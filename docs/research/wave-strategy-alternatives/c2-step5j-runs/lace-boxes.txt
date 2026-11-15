@@ -1,0 +1,21 @@
+C2 step 5j: two boxes over the AGED LACE, sRGB CODE VALUES, step 5h's own foam-relief.py at tile 8.
+
+READ THIS FIRST. These two boxes were drawn AFTER the three legs were looked at, to put a number on an
+impression taken from the stills. They are therefore NOT a judge and nothing in c2-step5j.md section 3 uses
+them. Every box in section 3 is step 5i's, drawn on the off leg before any switched leg was rendered.
+
+== the far lace on side, x 960-1270, y 500-700 ==
+[off] far lace, side         n  62000  mean  204.0  sd  11.2  LOCAL sd(8px)  3.24 (med  2.37)  p5-p95 193.1-232.3  >220:  11.9%
+[on] far lace, side          n  62000  mean  197.4  sd   5.3  LOCAL sd(8px)  2.00 (med  1.32)  p5-p95 189.9-207.7  >220:   0.1%
+[bubbles] far lace, side     n  62000  mean  198.5  sd   5.9  LOCAL sd(8px)  1.87 (med  1.26)  p5-p95 191.3-212.6  >220:   0.4%
+
+== the lace foreground on bore-face, x 760-1270, y 540-715 (outside section 3's broken box) ==
+[off] lace foreground, bore-face n  89250  mean  222.9  sd   6.2  LOCAL sd(8px)  1.99 (med  1.81)  p5-p95 212.8-233.2  >220:  79.9%
+[on] lace foreground, bore-face n  89250  mean  205.1  sd  15.5  LOCAL sd(8px)  1.89 (med  1.60)  p5-p95 170.9-218.0  >220:   0.1%
+[bubbles] lace foreground, bore-face n  89250  mean  208.8  sd  14.3  LOCAL sd(8px)  1.41 (med  1.22)  p5-p95 177.3-220.9  >220:   8.2%
+
+What they say: the aged lace is NOT removed by ?foamAlbedo=bubbles, and it is not darkened either -- it comes
+back UP, from on's 205.1 of 255 to 208.8 against the off leg's 222.9 on bore-face, while its 8 px network
+flattens from 1.89 to 1.41 against 1.99. The mechanism is in the composition: the foam white is mixed over
+the water by the COVER, so once the foam's albedo falls below the lit water's own brightness, taking it lower
+makes the pixel BRIGHTER, not darker. The aged end has a floor, and it is the water under it.

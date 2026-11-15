@@ -1,8 +1,10 @@
 import { Color, ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  FOAM_CAP_SCALE, FOAM_COLOUR_HEX, FOAM_COLOUR_LUMINANCE, FOAM_REFLECTANCE,
-  foamAlbedoColour, foamAlbedoProgramKey, foamAlbedoScale, foamReflectance, setFoamAlbedo, waterFoamAlbedoPars, withFoamAlbedo,
+  BUBBLE_DIAMETER, FOAM_CAP_SCALE, FOAM_COLOUR_HEX, FOAM_COLOUR_LUMINANCE, FOAM_LAYERS, FOAM_REFLECTANCE,
+  bubbleAlbedoScale, bubbleLayers, bubbleReflectance, foamAlbedoBubbles, foamAlbedoColour, foamAlbedoPars,
+  foamAlbedoProgramKey, foamAlbedoScale, foamReflectance, layerReflectance, setFoamAlbedo, waterFoamAlbedoPars,
+  waterFoamBubblePars, withFoamAlbedo,
 } from './foamAlbedo';
 import { YOUTH_AIR, YOUTH_COVER, foamYouth } from './foamFreshness';
 import { RICH_FOAM, RICH_FOAM_FRESH } from './richWaterGlsl';
@@ -161,5 +163,150 @@ describe('the foam albedo: where it hooks', () => {
     expect(compiled(surface.mesh.material)).toEqual(off);
     expect(on.fragment).not.toBe(off.fragment);
     expect(on.vertex).toBe(off.vertex);
+  });
+});
+
+describe('the foam albedo: the bubble layers (step 5j)', () => {
+  it('reproduces the two sourced ends of R(N) that were never fitted here', () => {
+    // A single bubble layer about 0.10, and the laboratory ceiling past about 25 (whitewater-sources.md).
+    expect(layerReflectance(1)).toBeCloseTo(0.0997, 4);
+    expect(layerReflectance(25)).toBeCloseTo(0.546, 3);
+    expect(layerReflectance(1000)).toBeCloseTo(FOAM_LAYERS.ceiling, 6);
+    expect(layerReflectance(0)).toBe(0);
+    // R is very nearly linear in N while N is small, which is what lets a cover fraction stand for a part layer.
+    expect(layerReflectance(0.5) / layerReflectance(1)).toBeCloseTo(0.52, 2);
+    // And it never rises above the sourced ceiling, whatever the fields say.
+    for (const n of [0, 0.3, 1, 5, 12, 25, 100, 1e6]) expect(layerReflectance(n)).toBeLessThanOrEqual(FOAM_LAYERS.ceiling);
+  });
+
+  it('counts the layers from the fields the drawing carries, and clamps as the plume`s own whiteness does', () => {
+    // alpha * h / d_bubble, plus the surface mat as at most one layer.
+    expect(bubbleLayers(0.2, 0.5, 2, 0)).toBeCloseTo((0.2 * 0.5) / BUBBLE_DIAMETER, 6);
+    expect(bubbleLayers(0, 0, 0, 1)).toBeCloseTo(1, 9);
+    expect(bubbleLayers(0, 0, 0, 0.5)).toBeCloseTo(0.5, 9);
+    // The plume reaches no deeper than the water (`plumeReach`), so a 2 m plume in 0.3 m of water is 0.3 m of air.
+    expect(bubbleLayers(0.1, 2, 0.3, 0)).toBeCloseTo((0.1 * 0.3) / BUBBLE_DIAMETER, 6);
+    // Foam above 1 (a Canyon lip's landing writes it) is one layer, not two.
+    expect(bubbleLayers(0, 1, 1, 3)).toBeCloseTo(1, 9);
+    // Out of range off a sliver triangle's edge, where MSAA shades it: never negative, never a NaN.
+    for (const [a, p, d, foam] of [[-0.66, -26, -1, -0.5], [0, -1, 1, 0], [-1, 1, 1, 2]] as const) {
+      const n = bubbleLayers(a, p, d, foam);
+      expect(Number.isFinite(n)).toBe(true);
+      expect(n).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  // NB these are ALBEDOS, not pixels. The drawn lace comes out BRIGHTER under `bubbles` even though its albedo is
+  // lower, because the foam's white is mixed over the water by the cover (c2-step5j.md section 5.1).
+  it('puts the aged lace`s albedo under step 5i`s aged end and the live plume`s over its fresh one', () => {
+    // An aged lace: the air has risen out, so one layer of surface mat is all that is left.
+    const lace = bubbleReflectance(0, 0, 1.2, 1);
+    expect(lace).toBeCloseTo(0.0997, 4);
+    expect(lace).toBeLessThan(FOAM_REFLECTANCE.aged);
+    // A live plume: half a metre of 10 %-air water is fifty layers, which is the ceiling.
+    const plume = bubbleReflectance(0.1, 0.5, 1.2, 1);
+    expect(plume).toBeCloseTo(FOAM_LAYERS.ceiling, 4);
+    expect(plume).toBeGreaterThan(FOAM_REFLECTANCE.fresh);
+    // The whole range sits inside the sourced chain: 0.03-0.10 aged, 0.55-0.60 the laboratory ceiling.
+    for (const air of [0, 0.004, 0.02, 0.13, 0.4]) {
+      for (const h of [0, 0.01, 0.1, 0.5, 2]) {
+        for (const foam of [0, 0.4, 1]) {
+          const r = bubbleReflectance(air, h, 2, foam);
+          expect(r).toBeGreaterThanOrEqual(0);
+          expect(r).toBeLessThanOrEqual(FOAM_LAYERS.ceiling);
+        }
+      }
+    }
+  });
+
+  it('is monotone in every field: more air, a deeper plume or more cover is never darker', () => {
+    const base = bubbleReflectance(0.02, 0.2, 1, 0.5);
+    expect(bubbleReflectance(0.04, 0.2, 1, 0.5)).toBeGreaterThan(base);
+    expect(bubbleReflectance(0.02, 0.4, 1, 0.5)).toBeGreaterThan(base);
+    expect(bubbleReflectance(0.02, 0.2, 1, 0.9)).toBeGreaterThan(base);
+    let previous = -1;
+    for (let air = 0; air <= 0.4; air += 0.005) {
+      const r = bubbleReflectance(air, 0.3, 1, 0.8);
+      expect(r).toBeGreaterThanOrEqual(previous - 1e-12);
+      previous = r;
+    }
+  });
+
+  it('is the cap`s own share, so the shader passes 1 where the layers reach step 5i`s 0.50', () => {
+    expect(bubbleAlbedoScale(0, 0, 1, 1)).toBeCloseTo(0.0997 / FOAM_REFLECTANCE.fresh, 4);
+    expect(bubbleAlbedoScale(1, 1, 1, 1)).toBeCloseTo(FOAM_LAYERS.ceiling / FOAM_REFLECTANCE.fresh, 6);
+    // 12 layers is where R(N) crosses the cap, so the scale crosses 1 there and nowhere else.
+    expect(layerReflectance(12)).toBeCloseTo(FOAM_REFLECTANCE.fresh, 2);
+    expect(bubbleAlbedoScale(0.012, 1, 1, 0)).toBeCloseTo(1, 2);
+  });
+
+  it('writes the GLSL twin from the same constants, so the two cannot drift', () => {
+    expect(waterFoamBubblePars).toContain(`max( 0.0, air ) * reach / ${BUBBLE_DIAMETER.toFixed(4)}`);
+    expect(waterFoamBubblePars).toContain(`${(FOAM_LAYERS.ceiling / FOAM_REFLECTANCE.fresh).toFixed(4)} * ( 1.0 - exp( -${FOAM_LAYERS.rate.toFixed(4)} * layers ) )`);
+    expect(waterFoamBubblePars).toContain('float reach = max( 0.0, min( plume, depth ) );');
+    // Same name as the cap's, so the hook is the one line either way.
+    expect(waterFoamBubblePars).toContain('float waterFoamAlbedoScale(');
+    expect(waterFoamAlbedoPars).toContain('float waterFoamAlbedoScale(');
+  });
+
+  it('is a third value of the same switch, and leaves `on` exactly as step 5i shipped it', () => {
+    // One surface, compiled three times: a second instance would carry its own textures' uuids.
+    const surface = richSurface();
+    setFoamAlbedo('on');
+    expect(foamAlbedoBubbles()).toBe(false);
+    const capPars = foamAlbedoPars();
+    const capKey = foamAlbedoProgramKey();
+    const capProgram = compiled(surface.mesh.material);
+    const capColour = foamAlbedoColour();
+    setFoamAlbedo('bubbles');
+    expect(foamAlbedoBubbles()).toBe(true);
+    expect(foamAlbedoPars()).toBe(waterFoamBubblePars);
+    expect(foamAlbedoProgramKey()).toBe('-foam-albedo-bubbles');
+    const bubbleProgram = compiled(surface.mesh.material);
+    expect(bubbleProgram.fragment).not.toBe(capProgram.fragment);
+    expect(bubbleProgram.vertex).toBe(capProgram.vertex);
+    // The uniform is the same 0.50 under both, so no mesh without a layer count of its own moves between them.
+    expect(colourLuminance(foamAlbedoColour())).toBeCloseTo(colourLuminance(capColour), 9);
+    expect(colourLuminance(foamAlbedoColour())).toBeCloseTo(FOAM_REFLECTANCE.fresh, 4);
+    // And back on `on` the program, the pars and the key are what they were, byte for byte.
+    setFoamAlbedo('on');
+    expect(foamAlbedoPars()).toBe(capPars);
+    expect(foamAlbedoPars()).toBe(waterFoamAlbedoPars);
+    expect(foamAlbedoProgramKey()).toBe(capKey);
+    expect(compiled(surface.mesh.material)).toEqual(capProgram);
+  });
+
+  it('hooks on the same crease and hands the layer count the two depth varyings', () => {
+    for (const foam of [RICH_FOAM, RICH_FOAM_FRESH, richRollerFoam(RICH_FOAM)]) {
+      const out = withFoamAlbedo(foam, true);
+      expect(out.split('waterCrease *= waterFoamAlbedoScale( vWaterAir, vWaterFoam, vWaterPlumeDepth, vWaterDepth );')).toHaveLength(2);
+      // The varyings it reads are the ones the plume's own whiteness reads, in the same fragment.
+      expect(out).toContain('min( vWaterPlumeDepth, vWaterDepth )');
+    }
+    expect(() => withFoamAlbedo('nothing like the Rich foam', true)).toThrow(/crease once/);
+  });
+
+  it('is in the Rich program with `bubbles` and nowhere in it with the switch off', () => {
+    const surface = richSurface();
+    setFoamAlbedo('bubbles');
+    const { fragment } = compiled(surface.mesh.material);
+    expect(fragment).toContain('float waterFoamLayers( float air, float plume, float depth, float foam )');
+    expect(fragment).toContain('waterCrease *= waterFoamAlbedoScale( vWaterAir, vWaterFoam, vWaterPlumeDepth, vWaterDepth );');
+    setFoamAlbedo('off');
+    const plain = compiled(surface.mesh.material);
+    expect(plain.fragment).not.toContain('waterFoamLayers');
+    expect(plain.fragment).not.toContain('waterFoamAlbedoScale');
+    expect(foamAlbedoProgramKey()).toBe('');
+  });
+
+  it('leaves the Rich program byte for byte as it is with the switch off, through either value', () => {
+    const surface = richSurface();
+    const off = compiled(surface.mesh.material);
+    setFoamAlbedo('bubbles');
+    compiled(surface.mesh.material);
+    setFoamAlbedo('on');
+    compiled(surface.mesh.material);
+    setFoamAlbedo('off');
+    expect(compiled(surface.mesh.material)).toEqual(off);
   });
 });

@@ -80,3 +80,16 @@ The coordinator guessed from this that **"the question is not 'build a particle 
   **5.05** here, while the region's large-scale contrast is still about half. **Item 5 is still open**, and 5i
   refutes half of 5h's reading of it — our flat water does carry a grazing Fresnel sky (`skyReflection.ts`); it is
   0.80× this photograph's for some other reason, untested.
+- **5j** (`../wave-strategy-alternatives/c2-step5j.md`) built the thing item 4's own note above points at — the
+  **number of bubble layers**, N ≈ α·h/d_bubble through R(N) ≈ 0.55(1 − e^(−0.2N)), as `?foamAlbedo=bubbles` beside
+  5i's cap — and **measured it worse**: on this frame's own geometry the within-frame ratio is **1.146** against 5i's
+  **1.102** and this photograph's **0.748**, the near-white share 21.9 % against 18.7 % and 14.6 %, and the local
+  relief falls back to the off leg's 2.98 [M]. It also moves **item 4's own aged end the wrong way** — the lace comes
+  back up, not down, because the foam's white is mixed over the water by the cover, so once the albedo is under the
+  lit water's own brightness, lowering it brightens the pixel. The cause of the brightening is in the fields, read
+  for the first time over 18 450 render nodes: **the deep plumes are under the thick cover**, so weighting by cover
+  lifts the layer count's mean reflectance to 0.433 against the cap's 0.335. It also measures why N cannot be the
+  grading variable here at all —
+  R(N) is at 90 % of its ceiling by **11.5 layers**, where the drawn field's maximum is **685** and a plume at the
+  physics' own peak void fraction would be 180.
+  **Ride 5i's `on` first.**

@@ -1,0 +1,69 @@
+C2 step 5j: the Canyon byte check, both of step 5h's protocols, with leg C on ?foamAlbedo=bubbles.
+branch rebased onto origin/main 726473a0; git diff --name-only 9c1acb9f origin/main -- src/ scripts/ server/ is EMPTY,
+so the bundle made before the rebase is the rebased tree's code byte for byte.
+
+== leg A: branch, foamAlbedo off, FRESH spin-up ==
+spun up on the CPU in 55.4 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/bytes/canyon.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.26/1.40, roller 0.39/0.52, front 0.00/0.00, lip 0.03/0.03, foam 3.65/3.95, airSources 0.05/0.07, aeration 1.91/2.05, contact 0.00/0.00, board 0.62/0.82, bubbles 0.17/0.19, spray 0.17/0.26, sounds 0.00/0.00, snapshotFields 4.23/4.65, snapshot 4.71/5.19, summary 0.41/0.45
+  CPU stages per step (step − water + snapshot + summary): 13.71/15.15; water (CPU solver, not timed on the device) 86.1
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+EXIT 0
+
+== leg D: branch, foamAlbedo off, cache read ==
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.28/1.50, roller 0.41/0.59, front 0.00/0.00, lip 0.03/0.05, foam 3.69/4.32, airSources 0.04/0.07, aeration 1.96/2.28, contact 0.00/0.00, board 0.63/0.86, bubbles 0.17/0.20, spray 0.17/0.28, sounds 0.00/0.00, snapshotFields 4.54/5.31, snapshot 5.06/5.93, summary 0.42/0.49
+  CPU stages per step (step − water + snapshot + summary): 14.26/16.73; water (CPU solver, not timed on the device) 84.2
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+EXIT 0
+
+== leg C: branch, foamAlbedo=bubbles, cache read ==
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.53/3.67, roller 0.51/1.03, front 0.00/0.00, lip 0.03/0.07, foam 4.55/12.29, airSources 0.06/0.11, aeration 2.35/5.78, contact 0.00/0.00, board 0.78/2.04, bubbles 0.21/0.38, spray 0.21/0.42, sounds 0.00/0.00, snapshotFields 5.46/14.16, snapshot 6.06/15.58, summary 0.52/0.86
+  CPU stages per step (step − water + snapshot + summary): 16.96/43.02; water (CPU solver, not timed on the device) 106.0
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+EXIT 0
+
+== leg B: branch, foamAlbedo=on, cache read (step 5i's own leg C, re-run on this tree) ==
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.53/2.90, roller 0.48/0.96, front 0.00/0.00, lip 0.03/0.06, foam 4.52/11.08, airSources 0.05/0.14, aeration 2.36/4.62, contact 0.00/0.00, board 0.79/1.87, bubbles 0.21/0.34, spray 0.20/0.46, sounds 0.00/0.00, snapshotFields 5.21/13.25, snapshot 5.82/14.37, summary 0.52/0.76
+  CPU stages per step (step − water + snapshot + summary): 16.86/43.87; water (CPU solver, not timed on the device) 103.9
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+EXIT 0
+
+BYTES-DONE
+
+main's own published figures, unchanged from step 5f through 5i:
+  fresh spin-up  snapshots ea3d57a4d49f4b48  state a1a2555739210f96
+  cache read     snapshots a8ac71b70eac2add  state 6319ed883e54b32e
+
+So, on both protocols independently:
+
+  protocol 1, fresh spin-up : leg A  ea3d57a4d49f4b48 / a1a2555739210f96  = main's, byte for byte
+  protocol 2, cache read    : leg D  a8ac71b70eac2add / 6319ed883e54b32e  = main's, byte for byte
+  ?foamAlbedo=bubbles       : leg C  a8ac71b70eac2add / 6319ed883e54b32e  = main's, BOTH hashes, unmoved
+  ?foamAlbedo=on            : leg B  a8ac71b70eac2add / 6319ed883e54b32e  = main's, BOTH hashes, unmoved
+
+BOTH hashes had to be main's on every leg, and were. This change writes nothing into the snapshot -- it is a
+fragment shader, one function in the Rich fragment's pars and a program-cache-key part, all entirely downstream
+of it -- so a moved snapshot hash would have been a bug and not a pass. (Step 5h's own ?lipVeil=on DID move the
+snapshot hash, because the veil writes drawn particles into the snapshot; this does not, and step 5i's leg C set
+the same expectation for ?foamAlbedo=on, which leg B here repeats on this tree.)
+
+The module is really in the bundle and really reads the switch, and so are THIS round's own constants:
+  grep -c foamAlbedo.ts bench.mjs       -> 1
+  grep -o 'devParam("foamAlbedo")'      -> present
+  grep -c BUBBLE_DIAMETER bench.mjs     -> 3
+so leg C is a test of the new value and not of an absent file.
+
+ON COST, and it is not a claim: the ms rows above were taken while this machine was also running typechecks, a
+vitest suite and this round's image measurements, so they are NOT comparable with step 5i's published rows and
+nothing in c2-step5j.md quotes them. What the legs DO bound is the simulation's cost, at zero, by construction:
+nothing in the simulation changed, which the hashes say from the bytes. The FRAGMENT's own extra work under
+?foamAlbedo=bubbles -- a min, a clamp, a divide and an exp per covered pixel -- is NOT measured by this bench
+and is not measured anywhere in this round.
+
+main moved under the branch while this round ran, from 9c1acb9f to 726473a0 (the surfer track's steps 3.2x and
+3.2y). `git diff --name-only 9c1acb9f origin/main -- src/ scripts/ server/` is EMPTY -- every one of main's new
+commits is under docs/ -- so the bundle made before the rebase is the rebased tree's code byte for byte, and
+these legs did not need re-running after it.

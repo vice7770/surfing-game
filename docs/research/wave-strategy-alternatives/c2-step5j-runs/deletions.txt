@@ -1,0 +1,68 @@
+C2 step 5j: the deletions column, read before the push, with every deleted line printed in full.
+
+$ git rebase origin/main   # branch now on 726473a0
+
+$ git diff --stat origin/main <working tree>
+ 31 files changed, <insertions: goes stale, see the note at the end>, 25 deletions(-)
+
+$ git diff --name-only origin/main -- src/
+src/scene/WaterSurface.ts
+src/scene/water/foamAlbedo.test.ts
+src/scene/water/foamAlbedo.ts
+
+== every deleted line, in full ==
+     1	-| **The reflectance of an active breaker's whitewater** | — | **≈ 0.50** fresh (Stage A), **0.40** bright thick, **0.18** thin, **0.03–0.10** at 10 s; **0.55–0.60** is the laboratory ceiling | Field hyperspectral, Long Island Sound, nadir (Dierssen 2019); open-ocean whitecaps by film densitometry, wind 7.5–15 m/s, time- and area-effective 0.22 ± 0.08 (Koepke 1984); a single bubble layer ≈ 0.10 and > 25 layers ≈ 0.55 (Whitlock et al. 1982 and Stabeno & Monahan 1986, both cited through those two). Set by the **number of bubble layers** N ≈ α·h/d_bubble, R(N) ≈ 0.55(1 − e^(−0.2N)), **not by a coverage fraction**. **Our `waterFoamColor` `#d8f2e9` is a diffuse albedo of 0.840** — 1.5–1.7× the whitest foam ever measured (C2 step 5h §5, not yet changed) | Sourced |
+     2	-import { foamAlbedoColour, foamAlbedoOn, foamAlbedoProgramKey, onFoamAlbedoChange, waterFoamAlbedoPars, withFoamAlbedo } from './water/foamAlbedo';
+     3	-        // What whitewater reflects (C2 step 5i); `?foamAlbedo=on` only, so every other program is today's byte for byte.
+     4	-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${this.barrelEnabled ? waterNoCarvePars : waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${dense ? waterChurnFreshGlsl : ''}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks, laceLookOn())}` : ''}${albedo ? waterFoamAlbedoPars : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
+     5	-        // The foam's albedo aged from the sourced reflectances (step 5i), after every other foam rewrite.
+     6	-        if (albedo) shader.fragmentShader = withFoamAlbedo(shader.fragmentShader);
+     7	-  FOAM_CAP_SCALE, FOAM_COLOUR_HEX, FOAM_COLOUR_LUMINANCE, FOAM_REFLECTANCE,
+     8	-  foamAlbedoColour, foamAlbedoProgramKey, foamAlbedoScale, foamReflectance, setFoamAlbedo, waterFoamAlbedoPars, withFoamAlbedo,
+     9	- * Dev: `?foamAlbedo=on` draws it; without it every program and every uniform is today's, byte for byte.
+    10	- * `window.waterFoamAlbedo(on)` switches it in a page — the tank and every mesh sharing its uniforms follow at once;
+    11	- * the far ocean takes its value at construction, so it follows on the next reload.
+    12	- * The Rich fragment with the foam's albedo aged: the crease every foam-white site multiplies in takes the age scale
+    13	- * with it, so the tank's surface foam, the plume's creased white and the roller band's own `waterFoamColor *
+    14	- * waterCrease` all age together — while the band's fresh albedo (`waterBandAlbedo`, a fresh crest) keeps the cap
+    15	- * alone, which is what it is.
+    16	-export function withFoamAlbedo(fragment: string): string {
+    17	-  return fragment.replace(CREASE_LINE, () => `${CREASE_LINE}\n  waterCrease *= waterFoamAlbedoScale( vWaterAir, vWaterFoam );`);
+    18	-/** Whether the sourced foam albedo is drawn (dev: `?foamAlbedo=on`; `window.waterFoamAlbedo(on)` in a page). */
+    19	-export const foamAlbedoMode = { on: devParam('foamAlbedo')?.trim().toLowerCase() === 'on' };
+    20	-  return foamAlbedoMode.on;
+    21	-export function setFoamAlbedo(on: boolean): void {
+    22	-  if (on === foamAlbedoMode.on) return;
+    23	-  foamAlbedoMode.on = on;
+    24	-/** The Rich programs' cache-key part: none with the switch off (the default), so today's program is reused. */
+    25	-  return foamAlbedoMode.on ? '-foam-albedo' : '';
+
+== what they are ==
+
+Twenty-five lines, and every one is a line this round rewrote in place. In the diff's own order:
+
+   1       docs/research/whitewater-sources.md -- the reflectance row, which still said "not yet changed" of a
+           waterFoamColor that steps 5i and 5j both change opt-in. Replaced by the same row with that corrected
+           and d_bubble's own row added above it.
+
+   2- 6    src/scene/WaterSurface.ts -- the import line; two comments; the Rich fragment's pars line (now
+           foamAlbedoPars() in place of the constant); the withFoamAlbedo call (now with the mode passed).
+
+   7- 8    src/scene/water/foamAlbedo.test.ts -- the import list, replaced by a longer one. (The test titles this
+           round renamed are titles this round also wrote, so they are not deletions against origin/main.)
+
+   9-25    src/scene/water/foamAlbedo.ts -- three lines of the module header's Dev paragraph; four lines of
+           withFoamAlbedo's doc comment; its signature and its one-line body; the mode's comment and its boolean
+           literal; foamAlbedoOn's body; setFoamAlbedo's signature and two lines of its body; the program key's
+           comment and its one-line body.
+
+NOT a deletion anywhere: the tube-spray reference's README gains a 5j bullet after 5i's and removes nothing.
+
+The four exported names step 5i shipped and this round must not move -- FOAM_REFLECTANCE, FOAM_CAP_SCALE,
+foamAlbedoScale and waterFoamAlbedoPars -- are all still exported with their values unchanged, which
+foamAlbedo.test.ts asserts, and `?foamAlbedo=on`'s rendered pixels reproduce step 5i's published figures to all
+four printed decimals and its footprints to the exact pixel count (c2-step5j.md section 2).
+
+The INSERTIONS number goes stale with every further line of this write-up -- it is left out above for that
+reason -- while the DELETIONS number does not, which is why it is the one quoted in c2-step5j.md section 8.2.
+Read on the final tree: 31 files changed, 25 deletions, and `git diff | grep -cE '^-[^-]'` counts 25 too.

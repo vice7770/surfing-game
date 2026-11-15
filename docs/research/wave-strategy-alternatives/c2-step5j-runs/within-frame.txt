@@ -1,0 +1,42 @@
+ENCODING: sRGB inverse EOTF per channel, Rec. 709 luminance, mean over pixels. Ratios are within one frame.
+Tone-mapped before the encode, so display-linear, not scene radiance (step 5i section 1).
+
+the owner's photograph (1280 x 720)
+  broken foam   n 101760  linear mean 0.5672  sd 0.1408
+  glassy water  n  60000  linear mean 0.7582  sd 0.0984
+  clean face    n  50000  linear mean 0.2227  sd 0.0428
+  WITHIN-FRAME RATIO broken / glassy water = 0.748   (broken / clean face = 2.547)
+  contrast inside the broken region, sd / mean = 0.248
+
+== side ==
+  off     broken n  63800 mean 0.7975 sd 0.0739 | flat n  50000 mean 0.6089 sd 0.0244 | RATIO 1.310 | contrast 0.093  (broken / clean face 3.622)
+  on      broken n  63800 mean 0.6627 sd 0.0857 | flat n  50000 mean 0.6012 sd 0.0212 | RATIO 1.102 | contrast 0.129  (broken / clean face 3.009)
+  bubbles broken n  63800 mean 0.6901 sd 0.0764 | flat n  50000 mean 0.6022 sd 0.0199 | RATIO 1.146 | contrast 0.111  (broken / clean face 3.134)
+  footprint on      n 232564 (25.23 % of the frame)  OFF mean 0.6919  LEG mean 0.5839  LEG/OFF 0.844
+  footprint bubbles n 232721 (25.25 % of the frame)  OFF mean 0.6917  LEG mean 0.6019  LEG/OFF 0.870
+  bubbles vs on  n 124743 (13.54 % of the frame)  ON mean 0.6195  BUBBLES mean 0.6531  BUBBLES/ON 1.054
+
+== front ==
+  off     broken n  33750 mean 0.8705 sd 0.0323 | flat n  23400 mean 0.4677 sd 0.0829 | RATIO 1.861 | contrast 0.037
+  on      broken n  33750 mean 0.7697 sd 0.0674 | flat n  23400 mean 0.4575 sd 0.0825 | RATIO 1.682 | contrast 0.088
+  bubbles broken n  33750 mean 0.7834 sd 0.0534 | flat n  23400 mean 0.4560 sd 0.0838 | RATIO 1.718 | contrast 0.068
+  footprint on      n 429392 (46.59 % of the frame)  OFF mean 0.7786  LEG mean 0.6977  LEG/OFF 0.896
+  footprint bubbles n 429478 (46.60 % of the frame)  OFF mean 0.7786  LEG mean 0.7159  LEG/OFF 0.920
+  bubbles vs on  n 259352 (28.14 % of the frame)  ON mean 0.7022  BUBBLES mean 0.7325  BUBBLES/ON 1.043
+
+== above ==
+  off     broken n  41400 mean 0.8529 sd 0.0409 | flat n  39600 mean 0.5277 sd 0.0260 | RATIO 1.616 | contrast 0.048
+  on      broken n  41400 mean 0.6943 sd 0.0733 | flat n  39600 mean 0.5277 sd 0.0260 | RATIO 1.316 | contrast 0.106
+  bubbles broken n  41400 mean 0.7135 sd 0.0637 | flat n  39600 mean 0.5277 sd 0.0260 | RATIO 1.352 | contrast 0.089
+  footprint on      n 453855 (49.25 % of the frame)  OFF mean 0.7662  LEG mean 0.6664  LEG/OFF 0.870
+  footprint bubbles n 453957 (49.26 % of the frame)  OFF mean 0.7662  LEG mean 0.6891  LEG/OFF 0.899
+  bubbles vs on  n 275757 (29.92 % of the frame)  ON mean 0.6708  BUBBLES mean 0.7082  BUBBLES/ON 1.056
+
+== bore-face ==
+  off     broken n 108000 mean 0.7817 sd 0.0605 | flat n  40000 mean 0.5755 sd 0.0712 | RATIO 1.358 | contrast 0.077
+  on      broken n 108000 mean 0.5747 sd 0.0897 | flat n  40000 mean 0.5629 sd 0.0556 | RATIO 1.021 | contrast 0.156
+  bubbles broken n 108000 mean 0.6221 sd 0.0907 | flat n  40000 mean 0.5629 sd 0.0578 | RATIO 1.105 | contrast 0.146
+  footprint on      n 505127 (54.81 % of the frame)  OFF mean 0.7152  LEG mean 0.5843  LEG/OFF 0.817
+  footprint bubbles n 505584 (54.86 % of the frame)  OFF mean 0.7151  LEG mean 0.6110  LEG/OFF 0.854
+  bubbles vs on  n 354012 (38.41 % of the frame)  ON mean 0.6118  BUBBLES mean 0.6499  BUBBLES/ON 1.062
+

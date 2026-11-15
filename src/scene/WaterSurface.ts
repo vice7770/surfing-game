@@ -46,7 +46,7 @@ import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
 import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { foamFreshMode, foamFreshProgramKey, onFoamFreshChange, waterFoamFreshPars } from './water/foamFreshness';
-import { foamAlbedoColour, foamAlbedoOn, foamAlbedoProgramKey, onFoamAlbedoChange, waterFoamAlbedoPars, withFoamAlbedo } from './water/foamAlbedo';
+import { foamAlbedoBubbles, foamAlbedoColour, foamAlbedoOn, foamAlbedoPars, foamAlbedoProgramKey, onFoamAlbedoChange, withFoamAlbedo } from './water/foamAlbedo';
 import { onRockBedChange, rockBedMode, rockBedProgramKey, withRockBed } from './water/rockBed';
 import { withNormalGuard } from './water/tubeLook';
 import { richBodyGain } from './water/waterLight';
@@ -407,8 +407,10 @@ export class WaterSurface {
         const richFoam = fresh ? RICH_FOAM_FRESH : RICH_FOAM;
         // The foam's look after the 2026-10-21 playtest (`foamLook.ts`); `?foamLook=off` compiles today's foam.
         const dense = denseLookOn();
-        // What whitewater reflects (C2 step 5i); `?foamAlbedo=on` only, so every other program is today's byte for byte.
+        // What whitewater reflects (C2 step 5i), from the bubble layers under the pixel with `=bubbles` (step 5j);
+        // either value only, so every other program is today's byte for byte.
         const albedo = foamAlbedoOn();
+        const bubbles = foamAlbedoBubbles();
         const slopePars = this.vertexNormals ? `\n${richVertexSlopePars}` : '';
         // G8: the physics' Catmull-Rom surface, its normal per pixel.
         shader.vertexShader = shader.vertexShader
@@ -416,7 +418,7 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', this.vertexNormals ? richBeginVertexNormal : richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${this.barrelEnabled ? waterNoCarvePars : waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${dense ? waterChurnFreshGlsl : ''}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks, laceLookOn())}` : ''}${albedo ? waterFoamAlbedoPars : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${this.barrelEnabled ? waterNoCarvePars : waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${dense ? waterChurnFreshGlsl : ''}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks, laceLookOn())}` : ''}${albedo ? foamAlbedoPars() : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
@@ -431,8 +433,9 @@ export class WaterSurface {
         // The light through foam kept to what the foam lets through (item 4b): after the dense churn, whose freshness
         // the glow does not take.
         if (lightLookOn()) shader.fragmentShader = withFoamLight(shader.fragmentShader);
-        // The foam's albedo aged from the sourced reflectances (step 5i), after every other foam rewrite.
-        if (albedo) shader.fragmentShader = withFoamAlbedo(shader.fragmentShader);
+        // The foam's albedo from the sourced reflectances (step 5i), or from the bubble layers (step 5j), after every
+        // other foam rewrite.
+        if (albedo) shader.fragmentShader = withFoamAlbedo(shader.fragmentShader, bubbles);
         // The rock floor in its own albedo (the 2026-10-22 playtest), only where the bed has one.
         if (this.rockBedEnabled) withRockBed(shader, { surface: 'waterHeight', xz: 'waterXZ' });
         // The horizon plan: the haze toward the horizon, and the sky mirrored from the slopes' spread.
