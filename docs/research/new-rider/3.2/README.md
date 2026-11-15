@@ -6645,9 +6645,10 @@ which is exactly the design's order, and §3 is what the hip can do about a 60°
   `SurfZoneRunner` (`src/wave/`) included — the last is outside the merge suite, so a red there is news.
   `results/32x/suite-rider-32x.txt`. `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it
   (`c2-step5g.md` §7.4).
-- **The Canyon bench, all four hashes**: `results/32x/canyon-bytes-32x.txt`, the same command and reference as step
-  5f's and 3.2t–3.2w's — Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`, default Canyon `ea3d57a4d49f4b48` /
-  `a1a2555739210f96`.
+- **The Canyon bench, all four hashes, fresh spin-ups on the rebased tree**: Canyon B **`a367d938f15fa934`** /
+  **`9e5831f80e38abd9`**, default Canyon **`ea3d57a4d49f4b48`** / **`a1a2555739210f96`** — the same command and the
+  same reference as step 5f's and 3.2t–3.2w's. **All four identical.** `results/32x/canyon-bytes-32x.txt` has both
+  legs in full. Nothing was inherited across the rebase: see the rebase bullet below.
 - **The default board**: `boardShape.ts` is untouched and the default rider's path is untouched, so the default board
   is unchanged by construction; the four Canyon hashes are the check that says so.
 - **The deletions column, checked before the push**: `git diff --stat origin/main HEAD`, deletions read off the
