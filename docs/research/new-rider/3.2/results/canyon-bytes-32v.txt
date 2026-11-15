@@ -25,3 +25,17 @@ The default board was also checked bit for bit against main as raw IEEE patterns
 the board path than the hash: results/32v/shapebits-32v.txt, diff clean.
 A wave-track agent ran its own three-leg Canyon bench alongside this one throughout, so the per-step
 milliseconds here are a loaded machine's. The hashes are the claim; the milliseconds are not.
+
+THE REBASE, AND WHY THE HASHES ABOVE STILL STAND WITHOUT A RE-RUN.
+The deletions check caught it, which is the third round running it has earned its place. After these hashes were
+measured, `git diff --numstat origin/main` showed 16 deletions in docs/research/wave-strategy-alternatives/c2-step5g.md
+-- the wave track had merged 89af1077 ("C2 step 5g: close the one test file that would not run, by reading it") while
+this round ran, and the branch, being behind, would have reverted it. Rebased onto 89af1077; no conflict, and the
+column is back to 9 deletions, every one a line of mine that another line of mine replaced.
+
+Step 3.2u had to state an unverified caveat at exactly this point. This round does not need one, and the reason is
+checkable rather than argued: `git show --stat 89af1077` is **one documentation file, +16/-1**
+(docs/research/wave-strategy-alternatives/c2-step5g.md) and **no source file at all**. The solver, the board, the rider
+and every switch are byte-identical across the rebase, so the four hashes above are the rebased tree's own. `tsc -p .`
+and `tsc -p server/tsconfig.json` were both re-run on the rebased tree (exit 0 each, read from tsc's own status), and
+so was the 25-file rider/board/HUD/runner suite.
