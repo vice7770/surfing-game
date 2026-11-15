@@ -1478,6 +1478,14 @@ Part 27 §5 published that row from — as per-run medians:
 | along-board (the push down the line) | 2.0–10.1 | **1.7–7.4** | 0.9–2.1 |
 | the deck normal's own load | 20.2–87.8 | **21.4–91.8** | 26.2–100.6 |
 
+**And the no-hidden-motors question, answered rather than waved at.** Rotating a force at constant magnitude does
+change the work it does — `F · v` depends on the direction, and pretending otherwise would be the dodge. What it cannot
+do is make energy from nothing: it is the same water force, acting at the same point, with its reaction on the water
+as implicit as it already was (ruling 27's one-way coupling, unchanged). The measurable question is whether the ride
+runs away, and it does not: the speed at the fall **falls**, 6.21 → 5.82 m/s in the world frame and 5.56 → 5.15 on the
+deck, over 108 runs a configuration — later falls on slower boards, not faster ones. Two populations, so it is a
+negative result and not a number.
+
 So the recalibration the owner objected to in 3.2s is real but small: the along-board component falls **5–33 %**
 (slope 0.666–0.954 over the eighteen world and deck cells) where the unconditional version cut it **45–77 %**
 (slope 0.182), and the horizontal push grows at the low end rather than shrinking — by **3.3 N** at the top of the
@@ -1579,8 +1587,8 @@ because it is a result.
 Late in a capsize none of this is the authority. The ankle's ceiling is `F_n × 0.130 m` and `F_n` is the same quantity
 whose collapse inflates the demand; with the switch on `F_n` at the fall still runs down to **7.3 N** in the deck cells
 and the deepest rolls reach **134.8°**. **The hip is the authority there, and a re-pointed buoyancy changes only how
-early it is needed** — by the 0.14–0.94° §4 measures, which is between a seventh and a twentieth of the residual the
-body is standing on when it goes.
+early it is needed** — by the 0.14–0.94° §4 measures, which is a fifth of the residual at trim and a twentieth to
+a sixtieth of it at the rolls the body goes over at.
 
 ## 10. Seatbelts
 
@@ -1671,8 +1679,9 @@ this fix — "it removes essentially all of the sideways force" — was measured
 the time*, and that version is not physics: it would push a flipped board under.
 
 So the honest size, in your terms: of the sideways slope the surfer is standing on, which runs from under a degree when
-he is flat to about **seventeen degrees** when he is going over, this switch takes off **a seventh to a twentieth**. It
-peaks at about **one degree** of correction around thirty to forty degrees of lean and then falls away.
+he is flat to about **seventeen degrees** when he is going over, this switch takes off about **a fifth while he is
+flat, a twentieth past fifty degrees of lean, and a sixtieth past seventy**. In absolute terms its correction peaks at
+about **one degree** around thirty to forty degrees of lean and then falls away.
 
 **Does he stay on? No.** Twelve of twelve fell in all thirty-six conditions I ran. What he gets is time — about
 **a sixth of a second** on its own, and **half a second** together with last round's inner-ear fix, which do add. He
