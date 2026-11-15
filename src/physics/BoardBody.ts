@@ -88,6 +88,14 @@ export interface BoardBodyOptions {
    * `'off'` builds the section and makes no suction. Ignored without `hull: 'rail'`.
    */
   railSuction?: 'off';
+  /**
+   * The rail side-face foils, which `hull: 'rail'` drops because the band's own facets carry that surface and keeping
+   * both counts the rail twice (step 3.2u). `'on'` keeps them **alongside** the band — a diagnostic, and one of the two
+   * flags Part 19 §5 named to settle why the section makes the rider lean at all, since the dropped side faces are one
+   * of the three unseparated causes. Deliberately double-counts the rail, so it is for probes only and reaches no
+   * switch; ignored without `hull: 'rail'`, where the side faces are on already.
+   */
+  railFaces?: 'on';
 }
 
 /**
@@ -629,7 +637,7 @@ export class BoardBody implements BoardContactBody {
     this.reaction = new Float64Array(count * 3);
     this.meanPosition = new Float64Array(count * 2);
     this.bedImpulse = new Float64Array(count * 2 * 3);
-    this.foils = this.buildFoils(options.fins ?? THRUSTER, center, shape.taper);
+    this.foils = this.buildFoils(options.fins ?? THRUSTER, center, shape.taper, options.railFaces === 'on');
     const foilCount = this.foils.length;
     this.foilArm = new Float64Array(foilCount * 3);
     this.foilNormal = new Float64Array(foilCount * 3);
@@ -645,7 +653,7 @@ export class BoardBody implements BoardContactBody {
    * Dropping them also means `shape.taper` no longer reaches anything that moves (the advisor's trap 3: it feeds this
    * function, and only the rail faces' height used it; the fins never did).
    */
-  private buildFoils(fins: readonly FinSpec[], center: Vec, railTaper: number): Foil[] {
+  private buildFoils(fins: readonly FinSpec[], center: Vec, railTaper: number, keepRailFaces = false): Foil[] {
     const { shape } = this;
     const foils: Foil[] = [];
     const s = (z: number) => Math.min(1, Math.max(0, z / shape.length + 0.5));
@@ -655,7 +663,7 @@ export class BoardBody implements BoardContactBody {
       const x = fin.side === 0 ? 0 : fin.side * (half - fin.fromRail);
       foils.push({ kind: 'fin', local: { x: x - center.x, y: shape.curves.rocker(s(z)) - center.y, z: z - center.z }, normal: { x: 1, y: 0, z: 0 }, fin, area: fin.area, height: fin.depth });
     }
-    const stations = shape.section === 'rail' ? [] : [...new Set(shape.patches.map((patch) => patch.position.z))].sort((a, b) => a - b);
+    const stations = shape.section === 'rail' && !keepRailFaces ? [] : [...new Set(shape.patches.map((patch) => patch.position.z))].sort((a, b) => a - b);
     for (const z of stations) {
       const half = shape.curves.width(s(z)) / 2;
       const height = shape.curves.thickness(s(z)) * (1 - railTaper);
@@ -1526,7 +1534,10 @@ export class BoardBody implements BoardContactBody {
       this.forces.suction.x += h * totals.sx;
       this.forces.suction.y += h * totals.sy;
       this.forces.suction.z += h * totals.sz;
-      if (BoardBody.yawLedger) this.yaw.suction += totals.sty;
+      // `h *` as every other entry has it (step 3.2v): without it this one entry accumulates a torque rather than an
+      // angular impulse and the `/ dt` below leaves it a factor `substeps` too large. Ledger only — `yawLedger` is off
+      // in the game — and it never showed because the suction measures 0.0 N through every ride (Part 19 §1 item 2).
+      if (BoardBody.yawLedger) this.yaw.suction += h * totals.sty;
     }
     if (frothX !== 0 || frothZ !== 0) {
       this.work.froth += h * (frothX * avx + frothZ * avz + frothTx * awx + frothTy * awy + frothTz * awz);

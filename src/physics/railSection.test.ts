@@ -234,3 +234,126 @@ describe("COMPRESS_PULL deleted (`compressPull: 'off'`, opt-in)", () => {
     expect(now.work.legDrive).toBe(0);
   });
 });
+
+/**
+ * Step 3.2v's three diagnostics. Part 19 §5 left one thing measured and unattributed — *why does the section make the
+ * rider lean at all*, 0.55° of roll on the flat board against 26.5° on the section — and named two flags that settle it
+ * without a fourth hull: the **squared taper** on the section's own patch layout (band kept, the thickness
+ * redistribution undone) and the **rail side-face foils re-enabled** beside the band. Both are probe-only: neither
+ * reaches a switch, and `railFaces: 'on'` deliberately double-counts the rail, which is exactly why it is a
+ * measurement and not a hull. The third is a fix to the yaw ledger, which 3.2v reads to book the heading by source.
+ */
+describe("step 3.2v's diagnostics", () => {
+  it('takes the squared taper on the section’s own layout, and the flat board ignores the exponent', () => {
+    const linear = buildBoardShape(REFERENCE_BOARD, 12, 4, 'rail');
+    const squared = buildBoardShape(REFERENCE_BOARD, 12, 4, 'rail', 2);
+    // The band is kept and the layout is the same — only the thickness across the beam moves.
+    expect(squared.section).toBe('rail');
+    expect(squared.patches.length).toBe(linear.patches.length);
+    expect(squared.patches.filter((patch) => patch.band).length).toBe(linear.patches.filter((patch) => patch.band).length);
+    expect(squared.planformArea).toBeCloseTo(linear.planformArea, 12);
+    expect(squared.maxWidth).toBe(linear.maxWidth);
+    // A different distribution: a squared taper carries more of the thickness inboard, so the taper that holds the
+    // volume is far larger (0.916 against the linear 0.568) and the rail it leaves is thinner.
+    expect(squared.taper).toBeGreaterThan(linear.taper);
+    // **And it no longer closes the volume as tightly, which is the measurement from the other side of why `'rail'` is
+    // linear.** The squared taper's rail is thin enough that `RAIL_BAND.minSlab` — the 2 mm floor under a band facet's
+    // own slab — starts to bind, and every facet it lifts adds volume the solve did not account for. The linear taper
+    // closes to 0.002 % (4e-7 m³) and the squared one to 0.04 % (1.0e-5 m³), twenty-five times worse.
+    expect(linear.volume).toBeCloseTo(REFERENCE_BOARD.volume, 6);
+    expect(squared.volume).toBeCloseTo(REFERENCE_BOARD.volume, 4);
+    expect(Math.abs(squared.volume - REFERENCE_BOARD.volume)).toBeGreaterThan(10 * Math.abs(linear.volume - REFERENCE_BOARD.volume));
+    // And it is the exponent that did it, not the band: the flat board is bit for bit itself whatever is passed.
+    const flatDefault = buildBoardShape(REFERENCE_BOARD, 12, 4, 'flat');
+    expect(buildBoardShape(REFERENCE_BOARD, 12, 4, 'flat', 2).taper).toBe(flatDefault.taper);
+    expect(buildBoardShape(REFERENCE_BOARD, 12, 4, 'flat', 1).taper).toBe(flatDefault.taper);
+    expect(RAIL_BAND.power).toBe(1);
+  });
+
+  it('re-enables the rail side-face foils beside the band when asked, and only then', () => {
+    const faces = (board: BoardBody) => (board as unknown as { foils: { kind: string }[] }).foils.filter((foil) => foil.kind === 'rail').length;
+    const flat = new BoardBody({});
+    const band = new BoardBody({ hull: 'rail' });
+    const both = new BoardBody({ hull: 'rail', railFaces: 'on' });
+    // The band drops them, as step 3.2u shipped it; the flag puts them back, two a station as the flat board has them.
+    expect(faces(flat)).toBeGreaterThan(0);
+    expect(faces(band)).toBe(0);
+    expect(faces(both)).toBe(faces(flat));
+    // And nothing else about the hull moves with the flag: same patches, same taper, same volume.
+    expect(both.shape.patches.length).toBe(band.shape.patches.length);
+    expect(both.shape.taper).toBe(band.shape.taper);
+    // The flag is ignored on the flat board, where the side faces are on already.
+    expect(faces(new BoardBody({ railFaces: 'on' }))).toBe(faces(flat));
+  });
+
+  it('books the suction’s yaw as an angular impulse, like every other entry in the ledger', () => {
+    /**
+     * `yaw.suction` was accumulating a torque where every other entry accumulates `h ×` one, and the ledger's `/ dt`
+     * then left it a factor `substeps` too large. The bound that catches it: a mean torque about the world vertical
+     * cannot exceed the mean force times the longest arm on the board, which is its own length.
+     */
+    const board = new BoardBody({ hull: 'rail' });
+    BoardBody.yawLedger = true;
+    try {
+      const water = new PlaneWater({});
+      const normal = new Vector3(0, 1, 0);
+      const fall = new Vector3(0, 0, 1);
+      const left = new Vector3().crossVectors(normal, fall).normalize();
+      board.place(
+        new Vector3(0, board.shape.centerOfMass.y, 0),
+        new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, fall)),
+        // Running down the line with 20° of sideways slip, which is the one flow that makes the band suck at all.
+        new Vector3(Math.sin(20 / (180 / Math.PI)), 0, Math.cos(20 / (180 / Math.PI))).multiplyScalar(7.5),
+        new Vector3(0, 0, 1.2),
+      );
+      for (let i = 0; i < 12; i += 1) board.step(1 / 60, water);
+      const force = board.forces.suction.length();
+      expect(Math.abs(board.yaw.suction)).toBeLessThanOrEqual(force * board.shape.length + 1e-9);
+    } finally {
+      BoardBody.yawLedger = false;
+    }
+  });
+});
+
+/**
+ * Step 3.2v, job 1d's physics half: **`balanceReserve` says how close the rider is to going down and never said
+ * why.** `balanceLimits` names which of the three it took the minimum of, and whether the weight left the feet across
+ * the board — the two things the HUD needs to label a fall, and the two the probes needed to measure one. It must
+ * agree with `balanceReserve` exactly, or the meter and its label would disagree on screen.
+ */
+describe("the balance's three limits, named (`balanceLimits`)", () => {
+  it('agrees with the reserve, and names the least of the three', () => {
+    const board = new BoardBody({});
+    const rider = new AttachedRider(board.shape, { phase: 'standing', rider: 'new' });
+    board.attach(rider);
+    const water = new PlaneWater({});
+    for (let i = 0; i < 30; i += 1) board.step(1 / 60, water);
+    const limits = rider.balanceLimits;
+    // The reserve is the minimum of the three, and the name is the argument of that minimum.
+    expect(Math.min(limits.margin, limits.grip, limits.knee)).toBeCloseTo(rider.balanceReserve, 12);
+    const named = limits.limit === 'margin' ? limits.margin : limits.limit === 'grip' ? limits.grip : limits.knee;
+    expect(named).toBeCloseTo(rider.balanceReserve, 12);
+    // All three are reserves: 0 to 1.
+    for (const value of [limits.margin, limits.grip, limits.knee]) {
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(value).toBeLessThanOrEqual(1);
+    }
+    // `across` is a statement about `past` and must not contradict it: nothing is across while nothing is past.
+    expect(limits.past).toBeGreaterThanOrEqual(0);
+    if (limits.past === 0) expect(limits.across).toBe(false);
+  });
+
+  it('calls the old rider’s single number a posture, because it has no three terms behind it', () => {
+    const board = new BoardBody({});
+    const rider = new AttachedRider(board.shape, { phase: 'standing' });
+    board.attach(rider);
+    const water = new PlaneWater({});
+    for (let i = 0; i < 30; i += 1) board.step(1 / 60, water);
+    const limits = rider.balanceLimits;
+    expect(limits.limit).toBe('posture');
+    expect(limits.margin).toBe(rider.balanceReserve);
+    expect(limits.grip).toBe(rider.balanceReserve);
+    expect(limits.knee).toBe(rider.balanceReserve);
+    expect(limits.across).toBe(false);
+  });
+});

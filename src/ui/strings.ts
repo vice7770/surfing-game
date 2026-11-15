@@ -195,6 +195,14 @@ export const EN = {
   'hud.pause': 'Pause',
   'hud.speed': 'Speed',
   'hud.balance': 'Balance',
+  // Step 3.2v: which of the balance's three limits is nearest, beside the meter, and what let go on a fall. The
+  // owner's own words for the three: the weight going off the side, the feet losing their grip, the knees giving.
+  'hud.balance.margin': 'Weight',
+  'hud.balance.grip': 'Grip',
+  'hud.balance.knee': 'Knees',
+  'hud.balance.posture': 'Balance',
+  'hud.balance.broke': '{limit} — {speed}',
+  'hud.balance.brokeAcross': '{limit} off the side — {speed}',
   'hud.hint.paddle': 'Paddle',
   'hud.hint.popUp': 'Pop up',
   'hud.hint.steer': 'Steer',

@@ -1,0 +1,32 @@
+
+## turnpath — flat, cheat on, rider new, window 4.0 s + 5.0 s hold, gate 85°, start 45° off the fall line
+   18 runs, 5 s wall · the face 1.40 m / 16° / 5.70 m/s, depth 2.6 m
+   the gate: 0 of 18 · why each run stopped: gate 0 · window 0 · fell 18
+   heading: reached 46.9–76.9° off the fall line · came round 27.4–123.2° from the start · in the window 9.4–123.2° · the unsigned metric's fold 0.0–0.0°
+   the heading's own rate: 21.02 °/s median, 222.6 °/s peak · over the window's last half second -96.3–106.7 °/s
+   the roll path: lean asked 25.0° (peak 50.0°) → body 16.0° (peak 70.0°) → board roll -12.6° (peak 20.0°) → heading 57.5°
+   drift -0.63° median, 31.7° peak · lateral 0.253 g median, 1.628 g peak · nUp 1.026
+   the cheat's work on the body: assist 0.0 J · carry 0.0 J · lean-out 0.0 J
+   job 1a — the falls: 18 of 18 went down · by cause balance 18
+     which of the three bound at the fall: margin 18 · grip 0 · knee 0 · the contact's own limit there: tip 8 · none 10
+     the three over the half second before, loaded frames: margin 0.480 · grip left 0.858 · knee left 0.542
+     the feet's grip saturated on the way down (limit 'slip'), frames of the last 0.5 s: 0.0–0.0 of 30.0–31.0 · tipping 0.0–12.0
+     which way the weight left the feet: across 18 · along 0 · none 0 · past the edge by 0.1–0.8 m
+     the capture point across at the fall, 0.382 m median = the body leaning out 0.131 m + the body's own speed across 0.225 m (spans -0.1–0.2 and -0.4–0.8)
+   job 1b — the slide: 12 of 18 falls were sliding over 8° at some point · for 0.0–0.3 s before going down · drift at the fall -62.3–18.8° at 1.9–8.7 m/s
+     and the window **any** recovery would have: the margin fell from over 0.50 to the fall in 0.1–1.1 s (median 0.21)
+   the settle after the stick is centred (the owner's "the surfer's own system fixes it"): 0 of 18 runs got that far · 0 of them were still up 2 s later
+   the yaw ledger over the turn, N·m·s about the world vertical (positive the turn's way):
+     fins         -18.439 median  (-26.8–-3.1)
+     rails         -1.587 median  (-2.8–-0.7)
+     pressure     -20.502 median  (-65.4–39.8)
+     friction       2.301 median  (0.7–4.1)
+     addedMass    -15.817 median  (-23.5–-10.5)
+     radiation     -2.162 median  (-3.5–-1.5)
+     buoyancy      -3.391 median  (-6.6–-1.9)
+     froth          0.000 median  (0.0–0.0)
+     suction        0.000 median  (0.0–0.0)
+     bed            0.000 median  (0.0–0.0)
+     gyro          -0.002 median  (-0.1–0.2)
+     rider         58.564 median  (-5.8–118.5)
+     total          0.263 median  (-1.0–0.9)

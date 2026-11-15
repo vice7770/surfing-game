@@ -266,6 +266,14 @@ export interface SurfZoneStatus {
     separation?: RiderSeparation; resets: number; wave: WaveFrame; live?: Maneuver; report?: RideReport & { id: number };
     /** The rider's balance reserve, 0–1 (0 once fallen). */
     balance: number;
+    /**
+     * **Which of the reserve's three limits is nearest, and the three themselves** (step 3.2v,
+     * `AttachedRider.balanceLimits`): `balance` above is their minimum, and until now which one it was never left the
+     * physics. `broke` is the limit at the moment of the latest fall and the speed over ground there, m/s, kept until
+     * the next ride starts — so the owner's own ride says what let go rather than only how close it came.
+     */
+    balanceLimit?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number };
+    broke?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; across: boolean; speed: number };
     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
     bank?: number;
     /** Optional dev guidance. This is a geometry observation, not a completed ride. */
@@ -407,6 +415,13 @@ export class SurfZoneRunner {
   /** C2 step 3: the bodies' places the library's contact lofts near (x, z pairs). */
   private readonly nearBodies = new Float64Array(4);
   private rideResets = 0;
+  /**
+   * Step 3.2v: the balance limit that let go at the latest fall, and the speed over ground there, m/s. Taken on the
+   * frame the rider separates — after that the capture state is whatever it was left at — and held until the rider is
+   * back on the board, which is what lets the HUD name the fall the owner just had.
+   */
+  private broke?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; across: boolean; speed: number };
+  private wasAttached = false;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
   private readonly point = new Vector3();
@@ -1116,6 +1131,25 @@ export class SurfZoneRunner {
   status(): SurfZoneStatus {
     const start = performance.now();
     const { simulation } = this;
+    /**
+     * Step 3.2v: the limit that let go, taken on the first snapshot after the rider came off the board. The capture
+     * state and the contact's two shares are not cleared by the separation — nothing calls `project` once the rider is
+     * off — so this reads the fall's own values, and it is cleared when the rider is back on.
+     */
+    if (this.session) {
+      const attached = this.session.rider.attached;
+      if (this.wasAttached && !attached) {
+        const limits = this.session.rider.balanceLimits;
+        this.broke = {
+          limit: limits.limit,
+          across: limits.across,
+          speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
+        };
+      } else if (attached && !this.wasAttached) {
+        this.broke = undefined;
+      }
+      this.wasAttached = attached;
+    }
     // The readout's peak (the Canyon's beach peaks): the one nearest the rider, else the take-off's.
     const near = this.session ? this.session.board.centerOfMass.x : this.focus.x;
     const peaks = simulation.readoutPeaks();
@@ -1153,6 +1187,8 @@ export class SurfZoneRunner {
         live: this.analyzer?.latest && { ...this.analyzer.latest },
         report: this.rideReport && { ...this.rideReport, maneuvers: this.rideReport.maneuvers.map((maneuver) => ({ ...maneuver })) },
         balance: this.session.phase === 'fallen' ? 0 : this.session.rider.balanceReserve,
+        balanceLimit: this.session.rider.balanceLimits,
+        ...(this.broke ? { broke: { ...this.broke } } : {}),
         bank: this.session.rider.attached ? this.session.rider.bank.angle : 0,
         ...(this.tubeApproach?.seaTime === simulation.seaTime ? { tubeApproach: {
           ...this.tubeApproach, mouth: { ...this.tubeApproach.mouth }, inside: { ...this.tubeApproach.inside },
