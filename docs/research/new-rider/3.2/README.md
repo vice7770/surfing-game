@@ -6369,9 +6369,12 @@ The 12 of 12 against 0 of 12 reproduces: the shipped new rider **12 of 12 at 0.7
   is under `docs/research/new-rider/3.2/`. The one source edit this round made — the plumb mount in `frame` — was a
   probe-only trial, measured in §3, and reverted before the first commit.
 - `npx tsc --noEmit -p .`: **exit 0**, on its own line, read from `tsc`'s own exit status and not through a pipe.
-  `npx tsc --noEmit -p server/tsconfig.json`: **exit 0**.
+  `npx tsc --noEmit -p server/tsconfig.json`: **exit 0**. The root project includes only `src`, so the probe was
+  type-checked too, on a throwaway project that extends the root's options and adds the one file: **exit 0**.
 - The rider, board, HUD and runner test files run alone, `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`) and
-  `SurfZoneRunner` (`src/wave/`) included: `results/32w/suite-rider-32w.txt`.
+  `SurfZoneRunner` (`src/wave/`) included — the last of those is outside the merge suite, so a red there is news:
+  **57 files passed, 740 tests passed and 21 expected fail, vitest exit 0**, 146 s. `results/32w/suite-rider-32w.txt`.
+  `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it (`c2-step5g.md` §7.4).
 - **The Canyon bench, all four hashes**: `results/32w/canyon-bytes-32w.txt`, the same command and the same reference as
   step 5f's, 3.2t's, 3.2u's and 3.2v's — Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`, default Canyon
   `ea3d57a4d49f4b48` / `a1a2555739210f96`. With no source file touched this is the only possible result, and it is run
