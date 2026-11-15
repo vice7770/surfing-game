@@ -6985,9 +6985,14 @@ arithmetic says it is.
   there is news: **58 files passed, 783 tests passed and 21 expected fail, vitest exit 0**, 105 s.
   `results/32y/suite-rider-32y.txt`. `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it
   (`c2-step5g.md` §7.4).
-- **The Canyon bench, all four hashes, on the tree that merges**: `results/32y/canyon-bytes-32y.txt`, the same command
-  and the same reference as step 5f's and 3.2t–3.2x's. With no source file touched this is the only possible result,
-  and it is run anyway because that is what a seatbelt is for.
+- **The Canyon bench, all four hashes, fresh spin-ups on the tree that merges**: Canyon B **`a367d938f15fa934`** /
+  **`9e5831f80e38abd9`**, default Canyon **`ea3d57a4d49f4b48`** / **`a1a2555739210f96`** — the same command and the
+  same reference as step 5f's and 3.2t–3.2x's. **All four identical**, and Canyon B twice over from two independent
+  spin-ups. `results/32y/canyon-bytes-32y.txt` has all three legs in full. With no source file touched this is the
+  only possible result, and it is run anyway because that is what a seatbelt is for.
+- **No rebase was needed.** `origin/main` was **9c1acb9f** when the round started and still 9c1acb9f at the push, so
+  nothing of the wave track's was inherited or reverted across one — and the deletions column below is the check that
+  says so rather than `merge-base --is-ancestor`, which has caught none of the six.
 - **The default board**: `boardShape.ts` is untouched and no source file changed, so the default board and the default
   rider's path are unchanged by construction.
 - **The deletions column, checked before the push**: `git diff --stat origin/main HEAD`, deletions read off the summary
