@@ -6373,7 +6373,8 @@ The 12 of 12 against 0 of 12 reproduces: the shipped new rider **12 of 12 at 0.7
   type-checked too, on a throwaway project that extends the root's options and adds the one file: **exit 0**.
 - The rider, board, HUD and runner test files run alone, `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`) and
   `SurfZoneRunner` (`src/wave/`) included — the last of those is outside the merge suite, so a red there is news:
-  **57 files passed, 740 tests passed and 21 expected fail, vitest exit 0**, 146 s. `results/32w/suite-rider-32w.txt`.
+  **57 files passed, 740 tests passed and 21 expected fail, vitest exit 0**, 146 s, and **58 / 783 / 21, exit 0** on
+  the rebased tree with `SprayCloud.test.ts` added (see the rebase bullet). `results/32w/suite-rider-32w.txt`.
   `src/wave/SurfZoneSimulation.test.ts` is deliberately not in it (`c2-step5g.md` §7.4).
 - **The Canyon bench, all four hashes**: `results/32w/canyon-bytes-32w.txt`, the same command and the same reference as
   step 5f's, 3.2t's, 3.2u's and 3.2v's — Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`, default Canyon
@@ -6384,6 +6385,15 @@ The 12 of 12 against 0 of 12 reproduces: the shipped new rider **12 of 12 at 0.7
 - **The deletions column, checked before the push**: `git diff --stat origin/main HEAD` — two added files and one
   appended README section, no deletions anywhere, so nothing of the wave track's can have been reverted.
 - No force was added or removed, and no switch reaches the game. `MOUNT_PLUMB` existed for one measurement and is gone.
+- **The rebase, and why it was not optional.** The deletions column earned its place for the fourth round running.
+  With the work committed, `git diff --stat origin/main HEAD` showed **1,640 deletions across 34 files** of the wave
+  track's — `c2-step5h.md`, its runs and stills, `whitewater-sources.md` and **`src/wave/SprayCloud.ts` (−148) and its
+  test (−124)**: the wave track had merged C2 step 5h (`origin/main` **f7f08766**) while this round ran, and the
+  branch, being behind, would have reverted it. Rebased onto f7f08766; no conflict, and the column is back to
+  **11 files, 2,072 insertions and no deletions at all.** Unlike 3.2v's rebase this one **moves a source file in the
+  Canyon path**, so neither `tsc` run nor the suite nor the four hashes could be inherited: all of them were re-run on
+  the rebased tree, and the hashes above are that tree's own. The wave track's own leg A on the same tree reads the
+  same default-Canyon pair, independently.
 - A wave-track agent shared the machine throughout; nothing of theirs was stopped. The per-cell wall-clock seconds in
   `cells.txt` are a loaded machine's.
 
