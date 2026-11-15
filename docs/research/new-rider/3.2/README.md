@@ -6185,3 +6185,276 @@ falls before the turn finishes. At half stick he does not fall at all — he jus
 four seconds and the honest board needs about five and a half. Give it eight seconds and two of the six get all the way
 round. So the shaped board's turn is not weak, it is **slow** — about one and a half times slower than the version with
 the cheat in it. That is a smaller and more specific problem than "the turn is missing", and it waits behind the falls.
+
+# Part 21 — the trim fall, named: the pair capsizes
+
+Written 2026-11-15 by the build agent (Opus 5, effort high) on branch `claude/rider-new-32w`, cut from `origin/main`
+at **b3ed7397** (step 3.2v's merge), so Part 20 above is its base.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+**The round had one job**, in the coordinator's words: *the new rider falls 12 of 12 riding in trim with the stick never
+touched, the old rider falls 0 of 12 on the same water — find out why.* The brief carried no hypothesis, on purpose,
+after three rounds whose premises the agent refuted. This round ships **no change to the game**: one probe, two ladders
+and a diagnosis. The diagnosis filled the round, and the reason it did is §1.1 — the fall is not the one Part 20
+described, and the difference is a sign.
+
+**The harness is 3.2v's trim cell, unchanged** (3.2u's ruling: add cells, do not move the acceptance test): the
+Canyon-matched `FaceWater` — 1.4 m, 2.6 m deep, 16°, 5.7 m/s — the board placed 0.75 fronts ahead of the crest and 45°
+off the fall line, the entry speed the face's own plus −3, −2, −1, 0, +1.5 or +3 m/s, the stances Compress and tall,
+`water.advance(STEP)` every frame, 9 s a run, the stick **at zero every frame**. **12 runs a cell** (2 stances × 6
+entry speeds). The probe is `3.2/trimbank.ts`; the cells are `results/32w/cells.txt`, the ladders
+`results/32w/ladders.txt`, three frame traces beside them.
+
+## 1. The five sentences the round is for
+
+1. **The fall is a capsize, not a dismount: the board and the body go over together and the ankle never opens.** New
+   rider, 12 runs: the body's bank peaks **20.7–65.7°**, the board's roll about the heading **20.9–63.0°**, the rail
+   against the water's own normal **10.9–62.9°** — and the **ankle's own span stays within 2.7–9.5° peak, median
+   0.3–1.6°** [M]. The old rider on the same 12: the board's roll peaks 8.3° in the nine that stand and 71.6° in its
+   three falls. **Part 20's trace reads the body banking +60.7° while the board rolls −57.7°, which looks like the body
+   leaving the board; both angles taken about the heading from the same datum are the same way and within 2.7° of each
+   other.** Part 20's roll column is the rail against the water's normal, signed by the stick's way; this one is the
+   deck against the world's level, the angle the ankle actually spans. The sign is the whole round: one says the body
+   falls off the board, the other says the pair goes over as one.
+2. **It topples at the bare inverted pendulum's own rate, so the hull gives no net roll restoring with the rider on
+   it.** One trace (tall, entry +0, `results/32w/trace-new-tall0.jsonl`): the rail runs 0.69° at 0.183 s to 5.84° at
+   0.700 s, a log-linear fit of **4.07 /s (τ 0.245 s)**, and 2.80 /s (τ 0.357 s) over the whole 1.63 s. The capture
+   point's own ω₀ = √(g_eff/h), with the centre of mass 0.834 m over the feet, reads **3.39 1/s median** in the same
+   run [M]. The arithmetic behind that is read, not measured here [R]: the rider's overturning stiffness about the feet
+   is m g h = 73 × 9.81 × 0.834 = **597 N·m/rad**, against the water's own righting moment per radian of roll about the
+   feet in `PLANT_SPEEDS` at this board's speed — **−143 N·m/rad at 7.5 m/s, −227 at 8 m/s**. The plant is two to four
+   times too top-heavy for its hull. A surfboard is; that is the game the balance has to win.
+3. **The roll is away before the balance meter moves, so it is the cause and not the consequence.** At 0.700 s the rail
+   is 5.84° and climbing at 4 /s while the margin still reads **0.794** of 1 and the contact's own limit reads `'none'`
+   [M]. The margin's whole collapse and the rail's last 57° are the same 0.9 s.
+4. **Five candidates refuted, each on 12 runs and one switch** — §3 has them in full. The ankle's command authority
+   (the first thing I tried), the mount's own lean (the most attractive, and 3.2v's own open question), the rate sense,
+   the face's slope, and where on the face he starts. None of them is it.
+5. **No setting of one gain stands him up: holding the roll makes the fall come sooner, not later.** Ten rate gains
+   from 0 to 5 through `humanGains`, 12 runs each (§4). The roll peak falls monotonically with the gain — 68.9° of rail
+   at gain 0 down to **4.9–9.8°** at gain 3, the old rider's own order — and the fall time falls with it, to
+   **0.38–0.43 s** in all twelve. At gain 3 the ankle's rest is slewed to **−13.37°** of its 14.3° range over 0.2 s,
+   which drags the centre of mass from +0.108 m across the middle to −0.131 m — **one millimetre past the feet's
+   0.130 m edge** — at an across speed of **1.44 m/s**, so the capture point reads **−0.570 m = −0.131 of position +
+   −0.439 of velocity** (77 % velocity) and the fall fires. **The roll and the fall test pull opposite ways.**
+
+## 2. What the fall actually is, link by link
+
+`trimbank.ts` reads every link of the roll loop off the live instance (private to TypeScript, present at run time), so
+a command that saturates shows as a flat top and a command that is simply absent shows as a zero. The shipped cell,
+12 runs:
+
+| | new rider (predictor) | old rider |
+|---|---|---|
+| fell inside 9 s | **12 of 12**, 0.77–1.70 s | 3 of 12, 7.78–8.87 s |
+| which bound | margin 12 | grip 3 |
+| the body's bank, peak | 20.7–65.7° | 2.5° (nine that stand), 66.6° (three falls) |
+| the board's roll about the heading, peak | **20.9–63.0°** | **8.3–71.6°** |
+| the rail against the water's normal, peak | 10.9–62.9° | 10.8–71.1° |
+| **the ankle's own span, peak** | **2.7–9.5°** | **11.7–66.2°** |
+| the ankle's rest commanded, peak | 1.97–9.03° of 14.3 | 4.31–14.32° of 14.3 |
+| the hip's swing torque, peak | **0–8 N·m** | 0–142 N·m |
+| the hip's swing angle, peak | **0.0–0.3°** | 0.0–68.8° |
+| the board's drift, peak | 1.9–4.9° | 2.5–103.1° |
+
+Read down the ankle-span row and the hip rows together. **The new rider's ankle never opens past 9.5° and his hip never
+moves**: the body is locked square to a deck that is rolling over, and the one joint with the inertia to do anything
+about it contributes 8 N·m at its best. The old rider's ankle spans up to 66° and his hip swings up to 69°, because its
+loop drives the body's bank to **0.8–3.3°** of the world vertical at every slope measured while the deck sits at the
+face's own tilt — so its ankle is permanently open by the face's angle and its hip is in the fight.
+
+**Why the hip never fires, read in the code [R].** It gets a command only from what the ankle's own command asks
+**past** HIP_SHARE × ANKLE_REST_RANGE — 0.8 × 14.3° = 11.5° — and the shipped predictor asks 2.63–14.35° raw,
+1.97–9.03° after the clips. It is not wired to the capture point at all; `HumanBalance.sensedCaptureAcross` says so in
+its own comment, and Part 9 §2 is why. **And the fall test pays for it anyway**: `reachAcross`, the room the margin
+credits the hip with catching past the feet's edge, reads **0.169–0.300 m** through these runs, about twice the feet's
+own half-width, and 0.172–0.385 m at the fall [M]. That it fires at gain 3 — **233 N·m of swing torque, 15.5° of swing
+angle, and the roll held to 4.9–9.8° of rail** — is the measurement that says the authority is there and only the
+trigger is missing. **This is 3.2v's own flagged `reachAcross` lead, and it is where I would go next.**
+
+## 3. The five refutations, with their switches
+
+- **The ankle's command authority — refuted, and the trade the code records is not a trade.** `DEFAULT_WEIGHTS`'
+  `commandScale[0]` is 0.09 rad against an ankle range of 0.25, and its own comment says step 3.2j raised it and did
+  not keep it because "every variant that raises the ankle's gain collapses the saved shove in the lower stances". Run
+  at 0.15 / 0.25 / 0.5 rad, 12 runs a cell: **12 of 12 in every one**, falling at 0.98–4.28 / 1.00–6.32 / 1.10–5.88 s
+  against the shipped 0.77–1.70 — and the **roll peak rises** (66.9 / 90.2 / 85.7°), the raw command reaches
+  57.7 / 449.3 / 207.9° and the ankle torque 167 / **1279** / 611 N·m [M]. Raising the ankle's scale buys a later fall
+  in some runs and a worse capsize; it does not stand him up, so the shove bar is not what is keeping him down.
+- **The mount's own lean — refuted, and this was the attractive one.** The new rider mounts **square to the deck**
+  (`frame`'s `measure = false` path: "square in pitch alone, plumb across (step 3.1), a start across a face had its
+  bank run uphill"), which on this face is **8.69–8.71° of body lean with the centre of mass 0.126 m across against a
+  feet half-width of 0.130 m** — 97 % of his whole support budget, before the first frame. The old rider mounts plumb:
+  **0.00° and 0.000 m across in every cell of both ladders** [M]. So the two riders are not placed the same way, which
+  is worth saying on its own. Mounted plumb across instead (one line in `frame`, probe-only, reverted before the push):
+  **12 of 12**, 0.52–5.68 s, bank peak 22.2–64.6°, roll peak 15.7–57.1°. The offset is real and it is not the cause.
+  (And the mount is square to a felt vertical that is the face's normal for 0.17 s: the felt vertical's own tilt across
+  runs **−7.6° → −1.4° over 0.167 s** in the trace while the body's bank stays at 8.7° [M]. The premise of the step 3.1
+  choice holds for a sixth of a second.)
+- **The rate sense — refuted.** `balance.rateSense: 'difference'` (the bank's change over a substep) against the
+  shipped `'canal'` (the body's own angular rate): **12 of 12 both**, the same 0.77–1.70 s, roll peak 62.8 against
+  63.0°, commands within 0.11° [M]. The two senses agree, which also says the angle and the rate the filter is fed are
+  consistent.
+- **The face's slope — refuted.** 1, 2, 4, 8, 12, 16, 20°, 12 runs a cell: the new rider is **12 of 12 at every one**,
+  0.65–5.53 s [M].
+- **Where on the face he starts — refuted.** SIDE 0, −10, −20, −30, −45, −60°, 12 runs a cell: **12 of 12 at every
+  one**, including SIDE 0 where the mount's across offset is exactly 0.000 m and the deck's roll 0.00° [M].
+
+## 4. The gain ladder, and why the fix is not a gain
+
+`humanGains` replaces the predictor with step 3.2's own delayed law (δ = K_ref θ_ref − G θ − G_r θ̇ on senses
+BALANCE_DELAY old, through MOTOR_LAG). With the angle gain at 0 throughout — HUMAN_BANK_GAIN's own value, and the
+value the roll model picked because any gain on the angle rings through the delay — the rate gain alone, 12 runs a cell:
+
+| rate gain | fell | at | the board's roll peak | the rail peak | the body's bank peak |
+|---|---|---|---|---|---|
+| 0 (rest held at 0: the passive ankle alone, no control) | 12 of 12 | 0.63–3.08 s | 25.6–68.9° | 14.5–68.9° | 27.0–70.0° |
+| 0.1 (HUMAN_BANK_RATE_GAIN's own) | 12 of 12 | 0.78–3.90 s | 27.4–77.4° | 22.2–78.0° | 24.3–70.0° |
+| 0.3 | 12 of 12 | **1.27–3.55 s** | 11.8–79.8° | 11.8–80.1° | 13.5–65.0° |
+| 0.5 | 12 of 12 | 0.70–4.07 s | 13.0–60.8° | 7.6–66.5° | 13.3–58.2° |
+| 0.8 | 12 of 12 | 0.62–2.15 s | 12.2–32.9° | 5.8–26.3° | 13.7–26.8° |
+| 1 | 12 of 12 | 0.58–1.38 s | 12.7–32.6° | 5.0–24.8° | 13.4–36.8° |
+| 1.5 | 12 of 12 | 0.42–1.02 s | 12.8–28.3° | 6.1–17.8° | 10.3–26.4° |
+| 2 | 12 of 12 | 0.40–1.03 s | 12.9–28.3° | 4.9–22.6° | 10.0–31.6° |
+| 3 | 12 of 12 | 0.38–0.43 s | **12.9–17.2°** | **4.9–9.8°** | **9.9–10.4°** |
+| 5 | 12 of 12 | 0.37–0.43 s | 14.6–18.3° | 4.5–11.7° | 10.2–10.7° |
+| **the shipped predictor** | 12 of 12 | 0.77–1.70 s | 20.9–63.0° | 10.9–62.9° | 20.7–65.7° |
+| the old rider's own gains (7.4 / 3.6 / 0.1) on the new rider | 12 of 12 | 0.18–0.22 s | 15.9–17.4° | 6.9–9.3° | 8.3–8.4° |
+
+Two readings, and they are the round's recommendation:
+
+**The shipped predictor does no better than no control at all.** Gain 0 holds the ankle's rest at exactly zero — a
+passive spring and damper and nothing else — and falls at 0.63–3.08 s against the predictor's 0.77–1.70 s, with a
+comparable roll peak. The predictor's commands ring in sign while the rail climbs monotonically: over 0.77–1.18 s of
+the trace the raw ankle command runs **−3.33, −7.45, +2.45, −2.02, +4.09, −1.34°** while the rail goes 7.4 → 10.2 →
+12.8 → 14.0 → 15.9 → 17.9°. Whatever it is answering, it is not the capsize.
+
+**And a loop that does hold the roll trips the fall test instead.** At gain 3 the body is held to 9.9–10.4° and the
+board to 4.9–9.8° of rail — the old rider's own numbers — and every run is down in 0.38–0.43 s, margin-bound. The
+mechanism, from the trace (`results/32w/trace-rate3-tall0.jsonl`): the ankle's rest is a **position** command through
+an 800 N·m/rad spring with no rate limit of its own, and slewing it 0.29 rad in 0.2 s throws the centre of mass across
+at 1.44 m/s; the capture point counts that velocity at 77 % of itself and calls the correction a fall. The ankle torque
+peaks at **252 N·m** in that run and **1279 N·m** in the commandScale-0.25 cell, and **nothing in the model bounds it
+to a human ankle's strength** — a human's sagittal ankle peaks near 100–140 N·m a leg [S, order of size], and the
+frontal-plane ankle is far weaker again.
+
+So the next change is not a number in this loop. On these measurements it is one of: **bound the ankle's torque and
+give the hip the capture point** (the authority is measured, at 233 N·m and 15.5° of swing, and the fall test is
+already paying for it); or **give the plant some roll restoring it does not have**, since 597 N·m/rad of top-heaviness
+against −143 to −227 of hull is a plant no 0.15 s loop can hold. I did not pick between them, because picking needs a
+measurement I did not take.
+
+## 5. What Part 20's headline is, exactly, and what it is not
+
+The 12 of 12 against 0 of 12 reproduces: the shipped new rider **12 of 12 at 0.77–1.70 s**, the old rider **3 of 12 at
+7.78–8.87 s** over 9 s, which is 0 of 12 inside the 4 s window Part 20 reported. Two caveats on it, both measured:
+
+- **The two riders do not share a fall test.** Standing free the test is `human.fallen`, the capture point; otherwise it
+  is the sway and the postural error against RECOVERABLE_ERROR = 0.25 m [R]. In these runs the old rider's three falls
+  are **grip**-bound (`limit === 'slip'`), not postural, and the new rider's twelve are all the capture point's. So the
+  comparison is partly between a rider carrying a test that reads where his weight is going and a rider carrying none.
+  **I could not make that comparison sharp**: the `postureError` field reads 0.000 m for **both** riders through every
+  cell of this probe, so I will not claim from it that the new rider would have stood under the old test. What the
+  capsize does not need any test to say is that **a board at 63° of rail in trim is a capsize**, and the old rider's
+  board holds 8.3°.
+- **The old rider's 0-of-12 belongs to a band, not to the water.** Over the slope ladder the old rider is **12 of 12 at
+  1, 2, 4 and 8°** (1.73–7.20 s, grip-bound, the board rolling to 46–64°) and only 4, 3 and 3 of 12 at 12, 16 and 20°.
+  With the wave not advanced under him he is 12 of 12 at 2.22–5.15 s with the board at 49.1–68.6°. So the 16° cell is
+  near the old rider's own best, which is the right place to test and worth saying out loud.
+
+## 6. Seatbelts
+
+- **This round changes no source file at all.** `git diff --stat origin/main HEAD -- src/` is empty; everything shipped
+  is under `docs/research/new-rider/3.2/`. The one source edit this round made — the plumb mount in `frame` — was a
+  probe-only trial, measured in §3, and reverted before the first commit.
+- `npx tsc --noEmit -p .`: **exit 0**, on its own line, read from `tsc`'s own exit status and not through a pipe.
+  `npx tsc --noEmit -p server/tsconfig.json`: **exit 0**.
+- The rider, board, HUD and runner test files run alone, `PhysicalMode` (`src/game/`), `RideHud` (`src/ui/`) and
+  `SurfZoneRunner` (`src/wave/`) included: `results/32w/suite-rider-32w.txt`.
+- **The Canyon bench, all four hashes**: `results/32w/canyon-bytes-32w.txt`, the same command and the same reference as
+  step 5f's, 3.2t's, 3.2u's and 3.2v's — Canyon B `a367d938f15fa934` / `9e5831f80e38abd9`, default Canyon
+  `ea3d57a4d49f4b48` / `a1a2555739210f96`. With no source file touched this is the only possible result, and it is run
+  anyway because that is what a seatbelt is for.
+- **The default board**: unchanged by construction, since `boardShape.ts` is untouched; the bit-for-bit check 3.2v
+  introduced has nothing to compare that the empty `src/` diff does not already settle.
+- **The deletions column, checked before the push**: `git diff --stat origin/main HEAD` — two added files and one
+  appended README section, no deletions anywhere, so nothing of the wave track's can have been reverted.
+- No force was added or removed, and no switch reaches the game. `MOUNT_PLUMB` existed for one measurement and is gone.
+- A wave-track agent shared the machine throughout; nothing of theirs was stopped. The per-cell wall-clock seconds in
+  `cells.txt` are a loaded machine's.
+
+## 7. What I am unsure of
+
+- **The `FaceWater` is a fit to Canyon, not Canyon**, and every number above is within that harness. The owner rides
+  Canyon.
+- **The hull arithmetic in §1.2 is read, not measured here.** −143 and −227 N·m/rad are `PLANT_SPEEDS`' 7.5 and 8 m/s
+  rows and 597 N·m/rad is the code's own masses; what I measured is the toppling rate, 4.07 /s early and 2.80 /s over
+  the run, against an ω₀ of 3.39. I did not measure the hull's roll spring under this rider in this probe, and the two
+  are not the same claim.
+- **The gain ladder is step 3.2's delayed law, not the predictor.** It says what one ankle-rest gain can and cannot
+  buy against this plant and this fall test. It does not say the predictor could not be redesigned to do better, and
+  the 1.27–3.55 s best at gain 0.3 is a non-monotonic ladder I would not defend to a decimal.
+- **The ankle-torque numbers are the model's, and the human figures I set them against are an order of size [S]**, not
+  a sourced table for the frontal plane. The claim I will defend is that nothing bounds the model's ankle at all, which
+  is read in the code; the claim that 1279 N·m is 10 times a human's is an order-of-size comparison.
+- **The rider is placed, not paddled in.** The placement ladder narrows this — the mount's across offset is 0.126 m at
+  SIDE −45 and 0.000 m at SIDE 0 and he falls 12 of 12 at both — but the first 0.17 s of every trace carries a contact
+  transient (the felt vertical's tilt across runs −7.6° → −1.4°), and a 0.52 s life is a short run to conclude a wave
+  from.
+- **Twelve runs a cell, two stances, one face.** Every span above is the whole population, not a confidence interval.
+- **Nothing here has been ridden by a person.** Every number is a probe, and the owner's ride is the evidence that
+  started the thread.
+
+## 8. Files (3.2w)
+
+- `docs/research/new-rider/3.2/trimbank.ts` (new): the trim cell with the roll loop read link by link — the body's
+  bank, the board's roll about the heading from the world's level, the rail against the water's normal, the ankle's own
+  span, the rest commanded and the raw command behind the clips, the ankle and hip torques, the hip's swing, the three
+  senses the controller is fed, the three limits, and the capture point split into position and velocity with ω₀, the
+  CoM height, the felt vertical's tilt and the hip's credited reach. Switches: `GAINS`, `WEIGHTS`, `RATE_SENSE`,
+  `RAIL_CAP`, `FACE`, `SIDE`, `AHEAD`, `DEPTH`, `SECONDS`, `FROZEN`, `SUBSTEPS`, `YAW_INERTIA`. Its header carries the
+  commands.
+- `docs/research/new-rider/3.2/results/32w/`: `cells.txt` (the fifteen cells), `ladders.txt` (the slope and placement
+  ladders, 12 runs a cell), `rows.jsonl`, three frame traces (`trace-new-tall0`, `trace-rate3-tall0`, `trace-old-tall0`),
+  `suite-rider-32w.txt`, `canyon-bytes-32w.txt`.
+- No source file.
+
+## 9. For the owner, in plain words
+
+**You said the surfer falls too much and slides out sideways. Step 3.2v found he falls even when you do nothing at all.
+This round found out what that fall is, and it is not what it looked like.**
+
+**He is not falling off the board. The board is tipping over and taking him with it.** When he is just riding along the
+face with the stick untouched, the board rolls from flat onto its rail — all the way to about **sixty degrees** — and he
+stays stood square on it the whole way down. His ankles barely bend: they stay within nine degrees of straight. The old
+surfer on the same wave keeps the board at about **eight degrees** and stands up for the whole ride. So the thing to
+picture is not a man losing his footing. It is a man standing to attention on a board that is slowly capsizing.
+
+**And it tips over at exactly the speed a broom handle falls over.** I measured how fast the roll runs away: it doubles
+about every quarter of a second, which is what a weight your height above your feet does when nothing is holding it. In
+other words, once he is stood on it, the board gives him almost nothing to stand on. That is actually true of a real
+surfboard too — standing on one is genuinely unstable — so the fix is not to make the board stiffer and call it done.
+
+**The part that matters for your balance idea.** His balance has one thing it can do about this: roll his ankles to push
+the board back flat. I tried turning that response up, all the way from off to much stronger than the old surfer's, ten
+settings. Here is the problem, and it is the finding of the round: **the harder he corrects, the sooner he falls.** Turn
+it up enough to actually hold the board flat and the game calls a fall in **four tenths of a second** — because the
+correction itself throws his weight sideways at about 1.4 m/s, and the game's fall test counts how fast his weight is
+moving as three quarters of its verdict. So the board tipping over and the fall test are pulling in opposite directions,
+and no setting of that one dial gets him both.
+
+**What he never does.** He has hips and arms, which are the strongest thing a person has for not falling sideways — and
+in all twelve rides they contribute almost nothing: eight newton-metres at best and a third of a degree of movement. Yet
+the fall test is already giving him credit for a hip catch of about a quarter of a metre, twice the width of his feet.
+When I forced the response up high enough that his hips did fire, they gave **233 newton-metres** and held the board
+flat. **The strength is there and nothing is telling him to use it.** That is the one thing I would do next.
+
+**Five things I checked that are not the cause**, so nobody spends a round on them: giving his ankle more command
+authority (it makes the capsize worse, and the trade-off the code was worried about turns out not to matter); the fact
+that he stands up square to the deck instead of upright, which starts him with his weight almost over the edge of his
+feet — real, and still not the cause; which rate his inner ear is fed; how steep the face is; and where on the face he
+starts. He falls twelve out of twelve in every one of those.
+
+**Nothing in this round changes the game.** There is nothing new to ride. The next round has a measured target and I did
+not want to guess at it with an hour left.

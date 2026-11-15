@@ -1,0 +1,4 @@
+Canyon byte check, step 3.2w (claude/rider-new-32w on origin/main b3ed7397): the same command and the same reference as C2 step 5f's, 3.2t's, 3.2u's and 3.2v's
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 54.9 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyon-b32w.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000

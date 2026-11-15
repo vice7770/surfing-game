@@ -1,0 +1,241 @@
+# step 3.2w, trimbank: the roll loop link by link, the trim cell (stick at zero), 12 runs a cell
+
+### RIDER=new
+## trimbank — rider new, law predictor
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.77–1.70 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 20.7–65.7° · the board's roll peak 20.9–63.0° · the rail peak 10.9–62.9°
+   the ankle's own span: peak 2.7–9.5° · median 0.3–1.6° (a human ankle has about ±29°)
+   the commands: rest peak 1.97–9.03° · raw peak 2.63–14.35° · ankle torque peak 42–90 N·m (median 6–31)
+   the hip: swing torque peak 0–8 N·m · swing angle peak 0.0–0.3°
+   the senses: load 8.84–11.38 m/s² · pitch rate 0.24–0.51 rad/s · feet's load median 0.86–1.09 body weights
+   at the fall: margin 0.000–0.000 · past 0.175–0.385 m · capture 0.305–0.515 m = lean 0.130–0.206 + speed 0.164–0.347
+   the capture point's own terms: ω₀ median 3.32–4.62 1/s · CoM height 0.543–0.847 m · the hip's reach past the edge 0.169–0.300 m (feet's half-width 0.13) · felt tilt peak 7.7–15.9°
+   at the fall: ω₀ 3.05–4.71 · reach 0.172–0.385 m · felt tilt -15.9–-7.4°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 1.9–4.9° · at the fall -2.32–3.23° at 5.16–9.15 m/s
+
+### RIDER=old
+## trimbank — rider old, law predictor
+   12 runs, 13 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 3 of 12 at 7.78–8.87 s · bound margin 0 · grip 3 · knee 0
+   the mount: the body's first-frame lean -0.03–-0.02° on a deck rolled 8.24–8.31° · its CoM 0.000–0.000 m across, feet's half-width 0.130 m
+   the body's bank peak 2.5–66.6° · the board's roll peak 8.3–71.6° · the rail peak 10.8–71.1°
+   the ankle's own span: peak 11.7–66.2° · median 0.7–1.7° (a human ankle has about ±29°)
+   the commands: rest peak 4.31–14.32° · raw peak 0.00–0.00° · ankle torque peak 76–459 N·m (median 6–27)
+   the hip: swing torque peak 0–142 N·m · swing angle peak 0.0–68.8°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.00–0.00 body weights
+   at the fall: margin 1.000–1.000 · past 0.000–0.000 m · capture 0.000–0.000 m = lean 0.000–0.000 + speed 0.000–0.000
+   the capture point's own terms: ω₀ median 0.00–0.00 1/s · CoM height 0.000–0.000 m · the hip's reach past the edge 0.000–0.000 m (feet's half-width 0.13) · felt tilt peak 0.0–0.0°
+   at the fall: ω₀ 0.00–0.00 · reach 0.000–0.000 m · felt tilt 0.0–0.0°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 2.5–103.1° · at the fall 0.13–99.77° at 0.62–8.26 m/s
+
+### RIDER=new GAINS=0,0,0
+## trimbank — rider new, law gains 0,0,0
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.63–3.08 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 27.0–70.0° · the board's roll peak 25.6–68.9° · the rail peak 14.5–68.9°
+   the ankle's own span: peak 2.0–4.5° · median 0.3–2.4° (a human ankle has about ±29°)
+   the commands: rest peak 0.00–0.00° · raw peak 0.00–0.00° · ankle torque peak 41–78 N·m (median 7–36)
+   the hip: swing torque peak 0–0 N·m · swing angle peak 0.0–0.0°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.79–1.16 body weights
+   at the fall: margin 0.000–0.000 · past 0.147–0.414 m · capture 0.277–0.544 m = lean 0.130–0.202 + speed 0.147–0.361
+   the capture point's own terms: ω₀ median 3.24–4.69 1/s · CoM height 0.533–0.847 m · the hip's reach past the edge 0.169–0.338 m (feet's half-width 0.13) · felt tilt peak 9.6–14.6°
+   at the fall: ω₀ 2.87–6.07 · reach 0.136–0.414 m · felt tilt -14.6–-9.6°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 1.1–10.9° · at the fall -7.35–3.85° at 4.78–9.63 m/s
+
+### RIDER=new GAINS=0,0.1,0.1
+## trimbank — rider new, law gains 0,0.1,0.1
+   12 runs, 2 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.78–3.90 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 24.3–70.0° · the board's roll peak 27.4–77.4° · the rail peak 22.2–78.0°
+   the ankle's own span: peak 2.7–7.4° · median 0.6–2.9° (a human ankle has about ±29°)
+   the commands: rest peak 4.14–9.11° · raw peak 0.00–0.00° · ankle torque peak 29–93 N·m (median 6–38)
+   the hip: swing torque peak 0–68 N·m · swing angle peak 0.0–22.9°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.73–1.05 body weights
+   at the fall: margin 0.000–0.000 · past 0.193–0.439 m · capture -0.389–0.569 m = lean -0.130–0.208 + speed -0.258–0.367
+   the capture point's own terms: ω₀ median 3.27–4.47 1/s · CoM height 0.536–0.846 m · the hip's reach past the edge 0.161–0.331 m (feet's half-width 0.13) · felt tilt peak 12.4–27.9°
+   at the fall: ω₀ 2.93–7.69 · reach 0.056–0.438 m · felt tilt -27.9–13.5°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 2.1–19.5° · at the fall -2.94–19.20° at 1.96–8.24 m/s
+
+### RIDER=new GAINS=0,0.3,0
+## trimbank — rider new, law gains 0,0.3,0
+   12 runs, 2 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 1.27–3.55 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 13.5–65.0° · the board's roll peak 11.8–79.8° · the rail peak 11.8–80.1°
+   the ankle's own span: peak 4.8–15.2° · median 1.1–3.1° (a human ankle has about ±29°)
+   the commands: rest peak 6.80–14.15° · raw peak 0.00–0.00° · ankle torque peak 40–328 N·m (median 14–45)
+   the hip: swing torque peak 7–149 N·m · swing angle peak 1.1–26.0°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.83–1.05 body weights
+   at the fall: margin 0.000–0.000 · past 0.160–0.457 m · capture 0.290–0.587 m = lean 0.130–0.197 + speed 0.159–0.456
+   the capture point's own terms: ω₀ median 3.35–4.36 1/s · CoM height 0.534–0.845 m · the hip's reach past the edge 0.168–0.270 m (feet's half-width 0.13) · felt tilt peak 9.2–36.5°
+   at the fall: ω₀ 3.27–4.73 · reach 0.000–0.396 m · felt tilt -36.5–1.8°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 4.5–18.1° · at the fall -7.53–4.94° at 2.11–8.40 m/s
+
+### RIDER=new GAINS=0,1,0
+## trimbank — rider new, law gains 0,1,0
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.58–1.38 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 13.4–36.8° · the board's roll peak 12.7–32.6° · the rail peak 5.0–24.8°
+   the ankle's own span: peak 11.3–19.2° · median 4.0–6.3° (a human ankle has about ±29°)
+   the commands: rest peak 12.89–14.08° · raw peak 0.00–0.00° · ankle torque peak 54–304 N·m (median 12–32)
+   the hip: swing torque peak 136–258 N·m · swing angle peak 5.7–37.4°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.80–0.96 body weights
+   at the fall: margin 0.000–0.000 · past 0.284–0.677 m · capture -0.491–0.807 m = lean -0.130–0.133 + speed -0.361–0.674
+   the capture point's own terms: ω₀ median 3.33–4.35 1/s · CoM height 0.541–0.847 m · the hip's reach past the edge 0.155–0.264 m (feet's half-width 0.13) · felt tilt peak 7.6–21.5°
+   at the fall: ω₀ 3.21–4.49 · reach 0.038–0.283 m · felt tilt -6.9–6.0°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 6.6–17.2° · at the fall -6.09–8.10° at 5.06–9.72 m/s
+
+### RIDER=new GAINS=0,3,0
+## trimbank — rider new, law gains 0,3,0
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.38–0.43 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 9.9–10.4° · the board's roll peak 12.9–17.2° · the rail peak 4.9–9.8°
+   the ankle's own span: peak 16.0–18.6° · median 3.2–4.0° (a human ankle has about ±29°)
+   the commands: rest peak 12.64–13.37° · raw peak 0.00–0.00° · ankle torque peak 181–284 N·m (median 15–35)
+   the hip: swing torque peak 224–240 N·m · swing angle peak 9.1–15.5°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.63–0.87 body weights
+   at the fall: margin 0.000–0.000 · past 0.239–0.563 m · capture -0.693–-0.369 m = lean -0.132–-0.130 + speed -0.561–-0.239
+   the capture point's own terms: ω₀ median 3.13–3.37 1/s · CoM height 0.780–0.846 m · the hip's reach past the edge 0.164–0.262 m (feet's half-width 0.13) · felt tilt peak 8.1–13.3°
+   at the fall: ω₀ 3.27–3.69 · reach 0.103–0.266 m · felt tilt -3.4–5.2°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 5.3–19.2° · at the fall 2.18–8.88° at 4.68–10.32 m/s
+
+### RIDER=new GAINS=0,5,0
+## trimbank — rider new, law gains 0,5,0
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.37–0.43 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 10.2–10.7° · the board's roll peak 14.6–18.3° · the rail peak 4.5–11.7°
+   the ankle's own span: peak 17.2–19.8° · median 3.7–5.1° (a human ankle has about ±29°)
+   the commands: rest peak 12.74–13.37° · raw peak 0.00–0.00° · ankle torque peak 216–313 N·m (median 21–36)
+   the hip: swing torque peak 240–250 N·m · swing angle peak 16.2–22.1°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.64–0.85 body weights
+   at the fall: margin 0.000–0.000 · past 0.271–0.606 m · capture -0.736–-0.401 m = lean -0.131–-0.130 + speed -0.605–-0.271
+   the capture point's own terms: ω₀ median 3.13–3.32 1/s · CoM height 0.780–0.847 m · the hip's reach past the edge 0.162–0.266 m (feet's half-width 0.13) · felt tilt peak 9.9–14.3°
+   at the fall: ω₀ 3.24–3.67 · reach 0.034–0.248 m · felt tilt -3.7–3.2°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 5.5–20.4° · at the fall 2.40–11.96° at 4.75–10.23 m/s
+
+### RIDER=new GAINS=7.4,3.6,0.1
+## trimbank — rider new, law gains 7.4,3.6,0.1
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.18–0.22 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.35–8.42° on a deck rolled 9.55–9.68° · its CoM 0.121–0.122 m across, feet's half-width 0.130 m
+   the body's bank peak 8.3–8.4° · the board's roll peak 15.9–17.4° · the rail peak 6.9–9.3°
+   the ankle's own span: peak 18.6–20.6° · median 10.7–12.3° (a human ankle has about ±29°)
+   the commands: rest peak 14.32–14.32° · raw peak 0.00–0.00° · ankle torque peak 224–319 N·m (median 118–159)
+   the hip: swing torque peak 239–249 N·m · swing angle peak 18.2–20.3°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.45–0.62 body weights
+   at the fall: margin 0.000–0.000 · past 0.324–0.657 m · capture -0.787–-0.454 m = lean -0.132–-0.130 + speed -0.655–-0.323
+   the capture point's own terms: ω₀ median 2.89–3.14 1/s · CoM height 0.828–0.847 m · the hip's reach past the edge 0.139–0.265 m (feet's half-width 0.13) · felt tilt peak 14.7–16.7°
+   at the fall: ω₀ 2.84–3.09 · reach 0.061–0.262 m · felt tilt -4.4–0.8°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 4.5–17.6° · at the fall 2.46–11.48° at 4.39–9.72 m/s
+
+### RIDER=new RATE_SENSE=difference
+## trimbank — rider new, law predictor
+   12 runs, 2 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.77–1.70 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 20.7–65.7° · the board's roll peak 20.9–62.8° · the rail peak 10.8–62.7°
+   the ankle's own span: peak 2.7–9.5° · median 0.3–1.6° (a human ankle has about ±29°)
+   the commands: rest peak 1.97–9.04° · raw peak 2.62–14.24° · ankle torque peak 43–90 N·m (median 6–30)
+   the hip: swing torque peak 0–7 N·m · swing angle peak 0.0–0.3°
+   the senses: load 8.84–11.38 m/s² · pitch rate 0.24–0.51 rad/s · feet's load median 0.86–1.09 body weights
+   at the fall: margin 0.000–0.000 · past 0.175–0.386 m · capture 0.305–0.516 m = lean 0.130–0.205 + speed 0.164–0.347
+   the capture point's own terms: ω₀ median 3.32–4.60 1/s · CoM height 0.543–0.847 m · the hip's reach past the edge 0.169–0.300 m (feet's half-width 0.13) · felt tilt peak 7.7–15.9°
+   at the fall: ω₀ 3.05–4.70 · reach 0.172–0.385 m · felt tilt -15.9–-7.4°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 1.9–4.9° · at the fall -4.71–3.23° at 5.16–9.79 m/s
+
+### RIDER=new WEIGHTS={"commandScale":[0.15,30]}
+## trimbank — rider new, law predictor
+   12 runs, 2 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.98–4.28 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 26.0–58.6° · the board's roll peak 23.5–66.9° · the rail peak 13.3–63.7°
+   the ankle's own span: peak 3.6–12.4° · median 0.7–2.0° (a human ankle has about ±29°)
+   the commands: rest peak 2.34–14.16° · raw peak 4.91–57.70° · ankle torque peak 42–167 N·m (median 7–32)
+   the hip: swing torque peak 0–99 N·m · swing angle peak 0.0–19.2°
+   the senses: load 8.84–11.51 m/s² · pitch rate 0.18–1.26 rad/s · feet's load median 0.75–1.13 body weights
+   at the fall: margin 0.000–0.000 · past 0.171–0.429 m · capture 0.301–0.559 m = lean 0.130–0.207 + speed 0.154–0.359
+   the capture point's own terms: ω₀ median 3.32–4.52 1/s · CoM height 0.531–0.846 m · the hip's reach past the edge 0.167–0.321 m (feet's half-width 0.13) · felt tilt peak 8.4–34.2°
+   at the fall: ω₀ 2.85–4.59 · reach 0.072–0.427 m · felt tilt -34.2–-8.3°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 2.1–65.3° · at the fall -65.26–3.70° at 0.75–9.36 m/s
+
+### RIDER=new WEIGHTS={"commandScale":[0.25,30]}
+## trimbank — rider new, law predictor
+   12 runs, 3 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 1.00–6.32 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 22.9–70.0° · the board's roll peak 23.7–90.2° · the rail peak 13.5–105.6°
+   the ankle's own span: peak 2.1–82.8° · median 0.4–2.2° (a human ankle has about ±29°)
+   the commands: rest peak 2.77–13.85° · raw peak 4.18–449.34° · ankle torque peak 21–1279 N·m (median 4–32)
+   the hip: swing torque peak 0–236 N·m · swing angle peak 0.0–40.9°
+   the senses: load 8.84–11.62 m/s² · pitch rate 0.20–2.35 rad/s · feet's load median 0.87–1.13 body weights
+   at the fall: margin 0.000–0.000 · past 0.158–0.555 m · capture -0.435–0.685 m = lean -0.161–0.197 + speed -0.304–0.554
+   the capture point's own terms: ω₀ median 3.35–4.62 1/s · CoM height 0.539–0.847 m · the hip's reach past the edge 0.167–0.321 m (feet's half-width 0.13) · felt tilt peak 7.6–26.7°
+   at the fall: ω₀ 3.26–5.81 · reach 0.000–0.341 m · felt tilt -19.4–26.7°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 2.6–105.1° · at the fall -62.18–30.48° at 0.77–8.48 m/s
+
+### RIDER=new WEIGHTS={"commandScale":[0.5,30]}
+## trimbank — rider new, law predictor
+   12 runs, 4 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 1.10–5.88 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 20.8–70.0° · the board's roll peak 26.6–85.7° · the rail peak 23.3–100.8°
+   the ankle's own span: peak 3.4–63.5° · median 0.3–3.0° (a human ankle has about ±29°)
+   the commands: rest peak 10.69–14.21° · raw peak 19.43–207.92° · ankle torque peak 23–611 N·m (median 3–30)
+   the hip: swing torque peak 15–249 N·m · swing angle peak 0.0–68.8°
+   the senses: load 8.84–11.76 m/s² · pitch rate 0.37–2.15 rad/s · feet's load median 0.86–1.18 body weights
+   at the fall: margin 0.000–0.000 · past 0.160–0.411 m · capture -0.541–0.526 m = lean -0.155–0.225 + speed -0.410–0.396
+   the capture point's own terms: ω₀ median 3.42–4.67 1/s · CoM height 0.539–0.847 m · the hip's reach past the edge 0.163–0.260 m (feet's half-width 0.13) · felt tilt peak 7.6–119.7°
+   at the fall: ω₀ 3.20–7.99 · reach 0.000–0.362 m · felt tilt -119.7–26.3°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 4.1–99.8° · at the fall -99.84–83.73° at 0.61–5.83 m/s
+
+### RIDER=new FROZEN=1
+## trimbank — rider new, law predictor, wave frozen
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.28–4.18 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.70–8.72° on a deck rolled 8.80–8.81° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 16.5–57.5° · the board's roll peak 11.6–56.5° · the rail peak 10.5–56.5°
+   the ankle's own span: peak 6.4–10.5° · median 1.0–5.0° (a human ankle has about ±29°)
+   the commands: rest peak 3.09–13.79° · raw peak 5.22–26.51° · ankle torque peak 359–432 N·m (median 6–76)
+   the hip: swing torque peak 0–47 N·m · swing angle peak 0.0–10.2°
+   the senses: load 13.55–20.29 m/s² · pitch rate 0.79–1.48 rad/s · feet's load median 0.15–1.23 body weights
+   at the fall: margin 0.000–0.000 · past 0.211–0.409 m · capture -0.501–0.539 m = lean -0.130–0.174 + speed -0.371–0.389
+   the capture point's own terms: ω₀ median 3.39–4.79 1/s · CoM height 0.507–0.831 m · the hip's reach past the edge 0.155–0.354 m (feet's half-width 0.13) · felt tilt peak 8.5–21.1°
+   at the fall: ω₀ 3.53–5.03 · reach 0.148–0.409 m · felt tilt -21.1–11.1°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 3.4–71.8° · at the fall -2.47–71.78° at 0.85–10.69 m/s
+
+### RIDER=old FROZEN=1
+## trimbank — rider old, law predictor, wave frozen
+   12 runs, 6 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 2.22–5.15 s · bound margin 0 · grip 12 · knee 0
+   the mount: the body's first-frame lean 0.05–0.05° on a deck rolled 8.02–8.06° · its CoM 0.000–0.000 m across, feet's half-width 0.130 m
+   the body's bank peak 1.9–2.4° · the board's roll peak 49.1–68.6° · the rail peak 49.1–68.6°
+   the ankle's own span: peak 48.8–70.8° · median 0.3–4.0° (a human ankle has about ±29°)
+   the commands: rest peak 14.32–14.32° · raw peak 0.00–0.00° · ankle torque peak 164–473 N·m (median 1–2)
+   the hip: swing torque peak 127–182 N·m · swing angle peak 11.4–15.4°
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.00–0.00 body weights
+   at the fall: margin 1.000–1.000 · past 0.000–0.000 m · capture 0.000–0.000 m = lean 0.000–0.000 + speed 0.000–0.000
+   the capture point's own terms: ω₀ median 0.00–0.00 1/s · CoM height 0.000–0.000 m · the hip's reach past the edge 0.000–0.000 m (feet's half-width 0.13) · felt tilt peak 0.0–0.0°
+   at the fall: ω₀ 0.00–0.00 · reach 0.000–0.000 m · felt tilt 0.0–0.0°
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 27.7–129.3° · at the fall -117.11–129.33° at 0.62–1.27 m/s
