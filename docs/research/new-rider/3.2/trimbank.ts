@@ -336,6 +336,8 @@ const t0 = Date.now();
 for (const st of STANCES) for (const extra of EXTRAS) rows.push(oneRun(st, extra));
 for (const row of rows) emit(row, OUT);
 const nf = (k: string) => rows.map((x) => Number(x[k]));
+/** As `nf`, but a null (never happened) stays NaN instead of becoming 0, so `span` prints '–' and not '0.00–0.00'. */
+const nfSome = (k: string) => rows.map((x) => (x[k] === null || x[k] === undefined ? Number.NaN : Number(x[k])));
 const fellRows = rows.filter((x) => x.fell);
 const law = RIDER === 'old' ? "the old rider's own" : GAINS ? `gains ${GAINS.join(',')}` : 'predictor';
 console.log(`## trimbank — rider ${RIDER}, law ${law}${FROZEN ? ', wave frozen' : ''}${process.env.WEIGHTS ? ` · weights ${process.env.WEIGHTS}` : ''}`);
@@ -346,7 +348,7 @@ console.log(`   the body's bank peak ${span(nf('bankPeakDeg'))}° · the board's
 console.log(`   the ankle's own span: peak ${span(nf('ankleSpanPeakDeg'))}° · median ${span(nf('ankleSpanMedianDeg'))}° (a human ankle has about ±29°)`);
 console.log(`   the commands: rest peak ${span(nf('ankleRestPeakDeg'), 2)}° · raw peak ${span(nf('ankleRawPeakDeg'), 2)}° · ankle torque peak ${span(nf('ankleTorquePeak'), 0)} N·m (median ${span(nf('ankleTorqueMedian'), 0)})`);
 console.log(`   the hip: swing torque peak ${span(nf('swingTorquePeak'), 0)} N·m · swing angle peak ${span(nf('swingAnglePeakDeg'))}°`);
-console.log(`   the hip's trigger (3.2x): signal peak ${span(nf('capHipPeak'), 3)} m · opened at ${span(nf('hipOpenedAtS'), 2)} s · swing passed 20 N·m at ${span(nf('hipFiredAtS'), 2)} s`);
+console.log(`   the hip's trigger (3.2x): signal peak ${span(nf('capHipPeak'), 3)} m · opened at ${span(nfSome('hipOpenedAtS'), 2)} s (in ${rows.filter((x) => x.hipOpenedAtS !== null).length} of ${rows.length}) · swing passed 20 N·m at ${span(nfSome('hipFiredAtS'), 2)} s (in ${rows.filter((x) => x.hipFiredAtS !== null).length} of ${rows.length})`);
 console.log(`   the senses: load ${span(nf('loadSensePeak'), 2)} m/s² · pitch rate ${span(nf('pitchSensePeak'), 2)} rad/s · feet's load median ${span(nf('captureLoadMedian'), 2)} body weights`);
 console.log(`   at the fall: margin ${span(nf('marginAtFall'), 3)} · past ${span(nf('pastAtFall'), 3)} m · capture ${span(nf('capAtFall'), 3)} m = lean ${span(nf('capPointAtFall'), 3)} + speed ${span(nf('capSpeedAtFall'), 3)}`);
 console.log(`   the capture point's own terms: ω₀ median ${span(nf('omegaMedian'), 2)} 1/s · CoM height ${span(nf('comHeightMedian'), 3)} m · the hip's reach past the edge ${span(nf('reachMedian'), 3)} m (feet's half-width 0.13) · felt tilt peak ${span(nf('tiltPeakDeg'))}°`);
