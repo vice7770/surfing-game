@@ -5750,7 +5750,8 @@ bug fix in a measurement tool.
    the roll and the reach where the section put them [M, 6 runs a cell]. With the patch count already refuted by its
    own named test, the band's own normals are what is left.
 4. **Job 1a, answered with a population: the capture point's margin binds, and the weight leaves the feet *across* the
-   board.** New rider, flat board, 30 runs (18 in the owner's acceptance turn, 12 in trim with the stick untouched):
+   board.** New rider, flat board, 30 runs (18 running the owner's own movement at three stick positions, 12 in trim
+   with the stick at zero throughout; §3 states both populations exactly):
    **margin bound in 30 of 30, across in 30 of 30**, past the feet's edge by **0.1–0.8 m**, with the feet still holding
    **86–91 %** of their grip and the contact's own limit never once `'slip'` [M].
 5. **Job 1b: the slide is not what precedes these falls, and there is no window to catch one in.** The board slid more
@@ -5902,7 +5903,13 @@ closing — **0.002 % with the linear taper against 0.04 % with the squared one*
 
 `balanceReserve` is `min(capture-point margin, 1 − frictionUsed, 1 − kneeUsed)` for the new rider
 (`AttachedRider.ts:2366`), and the game computed which one it was and threw it away. Here it is, new rider, flat board,
-the Canyon-matched face [M]:
+the Canyon-matched face [M].
+
+**The two populations, exactly.** The **turn** cell is 18 runs: 2 stances (Compress and tall) × 3 entry speeds (+0,
++1.5, +3 m/s on the trim speed) × **3 stick positions (0.25, 0.5, 1.0)** — the owner's own movement, with a third,
+gentler stick position added to the two the acceptance test uses, because the question here is the fall and not the
+gate. Job 2 above keeps the acceptance test's own two positions, so its cells stay comparable with Part 19's. The
+**trim** cell is 12 runs: 2 stances × 6 entry speeds (−3 to +3 m/s) × **the stick at zero throughout**.
 
 | | the owner's acceptance turn, 18 runs | trim, the stick never touched, 12 runs |
 |---|---|---|
