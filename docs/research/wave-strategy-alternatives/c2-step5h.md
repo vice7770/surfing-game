@@ -250,6 +250,11 @@ high in 5g's sky are gone; what is left reads as a burst of spray at the lip wit
 polka-dot field. **It is also fainter than 5g's**, and its footprint is 28 % smaller — the fallout of §3.3 plus the
 corrected class shares. If the owner's reaction is "I can barely see it", that reaction is correct and §4.4 is why.
 
+**And one risk a still cannot show.** The over-1 mm band is 54 % of the sprites and now lives 0.25–0.45 s, tapering
+out over the last quarter of that — 60 to 110 ms. On a held frame that is invisible; **in motion it may read as
+flicker at the lip**, and no measurement here would catch it. It is the first thing to look for on a ride, and if
+it is there the fix is to let the band fall out by thinning rather than by expiring.
+
 ---
 
 ## 5. Job 2: the flat white mass. A different fault, and a large one
