@@ -126,3 +126,20 @@ I offered to ship the **old** rider as the playable one and keep the new one as 
 - **"the snap showed the physics behind it were not valid"** — the snap has **never been measured on the new rider at all.** It is the hardest case and the one most likely to expose an approximately-real body.
 
 **Measure progress by whether a skill works for the right reason, not by the fall count.**
+
+## THE FIRST CONFIRMED WIN — owner's ride, 2026-11-16 night
+
+Address ridden: **`?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two`** (confirmed by them).
+
+Their two sentences, both unprompted:
+
+> *"gets on the board down turn just falls very easily"*
+> *"seems that the movement is very fluid in the sense that doesnt look like a stick but an actual human movement"*
+
+**Both halves match step 3.4a's measurement exactly, and this is the first time the bench and the ride have agreed on a POSITIVE:**
+- **the lean row improved in 96 of 96 live runs (3.515 → 1.039, a 70 % cut)** — and the owner felt it, calling it human movement rather than a stick, which is 3.4a's own shot-list question answered without being asked;
+- **the bar was unchanged on their cell (median 1.033 s, 18 of 18)** — and they still fall easily on a bottom turn.
+
+**So the split is clean and confirmed from both sides: the BODY is right and feels right; what remains wrong is what the board does underneath him and what the loop commands.** Those are the roll row and the gains — exactly step 3.4c's job.
+
+**Keep the two-body plant.** It is the only change on this track that improved something without trading, and it is the foundation the owner's "system for all skills" needs: a body that moves like a person is what every skill has to be built on.
