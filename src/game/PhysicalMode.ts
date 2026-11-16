@@ -557,6 +557,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...kneeRoomSwitch(),
     // `?stanceReach=keep`: a deep crouch keeps the riding stance's hip range and free arms, so Compress keeps its catching reach as well as its lower centre of mass (step 3.3h, the owner's ruling of 2026-11-16), opt-in, to ride.
     ...stanceReachSwitch(),
+    // `?ankleLimit=feet`: the ankle's torque is bounded by the moment the soles can transmit, `legLoad` × the feet's half-width across (step 3.3i; the bound `LEAN_IN_RATE` derives at 93 N·m and nothing enforced), opt-in, to ride.
+    ...ankleLimitSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
@@ -1099,6 +1101,18 @@ export function kneeRoomSwitch(search?: string): { kneeRoom?: 'achieved' } {
  */
 export function stanceReachSwitch(search?: string): { stanceReach?: 'keep' } {
   return devParam('stanceReach', search)?.trim().toLowerCase() === 'keep' ? { stanceReach: 'keep' } : {};
+}
+
+/**
+ * The `?ankleLimit=feet` dev switch (`SurfZoneConfig.ankleLimit`, step 3.3i): opt-in, **the ankle's torque is bounded
+ * by the moment the soles can transmit** — the load through the legs times the feet's own half-width across, which
+ * `AttachedRider`'s LEAN_IN_RATE note derives at `m g d` = 716 N × 0.13 m = 93 N·m and which nothing enforced. Step
+ * 3.3i measured the shipped ankle's demand at a median of 23–33 N·m, which is 30 % of that bound, and a **peak of
+ * 717 N·m**, past the bound in 2.3–10.1 % of substeps and by up to 4.9×, over twelve full-stick runs. Nothing on the
+ * default rider, no force and no hull law. Anything else, the ankle unbounded as before.
+ */
+export function ankleLimitSwitch(search?: string): { ankleLimit?: 'feet' } {
+  return devParam('ankleLimit', search)?.trim().toLowerCase() === 'feet' ? { ankleLimit: 'feet' } : {};
 }
 
 /**

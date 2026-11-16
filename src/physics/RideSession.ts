@@ -166,6 +166,8 @@ export interface RideSessionOptions {
   kneeRoom?: 'achieved';
   /** A deep crouch keeps the riding stance's hip range and free arms (step 3.3h; `AttachedRiderOptions.stanceReach`): 'keep' (the `?stanceReach=keep` dev switch); by default the stance's own. */
   stanceReach?: 'keep';
+  /** The ankle's torque bounded by the moment the soles can transmit (step 3.3i; `AttachedRiderOptions.ankleLimit`): 'feet' (the `?ankleLimit=feet` dev switch); by default unbounded, as it always was. */
+  ankleLimit?: 'feet';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -270,6 +272,7 @@ export class RideSession {
       ...(options.feltFrame ? { feltFrame: options.feltFrame } : {}),
       ...(options.kneeRoom ? { kneeRoom: options.kneeRoom } : {}),
       ...(options.stanceReach ? { stanceReach: options.stanceReach } : {}),
+      ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

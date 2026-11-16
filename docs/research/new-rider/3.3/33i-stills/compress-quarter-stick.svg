@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1770" height="650" viewBox="0 0 1770 650">
+  <rect width="1770" height="650" fill="#ffffff"/>
+  <text x="20" y="24" font-family="monospace" font-size="13" fill="#111">step 3.3i — the fall drawn as a SECTION ACROSS THE BOARD · stance compress · stick 0.25 · entry +0 m/s · felt deck · Canyon-matched FaceWater 1.4 m / 16° / 5.7 m/s (a FIT to Canyon, not Canyon)</text>
+  <text x="20" y="42" font-family="monospace" font-size="11" fill="#555">looking along the board from behind the tail · +x rail to the RIGHT, which is the one that goes DOWN as the roll grows · grey dashed = the world vertical through the board's centre · blue = the water surface at its measured across slope · red = the feet's half-width · black = the body's line to its centre of mass</text>
+  <text x="20" y="50" font-family="monospace" font-size="13" fill="#111">shipped (the ankle unbounded) — fell 'balance' at 3.82 s, roll -43.6° on that frame; the last panel is the last frame the split reconstructs (step 3.2z's rule)</text>
+  <g>
+    <rect x="20" y="60" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 33 220.70141969924921 L 297 219.29858030075079" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 165 232 L 165 88" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 138.4524051196953 211.03235039716398 L 192.9987976530987 221.12288169851504 L 191.5475948803047 228.96764960283602 L 137.0012023469013 218.87711830148496 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 150.38586601040686 213.23992004675048 L 181.06533676238715 218.9153120489285" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 165.725601386397 216.0776160478395 L 175.19890141371908 149.34732208341433" stroke="#333" stroke-width="2"/>
+    <circle cx="175.19890141371908" cy="149.34732208341433" r="5" fill="#333"/>
+    <text x="26" y="74" font-family="monospace" font-size="9.5" fill="#111">t−0.50 s  (t 3.20)</text>
+    <text x="26" y="252" font-family="monospace" font-size="9.5" fill="#111">roll 10.5°   bank 7.8°</text>
+    <text x="26" y="265" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.024 m (feet ±0.13)</text>
+    <text x="26" y="278" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.19 feet 0.18</text>
+    <text x="26" y="291" font-family="monospace" font-size="9.5" fill="#111">  relative 0.02 · 3.3g's split 0.17/0.18</text>
+    <text x="26" y="304" font-family="monospace" font-size="9.5" fill="#111">ankle 11  residual 9 N·m</text>
+  </g>
+  <g>
+    <rect x="310" y="60" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 323 220.94884487174014 L 587 219.05115512825986" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 455 232 L 455 88" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 428.46960219019206 210.98160073065264 L 482.9965992121105 221.17642079396782 L 481.53039780980794 229.01839926934736 L 427.0034007878895 218.82357920603218 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 440.398819801614 213.2119862953609 L 471.0673816006886 218.94603522925956" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 455.7331007011513 216.07901076231025 L 466.6870939666811 149.1220679358756" stroke="#333" stroke-width="2"/>
+    <circle cx="466.6870939666811" cy="149.1220679358756" r="5" fill="#333"/>
+    <text x="316" y="74" font-family="monospace" font-size="9.5" fill="#111">t−0.40 s  (t 3.30)</text>
+    <text x="316" y="252" font-family="monospace" font-size="9.5" fill="#111">roll 10.6°   bank 9.0°</text>
+    <text x="316" y="265" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.013 m (feet ±0.13)</text>
+    <text x="316" y="278" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.12 feet 0.01</text>
+    <text x="316" y="291" font-family="monospace" font-size="9.5" fill="#111">  relative 0.11 · 3.3g's split 0.09/-0.04</text>
+    <text x="316" y="304" font-family="monospace" font-size="9.5" fill="#111">ankle 2  residual 2 N·m</text>
+  </g>
+  <g>
+    <rect x="600" y="60" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 613 221.29437412003546 L 877 218.70562587996454" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 745 232 L 745 88" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 718.6164353372449 210.56066480019678 L 772.9743400744218 221.62167528458139 L 771.3835646627551 229.43933519980322 L 717.0256599255782 218.37832471541861 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 730.5086595550955 212.98055234722972 L 761.0821158565712 219.20178773754841" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 745.7953877058334 216.09117004238908 L 758.8471036152877 149.1019568205025" stroke="#333" stroke-width="2"/>
+    <circle cx="758.8471036152877" cy="149.1019568205025" r="5" fill="#333"/>
+    <text x="606" y="74" font-family="monospace" font-size="9.5" fill="#111">t−0.30 s  (t 3.40)</text>
+    <text x="606" y="252" font-family="monospace" font-size="9.5" fill="#111">roll 11.5°   bank 10.6°</text>
+    <text x="606" y="265" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.005 m (feet ±0.13)</text>
+    <text x="606" y="278" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.19 feet 0.08</text>
+    <text x="606" y="291" font-family="monospace" font-size="9.5" fill="#111">  relative 0.11 · 3.3g's split 0.15/0.07</text>
+    <text x="606" y="304" font-family="monospace" font-size="9.5" fill="#111">ankle -14  residual -15 N·m</text>
+  </g>
+  <g>
+    <rect x="890" y="60" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 903 221.32828942205242 L 1167 218.67171057794758" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 1035 232 L 1035 88" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 1009.124554176214 209.2457061250707 L 1062.857380338387 223.02653168007214 L 1060.875445823786 230.7542938749293 L 1007.1426196616131 216.97346831992786 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 1020.8800259823654 212.26062489722634 L 1051.1019085322355 220.0116129079165" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 1035.9909672573006 216.1361189025714 L 1045.6986113867868 148.32718551265273" stroke="#333" stroke-width="2"/>
+    <circle cx="1045.6986113867868" cy="148.32718551265273" r="5" fill="#333"/>
+    <text x="896" y="74" font-family="monospace" font-size="9.5" fill="#111">t−0.20 s  (t 3.50)</text>
+    <text x="896" y="252" font-family="monospace" font-size="9.5" fill="#111">roll 14.4°   bank 7.2°</text>
+    <text x="896" y="265" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.062 m (feet ±0.13)</text>
+    <text x="896" y="278" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.07 feet 1.72</text>
+    <text x="896" y="291" font-family="monospace" font-size="9.5" fill="#111">  relative -1.65 · 3.3g's split -0.04/1.52</text>
+    <text x="896" y="304" font-family="monospace" font-size="9.5" fill="#111">ankle 80  residual 64 N·m</text>
+  </g>
+  <g>
+    <rect x="1180" y="60" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 1193 220.05446775730505 L 1457 219.94553224269495" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 1325 232 L 1325 88" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 1297.0493617449565 218.01119270322127 L 1352.3782853157675 214.03149713106745 L 1352.9506382550435 221.98880729677873 L 1297.6217146842325 225.96850286893255 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 1309.1540219230444 217.1405294153026 L 1340.2736251376796 214.90216041898614" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 1324.7138235303619 216.02134491714438 L 1304.537263348712 148.32703526550276" stroke="#333" stroke-width="2"/>
+    <circle cx="1304.537263348712" cy="148.32703526550276" r="5" fill="#333"/>
+    <text x="1186" y="74" font-family="monospace" font-size="9.5" fill="#111">t−0.10 s  (t 3.60)</text>
+    <text x="1186" y="252" font-family="monospace" font-size="9.5" fill="#111">roll -4.1°   bank -17.2°</text>
+    <text x="1186" y="265" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.127 m (feet ±0.13)</text>
+    <text x="1186" y="278" font-family="monospace" font-size="9.5" fill="#111">across m/s: body -0.95 feet 1.75</text>
+    <text x="1186" y="291" font-family="monospace" font-size="9.5" fill="#111">  relative -2.70 · 3.3g's split -1.18/1.17</text>
+    <text x="1186" y="304" font-family="monospace" font-size="9.5" fill="#111">ankle 134  residual 65 N·m</text>
+  </g>
+  <g>
+    <rect x="1470" y="60" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 1483 215.7987132614385 L 1747 224.2012867385615" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 1615 232 L 1615 88" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 1588.9421673562683 230.3045082968233 L 1637.097842190079 202.76982577364973 L 1641.0578326437317 209.6954917031767 L 1592.902157809921 237.23017422635027 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 1599.4774903282355 224.28057084161523 L 1626.562519218112 208.7937632288578" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 1613.0200047731737 216.5371670352365 L 1571.2658362913498 157.7046102719512" stroke="#333" stroke-width="2"/>
+    <circle cx="1571.2658362913498" cy="157.7046102719512" r="5" fill="#333"/>
+    <text x="1476" y="74" font-family="monospace" font-size="9.5" fill="#111">t−0.00 s  (t 3.70)</text>
+    <text x="1476" y="252" font-family="monospace" font-size="9.5" fill="#111">roll -29.8°   bank -34.1°</text>
+    <text x="1476" y="265" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.059 m (feet ±0.13)</text>
+    <text x="1476" y="278" font-family="monospace" font-size="9.5" fill="#111">across m/s: body -2.31 feet 0.05</text>
+    <text x="1476" y="291" font-family="monospace" font-size="9.5" fill="#111">  relative -2.36 · 3.3g's split -2.34/-0.28</text>
+    <text x="1476" y="304" font-family="monospace" font-size="9.5" fill="#111">ankle 151  residual 24 N·m</text>
+  </g>
+  <text x="20" y="345" font-family="monospace" font-size="13" fill="#111">ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.88 s, roll -18.6° on that frame; the last panel is the last frame the split reconstructs (step 3.2z's rule)</text>
+  <g>
+    <rect x="20" y="355" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 33 515.5051378043571 L 297 514.4948621956429" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 165 527 L 165 383" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 138.13424838845847 507.03602337553787 L 193.02121698648935 515.0702276591272 L 191.86575161154153 522.9639766244621 L 136.97878301351065 514.9297723408728 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 150.14221926890136 508.7937172972301 L 181.01324610604647 513.3125337374349" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 165.5777326874739 511.05312551733255 L 175.14220499752443 444.5681356916788" stroke="#333" stroke-width="2"/>
+    <circle cx="175.14220499752443" cy="444.5681356916788" r="5" fill="#333"/>
+    <text x="26" y="369" font-family="monospace" font-size="9.5" fill="#111">t−0.50 s  (t 3.15)</text>
+    <text x="26" y="547" font-family="monospace" font-size="9.5" fill="#111">roll 8.3°   bank 8.1°</text>
+    <text x="26" y="560" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.001 m (feet ±0.13)</text>
+    <text x="26" y="573" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.26 feet 0.16</text>
+    <text x="26" y="586" font-family="monospace" font-size="9.5" fill="#111">  relative 0.09 · 3.3g's split 0.24/0.20</text>
+    <text x="26" y="599" font-family="monospace" font-size="9.5" fill="#111">ankle -17  residual -17 N·m</text>
+  </g>
+  <g>
+    <rect x="310" y="355" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 323 515.7322286767535 L 587 514.2677713232465" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 455 527 L 455 383" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 428.6718028177609 505.4073170353043 L 482.9644311717717 516.7844109860869 L 481.3281971822391 524.5926829646958 L 427.0355688282283 513.2155890139131 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 440.5497461064901 507.8963561707242 L 471.08648788304254 514.295371850667" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 455.81811699476634 511.0958640106956 L 466.7587818186093 444.35855421767224" stroke="#333" stroke-width="2"/>
+    <circle cx="466.7587818186093" cy="444.35855421767224" r="5" fill="#333"/>
+    <text x="316" y="369" font-family="monospace" font-size="9.5" fill="#111">t−0.40 s  (t 3.25)</text>
+    <text x="316" y="547" font-family="monospace" font-size="9.5" fill="#111">roll 11.8°   bank 8.9°</text>
+    <text x="316" y="560" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.025 m (feet ±0.13)</text>
+    <text x="316" y="573" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.14 feet 0.08</text>
+    <text x="316" y="586" font-family="monospace" font-size="9.5" fill="#111">  relative 0.06 · 3.3g's split 0.11/0.05</text>
+    <text x="316" y="599" font-family="monospace" font-size="9.5" fill="#111">ankle 13  residual 11 N·m</text>
+  </g>
+  <g>
+    <rect x="600" y="355" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 613 515.9874973648388 L 877 514.0125026351612" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 745 527 L 745 383" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 718.6493538277139 505.4691564050707 L 772.9685435127693 516.7187516115943 L 771.3506461722861 524.5308435949293 L 717.0314564872307 513.2812483884057 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 730.5331081076104 507.9303018300624 L 761.0847892328727 514.2576061866026" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 745.8089486702415 511.0939540083325 L 758.5637997841708 444.25420655063283" stroke="#333" stroke-width="2"/>
+    <circle cx="758.5637997841708" cy="444.25420655063283" r="5" fill="#333"/>
+    <text x="606" y="369" font-family="monospace" font-size="9.5" fill="#111">t−0.30 s  (t 3.35)</text>
+    <text x="606" y="547" font-family="monospace" font-size="9.5" fill="#111">roll 11.7°   bank 10.4°</text>
+    <text x="606" y="560" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.009 m (feet ±0.13)</text>
+    <text x="606" y="573" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.15 feet 0.03</text>
+    <text x="606" y="586" font-family="monospace" font-size="9.5" fill="#111">  relative 0.12 · 3.3g's split 0.11/-0.00</text>
+    <text x="606" y="599" font-family="monospace" font-size="9.5" fill="#111">ankle -8  residual -9 N·m</text>
+  </g>
+  <g>
+    <rect x="890" y="355" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 903 516.0881322451744 L 1167 513.9118677548256" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 1035 527 L 1035 383" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 1009.1421651215593 504.20343069640535 L 1062.8523966908913 518.0720566240308 L 1060.8578348784406 525.7965693035947 L 1007.1476033091087 511.9279433759693 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 1020.8926937650655 507.237558113977 L 1051.1018680473853 515.0379292064591" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 1035.9972809062253 511.13774366021806 L 1050.6032999006668 444.2501185704479" stroke="#333" stroke-width="2"/>
+    <circle cx="1050.6032999006668" cy="444.2501185704479" r="5" fill="#333"/>
+    <text x="896" y="369" font-family="monospace" font-size="9.5" fill="#111">t−0.20 s  (t 3.45)</text>
+    <text x="896" y="547" font-family="monospace" font-size="9.5" fill="#111">roll 14.5°   bank 11.7°</text>
+    <text x="896" y="560" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.022 m (feet ±0.13)</text>
+    <text x="896" y="573" font-family="monospace" font-size="9.5" fill="#111">across m/s: body 0.18 feet 0.11</text>
+    <text x="896" y="586" font-family="monospace" font-size="9.5" fill="#111">  relative 0.07 · 3.3g's split 0.13/0.09</text>
+    <text x="896" y="599" font-family="monospace" font-size="9.5" fill="#111">ankle -2  residual -4 N·m</text>
+  </g>
+  <g>
+    <rect x="1180" y="355" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 1193 515.5455676909598 L 1457 514.4544323090402" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 1325 527 L 1325 383" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 1298.267529324058 506.59949139111706 L 1353.0163558897195 515.5266269918993 L 1351.732470675942 523.400508608883 L 1296.9836441102805 514.4733730081007 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 1310.2452779943035 508.55253757089463 L 1341.038607219474 513.5735808121217" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 1325.6419426068887 511.06305919150816 L 1324.1833885526062 441.98510011051206" stroke="#333" stroke-width="2"/>
+    <circle cx="1324.1833885526062" cy="441.98510011051206" r="5" fill="#333"/>
+    <text x="1186" y="369" font-family="monospace" font-size="9.5" fill="#111">t−0.10 s  (t 3.55)</text>
+    <text x="1186" y="547" font-family="monospace" font-size="9.5" fill="#111">roll 9.3°   bank -2.3°</text>
+    <text x="1186" y="560" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.105 m (feet ±0.13)</text>
+    <text x="1186" y="573" font-family="monospace" font-size="9.5" fill="#111">across m/s: body -0.38 feet 2.58</text>
+    <text x="1186" y="586" font-family="monospace" font-size="9.5" fill="#111">  relative -2.96 · 3.3g's split -0.55/2.13</text>
+    <text x="1186" y="599" font-family="monospace" font-size="9.5" fill="#111">ankle 97  residual 83 N·m</text>
+  </g>
+  <g>
+    <rect x="1470" y="355" width="290" height="255" fill="none" stroke="#d8d8d8"/>
+    <path d="M 1483 513.0281012375963 L 1747 516.9718987624037" stroke="#2b7fc4" stroke-width="1.4" opacity="0.75"/>
+    <path d="M 1615 527 L 1615 383" stroke="#999" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <path d="M 1587.0029897375766 513.8334025142377 L 1642.191072836481 508.229542753313 L 1642.9970102624234 516.1665974857623 L 1587.808927163519 521.770457246687 Z" fill="#f0d8a8" stroke="#8a6b2f" stroke-width="1.2"/>
+    <path d="M 1599.0768373507035 512.6074105065522 L 1630.1172252233541 509.4555347609985" stroke="#c23b22" stroke-width="3.2"/>
+    <path d="M 1614.5970312870288 511.03147263377537 L 1581.8313069029373 446.6815613232468" stroke="#333" stroke-width="2"/>
+    <circle cx="1581.8313069029373" cy="446.6815613232468" r="5" fill="#333"/>
+    <text x="1476" y="369" font-family="monospace" font-size="9.5" fill="#111">t−0.00 s  (t 3.65)</text>
+    <text x="1476" y="547" font-family="monospace" font-size="9.5" fill="#111">roll -5.8°   bank -27.9°</text>
+    <text x="1476" y="560" font-family="monospace" font-size="9.5" fill="#111">CoM across -0.217 m (feet ±0.13)</text>
+    <text x="1476" y="573" font-family="monospace" font-size="9.5" fill="#111">across m/s: body -1.44 feet 1.26</text>
+    <text x="1476" y="586" font-family="monospace" font-size="9.5" fill="#111">  relative -2.70 · 3.3g's split -1.66/0.89</text>
+    <text x="1476" y="599" font-family="monospace" font-size="9.5" fill="#111">ankle 106  residual 27 N·m</text>
+  </g>
+</svg>

@@ -122,6 +122,17 @@ const FELT = process.env.FELT === 'deck' ? 'deck' as const : undefined;
  */
 const ROLL = process.env.ROLL === 'on';
 /**
+ * **Step 3.3i's addition, `ANKLE=on`, off by default.** Turns `AttachedRider.ankleLedger` on and prints **what the
+ * ankle carries** (§7): the joint's own angle and torque, the moment the soles can transmit, and the measured pairing
+ * between the ankle's torque and the roll ledger's own `rider` residual. Needs `ROLL=on` for the pairing block.
+ */
+const ANKLE = process.env.ANKLE === 'on';
+/**
+ * **Step 3.3i's second addition, `ANKLE_LIMIT=feet`, off by default.** The game's own `?ankleLimit=feet`: the ankle's
+ * torque bounded by the moment the soles can transmit. With it unset the probe is the shipped rider.
+ */
+const ANKLE_LIMIT = process.env.ANKLE_LIMIT === 'feet' ? 'feet' as const : undefined;
+/**
  * **Step 3.3h's second addition, `REACH=keep`, off by default.** Builds the rider with `stanceReach: 'keep'`, the
  * game's own `?stanceReach=keep`: a deep crouch keeps the riding stance's hip range and free arms, which is the
  * owner's ruling of 2026-11-16 on the trade step 3.3g measured (the crouch wins the moment bar by 1.3–1.7× and
@@ -139,6 +150,7 @@ const WATER_KEYS = ['buoyancy', 'pressure', 'addedMass', 'radiation', 'friction'
  */
 const ROLL_KEYS = [...WATER_KEYS, 'gyro', 'rider'] as const;
 if (ROLL) BoardBody.rollLedger = true;
+if (ANKLE) AttachedRider.ankleLedger = true;
 
 const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toFixed(d) : '–');
 const r = (x: number, d = 3) => (Number.isFinite(x) ? +x.toFixed(d) : null);
@@ -357,6 +369,29 @@ interface Frame {
   rollRiderArm: number;
   /** °/s²: `rollTotal` over the board's own roll inertia about its long axis, kg·m² — what that moment does to a board this light. */
   rollAlpha: number;
+  /**
+   * **Step 3.3i: the ankle, `ANKLE=on` only** (NaN otherwise). The signed columns are **multiplied by `rollSense`**
+   * in the same post-loop pass the roll columns are, and by nothing else, so **positive = the way the run actually
+   * went over**. Whether that is also `rollBy.rider`'s own sense is **measured** in §7 (the sum and the difference are
+   * both printed) and not assumed here.
+   *
+   * `ankleTorque` and `anklePeak` are N·m (the step's mean and its largest absolute); `ankleAngle` and
+   * `ankleAnglePeak` are the joint's own angle θ − φ in degrees; `ankleRest` is the rest the balance commanded, in
+   * degrees (ANKLE_REST_RANGE bounds it at 14.32°); `ankleBound` is the moment the soles can transmit, N·m
+   * (`legLoad` × the feet's half-width across, the code's own 93 N·m at 1 g); `ankleLoad` is that load, N; and
+   * `ankleOver` is the share of the step's substeps whose `|torque|` was past the bound.
+   */
+  ankleTorque: number;
+  anklePeak: number;
+  ankleDemand: number;
+  ankleDemandPeak: number;
+  ankleAbsorbed: number;
+  ankleAngle: number;
+  ankleAnglePeak: number;
+  ankleRest: number;
+  ankleBound: number;
+  ankleLoad: number;
+  ankleOver: number;
 }
 
 interface Inner {
@@ -413,6 +448,7 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     ...(process.env.SUBSTEPS ? { standingSubsteps: Number(process.env.SUBSTEPS) } : {}),
     ...(FELT ? { feltFrame: FELT } : {}),
     ...(REACH ? { stanceReach: REACH } : {}),
+    ...(ANKLE_LIMIT ? { ankleLimit: ANKLE_LIMIT } : {}),
   });
   board.attach(rider);
   stance(rider, st);
@@ -632,6 +668,22 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     } else {
       for (const key of ROLL_KEYS) rollBy[key] = Number.NaN;
     }
+    /**
+     * **Step 3.3i: the ankle's own reading**, off the rider's ledger. Raw here; the run's own sign (and the one
+     * negation that puts it in the roll residual's sense) is applied after the loop, with the roll columns'.
+     */
+    const led = rider.ankle;
+    const ankleTorque = ANKLE && led.substeps > 0 ? led.torque : Number.NaN;
+    const anklePeak = ANKLE && led.substeps > 0 ? led.peak : Number.NaN;
+    const ankleDemand = ANKLE && led.substeps > 0 ? led.demand : Number.NaN;
+    const ankleDemandPeak = ANKLE && led.substeps > 0 ? led.demandPeak : Number.NaN;
+    const ankleAbsorbed = ANKLE && led.substeps > 0 ? led.absorbed : Number.NaN;
+    const ankleAngle = ANKLE && led.substeps > 0 ? led.angle * DEG : Number.NaN;
+    const ankleAnglePeak = ANKLE && led.substeps > 0 ? led.anglePeak * DEG : Number.NaN;
+    const ankleRestDeg = ANKLE && led.substeps > 0 ? led.rest * DEG : Number.NaN;
+    const ankleBound = ANKLE && led.substeps > 0 ? led.bound : Number.NaN;
+    const ankleLoad = ANKLE && led.substeps > 0 ? led.load : Number.NaN;
+    const ankleOver = ANKLE && led.substeps > 0 ? led.over / led.substeps : Number.NaN;
     const drift = Math.hypot(vRel.x, vRel.z) > 0.05
       ? Math.atan2(vRel.x * fwd.z - vRel.z * fwd.x, vRel.x * fwd.x + vRel.z * fwd.z) * DEG
       : 0;
@@ -687,6 +739,17 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
       rollContact,
       rollRiderArm,
       rollAlpha,
+      ankleTorque,
+      anklePeak,
+      ankleDemand,
+      ankleDemandPeak,
+      ankleAbsorbed,
+      ankleAngle,
+      ankleAnglePeak,
+      ankleRest: ankleRestDeg,
+      ankleBound,
+      ankleLoad,
+      ankleOver,
     };
     frames.push(frame);
     pool.push(frame);
@@ -706,6 +769,23 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
       x.rollContact *= rollSense;
       x.rollRiderArm *= rollSense;
       x.rollAlpha *= rollSense;
+    }
+  }
+  /**
+   * **Step 3.3i: the ankle's own sign — `rollSense` and nothing else.** The one convention the roll columns use, the
+   * way the run actually went over, applied once after the loop; **no second negation is applied to make the pairing
+   * come out**, which is the trap step 3.3g fell into with `sign(nx)` and 3.3h caught in its own first sign plan.
+   * **Which sense the ankle's torque is already in is then a measurement**: §7 prints the median of (ankle + residual)
+   * AND of (ankle − residual), signed and absolute, and whichever is near zero is the answer. It came out that the
+   * ankle's torque is already in `rollBy.rider`'s own sense, so a positive ankle column and a positive residual mean
+   * the same thing — further over the way the run went — and that line is a result, not a convention.
+   */
+  if (ANKLE) {
+    for (const x of frames) {
+      x.ankleTorque *= rollSense;
+      x.ankleDemand *= rollSense;
+      x.ankleAngle *= rollSense;
+      x.ankleRest *= rollSense;
     }
   }
   const col = (k: keyof Frame) => frames.map((x) => Number(x[k]));
@@ -873,6 +953,27 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     /** The residual's independent reading and the arm it implies (see `Frame.rollContact`, `Frame.rollRiderArm`). */
     rollContactTurnMedian: r(median(after.map((x) => x.rollContact)), 2),
     rollContactVsRiderMedian: r(median(after.map((x) => Math.abs(x.rollContact - x.rollBy.rider))), 3),
+    /** **Step 3.3i: the ankle's columns** (`ANKLE=on`; NaN otherwise), over the commanded turn and at the fall. */
+    ankleTorqueTurnMedian: r(median(after.map((x) => x.ankleTorque)), 2),
+    ankleTorqueAbsTurnMedian: r(median(after.map((x) => Math.abs(x.ankleTorque))), 2),
+    ankleTorquePeak: r(peak(after.map((x) => x.anklePeak)), 2),
+    ankleDemandTurnMedian: r(median(after.map((x) => x.ankleDemand)), 2),
+    ankleDemandPeak: r(peak(after.map((x) => x.ankleDemandPeak)), 2),
+    ankleAbsorbedTurnMedian: r(median(after.map((x) => x.ankleAbsorbed)), 2),
+    ankleAbsorbedPeak: r(peak(after.map((x) => x.ankleAbsorbed)), 2),
+    ankleTorqueAtFall: r(last?.ankleTorque ?? Number.NaN, 2),
+    ankleAngleTurnMedian: r(median(after.map((x) => x.ankleAngle)), 2),
+    ankleAnglePeak: r(peak(after.map((x) => x.ankleAnglePeak)), 2),
+    ankleAngleAtFall: r(last?.ankleAngle ?? Number.NaN, 2),
+    ankleRestTurnMedian: r(median(after.map((x) => x.ankleRest)), 2),
+    ankleBoundTurnMedian: r(median(after.map((x) => x.ankleBound)), 1),
+    ankleLoadTurnMedian: r(median(after.map((x) => x.ankleLoad)), 1),
+    ankleOverShareTurn: r(mean(after.map((x) => x.ankleOver)), 3),
+    ankleUseTurnMedian: r(median(after.map((x) => (x.ankleBound > 0 ? Math.abs(x.ankleDemand) / x.ankleBound : Number.NaN))), 3),
+    ankleUsePeak: r(peak(after.map((x) => (x.ankleBound > 0 ? Math.abs(x.ankleDemand) / x.ankleBound : Number.NaN))), 3),
+    /** The pairing: the ankle's torque against the roll ledger's own residual, both in the run's own sense. */
+    ankleVsRiderMedian: r(median(after.map((x) => Math.abs(x.ankleTorque - x.rollBy.rider))), 2),
+    anklePlusRiderMedian: r(median(after.map((x) => Math.abs(x.ankleTorque + x.rollBy.rider))), 2),
     rollContactVsRiderPeak: r(peak(after.map((x) => Math.abs(x.rollContact - x.rollBy.rider))), 3),
     rollRiderArmTurnMedian: r(median(after.map((x) => x.rollRiderArm)), 4),
     /**
@@ -1054,4 +1155,39 @@ if (ROLL) {
  */
 console.log(`   §A the stance's room — stanceReach ${REACH ?? 'shipped'}: the catching REACH ${span(nf('reachTurnMedian'), 3)} m over the turn, ${span(nf('reachAtFall'), 3)} at the fall · the CoM height over the feet ${span(nf('heightTurnMedian'), 3)} m, a_max = g·d/h ${span(nf('aMaxTurn'), 2)} m/s²`);
 console.log(`   the fall: margin ${span(nf('marginAtFall'), 3)} · past ${span(nf('pastAtFall'), 3)} m · relative across-speed ${span(nfSome('relAcrossAtFall'), 3)} m/s = body ${span(nfSome('bodyAcrossAtFall'), 3)} − feet ${span(nfSome('feetAcrossAtFall'), 3)} · its mean rate ${span(nfSome('relAcrossMeanRate'), 2)} m/s² · reconstructs to ${span(nfSome('checkAtFall'), 4)}`);
+/**
+ * **§7 — step 3.3i: WHAT THE ANKLE CARRIES.**
+ *
+ * Step 3.3h closed by saying the board's +33.47 N·m goes into a board with *"no joint to absorb it ... not a cap, an
+ * ankle he does not have"*. The ankle is **already in the code** — the body's bank is the eighth unknown of the
+ * board's own solve and the ankle is a spring–damper on the joint's own angle, with `HUMAN_ANKLE_STIFFNESS` =
+ * 800 N·m/rad and `HUMAN_ANKLE_DAMPING` = 80 N·m·s/rad — so this block measures what it carries rather than building
+ * one. Its honesty rules, in the shape §6 states its own:
+ *
+ * - the datum is stated (`Frame.ankleTorque`), one sign convention applied once, after the loop;
+ * - **the pairing between the ankle's torque and the roll residual is printed as BOTH the difference and the sum**,
+ *   so the reader sees which is near zero and the probe is not fitting a sign;
+ * - `bound` is the code's own derived bound (`legLoad` × the feet's half-width), and it is derived there and enforced
+ *   on nothing, which is the one thing §7 is looking for;
+ * - and every span is the whole population of its arm.
+ */
+if (ANKLE) {
+  const commanded = pool.filter((x) => Number.isFinite(x.ankleTorque));
+  const ankleMed = median(commanded.map((x) => x.ankleTorque));
+  const boundMed = median(commanded.map((x) => x.ankleBound));
+  console.log(`   §7 WHAT THE ANKLE CARRIES (3.3i) — ${commanded.length} commanded frames pooled, N·m about the board's roll axis, + = the sense \`rollBy.rider\` is printed in:`);
+  console.log(`      the plant: HUMAN_ANKLE_STIFFNESS 800 N·m/rad · HUMAN_ANKLE_DAMPING 80 N·m·s/rad · ANKLE_REST_RANGE 14.32° · the body's bank is the 8th unknown of the board's solve`);
+  console.log(`      THE ANKLE'S TORQUE: median ${f(ankleMed, 2)} N·m · |median| ${f(median(commanded.map((x) => Math.abs(x.ankleTorque))), 2)} · peak absolute ${f(peak(commanded.map((x) => x.anklePeak)), 2)} · per run ${span(nfSome('ankleTorqueTurnMedian'), 2)} (|·| ${span(nfSome('ankleTorqueAbsTurnMedian'), 2)}), at the fall ${span(nfSome('ankleTorqueAtFall'), 1)}`);
+  console.log(`      THE JOINT'S OWN ANGLE θ − φ: median ${f(median(commanded.map((x) => x.ankleAngle)), 2)}° · peak absolute ${f(peak(commanded.map((x) => x.ankleAnglePeak)), 2)}° · per run ${span(nfSome('ankleAngleTurnMedian'), 2)}°, peak ${span(nfSome('ankleAnglePeak'), 1)}°, at the fall ${span(nfSome('ankleAngleAtFall'), 1)}° · the REST the balance commanded ${f(median(commanded.map((x) => x.ankleRest)), 2)}° median, per run ${span(nfSome('ankleRestTurnMedian'), 2)}°`);
+  console.log(`      THE MOMENT THE SOLES CAN TRANSMIT (legLoad × the feet's half-width across, the code's own derived bound): ${f(boundMed, 1)} N·m median on a load of ${f(median(commanded.map((x) => x.ankleLoad)), 1)} N · per run ${span(nfSome('ankleBoundTurnMedian'), 1)} N·m`);
+  console.log(`      THE DEMAND the spring and damper ASKED for, before any bound: median ${f(median(commanded.map((x) => x.ankleDemand)), 2)} N·m · |median| ${f(median(commanded.map((x) => Math.abs(x.ankleDemand))), 2)} · peak absolute ${f(peak(commanded.map((x) => x.ankleDemandPeak)), 2)} · per run ${span(nfSome('ankleDemandTurnMedian'), 2)}, peak ${span(nfSome('ankleDemandPeak'), 0)}`);
+  console.log(`      WHAT THE BOUND TOOK OFF IT (ankleLimit ${ANKLE_LIMIT ?? 'shipped'}): |demand| − |delivered| ${f(median(commanded.map((x) => x.ankleAbsorbed)), 2)} N·m median, per run ${span(nfSome('ankleAbsorbedTurnMedian'), 2)} · peak ${span(nfSome('ankleAbsorbedPeak'), 1)} — the PEAK column at 0.0 everywhere is the internal control with the switch off`);
+  console.log(`      SO HOW MUCH OF THE SOLE'S BOUND THE DEMAND USES: |demand| / bound ${f(median(commanded.map((x) => (x.ankleBound > 0 ? Math.abs(x.ankleDemand) / x.ankleBound : Number.NaN))), 3)} median, per run ${span(nfSome('ankleUseTurnMedian'), 3)} · peak ${span(nfSome('ankleUsePeak'), 2)} · the SHARE OF SUBSTEPS past the bound ${span(nfSome('ankleOverShareTurn'), 3)}`);
+  if (ROLL) {
+    console.log(`      THE PAIRING, SIGNED: median of (ankle + residual) ${f(median(commanded.map((x) => x.ankleTorque + x.rollBy.rider)), 2)} N·m · median of (ankle − residual) ${f(median(commanded.map((x) => x.ankleTorque - x.rollBy.rider)), 2)}`);
+    console.log(`      THE PAIRING, measured both ways: the roll residual's median ${f(median(commanded.map((x) => x.rollBy.rider)), 2)} N·m against the ankle's ${f(ankleMed, 2)} · |ankle − residual| median ${f(median(commanded.map((x) => Math.abs(x.ankleTorque - x.rollBy.rider))), 2)} · |ankle + residual| median ${f(median(commanded.map((x) => Math.abs(x.ankleTorque + x.rollBy.rider))), 2)}`);
+    console.log(`      per run: |ankle − residual| ${span(nfSome('ankleVsRiderMedian'), 2)} · |ankle + residual| ${span(nfSome('anklePlusRiderMedian'), 2)} N·m — whichever column is small is the one that pairs, and that is a measurement, not this probe's sign plan`);
+  }
+}
 if (ROLL) BoardBody.rollLedger = false;
+if (ANKLE) AttachedRider.ankleLedger = false;

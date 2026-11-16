@@ -123,6 +123,13 @@ const KNEEROOM = process.env.KNEEROOM;
  * the A/B that answers the ruling is run here as well as on `deck.ts`.
  */
 const REACH = process.env.REACH === 'keep' ? 'keep' as const : undefined;
+/**
+ * **Step 3.3i, `ANKLE_LIMIT=feet`, off by default**: the game's own `?ankleLimit=feet` — the ankle's torque bounded by
+ * the moment the soles can transmit (`legLoad` × the feet's half-width across, the bound `AttachedRider`'s
+ * LEAN_IN_RATE note derives at 93 N·m and nothing enforced). With it unset this probe is the shipped rider, and its
+ * shipped arm reproduces step 3.3g's and 3.3h's own published tables.
+ */
+const ANKLE_LIMIT = process.env.ANKLE_LIMIT === 'feet' ? 'feet' as const : undefined;
 
 type Stance = 'tall' | 'crouch' | 'compress' | 'snap' | 'snapdrive';
 const STANCES = (process.env.STANCES ?? 'tall,compress').split(',') as Stance[];
@@ -210,6 +217,7 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     ...(FELT ? { feltFrame: FELT } : {}),
     ...(KNEEROOM ? { kneeRoom: KNEEROOM } : {}),
     ...(REACH ? { stanceReach: REACH } : {}),
+    ...(ANKLE_LIMIT ? { ankleLimit: ANKLE_LIMIT } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -387,7 +395,7 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     pastFrom = frames[i].t;
   }
   return {
-    rider: RIDER, stance: st, extra, steer, felt: FELT ?? 'world', kneeRoom: KNEEROOM ?? 'shipped', stanceReach: REACH ?? 'shipped', hand: HAND,
+    rider: RIDER, stance: st, extra, steer, felt: FELT ?? 'world', kneeRoom: KNEEROOM ?? 'shipped', stanceReach: REACH ?? 'shipped', ankleLimit: ANKLE_LIMIT ?? 'shipped', hand: HAND,
     // The balanced hand's own stick, for the comparison to be against a turn and not against a smaller one.
     stickMedian: r(median(turn.map((x) => Math.abs(x.steer)))), stickEnd: r(Math.abs(end.steer)),
     heightEnd: r(end.height), tolDeg: r(Math.atan2(HALF_ACROSS, end.height) * DEG, 1),
@@ -470,7 +478,7 @@ for (const extra of EXTRAS) {
 
 const col = (pick: (x: Record<string, unknown>) => boolean, k: string) => rows.filter(pick).map((x) => (x[k] === null || x[k] === undefined ? Number.NaN : Number(x[k])));
 if (!TRACE) {
-  console.log(`\n# step 3.3g — the lean a turn demands against the lean the body holds, rider=${RIDER}, felt=${FELT ?? 'world'}, hand=${HAND}${HAND === 'balanced' ? ` gain=${GAIN}` : ''}, kneeRoom=${KNEEROOM ?? 'shipped'}, stanceReach=${REACH ?? 'shipped'}`);
+  console.log(`\n# step 3.3g — the lean a turn demands against the lean the body holds, rider=${RIDER}, felt=${FELT ?? 'world'}, hand=${HAND}${HAND === 'balanced' ? ` gain=${GAIN}` : ''}, kneeRoom=${KNEEROOM ?? 'shipped'}, stanceReach=${REACH ?? 'shipped'}, ankleLimit=${ANKLE_LIMIT ?? 'shipped'}`);
   console.log(`# Canyon-matched FaceWater ${FACE[0]} m / ${FACE[1]}° / ${FACE[2]} m/s, ${DEPTH} m deep — a FIT to Canyon, not Canyon.`);
   console.log(`# ${EXTRAS.length} entry speeds × ${STEERS.length} sticks = ${EXTRAS.length * STEERS.length} runs a stance, ${SECONDS} s each; the feet's half-width across is ${HALF_ACROSS} m.`);
   const groups: { name: string; pick: (x: Record<string, unknown>) => boolean }[] = [

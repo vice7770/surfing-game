@@ -9,7 +9,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, buoyFrameSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, buoyFrameSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1224,6 +1224,33 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { stanceReach: undefined }).stanceReach).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceReach).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?ankleLimit=feet` dev switch (step 3.3i): opt-in, the ankle's torque is bounded by the moment the soles can
+  // transmit (`legLoad` × the feet's half-width across, the 93 N·m `AttachedRider`'s own note derives); anything else,
+  // and an online room, the ankle unbounded as it always was.
+  it('bounds the ankle\'s torque with `?ankleLimit=feet` (an opt-in dev switch), and leaves it unbounded otherwise', () => {
+    expect(ankleLimitSwitch('?ankleLimit=feet')).toEqual({ ankleLimit: 'feet' });
+    expect(ankleLimitSwitch('?ankleLimit=FEET')).toEqual({ ankleLimit: 'feet' });
+    for (const search of ['', '?ankleLimit', '?ankleLimit=', '?ankleLimit=on', '?ankleLimit=sole', '?stanceReach=keep']) {
+      expect(ankleLimitSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?ankleLimit=feet' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).ankleLimit, spot).toBe('feet');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bankleLimit: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { ankleLimit: undefined }).ankleLimit).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).ankleLimit).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

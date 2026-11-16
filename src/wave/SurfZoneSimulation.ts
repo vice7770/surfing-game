@@ -309,6 +309,18 @@ export interface SurfZoneConfig {
    */
   stanceReach?: 'keep';
   /**
+   * 'feet': **the ankle's torque is bounded by the moment the soles can transmit** — `legLoad` times the feet's own
+   * half-width across, the bound `AttachedRider`'s LEAN_IN_RATE note already derives at 93 N·m and nothing enforced
+   * (step 3.3i; `RideSessionOptions.ankleLimit`). Step 3.3i measured the shipped ankle demanding **up to 717 N·m,
+   * past that bound in 2.3–10.1 % of substeps and by up to 4.9×**, on twelve full-stick runs. It is the joint's own
+   * limit and not a cap on a number: the board's share of the ankle's couple is carried where it always was, by the
+   * contact reaction applied at the rider's centre of mass, and the two were measured to pair to 4.24 N·m at the
+   * median. Past the clamp the sole is on its edge and the body is not held — which is a topple. The new surfer
+   * (`?rider=new`) only; no force and no hull law is touched. Every spot. The `?ankleLimit=feet` dev switch, opt-in,
+   * to ride; online rooms run the default.
+   */
+  ankleLimit?: 'feet';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

@@ -1,0 +1,25 @@
+===== CANYON B (?canyonWaves=true) =====
+spun up on the CPU in 47.8 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/33i/bench33i/B.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.19/1.35, roller 0.65/0.75, front 0.00/0.00, lip 0.03/0.03, foam 2.47/2.86, airSources 0.05/0.07, aeration 1.34/1.58, contact 0.00/0.00, board 0.62/0.86, bubbles 0.15/0.19, spray 0.25/0.36, sounds 0.00/0.00, snapshotFields 3.93/4.47, snapshot 4.42/5.02, summary 0.40/0.46
+  CPU stages per step (step − water + snapshot + summary): 11.80/13.54; water (CPU solver, not timed on the device) 77.8
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+===== CANYON DEFAULT =====
+spun up on the CPU in 54.5 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/33i/bench33i/D.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.27/1.39, roller 0.38/0.53, front 0.00/0.00, lip 0.03/0.03, foam 3.66/3.87, airSources 0.05/0.07, aeration 1.92/2.02, contact 0.00/0.00, board 0.63/0.83, bubbles 0.17/0.19, spray 0.16/0.26, sounds 0.00/0.00, snapshotFields 4.21/4.63, snapshot 4.70/5.19, summary 0.42/0.45
+  CPU stages per step (step − water + snapshot + summary): 13.75/15.09; water (CPU solver, not timed on the device) 83.8
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+
+Both spin-ups are the "spun up on the CPU in ... s" line (B 47.8 s, default 54.5 s), so neither arm
+imported a kept .sea: both state files were written by this run, into a new bench33i/ directory that
+did not exist before it. The wrapper for the B arm is one PREPENDED line on the bundle,
+`globalThis.location = { search: '?canyonWaves=true' }`, because a dynamic import makes rolldown split
+the chunk. Grids read, not assumed: B 400 x 451 = 180400, default 400 x 507 = 202800.
+
+main's reference (3.3h, results/33h/33h-canyon-byte-check.txt, itself the same as 3.3g's and 3.3f's):
+  B       snapshots a367d938f15fa934, state 9e5831f80e38abd9  -- SAME
+  default snapshots ea3d57a4d49f4b48, state a1a2555739210f96  -- SAME
+
+All four match, which they must: this round touches no solver, no wave, no spot file and no hull law,
+and its one behavioural change is an opt-in ankle bound that is off by default and off in the bench.

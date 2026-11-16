@@ -1387,6 +1387,31 @@ export interface AttachedRiderOptions {
    * which design bar this crosses.
    */
   stanceReach?: 'keep';
+  /**
+   * **The ankle's torque bounded by what the soles can transmit** (`ankleLimit: 'feet'`, step 3.3i): the ankle's
+   * spring–damper torque is clamped to `legLoad × the feet's half-width across`, which is the code's own derived
+   * bound — `LEAN_IN_RATE`'s note already states that *"the largest moment the feet can apply is the load times their
+   * half-width, m g d = 716 N × 0.13 m = 93 N·m"* — and which nothing enforced. Opt-in, off by default (the
+   * `?ankleLimit=feet` dev switch), pinned off in the online rooms.
+   *
+   * **It is a joint's own limit, not a cap on a number.** The clamp is on the torque the **joint** delivers, in the
+   * one place the joint's torque is set, and the board's share of it is carried where it always was: rows 0–5 of the
+   * coupled solve are the **pair's** momentum, so an internal joint torque belongs only in the joint's own row, and
+   * the board's roll comes out of that solve through `carried`, which while banking carries the body's own across
+   * offset. Step 3.3i measured the pairing at **|ankle − the roll ledger's own residual| = 0.95 N·m at the median on
+   * 780 unsteered frames and 4.24 on 1,118 full-stick ones, against columns of 16–33 N·m**. So clamping the joint
+   * clamps the moment the board feels, with no second force anywhere. Past the clamp the sole is on its own edge and
+   * the body is no longer held: it accelerates across, which is a topple and is what a sole on its edge does.
+   *
+   * **Why this bound and not a muscle's.** Both were sourced (step 3.3i): a young man's maximal isometric *sagittal*
+   * ankle torque — which is the axis here, because a surfer stands side-on — is **121.9–131.0 N·m plantarflexion and
+   * 39.5–41.9 N·m dorsiflexion per ankle** (Moraux et al. 2013, n = 345, 27 men aged 20–29, seated at 90°), so two
+   * ankles give about 250 N·m on the toes and 80 N·m on the heels. The geometric bound, 92 N·m at 1 g, sits **inside**
+   * that band on the heel side and far under it on the toe side, so **the sole's own geometry is the binding limit
+   * either way** and no second hand-picked constant is introduced. One honest note against it: on the heel side a
+   * human's muscle is about 13 % tighter than the geometry, and this switch is the geometry alone.
+   */
+  ankleLimit?: 'feet';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -1899,6 +1924,8 @@ export class AttachedRider {
   private readonly kneeRoomAchieved: boolean;
   /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
   private readonly stanceReach: 'keep' | undefined;
+  /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
+  private readonly ankleLimit: 'feet' | undefined;
   private readonly newSubsteps: number;
   private readonly yawScale: number;
   private readonly bankGain: number;
@@ -2053,6 +2080,58 @@ export class AttachedRider {
    * about and reconstructing them outside the class would re-derive `planing`'s own latch.
    */
   readonly leanProbe = { cap: 0, ask: 0, speedThrough: 0, planing: 0 };
+  /**
+   * **Step 3.3i: the ankle's own ledger**, off unless `AttachedRider.ankleLedger` is set, and read by nothing in the
+   * game. Step 3.3h measured the board's roll residual at **+33.47 N·m** through the commanded turn and concluded that
+   * the full moment goes into a board with *"no joint to absorb it"*. The ankle it names is **already here** — the
+   * body's bank is the eighth unknown of the board's own solve and the ankle is a spring–damper on the joint's own
+   * angle (`prepareBank`, `humanBank`, `predictiveBank`) — so this is the instrument that says what it carries.
+   *
+   * **The datum, stated.** Every entry is about the board's **roll axis along the heading**, the same axis
+   * `ankleTorque` is computed on. `angle` is the joint's own angle **θ − φ**: the body's bank from the world vertical
+   * toward the board's **+x** side, less the board's roll about the heading in the same sense, so it is **positive when
+   * the body leans further toward +x than the deck is rolled**. `torque` is `ankleTorque` itself, N·m, in the sign the
+   * solve uses — `rhs[7] += … − h (τ_ankle + τ_swing) / L`, row 7 being the body's across rate on the leg. No probe
+   * sign is applied here; a probe that wants the run's own sense applies it itself, as `deck.ts` does for the roll
+   * ledger.
+   *
+   * **Means, not sums.** `torque`, `angle`, `rest`, `bound` and `load` are running means over the substeps of the step
+   * (the standing new rider takes 32 of them), so each is already per-substep and no caller divides by anything.
+   * `substeps` is how many were booked, `peak`/`anglePeak` are the largest absolute of the step, and `over` counts the
+   * substeps whose `|torque|` was past `bound`.
+   */
+  static ankleLedger = false;
+  readonly ankle = {
+    /** Substeps booked into this step's means (0 in any step the body did not bank). */
+    substeps: 0,
+    /** N·m, the mean over the step of the ankle's own torque as the solve got it (bounded, with `ankleLimit: 'feet'`). */
+    torque: 0,
+    /** N·m, the largest absolute delivered torque of any substep in the step. */
+    peak: 0,
+    /** N·m, the mean over the step of the torque the spring and damper ASKED for, before any bound. */
+    demand: 0,
+    /** N·m, the largest absolute demanded torque of any substep in the step. */
+    demandPeak: 0,
+    /** N·m, the mean over the step of what the bound took off the demand, `|demand| − |delivered|` (0 with the switch off). */
+    absorbed: 0,
+    /** rad, the mean over the step of the joint's own angle θ − φ. */
+    angle: 0,
+    /** rad, the largest absolute joint angle of any substep in the step. */
+    anglePeak: 0,
+    /** rad, the mean over the step of the rest the balance commanded (ANKLE_REST_RANGE bounds it at ±0.25). */
+    rest: 0,
+    /**
+     * N·m, the mean over the step of **the moment the soles can transmit**: the load through the legs along the body's
+     * own up (`legLoad`) times the feet's half-width across, read off the live support region. This is the code's own
+     * bound, derived in `LEAN_IN_RATE`'s note as *"the largest moment the feet can apply is the load times their
+     * half-width, m g d = 716 N × 0.13 m = 93 N·m"* — derived there, and enforced on nothing.
+     */
+    bound: 0,
+    /** N, the mean over the step of `legLoad`, which `bound` is built on. */
+    load: 0,
+    /** Substeps of the step whose `|torque|` was past `bound`. */
+    over: 0,
+  };
   private readonly bodyFrame = new Quaternion();
   private readonly bankTurn = new Quaternion();
   private readonly swingTurn = new Quaternion();
@@ -2154,6 +2233,7 @@ export class AttachedRider {
     this.deckFelt = options.feltFrame === 'deck';
     this.kneeRoomAchieved = options.kneeRoom === 'achieved';
     this.stanceReach = options.stanceReach === 'keep' ? 'keep' : undefined;
+    this.ankleLimit = options.ankleLimit === 'feet' ? 'feet' : undefined;
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -2794,6 +2874,54 @@ export class AttachedRider {
     this.stepImpulse.set(0, 0, 0);
     this.stepLoad = 0;
     this.contact.feasible = true;
+    // Step 3.3i: the ankle's ledger is per step, as the board's roll ledger is (`BoardBody.step`).
+    if (AttachedRider.ankleLedger) for (const key of Object.keys(this.ankle) as (keyof AttachedRider['ankle'])[]) this.ankle[key] = 0;
+  }
+
+  /**
+   * **Step 3.3i, the ankle ledger's one booking site**, called from each of the three places `ankleTorque` is set,
+   * with the joint's own angle θ − φ. A pure observer: it reads `ankleTorque`, `ankleRest`, `legLoad` and the live
+   * support region and writes only into `ankle`. Running means, so the caller divides by nothing.
+   */
+  private bookAnkle(angle: number, demand: number): void {
+    if (!AttachedRider.ankleLedger) return;
+    const a = this.ankle;
+    const n = a.substeps + 1;
+    a.substeps = n;
+    const bound = this.soleBound();
+    const load = Math.max(0, this.legLoad);
+    a.torque += (this.ankleTorque - a.torque) / n;
+    a.demand += (demand - a.demand) / n;
+    a.absorbed += (Math.abs(demand) - Math.abs(this.ankleTorque) - a.absorbed) / n;
+    a.angle += (angle - a.angle) / n;
+    a.rest += (this.ankleRest - a.rest) / n;
+    a.bound += (bound - a.bound) / n;
+    a.load += (load - a.load) / n;
+    a.peak = Math.max(a.peak, Math.abs(this.ankleTorque));
+    a.demandPeak = Math.max(a.demandPeak, Math.abs(demand));
+    a.anglePeak = Math.max(a.anglePeak, Math.abs(angle));
+    if (Math.abs(demand) > bound) a.over += 1;
+  }
+
+  /**
+   * **Step 3.3i: the moment the soles can transmit**, N·m — the load through the legs along the body's own up times
+   * the feet's half-width across, read off the live support region (0.13 m standing, `riderPosture.ts`). This is the
+   * bound `LEAN_IN_RATE`'s own note derives (`m g d` = 716 N × 0.13 m = 93 N·m) and `ankleLimit: 'feet'` is the switch
+   * that applies it. A sole cannot press further out than its own edge, so the moment it transmits cannot exceed its
+   * load times that arm, whatever the muscle behind it.
+   */
+  private soleBound(): number {
+    return Math.max(0, this.legLoad) * ((this.support.xMax - this.support.xMin) / 2);
+  }
+
+  /**
+   * **Step 3.3i: the ankle's torque, set in one place** — the spring and damper's demand, bounded by the soles' own
+   * moment with `ankleLimit: 'feet'` and unbounded by default, then booked into the ledger with the joint's own angle.
+   */
+  private setAnkle(demand: number, angle: number): void {
+    const bound = this.ankleLimit === 'feet' ? this.soleBound() : Number.POSITIVE_INFINITY;
+    this.ankleTorque = Math.max(-bound, Math.min(bound, demand));
+    this.bookAnkle(angle, demand);
   }
 
   private markParts(): void {
@@ -3099,7 +3227,7 @@ export class AttachedRider {
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
-    this.ankleTorque = ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate);
+    this.setAnkle(ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate), this.bank.angle - roll);
   }
 
   /**
@@ -3140,7 +3268,7 @@ export class AttachedRider {
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
     this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
     this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
-    this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
+    this.setAnkle(HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative, this.bank.angle - roll);
   }
 
   /**
@@ -3242,7 +3370,7 @@ export class AttachedRider {
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
     this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
     this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
-    this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
+    this.setAnkle(HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative, this.bank.angle - roll);
     tb.active += (this.heldTwist - tb.active) * (1 - Math.exp(-h / MOTOR_LAG));
   }
 

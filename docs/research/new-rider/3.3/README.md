@@ -3350,3 +3350,559 @@ Canyon, `?canyonWaves=true`, which is your test spot. One change at a time, as a
 default?** It lengthens every ride I measured and prevents no fall, and it makes the crouch throw harder. I would
 leave it opt-in until you have ridden shot 2 and told me whether it feels right, because the only thing it is clearly
 better at is the thing the measurement sees and you cannot.
+
+# Part 32 — the ankle is already there, it is already carrying the whole 33 N·m, and bounding it to what the soles can transmit makes the fall worse
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33i`, cut from `main` at
+**730e71ac** (step 3.3h's merge), so Part 31 is its base. It ships **one opt-in behavioural switch**
+(`?ankleLimit=feet`), **one read-only instrument** (`AttachedRider.ankle`, `AttachedRider.ankleLedger`), **one new
+probe** (`3.3/stills.ts`, which draws the fall), two probe additions, one new test file, and **156 runs** over eleven
+arms.
+
+Tags as in 3.2 and 3.3: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source; **[I]** my
+inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The seven sentences the round is for
+
+1. **The owner's bar is not met, and nothing in this round moves it.** `fall.ts`, four arms of 24 runs: **24 of 24
+   fall in each**, and **the quarter-stick Compress cell — their own case, the low speed of getting into position —
+   falls 3 of 3 on each filter, 6 of 6 across the two, shipped and bounded alike** [M]. That is the headline, first,
+   as the brief required.
+2. **My brief's premise is false, and reading the code was enough to refute it before anything was built.** *"Not a
+   cap, an ankle he does not have"* — he has one. `AttachedRider` carries the body's bank θ as the **eighth unknown of
+   the board's own solve**, and the ankle is a spring–damper on the joint's own angle,
+   `τ = K(θ − φ − δ) + (Kh + C)(θ̇ − φ̇)`, with `K = HUMAN_ANKLE_STIFFNESS` = **800 N·m/rad** and
+   `C = HUMAN_ANKLE_DAMPING` = **80 N·m·s/rad** for the new rider, the rest δ bounded to ANKLE_REST_RANGE = 14.32°,
+   implicit in the solve and with its reaction in place [R]. Its stiffness is **already sourced, and already above a
+   human's**: measured intrinsic ankle stiffness in standing is 0.44–0.93 m g h (Vlutters et al. 2015), 0.91 (Loram
+   and Lakie 2002), 0.08–0.75 across postures (Amiri and Kearney 2020), and 800 is about **1.4 m g h** [S, R,
+   `humanBalance.ts:43`].
+3. **And the ankle is not merely present — it is the whole of the 33.47 N·m.** Rows 0–5 of the coupled solve the
+   standing rider actually runs are **the pair's** momentum (`solveStep`'s own comment [R]), so an internal joint
+   torque must not appear in them and does not; the board's roll comes out of that solve through the point the body is
+   carried at, which while banking carries the body's **own across offset** [R]. **So the ankle's couple reaches the
+   board with no separate term**, and the two should be one moment read twice [I]. Measured, on two populations:
+   **|ankle − the roll ledger's own residual| = 0.95 N·m at the median (per run 0.17–6.52) against columns of
+   16–18 N·m unsteered, and 4.24 (per run 1.47–15.52) against 23–33 N·m at a full stick** — while |ankle **+**
+   residual| is **34.67** and **60.76** [M]. **The question "how much of the 33 N·m does a real ankle absorb" has the
+   answer "all of it, and it is already doing so".**
+4. **The joint's own angle is small, so the roll is not running away through an open ankle.** θ − φ is **0.76°** at
+   the median unsteered (peak 1.1–11.3° per run) and **0.06°** at a full stick (peak 13.1–20.5°) [M] — not the 14–41°
+   by which the roll exceeds the commanded lean. **The body goes over WITH the deck**, tracking it to within a few
+   degrees the whole way down (bank 23.1° against roll 21.3°, 32.4 against 32.3, 44.2 against 45.6, 59.5 against
+   61.3) [M].
+5. **What IS unenforced is the sole's own bound, and it is breached at the peaks and nowhere else.** The moment the
+   soles can transmit is `legLoad × the feet's half-width across` = **91.7 N·m** at the median on a 705 N load — the
+   bound `AttachedRider`'s own LEAN_IN_RATE note derives as *"m g d = 716 N × 0.13 m = 93 N·m"* and which nothing
+   applies [R]. The ankle's demand uses **17.4 % of it at the median unsteered and 30.1 % at a full stick**, is
+   **never past it in 12 of 12 unsteered runs**, and goes past it in **2.3–10.1 % of substeps at a full stick, by up
+   to 4.94×, with a peak demand of 717 N·m** [M].
+6. **So I built the bound — `?ankleLimit=feet`, opt-in, off by default, pinned off online — and it makes the fall
+   worse.** Twelve full-stick runs: the ride goes **1.12–2.67 s → 0.83–2.55 s**, the roll peak **63.7–91.4° →
+   73.9–95.2°**, the roll rate at the fall **−268 to +255 °/s → −961 to +875 °/s** (peak 146.7–353.7 → 466.9–979.9),
+   and the joint's own angle opens from a 20.5° peak to **47.3°** while the clipped demand climbs to **2 087 N·m**
+   [M]. Over 24 runs the rider's centre of mass ends outside his own feet in **16 of 24 against the shipped 5 of 24**,
+   and a whole foot-width (0.26 m) out in **6 of 24 against 0** [M]. **A stiff spring that saturates is not an ankle
+   giving; it is an ankle letting go.**
+7. **And the stills settle the coordinator's question, with a refutation of step 3.3g's own reading of its own
+   column.** Through the last half-second of the full-stick fall the deck rolls **17° → 90°** while the rider's centre
+   of mass stays **within two and a half centimetres of the board's own centreline** and ends five millimetres off it;
+   over 24 runs it is never more than **0.173 m** out, **inside** the feet's own 0.13 m in 22 of 24, and inside
+   **0.113 m** in all 17 runs whose roll passes 60° [M]. **The board does not go out from under him; it tips him
+   off.** 3.3g's *"the board slides out from under him"* cannot be what its column says, because
+   `deck.ts`'s `feetAcross` is `board.velocityAt(captureFeet)` and `captureFeet` is **a point fixed in the board's
+   frame** [R] — that column can contain no sliding, only carrying. **The owner's "I think the surfer falls over" and
+   the roll measurement are the same event.**
+
+## 1. (A) What already exists, read before anything was built
+
+The brief's rule 3 says *"assume this brief contains an error — the likeliest is that one joint is the answer."* The
+error was earlier than that: the joint is already built, and here is what it is [R].
+
+| **[R]** the shipped ankle (`AttachedRider`) | |
+|---|---|
+| the coordinate | the body's bank θ from the **world vertical** toward the board's **+x** side, the **eighth unknown** of the board's 9×9 solve (`system[7N+7] += m + h(Kh + C)/L²`) |
+| the joint's angle | **θ − φ**, φ the board's roll about the heading, the same axis the roll ledger books |
+| the torque | `τ = K(θ − φ − δ) + (Kh + C)(θ̇ − φ̇)`, backward Euler, implicit in the solve and *"at once and with no lag"* |
+| the generalized force | `rhs[7] += t·f − h(τ_ankle + τ_swing)/L`, row 7 being the body's across rate on the leg |
+| the reaction | the live path for a standing rider is the coupled 9×9 (`coupleStanding`), whose **rows 0–5 are the pair's momentum** (`solveStep`'s own comment), so an internal joint torque must not appear in them and does not — the board's roll comes out of the coupled solve through `carried`, the point the body is carried at, which **while banking carries the body's own across offset** (`prepare`: `carried.addScaledVector(across, off.dot(across))`). On the fallback path (`pushBoard`, used when the contact is infeasible) the reaction is applied at the **rider's centre of mass** |
+| K, C, new rider | **800 N·m/rad**, **80 N·m·s/rad** (`HUMAN_ANKLE_STIFFNESS`, `HUMAN_ANKLE_DAMPING`) |
+| the rest the balance may command | ±**ANKLE_REST_RANGE** = 0.25 rad = **14.32°**, further narrowed past the rail's bite |
+| the surfer's axis, named in the code | *"the ankle across (toes and heels: the surfer stands side-on, so this is the human's own **sagittal** ankle)"* |
+
+**That last row is the brief's second error, and it changes which source is the right one.** The brief asked for *"a
+human ankle's inversion/eversion range and its stiffness"*. A surfer stands **across** the board, so the board's roll
+axis is the human's **toe–heel** axis: **plantarflexion and dorsiflexion**, not inversion and eversion. Inversion and
+eversion would be the board's **pitch**. Sourced on the right axis, maximal isometric sagittal ankle torque in men
+aged 20–29 is **121.9–131.0 N·m plantarflexion and 39.5–41.9 N·m dorsiflexion per ankle**, left and right means,
+n = 27 of a study of 345 healthy people aged 5–80, seated with hip, knee and ankle at right angles, two 2–4 s maximal
+contractions [S, Moraux et al., *BMC Musculoskelet Disord* 2013;14:104, Table 1]. Two ankles together therefore give
+roughly **250 N·m on the toes and 80 N·m on the heels**. One honesty note on that fetch: the adult rows of the
+extracted table sum to 274 subjects against the text's 288, which the extraction flagged, so the **band** is what I
+use and not any single digit.
+
+**Which puts the sole's own geometry, not the muscle, in charge.** `legLoad × 0.13 m` = **91.7 N·m** at the measured
+median load sits *inside* the two-ankle dorsiflexion band (80 N·m) and far under the plantarflexion one (250), so
+whichever way he leans **the foot's own edge binds before the muscle does**, and `?ankleLimit=feet` needs no
+hand-picked constant. Against it: on the heel side a human's muscle is about **13 % tighter** than the geometry, and
+this switch is the geometry alone.
+
+**Two earlier rounds already swept the two obvious knobs on this joint, and both are in the code with their numbers**
+[R, `3.2/README.md` Part 22]: `ANKLE_REST_RATE` (the rest's slew bound — at 1.5 rad/s it cut the ankle's peak torque
+from 181–290 to 59–162 N·m and *"the falls are unchanged at 0.38–0.45 s against 0.38–0.43"*) and `ANKLE_PLUMB` (the
+deck's roll carried in the rest — it brought the bank peak from 20.7–65.7° to 12.1–34.6° and *"12 of 12 still fall"*).
+Doubling the stiffness to a braced 1 600/160 *"did not damp the free roll"*. **So three of the four things one can do
+to this ankle had already been measured and kept off before my brief asked for an ankle to be built.**
+
+## 2. (B) The instrument, and the prediction it was written to test
+
+`AttachedRider.ankle` is the roll ledger's twin one joint over, off behind `AttachedRider.ankleLedger`, booked at the
+**one** site the torque is now set (`setAnkle`, called from all three `prepareBank` paths), reset in `beginStep` as the
+board resets its own.
+
+**The datum, stated.** Every entry is about the board's **roll axis along the heading**, the axis `ankleTorque` is
+computed on. `angle` is the joint's own **θ − φ**, positive when the body leans further toward the board's **+x** than
+the deck is rolled. `torque` is `ankleTorque` in the sign the solve uses. `torque`, `demand`, `angle`, `rest`, `bound`
+and `load` are **running means over the step's substeps** (32 of them, standing), so nothing divides by anything;
+`peak`/`demandPeak`/`anglePeak` are the step's largest absolutes and `over` counts substeps past the bound.
+
+**The probe's sign is `rollSense` and nothing else.** `deck.ts` multiplies the ankle columns by the sense of the
+deck's roll at the **last** frame, the one convention its roll columns use, and **applies no second negation to make
+the pairing come out** — which is the trap 3.3g fell into with `sign(nx)` and 3.3h caught in its own first sign plan.
+Whether the ankle's torque is then in `rollBy.rider`'s own sense is **printed as a measurement**: §7 of the probe
+gives the median of (ankle + residual) *and* of (ankle − residual), signed and absolute.
+
+**The prediction, written before the instrument had run once** (`33i-stills/`'s own note and this round's scratch
+record; reproduced here verbatim in substance):
+
+> **P1.** The ankle's booked mean torque will be of the same order and the same sign as the roll ledger's `rider`
+> residual, +33.47 N·m, because the ankle's couple reaches the board with **no separate term**: rows 0–5 of the solve
+> are the pair's momentum, so an internal torque belongs only in the joint's own row, and the board's roll comes out
+> of the coupled solve through a carried point that moves across with the body's bank. (The same statement on the
+> fallback path, where the reaction is applied at the **rider's centre of mass**: for a massless leg, moments about
+> the foot give `τ_ankle = (r_cm − r_foot) × F`, so
+> `(r_foot − r_board) × F − τ_ankle ≡ (r_cm − r_board) × F` — applying the reaction at the centre of mass with no
+> separate couple **is** the foot force plus the ankle's couple.) Predicted within a factor 2 of 33 N·m.
+> **P2.** The demand will be inside the soles' own bound at the median (33 N·m over 720 N is an arm of 0.046 m against
+> the feet's 0.13 m) and will breach at the peaks, where 3.3h's implied arm reaches 0.309 m.
+> **P3.** The joint's own angle will be of order τ/K = 2.4° plus the rest, **not** the 14–41° of excess roll.
+> **The falsification, stated in advance:** if the booked torque came out at hundreds of N·m, P1 is wrong, the
+> identity does not hold in this code, and **the ankle torque is an unpaired torque and a hidden motor** — which would
+> be the finding instead.
+
+**All three held, and the falsification did not fire** (§3). The positive control is
+`src/physics/ankleLedger.test.ts`, five tests written before they were run: the pairing's **sign and size against an
+independent reading** (the roll ledger, which the ankle ledger never touches), the bound's own arithmetic against the
+posture's published 0.13 m half-width (a factor-of-two slip between half-width and width is the shape of error this
+track keeps catching), that the clamp clamps and that `absorbed` is exactly **0** without the switch, that the joint's
+angle is small, and that the ledger is off by default and a pure observer to the digit.
+
+## 3. (B) What the ankle carries, on two populations
+
+The arms are 3.3h's own, re-run on this branch, and both reproduce their published records to the digit: the unsteered
+twelve give Part 24's **bank peak 20.7–65.7°, roll peak 20.9–63.0°, rail peak 10.9–62.9°, drift peak 1.9–4.9° and 12
+of 12 falls at 0.77–1.70 s**, and the full-stick twelve give 3.3g's **63.5–70.0 / 63.7–91.4 / 75.7–90.1 / 3.2–20.9°
+and 12 of 12 at 1.12–2.67 s** [M].
+
+| **[M]** N·m about the board's roll axis, + = the sense `rollBy.rider` is printed in | **unsteered**, 780 commanded frames | **full stick**, 1 118 frames |
+|---|---|---|
+| **the ankle's torque**, median · \|median\| · peak absolute | **+16.04** · 16.04 · 92.95 | **+22.92** · 29.58 · **717.06** |
+| the same, per run (median · \|median\|) | 0.22–30.77 · 6.67–30.77 | 13.09–40.30 · 18.72–43.40 |
+| **the roll ledger's `rider` residual**, median | **+17.84** | **+33.47** |
+| **\|ankle − residual\|**, median · per run | **0.95** · 0.17–6.52 | **4.24** · 1.47–15.52 |
+| \|ankle **+** residual\|, median · per run | 34.67 · 13.34–73.74 | 60.76 · 38.61–99.83 |
+| the signed median of (ankle − residual) | **−0.86** | **−4.17** |
+| **the joint's angle θ − φ**, median · peak absolute | **0.76°** · 11.33° | **0.06°** · 20.46° |
+| the same, per run median · per-run peak | 0.10–3.37° · 1.1–11.3° | −1.68–4.30° · 13.1–20.5° |
+| the **rest** the balance commanded, median · per run | 0.22° · −0.45–1.84° | −0.20° · −3.31–1.25° |
+| **the moment the soles can transmit**, median (on a load of) | **90.9 N·m** (699.2 N) | **91.7 N·m** (705.3 N) |
+| **\|demand\| / that bound**, median · per run · peak | **0.174** · 0.073–0.314 · 0.41–0.91 | **0.301** · 0.187–0.411 · **1.02–4.94** |
+| **the share of substeps past the bound**, per run | **0.000–0.000** | **0.023–0.101** |
+
+**Five readings.**
+
+1. **The ankle's torque and the board's roll moment are one quantity.** The difference column is **0.95 and
+   4.24 N·m** against the sum column's **34.67 and 60.76**, on two populations, with the signed difference at −0.86
+   and −4.17. P1 held, and with it the structure: **the 33 N·m my brief wanted a joint to absorb is the joint's own
+   torque.** There is nothing for a second joint to take off it that is not already the first one's.
+2. **It is therefore not a mystery force and not a missing one — it is a load standing off the centreline, and the
+   ankle is what holds it there.** 3.3h's implied arm of 0.0525 m, the feet's 0.13 m and the ankle's 22.92 N·m are the
+   same statement in three units [A].
+3. **The joint barely opens.** 0.06–0.76° at the median and 20.5° at the worst peak, against a commanded rest bounded
+   at 14.32°. An ankle at 800 N·m/rad carrying 23 N·m deflects 1.6°; it is, in effect, rigid — **and it is rigid
+   because it is strong, not because it is absent.** The body therefore rides the roll down with the deck, which is
+   what §6's pictures show.
+4. **The one unenforced limit is the sole's, and it is breached only at the peaks.** 30 % of the bound at the median;
+   never past it in any of 780 unsteered frames; past it in 2.3–10.1 % of a full stick's substeps, at up to 4.94× and
+   a peak of 717 N·m. **So a bound has something to bite on, and it is small and concentrated** — which is exactly
+   what P2 predicted and is the reason the build in §4 was worth running rather than reasoning about.
+5. **The two populations scale together**, 16.0 → 22.9 N·m of ankle against 17.8 → 33.5 N·m of residual as the steer
+   goes on, which is the same scaling 3.3h measured for the residual alone.
+
+## 4. (B) The build, and what it does — which is make the fall worse
+
+`?ankleLimit=feet` clamps the ankle's torque to `legLoad × the feet's half-width across`. **It is a joint's own limit
+and not a cap on a number**: the clamp is on the torque the joint delivers, in the one place the joint's torque is
+set, and the board's share of it rides where it always did, out of the coupled solve's own pair-momentum rows —
+which §3 measured pairing with the ankle to 4.24 N·m. **Past the clamp the sole is on its own edge and the body is no
+longer held: it accelerates across, which is a topple, and is what a sole on its edge does.** No second force is
+added anywhere.
+
+| **[M]** full stick, deck filter, 12 runs | shipped | `?ankleLimit=feet` |
+|---|---|---|
+| fell | 12 of 12 at **1.12–2.67 s** | 12 of 12 at **0.83–2.55 s** |
+| the deck's roll peak | 63.7–91.4° | **73.9–95.2°** |
+| the rail's peak | 75.7–90.1° | 69.1–94.0° |
+| the bank peak | 63.5–70.0° | **39.5–70.0°** |
+| the roll **rate** at the fall | −268.2–255.0 °/s (peak 146.7–353.7) | **−960.6–874.7 °/s (peak 466.9–979.9)** |
+| the roll acceleration over the turn | 21–234 °/s² | 22–263 °/s² |
+| **the joint's angle, peak absolute** | 20.46° | **47.27°** |
+| **the demand, peak absolute** | 717 N·m | **2 087 N·m** |
+| what the bound took off it, median · per-run peak | **0.00** · 0.0–0.0 | 0.00 · **608.6–1 685.2** |
+| the share of substeps past the bound | 0.023–0.101 | 0.013–0.197 |
+| the residual's implied arm, median · peak | 0.0525 · 0.3092 m | **0.0508 · 0.1641 m** |
+| the rider residual / the water column, median | +33.47 / −33.40 | +33.05 / −32.98 |
+
+**Four readings, and the second is why it is off by default.**
+
+1. **The bound does what it was built to do.** The residual's implied arm — where the contact presses — is capped from
+   a peak of 0.309 m to **0.164 m**, i.e. the moment the board feels really is held near the feet's own edge. The
+   clamp bites, hard, where it bites: 608–1 685 N·m taken off a single substep's demand.
+2. **And the fall gets worse on every axis that matters.** Shorter ride, higher roll peak, and a roll rate at the fall
+   **three times** the shipped one — 980 °/s, which is nearly three turns a second. **The mechanism is visible in the
+   demand column: clipping a 800 N·m/rad spring lets the joint open (20.5° → 47.3°), and an open joint on a stiff
+   spring demands more, not less (717 → 2 087 N·m).** A saturating stiff spring is a relaxation oscillator, not a
+   compliant ankle.
+3. **It also takes the body off the board** (§6): the centre of mass ends outside the feet in **10 of 24** runs
+   against the shipped **2 of 24**, a whole foot-width out in **3 of 24** against **0**, and as far as **0.418 m** out
+   against the shipped **0.173** [M].
+4. **Nothing in the water column moves**, which is the control: rider +33.05 against water −32.98, net +0.05, the same
+   near-cancellation 3.3h measured, because this switch touches no force and no hull law.
+
+**So the switch ships opt-in, off by default and pinned off for online rooms, and I am not recommending it.** It is
+kept for the same reason `ANKLE_REST_RATE` and `ANKLE_PLUMB` are kept at their measured-and-not-adopted values: *a
+human's sole does have this limit and this is where it would go*, and the next round should not have to rebuild the
+apparatus to find that out again.
+
+## 5. The owner's bar, measured — the headline restated with its population
+
+`fall.ts`, four arms of 24 runs (3 entry speeds × 4 sticks × 2 stances), the shipped world filter and the deck filter
+the owner rides with, `?ankleLimit` shipped against `feet`. The shipped world arm **reproduces step 3.3g's own
+published table to the digit** (tall 1.20–4.15, Compress 1.12–3.98, all 24 at 1.12–4.15 s, nets 12.6–88.1°) [M].
+
+| **[M]** fell, and when | world shipped | world feet | deck shipped | deck feet |
+|---|---|---|---|---|
+| all 24 | **24 of 24**, 1.12–4.15 s | **24 of 24**, 1.12–4.07 | **24 of 24**, 1.30–4.05 | **24 of 24**, 1.30–3.88 |
+| tall (12) | 12 of 12, 1.20–4.15 | 12 of 12, 1.20–4.07 | 12 of 12, 1.32–3.85 | 12 of 12, 1.33–3.85 |
+| Compress (12) | 12 of 12, 1.12–3.98 | 12 of 12, 1.12–3.80 | 12 of 12, 1.30–4.05 | 12 of 12, 1.30–3.88 |
+| **Compress at a quarter stick (3)** | **3 of 3**, 2.08–3.98 | **3 of 3**, 2.08–3.80 | **3 of 3**, 3.58–4.05 | **3 of 3**, 3.77–3.88 |
+| … its held residual, m/s² | 0.86–3.69 | 0.86–1.95 | 1.57–2.30 | 0.53–2.13 |
+| … its roll at the fall, ° | 10.3–53.8 | −12.0–10.1 | −43.6–13.4 | −18.6–8.3 |
+
+**The owner's bar is "Compress must never fall at the low speeds of getting into position", 100 %, not fewer. It falls
+6 of 6 across the two filters shipped and 6 of 6 bounded.** 96 of 96 falls across this round's four arms remain a
+falsified model, as they were in Part 31's.
+
+## 6. The fall, drawn — and step 3.3g's own reading of its own column, refuted
+
+The coordinator's deliverable, and it answers the one open ride-versus-bench question.
+`docs/research/new-rider/3.3/33i-stills/` holds two SVG sequences, their numbers, and the fall frame of 24 runs an
+arm; its README is the one to read. The short of it, and all of it measured:
+
+**(a) The deck rolls under him; the board does not go out from under him.** Through the last half-second of the
+full-stick Compress fall the roll goes **16.7 → 26.6 → 38.6 → 53.4 → 70.5 → 89.8°** while the rider's centre of mass
+sits at **+0.025, +0.011, −0.002, −0.015, −0.016, −0.005 m** across the board's **own** centreline [M]. Over
+**24 runs** (3 entry speeds × 4 sticks × 2 stances, deck filter) that offset is **0.002–0.173 m**, **inside** the
+feet's own 0.13 m in 22 of 24 and never past 1.33× of it; in the 17 whose roll passes 60° it is **0.003–0.113 m**,
+inside the feet, in all 17 [M]. **For the board to be going out from under him that offset would have to grow, and
+it does not.**
+
+**The frame is 3.2z's, not the separation frame.** `deck.ts` reads its own across split on the **latest frame where
+the two halves still reconstruct the capture point's velocity term**, because on the separation frame the rider's
+velocity and the feet's point have already been re-set [R]. The sequences follow that rule, and with it the last
+shipped full-stick panel reproduces `deck.ts`'s published split **to the digit** — body **0.95** / feet **−1.44** m/s
+at its own `splitAtS` of 2.600 s — which is the check that the picture and the published column are the same number.
+Each leg's separation-frame time and roll are printed in its heading.
+
+**(b) And it structurally cannot.** `deck.ts`'s `feetAcross` column is `board.velocityAt(captureFeet)`, and
+`AttachedRider.captureStep` builds `captureFeet` as `board.toWorld(midX, deckHeight(midZ), midZ)` — **the middle of
+the support region, a point fixed in the board's frame**, re-expressed in the world each substep [R]. So that column
+is the velocity of a board-fixed point **by construction**, and it cannot contain any sliding of the feet on the deck.
+While the rider is attached there is none: the feet do not move in the board's frame at all.
+
+**(c) So 3.3g's measurement stands and its reading does not.** *"In 8 of 12 full-stick runs it is the FEET that are
+moving, not the body ... The board slides out from under him more often than he topples off it"* — `relAcross` really
+does run 1.399–2.432 m/s with the feet's term the larger, and **the sequences reproduce it to the digit** (body
+**0.95** / feet **−1.44** m/s on the Compress entry-0 run, `deck.ts`'s own published pair) [M]. Two things make the
+feet's term large, and neither is sliding: that
+board-fixed point is **carried** by a board rolling at up to 354 °/s and turning at up to 234 °/s, and the split is
+taken in the **felt** frame, where at 89° of roll the felt vertical is nowhere near the deck's up, so the subtraction
+moves a large share of the carried velocity from one column to the other. **In the board's own geometric frame the
+body is the faster one in 21 of 24 runs** (body 0.49–2.84 m/s against the feet's 0.05–2.01) [M].
+
+**(d) The owner's words and the measurement are the same event.** A deck rolling from 20° to 89° under a man whose
+weight never leaves it looks, from outside, exactly like *"the surfer falls over"*. The coordinator's inference was
+right, and it now has a picture and 24 runs behind it rather than an argument.
+
+**(e) But their own cell is a different fall, and this is the find of §6.** At a **quarter** stick the separation
+roll is only −43.6° and what crosses the line is the **body**: at the last panel the bank is **−34.1°** against a
+roll of −29.8°, the centre of mass reaches **−0.127 m** — the feet's own edge — on the way, and the ankle's demand
+runs to **151 N·m**, 1.6× what the soles can transmit [M]. **And the difference holds over the population, which is
+what makes it a finding and not a trace:** taking `|bank| − |roll|` at that frame, the **17** runs whose separation
+roll passes 60° give **−20.0 to +0.6°** — the body is never ahead of the deck by more than half a degree — and the
+**7** whose roll stays under 60° give **−8.0 to +15.4°** [M]. **The roll finding of Part 31 is about the hard-turn
+fall, where the body goes over with the deck; the owner's bar is about the other one, where the body goes over the
+deck**, and no round has yet measured the gentle one on its own terms. One honest caution: each drawn sequence is
+**one run**, and the population claim is the sweep, not the panels.
+
+**(f) And the bound makes the picture worse**, which is §4's cost in a form the owner can see: with
+`?ankleLimit=feet` the quarter-stick separation roll is only **−18.6°** and the body ends **−0.217 m** off the
+centreline, and over the 24 runs it is outside the feet in 10 against the shipped 2 and as far as **0.418 m** out.
+
+## 7. What I refuted
+
+- **My brief's premise, twice over.** *"Not a cap, an ankle he does not have"*: he has one, it is the eighth unknown
+  of the board's own solve, its stiffness is sourced and already above a braced human's, and **it is already carrying
+  the entire 33.47 N·m** — ankle against residual agreeing to 0.95 N·m at the median on one population and 4.24 on the
+  other. Seventeen consecutive rounds have now refuted their brief's premise.
+- **My brief's axis.** It asked for inversion/eversion; a surfer stands side-on, so the board's roll axis is the
+  human's **sagittal** ankle (the code already says so), and inversion/eversion is the board's **pitch**. The sourced
+  numbers that matter are plantarflexion and dorsiflexion, and they put the **sole's geometry**, not the muscle, in
+  charge of the bound.
+- **My own build, by measurement.** I built the one limit that was genuinely unenforced and it **shortens the ride,
+  raises the roll peak, trebles the roll rate at the fall and takes the body off the board three times as often.** I
+  would have shipped it as a recommendation if I had not run it.
+- **Step 3.3g's reading of its own 8-of-12**, §6(b)–(c). The column is a board-fixed point's carried velocity in the
+  felt frame; it cannot measure the feet sliding, and in the board's own frame the body is the faster one in 21 of 24.
+- **The idea that a strength or geometry limit on the ankle is what the fall was waiting for.** The demand is at
+  **17–30 % of the sole's own bound at the median** and never breaches it at all on 780 unsteered frames.
+- **The "hidden motor" reading I went in prepared to publish.** `ankleTorque` appears in `rhs[7]` and in no board row,
+  which looks like an unpaired torque. It is not: rows 0–5 are the **pair's** momentum, so an internal joint torque
+  must be absent from them, and the board's roll comes out of the coupled solve through a carried point that moves
+  across with the body's bank — and §3 measured the pairing to 0.95 and 4.24 N·m. **I had the probe, the derivation
+  and the A/B ready for the opposite result, and the falsification was stated in advance.**
+
+## 8. What I will not claim
+
+- **I will not claim the residual IS the ankle's torque exactly.** It is a residual and the two disagree by up to
+  15.52 N·m per run and more frame by frame, because the residual also carries the pair's own inertia inside the solve
+  and the feet's own small lever about the board's centre of mass. **0.95 and 4.24 N·m at the median is what I claim.**
+- **I will not claim a human ankle's stiffness is 800 N·m/rad.** The sourced quantity is intrinsic standing stiffness
+  at 0.08–0.93 m g h across three studies; 800 is about 1.4 m g h, i.e. **above** them, and whoever chose it said so.
+  What is **not** sourced anywhere is how a surfer's ankle behaves on a planing board at 7 m/s, and I did not find it.
+- **I will not claim the sole's bound is a human's own limit on this axis.** It is the geometric one. On the heel side
+  a young man's two ankles are about 13 % under it (80 against 92 N·m) and on the toe side nearly 3× over it; I apply
+  the geometry and say so, and I did not pick a muscle constant.
+- **I will not claim `?ankleLimit=feet` is wrong physics.** It is a sole that cannot press past its edge, which is
+  true. What is measured is that **in this model it makes the fall worse**, and the mechanism I offer for that —
+  clipping a stiff spring opens the joint and raises its demand — is **an inference from two measured columns**
+  (angle peak 20.5 → 47.3°, demand peak 717 → 2 087 N·m), not a separate measurement.
+- **I will not claim one joint is enough, and I will not claim the second joint from this round's data.** §10 names
+  what I would measure and why, and names what I am **not** entitled to say about it.
+- **I will not promote either drawn sequence to a mechanism.** Each is one run; the population is the 24-run fall-frame
+  sweep, and the two readings it supports are the two stated in §6(a) and §6(e).
+- **I will not re-promote 3.3h's `rollRiderArm` peak of 0.309 m as "a surfer standing outside his feet"** — on this
+  round's reading it is the residual's peak, the bound caps it to 0.164 m, and the median was always 0.0525 m.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed rather than paddled in, `deck.ts`'s six
+  entry speeds and `fall.ts`'s three are different populations and are **never pooled**, and every span above is the
+  **whole population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 9. What changed, and why each piece is allowed
+
+- **`src/physics/AttachedRider.ts`** — the `ankleLimit?: 'feet'` option with one private field and one constructor
+  line; `static ankleLedger` (off) and the `ankle` ledger object; `soleBound()`; `setAnkle(demand, angle)`, which is
+  now the **only** place `ankleTorque` is assigned, replacing the three in-line assignments; `bookAnkle`; and the
+  ledger's reset in `beginStep`. **With the switch off, `setAnkle` assigns the identical expression** — the clamp's
+  bound is `Infinity` — which the shipped-rider reproductions in §10 prove behaviourally.
+- **The plumbing**, in the shape the four existing rider switches use: `RideSessionOptions.ankleLimit`,
+  `SurfZoneConfig.ankleLimit`, `SurfZoneRunner`'s pass-through, `PhysicalMode`'s `ankleLimitSwitch`
+  (`?ankleLimit=feet`, case-insensitive, anything else the default), and **`main.ts`'s online-room override pins it to
+  `undefined`** — which `PhysicalMode.test.ts` enforces by reading `main.ts` and failing if the pin is removed.
+- **`src/physics/ankleLedger.test.ts`** — five tests, the positive control among them (§2).
+- **`docs/research/new-rider/3.3/deck.ts`** — `ANKLE=on` (the ledger and §7's block) and `ANKLE_LIMIT=feet`, both off
+  by default. **With both unset the probe reproduces its own published record**: at `STEER=0` with no switches, Part
+  24's twelve to the digit; at `STEER=1 FELT=deck ROLL=on`, 3.3h's §4 table to the digit.
+- **`docs/research/new-rider/3.3/fall.ts`** — `ANKLE_LIMIT=feet`, off by default; its shipped world arm reproduces
+  3.3g's own table to the digit.
+- **`docs/research/new-rider/3.3/stills.ts`** — new, read-only, and it touches no source file: it draws the fall as a
+  section across the board from the live state and prints every number on every panel.
+
+## 10. If one joint is not enough — what the second would be, and what I am not entitled to say
+
+**One joint is not enough, and the reason is structural rather than a shortfall of this one.** The ankle's torque *is*
+the board's roll moment. Reducing it means putting the body's line of force back over the board's centreline, which
+means **moving the body across** — and the capture point charges across speed at 1/ω₀ ≈ 0.29 m per m/s. That is step
+3.2w's measured ankle trade, step 3.2x's hip ladder (*"12 of 12 fall at every gain from 500 to 8 000 N·m/m"*), and now
+this. **Whatever helps is not another limb pushing the same 33 N·m around.**
+
+**The quantity I would measure next, and it is not a joint: the board's own roll inertia against the water's.** The
+ledger's own arithmetic is that `I_zz` = **0.0262 kg·m²**, so **1 N·m is 2 187 °/s²** [M, 3.3h], and the whole of the
+capsize lives in a 0.1 % error between two 33 N·m columns on that number. The game's `addedMass` entry contributes
+**−1.78 N·m of the water's −32.98** on the roll axis, 5 % [M] — i.e. the water in this model barely resists the
+board's *rotation*, only the force. **For a flat plate rolling about its long axis the added moment of inertia per
+unit length is of order ρπa⁴/8** (strip theory, a the half-beam), which at a = 0.25 m over 2 m of board is **order
+1 kg·m², tens of times the board's own** [I, A].
+
+**What I am not entitled to say about that**, and it matters because my brief warns of exactly this error — *a correct
+equation applied to the wrong regime*: **that formula is for a deeply submerged plate, and a planing surfboard is a
+surface-piercing body mostly out of the water.** The submerged fraction, the free-surface correction and the speed
+dependence all cut it, possibly by a large factor, and I **did not measure any of them**. So this is a **question for
+the water track and the wave-shape advisor, with a sourced order of magnitude and a stated regime mismatch** — not a
+finding, not a recommendation, and not a thing the surfer track should build. If it survives, it changes the
+denominator every roll number on this track divides by; if it does not, the 0.0262 stands and the capsize is honest.
+
+**The second thing, and it is the one the owner's own bar points at:** the gentle fall of §6(e) has never been
+measured on its own terms. Every roll number on this track comes from the hard-turn arm; the quarter-stick fall has a
+**modest roll and a body that banks past the deck**, which is a different failure and may have a different cause. **I
+would measure that before building anything.**
+
+## 11. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the three probes type-checked separately on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/deck.ts`, `.../fall.ts`, `.../stills.ts`, `src/physics/AttachedRider.ts` and
+  `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **57 files, 611 passed, 21 expected fail** (56/606/21 in 3.3h; the five new passes are
+  `ankleLedger.test.ts`'s).
+  `vitest run src/game src/scene/rig`: **70 files, 731 passed** (730 in 3.3h; the one new pass is
+  `PhysicalMode.test.ts`'s switch test, **98 of 98** in that file).
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail**.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference,
+  so a red there would be news as `runner-test-file-excluded` has it. `src/wave/SurfZoneSimulation.test.ts` is closed
+  by reading, as `c2-step5g.md` §7.4 allows: this round touches no solver, no wave and no spot file.
+- **the shipped rider is proved unchanged against published baselines**, which is the one seatbelt that matters for a
+  round that moved the line `ankleTorque` is assigned on: `deck.ts` at `STEER=0` with no switches reproduces **Part
+  24's twelve to the digit**, `deck.ts` at `STEER=1 FELT=deck ROLL=on` reproduces **3.3h §4's whole per-source table
+  to the digit** (rider +33.47, pressure −20.46, buoyancy −3.81, radiation −1.65, addedMass −1.16, fins −0.47, rails
+  +0.09, friction +0.04, water −33.40, net +0.04, implied arm 0.0525 / 0.3092 m, direct reading 39.19, |direct −
+  residual| 4.721 / 143.196), and `fall.ts`'s shipped world arm reproduces **3.3g §2b's own table to the digit**.
+  A behavioural leak in `setAnkle`'s default path would move all three.
+- **the switch is pinned off for the online rooms** in `main.ts`'s room overrides, and `PhysicalMode.test.ts` reads
+  `main.ts` and fails if the pin is removed — the same assertion `?kneeRoom` and `?stanceReach` carry.
+- **the Canyon byte check** (`scripts/m1-cpu-bench.ts`, medium, 3600 steps, **fresh** spin-ups into a new state
+  directory), with the brief's three cautions read rather than assumed — the wrapper is one **prepended** line on the
+  bundle (`globalThis.location = { search: '?canyonWaves=true' }`, because a dynamic import makes rolldown split the
+  chunk), the grid line read, and the "spun up on the CPU in … s" line read so that no kept `.sea` was imported (both
+  state files were written by this run, into a `bench33i/` directory that did not exist before it):
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180 400 cells**, spun up on the CPU in **47.8 s**: snapshots
+    **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202 800 cells**, spun up on the CPU in **54.5 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  All four match.
+
+  This round touches no solver, no wave, no spot file and no hull law, and its one behavioural change is an opt-in
+  balance switch that is off by default and off in the bench. The raw output is
+  `results/33i/33i-canyon-byte-check.txt`.
+
+## 11b. The deletions column, read line by line
+
+`git diff --cached --shortstat origin/main`: **29 files, 2 835 insertions and 9 deletions** — and **all nine deletions
+read, one by one. Every one is a line replaced in place; nothing was removed and nothing was reverted.**
+
+- `AttachedRider.ts`, **3**: the three `this.ankleTorque = …` assignments, each replaced in place by a
+  `this.setAnkle(<the identical expression>, this.bank.angle − roll)` call, so the demand is the same expression it
+  always was and the default path's bound is `Infinity`.
+- `main.ts`, **2**: the online-pin comment and the overrides object, replaced with `?ankleLimit` named and
+  `ankleLimit: undefined` added.
+- `SurfZoneRunner.ts`, **1**: the config pass-through line, replaced with `ankleLimit` added.
+- `PhysicalMode.test.ts`, **1**: the import list, replaced with `ankleLimitSwitch` added.
+- `fall.ts`, **2**: its row label and its header `console.log`, replaced with `ankleLimit` named in both.
+
+`origin/main` is still **730e71ac**, which is this branch's own merge base, so there was no mid-round merge to rebase
+onto — and the column was read rather than that being assumed. `ankleLedger.test.ts`, `stills.ts`, `RideSession.ts`,
+`SurfZoneSimulation.ts`, `PhysicalMode.ts`, `deck.ts` and the two new directories are **pure additions**, zero
+deletions each.
+
+## 12. Files (3.3i)
+
+- `src/physics/AttachedRider.ts` — `ankleLimit?: 'feet'`, `static ankleLedger`, the `ankle` ledger, `soleBound`,
+  `setAnkle`, `bookAnkle`, the reset in `beginStep`. `src/physics/ankleLedger.test.ts` — the positive control, the
+  bound's arithmetic, the clamp, the joint's angle, off-by-default and pure-observer (5 tests).
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts`, `src/main.ts` — the plumbing and the online pin. `src/game/PhysicalMode.test.ts` — the
+  switch, the spots, and the pin read out of `main.ts`.
+- `docs/research/new-rider/3.3/deck.ts` — `ANKLE=on`, `ANKLE_LIMIT=feet`, the ankle columns, §7's block.
+  `docs/research/new-rider/3.3/fall.ts` — `ANKLE_LIMIT=feet`. `docs/research/new-rider/3.3/stills.ts` — new.
+- `docs/research/new-rider/3.3/33i-stills/` — the two SVG sequences, their numbers, the 24-run fall-frame sweep and a
+  README that says how to read a panel and what the pictures settle.
+- `docs/research/new-rider/3.3/results/33i/` — eleven arms with their printed tables beside their rows and
+  `33i-canyon-byte-check.txt`.
+
+## 13. For the owner, in plain words — and the shot list
+
+**You asked whether the surfer falls over or the board goes away from him. I drew it, and you are right: the surfer
+falls over — and the reason is that the board tips up under him.**
+
+Through the last half-second before he goes, on a hard turn, the board rolls from **17 degrees to 90**, and his weight
+never leaves it: his middle stays within **two and a half centimetres** of the board's centreline the whole way, and
+ends half a centimetre off it. Over 24 runs it is never more than **17 centimetres** out, and **inside his own feet in
+22 of them**. **The board does not slide away. It rolls, and he goes over the side of it with it.** The pictures are
+in
+`docs/research/new-rider/3.3/33i-stills/` — look at `compress-full-stick.svg` first.
+
+And I have to correct something I told you last round: I said *"in 8 of 12 runs his feet move across faster than his
+body"*, and implied the board was sliding out. **That was my mistake, not the measurement's.** The thing I was
+measuring is the speed of a spot on the deck — which is glued to the board — so it can never show his feet sliding; it
+was showing the deck being swung around by a board rolling at 350 degrees a second. **In the board's own frame his
+body is the faster one in 21 of 24 runs.**
+
+**Then the ankle, which is what this round was sent to build. It was already there, and it is already doing the whole
+job.**
+
+Last round I told you nothing caps the twist his feet put into the board. **I was wrong.** The game already has an
+ankle: a spring and a damper between his body and the deck, inside the same solve as everything else, at
+**800 newton-metres per radian** — which is already **stiffer than a braced human's**, measured in three separate
+laboratory studies. And when I measured what it carries, it is **the whole 33 newton-metres** I told you about last
+round: the ankle's torque and the board's twist are **the same number**, agreeing to **1 newton-metre** on one test
+and **4** on the other. There was never a missing joint. The twist you were told nothing caps **is** his ankle,
+working.
+
+**One thing really was unenforced, so I built it.** A foot cannot press further out than its own edge, so the most it
+can twist the board is its load times its half-width — about **92 newton-metres** for him. Nothing in the game applied
+that. His ankle asks for **more than 92** in about 2 to 10 per cent of the instants of a hard turn, and at the worst
+moment it asks for **717**.
+
+**So I capped it at what his soles can actually transmit. It makes things worse, and I am not recommending it.** The
+ride gets *shorter* (from 1.1–2.7 seconds to 0.8–2.6), the board rolls *further* (to 95 degrees), and it spins in roll
+**three times faster** — nearly a thousand degrees a second. And it takes him off the board: in your own gentle case
+he ends up **87 centimetres** to the side of a board that is barely tilted, which will look ridiculous. The reason is
+simple once you see it: capping a very stiff spring doesn't make the ankle soft, it makes it **let go** — his middle
+ends up as far as **42 centimetres** to the side, against **17** as it ships. It is behind `?ankleLimit=feet` if you
+ever want to see it, and it is off.
+
+**Your bar is still not met: 24 out of 24 fall in all four tests, and in Compress at the gentlest stick, 6 of 6.**
+
+**But the pictures found something I think matters more than anything else this round.** Your gentle case is a
+**different fall from the hard one.** On a hard turn the board rolls to 90 degrees and his body goes with it — his
+lean is always a degree or two *behind* the deck. At a quarter stick — your own case, getting into position — **the
+board only reaches 30 to 44 degrees and it is his body that goes past it**: he leans about 4 degrees further than the
+deck is rolled, and his weight walks out to the edge of his feet. Over 24 runs: in the 17 hard falls his lean never
+gets more than half a degree ahead of the deck; in the 7 gentle ones it gets up to **15 degrees** ahead. **Everything
+this track has measured about rolling boards comes from the hard turn. Nobody has yet measured your fall on its own
+terms**, and I would do that next, before building anything else.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot. One change at a time, as always.
+
+1. **`?rider=new&feltFrame=deck&canyonWaves=true`** — as it ships, your usual address. Get into position at low speed,
+   press Compress, make one gentle turn. **The question: when he goes, does the board tip up under him, or does his
+   body lean over past the board while the board stays fairly flat?** The measurement says that at a gentle stick it
+   is the second one, and at a hard stick the first. **If both feel the same to you, say so** — that would mean the
+   two falls I have measured separately are one thing to ride, and it changes what I measure next.
+2. **The same, then a HARD turn (full stick) from the same position.** Same question. The measurement says this one is
+   the board rolling to 90 degrees with you still on it.
+3. **`?rider=new&feltFrame=deck&ankleLimit=feet&canyonWaves=true`** — the capped ankle, only if you are curious. The
+   measurement says it is worse and more absurd; **what I would like to know is whether it looks wrong in the way the
+   numbers say** (he slides off the side of a barely tilted board) or wrong in some other way.
+4. **And a ruling I would like, not a ride:** given that the two falls are different, **which one do you want fixed
+   first?** Your bar names the gentle one. Every roll number on this track is from the hard one. I will measure
+   whichever you name.
