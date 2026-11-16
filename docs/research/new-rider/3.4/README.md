@@ -2532,3 +2532,635 @@ probe and a results folder.
   cell where the folder prints 1.033, because `mount.ts` used a symmetric median and the folder's `median` is
   `qt(v, 0.5)` [R, §10]. The eighteen fall times are identical value for value to 3.4c's; only the convention
   differed, and `mount.ts` now carries the folder's with a comment saying why.
+
+# Part 5 — the datum in both places already exists, it is `?waterHeel=tilt`, and the 2×2's missing cell refutes the
+reason it was rejected: each half alone more than doubles the glide and together they halve it. And the mount's two
+agreements are a ride and a row moving in opposite directions on the same runs
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-two-body-e`, cut from `main` at
+**95829b02** (Part 4's merge), so Part 4 is its base. Its brief is items 1 and 2 of Part 4 §15's own step-five
+ruling: *"**The datum, in both places at once** … 3.3p changed only the first and it got worse; both together has
+never been measured, and both switches already exist"* and *"the body is placed square to the deck on the argument
+that the felt vertical is the face's normal … below 4 m/s the rule flips. **Make the mount agree with itself.**"*
+
+It ships **two switches, both opt-in, both off by default, both pinned off for online rooms**: `?waterHeel=ref`, the
+fourth cell of a 2×2 whose other three step 3.3p built, and `?mountAgree=deck|felt|both`, the mount's own two
+agreements. **Sixteen arms, 336 rides, 28 723 control ticks and 28 723 frames** on the two-body plant the owner
+rides: the four datum cells and the three mount values and their combination, each on the glide (24 runs) and on the
+owner's own low-speed cell (18).
+
+**The owner's two sentences are still the frame** — *"gets on the board down turn just falls very easily"* and
+*"seems that the movement is very fluid … an actual human movement"* — and **nothing here proposes reverting the
+two-body plant**; every arm of this round runs it.
+
+## 0. The ten sentences the round is for
+
+1. **The owner's bar is NOT met in any arm. 336 of 336 rides ended before nine seconds and Compress fell in 112 of
+   112** [M], over sixteen arms. The best single move in the whole round is the owner's own low cell going from
+   **1.033 s to 1.167 s** on `?mountAgree=deck`, and its three slowest entries from **0.617 to 1.000 s**.
+2. **The brief's first premise is false, and one column settles it.** `?waterHeel=tilt` already carries the datum
+   into **both** places: with it on, the trim the loop holds is **`|φ_ref| = 9.1052°` at frame 1** against a face
+   tilt of 8.811° under the board — **1.0378 × the face's own tilt**, in the sign that makes the board flush with
+   the face — and `|φ_ref|` is **exactly 0.0000° in 0.000 of 845 frames** on that arm against **1.000 of 2 193** on
+   the shipped one [M]. 3.3p rode it and published it: median **0.283 s**. *"Both together has never been measured"*
+   is wrong; what had never been measured is **which half does what**.
+3. **So this round built the 2×2's missing cell, and it refutes 3.3p's own attribution.** Glide medians, 24 runs
+   each: the datum **off 1.450 s**, the **prediction alone 4.033**, the **reference alone 3.683**, **both 0.683**
+   [M]. **Each half alone nearly triples the ride; the two together halve it.** 3.3p's sentence *"the reference is
+   the destabiliser, and that is a measured split"* was a difference of two arms that differ in **both** halves;
+   with the fourth cell in hand the destabiliser is **neither half — it is the pair**.
+4. **And the two cells disagree about the ordering, so neither may be pooled.** On the owner's own low cell (18
+   runs): off **1.033**, prediction alone **0.967**, reference alone **0.483**, both **0.433** [M]. There the
+   reference's half halves the ride and the prediction's is neutral. **Two populations, two orderings, one switch.**
+5. **On the rows the datum correction is enormous, and almost all of it is the denominator.** The mount's own window,
+   **unfiltered, from frame 1**, 264 ticks a glide arm: the model each arm ran goes **39.002 → 1.514 → 1.150 →
+   0.750** across off / prediction / reference / both — **fifty-two times** — while the game's own roll row there
+   goes **30.5 → 562.6 → 1 147.0 → 2 659.9 °/s²** (×18 to ×87) and **the model's own absolute error gets worse,
+   1 188.9 → 1 993.8 °/s²** [M]. **The ratio is repaired by making the board move, not by making the model right**,
+   which is Part 4 §7's `PLACE=level` reading for the fourth time in this folder.
+6. **The folder's `live` filter does not merely hide the mount's size — it hides its sign.** Against the whole live
+   population of the same arm the mount is **1.76–3.78 × worse** on the two shipped-datum arms and
+   **3.0–7.1 × BETTER** on every datum-corrected one [M, 16 arms]. **A filter chosen on one configuration is not a
+   filter**, and `t > 0.2 && clamped === 0` has defined every population in this folder since 3.3k.
+7. **The mount's four-metre-a-second contradiction is one line and `?mountAgree=deck` closes it exactly.** The nine
+   1–3 m/s runs of the owner's own cell go from a body bank at frame 1 of **[−0.039°, −0.036°]** to
+   **[8.723°, 8.745°]**, inside 0.5° of the **8.703–8.715°** the 4–6 m/s runs start at, **9 of 9** [M]. On the glide,
+   where every entry is above 4 m/s, it is a **null by construction and that is its own control: 2 193 ticks and 24
+   fall times identical to the shipped arm to the digit.**
+8. **And on that arm the ride and the row move in opposite directions, on the same runs.** The low cell's median
+   goes **1.033 → 1.167 s** and its three slowest entries **0.617 → 1.000 s** (+62 %), while the mount's own roll
+   row goes **7.415 → 29.912** — *worse* by four times — because the game's own row there falls from **140.8 to
+   35.8 °/s²**: a body placed in its own equilibrium leaves the board quieter still [M]. **A row is not a ride, and
+   this is the round's cleanest instance of it.**
+9. **The felt vertical's own agreement is complete and buys nothing, and the reason is a read.**
+   `?mountAgree=felt` takes `|feltAcross|` at frame 1 from **7.520–7.566° to 0.341–0.376°** and the first frame at
+   which the felt vertical agrees with the face's normal from **0.217 s to 0.017 s — frame 1 — 24 of 24 and 18 of
+   18** [M]. The glide's median moves **1.450 → 1.467 s** (one run of 24), and over the mount's whole window the
+   roll row's columns are **identical: 0 differing over 21 648 column reads on 264 ticks, first differing at
+   0.883 s** [M]. **The datum it repairs is not in the roll row's loop at the mount.**
+10. **Four of my own ten predictions are refuted and a fifth is unanswerable, two of them caught by my own
+    instruments before publication**, including
+    a test whose first draft asserted a separation that does not survive a closed loop (§11) and a magnitude
+    prediction that confused a filter's **seed** with its **frame-1 reading** (§8). **I have two switches, their
+    sizes, their populations and a contradiction closed; I do not have the bar.**
+
+## 1. (A) The four reads that had to come first
+
+**R1 [R]. `?waterHeel=tilt` reaches `DesignWeights.waterHeel = 'both'`, and `'both'` is the word for two halves.**
+`AttachedRider` maps `'tilt' → 'both'` and `'predict' → 'predict'` [R, `:2356–2360`], and `PredictiveController.tick`
+does exactly two things with the flag: it propagates `predD · tilt` through the forward prediction over the sensing
+delay, and — **only on `'both'`** — it hands `Γ_d · tilt` to `steadyTurn` as a known input on the equilibrium's
+right-hand side, *"so the reference is the steady turn ON this face and not on flat water"* [R,
+`predictiveBalance.ts:1424–1437`, `:1249`]. **The brief's "both places at once" is `'both'`, by reading, before any
+arm ran.** §2 is the read that it also *works* — that the trim actually moves to the face.
+
+**R2 [R]. The fourth cell did not exist, and that is the round's one real gap in item 1.** 3.3p shipped `'both'`
+(prediction + reference) and `'predict'` (prediction alone) and inferred the reference's effect from their
+difference. **There was no value that moves the reference alone**, so `?waterHeel=ref` is this round's addition: one
+condition on the propagation line and one on the drive line, and `Design` unchanged, so all three values share one
+design object. §3 and §4 are what it buys.
+
+**R3 [R]. The mount's low-speed branch disagrees with the frame after it, for the new surfer, by the code's own
+lines.** `reset` sets `banked = true` only above `PLANING_SPEED = 4` [R, `:2708`], and `planingStep` — which runs in
+`prepare`, before the board's solve, on the **next** frame — ends with `if (this.freeBody) this.banked = true;`
+[R, `:3305`]. **So for the new surfer the mount is the one frame of the whole ride that places the body plumb to the
+world**, and `?mountAgree=deck` sets the same flag one frame earlier. It sets `banked` and **not** `planing`,
+deliberately: the board is not planing and `planingStep` would flip a mounted `planing = true` back on that same
+next frame.
+
+**R4 [R]. The felt vertical's seed is the world's and the placement's argument is the face's, in two comments eleven
+hundred lines apart.** `reset`: the body square to the deck *"as a body balances on a board sliding freely down its
+face, **where the felt vertical is the face's normal**"* [R, `:2695–2697`]. `captureStep`: `if (this.pairFresh)
+this.pairFelt.set(0, WATER.gravity, 0)` [R, `:4998`]. `?mountAgree=felt` seeds it instead at `g (n̂·ŷ) n̂` — the
+specific force of a body sliding freely down a plane of normal `n̂`, which is that sentence written as a vector —
+with `n̂` the water's own normal under the board, which `planingStep` has already set this frame [R, R3's own call
+order]. **An initial condition of a first-order filter, not a force.**
+
+## 2. (B) The trim the loop holds, as a column
+
+Part 4 §4 reading 5 measured `|φ_ref|` at **exactly 0.0000°** at every one of 18 182 frames of eight arms and read
+it as *"the trim the loop holds is the board level with the WORLD for the whole ride."* This is the same column on
+the arms that move the reference.
+
+| **[M]** every frame of every run | frames | \|φ_ref\| median, ° | \|φ_ref\| peak, ° | \|φ_ref\| frame 1, ° | the face's tilt, frame 1, ° | φ_ref / −tilt, frame 1 | exactly 0.0000 in |
+|---|---|---|---|---|---|---|---|
+| **the glide, the datum off** | 2 193 | **0.0000** | 0.000 | **0.0000** | 8.824 | 0.0000 | **1.000** |
+| the glide, the prediction alone | 5 144 | 0.0000 | 0.000 | 0.0000 | 8.815 | 0.0000 | 1.000 |
+| **the glide, the reference alone** | 4 144 | 6.794 | 15.655 | **9.1052** | 8.815 | **1.0373** | 0.091 |
+| **the glide, both** | 845 | **8.887** | 14.248 | **9.1052** | 8.811 | **1.0378** | **0.000** |
+| the owner's cell, the reference alone | 555 | 9.565 | 13.667 | 9.1052 | 8.979 | 1.0180 | 0.000 |
+| the owner's cell, both | 497 | 9.375 | 12.992 | 9.1052 | 8.983 | 1.0174 | 0.000 |
+| the three `?mountAgree` arms, either cell | 1 422–2 207 | 0.0000 | 0.000 | 0.0000 | 8.824–8.981 | 0.0000 | **1.000** |
+
+**Four readings.**
+
+1. **The trim does move to the face, and by the face's own size.** 9.1052° of reference against 8.811° of tilt,
+   **1.0378 ×**, at frame 1 of every run of both reference-moving arms [M, 24 and 18 runs]. **The brief's item 1 is
+   a switch that exists and has been ridden**, and §3 is what it does.
+2. **The 3.8 % is not noise and it is not mine to explain.** `steadyTurn` solves the whole equilibrium of the
+   tilt-driven plant, not a datum shift: `φ_ref` comes out beside a slip, a yaw rate, an ankle rest and a twist
+   torque, all free [R, `:1409`]. That it lands within four per cent of the face is a property of that solve.
+   **I measured it; I did not design it.**
+3. **The 0.091 of exactly-zero frames on one arm is an identity, read rather than waved at.** All **377 of 377** of
+   them have the face's tilt **exactly 0** — the board is off the face — so the drive is zero and the trim is the
+   flat-water one [M]. Not a leak.
+4. **And `?mountAgree` touches the trim in neither of its halves**: exactly 0.0000° in 1.000 of 1 422–2 207 frames on
+   all six mount arms [M]. The two items of the brief are separable in this column, by measurement.
+
+## 3. (B) The 2×2, and the refutation it was built for
+
+| **[M]** median ride, s, the folder's own `qt(v, 0.5)` | runs | fell | the datum **off** | the **prediction** alone | the **reference** alone (new) | **both** |
+|---|---|---|---|---|---|---|
+| **the glide** (8 entries × 3 stances) | 24 | 24 of 24 in all four | **1.450** | **4.033** | **3.683** | **0.683** |
+| the glide, its span | — | — | 1.083–2.683 | 1.117–5.817 | 0.833–4.350 | 0.217–1.117 |
+| the glide, **Compress** | 8 | 8 of 8 in all four | 1.483 | 4.367 | 4.150 | 0.683 |
+| **the owner's own low cell** (6 entries × 3) | 18 | 18 of 18 in all four | **1.033** | **0.967** | **0.483** | **0.433** |
+| the low cell, its span | — | — | 0.500–6.233 | 0.150–5.983 | 0.117–1.317 | 0.133–0.900 |
+| the low cell, its three slowest entries (1–3 m/s, 9 runs) | 9 | 9 of 9 | **0.617** | 0.183 | 0.133 | 0.150 |
+
+**Five readings.**
+
+1. **The round's own headline, and it is a refutation.** On the glide **each half alone nearly triples the ride and
+   the two together halve it**: 1.450 → 4.033 (prediction) → 3.683 (reference) → 0.683 (both) [M, 24 runs a cell].
+   3.3p's published sentence is *"the reference is the destabiliser, and that is a measured split, not a"* —
+   **it is not a split; it is an interaction**, and the cell that shows it is the one that did not exist until this
+   round.
+2. **And the interaction is not small or marginal: it is a factor of five and six.** `both` is **0.17 ×** the
+   prediction arm and **0.19 ×** the reference arm, on the same water, the same placement, the same entries and the
+   same plant [M]. **Two corrections that each help, and hurt when combined**, which is what §5's near-cancellation
+   predicts qualitatively and which I will not dress up as a mechanism.
+3. **The owner's own cell orders them differently and I am not pooling them.** There the prediction's half is
+   **−6 %** (1.033 → 0.967) and the reference's is **−53 %** (→ 0.483), and both is 0.433 [M, 18 runs]. On that cell
+   3.3p's attribution is **upheld**. **The same switch, two cells, two answers** — and the glide is the cell with
+   three times the settled population.
+4. **Every datum arm costs the owner's own slow entries dearly.** 0.617 s → 0.133–0.183 s on all three [M, 9 runs
+   each]. **Whatever the datum correction is for, it is not for the speeds the owner gets into position at.**
+5. **My own P1 and P10 are upheld and my own P2 is refuted in both of its clauses.** P2 said the reference alone
+   would fall **below** the shipped median and sit nearer `both` than `predict`. It sits **above** the shipped
+   median (3.683 against 1.450) and nearer `predict` (|ln| gap 0.09 against 1.69) [M]. **Written down before the
+   arms and wrong, in the half the brief called settled.**
+
+## 4. (B) The rows, filtered and unfiltered, on both quantities
+
+Two different things are printed and never divided by one another:
+- **`rollRel`** — the roll row of **the model that arm actually ran**, which on a datum arm includes its own tilt
+  input by the controller's own line [R]. A different model on a different trajectory in each arm.
+- **`relFull`** — the **shipped** plant rebuilt at the controller's own exact point on that arm's trajectory. The
+  same model everywhere, so it separates "which model" from "where on the wave this ride went".
+
+| **[M]** the mount, `t < 0.2 s`, **unfiltered from frame 1** | n | **gm rel, the model run** | gm rel, the shipped plant | gm \|error\|, °/s² | **gm \|the game's row\|, °/s²** |
+|---|---|---|---|---|---|
+| **the glide, the datum off** | 264 | **39.002** | **32.429** | 1 188.9 | **30.5** |
+| the glide, the prediction alone | 264 | **1.514** | 2.076 | 851.8 | 562.6 |
+| the glide, the reference alone | 264 | **1.150** | 1.353 | 1 319.2 | 1 147.0 |
+| **the glide, both** | 264 | **0.750** | 0.333 | **1 993.8** | **2 659.9** |
+| the glide, both + both mount halves | 262 | 0.759 | 0.355 | 1 953.5 | 2 574.2 |
+| **the owner's cell, the datum off** | 198 | **7.415** | **7.823** | 1 044.4 | **140.8** |
+| the owner's cell, the prediction alone | 191 | 0.850 | 1.993 | 783.0 | 921.4 |
+| the owner's cell, the reference alone | 176 | 0.987 | 1.172 | 1 256.7 | 1 273.8 |
+| the owner's cell, both | 180 | **0.677** | 0.430 | 1 704.5 | 2 516.1 |
+| **the owner's cell, `mountAgree=deck`** | 198 | **29.912** | 17.863 | 1 070.9 | **35.8** |
+| the owner's cell, `mountAgree=felt` | 198 | 7.472 | 7.606 | 1 031.5 | 138.1 |
+| the glide, either mount half or both | 264 | **39.002** | **32.429** | **1 188.9** | **30.5** |
+
+| **[M]** the mount against the arm's **whole live population** (the folder's own filter) | mount, gm rel | all live, gm rel | ratio |
+|---|---|---|---|
+| the glide, off / `mountAgree=deck` / `=felt` / `=both` | 35.609 / 35.609 / 35.609 / 35.609 | 9.513 / 9.513 / 9.415 / 9.415 | **3.74 / 3.74 / 3.78 / 3.78** |
+| the glide, prediction / reference / both / all on | 1.599 / 1.308 / 0.708 / 0.722 | 4.917 / 4.980 / 3.129 / 3.632 | **0.33 / 0.26 / 0.23 / 0.20** |
+| the owner's cell, off / `=deck` / `=felt` / `=both` | 6.943 / 24.150 / 7.068 / 24.150 | 3.942 / 3.487 / 3.919 / 3.490 | **1.76 / 6.93 / 1.80 / 6.92** |
+| the owner's cell, prediction / reference / both / all on | 0.872 / 1.078 / 0.655 / 0.475 | 6.443 / 4.159 / 3.064 / 2.570 | **0.14 / 0.26 / 0.21 / 0.18** |
+
+**Six readings.**
+
+1. **The control first: 32.429 and 7.823, to the digit.** The shipped-datum, shipped-mount arms of this round
+   reproduce step 3.4d's own mount figures for the two-body plant exactly, on a fresh run through a different
+   script [M, 264 and 198 ticks]. **Every other number in this table is read on a pipeline that passes that.**
+   (Step 3.4d's §2 low-cell row prints **7.303**; recomputed from 3.4d's own dumps that is the **point-mass** arm
+   and the two-body one is **7.823** — the row's plant was not named where its glide rows' were. Stated, not
+   hidden.)
+2. **The datum correction moves the mount's ratio by fifty-two times, and it is the denominator.** 39.002 → 0.750
+   on the glide, while the game's own roll row goes **30.5 → 2 659.9 °/s², ×87**, and the model's own absolute
+   error goes the **wrong way, 1 188.9 → 1 993.8** [M]. **On every datum arm of both cells the error in °/s² is
+   within a factor of two of the shipped one or worse; only the quotient moves.** This is Part 4 §7 reading 2 again
+   on a different switch: *"a window where the game's board is especially quiet"*, repaired by making it loud.
+3. **The blend is not small at the mount, and that is new.** 3.3p measured the controller's eight-point blend
+   against the plant rebuilt at its own point at **0.001–0.056** on the live window. At the mount it is
+   **39.002 against 32.429 — 0.20** [M, the same 264 ticks]. **The quantity the folder has been quoting is the
+   rebuilt plant's; the model the rider actually runs is a fifth worse there.**
+4. **The filter hides the sign.** On the shipped datum the mount is the arm's **worst** window (1.76–3.78 ×); on
+   every corrected arm it is its **best** (3.0–7.1 × better) [M, 16 arms]. **`t > 0.2` was chosen on one
+   configuration and it does not describe another**, which is the second round running to find the premise of that
+   filter wrong.
+5. **My own P3 is refuted and in the direction that matters.** I predicted all three corrected arms would land
+   between 1 and 20 at the mount. **Five of the eight go under 1** (0.475–0.987) [M]. I under-estimated the move
+   because I was thinking about the numerator and the move is the denominator — **the same error §2 reading 2 of
+   Part 4 names, made again by me, one round later.**
+6. **And my own P4 is NOT upheld — it is unanswerable, because the arm it asks about does not live that long.**
+   P4 asked whether any age bin **after 1.5 s** is worse on `both` than on the shipped datum. **On both cells
+   `both` has no bin after 1.5 s at all**: its last is 1.0–1.5 s on the glide (21 ticks) and 0.6–1.0 s on the
+   owner's cell (110), because the ride is over [M]. **A prediction with no population is not a prediction**, and I
+   am recording it as unanswerable rather than scoring it either way. What the bins it does have say is that the row
+   is better in each of them (the glide: **1.653** at 0.2–0.6 s against 9.120 off, **6.087** at 0.6–1.0 s against
+   8.024) — **the window the shipped datum is worst in is the only window the corrected datum lives to see.**
+
+## 5. (B) `?mountAgree=deck` — the four-metre-a-second contradiction, closed
+
+| **[M]** the owner's own cell at frame 1, 3 runs an entry, the entry set absolutely | the board's roll, ° | the face's tilt, ° | the board's heel, ° | **the body's bank, °** | bank / roll |
+|---|---|---|---|---|---|
+| **as it ships**, entry 1 / 2 / 3 m/s | 8.338 / 8.334 / 8.329 | 9.050 / 9.016 / 8.980 | −0.712 / −0.682 / −0.651 | **−0.036 / −0.037 / −0.038** | **−0.004 / −0.004 / −0.005** |
+| as it ships, entry 4 / 5 / 6 | 8.895 / 8.883 / 8.872 | 8.947 / 8.911 / 8.876 | −0.052 / −0.028 / −0.003 | **8.715 / 8.709 / 8.703** | 0.980 / 0.980 / 0.981 |
+| **`mountAgree=deck`**, entry 1 / 2 / 3 | 8.933 / 8.919 / 8.906 | 9.050 / 9.016 / 8.982 | −0.117 / −0.097 / −0.075 | **8.745 / 8.732 / 8.723** | **0.979 / 0.979 / 0.979** |
+| `mountAgree=deck`, entry 4 / 5 / 6 | 8.895 / 8.883 / 8.872 | 8.947 / 8.911 / 8.876 | −0.052 / −0.028 / −0.003 | 8.715 / 8.709 / 8.703 | 0.980 / 0.980 / 0.981 |
+
+| **[M]** what it costs and buys | the shipped mount | `mountAgree=deck` | the move |
+|---|---|---|---|
+| the low cell's median ride, s (18 runs) | **1.033** | **1.167** | **+13 %** |
+| its span, s | 0.500–6.233 | **0.833**–6.233 | the **minimum +67 %** |
+| its three slowest entries' median, s (9 runs) | **0.617** | **1.000** | **+62 %** |
+| Compress, fell / median s (6 runs) | 6 of 6 / 1.167 | 6 of 6 / **1.167** | **nothing** |
+| **the mount's own roll row** (198 ticks, unfiltered) | **7.415** | **29.912** | **×4.0 worse** |
+| the game's own roll row at the mount, °/s² | **140.8** | **35.8** | **×0.25** |
+| the model's own absolute error at the mount, °/s² | 1 044.4 | 1 070.9 | ×1.03 |
+| **the glide** (every entry above 4 m/s): ticks, median, row | 2 193 / 1.450 / 39.002 | **2 193 / 1.450 / 39.002** | **identical** |
+
+**Five readings.**
+
+1. **The contradiction is closed exactly and per run, not per median.** The nine 1–3 m/s runs go from a body bank
+   at frame 1 of **[−0.039°, −0.036°]** to **[8.723°, 8.745°]** against the 4–6 m/s band's **8.703–8.715°** —
+   inside 0.5° in **9 of 9** [M]. **P6, written before the arm, upheld.**
+2. **It is the largest move toward the owner's bar in this round, and it is small.** 1.033 → 1.167 s on the cell,
+   0.617 → 1.000 s on the three entries the owner uses getting into position, and the cell's **worst** ride up
+   two thirds [M, 18 and 9 runs]. **P9, upheld.** It is also not nine seconds and Compress does not move at all.
+3. **And it makes the roll row four times worse on the same runs.** 7.415 → 29.912, because the game's own row at
+   the mount falls to **a quarter** (140.8 → 35.8 °/s²) while the model's error barely moves (×1.03) [M]. **A body
+   placed in its own equilibrium leaves the board quieter, and a quieter board is a bigger quotient.** This is the
+   round's cleanest case of **a row and a ride moving in opposite directions on the same arm**, and I am reporting
+   both rather than picking the flattering one.
+4. **The glide is a null by construction and that is the switch's own positive control.** Every glide entry is above
+   `PLANING_SPEED`, so the branch never fires: **2 193 ticks and all 24 fall times identical to the shipped arm to
+   the digit**, and the mount's row **39.002 against 39.002** [M]. A switch that cannot act where it should not act,
+   read rather than argued.
+5. **I am not claiming which placement is right.** The game's own argument is for square-to-the-deck [R, §1 R4] and
+   this arm is that argument applied at every speed; the other side of the contradiction — placing the body plumb
+   at **every** speed — is not built and not measured here, and it is the owner's call which side of a stated
+   physical argument to move.
+
+## 6. (B) `?mountAgree=felt` — the agreement that is complete and buys nothing
+
+| **[M]** the felt vertical at frame 1 | as it ships | `mountAgree=felt` |
+|---|---|---|
+| the glide, \|the angle across the deck\|, ° (24 runs) | **7.520–7.566** | **0.341–0.376** |
+| inside 1.5° of the face's normal | **0 of 24** | **24 of 24** |
+| the owner's cell, \|the angle across the deck\|, ° (18 runs) | 7.519–7.578 | **0.324–0.376** |
+| inside 1.5° | **0 of 18** | **18 of 18** |
+| its magnitude, m/s² (the glide) | 9.524–9.553 | **9.342–9.362** |
+| **the first frame the felt vertical agrees with the face's normal within 1°** | **0.217 s**, 24 of 24 | **0.017 s — frame 1 —** 24 of 24 |
+| the same, the owner's cell | 0.233 s, **10 of 18** | **0.017 s**, 18 of 18 |
+| the glide's median ride, s | 1.450 | **1.467** |
+| the owner's cell's median, s / its three slowest | 1.033 / 0.617 | **1.033 / 0.633** |
+| the mount's own roll row, the glide / the cell | 39.002 / 7.415 | **39.002** / 7.472 |
+| **the roll row's columns over the glide's mount** | — | **0 differing of 21 648 reads, 264 ticks** |
+| the glide's first differing tick | — | **t = 0.883 s** |
+| the owner's cell's first differing frame | — | **t = 0.117 s**, the frame the loop first sends anything |
+
+**Four readings.**
+
+1. **The disagreement is removed outright, at frame 1, in every run of both cells.** The felt vertical goes from
+   7.52–7.58° away from the face's normal to 0.32–0.38°, and the settling time Part 4 measured at 0.250 s becomes
+   **one frame** [M, 24 and 18 runs]. **The mount now says the same thing twice**, which is what the brief asked
+   for.
+2. **And the ride does not care.** The glide's median moves by **one run of 24** (1.450 → 1.467) and the owner's
+   cell's not at all; its three slowest entries move 0.617 → 0.633 s [M]. **A measured result with the bar
+   unmoved.**
+3. **The reason is a read, not a shrug: on the glide the felt vertical is not in the roll row's loop at the
+   mount.** Every roll-row column of the per-tick dump is **identical over the mount's whole window — 0 of 21 648
+   reads — and the ride first differs at 0.883 s** [M]. The felt vertical's route is the capture point: `ω₀`, the
+   margin, the fall test. **On the owner's own cell it is not an identity** — the first differing frame is
+   **0.117 s**, the frame the loop first sends a command, and the mount's ratio moves 7.415 → 7.472 (+0.8 %) [M].
+   **Two cells, two answers again, and the second one is stated without a mechanism.**
+4. **My own P7 is half upheld and half refuted, by my own column.** The angle half holds in 42 of 42 runs. The
+   magnitude half — "9.69 ± 0.10, which is `g cos 8.81°`" — is **refuted: 9.342–9.390 m/s²** [M]. `g (n̂·ŷ)` **is**
+   9.694, but that is the **seed**, and the column is **frame 1, already low-passed** over
+   `SPECIFIC_FORCE_TIME = 0.1 s`; the shipped seed of 9.81 reads 9.524–9.553 there by the same arithmetic.
+   **"A step-averaged quantity is not an instantaneous one" in a new dress: a filter's seed is not its first
+   reading.** And Part 4 §4 reading 4's *"ω₀ is 8 % high at the mount"* is **not** repaired by this switch:
+   `ω₀ ∝ √|felt|` and the magnitude goes from 9.53 to 9.35 against a settled 8.13, i.e. from **8 % to 7 %** high.
+
+## 7. (B) The combination, and the owner's bar
+
+| **[M]** 336 rides, 16 arms, the deck filter | runs | fell | median, s | span, s | Compress fell | Compress median, s |
+|---|---|---|---|---|---|---|
+| **the glide**: off / predict / ref / both | 24 each | **24 of 24 each** | 1.450 / 4.033 / 3.683 / **0.683** | 1.083–2.683 / 1.117–5.817 / 0.833–4.350 / 0.217–1.117 | **8 of 8 each** | 1.483 / 4.367 / 4.150 / 0.683 |
+| the glide: `=deck` / `=felt` / `=both` / **all on** | 24 each | 24 of 24 each | 1.450 / 1.467 / 1.467 / **0.683** | 1.083–2.683 ×3 / 0.167–1.117 | 8 of 8 each | 1.483 / 1.483 / 1.483 / 0.683 |
+| **the owner's cell**: off / predict / ref / both | 18 each | **18 of 18 each** | **1.033** / 0.967 / 0.483 / 0.433 | 0.500–6.233 / 0.150–5.983 / 0.117–1.317 / 0.133–0.900 | **6 of 6 each** | 1.167 / 1.050 / 0.483 / 0.433 |
+| the owner's cell: `=deck` / `=felt` / `=both` / **all on** | 18 each | 18 of 18 each | **1.167** / 1.033 / **1.167** / 0.733 | 0.833–6.233 / 0.500–6.233 / 0.833–6.233 / 0.167–0.917 | 6 of 6 each | 1.167 / 1.167 / 1.167 / 0.783 |
+
+**Four readings.**
+
+1. **The bar is not met in any arm.** 336 of 336 rides ended; **Compress fell in 112 of 112** [M]. The owner's bar
+   is *"Compress must never fall at the low speeds of getting into position, 100 %"*, and the best this round has is
+   a Compress median of **1.167 s** on the owner's own cell, which is the shipped one.
+2. **The combination is not the sum, and P10 is upheld.** All on is **0.683 s** on the glide and **0.733 s** on the
+   cell — worse than four of its five components on the glide and than six of seven arms on the cell [M].
+   **The datum's collapse dominates the mount's gain wherever both are on.**
+3. **`mountAgree=both` is `deck` to the digit on the cell** — 1.167 s, the same span, the same 24.150 mount row,
+   the same 1 607 ticks [M] — which is a third, independent read that the felt half does not reach the ride there
+   in any way the fall sees.
+4. **And every number in this table is the deck filter's, on the folder's own median.** `qt(v, 0.5)`, the upper
+   element of the middle pair [R]: a symmetric median would print 0.950 where this folder prints 1.033 for the
+   same eighteen numbers, which is 3.4d's own last bullet and is why `datum.ts` carries the convention with a
+   comment.
+
+## 8. What I refuted
+
+- **The brief's own first premise, by one column.** *"3.3p changed only the first and it got worse; both together
+  has never been measured."* `?waterHeel=tilt` **is** both together — the trim it holds is **9.1052°** against a
+  face tilt of 8.811°, `1.0378 ×` it, where the shipped trim is **exactly 0.0000°** in 1.000 of 2 193 frames — and
+  3.3p rode it and published its median, 0.283 s. **Thirtieth consecutive round to find its brief's premise wrong,
+  and tenth to find it in the half the brief called settled.**
+- **3.3p's own attribution, *"the reference is the destabiliser, and that is a measured split"*, by the cell that
+  was missing.** On the glide the prediction alone gives **4.033 s** and the reference alone **3.683 s** against
+  **1.450** shipped, and the two together **0.683** [M, 24 runs each]. **Each half helps and the pair hurts.** It
+  was never a split; it is an interaction, and a difference of two arms that differ in both halves cannot see one.
+- **My own P2, in both clauses.** The reference alone was predicted below the shipped median and nearer `both`; it
+  is **above** it and nearer **`predict`** [M].
+- **My own P3, by a factor I had the wrong end of.** Predicted 1–20 at the mount for all three corrected arms;
+  **five of eight go under 1** (0.475–0.987). I was reasoning about the model's error, and the move is the game's
+  own row — **Part 4's own reading, repeated as my own mistake one round later.**
+- **My own P5, as written.** "More than a factor of three on every datum arm of both cells": the owner's cell with
+  the datum **off** is **1.76** [M]. What survives is better than the prediction: the **direction** flips, 1.76–3.78
+  worse on the shipped datum and 3.0–7.1 **better** on every corrected one.
+- **My own P4, which turns out to be unanswerable rather than right or wrong**, because the arm it asks about has
+  no age bin after 1.5 s on either cell: the ride is over first (§4 reading 6). Recorded as unanswerable.
+- **My own P7's magnitude half, by confusing a seed with a reading.** `g (n̂·ŷ)` is 9.694 and the frame-1 column is
+  **9.342–9.390** [M], because the frame-1 column has already been low-passed; the shipped 9.81 seed reads
+  9.524–9.553 by the same arithmetic.
+- **This round's own first test draft, by the test itself, before it was committed.** The 2×2 separation
+  (`'ref'` leaves the prediction alone, `'predict'` leaves the trim alone) was first asserted over forty ticks and
+  **failed**: a moved trim sends different commands, and the commands enter the forward prediction, so **the two
+  halves are separable in the controller's line and not along a trajectory.** Read at the first tick — where the
+  sense line is shorter than the delay, the estimate is zero and no command has been sent — it is an **identity**,
+  and the test now says so with the reason in its comment.
+- **`ledgerApart` as a closure.** Part 4's §12 C5 lists the folder's exact-zero closures and this round's first
+  summary printed `ledgerApart` beside them at **16**. It is **a count of substeps the standing solve did not
+  decide** [R, `bankLedger.ts:189`], not a residual. **`datum.ts` now prints it apart, with its meaning.**
+  A sixteen there is sixteen substeps.
+
+## 9. What I will not claim
+
+- **I will not claim the bar is any closer.** 336 of 336, Compress **112 of 112**, and the one arm that moves the
+  owner's own cell moves it from 1.033 to 1.167 s.
+- **I will not claim the datum correction repairs the model.** On every corrected arm the model's own absolute
+  error at the mount is **within a factor of two of the shipped one or worse** (851.8–1 993.8 against 1 044.4–1 188.9
+  °/s²); what moves is the quotient, by the game's own row going up 18–87 times. **A quotient is not a model.**
+- **I will not claim a mechanism for the interaction.** Two corrections that each nearly triple the glide and halve
+  it together is a measured fact with a plausible shape (§5 of Part 4: the row is the small difference of two large
+  terms of opposite sign) and **I did not measure that shape on these arms**, so it stays a fact.
+- **I will not claim which side of the mount's contradiction is right.** `?mountAgree=deck` applies the game's own
+  stated argument at every speed and lengthens the owner's own cell by 13 % while making its roll row four times
+  worse. The other side — plumb at every speed — is not built here. **The owner's call.**
+- **I will not claim `?mountAgree=felt` does anything for the ride.** It closes the mount's own 0.25 s disagreement
+  in 42 of 42 runs and moves one glide run of 24.
+- **I will not claim either new switch should be on by default.** Both are opt-in, off by default, pinned off for
+  online rooms, and the datum ones halve the owner's own cell.
+- **I will not claim the two-body plant is better or worse here.** Every arm of this round runs it, because the
+  owner rides it; nothing here is an argument for reverting it.
+- **I will not offer any bot ride as evidence of feel**, anywhere in this document.
+- **Carried, flagged, not mine, not touched**: `steadyTurn`'s own reference on a **steered** arm (Part 4's median
+  43.7–44.7°, peak 2 249°) — this round ran no steered arm, so it adds nothing to that flag and does not close it;
+  the `cos³` added-mass frame defect; `AttachedRider.frame`'s 70° bank clamp; the live point-mass `ω₀` in
+  `HumanBalance.capture`, which §6 reading 4 measures as 8 % high at the mount off and **7 %** high with
+  `mountAgree=felt`; the `live` filter itself, which this round refutes for the second time and does not change.
+
+## 10. The controls
+
+**C1, the shipped rider is byte-identical with every switch off, over 14 658 column reads.** This round's two
+shipped-datum, shipped-mount arms against step 3.4d's own `two-off-unsteered` and `two-off-low`, column by column
+over every shared column of the per-run summary: **24 runs × 349 columns = 8 376 reads, 0 differing**, and
+**18 × 349 = 6 282 reads, 0 differing** [M]. The two columns `wheel` and `mount` are this round's own and are
+excluded **by name**, which is stated rather than hidden.
+
+**C2, the mount's own window reproduces 3.4d to the digit on a different script.** `relFull` over `t < 0.2 s`:
+**32.429** on the glide (264 ticks) and **7.823** on the owner's cell (198), against 3.4d's own published 32.429 and
+its own dumps' 7.823 recomputed here [M].
+
+**C3, `?mountAgree=deck`'s own null.** On the glide every entry is above `PLANING_SPEED`, so the branch cannot fire:
+**2 193 ticks and 24 fall times identical to the shipped arm** [M].
+
+**C4, `?mountAgree=felt`'s own identity at the mount.** Every roll-row column over the glide's mount window:
+**0 differing of 21 648 reads on 264 ticks**, first difference at **0.883 s** [M].
+
+**C5, the 2×2 is an identity at the first tick, asserted in the suite.** `predictiveBalance.test.ts`: with a 10°
+tilt, the shipped trim is **exactly zero in every entry**, `'predict'`'s trim **equals** the shipped one entry for
+entry, `'both'`'s **equals** `'ref'`'s, the shipped prediction is **exactly zero in every entry**, `'ref'`'s
+**equals** it and `'both'`'s **equals** `'predict'`'s. And the existing control holds for the new value: with the
+tilt handed in as **zero**, `'ref'` sends the same commands as the flag off over forty ticks, and with a 10° tilt it
+does not.
+
+**C6, the folder's own closures on all sixteen arms** (peaks over every arm): the sense reconstruction **exactly 0**,
+the tick spacing **exactly 0**, the ledger's split, closure and residual **exactly 0** [M]. `ledgerApart` is printed
+apart as **a count** (peak 16 substeps) and is not a closure (§8).
+
+**C7, 3.4a's zero-inertia cost control, both halves, re-run on this tree.** Over the **306 points of the schedule**
+the game reads: the shipped-weights fix against the shipped design, **worst entry 0.000e+0**, and non-vacuous with
+the two weights on (smallest relative move **1.193 × 10⁻²**) [M, `3.4/cost.ts`] — Part 4's own figures.
+
+**C8, the predictions were written before the arms**, in `results/34e/34e-predictions.md`, committed in `81ba9f9a`
+before the first arm ran; **four of the ten are refuted** (§8) and the refutations are in this document rather than
+in the file. The one read taken **before** the predictions — a single `WHEEL=tilt` run to read `refPhi` — is declared
+as a read in that file's own first section, because it chose the round's direction.
+
+## 11. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`: **exit 0**
+- the probes type-checked **separately** on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, `--listFiles` confirming **672 files** including
+  `3.3/plant.ts`, `3.4/datum.ts`, `3.4/mount.ts`, `3.4/cost.ts`, `3.4/row.ts`, `src/physics/bankLedger.ts`,
+  `src/physics/predictiveBalance.ts`, `src/physics/AttachedRider.ts` and `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code
+  above is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 635 passed, 21 expected fail** — Part 4's 634 plus this round's one new test.
+  `vitest run src/game src/scene/rig`: **70 files, 736 passed** — Part 4's 735 plus this round's one.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** — the
+  same as Part 4.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: nothing in this round touches the solver, the sea, the
+  snapshot or any spot's configuration, and the Canyon byte check below is the stronger read of the same thing.
+- **The Canyon byte check, run because `src/` DID change**, with the brief's three reads done rather than assumed —
+  the wrapper prepends `globalThis.location = { search: … }`, the **grid line** is read, and the **"spun up on the
+  CPU in … s" line** is read so that no kept `.sea` can have been imported silently. §11b.
+
+### 11b. The Canyon byte check
+
+| **[M]** 3 600 steps, fresh spin-up, this branch | grid | spin-up | snapshots | state |
+|---|---|---|---|---|
+| **Canyon B** (`?canyonWaves=true`) | 400 × 451 | **78.6 s** | **`a367d938f15fa934`** | **`9e5831f80e38abd9`** |
+| the brief's own reference | 400 × 451 | — | `a367d938f15fa934` | `9e5831f80e38abd9` |
+| **the default Canyon** | 400 × 507 | **62.9 s** | **`ea3d57a4d49f4b48`** | **`a1a2555739210f96`** |
+| the brief's own reference | 400 × 507 | — | `ea3d57a4d49f4b48` | `a1a2555739210f96` |
+
+**All four hashes are the brief's own references, to the character**, on seas spun up fresh in this round's own
+scratchpad — the spin-up lines are 78.6 s and 62.9 s and are read, so neither run imported a kept `.sea` (Part 2
+§11b's own trap, which cost that round an hour). The raw record, with the grid and spin-up lines in place, is
+`results/34e/34e-canyon-byte-check.txt`.
+
+**And it cannot differ, for a reason that is read and not inferred.** Every behavioural line of this round is behind
+one of two flags that no default sets: `DesignWeights.waterHeel === 'ref'` (a condition on two lines of `tick`,
+`undefined` unless `?waterHeel` is one of its three values) and `AttachedRider.mountDeck` / `.mountFelt` (both
+`false` unless `?mountAgree` is one of its three values). With both off, `tick`'s propagation condition is the same
+`if (d.predD)` it was, `drive` is `undefined` as it was, the mount's `else if` is not taken and the felt vertical's
+seed is `this.pairFelt.set(0, WATER.gravity, 0)` — the line that shipped. C1's 14 658 column reads are the
+measurement of that reading.
+
+## 12. Files (3.4e)
+
+- `src/physics/predictiveBalance.ts` — `DesignWeights.waterHeel` widened to `'both' | 'predict' | 'ref'`, and the
+  two lines in `tick` that make the 2×2: the tilt's propagation gated on the value instead of on `predD`'s
+  presence, and the reference's drive taken on `'both'` **or** `'ref'`.
+- `src/physics/AttachedRider.ts` — `AttachedRiderOptions.waterHeel` widened with `'ref'`; the new
+  `AttachedRiderOptions.mountAgree: 'deck' | 'felt' | 'both'` with `mountDeck` and `mountFelt` behind it; the
+  mount's own `else if` that places the standing body square to the deck at any entry speed; the felt vertical's
+  seed at the face's own normal.
+- `src/game/PhysicalMode.ts` — `waterHeelSwitch` accepts `ref`; **`mountAgreeSwitch`** and its line in the config.
+- `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`, `src/physics/RideSession.ts` — `mountAgree`
+  carried end to end, and `waterHeel`'s type widened in each.
+- `src/main.ts` — `mountAgree: undefined` in the online room's overrides, and its clause in the comment that names
+  every pinned switch.
+- `src/game/PhysicalMode.test.ts`, `src/physics/predictiveBalance.test.ts` — the switch's own address tests
+  (`?mountAgree`, `?waterHeel=ref`, the room's pin read out of `main.ts`) and the 2×2 identity at the first tick.
+- `docs/research/new-rider/3.3/plant.ts` — `WHEEL=ref` and **`MOUNTA=deck|felt|both`**, and `wheel` / `mount`
+  columns on all three dumps so no pooled read can mix arms. **Read-only.**
+- `docs/research/new-rider/3.4/datum.ts` — **new**: the analysis. The trim as a column, the rows per arm per filter
+  on both quantities, the mount's own frame 1 per entry speed, the settling reads, the falls on the folder's own
+  median, and the controls. It reads the `.jsonl` dumps and imports **nothing** from `src/`.
+- `docs/research/new-rider/3.4/results/34e/` — the sixteen arms as `.jsonl` (per run), `.ticks.jsonl.gz` (per tick)
+  and `.mount.jsonl.gz` (per frame), with `34e-summary.txt` (every table above, generated), `34e-predictions.md`
+  (ten predictions as written **before** their arms) and `34e-canyon-byte-check.txt`. **The per-tick and per-frame
+  dumps are kept in full for all sixteen arms, gzipped**: 13 MB against 64 MB raw, every figure in this Part is
+  read from one of them, and the generated summary is **byte-identical** read from the raw dumps and from the
+  gzipped ones (`md5 a5344dabc471ac8af845bbd4dc0bf82b` both ways) — the read that says the compression lost
+  nothing. The per-arm `.log` files (the probe's own console tables, every figure in them also in a dump) are the
+  one thing not kept.
+- `docs/research/new-rider/3.4/README.md` — this Part.
+
+## 13. For the owner, in plain words — and the shot list
+
+**Last round I told you the next thing to try was "the datum in both places at once". I was wrong about why: it was
+already there.**
+
+**One: the repair I recommended last round is a switch that already exists, and we already know what it does.**
+`?waterHeel=tilt` already does both halves — I checked the number the rider is steering toward and it really does
+move from "board level with the world" to "board flush with the wave face". It was built and ridden eight months of
+rounds ago, and it drops him faster. **My own last-round recommendation was a thing on the shelf.**
+
+**Two: so I built the one piece that was genuinely missing, and it says something nobody expected.** The correction
+has two halves — what he *predicts* and what he *aims at*. Nobody had ever run the second half on its own. I did.
+**Each half on its own nearly triples his ride on the test wave — one and a half seconds to about four. Both halves
+together cut it to two thirds of a second.** Two fixes that each help, and hurt when you combine them. I do not have
+an explanation for that and I am not going to invent one; I have the measurement, on twenty-four rides a case.
+
+**Three: and on your own slow speeds the answer is different again**, which is why I am not giving you one number.
+There the prediction half does nothing and the aiming half halves the ride.
+
+**Four: the mount's own contradiction is closed, and it is the only thing in this round that helps you.** Below four
+metres a second the game was standing him up with his body upright to the world, and above it leaning with the
+deck — and then changing its mind on the very next frame. `?mountAgree=deck` makes it one rule. **Your own test cell
+goes from a one-second ride to one and one sixth, and the three slowest entries — the speeds you use getting into
+position — from about six tenths of a second to a full second.** The worst ride of the eighteen goes up by two
+thirds.
+
+**Five: and the honest part, twice.** That same switch makes his *internal model* four times worse at the moment he
+stands up — because standing him up already balanced leaves the board almost still, and "almost still" is a very
+small number to divide by. The ride got longer and the error got worse, on the same eighteen rides. I am telling you
+both. **And the other mount fix — making the vertical he feels at the instant he stands up be the wave's and not the
+world's — works perfectly and changes nothing you could feel: one ride of twenty-four moved by a sixtieth of a
+second.** It turns out that reading does not reach his balance's commands at all for the first nine tenths of a
+second; it only reaches the test for whether he has fallen.
+
+**Your bar is not met.** 336 test rides, 336 ended, Compress fell in all 112 of its own.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot, `?rider=new&feltFrame=deck&riderBody=two` — the body you said feels
+human, on everything.
+
+1. **Add `&mountAgree=deck` and stand up slowly.** Paddle into position, stand up at the slowest speed you can, and
+   do it ten times. My numbers say the first moment should feel different — he starts already leaning with the deck
+   instead of bolt upright — and that his slowest stand-ups last about half again as long. **Does standing up slowly
+   feel less like being thrown?** That is the one thing a bench cannot tell me.
+2. **Then the same thing without it, back to back.** It is one character in the address and the glide is unchanged
+   by it, so the only difference you can feel is the slow stand-up itself.
+3. **Do NOT bother with `&waterHeel=tilt`.** It halves your own cell and cuts the glide to two thirds of a second.
+   `&waterHeel=predict` or `&waterHeel=ref` on the glide is the interesting ride if you are curious — each nearly
+   triples it — but both are worse than nothing at your slow speeds.
+4. **And a ruling, not a ride.** What I think step six is, in order:
+   - **The interaction, not another datum.** Two halves that each help and together hurt is the one new fact of this
+     round, and it is the shape of a cancellation. The instrument for it exists: Part 4 §5's own term table, run on
+     the four datum arms rather than on the shipped one. **That is a measurement, not a build, and it is one round.**
+   - **The other side of the mount's contradiction.** I applied the game's own argument at every speed. Nobody has
+     measured the opposite — the body plumb to the world at **every** speed — and it is the same one line. On your
+     own cell the whole ride is the mount, so the cheap experiment is worth having.
+   - **Not the gains, not the cost, not the body, and not the `live` filter.** Parts 3 and 4 settled the first three;
+     the filter is now refuted twice and changing it would re-date every number in the folder, which is a job and
+     not a step.
+   **My recommendation is the first, then the second. Your call.**
+
+## 14. The deletions column, read line by line
+
+`git diff --numstat` against `main`, read file by file. **Twenty-four deletions, and every one is a line re-emitted
+in place with something added.** Read as a column, file by file:
+
+```
+  23   3  docs/research/new-rider/3.3/plant.ts
+ 627   0  docs/research/new-rider/3.4/README.md
+ 288   0  docs/research/new-rider/3.4/datum.ts            (new)
+  35   2  src/game/PhysicalMode.test.ts
+  23   3  src/game/PhysicalMode.ts
+   2   2  src/main.ts
+  59   6  src/physics/AttachedRider.ts
+   9   1  src/physics/RideSession.ts
+  42   0  src/physics/predictiveBalance.test.ts
+  21   5  src/physics/predictiveBalance.ts
+   1   1  src/wave/SurfZoneRunner.ts
+  10   1  src/wave/SurfZoneSimulation.ts
+   … and 51 files under docs/research/new-rider/3.4/results/34e/, insertions only
+──────────────────────────────────────────────
+63 files, 2 251 insertions, 24 deletions
+```
+
+`git diff --cached --numstat main -- src/ server/` is **nine files and 21 of the 24 deletions** (the other three are
+the probe's own `Env:`, doc and `WHEEL` lines); `server/` is empty on both sides.
+
+- **`src/physics/predictiveBalance.ts`, 5.** `DesignWeights.waterHeel`'s type line and its "Two values" doc line,
+  both re-emitted (`'both' | 'predict' | 'ref'`, "**Three** values"); `tick`'s propagation line, re-emitted with
+  `&& this.weights?.waterHeel !== 'ref'` and **nothing else changed** (`d.predD`, `jj`, `N`, `i`, `n`, `xh`,
+  `predD[jj][i][0]`, `tilt` all present); its comment line, re-emitted; and the `drive` line, re-emitted as
+  `refHeel` plus the same `d.gammaD.map((row) => row[0] * tilt)`.
+- **`src/physics/AttachedRider.ts`, 6.** `AttachedRiderOptions.waterHeel`'s type line and its doc line, re-emitted
+  with `'ref'`; `this.waterHeel = …`, re-emitted with `|| options.waterHeel === 'ref'`; the `heelWeights` type and
+  ternary lines, re-emitted with the third branch; and `this.pairFelt.set(0, WATER.gravity, 0)`, re-emitted
+  **unchanged** inside an `else`. The felt vertical's shipped seed is therefore still the exact expression it was.
+- **`src/game/PhysicalMode.ts`, 3**: `waterHeelSwitch`'s signature, its `return` line and one doc line, all three
+  re-emitted with `ref` added and every other value kept (`'tilt'`, `'predict'`, `devParam`, `trim`,
+  `toLowerCase`).
+- **`src/main.ts`, 2**: the online-room override line and its comment line, both re-emitted with `mountAgree` in
+  them and **every other switch still named** — checked as a column, not by eye: the override line's **75** names
+  are all 75 still there with `mountAgree` the 76th, and the comment line's **19** are all 19 with `mountAgree` the
+  20th.
+- **`src/wave/SurfZoneRunner.ts`, 1** and **`src/wave/SurfZoneSimulation.ts`, 1** and
+  **`src/physics/RideSession.ts`, 1**: one line each, re-emitted with `mountAgree` spliced in beside `waterHeel`
+  and nothing dropped.
+- **`src/game/PhysicalMode.test.ts`, 2**: the import line (extended with `mountAgreeSwitch` — its **68** names are
+  all 68 still there, read as a column, with the new one the 69th) and the `waterHeel` negative-case loop (extended
+  with `'?waterHeel=reference'`, all six original cases kept).
+- **`docs/research/new-rider/3.3/plant.ts`, 3**: the `Env:` line, the `WHEEL` doc line and the `WHEEL` constant,
+  all three re-emitted with `ref` and `MOUNTA` — `'tilt'`, `'predict'`, `process.env.WHEEL` and `undefined` all
+  still present.
+- **Every other file is insertions only, zero deletions**: `docs/research/new-rider/3.4/datum.ts` (new),
+  `src/physics/predictiveBalance.test.ts`, `docs/research/new-rider/3.4/README.md` (this Part appended, Parts 1 to
+  4 untouched) and the results folder.
+- **And one line was deleted after it was written and before it was committed**: the forty-tick body of this
+  round's own 2×2 test, replaced by the first-tick read when the forty-tick version refuted its own assertion
+  (§8). It does not appear in the diff because it never reached a commit, and it is recorded here rather than left
+  out.
