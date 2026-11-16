@@ -125,10 +125,52 @@ describe('the water\'s own heel datum (step 3.3p, `waterHeel`)', () => {
     };
     expect(run({ ...DEFAULT_WEIGHTS, waterHeel: 'both' }, 0)).toEqual(run(undefined, 0));
     expect(run({ ...DEFAULT_WEIGHTS, waterHeel: 'predict' }, 0)).toEqual(run(undefined, 0));
+    // Step 3.4e's fourth cell takes the same control, and it is not vacuous either.
+    expect(run({ ...DEFAULT_WEIGHTS, waterHeel: 'ref' }, 0)).toEqual(run(undefined, 0));
     // And with a tilt it does something: a 10 degree face must move the command.
     const moved = run({ ...DEFAULT_WEIGHTS, waterHeel: 'both' }, 10 * (Math.PI / 180));
     const still = run(undefined, 10 * (Math.PI / 180));
     expect(moved).not.toEqual(still);
+    expect(run({ ...DEFAULT_WEIGHTS, waterHeel: 'ref' }, 10 * (Math.PI / 180))).not.toEqual(still);
+  });
+
+  // **Step 3.4e: the switch is the 2x2 of its two halves, and each value is exactly one row of it.** The two halves are
+  // separable reads on the controller itself: the forward prediction is `predicted`, the trim is `reference`. So with a
+  // tilt on, `'predict'` must move the prediction and leave the trim where the shipped one is; `'ref'` must move the
+  // trim and leave the prediction where the shipped one is; `'both'` must agree with `'predict'` on the prediction and
+  // with `'ref'` on the trim, at the same state and the same tilt.
+  //
+  // **Read at the FIRST tick, and the reason is a refutation of this test's own first draft.** Over forty ticks
+  // `'ref'`'s prediction is NOT the shipped one: a moved trim sends different commands, and the commands enter `xh`
+  // through `pred[jj]`, so the two halves are separable in the controller's own line and NOT separable along a
+  // trajectory. At the first tick the sense line is shorter than the delay, the estimate is zero and no command has
+  // been sent, so `xh` is exactly `Σ predD · tilt` — zero for the two values that do not propagate it — and the split
+  // is an identity rather than an approximation.
+  it('splits into the prediction and the reference, one half per value, as a 2x2', () => {
+    const tilt = 10 * (Math.PI / 180);
+    const at = (w?: DesignWeights) => {
+      const c = new PredictiveController(w);
+      const sense = [0.02, 0.1, 0, 0, 0, 0.01, 0];
+      c.tick(sense, 7, 0, 0, 0, { ankle: 0.25, twist: 30 }, 0, tilt);
+      return { x: [...c.predicted], ref: [...c.reference.x], refU: [...c.reference.u] };
+    };
+    const off = at(undefined);
+    const pre = at({ ...DEFAULT_WEIGHTS, waterHeel: 'predict' });
+    const ref = at({ ...DEFAULT_WEIGHTS, waterHeel: 'ref' });
+    const both = at({ ...DEFAULT_WEIGHTS, waterHeel: 'both' });
+    // The shipped trim is the board level with the WORLD, and on an unsteered tick it is exactly zero.
+    expect(off.ref.every((v) => v === 0)).toBe(true);
+    expect(pre.ref).toEqual(off.ref);
+    expect(pre.refU).toEqual(off.refU);
+    // `'ref'` moves the trim off the world's level, and by something the size of the face under the board.
+    expect(Math.abs(ref.ref[0])).toBeGreaterThan(0.5 * tilt);
+    expect(both.ref).toEqual(ref.ref);
+    expect(both.refU).toEqual(ref.refU);
+    // ... and leaves the forward prediction the shipped one, where `'predict'` and `'both'` move it and agree.
+    expect(off.x.every((v) => v === 0)).toBe(true);
+    expect(ref.x).toEqual(off.x);
+    expect(pre.x).not.toEqual(off.x);
+    expect(both.x).toEqual(pre.x);
   });
 });
 

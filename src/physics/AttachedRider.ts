@@ -1490,9 +1490,34 @@ export interface AttachedRiderOptions {
    * 0.390–0.825, and it makes both rows' magnitudes worse. `DesignWeights.waterHeel` has the rest.
    *
    * `'tilt'` carries the tilt through the forward prediction **and** the reference's own steady turn; `'predict'`
-   * through the forward prediction alone, leaving the reference the flat-water one that ships.
+   * through the forward prediction alone, leaving the reference the flat-water one that ships; `'ref'` (step 3.4e)
+   * is the 2×2's fourth cell — **the reference alone**, the forward prediction the flat-water one — so that 3.3p's
+   * own sentence *"the reference is the destabiliser"* can be read off one arm instead of inferred from the
+   * difference of two arms that differ in both halves. `DesignWeights.waterHeel` has the rest.
    */
-  waterHeel?: 'tilt' | 'predict';
+  waterHeel?: 'tilt' | 'predict' | 'ref';
+  /**
+   * **The mount agreeing with itself** (step 3.4e, `?mountAgree=deck|felt|both`): two one-line halves of the moment
+   * the rider stands up, each opt-in, each off by default, both pinned off for online rooms.
+   *
+   * The shipped mount places the standing body **square to the deck** above `PLANING_SPEED` and **plumb to the
+   * world** below it, *"as a body balances on a board sliding freely down its face, where the felt vertical is the
+   * face's normal"* [R, `reset`] — and step 3.4d measured two disagreements inside that:
+   * 1. the felt vertical the body's own balance reads at frame 1 is the **world's** gravity (7.545° across the deck
+   *    where the deck's own tilt is 8.85°), reaching the face's normal only at **0.250 s**, 24 of 24 runs; and
+   * 2. on the owner's own low-speed cell the rule **flips at one metre a second** — nine of eighteen runs mount
+   *    plumb and nine square, an **8.37°** difference in where the body starts — while `planingStep` forces
+   *    `banked` true on the **next** frame for the new surfer whatever the speed, so the mount is the one frame of
+   *    the ride that disagrees with the rest of it.
+   *
+   * - `'deck'` — the body square to the deck at the mount at **any** entry speed, which is the rule the frame after
+   *   the mount already uses. An initial placement, not a force.
+   * - `'felt'` — the felt vertical's low pass seeded at the face's own normal: `g (n̂·ŷ) n̂`, the specific force of a
+   *   body sliding freely down a plane of normal `n̂`, which is the placement's own stated argument. An initial
+   *   condition of a first-order filter, not a force.
+   * - `'both'` — both.
+   */
+  mountAgree?: 'deck' | 'felt' | 'both';
   /**
    * **The two-body rider** (step 3.4a, `?riderBody=two`): the balance's own internal plant gives the rider's body an
    * inertia of its own in the frontal plane instead of treating it as a point mass on a massless leg, so the board's
@@ -2004,6 +2029,16 @@ export class AttachedRider {
   private readonly newRider: boolean;
   /** The felt vertical's low pass held on the deck's own axes (`feltFrame: 'deck'`, step 3.3c) rather than in the world. */
   private readonly deckFelt: boolean;
+  /**
+   * **Step 3.4e, `mountAgree`**: the mount's own two halves, each off by default.
+   * - `mountDeck` — the standing body is placed **square to the deck** at the mount whatever the entry speed, instead
+   *   of plumb to the world below `PLANING_SPEED`. For the new surfer the very next frame forces `banked` true
+   *   (`planingStep`), so with it off the mount is the one frame of the ride that disagrees with every other.
+   * - `mountFelt` — the felt vertical's low pass is **seeded at the face's own normal** instead of the world's
+   *   vertical, which is the vertical the placement's own argument names.
+   */
+  private readonly mountDeck: boolean;
+  private readonly mountFelt: boolean;
   /** The knees' travel read at the depth the leg has reached rather than the one commanded (`kneeRoom: 'achieved'`, step 3.3f). */
   private readonly kneeRoomAchieved: boolean;
   /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
@@ -2340,6 +2375,9 @@ export class AttachedRider {
     this.capsLegs = options.legPower === 'cap';
     this.newRider = options.rider === 'new';
     this.deckFelt = options.feltFrame === 'deck';
+    // Step 3.4e: the mount's own two halves, each reached by one value of `mountAgree` and both by `'both'`.
+    this.mountDeck = options.mountAgree === 'deck' || options.mountAgree === 'both';
+    this.mountFelt = options.mountAgree === 'felt' || options.mountAgree === 'both';
     this.kneeRoomAchieved = options.kneeRoom === 'achieved';
     this.stanceReach = options.stanceReach === 'keep' ? 'keep' : undefined;
     this.ankleLimit = options.ankleLimit === 'feet' ? 'feet' : undefined;
@@ -2352,9 +2390,11 @@ export class AttachedRider {
     this.predictive = this.newRider && options.humanGains === undefined;
     // Step 3.3p: `waterHeel: 'tilt'` is the same weights flag the explicit `balance.weights` route reaches, so the
     // two cannot disagree and an explicit `waterHeel` in `balance.weights` still wins.
-    this.waterHeel = options.waterHeel === 'tilt' || options.waterHeel === 'predict';
-    const heelWeights: { waterHeel: 'both' | 'predict' } | undefined = options.waterHeel === 'tilt'
-      ? { waterHeel: 'both' } : options.waterHeel === 'predict' ? { waterHeel: 'predict' } : undefined;
+    // Step 3.4e adds `'ref'`, which needs the tilt read for the same reason the other two do.
+    this.waterHeel = options.waterHeel === 'tilt' || options.waterHeel === 'predict' || options.waterHeel === 'ref';
+    const heelWeights: { waterHeel: 'both' | 'predict' | 'ref' } | undefined = options.waterHeel === 'tilt'
+      ? { waterHeel: 'both' } : options.waterHeel === 'predict' ? { waterHeel: 'predict' }
+        : options.waterHeel === 'ref' ? { waterHeel: 'ref' } : undefined;
     // Step 3.4a: `riderBody` reaches the same weights route, so an explicit `riderBody` in `balance.weights` wins.
     const bodyWeights: { riderBody: 'two' | 'control' | 'symmetric' } | undefined = options.riderBody
       ? { riderBody: options.riderBody } : undefined;
@@ -2667,6 +2707,11 @@ export class AttachedRider {
       this.kneeUsed = 0;
       if (this.upright && this.phase === 'standing' && board.velocity.length() > PLANING_SPEED) {
         this.planing = true;
+        this.banked = true;
+      } else if (this.mountDeck && this.upright && this.phase === 'standing') {
+        // Step 3.4e (`mountAgree: 'deck'`): the body square to the deck at the mount whatever the entry speed. Only
+        // `banked` — the body's placement — is set; `planing` stays the board's own speed test, because the board is
+        // not planing and `planingStep` would flip a mounted `true` back on the next frame anyway.
         this.banked = true;
       }
     }
@@ -4963,7 +5008,15 @@ export class AttachedRider {
     // nothing in the water is touched. Step 3.3b measured the world frame's rate-proportional cost at 0.084–0.132° of
     // tilt per degree of roll in all seven of its cells, over roll rates of 65–330 °/s.
     if (this.pairFresh) {
-      this.pairFelt.set(0, WATER.gravity, 0);
+      // Step 3.4e (`mountAgree: 'felt'`): the seed is the **face's own normal** — `g (n̂·ŷ) n̂`, the specific force of
+      // a body sliding freely down a plane of normal `n̂`, which is the vertical the mount's own placement argument
+      // names [R, `reset`]. `waterUp` is the water's own normal under the board, set by `planingStep` in `prepare`
+      // before the board's solve and so before this substep, and (0, 1, 0) off the water, where the two seeds are the
+      // same vector. Off, it is the world's vertical, byte for byte the line that ships.
+      if (this.mountFelt) {
+        this.pairFelt.copy(this.waterUp).normalize();
+        this.pairFelt.multiplyScalar(WATER.gravity * this.pairFelt.y);
+      } else this.pairFelt.set(0, WATER.gravity, 0);
       // The mount's reading is the same vector either way: the world vertical, rotated into the deck's axes when that is
       // where the state lives, so the switch changes nothing on the first loaded substep.
       if (this.deckFelt) this.pairFelt.applyQuaternion(inverse);

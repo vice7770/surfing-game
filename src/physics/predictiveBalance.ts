@@ -792,12 +792,23 @@ export interface DesignWeights {
    * Φ, Γ, the LQR gain and the filter are **untouched** by it: the tilt is an input, not a state, so with the flag
    * off the design is byte-for-byte the design that ships.
    *
-   * Two values, because the correction has two halves and step 3.3p measured them apart:
+   * **Three** values, because the correction has two halves and the switch is the 2×2 of them. Step 3.3p built and
+   * measured three of the four cells; step 3.4e adds the fourth (`'ref'`) so that "the reference is the destabiliser"
+   * can be read off an arm that changes the reference and nothing else, instead of inferred from the difference of
+   * two arms that differ in both halves:
    * - `'both'` — the tilt propagates through the forward prediction over the sensing delay **and** into the
    *   reference, whose steady turn is then the trim **on this face** rather than on flat water.
    * - `'predict'` — the forward prediction only; the reference is the flat-water one that ships.
+   * - `'ref'` — **the reference only** (step 3.4e): the trim the loop holds is the steady turn on this face, and the
+   *   forward prediction is the flat-water one that ships. `Design.predD` is still built — the design is the same
+   *   object for all three values — and `tick` does not apply it, which is the one line the value is.
+   *
+   * The reference the two reference-moving values hold is **measured**, not assumed: on the Canyon-matched face
+   * (3.3's own unsteered cell, tilt 8.81° under the board at the mount) `|φ_ref|` is **9.105°** at frame 1 against
+   * the **exactly 0.0000°** step 3.4d read at every one of 18 182 frames with the flag off — i.e. the trim does move
+   * from "the board level with the world" to "the board flush with the face". Step 3.4e §2.
    */
-  waterHeel?: 'both' | 'predict';
+  waterHeel?: 'both' | 'predict' | 'ref';
   /**
    * **The two-body rider** (step 3.4a, `?riderBody=two`): the plant the design, the filter and the predictor all run
    * on gives the rider's body an inertia of its own in the frontal plane (`YawPlant.body`, `RiderBody`) instead of
@@ -1421,9 +1432,14 @@ export class PredictiveController {
     // sensing delay exactly as the commands already sent do. Held at the tilt now over the whole delay — the water's
     // slope under the board turns far slower than the board's own modes (3.2p measured the board's at 1.0–1.4 Hz) —
     // and absent entirely with the flag off, where `predD` is undefined and these lines do not run.
-    if (d.predD) for (let jj = 0; jj < N; jj += 1) for (let i = 0; i < n; i += 1) xh[i] += d.predD[jj][i][0] * tilt;
-    // `'predict'` leaves the reference the flat-water one that ships; `'both'` solves the steady turn on this face.
-    const drive = d.gammaD && this.weights?.waterHeel === 'both' ? d.gammaD.map((row) => row[0] * tilt) : undefined;
+    // Step 3.4e: `'ref'` is the 2×2's fourth cell — the reference moved and the prediction left alone — so the
+    // propagation is gated on the value and not on `predD`'s presence. `'both'` and `'predict'` are the lines 3.3p
+    // shipped, unchanged, and with the flag off `predD` is undefined and the condition is the same `if (d.predD)`.
+    if (d.predD && this.weights?.waterHeel !== 'ref') for (let jj = 0; jj < N; jj += 1) for (let i = 0; i < n; i += 1) xh[i] += d.predD[jj][i][0] * tilt;
+    // `'predict'` leaves the reference the flat-water one that ships; `'both'` and `'ref'` solve the steady turn on
+    // this face.
+    const refHeel = this.weights?.waterHeel === 'both' || this.weights?.waterHeel === 'ref';
+    const drive = d.gammaD && refHeel ? d.gammaD.map((row) => row[0] * tilt) : undefined;
     let ref = steadyTurn(d.phi, d.gamma, bankAsked, twistAsked, drive);
     if (this.turn === 'tan' && Math.abs(bankAsked) > 1e-6) {
       // The turn that balances the lean asked (the linear model's bank is the lean's tangent in the body's balance), its

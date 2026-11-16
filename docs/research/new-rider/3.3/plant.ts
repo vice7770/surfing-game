@@ -119,7 +119,8 @@
  *   RIDER=new FELT=deck node <scratch>/pl.mjs
  *
  * Env: `RIDER=new|old`, `STANCES`, `EXTRAS`, `ENTRIES`, `STEERS`, `SECONDS`, `FELT=deck`, `LEDGER=off`,
- * `WHEEL=tilt|predict` (step 3.3p's switch), `OUT`, `TRACE`.
+ * `WHEEL=tilt|predict|ref` (step 3.3p's switch with step 3.4e's fourth cell), `MOUNTA=deck|felt|both` (step 3.4e's
+ * switch), `OUT`, `TRACE`.
  */
 import { appendFileSync } from 'node:fs';
 import { Matrix4, Quaternion, Vector3 } from 'three';
@@ -151,8 +152,21 @@ const STEERS = (process.env.STEERS ?? '0').split(',').map(Number);
 const OUT = process.env.OUT;
 const TRACE = process.env.TRACE === '1';
 const FELT = process.env.FELT === 'deck' ? 'deck' : undefined;
-/** `WHEEL=tilt`: step 3.3p's shipped switch, so the arm that rides it is the same probe on the same cells. */
-const WHEEL = process.env.WHEEL === 'tilt' ? 'tilt' : process.env.WHEEL === 'predict' ? 'predict' : undefined;
+/**
+ * `WHEEL=tilt|predict|ref`: step 3.3p's shipped switch with step 3.4e's fourth cell added, so the arm that rides it is
+ * the same probe on the same cells. `tilt` is the datum in BOTH places (the forward prediction and the reference's own
+ * steady turn), `predict` the prediction alone, `ref` (step 3.4e) the reference alone.
+ */
+const WHEEL = process.env.WHEEL === 'tilt' ? 'tilt' : process.env.WHEEL === 'predict' ? 'predict'
+  : process.env.WHEEL === 'ref' ? 'ref' : undefined;
+/**
+ * **Step 3.4e's switch**: `MOUNTA=deck|felt|both` rides `?mountAgree`, the mount made to agree with its own stated
+ * argument — the standing body square to the deck at ANY entry speed (`deck`), the felt vertical's low pass seeded at
+ * the face's own normal (`felt`), or both. Unset, the mount is the one that ships and every arm is step 3.4d's own
+ * probe on step 3.4d's own cells.
+ */
+const MOUNTA = process.env.MOUNTA === 'deck' ? 'deck' : process.env.MOUNTA === 'felt' ? 'felt'
+  : process.env.MOUNTA === 'both' ? 'both' : undefined;
 /** `LEDGER=off`: the purity arm — the ride with the ledger not turned on, so "the ledger changes nothing" is read. */
 const LEDGER = process.env.LEDGER === 'off' ? 'off' : 'on';
 /**
@@ -752,6 +766,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(FELT ? { feltFrame: FELT } : {}),
     ...(WHEEL ? { waterHeel: WHEEL } : {}),
+    ...(MOUNTA ? { mountAgree: MOUNTA } : {}),
     ...(BODY ? { riderBody: BODY } : {}),
     ...(COST ? { riderCost: COST } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
@@ -824,6 +839,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       appendFileSync(MOUNT, `${JSON.stringify({
         body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0,
         extra: entry0 === null ? extra : null,
+        // Step 3.4e: which datum cell and which mount this arm ran, on every row, so a pooled read cannot mix arms.
+        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships',
         frame: i + 1, t: r(t, 4),
         // what the predictor has: its own ticks, its sense line against the delay it needs, and whether its filter runs
         predTicks: rider.predictor.ticks, senses: ctl.senses.length, steps: dM ? dM.steps : null,
@@ -1679,6 +1696,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     for (const xx of ticks) {
       appendFileSync(TICKS, `${JSON.stringify({
         body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0, extra: entry0 === null ? extra : null,
+        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships',
         live: xx.t > 0.2 && xx.clamped === 0 ? 1 : 0, clamped: xx.clamped, ticks: xx.ticks,
         t: r(xx.t, 4),
         // the state the tick sits at, every one a read off the ride
@@ -1723,6 +1741,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
   const out: Record<string, unknown> = {
     rider: RIDER,
     ledger: LEDGER,
+    wheel: WHEEL ?? 'off',
+    mount: MOUNTA ?? 'ships',
     stance: st,
     extra: entry0 === null ? extra : null,
     entryAsked: entry0,

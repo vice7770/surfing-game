@@ -353,7 +353,16 @@ export interface SurfZoneConfig {
    * input to the predictor, so with the switch off the design is byte-for-byte the one that ships. The new surfer
    * (`?rider=new`) only. Every spot. The `?waterHeel=tilt` dev switch, opt-in, to ride; online rooms run the default.
    */
-  waterHeel?: 'tilt' | 'predict';
+  waterHeel?: 'tilt' | 'predict' | 'ref';
+  /**
+   * 'deck' | 'felt' | 'both': the mount made to agree with its own argument (step 3.4e;
+   * `RideSessionOptions.mountAgree`, `AttachedRiderOptions.mountAgree`). 'deck' places the standing body square to
+   * the deck at **any** entry speed instead of plumb to the world below `PLANING_SPEED`; 'felt' seeds the felt
+   * vertical's low pass at the **face's own normal** instead of the world's vertical; 'both' does both. Two initial
+   * conditions at the moment of standing up; no force and no control law changes. The new surfer (`?rider=new`) only.
+   * Every spot. The `?mountAgree` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  mountAgree?: 'deck' | 'felt' | 'both';
   /**
    * 'two': the balance's own internal plant gives the rider's body an inertia of its own in the frontal plane, so the
    * board's roll, the body's bank, the turn and the sway are solved **together** and the force at the feet comes out

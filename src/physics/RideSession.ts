@@ -176,7 +176,14 @@ export interface RideSessionOptions {
    * and hands the face's own tilt to the predictor as a measured input (the `?waterHeel=tilt` dev switch); by default
    * they are read at the board's roll from the world's level, which is the angle the lab never measured.
    */
-  waterHeel?: 'tilt' | 'predict';
+  waterHeel?: 'tilt' | 'predict' | 'ref';
+  /**
+   * The mount made to agree with its own argument (step 3.4e; `AttachedRiderOptions.mountAgree`): 'deck' places the
+   * standing body square to the deck at any entry speed instead of plumb to the world below `PLANING_SPEED`, 'felt'
+   * seeds the felt vertical's low pass at the face's own normal instead of the world's vertical, 'both' does both
+   * (the `?mountAgree` dev switch); by default the mount is the one that ships.
+   */
+  mountAgree?: 'deck' | 'felt' | 'both';
   /**
    * The two-body rider (step 3.4a; `AttachedRiderOptions.riderBody`): 'two' gives the rider's body an inertia of its
    * own in the balance's internal plant, so the lateral accelerations are solved together and the force at the feet is
@@ -298,6 +305,7 @@ export class RideSession {
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
+      ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
       ...(options.riderCost ? { riderCost: options.riderCost } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),

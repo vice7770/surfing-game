@@ -9,7 +9,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, buoyFrameSwitch, waterHeelSwitch, riderBodySwitch, riderCostSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1366,7 +1366,10 @@ describe('PhysicalMode', () => {
     expect(waterHeelSwitch('?waterHeel=tilt')).toEqual({ waterHeel: 'tilt' });
     expect(waterHeelSwitch('?waterHeel=TILT')).toEqual({ waterHeel: 'tilt' });
     expect(waterHeelSwitch('?waterHeel=predict')).toEqual({ waterHeel: 'predict' });
-    for (const search of ['', '?waterHeel', '?waterHeel=', '?waterHeel=level', '?waterHeel=on', '?buoyFrame=hull']) {
+    // Step 3.4e's fourth cell of the 2x2: the reference's own steady turn alone.
+    expect(waterHeelSwitch('?waterHeel=ref')).toEqual({ waterHeel: 'ref' });
+    expect(waterHeelSwitch('?waterHeel=REF')).toEqual({ waterHeel: 'ref' });
+    for (const search of ['', '?waterHeel', '?waterHeel=', '?waterHeel=level', '?waterHeel=on', '?waterHeel=reference', '?buoyFrame=hull']) {
       expect(waterHeelSwitch(search), search).toEqual({});
     }
     const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
@@ -1382,6 +1385,36 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { waterHeel: undefined }).waterHeel).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).waterHeel).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?mountAgree=deck|felt|both` dev switch (step 3.4e): opt-in, the moment the new surfer stands up made to agree
+  // with its own stated argument — the body square to the deck at ANY entry speed (the shipped mount flips the rule at
+  // PLANING_SPEED, nine runs of eighteen each way on the owner's own cell), and/or the felt vertical's low pass seeded
+  // at the face's own normal (the shipped seed is the WORLD's vertical, which reaches the face's normal at 0.250 s).
+  it('makes the mount agree with its own argument with `?mountAgree=deck|felt|both` (an opt-in dev switch), and mounts as it ships otherwise', () => {
+    expect(mountAgreeSwitch('?mountAgree=deck')).toEqual({ mountAgree: 'deck' });
+    expect(mountAgreeSwitch('?mountAgree=DECK')).toEqual({ mountAgree: 'deck' });
+    expect(mountAgreeSwitch('?mountAgree=felt')).toEqual({ mountAgree: 'felt' });
+    expect(mountAgreeSwitch('?mountAgree=both')).toEqual({ mountAgree: 'both' });
+    for (const search of ['', '?mountAgree', '?mountAgree=', '?mountAgree=on', '?mountAgree=level', '?waterHeel=tilt']) {
+      expect(mountAgreeSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?mountAgree=both' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).mountAgree, spot).toBe('both');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bmountAgree: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { mountAgree: undefined }).mountAgree).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).mountAgree).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

@@ -566,6 +566,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
     // with the face's own tilt as a measured input, instead of at its roll from the world's level (step 3.3p), opt-in, to ride.
     ...waterHeelSwitch(),
+    // `?mountAgree=deck|felt|both`: the mount places the standing body square to the deck at any entry speed, and/or seeds
+    // the felt vertical's low pass at the face's own normal, so the moment of standing up agrees with its own argument (step 3.4e), opt-in, to ride.
+    ...mountAgreeSwitch(),
     // `?riderBody=two`: the balance's internal plant gives the rider's body an inertia of its own and solves the lateral
     // accelerations together, instead of a point mass on a massless leg with a substituted force at the feet (step 3.4a), opt-in, to ride.
     ...riderBodySwitch(),
@@ -1160,11 +1163,28 @@ export function buoyFrameSwitch(search?: string): { buoyFrame?: 'hull' } {
  * measured them never used (docs/research/new-rider/3.3 Part 39). Measured and NOT a fix: it buys the sign of the roll
  * acceleration and costs both rows' size. Anything else, the world's level as before, and then the design is
  * byte-for-byte the shipped one. `tilt` carries the face's tilt through the forward prediction and the reference's own
- * steady turn; `predict` through the forward prediction alone.
+ * steady turn; `predict` through the forward prediction alone; `ref` (step 3.4e) the reference's own steady turn
+ * alone, which is the 2×2's fourth cell and the arm that isolates 3.3p's own *"the reference is the destabiliser"*.
  */
-export function waterHeelSwitch(search?: string): { waterHeel?: 'tilt' | 'predict' } {
+export function waterHeelSwitch(search?: string): { waterHeel?: 'tilt' | 'predict' | 'ref' } {
   const v = devParam('waterHeel', search)?.trim().toLowerCase();
-  return v === 'tilt' || v === 'predict' ? { waterHeel: v } : {};
+  return v === 'tilt' || v === 'predict' || v === 'ref' ? { waterHeel: v } : {};
+}
+
+/**
+ * The `?mountAgree=deck|felt|both` dev switch (`SurfZoneConfig.mountAgree`, step 3.4e): opt-in, the moment the new
+ * surfer stands up made to agree with its own stated argument. The shipped mount places the standing body square to
+ * the deck above `PLANING_SPEED` and plumb to the world below it, *"where the felt vertical is the face's normal"* —
+ * and step 3.4d measured that the felt vertical the body's balance reads at frame 1 is the **world's** gravity
+ * (reaching the face's normal at 0.250 s, 24 of 24), and that on the owner's own low-speed cell the placement rule
+ * flips at one metre a second, nine runs of eighteen each way and 8.37° apart, while the frame after the mount forces
+ * the body banked whatever the speed. `deck` places it square to the deck at any entry speed; `felt` seeds the felt
+ * vertical's low pass at the face's own normal; `both` does both. Anything else, the mount as it ships.
+ * docs/research/new-rider/3.4 Part 5.
+ */
+export function mountAgreeSwitch(search?: string): { mountAgree?: 'deck' | 'felt' | 'both' } {
+  const v = devParam('mountAgree', search)?.trim().toLowerCase();
+  return v === 'deck' || v === 'felt' || v === 'both' ? { mountAgree: v } : {};
 }
 
 /**
