@@ -101,6 +101,15 @@ const whole = new Float64Array(MAX);
 /** The LU of `A`, its pivots, and the scratch a back-substitution needs. */
 const lu = new Float64Array(MAX * MAX);
 const pivots = new Int32Array(MAX);
+/**
+ * Step 3.3p: a SECOND factorisation, of the same `A` with the bank row's own diagonal multiplied by `RIGID`, so the
+ * body cannot move across the leg at all. It is the positive control on the lateral unit reads below (P0c): with the
+ * ankle rigid the effective sway mass must read the two masses SUMMED, which is the number my brief took the
+ * diagonal `system[i][i] += m` to mean. Nothing in the game reads it; it is only built while `on`.
+ */
+const luRigid = new Float64Array(MAX * MAX);
+const pivotsRigid = new Int32Array(MAX);
+const RIGID = 1e6;
 const solution = new Float64Array(MAX);
 const total = new Float64Array(MAX);
 /**
@@ -113,8 +122,8 @@ const response = new Float64Array(MAX);
 let factored = false;
 let order = 0;
 
-function factor(a: Float64Array, n: number): boolean {
-  for (let i = 0; i < n; i += 1) pivots[i] = i;
+function factor(a: Float64Array, n: number, piv: Int32Array = pivots): boolean {
+  for (let i = 0; i < n; i += 1) piv[i] = i;
   for (let k = 0; k < n; k += 1) {
     let p = k;
     let best = Math.abs(a[k * n + k]);
@@ -132,9 +141,9 @@ function factor(a: Float64Array, n: number): boolean {
         a[k * n + j] = a[p * n + j];
         a[p * n + j] = t;
       }
-      const t = pivots[k];
-      pivots[k] = pivots[p];
-      pivots[p] = t;
+      const t = piv[k];
+      piv[k] = piv[p];
+      piv[p] = t;
     }
     const d = a[k * n + k];
     for (let i = k + 1; i < n; i += 1) {
@@ -146,8 +155,8 @@ function factor(a: Float64Array, n: number): boolean {
   return true;
 }
 
-function substitute(a: Float64Array, n: number, b: Float64Array, offset: number, out: Float64Array): void {
-  for (let i = 0; i < n; i += 1) out[i] = b[offset + pivots[i]];
+function substitute(a: Float64Array, n: number, b: Float64Array, offset: number, out: Float64Array, piv: Int32Array = pivots): void {
+  for (let i = 0; i < n; i += 1) out[i] = b[offset + piv[i]];
   for (let i = 1; i < n; i += 1) {
     let s = out[i];
     for (let j = 0; j < i; j += 1) s -= a[i * n + j] * out[j];
@@ -227,6 +236,63 @@ export const bankLedger = {
    * read of a dummy row. Counted and skipped rather than reported.
    */
   unitSkipped: 0,
+  /**
+   * **Step 3.3p: the LATERAL compliances, off the same LU, with no force in any of them.**
+   *
+   * The internal model divides a side force by `YawPlant.boardMass` = **2.54 kg, the dry board**, and divides the
+   * board's roll moment by `boardRollInertia`, which is already the game's own measured value
+   * [R, `predictiveBalance.ts:627`, `:569`]. 3.3o's brief called the first one "29.7 times too small" by comparing it
+   * with `coupleStanding`'s DIAGONAL `system[i * N + i] += m`. Part 36's own reading 2 is that a diagonal of `A` is
+   * not an effective inertia — the same loop writes `system[i * N + 7] += m t_i` two lines down — so the quantity the
+   * model's `boardMass` should be compared with is this one, and these rows are it.
+   *
+   * - `sideSwayPer` — the board's own sway, m/s per N·s, for one unit of side impulse on its three translational rows
+   *   (`b = t̂` on rows 0–2, zero elsewhere). **`1 / sideSwayPer` is the mass the integrator actually divides a side
+   *   force by, with the rider coupled.**
+   * - `sideRollPer`, `sideRelativePer` — the same impulse's roll of the deck and its `Δu̇ / L`: the cross terms the
+   *   model writes as `deckHeight · push` (a 0.031 m lever) and as the feet's own acceleration.
+   * - `rollSwayPer` — the other corner of the same 2×2: the sway one unit of **roll** impulse makes.
+   * - `yawPer` — the board's own turn, rad/s per N·m·s, for one unit of yaw impulse about the body's `up`
+   *   (`b = n̂` on rows 3–5). **`1 / yawPer` is the yaw inertia the solve meets**, against the model's
+   *   `boardYawInertia + riderYawInertia`.
+   * - `sideSwayRigid` — the same side impulse with the **bank row's** diagonal multiplied by 10⁶, so the body cannot
+   *   move across the leg. (My own prediction P0c was that this alone must read the two masses summed. It does not,
+   *   and the reason is the next row: the board can still roll and yaw out from under a rider whose across freedom is
+   *   welded. **The failed prediction is the mechanism.**)
+   * - `sideSwayFrozen` — **the positive control that works**: the same impulse with the diagonals of rows 3–5
+   *   (rotation), 6 (the leg), 7 (the bank) and 8 (along) all multiplied by 10⁶, so nothing can give way and the
+   *   pair is one rigid translating mass. `1 / sideSwayFrozen` must read the masses SUMMED — the board's own and its
+   *   water's, plus the rider's 73 kg — which is the number my brief took the diagonal `system[i][i] += m` to mean.
+   *
+   * **And the instrument's own free control: `A` is symmetric, so `sideRollPer` and `rollSwayPer` are the same entry
+   * of `A⁻¹` read from two different back-substitutions and must agree.** They are reported separately so that is
+   * read rather than asserted. `sideYawPer`/`yawSwayPer`, `rollYawPer`/`yawRollPer`, `ankleSwayPer`,
+   * `ankleYawPer`/`yawRelativePer` and `rollRelativePer`/`ankleDeck` are the remaining corners, so the four
+   * generalised coordinates the lateral problem lives in — the deck's roll, the board's sway, its turn and the
+   * joint's own angle — have their **whole 4×4 compliance** read off the game's own matrix. That is the block the
+   * internal model builds by hand out of three independent divisions by `boardRollInertia`, `boardMass · V` and
+   * `boardYawInertia + riderYawInertia`, with the two off-diagonal corners it keeps taken at a 0.031 m lever.
+   *
+   * The datum: `t̂` is `AttachedRider.across` and `n̂` is its `up` — the rider's own two axes, the ones
+   * `coupleStanding` writes the bank's and the leg's rows on, so an entry here and a row of `A` are about one axis.
+   * `sideRollPer` is about `rollAxis`, as every other `deck` reading on this ledger is.
+   */
+  sideSwayPer: 0,
+  sideRollPer: 0,
+  sideRelativePer: 0,
+  sideYawPer: 0,
+  rollSwayPer: 0,
+  rollYawPer: 0,
+  yawPer: 0,
+  yawRollPer: 0,
+  yawSwayPer: 0,
+  yawRelativePer: 0,
+  ankleSwayPer: 0,
+  ankleYawPer: 0,
+  sideSwayRigid: 0,
+  sideSwayFrozen: 0,
+  /** Substeps whose rigid-ankle or frozen counterfactual could not be factored (reported, never hidden). */
+  rigidSingular: 0,
   rollDeckPer: 0,
   rollRelativePer: 0,
   ankleOwn: 0,
@@ -255,6 +321,21 @@ export const bankLedger = {
     this.singular = 0;
     this.unitSteps = 0;
     this.unitSkipped = 0;
+    this.sideSwayPer = 0;
+    this.sideRollPer = 0;
+    this.sideRelativePer = 0;
+    this.sideYawPer = 0;
+    this.rollSwayPer = 0;
+    this.rollYawPer = 0;
+    this.yawPer = 0;
+    this.yawRollPer = 0;
+    this.yawSwayPer = 0;
+    this.yawRelativePer = 0;
+    this.ankleSwayPer = 0;
+    this.ankleYawPer = 0;
+    this.sideSwayRigid = 0;
+    this.sideSwayFrozen = 0;
+    this.rigidSingular = 0;
     this.rollDeckPer = 0;
     this.rollRelativePer = 0;
     this.ankleOwn = 0;
@@ -328,6 +409,7 @@ export const bankLedger = {
   solve(
     system: Float64Array, rhs: Float64Array, n: number, length: number,
     rx: number, ry: number, rz: number, banking: boolean,
+    tx = 0, ty = 0, tz = 0, nx = 0, ny = 0, nz = 0,
   ): void {
     order = n;
     for (let i = 0; i < n * n; i += 1) lu[i] = system[i];
@@ -392,6 +474,9 @@ export const bankLedger = {
     substitute(lu, n, unit, 0, response);
     this.rollDeckPer += response[3] * rx + response[4] * ry + response[5] * rz;
     this.rollRelativePer += response[7] / length;
+    // Step 3.3p: the other corners of the same row of A⁻¹, off the same back-substitution.
+    this.rollSwayPer += response[0] * tx + response[1] * ty + response[2] * tz;
+    this.rollYawPer += response[3] * nx + response[4] * ny + response[5] * nz;
     // (ii) one unit of ankle torque-impulse, as `coupleStanding` books it: row 7 alone.
     unit.fill(0);
     unit[7] = 1 / length;
@@ -402,6 +487,9 @@ export const bankLedger = {
       this.ankleRelative += rel;
       this.ankleDeck += deck;
       this.ankleOwn += rel + deck;
+      // Step 3.3p: the rest of the ankle's own row of A⁻¹.
+      this.ankleSwayPer += response[0] * tx + response[1] * ty + response[2] * tz;
+      this.ankleYawPer += response[3] * nx + response[4] * ny + response[5] * nz;
     }
     // (iii) the counterfactual: the same torque with the board's reaction couple booked as well.
     unit.fill(0);
@@ -418,6 +506,56 @@ export const bankLedger = {
       this.pairOwn += rel + deck;
     }
     this.bodyHeld += system[7 * n + 7] * length * length;
+    // **Step 3.3p: (iv) one unit of SIDE impulse on the board's own three translational rows.** `b = t̂` on rows 0–2
+    // and nothing else — the same shape `bookBody` spreads a lateral force on the board over, with the arm's and the
+    // joints' rows left empty, so what comes out is the plant's own answer and not a force's.
+    unit.fill(0);
+    unit[0] = tx;
+    unit[1] = ty;
+    unit[2] = tz;
+    substitute(lu, n, unit, 0, response);
+    this.sideSwayPer += response[0] * tx + response[1] * ty + response[2] * tz;
+    this.sideRollPer += response[3] * rx + response[4] * ry + response[5] * rz;
+    this.sideRelativePer += response[7] / length;
+    this.sideYawPer += response[3] * nx + response[4] * ny + response[5] * nz;
+    // (v) one unit of YAW impulse about the body's own up, the axis `coupleYaw` turns the rider's yaw inertia on.
+    unit.fill(0);
+    unit[3] = nx;
+    unit[4] = ny;
+    unit[5] = nz;
+    substitute(lu, n, unit, 0, response);
+    this.yawPer += response[3] * nx + response[4] * ny + response[5] * nz;
+    this.yawRollPer += response[3] * rx + response[4] * ry + response[5] * rz;
+    this.yawSwayPer += response[0] * tx + response[1] * ty + response[2] * tz;
+    this.yawRelativePer += response[7] / length;
+    // (vi) **the positive control**: the same side impulse with the bank row's diagonal multiplied by 10⁶, so the
+    // body is welded across. A second factorisation of the same `A`; `system` is still the assembled matrix here
+    // (`solveLinear` runs after this call returns, and `factor` above worked on the copy `lu`) [R].
+    for (let i = 0; i < n * n; i += 1) luRigid[i] = system[i];
+    luRigid[7 * n + 7] *= RIGID;
+    if (factor(luRigid, n, pivotsRigid)) {
+      unit.fill(0);
+      unit[0] = tx;
+      unit[1] = ty;
+      unit[2] = tz;
+      substitute(luRigid, n, unit, 0, response, pivotsRigid);
+      this.sideSwayRigid += response[0] * tx + response[1] * ty + response[2] * tz;
+    } else {
+      this.rigidSingular += 1;
+    }
+    // (vii) the control that works: every row but the three translations welded, so the pair is one rigid mass.
+    for (let i = 0; i < n * n; i += 1) luRigid[i] = system[i];
+    for (let row = 3; row < n; row += 1) luRigid[row * n + row] *= RIGID;
+    if (factor(luRigid, n, pivotsRigid)) {
+      unit.fill(0);
+      unit[0] = tx;
+      unit[1] = ty;
+      unit[2] = tz;
+      substitute(luRigid, n, unit, 0, response, pivotsRigid);
+      this.sideSwayFrozen += response[0] * tx + response[1] * ty + response[2] * tz;
+    } else {
+      this.rigidSingular += 1;
+    }
   },
 
   /** After `solveLinear`: this file's own answer against the game's, on the four rows the ledger reads. */
@@ -445,6 +583,20 @@ export const bankLedger = {
     const over = this.unitSteps > 0 ? 1 / this.unitSteps : 0;
     this.rollDeckPer *= over;
     this.rollRelativePer *= over;
+    this.sideSwayPer *= over;
+    this.sideRollPer *= over;
+    this.sideRelativePer *= over;
+    this.sideYawPer *= over;
+    this.rollSwayPer *= over;
+    this.rollYawPer *= over;
+    this.yawPer *= over;
+    this.yawRollPer *= over;
+    this.yawSwayPer *= over;
+    this.yawRelativePer *= over;
+    this.ankleSwayPer *= over;
+    this.ankleYawPer *= over;
+    this.sideSwayRigid *= over;
+    this.sideSwayFrozen *= over;
     this.ankleOwn *= over;
     this.ankleRelative *= over;
     this.ankleDeck *= over;

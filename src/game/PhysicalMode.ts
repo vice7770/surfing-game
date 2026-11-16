@@ -563,6 +563,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...ankleRangeSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
+    // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
+    // with the face's own tilt as a measured input, instead of at its roll from the world's level (step 3.3p), opt-in, to ride.
+    ...waterHeelSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1142,6 +1145,20 @@ export function ankleRangeSwitch(search?: string): { ankleRange?: 'load' | 'wide
  */
 export function buoyFrameSwitch(search?: string): { buoyFrame?: 'hull' } {
   return devParam('buoyFrame', search)?.trim().toLowerCase() === 'hull' ? { buoyFrame: 'hull' } : {};
+}
+
+/**
+ * The `?waterHeel=tilt` dev switch (`SurfZoneConfig.waterHeel`, step 3.3p): opt-in, the new surfer's balance reads its
+ * internal model's three **heel** derivatives at the board's heel against the **water** and takes the face's own tilt as
+ * a measured third input, instead of reading them at the board's roll from the world's level — the angle the lab that
+ * measured them never used (docs/research/new-rider/3.3 Part 39). Measured and NOT a fix: it buys the sign of the roll
+ * acceleration and costs both rows' size. Anything else, the world's level as before, and then the design is
+ * byte-for-byte the shipped one. `tilt` carries the face's tilt through the forward prediction and the reference's own
+ * steady turn; `predict` through the forward prediction alone.
+ */
+export function waterHeelSwitch(search?: string): { waterHeel?: 'tilt' | 'predict' } {
+  const v = devParam('waterHeel', search)?.trim().toLowerCase();
+  return v === 'tilt' || v === 'predict' ? { waterHeel: v } : {};
 }
 
 /**

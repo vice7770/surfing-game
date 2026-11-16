@@ -70,6 +70,9 @@ const run = (steps: number, ledger: boolean, steer = 0) => {
       unitSteps: number; unitSkipped: number; rollDeckPer: number; rollRelativePer: number;
       ankleOwn: number; ankleRelative: number; ankleDeck: number; pairOwn: number; bodyHeld: number;
       linear: number;
+      // Step 3.3p: the lateral compliances, off the same LU, and their two controls.
+      sideSwayPer: number; sideRollPer: number; rollSwayPer: number; yawPer: number;
+      sideSwayRigid: number; sideSwayFrozen: number; rigidSingular: number;
     }[] = [];
     for (let i = 0; i < steps; i += 1) {
       board.step(1 / 60, water);
@@ -114,6 +117,13 @@ const run = (steps: number, ledger: boolean, steer = 0) => {
         // unit's, identically. Relative to the largest of the three so it is a precision and not a size.
         linear: Math.abs(bankLedger.pairOwn - (bankLedger.ankleOwn - (bankLedger.rollRelativePer + bankLedger.rollDeckPer)))
           / Math.max(1e-30, Math.abs(bankLedger.pairOwn), Math.abs(bankLedger.ankleOwn)),
+        sideSwayPer: bankLedger.sideSwayPer,
+        sideRollPer: bankLedger.sideRollPer,
+        rollSwayPer: bankLedger.rollSwayPer,
+        yawPer: bankLedger.yawPer,
+        sideSwayRigid: bankLedger.sideSwayRigid,
+        sideSwayFrozen: bankLedger.sideSwayFrozen,
+        rigidSingular: bankLedger.rigidSingular,
       });
     }
     return seen;
@@ -180,6 +190,8 @@ describe('bankLedger', () => {
       expect(row.unitSteps).toBe(0);
       expect(row.unitSkipped).toBe(0);
       expect(row.rollDeckPer).toBe(0);
+      expect(row.sideSwayPer).toBe(0);
+      expect(row.sideSwayFrozen).toBe(0);
       expect(row.ankleOwn).toBe(0);
       expect(row.bodyHeld).toBe(0);
     }
@@ -203,6 +215,30 @@ describe('bankLedger', () => {
       // Both compliances are finite and the board's roll inertia they imply is of order 1 kg·m², not 1e-2 or 1e2.
       expect(1 / row.rollDeckPer).toBeGreaterThan(0.02);
       expect(1 / row.rollDeckPer).toBeLessThan(100);
+    }
+  });
+
+  // Step 3.3p: the lateral block of the same `A⁻¹`, with the two controls that say it is an effective inertia and not
+  // an arbitrary number. `A` is symmetric, so the roll–sway corner read from two different back-substitutions must be
+  // one entry; and with every row but the three translations welded the pair is one rigid mass, so the sway mass must
+  // read the two masses SUMMED — which is the number step 3.3o's brief took the diagonal `system[i][i] += m` to mean.
+  it('P0c (step 3.3p): the lateral compliances are one symmetric A⁻¹, and the frozen control reads the masses summed', () => {
+    for (const row of run(240, true)) {
+      if (row.unitSteps === 0) continue;
+      // Symmetry: two back-substitutions, one entry.
+      expect(Math.abs(row.sideRollPer - row.rollSwayPer)).toBeLessThan(1e-12 * Math.max(1, Math.abs(row.sideRollPer)));
+      // The effective sway mass is a board's, not a pair's: the ankle is compliant over a 1 ms substep.
+      expect(1 / row.sideSwayPer).toBeGreaterThan(1);
+      expect(1 / row.sideSwayPer).toBeLessThan(40);
+      // Welding the bank row alone does NOT weld the pair — the board can still roll out from under the rider.
+      expect(1 / row.sideSwayRigid).toBeLessThan(40);
+      // Welding everything but the translations does: 2.54 kg of board, the water's share, and the rider's 73 kg.
+      expect(1 / row.sideSwayFrozen).toBeGreaterThan(70);
+      expect(1 / row.sideSwayFrozen).toBeLessThan(140);
+      expect(row.rigidSingular).toBe(0);
+      // The yaw inertia the solve meets, against the model's own `boardYawInertia + riderYawInertia` of about 1.9.
+      expect(1 / row.yawPer).toBeGreaterThan(0.5);
+      expect(1 / row.yawPer).toBeLessThan(10);
     }
   });
 

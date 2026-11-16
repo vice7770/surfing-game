@@ -1,4 +1,42 @@
 /**
+ * Steps 3.3o and 3.3p: **how wrong the balance's own internal plant is, per part — and whether the game's own 9×9
+ * solve can supply a better one.**
+ *
+ * **Step 3.3p's five additions, and what each one is an identity of** (the five instruments 3.3o built are below,
+ * unchanged):
+ *
+ * **6. The four inertias the game's own `A⁻¹` holds, against the four the model has by hand.** `coupleStanding`'s
+ * `system[i * N + i] += m` is a **diagonal** of `A`, and the same loop writes the coupling to the bank's own freedom
+ * two lines down [R], so the quantity the model's `boardMass` should be compared with is `1 / (t̂ · Δv)` off `A⁻¹` —
+ * which is the sibling of Part 36 §2's reading that `A[7][7] · L²` is not an effective inertia. The bank ledger now
+ * publishes the whole **4×4 lateral compliance** of the game's own matrix (the deck's roll, the board's sway, its
+ * turn, the joint's own angle) plus two counterfactual factorisations, and this probe reads it per tick. `A` is
+ * symmetric, so its two roll–sway corners must agree exactly; and with every row but the three translations welded
+ * the sway mass must read the two masses SUMMED, which is the positive control.
+ *
+ * **7. FORCE against FORCE, with no inertia and no solve in between.** The model's own water roll moment, side force
+ * and yaw moment from the twelve derivatives read at the state, against `BoardBody.roll`, `BoardBody.yaw` and
+ * `BoardBody.forces` — the board's own per-source ledgers, both static measurement flags, both off in the game. This
+ * is the instrument that separates "the derivatives are wrong" from "the denominator is wrong", because neither side
+ * has an inertia in it.
+ *
+ * **8. The water's own heel datum, as a counterfactual and as the round's switch.** Every one of the twelve
+ * derivatives was measured per radian of the board's heel **against a flat free surface** [R]; the model is fed `φ`,
+ * its roll from the **world's level** [R]. The corrected plant is the same plant with `−heelColumn` as an extra
+ * **input** column driven by the measured tilt, and `heelColumn` is **imported from `predictiveBalance`** so the
+ * counterfactual scored here and the switch that ships are one function. `WHEEL=tilt|predict` rides it.
+ *
+ * **9. The derived plant's ceiling**: the model's own four generalised forces put through the game's own 4×4
+ * compliance, so that every mass, inertia and lever of the model's lateral block is gone and only the forces are the
+ * model's. **This is the brief's own ruling item 2, measured instead of built.** Its control is the diagonal alone,
+ * which must reproduce the model's own `K / boardRollInertia` to within the two inertias' own ratio.
+ *
+ * **10. The roll row's own conditioning**, in the model and in the game: its largest single term over the net it
+ * produces. A row whose net is a third of its largest term turns a 2–6× term error into a 4–16× net error, which is
+ * what 3.3o measured and could not attribute.
+ *
+ * ---
+ *
  * Step 3.3o: **how wrong the balance's own internal plant is, per part.**
  *
  * Step 3.3n found that the loop's command-bias estimate `b̂₀` is an unbounded integrator that reaches 0.31–2.82 of the
@@ -7,7 +45,9 @@
  * slack the model has, so all mismatch piles into it … **Nobody has measured how wrong that model is**, or which part
  * of it (the water's captive derivatives, the point-mass body, the free-versus-held table, the rail schedule)."*
  *
- * This probe measures it. **It builds nothing: no source file is touched, no switch added, no constant moved.**
+ * Step 3.3o's probe measured it and built nothing. **Step 3.3p's additions above are read-only too, and the one
+ * source change of the round — `?waterHeel=tilt|predict` — is reached here only through `WHEEL`, which is off by
+ * default, so every arm with `WHEEL` unset is step 3.3o's own probe on step 3.3o's own cells.**
  *
  * ## The five instruments, and what each is an identity of
  *
@@ -78,7 +118,8 @@
  *   ./node_modules/.bin/rolldown docs/research/new-rider/3.3/plant.ts -o <scratch>/pl.mjs --format esm --platform node
  *   RIDER=new FELT=deck node <scratch>/pl.mjs
  *
- * Env: `RIDER=new|old`, `STANCES`, `EXTRAS`, `ENTRIES`, `STEERS`, `SECONDS`, `FELT=deck`, `LEDGER=off`, `OUT`, `TRACE`.
+ * Env: `RIDER=new|old`, `STANCES`, `EXTRAS`, `ENTRIES`, `STEERS`, `SECONDS`, `FELT=deck`, `LEDGER=off`,
+ * `WHEEL=tilt|predict` (step 3.3p's switch), `OUT`, `TRACE`.
  */
 import { appendFileSync } from 'node:fs';
 import { Matrix4, Quaternion, Vector3 } from 'three';
@@ -87,7 +128,7 @@ import { BoardBody } from '../../../../src/physics/BoardBody';
 import { createWaterSample } from '../../../../src/physics/SurfWater';
 import { FaceWater } from '../../../../src/physics/testing/FaceWater';
 import { bankLedger, BANK_SOURCES, type BankSource } from '../../../../src/physics/bankLedger';
-import { CONTROL_STEP, continuousPlant, discretise, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
+import { CONTROL_STEP, continuousPlant, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
 import type { TwistPlant, YawPlant } from '../../../../src/physics/rollModel';
 
 const DEG = 180 / Math.PI;
@@ -110,6 +151,8 @@ const STEERS = (process.env.STEERS ?? '0').split(',').map(Number);
 const OUT = process.env.OUT;
 const TRACE = process.env.TRACE === '1';
 const FELT = process.env.FELT === 'deck' ? 'deck' : undefined;
+/** `WHEEL=tilt`: step 3.3p's shipped switch, so the arm that rides it is the same probe on the same cells. */
+const WHEEL = process.env.WHEEL === 'tilt' ? 'tilt' : process.env.WHEEL === 'predict' ? 'predict' : undefined;
 /** `LEDGER=off`: the purity arm — the ride with the ledger not turned on, so "the ledger changes nothing" is read. */
 const LEDGER = process.env.LEDGER === 'off' ? 'off' : 'on';
 
@@ -144,7 +187,7 @@ function emit(line: unknown): void {
 interface ControlInner {
   senses: number[][];
   estimate: number[];
-  blendedDesign?: { phi: number[][]; gamma: number[][]; k: number[][]; c: number[][]; steps: number };
+  blendedDesign?: { phi: number[][]; gamma: number[][]; k: number[][]; c: number[][]; steps: number; gammaD?: number[][] };
 }
 
 /** `AttachedRider`'s own privates this probe reads, each named rather than reached for anonymously. */
@@ -154,13 +197,35 @@ interface RiderInner {
   ankleBite: number;
   heldAnkleRaw: number;
   leanAsked: number;
+  /** Step 3.3p: the tilt the controller was handed, rad, in the model's own sign (0 unless `waterHeel`). */
+  schedTilt: number;
   /** The rail the schedule was read at, rad — `min(SCHEDULE_RAIL_CAP, …)` of the lean ASKED for, not the board's rail. */
   schedRail: number;
+  /** Step 3.3p: the tilt the controller was handed, rad, model sign (0 unless `waterHeel` is on). */
+  schedTilt: number;
 }
 
 /** The six groups of the plant that can be zeroed exactly, and the twelve coefficients each owns. */
 type Group = 'waterRoll' | 'waterYaw' | 'waterSide' | 'ankle' | 'twist' | 'feetForward';
 const GROUPS: Group[] = ['waterRoll', 'waterYaw', 'waterSide', 'ankle', 'twist', 'feetForward'];
+
+/**
+ * The plant with the tilt as a third input: Φ, Γ (two commands) and Γ_d (the tilt's own column).
+ *
+ * **`heelColumn` is imported from `predictiveBalance`, not reimplemented here**, so the counterfactual this probe
+ * scores and the switch the round ships are the same arithmetic on the same function. Every derivative in
+ * `PLANT_SPEEDS`, `RAIL_PLANT` and `FROZEN_PLANT` was measured per radian of the board's heel against a flat free
+ * surface [R]; the model is fed `φ`, its roll from the world's level [R]. The corrected plant is the same plant with
+ * `−heelColumn` as an extra input column driven by the measured tilt, so the water's own terms see `φ − tilt` and
+ * every other term still sees `φ`.
+ */
+function tiltPlant(y: YawPlant, t: TwistPlant): { phi: number[][]; gamma: number[][]; gammaD: number[] } {
+  const { a, b } = continuousPlant(y, t);
+  const heel = heelColumn(y, t);
+  const b3 = b.map((row, i) => [...row, -heel[i]]);
+  const d = discretise(a, b3, CONTROL_STEP);
+  return { phi: d.phi, gamma: d.gamma.map((row) => [row[0], row[1]]), gammaD: d.gamma.map((row) => row[2]) };
+}
 
 function without(y: YawPlant, t: TwistPlant, g: Group): { y: YawPlant; t: TwistPlant } {
   const yy: YawPlant = { ...y };
@@ -305,6 +370,98 @@ interface Tick {
   ledgerBankRel: number;
   /** The rebuilt exact-point plant's roll row against the controller's own blended one, relative: the blend's own error. */
   blendRel: number;
+
+  // --- 7. step 3.3p: the inertias the GAME's own 9×9 meets, off its own A⁻¹, against the model's hand-built ones ---
+  /** `1 / (t̂ · Δv)` for a unit side impulse on the board's rows, kg — the mass the solve divides a side force by. */
+  swayMassGame: number;
+  /** The model's own: `YawPlant.boardMass`, kg (2.54, the dry board) [R]. */
+  swayMassModel: number;
+  /** The same read with the bank row welded (×10⁶): the positive control, which must read the masses SUMMED. */
+  swayMassRigid: number;
+  /** `1 / (r̂ · Δω)` for a unit roll impulse, kg·m², against the model's `boardRollInertia` (3.3m's reproduction). */
+  rollInertiaGame: number;
+  rollInertiaModel: number;
+  /** `1 / (n̂ · Δω)` for a unit yaw impulse about the body's up, kg·m², against `boardYawInertia + riderYawInertia`. */
+  yawInertiaGame: number;
+  yawInertiaModel: number;
+  /** The cross terms, both corners: the roll a unit side impulse makes and the sway a unit roll impulse makes. */
+  sideRollGame: number;
+  rollSwayGame: number;
+  /** The joint's own `Δu̇ / L` for a unit side impulse: the feet's acceleration, which the model has through the slip. */
+  sideRelativeGame: number;
+  /** The control that works: the same read with everything but the three translations welded, kg. */
+  swayMassFrozen: number;
+
+  // --- 8. step 3.3p: FORCE against FORCE, with no inertia and no solve in between ---
+  /**
+   * The game's own water roll moment on the board, N·m, in the model's own sign — `BoardBody.roll`'s ten water
+   * sources summed (`gyro`, `rider` and `total` left out: the first is the board's own, the second a residual).
+   * The datum: `BoardBody.roll` is about the board's own long axis, positive lifting the board's +x rail, which is
+   * the same rotation as the model's `+φ` (right rail down) [R + A on the two docstrings]; 3.3m measured that axis
+   * and `rollAxis` agree to 2–5 %, so nothing below turns on which is used.
+   */
+  kGame: number;
+  /** The same for the side force, N, along the model's own +y (the board's right), ten sources summed. */
+  yGame: number;
+  /** The same for the yaw moment, N·m, in the model's sign (+ nose right), off `BoardBody.yaw`. */
+  nGame: number;
+  /** The model's own three, from the twelve captive derivatives read at the controller's own state. */
+  kModel: number;
+  yModel: number;
+  nModel: number;
+  /**
+   * The same three with the board's **heel relative to the water** put in where the model puts its world roll. The
+   * lab measured every derivative per radian of heel against a flat free surface, and the model is fed `φ`, the
+   * board's roll from the world's level — on a face those differ by the face's own tilt. Both are printed.
+   */
+  kModelRail: number;
+  yModelRail: number;
+  nModelRail: number;
+  /** The face's own tilt under the board, °: the whole difference between the two rows above. */
+  tilt: number;
+
+  // --- 9. step 3.3p: the TILT plant — the same plant with the water's own terms read at the heel against the water ---
+  /** Its implied mean roll and lean acceleration, °/s², and its own relative error against the game's. */
+  rollAccTilt: number;
+  bankAccTilt: number;
+  relTilt: number;
+  relBankTilt: number;
+  /** Whether it gets the SIGN of the two accelerations right. */
+  rollSignTilt: number;
+  bankSignTilt: number;
+  /** Its own one-step residual ratios, on the previous tick's own tilt plant and the previous tick's own tilt. */
+  ratioRollRateTilt: number;
+  ratioBankRateTilt: number;
+  /** The same four for the tilt plant read ALSO at the board's measured rail (the two corrections together). */
+  rollAccTiltRail: number;
+  relTiltRail: number;
+  relBankTiltRail: number;
+  rollSignTiltRail: number;
+
+  // --- 10. step 3.3p: the DERIVED plant's ceiling — the model's own forces through the GAME's own 4×4 compliance ---
+  /**
+   * `φ̈` from `C_game · (the model's own generalised forces)`, °/s², where `C_game` is the game's own `A⁻¹` on the
+   * four lateral coordinates and the forces are the model's own: the water's roll moment, side force and yaw moment
+   * from the twelve derivatives at the state, plus the body's push across at the feet and the ankle's own torque.
+   * **This is the ceiling on what re-deriving the inertia side can buy**: it is the model's force side with the
+   * game's own mass matrix and nothing of the model's own masses left in it.
+   */
+  rollAccDerived: number;
+  relDerived: number;
+  rollSignDerived: number;
+  /** The same with the water's heel taken against the water (the two corrections at once). */
+  rollAccDerivedTilt: number;
+  relDerivedTilt: number;
+  rollSignDerivedTilt: number;
+  /** The control on the mapping's signs and scalings: the DIAGONAL alone, against the model's own `K / I_roll`. */
+  rollAccDerivedDiag: number;
+  rollAccModelDiag: number;
+
+  // --- 11. step 3.3p: the row's own CONDITIONING, in the model and in the game ---
+  /** The model's largest single roll-row group over the net it produces: how much cancellation the row lives on. */
+  condModel: number;
+  /** The game's own: its largest single source group (water+board or rider) over its own net. */
+  condGame: number;
 }
 
 function oneRun(st: Stance, extra: number, entry0: number | null, steer: number): Record<string, unknown> {
@@ -330,11 +487,16 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     phase: 'standing',
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(FELT ? { feltFrame: FELT } : {}),
+    ...(WHEEL ? { waterHeel: WHEEL } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
   rider.steer = steer;
   bankLedger.on = LEDGER === 'on';
+  // Step 3.3p: the board's own roll and yaw ledgers (both static measurement flags, both off in the game) for the
+  // force-against-force read. `LEDGER=off` turns all three off together, so the purity arm is one arm.
+  BoardBody.rollLedger = LEDGER === 'on';
+  BoardBody.yawLedger = LEDGER === 'on';
 
   const ctl = rider.predictor as unknown as ControlInner;
   const inner = rider as unknown as RiderInner;
@@ -347,7 +509,14 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
   let fellAt = Number.NaN;
   let lastTicks = -1;
   /** The previous tick's snapshot: the state, the command, and COPIES of the blend's Φ and Γ. */
-  let prev: { t: number; x: number[]; xNeg: number[]; u: number[]; phi: number[][]; gamma: number[][]; scale: number[]; rollGame: number; bankGame: number } | null = null;
+  let prev: {
+    t: number; x: number[]; xNeg: number[]; u: number[]; phi: number[][]; gamma: number[][]; scale: number[];
+    rollGame: number; bankGame: number;
+    /** Step 3.3p: the tilt plant at the same point, and the tilt it was read at (model sign, rad). */
+    tPhi: number[][]; tGamma: number[][]; tGammaD: number[]; tiltRad: number;
+    /** The controller's own tilt column and the tilt it was handed, when `waterHeel` is on. */
+    ownGammaD: number[] | null; ownTilt: number;
+  } | null = null;
   let senseOff = 0;
   let spacingOff = 0;
   let ledgerSplit = 0;
@@ -464,6 +633,90 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       const bothD = discretise(bothC.a, bothC.b, CONTROL_STEP);
       const rollBoth = meanAcc(bothD.phi, bothD.gamma, 1);
       const bankBoth = meanAcc(bothD.phi, bothD.gamma, 3);
+      // **Step 3.3p: the tilt plant.** The water's own terms read at the heel against the water, the rest of the
+      // plant untouched, the tilt entering as a measured input. `tiltRad` is in the model's own sign, which is the
+      // probe's reversed (`φ = −roll` by instrument 1's identity), so the heel the water sees is `φ − tiltRad`.
+      const ledgerLive = bankLedger.on && bankLedger.unitSteps > 0;
+      const tiltRad = -tilt / DEG;
+      const tp = tiltPlant(y, tw);
+      const tiltAcc = (row: number) =>
+        (dot(tp.phi[row], x) + tp.gamma[row][0] * u[0] + tp.gamma[row][1] * u[1] + tp.gammaD[row] * tiltRad - x[row]) / CONTROL_STEP;
+      const rollTilt = tiltAcc(1);
+      const bankTilt = tiltAcc(3);
+      // And the two corrections together: the schedule read at the board's measured rail AND the water's own datum.
+      const tpRail = tiltPlant(atRail.y, atRail.t);
+      const tiltRailAcc = (row: number) =>
+        (dot(tpRail.phi[row], x) + tpRail.gamma[row][0] * u[0] + tpRail.gamma[row][1] * u[1] + tpRail.gammaD[row] * tiltRad - x[row]) / CONTROL_STEP;
+      const rollTiltRail = tiltRailAcc(1);
+      const bankTiltRail = tiltRailAcc(3);
+
+      // **Step 3.3p: the derived plant's ceiling.** The model's own four generalised forces put through the GAME's
+      // own 4×4 compliance, so the whole inertia side of the model — `boardRollInertia`, `boardMass · V`,
+      // `boardYawInertia + riderYawInertia`, `m h²`, the 0.031 m deck lever and the point-mass pendulum's own
+      // geometry — is replaced by the matrix the integrator actually inverts, and nothing but the forces is the
+      // model's. The column scalings are the ledger's own: the roll and yaw entries are per N·m, the sway entry per
+      // N, and the ankle column is the response the ledger reads for `b[7] = 1/L`, which the code writes as
+      // `rhs[7] += −h τ / L` [R], so the torque that multiplies it is **−τ** (§10's own note).
+      //
+      // `push` is the model's own body-push row (`yawRows`: `torque / hh` with `push[2] -= m g`), recovered from the
+      // plant's own numbers rather than re-derived, and it enters the side slot because that is where the game puts a
+      // lateral force on the board. The ankle's cop torque goes in the ankle slot alone, which is where
+      // `coupleStanding` puts it and what 3.3m verified.
+
+      // --- 8. step 3.3p: FORCE against FORCE. The model's own three water loads from the twelve derivatives read at
+      // a state, against the game's own per-source totals — no inertia, no mass matrix and no solve in between, so
+      // this separates "the derivatives are wrong" from "the denominator is wrong" with nothing in common between
+      // the two sides but the state.
+      const loads = (yy: YawPlant, phi: number) => ({
+        k: yy.heelRoll * phi + yy.slipRoll * x[5] + yy.yawRoll * x[4] + yy.rollDamping * x[1],
+        y: yy.heelSide * phi + yy.slipSide * x[5] + yy.yawSide * x[4] + yy.rollRateSide * x[1],
+        n: yy.heelYaw * phi + yy.slipYaw * x[5] + yy.yawDamping * x[4] + yy.rollRateYaw * x[1],
+      });
+      const mk = loads(y, x[0]);
+      // The model's own φ is `−roll` in radians by instrument 1's identity, so the heel against the water in the
+      // same sign is `−rail`.
+      const mkRail = loads(y, -rail / DEG);
+      // The game's own: the ten water sources of each ledger. `modelY` is the board's right, which is the opposite of
+      // the probe's own `sideV` (the board's +x, its left), and `nGame`'s sign flips with it.
+      let waterK = Number.NaN;
+      let waterY = Number.NaN;
+      let waterN = Number.NaN;
+      if (BoardBody.rollLedger) {
+        const rl = board.roll;
+        waterK = rl.buoyancy + rl.pressure + rl.addedMass + rl.radiation + rl.friction + rl.bed + rl.fins + rl.rails + rl.froth + rl.suction;
+        const yl = board.yaw;
+        waterN = -(yl.buoyancy + yl.pressure + yl.addedMass + yl.radiation + yl.friction + yl.bed + yl.fins + yl.rails + yl.froth + yl.suction);
+        const fo = board.forces;
+        waterY = -(fo.buoyancy.dot(sideV) + fo.pressure.dot(sideV) + fo.addedMass.dot(sideV) + fo.radiation.dot(sideV)
+          + fo.friction.dot(sideV) + fo.bed.dot(sideV) + fo.fins.dot(sideV) + fo.rails.dot(sideV) + fo.froth.dot(sideV)
+          + fo.suction.dot(sideV));
+      }
+
+      // **The signs, read rather than assumed.** `rollAxis` is + rolling the deck toward the board's +x, which is the
+      // probe's + roll and so the model's **−φ** [R, bankLedger's own datum paragraph + instrument 1's identity];
+      // `across` is + toward the board's +x, so the model's **−y**; `up` is + turning the nose toward the board's +x,
+      // so the model's **−r**. Each of the three corners therefore carries two sign flips — one on the force, one on
+      // the response — and **comes out positive**. The ankle's column is the response to `b[7] = 1/L` where the code
+      // writes `rhs[7] += −h τ_game / L` and the model's ankle torque is `−τ_game`, so it enters as `−τ_model`.
+      // The diagonal-only read below is the control that says these signs are right: it must reproduce the model's
+      // own `K / boardRollInertia` within the 0.75–1.18 the two inertias differ by.
+      const ankleTorqueModel = y.ankleStiffness * (x[2] - x[0] - x[8]) + y.ankleDamping * (x[3] - x[1]);
+      // The body's weight across at the feet — and **only** that. The model's own `push` also carries `τ_ankle / h`,
+      // the horizontal force at the feet the ankle's torque implies; the game books the ankle on row 7 alone and lets
+      // the constraint carry its reaction [R, `coupleStanding`; 3.3m §2 reading 3], so putting both in would count
+      // the ankle twice.
+      const pushDerived = -y.mass * 9.81 * x[2];
+      const derivedRoll = (ld: { k: number; y: number; n: number }) => (
+        bankLedger.rollDeckPer * ld.k
+        + bankLedger.sideRollPer * (ld.y + pushDerived)
+        + bankLedger.yawRollPer * ld.n
+        - bankLedger.ankleDeck * ankleTorqueModel
+      ) * DEG;
+      const haveC = ledgerLive && bankLedger.rollDeckPer !== 0;
+      const rollDerived = haveC ? derivedRoll(mk) : Number.NaN;
+      const rollDerivedTilt = haveC ? derivedRoll(mkRail) : Number.NaN;
+      const rollDerivedDiag = haveC ? bankLedger.rollDeckPer * mk.k * DEG : Number.NaN;
+      const rollModelDiag = (mk.k / y.boardRollInertia) * DEG;
 
       // --- 3. the two rows against the ledger, in °/s².
       const ledgerOn = bankLedger.on;
@@ -490,6 +743,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       let resScaled = Number.NaN;
       let ratioRollRateNeg = Number.NaN;
       let ratioBankRateNeg = Number.NaN;
+      let ratioRollRateTilt = Number.NaN;
+      let ratioBankRateTilt = Number.NaN;
       let rollAccModel = Number.NaN;
       let bankAccModel = Number.NaN;
       let rollAccAtRail = Number.NaN;
@@ -509,8 +764,11 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         const pred = new Array<number>(n).fill(0);
         const predNeg = new Array<number>(n).fill(0);
         for (let q = 0; q < n; q += 1) {
-          pred[q] = dot(prev.phi[q], prev.x) + prev.gamma[q][0] * prev.u[0] + prev.gamma[q][1] * prev.u[1];
-          predNeg[q] = dot(prev.phi[q], prev.xNeg) + prev.gamma[q][0] * prev.u[0] + prev.gamma[q][1] * prev.u[1];
+          // Step 3.3p: the controller's OWN tilt input when it has one (`waterHeel`), so an arm's residual is the
+          // residual of the model that arm actually ran and not of the shipped one evaluated on its trajectory.
+          const d0 = prev.ownGammaD ? prev.ownGammaD[q] * prev.ownTilt : 0;
+          pred[q] = dot(prev.phi[q], prev.x) + prev.gamma[q][0] * prev.u[0] + prev.gamma[q][1] * prev.u[1] + d0;
+          predNeg[q] = dot(prev.phi[q], prev.xNeg) + prev.gamma[q][0] * prev.u[0] + prev.gamma[q][1] * prev.u[1] + d0;
         }
         const ratio = (q: number, p: number[]) => {
           const move = Math.abs(x[q] - prev!.x[q]);
@@ -526,14 +784,24 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         ratioSlip = ratio(5, pred);
         ratioRollRateNeg = ratio(1, predNeg);
         ratioBankRateNeg = ratio(3, predNeg);
+        // Step 3.3p: the same one-step residual on the tilt plant, off the PREVIOUS tick's own tilt plant, state,
+        // command and tilt — the same shape as the shipped plant's above, nothing of this tick in it.
+        const predTilt = new Array<number>(n).fill(0);
+        for (let q = 0; q < n; q += 1) {
+          predTilt[q] = dot(prev.tPhi[q], prev.x) + prev.tGamma[q][0] * prev.u[0] + prev.tGamma[q][1] * prev.u[1]
+            + prev.tGammaD[q] * prev.tiltRad;
+        }
+        ratioRollRateTilt = ratio(1, predTilt);
+        ratioBankRateTilt = ratio(3, predTilt);
         let acc = 0;
         for (let q = 0; q < n; q += 1) { const sc = prev.scale[q]; acc += ((pred[q] - x[q]) / sc) ** 2; }
         resScaled = Math.sqrt(acc / n);
       }
       // The model's own implied mean acceleration over THIS step, off this tick's own blend and state.
       {
-        const pr = dot(d.phi[1], x) + d.gamma[1][0] * u[0] + d.gamma[1][1] * u[1];
-        const pb = dot(d.phi[3], x) + d.gamma[3][0] * u[0] + d.gamma[3][1] * u[1];
+        const own = (row: number) => (d.gammaD ? d.gammaD[row][0] * inner.schedTilt : 0);
+        const pr = dot(d.phi[1], x) + d.gamma[1][0] * u[0] + d.gamma[1][1] * u[1] + own(1);
+        const pb = dot(d.phi[3], x) + d.gamma[3][0] * u[0] + d.gamma[3][1] * u[1] + own(3);
         rollAccModel = (pr - x[1]) / CONTROL_STEP * DEG;
         bankAccModel = (pb - x[3]) / CONTROL_STEP * DEG;
         rollAccAtRail = rollAtRail * DEG;
@@ -550,6 +818,12 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         scale,
         rollGame: rollGame,
         bankGame: bankGame,
+        tPhi: tp.phi.map((row) => row.slice()),
+        tGamma: tp.gamma.map((row) => row.slice()),
+        tGammaD: tp.gammaD.slice(),
+        tiltRad,
+        ownGammaD: d.gammaD ? d.gammaD.map((row) => row[0]) : null,
+        ownTilt: inner.schedTilt,
       };
 
       const relOf = (m: number, g: number) => (Number.isFinite(g) && Math.abs(g) > 1e-9 ? (m - g) / Math.abs(g) : Number.NaN);
@@ -565,6 +839,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         speedUsed: Math.max(TABLE_FLOOR, Math.min(TABLE_CEIL, speedUsed)),
         speedClamped: speedUsed < TABLE_FLOOR || speedUsed > TABLE_CEIL ? 1 : 0,
         schedRail: schedRail * DEG,
+        schedTilt: inner.schedTilt * DEG,
         railMeas: Math.abs(rail),
         railUsable: railLimit(speedUsed) * DEG,
         resRollRate,
@@ -621,6 +896,52 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         ledgerRollRel,
         ledgerBankRel,
         blendRel: Math.abs(rollAccModel) > 1e-9 ? (rollAll * DEG - rollAccModel) / Math.abs(rollAccModel) : Number.NaN,
+        // Step 3.3p: the game's own effective inertias, each the reciprocal of a unit read off its own `A⁻¹`. The
+        // ledger's unit rows are means over the substeps the body banked through, so a frame with none reads NaN
+        // rather than a reciprocal of zero.
+        swayMassGame: ledgerOn && bankLedger.sideSwayPer !== 0 ? 1 / bankLedger.sideSwayPer : Number.NaN,
+        swayMassModel: y.boardMass,
+        swayMassRigid: ledgerOn && bankLedger.sideSwayRigid !== 0 ? 1 / bankLedger.sideSwayRigid : Number.NaN,
+        rollInertiaGame: ledgerOn && bankLedger.rollDeckPer !== 0 ? 1 / bankLedger.rollDeckPer : Number.NaN,
+        rollInertiaModel: y.boardRollInertia,
+        yawInertiaGame: ledgerOn && bankLedger.yawPer !== 0 ? 1 / bankLedger.yawPer : Number.NaN,
+        yawInertiaModel: y.boardYawInertia + y.riderYawInertia,
+        sideRollGame: ledgerOn ? bankLedger.sideRollPer : Number.NaN,
+        rollSwayGame: ledgerOn ? bankLedger.rollSwayPer : Number.NaN,
+        sideRelativeGame: ledgerOn ? bankLedger.sideRelativePer : Number.NaN,
+        swayMassFrozen: ledgerOn && bankLedger.sideSwayFrozen !== 0 ? 1 / bankLedger.sideSwayFrozen : Number.NaN,
+        kGame: waterK,
+        yGame: waterY,
+        nGame: waterN,
+        kModel: mk.k,
+        yModel: mk.y,
+        nModel: mk.n,
+        kModelRail: mkRail.k,
+        yModelRail: mkRail.y,
+        nModelRail: mkRail.n,
+        tilt,
+        rollAccTilt: rollTilt * DEG,
+        bankAccTilt: bankTilt * DEG,
+        relTilt: relOf(rollTilt * DEG, rollGame),
+        relBankTilt: relOf(bankTilt * DEG, bankGame),
+        rollSignTilt: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? (Math.sign(rollTilt) === Math.sign(rollGame) ? 1 : 0) : Number.NaN,
+        bankSignTilt: Number.isFinite(bankGame) && Math.abs(bankGame) > 1e-9 ? (Math.sign(bankTilt) === Math.sign(bankGame) ? 1 : 0) : Number.NaN,
+        ratioRollRateTilt,
+        ratioBankRateTilt,
+        rollAccTiltRail: rollTiltRail * DEG,
+        relTiltRail: relOf(rollTiltRail * DEG, rollGame),
+        relBankTiltRail: relOf(bankTiltRail * DEG, bankGame),
+        rollSignTiltRail: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? (Math.sign(rollTiltRail) === Math.sign(rollGame) ? 1 : 0) : Number.NaN,
+        rollAccDerived: rollDerived,
+        relDerived: relOf(rollDerived, rollGame),
+        rollSignDerived: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 && Number.isFinite(rollDerived) ? (Math.sign(rollDerived) === Math.sign(rollGame) ? 1 : 0) : Number.NaN,
+        rollAccDerivedTilt: rollDerivedTilt,
+        relDerivedTilt: relOf(rollDerivedTilt, rollGame),
+        rollSignDerivedTilt: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 && Number.isFinite(rollDerivedTilt) ? (Math.sign(rollDerivedTilt) === Math.sign(rollGame) ? 1 : 0) : Number.NaN,
+        rollAccDerivedDiag: rollDerivedDiag,
+        rollAccModelDiag: rollModelDiag,
+        condModel: Math.abs(rollAll) > 1e-12 ? Math.max(Math.abs(gm.waterSide), Math.abs(gm.waterRoll), Math.abs(gm.ankle), Math.abs(mRest)) / Math.abs(rollAll) : Number.NaN,
+        condGame: ledgerOn && Math.abs(rollGame) > 1e-9 ? Math.max(Math.abs(gWater + gBoard), Math.abs(gRider)) / Math.abs(rollGame) : Number.NaN,
         rollAccSway: rollSway * DEG,
         relSway: relOf(rollSway * DEG, rollGame),
         rollAccBoth: rollBoth * DEG,
@@ -644,6 +965,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     }
   }
   bankLedger.on = false;
+  BoardBody.rollLedger = false;
+  BoardBody.yawLedger = false;
 
   if (TRACE && ticks.length) {
     process.stdout.write(`# TRACE ${RIDER} ${st} entry=${f(entry, 3)} steer=${steer} felt=${FELT ?? 'world'}\n`);
@@ -676,6 +999,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     entry: r(entry, 3),
     steer,
     felt: FELT ?? 'world',
+    waterHeel: WHEEL ?? 'level',
     fell,
     fellAt: r(fellAt, 3),
     frames: Math.round((Number.isFinite(fellAt) ? fellAt : SECONDS) / STEP),
@@ -764,6 +1088,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     bRestMed: r(median(absCol(live, 'bRest')), 1),
     // --- P3 the rail
     schedRailPeak: r(peak(absCol(live, 'schedRail')), 6),
+    schedTiltMed: r(median(absCol(live, 'schedTilt')), 3),
+    schedTiltPeak: r(peak(absCol(live, 'schedTilt')), 3),
     railMeasPeak: r(peak(col(live, 'railMeas')), 2),
     railMeasMed: r(median(col(live, 'railMeas')), 2),
     heelRoll0Med: r(median(col(live, 'heelRoll0')), 1),
@@ -785,6 +1111,62 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     speedMed: r(median(col(live, 'speed')), 3),
     speedMin: r(sorted(col(live, 'speed'))[0] ?? Number.NaN, 3),
     speedClampedShare: r(share(live.map((xx) => xx.speedClamped === 1)), 3),
+    // --- step 3.3p: the game's own inertias against the model's
+    swayMassGameMed: r(median(col(live, 'swayMassGame')), 3),
+    swayMassGameSpanLo: r(sorted(col(live, 'swayMassGame'))[0] ?? Number.NaN, 3),
+    swayMassGamePeak: r(peak(col(live, 'swayMassGame')), 3),
+    swayMassModelMed: r(median(col(live, 'swayMassModel')), 3),
+    swayMassRigidMed: r(median(col(live, 'swayMassRigid')), 3),
+    swayRatioMed: r(median(live.map((xx) => xx.swayMassGame / xx.swayMassModel).filter(Number.isFinite)), 3),
+    rollInertiaGameMed: r(median(col(live, 'rollInertiaGame')), 4),
+    rollInertiaModelMed: r(median(col(live, 'rollInertiaModel')), 4),
+    rollRatioMed: r(median(live.map((xx) => xx.rollInertiaGame / xx.rollInertiaModel).filter(Number.isFinite)), 3),
+    yawInertiaGameMed: r(median(col(live, 'yawInertiaGame')), 4),
+    yawInertiaModelMed: r(median(col(live, 'yawInertiaModel')), 4),
+    yawRatioMed: r(median(live.map((xx) => xx.yawInertiaGame / xx.yawInertiaModel).filter(Number.isFinite)), 3),
+    sideRollGameMed: r(median(col(live, 'sideRollGame')), 6),
+    rollSwayGameMed: r(median(col(live, 'rollSwayGame')), 6),
+    sideRelativeGameMed: r(median(col(live, 'sideRelativeGame')), 6),
+    swayMassFrozenMed: r(median(col(live, 'swayMassFrozen')), 3),
+    rigidSingular: bankLedger.rigidSingular,
+    crossSym: r(peak(live.map((xx) => Math.abs(xx.sideRollGame - xx.rollSwayGame))), 15),
+    // --- step 3.3p: force against force
+    tiltMed: r(median(absCol(live, 'tilt')), 2),
+    kGameMed: r(median(absCol(live, 'kGame')), 1),
+    kModelMed: r(median(absCol(live, 'kModel')), 1),
+    kModelRailMed: r(median(absCol(live, 'kModelRail')), 1),
+    kRatioMed: r(median(live.map((xx) => (Math.abs(xx.kGame) > 1e-6 ? xx.kModel / xx.kGame : Number.NaN)).filter(Number.isFinite)), 3),
+    kRatioRailMed: r(median(live.map((xx) => (Math.abs(xx.kGame) > 1e-6 ? xx.kModelRail / xx.kGame : Number.NaN)).filter(Number.isFinite)), 3),
+    kAbsRatioMed: r(median(live.map((xx) => (Math.abs(xx.kGame) > 1e-6 ? Math.abs(xx.kModel / xx.kGame) : Number.NaN)).filter(Number.isFinite)), 3),
+    kSignRight: r(share(live.filter((xx) => Math.abs(xx.kGame) > 1e-6 && Math.abs(xx.kModel) > 1e-6).map((xx) => Math.sign(xx.kModel) === Math.sign(xx.kGame))), 3),
+    yGameMed: r(median(absCol(live, 'yGame')), 1),
+    yModelMed: r(median(absCol(live, 'yModel')), 1),
+    yModelRailMed: r(median(absCol(live, 'yModelRail')), 1),
+    yAbsRatioMed: r(median(live.map((xx) => (Math.abs(xx.yGame) > 1e-6 ? Math.abs(xx.yModel / xx.yGame) : Number.NaN)).filter(Number.isFinite)), 3),
+    ySignRight: r(share(live.filter((xx) => Math.abs(xx.yGame) > 1e-6 && Math.abs(xx.yModel) > 1e-6).map((xx) => Math.sign(xx.yModel) === Math.sign(xx.yGame))), 3),
+    nGameMed: r(median(absCol(live, 'nGame')), 1),
+    nModelMed: r(median(absCol(live, 'nModel')), 1),
+    nAbsRatioMed: r(median(live.map((xx) => (Math.abs(xx.nGame) > 1e-6 ? Math.abs(xx.nModel / xx.nGame) : Number.NaN)).filter(Number.isFinite)), 3),
+    nSignRight: r(share(live.filter((xx) => Math.abs(xx.nGame) > 1e-6 && Math.abs(xx.nModel) > 1e-6).map((xx) => Math.sign(xx.nModel) === Math.sign(xx.nGame))), 3),
+    // --- step 3.3p: the tilt plant, scored on 3.3o's own rows
+    relTiltMed: r(median(absCol(live, 'relTilt')), 3),
+    relBankTiltMed: r(median(absCol(live, 'relBankTilt')), 3),
+    rollSignTiltShare: r(shareOf(live, 'rollSignTilt'), 3),
+    bankSignTiltShare: r(shareOf(live, 'bankSignTilt'), 3),
+    ratioRollRateTiltMed: r(median(col(live, 'ratioRollRateTilt')), 3),
+    ratioBankRateTiltMed: r(median(col(live, 'ratioBankRateTilt')), 3),
+    aboveOneRollRateTilt: r(aboveOne(live, 'ratioRollRateTilt'), 3),
+    aboveOneBankRateTilt: r(aboveOne(live, 'ratioBankRateTilt'), 3),
+    relTiltRailMed: r(median(absCol(live, 'relTiltRail')), 3),
+    relBankTiltRailMed: r(median(absCol(live, 'relBankTiltRail')), 3),
+    rollSignTiltRailShare: r(shareOf(live, 'rollSignTiltRail'), 3),
+    relDerivedMed: r(median(absCol(live, 'relDerived')), 3),
+    rollSignDerivedShare: r(shareOf(live, 'rollSignDerived'), 3),
+    relDerivedTiltMed: r(median(absCol(live, 'relDerivedTilt')), 3),
+    rollSignDerivedTiltShare: r(shareOf(live, 'rollSignDerivedTilt'), 3),
+    derivedDiagRatioMed: r(median(live.map((xx) => (Math.abs(xx.rollAccModelDiag) > 1e-9 ? xx.rollAccDerivedDiag / xx.rollAccModelDiag : Number.NaN)).filter(Number.isFinite)), 3),
+    condModelMed: r(median(col(live, 'condModel')), 2),
+    condGameMed: r(median(col(live, 'condGame')), 2),
   };
   return out;
 }
@@ -798,9 +1180,14 @@ for (const st of STANCES) {
 }
 for (const row of rows) emit(row);
 
-const num = (k: string) => rows.map((x) => Number(x[k])).filter(Number.isFinite);
+// **`Number(null) === 0`** — this folder's own trap, and step 3.3o's summary lines walked into it: `r()` returns
+// `null` for a run whose column has no live tick, `Number(null)` is 0, and 0 passes `Number.isFinite`, so every arm
+// with a dead run had a spurious 0.000 at the bottom of every span. The `.jsonl` was always right; the printed spans
+// were not. Null is dropped before the cast here, and `typeof` is the test rather than a falsy check, so a genuine 0
+// still counts.
+const num = (k: string) => rows.map((x) => x[k]).filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
 const sh = (k: string) => span(num(k), 3);
-process.stdout.write(`\n# step 3.3o — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}\n`);
+process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}\n`);
 process.stdout.write(`# fell ${rows.filter((x) => x.fell).length} of ${rows.length}, at ${span(num('fellAt'), 3)} s, median ${f(median(num('fellAt')), 3)}\n`);
 process.stdout.write(`# P0a sense residual, peak over runs: ${peak(num('senseOff')).toExponential(3)}  | tick spacing off: ${peak(num('spacingOff')).toExponential(3)} s\n`);
 process.stdout.write(`# P0c ledger split ${peak(num('ledgerSplit')).toExponential(2)} closure ${peak(num('ledgerClosure')).toExponential(2)} residual ${peak(num('ledgerResidual')).toExponential(2)} apart ${peak(num('ledgerApart'))}\n`);
@@ -828,3 +1215,27 @@ process.stdout.write(`# P4 speed median ${sh('speedMed')} m/s, min ${sh('speedMi
 process.stdout.write(`# P5 counterfactuals, roll row rel err: shipped ${sh('rollRelMed')} | rail ${sh('relAtRailMed')} | sway 75.54 kg ${sh('relSwayMed')} | both ${sh('relBothMed')}\n`);
 process.stdout.write(`#    bank row rel err: shipped ${sh('bankRelMed')} | rail ${sh('relBankRailMed')} | sway ${sh('relBankSwayMed')} | both ${sh('relBankBothMed')}\n`);
 process.stdout.write(`#    closest on the roll row, share of ticks: shipped ${sh('bestShipped')} rail ${sh('bestRail')} sway ${sh('bestSway')} both ${sh('bestBoth')}\n`);
+process.stdout.write(`# P6 (3.3p) the game's own inertias off its own A⁻¹, per-run medians over the arm:\n`);
+process.stdout.write(`#    sway mass GAME ${sh('swayMassGameMed')} kg (lo ${sh('swayMassGameSpanLo')}, peak ${sh('swayMassGamePeak')}) vs MODEL ${sh('swayMassModelMed')}; ratio ${sh('swayRatioMed')}\n`);
+process.stdout.write(`#    the bank row welded ${sh('swayMassRigidMed')} kg | EVERYTHING but translation welded (P0c) ${sh('swayMassFrozenMed')} kg — must read the masses SUMMED; singular ${sh('rigidSingular')}\n`);
+process.stdout.write(`#    A is symmetric: |side→roll − roll→sway| peak ${sh('crossSym')}\n`);
+process.stdout.write(`#    roll inertia GAME ${sh('rollInertiaGameMed')} kg·m² vs MODEL ${sh('rollInertiaModelMed')}; ratio ${sh('rollRatioMed')}\n`);
+process.stdout.write(`#    yaw inertia GAME ${sh('yawInertiaGameMed')} kg·m² vs MODEL ${sh('yawInertiaModelMed')}; ratio ${sh('yawRatioMed')}\n`);
+process.stdout.write(`#    cross terms: side→roll ${sh('sideRollGameMed')} rad/s per N·s, roll→sway ${sh('rollSwayGameMed')} m/s per N·m·s, side→Δu̇/L ${sh('sideRelativeGameMed')}\n`);
+process.stdout.write(`# P7 (3.3p) FORCE against FORCE, the twelve derivatives at the state vs the game's own water, no inertia between:\n`);
+process.stdout.write(`#    roll moment K: model ${sh('kModelMed')} N·m vs game ${sh('kGameMed')}; |ratio| ${sh('kAbsRatioMed')}, signed ${sh('kRatioMed')}, sign right ${sh('kSignRight')}\n`);
+process.stdout.write(`#    … with the heel against the WATER instead of the world's level: model ${sh('kModelRailMed')} N·m, signed ratio ${sh('kRatioRailMed')} (face tilt ${sh('tiltMed')}°)\n`);
+process.stdout.write(`#    side force Y: model ${sh('yModelMed')} N vs game ${sh('yGameMed')}; |ratio| ${sh('yAbsRatioMed')}, sign right ${sh('ySignRight')} | at the water's heel ${sh('yModelRailMed')} N\n`);
+process.stdout.write(`#    yaw moment N: model ${sh('nModelMed')} N·m vs game ${sh('nGameMed')}; |ratio| ${sh('nAbsRatioMed')}, sign right ${sh('nSignRight')}\n`);
+process.stdout.write(`# P8 (3.3p) the TILT plant — the water's own terms at the heel against the WATER, the tilt a measured input:\n`);
+process.stdout.write(`#    roll row rel err ${sh('relTiltMed')} against shipped ${sh('rollRelMed')}; sign right ${sh('rollSignTiltShare')} against ${sh('rollSignRight')}\n`);
+process.stdout.write(`#    lean row rel err ${sh('relBankTiltMed')} against shipped ${sh('bankRelMed')}; sign right ${sh('bankSignTiltShare')} against ${sh('bankSignRight')}\n`);
+process.stdout.write(`#    one-step ratios: roll rate ${sh('ratioRollRateTiltMed')} against ${sh('ratioRollRateMed')}; bank rate ${sh('ratioBankRateTiltMed')} against ${sh('ratioBankRateMed')}\n`);
+process.stdout.write(`#    share above 1: roll ${sh('aboveOneRollRateTilt')} against ${sh('aboveOneRollRate')}; bank ${sh('aboveOneBankRateTilt')} against ${sh('aboveOneBankRate')}\n`);
+process.stdout.write(`#    tilt AND the measured rail together: roll ${sh('relTiltRailMed')} lean ${sh('relBankTiltRailMed')}, roll sign ${sh('rollSignTiltRailShare')}\n`);
+process.stdout.write(`# P9 (3.3p) the DERIVED plant's ceiling — the model's own forces through the GAME's own 4x4 compliance:\n`);
+process.stdout.write(`#    roll row rel err ${sh('relDerivedMed')} against shipped ${sh('rollRelMed')}; sign right ${sh('rollSignDerivedShare')} against ${sh('rollSignRight')}\n`);
+process.stdout.write(`#    with the water's heel at the water too: rel err ${sh('relDerivedTiltMed')}, sign right ${sh('rollSignDerivedTiltShare')}\n`);
+process.stdout.write(`#    the mapping's own control, diagonal only / the model's K over its own I_roll: ${sh('derivedDiagRatioMed')} (must sit in 0.75-1.18, the two inertias' own ratio)\n`);
+process.stdout.write(`# P10 (3.3p) the roll row's CONDITIONING — its largest single term over the net it produces:\n`);
+process.stdout.write(`#    in the model ${sh('condModelMed')}x, in the GAME ${sh('condGameMed')}x\n`);

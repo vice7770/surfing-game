@@ -720,6 +720,40 @@ export interface DesignWeights {
    * ship. The difference is the plant, not the sense: it is the same either way with the senses switched off.
    */
   heaveGains?: 'free' | 'held';
+  /**
+   * **The water's own heel datum** (step 3.3p, `?waterHeel=tilt|predict`): with this set, the twelve captive derivatives'
+   * three **heel** coefficients (`heelRoll`, `heelSide`, `heelYaw`) are read at the board's heel **against the
+   * water** instead of at `φ`, its roll from the world's level, and the difference — the face's own tilt under the
+   * board — enters the internal model as a **measured third input** (`Design.gammaD`, `Design.predD`).
+   *
+   * **It is a datum defect found by reading.** Every derivative in `PLANT_SPEEDS`, `RAIL_PLANT` and `FROZEN_PLANT`
+   * was measured in a lab per radian of the board's heel against a flat free surface; the model is fed the board's
+   * roll from the world's level, which is what the sense line carries and what the board's own angular dynamics
+   * integrate. On flat water they are the same angle. On a wave face they differ by the face's tilt, and the
+   * ten-state plant has neither a state nor an input for it.
+   *
+   * **And it is not a fix, measured.** Step 3.3p scored it on step 3.3o's own two rows over 96 runs: the model's own
+   * water roll moment goes from **2.06–3.59× the game's to 0.97–2.93×**, and the share of ticks whose roll-
+   * acceleration **sign** the model gets right goes from **0.190–0.462 to 0.390–0.825** on the unsteered deck arm
+   * (the lean row's from 0.491–0.845 to 0.580–0.877) — while the two rows' **magnitudes get worse** (the roll row's
+   * relative error 4.300–16.386 → 6.440–30.943, a median of the per-run medians 10.050 → 11.640), because that row
+   * is a near-cancellation whose net is a third to a sixteenth of its own largest term (Part 39 §4). **It trades
+   * size for direction, as every repair this folder has measured trades one thing for another.**
+   *
+   * And ridden it trades too: `'predict'` **doubles** the unsteered ride (median 1.183 → 2.433 s on 24) and
+   * **halves the owner's own low-speed cell** (1.033 → 0.450 on 18) and a held turn (3.067 → 1.167 on 18), while
+   * `'both'` drops the rider in 0.283 s. **Off by default for that reason and for no other.** `3.3/README.md`
+   * Part 39.
+   *
+   * Φ, Γ, the LQR gain and the filter are **untouched** by it: the tilt is an input, not a state, so with the flag
+   * off the design is byte-for-byte the design that ships.
+   *
+   * Two values, because the correction has two halves and step 3.3p measured them apart:
+   * - `'both'` — the tilt propagates through the forward prediction over the sensing delay **and** into the
+   *   reference, whose steady turn is then the trim **on this face** rather than on flat water.
+   * - `'predict'` — the forward prediction only; the reference is the flat-water one that ships.
+   */
+  waterHeel?: 'both' | 'predict';
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -805,6 +839,13 @@ export interface Design {
   steps: number;
   /** The bias states are estimated (the commands add −b̂). */
   bias: boolean;
+  /**
+   * **Step 3.3p, `DesignWeights.waterHeel` only**: the water's heel datum as a third, measured input — the discrete
+   * input column for the face's own tilt (n × 1) and `Φ^{N−1−j} Γ_d` over the delay, exactly as `gamma` and `pred`
+   * are the commands'. Absent unless the flag is set, and then the ten rows of Φ, Γ, K and L are unchanged.
+   */
+  gammaD?: Mat;
+  predD?: Mat[];
 }
 /**
  * The capture point across as a row over the state, m per rad: ξ = L (θ + θ̇/ω₀) with L the centre of mass over the feet
@@ -817,6 +858,21 @@ export function captureRow(y: YawPlant, gravity = 9.81, n = N_STATE): number[] {
   row[3] = y.height / Math.sqrt(gravity / y.height);
   return row;
 }
+/**
+ * **Step 3.3p: the part of the plant's first column the water's three HEEL derivatives own**, per radian of `φ`, by
+ * differencing the same `continuousPlant` the design is built from — the code's own function, not a reimplementation
+ * of it. `heelRoll`, `heelSide` and `heelYaw` are the only three of the twelve that multiply `φ`, so the difference
+ * is exactly their column and every other term's is untouched.
+ *
+ * With `DesignWeights.waterHeel` set, the plant's water terms are read at `φ − tilt` instead of `φ`, which is the
+ * same plant with `−heelColumn` as an extra input column driven by the measured tilt.
+ */
+export function heelColumn(y: YawPlant, t: TwistPlant): number[] {
+  const full = continuousPlant(y, t);
+  const bare = continuousPlant({ ...y, heelRoll: 0, heelSide: 0, heelYaw: 0 }, t);
+  return full.a.map((row, i) => row[0] - bare.a[i][0]);
+}
+
 export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WEIGHTS, delay = PREDICT_DELAY, step = CONTROL_STEP): Design {
   const { a, b } = continuousPlant(y, t);
   const { phi, gamma } = discretise(a, b, step);
@@ -906,7 +962,23 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
     pred[j] = mul(power, gamma);
     power = mul(power, phi);
   }
-  return { phi, gamma, c, k, phiE, gammaE, cE, l, phiN: power, pred, steps, bias };
+  // Step 3.3p: the tilt's own input column, discretised over the same step and carried over the same delay. The
+  // zero-order hold is taken on [A | −heelColumn] jointly, so Γ_d is `∫₀ʰ e^{A s} ds · (−heelColumn)` exactly, the
+  // same integral `gamma` is, and Φ above is untouched (the same `discretise` on the same A).
+  let gammaD: Mat | undefined;
+  let predD: Mat[] | undefined;
+  if (w.waterHeel) {
+    const col = heelColumn(y, t);
+    const bd: Mat = Array.from({ length: nState }, (_, i) => [-col[i]]);
+    gammaD = discretise(a, bd, step).gamma;
+    let powerD = eye(nState);
+    predD = new Array<Mat>(steps);
+    for (let j = steps - 1; j >= 0; j -= 1) {
+      predD[j] = mul(powerD, gammaD);
+      powerD = mul(powerD, phi);
+    }
+  }
+  return { phi, gamma, c, k, phiE, gammaE, cE, l, phiN: power, pred, steps, bias, ...(gammaD && predD ? { gammaD, predD } : {}) };
 }
 
 /**
@@ -1044,7 +1116,7 @@ function solveSmall(a: number[][], b: number[]): number[] {
  * The steady state of a discrete model (Φ, Γ) with the bank (x[2]) and the twist (x[6]) set and the rates φ̇, θ̇
  * nothing: (Φ − I) x + Γ u = 0 solved for the rest of x and u, by least squares (the ten rows are consistent).
  */
-export function steadyTurn(phi: Mat, gamma: Mat, bank: number, twist: number): { x: number[]; u: number[] } {
+export function steadyTurn(phi: Mat, gamma: Mat, bank: number, twist: number, drive?: readonly number[]): { x: number[]; u: number[] } {
   const n = phi.length;
   // With the board's heave and pitch carried (step 3.2p), the steady turn's own draft and trim are free as well: in a
   // banked turn the board sits at a different height and a different pitch, and the loop must not be made to fight it.
@@ -1057,6 +1129,9 @@ export function steadyTurn(phi: Mat, gamma: Mat, bank: number, twist: number): {
     free.forEach((j, c) => { m[i][c] = phi[i][j] - (i === j ? 1 : 0); });
     for (let q = 0; q < N_COMMAND; q += 1) m[i][free.length + q] = gamma[i][q];
     rhs[i] = -((phi[i][2] - (i === 2 ? 1 : 0)) * bank + (phi[i][6] - (i === 6 ? 1 : 0)) * twist);
+    // Step 3.3p: a known input already acting on the plant (the face's own tilt through Γ_d) belongs on the
+    // right-hand side of the equilibrium, so the reference is the steady turn ON this face and not on flat water.
+    if (drive) rhs[i] -= drive[i];
   }
   const ata = zeros(cols, cols);
   const atb = new Array<number>(cols).fill(0);
@@ -1146,7 +1221,12 @@ export class PredictiveController {
     let out = this.blendedDesign;
     if (!out) {
       const copy = (m: Mat) => m.map((row) => row.slice());
-      out = { ...first, phi: copy(first.phi), gamma: copy(first.gamma), k: copy(first.k), phiE: copy(first.phiE), gammaE: copy(first.gammaE), l: copy(first.l), phiN: copy(first.phiN), pred: first.pred.map(copy) };
+      out = {
+        ...first, phi: copy(first.phi), gamma: copy(first.gamma), k: copy(first.k), phiE: copy(first.phiE),
+        gammaE: copy(first.gammaE), l: copy(first.l), phiN: copy(first.phiN), pred: first.pred.map(copy),
+        // Step 3.3p: the tilt's own column and its delay line, blended as every other matrix is.
+        ...(first.gammaD && first.predD ? { gammaD: copy(first.gammaD), predD: first.predD.map(copy) } : {}),
+      };
       this.blendedDesign = out;
     }
     const mix = (target: Mat, get: (d: Design) => Mat) => {
@@ -1159,6 +1239,10 @@ export class PredictiveController {
     mix(out.phi, (d) => d.phi); mix(out.gamma, (d) => d.gamma); mix(out.k, (d) => d.k);
     mix(out.phiE, (d) => d.phiE); mix(out.gammaE, (d) => d.gammaE); mix(out.l, (d) => d.l); mix(out.phiN, (d) => d.phiN);
     for (let j = 0; j < out.pred.length; j += 1) mix(out.pred[j], (d) => d.pred[j]);
+    if (out.gammaD && out.predD) {
+      mix(out.gammaD, (d) => d.gammaD!);
+      for (let j = 0; j < out.predD.length; j += 1) mix(out.predD[j], (d) => d.predD![j]);
+    }
     return out;
   }
 
@@ -1167,7 +1251,7 @@ export class PredictiveController {
    * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
    * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
    */
-  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0): readonly number[] {
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0): readonly number[] {
     const d = this.blend(speed, depth, rail);
     // The plant's own size: ten, or fourteen with the board's heave and pitch carried (step 3.2p).
     const n = d.phi.length;
@@ -1217,11 +1301,18 @@ export class PredictiveController {
       const p = d.pred[jj];
       for (let i = 0; i < n; i += 1) xh[i] += p[i][0] * (uc[0] + b0) + p[i][1] * (uc[1] + b1);
     }
-    let ref = steadyTurn(d.phi, d.gamma, bankAsked, twistAsked);
+    // Step 3.3p (`DesignWeights.waterHeel`): the face's own tilt is a measured input, so it propagates over the
+    // sensing delay exactly as the commands already sent do. Held at the tilt now over the whole delay — the water's
+    // slope under the board turns far slower than the board's own modes (3.2p measured the board's at 1.0–1.4 Hz) —
+    // and absent entirely with the flag off, where `predD` is undefined and these lines do not run.
+    if (d.predD) for (let jj = 0; jj < N; jj += 1) for (let i = 0; i < n; i += 1) xh[i] += d.predD[jj][i][0] * tilt;
+    // `'predict'` leaves the reference the flat-water one that ships; `'both'` solves the steady turn on this face.
+    const drive = d.gammaD && this.weights?.waterHeel === 'both' ? d.gammaD.map((row) => row[0] * tilt) : undefined;
+    let ref = steadyTurn(d.phi, d.gamma, bankAsked, twistAsked, drive);
     if (this.turn === 'tan' && Math.abs(bankAsked) > 1e-6) {
       // The turn that balances the lean asked (the linear model's bank is the lean's tangent in the body's balance), its
       // angles (the board's roll, the bank, the ankle's rest) brought back to the lean asked.
-      const t = steadyTurn(d.phi, d.gamma, Math.tan(bankAsked), twistAsked);
+      const t = steadyTurn(d.phi, d.gamma, Math.tan(bankAsked), twistAsked, drive);
       const f = bankAsked / Math.tan(bankAsked);
       ref = { x: t.x.map((v, i) => (i === 0 || i === 2 || i === 8 ? v * f : v)), u: [t.u[0] * f, t.u[1]] };
     }

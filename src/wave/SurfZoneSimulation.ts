@@ -342,6 +342,19 @@ export interface SurfZoneConfig {
    */
   buoyFrame?: 'hull';
   /**
+   * 'tilt': the balance's own internal model reads the water's twelve captive derivatives at the board's heel
+   * **against the water** and takes the face's own tilt as a measured input, instead of reading them at the board's
+   * roll from the **world's level** (step 3.3p; `RideSessionOptions.waterHeel`, `DesignWeights.waterHeel`). Every one
+   * of those derivatives was measured in a lab against a flat free surface, so on a face the model is reading them at
+   * an angle the lab never measured — a datum defect, found by reading. **Measured and not a fix**: it takes the
+   * model's own water roll moment from 2.06–3.59× the game's to 0.97–2.93× and the share of ticks whose roll
+   * acceleration it gets the SIGN of right from 0.190–0.462 to 0.390–0.825, and it makes both rows' magnitudes worse,
+   * because that row is a near-cancellation. Nothing in the force path moves and no gain changes: the tilt is an
+   * input to the predictor, so with the switch off the design is byte-for-byte the one that ships. The new surfer
+   * (`?rider=new`) only. Every spot. The `?waterHeel=tilt` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  waterHeel?: 'tilt' | 'predict';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

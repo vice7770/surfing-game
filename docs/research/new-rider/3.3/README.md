@@ -7486,3 +7486,639 @@ bench, and the ruling at the end is the real ask.
      simple to describe the body that is falling.
    **My own recommendation is the second, and if you want one sentence for why: nine rounds have now tried to fix
    the rider by changing a number, and this round measured that the numbers are wrong all through.** Your call.
+
+# Part 39 — the game's own solve has four inertias, the model already has all four right, and re-deriving the model on
+them makes it worse
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33p`, cut from `main` at
+**8889c399** (step 3.3o's merge), so Part 38 is its base. It ships **fifteen read-only rows on the bank ledger**
+(still off by default, still read by nothing in the game), **one new opt-in switch** (`?waterHeel=tilt|predict`, off
+by default and pinned off for online rooms), **five new tests**, and
+**270 rides over thirteen arms**: the five shipped-plant arms of 3.3o, the same five with the switch on, two more
+with its second value, and the unsteered 24 again with every ledger off as the purity check. **22 228 control ticks
+read, 18 646 of them live.**
+
+Its brief is Part 38's own ruling item 2: *"Re-derive the internal model against the game's own 9×9 solve instead of
+a hand-built ten-state model with the masses and the rail put in by hand. A round of building; the comparison
+instruments now exist and close to 14 decimals. My recommendation."*
+
+**I built the comparison, and it says the re-derivation is the wrong move.** The four inertias the game's own 9×9
+would supply are the four the model already has, right to within a factor of 1.1–2.2; the model's own forces put
+through the game's own 4×4 compliance are **two and a half times worse** than through its own hand-built one; and the
+4–16× the brief wants closed is **a conditioning number, not a wrong part** — the row's net is a third of its own
+largest term, in the model *and in the game*.
+
+Tags as in 3.2, 3.3 and 3.4: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source;
+**[I]** my inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The nine sentences the round is for
+
+1. **The owner's bar is not met, and the one thing this round ships makes the bar's own cell worse.** On the owner's
+   own low-speed cell — entries set **absolutely** at 1–6 m/s through the water × three stances, the stick never
+   touched — the shipped rider ends **18 of 18 at 0.517–7.100 s on the deck filter and 18 of 18 at 0.117–6.900 s on
+   the world one, Compress 6 of 6 on each** [M], reproducing step 3.3l's, 3.3m's, 3.3n's and 3.3o's published rows to
+   the digit over **126 runs and 1 008 column reads with 0 mismatches** (§9). With `?waterHeel=predict` on, that cell
+   falls **sooner**: 0.133–1.400 s (median 1.033 → **0.450**) and 0.100–1.200 s (0.767 → **0.383**) [M].
+   **270 of 270 rides ended before nine seconds, and Compress fell 6 of 6 or 8 of 8 in every one of the thirteen
+   arms.**
+2. **The brief's largest single defect is refuted, and it was an arithmetic on two diagonals.** Part 38 §4 called the
+   model's sway mass *"at least 29.7 times too small (75.54 / 2.54)"* by comparing `YawPlant.boardMass` with
+   `coupleStanding`'s diagonal `system[i * N + i] += m` [R]. The quantity the model's `boardMass` divides is the mass
+   the **integrator** divides a side force by, which is `1 / (t̂ · Δv)` off the game's own `A⁻¹`. Measured over the
+   **96 of 102 runs that have a live tick** (six low-world rides fall inside the 0.2 s window and have none, counted
+   and excluded): **2.796–5.580 kg at the per-run median, a ratio to the model's 2.54 of 1.101–2.197, median
+   1.17–1.40 by arm; 15.908 kg at the peak within a run** [M]. **Part 36's own
+   reading 2 said a diagonal of `A` is not an effective inertia, and this is the fifth consecutive round to find its
+   error in the half its brief called settled.**
+3. **And the control that proves the instrument also proves the brief's number means something else.** The same unit
+   read with **every row but the three translations welded** (×10⁶ on the diagonals of rotation, the leg, the bank and
+   the along) reads **75.7–93.8 kg** [M] — the two masses summed, plus the water's. **That is what 75.54 kg is: the
+   mass the pair would meet if the rider were welded to the deck.** He is not: the ankle is compliant over a 1 ms
+   substep and the board can roll out from under him, which is 3.3m's own mechanism one force over.
+4. **All four of the lateral inertias the 9×9 holds are already in the model, and already right.** Sway
+   **1.101–2.197×** (above), the board's roll inertia **0.088–1.446×** (median 0.54–1.11 by arm), its yaw inertia
+   **0.922–1.145× in all 96 runs** [M]. The roll inertia reproduces 3.3m to its published span, and the yaw
+   inertia's agreement is tighter than any number this folder has compared. **There is nothing in the 9×9's inertia
+   side left to re-derive.**
+5. **Force against force, with no inertia and no solve in between, the twelve derivatives are not 7–22× out either.**
+   The model's own water roll moment against the game's ten water sources, both in N·m: **|ratio| 0.135–68.369 (one
+   low-world run owns that top end), per-arm
+   medians 0.68 / 2.64 / 3.30 / 3.48 / 4.17**, and on the steered arm the model's roll moment is **smaller** than the
+   game's. The **side force** is right — **|ratio| 0.555–1.548 on four of the five arms (18.447 at the top of the
+   low-world
+   one), medians 0.79–0.91** — and the yaw moment **0.101–2.602, medians 0.33–1.64** [M]. 3.3o's 7–22× was a one-step
+   compounded **group** contribution, not a force,
+   and it compared a rate of change with a force.
+6. **So where is the 4–16×? It is a conditioning number.** The roll row's largest single term over the net it
+   produces is **1.54–16.00× in the model and 0.54–27.45× in the game** (per-arm medians 2.12–3.32 and 2.54–5.79)
+   [M]. **Both compute that row as a near-cancellation.** A term wrong by a factor of 2 to 6 is wrong by 1 to 5 times
+   itself, and in a row whose net is a third of that term that lands as **3 to 15 times the net** [A] — against the
+   **4–16×** 3.3o measured and could not attribute. **Nothing on the inertia side can touch it, and this round
+   measured that directly** (next).
+7. **The re-derivation the brief asked for was built as a counterfactual and it is worse on all five arms.** The
+   model's own four generalised forces put through the **game's own 4×4 lateral compliance** — so that
+   `boardRollInertia`, `boardMass · V`, `boardYawInertia + riderYawInertia`, `m h²`, the 0.031 m deck lever and the
+   point-mass pendulum's whole geometry are gone and only the forces are the model's — gives a roll-row relative
+   error of **9.938–53.454 (median 25.240)** against the shipped **4.300–16.386 (10.050)** on the unsteered deck arm,
+   and is worse on every other arm too [M]. Its own control holds (§5). **The reason is in the same measurement:
+   the model's force side is not separable from its inertia side.** Its `push` channel — `τ_ankle / L` as a
+   horizontal force at the feet, `L` the body's own height over them [R, `rollModel.ts:510`] — exists *because* the body
+   is a point mass on a massless leg with the contact at the
+   feet, and the game's constrained solve has no such force. **"Swap the masses" is not a well-posed operation on
+   this model.**
+8. **One defect is real, is found by reading, and is what the round ships.** Every one of the twelve derivatives was
+   measured per radian of the board's heel **against a flat free surface** [R]; the model is fed `φ`, its roll from the
+   **world's level** [R]. On a face they differ by the face's own tilt, measured here at **0.83–13.41° at the median
+   and up to 15.8°** [M], and the ten-state plant has neither a state nor an input for it. Correcting it takes the
+   model's own water roll moment's signed ratio from **2.058–3.587 (median 3.046) to 0.971–2.934 (1.918)** and the
+   share of ticks whose roll-acceleration **sign** the model gets right from **0.190–0.462 (0.338) to 0.390–0.825
+   (0.581)** on the unsteered deck arm [M] — **and makes both rows' magnitudes worse** (the roll row 10.050 →
+   11.640), for the reason in §0.6.
+9. **Ridden, it doubles the unsteered ride and halves the owner's own cell, so it is shipped opt-in, off, and I will
+   not sell it.** `?waterHeel=predict`: the unsteered deck arm **1.100–2.067 s (median 1.183) → 0.883–4.767 (2.433)**
+   and the world one **0.950 → 2.350**; the owner's low cell **1.033 → 0.450** and **0.767 → 0.383**; the steered arm
+   **3.067 → 1.167** [M]. `?waterHeel=tilt`, which also solves the reference's steady turn on the tilted face, drops
+   him in **0.183–0.783 s (median 0.283)** — **the reference is the destabiliser, and that is a measured split, not a
+   guess.** This is step 3.3n's shape again: the largest ride effects this track has found all make the model's own
+   fit worse.
+
+## 1. (A) The three reads that had to come first
+
+**(i) `system[i * N + i] += m` is a diagonal, and my brief called it an inertia.** `coupleStanding`'s loop writes
+the rider's mass on the diagonal of the three translation rows **and**, two lines down in the same loop,
+`system[i * N + 7] += m t_i` and `system[7 * N + i] += m t_i` — the coupling to the bank's own freedom [R,
+`AttachedRider.ts:4385–4396`]. Part 36 §2 reading 2 measured what that does one force over: `A[7][7] · L²` is
+`m L² =` 22–53 kg·m² and the body's **effective** roll inertia off `A⁻¹` is **1.00–2.52**, a twenty-second of it
+[M, 3.3m]. **The sway row is coupled the same way, so the brief's 75.54 / 2.54 is two diagonals divided by each
+other.** §2 reads `A⁻¹` instead.
+
+**(ii) The water's side force reaches the roll row only through the slip, and the bank row through the same
+channel.** `yawRows` writes `slipAcc = (side + push) / (boardMass · V)` and
+`rollAcc = (roll + torque + deckHeight · push) / boardRollInertia` [R, `rollModel.ts:545`, `:551`], and
+`feet = V · slipAcc + feetStation · yawAcc` with `bankAcc = (−cop − m h feet) / (m h²)` [R, `:547–549`]. So a side
+force changes the roll row **only** by moving `β` over a step and `slipRoll · β` then entering the roll moment, and it
+reaches the lean row through the feet's acceleration. **One wrong denominator could have made both rows too stiff,
+which is exactly what 3.3o measured and could not attribute — and §2 is the measurement that rules it out.**
+
+**(iii) The game's own 9×9 is destroyed by its own solve, so the only honest read is more unit right-hand sides on
+the ledger's own factorisation.** `solveLinear(s8, r8, n)` eliminates in place [R, `BoardBody.ts:1526`], so
+`system9` afterwards is a factorisation and not the matrix. `bankLedger.solve` is called **before** it, holds an LU
+of `A` and already back-substitutes three unit right-hand sides through it [R, 3.3m]. This round adds four more and
+reads six further corners off the three that were there, which is **the whole 4×4 compliance of the four coordinates
+the lateral problem lives in**: the deck's roll about `rollAxis`, the board's sway along `across`, its turn about
+`up`, and the joint's own angle `Δu̇ / L`.
+
+## 2. (B) The four inertias the 9×9 holds, against the four the model has
+
+**The cells are step 3.3k's, 3.3l's, 3.3m's, 3.3n's and 3.3o's own**, unchanged: the Canyon-matched `FaceWater`
+(1.4 m / 16° / 5.7 m/s, 2.6 m deep, the board 0.75 fronts ahead of the crest, 45° off the fall line), the stance
+held, 9 s a run. **The datum**: `t̂` is `AttachedRider.across` and `n̂` its `up` — the rider's own two axes, the ones
+`coupleStanding` writes the bank's and the leg's rows on, so an entry here and a row of `A` are about one axis; the
+roll entries are about `rollAxis`, as every `deck` reading on this ledger is. Every window starts after 0.2 s and
+excludes the `MAX_BANK` clamp's frames, which are counted and published.
+
+| **[M]** per-run medians, the 96 runs with a live tick, five arms | the GAME, off its own `A⁻¹` | the MODEL | ratio, span / per-arm medians |
+|---|---|---|---|
+| **the sway mass a side force meets**, kg | **2.796–5.580** (peak in a run 15.908) | `boardMass` **2.54** [R] | **1.101–2.197** / 1.17, 1.23, 1.27, 1.33, 1.40 |
+| **the board's roll inertia**, kg·m² | 0.123–1.187 | `boardRollInertia` 0.664–1.396 [R] | **0.088–1.446** / 0.54, 0.75, 0.93, 0.93, 1.11 |
+| **its yaw inertia**, kg·m² | 1.810–2.368 | `boardYawInertia + riderYawInertia` 1.799–2.067 [R] | **0.922–1.145** / 0.98–1.04 |
+| the cross, a side impulse's own roll, rad/s per N·s | **−0.3363 to −0.0360** | **exactly 0** (a water side force enters `rollAcc` not at all) [R] | — |
+| the cross, a roll impulse's own sway, m/s per N·m·s | −0.3363 to −0.0360 (the same entry, §2 reading 4) | — | — |
+| a side impulse's own `Δu̇ / L` | −0.504 to +0.089 | — | — |
+| **the control: the same read with everything but the translations welded**, kg | **75.7–93.8** | — | — |
+
+**Five readings.**
+
+1. **The model's sway mass is right to a factor of 1.1–2.2, not wrong by 29.7.** **P1a and P1b hold and P1c — which
+   I wrote opposed to them on purpose — is refuted.** The reason is 3.3m's: the reduced mass of a 75 kg body and a
+   light board across is the light board, because `1/75` is a thirtieth of `1/3`.
+2. **The welded control is the brief's own number, and it says what 75.54 kg would mean.** It reads **75.7–93.8 kg**
+   — 2.54 of board, 73 of rider and 0.2–18 of water. **So the brief was not computing nothing; it was computing the
+   mass of a rider welded to the deck, and the solve does not meet that mass.**
+3. **My own P0c is refuted as I wrote it, and the refutation is the mechanism.** I predicted that welding **the bank
+   row alone** would read the masses summed. It reads **3.26–5.59 kg** [M]: with the across freedom gone the board
+   can still **roll and yaw out from under the rider**, and a board rolling about a point 0.55–0.85 m up pays only its
+   own roll inertia over that lever [A]. The control that works welds rows 3–8 as well.
+4. **The two cross terms are one entry of `A⁻¹`, read twice, and they agree exactly.** `A` is symmetric, so
+   `sideRollPer` and `rollSwayPer` must be the same number from two different back-substitutions. Peak difference
+   over every live tick of every one of the 96 runs with one: **0.000** [M]. **That is the instrument's own free control
+   and
+   it is reported rather than asserted.**
+5. **The one structural term the model has none of.** A water side force on the board produces **no roll
+   acceleration at all** in the model: `rollAcc`'s only lateral-force term is `deckHeight · push`, the **body's** push
+   at a 0.031 m lever [R]. In the game the same force rolls the board at **0.036–0.336 rad/s per N·s**, because the
+   rider's mass sits 0.55–0.85 m above it and the constraint must carry it. **P2b holds, and more strongly than I
+   wrote it: not 5× the model's, but against the model's nothing.** §6 measures what having it is worth, and the
+   answer is: less than nothing, for the reason in §5.
+
+## 3. (B) Force against force, with no inertia and no solve in between
+
+The strongest instrument of the round, and the one that relocates 3.3o's headline. The model's own three water loads
+are the twelve derivatives read at the controller's own state:
+
+> `K = heelRoll · φ + slipRoll · β + yawRoll · r + rollDamping · φ̇`, and the same shape for `Y` and `N` [R]
+
+and the game's own are the **ten water sources** of `BoardBody.roll` (a mean roll moment, N·m), of `BoardBody.yaw`
+(a mean yaw moment) and of `BoardBody.forces` projected on the model's own `+y` (a mean side force, N) — `gyro`,
+`rider` and `total` left out, the first being the board's own and the second a residual [R]. **Both sides are reads,
+and the two have nothing in common but the state.**
+
+**The datum, and it is the round's own frame risk, so it is stated twice.** `BoardBody.roll` is + lifting the board's
++x rail about the board's long axis [R]; the board's local +x is the probe's own `sideV` (`place` builds the basis
+`(left, normal, forward)` and `normal × forward` is `sideV`) [R + A]; the model's `φ` is `−roll` by instrument 1's
+identity, so **a positive `BoardBody.roll` is a positive model `K`** and the two need no flip. The model's `+y` is
+the board's right, which is `−sideV`, so the side force and the yaw moment do flip. 3.3m measured that the board's
+long axis and `rollAxis` agree to 2–5 %, so nothing below turns on which is used.
+
+| **[M]** per-run medians, |model / game| | unsteered deck 24 | unsteered world 24 | low deck 18 | low world 18 | steered 18 |
+|---|---|---|---|---|---|
+| **roll moment K**, model N·m | 37.5–129.9 | 28.4–114.7 | 9.2–229.7 | 8.1–159.3 | 3.3–78.6 |
+| … the game's | 6.6–45.7 | 6.4–44.7 | 4.8–42.0 | 5.7–47.8 | 22.9–54.4 |
+| … **\|ratio\|**, span and median | 2.276–5.798 (**3.302**) | 1.777–5.750 (2.638) | 0.855–11.029 (4.166) | 0.854–**68.369** (3.479) | **0.135–1.689 (0.678)** |
+| … sign right | 0.627–1.000 | 0.603–1.000 | 0.352–1.000 | 0.324–1.000 | 0.609–1.000 |
+| **side force Y**, \|ratio\| | **0.594–1.007 (0.861)** | 0.610–0.999 (0.788) | 0.651–1.312 (0.910) | 0.672–18.447 (0.820) | 0.555–1.548 (0.868) |
+| … sign right | 0.963–1.000 | 0.917–1.000 | 0.474–1.000 | 0.000–1.000 | 0.708–1.000 |
+| **yaw moment N**, \|ratio\| | 0.151–1.583 (0.664) | 0.101–1.590 (0.667) | 0.219–1.940 (0.684) | 0.219–1.479 (0.329) | 0.556–2.602 (1.639) |
+| **K's signed ratio at the world's level** | 2.058–3.587 (**3.046**) | 1.724–3.245 (2.531) | −0.207–11.029 (3.524) | −0.367–68.369 (2.506) | 0.083–1.689 (0.509) |
+| **… at the heel against the WATER** | **0.971–2.934 (1.918)** | 0.024–2.407 (1.205) | 1.670–14.362 (4.411) | 0.334–93.780 (1.493) | 0.147–1.447 (0.584) |
+| the face's own tilt under the board, ° | 0.95–10.11 | 1.42–10.14 | 2.25–13.41 | 1.68–11.18 | 0.83–8.31 |
+
+**Four readings.**
+
+1. **The side force is right.** |ratio| **0.555–1.548** over all five arms, medians 0.79–0.91, and its sign right in
+   0.917–1.000 of ticks on the two unsteered arms. **The derivative group 3.3o measured as the model's largest single
+   roll-row term — the side force, 3 950 °/s² — is a correct force put through a channel that compounds it over a
+   step.** That is a statement about the slip channel's time constant (`m_b V / |slipSide|` is 0.011 s against a
+   1/60 s step [A]), not about the derivative.
+2. **The roll moment is 2–6× out on the straight arms and UNDER on the steered one.** The model's K is smaller than
+   the game's at the median on the steered arm (0.678), which **no reading of 3.3o's 7–22× would have predicted** and
+   which is the reason §6's tilt correction helps that arm's magnitudes and hurts the others'.
+3. **The low-speed arms carry outliers and are reported with them.** One low-world run reads |K ratio| 68.369 and
+   one |Y ratio| 18.447; the medians are 3.479 and 0.820. **The span is the whole population and the median is the
+   number I lead with**, and that arm's own ledger control degrades to 12.470 relative (§9), which is why its per-source
+   rows
+   are not used.
+4. **The heel datum is worth a factor of 1.6 on the model's own roll moment, measured.** 3.046 → 1.918 on the
+   unsteered deck arm and 2.531 → 1.205 on the world one; **worse on the owner's low cell** (3.524 → 4.411, where
+   the tilt is largest at 2.25–13.41° and the model's K already overshoots most). §6 scores it on 3.3o's own rows.
+
+## 4. (B) The conditioning, which is the round's answer to "where is the 4–16×"
+
+| **[M]** the roll row's largest single term over the net it produces | span over the arm | median |
+|---|---|---|
+| in the MODEL (largest of its water-side, water-roll, ankle and remainder groups) | **1.54–16.00** | 2.12 / 2.29 / 2.37 / 2.58 / **3.32** |
+| in the GAME (larger of water + board and rider, off the ledger) | **0.54–27.45** | 2.54 / 2.78 / 3.11 / 3.64 / **5.79** |
+
+**Three readings.**
+
+1. **Both sides compute this row as a near-cancellation, and the game's is the more ill-conditioned of the two.**
+   The model's net roll acceleration is between **two thirds and a sixteenth** of its own largest term; the game's
+   is between **twice** its largest source group (the 0.54 end — a run where the two groups add rather than cancel)
+   and **a twenty-eighth** of it, and the per-arm medians say a **third to a sixth** on both sides. **This is Part
+   35's structural complaint about the lean — a residual of terms two to fifteen times its own size — arriving at
+   the roll row, in the game as well as in the model.**
+2. **And it is the arithmetic that closes 3.3o's headline.** A term 2–6× out (§3) is wrong by 1–5 times itself; in a
+   row whose net is a third of it that is **3–15 times the net** [A], against a measured net error of **4–16×**
+   [M, 3.3o, reproduced in §9]. **The two are the same statement, to the width of the two spans.** So the brief's question — *which part is wrong* — has the answer Part 38 already
+   gave (*no part*), and this round says **why no part**: the row has no part big enough to be wrong by a little.
+3. **I will not claim conditioning is the whole of it**, because a conditioning number is a bound and not a
+   decomposition: it says a 2–6× term error is **sufficient** to make an error of this size in the net, not that nothing
+   else contributes. What it does settle is that **an inertia correction cannot close the gap**, and §5 measures that
+   outright instead of inferring it.
+
+## 5. (B) The re-derivation itself, built as a counterfactual, and worse on every arm
+
+The model's own four generalised forces — `K`, `Y + (−m g θ)`, `N`, and the ankle's own torque — put through the
+**game's own 4×4 compliance** read off its own `A⁻¹` on the same tick. Every mass, inertia and lever of the model's
+lateral block is gone. The ankle's column is the ledger's own read for `b[7] = 1/L`, which the code writes as
+`rhs[7] += −h τ_game / L` with the model's torque being `−τ_game` [R], so it enters as `−τ_model`; the body's weight
+across goes in the side slot and the ankle's torque in the ankle slot alone, **which is where `coupleStanding` puts
+it and what 3.3m verified** — putting the model's own `push` there as well would count the ankle twice.
+
+| **[M]** roll row relative error, per-run medians | shipped | **the game's own compliance** | with the water's heel too |
+|---|---|---|---|
+| unsteered, deck, 24 | 4.300–16.386 (**10.050**) | 9.938–53.454 (**25.240**) | 6.988–51.287 |
+| unsteered, world, 24 | 3.787–23.204 (9.366) | 6.440–45.825 (21.132) | 6.115–38.452 |
+| the owner's low speed, deck, 18 | 0.902–16.656 (2.725) | 0.851–36.503 (17.112) | 1.168–30.755 |
+| the same, world, 12 | 0.891–18.468 (7.420) | 1.030–43.969 (24.350) | 1.936–76.824 |
+| steered, deck, 18 | 2.435–8.772 (4.035) | 4.554–50.635 (14.272) | 3.170–42.294 |
+| **its own control**: the diagonal alone over the model's own `K / I_roll` | — | 0.852–1.344 / 0.695–1.297 / 0.993–11.579 / 0.904–5.334 / 0.892–1.782 | — |
+
+**Four readings.**
+
+1. **My own P3a is refuted, and in the direction that matters.** I predicted the re-derivation would cut the roll
+   row's error by at least a third. It **multiplies it by 2.4** at the median on the unsteered deck arm and is worse
+   on all five. Its sign agreement barely moves (0.338 → 0.338 on that arm).
+2. **The control says the mapping is right.** The diagonal alone — the game's own roll compliance times the model's
+   own K — reproduces the model's own `K / boardRollInertia` to **0.852–1.344** on the unsteered deck arm, inside the
+   **0.747–1.184** the two inertias themselves differ by (§2); it widens exactly where the inertia ratio itself
+   widens (0.993–11.579 on the low cell, where the game's effective roll inertia drops to 0.123 kg·m²). **So the
+   signs and the scalings of the mapping are read, not assumed.**
+3. **The reason is that the model's force side is not separable from its inertia side.** The model's `push` carries
+   `τ_ankle / L` as a **horizontal force at the feet** [R, `rollModel.ts:510`: `push = torque.map((t) => t / hh)`]
+   — a force that exists only because its body is a point mass on a massless leg whose contact is at the feet. The game's constrained solve has no such force: the ankle lives on
+   row 7 and the constraint carries its reaction. **There is no way to keep one side and swap the other, and that is
+   not a limitation of my probe; it is a property of the two formulations.** A real re-derivation has to replace
+   **both** sides at once, which is a different and much larger round (§11).
+4. **So the brief's ruling item 2 is answered with a measurement rather than with a build**, and the answer is no.
+   Rule 6's "a measured result with the model still wrong is a complete round" is the licence I am using, and §6 is
+   the one thing the round did find worth building.
+
+## 6. (B) The water's own heel datum: built, shipped opt-in, and not a fix
+
+### 6.1 What it is, by reading
+
+Every one of the twelve derivatives in `PLANT_SPEEDS`, `RAIL_PLANT` and `FROZEN_PLANT` was measured **per radian of
+the board's heel against a flat free surface** [R, their own docstrings and the `rail-dig` study]. The model is fed
+`φ`, the board's roll from the **world's level** — the sense line is built from
+`atan2(boardUp · side, boardUp.y)` [R, `AttachedRider.ts:3289`, and `sense[5] = −(bank.angle − roll)` at `:3468`].
+On flat water they are one angle. On a wave face they differ by the face's own tilt under the board, measured here
+at **0.83–13.41° at the per-run median and up to 15.77° at the peak** [M], and the ten-state plant has neither a
+state nor an input for it.
+
+**And the distinction is not new in this folder — only its application inside the model is.** Part 25 §4 already
+said, of an outside study's numbers, *"their rail is against the water's surface while my `roll` is against the
+world's level, which on a 16° face is not the same datum"* — and then used it on a comparison between this game and a
+published one. **Nobody had asked whether the balance's own model has the same mismatch with its own lab.** It does.
+
+`?waterHeel=tilt|predict` reads the three **heel** coefficients at `φ − tilt` and hands the tilt to the predictor as
+a **measured third input**. The three are the only ones that multiply `φ`, so the correction is exactly one column
+of `A`, taken by differencing `continuousPlant` itself (`heelColumn`, tested). **Φ, Γ, the LQR gain and the filter
+are untouched** — the tilt is an input, not a state — so with the switch off the design is byte-for-byte the shipped
+one, which `predictiveBalance.test.ts` asserts and §9's 1 008 column reads confirm.
+
+### 6.2 Scored on step 3.3o's own rows, apples to apples on the shipped ride
+
+The counterfactual: the same recorded states, the same commands, the plant swapped. **This is the comparison the
+brief asked for and it is not the ride.**
+
+| **[M]** per-run medians | roll row rel err, shipped → tilt | roll **sign** right, shipped → tilt | lean row rel err | lean **sign** right |
+|---|---|---|---|---|
+| unsteered, deck, 24 | 10.050 → **11.640** | **0.338 → 0.581** (spans 0.190–0.462 → 0.390–0.825) | 3.540 → 13.272 | 0.696 → 0.685 |
+| unsteered, world, 24 | 9.366 → 10.498 | **0.333 → 0.622** (0.083–0.476 → 0.444–0.882) | 3.310 → 13.170 | 0.733 → 0.673 |
+| the owner's low speed, deck, 18 | 2.725 → 3.993 | 0.579 → 0.571 | 3.833 → 7.936 | 0.625 → 0.630 |
+| the same, world, 12 | 7.420 → 11.214 | 0.378 → 0.604 | 3.722 → 32.625 | 0.735 → 0.688 |
+| steered, deck, 18 | 4.035 → 4.165 (spans **2.435–8.772 → 1.465–6.799**) | 0.605 → 0.591 | 8.298 → 7.234 | 0.650 → 0.547 |
+
+**Three readings.**
+
+1. **It buys the direction of the board's roll and costs its size.** On the two unsteered arms the sign goes from
+   worse than a coin to **three ticks in five**, which is the defect 3.3o led with (*"it gets the sign right less
+   often than a coin"*); the magnitudes get 10–50 % worse. **P3c holds and P3d — written opposed to P3a — is the
+   reading.**
+2. **It does not transfer to the owner's own cell**, where the tilt is largest: the sign does not move (0.579 →
+   0.571) and the magnitude worsens. **The arm where the correction is biggest is the arm where it does least**,
+   which is the fourth time this folder has measured that shape.
+3. **On the steered arm it narrows both ends of the roll row** (2.435–8.772 → 1.465–6.799) **and leaves the median
+   where it was** (4.035 → 4.165). A span and a median are two statements and both are printed.
+
+### 6.3 Ridden — the fall, as a separate fact
+
+| **[M]** arm | n | shipped | **`?waterHeel=predict`** | `?waterHeel=tilt` | Compress |
+|---|---|---|---|---|---|
+| unsteered, deck | 24 | 1.100–2.067 (**1.183**) | **0.883–4.767 (2.433)** | 0.183–0.783 (0.283) | 8 of 8 in all three |
+| unsteered, world | 24 | 0.767–1.950 (0.950) | **0.533–4.583 (2.350)** | — | 8 of 8 |
+| **the owner's low speed, deck** | 18 | 0.517–7.100 (**1.033**) | **0.133–1.400 (0.450)** | 0.133–0.783 (0.350) | 6 of 6 in all three |
+| the same, world | 18 | 0.117–6.900 (0.767) | 0.100–1.200 (0.383) | — | 6 of 6 |
+| steered, deck | 18 | 1.367–4.117 (3.067) | 0.817–3.567 (1.167) | — | 6 of 6 |
+
+**Four readings.**
+
+1. **It doubles the unsteered ride** — ×2.06 on the deck filter and ×2.47 on the world one at the median — **and it
+   is the second largest ride effect this track has measured**, after step 3.3n's bias ablation (×3.65).
+2. **And it halves the owner's own cell** (×0.44 and ×0.50) **and the steered arm** (×0.38). **The bar is not met and
+   is moved the wrong way.** `?waterHeel` ships off for that reason and for no other.
+3. **The reference's own steady turn is the destabiliser, and the two halves are measured apart.** `'tilt'` solves
+   `(Φ − I) x + Γ u + Γ_d · tilt = 0` for the reference, so the commanded trim is the trim **on this face**; it drops
+   him in 0.283 s. `'predict'` leaves the flat-water reference alone and carries the tilt through the forward
+   prediction only. **Same correction, same column, one difference, a factor of nine in the fall.**
+4. **The `'tilt'` arm's own model numbers look the best of anything in this folder and I am not reporting them as a
+   finding.** Its roll row goes under 1 in **11 of 20** runs and its lean row in **12 of 20**, with both signs at a
+   median of 1.000 [M] — over **262 live ticks** on rides that ended at 0.183–0.783 s, with 4 of 24 having no live
+   tick at all. **That window is the placement's own first half second at a small state, and it is not the same
+   measurement as the other arms'. It falsifies my own P3b by P3b's own wording, and I claim nothing from it.**
+
+## 7. What I refuted
+
+- **My brief's largest single defect, which was its headline.** The model's sway mass is **1.101–2.197×** the mass
+  the game's own solve divides a side force by, not 29.7× too small. The 29.7 is two diagonals divided by each other,
+  and **Part 36 §2 had already published the reading that forbids it**. Fifth consecutive round to find its error in
+  the half its brief called settled.
+- **My brief's premise, that the masses are put in by hand and wrong.** All four lateral inertias are the game's own
+  to within 1.1–2.2× (sway), 0.09–1.45× (roll) and 0.92–1.15× (yaw), and **two of them were measured in the game
+  and tabulated by step 3.2e** (`BOARD_INERTIA`, read by `plantAt`) [R] — so "put in by hand" was never true of the
+  two that matter most.
+- **My brief's "the water term 7.1–22.3× too big", as a statement about the derivatives.** Force against force, the
+  side force is right (medians 0.79–0.91), the roll moment is 2–6× out on the straight arms and **under** on the
+  steered one (median 0.678), and the yaw moment's medians are 0.33–1.64. 3.3o's 7–22× is a one-step compounded
+  group contribution and 3.3o said it was.
+- **My own P3a, and with it the brief's ruling item 2.** The re-derivation against the game's own compliance is
+  **2.4× worse** at the median on the unsteered deck arm and worse on all five.
+- **My own P0c, as written.** Welding the bank row alone reads 3.26–5.59 kg, not the masses summed; the board rolls
+  out from under a rider whose across freedom is welded. The corrected control (everything but the translations)
+  reads 75.7–93.8 kg.
+- **My own P1c**, which I wrote opposed to P1a so that one of them had to fail.
+- **My own P3b, on one arm of the twelve the ledger ran on, and by P3b's own wording** (§6.3 reading 4), over a
+  262-tick window I do not claim.
+- **The probe's own summary lines, before they were reported.** `r()` returns `null` where a column has no live
+  tick, **`Number(null)` is 0, and 0 passes `Number.isFinite`** — so every printed span on an arm with a dead run
+  had a spurious 0.000 at its bottom, in step 3.3o's own summary as well as this round's first draft. The `.jsonl`
+  was always right. Fixed by dropping null before the cast, and the arms with dead runs were re-emitted.
+
+## 8. What I will not claim
+
+- **I will not claim the model is right.** Both rows are still above 1 at the median in **96 of 96** live runs of
+  the five shipped arms (§9), exactly as 3.3o measured. What this round moves is **where that error lives**: not in
+  the inertia side, not in the side force, and not in any one part.
+- **I will not claim conditioning is a decomposition.** It bounds; it does not attribute. §4 reading 3.
+- **I will not claim `?waterHeel` is a fix, or recommend turning it on.** It doubles one arm, halves three, and makes
+  both rows' magnitudes worse on the arm it helps. It ships because it is a defect I can show by pointing at two
+  lines and because its ride effect is large enough that the owner should feel it, not because I believe in it.
+- **I will not claim the `'tilt'` arm's sub-1 rows mean anything.** 262 live ticks, 0.28 s of ride, the placement's
+  own window.
+- **I will not claim the K comparison to better than its frame.** The game's roll moment is about the board's own
+  long axis and the model's about `rollAxis`; 3.3m measured those agree to 2–5 %, and the side force's and yaw
+  moment's sign conventions are derived in §3 from two docstrings and the `place` basis, not measured. A sign error
+  there would flip a ratio, not change its size, and the size is what §3 leads with.
+- **I will not claim anything about the low-speed arms' per-source numbers.** Their ledger control degrades to
+  29.763 relative on the deck filter and 12.470 on the world one (§9) and 8–9 of 18 runs have no live tick with the
+  switch on. §3's force ratios there are reported with their outliers and their medians.
+- **The `FaceWater` is a fit to Canyon, not Canyon**; the rider is **placed**, not paddled or popped up; every span
+  above is **the whole population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+- **Carried, not mine, not touched**: `steadyTurn`'s `ref.u[0]` peaking at 2 675° in 1 of 18 steered runs (Part 37
+  §6); the `cos³` added-mass frame defect; `AttachedRider.frame`'s hard clamp of the measured bank at 70° at three
+  sites.
+
+## 9. The controls
+
+**P0a, the state is a read**: the reconstruction pushed back through the controller's own `C`, all seven rows, **peak
+over every tick of every one of the 270 runs: exactly 0**; tick spacing exactly `CONTROL_STEP`, **0.000e+0 off** [M].
+
+**P0b, the ledger's own axis against the game's own state change**: `−deckTotal` against the game's own `φ̇` change,
+**0.009–0.046** (unsteered deck) and **0.008–0.044** (world) — 3.3o's own spans to the digit; the lean column
+0.092–0.455; **the owner's low-speed cell 0.009–29.763 on the deck filter and 0.009–12.470 on the world
+one**, which is why no per-source ledger number is reported for that arm [M].
+
+**P0c, the lateral unit reads are effective inertias**: `A` symmetric, |side→roll − roll→sway| peak **0.000** over
+every live tick of the 96 runs with one; everything but the three translations welded reads **75.7–93.8 kg**, the
+masses summed; and **0 singular factorisations** anywhere, counted rather than assumed [M]. And
+`bankLedger.test.ts` asserts all three on its own ride.
+
+**P0d, the ledger closes**: `split`, `closure` and `residual` **0.00e+0 on every step of every run**; `apart` at most
+16–20 per run [M].
+
+**P0e, the rider unchanged with the switch off**: the five shipped arms and the purity arm compared row by row
+against `33l-unsteered-deck`, `33l-unsteered-world`, `33l-low-deck`, `33l-low-world` and `33n-steered-deck` on
+`fell`, `fellAt`, `rollFall`, `bankFall`, `railFall`, `frames`, `stance` and `steer` — **126 runs, 1 008 column
+reads, 0 mismatches** [M]. And the tilt the controller was handed with the switch off is **0.000000° in all 24
+runs** of the unsteered deck arm, read per tick [M].
+
+**P0f, the new ledger rows change nothing**: the unsteered deck 24 re-run with every ledger off — identical
+`tickRows` (1 887), `liveRows` (1 529) and `clampedRows` (70), and identical on all eight baseline columns [M].
+
+**P0g, the groups still sum to the row**: the six zeroable groups plus the named remainder against the row's own
+implied mean acceleration, **peak 2.6 × 10⁻¹³ (roll)** and **4.7 × 10⁻¹¹ (bank)** over every live tick of every
+run of every arm [M].
+
+**P0h, the blend is not the culprit**: the plant rebuilt at the controller's exact point against its own eight-point
+blend, **0.001–0.056 median** on the unsteered arms [M] — 3.3o's own number.
+
+**P0i, 3.3o's headline reproduced on this tree, which is what makes §6.2 a comparison**: the one-step roll-rate
+ratio's per-arm medians of the per-run medians **10.641 / 9.092 / 3.980 / 7.857 / 3.934** and the bank rate's
+**2.552 / 3.097 / 4.620 / 3.634 / 5.131**, and the roll row's relative error **10.050 / 9.366 / 2.725 / 7.420 /
+4.035** — **every one of them 3.3o's published figure to the digit** [M], above 1 at the median in **96 of 96** live
+runs.
+
+**A positive control predicted before it ran**: over the first six ticks the filter has not run, so a probe reading
+`x̂` would be small there and one reading the game's own state must not be. The roll-rate ratio over ticks 1–6 is
+**4.809–65.259** on the low-world arm against 2.999–19.753 over the rest [M]. **Held.**
+
+**The switch's own three tests** (`predictiveBalance.test.ts`): the heel column is exactly the three heel
+derivatives' own column of `A` and nothing else, to 12 decimals, with every other column byte-identical; Φ, Γ, K, L,
+Φe, Γe and Φ^N are **byte-identical** with the flag on and off and `Γ_d` is the zero-order hold of `−heelColumn` to
+14 decimals; and **with the flag on and the tilt handed in as zero the controller sends exactly what it sends with
+the flag off, tick for tick, on both values of the flag** — with a 10° tilt it does not, so the test is not vacuous.
+
+## 10. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 624 passed, 21 expected fail** — step 3.3o's 620 plus this round's four new
+  ones (three on the switch, one on the ledger's lateral reads).
+  `vitest run src/game src/scene/rig`: **70 files, 733 passed** — 3.3o's 732 plus the switch's own.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical to 3.3o's.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round touches no solver, no wave and no spot file,
+  and its one `SurfZoneSimulation.ts` change is a new optional config field threaded through `SurfZoneRunner` to the
+  rider.
+- **The Canyon byte check, run because `src/` DID change this round**, with the brief's three checks read rather than
+  assumed — the wrapper prepends `globalThis.location = { search: '?canyonWaves=true' }` to the bundle (a dynamic
+  import makes rolldown split the chunk otherwise), the grid line is read, and the "spun up on the CPU in … s" line
+  is read so that no kept `.sea` was imported:
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180 400 cells**, spun up on the CPU in **44.3 s**:
+    snapshots **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202 800 cells**, spun up on the CPU in **62.8 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  **All four match.** `src/` did change this round — eleven files — but every behavioural line is behind
+  `DesignWeights.waterHeel`, which is unset by default, or inside `if (bankLedger.on)`, which the game never sets;
+  no solver, no wave, no spot file and no hull law is touched. The hashes say so rather than the reasoning doing it
+  alone. The raw output is `results/33p/33p-canyon-byte-check.txt`.
+- **the shipped rider is proved unchanged with the switch off against step 3.3l's and 3.3n's published baselines,
+  126 runs and 1 008 column reads to the digit** (§9, P0e), the ledger-off purity arm is identical to the ledger-on
+  one on `tickRows`, `liveRows`, `clampedRows` and all eight columns, and the tilt handed to the controller with the
+  switch off is **0.000000° in all 24 runs** read per tick.
+
+## 10b. The deletions column, read line by line
+
+`git diff --numstat origin/main` before the commit, read file by file: **41 files, 2 606 insertions and 32
+deletions** (this section included), and **all thirty-two deletions read one by one** — every one of them a line replaced in place, with
+nothing removed and nothing reverted.
+
+```
+422  11  docs/research/new-rider/3.3/plant.ts
+ 30   1  src/game/PhysicalMode.test.ts
+  2   2  src/main.ts
+ 39   3  src/physics/AttachedRider.ts
+159   7  src/physics/bankLedger.ts
+ 59   1  src/physics/predictiveBalance.test.ts
+ 97   6  src/physics/predictiveBalance.ts
+  1   1  src/wave/SurfZoneRunner.ts
+```
+
+`src/game/PhysicalMode.ts` (**+17**), `src/physics/RideSession.ts` (**+8**), `src/physics/SurfZoneSimulation.ts`
+(**+13**), `docs/research/new-rider/3.3/README.md` (**+636**) and the twenty-eight files under `results/33p/` are
+**insertions only, zero deletions**.
+
+- **`plant.ts`, 11**: the file's own header sentence *"it builds nothing"* and its `Env:` line, both rewritten
+  because the probe now has `WHEEL`; the `import` line, extended with `heelColumn`; two type lines
+  (`blendedDesign`, `prev`), both extended with the new fields; the four prediction lines (`pred`, `predNeg`, `pr`,
+  `pb`), each re-added with the controller's own tilt input added to it; `num`, which is the
+  **`Number(null) === 0` fix**; and the summary's own header line, now "step 3.3p … heel …".
+- **`bankLedger.ts`, 7**: `factor`'s and `substitute`'s signatures, both re-added with an optional pivot array so a
+  second factorisation can use them, and the five lines inside them that name `pivots` and now name the parameter.
+  **Nothing was removed from the ledger; the three existing unit reads and all twenty-three sources are untouched.**
+- **`predictiveBalance.ts`, 6**: `design`'s `return` line, `steadyTurn`'s and `tick`'s signatures, `blend`'s `out =`
+  line, and the two `steadyTurn(...)` calls in `tick` — each re-added with the new optional argument or field and
+  nothing dropped.
+- **`AttachedRider.ts`, 3**: the `new PredictiveController(...)` line, the `predictor.tick(...)` line and the
+  `bankLedger.solve(...)` line, each re-added with one more argument.
+- **`main.ts`, 2**: the online-room override line and its comment line, both re-added with `waterHeel` in them.
+- **`PhysicalMode.test.ts`, 1** and **`predictiveBalance.test.ts`, 1**: the import lines, extended.
+- **`SurfZoneRunner.ts`, 1**: the config spread line, extended.
+
+**A token-by-token check was run rather than trusted to the eye**: every identifier on every one of the
+thirty-two deleted lines was searched for in the round's insertions, and all of them are present, with one
+intended exception — `AttachedRider`'s `...options.balance.weights` became `...options.balance?.weights` inside a
+branch that only runs when `options.balance?.weights` is truthy, so the two are the same expression there.
+
+## 11. Files (3.3p)
+
+- `src/physics/bankLedger.ts` — **fifteen read-only rows and four more unit right-hand sides** (two of them through a
+  second factorisation of the same `A`) on the one the
+  ledger already holds: the lateral 4×4 compliance of the game's own `A⁻¹` (the sway mass a side force meets, the
+  roll–sway and roll–yaw and sway–yaw corners, the joint's own share of a side impulse, the yaw inertia the solve
+  meets), plus two counterfactual factorisations — the bank row welded, and everything but the three translations
+  welded, which is the positive control. Still **off by default**, still read by nothing in the game.
+- `src/physics/predictiveBalance.ts` — `heelColumn` (the three heel derivatives' own column of `A`, by differencing
+  `continuousPlant` itself), `DesignWeights.waterHeel: 'both' | 'predict'`, `Design.gammaD` and `Design.predD`, the
+  blend of both, the tilt's propagation over the sensing delay in `tick`, and `steadyTurn`'s optional known-input
+  term. **With the flag unset, every matrix and every command is byte-identical** (tested).
+- `src/physics/AttachedRider.ts` — `AttachedRiderOptions.waterHeel`, the face's own tilt read where the schedule's
+  rail does not shadow it, and `schedTilt` for the probe. The one-line `bankLedger.solve` call gains the body's own
+  `across` and `up`.
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts`, `src/main.ts` — the switch's own chain and its pin for online rooms.
+- `src/physics/predictiveBalance.test.ts`, `src/physics/bankLedger.test.ts`, `src/game/PhysicalMode.test.ts` — five
+  new tests: three on the switch's own design (§9), one on the ledger's lateral reads and their two controls, and one
+  on the switch's address and its room pin.
+- `docs/research/new-rider/3.3/plant.ts` — step 3.3o's probe, extended: the game's own four inertias and its whole
+  lateral compliance against the model's; force against force on all three water loads, at the world's level and at
+  the water's own heel; the tilt plant as a counterfactual on the shipped ride; the derived plant's ceiling; the roll
+  row's conditioning in both; and `WHEEL=tilt|predict` so the ridden arm is the same probe on the same cells. The
+  `Number(null) === 0` fix in its own summary helper is here.
+- `docs/research/new-rider/3.3/results/33p/` — **28 files**: the thirteen arms as `.jsonl` and `.txt`,
+  `33p-canyon-byte-check.txt`, and `33p-predictions.md` (every prediction as written before its read, each with its
+  own falsification, plus the four reads R1–R4 made before anything ran).
+- `docs/research/new-rider/3.3/README.md` — this Part.
+
+## 12. For the owner, in plain words — and the shot list
+
+**Last round I told you his balance's mental model of the board is wrong by four to twenty times, that no single
+number in it is to blame, and that the honest next step was to stop patching numbers and rebuild the model on the
+game's own equations — the big matrix the game solves sixty times a second. I said that was my recommendation. I
+built the comparison first, and the comparison says my recommendation was wrong.**
+
+**One: the numbers I called wrong are right.** The game's own matrix holds four weights for the sideways and rolling
+motion. I pulled all four out of it and put them next to the balance's own. They match: the sideways weight to within
+a factor of one to two, the rolling weight to within a factor of one, and the turning weight to within **fifteen per
+cent in every one of ninety-six rides**. **And the one I told you last round was "thirty times out, on one number" is not.** I had
+compared two entries of a matrix that cannot be compared that way — a mistake this folder has now made five rounds
+running, always in the half the brief called settled. The right comparison says one and a half times, not thirty.
+**So there is nothing in the game's own equations for the balance to borrow. It already has it.**
+
+**Two: the water's push is not ten times too big either, and I checked it the hard way.** I compared the push the
+balance *thinks* the water is making with the push the game *actually* makes — in newtons, with nothing in between,
+no masses, no solving. **The sideways push is right** — typically within twenty per cent, and inside a factor
+of two in every test but one low-speed run. The rolling push is two to six times too big when he is going straight
+and, on a held turn, **too small**. Last round's "seven
+to twenty-two times" was a different quantity measured a different way, and it was not a force.
+
+**Three: so where does the four-to-twenty-times come from? From cancellation, and the game does it too.** The
+board's rolling sum is a tug of war: the water pushes one way at a few hundred, the rider pushes back at a few
+hundred, and what is left over — what actually rolls the board — is a *half to a twentieth* of either, and a third to a sixth
+of it typically. **I measured that ratio in the balance's model and in the game, and the game's is the worse of the
+two.** When the answer is a twentieth of the terms, a term that is three times too big lands as forty times out. That is the whole four-to-twenty.
+It is not a broken part. It is a sum that cannot be computed accurately by anyone, including the game.
+
+**Four: and I tried the rebuild anyway, properly, before telling you not to.** I took the balance's own forces and
+ran them through the game's own matrix, with every one of the balance's own weights thrown away. **It got two and a
+half times worse**, on all five tests. The reason is worth one sentence: the balance's model has a force in it — the
+sideways shove his ankle makes at his feet — that only exists *because* its body is a stick man on a massless leg.
+The game has no such force; its rider is held by a constraint. **You cannot keep one half of a model and swap the
+other.** A real rebuild has to replace both halves at once, and that is a much bigger job than the one I recommended.
+
+**Five: one real bug, found by reading, and it is yours to ride.** Every one of the water numbers in the balance's
+model was measured in a lab **against flat water**. The balance is fed his roll **against the horizon**. On a wave
+face those are not the same angle — here they differ by up to sixteen degrees — and the model has nowhere to put the
+difference. I built the correction. **It doubles how long he stays on when he is not steering** (one point two
+seconds to two point four) **and it halves your own test — getting into position, slowly, Compress** (one second to
+under half) **and halves a held turn too.** So it ships behind a switch, off, and I would not sell it to you. It is
+the second biggest effect this track has found and it is another one that trades.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot, and `?rider=new&feltFrame=deck` as always.
+
+1. **`?waterHeel=predict`, no stick, just glide.** This is the one that doubled the bench ride. **Does he feel like
+   he is holding on longer when you are not asking for anything?** The bench says about twice as long.
+2. **The same, then get into position slowly in Compress.** The bench says this is where it is **worse** — half as
+   long. **I want to know whether it feels worse or just different**, because "falls sooner" and "feels less in
+   control" have not always been the same thing on this track.
+3. **The same, and hold a turn.** The bench says a held turn goes from three seconds to one and a bit. If the turn
+   feels like it gives way earlier, that is the same number.
+4. **`?waterHeel=tilt` once, so you have seen it.** It drops him in a quarter of a second, every time, on both
+   cells. It is the same correction with one more piece — the trim it aims for is computed on the tilted face instead
+   of on flat water — and that one piece is the whole difference. I am including it because a switch that fails in a
+   quarter of a second is a cleaner demonstration of how brittle this loop is than anything I can write.
+5. **And a ruling, not a ride.** Part 38 offered you three routes and recommended the second (rebuild the model on
+   the game's equations). **This round measured that route and it is closed.** What is left:
+   - **Patch the heel datum and keep looking.** It ships; it trades; I am not asking for it.
+   - **Rebuild the lateral model's forces AND its inertias together from the game's constrained formulation** — not
+     the borrow I recommended last round, but a real rewrite of the body's end of the model. It is the only version
+     of last round's recommendation that is well posed. It is a large piece of work and the conditioning measurement
+     above says it still has to beat a sum whose answer is a twentieth of its terms.
+   - **The two-body rider.** Part 38 said this round would be the cleanest possible setup for that decision, and it
+     is: **the model's inertias are right, its side force is right, and he still falls 270 of 270.** The thing that
+     is wrong is the shape of the body the model is built on — a point mass on a massless leg, whose own gravity term
+     is bigger than the whole lean the game produces (3.3o §2.3) and whose ankle-at-the-feet force has no counterpart
+     in the game at all (§5 reading 3). **That is now two independent measurements pointing at the body's shape
+     rather than at any number in it.**
+   **My recommendation this time is the third, and I am saying so having just had my own last recommendation
+   refuted by my own measurement.** Your call.

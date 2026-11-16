@@ -9,7 +9,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, buoyFrameSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, buoyFrameSwitch, waterHeelSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1353,6 +1353,35 @@ describe('PhysicalMode', () => {
       expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bwave: undefined\b/);
       vi.stubGlobal('location', { search: '?poolSize=ref' });
       expect(surfZoneConfigFor(physicalSettingsFor('pool', { ...conditions, waves: 'barrel' }, { stage: 2, compute: 'cpu' }), 5, false).wave).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?waterHeel=tilt|predict` dev switch (step 3.3p): opt-in, the new surfer's balance reads its internal model's
+  // three HEEL derivatives at the board's heel against the WATER and takes the face's own tilt as a measured input,
+  // instead of reading them at the board's roll from the world's level. Measured and NOT a fix (Part 39): it doubles the
+  // unsteered ride and halves the owner's own low-speed cell, so the room's pin matters and is read from main.ts here.
+  it('reads the water\'s derivatives at the heel against the water with `?waterHeel=tilt|predict` (an opt-in dev switch), and at the world\'s level otherwise', () => {
+    expect(waterHeelSwitch('?waterHeel=tilt')).toEqual({ waterHeel: 'tilt' });
+    expect(waterHeelSwitch('?waterHeel=TILT')).toEqual({ waterHeel: 'tilt' });
+    expect(waterHeelSwitch('?waterHeel=predict')).toEqual({ waterHeel: 'predict' });
+    for (const search of ['', '?waterHeel', '?waterHeel=', '?waterHeel=level', '?waterHeel=on', '?buoyFrame=hull']) {
+      expect(waterHeelSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?waterHeel=predict' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).waterHeel, spot).toBe('predict');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bwaterHeel: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { waterHeel: undefined }).waterHeel).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).waterHeel).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

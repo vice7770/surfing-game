@@ -1479,6 +1479,20 @@ export interface AttachedRiderOptions {
     /** Step 3.2x: the share of the deck's own roll the ankle's rest carries, 0–1 (ANKLE_PLUMB, 0, by default: measured and not kept). */
     anklePlumb?: number;
   };
+  /**
+   * **The water's own heel datum for the balance's internal model** (step 3.3p, `?waterHeel=tilt`): `'tilt'` reads
+   * the twelve captive derivatives' three heel coefficients at the board's heel **against the water** and hands the
+   * face's own tilt to the predictor as a measured input, instead of reading them at the board's roll from the
+   * **world's level**, which is what the lab did not measure. Opt-in, off by default, pinned off for online rooms.
+   *
+   * **Measured and not a fix**: it takes the model's own water roll moment from 2.06–3.59× the game's to
+   * 0.97–2.93× and the share of ticks whose roll-acceleration sign the model gets right from 0.190–0.462 to
+   * 0.390–0.825, and it makes both rows' magnitudes worse. `DesignWeights.waterHeel` has the rest.
+   *
+   * `'tilt'` carries the tilt through the forward prediction **and** the reference's own steady turn; `'predict'`
+   * through the forward prediction alone, leaving the reference the flat-water one that ships.
+   */
+  waterHeel?: 'tilt' | 'predict';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -1971,6 +1985,10 @@ export class AttachedRider {
   private readonly ankleLimit: 'feet' | undefined;
   /** The bound on the rest the balance may command, off the live sole or doubled (`ankleRange`, step 3.3k); undefined by default. */
   private readonly ankleRange: 'load' | 'wide' | undefined;
+  /** Step 3.3p: the internal model reads the water's derivatives at the heel against the water (`waterHeel`); false by default. */
+  private readonly waterHeel: boolean;
+  /** The face's own tilt under the board, rad, in the MODEL's own sign (the probe's reversed), 0 unless `waterHeel`. Read-only. */
+  schedTilt = 0;
   /** rad, the range the latest bank step allowed the commanded rest — ANKLE_REST_RANGE unless `ankleRange` is set. Read-only, for the ledger. */
   private ankleRoom = ANKLE_REST_RANGE;
   /** rad, the same range after the rail's bite narrowed it (the bank step's own `room`). Read-only, for the ledger. */
@@ -2305,7 +2323,15 @@ export class AttachedRider {
     this.bankRateGain = options.humanGains?.bankRate ?? HUMAN_BANK_RATE_GAIN;
     this.bankForward = options.humanGains?.forward ?? HUMAN_BANK_FORWARD;
     this.predictive = this.newRider && options.humanGains === undefined;
-    this.predictor = new PredictiveController(options.balance?.weights ? { ...DEFAULT_WEIGHTS, ...options.balance.weights } : undefined, options.balance?.turn ?? 'tan');
+    // Step 3.3p: `waterHeel: 'tilt'` is the same weights flag the explicit `balance.weights` route reaches, so the
+    // two cannot disagree and an explicit `waterHeel` in `balance.weights` still wins.
+    this.waterHeel = options.waterHeel === 'tilt' || options.waterHeel === 'predict';
+    const heelWeights: { waterHeel: 'both' | 'predict' } | undefined = options.waterHeel === 'tilt'
+      ? { waterHeel: 'both' } : options.waterHeel === 'predict' ? { waterHeel: 'predict' } : undefined;
+    const weights = options.balance?.weights || heelWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...options.balance?.weights }
+      : undefined;
+    this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.rateSense = options.balance?.rateSense ?? 'canal';
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
@@ -3422,6 +3448,12 @@ export class AttachedRider {
     const range = this.restRange();
     this.ankleRoom = range;
     const tb = this.twistBody;
+    // Step 3.3p (`waterHeel: 'tilt'`): the face's own tilt under the board — the angle the measured `rail` is `roll`
+    // less, which is `atan2(waterUp · side, waterUp.y)`, read here because the block below shadows `rail` with the
+    // SCHEDULE's rail (the lean asked for). The model's `φ` is `−roll` [R, `sense[5] = −(bank.angle − roll)` below],
+    // so the heel the water's own terms must be read at is `−tilt` in the model's sign. Zero with the switch off,
+    // and then nothing in the controller reads it (`Design.gammaD` is undefined).
+    const faceTilt = this.waterHeel ? -(roll - rail) : 0;
     if (this.controlDue <= 1e-9) {
       this.controlDue += CONTROL_STEP;
       const turn = this.up.dot(this.boardSpin);
@@ -3449,8 +3481,9 @@ export class AttachedRider {
       let rail = Math.abs(this.leanAsked);
       for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
       rail = Math.min(this.railCap, rail);
-      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail);
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt);
       this.schedRail = rail;
+      this.schedTilt = faceTilt;
       this.heldAnkleRaw = -this.predictor.raw[0];
       this.heldTwist = -u[1];
     }
@@ -4505,7 +4538,10 @@ export class AttachedRider {
         if (this.banking) bankLedger.bookRow('limbs', 7, -h * t.dot(force));
         if (free) bankLedger.bookRow('limbs', 8, -h * this.forward.dot(force));
       }
-      bankLedger.solve(system, rhs, N, length, this.rollAxis.x, this.rollAxis.y, this.rollAxis.z, this.banking);
+      // Step 3.3p: the body's own `across` and `up` as well, for the lateral unit reads (the effective sway mass, the
+      // roll–sway cross terms and the yaw inertia the solve meets). Read-only, as every other argument here.
+      bankLedger.solve(system, rhs, N, length, this.rollAxis.x, this.rollAxis.y, this.rollAxis.z, this.banking,
+        t.x, t.y, t.z, n.x, n.y, n.z);
     }
   }
 

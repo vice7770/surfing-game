@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { eigenvalues } from './rollModel';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, add, closedLoop, continuousPlant, design, discretise, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, add, closedLoop, continuousPlant, design, discretise, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -72,4 +72,62 @@ describe('predictive balance in the game (step 3.2e, the runtime controller)', (
       expect(Math.abs(x[4] - ref.x[4])).toBeLessThan(0.02 * Math.abs(ref.x[4]) + 1e-3);
     });
   }
+});
+
+describe('the water\'s own heel datum (step 3.3p, `waterHeel`)', () => {
+  // The three HEEL derivatives are the only ones that multiply the board's roll, so differencing the plant with them
+  // zeroed must give exactly their column of A and leave every other column alone.
+  it('isolates the three heel derivatives as the plant\'s first column, and nothing else', () => {
+    const { y, t } = plantAt(7, 0);
+    const col = heelColumn(y, t);
+    const bare = continuousPlant({ ...y, heelRoll: 0, heelSide: 0, heelYaw: 0 }, t);
+    const full = continuousPlant(y, t);
+    for (let i = 0; i < col.length; i += 1) {
+      expect(full.a[i][0]).toBeCloseTo(bare.a[i][0] + col[i], 12);
+      // Every other column is untouched by the three, so the difference lives in column 0 alone.
+      for (let j = 1; j < col.length; j += 1) expect(full.a[i][j]).toBe(bare.a[i][j]);
+    }
+    // And it is not a column of zeros: the heel derivatives reach the roll, the slip and the yaw rows.
+    expect(Math.max(...col.map(Math.abs))).toBeGreaterThan(1);
+  });
+
+  // The tilt is an INPUT, not a state, so the design the flag changes is Γ_d alone: Φ, Γ, the LQR gain and the filter
+  // are byte-for-byte the shipped ones. This is what makes the switch off-by-default free.
+  it('leaves Phi, Gamma, K and L byte-identical and adds only the tilt\'s own column', () => {
+    const { y, t } = plantAt(7, 0.195);
+    const off = design(y, t);
+    const on = design(y, t, { ...DEFAULT_WEIGHTS, waterHeel: 'both' });
+    for (const key of ['phi', 'gamma', 'k', 'l', 'phiE', 'gammaE', 'phiN'] as const) {
+      expect(on[key]).toEqual(off[key]);
+    }
+    expect(off.gammaD).toBeUndefined();
+    expect(off.predD).toBeUndefined();
+    expect(on.gammaD).toBeDefined();
+    expect(on.predD).toHaveLength(on.steps);
+    // Γ_d is the zero-order hold of −heelColumn over the same step, on the same A.
+    const { a } = continuousPlant(y, t);
+    const col = heelColumn(y, t);
+    const want = discretise(a, col.map((v) => [-v]), CONTROL_STEP).gamma;
+    for (let i = 0; i < want.length; i += 1) expect(on.gammaD![i][0]).toBeCloseTo(want[i][0], 14);
+  });
+
+  // The positive control on the switch: with the flag on and the tilt handed in as zero, the controller must send
+  // exactly what it sends with the flag off, tick for tick. A difference would mean Γ_d leaks when there is no tilt.
+  it('sends the same commands with the flag on and no tilt as with the flag off', () => {
+    const run = (weights?: DesignWeights, tilt = 0) => {
+      const c = new PredictiveController(weights);
+      const sent: number[][] = [];
+      for (let i = 0; i < 40; i += 1) {
+        const sense = [0.02 * Math.sin(i / 5), 0.1 * Math.cos(i / 5), 0, 0, 0, 0.01 * Math.sin(i / 3), 0];
+        sent.push([...c.tick(sense, 7, 0, 0, 0, { ankle: 0.25, twist: 30 }, 0, tilt)]);
+      }
+      return sent;
+    };
+    expect(run({ ...DEFAULT_WEIGHTS, waterHeel: 'both' }, 0)).toEqual(run(undefined, 0));
+    expect(run({ ...DEFAULT_WEIGHTS, waterHeel: 'predict' }, 0)).toEqual(run(undefined, 0));
+    // And with a tilt it does something: a 10 degree face must move the command.
+    const moved = run({ ...DEFAULT_WEIGHTS, waterHeel: 'both' }, 10 * (Math.PI / 180));
+    const still = run(undefined, 10 * (Math.PI / 180));
+    expect(moved).not.toEqual(still);
+  });
 });

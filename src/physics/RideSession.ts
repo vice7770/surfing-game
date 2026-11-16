@@ -170,6 +170,13 @@ export interface RideSessionOptions {
   ankleLimit?: 'feet';
   /** The bound on the rest the balance may command at the ankle (step 3.3k; `AttachedRiderOptions.ankleRange`): 'load' off the live sole or 'wide' doubled (the `?ankleRange=load|wide` dev switch); by default ANKLE_REST_RANGE's own 14.32°. */
   ankleRange?: 'load' | 'wide';
+  /**
+   * The water's own heel datum for the balance's internal model (step 3.3p; `AttachedRiderOptions.waterHeel`):
+   * 'tilt' reads the twelve captive derivatives' three heel coefficients at the board's heel against the **water**
+   * and hands the face's own tilt to the predictor as a measured input (the `?waterHeel=tilt` dev switch); by default
+   * they are read at the board's roll from the world's level, which is the angle the lab never measured.
+   */
+  waterHeel?: 'tilt' | 'predict';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -276,6 +283,7 @@ export class RideSession {
       ...(options.stanceReach ? { stanceReach: options.stanceReach } : {}),
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
+      ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';
