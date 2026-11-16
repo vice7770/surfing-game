@@ -136,6 +136,19 @@ const ANKLE_LIMIT = process.env.ANKLE_LIMIT === 'feet' ? 'feet' as const : undef
  * observer to the digit), and with it unset every row of this probe is byte-for-byte the shipped one.
  */
 const ANKLE = process.env.ANKLE === 'on';
+/**
+ * **Step 3.3k, `ANKLE_RANGE=load|wide`, off by default**: the game's own `?ankleRange=load` / `?ankleRange=wide` — the
+ * bound on the rest the balance may command at the ankle, the one limit step 3.3j measured **at its stop** when he
+ * goes (±14.32°, saturated in 62 of 72). `load` is `bankAuthority`'s own `restRange` with the **live** load and the
+ * **live** sole instead of one body weight and 0.13 m; `wide` is twice the shipped bound, the literal widening step
+ * 3.3j's §10 item 4 named. With it unset every row of this probe is the shipped rider's.
+ */
+const ANKLE_RANGE = process.env.ANKLE_RANGE === 'load' ? 'load' as const
+  : process.env.ANKLE_RANGE === 'wide' ? 'wide' as const : undefined;
+/** `AttachedRider`'s own ankle spring, restated so the probe never imports a private: N·m/rad (HUMAN_ANKLE_STIFFNESS). */
+const ANKLE_K = 800;
+/** `AttachedRider`'s own ANKLE_REST_RANGE, °, restated: the bound this round's switch moves. */
+const REST_BOUND = 0.25 * DEG;
 
 type Stance = 'tall' | 'crouch' | 'compress' | 'snap' | 'snapdrive';
 const STANCES = (process.env.STANCES ?? 'tall,compress').split(',') as Stance[];
@@ -211,6 +224,12 @@ interface Frame {
   ankleDem: number;   // the torque the ankle's spring and damper ASKED for, N·m, the step's mean
   ankleBound: number; // the moment the soles can transmit, N·m (`legLoad` × the feet's half-width across)
   ankleAngle: number; // the joint's own angle θ − φ, °
+  // **Step 3.3k's columns**: the rest the balance COMMANDED and the bound it was commanded within, both the step's
+  // own mean off the ankle ledger (NaN unless ANKLE=on). `ankleRoom` is `restRange`'s own value — ANKLE_REST_RANGE
+  // unless `?ankleRange` moves it — so the A/B's independent variable is read out of the rider and not assumed.
+  ankleRest: number;  // δ, the commanded rest, °
+  ankleRoom: number;  // the range allowed to δ this step (restRange()), °
+  ankleBite: number;  // the same range after the rail's bite narrowed it, °: the bound on the side that digs the rail
 }
 
 function oneRun(st: Stance, extra: number, steer: number): Record<string, unknown> {
@@ -241,6 +260,7 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     ...(KNEEROOM ? { kneeRoom: KNEEROOM } : {}),
     ...(REACH ? { stanceReach: REACH } : {}),
     ...(ANKLE_LIMIT ? { ankleLimit: ANKLE_LIMIT } : {}),
+    ...(ANKLE_RANGE ? { ankleRange: ANKLE_RANGE } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -384,6 +404,9 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
       ankleDem: haveAnkle ? led.demand : Number.NaN,
       ankleBound: haveAnkle ? led.bound : Number.NaN,
       ankleAngle: haveAnkle ? led.angle * DEG : Number.NaN,
+      ankleRest: haveAnkle ? led.rest * DEG : Number.NaN,
+      ankleRoom: haveAnkle ? led.room * DEG : Number.NaN,
+      ankleBite: haveAnkle ? led.bite * DEG : Number.NaN,
     });
     // The roll rate, filled on the frame after so it is a difference and never a one-frame value read as a rate.
     if (frames.length > 1) frames[frames.length - 1].rollRate = (roll - frames[frames.length - 2].roll) / STEP;
@@ -405,7 +428,12 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
 
   // The mount's contact transient is the first ~0.17 s in every probe of this folder.
   const live = frames.filter((x) => x.t > 0.2);
-  const turn = live.filter((x) => Math.abs(x.steer) > STEER_DEADBAND);
+  // **Step 3.3k: standing still has no commanded turn**, so `live.filter(|steer| > deadband)` is EMPTY at stick 0 and
+  // every column built on `turn` comes back NaN (and `dir` falls to `Math.sign(0) || 1`, which picks +1 at random —
+  // this folder's own named trap). With no stick the ride itself is the window. Every published arm of steps 3.3g–3.3j
+  // is steered, so `steered` is true there and `turn` is unchanged, which is why the four reproductions still hold.
+  const steered = Math.abs(steer) > STEER_DEADBAND;
+  const turn = steered ? live.filter((x) => Math.abs(x.steer) > STEER_DEADBAND) : live;
   const first = turn[0];
   const last = turn[turn.length - 1];
   const end = frames[frames.length - 1];
@@ -499,6 +527,59 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     if (Math.abs(frames[i].px) <= 0.065) break;
     pxFrom2 = frames[i].t;
   }
+  // ## Step 3.3k: why the deck's roll is where it is, standing still
+  //
+  // **The identity, which is why this is a measurement and not a model.** The ankle is a spring on the joint's own
+  // angle θ − φ about a commanded rest δ, so by definition
+  //
+  //   φ = θ − δ − (θ − φ − δ)
+  //
+  // — the deck's roll is the body's bank, less the rest the balance commanded, less the ankle's own SPRING ANGLE
+  // (θ − φ − δ), which is τ_spring / K and is 2.4° at 33 N·m on K = 800 N·m/rad. The three add to φ exactly, so the
+  // content is their SIZES, and `splitRes` below is the arithmetic's own residual, which must be the substep
+  // averaging and nothing else (the probe reads φ and θ frame-end off the board and the rider, the ledger reads
+  // θ − φ and δ as means over the step's substeps).
+  //
+  // The reading it makes possible: if the spring angle is small, **the board sits wherever the body's bank and the
+  // balance's command put it**, and the bound on δ is then a bound on how much deck roll a plumb body can refuse.
+  const springOf = (x: Frame) => x.ankleAngle - x.ankleRest;
+  const splitRes = (x: Frame) => x.roll - (x.bank - x.ankleRest - springOf(x));
+  // The first time each of the deck's roll and the body's bank passes 10° and does not come back inside it: the two
+  // 'first movers' of §2.2 as a clock rather than as a share, so their order is a measurement over the population.
+  const firstPast = (pick: (x: Frame) => number, deg: number) => {
+    let at = Number.NaN;
+    for (let i = frames.length - 1; i >= 0; i -= 1) {
+      if (Math.abs(pick(frames[i])) < deg) break;
+      at = frames[i].t;
+    }
+    return at;
+  };
+  const roll10At = firstPast((x) => x.roll, 10);
+  const bank10At = firstPast((x) => x.bank, 10);
+  // **The body's bank is hard-clamped at MAX_BANK = 70°** where it is measured (`AttachedRider.frame`), and the
+  // clamped value is what the body's own frame and the ankle's torque are then built on. So when it reaches that stop
+  // is a measurement this round owes, beside `pxFrom`: a limit that only arrives after the weight has already left
+  // the feet is a consequence of the fall and not a candidate for its cause.
+  const bank70At = firstPast((x) => x.bank, 69.9);
+  // The commanded rest at its own bound, read RELATIVE to the bound that was applied, so the column means the same
+  // thing with `?ankleRange` on as off: the start of the final continuous window with |δ| ≥ 0.98 of the bound.
+  // The rest is bounded by the RANGE on the side that rolls the board off its rail and by the BITE on the side that
+  // digs it in, so "at its bound" is read against the nearer of the two in the direction the rest is actually going.
+  const restBound = (x: Frame) => (x.ankleRest * x.rail >= 0 ? x.ankleRoom : x.ankleBite);
+  let satRestFrom = Number.NaN;
+  for (let i = frames.length - 1; i >= 0; i -= 1) {
+    const x = frames[i];
+    const b = restBound(x);
+    if (!(Number.isFinite(b) && b > 1e-9 && Math.abs(x.ankleRest) >= 0.98 * b)) break;
+    satRestFrom = x.t;
+  }
+  // And the one the brief did not have: the room on the digging side CLOSED (the rail past RAIL_BITE + RAIL_EASE), so
+  // whatever the range is, the balance may command no rest at all in the direction it is asking for.
+  let biteShutFrom = Number.NaN;
+  for (let i = frames.length - 1; i >= 0; i -= 1) {
+    if (!(Number.isFinite(frames[i].ankleBite) && frames[i].ankleBite <= 1e-9)) break;
+    biteShutFrom = frames[i].t;
+  }
   const rollFlipAt = lastFlip((x) => x.roll);
   const bankFlipAt = lastFlip((x) => x.bank);
   const peakOf = (xs: Frame[], pick: (x: Frame) => number) => (xs.length ? Math.max(...xs.map((x) => Math.abs(pick(x)))) : Number.NaN);
@@ -542,6 +623,35 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     // and `satLead` will have no consistent sign.**
     satDeg: r(Math.abs(end.ankle), 2),
     satFor: r(satHeld, 3), pxFrom: r(pxFrom2, 3), satLead: r(pxFrom2 - (end.t - satHeld), 3),
+    // **Step 3.3k's own columns.** The split of the deck's roll at the fall, and the arithmetic's residual beside it.
+    ankleRestEnd: r(end.ankleRest, 2), ankleRoomEnd: r(end.ankleRoom, 2),
+    // **The rail's bite on the rest's room**, which is a second bound the brief's candidate did not know about.
+    ankleBiteEnd: r(end.ankleBite, 2), ankleBiteMedian: r(median(live.map((x) => x.ankleBite)), 2),
+    biteShut: Number.isFinite(end.ankleBite) && end.ankleBite <= 1e-9 ? 1 : 0,
+    biteShutFrom: r(biteShutFrom, 3), biteShutFor: r(end.t - biteShutFrom, 3),
+    biteShutLead: r(pxFrom2 - biteShutFrom, 3),
+    railEnd: r(end.rail, 1), railPeak: r(peakOf(live, (x) => x.rail), 1),
+    // Is the rest pressed against the bound in the direction the balance is ASKING, or is it the other way?
+    restBoundEnd: r(restBound(end), 2), restWanted: r(end.ankleRest * Math.sign(end.rail || 1), 2),
+    ankleRoomFirst: r(frames[0]?.ankleRoom ?? Number.NaN, 2),
+    ankleRoomMin: r(live.length ? Math.min(...live.map((x) => x.ankleRoom)) : Number.NaN, 2),
+    ankleRoomMedian: r(median(live.map((x) => x.ankleRoom)), 2),
+    springEnd: r(springOf(end), 2), springPeakHalf: r(peakOf(lastHalf, springOf), 2),
+    splitRes: r(splitRes(end), 3), splitResPeak: r(peakOf(live, splitRes), 3),
+    // The control for the split: the probe's own joint angle (bank − roll, frame-end, off the board's geometry)
+    // against the ledger's (a mean over the step's substeps, read inside the rider). Two readings, one joint.
+    relEnd: r(end.rel, 2), relLedgerGap: r(end.rel - end.ankleAngle, 2),
+    relLedgerGapPeak: r(peakOf(live, (x) => x.rel - x.ankleAngle), 2),
+    // The two first movers as a clock: when each of the deck's roll and the body's bank passed 10° for good, and the
+    // lead of the bank over the roll (positive = the BODY's bank got there first).
+    roll10At: r(roll10At, 3), bank10At: r(bank10At, 3), bankLead10: r(roll10At - bank10At, 3),
+    bank70At: r(bank70At, 3), bank70Lead: r(pxFrom2 - bank70At, 3), bank70End: Math.abs(end.bank) >= 69.9 ? 1 : 0,
+    // The commanded rest at its own applied bound: when it last got there for good, and its lead on `px`'s departure.
+    satRestFrom: r(satRestFrom, 3), satRestFor: r(end.t - satRestFrom, 3),
+    satRestLead: r(pxFrom2 - satRestFrom, 3),
+    restAtBound: Number.isFinite(end.ankleRoom) && end.ankleRoom > 0 && Math.abs(end.ankleRest) >= 0.98 * end.ankleRoom ? 1 : 0,
+    // Standing still has no commanded turn: the row says so rather than leaving `dir` to be read as a turn's side.
+    steered: steered ? 1 : 0, ankleRange: ANKLE_RANGE ?? 'shipped',
     // The balanced hand's own stick, for the comparison to be against a turn and not against a smaller one.
     stickMedian: r(median(turn.map((x) => Math.abs(x.steer)))), stickEnd: r(Math.abs(end.steer)),
     heightEnd: r(end.height), tolDeg: r(Math.atan2(HALF_ACROSS, end.height) * DEG, 1),
@@ -624,7 +734,7 @@ for (const extra of EXTRAS) {
 
 const col = (pick: (x: Record<string, unknown>) => boolean, k: string) => rows.filter(pick).map((x) => (x[k] === null || x[k] === undefined ? Number.NaN : Number(x[k])));
 if (!TRACE) {
-  console.log(`\n# step 3.3g — the lean a turn demands against the lean the body holds, rider=${RIDER}, felt=${FELT ?? 'world'}, hand=${HAND}${HAND === 'balanced' ? ` gain=${GAIN}` : ''}, kneeRoom=${KNEEROOM ?? 'shipped'}, stanceReach=${REACH ?? 'shipped'}, ankleLimit=${ANKLE_LIMIT ?? 'shipped'}`);
+  console.log(`\n# step 3.3g — the lean a turn demands against the lean the body holds, rider=${RIDER}, felt=${FELT ?? 'world'}, hand=${HAND}${HAND === 'balanced' ? ` gain=${GAIN}` : ''}, kneeRoom=${KNEEROOM ?? 'shipped'}, stanceReach=${REACH ?? 'shipped'}, ankleLimit=${ANKLE_LIMIT ?? 'shipped'}, ankleRange=${ANKLE_RANGE ?? 'shipped'}, ankle ledger=${ANKLE ? 'on' : 'off'}`);
   console.log(`# Canyon-matched FaceWater ${FACE[0]} m / ${FACE[1]}° / ${FACE[2]} m/s, ${DEPTH} m deep — a FIT to Canyon, not Canyon.`);
   console.log(`# ${EXTRAS.length} entry speeds × ${STEERS.length} sticks = ${EXTRAS.length * STEERS.length} runs a stance, ${SECONDS} s each; the feet's half-width across is ${HALF_ACROSS} m.`);
   const groups: { name: string; pick: (x: Record<string, unknown>) => boolean }[] = [
@@ -729,6 +839,54 @@ if (!TRACE) {
     const n = rows.filter(g.pick).length;
     if (!n) continue;
     console.log(`| ${g.name} | ${n} | ${rows.filter((x) => g.pick(x) && x.centred === 1).length} of ${n} | ${span(col(g.pick, 'gapTo85'), 3)} | ${span(col(g.pick, 't85'), 2)} |`);
+  }
+
+  // ## Step 3.3k's tables: the deck's roll split by the identity φ = θ − δ − (θ − φ − δ), and the clock of the two
+  // first movers. Printed for every group and every regime, and with the split's own residual beside it, because the
+  // identity is exact and the only thing that can go wrong is the frame the two sides are read in.
+  const regimes: { name: string; pick: (x: Record<string, unknown>) => boolean }[] = [
+    { name: 'A flat (|roll| < 10° at the fall)', pick: (x) => Math.abs(Number(x.rollRaw)) < 10 },
+    { name: 'B partial (10–60°)', pick: (x) => Math.abs(Number(x.rollRaw)) >= 10 && Math.abs(Number(x.rollRaw)) < 60 },
+    { name: 'C capsize (≥ 60°)', pick: (x) => Math.abs(Number(x.rollRaw)) >= 60 },
+  ];
+  console.log(`\n### step 3.3k — the deck's roll SPLIT by the ankle's own identity, φ = θ − δ − (θ − φ − δ). All raw board frame, at the fall.`);
+  console.log(`\n| population | n | the deck's roll φ ° | the body's bank θ ° | the commanded rest δ ° | the ankle's SPRING angle θ−φ−δ ° | its peak over the last 0.5 s | the identity's residual ° | its peak over the ride |`);
+  console.log(`|---|---|---|---|---|---|---|---|---|`);
+  for (const g of [...groups, ...regimes]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    console.log(`| ${g.name} | ${n} | ${span(col(g.pick, 'rollRaw'), 1)} | ${span(col(g.pick, 'bankRaw'), 1)} | ${span(col(g.pick, 'ankleRestEnd'), 2)} `
+      + `| ${span(col(g.pick, 'springEnd'), 2)} | ${span(col(g.pick, 'springPeakHalf'), 2)} | ${span(col(g.pick, 'splitRes'), 3)} | ${span(col(g.pick, 'splitResPeak'), 3)} |`);
+  }
+  console.log(`\n| population | n | the RANGE allowed to δ, ° (median over the ride) | at the fall | its smallest | the first frame's | δ AT its own bound at the fall, runs | it got there at s | held for s | its lead on px leaving half the feet's bound, s |`);
+  console.log(`|---|---|---|---|---|---|---|---|---|---|`);
+  for (const g of [...groups, ...regimes]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    const leads = col(g.pick, 'satRestLead');
+    console.log(`| ${g.name} | ${n} | ${span(col(g.pick, 'ankleRoomMedian'), 2)} | ${span(col(g.pick, 'ankleRoomEnd'), 2)} | ${span(col(g.pick, 'ankleRoomMin'), 2)} | ${span(col(g.pick, 'ankleRoomFirst'), 2)} `
+      + `| ${rows.filter((x) => g.pick(x) && x.restAtBound === 1).length} of ${n} | ${span(col(g.pick, 'satRestFrom'), 3)} | ${span(col(g.pick, 'satRestFor'), 3)} `
+      + `| ${f(median(leads), 3)} (${leads.filter((v) => v > 0).length} of ${leads.filter(Number.isFinite).length} positive) |`);
+  }
+  console.log(`\n| population | n | the rail at the fall ° | its peak | the rail's BITE on the rest's room, ° (median) | at the fall | the room CLOSED at the fall, runs | it closed at s | for s | its lead on px, s | the rest δ at the fall ° |`);
+  console.log(`|---|---|---|---|---|---|---|---|---|---|---|`);
+  for (const g of [...groups, ...regimes]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    const leads = col(g.pick, 'biteShutLead');
+    console.log(`| ${g.name} | ${n} | ${span(col(g.pick, 'railEnd'), 1)} | ${span(col(g.pick, 'railPeak'), 1)} | ${span(col(g.pick, 'ankleBiteMedian'), 2)} | ${span(col(g.pick, 'ankleBiteEnd'), 2)} `
+      + `| ${rows.filter((x) => g.pick(x) && x.biteShut === 1).length} of ${n} | ${span(col(g.pick, 'biteShutFrom'), 3)} | ${span(col(g.pick, 'biteShutFor'), 3)} `
+      + `| ${f(median(leads), 3)} (${leads.filter((v) => v > 0).length} of ${leads.filter(Number.isFinite).length} positive) | ${span(col(g.pick, 'ankleRestEnd'), 2)} |`);
+  }
+  console.log(`\n| population | n | the deck's roll passed 10° for good at s | the body's bank did at s | the BANK's lead, s (+ = the body first) | … positive, runs | the joint's angle, probe ° | the ledger's gap ° | the body's bank AT its 70° stop, runs | it got there at s | its lead on px, s |`);
+  console.log(`|---|---|---|---|---|---|---|---|---|---|---|`);
+  for (const g of [...groups, ...regimes]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    const lead = col(g.pick, 'bankLead10');
+    console.log(`| ${g.name} | ${n} | ${span(col(g.pick, 'roll10At'), 3)} | ${span(col(g.pick, 'bank10At'), 3)} | ${f(median(lead), 3)} `
+      + `| ${lead.filter((v) => v > 0).length} of ${lead.filter(Number.isFinite).length} | ${span(col(g.pick, 'relEnd'), 2)} | ${span(col(g.pick, 'relLedgerGap'), 2)} `
+      + `| ${rows.filter((x) => g.pick(x) && x.bank70End === 1).length} of ${n} | ${span(col(g.pick, 'bank70At'), 3)} | ${f(median(col(g.pick, 'bank70Lead')), 3)} |`);
   }
 
   console.log(`\n| group | stick asked | stick held, median | height m | tolerance ° (0.13 m at that height) | error ° at the fall | capture's velocity part m | its position part (px) m |`);

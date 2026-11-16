@@ -37,7 +37,7 @@ import { FaceWater } from './testing/FaceWater';
  */
 
 /** The Canyon-matched cell `3.3/deck.ts` runs, placed the same way, with the new rider standing and a held stick. */
-const run = (steps: number, steer: number, options: { ledger?: boolean; limit?: boolean } = {}) => {
+const run = (steps: number, steer: number, options: { ledger?: boolean; limit?: boolean; range?: 'load' | 'wide' } = {}) => {
   const DEG = 180 / Math.PI;
   AttachedRider.ankleLedger = options.ledger ?? false;
   BoardBody.rollLedger = options.ledger ?? false;
@@ -59,17 +59,17 @@ const run = (steps: number, steer: number, options: { ledger?: boolean; limit?: 
       new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)),
       forward.clone().multiplyScalar(entry).add(new Vector3(here.flowX, here.flowY, here.flowZ)),
     );
-    const rider = new AttachedRider(board.shape, { phase: 'standing', rider: 'new', ...(options.limit ? { ankleLimit: 'feet' as const } : {}) });
+    const rider = new AttachedRider(board.shape, { phase: 'standing', rider: 'new', ...(options.limit ? { ankleLimit: 'feet' as const } : {}), ...(options.range ? { ankleRange: options.range } : {}) });
     board.attach(rider);
     rider.steer = steer;
-    const seen: { torque: number; demand: number; bound: number; load: number; angle: number; absorbed: number; over: number; substeps: number; residual: number }[] = [];
+    const seen: { torque: number; demand: number; bound: number; load: number; angle: number; rest: number; room: number; absorbed: number; over: number; substeps: number; residual: number }[] = [];
     for (let i = 0; i < steps; i += 1) {
       board.step(1 / 60, water);
       if (!rider.attached) break;
       const a = rider.ankle;
       if (a.substeps > 0) {
         seen.push({
-          torque: a.torque, demand: a.demand, bound: a.bound, load: a.load, angle: a.angle, absorbed: a.absorbed, over: a.over, substeps: a.substeps,
+          torque: a.torque, demand: a.demand, bound: a.bound, load: a.load, angle: a.angle, rest: a.rest, room: a.room, absorbed: a.absorbed, over: a.over, substeps: a.substeps,
           // The probe's own sense for the roll ledger (`deck.ts`: every entry negated into its own roll sense).
           residual: -board.roll.rider,
         });
@@ -146,6 +146,45 @@ describe('the ankle ledger and the sole\'s own bound (step 3.3i)', () => {
     const DEG = 180 / Math.PI;
     expect(Math.abs(median(seen.map((x) => x.angle))) * DEG).toBeLessThan(5);
     expect(Math.max(...seen.map((x) => Math.abs(x.angle))) * DEG).toBeLessThan(30);
+  });
+
+  /**
+   * **Step 3.3k: the bound on the commanded rest (`ankleRange`), and its positive control, written before it ran.**
+   *
+   * Step 3.3j measured `ANKLE_REST_RANGE` = ±0.25 rad = ±14.32° **at its stop at the fall in 62 of 72 runs** while
+   * the hip had room left in 69 of 72, and asked for one A/B on it. Before moving it, what it is was read: it is
+   * `rollModel.bankAuthority`'s own `restRange = footReach · m g / series` — the rest at which the feet's centre of
+   * pressure reaches the sole's edge **under one body weight**, on `footReach` = 0.13 m. So `'load'` is not a new
+   * number: it is that formula with the live load and the live sole.
+   *
+   * **Predicted before these ran**: (1) with `'load'`, the booked bound is `0.25 × load / (m g)` in every step, since
+   * the standing support is exactly ±0.13 m, so the two 0.13 m cancel; (2) at one body weight it is therefore the
+   * shipped 0.25 identically, which is what makes the switch an A/B on the bound and not on a second rider; (3) with
+   * `'wide'` it is exactly 0.5; (4) off, exactly 0.25 in every step.
+   */
+  it('reads the commanded rest\'s bound off the live sole with `ankleRange: \'load\'`, and books 0.25 rad without it (step 3.3k)', () => {
+    const G = 9.81;
+    const off = run(60, 0, { ledger: true });
+    expect(off.seen.length).toBeGreaterThan(30);
+    // (4) Off: the shipped constant, exactly, in every step.
+    for (const x of off.seen) expect(x.room).toBeCloseTo(0.25, 12);
+    // (1) and (2): the live bound is the shipped one scaled by the load in body weights, because the sole is the same.
+    const load = run(60, 0, { ledger: true, range: 'load' });
+    const weight = load.rider.mass * G;
+    for (const x of load.seen) {
+      expect(x.bound).toBeCloseTo(x.load * 0.13, 9);
+      expect(x.room).toBeCloseTo((0.25 * x.load) / weight, 9);
+    }
+    // And it really is of the shipped bound's own size in trim, so this is a bound on the same quantity and not a new one.
+    expect(median(load.seen.map((x) => x.room))).toBeGreaterThan(0.1);
+    expect(median(load.seen.map((x) => x.room))).toBeLessThan(0.5);
+    // (3) `wide` is exactly twice the shipped bound.
+    const wide = run(60, 0, { ledger: true, range: 'wide' });
+    for (const x of wide.seen) expect(x.room).toBeCloseTo(0.5, 12);
+    // The commanded rest stays inside whatever bound was applied, which is the clamp this switch moves.
+    for (const arm of [off, load, wide]) for (const x of arm.seen) expect(Math.abs(x.rest)).toBeLessThanOrEqual(x.room + 1e-9);
+    // And the switch is not a no-op: a doubled bound moves the trajectory. (Which way is a measurement, not a test.)
+    expect(wide.board.orientation.toArray()).not.toEqual(off.board.orientation.toArray());
   });
 
   it('is off by default and changes nothing about the rider or the board when it is on', () => {

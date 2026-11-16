@@ -168,6 +168,8 @@ export interface RideSessionOptions {
   stanceReach?: 'keep';
   /** The ankle's torque bounded by the moment the soles can transmit (step 3.3i; `AttachedRiderOptions.ankleLimit`): 'feet' (the `?ankleLimit=feet` dev switch); by default unbounded, as it always was. */
   ankleLimit?: 'feet';
+  /** The bound on the rest the balance may command at the ankle (step 3.3k; `AttachedRiderOptions.ankleRange`): 'load' off the live sole or 'wide' doubled (the `?ankleRange=load|wide` dev switch); by default ANKLE_REST_RANGE's own 14.32°. */
+  ankleRange?: 'load' | 'wide';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -273,6 +275,7 @@ export class RideSession {
       ...(options.kneeRoom ? { kneeRoom: options.kneeRoom } : {}),
       ...(options.stanceReach ? { stanceReach: options.stanceReach } : {}),
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
+      ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

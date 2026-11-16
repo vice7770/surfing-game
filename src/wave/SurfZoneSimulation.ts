@@ -321,6 +321,18 @@ export interface SurfZoneConfig {
    */
   ankleLimit?: 'feet';
   /**
+   * 'load' or 'wide': **the bound on the rest the balance may command at the ankle** (step 3.3k;
+   * `RideSessionOptions.ankleRange`). Step 3.3j measured that bound — ANKLE_REST_RANGE, ±14.32° — **at its stop when
+   * the rider goes, in 62 of 72 runs**, while the hip had room left in 69 of 72, and named widening it as the one A/B
+   * worth running. 'load' is the bound's own derivation (`rollModel.bankAuthority`'s `restRange`) with the live load
+   * and the live sole instead of one body weight and 0.13 m, so it is identically the shipped bound at one body
+   * weight, wider under load and narrower when the feet go light; 'wide' is twice the shipped bound and is paid for by
+   * no geometry. Only the bound on the commanded rest moves: the hip's share and the old rider are untouched. The new
+   * surfer (`?rider=new`) only; no force and no hull law is touched. Every spot. The `?ankleRange=load|wide` dev
+   * switch, opt-in, to ride; online rooms run the default.
+   */
+  ankleRange?: 'load' | 'wide';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

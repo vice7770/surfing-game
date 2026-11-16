@@ -4534,3 +4534,542 @@ below is the game as it ships.
    case — the 14.3° the balance may ask of his ankles — which is one switch, one A/B and a stated prediction: **if it
    is the binding limit, widening it moves the flat fall and leaves the capsize alone; if it moves neither, it is
    innocent and I will publish that.**
+
+# Part 34 — the command saturates and the rest does not, the bound is innocent, and standing still the body goes first and the deck follows it
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33k`, cut from `main` at
+**6b94c922** (step 3.3j's merge), so Part 33 is its base. It ships **one opt-in behavioural switch**
+(`?ankleRange=load|wide`, off by default, pinned off in the online rooms), two new read-only ledger columns, the
+probe's own unsteered window, and **360 runs over nine arms** — four 24-run `fall.ts` arms on the stick untouched,
+three 72-run gentle ladders, and two 24-run reproduction arms.
+
+Tags as in 3.2 and 3.3: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source; **[I]** my
+inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The seven sentences the round is for
+
+1. **The owner's bar is not met, and this round adds the stick-untouched population to the record.** `fall.ts` on the
+   owner's own address, the stick never touched, three stances × eight entry speeds: **24 of 24 fall at 1.10–2.07 s**
+   on the deck filter and **24 of 24 at 0.77–1.95 s** on the world one, and Compress on the deck filter capsizes the
+   board past 60° in **7 of 8** [M]. Across the round's nine arms, **360 of 360 fall**, with the switch off, on
+   `'load'` and on `'wide'` alike.
+2. **My brief's redirection is half refuted by its own target: there is no flat fall standing still.** Step 3.3j's
+   regime A (|roll| < 10° at the fall) is **0 of 24 on the deck filter and 0 of 24 on the world one** [M]; the deck's
+   roll at the fall is **27.5–89.0°** and **20.9–68.8°**. The flat fall — the one the brief sent me to fix by
+   dropping the turn — **needs the stick**. On the gentle ladder it is 19 of 72; with the stick untouched it does not
+   occur. **So "drop the turn and the job is standing still" trades the owner's fall for a different population, not
+   for a simpler one.**
+3. **The candidate step 3.3j named is measured and it is NOT at its stop. The quantity that saturates is the
+   predictor's command, not the rest the ankle gets.** On step 3.3j's own 72-run ladder, reproduced here, the
+   predictor's sent ankle command is at ±14.32° in **62 of 72 — 3.3j's own figure, to the run.** The rest the ankle is
+   actually given is at that bound in **1 of 72**, its median absolute value is **3.41°**, and standing still it is
+   **0 of 24 on both filters**, with a median absolute value of **5.19°** (deck) and **2.42°** (world) [M]. **Two different quantities, one name.**
+4. **What bounds the rest instead is the rail's bite, and it is read in the code, not inferred.** The clamp is
+   `[−room, +range]` with `room = range × max(0, 1 − (|rail| − RAIL_BITE)/RAIL_EASE)`, **zero at |rail| ≥ 52°** [R].
+   It is **shut at the fall in 19 of 24** unsteered runs on the deck filter (13 of 13 capsizes) and **40 of 72** on
+   the ladder [M]; of the 62 runs whose command saturated, the bite was shut in **36** [M].
+5. **The A/B ran as specified, and step 3.3j's prediction fails in both of its halves — and in the direction it did
+   not offer.** Doubling the bound to ±28.65° is really used (the sent command passes 14.33° in **61 of 72** runs and
+   the applied rest reaches **−27.02 to +28.03°**), and paired run for run it **saves nobody: 72 of 72 and 24 of 24
+   still fall**, the median change in fall time is **0.000 s**, and the moves have **no sign in any regime** (A 7
+   later / 10 sooner, B 5/7, C 13/10) [M]. The one thing it does move is the **wrong regime**: the flat count goes
+   **19 → 18** and the capsize count **36 → 29** [M]. *"Widening it moves the flat fall and leaves the capsize alone"*
+   is **backwards**, and the branch that holds is the one that matters: **the bound is innocent of the fall.**
+6. **Standing still, the body goes first and the deck follows it through the ankle.** The ankle's own identity
+   `φ = θ − δ − (θ − φ − δ)` closes with a residual of **−2.573 to +0.748°**, and that residual **is** the ledger's
+   substep averaging — it equals `−(probe's joint angle − ledger's)` in **120 of 120** rows of three arms (72 + 24 +
+   24), to the rounding the files are written at [M]. The spring angle is within ±10° in **20 of 24** (deck) and **24 of 24**
+   (world), so the deck sits where the body's bank puts it less a rest of a few degrees. And the clock agrees: the
+   **body's bank** passes 10° for good at **0.217–0.667 s**, the **deck's roll** at **0.317–0.750 s**, and the bank
+   leads in **24 of 24 on each filter — 48 of 48 — at a median of +0.100 s** [M].
+7. **And the two stops I found myself are refuted by their own clock, which is why neither is offered as a cause.**
+   `MAX_BANK`'s hard 70° clamp on the body's bank is reached in **13 of 24**, and its lead on the weight leaving half
+   the feet's bound is **negative in 13 of 13** (median −0.200 s). The rail's bite shutting leads in **2 of 18**
+   (median −0.166 s) [M]. **Both arrive after the fall is already under way. They are consequences.**
+
+## 1. (A) What ±14.32° is, read before it was moved
+
+My brief's one instruction about the switch was *"find out what the ±14.32° is for before you widen it."* It is not a
+tuning constant [R]:
+
+`rollModel.bankAuthority` derives **`restRange = footReach · m g / series`**, with
+`series = k·K_hull/(k + K_hull)` the ankle and the hull in series, and its own doc says what it is: *"the rest, rad, at
+which the feet's pressure reaches their edges (`footReach`, m, out from the middle, **under one body weight**)"*.
+`ANKLE_STIFFNESS`'s note says what happens past it: *"the feet's pressure reaches their edges and more only rolls the
+board away onto its rail."*
+
+So **±0.25 rad is the geometry of the sole at one body weight** — `footReach` = 0.13 m, which is
+`riderPosture.ts`'s own standing support (`feet: { xMin: −0.13, xMax: 0.13 }`), the 0.13 m `soleBound` and
+`predictiveBalance`'s `feetReach` already use — on a hull of about **730 N·m/rad** [A: `series = 0.13 × 75 × 9.81 /
+0.25 = 382.6`, and `k H/(k+H) = 382.6` at `H = 733` for `k = 800`]. The carve lab's own hull is **850–1 700**
+N·m/rad, which would put the same formula at **0.231–0.178 rad**, so the shipped 0.25 is already at the generous end
+of its own derivation [A].
+
+**Two things follow, and the second is why the round could widen it at all.**
+
+1. **The honest form of "widen it" is not a bigger number: it is the same formula with the live numbers.** That is
+   `?ankleRange=load`: `ANKLE_REST_RANGE × soleBound() / (m g × 0.13)`, the live load through the legs and the live
+   support's own half-width in place of one body weight and 0.13 m. At exactly one body weight on the standing
+   support it is **identically** the shipped 0.25 rad, which is the switch's own positive control (§6, and
+   `ankleLedger.test.ts`).
+2. **The bound is not in fact keeping the centre of pressure inside the sole, and steps 3.3i and 3.3j already
+   measured that.** With the shipped range in place, the ankle's **demand** runs at **0.22–27.10× the soles' own
+   bound** (Part 33 §2.2). The range bounds the **command**; `ankleLimit: 'feet'` is the switch that bounds the
+   **moment**. So `?ankleRange=wide` — twice the bound, paid for by no geometry — does not introduce a violation that
+   was not already there, and it is the literal widening step 3.3j's §10 item 4 wrote its prediction against. It is
+   reported as a measurement and **not** offered as something to ship.
+
+## 2. (B) Standing still, measured on its own population
+
+**The cell is `fall.ts`'s own** — the Canyon-matched `FaceWater` (1.4 m / 16° / 5.7 m/s, 2.6 m deep, the board 0.75
+fronts ahead of the crest and 45° off the fall line), the stance held, 9 s a run. **The population is new**: the stick
+**never touched** (`STEERS=0`, so `rider.steer` is 0 on every frame of every run), **eight** entry speeds
+(−3, −2, −1, 0, +1, +1.5, +2, +3 m/s) × **three** stances (tall, crouch, Compress) = **24 runs**, run twice, once on
+`?feltFrame=deck` (the owner's address) and once on the shipped world filter. Step 3.3j's gentle ladder is run beside
+it unchanged and **the two are never pooled**; `deck.ts`'s six entry speeds are a third population and are not pooled
+with either.
+
+**The datum**: every angle in §2 is the **raw board-frame** one, `+` meaning the deck normal, or the body's lean,
+toward the board's own **+x** — not the `dir`-signed convention, which standing still has no meaning at all, since
+there is no commanded turn to have an inside. The probe says so in its own row (`steered: 0`).
+
+**One honest caveat about the cell, before any number.** The entry speed is `(5.7 − alongFlow)/cos 45° + extra`, so at
+`extra = 0` the board runs at **7.7–8.3 m/s** and the speed at the fall across the 24 runs is **4.99–10.00 m/s** [M].
+**This arm is "the stick untouched", which is not the same thing as "the low speeds of getting into position."** The
+low end of it (entry −3, **5.82–6.88 m/s at the fall**) is the nearest this cell comes to the owner's words, and it
+falls there too — **6 of 6 across the two filters, at 0.95–1.60 s** [M].
+
+### 2.1 There is no flat fall standing still
+
+| **[M]** `fall.ts`, the stick never touched, 24 runs an arm | deck filter | world filter |
+|---|---|---|
+| fell | **24 of 24** | **24 of 24** |
+| at, s | **1.10–2.07** | **0.77–1.95** |
+| **A flat** (\|roll\| < 10° at the fall) | **0** | **0** |
+| B partial (10–60°) | 11 | 22 |
+| **C capsize** (≥ 60°) | **13** | 2 |
+| the deck's roll at the fall, ° | **27.5–89.0** | **20.9–68.8** |
+| the body's bank at the fall, ° | 28.4–**70.0** | 20.7–**70.0** |
+| the deck's roll peak, ° | 27.5–95.6 | 20.9–68.8 |
+| Compress: A / B / C | **0 / 1 / 7** | 0 / 8 / 0 |
+| tall | 0 / 5 / 3 | 0 / 7 / 1 |
+| crouch | 0 / 5 / 3 | 0 / 7 / 1 |
+| the trigger: `beyond` / `weightPast` / together | 1 / **20** / 0 | 15 / 8 / 1 |
+| \|px\| 0.3 s before the fall, inside the feet's 0.13 m | **24 of 24** | **24 of 24** |
+| the deck's share of the fall-test error, median | 0.32 | **0.83** |
+
+**Four readings.**
+
+1. **Regime A is empty on both filters.** The classifier is step 3.3j's own and the roll at the fall never comes
+   within 10° of level: the nearest is 27.5° (deck) and 20.9° (world). **The fall the brief carried forward as the
+   one to work on — the body walking off a flat board — is a fall that needs a stick**, and on the gentle ladder it
+   is 17 of 19 the tall stance's anyway (Part 33 §2.3). This refutes my brief's premise that dropping the turn keeps
+   the same problem and removes a complication: it removes **that** problem and leaves the capsize.
+2. **Compress on the owner's own filter capsizes in 7 of 8**, which is Part 33's finding arriving from a second
+   probe, a third stance and a different population.
+3. **It is sudden here too.** `|px|` is inside the feet's own bound 0.3 s before the fall in **all 48 runs**
+   (0.030–0.110 m deck, 0.025–0.127 m world, against 0.13), and the deck-filter arm's `px` rate over the last 0.2 s
+   reaches 1.23 m/s. Nothing in this arm is a slow stall.
+4. **The two filters are two different falls and the deck-share column is the measurement of it**: the world arm's
+   fall is three quarters the deck's bank (median 0.83) and the deck arm's only a third (0.32), while the deck arm is
+   the one that capsizes. I report that as a measured property of the filter the owner rides with, as Part 33 did, and
+   not as a reason to change it: the frame is right (steps 3.3c, 3.3g) and the fall count is 24 of 24 either way.
+
+### 2.2 The deck's roll is the body's bank, less the rest, less a few degrees of spring
+
+**The identity, which is why this is a measurement and not a model.** The ankle is a spring on the joint's own angle
+about a commanded rest, so **by definition**
+
+> `φ = θ − δ − (θ − φ − δ)`
+
+— the deck's roll is the body's bank, less the rest the balance commanded, less the ankle's own **spring angle**,
+which is `τ_spring / K` and is 2.4° at 33 N·m on K = 800 N·m/rad. The three add to `φ` exactly, so the content is
+their **sizes**.
+
+| **[M]** at the fall, raw board frame | deck, 24 runs | world, 24 runs | the ladder, 72 runs |
+|---|---|---|---|
+| the deck's roll φ, ° | 27.5–89.0 | 20.9–68.8 | — |
+| the body's bank θ, ° | 28.4–70.0 | 20.7–70.0 | — |
+| **the commanded rest δ, °** | **−3.62–13.85** | **−9.87–7.63** | **−13.11–14.07** |
+| … \|δ\| inside the ±14.32° bound | **24 of 24** | **24 of 24** | **72 of 72** |
+| … \|δ\| at 98 % of its own bound | **0 of 24** | **0 of 24** | **1 of 72** |
+| … median \|δ\| | 5.19 | 2.42 | **3.41** |
+| the spring angle θ − φ − δ, ° | −54.98–9.26 | −1.97–8.54 | −68.11–27.40 |
+| … within ±10° | **20 of 24** | **24 of 24** | 39 of 72 |
+| **the identity's residual, °** | **−2.573–0.748** | **−0.508–1.551** | — |
+| … equal to the ledger's own substep gap | **24 of 24** | **24 of 24** | **72 of 72** (120 of 120 in all) |
+
+**Three readings.**
+
+1. **The residual is the instrument and nothing else.** It equals `−(the probe's joint angle − the ledger's)` in
+   **72 of 72 rows across the three arms**, to the rounding the result files are written at: the probe reads φ and θ
+   at the frame's end off the board's and the rider's own geometry, the ledger reads θ − φ and δ as means over the
+   step's substeps, and at 85–264 °/s of roll a step is 1.4–4.4° of difference. **That is the positive control for
+   this round's new reading**, and it is why the split can be read as a split.
+2. **So the deck sits where the body's bank puts it.** With the spring angle inside ±10° in 20 of 24 and 24 of 24,
+   `φ ≈ θ − δ` with δ itself a few degrees: the body and the deck go over **locked**, and the deck's 27–89° is the
+   body's 28–70° carried through a stiff ankle. The spring angle is large only in the **five**
+   deepest capsizes (−8.86, −13.21, −18.16, −18.93 and −54.98°, at rolls of 76.1 to 89.0°) — and those are the runs where the **body** has
+   already hit its 70° stop and cannot follow the deck any further (§4).
+3. **And the clock says which of the two goes first.** The body's bank passes 10° for good at **0.217–0.667 s** and
+   the deck's roll at **0.317–0.750 s**; the bank leads in **24 of 24 on the deck filter and 24 of 24 on the world
+   one — 48 of 48 — at a median of +0.100 s** [M]. Through the last half second before the fall the body is the
+   further over of the two in **77–100 % of frames in every one of the 24 world runs**.
+
+**What I take from §2.2, and what I do not.** What is measured is an identity with its sizes and an order in time: the
+body's bank leads, the deck follows it through the ankle, and the rest the balance commands is a few degrees of trim
+on the difference between them. The inference that **the balance's only authority is over the split and not over the
+pair's roll** follows from the identity [I] — an internal joint cannot change the pair's own angular momentum — but I
+did not measure the pair's roll equation and **§7 keeps it out of the findings.** What I *did* do instead is the one
+experiment that tests it: §3.
+
+## 3. (B) The A/B, against the prediction as step 3.3j wrote it
+
+> *"If it is the binding limit, widening it moves the flat fall and leaves the capsize alone; if it moves neither, it
+> is innocent and I will publish that."* — Part 33 §10 item 4, quoted here before the read.
+
+**One switch, `?ankleRange`, two settings, paired run for run against the same cell with it off** — the same stance,
+entry speed and stick in each pair, so every row below is a difference and not two populations compared.
+
+### 3.1 Does the switch bind? (It would say nothing if it did not)
+
+| **[M]** the ladder, 72 runs an arm, deck filter | shipped | `load` | `wide` |
+|---|---|---|---|
+| the range applied to δ, ° (median over each ride) | **14.32** everywhere | **13.62–15.33** | **28.65** everywhere |
+| … narrower than shipped / wider, runs | — | **31 / 41** | **0 / 72** |
+| the predictor's sent command past 14.33°, runs | **0 of 72** | 24 of 72 | **61 of 72** |
+| the sent command's span, ° | 3.47–**14.32** | 0.00–38.16 | 0.33–**28.65** |
+| **the applied rest δ at the fall, °** | −13.11–14.07 | −15.03–14.63 | **−27.02–28.03** |
+
+**The `wide` arm is tested**: the extra room is asked for in 61 of 72 runs and the rest really reaches 28°.
+**`load` is not a widening** — it is narrower in 31 of 72 and wider in 41, so it brackets the bound rather than
+pushing one way, and my own **P2 (that it would be mostly narrower) fails on the ladder and holds on the unsteered
+arm** (17 of 24 narrower there).
+
+### 3.2 And it saves nobody
+
+| **[M]** paired, deck filter | the ladder, 72 pairs | the stick untouched, 24 pairs |
+|---|---|---|
+| **`load`**: fell | **72 of 72** (off: 72) | **24 of 24** (off: 24) |
+| … the fall time identical / later / sooner | 25 / 18 / 29 | **22** / 1 / 1 |
+| … Δ fell at, s | −2.133–+0.784, **median 0.000** | −0.283–+0.017, **median 0.000** |
+| **`wide`**: fell | **72 of 72** | **24 of 24** |
+| … the fall time identical / later / sooner | 20 / 25 / 27 | **22** / 2 / 0 |
+| … Δ fell at, s | −1.133–+1.700, **median 0.000** | 0.000–+0.017, **median 0.000** |
+
+| **[M]** `wide` against shipped, by the SHIPPED arm's regime | A flat, n=19 | B partial, n=17 | C capsize, n=36 |
+|---|---|---|---|
+| runs whose fall time moved at all | **17** | 12 | 23 |
+| … later / sooner | **7 / 10** | 5 / 7 | **13 / 10** |
+| the median of the moves, s | −0.017 | −0.042 | +0.017 |
+| the regime it moved to | A14 / B3 / **C2** | A2 / B14 / C1 | **A2 / B8** / C26 |
+| the arm's own regime count, shipped → `wide` | **19 → 18** | 17 → 25 | **36 → 29** |
+
+**Four readings, and the first is the answer.**
+
+1. **The bound is innocent.** Doubling it saves **0 of 96 runs** across the two arms, and `load` saves 0 of 96 as
+   well: **360 of 360 runs in this round fall.** The median change in fall time is **0.000 s** in every arm, and
+   neither setting turns a fall into a ride anywhere.
+2. **Step 3.3j's prediction fails in its specifics, and backwards.** It said widening would move the flat fall and
+   leave the capsize alone. Measured: **the flat count barely moves (19 → 18)** and **the capsize count moves most
+   (36 → 29)**, with 8 of 36 capsizes becoming partial rolls and 2 becoming flat. The moves that happen have no
+   sign — 7 later against 10 sooner in A, 13 against 10 in C — so **nothing here is a direction, only a reshuffle.**
+3. **Standing still it is almost perfectly inert**: 22 of 24 pairs fall at the **identical** time on each setting, to
+   the frame, which is what §2.2 predicts — the rest is nowhere near its bound there (0 of 24 at 98 % of it), so a
+   bigger bound is a bound on nothing.
+4. **The one effect worth a sentence, and it is not a fix**: a doubled bound changes the **kind** of fall on the
+   ladder (fewer capsizes, more partial rolls) without changing the fall. If the owner finds the capsize uglier to
+   ride than a partial roll, that is a feel question for them and not a number for me.
+
+## 4. (B) Where the rest's bound actually is, and the two stops that are not causes
+
+### 4.1 The rail's bite, which the brief's candidate did not know about
+
+The clamp on the rest is not symmetric and it is not the range [R]:
+
+```
+room  = restRange() × max(0, 1 − (|rail| − RAIL_BITE) / RAIL_EASE)     RAIL_BITE = 48°, RAIL_EASE = 4°
+lean  = rail > 0 ? max(−room, min(range, wanted)) : max(−range, min(room, wanted))
+```
+
+So **past |rail| ≥ 52° the room on one side is exactly zero**, and that side is the one that would roll the board
+further onto the rail it is already on — the design's own rule, from the rail-change study: *"the feet never roll the
+board away from it."*
+
+| **[M]** at the fall | deck, 24 | world, 24 | the ladder, 72 |
+|---|---|---|---|
+| the rail, ° | 17.7–88.9 | 10.8–68.8 | — |
+| **the bite's room shut (≤ 0 at the fall)** | **19 of 24** | 3 of 24 | **40 of 72** |
+| … in the capsize regime | **13 of 13** | 2 of 2 | — |
+| of the runs whose COMMAND saturated, the bite was shut in | 6 of 6 | — | **36 of 62** |
+| … and the applied rest was at the range in | **0** | — | **1** |
+| … and under 0.2° in | 1 | — | 10 |
+
+**This is the refutation of the brief's candidate, in one line**: *the command saturates against ±14.32° in 62 of 72;
+the rest the ankle gets is at that bound in 1 of 72, because in 36 of those 62 the rail had already shut the room on
+the side the balance was asking for.* The two numbers were read as one quantity, and they are two.
+
+### 4.2 And the bite is not a cause either, by its own clock
+
+| **[M]** deck filter, the stick untouched, 24 runs | |
+|---|---|
+| `px` left half the feet's bound (0.065 m) for good at, s | **0.800–1.850** |
+| the bite shut at, s | 1.000–1.817 |
+| **its lead on that departure**, s | median **−0.166**, positive in **2 of 18** |
+| the body's bank reached MAX_BANK's 70° stop, runs | **13 of 24** |
+| it got there at, s | 1.067–1.950 |
+| **its lead on that departure**, s | median **−0.200**, positive in **0 of 13** |
+
+**Both of my own candidates arrive after the weight has already left the feet.** A limit that is reached 0.17–0.20 s
+*after* the quantity the fall test is built on has gone is a **consequence of the fall**, not a candidate for its
+cause, and I am not entitled to either of them. §7 keeps them there.
+
+**One thing I found on the way and am flagging without claiming.** `AttachedRider.frame` **hard-clamps the measured
+body bank at MAX_BANK = 70°** (`this.bank.angle = max(−MAX_BANK, min(MAX_BANK, angle))`, three sites) [R], and the
+clamped value is what the body's own frame, its centre-of-mass target and the ankle's torque
+`K (θ − φ − δ)` are then built on. Past 70° the geometry the ankle's spring is computed from is **not the body's
+actual lean**, so the torque is not the torque that geometry would give. It is reached in 13 of 24 unsteered runs and
+27 of 72 ladder runs [M] — always after the fall is under way, so it cannot be this fall's cause, and it is a **real
+force consequence of a clamped reading** that belongs to a round of its own.
+
+## 5. The owner's bar, measured, with every population named
+
+| **[M]** arm | n | fell | when, s |
+|---|---|---|---|
+| `fall.ts`, deck filter, **the stick never touched**, 8 entries × 3 stances | **24** | **24 of 24** | **1.10–2.07** |
+| the same, **world** filter | 24 | **24 of 24** | **0.77–1.95** |
+| the same, deck filter, `?ankleRange=load` | 24 | **24 of 24** | 1.10–2.07 |
+| the same, deck filter, `?ankleRange=wide` | 24 | **24 of 24** | 1.10–2.07 |
+| `fall.ts`, deck filter, step 3.3j's gentle ladder (6 sticks × 6 entries × 2 stances) | 72 | **72 of 72** | 0.60–5.07 |
+| the same, `?ankleRange=load` | 72 | **72 of 72** | 0.58–5.12 |
+| the same, `?ankleRange=wide` | 72 | **72 of 72** | 0.60–4.78 |
+| `fall.ts`, world filter, step 3.3g's own grid (the reproduction) | 24 | **24 of 24** | 1.12–4.15 |
+| `fall.ts`, deck filter, step 3.3i's own grid (the reproduction) | 24 | **24 of 24** | 1.30–4.05 |
+
+**The owner's bar is "in Compress the surfer should not fall at the low speeds of getting into position", 100 %, not
+fewer. It is not met.** Compress falls 8 of 8 in each unsteered arm and 36 of 36 on the ladder, and **nothing this
+round built changes a single one of those outcomes.**
+
+## 6. The switch, and its positive control predicted before it ran
+
+`?ankleRange=load|wide` (`AttachedRiderOptions.ankleRange` → `RideSessionOptions` → `SurfZoneConfig` →
+`ankleRangeSwitch`), **off by default, pinned off in the online rooms**, the new surfer only, in the shape
+`?feltFrame=deck`, `?kneeRoom=achieved`, `?stanceReach=keep` and `?ankleLimit=feet` already use.
+
+**It moves one thing.** Only the bound on the commanded rest: the rail-bite easing's `room`, the clamp on the
+predictor's raw ankle command, and the `limits.ankle` the predictor is told — which is also what its own forward model
+is fed, so the two must agree or the loop is predicting a command it did not send. `HIP_SHARE × ANKLE_REST_RANGE`,
+which sets what the hip takes, and the `lagging` test's `ANKLE_REST_RANGE / BANK_GAIN` are **left at the shipped
+constant on purpose**, so the hip's demand is untouched and the A/B is one change. The old rider's `bankStep` is
+untouched.
+
+**The control, written in the test file before it ran** (`ankleLedger.test.ts`, step 3.3k's block):
+
+- **P0a** With `'load'` the booked bound is `0.25 × legLoad / (m g)` in **every** step, to nine decimals, because the
+  live support is exactly ±0.13 m and the two 0.13 m cancel — **so at one body weight it is the shipped 0.25 rad
+  identically**, which is what makes this an A/B on a bound and not a second rider. **Held.**
+- **P0b** `'wide'` books exactly 0.5 rad and the switch off exactly 0.25, in every step. **Held.**
+- **P0c** The doubled bound moves the trajectory after 60 frames (otherwise the arm is untested). **Held.**
+- And the clamp clamps: `|δ| ≤` the bound applied, every step, all three settings. **Held.**
+
+**One thing left in rather than floored, and named**: `soleBound()` is zero until the contact ledger has run once, so
+on `'load'` the first step's bound is zero and the rest is pinned at nothing for that step. That is the physics —
+unloaded feet shift no pressure — and a floor would be a constant nothing measured. The probe prints the first
+frame's bound so it can be seen (`ankleRoomFirst`).
+
+## 7. What I refuted
+
+- **My brief's premise, which is the nineteenth round running.** *"Drop the turn. The job is standing still"* — the
+  fall standing still is **not the flat fall it was sent to fix**: regime A is **0 of 24 on both filters** and the
+  deck's roll at the fall is 27.5–89.0° / 20.9–68.8°. Dropping the turn drops that population entirely.
+- **Step 3.3j's one named candidate, and the reason is a quantity confusion, not a wrong number.** Its 62 of 72 is
+  **reproduced to the run** — but it is the predictor's **sent command** at its bound, and the **rest the ankle gets**
+  is at that bound in **1 of 72** and **0 of 24** standing still, with a median absolute value of 3.41° and 5.19°.
+  The clamp that stands between them is the rail's bite, shut in 40 of 72 and 19 of 24.
+- **Step 3.3j's own prediction for the A/B, in both halves and in the direction it did not offer.** Widening moves the
+  **capsize** (36 → 29) and barely touches the **flat** fall (19 → 18), with no sign to the moves in any regime, and
+  it **saves nobody** in 96 paired runs. The bound is innocent.
+- **My own P2**, that `'load'` would be a tightening: it is narrower in 31 of 72 on the ladder and wider in 41. It
+  holds only on the unsteered arm (17 of 24 narrower).
+- **My own P3's second half.** I predicted the ankle's spring angle would be small *and* the identity's residual under
+  1°. The spring angle is within ±10° in 20 of 24 and 24 of 24 — but it reaches −54.98° in the deepest capsize, and
+  the residual is within 1° in only 17 of 24, because it is the ledger's substep averaging at up to 264 °/s of roll.
+  **The residual is an instrument, not an error, and it was predicted as an error.**
+- **My own two candidates, by their own clock.** The rail's bite shutting and `MAX_BANK`'s 70° stop are both **at
+  their stop** at the fall (19 of 24 and 13 of 24) and both arrive **0.17–0.20 s after** the weight has left half the
+  feet's bound, positive in 2 of 18 and 0 of 13. Neither is offered as a cause.
+
+## 8. What I will not claim
+
+- **I will not claim the rail's bite is the cause of the fall**, although it is the bound that actually binds the
+  rest. Its own clock refutes it: median lead −0.166 s, positive in 2 of 18.
+- **I will not claim `MAX_BANK`'s clamp is a cause**, for the same reason (median −0.200 s, positive in 0 of 13). That
+  the clamped reading feeds the ankle's own torque is **read in the code** and is a candidate for a later round, not
+  a finding here.
+- **I will not claim the balance has no authority over the pair's roll**, although the identity in §2.2 implies it
+  and the A/B is consistent with it. I did not measure the pair's roll equation; what is measured is an identity with
+  its sizes, an order in time, and a switch that changes nothing.
+- **I will not claim the body's bank leading the deck's roll is a cause either.** It is a clock on 48 of 48 runs with
+  a median of +0.100 s and it is the strongest ordering this track has measured — and an order is not a mechanism.
+  What makes the body's bank run away from 0.22 s is the next question and this round does not answer it.
+- **I will not claim the three regimes are physical**, or re-open them: A, B and C are step 3.3j's cuts, kept so the
+  two rounds read together, and A being empty standing still is a measurement about this cell and this stance set.
+- **I will not claim `'load'` is better or worse than the shipped bound.** It saves nobody, it moves the fall time
+  with no sign, and it is narrower in some runs and wider in others. It is the honest form of the bound and that is
+  all it is.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed rather than paddled in, and **the stick
+  untouched is not "low speed"**: this arm runs at 4.99–10.00 m/s at the fall. `fall.ts`'s eight entry speeds and
+  `deck.ts`'s six are different populations and are never pooled. Every span above is **the whole population of its
+  arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 9. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the probes type-checked separately on a throwaway project extending the root's options with `types: ["node"]` and an
+  **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/fall.ts`, `.../deck.ts`, `.../inertia.ts`, `.../stills.ts`,
+  `src/physics/AttachedRider.ts`, `src/physics/BoardBody.ts`, `src/physics/PlaneWater.ts` and `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **57 files, 612 passed, 21 expected fail** — step 3.3j's 611 **plus this round's one new
+  test** (`ankleLedger.test.ts`'s `ankleRange` block).
+  `vitest run src/game src/scene/rig`: **70 files, 732 passed** — step 3.3j's 731 plus this round's one new switch
+  test (`PhysicalMode.test.ts`).
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical to step 3.3j's.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand because this round touches
+  `SurfZoneRunner.ts`: **43 of 43**, the reference.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: the one line this round adds to that file is a config
+  field, no solver, no wave and no spot file is touched.
+- **the shipped rider is proved unchanged against three published baselines**, which is the seatbelt that matters for
+  a round that moves a line in the bank step:
+  - `fall.ts` with no switch set reproduces **3.3g's and 3.3i's published world arm to the digit** — tall
+    **1.20–4.15 s**, Compress **1.12–3.98**, all 24 at **1.12–4.15**, nets **12.6–88.1°**;
+  - `fall.ts` on the deck filter reproduces **3.3i's own grid to the digit** — all 24 at **1.30–4.05 s**;
+  - `fall.ts`'s 72-run gentle ladder reproduces **3.3j's own** — **72 of 72 at 0.60–5.07 s**, and its ankle column
+    reproduces 3.3j's **62 of 72** saturated commands exactly.
+- **the Canyon byte check, because `src/` changed**, with the three checks read rather than assumed — the wrapper
+  prepends `globalThis.location = { search: '?canyonWaves=true' }` to the bundle, the grid line read, and the
+  "spun up on the CPU in … s" line read so that no kept `.sea` was imported. Its output is
+  `results/33k/33k-canyon-byte-check.txt`.
+
+## 9b. The deletions column, read line by line
+
+`git diff --cached --numstat origin/main`, read file by file: **30 files changed, 3 165 insertions and exactly
+FIFTEEN deletions** — and **all fifteen read, one by one. Every one is a single line replaced in place**, and not one
+is a removal:
+
+- `src/physics/AttachedRider.ts`, **5**: the `room` and the `reachRest`/`lean` clamp lines in each of `humanBank` and
+  `predictiveBank` (4), each replaced by the identical line with `ANKLE_REST_RANGE` read through `range`
+  (= `restRange()`, which **is** ANKLE_REST_RANGE with the switch off), and the `predictor.tick` call, whose
+  `{ ankle: ANKLE_REST_RANGE, … }` becomes `{ ankle: range, … }`.
+- `src/physics/ankleLedger.test.ts`, **4**: the harness's signature, its rider construction, its `seen` type and its
+  push, each replaced by the identical line plus the `range` option and the two new ledger columns.
+- `src/main.ts`, **2**: the room-overrides comment and the overrides object, each replaced in place with
+  `ankleRange` named.
+- `docs/research/new-rider/3.3/fall.ts`, **2**: the `turn` window line, replaced by `steered` plus the same filter
+  (and only reached differently when the stick is inside its deadband — which is why §9's three reproductions hold),
+  and the header `console.log`, replaced with the same line plus two printed fields.
+- `src/game/PhysicalMode.test.ts`, **1**, and `src/wave/SurfZoneRunner.ts`, **1**: long single-line lists (the import,
+  the rider-options spread) replaced in place with the switch added.
+- Every other file — `RideSession.ts`, `SurfZoneSimulation.ts`, `PhysicalMode.ts`, the README and the 20 files of
+  `results/33k/` — is a **pure addition, zero deletions each**.
+
+**Nothing was removed and nothing was reverted**, and the behavioural proof of the five `AttachedRider.ts` lines is
+§9's three reproductions: with the switch off `restRange()` returns the constant those lines used to read, and the
+world arm, the deck grid and the 72-run ladder all come back to the digit. `origin/main` is still **6b94c922**, this
+branch's own merge base, so there was no mid-round merge to rebase onto — and the column was read rather than that
+being assumed.
+
+## 10. Files (3.3k)
+
+- `src/physics/AttachedRider.ts` — `AttachedRiderOptions.ankleRange`, `ANKLE_REST_REACH`, `ANKLE_RANGE_WIDE`, the
+  `restRange()` method and its doc on what ±14.32° is made of, the range read once a frame in `predictiveBank` and
+  `humanBank`, and two new read-only ledger columns (`room`, the range allowed; `bite`, the same range after the
+  rail's bite).
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts`, `src/main.ts` — the switch's plumbing and its pin to the default in the online rooms.
+- `src/physics/ankleLedger.test.ts` — step 3.3k's block: the switch's positive control, its four predictions, and
+  that the clamp clamps on all three settings.
+- `src/game/PhysicalMode.test.ts` — `?ankleRange=load|wide` parsed, every other spelling ignored, and the online
+  room's pin asserted against `main.ts`'s own text.
+- `docs/research/new-rider/3.3/fall.ts` — `ANKLE_RANGE=load|wide` (off by default), the **unsteered window** (with no
+  commanded turn the ride itself is the window, so the ride's columns are not NaN and `dir` is not
+  `Math.sign(0) || 1`), and step 3.3k's columns: the roll's split by the ankle's identity and its residual, the
+  probe-against-ledger control on the joint angle, the clock of the two first movers, the rail's bite on the rest's
+  room, the rest at its own applied bound, and `MAX_BANK`'s 70° stop with its lead on `px`. Three new printed tables.
+- `docs/research/new-rider/3.3/results/33k/` — nine arms with their printed tables beside their rows,
+  `33k-predictions.md` (every prediction as written before its read) and `33k-canyon-byte-check.txt`.
+
+## 11. For the owner, in plain words — and the shot list
+
+**You asked whether to drop the turn and work on standing still. I did, and the first thing I owe you is that it is
+not the same fall.**
+
+I ran him with the stick **never touched** — twenty-four rides, three stances, eight entry speeds. **All
+twenty-four fell**, in 1.1 to 2.1 seconds. But the fall I was sent to fix — the one where the board stays nearly flat
+and his **body** walks off it — **does not happen at all without the stick**: not once in twenty-four, and not once
+in another twenty-four on the other setting. Standing still, the board always goes over, 27° at the least and 89° at
+the worst. In your own stance, Compress, it capsized past 60° in **seven of eight**. So dropping the turn does not
+simplify the problem; it deletes the *other* problem and leaves yours.
+
+**And the suspect I told you about last round is not guilty. Worse, I had the wrong number on it.**
+
+Last round I said the game lets his balance ask his ankles for up to 14.3°, and that in 62 of 72 rides that request
+was **maxed out** when he fell. That is true — and it is the request, not what his ankles are actually given. **What
+they are actually given is at its limit in 1 of those 72 rides**, and typically about three and a half degrees. In
+between sits a rule I had not read: **once the board is more than 52° on its rail, the game allows his feet no shift
+at all in the direction his balance is asking for.** That rule had already shut in 36 of the 62. Two numbers, one
+name, and I reported them as one thing.
+
+**So I tested it anyway, exactly as I promised — and doubled the limit.**
+
+I doubled it to 28.6° and checked that he really uses the extra room (he does, in 61 of 72 rides). **It saves nobody.
+Ninety-six paired rides, the same wave and the same entry each time: he still falls in every single one**, and the
+fall comes at the identical moment in most of them. The one thing it changes is the *shape* of the fall — on the
+gentle-turn ladder it turns 7 of 36 capsizes into partial rolls — but it never turns a fall into a ride. **The limit
+is innocent, and I am publishing that, as I said I would.**
+
+**What I can tell you about why he goes over standing still.**
+
+The ankle is a spring between his body and the board, and the arithmetic of that spring is exact: **the board's roll
+is his body's lean, minus whatever his balance has shifted, minus two or three degrees of spring.** Measured, the
+spring part really is small — within ten degrees in 20 of 24 rides and in all 24 of the other set. **So the board sits
+wherever his body's lean puts it.** And the clock says which of the two moves first: **his body's lean passes 10°
+before the board's roll does, in 48 out of 48 rides, by a tenth of a second.** The board is not throwing him; he is
+leaning, and a board that light follows.
+
+I also found two things that *are* jammed solid when he goes — the rail rule above, and a hard 70° cap the game puts
+on how far his body may be measured as leaning. **Both of them arrive about two tenths of a second AFTER his weight
+has already left his feet.** They are what the fall looks like on the way down, not what starts it. I am not going to
+sell you either one as the cause.
+
+**Your bar is still not met: 360 of 360 rides in this round fell, and 36 of 36 in Compress on the ladder.**
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot. One change at a time, as always.
+
+1. **`?rider=new&feltFrame=deck&canyonWaves=true`, and DON'T TOUCH THE STICK.** Get into position, press Compress,
+   ride straight, hands off. **The question: does the board tip over under him within a couple of seconds, and does
+   it look like he is leaning it over or like the water rolling it?** The measurement says he leans first, every
+   time, by a tenth of a second — **this is the shot I most want your eyes on**, because if on the wave it looks like
+   the water rolling the board instead, my clock is measuring the bench and not your ride.
+2. **The same, in the TALL stance.** Measurement says tall goes over too (8 of 8) but less far — it capsizes in 3 of
+   8 against Compress's 7 of 8. **The question: does tall feel more survivable to you, or just differently bad?**
+3. **`?rider=new&feltFrame=deck&canyonWaves=true&ankleRange=wide`, gentle turns.** This is the doubled limit. The
+   measurement says it will not stop him falling — it did not in 96 rides — but that it turns some capsizes into
+   partial rolls. **The question is only about feel: when he goes, is a partial roll less horrible than a capsize?**
+   If it is, that is worth something on its own and I will say so; if you cannot tell the two apart, I will drop the
+   switch rather than carry it.
+4. **And a ruling I would like, not a ride.** Everything I can reach at the ankle is now measured and innocent: the
+   bound, the sole's own moment (3.3i), the hip (3.2x), the knee, the stance's reach. The next honest place to look
+   is **the one limit this round found jammed that I could not exonerate for the right reason** — the 70° cap, which
+   is a *clamp on a measurement* that the ankle's force is then computed from, so past 70° the game's ankle is
+   pulling against a lean his body is not actually at. **Do you want me to go after that, or do you want me to stop
+   measuring the ankle altogether and go after the thing that makes his body lean in the first place?** I can only
+   run one.

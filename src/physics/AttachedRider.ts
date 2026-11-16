@@ -406,6 +406,18 @@ const BANK_RATE_GAIN = 3.6;
 const BALANCE_LAG = 0.01;
 const ANKLE_REST_RANGE = 0.25;
 /**
+ * **What ANKLE_REST_RANGE is made of** (step 3.3k), so that `ankleRange: 'load'` can read the same formula with the
+ * live numbers rather than invent a second constant. `rollModel.bankAuthority` derives the rest at which the feet's
+ * centre of pressure reaches the sole's edge as `footReach · m g / series`; ANKLE_REST_RANGE = 0.25 rad is that rest
+ * at **one body weight** on `footReach` = ANKLE_REST_REACH = 0.13 m, which is `riderPosture.ts`'s own standing support
+ * half-width (`feet: { xMin: −0.13, xMax: 0.13 }`), the 0.13 m `soleBound` and `predictiveBalance`'s `feetReach`
+ * already use, and a hull of about 730 N·m/rad. So the nominal sole moment the shipped 0.25 rad stands for is
+ * `m g × 0.13` — 95.7 N·m at 75 kg — and the live one is `soleBound()`.
+ */
+const ANKLE_REST_REACH = 0.13;
+/** `ankleRange: 'wide'`: the factor on ANKLE_REST_RANGE. 2, so the bound is ±28.65°, and no geometry pays for it (step 3.3k). */
+const ANKLE_RANGE_WIDE = 2;
+/**
  * **The hip's trigger** (step 3.2x): the gain the hip's swing rotor is driven at on `HumanBalance.sensedCaptureHip` —
  * the capture point past HIP_SHARE of the feet's half-width across, m, delayed BALANCE_DELAY — in N·m/m.
  *
@@ -1412,6 +1424,36 @@ export interface AttachedRiderOptions {
    * human's muscle is about 13 % tighter than the geometry, and this switch is the geometry alone.
    */
   ankleLimit?: 'feet';
+  /**
+   * **The bound on the rest the balance may command at the ankle** (`ankleRange`, step 3.3k): `'load'` reads it off
+   * the live sole, `'wide'` doubles the shipped one. Opt-in, off by default (the `?ankleRange=load|wide` dev switch),
+   * pinned off in the online rooms.
+   *
+   * **What the shipped ±ANKLE_REST_RANGE = 0.25 rad = 14.32° is, read before it is moved** (step 3.3k's §1; the
+   * discipline step 3.3h set). It is not a tuning constant: it is `rollModel.bankAuthority`'s own `restRange`,
+   * `footReach · m g / series` with `series = k·K_hull/(k + K_hull)` — **the rest at which the feet's centre of
+   * pressure reaches the edge of the sole, under ONE body weight**, on `footReach` = 0.13 m (`riderPosture`'s standing
+   * support) and a hull of about 730 N·m/rad. Past it, says `ANKLE_STIFFNESS`'s own note, *"the feet's pressure
+   * reaches their edges and more only rolls the board away onto its rail"*.
+   *
+   * So the honest form of "widen it" is **not a bigger number: it is the same formula with the live numbers.**
+   * - `'load'`: `ANKLE_REST_RANGE × soleBound / (m g × 0.13)` — the live load through the legs and the live support's
+   *   own half-width in place of one body weight and 0.13 m. **At exactly one body weight on the standing support it
+   *   is the shipped 0.25 rad identically** (`ankleLedger.test.ts`'s own control), it is *wider* under load and
+   *   *narrower* when the feet go light, and it introduces no constant that was not already in the derivation.
+   * - `'wide'`: `2 × ANKLE_REST_RANGE`. This one is **not** paid for by any geometry and is here because step 3.3j's
+   *   §10 item 4 named a plain widening as the A/B, with the prediction stated before the read. Its licence is that
+   *   steps 3.3i and 3.3j already measured the ankle's **demand** at 0.22–27.10× the soles' own bound with the
+   *   shipped range in place, so the range is not in fact holding the centre of pressure inside the sole — it bounds
+   *   the command and not the moment, and `ankleLimit: 'feet'` is the switch that bounds the moment.
+   *
+   * **It moves one thing.** Only the bound on the commanded rest moves: the rail-bite easing's `room`, the clamp on
+   * the predictor's raw ankle command, and the `limits.ankle` the predictor is told (which is also what its own
+   * forward model is fed, so the two must agree). `HIP_SHARE × ANKLE_REST_RANGE`, which sets what the hip takes, and
+   * the `lagging` test's `ANKLE_REST_RANGE / BANK_GAIN` are **left at the shipped constant on purpose**, so the hip's
+   * demand is untouched and the A/B is one change. The old rider's `bankStep` is untouched.
+   */
+  ankleRange?: 'load' | 'wide';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -1926,6 +1968,12 @@ export class AttachedRider {
   private readonly stanceReach: 'keep' | undefined;
   /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
   private readonly ankleLimit: 'feet' | undefined;
+  /** The bound on the rest the balance may command, off the live sole or doubled (`ankleRange`, step 3.3k); undefined by default. */
+  private readonly ankleRange: 'load' | 'wide' | undefined;
+  /** rad, the range the latest bank step allowed the commanded rest — ANKLE_REST_RANGE unless `ankleRange` is set. Read-only, for the ledger. */
+  private ankleRoom = ANKLE_REST_RANGE;
+  /** rad, the same range after the rail's bite narrowed it (the bank step's own `room`). Read-only, for the ledger. */
+  private ankleBite = ANKLE_REST_RANGE;
   private readonly newSubsteps: number;
   private readonly yawScale: number;
   private readonly bankGain: number;
@@ -2129,6 +2177,21 @@ export class AttachedRider {
     bound: 0,
     /** N, the mean over the step of `legLoad`, which `bound` is built on. */
     load: 0,
+    /**
+     * rad, the mean over the step of **the range the bank step allowed the commanded rest**, `restRange()` —
+     * ANKLE_REST_RANGE = 0.25 unless `ankleRange` is set, the live sole's own with `'load'`, doubled with `'wide'`.
+     * It is here so the A/B's own independent variable is read rather than assumed. It is the bound on the side that
+     * rolls the board OFF the rail it is on; `bite` is the other side's.
+     */
+    room: 0,
+    /**
+     * rad, the mean over the step of **the same range after the rail's bite has narrowed it** (the `room` local of the
+     * bank step: `restRange() × max(0, 1 − (|rail| − RAIL_BITE) / RAIL_EASE)`, zero at |rail| ≥ 52°). It bounds the
+     * rest on the side that would roll the board FURTHER onto the rail it is already on, which past the bite the feet
+     * are not allowed to do. Step 3.3k measures it because the rest the balance actually gets is bounded by this and
+     * not by `room` whenever the rail has bitten.
+     */
+    bite: 0,
     /** Substeps of the step whose `|torque|` was past `bound`. */
     over: 0,
   };
@@ -2234,6 +2297,7 @@ export class AttachedRider {
     this.kneeRoomAchieved = options.kneeRoom === 'achieved';
     this.stanceReach = options.stanceReach === 'keep' ? 'keep' : undefined;
     this.ankleLimit = options.ankleLimit === 'feet' ? 'feet' : undefined;
+    this.ankleRange = options.ankleRange === 'load' || options.ankleRange === 'wide' ? options.ankleRange : undefined;
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -2897,6 +2961,8 @@ export class AttachedRider {
     a.rest += (this.ankleRest - a.rest) / n;
     a.bound += (bound - a.bound) / n;
     a.load += (load - a.load) / n;
+    a.room += (this.ankleRoom - a.room) / n;
+    a.bite += (this.ankleBite - a.bite) / n;
     a.peak = Math.max(a.peak, Math.abs(this.ankleTorque));
     a.demandPeak = Math.max(a.demandPeak, Math.abs(demand));
     a.anglePeak = Math.max(a.anglePeak, Math.abs(angle));
@@ -2912,6 +2978,25 @@ export class AttachedRider {
    */
   private soleBound(): number {
     return Math.max(0, this.legLoad) * ((this.support.xMax - this.support.xMin) / 2);
+  }
+
+  /**
+   * **Step 3.3k: the bound on the rest the balance may command**, rad, before the rail's bite narrows it.
+   *
+   * Shipped (`ankleRange` unset): ANKLE_REST_RANGE, the constant, which is `bankAuthority`'s `restRange` at one body
+   * weight on a 0.13 m sole. `'load'`: the same quantity with the live sole moment, `ANKLE_REST_RANGE × soleBound() /
+   * (m g × ANKLE_REST_REACH)` — identically ANKLE_REST_RANGE when the load is one body weight on the standing support,
+   * which is this switch's own positive control. `'wide'`: ANKLE_RANGE_WIDE × ANKLE_REST_RANGE.
+   *
+   * `soleBound()` is zero until the contact ledger has run once (`legLoad` starts at 0), and on `'load'` a zero bound
+   * pins the rest at nothing for that step. That is the physics — unloaded feet shift no pressure — and it is left in
+   * rather than floored, because a floor would be a constant nothing measured. The probes print the first frame's
+   * bound so it can be seen rather than assumed.
+   */
+  private restRange(): number {
+    if (this.ankleRange === 'wide') return ANKLE_RANGE_WIDE * ANKLE_REST_RANGE;
+    if (this.ankleRange !== 'load') return ANKLE_REST_RANGE;
+    return (ANKLE_REST_RANGE * this.soleBound()) / (this.mass * WATER.gravity * ANKLE_REST_REACH);
   }
 
   /**
@@ -3255,8 +3340,12 @@ export class AttachedRider {
     this.bank.rate = human.bankRate;
     const bank = human.sensedBank();
     const wanted = this.bankForward * this.bankReference - this.bankGain * bank - this.bankRateGain * human.sensedBankRate() - this.anklePlumb * roll;
-    const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
-    const reachRest = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    // Step 3.3k: the bound on the commanded rest, ANKLE_REST_RANGE unless `ankleRange` reads it off the live sole.
+    const range = this.restRange();
+    this.ankleRoom = range;
+    const room = range * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
+    this.ankleBite = room;
+    const reachRest = rail > 0 ? Math.max(-room, Math.min(range, wanted)) : Math.max(-range, Math.min(room, wanted));
     const leanSide = Math.sign(this.bankReference);
     this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
@@ -3327,6 +3416,10 @@ export class AttachedRider {
     // Unloaded feet sense no change in load, which is the same condition the capture point is read under (CAPTURE_LOAD).
     this.loadSense = this.captureLoad > 0 ? felt - this.loadSlow : 0;
     this.pitchRateSense = this.boardSpin.dot(this.scratch.set(-1, 0, 0).applyQuaternion(this.heading));
+    // Step 3.3k: the bound on the commanded rest, read once a frame so the predictor's own `limits.ankle` — which is
+    // also what its forward model is fed — and the clamp below cannot disagree. ANKLE_REST_RANGE unless `ankleRange`.
+    const range = this.restRange();
+    this.ankleRoom = range;
     const tb = this.twistBody;
     if (this.controlDue <= 1e-9) {
       this.controlDue += CONTROL_STEP;
@@ -3355,15 +3448,16 @@ export class AttachedRider {
       let rail = Math.abs(this.leanAsked);
       for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
       rail = Math.min(this.railCap, rail);
-      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: ANKLE_REST_RANGE, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail);
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail);
       this.schedRail = rail;
       this.heldAnkleRaw = -this.predictor.raw[0];
       this.heldTwist = -u[1];
     }
     this.controlDue -= h;
     const wanted = this.heldAnkleRaw - this.anklePlumb * roll;
-    const room = ANKLE_REST_RANGE * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
-    const lean = rail > 0 ? Math.max(-room, Math.min(ANKLE_REST_RANGE, wanted)) : Math.max(-ANKLE_REST_RANGE, Math.min(room, wanted));
+    const room = range * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
+    this.ankleBite = room;
+    const lean = rail > 0 ? Math.max(-room, Math.min(range, wanted)) : Math.max(-range, Math.min(room, wanted));
     const leanSide = Math.sign(this.bankReference);
     this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.

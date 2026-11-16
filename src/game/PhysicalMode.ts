@@ -559,6 +559,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...stanceReachSwitch(),
     // `?ankleLimit=feet`: the ankle's torque is bounded by the moment the soles can transmit, `legLoad` × the feet's half-width across (step 3.3i; the bound `LEAN_IN_RATE` derives at 93 N·m and nothing enforced), opt-in, to ride.
     ...ankleLimitSwitch(),
+    // `?ankleRange=load|wide`: the bound on the rest the balance may command at the ankle, off the live sole or doubled (step 3.3k; step 3.3j measured the shipped ±14.32° at its stop in 62 of 72 falls), opt-in, to ride.
+    ...ankleRangeSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
@@ -1113,6 +1115,21 @@ export function stanceReachSwitch(search?: string): { stanceReach?: 'keep' } {
  */
 export function ankleLimitSwitch(search?: string): { ankleLimit?: 'feet' } {
   return devParam('ankleLimit', search)?.trim().toLowerCase() === 'feet' ? { ankleLimit: 'feet' } : {};
+}
+
+/**
+ * The `?ankleRange=load|wide` dev switch (`SurfZoneConfig.ankleRange`, step 3.3k): opt-in, **the bound on the rest the
+ * balance may command at the ankle**. Step 3.3j measured the shipped bound — ANKLE_REST_RANGE, ±14.32° — at its stop
+ * at the fall in **62 of 72** runs while the hip still had room in 69 of 72, and asked for exactly one A/B on it.
+ * `load` is that bound's own derivation (`rollModel.bankAuthority`'s `restRange = footReach · m g / series`) read with
+ * the **live** load and the **live** sole, so it is identically the shipped 14.32° at one body weight on the standing
+ * support, wider under load and narrower when the feet go light; `wide` is twice the shipped bound, which no geometry
+ * pays for and which is here because a plain widening is what step 3.3j's prediction was written against. Nothing on
+ * the default rider, no force and no hull law. Anything else, the shipped bound as before.
+ */
+export function ankleRangeSwitch(search?: string): { ankleRange?: 'load' | 'wide' } {
+  const v = devParam('ankleRange', search)?.trim().toLowerCase();
+  return v === 'load' || v === 'wide' ? { ankleRange: v } : {};
 }
 
 /**
