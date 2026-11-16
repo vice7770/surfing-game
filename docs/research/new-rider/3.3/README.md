@@ -3066,9 +3066,17 @@ document for that reason.
 **The second population, which is why this is not one cell.** The unsteered twelve — Part 24's own twelve, 12 of 12
 falls at **0.77–1.70 s**, bank peak 20.7–65.7°, roll peak 20.9–63.0°, rail peak 10.9–62.9°, drift peak 1.9–4.9°, all
 reproduced to the digit — give **rider +17.84 against the water's −17.78, a net of +0.03 (per run 0.00–0.06, positive
-in 12 of 12)**, with `pressure −5.85`, `buoyancy −2.23`, `addedMass −1.33`, `radiation −1.19`, `fins −0.39`, and a
+in 11 of 12)**, with `pressure −5.85`, `buoyancy −2.23`, `addedMass −1.33`, `radiation −1.19`, `fins −0.39`, and a
 roll acceleration of 4–128 °/s² [M]. **The same shape, and the contact's moment scales with the steer, 17.8 → 33.5
 N·m, as it must.**
+
+**The two runs of twelve that do not fit it, named rather than averaged away.** Both are the slowest entry (−3 m/s),
+which barely rolls: the Compress one reads a net of +0.02 with the **columns reversed** (water +0.32, rider −0.30) and
+the tall one a net of 0.00 at the printed precision (water −0.40, rider +0.41), at roll peaks of 23.7° and 24.8°
+against the arm's 20.9–63.0° [M]. At a third of a newton-metre neither column is a contact pressing on a rail; they
+are two runs where almost nothing is twisting the board, and they are why the unsteered arm's sign count is **11 of 12
+and not 12**. On the full-stick arm, where the board does go over, the per-run net is positive in **12 of 12** at
+0.01–0.11 N·m.
 
 **And at the fall frame**, per run, the water's resistance is still there and the rider's push has largely spent
 itself: rider **+1.9 to +32.6**, pressure **−30.0 to −2.8**, buoyancy −1.6 to +0.5, addedMass −0.8 to +0.8,
