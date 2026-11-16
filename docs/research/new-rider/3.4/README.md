@@ -1768,10 +1768,10 @@ Measured ratio **1.19** on the arm the substitution is taken from, predicted ove
 - `docs/research/new-rider/3.4/results/34c/` — the forty arms as `.jsonl` and `.txt`, `34c-summary.txt` (every table
   above, generated), `34c-predictions.md` (every prediction as written **before** its read, each with its own
   falsification), and the **per-tick record, gzipped, for the seventeen arms every published figure is taken from**.
-  **All seventeen are load-bearing** — every geometric mean, every window ratio, the time profile, the survivorship
-  control and the shift–share are read from one of them. The other twenty-three arms' per-tick dumps are not kept:
-  they are one documented command each (`TICKS=… GAINS=1 … node pl.mjs`), and keeping all forty put the folder at
-  **29 MB**; the seventeen put it at **17 MB** against 34b's 5.8. **Every one of the forty arms' per-run summaries
+  **All twenty-one are load-bearing** — every geometric mean, every window ratio, the time profile, the survivorship
+  control and the shift–share are read from one of them. The other nineteen arms' per-tick dumps are not kept: they
+  are one documented command each (`TICKS=… GAINS=1 … node pl.mjs`), and keeping all forty put the folder at
+  **29 MB**; the twenty-one put it at **19 MB** against 34b's 5.8. **Every one of the forty arms' per-run summaries
   is kept in full**, and every figure in this Part that is not a per-tick statistic is read from those.
 - `docs/research/new-rider/3.4/README.md` — this Part.
 
@@ -1851,11 +1851,11 @@ results folder.
 
 ```
 522   1  docs/research/new-rider/3.3/plant.ts
-641   0  docs/research/new-rider/3.4/README.md
+650   0  docs/research/new-rider/3.4/README.md
 379   0  docs/research/new-rider/3.4/row.ts
-   … and 99 files under docs/research/new-rider/3.4/results/34c/, insertions only
+   … and 103 files under docs/research/new-rider/3.4/results/34c/, insertions only
 ──────────────────────────────────────────────
-102 files, 6 384 insertions, 1 deletion
+106 files, 7 555 insertions, 1 deletion
 ```
 
 `git diff --cached --numstat origin/main -- src/ server/` prints **nothing at all**, and the one commit `origin/main`
