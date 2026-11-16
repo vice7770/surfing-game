@@ -128,7 +128,7 @@ import { BoardBody } from '../../../../src/physics/BoardBody';
 import { createWaterSample } from '../../../../src/physics/SurfWater';
 import { FaceWater } from '../../../../src/physics/testing/FaceWater';
 import { bankLedger, BANK_SOURCES, type BankSource } from '../../../../src/physics/bankLedger';
-import { CONTROL_STEP, bodyInertiaAt, captureOmega, continuousPlant, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, type DesignWeights, bodyInertiaAt, captureOmega, continuousPlant, costWeights, design, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
 import { lateralCompliance, type RiderBody, type TwistPlant, type YawPlant } from '../../../../src/physics/rollModel';
 
 const DEG = 180 / Math.PI;
@@ -176,6 +176,29 @@ const BODYJ = process.env.BODYJ ? Number(process.env.BODYJ) : undefined;
  */
 const COST = process.env.COST === 'point' ? 'point' : process.env.COST === 'fixed' ? 'fixed'
   : process.env.COST === 'plant' ? 'plant' : undefined;
+/**
+ * **Step 3.4c's two switches**, both off by default, so every arm with them unset is step 3.4b's own probe on
+ * step 3.4b's own cells.
+ *
+ * `TICKS=<path>`: append one row per live control tick to a `.jsonl`, with the state the tick was taken at, the roll
+ * row's own two halves and the roll row's matched per-source gaps — the file the stratified (matched-state) comparison
+ * across gain arms is read from. Nothing about the ride changes; it is a dump of columns already computed.
+ *
+ * `GAINS=1`: the round's own block. At each tick it rebuilds the design at the controller's **exact** point with each
+ * of the four cost arms' weights, and from each one's `k` reconstructs **the command that arm would have sent at this
+ * very state** — `ref.u − b̂ − K (x̂ − ref.x)`, the controller's own line, with the ankle's own clamp. The gains enter
+ * the roll row only through `Γ[1]·u`, so `Γ[1]·(u' − u)` is **exactly** how much another gain set could move the
+ * model's roll row without moving the trajectory. It costs four `design()` calls a tick, so it is a switch.
+ */
+const TICKS = process.env.TICKS;
+const GAINS = process.env.GAINS === '1';
+/** The four cost arms' own weight sets, named, for `GAINS`. `off` is the shipped cost function. */
+const COST_ARMS: { key: string; w: DesignWeights }[] = [
+  { key: 'off', w: DEFAULT_WEIGHTS },
+  { key: 'point', w: { ...DEFAULT_WEIGHTS, ...costWeights('point') } },
+  { key: 'fixed', w: { ...DEFAULT_WEIGHTS, ...costWeights('fixed') } },
+  { key: 'plant', w: { ...DEFAULT_WEIGHTS, ...costWeights('plant') } },
+];
 /** The three body plants scored as counterfactuals on every ride, whatever `BODY` is. */
 const BODIES: { key: 'Ctl' | 'Sym' | 'Two'; body: RiderBody | true }[] = [
   { key: 'Ctl', body: { inertia: 0, feetRoll: false } },
@@ -270,6 +293,12 @@ function without(y: YawPlant, t: TwistPlant, g: Group): { y: YawPlant; t: TwistP
 const WATER_SOURCES: BankSource[] = ['buoyancy', 'pressure', 'suction', 'friction', 'fins', 'rails', 'froth', 'addedMass'];
 const BOARD_SOURCES: BankSource[] = ['weight', 'gyro'];
 const RIDER_SOURCES: BankSource[] = BANK_SOURCES.filter((s) => !WATER_SOURCES.includes(s) && !BOARD_SOURCES.includes(s)) as BankSource[];
+/**
+ * Step 3.4c: the rider sources the model's own `ankle` and `twist` groups do NOT name, which are what its named
+ * remainder (`mRest`) must answer for. A partition of `RIDER_SOURCES` with those two removed, built by filtering so
+ * that a source added to `BANK_SOURCES` later lands here rather than being dropped silently.
+ */
+const REST_SOURCES: BankSource[] = RIDER_SOURCES.filter((s) => s !== 'ankle' && s !== 'twist');
 
 const dot = (row: readonly number[], x: readonly number[]) => { let s = 0; for (let j = 0; j < x.length; j += 1) s += row[j] * x[j]; return s; };
 
@@ -514,6 +543,154 @@ interface Tick {
   condModel: number;
   /** The game's own: its largest single source group (water+board or rider) over its own net. */
   condGame: number;
+
+  // --- 12. step 3.4c: the roll row PER SOURCE, and the two halves of the model's own row ---
+  /**
+   * **The game's own roll row per source**, °/s², signed, in the model's own sign (`−deck[src] · DEG`): all
+   * twenty-three of `BANK_SOURCES`, so "per source" is the ledger's own partition and not a grouping I chose. Their
+   * sum is `rollAccGame` to the ledger's own closure (`gDeckClose` below is that read, not asserted).
+   */
+  gDeck: Record<BankSource, number>;
+  /** `|Σ_src gDeck − rollAccGame| / |rollAccGame|`: the ledger's partition of the roll row, read. */
+  gDeckClose: number;
+  /**
+   * **The model's own roll row split into the half the gains can reach and the half they cannot.** The row is
+   * `(Φ[1]·x + Γ[1]·u − φ̇)/h`, so the command's own half is `(Γ[1]·u)/h` exactly and the state's is the rest.
+   * **The cost weights enter `design` only through `k` [R], so `Γ` is the same matrix in every cost arm and
+   * `rollCmd` is the WHOLE of the gains' reach into the roll row at a fixed state.**
+   */
+  rollCmd: number;
+  rollState: number;
+  /** `|rollCmd|` over the model's own row and over the game's own row: the loop's ceiling, both denominators printed. */
+  cmdShareModel: number;
+  cmdShareGame: number;
+  /**
+   * **The matched per-source gaps on the roll row**, °/s², signed, model minus game, each at the controller's own
+   * exact point (so they sum to `rollAccFull − rollAccGame`, not to the blend's row):
+   * - `eWater` — the model's twelve captive derivatives (`waterRoll + waterYaw + waterSide`) against the ledger's
+   *   hull, foils, froth and added mass **plus** the board's own weight and gyro (`gWater + gBoard`), because the
+   *   model has no separate term for either and its water terms are what must answer for them.
+   * - `eAnkle` — the model's `ankle` group (the spring and the damper, both the state's part and the command's,
+   *   since `without('ankle')` zeroes both) against the ledger's `ankle` source.
+   * - `eTwist` — the model's `twist` group against the ledger's `twist`.
+   * - `eRest` — the model's named remainder (gravity through the feet, the pendulum's `g/L`, the inertias, the pure
+   *   kinematics) against every rider source the two above do not name: `gravity`, `carry`, `riderWater`, `assist`,
+   *   `leg`, `swing`, `hand`, `pitch`, `drive`, `limbs`, `yawCouple`.
+   * - `eFeetFwd` — the model's `feetForward` group, which has **no ledger source at all**, so it is its own gap and
+   *   is reported as unmatched rather than folded into `eRest`.
+   */
+  eWater: number;
+  eAnkle: number;
+  eTwist: number;
+  eRest: number;
+  eFeetFwd: number;
+  /** The game's side of the four, °/s² signed, so a ratio is never taken against a number that is not printed. */
+  gWaterBoard: number;
+  gAnkleSrc: number;
+  gTwistSrc: number;
+  gRestSrc: number;
+  /** The net error the five are a partition of, °/s² signed, and the closure of that partition, relative. */
+  eNet: number;
+  eClose: number;
+  /** Each gap's share of `|eNet|`: which source owns the ten times. */
+  shWater: number;
+  shAnkle: number;
+  shTwist: number;
+  shRest: number;
+  shFeetFwd: number;
+  /**
+   * The same five gaps on the **two-body** plant, against the same game row on the same tick, so the per-source read
+   * has both plants and neither is reported against the other's trajectory (Part 1 §9 reading 3's warning).
+   */
+  eWaterTwo: number;
+  eAnkleTwo: number;
+  eTwistTwo: number;
+  eRestTwo: number;
+  eFeetFwdTwo: number;
+  eNetTwo: number;
+  eCloseTwo2: number;
+
+  // --- 13. step 3.4c: what another gain set could do to the roll row at THIS state (`GAINS=1`) ---
+  /**
+   * The reconstruction's own control: `|û₀ − u₀|` over `|u₀|` with the arm's OWN weights at the exact point. It is
+   * not expected to be zero — the controller rides its eight-point blend and this is the exact point — and the size
+   * of it is the blend's own error on the command, printed beside the counterfactual it bounds.
+   */
+  cmdRebuild: number;
+  /** The peak difference of `Φ` and `Γ` across the four cost arms' designs at this point: P1, the identity, read. */
+  gainPlantOff: number;
+  /** The peak difference of the model's own roll row across the four arms with the RECORDED command: P1's own row. */
+  gainRowOff: number;
+  /**
+   * `|Γ[1]·(u' − u_off)| / h`, °/s², the largest over the three cost arms: **the whole swing another gain set's
+   * command can make in the model's roll row at this very state.** Its ratio to the game's own row is the loop's
+   * own measured ceiling on the roll row's error.
+   */
+  gainRollSwing: number;
+  gainSwingShare: number;
+  /** The same for the ankle command itself, rad, so the swing is reported in the command as well as in the row. */
+  gainCmdSwing: number;
+  /**
+   * The swing over the NET roll-row error `|eNet|`, which is the quantity the roll row's relative error is built
+   * from: **the share of the roll row's own error that another gain set could move without moving the trajectory.**
+   */
+  gainSwingOverNet: number;
+  /** The `point` arm's own swing against the ride's own arm, since that is the pair whose row moved in 3.4b. */
+  gainRollSwingPoint: number;
+  /** The ankle's own bound at this tick, rad, and whether either command sat on it: the clamp, read not assumed. */
+  ankleRoomHere: number;
+  gainClamped: number;
+  /**
+   * **The brief's own measurement, per tick: one recorded ride, four sets of gains.** The roll row's relative error
+   * at THIS recorded state — the same `x`, the same plant, the same game row — with each cost arm's **own command**
+   * substituted, keyed by the arm. The ride's own arm's entry is the row itself (`relFull`) by construction, since
+   * every entry is `rollAccFull + Γ[1]·(u_arm − û)` and `û` is the ride's own arm's rebuilt command.
+   *
+   * **This is the only honest sense in which "the roll row per gain set at a fixed trajectory" exists**: the plant
+   * cannot see the gains at all, so the gains reach the row only through `u`, and this substitutes exactly that.
+   * The game's side is the recorded one and does **not** respond to the substituted command, so these are not four
+   * rides — they are four readings of one tick, and §11 says so.
+   */
+  relSubst: Record<string, number>;
+  /** The same for the body's own lean row, so the round does not report one row and leave the other unmeasured. */
+  relSubstBank: Record<string, number>;
+  /** Whether the substituted command brings the model's roll row CLOSER to the game's on this tick. */
+  substHelps: Record<string, number>;
+  /** The two matched sources the command reaches at all, per arm, °/s²: `Γ[1][0]` is the ankle's, `Γ[1][1]` the twist's. */
+  eAnkleSubst: Record<string, number>;
+  eTwistSubst: Record<string, number>;
+  /**
+   * **The control on the substitution, and it is the one that stops it being read as more than it is.** The
+   * substituted command moves the MODEL's roll row and the game's recorded row stays where it was — but the game's
+   * own roll row responds to the commanded ankle rest too, through the same 800 N·m/rad spring the model has
+   * (`HUMAN_ANKLE_STIFFNESS` = `YawPlant.ankleStiffness` = 800 [R, two files, one number]). So:
+   *
+   * **The frame, because the first version of this read was in the wrong one.** `B` is zero in every entry but
+   * `B[8][0] = B[9][1] = 1 / lag` [R, `continuousPlant`], so the model's two commands drive **only the two
+   * muscle-lag states** and have no instantaneous authority over any row at all. `bZeroOff` below is that read, not
+   * an assumption. And the game is the same shape: its own `ankleRest` follows the commanded lean through
+   * `MOTOR_LAG = 0.05` s and the model's `PREDICT_LAG` is **0.05 s**, the same first-order lag [R, two files, one
+   * number]. So the authority that is comparable on both sides is the one **per radian of the ankle's commanded
+   * REST**, with the lag behind it on both sides:
+   *
+   * - `cmdAuthModelCont` — the model's own, `|A[1][8]|`, the roll-rate row's coefficient on the rest state δ.
+   * - `cmdAuthGame` — the game's own, `|ankleDeck × 800|`, where `ankleDeck` is the bank ledger's deck-roll response
+   *   to `b[7] = 1/L` (i.e. to τ_game = −1) and 800 N·m/rad is the stiffness the rest acts through —
+   *   `HUMAN_ANKLE_STIFFNESS` = `YawPlant.ankleStiffness` = 800, two files, one number [R].
+   * - `cmdAuthModel` — the **step-averaged** `|Γ[1][0]| / h`, which is what the substitution actually moves. It is a
+   *   different quantity from the two above (`Γ = ∫₀ʰ e^{A s} ds · B` over a step that is short against a 32 rad/s
+   *   mode — this folder's own `(Φ − I)/h ≠ A`, on the input side), so it is **printed and never divided by the
+   *   game's**. `cmdAuthStep` is its ratio to the model's own instantaneous one, so the two frames are visible.
+   *
+   * **The two sign conventions do not agree** (3.3p §6 reading 5), so only magnitudes are divided.
+   */
+  cmdAuthModel: number;
+  cmdAuthModelCont: number;
+  cmdAuthGame: number;
+  cmdAuthRatio: number;
+  cmdAuthStep: number;
+  /** `max |B[i][j]|` over every input entry but the two lag rows': the read that the commands enter only those. */
+  bZeroOff: number;
 }
 
 function oneRun(st: Stance, extra: number, entry0: number | null, steer: number): Record<string, unknown> {
@@ -981,7 +1158,153 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         bGamma: Object.fromEntries(BODIES.map(({ key }) => [key, bodyPlants[key].gamma.map((row) => row.slice())])),
       };
 
+      // ===== Step 3.4c: the roll row PER SOURCE at a fixed trajectory, and the gains' own reach into it =====
+      // **The game's side is the ledger's own twenty-three-way partition**, in the model's sign, and its closure is
+      // read rather than assumed. The model's side is the six groups the code's own `without` separates plus the
+      // named remainder, already computed above. The matching is stated in the `Tick` docstring and is a partition on
+      // both sides: every ledger source is in exactly one bucket and every model group in exactly one.
+      const relOfRaw = (m: number, g: number) => (Number.isFinite(g) && Math.abs(g) > 1e-9 ? (m - g) / Math.abs(g) : Number.NaN);
+      const gDeck = {} as Record<BankSource, number>;
+      let gDeckSum = 0;
+      for (const src of BANK_SOURCES) {
+        const v = ledgerOn ? -bankLedger.deck[src] * DEG : Number.NaN;
+        gDeck[src] = v;
+        if (Number.isFinite(v)) gDeckSum += v;
+      }
+      let gRestSrc = 0;
+      for (const src of REST_SOURCES) gRestSrc += gDeck[src];
+      const gWaterBoard = gWater + gBoard;
+      const gAnkleSrc = gDeck.ankle;
+      const gTwistSrc = gDeck.twist;
+      // The five gaps, at the controller's own EXACT point, so they are a partition of `rollAccFull − rollAccGame`.
+      const eWater = (gm.waterRoll + gm.waterYaw + gm.waterSide) * DEG - gWaterBoard;
+      const eAnkle = gm.ankle * DEG - gAnkleSrc;
+      const eTwist = gm.twist * DEG - gTwistSrc;
+      const eRest = mRest * DEG - gRestSrc;
+      const eFeetFwd = gm.feetForward * DEG;
+      const eNet = rollAll * DEG - rollGame;
+      const eSum = eWater + eAnkle + eTwist + eRest + eFeetFwd;
+      // The same five on the two-body plant, against the same game row on the same tick.
+      const eWaterTwo = (gmTwo.waterRoll + gmTwo.waterYaw + gmTwo.waterSide) * DEG - gWaterBoard;
+      const eAnkleTwo = gmTwo.ankle * DEG - gAnkleSrc;
+      const eTwistTwo = gmTwo.twist * DEG - gTwistSrc;
+      const eRestTwo = mRestTwo * DEG - gRestSrc;
+      const eFeetFwdTwo = gmTwo.feetForward * DEG;
+      const eNetTwo = rollAllTwo * DEG - rollGame;
+      const eSumTwo = eWaterTwo + eAnkleTwo + eTwistTwo + eRestTwo + eFeetFwdTwo;
+      // **The model's row split into the half the gains reach and the half they do not.** `Γ` is the same matrix in
+      // every cost arm [R, `design`: the weights enter only `q`], so `rollCmd` is the whole of the gains' reach into
+      // this row at this state. The datum is the controller's OWN blended Γ, the same one `rollAccModel` is built
+      // with, so the two halves sum to it exactly.
+      const rollCmd = (d.gamma[1][0] * u[0] + d.gamma[1][1] * u[1]) / CONTROL_STEP * DEG;
+      // The two authorities of the commanded ankle rest over the roll row, °/s² per rad — the model's own and the
+      // game's own, magnitudes only, the two sign conventions never divided (3.3p §6 reading 5).
+      const cmdAuthModel = Math.abs(fullD.gamma[1][0]) / CONTROL_STEP * DEG;
+      const cmdAuthModelCont = Math.abs(full.a[1][8]) * DEG;
+      // The read: the commands enter the plant only through the two muscle-lag rows.
+      let bZeroOff = 0;
+      for (let i2 = 0; i2 < full.b.length; i2 += 1) {
+        for (let j2 = 0; j2 < full.b[i2].length; j2 += 1) {
+          if ((i2 === 8 && j2 === 0) || (i2 === 9 && j2 === 1)) continue;
+          bZeroOff = Math.max(bZeroOff, Math.abs(full.b[i2][j2]));
+        }
+      }
+      const cmdAuthGame = ledgerLive ? Math.abs(bankLedger.ankleDeck * y.ankleStiffness) * DEG : Number.NaN;
+      // ===== Step 3.4c: what ANOTHER gain set would command at this very state (`GAINS=1`) =====
+      let cmdRebuild = Number.NaN;
+      let gainPlantOff = Number.NaN;
+      let gainRowOff = Number.NaN;
+      let gainRollSwing = Number.NaN;
+      let gainCmdSwing = Number.NaN;
+      let gainRollSwingPoint = Number.NaN;
+      let gainClamped = Number.NaN;
+      const relSubst: Record<string, number> = {};
+      const relSubstBank: Record<string, number> = {};
+      const substHelps: Record<string, number> = {};
+      const eAnkleSubst: Record<string, number> = {};
+      const eTwistSubst: Record<string, number> = {};
+      for (const arm of COST_ARMS) {
+        relSubst[arm.key] = Number.NaN;
+        relSubstBank[arm.key] = Number.NaN;
+        substHelps[arm.key] = Number.NaN;
+        eAnkleSubst[arm.key] = Number.NaN;
+        eTwistSubst[arm.key] = Number.NaN;
+      }
+      if (GAINS) {
+        const dsg = COST_ARMS.map((arm) => design(y, tw, arm.w));
+        const nS = dsg[0].phi.length;
+        // P1, read per tick: the four arms' Φ and Γ, and the exact-point plant the groups are built on, are one
+        // matrix. A non-zero here would mean the cost reaches the plant.
+        gainPlantOff = 0;
+        for (let q = 0; q < nS; q += 1) {
+          for (let j = 0; j < nS; j += 1) {
+            for (const dd of dsg) gainPlantOff = Math.max(gainPlantOff, Math.abs(dd.phi[q][j] - dsg[0].phi[q][j]));
+            gainPlantOff = Math.max(gainPlantOff, Math.abs(fullD.phi[q][j] - dsg[0].phi[q][j]));
+          }
+          for (let j = 0; j < 2; j += 1) {
+            for (const dd of dsg) gainPlantOff = Math.max(gainPlantOff, Math.abs(dd.gamma[q][j] - dsg[0].gamma[q][j]));
+            gainPlantOff = Math.max(gainPlantOff, Math.abs(fullD.gamma[q][j] - dsg[0].gamma[q][j]));
+          }
+        }
+        // P1's own row: the model's roll row with the RECORDED state and the RECORDED command, under each arm's
+        // design. The gains cannot enter it, and this is the number that says so.
+        const rowOf = (dd: { phi: number[][]; gamma: number[][] }) =>
+          (dot(dd.phi[1], x) + dd.gamma[1][0] * u[0] + dd.gamma[1][1] * u[1] - x[1]) / CONTROL_STEP * DEG;
+        gainRowOff = 0;
+        for (const dd of dsg) gainRowOff = Math.max(gainRowOff, Math.abs(rowOf(dd) - rowOf(dsg[0])));
+        // The command the controller's own line gives, rebuilt at the exact point:
+        //     u_q = ref.u_q − b̂_q − K[q] · (x̂ − ref.x)
+        // clamped as `tick` clamps it [R, `PredictiveController.tick`]. The ankle's bound is the rider's own
+        // `ankleRoom`, read; the twist's is `min(TWIST_BODY_TORQUE, grip)`, which the probe does not read, so it is
+        // recovered when the recorded tick was clamped (`|raw| > |sent|` makes `|sent|` the bound) and left open
+        // otherwise. `cmdRebuild` is the control on all of it.
+        const ref = rider.predictor.reference;
+        const xh = rider.predictor.predicted;
+        const bh = rider.predictor.bias;
+        const room = inner.ankleRoom;
+        const twistLim = Math.abs(rider.predictor.raw[1]) > Math.abs(u[1]) + 1e-12 ? Math.abs(u[1]) : Number.POSITIVE_INFINITY;
+        const cmdOf = (kk: number[][]) => {
+          const out = [0, 0];
+          for (let q = 0; q < 2; q += 1) {
+            let s = ref.u[q] - bh[q];
+            for (let j = 0; j < nS; j += 1) s -= kk[q][j] * (xh[j] - ref.x[j]);
+            out[q] = s;
+          }
+          out[0] = Math.max(-room, Math.min(room, out[0]));
+          out[1] = Math.max(-twistLim, Math.min(twistLim, out[1]));
+          return out;
+        };
+        const own = COST_ARMS.findIndex((arm) => arm.key === (COST ?? 'off'));
+        const uHat = cmdOf(dsg[own].k);
+        cmdRebuild = Math.abs(u[0]) > 1e-9 ? Math.abs(uHat[0] - u[0]) / Math.abs(u[0]) : Number.NaN;
+        // The swing: `Γ[1] · (u' − û)` over the step, °/s². `Γ` is the exact point's, which `gainPlantOff` has just
+        // read to be the same matrix as the four designs' own.
+        gainRollSwing = 0;
+        gainCmdSwing = 0;
+        gainClamped = Math.abs(Math.abs(uHat[0]) - room) < 1e-12 ? 1 : 0;
+        for (let q = 0; q < dsg.length; q += 1) {
+          const key = COST_ARMS[q].key;
+          const up = q === own ? uHat : cmdOf(dsg[q].k);
+          const dAnkle = fullD.gamma[1][0] * (up[0] - uHat[0]) / CONTROL_STEP * DEG;
+          const dTwist = fullD.gamma[1][1] * (up[1] - uHat[1]) / CONTROL_STEP * DEG;
+          const dRoll = dAnkle + dTwist;
+          const dBank = (fullD.gamma[3][0] * (up[0] - uHat[0]) + fullD.gamma[3][1] * (up[1] - uHat[1])) / CONTROL_STEP * DEG;
+          // **The brief's measurement**: the same tick's row with this arm's own command in it.
+          relSubst[key] = relOfRaw(rollAll * DEG + dRoll, rollGame);
+          relSubstBank[key] = relOfRaw(bankAll * DEG + dBank, bankGame);
+          substHelps[key] = Number.isFinite(eNet) ? (Math.abs(eNet + dRoll) < Math.abs(eNet) ? 1 : 0) : Number.NaN;
+          eAnkleSubst[key] = eAnkle + dAnkle;
+          eTwistSubst[key] = eTwist + dTwist;
+          if (q === own) continue;
+          gainRollSwing = Math.max(gainRollSwing, Math.abs(dRoll));
+          gainCmdSwing = Math.max(gainCmdSwing, Math.abs(up[0] - uHat[0]));
+          if (Math.abs(Math.abs(up[0]) - room) < 1e-12) gainClamped = 1;
+          if (key === 'point') gainRollSwingPoint = Math.abs(dRoll);
+        }
+      }
+
       const relOf = (m: number, g: number) => (Number.isFinite(g) && Math.abs(g) > 1e-9 ? (m - g) / Math.abs(g) : Number.NaN);
+      const shareOfNet = (e: number) => (Math.abs(eNet) > 1e-9 ? Math.abs(e) / Math.abs(eNet) : Number.NaN);
       ticks.push({
         t,
         ticks: nTicks,
@@ -1182,6 +1505,57 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         ankleBankCtl,
         ankleBankGame: ledgerOn ? bankLedger.ankleOwn : Number.NaN,
         condTwo: Math.abs(rollAllTwo) > 1e-12 ? Math.max(Math.abs(gmTwo.waterSide), Math.abs(gmTwo.waterRoll), Math.abs(gmTwo.ankle), Math.abs(mRestTwo)) / Math.abs(rollAllTwo) : Number.NaN,
+        // --- step 3.4c: the roll row per source, the row's two halves, and the gains' own reach
+        gDeck,
+        gDeckClose: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? Math.abs(gDeckSum - rollGame) / Math.abs(rollGame) : Number.NaN,
+        rollCmd,
+        rollState: rollAccModel - rollCmd,
+        cmdShareModel: Math.abs(rollAccModel) > 1e-9 ? Math.abs(rollCmd) / Math.abs(rollAccModel) : Number.NaN,
+        cmdShareGame: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? Math.abs(rollCmd) / Math.abs(rollGame) : Number.NaN,
+        eWater,
+        eAnkle,
+        eTwist,
+        eRest,
+        eFeetFwd,
+        gWaterBoard,
+        gAnkleSrc,
+        gTwistSrc,
+        gRestSrc,
+        eNet,
+        eClose: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? Math.abs(eSum - eNet) / Math.abs(rollGame) : Number.NaN,
+        shWater: shareOfNet(eWater),
+        shAnkle: shareOfNet(eAnkle),
+        shTwist: shareOfNet(eTwist),
+        shRest: shareOfNet(eRest),
+        shFeetFwd: shareOfNet(eFeetFwd),
+        eWaterTwo,
+        eAnkleTwo,
+        eTwistTwo,
+        eRestTwo,
+        eFeetFwdTwo,
+        eNetTwo,
+        eCloseTwo2: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? Math.abs(eSumTwo - eNetTwo) / Math.abs(rollGame) : Number.NaN,
+        cmdRebuild,
+        gainPlantOff,
+        gainRowOff,
+        gainRollSwing,
+        gainSwingShare: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? gainRollSwing / Math.abs(rollGame) : Number.NaN,
+        gainCmdSwing,
+        gainSwingOverNet: Math.abs(eNet) > 1e-9 ? gainRollSwing / Math.abs(eNet) : Number.NaN,
+        gainRollSwingPoint,
+        ankleRoomHere: inner.ankleRoom,
+        gainClamped,
+        relSubst,
+        relSubstBank,
+        substHelps,
+        eAnkleSubst,
+        eTwistSubst,
+        cmdAuthModel,
+        cmdAuthModelCont,
+        cmdAuthGame,
+        cmdAuthRatio: Number.isFinite(cmdAuthGame) && cmdAuthGame > 1e-12 ? cmdAuthModelCont / cmdAuthGame : Number.NaN,
+        cmdAuthStep: cmdAuthModelCont > 1e-12 ? cmdAuthModel / cmdAuthModelCont : Number.NaN,
+        bZeroOff,
       });
     }
 
@@ -1217,6 +1591,49 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
   const absCol = (w: Tick[], k: keyof Tick) => w.map((xx) => Math.abs(Number(xx[k])));
   const shareOf = (w: Tick[], k: keyof Tick) => share(w.filter((xx) => Number.isFinite(Number(xx[k]))).map((xx) => Number(xx[k]) === 1));
   const aboveOne = (w: Tick[], k: keyof Tick) => share(w.filter((xx) => Number.isFinite(Number(xx[k]))).map((xx) => Number(xx[k]) > 1));
+
+  // **Step 3.4c: the per-tick dump.** One row per LIVE tick, with the state the tick was taken at and the roll row's
+  // own columns, so the matched-state comparison across gain arms is made on ticks and not on run medians. Nothing
+  // here is computed for the dump; every column is already on the row.
+  if (TICKS) {
+    for (const xx of live) {
+      appendFileSync(TICKS, `${JSON.stringify({
+        body: BODY ?? 'point', cost: COST ?? 'off', stance: st, steer, entryAsked: entry0, extra: entry0 === null ? extra : null,
+        t: r(xx.t, 4),
+        // the state the tick sits at, every one a read off the ride
+        speed: r(xx.speed, 3), railMeas: r(xx.railMeas, 3), roll: r(xx.roll, 3), bank: r(xx.bank, 3),
+        through: r(xx.through, 3), schedRail: r(xx.schedRail, 4), tilt: r(xx.tilt, 3),
+        // the roll row, both sides and both halves
+        rollAccGame: r(xx.rollAccGame, 4), rollAccModel: r(xx.rollAccModel, 4), rollAccFull: r(xx.rollAccFull, 4),
+        rollRel: r(xx.rollRel, 6), relFull: r(xx.relFull, 6), rollSign: xx.rollSign,
+        rollCmd: r(xx.rollCmd, 4), rollState: r(xx.rollState, 4),
+        cmdShareModel: r(xx.cmdShareModel, 6), cmdShareGame: r(xx.cmdShareGame, 6),
+        condGame: r(xx.condGame, 4), condModel: r(xx.condModel, 4),
+        // the per-source gaps and the game's own side of each
+        eWater: r(xx.eWater, 4), eAnkle: r(xx.eAnkle, 4), eTwist: r(xx.eTwist, 4), eRest: r(xx.eRest, 4), eFeetFwd: r(xx.eFeetFwd, 4),
+        gWaterBoard: r(xx.gWaterBoard, 4), gAnkleSrc: r(xx.gAnkleSrc, 4), gTwistSrc: r(xx.gTwistSrc, 4), gRestSrc: r(xx.gRestSrc, 4),
+        eNet: r(xx.eNet, 4), eClose: r(xx.eClose, 8), gDeckClose: r(xx.gDeckClose, 8),
+        eWaterTwo: r(xx.eWaterTwo, 4), eAnkleTwo: r(xx.eAnkleTwo, 4), eTwistTwo: r(xx.eTwistTwo, 4),
+        eRestTwo: r(xx.eRestTwo, 4), eFeetFwdTwo: r(xx.eFeetFwdTwo, 4), eNetTwo: r(xx.eNetTwo, 4),
+        // the gains' own reach, when `GAINS=1`
+        gainRollSwing: r(xx.gainRollSwing, 4), gainSwingShare: r(xx.gainSwingShare, 6),
+        gainCmdSwing: r(xx.gainCmdSwing, 6), cmdRebuild: r(xx.cmdRebuild, 6),
+        gainRowOff: r(xx.gainRowOff, 15), gainPlantOff: r(xx.gainPlantOff, 15),
+        ankleRoomHere: r(xx.ankleRoomHere, 4), gainClamped: xx.gainClamped,
+        cmdAuthModel: r(xx.cmdAuthModel, 2), cmdAuthModelCont: r(xx.cmdAuthModelCont, 2),
+        cmdAuthGame: r(xx.cmdAuthGame, 2), cmdAuthRatio: r(xx.cmdAuthRatio, 4), cmdAuthStep: r(xx.cmdAuthStep, 4),
+        // the brief's measurement: the same tick's roll row under each of the four gain sets
+        ...Object.fromEntries(COST_ARMS.flatMap((arm) => [
+          [`subst_${arm.key}`, r(xx.relSubst[arm.key], 6)],
+          [`substBank_${arm.key}`, r(xx.relSubstBank[arm.key], 6)],
+          [`substHelps_${arm.key}`, xx.substHelps[arm.key]],
+        ])),
+        // the two-body plant's own roll row on the same tick, so the per-source read has both plants
+        rollAccTwo: r(xx.rollAccTwo, 4), relTwo: r(xx.relTwo, 6),
+        mWaterAllTwo: r(xx.mWaterAllTwo, 4), mAnkleTwo: r(xx.mAnkleTwo, 4), mRestTwo: r(xx.mRestTwo, 4),
+      })}\n`);
+    }
+  }
 
   const out: Record<string, unknown> = {
     rider: RIDER,
@@ -1474,6 +1891,83 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ankleBankGameMed: r(median(absCol(live, 'ankleBankGame')), 4),
     ankleBankRatioCtlMed: r(median(live.map((xx) => (Math.abs(xx.ankleBankGame) > 1e-12 ? Math.abs(xx.ankleBankCtl / xx.ankleBankGame) : Number.NaN)).filter(Number.isFinite)), 3),
     ankleBankRatioTwoMed: r(median(live.map((xx) => (Math.abs(xx.ankleBankGame) > 1e-12 ? Math.abs(xx.ankleBankTwo / xx.ankleBankGame) : Number.NaN)).filter(Number.isFinite)), 3),
+    // --- step 3.4c: the roll row per source, the row's two halves, and the gains' own reach into it
+    // The ledger's own twenty-three-way partition of the roll row, per-run medians of |·|, °/s². Printed for every
+    // source so "per source" is the ledger's partition and not a grouping chosen after the fact; the sources that are
+    // identically zero on this arm are printed as zero rather than dropped.
+    ...Object.fromEntries(BANK_SOURCES.map((src) => [`gd_${src}`, r(median(live.map((xx) => Math.abs(xx.gDeck[src]))), 2)])),
+    gDeckClosePeak: r(peak(absCol(live, 'gDeckClose')), 15),
+    rollCmdMed: r(median(absCol(live, 'rollCmd')), 2),
+    rollStateMed: r(median(absCol(live, 'rollState')), 2),
+    cmdShareModelMed: r(median(col(live, 'cmdShareModel')), 4),
+    cmdShareGameMed: r(median(col(live, 'cmdShareGame')), 4),
+    cmdShareGamePeak: r(peak(col(live, 'cmdShareGame')), 4),
+    cmdAuthModelMed: r(median(col(live, 'cmdAuthModel')), 1),
+    cmdAuthModelContMed: r(median(col(live, 'cmdAuthModelCont')), 1),
+    cmdAuthGameMed: r(median(col(live, 'cmdAuthGame')), 1),
+    cmdAuthStepMed: r(median(col(live, 'cmdAuthStep')), 4),
+    bZeroOffPeak: r(peak(col(live, 'bZeroOff')), 15),
+    cmdAuthRatioMed: r(median(col(live, 'cmdAuthRatio')), 3),
+    cmdAuthRatioLo: r(sorted(col(live, 'cmdAuthRatio'))[0] ?? Number.NaN, 3),
+    cmdAuthRatioPeak: r(peak(col(live, 'cmdAuthRatio')), 3),
+    // the five matched gaps: the model's term minus the game's, °/s², and the game's own side of each
+    eWaterMed: r(median(absCol(live, 'eWater')), 2),
+    eAnkleMed: r(median(absCol(live, 'eAnkle')), 2),
+    eTwistMed: r(median(absCol(live, 'eTwist')), 2),
+    eRestMed: r(median(absCol(live, 'eRest')), 2),
+    eFeetFwdMed: r(median(absCol(live, 'eFeetFwd')), 2),
+    gWaterBoardMed: r(median(absCol(live, 'gWaterBoard')), 2),
+    gAnkleSrcMed: r(median(absCol(live, 'gAnkleSrc')), 2),
+    gTwistSrcMed: r(median(absCol(live, 'gTwistSrc')), 2),
+    gRestSrcMed: r(median(absCol(live, 'gRestSrc')), 2),
+    eNetMed: r(median(absCol(live, 'eNet')), 2),
+    eClosePeak: r(peak(absCol(live, 'eClose')), 15),
+    shWaterMed: r(median(col(live, 'shWater')), 3),
+    shAnkleMed: r(median(col(live, 'shAnkle')), 3),
+    shTwistMed: r(median(col(live, 'shTwist')), 3),
+    shRestMed: r(median(col(live, 'shRest')), 3),
+    shFeetFwdMed: r(median(col(live, 'shFeetFwd')), 3),
+    eWaterTwoMed: r(median(absCol(live, 'eWaterTwo')), 2),
+    eAnkleTwoMed: r(median(absCol(live, 'eAnkleTwo')), 2),
+    eTwistTwoMed: r(median(absCol(live, 'eTwistTwo')), 2),
+    eRestTwoMed: r(median(absCol(live, 'eRestTwo')), 2),
+    eFeetFwdTwoMed: r(median(absCol(live, 'eFeetFwdTwo')), 2),
+    eNetTwoMed: r(median(absCol(live, 'eNetTwo')), 2),
+    eCloseTwoPeak: r(peak(absCol(live, 'eCloseTwo2')), 15),
+    shWaterTwoMed: r(median(live.map((xx) => (Math.abs(xx.eNetTwo) > 1e-9 ? Math.abs(xx.eWaterTwo / xx.eNetTwo) : Number.NaN)).filter(Number.isFinite)), 3),
+    shRestTwoMed: r(median(live.map((xx) => (Math.abs(xx.eNetTwo) > 1e-9 ? Math.abs(xx.eRestTwo / xx.eNetTwo) : Number.NaN)).filter(Number.isFinite)), 3),
+    ownWaterTwo: r(share(live.map((xx) => Math.abs(xx.eWaterTwo) >= Math.max(Math.abs(xx.eAnkleTwo), Math.abs(xx.eTwistTwo), Math.abs(xx.eRestTwo), Math.abs(xx.eFeetFwdTwo)))), 3),
+    // which source's gap is the LARGEST on the tick, as a share of ticks: the per-source ownership, counted
+    ownWater: r(share(live.map((xx) => Math.abs(xx.eWater) >= Math.max(Math.abs(xx.eAnkle), Math.abs(xx.eTwist), Math.abs(xx.eRest), Math.abs(xx.eFeetFwd)))), 3),
+    ownAnkle: r(share(live.map((xx) => Math.abs(xx.eAnkle) > Math.max(Math.abs(xx.eWater), Math.abs(xx.eTwist), Math.abs(xx.eRest), Math.abs(xx.eFeetFwd)))), 3),
+    ownRest: r(share(live.map((xx) => Math.abs(xx.eRest) > Math.max(Math.abs(xx.eWater), Math.abs(xx.eAnkle), Math.abs(xx.eTwist), Math.abs(xx.eFeetFwd)))), 3),
+    // the gains' own reach (`GAINS=1`)
+    cmdRebuildMed: r(median(col(live, 'cmdRebuild')), 4),
+    cmdRebuildPeak: r(peak(col(live, 'cmdRebuild')), 4),
+    gainPlantOffPeak: r(peak(col(live, 'gainPlantOff')), 15),
+    gainRowOffPeak: r(peak(col(live, 'gainRowOff')), 15),
+    gainRollSwingMed: r(median(col(live, 'gainRollSwing')), 3),
+    gainSwingShareMed: r(median(col(live, 'gainSwingShare')), 4),
+    gainSwingSharePeak: r(peak(col(live, 'gainSwingShare')), 4),
+    gainCmdSwingMed: r(median(col(live, 'gainCmdSwing')), 5),
+    gainSwingOverNetMed: r(median(col(live, 'gainSwingOverNet')), 4),
+    gainSwingOverNetPeak: r(peak(col(live, 'gainSwingOverNet')), 4),
+    gainRollSwingPointMed: r(median(absCol(live, 'gainRollSwingPoint')), 3),
+    gainSwingPointOverNetMed: r(median(live.map((xx) => (Math.abs(xx.eNet) > 1e-9 ? Math.abs(xx.gainRollSwingPoint / xx.eNet) : Number.NaN)).filter(Number.isFinite)), 4),
+    ankleRoomMed: r(median(col(live, 'ankleRoomHere')), 4),
+    gainClampedShare: r(shareOf(live, 'gainClamped'), 3),
+    // **The brief's measurement**: one recorded ride, four sets of gains. The same ticks, the same plant, the same
+    // game row; only the command is each arm's own. `subst_<arm>` is the roll row's relative error, `substBank_<arm>`
+    // the lean row's, and `substHelps_<arm>` the share of ticks the substituted command moves the row CLOSER.
+    ...Object.fromEntries(COST_ARMS.flatMap((arm) => [
+      [`subst_${arm.key}`, r(median(live.map((xx) => Math.abs(xx.relSubst[arm.key])).filter(Number.isFinite)), 3)],
+      [`substBank_${arm.key}`, r(median(live.map((xx) => Math.abs(xx.relSubstBank[arm.key])).filter(Number.isFinite)), 3)],
+      [`substHelps_${arm.key}`, r(share(live.filter((xx) => Number.isFinite(xx.substHelps[arm.key])).map((xx) => xx.substHelps[arm.key] === 1)), 3)],
+      [`substAnkle_${arm.key}`, r(median(live.map((xx) => Math.abs(xx.eAnkleSubst[arm.key])).filter(Number.isFinite)), 2)],
+      [`substTwist_${arm.key}`, r(median(live.map((xx) => Math.abs(xx.eTwistSubst[arm.key])).filter(Number.isFinite)), 2)],
+      [`substSign_${arm.key}`, r(share(live.filter((xx) => Number.isFinite(xx.relSubst[arm.key]) && Math.abs(xx.rollAccGame) > 1e-9)
+        .map((xx) => Math.sign(xx.relSubst[arm.key] * Math.abs(xx.rollAccGame) + xx.rollAccGame) === Math.sign(xx.rollAccGame))), 3)],
+    ])),
     body: BODY ?? 'point',
     bodyJ: BODYJ ?? 1,
     cost: COST ?? 'off',
@@ -1556,3 +2050,30 @@ process.stdout.write(`#    with the water's heel at the water too: rel err ${sh(
 process.stdout.write(`#    the mapping's own control, diagonal only / the model's K over its own I_roll: ${sh('derivedDiagRatioMed')} (must sit in 0.75-1.18, the two inertias' own ratio)\n`);
 process.stdout.write(`# P10 (3.3p) the roll row's CONDITIONING — its largest single term over the net it produces:\n`);
 process.stdout.write(`#    in the model ${sh('condModelMed')}x, in the GAME ${sh('condGameMed')}x\n`);
+process.stdout.write(`# P11 (3.4c) the roll row PER SOURCE at a fixed trajectory — the model's term minus the game's, °/s² median:\n`);
+process.stdout.write(`#    water+board ${sh('eWaterMed')} (game ${sh('gWaterBoardMed')}) | ankle ${sh('eAnkleMed')} (game ${sh('gAnkleSrcMed')}) | twist ${sh('eTwistMed')} (game ${sh('gTwistSrcMed')}) | rest ${sh('eRestMed')} (game ${sh('gRestSrcMed')}) | feetFwd ${sh('eFeetFwdMed')} (no game source)\n`);
+process.stdout.write(`#    the net error the five partition ${sh('eNetMed')} °/s²; shares of |net|: water ${sh('shWaterMed')} ankle ${sh('shAnkleMed')} twist ${sh('shTwistMed')} rest ${sh('shRestMed')} feetFwd ${sh('shFeetFwdMed')}\n`);
+process.stdout.write(`#    LARGEST gap on the tick, share of ticks: water ${sh('ownWater')} ankle ${sh('ownAnkle')} rest ${sh('ownRest')}\n`);
+process.stdout.write(`#    the TWO-BODY plant's own five on the same ticks: water ${sh('eWaterTwoMed')} ankle ${sh('eAnkleTwoMed')} twist ${sh('eTwistTwoMed')} rest ${sh('eRestTwoMed')} feetFwd ${sh('eFeetFwdTwoMed')}; net ${sh('eNetTwoMed')}; water's share ${sh('shWaterTwoMed')} rest's ${sh('shRestTwoMed')}, water largest in ${sh('ownWaterTwo')}; closure ${peak(num('eCloseTwoPeak')).toExponential(2)}\n`);
+process.stdout.write(`#    controls: the ledger's own 23-way partition ${peak(num('gDeckClosePeak')).toExponential(2)} rel, the five gaps' partition of the net ${peak(num('eClosePeak')).toExponential(2)} rel\n`);
+process.stdout.write(`#    the ledger's roll row per source, |median| °/s²: ${BANK_SOURCES.map((s2) => `${s2} ${sh(`gd_${s2}`)}`).join(' | ')}\n`);
+process.stdout.write(`# P12 (3.4c) the half of the roll row the GAINS can reach — the command's own term, °/s²:\n`);
+process.stdout.write(`#    command's half ${sh('rollCmdMed')} vs the state's half ${sh('rollStateMed')}; its share of the model's row ${sh('cmdShareModelMed')}, of the GAME's row ${sh('cmdShareGameMed')} (peak ${sh('cmdShareGamePeak')})\n`);
+process.stdout.write(`#    the ankle rest's own AUTHORITY over the roll row, °/s² per rad, magnitudes only, NEVER across frames:\n`);
+process.stdout.write(`#      INSTANTANEOUS: model ${sh('cmdAuthModelContMed')} vs GAME ${sh('cmdAuthGameMed')}; ratio ${sh('cmdAuthRatioMed')} (lo ${sh('cmdAuthRatioLo')}, peak ${sh('cmdAuthRatioPeak')})\n`);
+process.stdout.write(`#      STEP-AVERAGED (what the substitution moves): model ${sh('cmdAuthModelMed')}; the ZOH's own attenuation on the model's side ${sh('cmdAuthStepMed')}\n`);
+process.stdout.write(`#      the commands enter the plant ONLY through the two muscle-lag rows: max |B| elsewhere ${peak(num('bZeroOffPeak')).toExponential(2)}\n`);
+if (GAINS) {
+  process.stdout.write(`# P13 (3.4c) the GAINS at a fixed state — four designs rebuilt at the controller's own exact point every tick:\n`);
+  process.stdout.write(`#    P1 the identity: |ΔΦ|,|ΔΓ| across the four cost arms peak ${peak(num('gainPlantOffPeak')).toExponential(2)}; the roll row's own difference peak ${peak(num('gainRowOffPeak')).toExponential(2)} °/s²\n`);
+  process.stdout.write(`#    the command rebuild's own control (exact point vs the ridden blend) ${sh('cmdRebuildMed')} rel median, ${sh('cmdRebuildPeak')} peak\n`);
+  process.stdout.write(`#    the SWING another gain set's command makes in the model's roll row: ${sh('gainRollSwingMed')} °/s² median, ${sh('gainSwingShareMed')} of the game's own row (peak ${sh('gainSwingSharePeak')}); ankle command ${sh('gainCmdSwingMed')} rad\n`);
+process.stdout.write(`#    … over the roll row's own NET error: ${sh('gainSwingOverNetMed')} median (peak ${sh('gainSwingOverNetPeak')}); the \`point\` arm alone ${sh('gainRollSwingPointMed')} °/s², ${sh('gainSwingPointOverNetMed')} of the net\n`);
+  process.stdout.write(`#    the clamp, read: the ankle's own bound ${sh('ankleRoomMed')} rad, a command sits ON it in ${sh('gainClampedShare')} of ticks\n`);
+  process.stdout.write(`# P14 (3.4c) THE BRIEF'S MEASUREMENT — one recorded ride, four sets of gains, the SAME ticks:\n`);
+  process.stdout.write(`#    the roll row's rel err per gain set: ${COST_ARMS.map((a2) => `${a2.key} ${sh(`subst_${a2.key}`)}`).join(' | ')}\n`);
+  process.stdout.write(`#    the lean row's: ${COST_ARMS.map((a2) => `${a2.key} ${sh(`substBank_${a2.key}`)}`).join(' | ')}\n`);
+  process.stdout.write(`#    the substituted command moves the roll row CLOSER in: ${COST_ARMS.map((a2) => `${a2.key} ${sh(`substHelps_${a2.key}`)}`).join(' | ')} of ticks\n`);
+  process.stdout.write(`#    the roll row's SIGN right per gain set: ${COST_ARMS.map((a2) => `${a2.key} ${sh(`substSign_${a2.key}`)}`).join(' | ')}\n`);
+  process.stdout.write(`#    the two sources the command reaches, |median| °/s²: ankle ${COST_ARMS.map((a2) => `${a2.key} ${sh(`substAnkle_${a2.key}`)}`).join(' / ')} ; twist ${COST_ARMS.map((a2) => `${a2.key} ${sh(`substTwist_${a2.key}`)}`).join(' / ')}\n`);
+}

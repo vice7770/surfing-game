@@ -1229,3 +1229,653 @@ deleted lines was searched for across the round's insertions. **Every code ident
 that are not are twelve ordinary English words (`carries`, `coming`, `difference`, `express`, `faster`, `going`,
 `larger`, `matters`, `most`, `radians`, `share`, `delay`) and all twelve are from the five removed comment lines —
 the intended removal named above.
+
+# Part 3 — the roll row's error is the model's, and it is not one number: six to eleven times in a ride's first
+second and one to two times after a second and a half, on the same runs
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-two-body-c`, cut from `main` at
+**bac85c61** (Part 2's merge plus the owner's ruling handoff), so Part 2 is its base. Its brief is Part 2 §7 item 1,
+the round's own accident: *"**The gains move the board's row.** Measure the roll row per source against the game at a
+**FIXED trajectory** — one recorded ride, several sets of gains. Six rounds have been measuring that row as if it
+were the model's alone."*
+
+It ships **no source change at all** — `git diff origin/main -- src/ server/` is **empty** — and instead extends two
+read-only probes: `3.3/plant.ts` with the roll row's **twenty-three-source** partition, the row's own two halves, the
+**four gain sets' commands substituted into one recorded ride**, and the ankle rest's authority on both sides
+(`TICKS=<path>`, `GAINS=1`, both off by default); and a new probe `3.4/row.ts` that does the matched-state
+decomposition. **Forty arms, 816 rides, 72 339 live control ticks of 83 655 read** on the shipped plant and the two-body plant ×
+the four cost arms × five cells, two of which are one-second windows built so that nobody falls.
+
+**The owner rode this track between Part 2 and this Part, and their two sentences are the frame for what follows:**
+*"gets on the board down turn just falls very easily"* and *"seems that the movement is very fluid in the sense that
+doesnt look like a stick but an actual human movement."* The second is Part 1's lean row felt from the inside; the
+first is this Part's subject. **Nothing here proposes reverting the two-body plant**, and §3's turn arms exist because
+their fall is a bottom turn.
+
+## 0. The ten sentences the round is for
+
+1. **The owner's bar is NOT met in any arm.** **480 of 480 rides given nine seconds ended before nine seconds, and
+   Compress fell in 160 of 160 of them** [M], over twenty-four arms on two plants and four cost arms. On the owner's own
+   low-speed cell the medians are **1.033 s shipped / 1.267 point / 1.267 fixed / 1.217 plant** and, on the two-body
+   plant, **1.033 / 0.850 / 0.850 / 0.883** — Part 2's figures to the digit. The other eight arms are one-second
+   windows built so that nobody falls; twelve of the sixteen are clean and the four that are not are named in §8.
+2. **None of the roll row's error is the gains, and that is an identity rather than a measurement.** The cost weights
+   enter `design` only through `q`, hence only through `k`; `Φ` and `Γ` come from `continuousPlant`/`discretise` on
+   the plant alone [R]. So at a fixed state **and** a fixed command the four cost arms' roll rows are one number:
+   **peak difference exactly 0 across all four designs, at every one of 72 339 live ticks of all 816 runs, and
+   `|ΔΦ|`, `|ΔΓ|` exactly 0 too** [M, P1 as written before it ran]. **Whatever moved the row in
+   Part 2, it was not a better model.**
+3. **And almost none of it is the gains at a matched window either.** On the one-second window where both arms hold
+   **exactly the same 1 152 ticks at exactly the same times and nobody falls**, the shipped plant's roll row moves
+   **9.774 → 9.418** (per-run median, ×0.964) and **10.663 → 9.607** (geometric mean over ticks, ×0.901) — against
+   **10.050 → 2.622** (×0.261) at nine seconds. **In log terms 91–97 % of Part 2's headline is not the gains** [M].
+   Part 2's own one-second control said this (×1.04) and this Part reproduces its numbers **to the digit** and says
+   what the other 91–97 % is.
+4. **It is the ride's own LENGTH, and not which states the ride visits.** Over five independent binnings the
+   **composition** term — the arm's own distribution over states — carries **0.4–16 %** of the nine-second move on
+   the glide, and the error's own denominator barely moves (`|the game's roll acceleration|` **159.7 → 166.9 °/s²**)
+   while the **absolute** error halves (1 362.7 → 681.4 °/s²) [M]. Dropping every run's last 0.3 s changes nothing
+   (×0.318 against ×0.309). Cutting both arms to the same clock time takes ×0.309 to ×0.533; cutting them to a window
+   nobody falls in takes it to ×0.901. **Part 2's "the arm without a body only rides somewhere gentler" is refuted as
+   written: the states are not gentler, the ride is longer.**
+5. **Because the roll row's error is not one number. It is 6–11× in a ride's first second and 1.0–2.4× after a second
+   and a half — on the same runs.** Geometric means by the ride's own age, unsteered deck: the weighted arm reads
+   **6.75 / 10.67 / 9.17 / 12.54** over 0.2–1.0 s and **4.55 / 1.82 / 1.89 / 2.33 / 1.37 / 1.53** over 1.0–5.0+ s
+   [M]. **And it is not survivorship**: taking only the **19 runs that live past 3 s** and reading their own profile
+   from 0.2 s gives **6.46 / 9.76 / 9.50 / 10.88** then **3.92 / 1.34 / 1.84 / 2.33 / 1.37 / 1.53**, and the
+   `plant` arm's 14 such runs give **6.60 / 10.80 / 10.77 / 6.26** then **3.06 / 1.98 / 2.37 / 2.26 / 1.63 / 1.05**
+   [M]. ***Six rounds have reported "the model's roll row is wrong by ten times" from a population that is almost
+   entirely the first second of a placed ride, because almost every arm this folder has measured died inside 1.5 s.***
+6. **Per source: three cells, three different owners — and the glide, the only cell this folder has been measuring,
+   is the only one the water owns.** The share of ticks on which each gap is the largest of the five [M, 40 arms,
+   both plants]: **the water 0.585–1.000 on the glide, 0.317–0.410 on the owner's own low-speed cell, 0.250–0.438 on
+   a turn**; **the ankle 0–0.148 on the glide and 0.256–0.475 on the low cell** — where its size, **2 227–5 624
+   °/s²**, is two to five times its size anywhere else; **the model's own remainder 0–0.297 on the glide and
+   0.292–0.688 on the turn.** *Six rounds have hunted the water because six rounds have only measured glides.*
+7. **And on the glide the row is the small difference of two gaps of opposite sign, which is why repairing one term
+   at a time has moved nothing.** The water's gap is **3.20–4.21× the net error** and the remainder's
+   **2.11–2.46×**, and **their signs are opposite in 86.1–99.4 % of the shipped plant's glide ticks** [M]. On the
+   **two-body** plant the same two gaps are opposite in only **43.2–59.2 %** — near a coin — **so the knife-edge is
+   the shipped plant's, not the problem's.** On the turn: shipped 69.2–89.5 %, two-body 64.0–75.4 %. **A net that is
+   the difference of two terms each three times itself moves by most of whatever you fix, in whichever direction the
+   cancellation leaves.**
+8. **The brief's own measurement, taken literally, overstates the loop's part about five times, and a read made
+   before the arms ran said it would.** Substituting each gain set's own command into one recorded ride — the same
+   states, the same plant, the same game row — moves the roll row **10.658 → 6.003 (×0.563)** on the one-second
+   window and brings it closer in **95 % of ticks** [M]. But the game's own roll row answers the same ankle rest at
+   **0.84× the model's rate** (instantaneous authority: model 62 313 vs game 49 819 °/s² per rad, per-tick ratio
+   median **1.19**, span 0.17–2.36) [M], so a two-sided change moves both rows together and the one-sided reading
+   books the whole of it as error. From that ratio alone the overstatement is **1/(1 − 1/1.19) = 6.3×**; measured
+   against the ridden ×0.901 it is **5.5×** [A]. **The direction was written into the probe's own docstring before any
+   arm ran; the factor was not.**
+9. **The loop's own reach is real but bounded, and on the owner's cell it is almost gone because the ankle is
+   saturated.** The command's own half of the model's roll row is **7–27 % of the model's row and 37–101 % of the
+   game's whole roll acceleration**, and the swing another gain set's command makes is **18–78 % of the roll row's own
+   net error** [M]. On the owner's own low-speed cell the ankle's command **sits on its 0.25 rad bound in 71–86 % of
+   ticks** — so there the gains cannot move the ride much whatever they are, which is Part 2's own low-cell result
+   from the other side.
+10. **Three of my own seven predictions are refuted, including both of the two that mattered.** P3 (the loop's reach
+    under half the game's row) is refuted — the swing is 1.7–7.9× it. P4 ("the water carries at least half the net")
+    is refuted in shape, not direction — it carries **210–420 %** of the net, and so does the remainder with the
+    opposite sign. P5 (the composition term carries more than half) is refuted as a decomposition — it carries
+    0.4–16 % — **while the conclusion it pointed at, that the trajectory owns the move, is upheld by the right
+    instrument**: the ride's length, which a state binning cannot see.
+
+## 1. (A) The four reads that had to come first
+
+**R1 [R]. The cost cannot reach the plant, so the brief's "a fixed trajectory, several sets of gains" is an identity
+before it is a measurement.** `design` builds `phi` and `gamma` from `continuousPlant(y, t)` and `discretise` alone;
+`feetReach`, `captureScale` and `captureOmega` enter only the state-cost `q`, and `q` enters only `dlqr`, hence only
+`k`; the filter gain `l` comes from `processNoise`, `senseNoise` and `bias` [R, `predictiveBalance.ts:985–1092`]. The
+roll row is `(Φ[1]·x + Γ[1]·u − φ̇)/h`. **So at a fixed `x` and a fixed `u` the four cost arms' rows are the same
+number by construction**, and the only question a fixed trajectory can answer is how much the gains move `u`. §2 reads
+that identity at every tick anyway, because this folder has had a value fall through a type guard before.
+
+**R2 [R]. The commands reach nothing instantaneously, on either side, and they reach it through the same lag.** `B`
+is zero in every entry but `B[8][0] = B[9][1] = 1/lag` [R, `continuousPlant`] — measured as well as read: **`max |B|`
+over every other entry is exactly 0 at all 72 339 live ticks** [M]. And the game's own `ankleRest` follows the
+commanded lean through `MOTOR_LAG = 0.05 s` while the model's `PREDICT_LAG` is **0.05 s** [R, two files, one number].
+**So the authority that is comparable on the two sides is the one per radian of the ankle's commanded REST, not per
+unit of command** — and the first version of §4's read was in the wrong frame, compared a step-averaged `Γ[1][0]/h`
+with an instantaneous `ankleDeck × 800`, and said the model understated the game by thirteen times. **It does not;
+that was this folder's twenty-fifth frame error in a fortnight and it was caught by writing the frame down.**
+
+**R3 [R]. The ankle's stiffness is one number in two files.** `HUMAN_ANKLE_STIFFNESS = 800` [R, `humanBalance.ts:50`]
+and `YawPlant.ankleStiffness = 800` [R, `rollModel.ts:164`], and `AttachedRider.setAnkle` uses the first on the
+commanded rest [R, `:3536`]. So `ankleDeck × 800` is the game's own roll response per radian of rest with no constant
+guessed.
+
+**R4 [R]. The matched map between the model's groups and the ledger's sources is a partition on both sides.** The
+model's roll row splits exactly into six zeroable groups plus a named remainder (`without`, 3.3o's instrument 4) and
+the game's into the ledger's twenty-three sources. The map used here is: the model's three water groups ↔ the
+ledger's eight hull/foil/froth/added-mass sources **plus** the board's own weight and gyro (the model has no separate
+term for either); `ankle` ↔ `ankle`; `twist` ↔ `twist`; the model's remainder ↔ every other rider source
+(`gravity`, `carry`, `riderWater`, `assist`, `leg`, `swing`, `hand`, `pitch`, `drive`, `limbs`, `yawCouple`); and the
+model's `feetForward` group ↔ **nothing**, so it is reported unmatched rather than folded in. Both partitions' closure
+is read, not asserted (§10 C3).
+
+## 2. (B) P1: at a fixed state and a fixed command the roll row cannot see the gains
+
+| **[M]** over 72 339 live ticks of 816 runs, forty arms | peak |
+|---|---|
+| `max` over the four cost arms of `\|Φ_arm − Φ_off\|` and `\|Γ_arm − Γ_off\|`, **and** against the exact-point plant the groups are built on | **exactly 0** |
+| `max` over the four cost arms of `\|the model's roll row\|` with the **recorded** state and the **recorded** command | **exactly 0 °/s²** |
+| `max \|B\|` over every input entry but the two muscle-lag rows' | **exactly 0** |
+
+**Two readings.**
+
+1. **The brief's measurement, taken as written, has one answer and it is zero.** "The roll row per source against the
+   game at a fixed trajectory, several sets of gains" is, for the row itself, four readings of one number. **So no
+   part of Part 2's 10.050 → 2.622 is the model being better**, and the question becomes which of the two remaining
+   routes — the command, or the trajectory — carries it. §3 and §5 are those two routes.
+2. **It is worth having read rather than argued.** 3.4a's own first build had a `captureOmega` value fall into a
+   default arm, and Part 2's §10 C4 was built for exactly that. This is the same check one level up, and it is the
+   cheapest one in the round.
+
+## 3. (B) The roll row PER SOURCE — no source owns it, and the ownership changes on a turn
+
+Each gap is the model's own matched term minus the game's, °/s², at the controller's **exact** point so that the five
+gaps are a partition of `rollAccFull − rollAccGame`; the median is of `|gap|` over the arm's own live ticks, pooled
+per arm over per-run medians. The datum is the model's own sign (`−deck[src] · DEG`, + leaning the body and rolling
+the deck toward the board's +x), the bank ledger's own [R].
+
+| **[M]** median `\|gap\|`, °/s², shipped plant | water+board | ankle | twist | remainder | feetFwd (no game source) | the NET error | water's share of `\|net\|` | remainder's | water the largest in |
+|---|---|---|---|---|---|---|---|---|---|
+| **glide**, unsteered 24, shipped cost | **6 197.0** | 906.2 | 134.3 | **4 029.8** | 87.0 | **1 647.1** | **3.40** | **2.11** | 0.86 |
+| … + the two weights (`point`) | 2 669.2 | 837.3 | 125.3 | 2 069.1 | 43.2 | 738.1 | 3.40 | 2.33 | 0.69 |
+| **glide, the one-second window** (nobody falls), shipped cost | **6 434.3** | 801.8 | 124.1 | 3 704.2 | 72.2 | 1 415.3 | **3.75** | 2.38 | **1.00** |
+| … + the two weights | 5 116.7 | 771.5 | 84.2 | 2 979.6 | 38.9 | 1 140.4 | 3.83 | 2.18 | 1.00 |
+| **the TURN**, steered 18, shipped cost | 2 358.5 | **1 142.7** | 81.0 | **2 422.4** | 27.7 | 845.7 | 3.14 | **3.17** | **0.32** |
+| … + the two weights | 2 763.2 | **1 445.5** | 39.2 | **2 796.1** | 41.2 | 1 178.1 | 2.31 | **3.45** | **0.41** |
+| **the turn's one-second window** (nobody falls), shipped cost | 3 054.6 | 763.5 | — | 2 416.8 | — | 839.5 | — | — | **0.44** |
+| … the same with `plant`'s constant | 2 113.3 | 1 010.8 | — | **2 867.1** | — | 1 161.3 | — | — | **0.25** |
+| the game's own side, glide / turn | 439–1 541 | 1 846–3 544 | **0.0 everywhere** | 1 613–2 193 | — | — | — | — | — |
+
+The spans quoted in the readings below are over **all** the arms of each cell group (16 glide, 8 low, 16 turn), not
+over the rows of this table, which are one arm each and are shown so the sizes are visible.
+
+| **[M]** the same five on the **two-body** plant, scored on the same ticks | water+board | remainder | ankle | the NET |
+|---|---|---|---|---|
+| glide, unsteered, shipped cost | 2 949.9 | **765.9** | — | 1 477.7 | 
+| glide, the one-second window | 2 861.1 | **613.8** | — | 1 283.5 |
+| **the turn**, steered, shipped cost | 1 278.0 | **1 404.8** | — | 762.7 |
+| the turn's one-second window, ridden two-body | 2 939.7 | 2 509.7 | **1 103.7** | 1 119.1 |
+| … + the two weights (8 of 18 fell inside the second, so this row is not a clean window) | 1 740.8 | 2 585.3 | **2 184.5** | 1 329.5 |
+
+**Six readings.**
+
+1. **The roll row is the small difference of two large gaps of opposite sign, and that is why six rounds of repairing
+   one term at a time have moved nothing.** On the shipped plant's glide the water's gap is **3.20–4.21× the net**
+   and the remainder's **2.11–2.46×**, and **their signs are opposite in 86.1–99.4 % of ticks** [M, 16 arms]. A row
+   whose two biggest errors each exceed its own net by three times, and cancel, moves by the *difference* of whatever
+   you fix — so a 20 % repair of the water's term moves the net by 60–80 % of itself, in whichever direction the
+   cancellation leaves. **This is 3.3p's conditioning argument measured per source instead of inferred from a
+   ratio** — and on the **two-body** plant the same two gaps are opposite in only **43.2–59.2 %**, so **the
+   knife-edge belongs to the shipped plant and not to the question.**
+2. **Three cells, three owners, counted per tick** — the share of ticks on which each gap is the largest of the five
+   [M, 40 arms, both plants]:
+
+   | | the water's twelve derivatives | the ankle | the model's own remainder |
+   |---|---|---|---|
+   | **the glide** (unsteered + its window, 16 arms) | **0.585–1.000** | 0–0.148 | 0–0.297 |
+   | **the owner's own low-speed cell** (8 arms) | 0.317–0.410 | **0.256–0.475** | 0.105–0.228 |
+   | **a commanded TURN** (steered + its window, 16 arms) | 0.250–0.438 | 0–0.313 | **0.292–0.688** |
+
+   **The owner's fall is a bottom turn, and on a turn the suspect is not the water**: it is gravity through the
+   feet, the pendulum's own `g/L`, the inertias and the pure kinematics — the model's own **remainder**, the one
+   term `without` cannot zero and six rounds have never separated. **And on the owner's own slow cell it is the
+   ankle**, whose gap there is 2 227–5 624 °/s² against 761–1 121 on the glide, which is §4 reading 3 from the
+   other side.
+3. **The ankle's own gap is 761–1 121 °/s² on the glide, 764–2 641 on the turn and 2 227–5 624 on the owner's own
+   low-speed cell** [M, 40 arms] — and on the low cell it is the largest of the five gaps on a quarter to a half of
+   ticks. Part 1 §6 reading 3 measured the two-body plant understating the ankle's authority over the **lean** by
+   three to five times; this is the same joint showing up on the **roll** row, biggest exactly where the owner's bar
+   is and where §4 reading 3 finds the command saturated and the game answering five times harder than the model.
+4. **The two-body plant halves the remainder's gap on the glide and does not on the turn.** 766 and 614 against the
+   shipped plant's 4 030 and 3 704 on the glide; **1 405 against 2 422** on the turn [M]. So Part 1's gain on the
+   body's half shows in the roll row's remainder too — on a glide.
+5. **`twist` is zero on the game's side at every tick of every arm** (the ledger's `twist` source reads 0.0), while
+   the model's twist group carries 39–142 °/s². That is the model answering for a source the game has none of in
+   these cells; it is small and it is reported rather than netted.
+6. **The partitions are exact and read**: the ledger's own twenty-three-way split of its roll row closes to
+   **4.1 × 10⁻¹¹** relative and the five gaps' partition of the net to **3.4 × 10⁻¹¹** (3.6 × 10⁻¹¹ on the two-body
+   plant), peak over every live tick of every one of the forty arms [M].
+
+## 4. (B) The half of the roll row the gains can reach, and the ankle rest's authority on both sides
+
+| **[M]** per-run medians, spans over the arm's runs | glide 24 | the owner's low cell 18 | the turn 18 | the glide's one-second window 24 |
+|---|---|---|---|---|
+| the command's own half of the model's roll row, °/s² | 95.5 | **460.6** | 137.2 | 88.1 |
+| … as a share of the **model's** row | 0.069 | 0.133 | 0.152 | 0.070 |
+| … as a share of the **game's** whole roll acceleration | **0.575** | 0.371 | 0.649 | 0.622 |
+| the swing another gain set's command makes, over the roll row's own **net error** | 0.299 (0.209–0.764) | 0.233 (0–0.512) | **0.777 (0.533–1.371)** | 0.391 (0.203–1.379) |
+| the ankle's own 0.25 rad bound: a command sits **on** it in | 0.36 | **0.71–0.86** | 0.40 | 0.12 |
+| the ankle rest's **instantaneous** authority over the roll row, °/s² per rad — the model's | 62 989 | 37 113 | 56 918 | 62 313 |
+| … the **game's** own (`\|ankleDeck × 800\|`) | 56 952 | **188 472** | 63 107 | 49 819 |
+| … the per-tick **ratio**, model/game, median (span) | 1.019 (0.12–2.36) | **0.601 (0.09–3.55)** | 0.859 (0.09–2.42) | **1.19 (0.17–2.36)** |
+| the zero-order hold's own attenuation on the model's side (`Γ[1][0]/h` over `A[1][8]`) | 0.053 | 0.068 | 0.065 | 0.055 |
+
+**Four readings.**
+
+1. **The command's own half is a fourteenth of the model's row and two thirds of the game's whole roll
+   acceleration.** That is the shape of the row: dominated by state terms that nearly cancel (§3), with a command
+   term small against those terms and large against the thing being predicted. So the loop's reach into the row is
+   real — **18–78 % of the row's own net error, 53–137 % on the turn** — and it is not the whole of it.
+2. **The two sides answer the ankle's commanded rest at within a factor of two of each other, in both directions.**
+   Per-arm median ratios **0.420–1.557** across the forty arms, per-tick spans **0.087–2.4** (one arm's per-tick
+   peak is 186, printed and not used) [M]. The structures match by
+   construction — both have a first-order 0.05 s lag then the same 800 N·m/rad spring (§1 R2, R3) — and the sizes
+   match to about a factor of two. **So a command change moves the game's roll row almost as much as the model's,
+   which is exactly why §5's one-sided substitution overstates the loop's part.**
+3. **On the owner's own low-speed cell the game answers the rest FIVE times harder than the model does** (188 472
+   against 37 113 °/s² per rad) **and the ankle's command is on its bound in 71–86 % of ticks** [M]. Two facts that
+   belong together: at the speeds of getting into position the balance is asking for more ankle than it has, and the
+   board answers what it does get five times more than the model expects. **Neither is a gain the gains can fix.**
+4. **The medians are not each other's quotient and are printed separately for that reason.** The low cell's
+   per-tick ratio median is 0.601 while 37 113 / 188 472 is 0.197; a median of ratios is not a ratio of medians, and
+   this folder has published the second as the first before.
+
+## 5. (B) The brief's own measurement: one recorded ride, four sets of gains
+
+The same recorded ticks — the same states, the same plant, the same game row — with each cost arm's **own** command
+substituted: `u_arm = ref.u − b̂ − K_arm (x̂ − ref.x)`, the controller's own line [R], the ankle clamped to the rider's
+own `ankleRoom`. The ride's own arm's entry is the row itself by construction, and that is read: **`subst_off`
+equals `relFull` and `substSign_off` equals `rollSignFull` in 24 of 24 runs** [M].
+
+| **[M]** the shipped arm's own recorded ticks, geometric mean of `\|rollRel\|` | off | point | fixed | plant | off→point |
+|---|---|---|---|---|---|
+| **the glide's one-second window** (nobody falls, 1 152 ticks) | **10.658** | **6.003** | 6.003 | 6.810 | **×0.563** |
+| the glide, nine seconds (1 529 ticks) | 9.737 | 5.746 | 5.746 | 6.287 | ×0.590 |
+| … the substituted command brings the row **closer** in | — | **0.950** | 0.950 | 0.960 | — |
+| … the **lean** row, median, over the same ticks | 3.190 | **5.822** | 5.822 | 4.916 | ×1.82 **worse** |
+| **ridden**, the same window, the same two arms | 10.663 | **9.607** | 9.607 | — | **×0.901** |
+
+**Four readings.**
+
+1. **The brief's measurement says the command is worth ×0.563 and riding it says ×0.901.** The one-sided
+   substitution **overstates the loop's part by 5.5×** in log terms. §4 reading 2 is why: the game's own row answers
+   the same rest at 0.84× the model's rate on this arm, so a two-sided change moves both rows and only the
+   difference is error. **From the authority ratio alone the predicted overstatement is `1/(1 − 1/1.19) = 6.3×`** [A,
+   on two measured numbers, assuming the two sides' step attenuation is alike, which this round cannot measure];
+   **measured 5.5×.** The direction was written into the probe's docstring before any arm ran; the factor was not.
+2. **It is systematic, not noise**: the substituted command brings the roll row closer in **95 % of ticks** and the
+   sign right more often (0.354 → 0.500 ridden; 0.604 → 0.688 on the turn's window) [M]. So the loop's part is small
+   and real rather than absent.
+3. **`fixed` is `point` byte for byte on the shipped plant, in this instrument too** — identical to every printed
+   digit in all twenty arms and both windows, which is Part 2's C5 reproduced on a new column [M].
+4. **And the same substitution makes the LEAN row 1.8× worse.** 3.190 → 5.822 on the glide's window, 3.352 → 5.069
+   at nine seconds [M]. **The gains that buy the board's row cost the body's**, which is the trade this folder has
+   measured a dozen times and the owner has now felt from the other side.
+
+## 6. (B) The ridden comparison, matched — and the result for the plant the owner rides
+
+| **[M]** geometric mean of `\|rollRel\|` over ticks, off → point | the whole arm | the **one-second window, nobody falls** | the share of the move that survives the window |
+|---|---|---|---|
+| **the glide, the SHIPPED plant** | 9.725 → 3.004 (**×0.309**) | 10.663 → 9.607 (**×0.901**) | **8.9 %** |
+| **the glide, the TWO-BODY plant** | 9.513 → 2.656 (×0.279) | 8.452 → 3.305 (**×0.391**) | **73.6 %** |
+| **the turn, the SHIPPED plant** | 3.814 → 3.471 (**×0.910**) | 3.922 → 3.601 (×0.918) | 90.7 % of a move that is 9 % |
+| **the turn, the TWO-BODY plant** | 2.346 → 1.703 (**×0.726**) | 1.650 → 1.293 (**×0.784**) | **76.0 %** |
+
+And the per-run medians, which are Part 2's own column and reproduce it to the digit: shipped glide **10.050 →
+2.622**, its one-second window **9.774 → 9.418**; two-body glide **9.087 → 2.259**, its window **6.512 → 2.944**.
+
+| **[M]** the shift–share over state bins, shipped plant's glide, off → point | composition (which states) | within-bin (the same state) |
+|---|---|---|
+| all ticks, five binnings (game's row / rail / cond / time / time × row) | −9.1 %, 2.3 %, 9.1 %, 16.1 %, 8.5 % | 109.1, 97.7, 90.9, 83.9, 91.5 % |
+| the arms' common clock time (t ≤ 1.933 s), the same five | 12.1, 4.3, 7.3, 16.2, 9.7 % | 87.9, 95.7, 92.7, 83.8, 90.3 % |
+| every tick more than 0.3 s before its own run's end | 3.7, 0.6, …  | 96.3, 99.4, … |
+| the **turn**, all ticks (the composition term **exceeds** the whole move and the within-bin term is **positive**) | 164–806 % | **−64 to −706 %** |
+
+**Six readings.**
+
+1. **On the shipped plant the roll row's gain is the ride's own length: 91 % of it goes when both arms are given the
+   same second.** ×0.309 over nine seconds and ×0.901 over a window nobody falls in. Part 2 said this (×1.04) and
+   this Part reproduces its figures exactly and measures what the rest is.
+2. **It is NOT which states the arm visits.** The composition term is **0.4–16 %** in five independent binnings;
+   the error's own denominator is unchanged (159.7 → 166.9 °/s²); and the **absolute** error halves, 1 362.7 → 681.4
+   °/s² [M]. **Part 2's own words — *"the arm without one only rides somewhere gentler"* — are refuted as written.**
+3. **And the shift–share is the wrong instrument for this question, which is a finding about method.** It books the
+   ride's own LENGTH into its within-bin term, because the arms' tick populations differ in age inside every state
+   bin and the roll row's error depends on age (§7). A state binning cannot see that. **The window nobody falls in
+   is the instrument; the shift–share agrees with it only once the window is imposed.** I report the shift–share
+   because I ran it, and I do not rest the answer on it.
+4. **On the plant the owner rides, better gains DO buy the board's row — and that is this round's one positive
+   result.** Two-body glide **×0.391** and two-body turn **×0.784** on windows nobody falls in, against the shipped
+   plant's ×0.901 and ×0.918 [M]. **74–76 % of the two-body plant's gain survives the window; 9 % of the shipped
+   plant's does.** Part 2's ×2.21-against-×4.02 split by plant, confirmed from an independent re-run and extended to
+   the turn.
+5. **And on the turn the two-body plant's roll row is TWICE as accurate as the shipped plant's before any gain
+   change**: geometric mean **1.650–2.346 against 3.814–3.922**, and its lean row **0.889 against 5.968** [M]. The
+   owner's *"doesn't look like a stick"* is the lean row; this is the same plant's board row on the manoeuvre they
+   fall on. **Nothing in this round is an argument for reverting the two-body plant and this row is the opposite.**
+6. **On the turn the shipped plant's gains push the row the WRONG way at a matched state.** The within-bin term is
+   **positive** in every binning (−64 to −706 % of a move that is itself only ×0.91), so what little the turn's row
+   gains is the states visited and the command alone makes it worse [M]. **On the shipped plant there is nothing for
+   the gains to buy on a turn.**
+
+## 7. (B) The roll row's error is not one number — the ride's own age, and the survivorship control
+
+Geometric means of `|rollRel|` by the tick's own time in the ride, per arm, with every bin's population printed.
+
+| **[M]** the GLIDE, unsteered deck | 0.2–0.4 | 0.4–0.6 | 0.6–0.8 | 0.8–1.0 | 1.0–1.5 | 1.5–2.0 | 2.0–3.0 | 3.0–4.0 | 4.0–5.0 | 5.0+ |
+|---|---|---|---|---|---|---|---|---|---|---|
+| shipped cost (n per bin 264–401; the arm ends at 1.1–2.07 s) | 8.16 | 8.68 | **15.90** | 11.33 | 6.53 | 15.18 *(n=63)* | — | — | — | — |
+| + the two weights, `point` (n 264–1 154) | 6.75 | 10.67 | 9.17 | **12.54** | 4.55 | **1.82** | **1.89** | 2.33 | **1.37** | 1.53 |
+| … `plant` | 7.62 | 12.34 | 10.61 | 7.47 | 4.19 | 2.99 | 2.67 | 2.26 | 1.63 | **1.05** |
+| **the survivorship control**: only `point`'s **19 runs** that live past 3 s, read from their own 0.2 s | **6.46** | 9.76 | 9.50 | 10.88 | 3.92 | **1.34** | 1.84 | 2.33 | 1.37 | 1.53 |
+| … only `plant`'s **14** such runs | **6.60** | 10.80 | 10.77 | 6.26 | 3.06 | 1.98 | 2.37 | 2.26 | 1.63 | 1.05 |
+| **the TURN**, steered deck, shipped cost (n 198–620) | 3.84 | 3.53 | **2.88** | 5.82 | 5.28 | 6.08 | 3.22 | 1.44 | — | — |
+| … + the two weights | 3.46 | 2.94 | **2.29** | 6.76 | 4.89 | 3.90 | 1.13 | — | — | — |
+
+**Five readings.**
+
+1. **On a glide the roll row's error falls from six-to-sixteen times to one-to-two times with the ride's own age, and
+   it is not survivorship.** The same 19 runs that live past three seconds are wrong by **6.46–10.88×** in their own
+   first second and **1.34–2.33×** after a second and a half; `plant`'s 14 such runs read 6.60–10.80 then 1.05–2.37
+   [M]. ***So "the model's roll row is wrong by ten times" is a statement about the first second of a placed ride,
+   and this folder has made it six times from a population that was almost nothing else.***
+2. **On a TURN there is no age profile at all: 1.4–6.1× throughout.** So the first second's blow-up is the glide's,
+   not a ride's [M]. **And the turn's row is two to four times better than the glide's first second from the start.**
+3. **None of the four diagnostics I carry tracks the profile.** Per bin, over the glide's own ten bins: the command's
+   share of the game's row is 0.42–1.32 with no trend, the water's gap over the net 1.2–6.2, the remainder's 1.3–6.1,
+   and the game's own near-cancellation 2.3–6.4 except where the shipped arm is falling (12.5, 48.4) [M]. **I have
+   the fact and not the mechanism, and I am not going to supply one.** §13 makes it step four's first job.
+4. **The shipped arm's own last bin is its worst** (15.18 on 63 ticks at 1.5–2.0 s), which is 3.3p's `rollRelLate`;
+   but dropping every run's last 0.3 s moves the nine-second comparison from ×0.309 to ×0.318 [M], **so the death
+   throes are not the explanation either.** It is the first second that is different, not the last.
+5. **The populations are printed because two of these bins are thin.** The shipped arm's 1.5–2.0 s bin is 63 ticks
+   and `point`'s 5.0+ bin is 82; nothing above rests on either, and the survivorship control's own bins are 154–1 140.
+
+## 8. (B) The owner's bar
+
+| **[M]** median s, every arm, deck filter | shipped plant: off → point → fixed → plant | two-body plant: off → point → fixed → plant |
+|---|---|---|---|
+| **the owner's own low speed, 18 runs** | **1.033** → 1.267 → 1.267 → 1.217 | **1.033** → **0.850** → 0.850 → 0.883 |
+| the glide, 24 | 1.183 → 4.317 → 4.317 → 4.000 | 1.450 → 4.050 → 3.950 → 3.933 |
+| the turn, 18 | 3.067 → 1.967 → 1.967 → 2.033 | **2.500 → 1.300 → 1.300 → 1.667** |
+| **Compress, every nine-second cell** | **6 of 6 / 8 of 8 in all four** | **6 of 6 / 8 of 8 in all four** |
+| **every nine-second ride, every arm** | **480 of 480 ended before nine seconds; Compress 160 of 160** | — |
+
+**Every one of those twelve medians is Part 2 §6's own figure to the digit**, including the two-body turn's
+2.500 / 1.300 / 1.300 / 1.667, which Part 2 published and this round re-rode on a fresh tree (§10 C1).
+
+**Three readings.**
+
+1. **The bar is not met and no arm of this round comes near it.** **480 of 480 nine-second rides ended before nine
+   seconds and Compress fell in 160 of 160** [M], over twenty-four nine-second arms on two plants. The sixteen
+   one-second arms are windows built so that nobody falls — **they are an instrument, not a result, and they are
+   never counted as rides that survived.** Twelve of the sixteen are clean (0 of 18 or 0 of 24); **four are not**:
+   `two-point`, `two-fixed` (8 of 18) and `two-plant` (4 of 18) fall inside the **turn's** own second, and
+   §6 reading 4's two-body turn figure carries that caveat on its face.
+2. **Nothing in this round was built to move the fall.** It is a measurement round with no source change: §9's own
+   first line.
+3. **And the owner's own cell has a mechanical reason the gains cannot help it**, measured here and not inferred:
+   the ankle's command sits on its 0.25 rad bound in **71–86 % of ticks** there, and the game answers the rest
+   **five times** harder than the model expects (§4 reading 3).
+
+## 9. What I refuted
+
+- **The brief's own framing, as an experiment.** *"The roll row per source against the game at a FIXED trajectory —
+  one recorded ride, several sets of gains."* At a fixed state **and** command the row is one number in all four
+  gain sets, exactly, at 72 339 of 72 339 live ticks (§2). **So the experiment as named has no variance in it**, and
+  the version that does — substituting each gain set's own command — **overstates the loop's part 5.5 times**,
+  because the game's own roll row answers the same ankle rest at 0.84× the model's rate (§5 reading 1).
+  **Twenty-eighth consecutive round to find its brief's premise wrong, and eighth to find it in the half the brief
+  called settled** — here the half that called the measurement well posed.
+- **Part 2's own §7 reading 2, in its stated mechanism.** *"The arm without a body only rides somewhere gentler."*
+  The states are **not** gentler: the composition term over five state binnings is **0.4–16 %**, the error's own
+  denominator is unchanged (159.7 → 166.9 °/s²), and the **absolute** error halves (1 362.7 → 681.4 °/s²). **The arm
+  rides LONGER, and the roll row's error is six to eleven times in a glide's first second and one to two times after
+  a second and a half** (§7). Part 2's conclusion holds; its reason does not.
+- **"The model's roll row is wrong by ten times."** It is wrong by **6–11×** in the first second of an unsteered
+  glide, **1.0–2.4×** after a second and a half **on the same runs** (19 and 14 runs, survivorship controlled), and
+  **1.4–6.1× with no age profile at all on a commanded turn** (§7). Six rounds have carried one number for three
+  different quantities, because almost every arm this folder has measured died inside 1.5 s.
+- **"The roll row's residue is one thing to find."** On the shipped plant's glide it is the difference of two gaps,
+  the water's at **3.20–4.21× the net** and the remainder's at **2.11–2.46×**, with **opposite signs in 86.1–99.4 %
+  of ticks** (§3) — and **which of the five is biggest depends on the cell**: the water owns the glide (largest in
+  0.585–1.000 of ticks), the **ankle** the owner's own low-speed cell (0.256–0.475, with a gap two to five times its
+  size anywhere else), and the model's own **remainder** the turn (0.292–0.688) [M, 40 arms, both plants]. **Six
+  rounds have hunted the water because six rounds have only measured glides.**
+- **My own P3**, that the loop's reach would be under half the game's row: the swing another gain set's command
+  makes is **1.7–7.9× the game's whole roll acceleration** and **18–137 % of the roll row's own net error**.
+- **My own P4**, that the water would carry *at least half* the net error: it carries **210–420 %** of it, and the
+  remainder carries 210–345 % with the opposite sign. **The prediction had the wrong shape, not the wrong
+  direction** — the water is still the largest single gap on the glide.
+- **My own P5**, that the composition term would carry more than half: it carries **0.4–16 %**. And the conclusion it
+  pointed at — that the trajectory owns the move — **is upheld by a different instrument**, the window nobody falls
+  in. **A shift–share over state bins cannot see the ride's own length, and it books it into the within-bin term.**
+  That is a methodological refutation of my own method, and it is why §6 reading 3 exists.
+- **My own first version of §4's authority read**, within the hour and before any arm ran: it compared a
+  step-averaged `Γ[1][0]/h` with an instantaneous `ankleDeck × 800` and said the model understated the game
+  thirteen-fold. The right comparison is per radian of the **rest state**, `A[1][8]` against `ankleDeck × 800`, with
+  the same 0.05 s lag behind both sides [R, two files], and it is **1.019 rather than 0.076**.
+
+## 10. What I will not claim
+
+- **I will not claim the bar is any closer.** 480 of 480, Compress 160 of 160, and the owner's own cell at 1.033 s
+  shipped against 0.850 at worst.
+- **I will not claim a mechanism for the glide's first second.** The fact is measured and survivorship-controlled;
+  none of the four diagnostics I carry — the command's share, the water's gap over the net, the remainder's, the
+  game's own near-cancellation — tracks it (§7 reading 3). **I have a fact and I am not going to supply a cause.**
+- **I will not claim the two-body plant's gain on the roll row is a repair.** 74–76 % of it survives the window,
+  which is Part 2's finding confirmed; but the two-body turn's own window is **contaminated by falls in three of its
+  four arms** (§8 reading 1), and the glide's ×0.391 is one cell.
+- **I will not claim which of the two per-source gaps to fix.** They cancel; fixing either alone moves the net by
+  two to four times the fix, in a direction the cancellation chooses.
+- **I will not claim the one-sided substitution is the loop's share.** It is an upper bound on it, over by about
+  5.5× on the one arm where I can compare it with a ride, and the factor depends on the cell (the authority ratio's
+  own per-arm medians span **0.420–1.557**).
+- **I will not claim anything from the turn's two-body window as a ride**, for the reason above, and **no bot ride
+  is offered as evidence of feel anywhere in this document.**
+- **I will not propose reverting the two-body plant.** Part 1 measured its lean row better in 96 of 96 runs, the
+  owner felt it (*"doesn't look like a stick but an actual human movement"*), and this round measures its roll row on
+  the turn at **half** the shipped plant's error and its lean row at a sixth. **Where this round favours the shipped
+  plant on anything, that is a statement about the roll row's instrument, not about the body.**
+- **Carried, flagged, not mine, not touched**: `steadyTurn`'s `ref.u[0]` at 2 675°; the `cos³` added-mass frame
+  defect; `AttachedRider.frame`'s 70° bank clamp at three sites; the live point-mass `ω₀` in `HumanBalance.capture`
+  (right for the game's own point-mass rider, wrong the day Part 1 §8 item 3 lands); the game's own rider as two
+  bodies.
+
+## 11. The controls
+
+**C1, the whole of Parts 1 and 2 reproduced on this tree, which is what makes every comparison above a comparison.**
+Shipped plant, the five arms: roll row **10.050 / 2.725 / 4.035**, lean row **3.540 / 3.833 / 8.298**, bank-rate
+residual **2.552 / 4.620 / 5.131**, roll sign **0.338 / 0.579 / 0.605**, falls **1.183 / 1.033 / 3.067 s**; the
+one-second window **9.774 → 9.418** roll, **3.190 → 4.650** lean, **0.354 → 0.500** sign; the two-body plant
+**9.087 / 1.638 / 1.097 / 0.321 / 1.450 s**, its window **6.512 → 2.944** roll and **1.301 → 0.740** lean, its turn
+**2.500 → 1.300 → 1.300 → 1.667 s**; and `relTwo` on the shipped ride **10.066** — **every one 3.3p's, Part 1's or
+Part 2's published figure to the digit** [M].
+
+**C2, the state is a read.** The reconstruction pushed back through the controller's own `C`: **peak over every tick
+of every one of the 816 runs exactly 0**; tick spacing **exactly 0** off `CONTROL_STEP`; the ledger's own closure and
+residual **exactly 0** [M].
+
+**C3, every partition read rather than asserted.** The ledger's twenty-three-way split of its own roll row closes to
+**4.1 × 10⁻¹¹** relative; the five matched gaps' partition of the net to **3.4 × 10⁻¹¹** (shipped) and
+**3.6 × 10⁻¹¹** (two-body); the model's own six groups plus remainder to **1.6 × 10⁻¹²** — peaks over every live
+tick of every arm [M].
+
+**C4, P1 as an identity, read at every tick** (§2): `|ΔΦ|`, `|ΔΓ|` and the roll row's own difference across the four
+cost arms **exactly 0**, and `max |B|` outside the two muscle-lag rows **exactly 0**.
+
+**C5, 3.4a's zero-inertia control still exact**: the control plant's own `A` against the shipped plant's,
+**1.2 × 10⁻¹⁴** peak over its row's largest, and its roll row's relative error **1.2 × 10⁻¹⁰** [M].
+
+**C6, the substitution's own arm is the row itself.** `subst_off` equals `relFull` and `substSign_off` equals
+`rollSignFull` in **24 of 24 runs**, by construction and read [M].
+
+**C7, the command rebuild, and P2.** Rebuilding the sent command at the controller's **exact** point reproduces it to
+**0.104 relative at the median** (per-run medians 0.006–3.02) and **not** to machine precision, which is the blend's
+own error — `blendRelMed` reads **0.050** at the median across the arms, 3.3p's own 0.001–0.056. **P2 as written
+holds**: not exact, median gap inside 0.001–0.3.
+
+**C8, `fixed` ≡ `point` on the shipped plant**, in every new column of this round as well as Part 2's: identical to
+every printed digit in all twenty shipped-plant arms and both windows [M].
+
+**C9, the survivorship control on §7's headline, predicted to be the discriminating read before it ran**: the 19
+`point` runs and 14 `plant` runs that live past three seconds, read from their own 0.2 s, show the **same** first
+second (6.46–10.88×) and the **same** settled ride (1.05–2.37×) as the pooled arms. **The profile is the ride's age.**
+
+**C10, the authority read's own direction, written into the probe before the arms ran.** The docstring says *"a ratio
+near 1 means both sides would move together and the substitution's one-sided reading overstates the loop's share."*
+Measured ratio **1.19** on the arm the substitution is taken from, predicted overstatement **6.3×**, measured
+**5.5×** [A, with its two assumptions named in §5 reading 1].
+
+## 12. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`: **exit 0**
+- the probes type-checked **separately** on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, `--listFiles` confirming 670 files including
+  `docs/research/new-rider/3.3/plant.ts`, `docs/research/new-rider/3.4/row.ts`,
+  `docs/research/new-rider/3.4/cost.ts`, `src/physics/bankLedger.ts`, `src/physics/predictiveBalance.ts`,
+  `src/physics/rollModel.ts`, `src/physics/AttachedRider.ts` and `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 634 passed, 21 expected fail** — Part 2's exactly.
+  `vitest run src/game src/scene/rig`: **70 files, 735 passed** — Part 2's exactly.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  Part 2's exactly. `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand:
+  **43 of 43**. `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round changes no file under `src/`.
+- **The Canyon byte check is not run, and the reason is stronger than a hash.** The brief gates it on `src/`
+  changing. `git diff origin/main -- src/ server/` is **empty**: not one byte of the game changed, so the two
+  Canyon hashes cannot differ from Part 2's by construction. The whole round is two read-only probe files under
+  `docs/`. (Part 2's own fresh spin-up reproduced the references `a367d938f15fa934` / `9e5831f80e38abd9` and
+  `ea3d57a4d49f4b48` / `a1a2555739210f96`, and nothing since has touched the solver.)
+- **the shipped rider is proved unchanged with every switch off** by the same read: there is no source change for a
+  switch to be off of, and §11 C1 reproduces 3.3p's, Part 1's and Part 2's published rows and falls to the digit.
+- **`3.3/plant.ts`'s two new switches are off by default** (`TICKS` unset, `GAINS` unset), so every arm run without
+  them is Part 2's own probe on Part 2's own cells, which C1 is the read of.
+
+## 13. Files (3.4c)
+
+- `docs/research/new-rider/3.3/plant.ts` — step 3.3p's probe, extended with: the roll row's **twenty-three-source**
+  partition off the bank ledger (`gDeck`, with its own closure column); the row's own two halves (`rollCmd`,
+  `rollState`) and the command's share of each side; the **five matched per-source gaps** on both plants with their
+  partition's closure; `GAINS=1`, which rebuilds the four cost arms' designs at the controller's exact point every
+  tick and from each one's `k` reconstructs **the command that arm would have sent at this very state**, giving P1's
+  identity, the command-rebuild control, the swing, and **the brief's own measurement** (`relSubst`, `relSubstBank`,
+  `substHelps` per arm); the ankle rest's **authority** on both sides in one frame, with the zero-order hold's
+  attenuation printed beside it and `bZeroOff` as the read that the commands enter only the two lag rows; and
+  `TICKS=<path>`, a per-tick `.jsonl` dump of columns already computed. **Read-only; nothing under `src/` changed.**
+- `docs/research/new-rider/3.4/row.ts` — **new**: the matched-state decomposition. Five binnings, three windows (all
+  ticks, the arms' common clock time, and every tick more than 0.3 s before its own run's end), the exact shift–share
+  on the log mean with its closure, the per-source table per arm, the substitution's own table, **the roll row's
+  error against the ride's own age with the survivorship control**, and the denominator read that says whether a
+  smaller relative error is a bigger denominator. Read-only; it reads the `.jsonl` dumps and imports nothing from
+  `src/`.
+- `docs/research/new-rider/3.4/results/34c/` — the forty arms as `.jsonl` and `.txt`, `34c-summary.txt` (every table
+  above, generated), `34c-predictions.md` (every prediction as written **before** its read, each with its own
+  falsification), and the **per-tick record, gzipped, for the seventeen arms every published figure is taken from**.
+  **All seventeen are load-bearing** — every geometric mean, every window ratio, the time profile, the survivorship
+  control and the shift–share are read from one of them. The other twenty-three arms' per-tick dumps are not kept:
+  they are one documented command each (`TICKS=… GAINS=1 … node pl.mjs`), and keeping all forty put the folder at
+  **29 MB**; the seventeen put it at **17 MB** against 34b's 5.8. **Every one of the forty arms' per-run summaries
+  is kept in full**, and every figure in this Part that is not a per-tick statistic is read from those.
+- `docs/research/new-rider/3.4/README.md` — this Part.
+
+## 14. For the owner, in plain words — and the shot list
+
+**You rode it and said two things. The second one — *"doesn't look like a stick but an actual human movement"* — is
+the half of his balance I was told last round was fixed, and you felt it without being asked. The first one — *"down
+turn just falls very easily"* — is this round's subject, and I have four things to tell you about it.**
+
+**One: the number everyone on this track has been quoting about the board is three different numbers.** His balance
+predicts, sixty times a second, how fast the board is about to roll under him. For six rounds we have said that
+prediction is **wrong by ten times**. Measured properly: it is wrong by **six to eleven times in the first second
+after he stands up**, by **one to two times once the ride settles**, and by **one and a half to six times on a
+turn, with no pattern in time at all.** The reason nobody saw this is that almost every test ride this track has ever
+run **fell inside the first second and a half**, so the only number anyone ever measured was the first second's.
+**The board half of his balance is not uniformly broken. The start is.**
+
+**Two: last round's good news was mostly an illusion, and I can say exactly how much.** Last round turned two unused
+rules on and the board's prediction got **four times** more accurate. I gave both arms **the same one second** —
+a window nobody falls in — and the improvement shrank to **a tenth**. **Ninety-one per cent of it was that the
+rider with the new rules simply stayed up three and a half times longer, and a longer ride is mostly settled riding,
+where the prediction is good anyway.** Not "he rides somewhere gentler" — I checked, the water and the rail he meets
+are the same. He just rides for longer.
+
+**Three: on the rider YOU rode — the two-body one — the gains really do buy the board's prediction, and that is the
+one piece of good news I have.** Same test, same second, nobody falling: on the old point-mass plant better gains buy
+**nothing** (a tenth). On the two-body plant they buy **a factor of two and a half on a glide and a quarter on a
+turn** — three quarters of it survives the fair window. **And before any gain change, on the turn you fall on, the
+two-body plant's board prediction is already twice as good as the old one's and its body prediction six times.**
+Whatever else this round says, it says keep the body you felt.
+
+**Four: and here is why fixing the board half one piece at a time has failed five times.** I split the prediction by
+source — water, ankle, twist, everything else — against the game's own books, source by source. Two of those sources
+are each wrong by **two to four times the whole error**, and **they point opposite ways in ninety-five to ninety-nine
+per cent of ticks**. The prediction is the small difference of two big mistakes that cancel. Fix either one by a
+fifth and the answer moves by most of itself, in whichever direction the cancellation happens to leave. **That is
+why six rounds of clearing suspects moved nothing.** And the pair swaps roles depending on what you are doing: **on
+a glide the water is the bigger mistake; on a turn — your turn — it is his own body's gravity, inertia and geometry.**
+
+**Five: your bar is not met and this round did not try.** 480 test rides given nine seconds, 480 ended, Compress
+fell in all 160 of its own. Nothing in the game changed; this was a measurement round.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot, `?rider=new&feltFrame=deck` as always, and **`?riderBody=two` on
+everything** — it is the plant you already rode and liked.
+
+1. **`?riderBody=two&riderCost=point`, and hold a bottom turn.** This is the one combination my numbers say should
+   feel different on the manoeuvre you fall on: on the turn it is the only arm where better gains buy the board's own
+   row (a quarter better, three quarters of it surviving a fair window). **Does the board feel like it is going where
+   you expect under you, or does the turn still give way?** The bench says the turn's own time gets *shorter*
+   (2.50 s → 1.30 s), so I expect you to fall sooner and I want to know whether it feels **more** or **less**
+   predictable while you do.
+2. **`?riderBody=two` alone, and ride past the first two seconds once.** If you can get past the first second and a
+   half at all, my numbers say the board's prediction becomes four to eight times better from there. **Does it feel
+   like it settles?** Everything this track knows about the board comes from the first second, and I cannot tell you
+   from a bench what settled riding feels like.
+3. **And a ruling, not a ride.** What I think step four is, in order:
+   - **The first second.** It is six to eleven times wrong there and one to two times after, on the same runs, and
+     **none of the four things I can measure explains why.** That is the single biggest unexplained number on this
+     track and it sits exactly where you said you fall (*"gets on the board"*). I would spend step four on it, and
+     the first thing I would do is instrument the placement itself rather than the plant.
+   - **The turn's own source**, which is his own body's gravity, inertia and geometry rather than the water. That is
+     the model's one term nobody has ever separated — six rounds could zero the water, the ankle and the twist, and
+     never this. Splitting it is a day's work on the same probe.
+   - **Not the gains, and not another cost constant.** They are a tenth on the old plant and a quarter on the new
+     one, they cost the body's half 1.8× every time, and your own slow cell cannot use them at all — the ankle's
+     command is already jammed against its limit in **seven to nine ticks out of ten** there, and the board answers
+     what it does get **five times** harder than the balance expects.
+   **My recommendation is the first, then the second. Your call.**
+
+## 15. The deletions column, read line by line
+
+`git diff --cached --numstat origin/main` before the commit, read file by file. **`src/` and `server/` are empty on
+both sides of the diff — not one byte of the game changed** — and the whole round is two files under `docs/` plus a
+results folder.
+
+```
+522   1  docs/research/new-rider/3.3/plant.ts
+641   0  docs/research/new-rider/3.4/README.md
+379   0  docs/research/new-rider/3.4/row.ts
+   … and 99 files under docs/research/new-rider/3.4/results/34c/, insertions only
+──────────────────────────────────────────────
+102 files, 6 384 insertions, 1 deletion
+```
+
+`git diff --cached --numstat origin/main -- src/ server/` prints **nothing at all**, and the one commit `origin/main`
+gained while this round ran (`62f39d95`, the owner's ride) touches one handoff `.md` and no code — this branch is
+rebased onto it.
+
+- **`docs/research/new-rider/3.3/plant.ts` — one deletion, and it is an import line.** The
+  `predictiveBalance` import, re-added with `DEFAULT_WEIGHTS`, `type DesignWeights`, `costWeights` and `design` added
+  to it and **nothing dropped**: `CONTROL_STEP`, `bodyInertiaAt`, `captureOmega`, `continuousPlant`, `discretise`,
+  `heelColumn`, `plantAt` and `railLimit` are all still there, in order.
+- **Every other file in the round is insertions only, zero deletions**: `docs/research/new-rider/3.4/row.ts` (new),
+  `docs/research/new-rider/3.4/README.md` (this Part appended, Parts 1 and 2 untouched) and the files under
+  `results/34c/`.
+- **A token-by-token check was run rather than trusted to the eye**: every identifier on the one deleted line was
+  searched for across the round's insertions. **All eight are present**, in the same import statement.
+- **And the round's own data accident is recorded rather than hidden.** A shell loop meant to keep the per-tick
+  record for seventeen arms and drop the other twenty-three deleted **all forty** (zsh matched `*.ticks.jsonl.gz`,
+  the prefix-strip in the keep test did not, and every file failed the test). The seventeen were **regenerated from
+  the probe**, which re-ran the published analysis end to end, and §11 C1's reproduction figures were re-read from
+  the regenerated files. **Every per-run summary survived untouched**, so no measurement in this document was
+  recomputed from a different number than the one it was first read from; the two spans that changed when I checked
+  them against the 40-arm population rather than one arm's are §0 sentences 6, 7 and 9, and they are corrected in
+  place with the population named.
