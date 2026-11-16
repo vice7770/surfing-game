@@ -5,3 +5,4 @@ canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solv
 ===== CANYON DEFAULT =====
 spun up on the CPU in 57.1 s; kept in /tmp/claude-501/bench33k/D.sea
 canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96

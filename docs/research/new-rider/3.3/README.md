@@ -4952,10 +4952,19 @@ frame's bound so it can be seen (`ankleRoomFirst`).
   - `fall.ts` on the deck filter reproduces **3.3i's own grid to the digit** — all 24 at **1.30–4.05 s**;
   - `fall.ts`'s 72-run gentle ladder reproduces **3.3j's own** — **72 of 72 at 0.60–5.07 s**, and its ankle column
     reproduces 3.3j's **62 of 72** saturated commands exactly.
-- **the Canyon byte check, because `src/` changed**, with the three checks read rather than assumed — the wrapper
-  prepends `globalThis.location = { search: '?canyonWaves=true' }` to the bundle, the grid line read, and the
-  "spun up on the CPU in … s" line read so that no kept `.sea` was imported. Its output is
-  `results/33k/33k-canyon-byte-check.txt`.
+- **the Canyon byte check, because `src/` changed** (`scripts/m1-cpu-bench.ts`, medium, 3 600 steps, **fresh**
+  spin-ups into new state paths), with the three checks read rather than assumed — the wrapper prepends
+  `globalThis.location = { search: '?canyonWaves=true' }` to the bundle (a prepended line, because a dynamic import
+  makes rolldown split the chunk), the grid line read, and the "spun up on the CPU in … s" line read so that no kept
+  `.sea` was imported:
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180 400 cells**, spun up on the CPU in **45.8 s**: snapshots
+    **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202 800 cells**, spun up on the CPU in **57.1 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  All four match, which they must: this round touches no solver, no wave, no spot file and no hull law, and the five
+  rider lines it does touch read `ANKLE_REST_RANGE` through `restRange()`, which returns that constant with the switch
+  off. The raw output is `results/33k/33k-canyon-byte-check.txt`.
 
 ## 9b. The deletions column, read line by line
 
