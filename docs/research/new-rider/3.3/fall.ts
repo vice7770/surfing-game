@@ -130,6 +130,12 @@ const REACH = process.env.REACH === 'keep' ? 'keep' as const : undefined;
  * shipped arm reproduces step 3.3g's and 3.3h's own published tables.
  */
 const ANKLE_LIMIT = process.env.ANKLE_LIMIT === 'feet' ? 'feet' as const : undefined;
+/**
+ * **Step 3.3j, `ANKLE=on`, off by default**: turns `AttachedRider.ankleLedger` on, so the gentle fall gets the same
+ * ankle columns step 3.3i measured on the hard one. Read-only (`ankleLedger.test.ts` asserts the ledger is a pure
+ * observer to the digit), and with it unset every row of this probe is byte-for-byte the shipped one.
+ */
+const ANKLE = process.env.ANKLE === 'on';
 
 type Stance = 'tall' | 'crouch' | 'compress' | 'snap' | 'snapdrive';
 const STANCES = (process.env.STANCES ?? 'tall,compress').split(',') as Stance[];
@@ -189,9 +195,26 @@ interface Frame {
   bankRate: number;   // the body's bank rate, °/s
   along: number;      // the capture point ALONG the board, m, so the across can be shown to be the narrow way
   pastAcross: number; // how far past the feet's edge the capture point is ACROSS, m, signed board +x
+  // **Step 3.3j's columns, for the GENTLE fall**, which no round has measured on its own terms. Step 3.3i found the
+  // two falls differ in the one quantity this block is built around: in the hard fall the body goes over WITH the
+  // deck (`|bank| − |roll|` is −20.0 to +0.6° over 17 runs) and in the gentle one it gets AHEAD of it (−8.0 to
+  // +15.4° over 7). The roll ledger is the hard fall's instrument; these are the body's own.
+  rollRate: number;   // the deck's roll rate, °/s, signed in the raw board-frame sense (+ = the deck normal toward +x)
+  comAcross: number;  // the rider's centre of mass ACROSS the board's own centreline, m (`board.toLocal(rider.position).x`)
+  comHeight: number;  // the same point's height off the board's origin, m
+  halfAcross: number; // the live support region's own half-width across, m (`rider.support`), the bar `comAcross` is against
+  bodyFelt: number;   // step 3.2z's split, the BODY's half of `speedAcross`, m/s (board frame, less the felt vertical's part)
+  feetFelt: number;   // the same split's FEET half — a board-FIXED point's carried velocity, so it can hold no sliding
+  bodyRaw: number;    // the body's across speed in the board's own geometric frame, m/s
+  feetRaw: number;    // the feet's point's across speed in the same frame, m/s
+  ankleTq: number;    // the ankle's delivered torque, N·m, the step's mean (NaN unless ANKLE=on)
+  ankleDem: number;   // the torque the ankle's spring and damper ASKED for, N·m, the step's mean
+  ankleBound: number; // the moment the soles can transmit, N·m (`legLoad` × the feet's half-width across)
+  ankleAngle: number; // the joint's own angle θ − φ, °
 }
 
 function oneRun(st: Stance, extra: number, steer: number): Record<string, unknown> {
+  AttachedRider.ankleLedger = ANKLE;
   const water = new FaceWater({ depth: DEPTH, height: FACE[0], slope: FACE[1], speed: FACE[2] });
   const sample = createWaterSample();
   const fall = new Vector3(0, 0, 1);
@@ -227,6 +250,12 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
   const side = new Vector3();
   const boardUp = new Vector3();
   const nW = new Vector3();
+  // Step 3.3j's scratch: the board-frame place of the rider, the feet's own board-fixed point and its velocity.
+  const local = new Vector3();
+  const feetWorld = new Vector3();
+  const feetVel = new Vector3();
+  const bodyScratch = new Vector3();
+  const boardInv = new Quaternion();
   const lastVel = new Vector3().copy(board.velocity);
   const accel = new Vector3();
   const feet = stanceFeet(board.shape);
@@ -280,6 +309,33 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     const h = state.height;
     const nx = state.feltAcross;
     const pxx = state.pointAcross;
+    // **Step 3.3j's block.** `local.x` is the rider's centre of mass across the board's OWN centreline, the column
+    // `33i-stills` drew and the one the gentle fall moves; the split is step 3.2z's, taken `deck.ts`'s way and
+    // guarded by `state.omega > 0`, which is the one test that says the capture state is live (`captureFeet` is a
+    // constructed Vector3, so `if (!captureFeet)` guards nothing — 3.3f's trap, named in this folder's own notes).
+    board.toLocal(rider.position, local);
+    const mid = (rider.support.zMin + rider.support.zMax) / 2;
+    board.toWorld(bodyScratch.set(0, 0, mid), feetWorld);
+    board.velocityAt(feetWorld, feetVel);
+    const inner = rider as unknown as { captureFelt?: { x: number; y: number; z: number }; captureFeet: Vector3 };
+    let bodyFelt = Number.NaN;
+    let feetFelt = Number.NaN;
+    if (state.omega > 0 && inner.captureFelt) {
+      const fv = inner.captureFelt;
+      const g = Math.hypot(fv.x, fv.y, fv.z);
+      const ux = g > 1e-6 ? fv.x / g : 0;
+      const uy = g > 1e-6 ? fv.y / g : 1;
+      const uz = g > 1e-6 ? fv.z / g : 0;
+      boardInv.copy(board.orientation).invert();
+      const acrossOf = (v: Vector3) => {
+        bodyScratch.copy(v).applyQuaternion(boardInv);
+        return bodyScratch.x - (bodyScratch.x * ux + bodyScratch.y * uy + bodyScratch.z * uz) * ux;
+      };
+      bodyFelt = acrossOf(rider.velocity);
+      feetFelt = acrossOf(board.velocityAt(inner.captureFeet, bodyScratch.clone()));
+    }
+    const led = rider.ankle;
+    const haveAnkle = ANKLE && led.substeps > 0;
     frames.push({
       t,
       steer: rider.steer,
@@ -316,7 +372,21 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
       bankRate: rider.bank.rate * DEG,
       along: state.along,
       pastAcross: state.pastAcross,
+      rollRate: Number.NaN,
+      comAcross: local.x,
+      comHeight: local.y,
+      halfAcross: (rider.support.xMax - rider.support.xMin) / 2,
+      bodyFelt,
+      feetFelt,
+      bodyRaw: rider.velocity.dot(side),
+      feetRaw: feetVel.dot(side),
+      ankleTq: haveAnkle ? led.torque : Number.NaN,
+      ankleDem: haveAnkle ? led.demand : Number.NaN,
+      ankleBound: haveAnkle ? led.bound : Number.NaN,
+      ankleAngle: haveAnkle ? led.angle * DEG : Number.NaN,
     });
+    // The roll rate, filled on the frame after so it is a difference and never a one-frame value read as a rate.
+    if (frames.length > 1) frames[frames.length - 1].rollRate = (roll - frames[frames.length - 2].roll) / STEP;
     rider.steer = used;
     // `attached` is the test (step 3.3f §1): `separate` leaves `phase` and `upright` untouched.
     if (!rider.attached || !rider.upright || rider.phase !== 'standing') {
@@ -394,8 +464,84 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     if (frames[i].weightPast === 0) break;
     pastFrom = frames[i].t;
   }
+  // ## Step 3.3j: the gentle fall's own columns
+  //
+  // **The datum of every angle here is the raw board-frame one** (+ = the deck normal, or the body's lean, toward the
+  // board's own +x), NOT the `dir`-signed "toward the turn's inside" convention the rest of this probe uses — because
+  // the gentle fall's defining feature is that the roll **reverses**, and a column signed by the run's final direction
+  // cannot show a reversal. The two conventions are kept apart on purpose and nothing below mixes them.
+  //
+  // `lead` is step 3.3i's own quantity, `|bank| − |roll|`, positive when the BODY is further over than the deck.
+  const lastHalf = frames.filter((x) => x.t > end.t - 0.5);
+  const lead = (x: Frame) => Math.abs(x.bank) - Math.abs(x.roll);
+  // The last frame whose across split still reconstructs the capture point's term (step 3.2z's rule, `deck.ts`'s own):
+  // on the separation frame the rider's velocity and the feet's point have already been re-set.
+  const split = [...frames].reverse().find((x) => Number.isFinite(x.bodyFelt));
+  // The sign changes, read on the RAW roll and bank: the last frame at which each crosses zero, and the lag between.
+  const lastFlip = (pick: (x: Frame) => number) => {
+    for (let i = frames.length - 1; i > 0; i -= 1) {
+      const a = pick(frames[i - 1]);
+      const b = pick(frames[i]);
+      if (a !== 0 && b !== 0 && Math.sign(a) !== Math.sign(b)) return frames[i].t;
+    }
+    return Number.NaN;
+  };
+  // How long the predictor's ankle command has been continuously at ANKLE_REST_RANGE (14.32°) at the end, s.
+  let satHeld = 0;
+  if (Math.abs(end.ankle) > 14.29) {
+    let i = frames.length - 1;
+    while (i > 0 && Math.abs(frames[i - 1].ankle) > 14.29) i -= 1;
+    satHeld = end.t - frames[i].t + STEP;
+  }
+  // The first frame |px| left half the feet's own bound (0.065 m) and did not come back.
+  let pxFrom2 = Number.NaN;
+  for (let i = frames.length - 1; i >= 0; i -= 1) {
+    if (Math.abs(frames[i].px) <= 0.065) break;
+    pxFrom2 = frames[i].t;
+  }
+  const rollFlipAt = lastFlip((x) => x.roll);
+  const bankFlipAt = lastFlip((x) => x.bank);
+  const peakOf = (xs: Frame[], pick: (x: Frame) => number) => (xs.length ? Math.max(...xs.map((x) => Math.abs(pick(x)))) : Number.NaN);
+  const signedPeak = (xs: Frame[], pick: (x: Frame) => number) => {
+    let best = Number.NaN;
+    for (const x of xs) if (!Number.isFinite(best) || pick(x) > best) best = pick(x);
+    return best;
+  };
   return {
-    rider: RIDER, stance: st, extra, steer, felt: FELT ?? 'world', kneeRoom: KNEEROOM ?? 'shipped', stanceReach: REACH ?? 'shipped', ankleLimit: ANKLE_LIMIT ?? 'shipped', hand: HAND,
+    rider: RIDER, stance: st, extra, steer, felt: FELT ?? 'world', kneeRoom: KNEEROOM ?? 'shipped', stanceReach: REACH ?? 'shipped', ankleLimit: ANKLE_LIMIT ?? 'shipped', hand: HAND, ankle: ANKLE ? 'on' : 'off',
+    // **the two falls, told apart** — all raw board-frame, all at the fall frame unless named otherwise
+    rollRaw: r(end.roll, 1), bankRaw: r(end.bank, 1),
+    lead: r(lead(end), 1), leadPeakHalf: r(signedPeak(lastHalf, lead), 1),
+    leadShareHalf: r(lastHalf.length ? lastHalf.filter((x) => lead(x) > 0).length / lastHalf.length : Number.NaN, 2),
+    rollPeak: r(peakOf(live, (x) => x.roll), 1), bankPeak: r(peakOf(live, (x) => x.bank), 1),
+    rollRateEnd: r(end.rollRate, 1), rollRatePeak: r(peakOf(live, (x) => x.rollRate), 1),
+    // the reversal: when the deck's roll last crossed zero, when the body's bank did, and which went first
+    rollFlipAt: r(rollFlipAt, 3), bankFlipAt: r(bankFlipAt, 3),
+    flipLag: r(rollFlipAt - bankFlipAt, 3),
+    flipBeforeFall: r(Number.isFinite(rollFlipAt) ? end.t - rollFlipAt : Number.NaN, 3),
+    // the body over the board's own centreline, and against its own feet
+    comEnd: r(end.comAcross), comPeakHalf: r(peakOf(lastHalf, (x) => x.comAcross)),
+    halfAcross: r(end.halfAcross), comOverFeet: r(peakOf(lastHalf, (x) => x.comAcross) / end.halfAcross, 2),
+    comHeight: r(end.comHeight),
+    // step 3.2z's split at its own last consistent frame, and the raw board-frame pair beside it
+    splitAtS: r(split?.t ?? Number.NaN), bodyFelt: r(split?.bodyFelt ?? Number.NaN, 2), feetFelt: r(split?.feetFelt ?? Number.NaN, 2),
+    bodyRaw: r(split?.bodyRaw ?? Number.NaN, 2), feetRaw: r(split?.feetRaw ?? Number.NaN, 2),
+    bodyFaster: split ? (Math.abs(split.bodyRaw) > Math.abs(split.feetRaw) ? 1 : 0) : null,
+    // the ankle, on the gentle arm, against the moment the soles can transmit
+    ankleTqEnd: r(end.ankleTq, 1), ankleDemEnd: r(end.ankleDem, 1), ankleBoundEnd: r(end.ankleBound, 1),
+    ankleRatioEnd: r(Math.abs(end.ankleDem) / end.ankleBound, 2),
+    ankleRatioPeakHalf: r(peakOf(lastHalf, (x) => x.ankleDem) / end.ankleBound, 2),
+    ankleAngleEnd: r(end.ankleAngle, 2), ankleAnglePeakHalf: r(peakOf(lastHalf, (x) => x.ankleAngle), 2),
+    // did the probe's own script centre the stick before he fell? (`t85` is when |net| first reaches ACROSS)
+    gapTo85: r(fellAt - t85, 3), centred: Number.isFinite(t85) ? 1 : 0,
+    // **Is the balance's own saturated ankle command load-bearing, or incidental?** `ankle` is the predictor's
+    // command as sent, ° (`predictor.sent[0]`), and `ANKLE_REST_RANGE` bounds it at ±14.32°. `satFor` is how long it
+    // has been continuously at that bound when he goes; `pxFrom` is when |px| last left half the feet's own bound
+    // (0.065 m) for good. **Predicted before the read: if the saturation is what binds, it precedes px's departure
+    // in most runs (`satLead` > 0) and is short; if it is incidental, `satFor` will be long in runs that fall late
+    // and `satLead` will have no consistent sign.**
+    satDeg: r(Math.abs(end.ankle), 2),
+    satFor: r(satHeld, 3), pxFrom: r(pxFrom2, 3), satLead: r(pxFrom2 - (end.t - satHeld), 3),
     // The balanced hand's own stick, for the comparison to be against a turn and not against a smaller one.
     stickMedian: r(median(turn.map((x) => Math.abs(x.steer)))), stickEnd: r(Math.abs(end.steer)),
     heightEnd: r(end.height), tolDeg: r(Math.atan2(HALF_ACROSS, end.height) * DEG, 1),
@@ -534,6 +680,57 @@ if (!TRACE) {
     console.log(`| ${g.name} | ${span(col(g.pick, 'heightMedian'))} | ${span(col(g.pick, 'aMax'))} | ${span(col(g.pick, 'aLatHeld'))} `
       + `| ${span(col(g.pick, 'aResHeld'))} | ${span(ratio)} | ${span(col(g.pick, 'tolDeg'), 1)} | ${span(col(g.pick, 'reachAcross'))} |`);
   }
+  // ## Step 3.3j's tables: the gentle fall on its own terms, and the two falls told apart
+  //
+  // The split is step 3.3i's: the runs whose roll at the fall passes 60° are the HARD fall (the body goes over with
+  // the deck) and those under it the other one. It is printed as a classification with its own n, never as an average
+  // over both, because the whole point of the round is that they may be two populations.
+  const hard = (x: Record<string, unknown>) => Math.abs(Number(x.rollRaw)) >= 60;
+  const soft = (x: Record<string, unknown>) => Math.abs(Number(x.rollRaw)) < 60;
+  const kinds: { name: string; pick: (x: Record<string, unknown>) => boolean }[] = [
+    { name: 'roll ≥ 60° at the fall (the HARD fall)', pick: hard },
+    { name: 'roll < 60° (the GENTLE fall)', pick: soft },
+    ...STEERS.map((v) => ({ name: `stick ${v}, roll < 60°`, pick: (x: Record<string, unknown>) => soft(x) && x.steer === v })),
+    ...STEERS.map((v) => ({ name: `stick ${v}, roll ≥ 60°`, pick: (x: Record<string, unknown>) => hard(x) && x.steer === v })),
+  ];
+  console.log(`\n### step 3.3j — the two falls told apart. Every angle RAW board frame (+ = toward the board's own +x); \`lead\` is |bank| − |roll|.`);
+  console.log(`\n| population | n | fell at s | roll at the fall ° | bank ° | LEAD ° | its peak over the last 0.5 s | share of that 0.5 s the body leads | roll peak ° | roll rate at the fall °/s | its peak |`);
+  console.log(`|---|---|---|---|---|---|---|---|---|---|---|`);
+  for (const g of [...groups, ...kinds]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    console.log(`| ${g.name} | ${n} | ${span(col(g.pick, 'fellAt'))} | ${span(col(g.pick, 'rollRaw'), 1)} | ${span(col(g.pick, 'bankRaw'), 1)} `
+      + `| ${span(col(g.pick, 'lead'), 1)} | ${span(col(g.pick, 'leadPeakHalf'), 1)} | ${span(col(g.pick, 'leadShareHalf'), 2)} `
+      + `| ${span(col(g.pick, 'rollPeak'), 1)} | ${span(col(g.pick, 'rollRateEnd'), 1)} | ${span(col(g.pick, 'rollRatePeak'), 1)} |`);
+  }
+  console.log(`\n| population | n | the deck's roll REVERSED, runs | the body's bank reversed | the roll's last zero crossing, s before the fall | the lag roll − bank, s | the body across the board's centreline at the fall, m | its peak over the last 0.5 s | over the feet's own half-width, × |`);
+  console.log(`|---|---|---|---|---|---|---|---|---|`);
+  for (const g of [...groups, ...kinds]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    const flipped = rows.filter((x) => g.pick(x) && Number.isFinite(Number(x.rollFlipAt))).length;
+    const bankFlipped = rows.filter((x) => g.pick(x) && Number.isFinite(Number(x.bankFlipAt))).length;
+    console.log(`| ${g.name} | ${n} | ${flipped} of ${n} | ${bankFlipped} of ${n} | ${span(col(g.pick, 'flipBeforeFall'), 3)} | ${span(col(g.pick, 'flipLag'), 3)} `
+      + `| ${span(col(g.pick, 'comEnd'))} | ${span(col(g.pick, 'comPeakHalf'))} | ${span(col(g.pick, 'comOverFeet'), 2)} |`);
+  }
+  console.log(`\n| population | n | the trigger: beyond / weightPast / together | the capture point's position part px, m | its velocity part, m | step 3.2z's split body / feet, m/s | the body faster, raw board frame | the ankle's demand / the soles' bound, at the fall | its peak over the last 0.5 s | the joint's angle ° |`);
+  console.log(`|---|---|---|---|---|---|---|---|---|---|`);
+  for (const g of [...groups, ...kinds]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    const t = (k: string) => rows.filter((x) => g.pick(x) && x.trigger === k).length;
+    console.log(`| ${g.name} | ${n} | ${t('beyond')} / ${t('weightPast')} / ${t('together')} | ${span(col(g.pick, 'px'))} | ${span(col(g.pick, 'vTermSigned'))} `
+      + `| ${span(col(g.pick, 'bodyFelt'), 2)} / ${span(col(g.pick, 'feetFelt'), 2)} | ${rows.filter((x) => g.pick(x) && x.bodyFaster === 1).length} of ${n} `
+      + `| ${span(col(g.pick, 'ankleRatioEnd'), 2)} | ${span(col(g.pick, 'ankleRatioPeakHalf'), 2)} | ${span(col(g.pick, 'ankleAngleEnd'), 2)} |`);
+  }
+  console.log(`\n| population | n | the probe's own script centred the stick, runs | the fall AFTER that, s | 85° reached at s |`);
+  console.log(`|---|---|---|---|---|`);
+  for (const g of [...groups, ...kinds]) {
+    const n = rows.filter(g.pick).length;
+    if (!n) continue;
+    console.log(`| ${g.name} | ${n} | ${rows.filter((x) => g.pick(x) && x.centred === 1).length} of ${n} | ${span(col(g.pick, 'gapTo85'), 3)} | ${span(col(g.pick, 't85'), 2)} |`);
+  }
+
   console.log(`\n| group | stick asked | stick held, median | height m | tolerance ° (0.13 m at that height) | error ° at the fall | capture's velocity part m | its position part (px) m |`);
   console.log(`|---|---|---|---|---|---|---|---|`);
   for (const g of groups) {

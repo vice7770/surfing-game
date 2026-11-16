@@ -3906,3 +3906,630 @@ Canyon, `?canyonWaves=true`, your test spot. One change at a time, as always.
 4. **And a ruling I would like, not a ride:** given that the two falls are different, **which one do you want fixed
    first?** Your bar names the gentle one. Every roll number on this track is from the hard one. I will measure
    whichever you name.
+
+# Part 33 — the gentle fall is three falls, the stick does not choose between them, and the one the owner's own stance gets is the capsize
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33j`, cut from `main` at
+**5481822d** (the advisor's roll-inertia consult), so Part 32 is its base. It ships **no source change and no switch** —
+`git diff --stat` touches `docs/` only — **one new read-only probe** (`3.3/inertia.ts`), additions to two existing
+probes, and **252 runs over eleven arms**.
+
+Tags as in 3.2 and 3.3: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source; **[I]** my
+inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The eight sentences the round is for
+
+1. **The owner's bar is not met, and this round says why their own framing of it cannot be the route.** Across the
+   round's fall arms: **72 of 72** on the gentle stick ladder with six entry speeds, **36 of 36** on three,
+   **36 of 36** on the world filter, **36 of 36** with the probe's stick never centred, **24 of 24** on step 3.3i's
+   own grid, and **12 of 12 in each of six `deck.ts` arms** [M]. **And the decisive one: with the stick UNTOUCHED he
+   falls 12 of 12 at 1.10–1.93 s on the owner's own filter and 0.77–1.70 s on the world one** [M, Part 24's arm
+   reproduced]. **The gentle turn is not what is killing him; he falls without one.**
+2. **My brief's premise is false, and the error it warns about is the one it made: the gentle fall is not one
+   population.** On 72 runs at sticks 0.06–0.30 it is **three**, separated by the deck's roll at the fall with **no
+   overlap in the roll peak**: **A, flat** (|roll| < 10° at the fall, peak **10.0–49.3°**) — 19 runs; **B, partial**
+   (10–60°, peak 13.8–59.9°) — 17; **C, capsize** (≥ 60°, peak **62.0–92.1°**) — 36 [M].
+3. **And the stick does not choose which one you get. The stance does.** Across sticks 0.06 → 0.30 the flat count
+   runs **1, 4, 3, 5, 4, 2** and the capsize count **10, 7, 4, 5, 3, 7** — no ordering at all. By stance it is
+   **tall A17 / B5 / C14** against **Compress A2 / B12 / C22** [M]. **The owner's bar is about Compress, and Compress
+   at a gentle stick capsizes the board in 22 of 36 and rolls it past 10° in 34 of 36.** The entry speed is the second
+   term: at **−2 m/s** the split is **A0 / B1 / C11**.
+4. **So the one thing my brief said was already known about the gentle fall does not survive its own population.**
+   *"The body gets ahead of the deck in this fall, which is the opposite of the hard one"* is true of the **flat**
+   regime — `|bank| − |roll|` is **−7.8 to +19.3°, median +7.7, positive in 15 of 19** — and that regime is **17 of 19
+   the tall stance's**. In the capsize it is **−54.1 to +5.2°, median −7.9, positive in 4 of 36** [M]. **Step 3.3i's
+   7-run observation is not wrong and it is not the owner's fall**; its own grid reproduces here to the digit (§2.1).
+5. **What goes first is measured, and it is a monotone ordering over 72 runs, not a story.** The fall test's error is
+   `px = offset.x − height·nx`, so the share **|demand| / (|demand| + |offset.x|)** is the share the **deck's** bank
+   error brings. Its median is **0.20 in the flat regime, 0.40 in the partial one and 0.72 in the capsize** [M]. **In
+   the flat fall four fifths of the error is the body's own place and the deck never goes; in the capsize three
+   quarters of it is the deck.** Two different first movers, one probe, one datum.
+6. **The gentle fall is sudden, not a stall, and that refutes the other half of the brief's picture.** `px` is inside
+   the feet's own bound 0.3 s before the fall in **every one of the 72 runs** (−0.126 to +0.111 m against 0.13), and
+   the flat regime is the **fastest** of the three: the capture point's position term moves at a median **0.72 m/s**
+   over the last 0.2 s against 0.36 and 0.21, and `weightPast` has been true for **0.017–0.050 s** when he goes [M].
+7. **The advisor's three free reads: (a) held and is the round's most useful number, (b) is refuted by its own
+   method on six arms, (c)'s premise is refuted arithmetically.** (a) The solve's own roll inertia is
+   **0.498–1.140 kg·m² per run, 0.582–1.196 near trim, falling to 0.053–0.167 past 60° of rail** — the advisor
+   predicted 0.6–1.2 at trim falling to ~0.15, and **their falsification (0.03, the matrix not reaching the roll
+   equation) did not fire**. So step 3.3h's *"1 N·m = 2 187 °/s²"* is wrong by **19.0–43.5×**: the real figure is
+   **50.2–115.1 °/s²** [M]. (b) The angle part of `pressure`'s roll moment is **12.4–32.9 N·m/rad on six arms and
+   never near zero**, against the prediction of "near zero"; the rate part is **3.17–15.19 N·m·s/rad** across the same
+   six, spanning a factor five, so the regression cannot measure it — and read (a) measures it **structurally**
+   instead, off the matrix, at **9.4–16.2 N·m·s/rad over the ride and 13.8–18.2 near trim** against the sourced 12.7
+   [M, S]. (c) Nothing is omitted from Part 31's column: in **means**, which sum, the eleven water entries give
+   **−33.856**, the rider residual **+33.834**, all twelve **−0.022** against the total's own mean **−0.022**, and
+   `bed + froth + suction` add **0.000000000** [M]. The 6 N·m the advisor found missing is the non-additivity of
+   medians, **which Part 31 stated in its own §4 item 4**.
+8. **Nothing is built, and that is the round.** The one limit that is **at its stop** when he goes is the balance's own
+   commanded ankle rest: `ANKLE_REST_RANGE` = ±14.32°, saturated at the fall in **62 of 72** runs (flat 16 of 19)
+   while the hip is at its ±1.2 rad stop in **3 of 72** [M]. In the flat regime the saturation **precedes** the
+   capture point's departure by a median **0.067 s, in 14 of 19**; in the capsize it does not lead at all (median
+   −0.083 s, 14 of 31) [M]. **That is a candidate with a timing, not a cause**, and §8 says what I am not entitled to
+   claim about it.
+
+## 1. (A) What was read before anything was measured, and the one thing it changed
+
+My brief's own ranking put the gentle fall first and the advisor's reads second, and said *"start from a read, not from
+a hypothesis."* Two reads moved the design before a probe ran.
+
+**(i) `system` survives the step on the path a standing rider takes, so read (a) needs no source change** [R].
+`BoardBody.system` is a `private readonly Float64Array(36)`, which TypeScript hides and the run time does not. On the
+standing path `coupleStanding` copies rows 0–5 into `system8`/`system9` and `solveLinear` eliminates on **that** copy
+(`BoardBody.ts:1500–1506`), so the assembled matrix is intact when `step` returns. It is destroyed in place only on
+the two fallback paths — `pushCapped` and `rider.pushBoard` then `solve6` — and on the no-rider path, which is
+`solve6(system, rhs)` outright. **So this round touches no `src/` file, which is why there is no Canyon byte check in
+§9: there is nothing for it to check.**
+
+**(ii) And the assembly gives the probe its own validity test for free: every term of it is symmetric** [R]. Rows 0–5
+are built as `Σ coefficient · a_i a_j` over patches (`:1017`, `:1340`, `:1398`, `:2076`) plus `mass` on the
+translational diagonal and the world inertia tensor on the rotational block (`:1486–1488`). Gaussian elimination with
+partial pivoting is not symmetric. So `inertia.ts` prints `max|A_ij − A_ji| / max|A|`, pools only the steps that pass
+at **1e-12**, and **reports the share that passed** — 0.833–0.977 per run [M] — rather than assuming it.
+
+**The one thing this changed**: my plan had been to add a `static inertiaLedger` to `BoardBody`, which would have put
+a source change and a Canyon byte check into a read the advisor had called *"free, read-only"*. It is free.
+
+## 2. (B) The gentle fall, on its own terms
+
+**The cell is `fall.ts`'s own** — the Canyon-matched `FaceWater` (1.4 m / 16° / 5.7 m/s, 2.6 m deep, the board 0.75
+fronts ahead of the crest and 45° off the fall line), the stance held and the stick over from the first frame until the
+board is 85° round, then centred, 9 s a run. **The new population is the stick ladder**: sticks
+**0.06, 0.1, 0.15, 0.2, 0.25, 0.3** (0.06 is the smallest past `STEER_DEADBAND` = 0.05) × **six entry speeds**
+(−3, −2, −1, 0, +1.5, +3 m/s) × **two stances** = **72 runs**, on `?feltFrame=deck`, the owner's own address. A
+36-run arm on `fall.ts`'s own three entry speeds is run beside it and the two are **never pooled**.
+
+**The datum, stated, and it is not the rest of this probe's.** Every angle in §2 is the **raw board-frame** one — `+`
+means the deck normal, or the body's lean, toward the board's own **+x** — and **not** the `dir`-signed "toward the
+turn's inside" convention `fall.ts`'s other columns use. The reason is in the measurement: the gentle fall's defining
+feature is that the roll **reverses**, and a column signed by the run's final direction cannot show a reversal. The two
+conventions are kept apart in the probe and nothing below mixes them.
+
+### 2.1 The reproduction, first, because the whole round turns on one of 3.3i's columns
+
+`fall.ts` with no new switch set reproduces **step 3.3g's and 3.3i's published world arm to the digit** — tall
+1.20–4.15 s, Compress 1.12–3.98, all 24 at **1.12–4.15 s**, nets 12.6–88.1° — and on the deck filter **3.3i's own
+grid to the digit**, all 24 at **1.30–4.05 s** [M].
+
+**And the new column reproduces 3.3i's find on 3.3i's own grid**, which is what makes the rest of §2 a disagreement
+about meaning and not about numbers:
+
+| **[M]** `fall.ts`, deck filter, sticks 0.25–1, 24 runs | step 3.3i published | measured here |
+|---|---|---|
+| runs whose roll at the fall passes 60° | 17 (at its **separation** frame) | **16** (at the **fall** frame) |
+| `\|bank\| − \|roll\|` in those | **−20.0 to +0.6°** | **−21.1 to +0.3°**, positive in 1 of 16 |
+| the same in the runs under 60° | **−8.0 to +15.4°** (7 runs) | **−7.3 to +15.4°** (8 runs) |
+
+The one-run difference is the frame and is named: 3.3i's stills read the separation frame, this probe reads the fall
+frame. **Its bands are 3.3i's.**
+
+### 2.2 Three regimes, and the roll peak separates them with no overlap
+
+| **[M]** 72 runs, deck filter, sticks 0.06–0.30 | **A flat** | **B partial** | **C capsize** |
+|---|---|---|---|
+| the classifier: \|roll\| at the fall | **< 10°** | 10–60° | **≥ 60°** |
+| **n** | **19** | **17** | **36** |
+| the deck's roll **peak**, ° | **10.0–49.3** | 13.8–59.9 | **62.0–92.1** |
+| the stance | **17 tall / 2 Compress** | 5 / 12 | 14 / **22 Compress** |
+| fell at, s | 0.60–4.30 | 1.12–4.40 | 1.20–5.07 |
+| `\|bank\| − \|roll\|` at the fall, ° | **−7.8–+19.3** (median **+7.7**) | −16.4–+17.7 (+4.0) | **−54.1–+5.2** (**−7.9**) |
+| … positive, i.e. the body ahead of the deck | **15 of 19** | 12 of 17 | **4 of 36** |
+| **the deck's share of the fall-test error** (median) | **0.20** | 0.40 | **0.72** |
+| the body across the board's own centreline, peak over the last 0.5 s, m | 0.084–**0.224** | 0.047–0.179 | 0.035–**0.782** |
+| … past the feet's own 0.13 m | **17 of 19** | 8 of 17 | 16 of 36 |
+| `px`'s rate over the last 0.2 s, median m/s | **0.72** | 0.36 | 0.21 |
+| the trigger: `beyond` / `weightPast` / together | **5 / 12 / 2** | 0 / 16 / 1 | **0 / 26 / 0** |
+| the body the faster one (raw board frame) | **3 of 19** | 9 of 17 | **27 of 36** |
+| the test held because the feet went light, any frame of the last 0.2 s | **0 of 19** | 4 of 17 | 10 of 36 |
+| the ankle's demand over the soles' own bound, peak | 0.97–7.75 | 0.56–20.41 | 0.22–**27.10** |
+| the residual held 0.2 s over the stance's own `a_max` | 0.25–1.31 | 0.18–1.58 | 0.39–2.72 |
+| the roll **rate** peak, °/s | 119.1–262.3 | 92.5–341.7 | 116.8–**1 992.3** |
+
+**Five readings.**
+
+1. **The roll peak separates A from C with a gap** — 49.3° against 62.0° — on a classifier built from a *different*
+   frame's roll, which is what makes "three regimes" a measurement and not a cut I chose. B overlaps both, as a middle
+   band must.
+2. **They are two different first movers and the deck-share column is the measurement of it.** `px` is
+   `offset.x − height·nx`, so `height·nx` is the across place the turn **demands** and `offset.x` is what the body
+   **holds**; the share the demand brings is **0.20 in A and 0.72 in C** at the median. In the flat fall **four fifths
+   of the error is the body's own place**, and the deck's peak roll never reaches 50°. In the capsize **three quarters
+   is the deck's bank**.
+3. **So my brief's hypothesis about the instrument is half right, and the half matters.** *"The roll ledger may be the
+   wrong instrument for it, and the capture point's own split may be the right one"* — the roll ledger **is** the
+   wrong instrument for regime A, where the deck does not go; it is the **right** one for regime C, which is
+   **22 of 36 of the owner's own stance at a gentle stick**. The capture point's split is the right instrument for A.
+4. **And in neither regime does the board go out from under him**, which keeps 3.3i's §6 standing: the body is the
+   faster one in only 3 of 19 flat falls and 27 of 36 capsizes, and in the flat falls the body's offset from the
+   centreline **grows** to 1.1–1.7× the feet's own half-width, which is a body walking off a flat deck, not a deck
+   leaving.
+5. **The freeze is clean in regime A**: 0 of 19 runs had the capture point held for any frame of the last 0.2 s, so
+   nothing in the flat fall is a reading resumed on a body already gone. In the capsize it is 10 of 36.
+
+### 2.3 The stick does not choose the regime, and here is the whole cross-tabulation
+
+| **[M]** 72 runs | A flat | B partial | C capsize |
+|---|---|---|---|
+| **stick 0.06** | 1 | 1 | 10 |
+| stick 0.10 | 4 | 1 | 7 |
+| stick 0.15 | 3 | 5 | 4 |
+| stick 0.20 | 5 | 2 | 5 |
+| stick 0.25 | 4 | 5 | 3 |
+| stick 0.30 | 2 | 3 | 7 |
+| **entry −3 m/s** | 4 | 5 | 3 |
+| **entry −2** | **0** | 1 | **11** |
+| entry −1 | 2 | 2 | 8 |
+| entry 0 | 6 | 2 | 4 |
+| entry +1.5 | 4 | 4 | 4 |
+| entry +3 | 3 | 3 | 6 |
+| **tall** | **17** | 5 | 14 |
+| **Compress** | **2** | 12 | **22** |
+
+**The stick's column has no ordering in it at all**, and the gentlest stick of the ladder is the **most** likely to
+capsize (10 of 12). What orders the table is the **stance** and the **entry speed**. That is the round's answer to the
+brief's framing, and it is why "the gentle fall" cannot be a single mechanism: *gentle* names the stick, and the stick
+is not what the fall is about.
+
+### 2.4 Two artefacts ruled out, both by running them rather than arguing
+
+**(a) The probe's own script is not what makes the gentle fall.** `fall.ts` centres the stick once the board is 85°
+round, which in 6 of the 36 three-entry runs happens 0.067–1.017 s before the fall — a plausible way for a probe to
+manufacture a fall out of a release. Run with `ACROSS=9999`, so the stick is **never** centred, **exactly 1 of 36 runs
+changes at all**: Compress, entry +3, stick 0.06, whose 85° came 1.017 s early, falls 0.13 s later at 74.8° instead of
+89.3° [M]. Every other run is identical in fall time, roll, bank, lead, centre of mass, trigger and `px`. **The
+release is exonerated.**
+
+**(b) The deck filter does not make the flat fall, but it does make the capsize.** The same 36-run gentle ladder on
+the shipped **world** filter still falls **36 of 36**, and the regime mix moves hard: **A 10 / B 25 / C 1** against the
+deck filter's **A 13 / B 9 / C 14** [M]. So `?feltFrame=deck` — which step 3.3c and 3.3g established is the *correct*
+frame, because filtering in the world and projecting afterwards charges the reading `Ω·T` of in-plane force that is a
+frame error and not a force — **turns the partial roll into a capsize in about a third of the gentle ladder.** I report
+that as a measured property of the filter the owner rides with, not as a reason to change it: the frame is right and
+the fall count is 36 of 36 either way.
+
+### 2.5 The gentle stick is where the board is asked for the LEAST, and he falls anyway
+
+`deck.ts`, the roll ledger on, the deck filter, twelve runs an arm (two stances × six entry speeds), the stick held
+fixed from the first frame — so this is a **different population** from `fall.ts`'s and the two are never pooled. Six
+arms, one ladder:
+
+| **[M]** `deck.ts`, deck filter, 12 runs an arm | **the rider's roll drive**, median N·m | per run | fell | the deck's roll peak, ° |
+|---|---|---|---|---|
+| **stick 0 (untouched)** | **+24.37** | 0.12–43.32 | 12 of 12 at **1.10–1.93 s** | 27.5–95.6 |
+| stick 0.10 | **+6.64** | **−6.87**–35.63 | 12 of 12 at 0.92–4.30 | 14.6–92.1 |
+| **stick 0.25** | **+7.92** | **−12.58**–35.60 | 12 of 12 at 1.12–4.05 | 19.1–90.8 |
+| stick 0.50 | +23.23 | 15.00–36.89 | 12 of 12 at 1.18–3.55 | 53.1–91.1 |
+| stick 0.75 | +30.90 | 18.20–57.71 | 12 of 12 at 1.12–3.32 | 70.8–92.4 |
+| stick 1 | **+33.47** | 21.55–57.81 | 12 of 12 at 1.12–2.67 | 63.7–91.4 |
+
+**Three readings, and the first is the one for the owner.**
+
+1. **The drive is not monotone in the stick: it DIPS at the gentle sticks.** At 0.10 and 0.25 the rider's own roll
+   moment is **6.64 and 7.92 N·m** — a **third** of what he puts into the board with the stick untouched and a
+   **quarter** of the full stick's — and he falls 12 of 12 in each. **The gentle turn asks less of the board than no
+   turn at all, and it is still 12 of 12.** So "the gentle turn asks too much" is not available as an explanation.
+2. **The gentle sticks are the only arms where the per-run drive changes sign** (−6.87 to +35.63 and −12.58 to
+   +35.60): the twelve runs split into a group pressing the board over and a group pressing the other way, which is
+   §2.2's regime split seen in the moment column rather than the angle one.
+3. **The unsteered arm is the headline against the owner's bar.** On the world filter it reproduces Part 24's twelve
+   to the digit — 12 of 12 at **0.77–1.70 s**, bank peak 20.7–65.7°, roll peak 20.9–63.0°, rail peak 10.9–62.9°, drift
+   peak 1.9–4.9°, rider **+17.84** against the water's −17.78, the direct reading **+20.81**, |direct − residual|
+   2.134 / 28.735, the implied arm 0.0228 / 0.1218 m — and on the deck filter it falls 12 of 12 at **1.10–1.93 s**
+   with a roll peak of 95.6° and a drive of **+24.37 N·m** [M].
+
+### 2.6 The one limit that is at its stop when he goes
+
+| **[M]** 72 runs, deck filter, sticks 0.06–0.30 | A flat | B partial | C capsize | all |
+|---|---|---|---|---|
+| the predictor's ankle command at `ANKLE_REST_RANGE` (±14.32°) at the fall | **16 of 19** | 14 of 17 | 32 of 36 | **62 of 72** |
+| how long it had been there, s | 0.000–0.283 (median 0.133) | 0.000–0.367 (0.100) | 0.000–0.717 (0.150) | — |
+| the hip at its own ±1.2 rad stop | 0 of 19 | 1 of 17 | 2 of 36 | **3 of 72** |
+| the catching reach the stance had left, m | 0.158–0.278 | 0.125–0.272 | 0.168–0.303 | 0.125–0.303 |
+| **the saturation's lead on `px` leaving half the feet's bound**, s | **+0.067 median, 14 of 19 positive** | +0.017, 9 of 17 | **−0.083, 14 of 31** | — |
+
+**Two readings.** The commanded rest is **at its stop in 62 of 72 runs** while the hip — the authority steps 3.2x and
+3.3h swept — has room left in 69 of 72. And the saturation **leads** the capture point's departure in the flat regime
+(median +0.067 s, 14 of 19) and **does not lead at all** in the capsize (median −0.083 s, 14 of 31), which is a
+discriminator with a consistent sign in one regime and none in the other. **It is also four frames at 60 Hz, inside a
+0.283 s window, and §8 says why I will not call it the cause.**
+
+## 3. (B) Read (a) — the solve's own roll inertia, and what it does to every roll number on this track
+
+The advisor's ranked (a), and their prediction, both quoted in `inertia.ts`'s own header before it ran once:
+**0.6–1.2 kg·m² at trim, falling as cos³ of the deck-to-surface roll to ~0.15 past 60°; if it reads 0.03, the
+added-mass matrix is not reaching the roll equation and that is the bug.**
+
+**The datum.** `x̂ᵀ A x̂` over `A_rot[i][j] = system[(3+i)·6 + (3+j)]`, with x̂ **the board's long axis in the world**,
+`(rotation[2], rotation[5], rotation[8])` — **the same datum `BoardBody.rollOf` uses for every entry of the roll
+ledger**, so this inertia and that ledger's moments are about one axis and nothing has to be re-projected to divide one
+by the other. Rows 3–5 of the solve are `(dωx, dωy, dωz)` in the world and `rhs[3..5]` the angular impulses, so this
+is the generalized inertia the integrator divides the roll moment by. kg·m².
+
+### 3.1 The controls, and the one prediction of mine that failed
+
+| **[M]** a board on `PlaneWater` | asymmetry | `x̂ᵀAx̂` | `x̂ᵀIx̂` (dry) | `ŷᵀAŷ` | wetted m² | the gate |
+|---|---|---|---|---|---|---|
+| **dry**, standing rider | 0.0037 | 0.0262 | 0.026205 | **2.54** | 0 | **rejected** |
+| dry, no rider | 0.0037 | 0.0260 | 0.026205 | **2.54** | 0 | rejected |
+| **float**, standing rider | **0** | **1.8114** | 0.026205 | 152.37 | 0.5169 | **accepted** |
+| float, no rider | 0.0475 | 0.9354 | 0.026205 | 63.88 | 0.3414 | rejected |
+
+- **The gate's own negative control held as predicted**: with no rider the solve eliminates `system` in place, and both
+  no-rider reads come back asymmetric (0.0037 dry, 0.0475 floating), so the gate throws them out.
+- **My P1 failed, and the reason is a measurement.** I predicted that the dry board with a standing rider would read
+  `rollSolve` **exactly** equal to `rollDry` and `heaveSolve` exactly the board's 2.54 kg. **The heave half held to the
+  digit on all four rows.** The roll half was **not testable on the path I chose**: a dry board cannot give a standing
+  contact the impulse it asks for, so the solve takes `pushBoard` + `solve6` and eliminates the matrix — which the
+  asymmetry of 0.0037 is reporting. **So the dry control tests the read's block offsets (2.54 kg exactly, four times)
+  and not the roll element**, and I say so rather than quoting the 0.0262 it happens to return.
+- **P2 held**: floating with a rider, the water adds **1.785 kg·m²** to the board's 0.0262, and the read is
+  **symmetric to the last bit** — asymmetry exactly 0, which is the gate's positive side.
+
+### 3.2 The closure, which is the control that does work
+
+Reconstructed by hand, patch by patch, out of the same private arrays the assembly read (`arm`, `normal`,
+`surfaceNormal`, `damping`, `addedMass`, `entrained`, `radiation`, and `substepSpan` for h):
+
+| **[M]** kg·m² about the board's long axis | float + rider | the ride, 12 runs (median per run) |
+|---|---|---|
+| **`x̂ᵀAx̂`, the solve's own** | **1.8114** | **0.498–1.140** |
+| the dry tensor `x̂ᵀIx̂` | 0.026205 | 0.0262–0.0262 |
+| `Σ (addedMass + entrained)·((r × û)·x̂)²`, **a real inertia** | 1.7829 (with h·radiation) | **0.434–1.088** |
+| `Σ h·radiation·((r × û)·x̂)²`, **h × a damping** | — | 0.0022–0.0058 |
+| `Σ damping·((r × n̂)·x̂)²`, **h × a damping** (`damping = pressureDamping · h`) | 0.0022 | 0.0073–0.0112 |
+| the **rest** — foils, the duck plate, the rider's own yaw inertia | **0.0001** | 0.0032–0.0226 (peak \|rest\| 0.0158–0.0573) |
+| the substep h, s | 0.00104167 | 0.00104167 |
+
+**The two routes close to 0.0001 kg·m² on 1.81 on the control and leave 0.3–2 % unaccounted over the ride**, which is
+the foils and the rider's yaw coupling. **That is the control that says the read is on the right block and the right
+axis** — an off-by-three in the block index would have read a translational element of tens of kilograms into the
+roll, and a wrong axis would have read the pitch or yaw inertia, which is the *same order* as the answer and is why the
+closure and not the magnitude is the test.
+
+**And it separates what is an inertia from what is h times a damping**, which the advisor's own wording warned about:
+`inertia = h·radiation + addedMass + entrained` in the assembly, so a third of its name is a damping. The inertia
+proper is **0.434–1.088 kg·m²**.
+
+### 3.3 The answer, and what it costs every roll number on this track
+
+| **[M]** 12 runs (2 stances × 2 sticks × 3 entries), deck filter | |
+|---|---|
+| clean steps, share per run | 0.833–0.977 (asymmetry **exactly 0** in every accepted step; 0.18–0.29 in the rejected ones) |
+| **`x̂ᵀAx̂`, median per run** | **0.498–1.140 kg·m²** (over all accepted steps, 0.037–1.771) |
+| … **near trim** (\|rail\| < 10°) | **0.582–1.196** |
+| … **past 60° of rail** | **0.053–0.167** |
+| the ratio to step 3.3h's `I_zz` = 0.0262 | **19.0–43.5×** |
+| **1 N·m is** | **2 186 °/s² on 3.3h's I_zz · 50.2–115.1 °/s² on the solve's own** |
+| the hull's roll **damping** off the same assembly, pressure only | 7.0–10.7 N·m·s/rad (near trim 9.3–13.0) |
+| … **pressure + radiation** | **9.4–16.2 N·m·s/rad (near trim 13.8–18.2)** |
+| the cos power fitted per run | −3.35 to +3.71 — **not claimed** |
+
+**Four readings.**
+
+1. **The advisor's prediction held on both halves, and their falsification did not fire.** 0.582–1.196 near trim
+   against a predicted 0.6–1.2; 0.053–0.167 past 60° against a predicted ~0.15. **The generalized added-mass matrix
+   does reach the roll equation. There is no bug, and the inertia hypothesis is closed for the third time.**
+2. **But it closes step 3.3h's denominator, which was wrong by a factor 19 to 44.** *"1 N·m = 2 187 °/s² on a roll
+   inertia of 0.0262 kg·m²"* has been the arithmetic behind *"the whole of the capsize lives in a 0.1 % error between
+   two 33 N·m columns"* since Part 31. **On the inertia the integrator actually uses, 1 N·m is 50–115 °/s²**, and the
+   measured roll acceleration over the turn (21–234 °/s², Part 31) needs **0.2–4.7 N·m** of net moment, not
+   0.01–0.11. The net of +0.04 N·m is still small against 33; what is no longer true is that it is *astronomically*
+   small, and no conclusion on this track should rest on that ratio again.
+3. **I will not claim the cos³ law.** The per-run power fit spans −3.35 to +3.71, which is noise; what is measured is
+   the **direction and the size of the fall-off**, trim 0.582–1.196 → past-60° 0.053–0.167, a factor 7–10 against
+   cos³60° = 0.125's factor 8. Consistent, not fitted.
+4. **The damping comes out of the same read, structurally, and it supersedes read (b)'s regression** (§4). It is
+   `Σ pressureDamping·((r × n̂)·x̂)²` and `Σ radiation·((r × û)·x̂)²` — coefficients, read off the matrix, prior to any
+   fit: **9.4–16.2 N·m·s/rad over the ride and 13.8–18.2 near trim**, which **brackets the advisor's predicted 11–19
+   and the sourced 12.7** (ITTC 7.5-02-07-04.5 4.2.4).
+
+## 4. (B) Read (b) — the rate part and the angle part, and why its own method cannot answer it
+
+The advisor's prediction, quoted: **a rate slope of 11–19 N·m·s/rad bracketing the sourced 12.7, and an angle slope
+near zero on the flat section.** Regressed per-frame on six `deck.ts` arms, `rollBy.pressure` on roll rate (rad/s) and
+rail angle (rad), with the probe's own sign convention stated in the code and the sign flipped so that a positive
+figure is a damping.
+
+| **[M]** `deck.ts`, deck filter, 12 runs an arm | the joint fit's **rate** part, N·m·s/rad | its **angle** part, N·m/rad | R² | the rate **alone** | the angle **alone** |
+|---|---|---|---|---|---|
+| stick 0 | 5.58 … | **20.14** | 0.553 | **15.19** (R² 0.465) | 35.12 (0.432) |
+| stick 0.10 | … | **31.79** | 0.560 | 7.14 (0.270) | 37.14 (0.529) |
+| stick 0.25 | −0.02 | **32.86** | 0.291 | 3.17 (0.047) | 32.83 (0.291) |
+| stick 0.50 | … | **12.35** | 0.325 | 6.35 (0.252) | 19.36 (0.240) |
+| stick 0.75 | … | **31.38** | 0.515 | 10.82 (0.266) | 36.26 (0.504) |
+| **stick 1** (3.3h's own 1 118 frames) | **5.96** | **30.93** | 0.533 | **12.49** (0.316) | 39.24 (0.487) |
+| the whole water column, stick 1 | 9.75 | 19.11 | 0.419 | — | — |
+
+**Four readings, and the method is the finding.**
+
+1. **The "angle slope near zero" prediction is refuted on 6 of 6 arms**: 12.4–32.9 N·m/rad, every one of them, with
+   the angle-alone slope 19.4–39.2. **`pressure`'s roll moment has a substantial angle part on this flat section.**
+2. **The rate slope cannot be measured this way, and its own numbers say so**: 3.17–15.19 across the six arms, a
+   factor of five, and the joint fit drops the full-stick arm's 12.49 to 5.96 and the quarter-stick's 3.17 to −0.02.
+   **That is the signature of collinearity** — in a monotone roll the rate and the angle rise together — **and not two
+   measurements.** The predicted 11–19 is met on 2 of 6 arms and only when the angle is left out of the model.
+3. **So read (a) answers read (b)'s question better than read (b) does**, because the damping is a *coefficient in the
+   assembly* and not a slope to be fitted: 9.4–16.2 N·m·s/rad over the ride, 13.8–18.2 near trim (§3.3).
+4. **And the terminal-rate framing the advisor asked for instead of the net does not survive two populations either.**
+   `ω = drive / C` with the structural C: full stick **33.47 / 9.4–16.2 = 118–204 °/s** against a measured roll-rate
+   peak of **146.7–353.7**; quarter stick **7.92 / 9.4–16.2 = 28–48 °/s** against a measured peak of **92.5–326.3**
+   [A, M]. **It is the right order on the hard arm and 2–10× low on the gentle one.** I publish it as asked and do not
+   adopt it as the headline.
+
+**The equilibrium that the angle part implies, offered as a consistency check and withdrawn as a law.** With the
+damping **held** at read (a)'s structural value — a number that was not fitted — the stiffness comes out at
+17.10–26.29 N·m/rad on the full-stick arm, and `drive / stiffness` is **73.0–112.1° of rail** against that arm's
+measured **rail peak of 75.7–90.1°**. That is a striking agreement and **it fails its own second-population test**: on
+the quarter-stick arm the same procedure gives a stiffness of 5.55–17.00 with R² **0.026–0.291** and an equilibrium of
+**26.7–81.9°** against a measured rail peak of **10.5–94.1°** — a band too wide to be a test, from a fit that has
+degenerated. **So I do not claim that the capsize is the board going to its own roll equilibrium.** One arm agreed;
+the second does not confirm it; a two-parameter linear model with R² 0.03–0.56 fitted across 0–90° of roll is not a
+mechanism. §8 keeps it.
+
+## 5. (B) Read (c) — the full roll column, in means, which do sum
+
+The advisor's premise: *"Part 31's eight entries sum to −27.42, not −33.40 — about 6 N·m is in `froth`, `suction`,
+`bed` and `gyro`, which the published table omits."*
+
+| **[M]** `deck.ts`, stick 1, deck filter, **1 118 frames**, N·m, **means** | |
+|---|---|
+| buoyancy · pressure · addedMass · radiation | −3.398 · **−25.250** · −2.865 · −1.813 |
+| friction · bed · fins · rails · froth · suction · gyro | +0.055 · **0.000** · −0.669 · +0.103 · **0.000** · **0.000** · −0.019 |
+| **rider (a residual)** | **+33.834** |
+| the eleven water entries + gyro, **summed** | **−33.856** |
+| all twelve, summed | **−0.022** |
+| the total's own mean | **−0.022** |
+| **\|difference\|** | **0.000000000** |
+| what `bed + froth + suction` add | **0.000000000** |
+
+**The premise is refuted, arithmetically and on two populations** (the quarter-stick arm closes the same way: water
+−7.083, rider +7.079, all twelve −0.004 against a total of −0.004, |difference| 0.000000000). **No column is omitted
+from Part 31's table.** The 6 N·m is the non-additivity of medians, and Part 31 said so in its own §4 item 4: *"the
+eleven sum to +6.06 against the median of the sum, +0.04."* The means are additive **by construction** — every ledger
+entry is accumulated as an angular impulse over the substeps and divided by `dt` once, and `rider` is defined as the
+per-step residual — so this block could not have failed to close, and that is exactly why it settles the question.
+
+## 6. The owner's bar, measured, with every population named
+
+| **[M]** arm | n | fell | when, s |
+|---|---|---|---|
+| `fall.ts`, deck filter, sticks **0.06–0.30**, 6 entry speeds, 2 stances | **72** | **72 of 72** | 0.60–5.07 |
+| the same on `fall.ts`'s own 3 entry speeds | 36 | **36 of 36** | 1.53–5.07 |
+| the same, **world** filter | 36 | **36 of 36** | 1.27–4.48 |
+| the same, deck filter, the stick **never centred** | 36 | **36 of 36** | 1.53–5.07 |
+| `fall.ts`, deck filter, step 3.3i's own grid (sticks 0.25–1) | 24 | **24 of 24** | 1.30–4.05 |
+| `fall.ts`, world filter, step 3.3g's own grid | 24 | **24 of 24** | 1.12–4.15 |
+| `deck.ts`, deck filter, **stick 0 (untouched)** | 12 | **12 of 12** | **1.10–1.93** |
+| `deck.ts`, world filter, stick 0 (Part 24's own twelve) | 12 | **12 of 12** | **0.77–1.70** |
+| `deck.ts`, deck filter, sticks 0.10 · 0.25 · 0.50 · 0.75 · 1 | 12 each | **12 of 12** each | 0.92–4.30 |
+
+**The owner's bar is "in Compress the surfer should not fall at the low speeds of getting into position", 100 %, not
+fewer. Compress falls 36 of 36 on the 72-run gentle ladder, 18 of 18 on each 36-run arm, and 6 of 6 in each
+`deck.ts` arm.** And the sentence that matters most for what to do next: **he falls 12 of 12 with the stick
+untouched**, in 1.10–1.93 s, at a roll peak of 95.6°, with a larger roll drive (+24.37 N·m) than either gentle stick
+puts in. **The turn is not the cause, so making the turn gentler is not the route.**
+
+## 7. What I refuted
+
+- **My brief's premise, and it is the error my brief told me to look for.** *"My assumption that the gentle fall has a
+  single mechanism, or that it is even one population"* — it is **three** regimes on 72 runs, separated with no
+  overlap in the roll peak, and **the stick does not choose between them**. Nineteen consecutive rounds have now
+  refuted their brief's premise.
+- **The brief's one carried-forward fact about the gentle fall.** *"The body gets ahead of the deck in this fall,
+  which is the opposite of the hard one"* holds in the **flat** regime (lead positive in 15 of 19) and that regime is
+  **17 of 19 the tall stance's**; the owner's Compress gets the capsize in 22 of 36, where the lead is positive in
+  4 of 36. **Step 3.3i's 7-run band reproduces to the digit and does not mean what it was taken to mean.**
+- **The framing that the gentle turn asks too much of the board.** The rider's own roll drive is **lowest at the
+  gentle sticks** — 6.64 and 7.92 N·m against 24.37 with the stick untouched and 33.47 at a full stick — and he falls
+  12 of 12 in every arm of the ladder.
+- **The advisor's read (b), by its own method.** The "angle slope near zero" prediction fails on 6 of 6 arms
+  (12.4–32.9 N·m/rad); the rate slope spans 3.17–15.19 across the six and collapses when the angle enters the model,
+  so the regression cannot measure it. Read (a)'s structural read does, at 9.4–16.2 N·m·s/rad.
+- **The advisor's read (c), arithmetically.** Nothing is missing from Part 31's column: in means the twelve entries
+  sum to the total to **nine decimal places** on two populations and `bed + froth + suction` add exactly zero.
+- **Step 3.3h's denominator, which is the one correction this round makes to a published number.** The solve's roll
+  inertia is **0.498–1.140 kg·m², 19.0–43.5× the 0.0262 kg·m²** that *"1 N·m = 2 187 °/s²"* divides by. The right
+  figure is **50.2–115.1 °/s²**.
+- **Two artefacts, by running them.** The probe's own stick centring changes **1 of 36** runs; the deck filter does
+  not make the flat fall (the world filter falls 36 of 36 too), though it does turn the partial roll into a capsize in
+  about a third of the ladder.
+- **My own P1.** I predicted the dry control would read the roll element exactly; a dry board cannot feed a standing
+  contact, so that path eliminates the matrix and the prediction was not testable. The heave half of the same
+  prediction held to the digit four times, and §3.2's closure is the control that does the work.
+
+## 8. What I will not claim
+
+- **I will not claim the ankle's commanded rest is the cause of the flat fall.** What is measured is that it is at its
+  ±14.32° stop in **62 of 72** runs while the hip has room in 69 of 72, and that in the flat regime it **precedes**
+  the capture point's departure by a median **0.067 s in 14 of 19**. That is four frames at 60 Hz inside a 0.283 s
+  window, with no A/B behind it, and a lead is not a cause. §10 names the test.
+- **I will not claim the capsize is the board reaching its own roll equilibrium**, although one arm's
+  `drive / stiffness` of 73–112° brackets its measured 75.7–90.1° of rail. The second population does not confirm it
+  and the fit degenerates there (R² 0.026–0.291). One arm is not a law.
+- **I will not claim a `cos³` fall-off of the added roll inertia.** The per-run power fit is −3.35 to +3.71. The
+  direction and the factor (7–10 from trim to past 60°) are measured; the exponent is not.
+- **I will not claim the three regimes are exactly three, or that the 10° and 60° cuts are physical.** 60° is step
+  3.3i's own cut, kept so the two rounds can be read together; 10° is mine, chosen because the roll **peak** separates
+  with a gap there (49.3° against 62.0°) on a classifier built from a different frame. **B is a middle band and it
+  overlaps both**, and 17 of 72 runs are in it.
+- **I will not claim the stance *causes* the regime.** It predicts it strongly on 72 runs (tall A17/C14 against
+  Compress A2/C22) and so does the entry speed (−2 m/s gives C in 11 of 12), and I did not vary one with the other
+  held — the grid is complete but the mechanism is not measured.
+- **I will not claim the structural damping is a sourced hull damping.** It is this model's own coefficient read off
+  this model's own matrix. That it lands on the sourced 12.7 (ITTC) is a consistency the advisor predicted and not a
+  validation of the hull law.
+- **I will not re-promote the net roll moment as a headline**, as the advisor asked; and I will not replace it with
+  the terminal rate either, because that is 2–10× low on the gentle arm (§4).
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed rather than paddled in, **`deck.ts`'s six
+  entry speeds and `fall.ts`'s three are different populations and are never pooled**, `inertia.ts`'s ride arm is its
+  own third population, and every span above is **the whole population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 9. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the four probes type-checked separately on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/fall.ts`, `.../deck.ts`, `.../inertia.ts`, `.../stills.ts`,
+  `src/physics/AttachedRider.ts`, `src/physics/BoardBody.ts`, `src/physics/PlaneWater.ts` and `@types/node`. **This
+  check caught a real error the root project cannot see** (`WATER_KEYS.concat(['gyro'])` in `deck.ts`, since
+  `WATER_KEYS` is a narrowed literal tuple), which is why it is run and not assumed.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **57 files, 611 passed, 21 expected fail** — identical to Part 32's.
+  `vitest run src/game src/scene/rig`: **70 files, 731 passed** — identical.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round touches no solver, no wave and no spot file.
+- **the shipped rider is proved unchanged against four published baselines**, which is the seatbelt that matters for a
+  round whose whole output is numbers off the shipped rider:
+  - `fall.ts` with no switch set reproduces **3.3g's and 3.3i's world arm to the digit** (tall 1.20–4.15, Compress
+    1.12–3.98, all 24 at 1.12–4.15 s, nets 12.6–88.1°);
+  - `fall.ts` on the deck filter reproduces **3.3i's own grid to the digit** (all 24 at 1.30–4.05 s);
+  - `deck.ts` at `STEER=1 FELT=deck ROLL=on ANKLE=on` reproduces **3.3h §4's whole per-source table to the digit**
+    (rider +33.47, pressure −20.46, buoyancy −3.81, radiation −1.65, addedMass −1.16, fins −0.47, rails +0.09,
+    friction +0.04, water −33.40, net +0.04, the implied arm 0.0525 / 0.3092 m, the direct reading 39.19,
+    |direct − residual| 4.721 / 143.196, 1 118 commanded frames);
+  - `deck.ts` at `STEER=0 ROLL=on ANKLE=on` reproduces **Part 24's and Part 31's unsteered twelve to the digit**
+    (12 of 12 at 0.77–1.70 s, bank peak 20.7–65.7°, roll peak 20.9–63.0°, rail peak 10.9–62.9°, drift peak 1.9–4.9°,
+    rider +17.84, water −17.78, direct +20.81, |direct − residual| 2.134 / 28.735, arm 0.0228 / 0.1218 m).
+- **a positive control for the new instrument, predicted before it ran** (`inertia.ts`'s header, §3.1–3.2): the gate's
+  negative control (no rider ⇒ asymmetric ⇒ rejected) held; the heave element read the board's own 2.54 kg exactly on
+  all four control rows; the floating read is symmetric to the last bit; and the hand reconstruction closes on
+  `x̂ᵀAx̂` to **0.0001 kg·m² on 1.81**. My own P1 on the dry roll element **failed and is reported as failed**, with the
+  measured reason.
+- **no Canyon byte check, because there is nothing to check**: `git diff --stat` against `main` touches
+  **`docs/` only** — no `src/`, no solver, no wave, no spot file, no hull law, and **no switch reaches the game**.
+  The check's own purpose is to catch a behavioural change in shipped code, and this round ships none; the four
+  reproductions above are the evidence in its place.
+
+## 9b. The deletions column, read line by line
+
+`git diff --cached --numstat origin/main`, read file by file: **35 files changed, 3 879 insertions and exactly ONE
+deletion.** The one deletion is read and quoted:
+
+- `docs/research/new-rider/3.3/fall.ts`, **1**: the row object's first line,
+  `rider: RIDER, stance: st, extra, steer, felt: …, ankleLimit: ANKLE_LIMIT ?? 'shipped', hand: HAND,` — replaced in
+  place by **the identical line plus `ankle: ANKLE ? 'on' : 'off'`** at its end, so the round's own switch is named in
+  every row. Nothing was removed and nothing was reverted. Every other change to this file is an insertion beside the
+  line it belongs to.
+- `docs/research/new-rider/3.3/deck.ts`, **0**: §6b and §6c are inserted before §6's closing brace.
+- `docs/research/new-rider/3.3/README.md`, **0** — this Part is appended.
+- `docs/research/new-rider/3.3/inertia.ts` and the 31 files of `docs/research/new-rider/3.3/results/33j/` — **pure
+  additions, zero deletions each.**
+
+The behavioural proof that the one replaced line changed nothing is §9's four reproductions: `fall.ts`'s two arms and
+`deck.ts`'s two reproduce their published records to the digit.
+
+`origin/main` is still **5481822d**, this branch's own merge base, so there was no mid-round merge to rebase onto —
+and the column was read rather than that being assumed.
+
+## 10. Files (3.3j)
+
+- `docs/research/new-rider/3.3/inertia.ts` — **new**: the solve's own roll inertia, its symmetry gate, its dry and
+  floating controls, the hand reconstruction that closes it, and the hull's own roll damping off the same assembly.
+  No source file is touched by it.
+- `docs/research/new-rider/3.3/fall.ts` — `ANKLE=on` (off by default) and step 3.3j's gentle-fall columns: the raw
+  board-frame roll and bank, `|bank| − |roll|` and its peak and share, the roll rate, the reversal times, the body's
+  place across the board's own centreline against the live support half-width, step 3.2z's split at its own last
+  consistent frame, the ankle ledger's four columns, the stick-centring gap, and the ankle command's saturation and
+  its lead on `px`. Four new printed tables, split by regime.
+- `docs/research/new-rider/3.3/deck.ts` — **§6b** (read (c): the same roll column in means, which sum) and **§6c**
+  (read (b): the rate/angle split, the collinearity, the stiffness with the damping held, and the terminal rate). Both
+  print only when `ROLL=on`, and the two published arms reproduce to the digit with them on.
+- `docs/research/new-rider/3.3/results/33j/` — eleven arms with their printed tables beside their rows,
+  `33j-predictions.md` (every prediction as written before its read), `33j-regimes.txt` and the script that made it.
+
+## 11. For the owner, in plain words — and the shot list
+
+**You asked me to fix the gentle fall first. I measured it on 72 runs instead of 6, and the first thing I have to tell
+you is that there isn't one gentle fall. There are three, and the gentleness of the turn is not what decides which one
+you get.**
+
+I ran him at six different stick positions from a feather-touch (0.06 of full) up to a third of full, at six entry
+speeds, in both stances — 72 rides. **All 72 fell.** Sorting them by how far the board had rolled over when he went:
+
+- in **19** of them the board was essentially **flat** — never past 50°, and within 8° of level when he went — and
+  what crossed the line was **his body**, walking out to 1.1 to 1.7 times his own foot-width off the centreline;
+- in **36** of them the board **capsized**, past 60° and often to 90°, and he went over with it;
+- **17** were in between.
+
+**And here is the part that changes what to do next: which one you get is decided by the stance, not by the stick.**
+The flat "he walks off a level board" fall is almost entirely the **tall** stance's — 17 of the 19. **Your own stance,
+Compress, capsizes the board in 22 of 36 and rolls it past 10° in 34 of 36.** So the thing I was sent to go and
+measure — the fall where his body gets ahead of the deck — is real, and it is *not the one your Compress rides into*.
+
+**Two more measurements that I think settle the direction.**
+
+**First: he falls with the stick untouched.** Not gently steering — not steering at all. **12 of 12, in 1.1 to 1.9
+seconds.** And when I measure how hard his feet twist the board, the *gentle* stick positions twist it the **least** of
+anything on the ladder: about 7 newton-metres, against 24 with no stick at all and 33 at a full stick. **So the gentle
+turn is not what is killing him. Making the turn gentler cannot be the fix, because he already falls without one.**
+
+**Second: it is sudden, every time.** A third of a second before he goes, his weight is comfortably inside his feet in
+all 72 runs. The flat fall is the **fastest** of the three — his balance point travels at about 0.7 m/s in the last
+fifth of a second — and the fall test's second condition is true for only **two or three frames** before he is off.
+Whatever is going wrong goes wrong late and quickly, which is not a man slowly losing his balance.
+
+**One thing I found that is at its limit when he goes, and I am being careful about it.** The game lets his balance
+ask his ankles to shift his weight by up to **14.3 degrees**. In **62 of the 72 runs** that request is **maxed out**
+when he falls — while his hips, the thing two earlier rounds spent themselves on, still have room in 69 of 72. In the
+flat fall the ankle request maxes out about **0.07 s before** his weight starts leaving his feet, in 14 of 19 runs.
+**That is a suspect with a stopwatch on it, not a cause** — four frames is not proof — but it is the first limit I have
+found that is actually *at its stop* in your own failing case, and testing it is one switch.
+
+**And three bits of housekeeping on numbers you have been told before.** The board's resistance to being rolled is
+**19 to 44 times** what Part 31 divided by — I read it off the matrix the physics actually solves, and the wave advisor
+predicted the figure almost exactly. So the old line *"1 newton-metre spins this board at 2 187 degrees per second
+squared"* was wrong; it is 50 to 115. Second, the advisor thought a column was missing from the roll table; it isn't —
+I added them up a different way and they close to nine decimal places. Third, they predicted the board has essentially
+no resistance to *sitting* at a roll angle; it has a real one, on all six of my tests.
+
+**Your bar is still not met: 72 of 72, and 36 of 36 in Compress.**
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot. One change at a time, as always. Nothing new to turn on — everything
+below is the game as it ships.
+
+1. **`?rider=new&feltFrame=deck&canyonWaves=true`, and DON'T TOUCH THE STICK.** Get into position at low speed, press
+   Compress, and ride straight. **The question: does he fall anyway, and does it look like the board tipping over or
+   like him stepping off a flat board?** The measurement says he falls in about 1 to 2 seconds with the board rolling
+   past 90°. **This is the shot I most want your eyes on**, because if it is true on the wave as well as the bench,
+   the gentle *turn* is a red herring and I should stop measuring turns.
+2. **The same, then the feather-touch turn** (barely move the stick). Measurement says this is the *least* twist he
+   ever puts into the board and he still goes, 12 of 12.
+3. **The same in the TALL stance, gentle turn.** Measurement says this is where the other fall lives — **a nearly flat
+   board and his body leaning out past his feet**. **The question: does that one feel different from Compress's?** If
+   the two feel like one thing to you, my three regimes are one thing to ride and I will say so and stop splitting
+   them.
+4. **And a ruling I would like, not a ride.** Given that he falls with the stick untouched, **do you want me to drop
+   the turn entirely and work on standing still first?** Every round on this track for a fortnight has measured a
+   turn. If the answer is yes, the next measurement I would run is the one limit that is at its stop in your own
+   case — the 14.3° the balance may ask of his ankles — which is one switch, one A/B and a stated prediction: **if it
+   is the binding limit, widening it moves the flat fall and leaves the capsize alone; if it moves neither, it is
+   innocent and I will publish that.**

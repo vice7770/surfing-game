@@ -1146,6 +1146,120 @@ if (ROLL) {
   console.log(`      AT THE FALL, per run, N·m: ${ROLL_KEYS.map((k) => `${k} ${span(rows.map((x) => Number((x.rollByAtFall as Record<string, number>)[k])), 1)}`).join(' | ')}`);
   console.log(`      the net at the fall ${span(nf('rollTotalAtFall'), 1)} N·m = water ${span(nf('rollWaterAtFall'), 1)} + the rider residual ${span(nf('rollRiderAtFall'), 1)}`);
   console.log(`      and what it does to a board this light: the roll ACCELERATION ${span(nf('rollAlphaTurnMedian'), 0)} °/s² over the turn, ${span(nf('rollAlphaAtFall'), 0)} at the fall · the measured roll rate at the fall ${span(nf('rollRateAtFall'), 1)}°/s (peak ${span(nf('rollRatePeak'), 1)})`);
+  /**
+   * **§6b — step 3.3j, the advisor's free read (c): the roll column in MEANS, which do sum.**
+   *
+   * The wave-shape advisor's ruling of 2026-11-16 reported that Part 31's eight published entries sum to −27.42
+   * against the water column's −33.40 and inferred that *"about 6 N·m is in `froth`, `suction`, `bed` and `gyro`,
+   * which the published table omits."* **The premise is wrong and this block is why**: Part 31 printed all eleven
+   * entries (`bed`, `froth`, `suction` at 0.00 and `gyro` at −0.00) and said in its own §4 item 4 that *"each entry's
+   * figure is its own median over the pool and medians do not sum: the eleven sum to +6.06 against the median of the
+   * sum, +0.04."* The 6 N·m is the non-additivity of medians, not a missing column.
+   *
+   * **The MEAN is additive, so this block settles it arithmetically**: every entry's own mean over the same pool, the
+   * eleven water means summed, the rider residual's mean, and the sum of all twelve against the mean of the total —
+   * which must agree to round-off, because `rider` is defined as the residual **per step** and the means are over the
+   * same frames. If any entry were missing from the published table, THIS sum would not close.
+   */
+  const mean = (v: number[]) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : Number.NaN);
+  const mn = (k: string) => mean(commanded.map((x) => x.rollBy[k]));
+  const waterMean = ROLL_KEYS.filter((k) => k !== 'rider').reduce((a: number, k) => a + mn(k), 0);
+  const allMean = ROLL_KEYS.reduce((a, k) => a + mn(k), 0);
+  console.log(`   §6b READ (c) — THE SAME COLUMN IN MEANS, which DO sum (${commanded.length} frames):`);
+  console.log(`      PER SOURCE, mean N·m: ${ROLL_KEYS.map((k) => `${k} ${f(mn(k), 3)}`).join(' | ')}`);
+  console.log(`      the ten water entries + gyro, summed: ${f(waterMean, 3)} N·m · the rider residual's mean ${f(mn('rider'), 3)} · all twelve summed ${f(allMean, 3)} against the TOTAL's own mean ${f(mean(commanded.map((x) => x.rollTotal)), 3)} · |difference| ${f(Math.abs(allMean - mean(commanded.map((x) => x.rollTotal))), 9)}`);
+  console.log(`      the eight entries Part 31 published, summed as MEANS: ${f(['pressure', 'buoyancy', 'radiation', 'addedMass', 'fins', 'rails', 'friction'].reduce((a, k) => a + mn(k), 0) + mn('gyro'), 3)} N·m · what bed + froth + suction add: ${f(mn('bed') + mn('froth') + mn('suction'), 9)}`);
+  /**
+   * **§6c — step 3.3j, the advisor's free read (b): is `pressure`'s roll moment a RATE part or an ANGLE part?**
+   *
+   * Their ruling: *"Regress the per-frame `roll.pressure` on roll rate (N·m per rad/s) and on rail angle (N·m per
+   * rad) over the 1 118 frames already recorded. Predictions: a rate slope of 11–19 N·m·s/rad bracketing the sourced
+   * 12.7, and an angle slope near zero on the flat section. This is the difference between 'the board rolls too
+   * fast' (fight the drive) and 'the board has no roll equilibrium' (the authority must be the rider's)."*
+   *
+   * **The datum, and the one sign care this needs.** `rollBy.pressure` and `rollRate` are already in this probe's own
+   * roll sense and already multiplied by the run's `rollSense` (`Frame.rollBy`), so both are "positive = further over
+   * the way the run went" and a DAMPING must come out with a **negative** slope — the moment opposes the rate. The
+   * regression is reported with the sign flipped, so a positive figure is a damping, and the raw slope is printed
+   * beside it so nothing is hidden. `rail` is the deck against the WATER's own surface normal (the incidence the
+   * pressure actually sees), not the roll from the world vertical; both are printed.
+   *
+   * Three parameters by the normal equations (intercept, rate, angle), plus each slope alone with its own R².
+   */
+  const fit2 = (ys: number[], as: number[], bs: number[]) => {
+    let n = 0;
+    let sa = 0;
+    let sb = 0;
+    let sy = 0;
+    let saa = 0;
+    let sab = 0;
+    let sbb = 0;
+    let say = 0;
+    let sby = 0;
+    for (let i = 0; i < ys.length; i += 1) {
+      if (!Number.isFinite(ys[i]) || !Number.isFinite(as[i]) || !Number.isFinite(bs[i])) continue;
+      n += 1; sa += as[i]; sb += bs[i]; sy += ys[i];
+      saa += as[i] * as[i]; sab += as[i] * bs[i]; sbb += bs[i] * bs[i];
+      say += as[i] * ys[i]; sby += bs[i] * ys[i];
+    }
+    if (n < 10) return { n, rate: Number.NaN, angle: Number.NaN, intercept: Number.NaN, r2: Number.NaN };
+    // Centre, then solve the 2 × 2.
+    const ma = sa / n;
+    const mb = sb / n;
+    const my = sy / n;
+    const caa = saa - n * ma * ma;
+    const cab = sab - n * ma * mb;
+    const cbb = sbb - n * mb * mb;
+    const cay = say - n * ma * my;
+    const cby = sby - n * mb * my;
+    const det = caa * cbb - cab * cab;
+    if (!(Math.abs(det) > 1e-12)) return { n, rate: Number.NaN, angle: Number.NaN, intercept: Number.NaN, r2: Number.NaN };
+    const rate = (cay * cbb - cby * cab) / det;
+    const angle = (cby * caa - cay * cab) / det;
+    const intercept = my - rate * ma - angle * mb;
+    let ssr = 0;
+    let sst = 0;
+    for (let i = 0; i < ys.length; i += 1) {
+      if (!Number.isFinite(ys[i]) || !Number.isFinite(as[i]) || !Number.isFinite(bs[i])) continue;
+      const e = ys[i] - (intercept + rate * as[i] + angle * bs[i]);
+      ssr += e * e; sst += (ys[i] - my) * (ys[i] - my);
+    }
+    return { n, rate, angle, intercept, r2: sst > 0 ? 1 - ssr / sst : Number.NaN };
+  };
+  const rateRad = commanded.map((x) => x.rollRate / DEG);
+  const railRad = commanded.map((x) => x.rail / DEG);
+  const rollRad = commanded.map((x) => x.roll / DEG);
+  const press = commanded.map((x) => x.rollBy.pressure);
+  const waterAll = commanded.map((x) => x.rollWater);
+  const pRail = fit2(press, rateRad, railRad);
+  const pRoll = fit2(press, rateRad, rollRad);
+  const wRail = fit2(waterAll, rateRad, railRad);
+  const rateOnly = fit(rateRad, press);
+  const railOnly = fit(railRad, press);
+  console.log(`   §6c READ (b) — PRESSURE's roll moment split into a RATE part and an ANGLE part (${pRail.n} frames):`);
+  console.log(`      DAMPING (the rate part, sign flipped so + opposes the rate): ${f(-pRail.rate, 2)} N·m·s/rad · raw slope ${f(pRail.rate, 2)} · against the sourced 12.7 (ITTC 7.5-02-07-04.5 4.2.4)`);
+  console.log(`      STIFFNESS (the angle part, on the RAIL — the incidence the pressure sees): ${f(-pRail.angle, 2)} N·m/rad · raw ${f(pRail.angle, 2)} · intercept ${f(pRail.intercept, 2)} N·m · R² ${f(pRail.r2, 3)}`);
+  console.log(`      the same with the angle taken as the WORLD-datum roll instead: damping ${f(-pRoll.rate, 2)} · stiffness ${f(-pRoll.angle, 2)} N·m/rad · R² ${f(pRoll.r2, 3)}`);
+  console.log(`      the WHOLE water column the same way: damping ${f(-wRail.rate, 2)} N·m·s/rad · stiffness ${f(-wRail.angle, 2)} N·m/rad · R² ${f(wRail.r2, 3)}`);
+  console.log(`      each alone: pressure on the rate ${f(-rateOnly.slope, 2)} N·m·s/rad (R² ${f(rateOnly.r2, 3)}) · pressure on the rail ${f(-railOnly.slope, 2)} N·m/rad (R² ${f(railOnly.r2, 3)})`);
+  /**
+   * **The collinearity, and the fit that answers it.** In a monotone roll the rate and the angle rise together, so the
+   * two regressors are correlated and the joint fit splits the moment between them however the correlation allows:
+   * the rate slope is 12.49 N·m·s/rad alone and 5.96 with the angle in, which is the signature of collinearity and
+   * not two measurements. **Step 3.3j's read (a) measures the damping STRUCTURALLY** — `Σ pressureDamping·((r × n̂)·x̂)²`
+   * read straight off the matrix the integrator inverts, which is prior to any fit — at **9.4–16.2 N·m·s/rad over the
+   * ride and 13.8–18.2 near trim** (pressure + radiation; `inertia.ts`). So the honest stiffness is the one fitted
+   * with the damping held at a value that was not fitted: `pressure + C·rate` regressed on the angle alone.
+   * `DAMP=<N·m·s/rad>` sets C; the sourced 12.7 (ITTC 7.5-02-07-04.5 4.2.4) is the default.
+   */
+  const kAt = (C: number) => fit(railRad, press.map((v, i) => v + C * rateRad[i]));
+  const Cfix = num('DAMP', 12.7);
+  const kFix = kAt(Cfix);
+  const kLo = kAt(9.4);
+  const kHi = kAt(16.2);
+  console.log(`      THE STIFFNESS with the damping HELD at a value that was not fitted (read (a)'s structural one): at C = ${f(Cfix, 1)} the stiffness is ${f(-kFix.slope, 2)} N·m/rad (R² ${f(kFix.r2, 3)}, intercept ${f(kFix.intercept, 2)} N·m) · at C = 9.4 it is ${f(-kLo.slope, 2)} · at C = 16.2 it is ${f(-kHi.slope, 2)}`);
+  console.log(`      SO THE ROLL HAS AN EQUILIBRIUM, and here is where it sits: the rider's drive ${f(riderMed, 2)} N·m over a stiffness of ${f(-kFix.slope, 2)} N·m/rad is ${f((riderMed / -kFix.slope) * DEG, 1)}° of rail · over 9.4's ${f(-kLo.slope, 2)}, ${f((riderMed / -kLo.slope) * DEG, 1)}° · over 16.2's ${f(-kHi.slope, 2)}, ${f((riderMed / -kHi.slope) * DEG, 1)}° — against the MEASURED roll peak ${span(nf('rollPeakDeg'), 1)}° and rail peak ${span(nf('railPeakDeg'), 1)}°`);
+  console.log(`      and READ (c)'s own headline, the TERMINAL ROLL RATE the advisor asked for instead of the net: the rider's drive ${f(riderMed, 2)} N·m over this damping is ${f(Math.abs(riderMed / -pRail.rate) * DEG, 0)} °/s, against the measured roll rate at the fall ${span(nf('rollRateAtFall'), 1)}°/s and its peak ${span(nf('rollRatePeak'), 1)}`);
 }
 /**
  * **§A — step 3.3h: the owner's ruling on the crouch's reach, as an A/B readable off the rows.** `REACH=keep` is the
