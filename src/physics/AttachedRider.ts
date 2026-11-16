@@ -1375,6 +1375,18 @@ export interface AttachedRiderOptions {
    * commanded stance, so this switch moves exactly one quantity.
    */
   kneeRoom?: 'achieved';
+  /**
+   * **A deep crouch keeps its catching reach** (`stanceReach: 'keep'`, step 3.3h): the stance room's hip range and
+   * arms are read at the riding stance (±1.2 rad, arms free) whatever the leg's depth is, while the knees' travel
+   * stays the stance's own. The owner's ruling of 2026-11-16, in their words: *"Keep the reach in Compress — a deep
+   * crouch keeps its arms and hip swing."* Opt-in, off by default (the `?stanceReach=keep` dev switch).
+   *
+   * It moves the hip's **stop** as well as the fall test's credit — `humanSwingStep` clamps the swing to the same
+   * range — so the body can really swing that far and the arms really go out, raising `swingInertia` 6 → 10 kg·m² and
+   * the rider's yaw inertia by RIDER_YAW_ARMS_OUT with them. See `stanceRoom` for what the table's own limits are and
+   * which design bar this crosses.
+   */
+  stanceReach?: 'keep';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -1885,6 +1897,8 @@ export class AttachedRider {
   private readonly deckFelt: boolean;
   /** The knees' travel read at the depth the leg has reached rather than the one commanded (`kneeRoom: 'achieved'`, step 3.3f). */
   private readonly kneeRoomAchieved: boolean;
+  /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
+  private readonly stanceReach: 'keep' | undefined;
   private readonly newSubsteps: number;
   private readonly yawScale: number;
   private readonly bankGain: number;
@@ -2139,6 +2153,7 @@ export class AttachedRider {
     this.newRider = options.rider === 'new';
     this.deckFelt = options.feltFrame === 'deck';
     this.kneeRoomAchieved = options.kneeRoom === 'achieved';
+    this.stanceReach = options.stanceReach === 'keep' ? 'keep' : undefined;
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -3123,7 +3138,7 @@ export class AttachedRider {
     const lean = projecting ? 0 : reachRest * asking > 0 && lagging ? 0 : reachRest;
     // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
-    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
     this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
     this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
   }
@@ -3225,7 +3240,7 @@ export class AttachedRider {
     this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
-    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth).hipRange, human.swingInertia);
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
     this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
     this.ankleTorque = HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative;
     tb.active += (this.heldTwist - tb.active) * (1 - Math.exp(-h / MOTOR_LAG));
@@ -3667,7 +3682,7 @@ export class AttachedRider {
     // (`HumanBalance.strategies`) lowers the leg's rest within that stance's travel, at the crouch's pace.
     if (this.freeBody) {
       this.heldDepth = -asked;
-      const room = stanceRoom(this.heldDepth);
+      const room = stanceRoom(this.heldDepth, this.stanceReach);
       // The hip near its range: across (the swing) or in pitch (`StandingBody`'s hip), whichever is nearer.
       this.human.strategies(h, Math.max(Math.abs(this.swing.angle), Math.abs(this.standingBody.hip.angle)), room);
       // `kneeRoom: 'achieved'` (step 3.3f, opt-in): the knees' travel left is read at the depth the leg has actually
@@ -3675,7 +3690,7 @@ export class AttachedRider {
       // drop self-limits at about 0.17 m instead of reaching CROUCH_DEPTH itself. The hip's range and the arms above
       // are deliberately left on the commanded stance, so the switch moves one quantity. See `kneeRoom`'s note.
       const travel = this.kneeRoomAchieved
-        ? stanceRoom(Math.max(this.heldDepth, this.yawDepth)).kneeTravel : room.kneeTravel;
+        ? stanceRoom(Math.max(this.heldDepth, this.yawDepth), this.stanceReach).kneeTravel : room.kneeTravel;
       asked = Math.min(asked, -(this.heldDepth + this.human.knees * travel));
     }
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
@@ -4623,7 +4638,7 @@ export class AttachedRider {
     const felt = this.deckFelt ? this.captureFelt.copy(this.pairFelt) : this.captureFelt.copy(this.pairFelt).applyQuaternion(inverse);
     const height = Math.max(0.2, offset.length());
     const omega = Math.sqrt(Math.max(0.5, this.pairFelt.length()) / height);
-    const room = stanceRoom(this.stanceDepth);
+    const room = stanceRoom(this.stanceDepth, this.stanceReach);
     // Step 3.2i measured `rotorReach`'s horizon cap here and did not keep it: it buys nothing on the chop (the cap does
     // not bind with the arms in, where the hip's inertia is 6 kg·m²) and costs the push bar 44 % of its saved shove,
     // because under a shove ω₀ is read from a felt gravity the impulse itself inflates to 13–19 m/s², so the horizon

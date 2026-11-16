@@ -348,6 +348,33 @@ export class BoardBody implements BoardContactBody {
   readonly yaw = {
     buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, suction: 0, gyro: 0, rider: 0, total: 0,
   };
+  /**
+   * **The roll ledger (step 3.3h, a measurement tool and not part of the sim): who ROLLS the board, per source, in
+   * N·m.** The yaw ledger's exact twin, one axis over. Step 3.3g measured the deck at **63.7–91.4° of roll at the
+   * fall in 12 of 12 full-stick runs** against a largest commandable lean of 40.8–50.0°, and said plainly that it had
+   * measured the in-plane *force* and not the roll *moment*, which are not the same thing. This is that instrument.
+   *
+   * **The datum, stated, because every angle on this track must carry one.** Each entry is a mean torque over the
+   * latest step, N·m, about **the board's own long axis** — the board frame's +z, the axis a surfboard rolls about —
+   * taken as the world vector `(rotation[2], rotation[5], rotation[8])` at the substep that books it, which is the
+   * same axis and the same expression `bandLedger.rollMoment` has used since step 3.2u. **Positive is the right-hand
+   * sense about board +z, which lifts the board's +x rail** (and so pushes the board over onto its −x rail). The
+   * axis is the *instantaneous* one: torque balance holds instantly, so projecting every source and the board's own
+   * angular impulse on the same axis is exact, and at the fastest roll this track has measured (354 °/s) the axis
+   * itself moves 0.37° across a 1/960 s substep.
+   *
+   * `total` is the board's own `I·Δω` projected on that axis — the angular impulse it actually took, divided by the
+   * step — and `rider` is the residual, `total` less every water entry and the gyroscopic term: **everything the
+   * rider's coupling carries**, the feet's push on the deck and the pair's own inertia resisting the roll together,
+   * exactly as the yaw ledger's `rider` is defined. It is a residual and is reported as one, never as a measured
+   * contact torque.
+   *
+   * Only filled while `rollLedger` is on, so the default game pays one branch per substep and nothing else.
+   */
+  static rollLedger = false;
+  readonly roll = {
+    buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, suction: 0, gyro: 0, rider: 0, total: 0,
+  };
   /** Hull volume under water and wetted bottom area at the latest substep. */
   submergedVolume = 0;
   wettedArea = 0;
@@ -836,6 +863,7 @@ export class BoardBody implements BoardContactBody {
     this.foilMean.fill(0);
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
     if (BoardBody.yawLedger) for (const key of Object.keys(this.yaw) as (keyof BoardBody['yaw'])[]) this.yaw[key] = 0;
+    if (BoardBody.rollLedger) for (const key of Object.keys(this.roll) as (keyof BoardBody['roll'])[]) this.roll[key] = 0;
     this.rider?.beginStep();
     this.substepsTaken = 0;
     this.stepSpan = dt;
@@ -849,6 +877,14 @@ export class BoardBody implements BoardContactBody {
       const y = this.yaw;
       y.rider = y.total - (y.buoyancy + y.pressure + y.addedMass + y.radiation + y.friction + y.bed + y.fins + y.rails + y.froth + y.gyro);
       for (const key of Object.keys(y) as (keyof BoardBody['yaw'])[]) y[key] *= inverseDt;
+    }
+    if (BoardBody.rollLedger) {
+      const q = this.roll;
+      // `suction` is inside the sum here where the yaw ledger leaves it out: it is booked as an angular impulse like
+      // every other entry, and it measures 0.0 N·m on every cell this track rides (Part 19 §1 item 2), so including it
+      // moves no published number and makes the residual honest if a case ever turns it on.
+      q.rider = q.total - (q.buoyancy + q.pressure + q.addedMass + q.radiation + q.friction + q.bed + q.fins + q.rails + q.froth + q.suction + q.gyro);
+      for (const key of Object.keys(q) as (keyof BoardBody['roll'])[]) q[key] *= inverseDt;
     }
     this.rider?.endStep(dt, water, this);
     for (let k = 0; k < this.count; k += 1) {
@@ -1024,6 +1060,11 @@ export class BoardBody implements BoardContactBody {
         if (fin) this.yaw.fins += impulse * cy;
         else this.yaw.rails += impulse * cy;
       }
+      if (BoardBody.rollLedger) {
+        const about = impulse * this.rollOf(cx, cy, cz);
+        if (fin) this.roll.fins += about;
+        else this.roll.rails += about;
+      }
       this.foilReaction[k * 3] += impulse * nx;
       this.foilReaction[k * 3 + 1] += impulse * ny;
       this.foilReaction[k * 3 + 2] += impulse * nz;
@@ -1071,6 +1112,15 @@ export class BoardBody implements BoardContactBody {
       }
     }
     return false;
+  }
+
+  /**
+   * A world torque (or angular impulse) resolved about the board's own long axis — the roll ledger's datum (`roll`):
+   * board frame +z in the world, `(rotation[2], rotation[5], rotation[8])`, positive in the right-hand sense, which
+   * lifts the +x rail. Valid after `updateRotation`, which every caller is downstream of.
+   */
+  private rollOf(tx: number, ty: number, tz: number): number {
+    return tx * this.rotation[2] + ty * this.rotation[5] + tz * this.rotation[8];
   }
 
   private substep(h: number, water: SurfWater): void {
@@ -1359,6 +1409,8 @@ export class BoardBody implements BoardContactBody {
         waterTx += push * cx;
         waterTy += push * cy;
         waterTz += push * cz;
+        // Ruling 3's wall push is the one `waterT` entry with no settle-loop twin, so the roll ledger books it here.
+        if (BoardBody.rollLedger) this.roll.addedMass += push * this.rollOf(cx, cy, cz);
         this.reaction[k * 3] += push * ux;
         this.reaction[k * 3 + 1] += push * uy;
         this.reaction[k * 3 + 2] += push * uz;
@@ -1380,6 +1432,7 @@ export class BoardBody implements BoardContactBody {
       waterTx += this.plateWall[3];
       waterTy += this.plateWall[4];
       waterTz += this.plateWall[5];
+      if (BoardBody.rollLedger) this.roll.addedMass += this.rollOf(this.plateWall[3], this.plateWall[4], this.plateWall[5]);
     }
     this.applyFoils(h, water, system);
     const ft = this.foilTotals;
@@ -1411,6 +1464,24 @@ export class BoardBody implements BoardContactBody {
       y.addedMass += waterTy;
       y.froth += h * frothTy;
       y.gyro -= h * gyro[1];
+    }
+    if (BoardBody.rollLedger) {
+      const q = this.roll;
+      q.buoyancy += h * this.rollOf(totals.btx, totals.bty, totals.btz);
+      q.pressure += h * this.rollOf(totals.ptx, totals.pty, totals.ptz);
+      q.friction += h * this.rollOf(totals.ftx, totals.fty, totals.ftz);
+      q.fins += h * this.rollOf(ft[3], ft[4], ft[5]);
+      q.rails += h * this.rollOf(ft[9], ft[10], ft[11]);
+      q.froth += h * this.rollOf(frothTx, frothTy, frothTz);
+      q.gyro -= h * this.rollOf(gyro[0], gyro[1], gyro[2]);
+      // **`waterT` is deliberately NOT booked here, and this is where the roll ledger departs from the yaw ledger.**
+      // `waterT` holds the explicit half of the surface-normal push, `−(h·radiation + entrained)·intoSurface`, and the
+      // settle loop's `radiated` and `inertia` already carry that same half: `radiated + inertia` works out to
+      // `push − (D·Δu)_surface`, so booking `waterT` as well counts `push` twice. The yaw ledger does exactly that
+      // (`y.addedMass += waterTy` beside its settle entries), and it is why its `rider` residual cannot close. Measured
+      // here: a bare board heeled 20° in still water books `rider` = **0.086 N·m on a total of 0.463** with `waterT`
+      // in, and **0.0000 on 0.463** with it out (step 3.3h's positive control, `rollLedger.test.ts`). The two `waterT`
+      // entries that have no settle twin — ruling 3's wall push and `plateWall` — are booked at their own sites above.
     }
     for (let i = 0; i < 3; i += 1) {
       system[i * 6 + i] += this.mass;
@@ -1522,6 +1593,11 @@ export class BoardBody implements BoardContactBody {
         this.yaw.radiation += radiated * sy;
         this.yaw.addedMass += inertia * sy;
       }
+      if (BoardBody.rollLedger) {
+        this.roll.pressure += pressure * this.rollOf(cx, cy, cz);
+        this.roll.radiation += radiated * this.rollOf(sx, sy, sz);
+        this.roll.addedMass += inertia * this.rollOf(sx, sy, sz);
+      }
       this.reaction[k * 3] += pressure * nx + water * ux;
       this.reaction[k * 3 + 1] += pressure * ny + water * uy;
       this.reaction[k * 3 + 2] += pressure * nz + water * uz;
@@ -1551,6 +1627,7 @@ export class BoardBody implements BoardContactBody {
       // angular impulse and the `/ dt` below leaves it a factor `substeps` too large. Ledger only — `yawLedger` is off
       // in the game — and it never showed because the suction measures 0.0 N through every ride (Part 19 §1 item 2).
       if (BoardBody.yawLedger) this.yaw.suction += h * totals.sty;
+      if (BoardBody.rollLedger) this.roll.suction += h * this.rollOf(totals.stx, totals.sty, totals.stz);
     }
     if (frothX !== 0 || frothZ !== 0) {
       this.work.froth += h * (frothX * avx + frothZ * avz + frothTx * awx + frothTy * awy + frothTz * awz);
@@ -1558,6 +1635,14 @@ export class BoardBody implements BoardContactBody {
       this.forces.froth.z += h * frothZ;
     }
     if (BoardBody.yawLedger) this.yaw.total += I[3] * dwx + I[4] * dwy + I[5] * dwz;
+    // The board's own angular impulse about its long axis: (I·Δω) resolved on the roll ledger's datum.
+    if (BoardBody.rollLedger) {
+      this.roll.total += this.rollOf(
+        I[0] * dwx + I[1] * dwy + I[2] * dwz,
+        I[3] * dwx + I[4] * dwy + I[5] * dwz,
+        I[6] * dwx + I[7] * dwy + I[8] * dwz,
+      );
+    }
     v.x += dvx;
     v.y += dvy;
     v.z += dvz;
@@ -1906,6 +1991,11 @@ export class BoardBody implements BoardContactBody {
       this.yaw.bed += rz * ix - rx * iz;
       this.yaw.total += rz * ix - rx * iz;
     }
+    if (BoardBody.rollLedger) {
+      const about = this.rollOf(ry * iz - rz * iy, rz * ix - rx * iz, rx * iy - ry * ix);
+      this.roll.bed += about;
+      this.roll.total += about;
+    }
   }
 
   private impulseAt(rx: number, ry: number, rz: number, ix: number, iy: number, iz: number): void {
@@ -2112,6 +2202,7 @@ export class BoardBody implements BoardContactBody {
       this.forces.addedMass.y += inertia * ny;
       this.forces.addedMass.z += inertia * nz;
       if (BoardBody.yawLedger) this.yaw.addedMass += inertia * cy;
+      if (BoardBody.rollLedger) this.roll.addedMass += inertia * this.rollOf(cx, cy, cz);
       // The water takes the heave's impulse back, shared by the station's patches.
       const list = stationPatches[i];
       for (const k of list) {

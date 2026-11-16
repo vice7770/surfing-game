@@ -112,9 +112,33 @@ const VERTICAL = process.env.VERTICAL === 'particle' ? 'particle' as const : 'su
  * column is the force's own.
  */
 const FELT = process.env.FELT === 'deck' ? 'deck' as const : undefined;
+/**
+ * **Step 3.3h's first addition, `ROLL=on`, off by default.** Turns `BoardBody.rollLedger` on and prints **who rolls
+ * the board, per source, in N·m** (§6). This is the instrument step 3.3g closed by saying it had not built: it
+ * measured the in-plane *force*, and an in-plane force at the hull is not a roll moment about the pair's centre.
+ *
+ * The ledger is read-only — `rollLedger.test.ts` asserts the board's trajectory is identical to the digit with it on
+ * — and it is a `static`, so the probe sets it once for the whole run and clears it at the end.
+ */
+const ROLL = process.env.ROLL === 'on';
+/**
+ * **Step 3.3h's second addition, `REACH=keep`, off by default.** Builds the rider with `stanceReach: 'keep'`, the
+ * game's own `?stanceReach=keep`: a deep crouch keeps the riding stance's hip range and free arms, which is the
+ * owner's ruling of 2026-11-16 on the trade step 3.3g measured (the crouch wins the moment bar by 1.3–1.7× and
+ * loses the catching reach by 1.4–2.2×).
+ */
+const REACH = process.env.REACH === 'keep' ? 'keep' as const : undefined;
 
 /** All ten of `BoardBody.forces` — turnpath's own nine plus `suction`, which is 0 on the default flat-bottomed board. */
 const WATER_KEYS = ['buoyancy', 'pressure', 'addedMass', 'radiation', 'friction', 'bed', 'fins', 'rails', 'froth', 'suction'] as const;
+/**
+ * The roll ledger's own keys: the same ten water entries, plus `gyro` (the free body's own term, which the solve
+ * carries on the right-hand side) and `rider` — **a residual**, `total` less every other entry, so everything the
+ * rider's coupling carries: the feet's push on the deck and the pair's inertia resisting the roll together. It is
+ * never a measured contact torque and is not reported as one.
+ */
+const ROLL_KEYS = [...WATER_KEYS, 'gyro', 'rider'] as const;
+if (ROLL) BoardBody.rollLedger = true;
 
 const f = (v: number, d = 1) => (Number.isFinite(v) ? v.toFixed(d) : '–');
 const r = (x: number, d = 3) => (Number.isFinite(x) ? +x.toFixed(d) : null);
@@ -264,6 +288,14 @@ interface Frame {
   omega: number;
   capSpeedTerm: number;
   /**
+   * Step 3.3h: the room's own **catching reach** that the fall test measured the capture point against this frame, m
+   * (`CaptureState.reach` — `reachAcross` where the across way binds, `reachAlong` where the along way does), and the
+   * centre of mass's height over the feet the balance read, m. The two halves of the owner's ruling, read rather than
+   * re-derived: `?stanceReach=keep` is meant to move the first and leave the second alone.
+   */
+  reach: number;
+  heightOverFeet: number;
+  /**
    * °/s: the deck's own **roll rate**, `d(roll)/dt`. Step 3.3b needs it for two reasons and neither is cosmetic.
    * (1) `pairFelt` is low-passed over 0.1 s in the **world** and only then projected on the deck's *current* axes, so
    * a force locked to the deck normal still reads an across component of about `Ω · T` once the deck is rolling —
@@ -279,6 +311,52 @@ interface Frame {
   drift: number;
   /** °: the lean the steer asks the balance for (`AttachedRider.leanAsked`), the only channel the stick has on this rider. */
   leanAsked: number;
+  /**
+   * **Step 3.3h: the roll moment by source, N·m, `ROLL=on` only** (NaN otherwise, so every pooled column is empty
+   * rather than zero — the `Number(null) === 0` trap of 3.3f).
+   *
+   * **The datum, and it is not the ledger's raw one.** `BoardBody.roll` is positive in the right-hand sense about the
+   * board's +z, which lifts the +x rail; this probe's own `roll`, `bank` and `rail` columns are positive the other
+   * way (`roll = atan2(boardUp·side, boardUp.y)` is `−θ` for a rotation `θ` about +z, checked). So every entry here is
+   * **negated into this probe's own roll sense** and then **multiplied by `rollSense`** — the sign of the deck's roll
+   * at the **last** frame of the run, i.e. the way this run actually went over, applied to the whole run after the
+   * loop (the frames are mutated in place, so the pool carries the same sign) — so that
+   *
+   *   **positive = pushing the board FURTHER OVER the way it actually went.**
+   *
+   * One convention, stated once, signed by the run's own outcome rather than by a per-frame quantity: step 3.3g
+   * published an across column signed by `sign(nx)`, which is the deck's bank error and not the turn's side, read 22
+   * of 24 falls as "outboard", and had to withdraw it. **It is signed at the end rather than latched at STEER_FROM
+   * because at STEER_FROM = 0 the roll is still 0.0° and `Math.sign(0) || 1` would pick a sign at random** — a trap
+   * the same shape as 3.3f's `Number(null) === 0`, caught by running it.
+   */
+  rollBy: Record<string, number>;
+  /** N·m in the same sense: the ten water entries plus `gyro` summed (so `rollWater + rollBy.rider = rollTotal`), and the board's own angular impulse over the step. */
+  rollWater: number;
+  rollTotal: number;
+  /**
+   * **The independent reading of the residual, N·m in the same sense.** `rollBy.rider` is a residual, so it is not
+   * evidence of a contact torque on its own. This is the contact's roll moment taken **directly**, from two public
+   * fields the ledger never touches: `AttachedRider.contact.force` (the mean force on the RIDER over the step, N,
+   * world) and `AttachedRider.contact.centreOfPressure` (where it acts, board frame). By Newton's third law the board
+   * gets `−force` at that point, so its moment about the composite centre the ledger's torques are taken about
+   * (`BoardBody.centerOfMass`, read in `substep`) is `(P − C) × (−F)`, and negating it into this probe's roll sense
+   * gives `(P − C) × F` on the board's long axis.
+   *
+   * If the two agree, the residual **is** the contact and may be called that; if they do not, the residual is holding
+   * something else and must stay a residual. §6 prints the difference, and nothing in this round calls the residual a
+   * contact torque unless it does.
+   */
+  rollContact: number;
+  /**
+   * m: `rollBy.rider` over the contact's own normal load (`contact.force` on the deck normal) — **where on the deck
+   * the residual implies the load is pressing.** The feet's modelled half-width across is 0.13 m
+   * [R, `riderPosture.ts:96`], so an implied arm inside 0.13 m says the residual is exactly what a foot-borne load
+   * off the centreline makes, and one outside it says it is not. A falsification, not a confirmation.
+   */
+  rollRiderArm: number;
+  /** °/s²: `rollTotal` over the board's own roll inertia about its long axis, kg·m² — what that moment does to a board this light. */
+  rollAlpha: number;
 }
 
 interface Inner {
@@ -334,6 +412,7 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(process.env.SUBSTEPS ? { standingSubsteps: Number(process.env.SUBSTEPS) } : {}),
     ...(FELT ? { feltFrame: FELT } : {}),
+    ...(REACH ? { stanceReach: REACH } : {}),
   });
   board.attach(rider);
   stance(rider, st);
@@ -369,6 +448,15 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
   let fell = '';
   let fellAt = Number.NaN;
   let steerSign = 0;
+  /**
+   * The board's own roll inertia about its long axis, kg·m² — read off the live instance (private to TypeScript,
+   * present at run time) so `rollAlpha` is a measured division and not an assumed one. The board frame's z is the
+   * long axis, so `bodyInertia[8]` is I_zz.
+   */
+  const rollInertia = (board as unknown as { bodyInertia: number[] }).bodyInertia[8];
+  /** Step 3.3h's scratch: the contact's centre of pressure in the world relative to the composite centre, and the board's long axis. */
+  const copWorld = new Vector3();
+  const deckLong = new Vector3();
   let lastHeading = Number.NaN;
   let lastRoll = Number.NaN;
   for (let i = 0; i < Math.round(SECONDS / STEP); i += 1) {
@@ -511,6 +599,39 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
       turnRate = (d / STEP) * DEG;
     }
     lastHeading = heading;
+    /**
+     * **Step 3.3h: the roll moment by source.** `rollSense` is latched once, at STEER_FROM, from the roll the board
+     * already has — the same latch `steerSign` uses, so a run with no steer still gets one. Each entry is negated into
+     * this probe's own roll sense (see `Frame.rollBy`) and multiplied by it, so **positive is further over the way the
+     * run is going**. `rollWater` is the ten water entries plus `gyro`; `rollBy.rider` is the residual; the two sum to
+     * `rollTotal` by construction, which is `BoardBody.roll.total`'s own definition and not a finding.
+     */
+    const rollBy: Record<string, number> = {};
+    let rollWater = Number.NaN;
+    let rollTotal = Number.NaN;
+    let rollAlpha = Number.NaN;
+    let rollContact = Number.NaN;
+    let rollRiderArm = Number.NaN;
+    if (ROLL) {
+      const led = board.roll as unknown as Record<string, number>;
+      let water = 0;
+      for (const key of ROLL_KEYS) {
+        // Negated into this probe's own roll sense here; the run's own sign is applied after the loop (`Frame.rollBy`).
+        const value = -led[key];
+        rollBy[key] = value;
+        if (key !== 'rider') water += value;
+      }
+      rollWater = water;
+      rollTotal = -led.total;
+      rollAlpha = rollInertia > 0 ? (rollTotal / rollInertia) * DEG : Number.NaN;
+      board.toWorld(rider.contact.centreOfPressure, copWorld).sub(board.centerOfMass);
+      deckLong.set(0, 0, 1).applyQuaternion(board.orientation);
+      rollContact = copWorld.cross(rider.contact.force).dot(deckLong);
+      const normalLoad = rider.contact.force.dot(boardUp);
+      rollRiderArm = Math.abs(normalLoad) > 1 ? rollBy.rider / normalLoad : Number.NaN;
+    } else {
+      for (const key of ROLL_KEYS) rollBy[key] = Number.NaN;
+    }
     const drift = Math.hypot(vRel.x, vRel.z) > 0.05
       ? Math.atan2(vRel.x * fwd.z - vRel.z * fwd.x, vRel.x * fwd.x + vRel.z * fwd.z) * DEG
       : 0;
@@ -552,17 +673,40 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
       past: cap.past,
       omega: cap.omega,
       capSpeedTerm: cap.omega > 0 ? cap.speedAcross / cap.omega : Number.NaN,
+      reach: cap.reach,
+      heightOverFeet: cap.height,
       rollRate,
       turnRate,
       vOmega: speed * (turnRate / DEG),
       speed,
       drift,
       leanAsked: (inner.leanAsked ?? inner.bankReference ?? 0) * DEG,
+      rollBy,
+      rollWater,
+      rollTotal,
+      rollContact,
+      rollRiderArm,
+      rollAlpha,
     };
     frames.push(frame);
     pool.push(frame);
     if (TRACE) emit(frame, TRACE);
     if (!rider.attached) { fell = String(rider.separation); fellAt = t; break; }
+  }
+  /**
+   * **Step 3.3h: the roll columns' one sign, applied here.** The way this run actually went over, read off the deck's
+   * roll at the last frame; the frames are mutated in place so `pool` carries the same sign (see `Frame.rollBy`).
+   */
+  const rollSense = Math.sign(frames[frames.length - 1]?.roll ?? 0) || 1;
+  if (ROLL) {
+    for (const x of frames) {
+      for (const key of ROLL_KEYS) x.rollBy[key] *= rollSense;
+      x.rollWater *= rollSense;
+      x.rollTotal *= rollSense;
+      x.rollContact *= rollSense;
+      x.rollRiderArm *= rollSense;
+      x.rollAlpha *= rollSense;
+    }
   }
   const col = (k: keyof Frame) => frames.map((x) => Number(x[k]));
   const abs = (k: keyof Frame) => frames.map((x) => Math.abs(Number(x[k])));
@@ -705,6 +849,43 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     relAcrossMeanRate: r(Math.abs((split?.relAcross ?? Number.NaN) / (split?.t ?? Number.NaN)), 2),
     checkAtFall: r((split?.relAcross ?? Number.NaN) - (split?.capSpeedTerm ?? Number.NaN) * (split?.omega ?? Number.NaN), 4),
     splitAtS: r(split?.t ?? Number.NaN, 3),
+    /**
+     * **Step 3.3h's roll-moment columns** (`ROLL=on`; all NaN otherwise). Every one is in the signed sense
+     * `Frame.rollBy` states: **positive = further over the way this run is going.** `turn` columns are over the
+     * COMMANDED window (`after`, from STEER_FROM to the fall), which is the window step 3.3g designed on because the
+     * fall frame is already inside the capsize; `AtFall` is the last frame.
+     */
+    rollInertiaKgm2: r(rollInertia, 4),
+    rollTotalTurnMedian: r(median(after.map((x) => x.rollTotal)), 2),
+    rollTotalAtFall: r(last?.rollTotal ?? Number.NaN, 2),
+    rollWaterTurnMedian: r(median(after.map((x) => x.rollWater)), 2),
+    rollRiderTurnMedian: r(median(after.map((x) => x.rollBy.rider)), 2),
+    rollWaterAtFall: r(last?.rollWater ?? Number.NaN, 2),
+    rollRiderAtFall: r(last?.rollBy.rider ?? Number.NaN, 2),
+    rollAlphaTurnMedian: r(median(after.map((x) => x.rollAlpha)), 0),
+    rollAlphaAtFall: r(last?.rollAlpha ?? Number.NaN, 0),
+    /** The seatbelt on the sign convention: the share of commanded frames whose NET roll moment is positive — further over. */
+    rollOverShare: r(after.length ? after.filter((x) => x.rollTotal > 0).length / after.length : Number.NaN, 3),
+    /** The ledger's closure, N·m: `total` less every entry including `rider`. Zero by construction; printed so a broken key shows. */
+    rollClosure: r(peak(after.map((x) => Math.abs(x.rollTotal - x.rollWater - x.rollBy.rider))), 6),
+    rollByTurnMedian: Object.fromEntries(ROLL_KEYS.map((k) => [k, r(median(after.map((x) => x.rollBy[k])), 2)])),
+    rollByAtFall: Object.fromEntries(ROLL_KEYS.map((k) => [k, r(last?.rollBy[k] ?? Number.NaN, 2)])),
+    /** The residual's independent reading and the arm it implies (see `Frame.rollContact`, `Frame.rollRiderArm`). */
+    rollContactTurnMedian: r(median(after.map((x) => x.rollContact)), 2),
+    rollContactVsRiderMedian: r(median(after.map((x) => Math.abs(x.rollContact - x.rollBy.rider))), 3),
+    rollContactVsRiderPeak: r(peak(after.map((x) => Math.abs(x.rollContact - x.rollBy.rider))), 3),
+    rollRiderArmTurnMedian: r(median(after.map((x) => x.rollRiderArm)), 4),
+    /**
+     * The room's catching reach, m, and the centre of mass's height over the feet, m — so the owner's ruling can be
+     * read off the rows rather than inferred: `?stanceReach=keep` should move the reach and leave the height alone.
+     */
+    reachTurnMedian: r(median(after.map((x) => x.reach)), 4),
+    reachAtFall: r(last?.reach ?? Number.NaN, 4),
+    heightTurnMedian: r(median(after.map((x) => x.heightOverFeet)), 4),
+    heightAtFall: r(last?.heightOverFeet ?? Number.NaN, 4),
+    /** `a_max = g·d/h`, m/s², on the height the balance actually held over the commanded turn (d = 0.13 m, the feet's half-width). */
+    aMaxTurn: r((G * 0.13) / median(after.map((x) => x.heightOverFeet)), 3),
+    stanceReach: REACH ?? 'shipped',
   };
 }
 
@@ -831,4 +1012,46 @@ console.log(`      the same on the LOW-PASSED force (the lag folded in, so NOT a
 for (const e of perSourceLag) if (Math.abs(e.deficit) > 0.0005) console.log(`         ${e.k.padEnd(10)} ${f(e.deficit, 3)}  (${f(e.slope, 2)} N per ° of roll, R² ${f(e.r2, 3)})`);
 console.log(`         SUM ${f(deficitSumLag, 3)} against the felt tilt's own fitted ${f(-tiltOnRollFelt.slope, 3)}`);
 console.log(`      the pooled fit's own INTERCEPT, which the test says should be small: feltWorld on roll ${f(poolFelt.slope, 3)}° per ° with intercept ${f(poolFelt.intercept, 3)}° · un-lagged ${f(poolOwn.slope, 3)} with intercept ${f(poolOwn.intercept, 3)}°`);
+/**
+ * **§6 — step 3.3h: WHAT ROLLS THE BOARD, per source, in N·m.**
+ *
+ * The one thing step 3.3g said it had not measured. The discipline is 3.3b's own, moved one axis over:
+ * - the datum is stated (`Frame.rollBy`: the board's own long axis, signed so positive is further over the way the
+ *   run is going, the sense latched once per run);
+ * - the pool is the **commanded** window, STEER_FROM to the fall, because the fall frame is already inside the
+ *   capsize, and the fall frame is printed separately;
+ * - each entry's figure is **its own median over the pool**, and medians do not sum — the sum's own median is printed
+ *   beside them so the spread is visible rather than hidden, exactly as 3.3g's §4 caveat required;
+ * - `rider` is a **residual** and is labelled one everywhere;
+ * - and the positive control lives in `src/physics/rollLedger.test.ts`, not here.
+ */
+if (ROLL) {
+  const commanded = pool.filter((x) => Number.isFinite(x.rollTotal));
+  const med = (k: string) => median(commanded.map((x) => x.rollBy[k]));
+  const pk = (k: string) => peak(commanded.map((x) => Math.abs(x.rollBy[k])));
+  const netMed = median(commanded.map((x) => x.rollTotal));
+  const sumOfMedians = ROLL_KEYS.reduce((a, k) => a + med(k), 0);
+  const waterMed = median(commanded.map((x) => x.rollWater));
+  const riderMed = median(commanded.map((x) => x.rollBy.rider));
+  console.log(`   §6 WHAT ROLLS THE BOARD (3.3h) — N·m about the board's own long axis, + = further over the way the run went, ${commanded.length} commanded frames pooled:`);
+  console.log(`      the board's own roll inertia I_zz ${span(nf('rollInertiaKgm2'), 4)} kg·m², so 1 N·m is ${f(DEG / Number(rows[0]?.rollInertiaKgm2 ?? Number.NaN), 0)} °/s² on it`);
+  console.log(`      SEATBELTS · the ledger's closure |total − water − rider| peak ${span(nf('rollClosure'), 6)} N·m · the share of commanded frames whose NET moment is positive ${span(nf('rollOverShare'), 3)}`);
+  console.log(`      PER SOURCE over the commanded turn, N·m (median signed · peak absolute): ${ROLL_KEYS.map((k) => `${k} ${f(med(k), 2)} · ${f(pk(k), 2)}`).join(' | ')}`);
+  console.log(`      THE TWO COLUMNS: the WATER's own (the ten entries + gyro) median ${f(waterMed, 2)} N·m, per run ${span(nf('rollWaterTurnMedian'), 2)} · the RIDER RESIDUAL median ${f(riderMed, 2)}, per run ${span(nf('rollRiderTurnMedian'), 2)}`);
+  console.log(`      THE NET is their small difference: median of the sum ${f(netMed, 2)} N·m, per run ${span(nf('rollTotalTurnMedian'), 2)} · the sum of the medians ${f(sumOfMedians, 2)} (medians do not sum)`);
+  console.log(`      — so NO share of the net is quoted: the net is ${f(Math.abs(100 * netMed) / Math.max(Math.abs(waterMed), Math.abs(riderMed)), 1)} % of the larger column, and a percentage of it would divide by a near-zero. The two columns are the result.`);
+  console.log(`      THE RESIDUAL, CHECKED INDEPENDENTLY: the contact's own roll moment from its force and centre of pressure, median ${f(median(commanded.map((x) => x.rollContact)), 2)} N·m · |direct − residual| median ${f(median(commanded.map((x) => Math.abs(x.rollContact - x.rollBy.rider))), 3)} peak ${f(peak(commanded.map((x) => Math.abs(x.rollContact - x.rollBy.rider))), 3)}`);
+  console.log(`      and WHERE it implies the load presses: the residual over the contact's normal load ${f(median(commanded.map((x) => x.rollRiderArm)), 4)} m median, ${f(peak(commanded.map((x) => Math.abs(x.rollRiderArm))), 4)} peak absolute — against the feet's own half-width across, 0.13 m`);
+  console.log(`      AT THE FALL, per run, N·m: ${ROLL_KEYS.map((k) => `${k} ${span(rows.map((x) => Number((x.rollByAtFall as Record<string, number>)[k])), 1)}`).join(' | ')}`);
+  console.log(`      the net at the fall ${span(nf('rollTotalAtFall'), 1)} N·m = water ${span(nf('rollWaterAtFall'), 1)} + the rider residual ${span(nf('rollRiderAtFall'), 1)}`);
+  console.log(`      and what it does to a board this light: the roll ACCELERATION ${span(nf('rollAlphaTurnMedian'), 0)} °/s² over the turn, ${span(nf('rollAlphaAtFall'), 0)} at the fall · the measured roll rate at the fall ${span(nf('rollRateAtFall'), 1)}°/s (peak ${span(nf('rollRatePeak'), 1)})`);
+}
+/**
+ * **§A — step 3.3h: the owner's ruling on the crouch's reach, as an A/B readable off the rows.** `REACH=keep` is the
+ * game's own `?stanceReach=keep`. The two columns are the two halves of the owner's own sum: the catching reach the
+ * fall test measures the capture point against, and the height the moment bar `a_max = g·d/h` is read on. The ruling
+ * is that the first should rise and the second should not move.
+ */
+console.log(`   §A the stance's room — stanceReach ${REACH ?? 'shipped'}: the catching REACH ${span(nf('reachTurnMedian'), 3)} m over the turn, ${span(nf('reachAtFall'), 3)} at the fall · the CoM height over the feet ${span(nf('heightTurnMedian'), 3)} m, a_max = g·d/h ${span(nf('aMaxTurn'), 2)} m/s²`);
 console.log(`   the fall: margin ${span(nf('marginAtFall'), 3)} · past ${span(nf('pastAtFall'), 3)} m · relative across-speed ${span(nfSome('relAcrossAtFall'), 3)} m/s = body ${span(nfSome('bodyAcrossAtFall'), 3)} − feet ${span(nfSome('feetAcrossAtFall'), 3)} · its mean rate ${span(nfSome('relAcrossMeanRate'), 2)} m/s² · reconstructs to ${span(nfSome('checkAtFall'), 4)}`);
+if (ROLL) BoardBody.rollLedger = false;

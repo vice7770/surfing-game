@@ -555,6 +555,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...feltFrameSwitch(),
     // `?kneeRoom=achieved`: the new surfer's balance reads the knees' travel left at the depth its leg has reached, not the one commanded, so its own knee drop no longer spends the whole of Compress's travel on a standing stance (step 3.3f), opt-in, to ride.
     ...kneeRoomSwitch(),
+    // `?stanceReach=keep`: a deep crouch keeps the riding stance's hip range and free arms, so Compress keeps its catching reach as well as its lower centre of mass (step 3.3h, the owner's ruling of 2026-11-16), opt-in, to ride.
+    ...stanceReachSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
@@ -1084,6 +1086,19 @@ export function feltFrameSwitch(search?: string): { feltFrame?: 'deck' } {
  */
 export function kneeRoomSwitch(search?: string): { kneeRoom?: 'achieved' } {
   return devParam('kneeRoom', search)?.trim().toLowerCase() === 'achieved' ? { kneeRoom: 'achieved' } : {};
+}
+
+/**
+ * The `?stanceReach=keep` dev switch (`SurfZoneConfig.stanceReach`, step 3.3h): opt-in, **a deep crouch keeps its
+ * catching reach** — the stance room's hip range and arms (`humanBalance`'s `stanceRoom`) are read at the riding
+ * stance whatever the leg's depth is, while the knees' travel stays the stance's own. By default Compress's reach is
+ * 0.161–0.181 m against the standing stance's 0.252–0.354, measured over twelve runs a stance in step 3.3g §2b, so
+ * the crouch wins the fall test's moment bar by 1.3–1.7× and loses its catching reach by 1.4–2.2×. **The owner's
+ * ruling of 2026-11-16** keeps the reach: *"a deep crouch keeps its arms and hip swing."* Nothing on the default
+ * rider, no force and no hull law. Anything else, the stance's own room as before.
+ */
+export function stanceReachSwitch(search?: string): { stanceReach?: 'keep' } {
+  return devParam('stanceReach', search)?.trim().toLowerCase() === 'keep' ? { stanceReach: 'keep' } : {};
 }
 
 /**

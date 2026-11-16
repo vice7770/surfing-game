@@ -164,6 +164,8 @@ export interface RideSessionOptions {
   feltFrame?: 'deck';
   /** Which depth the knees' travel is read at (step 3.3f; `AttachedRiderOptions.kneeRoom`): 'achieved' (the `?kneeRoom=achieved` dev switch); by default the depth commanded. */
   kneeRoom?: 'achieved';
+  /** A deep crouch keeps the riding stance's hip range and free arms (step 3.3h; `AttachedRiderOptions.stanceReach`): 'keep' (the `?stanceReach=keep` dev switch); by default the stance's own. */
+  stanceReach?: 'keep';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -267,6 +269,7 @@ export class RideSession {
       ...(options.rider ? { rider: options.rider } : {}),
       ...(options.feltFrame ? { feltFrame: options.feltFrame } : {}),
       ...(options.kneeRoom ? { kneeRoom: options.kneeRoom } : {}),
+      ...(options.stanceReach ? { stanceReach: options.stanceReach } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

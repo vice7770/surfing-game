@@ -130,13 +130,42 @@ export interface StanceRoom {
  * | Pumping crouch | 0.195 | 0.15 m | ±0.8 rad | free |
  * | Compress / Snap | 0.30 | 0.05 m | ±0.4 rad | committed |
  * | Tube tuck | 0.45 | 0 | ±0.3 rad | — |
+ *
+ * **`reach: 'keep'` (step 3.3h, the owner's ruling of 2026-11-16, opt-in and off by default).** The hip's range and
+ * the arms are read at the **riding stance** (depth 0: ±1.2 rad, arms free) whatever the leg's depth is, while the
+ * knees' travel stays the stance's own. The owner's words: *"Keep the reach in Compress — a deep crouch keeps its
+ * arms and hip swing."*
+ *
+ * **What the table's own limits are, and what this overrides** (step 3.3h, the honesty requirement on the build):
+ * - the hip's range is **not only a credit, it is a stop**: `AttachedRider.humanSwingStep` clamps the hip's actual
+ *   lateral swing to it, so `reach: 'keep'` really does let the trunk swing to ±1.2 rad in a crouch rather than
+ *   merely tell the fall test that it could. Step 3.2h measured the consequence of a larger range from the other
+ *   side: with a hip **drive** on, *"the more range the rider has to throw, the more harm a pumped hip does"* (the
+ *   tall stance's saved shove collapsed 1.89 → 0.62 where the crouch's rose), and step 3.2z measured that the hip's
+ *   correction and the fall test's own reserve are **the same budget** — `reachAcross` is credited on the range
+ *   *remaining*, so a rider who has spent the range to slow his weight is credited with nothing left to catch it.
+ * - the arms are a **rotor**, not a decoration: `arms` raises `swingInertia` 6 → 10 kg·m² and `riderYawInertia` by
+ *   RIDER_YAW_ARMS_OUT, so free arms in a crouch buy reach and cost the board's yaw agility, both really.
+ * - the design's own bar it crosses is `design.md` §3.2's *"push recovery on a 7 m/s glide is ordered tall > crouch >
+ *   Compress"*, which is why the tall stance has the larger range at all. That bar and `design.md` §3.3's *"the order
+ *   tall < crouch < Compress"* for the lateral g at the fall have always pulled opposite ways, and step 3.3g measured
+ *   the trade: the crouch wins the moment bar by 1.3–1.7× and loses the catching reach by 1.4–2.2×. The owner has
+ *   ruled which side to keep, so the switch exists; it is **opt-in** because the ordering bar is the design's and
+ *   only the owner can retire it.
  */
-export function stanceRoom(depth: number): StanceRoom {
+export function stanceRoom(depth: number, reach?: 'keep'): StanceRoom {
   const d = Math.max(0, depth);
   const at = (a: number, b: number, from: number, to: number) => a + ((b - a) * (d - from)) / (to - from);
-  if (d <= 0.195) return { kneeTravel: at(0.3, 0.15, 0, 0.195), hipRange: at(1.2, 0.8, 0, 0.195), arms: 1 };
-  if (d <= 0.3) return { kneeTravel: at(0.15, 0.05, 0.195, 0.3), hipRange: at(0.8, 0.4, 0.195, 0.3), arms: at(1, 0, 0.195, 0.3) };
-  return { kneeTravel: Math.max(0, at(0.05, 0, 0.3, 0.45)), hipRange: Math.max(0.3, at(0.4, 0.3, 0.3, 0.45)), arms: 0 };
+  const room = d <= 0.195
+    ? { kneeTravel: at(0.3, 0.15, 0, 0.195), hipRange: at(1.2, 0.8, 0, 0.195), arms: 1 }
+    : d <= 0.3
+      ? { kneeTravel: at(0.15, 0.05, 0.195, 0.3), hipRange: at(0.8, 0.4, 0.195, 0.3), arms: at(1, 0, 0.195, 0.3) }
+      : { kneeTravel: Math.max(0, at(0.05, 0, 0.3, 0.45)), hipRange: Math.max(0.3, at(0.4, 0.3, 0.3, 0.45)), arms: 0 };
+  if (reach === 'keep') {
+    room.hipRange = 1.2;
+    room.arms = 1;
+  }
+  return room;
 }
 
 /** A time-stamped ring of channels: written now, read `delay` ago (interpolated; before the first sample, the first). */

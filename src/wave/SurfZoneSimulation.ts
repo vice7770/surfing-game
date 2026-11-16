@@ -298,6 +298,17 @@ export interface SurfZoneConfig {
    */
   kneeRoom?: 'achieved';
   /**
+   * 'keep': **a deep crouch keeps its catching reach.** The stance room's hip range and arms are read at the riding
+   * stance (±1.2 rad, arms free) whatever the leg's depth is, while the knees' travel stays the stance's own, so
+   * Compress no longer trades its moment bar away for a reach of 0.16–0.18 m against the standing stance's 0.25–0.35
+   * (step 3.3g §2b; `RideSessionOptions.stanceReach`, `humanBalance`'s `stanceRoom`). **The owner's ruling of
+   * 2026-11-16**, in their words: *"Keep the reach in Compress — a deep crouch keeps its arms and hip swing."* It
+   * moves the hip's stop as well as the fall test's credit, and the arms really go out. The new surfer (`?rider=new`)
+   * only; nothing on the default rider, no force and no hull law is touched. Every spot. The `?stanceReach=keep` dev
+   * switch, opt-in, to ride; online rooms run the default.
+   */
+  stanceReach?: 'keep';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

@@ -2786,3 +2786,559 @@ Changing that is a ruling, not a bug fix, and it is yours and the water advisor'
 measures all three on the hull's normal together and tells you what the sideways column and the falls do. If you would
 rather I chase what actually rolls the board to 90 degrees — which is a **moment**, not this force, and I have not
 measured it — say so and I will build that instrument instead. **I would pick the roll.**
+
+# Part 31 — the crouch keeps its reach and still falls, and the board is rolled by the rider's own feet against a hull that answers him to one part in a thousand
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33h`, cut from `main` at
+**5147f559** (step 3.3g's merge), so Part 30 is its base. It ships **one opt-in behavioural switch**
+(`?stanceReach=keep`, the owner's ruling of 2026-11-16), **one read-only instrument** (`BoardBody.rollLedger`, the
+yaw ledger's twin one axis over), two probe additions, two new test files' worth of assertions, and **108 runs** over
+nine arms.
+
+Tags as in 3.2 and 3.3: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source; **[I]** my
+inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The five sentences the round is for
+
+1. **The owner's ruling is built and it does what they asked, exactly and only.** `?stanceReach=keep` gives a deep
+   crouch the riding stance's hip range and free arms, and Compress's catching reach goes from **0.156–0.181 m to
+   0.305–0.372 m** over 24 runs an arm on two filters — a factor **1.8–2.0**, and **above the standing stance's own
+   0.251–0.354** — while Compress's centre-of-mass height (**0.50–0.55 m**) and its moment bar
+   (`a_max` **2.33–2.53 m/s²**) do not move at all [M]. The standing stance is **identical to the digit in all eight
+   of its cells on both filters**, which is the internal control: the switch is a no-op where the room was already the
+   riding stance's.
+2. **And he still falls, in every run of every arm.** **24 of 24**, and **12 of 12 Compress runs**, in each of the
+   four `fall.ts` arms. Compress's falls come later in **8 of 8 cells** — the gentlest stick moves furthest,
+   **2.08–3.98 s → 3.63–4.35 s** on the shipped filter — and the gate that fires moves from the reach to the moment
+   (Compress's last-to-turn-true count goes `beyond` 5 / `weightPast` 5 / together 2 → **5 / 2 / 4**) [M]. **The
+   owner's bar is not met: at a quarter stick, which is the low speed of getting into position, Compress falls 6 of
+   6.** That is the headline, as the brief required it to be if the reach were restored and he still fell.
+3. **What rolls the board is the rider's own feet, and every water force of consequence resists it.** Pooled over
+   1,118 commanded frames of the twelve full-stick runs that reproduce 3.3g's own twelve to the digit, in N·m about
+   the board's long axis, positive meaning further over the way the run went: **the rider residual +33.47**, and
+   against it **pressure −20.46, buoyancy −3.81, radiation −1.65, addedMass −1.16, fins −0.47**, with only `rails`
+   (+0.09) and `friction` (+0.04) pushing the roll on at all [M]. **The whole water column is −33.40 N·m and the net
+   is +0.04** — one part in a thousand of either column.
+4. **So the 14–41° of roll nobody commanded is not an unanswered force; it is the error in a near-cancellation on an
+   inertia of 0.0262 kg·m², where 1 N·m is 2,187 °/s².** The measured roll acceleration over the turn is
+   **21–234 °/s²** [M]. And the residual is not a mystery: divided by the contact's own normal load it implies the
+   load presses **0.0525 m** off the board's centreline (peak 0.309), against the feet's own modelled half-width
+   across of **0.13 m** [R] — exactly what a foot-borne load off the centreline makes. An independent reading of the
+   same moment, from `contact.force` and `contact.centreOfPressure`, gives **+39.19 N·m** against the residual's
+   +33.47, agreeing to **4.72 N·m at the median** on this arm and 2.13 on the unsteered one.
+5. **My brief's carried-forward attribution does not transfer to this axis, and the two orders are opposite.**
+   Buoyancy is **81.0 %** of the in-plane force column (3.3g §4) and **11 %** of the water's roll column, where it
+   *resists*; `pressure` is **5.7 %** of the in-plane column and **61 %** of the roll column. The three entries on the
+   water-surface normal together are **−6.62 of −33.40 N·m = 20 %** of the column that is holding the board up [A].
+   **Re-pointing them would move a fifth of the force resisting the capsize, in a direction nobody has measured.**
+
+## 1. (A) The build — what `stanceRoom`'s limits are, and what the switch overrides
+
+The brief set two honesty requirements on this build and they are answered first.
+
+**`stanceRoom`'s limits exist for three reasons, and all three are named in the code the switch touches**
+(`humanBalance.ts`'s `stanceRoom` doc, rewritten this round):
+
+1. **The hip's range is not only a credit, it is a stop.** `AttachedRider.humanSwingStep` clamps the hip's actual
+   lateral swing to the same number the fall test credits [R, `AttachedRider.ts:3141, 3243`]. So a switch that
+   restored the *credit* without the *stop* would be a fall test believing in a save the body cannot make — which is
+   the brief's rule 1, a kinematic prescription with no force behind it. **All five `stanceRoom` call sites in
+   `AttachedRider` take the switch**, so the trunk really can swing to ±1.2 rad in a crouch.
+2. **The arms are a rotor, not a decoration.** `arms` raises `swingInertia` from **6 to 10 kg·m²** and
+   `riderYawInertia` by `RIDER_YAW_ARMS_OUT` = 0.85 kg·m² [R]. Free arms in a crouch therefore buy reach and cost the
+   board's yaw agility, both really, and both happen with the switch on.
+3. **The design bar it crosses is `design.md` §3.2's** *"push recovery on a 7 m/s glide is ordered tall > crouch >
+   Compress"* — which is **why** the tall stance has the larger range at all. That bar and `design.md` §3.3's *"the
+   order tall < crouch < Compress"* for the lateral g at the fall have pulled opposite ways since the design was
+   written, and 3.3g measured the trade. **Two measured consequences of a larger range are already on the record and
+   both are costs**: step 3.2h found that with a hip *drive* on, *"the more range the rider has to throw, the more harm
+   a pumped hip does"* (the tall stance's largest saved shove collapsed 1.887 → 0.615 where the crouch's rose), and
+   step 3.2z found that `reachAcross` is credited on the range **remaining**, so *"a rider who has used the whole hip
+   to slow his weight is credited with no reserve to catch it"* — the hip's correction and the test's reserve are the
+   same budget.
+
+**So what the switch overrides is a design ordering bar, not a physical limit, and the override is behavioural.** It
+is therefore **opt-in, off by default, and pinned off for online rooms** in the shape `?feltFrame=deck`,
+`?buoyFrame=hull` and `?kneeRoom=achieved` use (§7), exactly as the brief specified — because only the owner can
+retire a design bar, and they have ruled on which side of this one to keep but not on the bar.
+
+**The one line of physics**: `stanceRoom(depth, 'keep')` reads `hipRange` and `arms` at the riding stance (depth 0:
+±1.2 rad, arms free) and leaves `kneeTravel` at the stance's own, so the switch moves one family of quantities and
+`kneeRoom`'s quantity is untouched. `humanBalance.test.ts` asserts it at eight depths, asserts the knees' travel is
+unchanged at each, asserts the default is the table, and asserts the ratio the credit changes by: Compress's rotor
+impulse against the tall stance's is `√(2·6·τ·0.4) / √(2·10·τ·1.2)` = **1/√5**, so restoring the room is a factor
+**√5 = 2.236** on the credit at the same height and ω — the top of 3.3g's measured 1.4–2.2× span, the rest of which is
+the swing already spent.
+
+## 2. (A) What the restored reach does to the owner's bar — the headline
+
+`fall.ts`, four arms of 24 runs (3 entry speeds × 4 sticks × 2 stances), the shipped (world) filter and the deck
+filter the owner rides with, `?stanceReach` shipped against `keep`. **Every number below is the whole population of
+its cell**, not an interval.
+
+### 2.1 The reach, which is what was asked for
+
+| **[M]** Compress's `reachAcross`, m, 3 runs a cell | shipped (world) | keep (world) | shipped (deck) | keep (deck) |
+|---|---|---|---|---|
+| stick 0.25 | 0.177–0.181 | **0.313–0.319** | 0.171–0.181 | **0.313–0.319** |
+| stick 0.5 | 0.162–0.178 | **0.312–0.329** | 0.162–0.178 | **0.305–0.322** |
+| stick 0.75 | 0.165–0.176 | **0.315–0.362** | 0.165–0.176 | **0.308–0.359** |
+| stick 1 | 0.161–0.174 | **0.325–0.372** | 0.156–0.175 | **0.307–0.368** |
+| **pooled** | **0.156–0.181** | **0.305–0.372** | — | — |
+| the tall stance's own, for scale | 0.251–0.354 | 0.251–0.354 | 0.251–0.338 | 0.251–0.338 |
+
+**The ruling is delivered.** Compress's catching reach rises by **1.8–2.0×** and ends **above** the standing stance's.
+
+**And only the reach moves.** Compress's centre of mass over the feet is **0.50–0.55 m** and its moment bar
+`a_max = g·d/h` is **2.33–2.53 m/s²** in both arms, to the digit [M]. The switch moved the gate 3.3g named as the
+second one and left the one the owner's own sum is about, which is what it was designed to do.
+
+**The internal control passes.** The standing stance is **identical in every column of all eight cells on both
+filters** — same falls, same reach, same height, same roll. It must be, because the tall stance's room already *is*
+the riding stance's, and a switch that changed it would be a switch doing something other than what it says.
+
+### 2.2 The falls, which is what was asked about
+
+| **[M]** Compress's fall, s, 3 runs a cell | shipped (world) | keep (world) | shipped (deck) | keep (deck) |
+|---|---|---|---|---|
+| stick 0.25 | 2.08–3.98 | **3.63–4.35** | 3.58–4.05 | **3.87–4.23** |
+| stick 0.5 | 3.07–3.35 | 3.35–3.47 | 3.33–3.42 | 3.35–3.50 |
+| stick 0.75 | 1.22–2.38 | 1.47–2.72 | 1.42–2.73 | 1.47–2.75 |
+| stick 1 | 1.12–2.18 | 1.33–2.65 | 1.30–2.65 | 1.33–2.65 |
+| **fell** | **12 of 12** | **12 of 12** | **12 of 12** | **12 of 12** |
+| the whole arm | **24 of 24** | **24 of 24** | **24 of 24** | **24 of 24** |
+
+**The ride gets longer in 8 of 8 cells and nothing is saved.** The gentlest stick — the owner's own case, the low
+speed of getting into position — moves furthest, **2.08 → 3.63 s** at the bottom of its span on the shipped filter,
+and **6 of 6 of those runs still fall**. Under the owner's ruling, read as the brief instructs, **96 of 96 falls
+across this round's four arms remain a falsified model**.
+
+### 2.3 What else moved, because it is not free
+
+**The gate that fires changes, which is the one piece of mechanism in §2.** Over Compress's twelve runs, counting
+which condition was the last to turn true before `fallen`:
+
+| **[M]** Compress, last to turn true | shipped | keep |
+|---|---|---|
+| `beyond` (the reach) / `weightPast` (the moment) / both on one frame, world filter | 5 / 5 / 2 | **5 / 2 / 4** |
+| the same, deck filter | 0 / 9 / 0 | **4 / 1 / 3** |
+| how far past the feet at the fall, m, world | 0.11–0.34 | 0.14–0.52 |
+| the same, deck | 0.19–1.04 | **0.20–0.45** |
+
+On the deck filter the shipped Compress runs are a reach that was **already** blown in 9 of 12 — `weightPast` was the
+last thing to go — and with the reach restored four of them become the reach again and three arrive together. **The
+fall has moved from "he had nothing left to catch with" toward "his weight went past his feet", which is the owner's
+own sum, and he still goes over it.**
+
+**Three costs, measured and not hidden.**
+
+| **[M]** Compress, 12 runs | shipped | keep |
+|---|---|---|
+| the residual held 0.2 s, m/s² (world) | 0.86–3.69 | **1.64–56.96** |
+| residual ÷ its own `a_max` | 0.37–1.58 | **0.69–24.45** |
+| the tolerance at the fall, ° | 13.7–15.4 | 13.6–**33.0** |
+| the deck's roll at the fall, ° (deck filter) | −43.6–89.8 | −62.5–**102.2** |
+| the felt over-bank at the fall, ° (deck filter) | −53.5–38.7 | −65.7–**115.5** |
+| the frozen share of the last 0.2 s (deck) | 0.00–0.54 | 0.00–**1.00** |
+| the longest light window, s (deck) | 0.00–0.10 | 0.00–**0.21** |
+
+A held residual of 57 m/s² is not a gentle turn; it is the freed hip and arms throwing hard, and the capture point
+goes light under them (a whole 0.2 s frozen in one run). **So the restored reach buys time and spends violence**, and
+on the deck filter it takes the board past 90° more often than before. I report that as a cost of the switch and not
+as a reason to withhold it: the owner ruled, and the switch is theirs to ride.
+
+## 3. (B) The instrument — the roll ledger, and the ledger bug the positive control found
+
+`BoardBody.roll` is the yaw ledger's exact twin one axis over, built the same way, filled at the same seven sites,
+and off by default behind `BoardBody.rollLedger`.
+
+**The datum, stated, as the brief required.** Each entry is a mean torque over the step about **the board's own long
+axis** — board frame +z in the world, `(rotation[2], rotation[5], rotation[8])` at the substep that books it, the
+same axis and the same expression `bandLedger.rollMoment` has used since step 3.2u — **positive in the right-hand
+sense, which lifts the +x rail**. The axis is the instantaneous one, which is exact because torque balance is
+instantaneous; at the fastest roll this track has measured (354 °/s) the axis itself moves 0.37° across a 1/960 s
+substep [A]. `total` is the board's own `I·Δω` on that axis and `rider` is the residual: `total` less every water
+entry and the gyroscopic term.
+
+**The probe's own sign is one convention, applied once, and signed by the run's outcome.** `deck.ts` negates every
+entry into its own `roll` sense (its `roll = atan2(boardUp·side, boardUp.y)` is `−θ` for a rotation `θ` about +z,
+checked frame by frame) and multiplies by the sign of the deck's roll at the **last** frame, so **positive means
+pushing the board further over the way it actually went**. It is signed at the end rather than latched at `STEER_FROM`
+because at `STEER_FROM` = 0 the roll is still 0.0° and `Math.sign(0) || 1` would pick a sign at random — the same
+shape of trap as 3.3f's `Number(null) === 0`, and caught by running it rather than by reasoning about it. Step 3.3g
+had to withdraw an across column signed by `sign(nx)`; this is the lesson applied.
+
+**The positive control** (`src/physics/rollLedger.test.ts`, written before it was run). A bare board heeled in still
+water has a **righting** moment, because the submerged volume shifts to the buried side; heel it so the **+x rail is
+buried** and the prediction is a **positive** net moment and a roll rate that turns positive.
+
+| **[M]** a bare board, `PlaneWater`, one step at 1/60 s | heel −20° (+x rail buried) | heel +20° |
+|---|---|---|
+| buoyancy's roll moment, N·m | **+5.474** | −5.474 |
+| the net | **+0.463** | −0.463 |
+| the board's own roll **rate** change, rad/s | **+0.2979** | −0.2979 |
+| the `rider` residual, N·m | **0.0000** | −0.0000 |
+
+All three predictions held: the sign, the mirror to nine decimals, and the sign against an independent reading (the
+board's own measured rate). The control is deliberately **not** the sum identity, which is true by construction
+because `rider` is defined as the residual; it is the sign against a physical prediction, the sign against the rate,
+and that the residual **closes to zero when there is no rider for it to belong to**. The test also asserts the ledger
+is a pure observer — 30 steps of a moving, heeled, spinning board give an identical trajectory to the digit with it
+on — and that it is off by default.
+
+**And the control found a bug in the existing yaw ledger, which is why the roll ledger is not a copy.** `waterT`
+holds the explicit half of the surface-normal push, `−(h·radiation + entrained)·intoSurface`, and the settle loop's
+`radiated` and `inertia` already carry that same half: their sum works out to `push − (D·Δu)_surface`. So booking
+`waterT` **as well** counts `push` twice. The yaw ledger does exactly that (`y.addedMass += waterTy` beside its settle
+entries). Measured on the control: with `waterT` in, the no-rider residual reads **0.086 N·m on a total of 0.463**
+(19 %); with it out, **0.0000 on 0.463** [M]. The roll ledger leaves it out and books the two `waterT` entries that
+have **no** settle twin — ruling 3's wall push and `plateWall` — at their own sites. **The yaw ledger is not touched
+and the fix is not claimed for it**: nothing in this round reads yaw, step 3.2q's own numbers were published with
+that residual in them, and correcting a published instrument is its own round. It is written down here and in
+`BoardBody.roll`'s own doc so the next reader of `yaw.rider` knows.
+
+## 4. (B) What rolls the board, per source, in newtons-metres
+
+The arm is 3.3g's own: full stick, the deck filter, twelve runs (two stances × six entry speeds), on the
+Canyon-matched `FaceWater`. **It reproduces 3.3g's published twelve to the digit** — 12 of 12 falls at
+**1.12–2.67 s**, bank peak **63.5–70.0°**, roll peak **63.7–91.4°**, rail peak **75.7–90.1°**, drift peak
+**3.2–20.9°** — so these roll moments belong to the same population as that round's in-plane forces and can be read
+beside them.
+
+| **[M]** N·m about the board's long axis, + = further over the way the run went, **1,118 commanded frames pooled** | median signed | peak absolute |
+|---|---|---|
+| **rider (a RESIDUAL)** | **+33.47** | 118.74 |
+| **pressure** | **−20.46** | 115.07 |
+| buoyancy | −3.81 | 7.08 |
+| radiation | −1.65 | 8.68 |
+| addedMass | −1.16 | 47.70 |
+| fins | −0.47 | 12.61 |
+| rails | +0.09 | 0.48 |
+| friction | +0.04 | 0.22 |
+| gyro | −0.00 | 0.30 |
+| bed, froth, suction | 0.00 | 0.00 |
+| **the water, all of it (the ten + gyro)** | **−33.40** (per run −57.81 to −21.72) | — |
+| **the NET** | **+0.04** (per run **0.01–0.11, positive in 12 of 12**) | — |
+| the sum of the medians, for the caveat | +6.06 | — |
+
+**Four readings, and the third is the mechanism.**
+
+1. **Nothing in the water rolls the board over.** Every entry of consequence resists; the only two with the roll's
+   own sign are `rails` (+0.09) and `friction` (+0.04), which are rounding. The thing rolling the board is the
+   **rider's own contact**.
+2. **And the contact's moment is exactly what a foot-borne load off the centreline makes, which is the falsification
+   test passing rather than my claim.** Divide the residual by the contact's own normal load and it implies the load
+   presses **0.0525 m** off the board's centreline at the median (peak 0.309), against the feet's modelled half-width
+   across of **0.13 m** [R, `riderPosture.ts:96`]. It is inside the feet. A residual implying an arm the feet do not
+   have would have meant the residual was holding something else.
+3. **So the net is a one-part-in-a-thousand difference between two 33 N·m columns, on a roll inertia of
+   0.0262 kg·m² where 1 N·m is 2,187 °/s².** The measured roll acceleration over the turn is **21–234 °/s²** and the
+   measured roll rate peaks at **146.7–353.7 °/s** [M]. **That is the answer to "the last 14–41° of roll is asked for
+   by nobody": it is asked for by the rider's feet, and it is the error in the hull's answer.** `MAX_BANK` (70°) and
+   `RAIL_RANGE` (50°) cap what the rider's **body** asks for; **nothing caps the moment the contact then delivers to a
+   2.5 kg board**, and the hull has to find the last tenth of a percent.
+4. **The percentage caveat, and why no share of the net is printed.** Each entry's figure is its own median over the
+   pool and medians do not sum: the eleven sum to +6.06 against the median of the sum, +0.04. And the net is **0.1 %
+   of the larger column**, so a share of it would divide by a near-zero — the printed table says so in those words
+   and quotes shares of **the water column** instead, where the denominator is 33 N·m. 3.3g's §4 had to add that
+   caveat after the fact; here it is in the instrument.
+
+**The residual, checked against an independent reading.** `rollBy.rider` is a residual, so it is not evidence of a
+contact torque on its own. `deck.ts` therefore also computes the contact's roll moment **directly**, from two public
+fields the ledger never touches — `AttachedRider.contact.force` (the mean force on the rider over the step, N, world)
+and `AttachedRider.contact.centreOfPressure` (where it acts, board frame) — as `(P − C) × F` on the board's long
+axis, about the same composite centre the ledger's torques are taken about.
+
+| **[M]** | full stick, deck filter (12 runs) | unsteered (12 runs) |
+|---|---|---|
+| the residual's median, N·m | +33.47 | +17.84 |
+| the direct reading's median, N·m | **+39.19** | **+20.81** |
+| \|direct − residual\|, median | **4.72** | **2.13** |
+| the same, peak | 143.20 | 28.74 |
+| the implied arm, m (median · peak) | 0.0525 · 0.309 | 0.0228 · 0.122 |
+
+**The two agree in sign, in order and within 14 % at the median on two populations, and disagree by up to 143 N·m
+frame by frame.** So the residual **is** the rider's contact in the main, and is not the contact exactly: it also
+carries the pair's own inertia resisting the roll inside the 9×9 solve, and `contact.force` is a step mean on the
+rider where the residual is accumulated per substep on the board. It is reported as a residual everywhere in this
+document for that reason.
+
+**The second population, which is why this is not one cell.** The unsteered twelve — Part 24's own twelve, 12 of 12
+falls at **0.77–1.70 s**, bank peak 20.7–65.7°, roll peak 20.9–63.0°, rail peak 10.9–62.9°, drift peak 1.9–4.9°, all
+reproduced to the digit — give **rider +17.84 against the water's −17.78, a net of +0.03 (per run 0.00–0.06, positive
+in 12 of 12)**, with `pressure −5.85`, `buoyancy −2.23`, `addedMass −1.33`, `radiation −1.19`, `fins −0.39`, and a
+roll acceleration of 4–128 °/s² [M]. **The same shape, and the contact's moment scales with the steer, 17.8 → 33.5
+N·m, as it must.**
+
+**And at the fall frame**, per run, the water's resistance is still there and the rider's push has largely spent
+itself: rider **+1.9 to +32.6**, pressure **−30.0 to −2.8**, buoyancy −1.6 to +0.5, addedMass −0.8 to +0.8,
+radiation −0.6 to 0.0, fins −3.3 to +3.1, for a net of **−11.0 to +0.9 N·m** [M]. By then the board is at 63.7–91.4°
+of roll and the fall frame is inside the capsize, which is why §4's number to design on is the commanded turn's.
+
+## 5. (B) What the roll moment does to step 3.3g's attribution — the refutation
+
+**The two attributions are in opposite orders, and this is the round's second result.**
+
+| **[M]** source | share of the in-plane force `F_s` (3.3g §4, same cell) | share of the water's roll column (here) | which way it pushes the roll |
+|---|---|---|---|
+| **buoyancy** | **81.0 %** | **11.4 %** | resists |
+| radiation | 14.7 % | 4.9 % | resists |
+| addedMass | 10.4 % | 3.5 % | resists |
+| rails | 9.5 % | −0.3 % | pushes it on |
+| **pressure** | **5.7 %** | **61.3 %** | resists |
+| friction | 1.1 % | −0.1 % | pushes it on |
+| fins | −14.1 % | 1.4 % | resists |
+
+- **Buoyancy is 81 % of the force that slides the board out and 11 % of the moment that holds it up.** `pressure` —
+  the one entry already resolved along the **hull's** own normal, and the one whose 5.7 % was 3.3g's falsification
+  test *passing* — is **61 %** of the roll column.
+- **The three entries on the water-surface normal together are −6.62 of the water's −33.40 N·m, 20 %** [A]. So
+  re-pointing them onto the hull normal, which my brief parked for this round and 3.3d measured at 46 % of buoyancy
+  alone, would move **a fifth of the force resisting the capsize**, in a direction nobody has measured. **That is a
+  reason to measure it before ruling on it, and the opposite of a reason to assume it helps**: on this axis the three
+  are on the side that keeps the board under him.
+- **I am not claiming the force attribution was wrong.** It was right about the force; `tilt = atan(F_s/F_n)` is exact
+  and 3.3g's column is the residual tilt in newtons. What is refuted is **transferring its ranking to the roll**, which
+  my brief invited by carrying the force column forward as the thing to design on — and which 3.3g itself warned
+  against in its own §8: *"an in-plane force at the hull is not the same thing as a roll moment about the pair's
+  centre of mass."* It was right to warn, and the warning now has numbers.
+
+## 6. What I refuted
+
+- **My brief's premise that the last 14–41° of roll is "asked for by nobody".** It is asked for by the rider's own
+  feet: **+33.47 N·m** median through the commanded turn, pressing 5.25 cm off the centreline, inside the feet's own
+  13 cm. What nobody commands is the **cap**: `MAX_BANK` and `RAIL_RANGE` bound the body's lean reference, and nothing
+  bounds the contact moment that follows from it onto a 0.0262 kg·m² board. Sixteen consecutive rounds have now
+  refuted their brief's premise, and this one is mine.
+- **Transferring 3.3g's in-plane force ranking to the roll axis**, §5. Buoyancy 81 % → 11 %, `pressure` 5.7 % → 61 %,
+  and every water entry of consequence on the resisting side.
+- **The idea that restoring the crouch's reach could meet the owner's bar.** It restores the reach by 1.8–2.0× to
+  above the standing stance's, moves the gate from the reach to the moment, lengthens the ride in 8 of 8 cells — and
+  **24 of 24 still fall in each of four arms**. The brief named this outcome in advance and required it as the
+  headline; it is §0 item 2.
+- **The yaw ledger's `rider` residual as a closing one**, §3: `waterT`'s explicit half is booked twice, measured at
+  **0.086 N·m on a total of 0.463** with no rider on a static heel. Reported, not fixed, because nothing here reads
+  yaw and 3.2q's published numbers carry it.
+- **My own first sign plan for the roll columns**, which latched the run's sense at `STEER_FROM` the way `steerSign`
+  does. At `STEER_FROM` = 0 the roll is 0.0° and `Math.sign(0) || 1` picks +1 regardless, so every run's columns would
+  have been signed by nothing. Found by running it on 3.3g's own arm, where the arm's own setting is `STEER_FROM=0`.
+
+## 7. What I will not claim
+
+- **I will not claim the residual IS a contact torque.** It is a residual. The independent reading agrees in sign, in
+  order and to **4.72 N·m at the median** on one population and **2.13** on the other, and disagrees by up to
+  **143 N·m** on a single frame, because the residual also carries the pair's inertia inside the solve. Everything in
+  §4 calls it a residual.
+- **I will not claim the near-cancellation is a bug.** A surfer standing on his inside rail and a planing hull holding
+  him up **is** a near-cancellation; that is what planing is. What I claim is its size — two ~33 N·m columns, net
+  0.1 % — and that the over-roll lives in its error on an inertia of 0.0262 kg·m².
+- **I will not claim `pressure`'s −20.46 N·m is all hull force.** Its peak absolute is **115 N·m** against a median of
+  −20.46, and 3.3g measured its *in-plane* residue tracking the roll **rate** at −0.102 N per °/s (R² 0.873) — a
+  within-step rotation, not a hull force. The same question is open on this axis and **I did not measure it here**.
+  Until it is measured, `pressure`'s 61 % share of the roll column is an upper bound on its hull part.
+- **I will not claim the restored reach is free.** Compress's held residual goes 0.86–3.69 → **1.64–56.96 m/s²**, its
+  roll at the fall −43.6–89.8 → **−62.5–102.2°**, and its longest light window 0.10 → 0.21 s. §2.3.
+- **I will not claim the stance table can meet the owner's bar.** Both of its gates are now measured — the moment bar
+  Compress wins by 1.26–1.67× (3.3g) and the reach it now wins by 1.8–2.0× (here) — and he falls 12 of 12 either way.
+  Whatever meets that bar is not in this table.
+- **I will not claim the roll ledger's `rider` column names what a *human* would do.** It is our contact's moment on
+  our board, with our feet's 0.13 m and our 2.5 kg board's 0.0262 kg·m². No source is offered for any of the three.
+- **I will not re-promote 3.3g's `unwind` column, or 3.3f's**, and I did not measure the post-centring fall of the
+  runs that finish the turn.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed rather than paddled in, `deck.ts`'s six
+  entry speeds and `fall.ts`'s three are different populations and are **never pooled**, and every span above is the
+  **whole population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 8. What changed, and why each piece is allowed
+
+- **`src/physics/humanBalance.ts`** — `stanceRoom(depth, reach?)`. One optional argument; with `'keep'` the hip range
+  and arms are read at the riding stance and the knees' travel is the stance's own. The default call is byte-for-byte
+  the table it always was, which `humanBalance.test.ts` asserts (`stanceRoom(0.3, undefined)` equals
+  `stanceRoom(0.3)`).
+- **`src/physics/AttachedRider.ts`** — the `stanceReach?: 'keep'` option, one private field, one constructor line, and
+  **all five `stanceRoom` call sites** threaded, so the hip's stop moves with the test's credit (§1).
+- **`src/physics/BoardBody.ts`** — `static rollLedger` (off), the `roll` ledger object, one private `rollOf` helper,
+  and the seven fill sites plus the reset and the residual. **Nothing is applied, nothing is read by the game**, and
+  `rollLedger.test.ts` asserts the trajectory is identical to the digit with it on.
+- **The plumbing**, in the shape the three existing rider switches use: `RideSessionOptions.stanceReach`,
+  `SurfZoneConfig.stanceReach`, `SurfZoneRunner`'s pass-through, `PhysicalMode`'s `stanceReachSwitch`
+  (`?stanceReach=keep`, case-insensitive, anything else the default), and **`main.ts`'s online-room override pins it
+  to `undefined`** — which `PhysicalMode.test.ts` enforces by reading `main.ts` and failing if the pin is removed.
+- **`docs/research/new-rider/3.3/deck.ts`** — `ROLL=on` (the ledger, §6's block, and the independent contact reading)
+  and `REACH=keep`, both off by default. **With both unset the probe reproduces its own published record**: at
+  `STEER=0` with no switches it gives bank peak 20.7–65.7°, roll peak 20.9–63.0°, rail peak 10.9–62.9°, drift peak
+  1.9–4.9° and 12 of 12 falls at **0.77–1.70 s** — Part 24's published twelve to the digit, run on this branch with
+  the new source fields in place.
+- **`docs/research/new-rider/3.3/fall.ts`** — `REACH=keep`, off by default; its shipped arm reproduces 3.3g's own
+  (24 of 24 at 1.12–4.15 s on the world filter, tall 1.20–4.15 / Compress 1.12–3.98, heights 0.64–0.84 / 0.50–0.55,
+  `a_max` 1.51–2.00 / 2.33–2.53, reach 0.25–0.35 / 0.16–0.18 — 3.3g §2b's table, to the digit).
+
+## 9. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the two probes type-checked separately on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/deck.ts`, `docs/research/new-rider/3.3/fall.ts`, `src/physics/BoardBody.ts`,
+  `src/physics/humanBalance.ts` and `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **56 files, 606 passed, 21 expected fail** (55/601/21 in 3.3g; the five new passes are
+  `rollLedger.test.ts`'s four and `humanBalance.test.ts`'s one, which is **21 of 21** in that file).
+  `vitest run src/game src/scene/rig`: **70 files, 730 passed** (729 in 3.3g; the one new pass is
+  `PhysicalMode.test.ts`'s switch test, **97 of 97** in that file).
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail**.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference,
+  so a red there would be news as `runner-test-file-excluded` has it. `src/wave/SurfZoneSimulation.test.ts` is closed
+  by reading, as `c2-step5g.md` §7.4 allows: this round touches no solver, no wave and no spot file.
+- **the shipped rider is proved unchanged against a published baseline**, as the brief required: `deck.ts` at
+  `STEER=0` with no switches reproduces Part 24's twelve to the digit on this branch (§8), and `fall.ts`'s shipped
+  world-filter arm reproduces 3.3g §2b's own table to the digit. A behavioural leak in `stanceRoom`'s new default
+  path, or a report field that changed behaviour, would move those falls.
+- **the switch is pinned off for the online rooms** in `main.ts`'s room overrides, and `PhysicalMode.test.ts` reads
+  `main.ts` and fails if the pin is removed — the same assertion `?kneeRoom` carries.
+- **the Canyon byte check** (`scripts/m1-cpu-bench.ts`, medium, 3600 steps, **fresh** spin-ups into new state paths),
+  with the brief's three cautions read rather than assumed — the wrapper is one **prepended** line on the bundle
+  (`globalThis.location = { search: '?canyonWaves=true' }`, because a dynamic import makes rolldown split the chunk),
+  the grid line read, and the "spun up on the CPU in … s" line read so that no kept `.sea` was imported (both state
+  files were written by this run, into a `bench33h/` directory that did not exist before it):
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180,400 cells**, spun up on the CPU in **42.9 s**: snapshots
+    **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202,800 cells**, spun up on the CPU in **61.3 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  All four match, which they must: this round touches no solver, no wave, no spot file and no hull law, and its one
+  behavioural change is an opt-in balance switch that is off by default and off in the bench. The raw output is
+  `results/33h/33h-canyon-byte-check.txt`.
+## 9b. The deletions column, read line by line
+
+`git diff --cached --stat origin/main`: **31 files, 1,915 insertions and 15 deletions** — and **all fifteen
+deletions read, one by one. Every one is a line replaced in place; nothing was removed and nothing was reverted.**
+
+- `humanBalance.ts`, **4**: `stanceRoom`'s signature and its three `return` lines, replaced in place with the
+  `const room = …` form plus the `reach === 'keep'` branch.
+- `AttachedRider.ts`, **5**: the five `stanceRoom(...)` call sites, each replaced in place with `this.stanceReach`
+  passed.
+- `main.ts`, **2**: the online-pin comment and the overrides object, replaced with `?stanceReach` named and
+  `stanceReach: undefined` added.
+- `SurfZoneRunner.ts`, **1**: the config pass-through line, replaced with `stanceReach` added.
+- `PhysicalMode.test.ts`, **1**: the import list, replaced with `stanceReachSwitch` added.
+- `fall.ts`, **2**: its row label and its header `console.log`, replaced with `stanceReach` named in both.
+
+`origin/main` is still **5147f559**, which is this branch's own merge base, so there was no mid-round merge to rebase
+onto — and the column was read rather than that being assumed. `humanBalance.test.ts`, `rollLedger.test.ts`,
+`BoardBody.ts`, `RideSession.ts`, `SurfZoneSimulation.ts`, `PhysicalMode.ts` and `deck.ts` are **pure additions**,
+zero deletions each.
+
+## 10. Files (3.3h)
+
+- `src/physics/humanBalance.ts` — `stanceRoom(depth, reach?)` and the doc that states what the table's limits are and
+  which design bar `'keep'` crosses. `src/physics/humanBalance.test.ts` — eight depths, the knees' travel untouched,
+  the default unchanged, and the √5 ratio (21 of 21 in the file).
+- `src/physics/AttachedRider.ts` — `stanceReach?: 'keep'`, one field, one constructor line, five threaded call sites.
+- `src/physics/BoardBody.ts` — `rollLedger`, the `roll` ledger, `rollOf`, the seven fill sites, the reset and the
+  residual, and the `waterT` double-count note (§3). `src/physics/rollLedger.test.ts` — the positive control, the
+  no-rider closure, the per-entry impulse bound, and off-by-default + pure-observer (4 tests).
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts`, `src/main.ts` — the plumbing and the online pin. `src/game/PhysicalMode.test.ts` — the
+  switch, the spots, and the pin read out of `main.ts`.
+- `docs/research/new-rider/3.3/deck.ts` — `ROLL=on`, `REACH=keep`, the roll columns, the independent contact reading,
+  the implied arm, §6's and §A's blocks. `docs/research/new-rider/3.3/fall.ts` — `REACH=keep`.
+- `docs/research/new-rider/3.3/results/33h/` — nine arms with their printed tables beside their rows
+  (`deck-s0-baseline`, `deck-s0-roll`, `deck-s1-deck-roll`, `deck-s1-deck-roll-reach`, `fall-world-shipped`,
+  `fall-world-reach`, `fall-deck-shipped`, `fall-deck-reach`) and `33h-canyon-byte-check.txt`.
+
+## 11. For the owner, in plain words — and the shot list
+
+**You ruled that a deep crouch keeps its arms and hip swing. I built it, it does exactly that, and he still falls
+every single time.**
+
+The number you were owed: in a crouch his catching reach was **16 to 18 centimetres** and it is now **31 to 37** —
+**about double**, and **more than he has standing** (25 to 35). And it moved only that: his weight still sits
+**50 to 55 cm** over his feet in the crouch, so the tipping sum you were right about is untouched. Standing is
+**identical in every single column**, which is how I know the switch does what it says and nothing else.
+
+**What it bought.** He rides longer in **every one of the eight cases** I measured. The gentlest turn — your own case,
+the low speed of getting into position — goes from falling at **2.1 seconds to 3.6**. And the *reason* he falls
+changed: before, in a crouch, he had already run out of reach and was just waiting for his weight to cross his feet;
+now it is his weight crossing his feet that goes first. **That is your sum becoming the thing that decides it.**
+
+**What it did not buy, and this is the headline.** **He still falls, 24 out of 24, in all four tests.** At the
+gentlest stick, in a crouch, 6 of 6. **So your bar is not met, and the stance table cannot meet it** — I have now
+measured both of its gates, he wins both in the crouch, and he goes over anyway.
+
+**It is also not free.** With his arms and hips loose in a crouch he throws them hard: the sideways pull he holds goes
+from about 4 m/s² to as much as **57**, and the board goes past flat-on-its-side more often than before (to 102°).
+You may well feel that as jerky. The switch is yours and off by default — add **`?stanceReach=keep`** to try it.
+
+**And now the thing I said last time I would go and find: what actually rolls the board onto its side.**
+
+**It is him. It is his own feet, and every force in the water is pushing the other way.**
+
+I built the instrument and measured the twisting force on the board, in newton-metres, one source at a time, on the
+same twelve runs as last round. Through the turn: **his feet twist the board over with about 33 newton-metres**, and
+the water pushes back with **33** — the hull's planing pressure doing most of it (20), with buoyancy, the water's
+added mass and its radiated waves all on the **same side as the hull**, holding him up. The difference between those
+two numbers is **0.04**. One part in a thousand.
+
+**That is why it goes to 90 degrees.** A surfboard weighs 2.5 kg, and twisting it about its own length is easy: its
+resistance to rolling is **0.026** in the units that matter, so **one newton-metre spins it at 2,200 degrees per
+second squared**. He is standing about **5 centimetres** off its centreline — well inside his own feet, so this is
+not a modelling error, it is just where a surfer stands — and that alone would flip the board instantly. The hull
+cancels it to a tenth of a percent, and a tenth of a percent is still enough to put the board on its side in a
+second. **Nobody caps that.** The game limits how far the *rider* can lean (50 degrees, 70 at most). Nothing limits
+the twist his feet then put into the board.
+
+**Two corrections to what I told you last round, both mine.**
+
+First, last round I told you **81 % of the sideways force is buoyancy** and that it was the first thing in the list
+that was ours. That is still true **of the sideways force**. But on the twisting force — the one that actually puts
+the board on its side — buoyancy is **11 %** and it is on the **helping** side, and the hull's own pressure, which was
+only 6 % of the sideways force, is **61 %**. **The two lists are in opposite orders**, and the one that matters for
+the capsize is the one I had not measured. I was carrying last round's ranking forward as if it answered this
+question, and it does not.
+
+Second, and this changes what I would ask of you: **the three forces I asked you to rule on** (buoyancy, the water's
+added mass, the waves it radiates) are, on the twisting axis, a **fifth of the force that is holding the board under
+him**. Turning them onto the hull's own direction would move a fifth of what is keeping him upright, in a direction
+I have not measured. **So I withdraw the recommendation to do it next. It needs measuring first, and it is no longer
+obviously a fix.**
+
+**What I would do next, and it follows straight from the number.** The board is rolled by his feet and stopped by the
+hull, and the two agree to a thousandth. Two things follow and both are testable:
+
+1. **A real surfboard is not 2.5 kg of roll resistance with a rigid man bolted to it.** A surfer's legs are a joint:
+   when the board rolls under him, his ankles and knees give, which is exactly the thing that stops a board rolling
+   out from under a person. Our rider is rigid at that joint, so the full 33 newton-metres goes straight into a board
+   that cannot resist it. **That is the two-body rider**, which is already on the list from the duck-dive round, and
+   this is now a second measurement pointing at it.
+2. **Or something caps the twist.** Nothing in the code limits the moment his feet put into the board, only the angle
+   his body leans at. That is not a motor — it is the ankle he does not have.
+
+**Nothing in the game changed by default this round.** One thing to type (`?stanceReach=keep`), one measuring tool
+that does nothing unless a probe turns it on, and no force, no hull law and no number in the physics moved.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, which is your test spot. One change at a time, as always.
+
+1. **`?rider=new&canyonWaves=true`** — the crouch as it ships. Catch a wave, get into position at low speed, press
+   Compress, make one gentle turn. How long before he goes, and does it feel like his arms are stuck?
+2. **`?rider=new&stanceReach=keep&canyonWaves=true`** — the same wave, the same gentle turn, with the crouch's arms
+   and hips free. **Two questions:** does he stay on noticeably longer at that gentle speed (the measurement says
+   about 1.5 seconds longer), and **does it feel loose or jerky** — because the measurement says his hips and arms
+   now throw much harder, and that may read as a surfer flailing rather than crouching.
+3. **The same two with `?feltFrame=deck` added**, which is the filter you have been riding, if you want them matched
+   to your last sessions.
+4. **And a shot I would like for the roll finding, not the switch:** on any of the above, when he goes over, **say
+   whether the board goes out from under him or he falls off it.** The measurement says the board rolls, hard, and in
+   8 of 12 runs his feet move across faster than his body. If that is not what it looks like to you, the instrument
+   and the ride disagree and I want to know.
+
+**One decision I would like from you**, and it is a ruling, not a ride: **do you want the crouch's reach kept on by
+default?** It lengthens every ride I measured and prevents no fall, and it makes the crouch throw harder. I would
+leave it opt-in until you have ridden shot 2 and told me whether it feels right, because the only thing it is clearly
+better at is the thing the measurement sees and you cannot.

@@ -29,6 +29,27 @@ describe('stanceRoom (the design\'s table)', () => {
       last = room;
     }
   });
+
+  // Step 3.3h, the owner's ruling of 2026-11-16: a deep crouch keeps its arms and hip swing. The hip's range and the
+  // arms are read at the riding stance; the knees' travel stays the stance's own, so the switch moves one family.
+  it('keeps the riding stance\'s hip range and free arms at every depth with `reach: \'keep\'`, and leaves the knees\' travel alone', () => {
+    for (const depth of [0, 0.1, 0.195, 0.25, 0.3, 0.4, 0.45, 0.6]) {
+      const own = stanceRoom(depth);
+      const kept = stanceRoom(depth, 'keep');
+      expect(kept.hipRange, `depth ${depth}`).toBe(1.2);
+      expect(kept.arms, `depth ${depth}`).toBe(1);
+      expect(kept.kneeTravel, `depth ${depth}`).toBeCloseTo(own.kneeTravel, 12);
+    }
+    // Off by default and under any other value: the table's own room, unchanged.
+    expect(stanceRoom(0.3, undefined)).toEqual(stanceRoom(0.3));
+    // And the reach it restores is the ratio step 3.3g measured: Compress's rotor impulse against the tall stance's is
+    // √(2 · 6 · τ · 0.4) / √(2 · 10 · τ · 1.2) = 1/√5, so keeping the room is a factor √5 = 2.236 on the credit at the
+    // same height and ω — the top of 3.3g's measured 1.4–2.2× span, which also carries the swing already spent.
+    const tau = 200;
+    const cut = rotorImpulse(SWING_INERTIA_SET, tau, stanceRoom(0.3).hipRange);
+    const kept = rotorImpulse(SWING_INERTIA_ARMS, tau, stanceRoom(0.3, 'keep').hipRange);
+    expect(kept / cut).toBeCloseTo(Math.sqrt(5), 9);
+  });
 });
 
 describe('DelayLine', () => {
