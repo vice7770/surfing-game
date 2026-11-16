@@ -6364,3 +6364,560 @@ things I measured on the bench.
    **My own recommendation is the second** — the command — because the plant is now measured from end to end and
    found innocent, and because it is the only one of the three that could plausibly meet your bar rather than make
    the game more correct. **Your call.**
+
+# Part 37 — the command and the joint are one number, the loop's own model is wrong by a bias that nothing bounds, and turning that bias off triples the ride
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33n`, cut from `main` at
+**fe48c7c2** (step 3.3m's merge), so Part 36 is its base. It ships **one read-only probe and no source change of any
+kind** — not a line, not a switch, not a constant — and **288 rides over fourteen arms**: the unsteered 24 and the
+owner's low-speed 18 on both fall filters, a steered 18, the same five cells with the command-bias estimator off
+(a documented weights setting), and four dead-ankle arms (3.2w's own gain-0 row).
+
+Tags as in 3.2, 3.3 and 3.4: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source;
+**[I]** my inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The seven sentences the round is for
+
+1. **The owner's bar is not met, and nothing in this round meets it.** On the owner's own low-speed cell — entries set
+   **absolutely** at 1–6 m/s through the water × three stances, the stick never touched — **18 of 18 rides end on the
+   deck filter at 0.517–7.100 s and 18 of 18 on the world one at 0.117–6.900 s; Compress falls 6 of 6 on each** [M],
+   reproducing step 3.3l's and 3.3m's published rows to the digit. **288 of 288 rides in this round ended before nine
+   seconds.** The one arm that moves the fall a long way — the bias ablation of §4 — moves it on the **unsteered** cell
+   and **not** on the owner's: there it is 18 of 18 at 0.467–5.533 s, a median of 1.100 s against the shipped 1.033.
+   **The bar is untouched.**
+2. **"The command is pinned and the joint is not" is REFUTED, and it was my own brief's premise.** Measured per tick
+   on one window, the rest the game commands the ankle and the command the predictor records sending are **one
+   number**: `|commanded + sent|` with the rail's bite open is **0.000000000° on every tick of every one of the 96 shipped-arm
+   runs that have a live tick** (of 102; six low-speed world rides fall inside the 0.2 s window and have none) [M], because `lean = clamp(−raw[0], −range, range) = −sent[0]` identically while
+   `|rail| < RAIL_BITE = 48°` [R, `AttachedRider.ts:3458–3461`]. And of the **151 ticks** across those arms whose sent
+   command saturated with the bite open, the commanded rest was at its own bound in **all 151**. Part 34's 62-of-72
+   and 1-of-72 are two windows **and** two quantities — a run that saturated at any time, against the **lagged** rest
+   at the fall frame — and Part 34 said the second half of that itself. **There is nothing to explain here: there is
+   no gap.**
+3. **The saturation is also much smaller than the brief says, per tick.** The sent command is at its ±14.324° bound in
+   **0.2 % of ticks on the unsteered world arm, 3.8 % on the unsteered deck one, 6.6 % steered and 18.8 % on the
+   owner's low-speed cell** [M]; it ever saturates in **2, 9, 17 and 12** runs of 24, 24, 18 and 18. A per-run "ever"
+   count and a per-tick share are not the same statement, and the first is the one nine rounds have been quoting.
+4. **What IS wrong, and it is a mechanism with an identity behind it: the loop's internal model is wrong about its own
+   actuator by exactly the bias it estimates, and nothing bounds that bias.** `DesignWeights.bias` gives the Kalman
+   filter two random-walk states for a slow command offset (`[0.01, 5]` per √s), the command subtracts `b̂` and the
+   **forward prediction propagates `u + b̂`** [R, `tick`: `xh[i] += p[i][0] * (uc[0] + b0)`]. Measured: `b̂₀` holds
+   **one sign in 1.000 of ticks in 24 of 24** unsteered runs, `|b̂₀|` rises in 0.61–1.00 of them, and at the ride's end
+   it is **0.311–2.819 of the ankle's whole command bound** — up to **40.4° on a 14.32° bound**. And the model's error
+   on its own lagged ankle rest **is** that bias, run by run: `restErr / |b̂₀|` = **0.924–1.020 in 24 of 24**, a median
+   3.0–5.8° and a peak 43.9° [M]. With the bias off that error collapses to a median of **0.009–0.217°**.
+5. **Turning the bias off triples to quadruples the ride on the unsteered arm — and still falls 24 of 24.** Deck:
+   **1.100–2.067 s (median 1.183) → 1.233–5.900 s (median 4.317)**. World: **0.767–1.950 (0.950) → 1.167–6.333
+   (4.283)** [M]. **This is the largest single effect this track has measured.** It is also honest about what it
+   costs: the filter's own fit gets **worse** (the innovation on the bank, median 0.68–2.66° → 0.12–6.75°, peak
+   5.95–12.59° → 6.74–72.83°), so **the bias is absorbing real model mismatch, and it buys that fit by lying about the
+   actuator.** And it does not transfer: the owner's low-speed cell moves 1.033 → 1.100 s at the median and the
+   steered arm 3.067 → 2.983.
+6. **The prediction is worse than not predicting, in the window that matters.** The probe reads the predictor's error
+   and the error of doing nothing **at the same instant off the same arrays** — `C x̂ − now` against `stale − now`,
+   the stale sense being exactly what the filter is fed. Over all seven senses the predictor is better in only
+   **20.3–57.4 %** of ticks on the unsteered deck arm, and **in the last 0.2 s before the ride ends it is worse for
+   most of that window in 24 of 24 runs** (its own share of wins there: **0.000–0.231**) [M]. Its peak error on the
+   bank in that window is **3.2–41.0°**, against an inherited lean of 8.7°. And the forward prediction's own
+   contribution to the command (`raw` less the same gains on the 0.1 s-old estimate) is **0.7–8.7° at the median and
+   12.3–28.9° at the peak**, on a 14.32° bound.
+7. **And it does fight the rider's own input — the owner's "correction balance while turning", measured.** On 18
+   steered rides (the stick held from the first frame, both ways, three entries × three stances), over the 55–235
+   ticks a run whose feedforward is past 0.1°: the LQR feedback **opposes** the reference's feedforward in
+   **62.2–98.3 %** of them, its median ratio is **−0.228 to −2.574 in 18 of 18 runs**, it cancels more than half the
+   ask in **35.4–90.0 %**, and **the rest actually delivered is 0.02–0.86 of the steady turn's own in 13 of 18 and
+   NEGATIVE — the wrong way entirely — in 5 of 18** [M]. This is the same with the bias off (opposes in 63.9–93.9 %,
+   delivered −0.358 to +0.454), so it is the gains and the reference, not the bias.
+
+## 1. (A) The read that had to come first: what the command is made of
+
+`PredictiveController.tick` is 78 lines and the command is its last four [R, `predictiveBalance.ts:1230–1243`]:
+
+```
+for (let q = 0; q < N_COMMAND; q += 1) {
+  let s = ref.u[q] - (q === 0 ? b0 : b1);
+  const row = d.k[q];
+  for (let j = 0; j < n; j += 1) s -= row[j] * (xh[j] - ref.x[j]);
+  u[q] = s;
+}
+this.raw[0] = u[0]; …
+u[0] = Math.max(least, Math.min(most, u[0]));
+this.commands.push(u);                         // the predictor is fed what it SENT, after the clamp
+```
+
+So the ankle command is exactly **three terms**:
+
+| the term | what it is | where it comes from |
+|---|---|---|
+| `ref.u[0]` | the **feedforward**: the ankle rest the steady turn for the lean asked needs | `steadyTurn(Φ, Γ, bankAsked, twistAsked)`, least squares |
+| `−b̂₀` | the **bias**: a Kalman random-walk estimate of a slow command offset, cancelled | `estimate[n]`, `DesignWeights.bias` |
+| `−K(x̂ − ref.x)` | the **feedback**: LQR gains on the forward prediction's error from the reference | `dlqr`, blended over eight table points |
+
+and the probe recomputes all three from the controller's own public fields and its blended `K`. **P0a, the identity,
+held with a peak relative residual of exactly 0 on every tick of 193 of the 204 loop-arm runs** [M] (the other
+eleven fall inside 0.2 s and have no live tick, so the column is not reported for them) — which is what makes
+every number below the controller's arithmetic and not a model of it.
+
+**The two things the read found before anything ran.**
+
+1. **The game uses `raw`, not `sent`** [R, `AttachedRider.ts:3454`: `this.heldAnkleRaw = -this.predictor.raw[0]`],
+   and clamps it itself with the rail-bite's own asymmetric room. The predictor's record of what it sent is `sent`.
+   Those two can disagree, and §2 measures whether they do.
+2. **The forward prediction is fed `u + b̂`, not `u`** [R, `tick`: `xh[i] += p[i][0] * (uc[0] + b0) + …`]. That is
+   correct offset-free control **if** `b̂` is a real actuator offset. On this plant it is not: the rider's ankle has no
+   offset, the command is clamped and nothing tells `b̂` so, and `b̂` is the filter's only slow channel for **any**
+   persistent mismatch. §4 measures what it does with that freedom.
+
+## 2. (B) The command and the joint are one number, and the brief's premise is gone
+
+**The cell is step 3.3k's, 3.3l's and 3.3m's own**: the Canyon-matched `FaceWater` (1.4 m / 16° / 5.7 m/s, 2.6 m
+deep, the board 0.75 fronts ahead of the crest, 45° off the fall line), the stance held, 9 s a run. **The datum**:
+every angle below is the raw board-frame one, `+` meaning the deck normal or the body's lean; every command is in the
+**model's** sign, which is the probe's reversed, and `limits.ankle` is `ANKLE_REST_RANGE = 0.25 rad = 14.324°` with no
+`ankleRange` switch [R]. Every window starts after 0.2 s (the placement's contact transient) and excludes the
+`MAX_BANK` clamp's frames, which are counted and published; the saturation shares are given over **all** ticks as
+well, so the exclusion cannot hide them.
+
+| **[M]** per tick | unsteered deck, 24 | unsteered world, 24 | low-speed deck, 18 | low-speed world, 12 of 18 | steered deck, 18 |
+|---|---|---|---|---|---|
+| ticks in the arm (runs with a live tick) | 1 887 | 1 521 | 1 521 | 1 125 | 2 829 |
+| **the sent command at its ±14.324° bound** | 72 (**3.8 %**) | 3 (**0.2 %**) | 286 (**18.8 %**) | 54 (**4.8 %**) | 188 (**6.6 %**) |
+| **the COMMANDED rest at its own applied bound** | 124 (6.6 %) | 14 (0.9 %) | 307 (20.2 %) | 54 (4.8 %) | 309 (10.9 %) |
+| runs that EVER saturate | 9 of 24 | 2 of 24 | 12 of 18 | 5 of 12 | 17 of 18 |
+| runs whose commanded rest ever reaches its bound | 12 of 24 | 5 of 24 | 14 of 18 | 5 of 12 | 18 of 18 |
+| saturated ticks with the bite **open** | 23 | 3 | 73 | 18 | 34 |
+| … of which the commanded rest was at its bound | **23** | **3** | **73** | **18** | **34** |
+| **peak `\|commanded + sent\|` with the bite open** | **0.000000000°** | **0.000000000°** | **0.000000000°** | **0.000000000°** | **0.000000000°** |
+
+**Four readings.**
+
+1. **They are the same quantity.** With the rail's bite open the game's own clamp and the controller's are the same
+   clamp on the same number, and the probe recomputes the game's line to verify it rather than assert it: **zero gap,
+   nine decimal places, every tick of 96 runs.** Of the 151 saturated-and-open ticks across the five arms, the
+   commanded rest was at its bound in **151**. *There is no "the command is pinned while the joint is free".*
+2. **What Part 34 measured was a lagged rest at a fall frame against a sent command over a run**, and it said the
+   second half of that in its own §4.1 (*"the rest the ankle gets is at that bound in 1 of 72, **because in 36 of
+   those 62 the rail had already shut the room**"*). My brief for this round compressed the two into one sentence and
+   presented it as an unexplained paradox. **It is not a paradox and it is not unexplained. This is my error, not
+   Part 34's**, and it is the twenty-third consecutive round to refute its own brief's premise.
+3. **And the lagged rest is a third quantity again.** `lagRest` puts the commanded rest through MOTOR_LAG = 0.05 s
+   [R], so `|lagged|` runs 0.44–2.92° on the unsteered deck arm where `|commanded|` runs 0.43–3.63° at the median.
+   Comparing a lagged value with a command is what makes the gap look real; the probe's first build did exactly that
+   and read a 3.33° gap with the bite open, which is **the lag and nothing else**. The column was corrected before it
+   was reported, and it is named here so nobody repeats it.
+4. **The per-tick share is the number to quote.** "62 of 72 saturate" is a per-run ever-count over a ladder that
+   includes a doubled bound; per tick on the shipped bound the figure is **0.2–18.8 %** by arm. The loop is **not**
+   living against its stop except on the owner's own low-speed cell, where it is there a fifth of the time.
+
+## 3. (B) What the command is actually made of, and the two large terms that nearly cancel
+
+| **[M]** unsteered deck, 24 runs, live ticks | median over the run | span over the 24 |
+|---|---|---|
+| **\|feedforward\| `ref.u[0]`** | **0.0000°** | 0.0000–0.0000° (peak 0.000) |
+| **\|bias\| `b̂₀`** | 3.1991–6.1389° | peak **4.56–40.38°** |
+| **\|feedback\| `−K(x̂−ref.x)`** | 1.934–7.970° | peak **4.36–112.89°** |
+| \|raw\| | 0.430–3.629° | peak 8.17–91.92° |
+| \|the rest actually commanded\| | 0.430–3.629° | peak **8.174–14.324°** |
+| of the **saturated** ticks, each term's median share of \|raw\| — ff | **0.000** | — |
+| … bias | **0.252–0.540** | — |
+| … feedback | **1.228–1.434** | — |
+| the feedback's own split: the board's roll `φ` | 6.204–17.953° | — |
+| … its rate `φ̇` | 0.024–1.288° | — |
+| … **the body's bank `θ`** | **12.363–27.751°** | — |
+| … its rate `θ̇` | 0.427–2.157° | — |
+| … the lagged rest `δ` | 0.736–2.887° | — |
+| the biggest single feedback term's state | **the bank in 1 887 of 1 887 ticks** | — |
+
+**Three readings.**
+
+1. **With the stick untouched the feedforward is exactly zero, so the whole command is the feedback less the bias.**
+   `ref.u[0]` is 0.0000° at the median and 0.000° at the peak in 24 of 24, because `steadyTurn` is called with
+   `bankAsked = −leanAsked = 0`. P1b held.
+2. **The command is a small difference of two large opposing terms.** The bank's own feedback term is
+   **12.4–27.8° at the median** — above the 14.32° bound on its own — and the board roll's is 6.2–18.0° against it,
+   leaving a net feedback of 1.9–8.0°. **The loop's output is a residual of terms two to fifteen times its own size**,
+   which is the same structural complaint Part 35 made about the lean itself. Nothing is wrong with a residual as
+   such; it is a statement about how little of the gains' own authority survives to the command.
+3. **At the saturated ticks the bias opposes the feedback, it does not drive it.** The feedback's median share of
+   `|raw|` there is **1.23–1.43** and the bias's is **0.25–0.54**: the command is at its stop because the feedback is
+   past it, and the bias is pulling 25–54 % of the way back. **So P1c's own wording — "it ramps into the bound" — is
+   refuted in its direction.** What the bias does instead is §4, and it is worse than windup.
+
+## 4. (B) The bias: an unbounded integrator that is also in the forward model
+
+| **[M]** | unsteered deck, 24 | unsteered world, 24 | low-speed deck, 18 | steered deck, 18 |
+|---|---|---|---|---|
+| `b̂₀` holds **one sign** over the live window | **1.000 of ticks, 24 of 24 runs** | **1.000, 24 of 24** | 0.525–1.000 (1.000 in 8 of 18) | 0.661–1.000 (1.000 in 11 of 18) |
+| `\|b̂₀\|` rising, share of ticks | 0.636–1.000 | 0.613–1.000 | 0.400–1.000 | 0.464–0.914 |
+| **`\|b̂₀\|` at the ride's end, over the command's whole bound** | **0.311–2.819** | 0.220–0.581 | 0.101–2.061 | 0.035–0.522 |
+| **the model's error on its own LAGGED REST, median** | **3.020–5.822°** | — | 1.577–10.981° | 0.392–1.733° |
+| … its peak | **5.98–43.89°** | — | 4.97–43.84° | 3.09–17.14° |
+| **`restErr / \|b̂₀\|`, run by run** | **0.924–1.020, 24 of 24** | — | — | — |
+| the same error with the **bias off** | **0.009–0.217° median, 0.93–14.29° peak** | — | — | — |
+
+**The chain, with the identity that closes it.**
+
+1. The internal model does not match the game. The filter's own residual says so: the innovation on the bank is
+   **0.68–2.66° at the median and 5.95–12.59° at the peak** [M].
+2. **The only slow state the filter has to absorb a persistent residual is the command bias**, because every other
+   state is a plant state the measurement pins. So all model mismatch lands on `b̂₀` — and it is a random walk, with
+   no bound, no decay and no anti-windup [R].
+3. It therefore ramps, with **one sign in 1.000 of ticks in 24 of 24 runs**, to **0.31–2.82 of the whole ankle
+   command bound**. At its peak it is **40.4° of rest on a joint the design allows 14.32° of.**
+4. **And it is in the forward model**, so the predictor's own state is wrong by exactly it. That is the identity:
+   `restErr / |b̂₀|` is **0.924–1.020 in all 24 runs**, and with the bias off `restErr` falls from a median of 3.0–5.8°
+   to **0.009–0.217°**. The predictor does not mis-integrate the ankle's lag; **it integrates the wrong command**, and
+   the wrong part is the bias.
+
+**And the ablation, which is a shipped setting and not a source change.** `DesignWeights.bias` documents its own
+off-state — *"Empty: none"* [R, `predictiveBalance.ts:646–651`] — so `balance: { weights: { bias: [] } }` removes the
+two states, the subtraction and the propagation together.
+
+| **[M]** fell / at / median | shipped | **bias off** | dead ankle (3.2w's gain 0) |
+|---|---|---|---|
+| **unsteered, deck filter, 24** | 24 of 24, 1.100–2.067 s, **1.183** | 24 of 24, 1.233–5.900 s, **4.317** | 24 of 24, 0.833–3.283 s, 1.167 |
+| **unsteered, world filter, 24** | 24 of 24, 0.767–1.950, **0.950** | 24 of 24, 1.167–6.333, **4.283** | 24 of 24, 0.633–3.083, 0.917 |
+| **the owner's low-speed cell, deck, 18** | 18 of 18, 0.517–7.100, **1.033** | 18 of 18, 0.467–5.533, **1.100** | 18 of 18, 0.383–1.067, 0.833 |
+| **the owner's low-speed cell, world, 18** | 18 of 18, 0.117–6.900, **0.767** | 18 of 18, 0.117–5.967, **1.033** | 18 of 18, 0.117–0.833, 0.633 |
+| **steered, deck, 18** | 18 of 18, 1.367–4.117, **3.067** | 18 of 18, 1.250–5.883, **2.983** | — |
+| Compress | 8/8, 8/8, 6/6, 6/6, 6/6 | 8/8, 8/8, 6/6, 6/6, 6/6 | 8/8, 8/8, 6/6, 6/6 |
+
+**Four readings, and the fourth is the one that keeps me honest.**
+
+1. **On the unsteered arm the ablation is worth 3.6× the median life on the deck filter and 4.5× on the world one**,
+   and every one of the 48 runs lasts at least as long as the shipped arm's own shortest. **This is the largest single
+   effect this track has measured, and it comes from deleting a term, not adding one.**
+2. **It does not transfer to the owner's bar.** The low-speed cell moves 1.033 → 1.100 s (deck) and 0.767 → 1.033
+   (world) at the median, and the steered arm moves the wrong way (3.067 → 2.983). **The bar is still 100 % and
+   still unmet in all four arms.** I will not sell the ablation as a fall fix.
+3. **It makes the filter worse, which is the point.** The innovation on the bank goes from a median 0.68–2.66° to
+   **0.12–6.75°** and its peak from 5.95–12.59° to **6.74–72.83°**. So the bias is doing real work: it buys the
+   filter's fit. **It buys it by telling the loop the ankle received a command it did not, and then predicting on
+   that lie.** A fit bought that way is worth less than the prediction it corrupts — which is a measurement here and
+   not a principle.
+4. **It is not a pure ablation of one additive term and I will not present it as one.** With `bias: []` the estimate's
+   model loses two states, so the Kalman gain `L` is **re-designed** [R]. The A/B is therefore "the shipped design"
+   against "the same design without the bias channel", which is what the setting is for, and not "the same filter with
+   `b̂` forced to zero". That stronger experiment would need a source change and this round makes none.
+
+## 5. (B) The prediction error, against the error of not predicting
+
+The controller is handed the sense **now** every tick and delays it itself, so one instant yields all three
+quantities off its own arrays [R, `tick`]: `C x̂` (what the predictor thinks the senses are now), `senses[last]` (what
+they are), and `senses[last − N]` (the stale sense the filter is fed, which is what **not** predicting gives).
+`predErr = C x̂ − now`, `staleErr = stale − now`.
+
+| **[M]** | unsteered deck, 24 | unsteered world, 24 | low-speed deck, 18 | steered deck, 18 |
+|---|---|---|---|---|
+| the predictor's \|error\| on the bank, median | 1.966–4.501° | 1.856–4.151° | 0.261–4.251° | 0.711–2.087° |
+| … its peak | **6.14–40.95°** | 5.93–8.05° | 4.90–25.45° | 5.56–14.32° |
+| the **stale sense's** \|error\| on the bank, median | 0.442–5.534° | 0.440–4.342° | 0.668–15.703° | 1.514–6.004° |
+| \|pred\| / \|stale\| on the bank, per run | 0.651–2.978 | 0.671–3.293 | 0.243–2.017 | 0.255–0.977 |
+| … runs where the predictor is **worse** at the median | 3 of 24 | **15 of 24** | 5 of 18 | 0 of 18 |
+| over all seven senses (rms), predictor better in | 0.203–0.574 | 0.226–0.853 | 0.302–0.950 | 0.062–0.819 |
+| … runs where it is worse for most ticks | **19 of 24** | 11 of 24 | 5 of 18 | **17 of 18** |
+| … in the **first 0.6 s** | 0.250–1.000 | 0.250–1.000 | 0.583–1.000 | 0.125–0.792 |
+| … in the **last 0.2 s** before the ride ended | **0.000–0.231** | 0.000–0.615 | 0.000–1.000 | 0.000–0.769 |
+| … runs where it is worse for most of that window | **24 of 24** | 17 of 24 | 9 of 18 | 17 of 18 |
+| the filter's own innovation on the bank, median | 0.679–2.662° | 0.694–2.918° | 0.294–2.327° | 0.174–1.310° |
+| **the prediction's own contribution to the command** | 0.720–8.727° median, **12.31–28.94°** peak | 0.688–7.207, 2.76–22.15 | 1.291–24.488, 4.72–78.14 | 1.985–9.958, 6.53–37.01 |
+| … over the command's bound, median | 0.050–0.609 | — | — | — |
+
+**Four readings.**
+
+1. **In the window the fall happens in, the forward prediction is worse than the raw delayed measurement, in 24 of
+   24 unsteered deck runs.** Its share of wins over the last 0.2 s is **0.000–0.231**: in every run it loses to doing
+   nothing for at least three quarters of that window. Near trim it wins (0.250–1.000 over the first 0.6 s). **P2a
+   held in both halves.** The honest reading is the obvious one: a linear model about a trim the rider has left
+   predicts the leaving badly, and the leaving is the fall.
+2. **Its peak error on the bank is 6.1–41.0°** on the unsteered deck arm, against the 8.69–8.71° of inherited lean
+   Part 35 measured as the fall's whole initial condition. **The loop is acting on a bank that is wrong by more than
+   the thing it is answering.** P2b held.
+3. **The prediction is a substantial share of the command**, so this is not a correction with no consequence:
+   `raw` less the same gains on the 0.1 s-old estimate is **0.72–8.73° at the median and up to 28.9°**, a median of
+   **0.05–0.61 of the whole bound**. P2c held at the top of its range and not at the bottom — in the quietest runs the
+   prediction is worth a twentieth of the bound — so I report it as a span and not as "more than a quarter".
+4. **And some of that error is §4's bias, by construction.** The prediction propagates `u + b̂`, so a bias of
+   0.31–2.82 bounds is inside `x̂`. Removing it moves the prediction's error on the ankle's own lagged rest from a
+   median 3.0–5.8° to 0.009–0.217°, and the **bank's** error the other way (median 0.204–8.111° with the bias off
+   against 1.966–4.501° with it): the bias was flattering the bank's prediction while corrupting the ankle's. **I will
+   not net those two into a verdict on "the prediction" as a whole** — they are two rows and I am printing both.
+
+## 6. (B) It fights the rider's own input — the owner's complaint, measured
+
+The owner has named *"correction balance while turning, which is incorrect"* from **three separate rides**. 3.3d
+(buoy.ts) tried to measure it with a regression of the command on `leanAsked` and said in its own comment that the
+regression is unusable, because `leanAsked` ramps over 0.55 s and then sits flat. Here it is taken on the command's
+own **decomposition** instead, which has no regressor at all: the reference's feedforward `ref.u[0]` **is** the ankle
+rest the asked turn's own steady state needs, and the feedback is what the loop puts against it.
+
+**18 steered rides**: the stick held at ±1 from the first frame, three relative entries (0, +1, +2) × three stances,
+the same water. 55–235 ticks a run have a feedforward past 0.1°.
+
+| **[M]** 18 steered rides, deck filter | span over the 18 |
+|---|---|
+| the feedback over the feedforward, median per run | **−0.228 to −2.574** — **negative in 18 of 18** |
+| the share of asked ticks the feedback **opposes** the ask | **0.622–0.983** |
+| the share it cancels **more than half** of the ask | **0.354–0.900** |
+| the raw command keeps the ask's own sign in | **0.428–0.874** of asked ticks |
+| **the rest actually delivered, over the steady turn's own** | **−0.268 to +0.855** — under 1 in **18 of 18**, **negative in 5 of 18** |
+| \|feedforward\| median | 0.682–10.230° |
+| the same five columns with the **bias off** | −0.465 to −1.338 · 0.639–0.939 · 0.470–0.898 · 0.296–0.952 · **−0.358 to +0.454** |
+
+**Four readings.**
+
+1. **The loop never delivers the lean it is asked for.** The rest actually commanded reaches **0.02–0.86** of the
+   asked turn's own steady value in 13 of 18 rides and is **the wrong way entirely in 5 of 18**. P4c is **refuted**,
+   and P4a and P4c were written as a deliberately opposed pair so that one of them had to be.
+2. **The feedback stands against the ask for most of the ride, not transiently.** A well-behaved LQR opposes its own
+   feedforward while the state catches up and then lets go. Here it opposes in **62–98 %** of the asked ticks of a
+   ride that lasts 1.4–4.1 s, and its median ratio is past −1 in 11 of 18 — the feedback is **larger** than the ask it
+   is fighting. The state never catches up, which is the same sentence as reading 1.
+3. **It is not the bias.** With the bias channel removed every column is within its own span (opposes in 0.639–0.939,
+   delivered −0.358 to +0.454). This is the **gains and the reference**, and the reference is `steadyTurn`'s least
+   squares on the blended model.
+4. **One run's feedforward blows up and I am not promoting it.** In **1 of 18** rides (tall, entry +0, steer +1)
+   `ref.u[0]` peaks at **2 675°** and `raw` at **2 971°** — `steadyTurn` solves normal equations through a pivot guard
+   that skips a near-singular column [R, `solveSmall`: `if (Math.abs(piv) < 1e-14) continue`], so an ill-conditioned
+   blend can return nonsense. In the other 17 its peak is **2.3–14.3°**. **One cell is not a mechanism** (this
+   folder's own rule 4) and it is flagged here as a thing to look at, not as a finding. The commanded rest is clamped
+   to ±14.324° in every tick of all 18 regardless.
+
+## 7. The owner's bar, measured, with every population named
+
+| **[M]** arm | n | the ride ended | balance fall / lost board | when, s | median | Compress |
+|---|---|---|---|---|---|---|
+| **the owner's low-speed cell, deck filter** (6 absolute entries × 3 stances) | **18** | **18 of 18** | 17 / 1 | **0.517–7.100** | 1.033 | **6 of 6** |
+| the same, **world** filter | 18 | **18 of 18** | 18 / 0 | **0.117–6.900** | 0.767 | **6 of 6** |
+| the same, deck, **bias off** | 18 | **18 of 18** | 17 / 1 | 0.467–5.533 | 1.100 | **6 of 6** |
+| the same, world, **bias off** | 18 | **18 of 18** | 17 / 1 | 0.117–5.967 | 1.033 | **6 of 6** |
+| the same, deck, **dead ankle** | 18 | **18 of 18** | 16 / 2 | 0.383–1.067 | 0.833 | **6 of 6** |
+| the same, world, **dead ankle** | 18 | **18 of 18** | 18 / 0 | 0.117–0.833 | 0.633 | **6 of 6** |
+| step 3.3k's unsteered arm, deck | 24 | **24 of 24** | 23 / 1 | 1.100–2.067 | 1.183 | **8 of 8** |
+| the same, world | 24 | **24 of 24** | 24 / 0 | 0.767–1.950 | 0.950 | **8 of 8** |
+| the same, deck, **bias off** | 24 | **24 of 24** | 23 / 1 | 1.233–5.900 | 4.317 | **8 of 8** |
+| the same, world, **bias off** | 24 | **24 of 24** | 21 / 2 (+1 foot slip) | 1.167–6.333 | 4.283 | **8 of 8** |
+| the same, deck, **dead ankle** | 24 | **24 of 24** | 24 / 0 | 0.833–3.283 | 1.167 | **8 of 8** |
+| the same, world, **dead ankle** | 24 | **24 of 24** | 24 / 0 | 0.633–3.083 | 0.917 | **8 of 8** |
+| the steered arm, deck | 18 | **18 of 18** | 17 / 1 | 1.367–4.117 | 3.067 | **6 of 6** |
+| the same, **bias off** | 18 | **18 of 18** | 18 / 0 | 1.250–5.883 | 2.983 | **6 of 6** |
+
+**The owner's bar is "in Compress the surfer should not fall at the low speeds of getting into position", 100 %, not
+fewer. It is not met, in any arm of this round.** Compress's ride ends **6 of 6** in every low-speed arm and **8 of 8**
+in every unsteered one, and **288 of 288 rides in this round ended before nine seconds — 277 of them a balance fall,
+10 by losing the board and 1 a foot slip.**
+
+**And the dead ankle is the comparison 3.2w made, re-run here with today's instruments.** 3.2w measured the shipped
+predictor at 0.77–1.70 s against a pinned-at-zero rest's 0.63–3.08 s and concluded *"the shipped predictor does no
+better than no control at all"*. On these cells, at the median, the shipped loop buys **+0.016 s** (unsteered deck)
+and **+0.033 s** (world) over a dead ankle, and **+0.200 s** and **+0.134 s** on the owner's low-speed cell. **And a
+dead ankle's longest unsteered ride, 3.283 s, is longer than the shipped loop's longest, 2.067 s.** The dead-ankle arm
+also drops the twist command, exactly as 3.2w's own gain-0 row did, which is why it is comparable with 3.2w and not a
+new experiment. **3.2w's finding reproduces.**
+
+## 8. What I refuted
+
+- **My own brief's central premise.** *"The balance's sent command saturating in 62 of 72 runs — while the joint it
+  writes was at its bound in 1 of 72 … The command is pinned and the joint is not."* Measured per tick on one window,
+  the rest the game commands and the command the loop records sending are **one number** (`|commanded + sent|` = **0.000000000°**
+  with the bite open, every tick of 96 runs), and of 151 saturated-and-open ticks the commanded rest was at its bound
+  in **151**. The two counts in the brief are two windows **and** two quantities, and Part 34's own §4.1 said so.
+- **The saturation's size.** Per tick it is **0.2 % / 3.8 % / 4.8 % / 6.6 % / 18.8 %** by arm, not "62 of 72".
+- **My own P1c, in its direction.** I predicted the bias ramps *into* the bound. At the saturated ticks it **opposes**
+  the feedback and pulls 25–54 % of the way back; the feedback alone is 1.23–1.43× the command. What the bias does
+  wrong is worse and different: it is **in the forward model**.
+- **My own P4c, which I wrote opposed to P4a on purpose.** The loop does **not** reach the asked turn's own rest: it
+  delivers 0.02–0.86 of it in 13 of 18 rides and the wrong way in 5 of 18. **P4a held.**
+- **P2c's lower half.** The prediction's contribution to the command is **0.05–0.61 of the bound** by run, not "more
+  than a quarter in a majority" as a single figure.
+- **The probe's own first instrument, before it was reported.** Comparing the **lagged** rest with the sent command
+  read a 3.33° gap with the bite open. The gap was MOTOR_LAG and nothing else. The column was corrected to the
+  **commanded** rest, which is the comparable quantity, and the lagged one is now compared with the model's own
+  lagged state instead — which is where §4's identity came from.
+
+## 9. What I will not claim
+
+- **I will not claim the bias is the cause of the fall.** Removing it triples the unsteered arm's median life and
+  **changes nothing about the bar**: 100 % still fall on the owner's own low-speed cell, at a median of 1.100 s
+  against 1.033. One arm pair moving a long way and two not moving is a finding about that arm, not a mechanism for
+  the fall.
+- **I will not claim the ablation is a fix, or that it should ship.** It makes the filter's own fit **worse** — the
+  top of the innovation's median span rising 2.5× (2.66 → 6.75°) and of its peak span 5.8× (12.59 → 72.83°) — it does
+  not help the bar, and it moves the steered arm
+  the wrong way. It is a measurement that names a defect; the owner decides whether anything is built.
+- **I will not claim the bias ablation is a clean removal of one term.** `bias: []` re-designs the Kalman gain. The
+  honest A/B for "this additive term alone" needs a source change and this round makes none.
+- **I will not claim the predictor is worse than nothing overall.** It is worse than the stale sense in the last
+  0.2 s in 24 of 24 unsteered deck runs and better in the first 0.6 s in most; and it buys +0.016 to +0.200 s of
+  median life over a dead ankle. Those are three different sentences and I am not collapsing them into one.
+- **I will not claim `steadyTurn`'s blow-up is a mechanism.** It is **one run of eighteen**, its peak is 2 675° where
+  the other seventeen peak at 2.3–14.3°, and the clamp contains it. It is named for the next round and nothing is
+  built on it.
+- **I will not claim what the right internal model is.** This round measures that the shipped one mismatches the game
+  enough to drive a command-bias estimate to 2.8 times the ankle's whole range. Which part of the model is wrong —
+  the water's captive derivatives, the point-mass body, the free-versus-held table, the rail schedule — is not
+  measured here.
+- **The `FaceWater` is a fit to Canyon, not Canyon**; the rider is **placed**, not paddled or popped up; every span
+  above is **the whole population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 10. The controls
+
+**P0a, the command's identity, on every tick of 193 of the 204 loop-arm runs** [M] (shipped and bias-off; the other
+eleven fall inside 0.2 s and have no live tick): the probe's `ff + bias + feedback` against
+the controller's own `raw[0]`, relative to the largest of the three. **Peak over every tick of every run: exactly 0.**
+This is what makes §3's decomposition the controller's arithmetic rather than a model of it, and it is the control
+that would have caught a stale read of the blended `K` (which is refilled **in place** every tick, so the probe reads
+it once a frame and only on a frame that ran a tick).
+
+**P0b, the clamp clamps** [M]: `|sent| ≤ limits.ankle` and `sent = raw` wherever `|raw|` is inside it, on every tick.
+**193 of 193 runs reporting it.**
+
+**P0c, the rider unchanged, against step 3.3l's published rows** [M]: the four ride arms' `.jsonl` compared row by
+row against `33l-unsteered-deck`, `33l-unsteered-world`, `33l-low-deck` and `33l-low-world` on `fell`, `fellAt`,
+`rollFall`, `bankFall`, `railFall`, `throughFall`, `frames`, `stance`, `entry` and `steer` — **84 runs, 840 column
+reads, 0 mismatches**, which also reproduces Part 36 §6's own published spans to the digit. **The probe changes no
+source file**, so this is a check that the probe itself is inert, and it is.
+
+**P0d, the positive control for the prediction-error instrument, predicted before it ran** [M]. The filter only runs
+once the sense line is longer than `N = 6` [R], and the estimate starts at zero, so over ticks 1–6 the prediction
+carries no sense and the prediction error must **be** the sense. Measured: the predicted bank over those ticks is
+**0.000° in 24 of 24** unsteered runs (and 0.044–0.051° on the steered arm, where the reference is not zero), and
+`| |predErr| − |sense| |` is **0.033–0.090°** — the whole residual being the command's own contribution through
+`Σ Φ^{N−1−j} Γ u` on a command built from `x̂ ≈ 0`. **Held.**
+
+**The read's own window discipline**: every window starts after 0.2 s and excludes the `MAX_BANK` clamp's frames
+(0–10 a run on the unsteered deck arm), **and** every saturation count is published over **all** ticks beside the live
+ones, so the exclusion cannot hide a stop. Six of the eighteen low-speed world runs on the shipped arm, and eleven of the 204 loop-arm runs in all, have no
+live tick at all (they fall inside 0.2 s); they are counted in the fall table and excluded from §5's columns, and the count is printed.
+
+## 11. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the probe type-checked separately on a throwaway project extending the root's options with `types: ["node"]` and an
+  **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/loop.ts`, `src/physics/AttachedRider.ts`, `src/physics/BoardBody.ts`,
+  `src/physics/predictiveBalance.ts`, `src/physics/testing/FaceWater.ts` and `@types/node`. (It caught one unused
+  import the root project's own `include` does not reach, which was removed.)
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 620 passed, 21 expected fail** — identical to step 3.3m's.
+  `vitest run src/game src/scene/rig`: **70 files, 732 passed** — identical to step 3.3m's.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical to step 3.3m's.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round touches no solver, no wave and no spot file —
+  it touches no source file at all.
+- **the shipped rider is proved unchanged against step 3.3l's published baselines, 84 runs and 840 column reads to
+  the digit** (§10, P0c).
+- **the Canyon byte check is NOT run, and the reason is read rather than assumed**: the check's condition is `src/`
+  changing, and `git status --porcelain` on the final tree shows exactly two entries, both untracked and both under
+  `docs/`:
+  ```
+  ?? docs/research/new-rider/3.3/loop.ts
+  ?? docs/research/new-rider/3.3/results/33n/
+  ```
+  **No file under `src/` is added, removed or modified.** The two behavioural arms (`GAINS=zero`, `BIAS=off`) are
+  **shipped constructor options** the probe passes — `humanGains` and `balance.weights.bias`, both documented in
+  `AttachedRider`'s own options block and `DesignWeights` [R] — not new code.
+
+## 11b. The deletions column, read line by line
+
+`git diff --numstat origin/main` after the rebase, read file by file: **the tracked diff is EMPTY, and the whole round
+is 3 untracked additions.** There is no deletions column because there is no tracked change: `git status --porcelain`
+reports `?? docs/research/new-rider/3.3/loop.ts` and `?? docs/research/new-rider/3.3/results/33n/`, and the committed
+tree adds this Part to `README.md` (**+ only**), the probe, and the result files. **Nothing was reverted, nothing was
+removed, and no line of any existing file but `README.md`'s own end was touched.**
+
+## 12. Files (3.3n)
+
+- `docs/research/new-rider/3.3/loop.ts` — **the probe, and the whole of the round's new code.** Four instruments, each
+  an identity of the controller's own arithmetic: the command decomposed into feedforward, bias and feedback with the
+  feedback split per state (P0a checks the sum); the prediction error against the error of not predicting, both read
+  at one instant off the controller's own sense line; the no-prediction counterfactual (the same gains on the
+  filter's 0.1 s-old estimate); and the commanded rest recomputed exactly as the bank step computes it, so
+  `|commanded + sent|` is a measurement and not an assumption. Env: `GAINS=zero` (3.2w's dead ankle), `BIAS=off`
+  (the command-bias channel removed, a documented weights setting), `ENTRIES`, `STEERS`, `FELT=deck`, `TRACE`.
+- `docs/research/new-rider/3.3/results/33n/` — **29 files**: the five shipped arms, the five bias-off arms and the
+  four dead-ankle arms as `.jsonl` and `.txt`, and `33n-predictions.md` (every prediction as written before its read,
+  each with its own falsification).
+- `docs/research/new-rider/3.3/README.md` — this Part. **No source file is touched.**
+
+## 13. For the owner, in plain words — and the shot list
+
+**Last round I told you his ankle is strong enough and the board is heavy enough, so the next place to look was what
+the balance is asking for. I went and read that loop. Three things, and the first is me correcting myself again.**
+
+**One: the thing I told you was a mystery is not one.** I said the balance's command is jammed against its stop while
+the ankle it writes to is nowhere near its own. That was me reading two different numbers as one. Measured properly,
+tick by tick, **the balance's command and the rest the ankle is told to hold are the same number** — exactly, to nine
+decimal places, on every one of nearly nine thousand control ticks in ninety-six rides. There is no gap to explain.
+And the jamming is much rarer than I said: the command sits on its stop about **four per cent** of the time in the
+test cell, and **nineteen per cent** at your own slow speeds. Not "sixty-two of seventy-two". I am sorry — that is the
+third premise of mine this track has had to withdraw.
+
+**Two: there is a real bug, and it is a good one.** The balance keeps a running guess at how much its own ankle
+command is "off by" — a correction it adds to make the books balance. That is a normal thing for a controller to
+have. But three things are wrong with this one. It has **no limit**. It only ever drifts **one way** — in twenty-four
+of twenty-four rides it never once changed sign. And by the time he falls it has reached **up to two and four fifths
+times the entire range his ankle is allowed**: it thinks the ankle is forty degrees off, on a joint that is only
+allowed fourteen. Worse, the balance then **predicts the future using that wrong number**. I can prove that exactly:
+the amount the loop's own forecast of his ankle is wrong by **is** that correction, run by run, to within eight per
+cent.
+
+**And switching it off triples how long he stays on.** On the test cell he goes from falling at **1.18 seconds** to
+**4.32 seconds** — and on the other fall filter from 0.95 to 4.28. That is the biggest single change anything in this
+whole line of work has produced, and it came from **deleting** something rather than adding something.
+
+**But I am not going to tell you it is the fix, and here is why.** On **your own** slow-speed test it barely moves —
+1.03 to 1.10 seconds — and **he still falls, every single time, in all four versions.** Your bar is a hundred per
+cent and it is still not met. It also makes the balance's own internal bookkeeping worse, which tells me that
+correction is doing a real job badly rather than doing nothing. So it is a defect I can show you, not a cure.
+
+**Three: you were right about the turning, and I can now show it with numbers instead of a slope.** You have told me
+three times that there is a "correction balance while turning, which is incorrect". With the stick held, over
+eighteen rides: **the balance's own correction pushes against the lean you asked for in sixty-two to ninety-eight per
+cent of the moments it is asked**, it cancels more than half your ask in up to ninety per cent of them, and **the
+ankle rest he actually gets never reaches what the turn you asked for needs** — it gets between two per cent and
+eighty-six per cent of it in thirteen rides, and in **five of eighteen it goes the wrong way entirely.** That is what
+you have been feeling. It is not the correction-guess from point two; switching that off leaves the fighting exactly
+as it was. It is the gains themselves and the turn they are aiming at.
+
+**And the old comparison still holds, which I re-ran rather than quoted.** A **completely dead ankle** — the balance
+switched off entirely, just a passive spring in his leg — falls at a median **1.167 s** against the working loop's
+**1.183 s**. Sixteen thousandths of a second of benefit. And the dead ankle's **best** ride, 3.28 seconds, is longer
+than the working loop's best, 2.07.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot. **Nothing in this round changes the game** — it adds no source line at
+all — so these are your eyes on things I measured on the bench. There is no new switch to type.
+
+1. **`?rider=new&feltFrame=deck&canyonWaves=true`, Compress, and hold the stick over.** The measurement says the
+   balance pushes against your lean in most of the moments you ask for it, and the ankle rest you get never reaches
+   what the turn needs. **The question: does holding a lean feel like leaning against something that is pushing
+   back?** If it does, point three above is something you can feel, and it is the first time this track has matched a
+   number to one of your words.
+2. **The same, both ways.** The numbers are **asymmetric** — on one side of the turn the rest delivered is almost
+   nothing or reversed, on the other it reaches up to five sixths of the ask. **Does one side feel much worse than
+   the other?**
+3. **Get into position slowly and don't take off.** Still the worst case, still your own bar, still unmet. Unchanged.
+4. **And a ruling, not a ride.** I have one thing I can build and one thing I would rather measure first:
+   - **the smallest honest change: bound the balance's own correction guess.** Not delete it — it is doing real
+     work — but stop it from ever exceeding what the ankle can physically be off by, and **stop feeding it into the
+     forecast**. Those are two or three lines in one file. It is the only change this track has found that moves the
+     test cell by a factor rather than a few per cent, and **I would not sell it to you as meeting your bar, because
+     I measured that it does not.**
+   - **what I would rather do first, and it is a measurement:** that correction only grows because **the balance's
+     internal model of the board does not match the game**. The correction is the only slack the model has, so all
+     the mismatch piles into it. **Nobody has measured how wrong that model is** — which part of it (the water's
+     numbers, the stick-figure body, the turn table) and by how much. That is one round, it is a read and not a
+     build, and it is the thing the last round's "go after the command" actually bottoms out in.
+   - **the two-body rider**, still the route the parked duck-dive work named as the faithful one, still not singled
+     out by anything I have measured.
+   **My own recommendation is the second** — measure how wrong the internal model is — because the defect I found
+   this round is a *symptom* of that mismatch, and bounding a symptom is the kind of fix that has cost this track nine
+   rounds before. **Your call.**
