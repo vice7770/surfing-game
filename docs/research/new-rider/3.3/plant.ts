@@ -129,7 +129,7 @@ import { BoardBody } from '../../../../src/physics/BoardBody';
 import { createWaterSample } from '../../../../src/physics/SurfWater';
 import { FaceWater } from '../../../../src/physics/testing/FaceWater';
 import { bankLedger, BANK_SOURCES, type BankSource } from '../../../../src/physics/bankLedger';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, type DesignWeights, bodyInertiaAt, captureOmega, continuousPlant, costWeights, design, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, type DesignWeights, PredictiveController, bodyInertiaAt, captureOmega, continuousPlant, costWeights, design, discretise, heelColumn, plantAt, railLimit, steadyTurn } from '../../../../src/physics/predictiveBalance';
 import { lateralCompliance, type RiderBody, type TwistPlant, type YawPlant } from '../../../../src/physics/rollModel';
 
 const DEG = 180 / Math.PI;
@@ -190,6 +190,17 @@ const BODYJ = process.env.BODYJ ? Number(process.env.BODYJ) : undefined;
  */
 const COST = process.env.COST === 'point' ? 'point' : process.env.COST === 'fixed' ? 'fixed'
   : process.env.COST === 'plant' ? 'plant' : undefined;
+/**
+ * **Step 3.3k's shipped switch, ridden for the first time with `WHEEL` on (step 3.4f)**: `ARANGE=load|wide` rides
+ * `?ankleRange`, the bound on the rest the balance may command. Shipped it is `ANKLE_REST_RANGE = 0.25 rad = 14.32°`,
+ * which is *"`bankAuthority`'s `restRange` at one body weight on a 0.13 m sole"* — the rest at which the feet's centre
+ * of pressure reaches the sole's edge [R, `AttachedRider.ts:408–419`, `:3090–3108`]. `'wide'` doubles it to ±28.65°.
+ * **Step 3.4f needs it because that bound is exactly where the datum's two halves land**: with both on, the command
+ * the loop asks for at frame 1 is 0.353–0.579 rad, 1.4–2.3 × the bound, and the arm the owner would ride has the
+ * ankle pinned on it for the mount's first seven frames. `ARANGE` is the one switch that separates "the correction is
+ * too big" from "the correction does not fit through the ankle".
+ */
+const ARANGE = process.env.ARANGE === 'load' ? 'load' : process.env.ARANGE === 'wide' ? 'wide' : undefined;
 /**
  * **Step 3.4c's two switches**, both off by default, so every arm with them unset is step 3.4b's own probe on
  * step 3.4b's own cells.
@@ -278,6 +289,8 @@ interface ControlInner {
   senses: number[][];
   estimate: number[];
   blendedDesign?: { phi: number[][]; gamma: number[][]; k: number[][]; c: number[][]; steps: number; gammaD?: number[][] };
+  /** Step 3.4f: the arm's OWN design weights, so the cancellation's design is the arm's and not a guess at it. */
+  weights?: DesignWeights;
 }
 
 /** `AttachedRider`'s own privates this probe reads, each named rather than reached for anonymously. */
@@ -287,6 +300,8 @@ interface RiderInner {
   ankleBite: number;
   heldAnkleRaw: number;
   leanAsked: number;
+  /** Step 3.4f: the twist asked for, rad — the second of the two angles `steadyTurn` is handed [R, `:3564`]. */
+  twistAsked: number;
   /** Step 3.3p: the tilt the controller was handed, rad, in the model's own sign (0 unless `waterHeel`). */
   schedTilt: number;
   /** The rail the schedule was read at, rad — `min(SCHEDULE_RAIL_CAP, …)` of the lean ASKED for, not the board's rail. */
@@ -684,6 +699,58 @@ interface Tick {
   /** The ankle's own bound at this tick, rad, and whether either command sat on it: the clamp, read not assumed. */
   ankleRoomHere: number;
   gainClamped: number;
+
+  // --- 13b. step 3.4f: the datum's two halves AS THEY ENTER THE COMMAND, at the exact point ---
+  /**
+   * **The two halves of `DesignWeights.waterHeel`, decomposed where the controller's own last line puts them.**
+   * `tick` ends `u_q = ref.u_q − b̂_q − Σ_j K_q[j] (x̂_j − x_ref,j)` [R, `predictiveBalance.ts:1453–1459`], and the
+   * tilt reaches it in exactly two places: the **prediction** half adds `Δx̂_i = Σ_{jj<N} predD[jj][i][0] · τ` to
+   * the estimate [R, `:1438`], and the **reference** half hands `drive_i = gammaD[i][0] · τ` to `steadyTurn` on the
+   * equilibrium's right-hand side [R, `:1442`, `:1261`], which moves `x_ref` and `u_ref` together.
+   *
+   * So at a **fixed state and a fixed operating point**, writing `u_off` for the shipped command there:
+   *
+   *     predict:  u_off − K·Δx̂
+   *     ref:      u_off + Δu_ref + K·Δx_ref
+   *     both:     u_off + Δu_ref + K·Δx_ref − K·Δx̂
+   *
+   * — `both = predict + ref − off` identically, and **the tilt's whole reach into `both`'s feedback is the
+   * DIFFERENCE `K·(Δx_ref − Δx̂)` where each half alone gets one of the two terms undifferenced.** Both are the same
+   * input `τ` through the same plant over two horizons (the 0.1 s sensing delay, and the equilibrium), so if they
+   * share a sign they subtract.
+   *
+   * **This is a decomposition at a point, not a trajectory claim.** A moved trim sends different commands and the
+   * commands enter the forward prediction, so the two halves are separable in the controller's line and **not**
+   * along a trajectory — step 3.4e's own refuted first draft. These columns are read on each arm's own recorded
+   * trajectory and are never pooled across arms as if they were one ride.
+   *
+   * The design is `design(y, t, {...weights, waterHeel: 'both'})` at the controller's own point, so it is the **same
+   * function of the operating point on all four arms**; `heelDesignOff` is the measurement that the flag leaves Φ, Γ
+   * and the LQR gain alone, rather than the shipped comment's word for it.
+   */
+  rowTiltPred: number;
+  /** The reference half's two pieces, which do not have to agree: the feedforward it moves, and the error it moves. */
+  rowTiltRefFF: number;
+  rowTiltRefFB: number;
+  rowTiltRef: number;
+  /** `rowTiltPred + rowTiltRef` — the sum is an identity, so this column IS the cancellation's residue. */
+  rowTiltBoth: number;
+  /** `|rowTiltBoth| / max(|rowTiltPred|, |rowTiltRef|)`: 1 is no cancellation at all, 0 is exact. */
+  cancelShare: number;
+  /** The two halves' own shift of the roll state they disagree about, °: the delay's and the equilibrium's. */
+  dxHatPhi: number;
+  dxRefPhi: number;
+  /** The two feedback terms in the ankle's own units, rad, and whether they share a sign (then they subtract). */
+  kDxHatA: number;
+  kDxRefA: number;
+  tiltSameSign: number;
+  /** Each half's own command against the ankle's bound at this tick: a half that saturates is a clamped one. */
+  predOverRoom: number;
+  refOverRoom: number;
+  /** C2/C3/C4: the flag's reach into the design, the flat equilibrium's own origin, and `steadyTurn`'s superposition. */
+  heelDesignOff: number;
+  refFlatOff: number;
+  superOff: number;
   /**
    * **The brief's own measurement, per tick: one recorded ride, four sets of gains.** The roll row's relative error
    * at THIS recorded state — the same `x`, the same plant, the same game row — with each cost arm's **own command**
@@ -769,6 +836,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(MOUNTA ? { mountAgree: MOUNTA } : {}),
     ...(BODY ? { riderBody: BODY } : {}),
     ...(COST ? { riderCost: COST } : {}),
+    ...(ARANGE ? { ankleRange: ARANGE } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -840,7 +908,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0,
         extra: entry0 === null ? extra : null,
         // Step 3.4e: which datum cell and which mount this arm ran, on every row, so a pooled read cannot mix arms.
-        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships',
+        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships', arange: ARANGE ?? 'ships',
         frame: i + 1, t: r(t, 4),
         // what the predictor has: its own ticks, its sense line against the delay it needs, and whether its filter runs
         predTicks: rider.predictor.ticks, senses: ctl.senses.length, steps: dM ? dM.steps : null,
@@ -1303,6 +1371,73 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         }
       }
       const cmdAuthGame = ledgerLive ? Math.abs(bankLedger.ankleDeck * y.ankleStiffness) * DEG : Number.NaN;
+
+      // ===== Step 3.4f: the datum's two halves AS THEY ENTER THE COMMAND, at the exact point =====
+      // The algebra is in the `Tick` field comment above; this is the arithmetic of it. The design is the arm's own
+      // weights with `waterHeel: 'both'` forced, so `gammaD` and `predD` exist on every arm and the instrument is the
+      // SAME function of the operating point on all four — and `heelDesignOff` is the measurement that forcing it
+      // moves no entry of Φ, Γ or K, rather than the shipped comment's word for it.
+      const wArm: DesignWeights = ctl.weights ?? DEFAULT_WEIGHTS;
+      const dPlain = design(y, tw, wArm);
+      const dBoth = design(y, tw, { ...wArm, waterHeel: 'both' });
+      const nB = dBoth.phi.length;
+      let heelDesignOff = 0;
+      for (let i2 = 0; i2 < nB; i2 += 1) {
+        for (let j2 = 0; j2 < nB; j2 += 1) heelDesignOff = Math.max(heelDesignOff, Math.abs(dBoth.phi[i2][j2] - dPlain.phi[i2][j2]));
+        for (let j2 = 0; j2 < 2; j2 += 1) heelDesignOff = Math.max(heelDesignOff, Math.abs(dBoth.gamma[i2][j2] - dPlain.gamma[i2][j2]));
+      }
+      for (let q = 0; q < 2; q += 1) {
+        for (let j2 = 0; j2 < nB; j2 += 1) heelDesignOff = Math.max(heelDesignOff, Math.abs(dBoth.k[q][j2] - dPlain.k[q][j2]));
+      }
+      // The prediction's half: the tilt propagated over the sensing delay, the controller's own line [R, `:1438`].
+      const dxHat = new Array<number>(nB).fill(0);
+      for (let jj = 0; jj < dBoth.steps; jj += 1) {
+        for (let i2 = 0; i2 < nB; i2 += 1) dxHat[i2] += (dBoth.predD?.[jj][i2][0] ?? Number.NaN) * tiltRad;
+      }
+      // The reference's half: the same tilt as a known input on the equilibrium's right-hand side [R, `:1442`].
+      const driveCol = (dBoth.gammaD ?? []).map((rw) => rw[0] * tiltRad);
+      const refDrive = steadyTurn(dBoth.phi, dBoth.gamma, 0, 0, driveCol);
+      // C3's own datum at this point: with no lean asked and no drive the equilibrium is the origin, exactly.
+      const refFlat = steadyTurn(dBoth.phi, dBoth.gamma, 0, 0);
+      let refFlatOff = Math.max(Math.abs(refFlat.u[0]), Math.abs(refFlat.u[1]));
+      for (let i2 = 0; i2 < nB; i2 += 1) refFlatOff = Math.max(refFlatOff, Math.abs(refFlat.x[i2]));
+      // C4, `steadyTurn`'s superposition, measured and not assumed: the drive's own response must be the same
+      // whatever lean and twist are asked, or `Δx_ref` is not a property of the tilt alone and the table above is
+      // wrong. `solveSmall` is a pivoting solve, so this is a real read of it and not a tautology.
+      const bankAsk = -inner.leanAsked;
+      const twistAsk = -inner.twistAsked;
+      const refAsk = steadyTurn(dBoth.phi, dBoth.gamma, bankAsk, twistAsk);
+      const refAskDrive = steadyTurn(dBoth.phi, dBoth.gamma, bankAsk, twistAsk, driveCol);
+      const refScaleX = Math.max(1e-12, ...refDrive.x.map(Math.abs));
+      const refScaleU = Math.max(1e-12, Math.abs(refDrive.u[0]), Math.abs(refDrive.u[1]));
+      let superOff = 0;
+      for (let i2 = 0; i2 < nB; i2 += 1) {
+        superOff = Math.max(superOff, Math.abs((refAskDrive.x[i2] - refAsk.x[i2]) - refDrive.x[i2]) / refScaleX);
+      }
+      for (let q = 0; q < 2; q += 1) {
+        superOff = Math.max(superOff, Math.abs((refAskDrive.u[q] - refAsk.u[q]) - refDrive.u[q]) / refScaleU);
+      }
+      // The two feedback terms, `K·Δx̂` and `K·Δx_ref`, in the commands' own units.
+      const kDxHat = [0, 0];
+      const kDxRef = [0, 0];
+      for (let q = 0; q < 2; q += 1) {
+        let s1 = 0;
+        let s2 = 0;
+        for (let j2 = 0; j2 < nB; j2 += 1) {
+          s1 += dBoth.k[q][j2] * dxHat[j2];
+          s2 += dBoth.k[q][j2] * refDrive.x[j2];
+        }
+        kDxHat[q] = s1;
+        kDxRef[q] = s2;
+      }
+      // And in the roll row's own units, which is the only frame in which the three terms are comparable with
+      // `rollCmd` and with the rows this folder publishes. `Γ` is this point's own, as `rollCmd`'s is the blend's.
+      const rowOfU = (u0: number, u1: number) => (dBoth.gamma[1][0] * u0 + dBoth.gamma[1][1] * u1) / CONTROL_STEP * DEG;
+      const rowTiltPred = rowOfU(-kDxHat[0], -kDxHat[1]);
+      const rowTiltRefFF = rowOfU(refDrive.u[0], refDrive.u[1]);
+      const rowTiltRefFB = rowOfU(kDxRef[0], kDxRef[1]);
+      const rowTiltRef = rowTiltRefFF + rowTiltRefFB;
+      const rowTiltBoth = rowTiltPred + rowTiltRef;
       // ===== Step 3.4c: what ANOTHER gain set would command at this very state (`GAINS=1`) =====
       let cmdRebuild = Number.NaN;
       let gainPlantOff = Number.NaN;
@@ -1638,6 +1773,22 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         gainRollSwingPoint,
         ankleRoomHere: inner.ankleRoom,
         gainClamped,
+        rowTiltPred,
+        rowTiltRefFF,
+        rowTiltRefFB,
+        rowTiltRef,
+        rowTiltBoth,
+        cancelShare: Math.abs(rowTiltBoth) / Math.max(1e-30, Math.abs(rowTiltPred), Math.abs(rowTiltRef)),
+        dxHatPhi: dxHat[0] * DEG,
+        dxRefPhi: refDrive.x[0] * DEG,
+        kDxHatA: kDxHat[0],
+        kDxRefA: kDxRef[0],
+        tiltSameSign: Math.abs(kDxHat[0]) > 0 && Math.abs(kDxRef[0]) > 0 && Math.sign(kDxHat[0]) === Math.sign(kDxRef[0]) ? 1 : 0,
+        predOverRoom: inner.ankleRoom > 0 ? Math.abs(kDxHat[0]) / inner.ankleRoom : Number.NaN,
+        refOverRoom: inner.ankleRoom > 0 ? Math.abs(refDrive.u[0] + kDxRef[0]) / inner.ankleRoom : Number.NaN,
+        heelDesignOff,
+        refFlatOff,
+        superOff,
         relSubst,
         relSubstBank,
         substHelps,
@@ -1696,7 +1847,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     for (const xx of ticks) {
       appendFileSync(TICKS, `${JSON.stringify({
         body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0, extra: entry0 === null ? extra : null,
-        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships',
+        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships', arange: ARANGE ?? 'ships',
         live: xx.t > 0.2 && xx.clamped === 0 ? 1 : 0, clamped: xx.clamped, ticks: xx.ticks,
         t: r(xx.t, 4),
         // the state the tick sits at, every one a read off the ride
@@ -1721,6 +1872,15 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         ankleRoomHere: r(xx.ankleRoomHere, 4), gainClamped: xx.gainClamped,
         cmdAuthModel: r(xx.cmdAuthModel, 2), cmdAuthModelCont: r(xx.cmdAuthModelCont, 2),
         cmdAuthGame: r(xx.cmdAuthGame, 2), cmdAuthRatio: r(xx.cmdAuthRatio, 4), cmdAuthStep: r(xx.cmdAuthStep, 4),
+        // **Step 3.4f**: the datum's two halves where the controller's own last line puts them, at the exact point,
+        // in the roll row's own units. `rowTiltBoth` is their SUM and the sum is an identity, so that column is the
+        // cancellation's own residue and `cancelShare` is its size against the larger half.
+        rowTiltPred: r(xx.rowTiltPred, 4), rowTiltRefFF: r(xx.rowTiltRefFF, 4), rowTiltRefFB: r(xx.rowTiltRefFB, 4),
+        rowTiltRef: r(xx.rowTiltRef, 4), rowTiltBoth: r(xx.rowTiltBoth, 4), cancelShare: r(xx.cancelShare, 6),
+        dxHatPhi: r(xx.dxHatPhi, 5), dxRefPhi: r(xx.dxRefPhi, 5),
+        kDxHatA: r(xx.kDxHatA, 6), kDxRefA: r(xx.kDxRefA, 6), tiltSameSign: xx.tiltSameSign,
+        predOverRoom: r(xx.predOverRoom, 4), refOverRoom: r(xx.refOverRoom, 4),
+        heelDesignOff: r(xx.heelDesignOff, 18), refFlatOff: r(xx.refFlatOff, 18), superOff: r(xx.superOff, 18),
         // the brief's measurement: the same tick's roll row under each of the four gain sets
         ...Object.fromEntries(COST_ARMS.flatMap((arm) => [
           [`subst_${arm.key}`, r(xx.relSubst[arm.key], 6)],
@@ -1743,6 +1903,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ledger: LEDGER,
     wheel: WHEEL ?? 'off',
     mount: MOUNTA ?? 'ships',
+    arange: ARANGE ?? 'ships',
     stance: st,
     extra: entry0 === null ? extra : null,
     entryAsked: entry0,
@@ -2046,6 +2207,13 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ownWater: r(share(live.map((xx) => Math.abs(xx.eWater) >= Math.max(Math.abs(xx.eAnkle), Math.abs(xx.eTwist), Math.abs(xx.eRest), Math.abs(xx.eFeetFwd)))), 3),
     ownAnkle: r(share(live.map((xx) => Math.abs(xx.eAnkle) > Math.max(Math.abs(xx.eWater), Math.abs(xx.eTwist), Math.abs(xx.eRest), Math.abs(xx.eFeetFwd)))), 3),
     ownRest: r(share(live.map((xx) => Math.abs(xx.eRest) > Math.max(Math.abs(xx.eWater), Math.abs(xx.eAnkle), Math.abs(xx.eTwist), Math.abs(xx.eFeetFwd)))), 3),
+    // **Step 3.4f**: the datum's two halves in the command, and this round's own three closures. The three `Off`
+    // columns are read as PEAKS over every tick of the run, because a closure is a worst case and not a median.
+    heelDesignOffPeak: r(peak(absCol(ticks, 'heelDesignOff')), 18),
+    refFlatOffPeak: r(peak(absCol(ticks, 'refFlatOff')), 18),
+    superOffPeak: r(peak(absCol(ticks, 'superOff')), 18),
+    cancelShareMed: r(median(absCol(live, 'cancelShare')), 4),
+    tiltSameSignShare: r(share(ticks.map((xx) => xx.tiltSameSign === 1)), 3),
     // the gains' own reach (`GAINS=1`)
     cmdRebuildMed: r(median(col(live, 'cmdRebuild')), 4),
     cmdRebuildPeak: r(peak(col(live, 'cmdRebuild')), 4),
@@ -2087,6 +2255,46 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
   return out;
 }
 
+/**
+ * **Step 3.4f, C4b: the additivity read off the GAME'S OWN `tick`, not off the probe's arithmetic.**
+ *
+ * `plant.ts`'s own 3.4f columns are built from `design`, `steadyTurn` and `predD` directly, so the additivity they
+ * show is the probe's algebra. This check runs the shipped `PredictiveController.tick` itself — four controllers,
+ * one tick each, the same sense line, the same speed, depth, limits and rail, and a tilt of 10° — and reads the four
+ * commands it returns. At the first tick the estimate is zero and no command has been sent, so the four are exactly
+ * the four cells of the table in the `Tick` comment, and
+ *
+ *     u_both + u_off  −  u_predict  −  u_ref  =  0
+ *
+ * must hold to the last bit if the two halves are additive **in the controller's own line**. Run once at startup,
+ * printed as a `#` line beside the arm's own headline, and it rides nothing. With the tilt handed in as **zero** all
+ * four must agree outright, which is C3's own read on the same four controllers.
+ */
+function additivity(tiltDeg: number): { resid: number; spread: number; raw: Record<string, number[]>; sent: Record<string, number[]> } {
+  const sense = [0.02, 0.1, 0.01, 0, 0, -0.08, 0.05, 1, 0];
+  const limits = { ankle: 0.25, twist: 40 };
+  const flags: (DesignWeights['waterHeel'] | undefined)[] = [undefined, 'predict', 'ref', 'both'];
+  const keys = ['off', 'predict', 'ref', 'both'];
+  const raw: Record<string, number[]> = {};
+  const sent: Record<string, number[]> = {};
+  flags.forEach((wh, i) => {
+    const c = new PredictiveController({ ...DEFAULT_WEIGHTS, ...(BODY ? { riderBody: BODY } : {}), ...(wh ? { waterHeel: wh } : {}) });
+    const out2 = c.tick(sense, FACE[2], DEPTH, 0, 0, limits, 0, -tiltDeg / DEG);
+    // **`raw` is the command BEFORE the clamp and `sent` after it** [R, `tick`: `this.raw[q] = u[q]` then the two
+    // `Math.max/min`]. The additivity is a property of the control law, so it is read on `raw`; `sent` is printed
+    // beside it because the clamp is exactly where the law stops being linear, and on these arms it bites.
+    raw[keys[i]] = [c.raw[0], c.raw[1]];
+    sent[keys[i]] = [out2[0], out2[1]];
+  });
+  let resid = 0;
+  let spread = 0;
+  for (let q = 0; q < 2; q += 1) {
+    resid = Math.max(resid, Math.abs(raw.both[q] + raw.off[q] - raw.predict[q] - raw.ref[q]));
+    for (const k of keys) spread = Math.max(spread, Math.abs(raw[k][q] - raw.off[q]));
+  }
+  return { resid, spread, raw, sent };
+}
+
 const rows: Record<string, unknown>[] = [];
 for (const st of STANCES) {
   for (const steer of STEERS) {
@@ -2104,6 +2312,18 @@ for (const row of rows) emit(row);
 const num = (k: string) => rows.map((x) => x[k]).filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
 const sh = (k: string) => span(num(k), 3);
 process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}, body ${BODY ?? 'point'}${BODYJ !== undefined ? ` x${BODYJ}` : ''}, cost ${COST ?? 'off'}\n`);
+{
+  const a10 = additivity(10);
+  const a0 = additivity(0);
+  process.stdout.write(`# step 3.4f C4b — the GAME'S OWN tick, four controllers, one tick each, ankle/twist:\n`);
+  for (const k of ['off', 'predict', 'ref', 'both']) {
+    process.stdout.write(`#    tilt 10°, ${k.padStart(7)}: raw ${a10.raw[k].map((v) => v.toFixed(9).padStart(14)).join(' ')}`
+      + `  sent ${a10.sent[k].map((v) => v.toFixed(9).padStart(14)).join(' ')}\n`);
+  }
+  process.stdout.write(`#    |raw_both + raw_off − raw_predict − raw_ref| = ${a10.resid.toExponential(3)} — additive in the controller's`
+    + ` own line, pre-clamp; the arms are not one tick (spread from off ${a10.spread.toExponential(3)})\n`);
+  process.stdout.write(`#    tilt 0 (C3): spread from off ${a0.spread.toExponential(3)}, residual ${a0.resid.toExponential(3)}\n`);
+}
 process.stdout.write(`# fell ${rows.filter((x) => x.fell).length} of ${rows.length}, at ${span(num('fellAt'), 3)} s, median ${f(median(num('fellAt')), 3)}\n`);
 process.stdout.write(`# P0a sense residual, peak over runs: ${peak(num('senseOff')).toExponential(3)}  | tick spacing off: ${peak(num('spacingOff')).toExponential(3)} s\n`);
 process.stdout.write(`# P0c ledger split ${peak(num('ledgerSplit')).toExponential(2)} closure ${peak(num('ledgerClosure')).toExponential(2)} residual ${peak(num('ledgerResidual')).toExponential(2)} apart ${peak(num('ledgerApart'))}\n`);

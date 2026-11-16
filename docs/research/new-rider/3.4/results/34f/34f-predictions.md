@@ -167,3 +167,39 @@ any run off the bound.
 **P16 — and the term table will still not contain any of it.** P5 and P6 stand as written: the brief's named
 instrument will separate the arms by where their rides went and not by which half they ran, and the **phantom** at
 the mount will agree across the four glide arms within 5 %.
+
+---
+
+# The third block: the ankle's own bound, and the one switch that separates the two explanations
+
+**Written before any `ARANGE` arm ran, and after the second block's arms.** The measured facts it stands on are
+stated as facts: the ankle's own bound is **`ANKLE_REST_RANGE = 0.25 rad = 14.32°` at every one of 42 458 ticks of
+eighteen arms**, and at frame 1 the loop's raw ankle command is **0.000000 / 0.086–0.194 / 0.271–0.350 /
+0.357–0.544 rad** on the glide's four arms (24 runs each) and **0.000000 / 0.083–0.222 / 0.271–0.357 /
+0.353–0.579** on the owner's own cell (18 runs each) — so `ref` asks **1.08–1.43 ×** the bound and `both` asks
+**1.41–2.32 ×** it, and `both` is **on the bound in 24 of 24 and 18 of 18 runs at frame 1** and in **0.462 and
+0.783** of the mount's first twelve frames.
+
+**So there are two explanations of `both`'s collapse and they are different.** (i) *The correction is too big* — the
+two halves add, so `both` over-corrects whatever the ankle can deliver. (ii) *The correction does not fit through
+the ankle* — the loop asks for twice the range the feet have, the clamp decides the command for the mount's first
+frames, and a clamped loop is a rail and not a loop. **`?ankleRange=wide` separates them in one character**: step
+3.3k built it, it doubles the bound to **±0.5 rad = ±28.65°** (`ANKLE_RANGE_WIDE = 2`, *"and no geometry pays for
+it"* [R]), which is just above `both`'s own ask — **and it has never been ridden with `WHEEL` on.**
+
+**P17 — the discriminator.** On the glide with the bound doubled, `g-tilt-wide`'s median will be **at or above
+`g-ref`'s 3.683 s** if the collapse is the clamp, and will stay **below both halves' own medians (4.033 and 3.683)**
+if the collapse is the over-correction itself. I am predicting **the clamp**: `g-tilt-wide` ≥ 3.683 s. *Falsified*
+if it comes in under 3.683 s — in which case explanation (i) stands and the clamp is a passenger.
+
+**P18 — and the bound will stop binding.** The share of the mount's first twelve frames on the bound will fall from
+**0.462 to under 0.10** on `g-tilt-wide` and from **0.783 to under 0.25** on `l-tilt-wide`. *Falsified* above
+those.
+
+**P19 — the switch's own null, which is a control by construction.** On `g-off` the bound is never reached (on the
+bound in **0 of 288** of the mount's ticks), so `g-off-wide` will be **identical to `g-off` over the mount's 288
+ticks**, and its whole-ride median will move by at most one run of 24. *Falsified* by any difference at the mount.
+
+**P20 — the reinforcement itself will not move, because it is upstream of the clamp.** `cancelShare` and
+`tiltSameSign` on the `-wide` arms will be **1.56–1.70 and 0.000**, the same as every other arm: the decomposition
+is of `raw`, before the clamp. *Falsified* outside that range.
