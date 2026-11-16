@@ -6921,3 +6921,568 @@ all — so these are your eyes on things I measured on the bench. There is no ne
    **My own recommendation is the second** — measure how wrong the internal model is — because the defect I found
    this round is a *symptom* of that mismatch, and bounding a symptom is the kind of fix that has cost this track nine
    rounds before. **Your call.**
+
+# Part 38 — the internal model is wrong by four to twenty times the motion it is predicting, in both rows, in 96 of 96 runs, and no single part owns it
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33o`, cut from `main` at
+**15e34a41** (step 3.3n's merge), so Part 37 is its base. It ships **one read-only probe and no source change of any
+kind** — not a line, not a switch, not a constant — and **126 rides over six arms**: the unsteered 24 on both fall
+filters, the owner's low-speed 18 on both, a steered 18, and the unsteered 24 again with the measurement tool off as
+the purity check. **8 938 control ticks read, 7 499 of them live.**
+
+Its brief is Part 37's own closing recommendation: *"the bias only grows because the loop's internal model does not
+match the game … **Nobody has measured how wrong that model is**, or which part of it (the water's captive
+derivatives, the point-mass body, the free-versus-held table, the rail schedule)."* **Nothing is built.**
+
+Tags as in 3.2, 3.3 and 3.4: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source;
+**[I]** my inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The eight sentences the round is for
+
+1. **The owner's bar is not met, and nothing in this round could meet it: the round changes nothing.** On the owner's
+   own low-speed cell — entries set **absolutely** at 1–6 m/s through the water × three stances, the stick never
+   touched — **18 of 18 rides end on the deck filter at 0.517–7.100 s and 18 of 18 on the world one at 0.117–6.900 s;
+   Compress falls 6 of 6 on each** [M], reproducing step 3.3l's and 3.3n's published rows to the digit over
+   **126 runs and 1 008 column reads with 0 mismatches** (§10, P0d). **126 of 126 rides ended before nine seconds.**
+2. **How wrong the internal model is, headline: on the board's roll rate it is wrong by 1.4 to 19.8 times the change
+   that actually happened, and on the body's bank rate by 1.1 to 23.2 times — above one at the median in every one of
+   the 96 runs that has a live tick, in all five ride arms** [M]. The instrument is the controller's **own blended**
+   Φ and Γ and its own `sent`, against the game's **own next state** read back out of the controller's own sense line:
+   `resid = Φ x_k + Γ u_k − x_{k+1}`. **Nothing is modelled on either side.** Per-arm medians of the per-run medians:
+   roll rate **10.641 / 9.092 / 3.980 / 7.857 / 3.934**, bank rate **2.552 / 3.097 / 4.620 / 3.634 / 5.131**.
+3. **And it gets the sign of the board's roll acceleration right less often than a coin: 0.190–0.462 of ticks on the
+   unsteered deck arm (24 runs) and 0.083–0.476 on the world one** [M]. The body's lean row does better and not well,
+   0.491–0.845.
+4. **"Which part" has an answer and it is not one part.** Split by differencing the code's own plant — the groups
+   close to **3.8 × 10⁻¹⁴** — the model's **water** term on the roll row is **7.1 to 22.3 times** the roll
+   acceleration the game's own solve attributes to the water, the hull, the foils and the board's weight together
+   (a gap of **2 345–8 257 °/s²**), and the model's **rider-through-the-feet** term is **3.4 to 15.3 times** the
+   game's, **in the opposite direction** (a gap of **1 603–5 432 °/s²**) [M]. The net survives at 4–16× only because
+   the two cancel. **Both halves are an order of magnitude too stiff.** *The point-mass body is not exonerated and
+   the water is not solely to blame.*
+5. **The rail schedule is wrong in a way nobody had written down, and it is not the measured rail at all.** The rail
+   handed to the schedule is derived from the lean **asked for** and capped at `SCHEDULE_RAIL_CAP = 12°`
+   [R, `AttachedRider.ts:628`, `:2313`, `:3448–3452`]. Measured: it is **0.000000° on every one of the 4 995 live
+   ticks of all 78 unsteered and low-speed runs**, and **12.000° — the cap, saturated — on every live tick of all 18
+   steered ones**, while the board's own measured |rail| peaks at **17.7–101.8°** [M]. Reading the schedule at the
+   board's real rail **improves the roll row in 23 of 24 unsteered deck runs** (median of medians 10.050 → **4.327**)
+   and **makes the lean row worse in 23 of 24** (3.540 → 6.433). It is a wrong part. It is not the wrong part.
+6. **The free-versus-held table is inert, and that is a measurement and not a reading of the default.** Both
+   corrections share one body whose first line is `if (deg <= 0) return zero` [R], and `heaveSense` is `false`
+   [R, `:781`]. Measured: at rail 0 the free and the held tables agree **to the digit on all twelve derivatives at 5,
+   7, 8 and 9 m/s** [M]. So on **78 of the 96** live runs the candidate cannot be the wrong part. At 12° — the
+   steered arm's own cap — they differ by up to **1 336 N/rad** on the side force per sideslip, and the roll-righting
+   moment changes sign between them; **evaluating that plant needs four heave states the game does not expose, so it
+   is NOT measured here** and I claim nothing about it.
+7. **The largest single defect I found is not on my brief's list, and it is one number.** `plantAt` gives the
+   internal plant `boardMass: 2.54` — the **dry board alone** [R, `predictiveBalance.ts:627`] — and the whole sway
+   equation is `m_b V β̇ = Y` [R, `rollModel.ts:545`]. The game's own solve accelerates sideways **the board, the
+   water's added mass and the rider's 73 kg**: `system[i * N + i] += m` for i = 0, 1, 2
+   [R, `AttachedRider.coupleStanding`]. **The model's sway inertia is at least 29.7 times too small** (75.54 / 2.54,
+   before any water), which is why the model's largest single roll-row group is **the water's SIDE force derivatives
+   at 3 950 °/s²** — bigger than its own roll moments. Measured as a counterfactual on the game's own recorded
+   states, raising it to the pair's 75.54 kg **improves the roll row in 19 of 24 unsteered and 13 of 18 steered runs
+   (4.035 → 2.926) and the lean row in 16 of 18 steered (8.298 → 4.489) and 12 of 18 low-speed (3.833 → 2.457)** [M].
+8. **And no single-coefficient repair gets either row under one, anywhere.** Across four plants (shipped, the
+   measured rail, the pair's sway mass, both) × two rows × five arms, the per-run median error is **under 1 in 0 of
+   24, 0 of 24, 0 of 18 and 0 of 18 runs on every arm except the owner's low-speed cell**, where 6–9 of 18 were
+   already under 1 before any change [M]. **Every repair I measured trades one row for the other.** The smallest
+   honest change is in §12 and it is not small.
+
+## 1. (A) The read that had to come first, and the three things it settled before a ride
+
+**(i) The state can be READ, not reconstructed.** `AttachedRider` builds the controller's seven-row sense from the
+game's own angles [R, `:3429–3436`] and `senseMatrix` says which state each row is [R, `:143–151`]. Inverting those
+seven rows gives **seven of the ten states exactly**:
+
+> `θ = s₀`  `θ̇ = s₁`  `ω_u = s₂`  `θ_t = s₃`  `r = s₂ − s₄`  `φ = s₀ − s₅`  `φ̇ = s₁ − s₆`
+
+Two more are read off the game in the same sign (`δ = −ankleRest`, `τ_a = −twistBody.active`). **Only the slip `β`
+is neither sensed nor stored**, so it is derived as the board's own sideslip through the water, and **every number
+that turns on it is printed for both of its signs** (§2.4). P0a pushes the reconstruction back through the
+controller's own `C`: **exactly 0 on all seven rows, every tick of every run** [M].
+
+**(ii) The comparison has to be in the controller's discrete form, and the probe's first build was not.** The
+plant's own roll mode is near **32 rad/s** [A: √((|heelRoll| + k_ankle)/I₀) ≈ √(1 023)] and the step is 1/60 s, so
+`(Φ − I)/h` is **not** `A`. Built against the continuous `A`, the exact-point plant disagreed with the controller's
+own blend by a median of **2.665 and a peak of 92.7** — larger than everything being measured. Rebuilt as a
+difference of **implied mean accelerations over the step** (`(Φ[i]·x + Γ[i]·u − x[i])/h`, which is what a
+zero-order hold means and the same quantity the ledger publishes), the same gap is **0.001–0.052 at the median**
+[M, §10 P0g]. **The blend's interpolation is not the wrong part, and the first version of this instrument was.**
+
+**(iii) `SCHEDULE_RAIL_CAP` exists, is 12°, and the rail is not the board's.** My brief named it; it is at
+`AttachedRider.ts:628`, reached through `balance.railCap` [R, `:2313`], and the comment in `predictiveBalance.ts:244`
+that says "keeping `SCHEDULE_RAIL_CAP` at 5°" is historical. The line that matters is `:3448–3452`: the schedule's
+rail is `min(railCap, atan(tan(min(MAX_BANK, |leanAsked|)) / railPull))` — **a function of the lean asked for, over
+two passes, not of the roll measured.** With the stick untouched it is identically zero.
+
+## 2. (B) How wrong the model is, measured on the controller's own arithmetic
+
+**The cells are step 3.3k's, 3.3l's, 3.3m's and 3.3n's own**, unchanged: the Canyon-matched `FaceWater` (1.4 m / 16° /
+5.7 m/s, 2.6 m deep, the board 0.75 fronts ahead of the crest, 45° off the fall line), the stance held, 9 s a run.
+**The datum**: every state is the **model's** own (so `φ = −roll` and `θ = −bank` in the probe's board frame, by
+§1(i)'s identity); every acceleration is **°/s² about `AttachedRider.rollAxis`**, the axis the bank ledger, 3.3j,
+3.3k, 3.3l and 3.3m all use. Every window starts after 0.2 s (the placement's contact transient) and excludes the
+`MAX_BANK` clamp's frames, which are counted and published.
+
+### 2.1 The one-step residual, which is the answer to the question as asked
+
+| **[M]** arm | n | live | **roll rate, ratio to its own change** | med of meds | > 1 at the median | share of ticks > 1 | **bank rate** | med of meds | > 1 at the median |
+|---|---|---|---|---|---|---|---|---|---|
+| unsteered, **deck** | 24 | 24 | **4.155–15.915** | **10.641** | **24/24** | 0.846–1.000 | **1.415–9.497** | 2.552 | **24/24** |
+| unsteered, **world** | 24 | 24 | **3.796–19.418** | **9.092** | **24/24** | 0.845–1.000 | **2.022–10.029** | 3.097 | **24/24** |
+| the owner's low speed, deck | 18 | 18 | **1.441–18.771** | 3.980 | **18/18** | 0.500–1.000 | **1.970–22.273** | 4.620 | **18/18** |
+| the same, world | 18 | **12** | **2.999–19.753** | 7.857 | **12/12** | 0.787–1.000 | **1.099–5.060** | 3.634 | **12/12** |
+| steered, deck | 18 | 18 | **2.471–9.084** | 3.934 | **18/18** | 0.712–0.948 | **3.966–23.179** | 5.131 | **18/18** |
+
+In absolute terms the roll-rate residual is **4.9–80.3 °/s at the median and up to 550 °/s at the peak**, and the
+bank-rate residual **1.7–116.5 °/s at the median** [M]. Six of the eighteen low-speed world runs fall inside the
+0.2 s window and have no live tick; they are counted in the fall table and excluded from every column above, and the
+count is printed.
+
+**Four readings.**
+
+1. **The model does not know which way the board is about to roll.** A ratio above 1 means the one-step prediction's
+   error on that component is larger than the component's whole change over that step — so the prediction carries no
+   information about the change's size, and §2.2 shows it often carries the wrong sign. **It is above 1 at the median
+   in 96 of 96 live runs, on both rows, in every arm.**
+2. **Both rows, which refutes half of my own P1b.** I predicted the body's row would be relatively better than the
+   board's, because 3.3l and 3.3m closed the body's end. It is better on the unsteered arm (**24 of 24** runs have
+   the roll ratio larger) and **worse on the steered arm (2 of 18)** and roughly even on the owner's cell (8 of 18).
+   **P1c, which I wrote opposed to P1b on purpose, is the one that holds in every arm: both rows are wrong.**
+3. **It is worst where the rider is going fastest, not where the tables are clamped.** On the owner's low-speed cell
+   the roll ratio by entry is **1.441–2.393 at 1 m/s, 2.663–3.413 at 2, 1.644–3.980 at 3, 3.334–6.112 at 4,
+   12.713–18.771 at 5 and 9.829–11.207 at 6** [M]. **This refutes my own P4b in its direction** and it rules the
+   speed clamp out as the cause (§5).
+4. **The residual in the design's own units.** Scaled by `DEFAULT_WEIGHTS.stateScale`, the whole ten-state residual's
+   rms is **0.177–5.920 at the median and 1.229–35.371 at the peak** [M] — at the median the model misses the state
+   by a fifth to six times what the design was told the largest acceptable state is.
+
+### 2.2 The same thing on a second, independent instrument: the bank ledger
+
+The bank ledger publishes the **game's own** mean roll acceleration about `rollAxis` over the step (`deckTotal`) and
+the body's own lean acceleration (`ownTotal`), attributed per source to machine precision [R, 3.3l]. So the model's
+implied mean acceleration over the same step can be compared with the game's **without the state line at all**.
+
+| **[M]** unsteered deck, 24 runs | model | game | relative error | med of meds | the model's SIGN right |
+|---|---|---|---|---|---|
+| the board's roll acceleration | **736.1–3167.0 °/s²** | **50.7–270.0** | **4.300–16.386** | **10.050** | **0.190–0.462** |
+| the body's lean acceleration | 141.6–697.8 | 26.8–157.9 | 1.676–9.019 | 3.540 | 0.491–0.845 |
+| the same, unsteered world, 24 | 502.7–2746.7 / 135.7–686.5 | 36.4–263.6 / 22.0–163.8 | 3.787–23.204 / 2.295–9.097 | 9.366 / 3.310 | **0.083–0.476** / 0.488–0.841 |
+| the same, steered, 18 | 394.6–1128.7 / 370.4–1930.2 | 96.3–325.0 / 43.9–261.5 | 2.435–8.772 / **3.742–18.954** | 4.035 / **8.298** | 0.433–0.770 / 0.328–0.832 |
+
+**And the control that makes this instrument usable, P0b**: the ledger's own `−deckTotal` against the game's own
+`φ̇` change over the same step, off the model's own coordinate — **0.009–0.046 relative in 24 of 24 unsteered deck
+runs and 0.008–0.044 in 24 of 24 world ones** [M]. So the ledger's roll column **is** the whole roll acceleration.
+Its **lean** column is not as clean: **0.092–0.455** on the unsteered deck arm and up to 1.108 steered, so the lean
+row's ledger numbers carry a control error of a tenth to a half and the state-line ratio of §2.1 is the datum I
+lead with there. **On the owner's low-speed cell the ledger's roll control degrades to 0.009–29.763, holding under
+0.10 in only 9 of 18 runs** — the rider is often not `banking` down there and the solve takes its apart paths
+(16 substeps a run) — so **no per-source ledger number is reported for that arm**, and §2.1's ratios, which do not
+use the ledger, are.
+
+**Two independent instruments, two different game-side reads, agreeing**: 4.300–16.386 against 4.155–15.915.
+
+### 2.3 Per part, by differencing the code's own plant
+
+`twistRows` is linear in each of the twelve captive derivatives, in the ankle's spring and damper, in the twist's and
+in the feet's forward force, so building the plant with one group zeroed and subtracting gives that group's row from
+the code's own function and not from a reimplementation of it. **P0e: the six groups plus the remainder reproduce the
+row to 3.8 × 10⁻¹⁴ (roll) and 7.1 × 10⁻¹² (bank)** [M].
+
+| **[M]** unsteered deck, 24 runs, °/s², median of the per-run medians | the model's own | the game's matching sources |
+|---|---|---|
+| **the water's SIDE force derivatives** (Y per φ, β, r, φ̇) | **3 950** | — |
+| the water's roll moment derivatives (K per φ, β, r, φ̇) | 2 955 | — |
+| the water's yaw moment derivatives (N per …) | 170 | — |
+| **the water, all three, signed** | **2 377–9 482 over the 24** | **109.5–900.9** (hull, foils, froth, added mass, the board's weight and gyro) |
+| the ankle's own spring and damper | 2 673 | — |
+| the remainder (gravity through the feet, `g/L`, the inertias, the kinematics) | 2 293 | — |
+| the twist / the feet's forward force | 134 / 87 | — |
+| **the rider through the feet, signed** | **1 657–6 484 over the 24** | **123.9–968.0** |
+| **the net roll acceleration** | **736–3 167** | **50.7–270.0** |
+| **the water's own gap** | **7.082–22.308× the game's** | **2 345–8 257 °/s²** |
+| **the rider's own gap** | **−15.281 to −3.375× the game's** | **1 603–5 432 °/s²** |
+| the pendulum's own `g/L · θ`, the point-mass body's signature term | **121–453** | the game's whole lean acceleration **20–206** |
+
+**Five readings.**
+
+1. **No part owns it.** The water is 7–22× too strong and the rider through the feet 3–15× too strong the other way.
+   **A plant whose two halves are each an order of magnitude out and which nets to 4–16× out by cancellation is not
+   a plant with a wrong part; it is a plant that is wrong.** This is Part 35's structural complaint about the lean —
+   *a residual of terms two to fifteen times its own size* — one level down, in the model rather than in the game.
+2. **The model's largest single roll-row group is the water's SIDE force**, 3 950 °/s², larger than its own roll
+   moments. That is not a rail effect and not a roll effect: it is the side force driving the slip over one step and
+   the slip driving the roll moment. §4 measures why it is that big, and it is one number.
+3. **The pendulum term is bigger than the whole lean acceleration the game produces.** `g/L · θ` alone is
+   **121–453 °/s²** where the game's measured lean acceleration is **20–206 °/s²** [M]. The point-mass body's own
+   destabilising term, with nothing else in it, over-answers the whole row. That is a statement about the model's
+   geometry (one mass at one height on one rigid leg) and it is the first number this track has put on it.
+4. **Two terms the model has no counterpart for at all, measured and both small.** The ledger's `carry` — *"the term
+   with no name in any force diagram"* — is **0.0000 °/s² at the peak in 96 of 96 runs** [M], and the read says why:
+   `mismatch = ω × carried + v_board + drive + forward·s − v_rider` is identically zero for a standing rider whose
+   velocity the constraint has just set [R, `:4421–4424`]. **P2c is refuted.** The board's `gyro` is
+   **0.021–0.932 °/s²** at the median [M], so **P2d holds the other way round from how I wrote it**: gyro is larger
+   than carry, because carry is exactly nothing.
+5. **P2b, which I predicted would hold, is refuted.** I predicted the rider side would agree inside a factor of two
+   because 3.3m measured the ankle's authority right to a median 0.0004–0.0027. It does not: it is 3.4–15.3× out.
+   **3.3m measured `A⁻¹` — what one newton-metre of ankle torque does — and it was right. This measures what the
+   model thinks the torque IS, and it is not.** Those are two different quantities and conflating them would have
+   been this folder's tenth frame error.
+
+### 2.4 The one state I had to derive, and why the verdict does not rest on it
+
+`β` is neither sensed nor stored, so it is derived. Every ratio above is therefore printed for **both signs** of it:
+
+| **[M]** unsteered deck, 24 | the sign the probe chose | reversed |
+|---|---|---|
+| the roll-rate ratio, per-run medians | 4.155–15.915 | **3.791–16.123** |
+| the bank-rate ratio | 1.415–9.497 | 1.822–33.093 |
+| runs in which the chosen sign is the better one | **roll: 10 of 24** | bank: 20 of 24 |
+
+**The roll row's verdict is independent of the frame**: the two spans are the same span, and the sign I chose is the
+better one in fewer than half the runs, so it is not a choice that flatters the result. The bank row's **size** is
+sign-sensitive (up to 33× the other way) and its **direction is not**: above 1 at the median either way. The model's
+own one-step prediction of the slip is itself off by **1.5–28.2× its own change** [M], which is either the model's
+slip row or my derivation of `β` and this round cannot separate them — so it is reported and not used.
+
+## 3. (B) The rail schedule: a wrong part, measured, and not the wrong part
+
+| **[M]** | unsteered deck, 24 | unsteered world, 24 | low speed, deck 18 / world 12 | steered, 18 |
+|---|---|---|---|---|
+| **the rail the schedule was read at, peak over the run** | **0.000000°, 24 of 24** | **0.000000°, 24 of 24** | **0.000000°, 18 of 18 / 12 of 12** | **12.000°, 18 of 18** |
+| the board's own measured \|rail\|, median | 1.04–22.00° | 0.97–18.99° | 1.38–68.35° / 0.58–38.72° | 7.27–38.49° |
+| … its peak | **17.73–87.37°** | 10.79–65.39° | **17.03–101.79°** / 12.77–95.29° | **54.13–95.79°** |
+| the model's own roll-righting `heelRoll` at the schedule's rail | −330.3 to −211.4 N·m/rad | −331.0 to −209.5 | −305.1 to −268.7 | −147.2 to −4.6 |
+| … at the board's measured rail | **−293.5 to +89.3** | −296.2 to +88.0 | −274.4 to −36.7 | **−157.5 to +54.0** |
+| the share of ticks where those two have **different signs** | 0.000–0.611 (**21 of 24 runs have some**) | 0.000–0.589 (16 of 24) | 0.000–0.353 (6 of 18) | **0.178–0.693 (18 of 18)** |
+| **P3c: reading the schedule at the MEASURED rail, roll row** | **10.050 → 4.327**, better in **23 of 24** | 9.366 → 5.146, **23 of 24** | 2.725 → 2.553, 9 of 18 | 4.035 → 4.482, 7 of 18 |
+| **the same change on the LEAN row** | **3.540 → 6.433**, better in **1 of 24** | 3.310 → 4.122, 8 of 24 | 3.833 → 5.564, 9 of 18 | **8.298 → 12.605, 1 of 18** |
+
+**Four readings.**
+
+1. **The schedule is never told the board is on its rail, and on the owner's own cell the board reaches 101.8° of
+   it.** P3a holds exactly: 0.000000° on every live tick of all 78 unsteered and low-speed runs. On the steered arm
+   it is **pinned at the 12° cap on every live tick of all 18** — so the cap is not a safety margin that is rarely
+   reached, it is where the schedule lives whenever the stick is held.
+2. **P3b holds in part and is not a mechanism.** The model's own righting moment and the measured rail's differ in
+   sign in some ticks of 21 of 24 unsteered deck runs, and in 18 of 18 steered ones. But the share is 0.000–0.611:
+   in three unsteered runs it never flips at all. **A majority of runs, not a majority of ticks.**
+3. **P3c holds on the roll row and is refuted on the lean row, which is the finding.** Telling the model the rail it
+   is actually on cuts the roll row's error by more than half (10.050 → 4.327) in 23 of 24 unsteered deck runs — and
+   **nearly doubles the lean row's** (3.540 → 6.433) in 23 of 24. The schedule's rail is a real defect and
+   **correcting it alone makes the model worse at the row the fall is in.**
+4. **On the owner's own bar cell it does almost nothing** (2.725 → 2.553, better in 9 of 18). The arm where it helps
+   most is not the arm the bar is on.
+
+## 4. (B) The sway mass: one number, 29.7 times out, and it was not on the list
+
+`plantAt` builds the internal plant with `boardMass: 2.54` [R, `predictiveBalance.ts:627`] and the whole sway
+equation is `β̇ = (Y + push)/(m_b V) − r` [R, `rollModel.ts:545`]. **2.54 kg is the dry board.** The game's own
+standing solve adds the rider's mass to all three of the board's translational rows —
+`for (let i = 0; i < 3; i += 1) system[i * N + i] += m` [R, `AttachedRider.coupleStanding:4385`] — on top of the
+water's own added mass, which `BoardBody.system` already holds [R]. So:
+
+> **the model accelerates 2.54 kg sideways where the game accelerates at least 75.54 kg: a factor of 29.7, before
+> any water** [A on two reads].
+
+That is why §2.3's largest single group is the water's side force. A side force of 89 N at 8 m/s moves the model's
+slip by **0.073 rad in one frame** [A: 89/(2.54 × 8)/60], and `slipRoll` ≈ −663 N·m/rad turns that into
+**2 770 °/s²** of roll acceleration the game never sees.
+
+**Measured as a counterfactual on the game's own recorded states**, with `boardMass` raised to the two masses the
+solve carries (**still a lower bound** — the water's lateral added mass is left out):
+
+| **[M]** median of the per-run medians | **roll row** shipped → sway | runs improved | **lean row** shipped → sway | runs improved |
+|---|---|---|---|---|
+| unsteered, deck, 24 | 10.050 → **8.055** | **19 of 24** | 3.540 → 4.939 | 5 of 24 |
+| unsteered, world, 24 | 9.366 → 8.279 | 20 of 24 | 3.310 → 4.855 | 9 of 24 |
+| the owner's low speed, deck, 18 | 2.725 → 3.498 | 10 of 18 | 3.833 → **2.457** | **12 of 18** |
+| the same, world, 12 | 7.420 → 9.077 | 8 of 12 | 3.722 → 4.268 | 6 of 12 |
+| steered, deck, 18 | 4.035 → **2.926** | **13 of 18** | 8.298 → **4.489** | **16 of 18** |
+
+**Three readings.**
+
+1. **It is the only change measured here that helps both rows on the same arm**: on the steered arm the roll row
+   falls 27 % and the lean row 46 %, and it improves 13 of 18 and 16 of 18 runs. On the owner's own cell it helps
+   the lean row (3.833 → 2.457, 12 of 18) and hurts the roll row.
+2. **It is a defect by reading, not by fit.** The number is wrong whatever the counterfactual does: a board with a
+   rider standing on it does not slide sideways like 2.54 kg. I am reporting the counterfactual because the brief
+   asked how wrong the model is, and this is how much of the wrongness that one coefficient owns.
+3. **It is not a fix and I will not offer it as one.** §6's table shows it leaves every arm above 1.
+
+## 5. (B) The speed, clamped, and cleared
+
+| **[M]** the owner's low-speed cell | entry 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| the speed the schedule was read at, median, m/s | 1.360–1.566 | 2.499–2.667 | 3.359–3.614 | 4.324–6.629 | 5.239–5.613 | 6.238–6.511 |
+| **the share of live ticks clamped to the table's 4–12 m/s floor** | **1.000** | **1.000** | **0.867–1.000** | 0.000–0.242 | 0.000 | 0.000 |
+| the roll-rate ratio, per-run medians | **1.441–2.393** | 2.663–3.413 | 1.644–3.980 | 3.334–6.112 | **12.713–18.771** | 9.829–11.207 |
+
+`labAt`, `boardInertiaAt` and `blend` all clamp the speed to the table's ends and the lowest is **4 m/s**
+[R, `:596–604`, `:574–582`, `:1125`], whose own comment says the board does not plane there (*"it trims 26° at
+4.5 m/s, 46° at 4"*) [R]. **8 of 18 low-speed deck runs are clamped on every live tick** and 3 of 12 on the world
+filter. **P4a is refuted in its "every": entry 3 has a run at 0.867**, which accelerates past the floor mid-ride.
+
+**And the clamp is cleared as the cause.** The mismatch is **smallest where the clamp bites hardest** (1.4–2.4× at
+1 m/s, fully clamped) and **largest where it does not bite at all** (12.7–18.8× at 5 m/s, never clamped).
+**P4b is refuted in its direction, and the speed clamp is the one named candidate this round removes.**
+
+## 6. The owner's bar, measured, with every population named — and every repair against it
+
+| **[M]** arm | n | the ride ended | balance fall / lost board | when, s | median | Compress |
+|---|---|---|---|---|---|---|
+| **the owner's low-speed cell, deck filter** (6 absolute entries × 3 stances) | **18** | **18 of 18** | 17 / 1 | **0.517–7.100** | 1.033 | **6 of 6** |
+| the same, **world** filter | 18 | **18 of 18** | 18 / 0 | **0.117–6.900** | 0.767 | **6 of 6** |
+| step 3.3k's unsteered arm, deck | 24 | **24 of 24** | 23 / 1 | 1.100–2.067 | 1.183 | **8 of 8** |
+| the same, world | 24 | **24 of 24** | 24 / 0 | 0.767–1.950 | 0.950 | **8 of 8** |
+| the same, deck, **the ledger off** (the purity arm) | 24 | **24 of 24** | 23 / 1 | 1.100–2.067 | 1.183 | **8 of 8** |
+| the steered arm, deck | 18 | **18 of 18** | 17 / 1 | 1.367–4.117 | 3.067 | **6 of 6** |
+
+**The owner's bar is "in Compress the surfer should not fall at the low speeds of getting into position", 100 %, not
+fewer. It is not met, in any arm of this round, and nothing in this round could change that: the round adds no
+source line.** Compress's ride ends **6 of 6** in every low-speed arm and **8 of 8** in every unsteered one, and
+**126 of 126 rides ended before nine seconds.**
+
+**And the four plants against each other, since that is the only thing here that could ever be built** — the median
+of the per-run medians of each row's relative error, and the count of runs the error is under 1 in:
+
+| **[M]** | **roll row**: shipped / rail / sway / both | runs under 1 | **lean row**: shipped / rail / sway / both | runs under 1 |
+|---|---|---|---|---|
+| unsteered, deck, 24 | **10.050 / 4.327 / 8.055 / 5.366** | **0 / 0 / 0 / 0** | **3.540 / 6.433 / 4.939 / 6.966** | **0 / 0 / 0 / 0** |
+| unsteered, world, 24 | 9.366 / 5.146 / 8.279 / 5.977 | 0 / 0 / 0 / 0 | 3.310 / 4.122 / 4.855 / 6.399 | 0 / 0 / 0 / 0 |
+| **the owner's low speed, deck, 18** | 2.725 / 2.553 / 3.498 / 3.231 | 9 / 8 / 6 / 9 | 3.833 / 5.564 / **2.457** / **2.284** | **0 / 0 / 0 / 0** |
+| the same, world, 12 | 7.420 / 4.864 / 9.077 / 5.452 | 1 / 1 / 1 / 1 | 3.722 / 4.547 / 4.268 / 4.275 | 0 / 0 / 0 / 1 |
+| steered, deck, 18 | 4.035 / 4.482 / **2.926** / 4.429 | 0 / 0 / 0 / 0 | 8.298 / 12.605 / **4.489** / **3.991** | 0 / 0 / 0 / 0 |
+
+**No variant takes the lean row under 1 in a single run of 96, on any arm.** The nine low-speed roll-row runs under 1
+were under 1 **before** any change. **Every repair trades a row.**
+
+## 7. What I refuted
+
+- **My own P2b, in the half my brief called settled.** I predicted the rider-through-the-feet side would agree inside
+  a factor of two because 3.3m measured the ankle's own authority right. It is **3.4–15.3× out**. 3.3m measured
+  `A⁻¹` — what a newton-metre does. This measures what the model thinks the newton-metres **are**. **This is the
+  fourth consecutive round to find its error in the half its brief called settled.**
+- **My own P4b, in its direction**, and with it one of the brief's standing suspicions: the mismatch is
+  **smallest** at the speeds the table's 4 m/s floor clamps (1.4–2.4× at 1 m/s) and largest where it does not clamp
+  (12.7–18.8× at 5 m/s). **The speed clamp is not the wrong part.**
+- **My own P4a, in its "every"**: the 3 m/s runs are clamped on 0.867–1.000 of ticks, not 1.000.
+- **My own P2c.** The ledger's `carry` is **exactly 0.0000 °/s² at the peak in 96 of 96 runs**, and the read says why
+  (`mismatch` is identically zero for a standing rider). I predicted at least a tenth of the row.
+- **My own P2d, in its direction.** I predicted `gyro` smaller than `carry`. `carry` is nothing, so `gyro` is larger.
+- **My own P1b, on three of five arms.** The body's row is relatively better than the board's on the unsteered arms
+  (24 of 24, 23 of 24) and **worse** on the steered one (2 of 18). **P1c, written opposed to it, is what holds
+  everywhere: both rows.**
+- **My own P3c, on the lean row.** Reading the schedule at the measured rail halves the roll row's error and nearly
+  doubles the lean row's, better in **1 of 24**.
+- **The probe's own first instrument, before it was reported.** Built against the continuous `A`, the exact-point
+  plant disagreed with the controller's own blend by a median **2.665** and a peak **92.7** — the plant's roll mode
+  is near 32 rad/s and the step is 1/60 s, so `(Φ − I)/h ≠ A`. Rebuilt in the discrete form the same gap is
+  **0.001–0.052**. The continuous version would have attributed the discretisation to the water.
+- **"The free-versus-held table" as a live candidate.** At rail 0 the two tables are the same table to the digit on
+  all twelve derivatives at 5, 7, 8 and 9 m/s, and the schedule's rail is 0 on 78 of 96 live runs.
+
+## 8. What I will not claim
+
+- **I will not claim which part is wrong, because the measurement says no part is.** The water is 7–22× out, the
+  rider through the feet 3–15× out the other way, the pendulum's own term alone is bigger than the whole lean
+  acceleration the game makes, and the net survives by cancellation. Naming one of those the culprit would be
+  picking from a list the measurement refuses to rank.
+- **I will not claim the sway mass is the fix**, or that the rail is, or that both are. §6 is the table that stops
+  me: **no variant takes the lean row under 1 in a single run of 96.** The sway mass is a defect I can show by
+  reading two lines; what fixing it buys is 27–46 % of a row's error on one arm and a loss on another.
+- **I will not claim the model's slip row is wrong**, although its one-step prediction is off by 1.5–28.2× its own
+  change: `β` is the one state I had to derive, and this round cannot separate the row from the derivation.
+- **I will not claim anything about the held table at a rail.** At 12° the two tables differ by up to 1 336 N/rad and
+  the roll-righting moment changes sign between them, and evaluating the held plant needs four heave states the game
+  does not expose. **Measured at rail 0 they are identical; at 12° they are not; which is right is not measured.**
+- **I will not net the two rows into one verdict on "the model".** They move in opposite directions under every
+  repair, and that is three sentences, not one.
+- **I will not claim the lean row's ledger numbers to better than their control**, which is 0.092–0.455 relative on
+  the unsteered deck arm — so §2.3's `own`-column entries are read to a factor of about 1.5 and the state-line ratio
+  of §2.1 is what I lead with. **No per-source ledger number is reported for the owner's low-speed cell at all**,
+  because the control there degrades to 29.763 and holds under 0.10 in only 9 of 18 runs.
+- **I will not claim this explains the fall.** It explains why `b̂₀` has somewhere to go, which is what Part 37 asked
+  for. The fall is still 126 of 126.
+- **The `FaceWater` is a fit to Canyon, not Canyon**; the rider is **placed**, not paddled or popped up; every span
+  above is **the whole population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+- **Carried, not mine, not touched**: `steadyTurn`'s `ref.u[0]` peaking at 2 675° in 1 of 18 steered runs (Part 37
+  §6); the `cos³` added-mass frame defect; `AttachedRider.frame`'s hard clamp of the measured bank at 70° at three
+  sites.
+
+## 9. The controls
+
+**P0a, the state is a read**: the reconstruction pushed back through the controller's own `C`, all seven rows,
+**peak over every tick of every one of the 126 runs: exactly 0** [M]. And the tick spacing: **exactly `CONTROL_STEP`,
+0.000e+0 off, every tick** — so the one-step residual is over one step and not over a frame that ran two ticks or
+none.
+
+**P0b, the ledger's own axis is the model's own axis**, and it says where it is usable: `−deckTotal` against the
+game's own `φ̇` change, **0.009–0.046 in 24 of 24** (deck) and **0.008–0.044 in 24 of 24** (world); the lean column
+**0.092–0.455** and **0.071–0.541**; the owner's low-speed cell **0.009–29.763**, under 0.10 in **9 of 18** [M].
+**Predicted before it ran** ("within a few per cent at the median … falsified if the two have different signs or
+differ by more than a factor of two"): **held on the roll row, and it is the reason the lean row's per-source numbers
+are reported to a factor and the owner's cell's are not reported at all.**
+
+**P0c, the ledger closes**: `split`, `closure` and `residual` **0.00e+0 on every step of every run**; `apart`
+(substeps the standing 8×8/9×9 did not decide) **at most 16, 3, 16, 16 and 20 per run** by arm, out of 1 887, 1 521,
+1 521, 1 180 and 2 829 ticks' worth of substeps [M].
+
+**P0d, the rider unchanged**: all six arms' `.jsonl` compared row by row against `33l-unsteered-deck`,
+`33l-unsteered-world`, `33l-low-deck`, `33l-low-world` and `33n-steered-deck` on `fell`, `fellAt`, `rollFall`,
+`bankFall`, `railFall`, `frames`, `stance` and `steer` — **126 runs, 1 008 column reads, 0 mismatches** [M].
+
+**P0e, the groups sum to the row**: the six zeroable groups plus the named remainder against the row's own implied
+mean acceleration, **peak 3.8 × 10⁻¹⁴ (roll) and 7.1 × 10⁻¹² (bank)** over every live tick of every run [M].
+
+**P0f, a positive control predicted before it ran.** Over the first six ticks the filter has not run, so the
+controller's own `x̂` carries no sense — but **this probe's state is the game's own and has no such property**, so the
+residual there must **not** be small. Measured: the roll-rate ratio over ticks 1–6 is **4.809–191.621** against
+**1.441–19.418** over the rest [M]. **Held**, and it is the control that would have caught an instrument reading
+`x̂` instead of the game.
+
+**P0g, the blend is not the culprit**: the plant rebuilt at the controller's exact point against the controller's own
+eight-point blend, **0.001–0.056 at the median and 0.003–1.751 at the peak** on the unsteered arms, 0.008–0.140 /
+1.137–16.414 steered [M]. **The interpolation is a per-cent effect against a four-to-twenty-times one.**
+
+**The purity arm**: the unsteered deck 24 re-run with the ledger **off** — identical `tickRows` (1 887), `liveRows`
+(1 529) and `clampedRows` (70), and identical on all eight baseline columns [M]. The ledger is a measurement tool
+and it measures nothing of itself.
+
+## 10. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the probe type-checked separately on a throwaway project extending the root's options with `types: ["node"]` and an
+  **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/plant.ts`, `src/physics/AttachedRider.ts`, `src/physics/bankLedger.ts`,
+  `src/physics/predictiveBalance.ts` and `@types/node` (668 files).
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 620 passed, 21 expected fail** — identical to step 3.3n's.
+  `vitest run src/game src/scene/rig`: **70 files, 732 passed** — identical to step 3.3n's.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical to step 3.3n's.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round touches no solver, no wave and no spot file
+  — **it touches no source file at all.**
+- **the shipped rider is proved unchanged against step 3.3l's and 3.3n's published baselines, 126 runs and 1 008
+  column reads to the digit** (§9, P0d), and the ledger-off purity arm is identical to the ledger-on one.
+- **the Canyon byte check is NOT run, and the reason is read rather than assumed**: the check's condition is `src/`
+  changing, and `git diff origin/main --name-only -- src/` returns **nothing at all**, while
+  `git status --porcelain` shows exactly two entries, both untracked and both under `docs/`:
+  ```
+  ?? docs/research/new-rider/3.3/plant.ts
+  ?? docs/research/new-rider/3.3/results/33o/
+  ```
+  **No file under `src/` is added, removed or modified.** The one behavioural arm (`LEDGER=off`) is the probe
+  declining to set `bankLedger.on`, which the game never sets either [R].
+
+## 10b. The deletions column, read line by line
+
+`git diff --numstat origin/main` before the commit, read file by file — **one tracked file, and its deletions column
+is zero**:
+
+```
+565	0	docs/research/new-rider/3.3/README.md
+```
+
+**565 insertions, 0 deletions, and nothing else tracked at all.** `git status --porcelain` reports exactly three
+entries: that modification and the two untracked additions `?? docs/research/new-rider/3.3/plant.ts` and
+`?? docs/research/new-rider/3.3/results/33o/`. **Nothing was reverted, nothing was removed, and no line of any
+existing file but `README.md`'s own end was touched.**
+
+## 11. Files (3.3o)
+
+- `docs/research/new-rider/3.3/plant.ts` — **the probe, and the whole of the round's new code.** Six instruments:
+  the game's own state read back out of the controller's seven senses (P0a checks it through the controller's own
+  `C`); the one-step residual of the controller's own blended Φ and Γ against the game's own next state; the two
+  rows the fall is in against the bank ledger, with the ledger's own control against the game's state change; the
+  per-part split by differencing the code's own `plantAt`/`continuousPlant` (P0e checks the sum); the schedule's own
+  rail and speed against the board's; and four counterfactual plants (shipped, the measured rail, the pair's sway
+  mass, both) evaluated on the same recorded states. Env: `ENTRIES`, `EXTRAS`, `STEERS`, `STANCES`, `FELT=deck`,
+  `LEDGER=off`, `SECONDS`, `OUT`, `TRACE`.
+- `docs/research/new-rider/3.3/results/33o/` — **13 files**: the five ride arms and the purity arm as `.jsonl` and
+  `.txt`, and `33o-predictions.md` (every prediction as written before its read, each with its own falsification,
+  plus the three reads R1–R3 made before anything ran).
+- `docs/research/new-rider/3.3/README.md` — this Part. **No source file is touched.**
+
+## 12. For the owner, in plain words — and the shot list
+
+**Last round I told you there was a real bug in his balance — a correction it keeps that has no limit and that it
+then predicts the future with — and that switching it off tripled how long he stayed on but did not meet your bar.
+I also told you the honest next step was to find out WHY that correction keeps growing: because the balance's own
+mental model of the board does not match the board. That is what I did. I measured it. Here is how wrong it is.**
+
+**One: it is wrong by four to twenty times.** Every sixtieth of a second the balance predicts how fast the board is
+about to roll and how fast his body is about to lean. I compared its own prediction with what then actually
+happened — its arithmetic, the game's answer, nothing of mine in between. **Its prediction of the board's roll is
+wrong by more than the whole amount the board actually rolled, in every one of ninety-six rides.** Typically by
+about ten times on the test cell. And it gets the **direction** of the board's roll right **nineteen to forty-six
+per cent of the time** — worse than guessing. His body's lean is wrong by one and a half to twenty-three times.
+**So the correction grows because the model it is correcting is not describing this board at all.**
+
+**Two: I cannot give you one guilty part, and I went looking for one.** I split the model's own forces apart. The
+**water's** push on the board, in the model, is **seven to twenty-two times** the push the game actually applies.
+The **rider's own weight and ankle through his feet** is **three to fifteen times** too big, **the other way**. They
+nearly cancel, and what is left over is the four-to-twenty-times error. Even the single simplest piece of it — the
+"stick man on a pole" sum that says how fast a leaning body falls over — is on its own **bigger than the whole lean
+the game produces**. This is not a model with a broken part. It is a model that is wrong all through and survives by
+its mistakes cancelling.
+
+**Three: two specific things I can show you by pointing at a line of code.**
+
+- **The balance is never told he is on his rail.** It reads its model at the rail of the turn *you asked for*, capped
+  at twelve degrees. With the stick untouched that is **exactly zero, on every one of five thousand control ticks**,
+  while the board is actually over at up to **a hundred and two degrees**. Telling it the truth halves the error on
+  the board's roll — and **doubles** it on his body's lean. So that is real and it is not the cure.
+- **The balance thinks the board weighs two and a half kilos when it is pushed sideways.** That is the bare board.
+  The game, correctly, has to shove the board *and him* — seventy-five kilos, plus the water. **Thirty times out, on
+  one number.** It is why the biggest single thing in the model's roll sum is the water pushing the board sideways.
+  Fixing just that improves things by a quarter to a half on two of the five tests and makes them worse on the
+  others.
+
+**Four: and the honest bottom line. I tried four versions of the model on your own recorded rides — as shipped, with
+the real rail, with the real sideways weight, and with both — and across ninety-six rides and two measurements
+each, not one of them got the error on his body's lean below "wrong by as much as the thing it is predicting."
+Every single repair I measured makes one half better and the other half worse.**
+
+**What I also cleared, so we stop looking there.** Two of the four suspects from last round are gone. The
+"free-versus-held" table question **cannot matter** on the rides that count — at no rail the two tables are the same
+table, to the digit. And the balance being handed a four-metres-a-second floor when he is doing one **is not it
+either**: the model is at its **most accurate** at those slow speeds (one and a half times out) and at its **worst**
+at five metres a second (nineteen times out). I predicted the opposite and I was wrong.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot. **Nothing in this round changes the game** — it adds no source line at
+all — so there is no new switch to type and nothing new to feel. These are your eyes on things I measured on the
+bench, and the ruling at the end is the real ask.
+
+1. **`?rider=new&feltFrame=deck&canyonWaves=true`, Compress, slow, don't take off.** Still your own bar, still
+   unmet, still unchanged: eighteen of eighteen on the bench. I am not asking you to confirm it. I am telling you it
+   has not moved.
+2. **The same, and hold the stick over.** Last round's measurement said the balance pushes against your lean in most
+   of the moments you ask for it. This round found the steered case is the arm where his **body's** model is worst
+   (four to twenty-three times out, the worst of the five arms). **Does holding a lean feel worse than riding
+   straight?** If it does, those two numbers are the same thing.
+3. **And a ruling, not a ride — this is the one I need.** I now have the measurement Part 37 asked for, and it says
+   the model is not repairable one coefficient at a time. Three routes, and my recommendation is the third:
+   - **Patch the two defects I can prove by reading** — the sideways mass and the rail the schedule is told. Two or
+     three lines in one file. **I would not sell this to you: I measured that it trades one row for the other and
+     leaves both above "wrong by as much as the motion".**
+   - **Re-derive the internal model against the game's own solve, properly** — which is a round of building, not of
+     reading: take the game's own 9×9 matrix as the plant the balance is designed on, instead of a hand-built
+     ten-state model of it with the masses and the rail put in by hand. The game already factorises that matrix
+     every substep; the instruments to compare them now exist and close to fourteen decimal places. This is the
+     route that could actually close the four-to-twenty-times gap, and it is a significant piece of work.
+   - **The two-body rider** — still the route the parked duck-dive work named as the faithful one. **And this round
+     is the first thing that argues for it rather than merely failing to argue against it:** the point-mass body's
+     own single term is bigger than the whole lean the game produces, so the body the model is built on is too
+     simple to describe the body that is falling.
+   **My own recommendation is the second, and if you want one sentence for why: nine rounds have now tried to fix
+   the rider by changing a number, and this round measured that the numbers are wrong all through.** Your call.

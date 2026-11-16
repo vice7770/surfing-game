@@ -1,0 +1,29 @@
+
+# step 3.3o — the internal plant against the game, 18 runs, new rider, deck filter, ledger on
+# fell 18 of 18, at 0.517–7.100 s, median 1.033
+# P0a sense residual, peak over runs: 0.000e+0  | tick spacing off: 0.000e+0 s
+# P0c ledger split 0.00e+0 closure 0.00e+0 residual 0.00e+0 apart 16
+# P0e group closure, roll 3.90e-14 bank 1.00e-13
+# P0b the ledger vs the game's own state change: roll 0.009–29.763 rel, lean 0.042–6.471 | measured roll acc 55.100–3893.600 °/s², lean 33.100–485.100
+# P0g the blend's own error (exact point vs the controller's blend) 0.001–0.038 median, 0.013–18.662 peak
+# P1 one-step residual: roll rate 4.916–80.301 °/s median (peak 49.876–243.640), bank rate 2.284–116.525 (peak 15.897–419.137)
+#    over the component's own change: roll rate 1.441–18.771, bank rate 1.970–22.273, roll 0.190–1.066, bank 0.060–0.846, slip 3.253–10.856
+#    share of ticks above 1: roll rate 0.500–1.000, bank rate 0.700–1.000
+#    with the derived slip's sign reversed: roll rate 1.540–19.200, bank rate 2.319–20.210
+#    scaled rms 0.177–5.920 median, 1.396–35.371 peak | first six ticks' roll-rate ratio 4.809–65.259
+# P1 rows vs the ledger: roll model 225.700–6050.900 °/s² vs game 58.000–106793.600, rel err 0.902–16.656 (peak 1.535–8176.518), sign right 0.157–0.955
+#                        bank model 150.600–7220.500 vs game 35.200–2127.500, rel err 2.372–12.136 (peak 14.872–2629.983), sign right 0.316–0.817
+#    last 0.2 s: roll 0.711–8.843, bank 0.125–17.887
+# P2 model roll row by group, °/s² median: waterRoll 282.100–5643.900 waterYaw 53.100–241.500 waterSide 829.200–3160.500 ankle 448.000–4771.800 twist 28.400–147.400 feetFwd 23.900–310.600 rest 530.200–2925.300
+#    game roll row by group: water 158.000–11270.600 rider 208.800–100849.900 board 25.400–446.800 | carry 0.000–0.000 gyro 0.034–15.570
+#    SIGNED sums: model water 967.400–7987.000 vs game water+board 153.100–11404.000 | model rider 549.400–4357.500 vs game rider 208.800–100849.900
+#    water gap 0.165–18.254 rel (672.000–6335.200 °/s²), rider gap -11.311–1.007 rel (616.000–97013.600 °/s²)
+#    carry's share of the roll row 0.000–0.000, of the lean row 0.000–0.000; carry's own peak 0.000–0.000 °/s²
+#    the pendulum's own g/L term 60.900–483.200 °/s²; bank row ankle 355.200–3840.500 rest 1536.700–15137.800
+# P3 schedule's rail peak 0.000–0.000° vs measured |rail| median 1.380–68.350° peak 17.030–101.790°
+#    heelRoll at 0 -305.100–-268.700 vs at the measured rail -274.400–-36.700 N·m/rad; sign flips in 0.000–0.353 of ticks
+#    P3c: rel err with the measured rail's plant 0.949–14.769 against 0.902–16.656; it HELPS in 0.050–1.000 of ticks
+# P4 speed median 1.360–6.629 m/s, min 0.646–6.004; clamped to the table's 4–12 in 0.000–1.000 of ticks
+# P5 counterfactuals, roll row rel err: shipped 0.902–16.656 | rail 0.949–14.769 | sway 75.54 kg 0.852–16.880 | both 0.945–14.872
+#    bank row rel err: shipped 2.372–12.136 | rail 1.744–9.018 | sway 1.211–6.853 | both 1.203–7.621
+#    closest on the roll row, share of ticks: shipped 0.000–0.385 rail 0.050–0.760 sway 0.000–0.950 both 0.000–0.719
