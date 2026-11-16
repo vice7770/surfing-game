@@ -3912,7 +3912,8 @@ Canyon, `?canyonWaves=true`, your test spot. One change at a time, as always.
 Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33j`, cut from `main` at
 **5481822d** (the advisor's roll-inertia consult), so Part 32 is its base. It ships **no source change and no switch** —
 `git diff --stat` touches `docs/` only — **one new read-only probe** (`3.3/inertia.ts`), additions to two existing
-probes, and **252 runs over eleven arms**.
+probes, and **324 runs over fourteen arms** — six `fall.ts` arms (228 runs), seven `deck.ts` arms (84) and
+`inertia.ts`'s own ride arm (12), plus its four control rows, which are not runs.
 
 Tags as in 3.2 and 3.3: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source; **[I]** my
 inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
@@ -3922,7 +3923,7 @@ inference from a stated model; **[A]** arithmetic on measured numbers, labelled 
 1. **The owner's bar is not met, and this round says why their own framing of it cannot be the route.** Across the
    round's fall arms: **72 of 72** on the gentle stick ladder with six entry speeds, **36 of 36** on three,
    **36 of 36** on the world filter, **36 of 36** with the probe's stick never centred, **24 of 24** on step 3.3i's
-   own grid, and **12 of 12 in each of six `deck.ts` arms** [M]. **And the decisive one: with the stick UNTOUCHED he
+   own grid, and **12 of 12 in each of seven `deck.ts` arms** [M]. **And the decisive one: with the stick UNTOUCHED he
    falls 12 of 12 at 1.10–1.93 s on the owner's own filter and 0.77–1.70 s on the world one** [M, Part 24's arm
    reproduced]. **The gentle turn is not what is killing him; he falls without one.**
 2. **My brief's premise is false, and the error it warns about is the one it made: the gentle fall is not one
