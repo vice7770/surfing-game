@@ -1,0 +1,13 @@
+===== CANYON B (?canyonWaves=true) =====
+spun up on the CPU in 47.9 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/wk/bench/B.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.19/1.61, roller 0.67/0.88, front 0.00/0.00, lip 0.03/0.03, foam 2.52/3.13, airSources 0.06/0.09, aeration 1.38/1.80, contact 0.00/0.00, board 0.65/1.11, bubbles 0.16/0.19, spray 0.27/0.42, sounds 0.00/0.00, snapshotFields 4.03/4.85, snapshot 4.55/5.48, summary 0.41/0.54
+  CPU stages per step (step − water + snapshot + summary): 12.15/15.48; water (CPU solver, not timed on the device) 78.4
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+===== CANYON DEFAULT =====
+spun up on the CPU in 59.6 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/wk/bench/D.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.31/1.68, roller 0.44/0.57, front 0.00/0.00, lip 0.03/0.03, foam 3.76/4.52, airSources 0.05/0.08, aeration 1.97/2.39, contact 0.00/0.00, board 0.65/0.98, bubbles 0.18/0.21, spray 0.18/0.30, sounds 0.00/0.00, snapshotFields 4.45/5.14, snapshot 4.96/5.77, summary 0.43/0.52
+  CPU stages per step (step − water + snapshot + summary): 14.34/17.28; water (CPU solver, not timed on the device) 90.2
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+[exited with code 0]

@@ -1493,6 +1493,18 @@ export interface AttachedRiderOptions {
    * through the forward prediction alone, leaving the reference the flat-water one that ships.
    */
   waterHeel?: 'tilt' | 'predict';
+  /**
+   * **The two-body rider** (step 3.4a, `?riderBody=two`): the balance's own internal plant gives the rider's body an
+   * inertia of its own in the frontal plane instead of treating it as a point mass on a massless leg, so the board's
+   * roll, the body's bank, the turn and the sway are solved together and **the force at the feet is an outcome of the
+   * solve** rather than the substituted `τ / h − m g θ` the shipped plant writes down. Opt-in, off by default,
+   * pinned off for online rooms. It changes the **plant**, not the control law: `DesignWeights.riderBody` has the
+   * scope line, and `docs/research/new-rider/3.4/README.md` the measurement.
+   *
+   * `'control'` is the same assembly with the body's inertia at zero, which reproduces the shipped plant exactly; it
+   * ships so that the control can be ridden as well as tested.
+   */
+  riderBody?: 'two' | 'control' | 'symmetric';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2328,8 +2340,11 @@ export class AttachedRider {
     this.waterHeel = options.waterHeel === 'tilt' || options.waterHeel === 'predict';
     const heelWeights: { waterHeel: 'both' | 'predict' } | undefined = options.waterHeel === 'tilt'
       ? { waterHeel: 'both' } : options.waterHeel === 'predict' ? { waterHeel: 'predict' } : undefined;
-    const weights = options.balance?.weights || heelWeights
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...options.balance?.weights }
+    // Step 3.4a: `riderBody` reaches the same weights route, so an explicit `riderBody` in `balance.weights` wins.
+    const bodyWeights: { riderBody: 'two' | 'control' | 'symmetric' } | undefined = options.riderBody
+      ? { riderBody: options.riderBody } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...options.balance?.weights }
       : undefined;
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;

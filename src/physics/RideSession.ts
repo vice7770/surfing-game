@@ -177,6 +177,13 @@ export interface RideSessionOptions {
    * they are read at the board's roll from the world's level, which is the angle the lab never measured.
    */
   waterHeel?: 'tilt' | 'predict';
+  /**
+   * The two-body rider (step 3.4a; `AttachedRiderOptions.riderBody`): 'two' gives the rider's body an inertia of its
+   * own in the balance's internal plant, so the lateral accelerations are solved together and the force at the feet is
+   * an outcome rather than a substitution (the `?riderBody=two` dev switch); 'control' is the same assembly with that
+   * inertia at zero, which reproduces the shipped plant. By default the body is a point mass on a massless leg.
+   */
+  riderBody?: 'two' | 'control' | 'symmetric';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -284,6 +291,7 @@ export class RideSession {
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
+      ...(options.riderBody ? { riderBody: options.riderBody } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

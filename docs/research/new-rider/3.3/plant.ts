@@ -128,8 +128,8 @@ import { BoardBody } from '../../../../src/physics/BoardBody';
 import { createWaterSample } from '../../../../src/physics/SurfWater';
 import { FaceWater } from '../../../../src/physics/testing/FaceWater';
 import { bankLedger, BANK_SOURCES, type BankSource } from '../../../../src/physics/bankLedger';
-import { CONTROL_STEP, continuousPlant, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
-import type { TwistPlant, YawPlant } from '../../../../src/physics/rollModel';
+import { CONTROL_STEP, bodyInertiaAt, continuousPlant, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
+import { lateralCompliance, type RiderBody, type TwistPlant, type YawPlant } from '../../../../src/physics/rollModel';
 
 const DEG = 180 / Math.PI;
 const STEP = 1 / 60;
@@ -155,6 +155,24 @@ const FELT = process.env.FELT === 'deck' ? 'deck' : undefined;
 const WHEEL = process.env.WHEEL === 'tilt' ? 'tilt' : process.env.WHEEL === 'predict' ? 'predict' : undefined;
 /** `LEDGER=off`: the purity arm — the ride with the ledger not turned on, so "the ledger changes nothing" is read. */
 const LEDGER = process.env.LEDGER === 'off' ? 'off' : 'on';
+/**
+ * **Step 3.4a's switch**: `BODY=two|control|symmetric` rides the two-body plant, so the ridden arm is the same probe
+ * on the same cells. Unset, every arm is step 3.3p's own probe on step 3.3p's own cells, and the three counterfactual
+ * body plants below are still scored on the SHIPPED ride, which is the apples-to-apples comparison.
+ */
+const BODY = process.env.BODY === 'two' ? 'two' : process.env.BODY === 'control' ? 'control'
+  : process.env.BODY === 'symmetric' ? 'symmetric' : undefined;
+/**
+ * `BODYJ=<x>`: the `Two` plant's own inertia as a multiple of the sourced one, so the lean row's gain can be read as a
+ * function of the body's inertia instead of at one value. Unset, the sourced inertia itself (`bodyInertiaAt`).
+ */
+const BODYJ = process.env.BODYJ ? Number(process.env.BODYJ) : undefined;
+/** The three body plants scored as counterfactuals on every ride, whatever `BODY` is. */
+const BODIES: { key: 'Ctl' | 'Sym' | 'Two'; body: RiderBody | true }[] = [
+  { key: 'Ctl', body: { inertia: 0, feetRoll: false } },
+  { key: 'Sym', body: { inertia: 0 } },
+  { key: 'Two', body: true },
+];
 
 type Stance = 'tall' | 'crouch' | 'compress';
 const STANCES = (process.env.STANCES ?? 'tall,crouch,compress').split(',') as Stance[];
@@ -201,8 +219,6 @@ interface RiderInner {
   schedTilt: number;
   /** The rail the schedule was read at, rad — `min(SCHEDULE_RAIL_CAP, …)` of the lean ASKED for, not the board's rail. */
   schedRail: number;
-  /** Step 3.3p: the tilt the controller was handed, rad, model sign (0 unless `waterHeel` is on). */
-  schedTilt: number;
 }
 
 /** The six groups of the plant that can be zeroed exactly, and the twelve coefficients each owns. */
@@ -262,6 +278,8 @@ interface Tick {
   speedClamped: number;
   /** The rail the schedule was read at, °, against the board's own measured |rail|, and the table's own limit there. */
   schedRail: number;
+  /** Step 3.3p: the tilt the controller was handed, °, in the model's own sign (0 unless `waterHeel` is on). */
+  schedTilt: number;
   railMeas: number;
   railUsable: number;
 
@@ -360,6 +378,29 @@ interface Tick {
   relBankBoth: number;
   /** Which of the four is closest to the game on the roll row: 0 shipped, 1 rail, 2 sway, 3 both. */
   bestRoll: number;
+
+  // --- step 3.4a: the two-body rider, as three counterfactual plants on the shipped ride.
+  /** The control's own number: the largest entry of the control plant's own A against the shipped plant's, over its row's largest. */
+  ctlOff: number;
+  rollAccCtl: number; bankAccCtl: number; relCtl: number; relBankCtl: number;
+  rollAccSym: number; bankAccSym: number; relSym: number; relBankSym: number; rollSignSym: number; bankSignSym: number;
+  rollAccTwo: number; bankAccTwo: number; relTwo: number; relBankTwo: number; rollSignTwo: number; bankSignTwo: number;
+  ratioRollRateCtl: number; ratioRollRateSym: number; ratioRollRateTwo: number;
+  ratioBankRateCtl: number; ratioBankRateSym: number; ratioBankRateTwo: number;
+  /** The force at the feet, N: the shipped plant's own `τ / h − m g θ`, the two-body plant's `m a_m` outcome, and the control's. */
+  footShipped: number; footTwo: number; footCtl: number; footRatio: number; footCtlOff: number;
+  /** The two-body plant's own four lateral reads, off `lateralCompliance` — the four the ledger publishes for the game. */
+  jTwo: number; swayMassTwo: number; swayMassCtl: number; rollInertiaTwo: number; yawInertiaTwo: number;
+  sideRollTwo: number; sideRollCtl: number; crossSymTwo: number;
+  /** The shipped plant at the controller's own exact point, so the control is exact and the blend is separated out. */
+  rollAccFull: number; bankAccFull: number; relFull: number; relBankFull: number; rollSignFull: number; bankSignFull: number;
+  /** The groups on the two-body plant, °/s², its closure, its own pendulum term and its own conditioning. */
+  mWaterSideTwo: number; mWaterRollTwo: number; mAnkleTwo: number; mRestTwo: number;
+  mWaterAllTwo: number; mRiderAllTwo: number; bWaterSideTwo: number; bAnkleTwo: number; bRestTwo: number;
+  mCloseTwo: number; bCloseTwo: number; mPendulumTwo: number; condTwo: number;
+  /** The body's weight on its own lean, SOLVED, in both plants; the bank inertia each meets; the ankle's own authority. */
+  pendSolvedCtl: number; gGravityOwn: number; bankInertiaTwo: number; bankInertiaCtl: number;
+  ankleBankTwo: number; ankleBankCtl: number; ankleBankGame: number;
 
   // --- P0b: is `deckTotal` the WHOLE roll acceleration? The game's own φ̇ change over the step says.
   /** `(φ̇⁺ − φ̇)/h`, °/s², off the previous tick's own reconstructed state: the game's own mean roll acceleration. */
@@ -488,6 +529,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(FELT ? { feltFrame: FELT } : {}),
     ...(WHEEL ? { waterHeel: WHEEL } : {}),
+    ...(BODY ? { riderBody: BODY } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -516,6 +558,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     tPhi: number[][]; tGamma: number[][]; tGammaD: number[]; tiltRad: number;
     /** The controller's own tilt column and the tilt it was handed, when `waterHeel` is on. */
     ownGammaD: number[] | null; ownTilt: number;
+    /** Step 3.4a: the three body plants at the same point, for the one-step residual on each. */
+    bPhi: Record<string, number[][]>; bGamma: Record<string, number[][]>;
   } | null = null;
   let senseOff = 0;
   let spacingOff = 0;
@@ -650,6 +694,91 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       const rollTiltRail = tiltRailAcc(1);
       const bankTiltRail = tiltRailAcc(3);
 
+      // ===== Step 3.4a: the two-body rider, as three counterfactual plants on the SHIPPED ride =====
+      // `Ctl` is the assembly with the body's inertia at zero AND the shipped asymmetric coupling, which must
+      // reproduce the shipped plant's own rows exactly — the control, measured per tick rather than asserted once.
+      // `Sym` is the same point-mass body with the coupling made consistent (the feet feel the board's own roll, the
+      // one term the shipped `feet` row omits while its roll row carries the same lever). `Two` is the step: the
+      // body's own frontal-plane inertia from de Leva, posed in the game's own stances, so the four lateral
+      // accelerations are solved together and **the force at the feet is an outcome of the solve**.
+      const bodyPlants: Record<string, { y: YawPlant; t: TwistPlant; a: number[][]; b: number[][]; phi: number[][]; gamma: number[][] }> = {};
+      for (const { key, body } of BODIES) {
+        // `BODYJ` scales the sourced inertia on the `Two` plant alone, so the sweep is the same arithmetic at another
+        // value and the control and the symmetry-only plant are untouched by it.
+        const use = key === 'Two' && BODYJ !== undefined
+          ? { inertia: BODYJ * bodyInertiaAt(y.mass, depth, y.height) } : body;
+        const pp = plantAt(speedUsed, depth, { rail: schedRail, body: use });
+        const cc = continuousPlant(pp.y, pp.t);
+        const dd = discretise(cc.a, cc.b, CONTROL_STEP);
+        bodyPlants[key] = { y: pp.y, t: pp.t, a: cc.a, b: cc.b, phi: dd.phi, gamma: dd.gamma };
+      }
+      const bodyAcc = (key: string, rowI: number) => meanAcc(bodyPlants[key].phi, bodyPlants[key].gamma, rowI);
+      // The control's own number, per tick: the largest difference between the control plant's continuous rows and the
+      // shipped plant's, over the row's own largest entry. It is a read, not an assertion.
+      let ctlOff = 0;
+      for (let i2 = 0; i2 < full.a.length; i2 += 1) {
+        let big = 1e-9;
+        for (let j2 = 0; j2 < full.a.length; j2 += 1) big = Math.max(big, Math.abs(full.a[i2][j2]));
+        for (let j2 = 0; j2 < full.a.length; j2 += 1) ctlOff = Math.max(ctlOff, Math.abs(full.a[i2][j2] - bodyPlants.Ctl.a[i2][j2]) / big);
+      }
+      // **The force at the feet, measured both ways.** The shipped plant writes it down: `push = τ / h − m g θ`
+      // [R, `yawRows`]. The two-body plant does not write it down at all — it comes out as `m a_m`, the body's own
+      // centre of mass's lateral acceleration times its mass, off the plant's own continuous rows at this state:
+      //     a_m = z_d φ̈ + h θ̈ + x_f ṙ + V (β̇ + r)
+      // So `footTwo / footShipped` says how much of the invented force the honest one agrees with, and the difference
+      // is the part that only existed because the body could not resist being accelerated sideways.
+      const contAcc = (key: string, rowI: number) => dot(bodyPlants[key].a[rowI], x) + bodyPlants[key].b[rowI][0] * u[0] + bodyPlants[key].b[rowI][1] * u[1];
+      const footOf = (key: string) => {
+        const yy = bodyPlants[key].y;
+        const phiDD = contAcc(key, 1);
+        const thetaDD = contAcc(key, 3);
+        const rDD = contAcc(key, 4);
+        const ay = yy.speed * (contAcc(key, 5) + x[4]);
+        const zd = (bodyPlants[key].y.body?.feetRoll ?? true) ? yy.deckHeight : 0;
+        return yy.mass * (zd * phiDD + yy.height * thetaDD + yy.feetStation * rDD + ay);
+      };
+      // The ankle's own torque at this state, as the plant's own line writes it [R, `yawRows`'s `torque`].
+      const ankleTorqueHere = y.ankleStiffness * (x[2] - x[0] - x[8]) + y.ankleDamping * (x[3] - x[1]);
+      const footShipped = -(ankleTorqueHere / y.height - y.mass * 9.81 * x[2]);
+      const footTwo = footOf('Two');
+      const footCtl = footOf('Ctl');
+      // The four lateral reads of each body plant, off the code's own `lateralCompliance` — the same four the ledger
+      // publishes for the game, so the three columns are comparable without a reimplementation beside them.
+      const compTwo = lateralCompliance(bodyPlants.Two.y, bodyPlants.Two.y.body);
+      const compCtl = lateralCompliance(bodyPlants.Ctl.y, bodyPlants.Ctl.y.body);
+      const jTwo = bodyPlants.Two.y.body?.inertia ?? 0;
+      // **The pendulum's own term, and the frame trap in comparing it.** 3.3o's `mPendulum` is the shipped plant's own
+      // LINE, `bankAcc[2] += g / h` [R] — the coefficient as written, with none of the coupling the row then does.
+      // The two-body plant has no such line: its answer to the body's weight is the SOLVED response, `c[1][1] m g h`.
+      // Dividing one by the other would be this folder's twelfth frame error, so both plants' **solved** responses are
+      // printed beside each other and the line read is left as what it is.
+      const pendTwo = compTwo[1][1] * y.mass * 9.81 * y.height * x[2];
+      const pendCtl = compCtl[1][1] * y.mass * 9.81 * y.height * x[2];
+      // **The ankle's own authority over the body's absolute lean**, rad/s² per N·m: in the model the ankle's column of
+      // the generalised force is exactly `(+1, −1, 0, 0)` (its torque on the board, its reaction on the body), so the
+      // bank's response is `c[1][0] − c[1][1]`. The game's counterpart is the ledger's `ankleOwn`, the response to
+      // `b[7] = 1 / L` as `coupleStanding` books it. Units agree (rad/s per N·m·s is rad/s² per N·m); the two sign
+      // conventions do not, so only the **magnitudes** are compared and the signs are printed, never divided.
+      const ankleBankTwo = compTwo[1][0] - compTwo[1][1];
+      const ankleBankCtl = compCtl[1][0] - compCtl[1][1];
+      // The six groups again, on the two-body plant: the assembly is linear in every one of the twelve derivatives,
+      // the ankle's pair and the twist's, so differencing the code's own function still gives each group's exact row.
+      const gmTwo: Record<Group, number> = { waterRoll: 0, waterYaw: 0, waterSide: 0, ankle: 0, twist: 0, feetForward: 0 };
+      const gbTwo: Record<Group, number> = { waterRoll: 0, waterYaw: 0, waterSide: 0, ankle: 0, twist: 0, feetForward: 0 };
+      const rollAllTwo = bodyAcc('Two', 1);
+      const bankAllTwo = bodyAcc('Two', 3);
+      for (const g of GROUPS) {
+        const w2 = without(bodyPlants.Two.y, bodyPlants.Two.t, g);
+        const c3 = continuousPlant(w2.y, w2.t);
+        const d3 = discretise(c3.a, c3.b, CONTROL_STEP);
+        gmTwo[g] = rollAllTwo - meanAcc(d3.phi, d3.gamma, 1);
+        gbTwo[g] = bankAllTwo - meanAcc(d3.phi, d3.gamma, 3);
+      }
+      const mSumTwo = GROUPS.reduce((acc, g) => acc + gmTwo[g], 0);
+      const bSumTwo = GROUPS.reduce((acc, g) => acc + gbTwo[g], 0);
+      const mRestTwo = rollAllTwo - mSumTwo;
+      const bRestTwo = bankAllTwo - bSumTwo;
+
       // **Step 3.3p: the derived plant's ceiling.** The model's own four generalised forces put through the GAME's
       // own 4×4 compliance, so the whole inertia side of the model — `boardRollInertia`, `boardMass · V`,
       // `boardYawInertia + riderYawInertia`, `m h²`, the 0.031 m deck lever and the point-mass pendulum's own
@@ -745,6 +874,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       let ratioBankRateNeg = Number.NaN;
       let ratioRollRateTilt = Number.NaN;
       let ratioBankRateTilt = Number.NaN;
+      const bodyRateRatio: Record<string, number> = { Ctl: Number.NaN, Sym: Number.NaN, Two: Number.NaN };
+      const bodyBankRateRatio: Record<string, number> = { Ctl: Number.NaN, Sym: Number.NaN, Two: Number.NaN };
       let rollAccModel = Number.NaN;
       let bankAccModel = Number.NaN;
       let rollAccAtRail = Number.NaN;
@@ -793,6 +924,16 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         }
         ratioRollRateTilt = ratio(1, predTilt);
         ratioBankRateTilt = ratio(3, predTilt);
+        // Step 3.4a: the same one-step residual on each body plant, off the PREVIOUS tick's own plant, state and
+        // command — the same shape as the shipped plant's above and nothing of this tick in it.
+        for (const { key } of BODIES) {
+          const pb2 = new Array<number>(n).fill(0);
+          for (let q = 0; q < n; q += 1) {
+            pb2[q] = dot(prev.bPhi[key][q], prev.x) + prev.bGamma[key][q][0] * prev.u[0] + prev.bGamma[key][q][1] * prev.u[1];
+          }
+          bodyRateRatio[key] = ratio(1, pb2);
+          bodyBankRateRatio[key] = ratio(3, pb2);
+        }
         let acc = 0;
         for (let q = 0; q < n; q += 1) { const sc = prev.scale[q]; acc += ((pred[q] - x[q]) / sc) ** 2; }
         resScaled = Math.sqrt(acc / n);
@@ -824,6 +965,8 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         tiltRad,
         ownGammaD: d.gammaD ? d.gammaD.map((row) => row[0]) : null,
         ownTilt: inner.schedTilt,
+        bPhi: Object.fromEntries(BODIES.map(({ key }) => [key, bodyPlants[key].phi.map((row) => row.slice())])),
+        bGamma: Object.fromEntries(BODIES.map(({ key }) => [key, bodyPlants[key].gamma.map((row) => row.slice())])),
       };
 
       const relOf = (m: number, g: number) => (Number.isFinite(g) && Math.abs(g) > 1e-9 ? (m - g) / Math.abs(g) : Number.NaN);
@@ -954,6 +1097,79 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
             .map((v, q) => [Math.abs(v - rollGame), q] as const)
             .sort((p, q) => p[0] - q[0])[0][1]
           : Number.NaN,
+        // --- step 3.4a: the two-body rider
+        ctlOff,
+        // The shipped plant rebuilt at the controller's own exact point, which is what the three body plants are built
+        // at too — so `relCtl` against `relFull` is the control, and `rollRel` (the controller's own eight-point
+        // blend) differs from `relFull` by the blend alone, which 3.3p measured at 0.001–0.056.
+        rollAccFull: rollAll * DEG,
+        bankAccFull: bankAll * DEG,
+        relFull: relOf(rollAll * DEG, rollGame),
+        relBankFull: relOf(bankAll * DEG, bankGame),
+        rollSignFull: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? (Math.sign(rollAll) === Math.sign(rollGame) ? 1 : 0) : Number.NaN,
+        bankSignFull: Number.isFinite(bankGame) && Math.abs(bankGame) > 1e-9 ? (Math.sign(bankAll) === Math.sign(bankGame) ? 1 : 0) : Number.NaN,
+        rollAccCtl: bodyAcc('Ctl', 1) * DEG,
+        bankAccCtl: bodyAcc('Ctl', 3) * DEG,
+        relCtl: relOf(bodyAcc('Ctl', 1) * DEG, rollGame),
+        relBankCtl: relOf(bodyAcc('Ctl', 3) * DEG, bankGame),
+        rollAccSym: bodyAcc('Sym', 1) * DEG,
+        bankAccSym: bodyAcc('Sym', 3) * DEG,
+        relSym: relOf(bodyAcc('Sym', 1) * DEG, rollGame),
+        relBankSym: relOf(bodyAcc('Sym', 3) * DEG, bankGame),
+        rollSignSym: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? (Math.sign(bodyAcc('Sym', 1)) === Math.sign(rollGame) ? 1 : 0) : Number.NaN,
+        bankSignSym: Number.isFinite(bankGame) && Math.abs(bankGame) > 1e-9 ? (Math.sign(bodyAcc('Sym', 3)) === Math.sign(bankGame) ? 1 : 0) : Number.NaN,
+        rollAccTwo: rollAllTwo * DEG,
+        bankAccTwo: bankAllTwo * DEG,
+        relTwo: relOf(rollAllTwo * DEG, rollGame),
+        relBankTwo: relOf(bankAllTwo * DEG, bankGame),
+        rollSignTwo: Number.isFinite(rollGame) && Math.abs(rollGame) > 1e-9 ? (Math.sign(rollAllTwo) === Math.sign(rollGame) ? 1 : 0) : Number.NaN,
+        bankSignTwo: Number.isFinite(bankGame) && Math.abs(bankGame) > 1e-9 ? (Math.sign(bankAllTwo) === Math.sign(bankGame) ? 1 : 0) : Number.NaN,
+        ratioRollRateCtl: bodyRateRatio.Ctl,
+        ratioRollRateSym: bodyRateRatio.Sym,
+        ratioRollRateTwo: bodyRateRatio.Two,
+        ratioBankRateCtl: bodyBankRateRatio.Ctl,
+        ratioBankRateSym: bodyBankRateRatio.Sym,
+        ratioBankRateTwo: bodyBankRateRatio.Two,
+        // the force at the feet: the shipped plant's own closed form against the two-body plant's outcome, N
+        footShipped,
+        footTwo,
+        footCtl,
+        footRatio: Math.abs(footShipped) > 1e-9 ? footTwo / footShipped : Number.NaN,
+        footCtlOff: Math.abs(footShipped) > 1e-9 ? Math.abs((footCtl - footShipped) / footShipped) : Number.NaN,
+        // the four lateral reads of the two-body plant, against the game's own (already on this row)
+        jTwo,
+        swayMassTwo: compTwo[3][3] !== 0 ? 1 / compTwo[3][3] : Number.NaN,
+        swayMassCtl: compCtl[3][3] !== 0 ? 1 / compCtl[3][3] : Number.NaN,
+        rollInertiaTwo: compTwo[0][0] !== 0 ? 1 / compTwo[0][0] : Number.NaN,
+        yawInertiaTwo: compTwo[2][2] !== 0 ? 1 / compTwo[2][2] : Number.NaN,
+        sideRollTwo: compTwo[0][3],
+        sideRollCtl: compCtl[0][3],
+        crossSymTwo: Math.abs(compTwo[0][3] - compTwo[3][0]),
+        // the groups on the two-body plant, °/s², and its own pendulum term
+        mWaterSideTwo: gmTwo.waterSide * DEG,
+        mWaterRollTwo: gmTwo.waterRoll * DEG,
+        mAnkleTwo: gmTwo.ankle * DEG,
+        mRestTwo: mRestTwo * DEG,
+        mWaterAllTwo: (gmTwo.waterRoll + gmTwo.waterYaw + gmTwo.waterSide) * DEG,
+        mRiderAllTwo: (gmTwo.ankle + gmTwo.twist + gmTwo.feetForward + mRestTwo) * DEG,
+        bWaterSideTwo: gbTwo.waterSide * DEG,
+        bAnkleTwo: gbTwo.ankle * DEG,
+        bRestTwo: bRestTwo * DEG,
+        mCloseTwo: Math.abs(mSumTwo + mRestTwo - rollAllTwo) / Math.max(1e-30, Math.abs(rollAllTwo)),
+        bCloseTwo: Math.abs(bSumTwo + bRestTwo - bankAllTwo) / Math.max(1e-30, Math.abs(bankAllTwo)),
+        mPendulumTwo: pendTwo * DEG,
+        pendSolvedCtl: pendCtl * DEG,
+        // The game's own counterpart to it, at last apples to apples: the ledger's `gravity` source on the BODY's own
+        // lean row — the rider's own weight's share of its own lean acceleration, attributed to machine precision.
+        // 3.3o's lean-row ledger control is 0.092–0.455, so this column is read to a factor of about 1.5 and no
+        // further (3.3o §8), and it is the reason both model numbers are printed beside it rather than divided alone.
+        gGravityOwn: ledgerOn ? -bankLedger.own.gravity * DEG : Number.NaN,
+        bankInertiaTwo: compTwo[1][1] !== 0 ? 1 / compTwo[1][1] : Number.NaN,
+        bankInertiaCtl: compCtl[1][1] !== 0 ? 1 / compCtl[1][1] : Number.NaN,
+        ankleBankTwo,
+        ankleBankCtl,
+        ankleBankGame: ledgerOn ? bankLedger.ankleOwn : Number.NaN,
+        condTwo: Math.abs(rollAllTwo) > 1e-12 ? Math.max(Math.abs(gmTwo.waterSide), Math.abs(gmTwo.waterRoll), Math.abs(gmTwo.ankle), Math.abs(mRestTwo)) / Math.abs(rollAllTwo) : Number.NaN,
       });
     }
 
@@ -1167,6 +1383,87 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     derivedDiagRatioMed: r(median(live.map((xx) => (Math.abs(xx.rollAccModelDiag) > 1e-9 ? xx.rollAccDerivedDiag / xx.rollAccModelDiag : Number.NaN)).filter(Number.isFinite)), 3),
     condModelMed: r(median(col(live, 'condModel')), 2),
     condGameMed: r(median(col(live, 'condGame')), 2),
+    // --- step 3.4a: the two-body rider
+    ctlOffPeak: r(peak(col(live, 'ctlOff')), 15),
+    relFullMed: r(median(absCol(live, 'relFull')), 3),
+    relBankFullMed: r(median(absCol(live, 'relBankFull')), 3),
+    rollSignFullShare: r(shareOf(live, 'rollSignFull'), 3),
+    bankSignFullShare: r(shareOf(live, 'bankSignFull'), 3),
+    relCtlOffPeak: r(peak(live.map((xx) => Math.abs(xx.relCtl - xx.relFull)).filter(Number.isFinite)), 15),
+    relCtlMed: r(median(absCol(live, 'relCtl')), 3),
+    relBankCtlMed: r(median(absCol(live, 'relBankCtl')), 3),
+    relSymMed: r(median(absCol(live, 'relSym')), 3),
+    relBankSymMed: r(median(absCol(live, 'relBankSym')), 3),
+    rollSignSymShare: r(shareOf(live, 'rollSignSym'), 3),
+    bankSignSymShare: r(shareOf(live, 'bankSignSym'), 3),
+    relTwoMed: r(median(absCol(live, 'relTwo')), 3),
+    relBankTwoMed: r(median(absCol(live, 'relBankTwo')), 3),
+    relTwoPeak: r(peak(absCol(live, 'relTwo')), 3),
+    relBankTwoPeak: r(peak(absCol(live, 'relBankTwo')), 3),
+    rollSignTwoShare: r(shareOf(live, 'rollSignTwo'), 3),
+    bankSignTwoShare: r(shareOf(live, 'bankSignTwo'), 3),
+    rollAccTwoMed: r(median(absCol(live, 'rollAccTwo')), 1),
+    bankAccTwoMed: r(median(absCol(live, 'bankAccTwo')), 1),
+    relTwoLate: r(median(absCol(late, 'relTwo')), 3),
+    relBankTwoLate: r(median(absCol(late, 'relBankTwo')), 3),
+    ratioRollRateCtlMed: r(median(col(live, 'ratioRollRateCtl')), 3),
+    ratioRollRateSymMed: r(median(col(live, 'ratioRollRateSym')), 3),
+    ratioRollRateTwoMed: r(median(col(live, 'ratioRollRateTwo')), 3),
+    ratioBankRateCtlMed: r(median(col(live, 'ratioBankRateCtl')), 3),
+    ratioBankRateSymMed: r(median(col(live, 'ratioBankRateSym')), 3),
+    ratioBankRateTwoMed: r(median(col(live, 'ratioBankRateTwo')), 3),
+    aboveOneRollRateTwo: r(aboveOne(live, 'ratioRollRateTwo'), 3),
+    aboveOneBankRateTwo: r(aboveOne(live, 'ratioBankRateTwo'), 3),
+    // the force at the feet
+    footShippedMed: r(median(absCol(live, 'footShipped')), 2),
+    footTwoMed: r(median(absCol(live, 'footTwo')), 2),
+    footRatioMed: r(median(col(live, 'footRatio')), 3),
+    footRatioSpanLo: r(sorted(col(live, 'footRatio'))[0] ?? Number.NaN, 3),
+    footRatioPeak: r(peak(col(live, 'footRatio')), 3),
+    footCtlOffPeak: r(peak(col(live, 'footCtlOff')), 15),
+    // the two-body plant's own four lateral reads against the game's
+    jTwoMed: r(median(col(live, 'jTwo')), 3),
+    swayMassTwoMed: r(median(col(live, 'swayMassTwo')), 3),
+    swayMassCtlMed: r(median(col(live, 'swayMassCtl')), 3),
+    swayRatioTwoMed: r(median(live.map((xx) => xx.swayMassGame / xx.swayMassTwo).filter(Number.isFinite)), 3),
+    rollInertiaTwoMed: r(median(col(live, 'rollInertiaTwo')), 4),
+    rollRatioTwoMed: r(median(live.map((xx) => xx.rollInertiaGame / xx.rollInertiaTwo).filter(Number.isFinite)), 3),
+    yawInertiaTwoMed: r(median(col(live, 'yawInertiaTwo')), 4),
+    yawRatioTwoMed: r(median(live.map((xx) => xx.yawInertiaGame / xx.yawInertiaTwo).filter(Number.isFinite)), 3),
+    sideRollTwoMed: r(median(col(live, 'sideRollTwo')), 6),
+    sideRollCtlPeak: r(peak(absCol(live, 'sideRollCtl')), 15),
+    sideRollRatioTwoMed: r(median(live.map((xx) => (Math.abs(xx.sideRollTwo) > 1e-12 ? xx.sideRollGame / xx.sideRollTwo : Number.NaN)).filter(Number.isFinite)), 3),
+    crossSymTwoPeak: r(peak(col(live, 'crossSymTwo')), 15),
+    // the groups, the closure, the pendulum and the conditioning on the two-body plant
+    mWaterSideTwoMed: r(median(absCol(live, 'mWaterSideTwo')), 1),
+    mWaterRollTwoMed: r(median(absCol(live, 'mWaterRollTwo')), 1),
+    mAnkleTwoMed: r(median(absCol(live, 'mAnkleTwo')), 1),
+    mRestTwoMed: r(median(absCol(live, 'mRestTwo')), 1),
+    mWaterAllTwoMed: r(median(absCol(live, 'mWaterAllTwo')), 1),
+    mRiderAllTwoMed: r(median(absCol(live, 'mRiderAllTwo')), 1),
+    bWaterSideTwoMed: r(median(absCol(live, 'bWaterSideTwo')), 1),
+    bAnkleTwoMed: r(median(absCol(live, 'bAnkleTwo')), 1),
+    bRestTwoMed: r(median(absCol(live, 'bRestTwo')), 1),
+    closeRollTwo: r(peak(absCol(live, 'mCloseTwo')), 15),
+    closeBankTwo: r(peak(absCol(live, 'bCloseTwo')), 15),
+    mPendulumTwoMed: r(median(absCol(live, 'mPendulumTwo')), 1),
+    pendRatioTwoMed: r(median(live.map((xx) => (Math.abs(xx.mPendulum) > 1e-9 ? xx.mPendulumTwo / xx.mPendulum : Number.NaN)).filter(Number.isFinite)), 4),
+    condTwoMed: r(median(col(live, 'condTwo')), 2),
+    pendSolvedCtlMed: r(median(absCol(live, 'pendSolvedCtl')), 1),
+    pendSolvedRatioMed: r(median(live.map((xx) => (Math.abs(xx.pendSolvedCtl) > 1e-9 ? xx.mPendulumTwo / xx.pendSolvedCtl : Number.NaN)).filter(Number.isFinite)), 4),
+    gGravityOwnMed: r(median(absCol(live, 'gGravityOwn')), 1),
+    pendGameRatioCtlMed: r(median(live.map((xx) => (Math.abs(xx.gGravityOwn) > 1e-9 ? Math.abs(xx.pendSolvedCtl / xx.gGravityOwn) : Number.NaN)).filter(Number.isFinite)), 3),
+    pendGameRatioTwoMed: r(median(live.map((xx) => (Math.abs(xx.gGravityOwn) > 1e-9 ? Math.abs(xx.mPendulumTwo / xx.gGravityOwn) : Number.NaN)).filter(Number.isFinite)), 3),
+    pendLineRatioMed: r(median(live.map((xx) => (Math.abs(xx.gGravityOwn) > 1e-9 ? Math.abs(xx.mPendulum / xx.gGravityOwn) : Number.NaN)).filter(Number.isFinite)), 3),
+    bankInertiaTwoMed: r(median(col(live, 'bankInertiaTwo')), 4),
+    bankInertiaCtlMed: r(median(col(live, 'bankInertiaCtl')), 4),
+    ankleBankTwoMed: r(median(absCol(live, 'ankleBankTwo')), 4),
+    ankleBankCtlMed: r(median(absCol(live, 'ankleBankCtl')), 4),
+    ankleBankGameMed: r(median(absCol(live, 'ankleBankGame')), 4),
+    ankleBankRatioCtlMed: r(median(live.map((xx) => (Math.abs(xx.ankleBankGame) > 1e-12 ? Math.abs(xx.ankleBankCtl / xx.ankleBankGame) : Number.NaN)).filter(Number.isFinite)), 3),
+    ankleBankRatioTwoMed: r(median(live.map((xx) => (Math.abs(xx.ankleBankGame) > 1e-12 ? Math.abs(xx.ankleBankTwo / xx.ankleBankGame) : Number.NaN)).filter(Number.isFinite)), 3),
+    body: BODY ?? 'point',
+    bodyJ: BODYJ ?? 1,
   };
   return out;
 }

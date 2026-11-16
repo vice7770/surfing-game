@@ -442,6 +442,12 @@ export interface YawPlant {
   /** The hip across taking a share of the ankle's lagged rest: τ_h = −`hip` δ, N·m/rad (pushes the body across, no load moment on the board). */
   hip?: number;
   /**
+   * **Step 3.4a, the two-body rider**: the rider's body as a segment of its own rather than a point mass on a massless
+   * leg. Omitted, and omitted by default, the plant is exactly as it was — `body: { inertia: 0 }` is the control that
+   * proves it (`twoBody`).
+   */
+  body?: RiderBody;
+  /**
    * The board's heave and pitch as two more pairs of states (ruling 29t item 2), optional. Omitted, the plant is as it
    * was: ten states, with the water's answer to the board's own sinking and pitching folded into the twelve
    * derivatives as a quasi-static correction.
@@ -489,6 +495,134 @@ export interface HeavePlant {
  */
 export const HEAVE_AT = 11;
 export const N_HEAVE = 4;
+
+/**
+ * **Step 3.4a (the two-body rider): the rider's body as a segment of its own.** `inertia` is the body's own moment of
+ * inertia **in the frontal plane about its own centre of mass**, kg·m² — the one quantity a point mass on a massless
+ * leg does not have, and the whole of the difference between the two formulations.
+ *
+ * **Why the inertia is the whole of the body's end of it.** The shipped plant's `push` is `τ / h − m g θ`, a
+ * horizontal force at the feet [R, `yawRows`]. That is **exactly** the constraint force of a body with zero inertia
+ * about its own centre: from the model's own `m h² θ̈ = m g h θ − τ − m h a_f` and `H = m (a_f + h θ̈)`, the feet's own
+ * acceleration cancels identically. So the "invented foot force" is the residue of eliminating a body that cannot
+ * resist being accelerated sideways, not a force bolted on by hand. With a real inertia the cancellation stops: the
+ * force at the feet becomes an **outcome of the solve**, and the body's own mass reaches the board's sway and roll
+ * rows, which is what the game's constrained solve does and this plant did not.
+ *
+ * Sourced (de Leva 1996's segment table posed in the game's own three stances, `3.2/inertia.probe.ts`): **9.686 /
+ * 7.010 / 5.620 kg·m²** tall / crouch / Compress, a share **0.1685 / 0.1917 / 0.2099** of `m h²`
+ * (`predictiveBalance.bodyInertiaAt`). `docs/research/new-rider/3.4/README.md` has the measurement.
+ *
+ * `feetRoll` is the **second** thing the shipped body gets wrong and it is separate from the inertia: the feet sit
+ * `z_d` over the board's own centre of mass, so the board's roll moves them across at `z_d φ̈` — which the shipped
+ * `feet` row omits **while its roll row still carries `z_d F`**. One lever on the force path and none on the
+ * kinematic path is not a coupling any Lagrangian has; it is half of a pair. On by default (the consistent coupling);
+ * `false` reproduces the shipped asymmetry, and `{ inertia: 0, feetRoll: false }` reproduces the shipped plant
+ * **exactly**, which is this step's positive control.
+ */
+export interface RiderBody {
+  inertia: number;
+  feetRoll?: boolean;
+}
+
+/** Solves `a x = b` for a 4 × 4 `a` and `b` a 4 × k right-hand side, in place (Gauss, partial pivoting). */
+function solve4(a: number[][], b: number[][]): number[][] {
+  const k = b[0].length;
+  for (let c = 0; c < 4; c += 1) {
+    let p = c;
+    for (let rr = c + 1; rr < 4; rr += 1) if (Math.abs(a[rr][c]) > Math.abs(a[p][c])) p = rr;
+    if (p !== c) { const t = a[p]; a[p] = a[c]; a[c] = t; const u = b[p]; b[p] = b[c]; b[c] = u; }
+    const piv = a[c][c];
+    if (!Number.isFinite(piv) || Math.abs(piv) < 1e-15) continue;
+    for (let rr = c + 1; rr < 4; rr += 1) {
+      const fac = a[rr][c] / piv;
+      if (fac === 0) continue;
+      for (let j = c; j < 4; j += 1) a[rr][j] -= fac * a[c][j];
+      for (let j = 0; j < k; j += 1) b[rr][j] -= fac * b[c][j];
+    }
+  }
+  const x = Array.from({ length: 4 }, () => new Array<number>(k).fill(0));
+  for (let rr = 3; rr >= 0; rr -= 1) {
+    for (let j = 0; j < k; j += 1) {
+      let s = b[rr][j];
+      for (let c = rr + 1; c < 4; c += 1) s -= a[rr][c] * x[c][j];
+      x[rr][j] = Math.abs(a[rr][rr]) < 1e-15 ? 0 : s / a[rr][rr];
+    }
+  }
+  return x;
+}
+
+/**
+ * **Step 3.4a: the lateral block's own mass matrix**, over `[φ̈, θ̈, ṙ, a_y]` with `a_y = V (β̇ + r)` the board's own
+ * lateral acceleration: `diag(I_x, J, I_z, m_b) + m v_f v_kᵀ` (`twoBody` has the derivation). Exported so that the
+ * four effective inertias the model meets, and the cross terms, can be read off **this** function rather than
+ * re-derived beside it; `lateralCompliance` inverts it, which is the quantity the bank ledger publishes for the game.
+ *
+ * Without a body it answers for the shipped plant, whose body is a point mass on a massless leg with the shipped
+ * asymmetric coupling — which is what that plant's own rows are, exactly (the control).
+ */
+export function lateralMass(y: YawPlant, body: RiderBody = { inertia: 0, feetRoll: false }): number[][] {
+  const m = y.mass;
+  const vf = [y.deckHeight, y.height, y.feetStation, 1];
+  const vk = [(body.feetRoll ?? true) ? y.deckHeight : 0, y.height, y.feetStation, 1];
+  const diag = [y.boardRollInertia, body.inertia, y.boardYawInertia + y.riderYawInertia, y.boardMass];
+  return Array.from({ length: 4 }, (_, i) => Array.from({ length: 4 }, (_, j) => (i === j ? diag[i] : 0) + m * vf[i] * vk[j]));
+}
+
+/** `lateralMass` inverted: the lateral 4×4 compliance the model meets, `[φ̈, θ̈, ṙ, a_y]` per unit of each generalised force. */
+export function lateralCompliance(y: YawPlant, body?: RiderBody): number[][] {
+  const eye = Array.from({ length: 4 }, (_, i) => Array.from({ length: 4 }, (_, j) => (i === j ? 1 : 0)));
+  return solve4(lateralMass(y, body), eye);
+}
+
+/**
+ * **Step 3.4a: the lateral block as two bodies with one real joint**, solved rather than eliminated. The coordinates
+ * are the board's roll φ, the body's bank θ, the board's turn r and the board's own lateral acceleration
+ * `a_y = V (β̇ + r)`; the unknowns are their four accelerations, and the ankle is a **torque with its reaction** —
+ * `+τ` on the board's roll row, `−τ` on the body's bank row, nothing anywhere else.
+ *
+ * The body's centre of mass sits `h` over the feet and the feet `z_d` over the board's centre of mass at the station
+ * `x_f`, so the body's own lateral acceleration is `a_m = a_y + z_d φ̈ + x_f ṙ + h θ̈ = v_kᵀ q` with
+ * `v_k = [z_d, h, x_f, 1]`, and its reaction `H = m a_m` acts on the board at the same three levers,
+ * `v_f = [z_d, h, x_f, 1]`. So
+ *
+ *     M = diag(I_x, J, I_z, m_b) + m v_f v_kᵀ
+ *
+ * — with `feetRoll` on the two vectors are the same, `M` is **symmetric**, and the coupling is the rank-one one a
+ * single mass rigidly jointed through a single point has. The generalised forces are
+ * `[K + τ, −τ + m g h θ, N − F_x y_c, Y]`: the water's own three loads, the ankle's **pair**, the body's weight on its
+ * own lean, and the feet's forward force at its centre of pressure. **No constraint force is written down** —
+ * `H = m v_kᵀ q` comes out of the solve.
+ *
+ * With `feetRoll: false` the kinematic vector loses its `z_d` while the force vector keeps it, `M` stops being
+ * symmetric, and the assembly carries the shipped plant's own asymmetry; at `J = 0` as well it reproduces the shipped
+ * plant **entry for entry**, which is the control. At `J = 0` with `feetRoll` **on** it does not, and the reason is
+ * worth stating: the `z_d φ̈` term cancels out of the **force** `H` at `J = 0` but not out of `θ̈`, which keeps
+ * `− z_d φ̈ / h` — 3.7 % of the roll row, on a bank row whose own entries are smaller than that.
+ *
+ * One further difference is deliberate and is zero in every plant `plantAt` builds [R]: the hip's torque
+ * (`YawPlant.hip`) is given its **reaction** on the board's roll row, which the shipped model leaves unpaired.
+ */
+function twoBody(
+  y: YawPlant,
+  body: RiderBody,
+  g: number,
+  parts: { cop: number[]; roll: number[]; side: number[]; yawMoment: number[]; iz: number },
+): { rollAcc: number[]; bankAcc: number[]; yawAcc: number[]; slipAcc: number[] } {
+  const m = y.mass;
+  const hh = y.height;
+  const mass = lateralMass(y, body);
+  const fRoll = parts.roll.map((w, j) => w + parts.cop[j]);
+  const fBank = parts.cop.map((t) => -t);
+  fBank[2] += m * g * hh;
+  const fYaw = parts.yawMoment.map((w, j) => w - (y.feetForward * parts.cop[j]) / (m * g));
+  const fSide = parts.side.slice();
+  const q = solve4(mass, [fRoll, fBank, fYaw, fSide]);
+  // β̇ = a_y / V − r.
+  const slipAcc = q[3].map((a) => a / y.speed);
+  slipAcc[4] -= 1;
+  return { rollAcc: q[0], bankAcc: q[1], yawAcc: q[2], slipAcc };
+}
 
 /**
  * The rows of [φ, φ̇, θ, θ̇, r, β] for `YawPlant` before the balance, as linear functions of the n-state. `yawExtra`, a
@@ -541,6 +675,16 @@ function yawRows(y: YawPlant, load: number, n: number, yawExtra?: readonly numbe
   cop[6] += -hip;
   const roll = water(y.heelRoll, y.slipRoll, y.yawRoll, y.rollDamping, 2);
   const iz = y.boardYawInertia + y.riderYawInertia;
+  // **Step 3.4a**: with the body given an inertia of its own the four lateral accelerations are solved together and
+  // the force at the feet is an outcome rather than a substitution (`twoBody`). Without it every line below is the
+  // one that shipped, and `body: { inertia: 0 }` reproduces them identically — the control.
+  if (y.body) {
+    const tb = twoBody(y, y.body, g, { cop, roll, side, yawMoment, iz });
+    const two = [row(), tb.rollAcc, row(), tb.bankAcc, tb.yawAcc, tb.slipAcc];
+    two[0][1] = 1;
+    two[2][3] = 1;
+    return two;
+  }
   const yawAcc = yawMoment.map((w, j) => (w - (y.feetForward * cop[j]) / (m * g) + y.feetStation * push[j]) / iz);
   const slipAcc = side.map((w, j) => (w + push[j]) / (y.boardMass * v));
   slipAcc[4] -= 1;

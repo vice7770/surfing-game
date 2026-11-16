@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { eigenvalues } from './rollModel';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, add, closedLoop, continuousPlant, design, discretise, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
+import { eigenvalues, lateralCompliance, lateralMass } from './rollModel';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, closedLoop, continuousPlant, design, discretise, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -129,5 +129,118 @@ describe('the water\'s own heel datum (step 3.3p, `waterHeel`)', () => {
     const moved = run({ ...DEFAULT_WEIGHTS, waterHeel: 'both' }, 10 * (Math.PI / 180));
     const still = run(undefined, 10 * (Math.PI / 180));
     expect(moved).not.toEqual(still);
+  });
+});
+
+describe('the two-body rider as a plant (step 3.4a, `riderBody`)', () => {
+  // **The positive control, and it is the step's own claim about the shipped plant.** The shipped `yawRows` eliminates
+  // the body in closed form: `push = τ / h − m g θ`. That expression is exactly the constraint force of a body with no
+  // inertia of its own about its own centre of mass — the feet's acceleration cancels identically — so the assembly
+  // with `inertia: 0` and the shipped asymmetric coupling must reproduce the shipped plant entry for entry, at every
+  // point of the schedule the game reads.
+  it('reproduces the shipped plant exactly with the body\'s inertia at zero and the shipped coupling', () => {
+    let worst = 0;
+    let cells = 0;
+    for (const v of SCHEDULE_SPEEDS) for (const d of SCHEDULE_DEPTHS) for (const rail of SCHEDULE_RAILS) {
+      const base = continuousPlant(...Object.values(plantAt(v, d, { rail })) as [never, never]);
+      const ctl = continuousPlant(...Object.values(plantAt(v, d, { rail, body: { inertia: 0, feetRoll: false } })) as [never, never]);
+      cells += 1;
+      for (let i = 0; i < base.a.length; i += 1) {
+        let big = 1e-9;
+        for (let j = 0; j < base.a.length; j += 1) big = Math.max(big, Math.abs(base.a[i][j]));
+        for (let j = 0; j < base.a.length; j += 1) worst = Math.max(worst, Math.abs(base.a[i][j] - ctl.a[i][j]) / big);
+      }
+    }
+    expect(cells).toBe(SCHEDULE_SPEEDS.length * SCHEDULE_DEPTHS.length * SCHEDULE_RAILS.length);
+    expect(worst).toBeLessThan(1e-12);
+  });
+
+  // And the control is a control only because the two other variants are NOT the shipped plant: the body's own inertia
+  // moves it, and so does the coupling on its own.
+  it('is not vacuous: the sourced inertia and the consistent coupling each move the plant', () => {
+    const base = plantAt(8, 0.195, { rail: 0 });
+    const sym = plantAt(8, 0.195, { rail: 0, body: { inertia: 0 } });
+    const two = plantAt(8, 0.195, { rail: 0, body: true });
+    expect(continuousPlant(sym.y, sym.t).a).not.toEqual(continuousPlant(base.y, base.t).a);
+    expect(continuousPlant(two.y, two.t).a).not.toEqual(continuousPlant(base.y, base.t).a);
+    expect(two.y.body!.inertia).toBeCloseTo(0.1917 * 73 * 0.65 * 0.65, 9);
+  });
+
+  // **The shipped plant's coupling is half of a pair, and this is the entry that says so.** The feet sit `deckHeight`
+  // over the board's centre of mass, so the board's roll moves them across — and the shipped `feet` row omits that
+  // while its roll row still carries the same lever on the force. The mass matrix is therefore asymmetric by exactly
+  // `m · deckHeight`, and with `feetRoll` on it is symmetric to machine precision.
+  it('shows the shipped coupling asymmetric by m·deckHeight and the consistent one symmetric', () => {
+    const { y } = plantAt(7, 0, { rail: 0 });
+    const shipped = lateralMass(y);
+    expect(Math.abs(shipped[0][3] - shipped[3][0])).toBeCloseTo(y.mass * y.deckHeight, 12);
+    const consistent = lateralMass(y, { inertia: 5 });
+    for (let i = 0; i < 4; i += 1) for (let j = 0; j < 4; j += 1) expect(consistent[i][j]).toBeCloseTo(consistent[j][i], 12);
+    const c = lateralCompliance(y, { inertia: 5 });
+    for (let i = 0; i < 4; i += 1) for (let j = 0; j < 4; j += 1) expect(c[i][j]).toBeCloseTo(c[j][i], 12);
+  });
+
+  // **The force at the feet, which is the thing this step deletes.** The commanded ankle rest `δ` reaches the plant
+  // only through the ankle's own torque (`τ = k (θ − φ − δ) + c (θ̇ − φ̇)`), so the `δ` column of A is the ankle's
+  // column of the generalised force put through the lateral solve. In the shipped plant the slip row's entry is
+  // exactly `−k / (h m_b V)` — the horizontal force `τ / h` at the feet, divided by the dry board's mass. In the
+  // assembly the ankle is a torque with its reaction, `(+1, −1, 0, 0)`, so the slip row's entry is the solve's own
+  // `(c[3][0] − c[3][1]) (−k) / V` and `1 / h` appears nowhere.
+  it('carries the ankle as a torque with its reaction, with no horizontal force at the feet', () => {
+    // `feetForward: 0` so the feet's centre of pressure does not also put the ankle on the yaw row, which would mix
+    // two effects in one assertion.
+    const base = plantAt(7, 0, { rail: 0, feetScale: 0 });
+    const two = plantAt(7, 0, { rail: 0, feetScale: 0, body: true });
+    const k = base.y.ankleStiffness;
+    const v = base.y.speed;
+    // `continuousPlant`'s own order: [φ, φ̇, θ, θ̇, r, β, θ_t, ω_u, δ, τ_a] — the slip row is 5, the rest is column 8.
+    const SLIP = 5;
+    const REST = 8;
+    const shipped = continuousPlant(base.y, base.t).a;
+    expect(shipped[SLIP][REST]).toBeCloseTo(-k / (base.y.height * base.y.boardMass * v), 9);
+    const c = lateralCompliance(two.y, two.y.body);
+    const assembled = continuousPlant(two.y, two.t).a;
+    expect(assembled[SLIP][REST]).toBeCloseTo(((c[3][0] - c[3][1]) * -k) / v, 9);
+    // And it is a different number: the invented force is not merely renamed.
+    expect(Math.abs(assembled[SLIP][REST] / shipped[SLIP][REST])).toBeLessThan(0.5);
+    // The ankle's own column on the four coordinates is (+1, −1, 0, 0) times its torque: the sway slot is zero, so a
+    // unit of ankle torque reaches the board's sway only through the solve, never as a force of its own.
+    for (const row of [0, 1, 2, 3]) {
+      expect(assembled[row === 0 ? 1 : row === 1 ? 3 : row === 2 ? 4 : SLIP][REST])
+        .toBeCloseTo(row === 3 ? ((c[3][0] - c[3][1]) * -k) / v : (c[row][0] - c[row][1]) * -k, 9);
+    }
+  });
+
+  // The sourced inertia, read where the plant reads it: de Leva 1996 posed in the game's own three stances.
+  it('takes the body\'s own frontal inertia from the sourced share at each stance', () => {
+    expect(bodyInertiaAt(73, 0, 0.84)).toBeCloseTo(0.1685 * 73 * 0.84 * 0.84, 10);
+    expect(bodyInertiaAt(73, 0.195, 0.65)).toBeCloseTo(0.1917 * 73 * 0.65 * 0.65, 10);
+    expect(bodyInertiaAt(73, 0.3, 0.55)).toBeCloseTo(0.2099 * 73 * 0.55 * 0.55, 10);
+    // Between the table's depths it interpolates, and outside it holds.
+    expect(bodyInertiaAt(73, -1, 0.84)).toBe(bodyInertiaAt(73, 0, 0.84));
+    expect(bodyInertiaAt(73, 9, 0.55)).toBe(bodyInertiaAt(73, 0.3, 0.55));
+  });
+
+  // The switch's own address: `'control'` must give the shipped design and `'two'` must not — otherwise the ridden
+  // control proves nothing. **To twelve decimals, not byte for byte**, and the distinction is the honest one: the
+  // assembly reaches the same plant through one 4×4 elimination instead of three divisions, so its A agrees to about
+  // 1e-14 of each row's largest entry and the Riccati and Kalman iterations carry that into the last bits of K and L.
+  // The ride is a separate and stronger fact: ridden, `control` matched the shipped rider on every fall column of
+  // 102 runs (`docs/research/new-rider/3.4/README.md` §9).
+  it('gives the shipped design to twelve decimals with `control` and a different one with `two`', () => {
+    const off = scheduledDesign(7, 0.195, 0);
+    const ctl = scheduledDesign(7, 0.195, 0, { ...DEFAULT_WEIGHTS, riderBody: 'control' });
+    for (const key of ['phi', 'gamma', 'k', 'l', 'phiE', 'gammaE', 'phiN'] as const) {
+      const a = off[key] as number[][];
+      const b = ctl[key] as number[][];
+      let big = 1e-9;
+      for (const row of a) for (const x of row) big = Math.max(big, Math.abs(x));
+      for (let i = 0; i < a.length; i += 1) for (let j = 0; j < a[i].length; j += 1) expect(Math.abs(b[i][j] - a[i][j]) / big).toBeLessThan(1e-12);
+    }
+    const two = scheduledDesign(7, 0.195, 0, { ...DEFAULT_WEIGHTS, riderBody: 'two' });
+    expect(two.k).not.toEqual(off.k);
+    expect(two.phi).not.toEqual(off.phi);
+    const sym = scheduledDesign(7, 0.195, 0, { ...DEFAULT_WEIGHTS, riderBody: 'symmetric' });
+    expect(sym.k).not.toEqual(off.k);
   });
 });

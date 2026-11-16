@@ -134,6 +134,44 @@ function verticalInertia(parts: Part[]) {
 }
 
 /**
+ * **Step 3.4a (the two-body rider): the body's own moment of inertia in the FRONTAL plane**, kg·m², about the board's
+ * long axis (`x` here) through the body's centre of mass — the axis the body banks about. The same segments, the same
+ * source and the same posed stances as `verticalInertia` above; only the axis is different, so the two numbers are
+ * comparable and the provenance is one table.
+ *
+ * `ownAxis` is the segment's own inertia about an axis through its centre in the direction `e`: for a segment whose
+ * long axis is `u`, the longitudinal radius takes the share `(u·e)²` and the mean transverse radius the rest, exactly
+ * as `verticalInertia` does it for a vertical. `aboutAnkle` is the same inertia carried to the ankle line
+ * (z = `ankleZ`, the probe's own 0.08 m), which is the quantity `m h²` stands for in the internal model, so the pair
+ * says what share of the body's pendulum inertia the point mass leaves out: `own / (own + m h²)`.
+ */
+function frontalInertia(parts: Part[], ankleZ = 0.08) {
+  let m = 0;
+  let c: P = [0, 0, 0];
+  const placed = parts.map((p) => {
+    const [fm, at, rs, rt, rl, l] = SEG[p.seg];
+    const mass = fm * MASS;
+    const cm = add(p.a, mul(sub(p.b, p.a), at));
+    const u = unit(sub(p.b, p.a));
+    // About the board's long axis: the long radius on the axis's own x part, the mean transverse on the rest.
+    const cos2 = u[0] * u[0];
+    const own = mass * l * l * (rl * rl * cos2 + ((rs * rs + rt * rt) / 2) * (1 - cos2));
+    m += mass;
+    c = add(c, mul(cm, mass));
+    return { seg: p.seg, mass, cm, own };
+  });
+  c = mul(c, 1 / m);
+  let own = 0;
+  let aboutAnkle = 0;
+  for (const p of placed) {
+    own += p.own + p.mass * ((p.cm[1] - c[1]) ** 2 + (p.cm[2] - c[2]) ** 2);
+    aboutAnkle += p.own + p.mass * ((p.cm[1] - c[1]) ** 2 + (p.cm[2] - ankleZ) ** 2);
+  }
+  const h = c[2] - ankleZ;
+  return { mass: m, comHeight: c[2], h, own, aboutAnkle, pointMass: m * h * h, share: own / (own + m * h * h) };
+}
+
+/**
  * Step 3.2c (ruling 29g, item 1): the yaw inertia split by where it sits. Two yaw coordinates: the board's turn ψ_b (the
  * feet, the shanks and the knees go with it, planted) and the upper body's twist θ_t about the vertical through the
  * pelvis (the pelvis, trunk, arms and head turn rigidly with it). The thighs run from the hip (on the pelvis) to the knee
@@ -232,5 +270,19 @@ it('the rider yaw inertia by posture (de Leva 1996)', () => {
       const s = yawSplit(posture(hip, back, lean, [0.3, 1, 0], arms), pivot as 'com' | [number, number]);
       emit({ part: 'split', posture: name, arms, pivot: pivot === 'com' ? 'centre of mass' : 'pelvis', whole: r(s.bb, 3), twist: r(s.tt, 3), withBoard: r(s.lower, 3), coupling: r(s.bt, 3), thighsOnTwist: r(s.thighShare, 3), boardMeetsUpperFree: r(s.boardMeetsFree, 3) });
     }
+  }
+});
+
+it('the rider body\'s frontal-plane inertia by posture, for the two-body rider (step 3.4a, de Leva 1996)', () => {
+  // The same three posed stances as the yaw read above, and the same anatomical control, about the board's long axis
+  // through the body's own centre of mass. `pose` is the game's own arm pose, which is the one the stance table was
+  // built on; `in` and `out` are printed so the arms' share is visible rather than asserted.
+  const stances: [string, number, number, number][] = [['tall', 0.78, 0.04, 0.15], ['crouch', 0.585, 0.08, 0.35], ['compress', 0.48, 0.1, 0.5]];
+  for (const [name, hip, back, lean] of stances) for (const arms of ['in', 'pose', 'out'] as const) {
+    const v = frontalInertia(posture(hip, back, lean, [0.3, 1, 0], arms));
+    emit({
+      part: 'frontal', posture: name, arms, comHeight: r(v.comHeight, 3), h: r(v.h, 3),
+      own: r(v.own, 3), pointMass: r(v.pointMass, 3), aboutAnkle: r(v.aboutAnkle, 3), share: r(v.share, 4),
+    });
   }
 });

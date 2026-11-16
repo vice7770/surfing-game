@@ -18,7 +18,7 @@
  * the board's yaw rate, its slip, the twist and the upper body's yaw rate, the ankle's lagged rest and the twist's
  * lagged torque); commands [u_a, u_t].
  */
-import { HEAVE_AT, N_HEAVE, boardDerivatives, twistRows, twistStateCount, type HeavePlant, type TwistPlant, type YawPlant } from './rollModel';
+import { HEAVE_AT, N_HEAVE, boardDerivatives, twistRows, twistStateCount, type HeavePlant, type RiderBody, type TwistPlant, type YawPlant } from './rollModel';
 
 export type Mat = number[][];
 export const zeros = (r: number, c: number): Mat => Array.from({ length: r }, () => new Array<number>(c).fill(0));
@@ -583,6 +583,26 @@ export function boardInertiaAt(speed: number): { roll: number; yaw: number } {
   return { roll: lo[0] + f * (hi[0] - lo[0]), yaw: lo[1] + f * (hi[1] - lo[1]) };
 }
 
+/**
+ * **Step 3.4a (the two-body rider): the body's own frontal-plane inertia as a share of `m h²`**, by stance depth, from
+ * de Leva's (1996) segment table posed in the game's own three stances — the same `posture` and the same table the
+ * rider's yaw inertia in `STANCE_TABLE` was read from (`3.2/inertia.probe.ts`, the game's own arm pose). The absolute
+ * numbers are 9.686 / 7.010 / 5.620 kg·m² about the body's own centre of mass, against `m h²` of 47.79 / 29.56 /
+ * 21.16, and the **share** is carried rather than the absolute so that the plant's own `height` sets the scale.
+ *
+ * The three sit at `STANCE_TABLE`'s own depths, so they are read with the interpolation `stanceAt` uses.
+ */
+export const BODY_FRONTAL_SHARE = [0.1685, 0.1917, 0.2099] as const;
+
+/** The body's own frontal-plane inertia about its own centre of mass, kg·m² (`BODY_FRONTAL_SHARE` × m h²). */
+export function bodyInertiaAt(mass: number, depth: number, height: number): number {
+  const d = Math.max(0, Math.min(STANCE_TABLE[2].depth, depth));
+  const i = d <= STANCE_TABLE[1].depth ? 0 : 1;
+  const f = (d - STANCE_TABLE[i].depth) / (STANCE_TABLE[i + 1].depth - STANCE_TABLE[i].depth);
+  const share = BODY_FRONTAL_SHARE[i] + f * (BODY_FRONTAL_SHARE[i + 1] - BODY_FRONTAL_SHARE[i]);
+  return share * mass * height * height;
+}
+
 export function stanceAt(depth: number): { height: number; lower: number; upper: number } {
   const d = Math.max(0, Math.min(STANCE_TABLE[2].depth, depth));
   const i = d <= STANCE_TABLE[1].depth ? 0 : 1;
@@ -612,7 +632,7 @@ const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
  * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
  * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
  */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean } = {}): { y: YawPlant; t: TwistPlant } {
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean; body?: boolean | number | RiderBody } = {}): { y: YawPlant; t: TwistPlant } {
   const lab = labAt(speed);
   const s = opts.scales ?? new Array<number>(12).fill(1);
   // Step 3.2f: the rail's own correction (`railCorrection`), so the schedule covers carving as it covers speed and stance.
@@ -631,6 +651,14 @@ export function plantAt(speed: number, depth: number, opts: { rollInertia?: numb
     // asks for the measured one (`sink`, step 3.2p). Without either, the plant is the ten-state one it always was.
     ...(heave ? { heave } : {}),
   };
+  // **Step 3.4a (the two-body rider)**: the rider's body as a segment with an inertia of its own, so that the four
+  // lateral accelerations are solved together and the force at the feet is an outcome. `true` takes the sourced share
+  // (`bodyInertiaAt`); a number is the inertia outright, and **0 is the control** that must reproduce this plant
+  // exactly — which is why the test is not truthiness: `false` is off, `0` is the control.
+  if (opts.body !== undefined && opts.body !== false) {
+    y.body = opts.body === true ? { inertia: bodyInertiaAt(y.mass, depth, st.height) }
+      : typeof opts.body === 'number' ? { inertia: opts.body } : opts.body;
+  }
   return { y, t: { inertia: st.upper, stiffness: opts.twistStiffness ?? TWIST_STIFFNESS, damping: opts.twistDamping ?? TWIST_DAMPING } };
 }
 
@@ -754,6 +782,22 @@ export interface DesignWeights {
    * - `'predict'` — the forward prediction only; the reference is the flat-water one that ships.
    */
   waterHeel?: 'both' | 'predict';
+  /**
+   * **The two-body rider** (step 3.4a, `?riderBody=two`): the plant the design, the filter and the predictor all run
+   * on gives the rider's body an inertia of its own in the frontal plane (`YawPlant.body`, `RiderBody`) instead of
+   * treating it as a point mass on a massless leg, so the four lateral accelerations are solved together and the force
+   * at the feet is an outcome of the solve rather than the substituted `τ / h − m g θ`.
+   *
+   * **It is a change of plant, not of controller.** Φ, Γ, K, L and the reference are all rebuilt on it, as they are
+   * rebuilt for any other plant; the cost function, the senses, the delay, the filter's noises and `captureRow`'s own
+   * point-mass ω₀ = √(g/L) are **untouched** — which is deliberate and is the step's own scope line
+   * (`docs/research/new-rider/3.4/README.md`).
+   *
+   * Off by default and pinned off for online rooms. `'two'` takes the sourced inertia (`bodyInertiaAt`); `'control'`
+   * takes the same assembly with the inertia at **zero**, which must reproduce the shipped plant exactly and is the
+   * positive control shipped so that it can be ridden as well as tested.
+   */
+  riderBody?: 'two' | 'control' | 'symmetric';
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -1071,12 +1115,17 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
     // Step 3.2p: with the heave and pitch sensed, the plant the internal model, the filter and the predictor run on is
     // the held table with those four states carried. The two go together — the sense is of a state, so the state has
     // to be there.
-    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense });
+    // Step 3.4a: the two-body rider is a plant, so it enters here and nowhere else — the cache's key already carries
+    // the weights, so the two designs cannot be confused.
+    const body: boolean | RiderBody | undefined = w.riderBody === 'two' ? true
+      : w.riderBody === 'control' ? { inertia: 0, feetRoll: false }
+        : w.riderBody === 'symmetric' ? { inertia: 0 } : undefined;
+    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}) });
     d = design(y, t, w);
     if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
       // The gains stay the shipped ones, designed on the free plant, with no gain on the four board states: the rider
       // feels and anticipates the board, and does not try to steer it. `DesignWeights.heaveGains` has the measurement.
-      const ten = plantAt(speed, depth, { rail });
+      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}) });
       const gains = design(ten.y, ten.t, { ...w, heaveSense: false });
       const pad = new Array<number>(d.phi.length - N_STATE).fill(0);
       d = { ...d, k: gains.k.map((row) => [...row, ...pad]) };

@@ -566,6 +566,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
     // with the face's own tilt as a measured input, instead of at its roll from the world's level (step 3.3p), opt-in, to ride.
     ...waterHeelSwitch(),
+    // `?riderBody=two`: the balance's internal plant gives the rider's body an inertia of its own and solves the lateral
+    // accelerations together, instead of a point mass on a massless leg with a substituted force at the feet (step 3.4a), opt-in, to ride.
+    ...riderBodySwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1159,6 +1162,22 @@ export function buoyFrameSwitch(search?: string): { buoyFrame?: 'hull' } {
 export function waterHeelSwitch(search?: string): { waterHeel?: 'tilt' | 'predict' } {
   const v = devParam('waterHeel', search)?.trim().toLowerCase();
   return v === 'tilt' || v === 'predict' ? { waterHeel: v } : {};
+}
+
+/**
+ * The `?riderBody=two` dev switch (`SurfZoneConfig.riderBody`, step 3.4a): opt-in, the new surfer's balance runs its
+ * internal plant with the rider's **body as a segment of its own** — an inertia in the frontal plane about its own
+ * centre of mass (de Leva 1996 posed in the game's stances) — so the board's roll, the body's bank, the turn and the
+ * sway are solved **together** and the force at the feet comes out of the solve, instead of a point mass on a massless
+ * leg whose reaction is the substituted `τ / h − m g θ`. `control` is the same assembly with that inertia at zero,
+ * which reproduces the shipped plant exactly (the positive control, shipped so it can be ridden too), and `symmetric`
+ * is the point mass with only the coupling made consistent — the feet feel the board's own roll, which the shipped
+ * `feet` row omits while its roll row carries the same lever. Anything else, the point mass as before.
+ * docs/research/new-rider/3.4.
+ */
+export function riderBodySwitch(search?: string): { riderBody?: 'two' | 'control' | 'symmetric' } {
+  const v = devParam('riderBody', search)?.trim().toLowerCase();
+  return v === 'two' || v === 'control' || v === 'symmetric' ? { riderBody: v } : {};
 }
 
 /**

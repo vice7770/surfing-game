@@ -1,0 +1,14 @@
+# step 3.4a — the rider body's own moment of inertia in the FRONTAL plane (about the board's long axis through the
+# body's own centre of mass), by posture, from de Leva's (1996) segment table posed in the game's own three stances.
+# Produced by `docs/research/new-rider/3.2/inertia.probe.ts`'s new block:
+#   npx vitest run --config docs/research/new-rider/3.2/vitest.probe.config.ts inertia
+# `h` is the centre of mass over the ankle line (0.08 m), `pointMass` is m h², `share` is own / (own + m h²).
+{"part":"frontal","posture":"tall","arms":"in","comHeight":0.871,"h":0.791,"own":9.315,"pointMass":45.709,"aboutAnkle":55.024,"share":0.1693}
+{"part":"frontal","posture":"tall","arms":"pose","comHeight":0.889,"h":0.809,"own":9.686,"pointMass":47.793,"aboutAnkle":57.478,"share":0.1685}
+{"part":"frontal","posture":"tall","arms":"out","comHeight":0.901,"h":0.821,"own":10.088,"pointMass":49.178,"aboutAnkle":59.266,"share":0.1702}
+{"part":"frontal","posture":"crouch","arms":"in","comHeight":0.702,"h":0.622,"own":6.87,"pointMass":28.242,"aboutAnkle":35.112,"share":0.1957}
+{"part":"frontal","posture":"crouch","arms":"pose","comHeight":0.716,"h":0.636,"own":7.01,"pointMass":29.556,"aboutAnkle":36.565,"share":0.1917}
+{"part":"frontal","posture":"crouch","arms":"out","comHeight":0.731,"h":0.651,"own":7.417,"pointMass":30.982,"aboutAnkle":38.399,"share":0.1932}
+{"part":"frontal","posture":"compress","arms":"in","comHeight":0.604,"h":0.524,"own":5.611,"pointMass":20.063,"aboutAnkle":25.674,"share":0.2186}
+{"part":"frontal","posture":"compress","arms":"pose","comHeight":0.618,"h":0.538,"own":5.62,"pointMass":21.158,"aboutAnkle":26.778,"share":0.2099}
+{"part":"frontal","posture":"compress","arms":"out","comHeight":0.634,"h":0.554,"own":5.983,"pointMass":22.382,"aboutAnkle":28.365,"share":0.2109}

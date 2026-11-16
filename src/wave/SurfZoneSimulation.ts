@@ -355,6 +355,17 @@ export interface SurfZoneConfig {
    */
   waterHeel?: 'tilt' | 'predict';
   /**
+   * 'two': the balance's own internal plant gives the rider's body an inertia of its own in the frontal plane, so the
+   * board's roll, the body's bank, the turn and the sway are solved **together** and the force at the feet comes out
+   * of the solve, instead of the body being a point mass on a massless leg whose reaction is the substituted
+   * `τ / h − m g θ` (step 3.4a; `RideSessionOptions.riderBody`, `DesignWeights.riderBody`). The shipped plant is the
+   * zero-inertia limit of the same system, which is what 'control' runs and what the tests assert. It changes the
+   * plant the design, the filter and the predictor are built on; it changes no control law and no force in the game.
+   * The new surfer (`?rider=new`) only. Every spot. The `?riderBody=two` dev switch, opt-in, to ride; online rooms
+   * run the default.
+   */
+  riderBody?: 'two' | 'control' | 'symmetric';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.
