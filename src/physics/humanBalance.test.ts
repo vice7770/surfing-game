@@ -78,6 +78,31 @@ describe('HumanBalance', () => {
     expect(s.margin).toBe(0);
   });
 
+  it('reports the lean the turn demands and the lean the body holds, and their difference is the error itself (step 3.3g)', () => {
+    const balance = new HumanBalance();
+    const DEG = 180 / Math.PI;
+    // A felt vertical leaning 20° toward board +x: `height · feltAcross` is then the across offset the body would have
+    // to hold for the test to read zero. Nothing here is read by the game; both fields are reports.
+    const tilted = { x: 9.81 * Math.sin(20 / DEG), y: 9.81 * Math.cos(20 / DEG), z: 0 };
+    const s = balance.capture({ x: 0.05, y: 0.8, z: 0 }, { x: 0, y: 0, z: 0 }, tilted, 0.13, 0.375, 0.375, 0.2, 0.2);
+    expect(s.offsetAcross).toBeCloseTo(0.05, 12);
+    expect(s.feltAcross).toBeCloseTo(Math.sin(20 / DEG), 9);
+    // The identity the whole attribution rests on: px = offset.x − height · nx, exactly.
+    expect(s.pointAcross).toBeCloseTo(s.offsetAcross - s.height * s.feltAcross, 12);
+    // The demand is over 0.2 m where the body holds 0.05, so the error is past the feet's own 0.13 m.
+    expect(s.height * s.feltAcross).toBeGreaterThan(0.2);
+    expect(Math.abs(s.pointAcross)).toBeGreaterThan(0.13);
+    expect(s.weightPast).toBe(true);
+    // Level, the demand is zero and the two reports say the body's own place and nothing else.
+    const level = balance.capture({ x: 0.05, y: 0.8, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 9.81, z: 0 }, 0.13, 0.375, 0.375, 0.2, 0.2);
+    expect(level.feltAcross).toBeCloseTo(0, 12);
+    expect(level.pointAcross).toBeCloseTo(level.offsetAcross, 12);
+    // And they are held through a light window with the rest of the state (CAPTURE_LOAD), not re-read.
+    balance.capture({ x: 0.3, y: 0.8, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 0.4, z: 0 }, 0.13, 0.375, 0.375, 0.2, 0.2, CAPTURE_LOAD - 0.01, 0.001);
+    expect(balance.frozen).toBe(true);
+    expect(balance.state.offsetAcross).toBeCloseTo(0.05, 12);
+  });
+
   it('bounds a rotor by what it can deliver inside a horizon (step 3.2i, not wired)', () => {
     // The hip with the arms out: 1.2 rad of range needs 0.35 s, so a 0.3 s horizon caps it at tau times the horizon.
     expect(rotorReach(10, 200, 1.2, 10)).toBeCloseTo(Math.sqrt(2 * 10 * 200 * 1.2), 9);

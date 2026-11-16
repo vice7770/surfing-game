@@ -97,6 +97,21 @@ const TRACE = process.env.TRACE;
  * round re-runs the shipped cell both ways rather than asserting which it was. `VERTICAL=particle` for the other.
  */
 const VERTICAL = process.env.VERTICAL === 'particle' ? 'particle' as const : 'surface' as const;
+/**
+ * **Step 3.3g's one addition to this probe, `FELT=deck`, off by default so every published 3.3b row is reproduced
+ * byte for byte when it is unset.** It moves BOTH ends of the felt reading onto the deck's own axes, which is step
+ * 3.3c's `?feltFrame=deck` and what the owner rides with:
+ * - the rider is built with `feltFrame: 'deck'`, so the game's own filter state is held on the deck's axes;
+ * - and this probe's per-source low pass is held there too — each entry is rotated into the board's frame and the
+ *   filter runs on those components (`dG/dt = (A − G)/T` in the board's frame) instead of being filtered in the world
+ *   and projected afterwards.
+ * The second half is the point: filtering in the world and projecting afterwards charges the reading `Ω · T` of
+ * in-plane force whenever the deck is rolling (up to 268 °/s at the fall and 354 °/s in peak on the full-stick cell
+ * this round reports), which is a frame error and not a
+ * force, so an attribution made that way **manufactures its own biggest source**. With `FELT=deck` the in-plane
+ * column is the force's own.
+ */
+const FELT = process.env.FELT === 'deck' ? 'deck' as const : undefined;
 
 /** All ten of `BoardBody.forces` — turnpath's own nine plus `suction`, which is 0 on the default flat-bottomed board. */
 const WATER_KEYS = ['buoyancy', 'pressure', 'addedMass', 'radiation', 'friction', 'bed', 'fins', 'rails', 'froth', 'suction'] as const;
@@ -303,7 +318,12 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
   // board's section is a flat sheet with a knife edge, whose rail side-face foils carry 3 % of the side force measured
   // below. The band is the one existing switch that changes where the lateral force comes from, so the bank gain is
   // measured with it as well as without — no new code, and the default stays the default.
-  const board = new BoardBody({ ...(process.env.HULL === 'rail' ? { hull: 'rail' as const } : {}) });
+  const board = new BoardBody({
+    ...(process.env.HULL === 'rail' ? { hull: 'rail' as const } : {}),
+    // `BUOY=hull`, step 3.3g's second probe-only addition, off by default: step 3.3d's own `?buoyFrame=hull`, so the
+    // in-plane column can be read with the one fix that exists already applied, and what is LEFT can be named.
+    ...(process.env.BUOY === 'hull' ? { buoyFrame: 'hull' as const } : {}),
+  });
   board.place(
     new Vector3(px, here.surfaceY, pz).addScaledVector(normal, board.shape.centerOfMass.y),
     new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)),
@@ -313,6 +333,7 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     phase: 'standing',
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(process.env.SUBSTEPS ? { standingSubsteps: Number(process.env.SUBSTEPS) } : {}),
+    ...(FELT ? { feltFrame: FELT } : {}),
   });
   board.attach(rider);
   stance(rider, st);
@@ -331,6 +352,8 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
   /** Step 3.3b: the deck's own across axis (the board's local +x in the world) and the pair's whole specific force. */
   const deckAcross = new Vector3();
   const pairSpec = new Vector3();
+  const lpInverse = new Quaternion();
+  const lpReading = new Vector3();
   /** Step 3.3b: each water entry held low-passed in the world over SPECIFIC_FORCE_TIME, the way `pairFelt` is. */
   const lp: Record<string, Vector3> = Object.fromEntries(WATER_KEYS.map((k) => [k, new Vector3()]));
   const lpDelta = new Vector3();
@@ -418,13 +441,17 @@ function oneRun(st: Stance, extra: number): Record<string, unknown> {
     const lpOnS: Record<string, number> = {};
     let lpN = 0;
     let lpS = 0;
+    // `FELT=deck`: the filter's state on the deck's own axes (step 3.3c, step 3.3g's addition above). The held vector
+    // is then already in the board's frame, so its +y IS the normal component and its +x the in-plane across one.
+    if (FELT) lpInverse.copy(board.orientation).invert();
     for (const key of WATER_KEYS) {
       const F = (board.forces as unknown as Record<string, Vector3>)[key];
       const held = lp[key];
-      if (lpFresh) held.copy(F);
-      else held.addScaledVector(lpDelta.copy(F).sub(held), blend);
-      const n = held.dot(boardUp);
-      const s = held.dot(deckAcross);
+      const reading = FELT ? lpReading.copy(F).applyQuaternion(lpInverse) : F;
+      if (lpFresh) held.copy(reading);
+      else held.addScaledVector(lpDelta.copy(reading).sub(held), blend);
+      const n = FELT ? held.y : held.dot(boardUp);
+      const s = FELT ? held.x : held.dot(deckAcross);
       lpOnN[key] = n;
       lpOnS[key] = s;
       lpN += n;
@@ -688,7 +715,7 @@ for (const row of rows) emit(row, OUT);
 const nf = (k: string) => rows.map((x) => Number(x[k]));
 const nfSome = (k: string) => rows.map((x) => (x[k] === null || x[k] === undefined ? Number.NaN : Number(x[k])));
 const fellRows = rows.filter((x) => x.fell);
-console.log(`## deck (3.3b) — rider ${RIDER}${process.env.HULL === 'rail' ? ' · hull=rail' : ''}, steer ${STEER}${STEER !== 0 ? ` (${STEER_SIGN}, from ${STEER_FROM} s)` : ''} · FaceWater vertical '${VERTICAL}'`);
+console.log(`## deck (3.3b) — rider ${RIDER}${process.env.HULL === 'rail' ? ' · hull=rail' : ''}, steer ${STEER}${STEER !== 0 ? ` (${STEER_SIGN}, from ${STEER_FROM} s)` : ''} · FaceWater vertical '${VERTICAL}' · felt frame ${FELT ?? 'world'} · buoyancy on the ${process.env.BUOY === 'hull' ? 'HULL' : 'surface'} normal`);
 console.log(`   ${rows.length} runs, ${f((Date.now() - t0) / 1000, 0)} s wall · face ${f(FACE[0], 2)} m / ${f(FACE[1], 0)}° / ${f(FACE[2], 2)} m/s, ${SECONDS} s each`);
 console.log(`   fell: ${fellRows.length} of ${rows.length}${fellRows.length ? ` at ${span(fellRows.map((x) => Number(x.fellAtS)), 2)} s` : ''}`);
 console.log(`   CHECK vs Part 24's twelve: bank peak ${span(nf('bankPeakDeg'))}° · roll peak ${span(nf('rollPeakDeg'))}° · rail peak ${span(nf('railPeakDeg'))}° · drift peak ${span(nf('driftPeakDeg'))}°`);
@@ -788,7 +815,7 @@ const tiltOnRollTest = fit(pool.map((x) => x.roll), pool.map((x) => x.tilt));
 /** And the lag's own law: the test's tilt against the deck's roll RATE, whose slope should be −SPECIFIC_FORCE_TIME. */
 const tiltOnRate = fit(pool.map((x) => x.rollRate), pool.map((x) => x.tilt));
 const pressureOnRate = fit(pool.map((x) => x.rollRate), pool.map((x) => x.onS.pressure));
-console.log(`      THE FELT SPLIT (each entry low-passed over ${SPECIFIC_FORCE_TIME} s in the world, then projected): F_n at the fall ${span(nf('lpNAtFall'), 1)} N · F_s at the fall ${span(nf('lpSAtFall'), 1)} N`);
+console.log(`      THE FELT SPLIT (each entry low-passed over ${SPECIFIC_FORCE_TIME} s ${FELT ? "on the DECK's own axes" : 'in the world'}, then projected): F_n at the fall ${span(nf('lpNAtFall'), 1)} N · F_s at the fall ${span(nf('lpSAtFall'), 1)} N`);
 console.log(`      SEATBELT its tilt against the test's own tiltAcross: |difference| median ${span(nf('tiltFeltVsTestMedian'), 3)}° · at the fall ${span(nf('tiltFeltVsTestAtFall'), 3)}° (its own tilt ${span(nf('tiltFeltAtFall'), 2)}° against the test's ${span(nf('tiltAtFall'), 1)}°)`);
 console.log(`      THE ATTRIBUTION AT THE FALL, N in the deck's plane: ${WATER_KEYS.map((k) => `${k} ${span(rows.map((x) => Number((x.lpOnSAtFall as Record<string, number>)[k])), 1)}`).join(' | ')}`);
 console.log(`   §5 WHERE THE RESIDUAL TILT COMES FROM — the deck-frame tilt regressed on the deck's roll, °/° over the pool:`);

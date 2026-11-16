@@ -246,6 +246,19 @@ export interface CaptureState {
   pointAcross: number;
   speedAcross: number;
   tiltAcross: number;
+  /**
+   * **The lean a turn demands, and the lean the body holds** (step 3.3g), both reports, neither read by the game:
+   * - `offsetAcross` is the centre of mass's own place across the board from the feet's middle, m (board +x) — `offset.x`
+   *   as it comes in, which is the body's achieved lean about the feet;
+   * - `feltAcross` is the felt vertical's own across component, unit (board +x), which points toward the **inside** of
+   *   the turn (the apparent up in a banked turn leans inward), so `height × feltAcross` is the across offset the body
+   *   would have to hold for `pointAcross` to be zero: **the demand**.
+   *
+   * Their difference is `pointAcross` itself (`px = offset.x − height · nx`), so the two say which of the two terms the
+   * balance's own margin is made of, and the probe does not have to re-derive `nx` from `tiltAcross` with `nz` unknown.
+   */
+  offsetAcross: number;
+  feltAcross: number;
 }
 
 /** The new surfer's human balance: the delay line, the roll loop's rest, the order of the moves, the capture point and the reserve. */
@@ -265,7 +278,7 @@ export class HumanBalance {
   /** Why the knees are going down now: the hip near its range, or the capture point off the feet. */
   kneeCause: 'none' | 'hip' | 'capture' = 'none';
   /** The latest capture point (`capture`). */
-  readonly state: CaptureState = { across: 0, along: 0, past: 0, pastAcross: 0, hipPast: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0 };
+  readonly state: CaptureState = { across: 0, along: 0, past: 0, pastAcross: 0, hipPast: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0, offsetAcross: 0, feltAcross: 0 };
   /** The time the capture point last left the feet (NaN while inside), on the balance's clock, s. */
   leftFeetAt = Number.NaN;
   /** Whether `capture` is holding its last state because the feet are light (CAPTURE_LOAD): the validity condition, step 3.2h. */
@@ -298,6 +311,8 @@ export class HumanBalance {
     this.state.hipPast = 0;
     this.state.weightPast = false;
     this.state.beyond = false;
+    this.state.offsetAcross = 0;
+    this.state.feltAcross = 0;
   }
 
   /**
@@ -433,6 +448,9 @@ export class HumanBalance {
     s.pointAcross = px;
     s.speedAcross = vx;
     s.tiltAcross = Math.atan2(nx, ny);
+    // The two reports of step 3.3g: the body's achieved lean about the feet, and the felt vertical the demand is read on.
+    s.offsetAcross = offset.x;
+    s.feltAcross = nx;
     s.along = pz + vz / omega;
     s.height = height;
     s.omega = omega;

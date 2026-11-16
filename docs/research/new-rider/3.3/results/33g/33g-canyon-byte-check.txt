@@ -1,0 +1,18 @@
+===== CANYON B (?canyonWaves=true) =====
+spun up on the CPU in 50.4 s; kept in <scratch>/bench/B.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+===== CANYON DEFAULT =====
+spun up on the CPU in 54.9 s; kept in <scratch>/bench/D.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+
+Both spin-ups are the "spun up on the CPU in ... s" line, so neither arm imported a kept .sea
+(the two state files were written by this run, B at 00:04 and D at 00:10). The wrapper for the B
+arm is one PREPENDED line on the bundle, `globalThis.location = { search: '?canyonWaves=true' }`,
+because a dynamic import makes rolldown split the chunk. Grids read, not assumed: B 400 x 451,
+default 400 x 507.
+
+main's reference (3.3f, results/33f/33f-canyon-byte-check.txt):
+  B       snapshots a367d938f15fa934, state 9e5831f80e38abd9  -- SAME
+  default snapshots ea3d57a4d49f4b48, state a1a2555739210f96  -- SAME

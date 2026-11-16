@@ -2234,3 +2234,555 @@ seconds without, 2.59 with, on 24 runs that all fall either way).
 **One warning about what I did not do.** I did not go after the falling, because the brief for this round was the
 stance and the turn's clock, and because I would rather hand you a measured diagnosis than a second change I could not
 attribute. The falling is now the whole of the problem, and it is a bigger job than a switch.
+
+# Part 30 — the fall is not after the turn, the board goes over, and the in-plane column is three forces on the wrong normal
+
+Written 2026-11-15 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33g`, cut from `main` at
+**cc3f6c59** (step 3.3f's merge), so Part 29 is its base. **This round ships no behavioural change to the game.** It
+adds two read-only report fields to `CaptureState`, one probe (`3.3/fall.ts`), two off-by-default env switches to the
+published 3.3b instrument (`3.3/deck.ts`), one test, and **180 runs** over ten arms.
+
+Tags as in 3.2 and 3.3: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source; **[I]** my
+inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+The owner's re-aim arrived mid-round and the round is reported against it: *"at this low speed, when the surfer gets
+the wave, on a compress close to the board stance, a professional surfer — which is what I'm trying to simulate — is
+never going to fall on a turn."* Taken as a ruling, that makes 96 of 96 falls a **falsified model**, so the question is
+not what could save him but **what is pushing him over that should not be there**. §4 and §5 answer that one in
+newtons, by source.
+
+## 0. The six sentences the round is for
+
+1. **The post-turn timing does not exist.** Part 29's *"in every one of the 18 monotone runs the rider comes off
+   0.22–0.73 s after the turn ends"* is `fellAt − turnFor`, and `turnFor` is a **duration** over a window that opens at
+   the probe's own 0.2167 s mount guard — so the published span is the gap **plus 0.2167 s**. Recomputed from 3.3f's
+   own 48 rows, the gap is `fellAt − (first.t + turnFor)` = **−0.001 to 0.517 s, median 0.000, and 13 of the 18
+   monotone runs are exactly 0.000** [M]: the fall **is** the last commanded frame. Over all 48, **37 of 48 are
+   exactly zero**. Only the **5** monotone runs that actually reached 85° and centred the stick have a gap at all, and
+   theirs is 0.100–0.517 s. **He comes off during the turn**, and the round's brief question — why *after* rather than
+   *during* — was the frame error's question, not the rider's. My own probe reproduces it independently: 19 of 24.
+2. **What he comes off is not a balance task he failed; it is a board that has gone over.** At a full stick, over
+   `deck.ts`'s twelve runs (two stances × six entry speeds, the deck-frame filter the owner rides with), the **lean
+   anyone asked for peaks at 40.8–50.0°** and the **deck's roll at the fall is 63.7–91.4° from the world vertical in
+   12 of 12**, with roll rates peaking at **146.7–353.7 °/s** [M]. `MAX_BANK` is 70° and `RAIL_RANGE` is 50° [R], so
+   the last 14–41° of roll is asked for by nobody. On the mixed-stick population (`fall.ts`, 24 runs, three entry
+   speeds) the same column reads **2.0–89.2°**, over 50° in 15 of 24 and rising with the stick (0.25 → 9.3–53.8°,
+   1 → 25.2–89.2°).
+3. **And the across force that is in the plane of the deck — the one the advisor's test says must be zero for a force
+   locked to the deck normal — is, in the main, three water entries resolved on the water's surface normal rather than
+   the hull's.** Pooled over the commanded run at a full stick with the deck filter, 12 runs, `F_s` is **−43.1 N** on `F_n` 718.4 N (a −3.4° residual tilt), and per source, in
+   newtons: **buoyancy −34.88 (81.0 % of it)**, radiation −6.32 (14.7 %), addedMass −4.47 (10.4 %), rails −4.11,
+   `pressure` **−2.47 (5.7 %)**, friction −0.46, fins **+6.09** (the other way) [M]. At the fall itself `F_s` is
+   **−20.5 to −182.9 N** and **buoyancy is the largest single in-plane entry in 12 of 12 runs** (−37.3 to −165.3 N).
+4. **Buoyancy, radiation and added mass are all applied along the WATER-SURFACE normal; `pressure` is the only one of
+   the four applied along the hull's** [R, `BoardBody.ts:1507–1518` for radiation and added mass, `:1512` for pressure;
+   `hullForces.ts:264` for the hydrostatic support]. So the entry already on the hull's normal contributes **5.7 %** — which is the advisor's own
+   falsification test (*"a flat athwartships bottom cannot make any `F_s`"*) **passing** — and the three on the
+   surface normal are essentially the whole column: zero their in-plane share and the pooled column goes
+   **−43.1 → −0.95 N** [A]. Step 3.3d's `?buoyFrame=hull` already exists for the biggest of the three and is **still
+   the largest entry in 12 of 12 with it on**, because its gate (the dry-deck share, median 0.464) withdraws it
+   exactly where the fall is: buoyancy's pooled in-plane median goes −34.88 → **−18.79 N** (46 % off, the gate's own
+   median), `F_s` −43.1 → −33.7 N, and the falls 1.12–2.67 → 1.15–2.80 s, **12 of 12 either way**.
+5. **The owner's rule about Compress is right, it is already in the fall test, and it works — and a second gate takes
+   it back.** `a_max = g·d/h`, so measured over the commanded turn Compress holds its centre of mass at 0.504–0.548 m
+   against tall's 0.636–0.843 and tolerates **2.33–2.53 m/s² of residual against tall's 1.51–2.00** (1.26–1.67×, the
+   owner's "half again"), and its held residual is over its own bar in **3 of 12** runs against tall's **9 of 12** [M].
+   It still falls 12 of 12 because `fallen` is `beyond && weightPast` and `beyond` is measured against the room's
+   catching reach, which the design's own `stanceRoom` table cuts from **0.252–0.354 m** (tall: ±1.2 rad of hip, free
+   arms) to **0.161–0.181 m** (Compress: ±0.4 rad, arms committed) [M]. **The crouch wins the moment bar by 1.3–1.7×
+   and loses the reach by 1.4–2.2×**, and that trade is a ruling for the owner and the design, not a bug. §2b.
+6. **Step 3.3c's filter switch did its job and the residual the owner rides with is the force's own.** The bank-gain
+   deficit splits, at a full stick, into the force's share and the filter's: **world filter 0.123 force / 0.077 filter
+   of the measured 0.200 °/°; deck filter 0.200 force / −0.030 filter of 0.170** [M]. With `feltFrame=deck` the
+   filter's share of the deficit is **gone**. So nothing further is to be had from the frame the filter is held in, and
+   what remains is §4's in-plane force.
+
+## 1. The timing, and why it had to be the first thing measured
+
+Part 29's handover rested on one sentence, and the brief called it *"the sharpest thing anyone has measured on this
+track"*. It is arithmetic, so it was checked before anything was built.
+
+`turn.ts` computes `turnFor: last.t − first.t`, where `first` is the first frame of the **commanded** turn after the
+probe's own 0.2 s mount guard — so `first.t` is 0.2167 s in every run of every cell [R]. The gap between the turn's
+end and the fall is `end.t − last.t`, which is `fellAt − (first.t + turnFor)`. Part 29 reported `fellAt − turnFor`.
+
+| from 3.3f's own `33f-new-shipped.jsonl`, 48 rows | monotone (arc ≥ 0.99), n = 18 | all 48 |
+|---|---|---|
+| **[M]** `fellAt − turnFor` (as published) | **0.216–0.734 s** | 0.216–0.983 |
+| **[M]** the gap itself, `fellAt − (first.t + turnFor)` | **−0.001 to 0.517 s** | −0.001 to 0.766 |
+| **[M]** runs whose gap is exactly 0.000 | **13 of 18** | **37 of 48** |
+| **[M]** runs that reached 85° and centred the stick | 5 of 18 | 11 of 48 |
+| **[M]** of those, the gap from 85° to the fall | 0.100–0.517 s | 0.017–0.767 |
+
+The published span and the recomputed one differ by 0.2167 s at both ends, to the digit, which is the window's own
+start. **Part 29's §4 and §11 both state the 0.22–0.73 s, and both are wrong by that offset.** The round's own probe
+(`3.3/fall.ts`, an independent implementation on the same cell) reads the gap as **0.000–0.517 s with 19 of 24 exactly
+zero** [M].
+
+**And the owner's ride agrees with the corrected ladder, which it did not with the published one.** Their words from
+this evening are *"the balance is of the surfer falls full turn"* — at or near a full stick, which is exactly where the
+corrected timing puts the fall **inside** the turn: at stick 1 the fall is at **1.12–2.18 s** and the commanded turn is
+still running in 5 of 6 of those runs [M]. **So the answer to "do the ride and the ladder still disagree about when" is
+no, and the disagreement was between the ride and an arithmetic slip.** The ladder, recomputed, says *during*, and so
+does the owner.
+
+**What survives it.** The minority that do finish the turn — 5 of 18 monotone runs, 11 of 48 overall — fall
+0.100–0.517 s after the stick centres, so there **is** a post-centring fall and the coordinator's question about what
+is released as the turn ends is a real question **about 11 runs of 48**, not 18 of 18. Nothing in this round pursues
+it, and the `unwind` column is left exactly where Part 29 left it: a column, not an answer.
+
+## 2. What the fall is, measured on the balance's own terms
+
+`HumanBalance.fallen` is `beyond && weightPast` [R]: the capture point past the feet's edge by more than the room left
+can catch, **and** the centre of mass's own push line past that edge. Both are read across the **felt vertical**, so
+the quantity the test is against is
+
+```
+  px = offset.x − height · nx           (`CaptureState.pointAcross`)
+```
+
+— the body's across place **less the across place the turn demands of it**, because in a banked turn the felt vertical
+leans toward the turn's inside. This round adds the two halves as report fields (`offsetAcross`, `feltAcross`, §9's
+one source change) so the error can be attributed instead of inferred: `height · nx` is **the demand** and `offset.x`
+is **what the body holds**. The feet's half-width across is **0.13 m** [R, `riderPosture.ts:96`].
+
+Over 24 runs (`?rider=new`, shipped filter, 3 entry speeds × 4 sticks × 2 stances), every column signed so that **+ is
+toward the turn's own inside**:
+
+| | tall (12) | Compress (12) | stick 0.25 (6) | stick 1 (6) | all 24 |
+|---|---|---|---|---|---|
+| **[M]** fell | 12 of 12 | 12 of 12 | 6 of 6 | 6 of 6 | **24 of 24, all `'balance'`** |
+| **[M]** at, s | 1.20–4.15 | 1.12–3.98 | 2.08–4.15 | 1.12–2.18 | 1.12–4.15 (median 2.88) |
+| **[M]** `px`, m | 0.13–0.20 | 0.13–0.16 | 0.13–0.14 | 0.13–0.16 | **0.130–0.202, positive in 24 of 24** |
+| **[M]** the demand `h·nx`, m | −0.28–0.06 | −0.27–−0.05 | −0.27–0.06 | −0.16–−0.09 | −0.282–0.063 |
+| **[M]** the body holds `offset.x`, m | −0.11–0.19 | −0.13–0.08 | −0.13–0.19 | −0.01–0.05 | −0.132–0.193 |
+| **[M]** the **deck's** share of \|px\| | 0.02–0.97 | 0.40–0.99 | 0.02–0.68 | 0.66–0.97 | 0.016–0.993 |
+| **[M]** height at the fall, m | 0.45–0.81 | 0.47–0.53 | 0.52–0.81 | 0.47–0.70 | 0.451–0.805 |
+| **[M]** the tolerance, ° (0.13 m at that height) | 9.2–16.1 | 13.7–15.4 | 9.2–13.9 | 10.5–15.4 | **9.2–16.1** |
+| **[M]** the error, ° | 9.2–19.6 | 13.8–17.4 | 9.2–15.1 | 10.5–18.6 | 9.2–19.6 |
+| **[M]** the capture point's velocity part, m | 0.22–0.71 | 0.10–0.34 | 0.13–0.71 | 0.13–0.25 | **0.104–0.714** |
+| **[M]** the body's across speed, m/s | 0.81–2.28 | 0.50–1.35 | 0.55–2.28 | 0.68–1.75 | **0.499–2.278** |
+
+**Five readings, and the fifth is the one that matters.**
+
+1. **He always falls to the inside of his own turn** — `px` positive in 24 of 24 — i.e. over the rail he is leaning on,
+   into the face. Not thrown outward.
+2. **The budget is small and he is only just past it.** The tolerance is 0.13 m, which at the height the balance has
+   crouched to is **9.2–16.1°**, and the error at the fall is **9.2–19.6°**: he crosses the line and goes, he does not
+   sail past it.
+3. **The error is mostly not the body's own place.** At sticks ≥ 0.5 the deck's term (`−height·nx`) carries
+   **66–99 %** of it; at stick 0.25 it carries 2–68 % and the body's own drift carries the rest. So *at the stick the
+   owner turns with, the across error is the deck's, not the rider's.*
+4. **It is as much a speed as a place.** The capture point's velocity term (0.10–0.71 m) is the same size as its
+   position term (0.13–0.20 m), with the body crossing at 0.50–2.28 m/s. The two conditions arrive together:
+   `weightPast` was the last to turn true in 10 of 24, `beyond` in 11, both on the same frame in 3, and each had been
+   standing for 0.017–0.383 s.
+5. **And in 8 of 12 full-stick runs it is the FEET that are moving, not the body.** `deck.ts`'s own split at the fall:
+   relative across speed **1.399–2.432 m/s = body −0.153 to 1.680 minus feet −2.379 to −0.241** [M]. **The board
+   slides out from under him more often than he topples off it**, which is why §4 asks what pushes the *board* across
+   and not what fails in the *rider*.
+
+**What is not involved.** The capture point's validity condition (CAPTURE_LOAD, step 3.2h) is **not** a factor on the
+shipped filter: the frozen share of the last 0.2 s before the fall is **0.000–0.083** and the longest light window of
+the whole run is **0.000–0.002 s** [M]. On the deck filter it does appear (frozen share up to 0.538, longest light
+window up to 0.101 s), and there **7 of 24 falls are not the capture point at all** — `weightPast` is false at the last
+frame, so those separations come from the other `'balance'` branch, the sway past `RECOVERABLE_ERROR` = 0.25 m [R] —
+and all 7 are at **82.2–91.1° of roll**. Same picture, different gate.
+
+## 2b. The owner's own rule, measured: the crouch's benefit is in the test, it works, and it is paid back somewhere else
+
+The owner's ruling of 2026-11-16: *"In compress the surfer should not fall in the lower speed of getting positioning
+in a wave. Normal and maybe Crouch if the turn is too sharp but not compress because the centre of gravity is supposed
+to do that."* That is a prediction with a number. Topple about the loaded edge: the restoring moment is `m·g·d`
+against an overturning `m·a·h`, so the lateral acceleration a stance tolerates is **`a_max = g·d/h`** — inversely
+proportional to the centre of mass's height, which the **static** criterion (`m·g·(d − x)`, 3.3e §1.4, and the "do not
+reach for CoM height" line in my own brief) does not contain. **The brief was wrong for the turning case and the owner
+is right.**
+
+**And the fall test already contains the bar.** `weightPast` is `|offset.x − height · nx| > d` with `d` = 0.13 m [R],
+so with the body stacked on the deck it fires at `|nx| > d/h` — at a **residual** lateral acceleration of `g·d/h`
+exactly. The residual is the right quantity and not the raw one: the deck's own bank carries the turn, and only the
+part the bank does not support lands on the feet. **By the advisor's identity that residual IS §4's in-plane force in
+other units**: `tilt = atan(F_s/F_n)`, so `g·tan(tilt) = g·F_s/F_n ≈ F_s/m_pair`. The pooled `F_s` of −43.1 N over the
+pair's 75.54 kg is **0.57 m/s²**, and §4's attribution is therefore an attribution of the owner's own `a_max`
+violation.
+
+Measured over the **commanded turn** (the height the balance actually holds, not the fall frame's), 12 runs a stance:
+
+| **[M]** `?rider=new`, shipped filter | tall (12) | Compress (12) | Compress ÷ tall |
+|---|---|---|---|
+| the centre of mass over the feet, m | 0.636–0.843 | **0.504–0.548** | 0.65–0.79 |
+| **`a_max = g·d/h`, m/s²** | **1.51–2.00** | **2.33–2.53** | **1.26–1.67×** |
+| the turn's own lateral acceleration, held 0.2 s | 9.81–27.85 | 6.33–23.06 | — |
+| **the RESIDUAL, held 0.2 s, m/s²** | 0.91–4.56 | 0.86–3.69 | — |
+| **residual ÷ `a_max`** | **0.56–2.98** | **0.37–1.58** | — |
+| **runs whose held residual is over their own bar** | **9 of 12** | **3 of 12** | — |
+| the tolerance in degrees, `atan(d/h)` | 9.2–16.1° | 13.7–15.4° | — |
+| **the room's catching reach `reachAcross`, m** | **0.252–0.354** | **0.161–0.181** | **0.46–0.72×** |
+
+**Four readings.**
+
+1. **The crouch's mechanical benefit is real, it is in the test, and it is the size the owner says.** Compress holds
+   its centre of mass 0.50–0.55 m over the feet against tall's 0.64–0.84 and therefore tolerates **1.26–1.67×** the
+   residual, which is "roughly half again". **It is not a benefit that fails to reach the fall test** — the coordinator's
+   candidate (*"a velocity criterion does not contain `h` the way a moment criterion does"*) is refuted as stated: the
+   capture point's velocity term is `vx/ω₀ = vx·√(h/g)`, which **is** height-sensitive, but as `√h` (1.23× between
+   these stances) where the moment bar goes as `h` (1.67×). **The crouch's benefit is diluted in that term, not
+   erased.**
+2. **And it works, in the only way a bar can be seen to work:** the held residual is over Compress's own bar in **3 of
+   12** runs against tall's **9 of 12**. The crouch is three times as often inside its limit.
+3. **It still falls 12 of 12, because the moment bar is not the only gate.** `fallen` is `beyond && weightPast`, and
+   `beyond` measures the capture point against the room's own **reach** — which `stanceRoom` cuts from ±1.2 rad of hip
+   with free arms (tall) to ±0.4 rad with the arms committed (Compress), measured here as **0.252–0.354 m against
+   0.161–0.181 m** [M]. **The crouch wins the moment bar by 1.3–1.7× and loses the catching reach by 1.4–2.2×.** That
+   is a trade written into the design's own table, it is the honest answer to *"what benefit of the crouch is not
+   reaching the test"* — the benefit reaches it and a second gate takes it back — and **it is a ruling for the owner
+   and the design, not a bug I should fix.**
+4. **The raw turn is 3–14× either bar, and that is as it should be.** The turn's own lateral acceleration held for
+   0.2 s is 6.3–27.9 m/s² (0.65–2.8 g), which no stance could carry on its feet alone; the deck's bank carries nearly
+   all of it, which is what banking is for. **The whole of the balance's problem is the 0.86–4.56 m/s² the bank does
+   not carry**, and that is §4's −43.1 N in other units.
+
+**And 3.3f's switch, since the stance separation is exactly what it was built for.** With `?kneeRoom=achieved` the
+heights go tall 0.67–0.84 / Compress 0.51–0.55, `a_max` 1.51–1.90 / 2.33–2.50, and the falls 1.22–4.15 s / 1.07–3.97 s
+against the shipped 1.20–4.15 / 1.12–3.98 [M]. **It changes neither the bar nor the fall measurably on this cell**,
+which is what Part 29 said of it, said again from the other side. One honest note against it: by keeping the standing
+stance taller it makes tall's own tolerance *smaller* (9.2–16.1° → 9.0–11.6° at the fall), which is the price of
+standing up.
+
+## 3. The roll nobody asked for
+
+This is the measurement the owner's bar turns into a falsification, and it is one column.
+
+| **[M]** `?rider=new`, deck filter, **full stick**, 12 runs (2 stances × 6 entry speeds) | span |
+|---|---|
+| the lean the stick asked for, peak | **40.8–50.0°** |
+| the deck's roll from the world vertical, peak | **63.7–91.4°** |
+| the rail against the water, peak | 75.7–90.1° |
+| the deck's roll at the fall | **63.7–91.4° in 12 of 12** |
+| the roll rate, peak | **146.7–353.7 °/s** |
+| the drift (the board's slip angle), peak | 3.2–20.9° |
+| fell | 12 of 12, at 1.12–2.67 s |
+
+`RAIL_RANGE` is 50° and `MAX_BANK` is 70° [R], and the lean cap sat at 48–68° through these turns in Part 29's own
+measurement. **The roll goes 14–41° past the largest lean any input can command, and reaches or passes 90° in 7 of the
+12.** A surfboard under a standing rider in a 1.4 m wave does not lie on its side at 350 °/s, and no stick asked it
+to. Under the owner's ruling this is the falsification, stated as a number: *the rider is not failing to balance, the
+board is capsizing underneath him.*
+
+**Said against the other populations, so it is not one cell.** On `fall.ts`'s three entry speeds the same column is
+2.0–89.2° over 24 runs — over 50° in 15 of 24, over 70° in 5 — and it rises monotonically with the stick (0.25 →
+9.3–53.8°, 0.5 → 2.0–83.4°, 0.75 → 39.6–87.5°, 1 → 25.2–89.2°) [M]. The runs that reach 90° are concentrated in the
+**slower** entries (`deck.ts`'s −3, −2, −1 m/s, which `fall.ts` does not carry), which is why the two probes' spans
+differ at the bottom end. **I am not claiming every fall is a 90° capsize. I am claiming the roll at the fall exceeds
+what anything commanded, in every full-stick run of twelve, by 14–41°.**
+
+**And this is why §2's over-bank is not the mechanism** (§7): through the commanded turn the deck is over-banked by
+only 0.5–8.5° as the balance reads it and −2.5 to +5.2° as an independent reading has it, and then in the **last
+0.25 s** the felt over-bank runs to 4.7–22.1°. The turn is survivable right up until it is not; what ends it is the
+roll running away in a quarter of a second, not a steady lean error.
+
+## 4. The in-plane force at the fall, per source, in newtons — the coordinator's own question
+
+The instrument is 3.3b's (`3.3/deck.ts`), unchanged except for two off-by-default env switches (§9). Its identity is
+exact and prior to any source [R, Part 27 §4]: the pair's felt vertical is the water force over the pair's mass, so on
+the deck's own axes `tilt = atan(F_s / F_n)`, and **a force locked to the deck normal has `F_s` = 0 at any
+magnitude**. `FELT=deck` moves both ends of the reading onto the deck's axes — the rider is built with
+`feltFrame: 'deck'`, which is what the owner rides, and the probe's per-source low pass is held there too, because
+filtering in the world and projecting afterwards charges the reading `Ω · T` of in-plane force at up to 354 °/s of
+roll and would **manufacture its own biggest source**.
+
+**Pooled over the commanded run, full stick, deck filter, 12 runs** (the number to design on, because the fall frame
+is already inside the capsize):
+
+| **[M]** in the deck's plane, `ŝ` | N, median signed | share of `F_s` | on the deck normal `n̂`, N |
+|---|---|---|---|
+| **buoyancy** | **−34.88** | **81.0 %** | 81.1 |
+| radiation | −6.32 | 14.7 % | 39.8 |
+| addedMass | −4.47 | 10.4 % | 48.6 |
+| rails | −4.11 | 9.5 % | −0.0 |
+| **pressure** | **−2.47** | **5.7 %** | 447.7 |
+| friction | −0.46 | 1.1 % | 0.8 |
+| fins | **+6.09** | −14.1 % | 0.0 |
+| bed, froth, suction | 0.00 | 0 | 0 |
+| **total `F_s`** | **−43.1** | on `F_n` **718.4 N** | = **−3.4°** of residual tilt |
+
+**One arithmetic caveat on that table, because it does not quite add up and should not be made to.** Each entry's
+figure is **its own median over the pool**, and medians do not sum: the seven sum to −46.62 N against the median of the
+sum, −43.1 N, an 8 % spread. Every share quoted as a percentage is against the −43.1, which is why they do not total
+100 % either (the signs differ, and `fins` is negative share).
+
+**At the fall frame itself**, per run, in the deck's plane (12 runs): buoyancy **−165.3 to −37.3**, pressure −23.4 to
+−4.7, addedMass −20.8 to +94.0, fins −49.6 to +62.5, radiation −9.1 to +7.0, rails −14.9 to −0.9, friction −1.9 to
++0.9, against `F_n` 249.5–1063.0 N and a total `F_s` of **−20.5 to −182.9 N** [M]. **Buoyancy is the largest single
+in-plane entry in 12 of 12 runs**, and in 12 of 12 again with `?buoyFrame=hull` on. −43.1 N over the pair's 75.54 kg
+is **0.57 m/s²** of across acceleration through the turn and **−1.43 m/s² at the fall** (median) — against a budget of
+0.13 m, which 1.43 m/s² crosses from rest in 0.43 s [A].
+
+## 4b. The drift, and the fins — the coordinator's spin-out question, answered on the steered cells
+
+Every arm in §4 is a **steered** cell: the stick is held from the first frame, which is the owner's own fall. The
+unsteered `STEER=0` arm is carried only as the instrument's reproduction check (§10). The coordinator's correction is
+right and it is worth the number: the drift (the board's slip angle) peaks at **1.9–4.9°** unsteered and at
+**1.5–20.7°** (world filter) and **3.2–20.9°** (deck filter) at a full stick [M] — four to five times as much, so the
+owner's slide-out is the steered fall and the probes have been measuring it.
+
+**But 69° is not this population.** Part 27's 0.8–69.3° is a frame-level pool over all runs, and 3.3d §3 already said
+of its own 93.6–123.8° that those frames are *"in and after the capsize ... not a controlled slide"*. On the steered
+cells the drift peak is 20.9°, and the frames that reach it are the last ones.
+
+**And the fins are not the pusher; they are the only resister.** `fins` is the one in-plane entry whose sign opposes
+the net: its in-plane median goes **−2.32–+11.49 N unsteered → +2.53–+21.86 N at a full stick** while `F_s` goes
+−31.7–+2.4 → **−72.0–−27.1 N** [M]. At the fall it is the **second largest** entry in 9 of 12 runs and the largest in
+**0 of 12** (buoyancy is the largest in 12 of 12), spanning −36.5 to +62.5 N — both signs, because by then the board
+is at 63.7–91.4° of roll and the fins are no longer doing what fins do. **So 3.3a's remark that the fins' sideslip
+channel "is what a spin-out is" is not what the in-plane column says on this cell: the fins grow with the steer, as
+they must, and they push back against the slide.** Whatever is sliding the board out, the fins are resisting it.
+
+## 5. Physics or artefact, source by source
+
+The advisor's test is exact and it is the only test used here: **an in-plane component is either a real in-plane force
+(a lifting surface, a rail with geometry, skin friction along the flow) or a frame error.**
+
+| source | what it is in the code | verdict |
+|---|---|---|
+| **buoyancy** | the hydrostatic support resolved along the **water-surface** normal, `ρg(−∂η/∂x, 1, −∂η/∂z)·V` [R, `hullForces.ts:264`] | **the frame question, already ruled on.** Step 3.3d's advisor item 2: in Savitsky's method the whole load, the buoyant term included, is the bottom-pressure resultant **normal to the bottom**, because hydrostatic pressure on a bottom wetted on one side under a **dry** deck has no wetted side walls to turn it vertical [S]. `?buoyFrame=hull` is built, off by default, and **gated to 46 %** by the dry-deck share. |
+| **radiation** | applied along `surfaceNormal` [R, `BoardBody.ts:1514–1516`] | **the same frame question, not ruled on.** `BoardWaterNormal.test.ts` asserts that direction deliberately, so changing it is a ruling for the owner and the advisor, not a bug fix. 14.7 % of `F_s`. |
+| **addedMass** | applied along `surfaceNormal` [R, `BoardBody.ts:1507–1509, 1517`] | the same, 10.4 %. A flat plate's added-mass reaction is normal to the **plate**; ours is normal to the water. Same test asserts it. |
+| **pressure** | applied along the **hull patch** normal [R, `BoardBody.ts:1512`] | **physics, and the advisor's falsification test passes**: its in-plane share is **5.7 %** (−2.47 of −43.1 N), where a flat athwartships bottom predicts ≈0. The residue it does carry tracks the roll **rate** (−0.102 N per °/s, R² 0.873, against the ledger's own within-step rotation of 0.057 N per °/s [M, 3.3b]) — a within-step rotation, not a hull force. |
+| **fins** | a lifting surface at drift | **physics**, +6.09 N, and it is the only entry pushing the other way. |
+| **rails** | the rail band's geometry; the default section is a **flat sheet with a knife edge** and `?hull=rail` is opt-in [R] | **physics by construction, and small for the same reason**: −4.11 N. |
+| **friction** | skin friction along the flow | **physics**, −0.46 N. |
+| bed, froth, suction | not active on this cell | — |
+
+**So the answer to the coordinator's question, in one line: the in-plane across column is not physics we failed to
+counter. It is three of our ten water entries resolved on the water-surface normal instead of the hull's, and they are
+essentially all of it** — zero their in-plane share and the pooled column goes **−43.1 → −0.95 N**, a 98 % reduction
+[A], the remainder being fins, rails, pressure and friction, every one of which a real board makes.
+
+**And the honest size of the prize, because it is not a surviving turn.** 3.3d already measured what removing 46 % of
+buoyancy's share buys: the median fall over 108 runs goes 1.76 → **2.10 s** on the deck filter, and **no fall was
+prevented in any of 36 cells**. This round's own A/B agrees: at a full stick with the deck filter, 12 of 12 fall at
+1.12–2.67 s shipped and 12 of 12 at 1.15–2.80 s with `?buoyFrame=hull`. Time to cross a fixed 0.13 m goes as
+`1/√a` [A], so deleting the whole in-plane column should lengthen the ride by about **√(1.43/0.03) ≈ 7×** if the
+in-plane force were the only thing moving the body across — and 3.3d's measured 1.19× for a 46 % cut on one of three
+entries says it is **not** the only thing. **I report the attribution as measured and the payoff as unmeasured.**
+
+## 6. The filter, and what step 3.3c settled
+
+The bank-gain deficit (°of residual tilt per ° of roll, pooled, full stick, 12 runs) splits into the force's own share
+and the filter's lag:
+
+| **[M]** | the force's share | the filter's lag | the measured deficit |
+|---|---|---|---|
+| world filter (shipped) | 0.123 | **0.077** | 0.200 |
+| **deck filter** (`?feltFrame=deck`, what the owner rides) | 0.200 | **−0.030** | 0.170 |
+
+And the lag's own law goes with it: the test's tilt per °/s of roll rate is **−0.0970 (R² 0.531)** in the world against
+−T = −0.1000, and **−0.0293 (R² 0.126)** on the deck [M]. **The filter's share of the residual is gone on the deck
+frame.** Step 3.3c's switch does what it was built to do, and nothing further is to be had from it; what the owner
+rides with now is the force's own residual, which is §4.
+
+## 7. What I refuted
+
+- **Part 29's post-turn timing**, §1. The fall is the last commanded frame in 13 of 18 monotone runs and 37 of 48
+  overall. My brief's central premise, refuted from the brief's own published rows before anything was built.
+- **My own first mechanism, and the test that killed it is in this round.** I measured the deck over-banked past the
+  bank its delivered turn supports — 0.5–8.5° through the turn as the balance reads it, −2.5 to +5.2° from an
+  independent reading of the board's own lateral acceleration, the two agreeing in size and in their rise with the
+  stick — and the tolerance is only 9.2–16.1°, so it looked like the whole of it. **So I took it out of the stick.**
+  The **balanced hand** (`HAND=balanced`, §9: an integrating thumb that commands only as much turn as can be had
+  without banking the deck past what the turn supports — an input, not a force) cut the felt over-bank through the turn
+  from 0.5–8.5° to **−1.3 to +4.1°**, and **24 of 24 still fell, at 1.150–4.583 s against the fixed hand's
+  1.117–4.150 s, medians 2.87 against 2.88, with the net heading down from 12.6–88.1° to 3.0–59.2°** [M]. It removed
+  the over-bank, delivered a third of the turn, and bought nothing. **The over-bank is a companion of the fall, not
+  its cause**, and I would have published it as the cause if I had not tested it.
+- **The capture point's freeze as a factor**, on the shipped filter: 0.000–0.083 of the last 0.2 s frozen, longest
+  light window 0.000–0.002 s over 24 runs. (It is present on the deck filter and is reported there, §2.)
+- **My own first sign convention**, which signed every across column by `sign(nx)` — the felt vertical's own sense,
+  which is the deck's **bank error** and not the turn's side. It read 22 of 24 falls as "outboard"; signed by the
+  turn's own direction, the same 24 runs are **inboard in 24 of 24**. The columns were rebuilt and the old reading is
+  withdrawn here rather than carried.
+- **`pressure` as the in-plane suspect**: 5.7 % of `F_s`, where the advisor predicted ≈0 for a flat athwartships
+  bottom. That is the advisor's test passing, and it is reported as such rather than as a finding of mine.
+
+## 8. What I will not claim
+
+- **I will not claim the in-plane column is the whole of the fall.** §5's arithmetic says deleting it would take the
+  pooled across forcing from **0.57 to 0.013 m/s²** (−43.1 → −0.95 N over the pair's 75.54 kg), and the fall frame's
+  own 1.43 m/s² with it; 3.3d's measured A/B on 46 % of one of the three entries moved the median fall by 19 % and
+  prevented none. Those two cannot both be the whole story, and the one that is measured
+  is the smaller. **The attribution is measured; the payoff is not.**
+- **I will not claim radiation and added mass are artefacts.** They are the **same frame question** as buoyancy, their
+  direction is asserted by a test as a deliberate choice, and resolving it is the advisor's and the owner's, not mine.
+  What I claim is their size: 14.7 % and 10.4 % of `F_s`.
+- **I will not claim every fall is a capsize.** 12 of 12 full-stick runs are at 63.7–91.4° of roll; the mixed-stick
+  population is 2.0–89.2°, and at a quarter stick the roll at the fall is 9.3–53.8°. What is true in every full-stick
+  run of twelve is that the roll at the fall exceeds the largest commandable lean by 14–41°.
+- **I will not claim `a_max = g·d/h` is a human's limit.** It is **our fall test's** bar, read off our own geometry:
+  `d` is the feet's modelled half-width across (0.13 m) and the criterion is a static moment about that edge, with no
+  ankle, no hip and no step in it. 3.2z already measured that the test as a whole is **more generous** than a human's
+  at the edge of the base (Hof; Pai & Patton). What §2b claims is the **ratio** between our own stances and that it
+  behaves as `1/h`, which is the owner's point, not that 1.5–2.5 m/s² is what a surfer can take.
+- **I will not claim the stance table's reach penalty is wrong**, only that it is 1.4–2.2× and that it is the second
+  gate. Whether a compressed surfer really has ±0.4 rad of hip and committed arms is the design's question and the
+  owner's.
+- **I will not claim what rolls the board.** I measured the in-plane **force** and the roll it accompanies; I did not
+  attribute the roll **moment**, and an in-plane force at the hull is not the same thing as a roll moment about the
+  pair's centre of mass. That instrument does not exist yet and is the next one.
+- **I will not re-promote Part 29's `unwind` column**, and I will not claim the post-centring fall of the 11 runs that
+  reach 85° has a cause: I did not measure it.
+- **The `FaceWater` is a fit to Canyon, not Canyon**, the rider is placed rather than paddled in, `deck.ts`'s six entry
+  speeds and `fall.ts`'s three are different populations and are never pooled, and every span above is **the whole
+  population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.** The balanced hand in particular is a 60 Hz
+  loop on a quantity no player can see, and it is a diagnostic input and nothing else.
+
+## 9. What changed, and why each piece is allowed
+
+- **`src/physics/humanBalance.ts`, two report fields.** `CaptureState.offsetAcross` (the body's own across place from
+  the feet, `offset.x` as it comes in) and `CaptureState.feltAcross` (the felt vertical's across component, so the
+  demand is `height × feltAcross`). Two assignments after the freeze's early return, so they are held through a light
+  window with the rest of the state; nothing in the game reads either. They exist because `px = offset.x − height·nx`
+  is the fall test's own quantity and §2's attribution of it must be read, not re-derived from `tiltAcross` with `nz`
+  unknown. `humanBalance.test.ts` asserts the identity, both ends, the level case and the freeze (5 new assertions in
+  one test, 20 of 20 in the file).
+- **`docs/research/new-rider/3.3/fall.ts`**, the probe: read-only, drives the shipped inputs, reads public fields.
+  `HAND=balanced` moves the **stick** and nothing else.
+- **`docs/research/new-rider/3.3/deck.ts`**, two env switches, both default off: `FELT=deck` (the rider's
+  `feltFrame: 'deck'` **and** the probe's own low pass held on the deck's axes) and `BUOY=hull` (step 3.3d's
+  `?buoyFrame=hull` on the board). With both unset the probe's whole printed report is **byte-identical** to the
+  pre-change build on the same arm, checked by `diff` and not asserted (§10).
+
+## 10. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the two probes type-checked separately on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/fall.ts`, `docs/research/new-rider/3.3/deck.ts`, `src/physics/humanBalance.ts` and
+  `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **55 files, 601 passed, 21 expected fail** (the new `humanBalance.test.ts` assertions
+  included: **20 of 20** in that file). `vitest run src/game src/scene/rig`: **70 files, 729 passed**.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail**.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference, so
+  a red there would be news as `runner-test-file-excluded` has it. `src/wave/SurfZoneSimulation.test.ts` is closed by
+  reading, as `c2-step5g.md` §7.4 allows: this round touches no solver, no wave and no spot file.
+- **the published instrument reproduces its own record, and that is also the proof that the shipped rider is
+  unchanged.** `deck.ts` at `STEER=0` with no switches gives bank peak **20.7–65.7°**, roll peak **20.9–63.0°**, rail
+  peak **10.9–62.9°**, drift peak **1.9–4.9°** and 12 of 12 falls at **0.77–1.70 s** — Part 24's published twelve to
+  the digit — run on **this** branch, with the two new `CaptureState` fields in place. A report field that changed
+  behaviour would move those falls. Its whole printed report is also byte-identical before and after this round's two
+  env switches were added, with both unset (`diff`, not an assertion).
+- **nothing is gated because nothing behavioural ships**, so there is no switch to pin off for the online rooms this
+  round; `main.ts` and `PhysicalMode.test.ts` are untouched.
+- **the Canyon byte check** (`scripts/m1-cpu-bench.ts`, medium, 3600 steps, **fresh** spin-ups into new state paths),
+  with the brief's three cautions read rather than assumed — the wrapper is one **prepended** line on the bundle
+  (`globalThis.location = { search: '?canyonWaves=true' }`, because a dynamic import makes rolldown split the chunk),
+  the grid line read, and the "spun up on the CPU in … s" line read so that no kept `.sea` was imported:
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180,400 cells**, spun up on the CPU in **50.4 s**: snapshots
+    **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202,800 cells**, spun up on the CPU in **54.9 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  All four match, which they must: this round touches no solver, no wave, no spot file and no hull law, and the only
+  two source lines it adds are report assignments. The raw output is `results/33g/33g-canyon-byte-check.txt`.
+- **the deletions column**, read line by line before the push (`git diff --cached --stat origin/main`): **26 files,
+  2,094 insertions and 8 deletions** — and **all eight deletions read, one by one**: one is `deck.ts`'s `BoardBody`
+  construction, replaced in place with `BUOY=hull` added; four are the four lines of its per-source low-pass loop,
+  replaced in place with the `FELT=deck` branch; two are its header and FELT-SPLIT `console.log`s, replaced with the
+  filter's frame named in them; and one is `humanBalance.ts`'s `state` initialiser, replaced in place with the two new
+  report fields. **Nothing was inherited and nothing was reverted**: `origin/main` is still **cc3f6c59**, the branch's
+  own base, so there was no mid-round merge to rebase onto — and the column was read rather than that being assumed.
+
+## 10b. Files (3.3g)
+
+- `docs/research/new-rider/3.3/fall.ts` — the probe. Read-only on the game; `HAND=balanced` moves the stick and
+  nothing else.
+- `docs/research/new-rider/3.3/deck.ts` — 3.3b's instrument, plus `FELT=deck` and `BUOY=hull`, both off by default and
+  checked byte-identical when unset (§10).
+- `docs/research/new-rider/3.3/results/33g/` — five `fall.ts` arms (`new-world`, `new-deck`, `new-balancedhand`,
+  `new-kneeroom`, `old-world`, 24 rows each) and five `deck.ts` arms (`deck-s0-world`, `deck-s0-deck`, `deck-s1-world`,
+  `deck-s1-deck`, `deck-s1-deck-hullbuoy`, 12 rows each), each with its printed tables beside its rows, and
+  `33g-canyon-byte-check.txt`.
+- `src/physics/humanBalance.ts` — the two report fields (§9). `src/physics/humanBalance.test.ts` — their test.
+
+## 11. For the owner, in plain words
+
+**You were right, and it is worse than "he falls too easily". He is falling off a board that has rolled on its side.**
+
+I measured the board's own lean at the moment he comes off. With the stick all the way over, on twelve runs, the most
+any input can ask for is **50 degrees** of lean — and the board is at **64 to 91 degrees** when he goes, rolling at up
+to **350 degrees a second**. Seven of the twelve are flat on their side. Nobody asked for that. So this is not a rider
+who needs a better sense of balance; it is a board going over, and your bar — a professional in a crouch on a wave he
+has just caught does not fall — says the thing to find is what pushes it over, not what could catch him.
+
+**And on "falls full turn": the ride and the measurement now say the same thing, which they did not this morning.**
+You said he falls on the full turn. The measurement says the same: at full stick he comes off **1.1 to 2.2 seconds**
+in, **while the turn is still being asked for**. Last round I told you it was 0.2 to 0.7 seconds *after* the turn, and
+that was my arithmetic and not your board.
+
+**Two things I have to correct from last round, both mine.**
+
+First, **"he falls just after the turn" was an arithmetic mistake of mine** — I subtracted a duration from a time and
+forgot the 0.22 seconds the measuring window starts at. He falls **during** the turn: in 13 of the 18 clean turns the
+fall *is* the last frame of the turn. Only 5 of them actually finish the turn and then fall.
+
+Second, I found what looked like the answer and then killed it myself. The board leans a few degrees further than its
+own turn can hold, and his whole margin is only 9 to 16 degrees, so that looked like the whole story. I wrote a
+diagnostic "perfect thumb" that only ever asks for as much turn as the board can hold level — and **he still fell, all
+24 times, at the same times, after only a third as much turn.** So that was a passenger, not the cause.
+
+**What I did find is a number, and it names one thing.** The sideways force **in the plane of the deck** — the force
+that slides the board out from under his feet, and in 8 of 12 runs it really is the board moving and not him — is
+**43 newtons through the turn and up to 183 newtons at the moment he goes**. Broken down by where it comes from, **81 %
+of it is buoyancy**, and buoyancy in our code pushes straight up in the world even when the board is on its side. A
+real planing board's support pushes square out of its **bottom** — and a force square out of the bottom cannot slide
+him sideways at all, at any size. Of the ten water forces we model, **three** (buoyancy, the water's added mass, and
+the waves it radiates) push along the water's surface instead of out of the hull, and those three are **essentially
+the whole sideways column**: the one force that already pushes out of the hull contributes **6 %**. Take the three
+off and that column goes from 43 newtons to **about 1**.
+
+**The honest part.** The fix for the biggest of the three already exists from two rounds ago (`?buoyFrame=hull`), and
+it only gets half of it, because it switches itself off wherever the deck is under water — which is exactly where he
+falls. With it on: the falls move from 1.12–2.67 s to 1.15–2.80 s, and **all twelve still fall**. So I am not telling
+you this is the fix. I am telling you it is the first thing in the list that is **ours and not the sport's**, and that
+the other two are the same question and have never been ruled on.
+
+**Nothing changed in the game this round.** No switch, no force, no new number in the physics — two read-only
+measurements in the balance code so the next round can see what it is doing, and nothing you can type.
+
+**On Compress, you were right and my own brief was wrong.** I had a standing instruction not to look at how low the
+surfer's weight is, because for a rider standing still it makes no difference to where he tips. In a **turn** it makes
+all the difference, and the sum is the one you named: the sideways pull a stance can take is `gravity × (half the
+foot's width) ÷ (how high the weight is)`, so **lower weight, more pull**. Measured through the turn, Compress holds
+his weight at **50–55 cm** over his feet against **64–84 cm** standing, and so takes **1.3 to 1.7 times** the sideways
+pull — your "half again", to the number. And it shows: the pull goes over Compress's limit in **3 of 12** runs against
+**9 of 12** standing. **The crouch is doing exactly what you said it should.**
+
+**And here is why it still falls, which is a decision for you rather than a bug for me.** The fall needs *two* things
+to go wrong at once: his weight past his feet (the sum above, which Compress wins) **and** the capture point past what
+his body can still catch. That second one is the hip and the arms, and our own stance table gives Compress **±0.4
+radians of hip with the arms committed** against standing's **±1.2 with the arms free** — so Compress's catching reach
+is **16–18 cm** against standing's **25–35 cm**. **The crouch wins the tipping sum by up to 1.7× and loses the
+catching reach by up to 2.2×.** That trade is written into the design we chose, not into the physics, and whether a
+compressed surfer should really have that little left to catch with is your call and the design's. It is the one place
+in this round where I could change something and chose to ask instead.
+
+**One more thing you said that I checked rather than assumed**: that it slides out sideways. On the steered runs the
+board's sideways slip angle peaks at **3 to 21 degrees**, against 2 to 5 when nobody is turning — so yes, the turn is
+where the sliding is. But the **fins** are not what is sliding him: they are the one force in the whole list that
+pushes **back** against it, and they grow stronger as you turn harder. It is the three that push along the water's
+surface that do the sliding.
+
+**What I would ask you for, and it is a decision rather than a ride.** The two remaining ones (the water's added mass
+and the waves it radiates) have a test in the codebase that asserts they point along the water's surface, deliberately,
+so for those two I am not calling it a mistake — I am asking.
+Changing that is a ruling, not a bug fix, and it is yours and the water advisor's. If you want it, the next round
+measures all three on the hull's normal together and tells you what the sideways column and the falls do. If you would
+rather I chase what actually rolls the board to 90 degrees — which is a **moment**, not this force, and I have not
+measured it — say so and I will build that instrument instead. **I would pick the roll.**
