@@ -5082,3 +5082,688 @@ Canyon, `?canyonWaves=true`, your test spot. One change at a time, as always.
    pulling against a lean his body is not actually at. **Do you want me to go after that, or do you want me to stop
    measuring the ankle altogether and go after the thing that makes his body lean in the first place?** I can only
    run one.
+
+# Part 35 — the lean is inherited from the face, sustained by a dozen terms that nearly cancel, and the ankle keeps a quarter of its own authority
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33l`, cut from `main` at
+**c3e87e2a** (step 3.3k's merge), so Part 34 is its base. It ships **one read-only ledger** (`bankLedger`, off by
+default, no behavioural switch of any kind), its six-test positive control, one new probe, and **174 runs over eight
+arms** — **108 with the ledger on** (24 unsteered trajectories read on both fall filters, 18 on the owner's own
+low-speed cell read on both, and 24 on a flat-across counterfactual) and **66 with it off**, as the reproduction and
+the purity check.
+
+Tags as in 3.2, 3.3 and 3.4: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source;
+**[I]** my inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The eight sentences the round is for
+
+1. **The owner's bar is not met, and this round is the first to test it on a cell built for the owner's own words.**
+   *"The lower speed of getting positioning in a wave"*: entry speeds set **absolutely** at 1, 2, 3, 4, 5 and 6 m/s
+   through the water × three stances, the stick never touched. **18 of 18 rides ended on the deck filter at
+   0.52–7.10 s — seventeen of them a balance fall — and 18 of 18 on the world one at 0.12–6.90 s, all eighteen a
+   balance fall; Compress falls 6 of 6 on each** [M]. And it is **worse**, not gentler,
+   than step 3.3k's arm: at 1–3 m/s the fall comes at a median **0.600 s** (deck) and **0.183 s** (world) against
+   3.3k's own minimum of 1.10 s.
+2. **The brief's question had a datum error in it, and it is mine as much as 3.3k's.** *"What makes his body lean,
+   standing still?"* assumes the lean is created. It is **inherited**: the board is placed square to the water's
+   surface and the body is mounted square to the deck [R], so on a 16° face taken 45° off the fall line **the body's
+   bank from the world vertical is 8.69–8.71° at the first frame in 24 of 24 runs, with the joint at −0.18 to −0.14°
+   and the rail at −0.4 to +0.9°** [M]. **Step 3.3k's headline — "the body's bank passes 10° for good at 0.217–0.667 s"
+   — is one and a third degrees of movement from a standing start of 8.7°**, and this round reproduces that clock to
+   the digit (24 of 24, median lead +0.100 s) while refusing to read it as a lean developing.
+3. **The attribution is exact, and that is the round's one piece of engineering.** The bank is the eighth unknown of a
+   linear solve, so `A x = b` can be split by source and solved once per part, and the parts sum to the solve's own
+   answer identically. Measured over the 24 unsteered trajectories at their full length, to the exponent rather than
+   to the result files' twelfth decimal: the partition of `b` closes at **1.110e-15** (N·s and N·m·s), the sum of the
+   per-source solutions closes against `A⁻¹ b` at **5.329e-15** (m/s and rad/s), and this file's own factorisation
+   agrees with the game's `solveLinear` at **exactly 0 — to the last bit, on every substep** [M]. **P0 held, as
+   written, with two orders of magnitude to spare.**
+4. **And there is no single cause, because the lean is a residual of terms ten to a hundred times its size.** In the
+   first 0.2 s the fourteen live entries total **411–820 °/s² gross** for a net of **+2.4 to +68.7** — a cancellation
+   ratio of **7–266, median 12** — and from 0.4 s the median ratio is **90** [M]. Any sentence of the form "X makes
+   him lean" is false on this measurement unless it names X's partner.
+5. **The one source with a lawful form is the pendulum's own, and it matches its closed form to within 14 %.** The
+   rider's weight on a leg that is not plumb books **+96.9 °/s² (91.2–100.0) in the first 0.2 s and +134.2 (93.3–157.7)
+   over the next 0.2**, **driving the lean that happened in 24 of 24 in every window of the ride**, and its ratio to
+   `g sin θ / L` computed from the window's own measured bank and leg length is **0.862–1.127, median 0.93–1.05** [M].
+   **He leans because he is an inverted pendulum whose only reference is a deck.** But its net is nearly cancelled by
+   the board's own weight (the two weights together are **+8.5 °/s²** of the first window's +39.9), so it is a
+   mechanism identified and **not** a majority of the drive — §8 keeps that line.
+6. **The ankle keeps about a quarter of its own authority over the body, and that is the measured reason nine rounds
+   of ankle limits all came back innocent.** Booked alone, the ankle's torque moves the leg's own angle a lot and the
+   body's absolute lean little, because the rest goes into rolling the deck the other way:
+   **`|own / relative|` is 0.004–0.691 with a median of 0.312 in the first 0.2 s, 0.353–0.484 (median 0.400) over the
+   next 0.2, 0.151–0.478 (0.250) from 0.4 to 1.0 s and 0.056–1.779 (0.127) over the ride** [M]. The board's roll
+   inertia in the solve is **0.498–1.140 kg·m²** (step 3.3j's read (a)) against the body's `m L²` ≈ **52–54 kg·m²** at
+   the measured L of 0.834–0.850 m [A]. **60–75 % of everything the ankle does rolls the board instead of righting the
+   man.**
+7. **The joints drive the lean before the balance wakes up and resist it after, and they lose either way.** In the
+   first 0.2 s — with the commanded rest at **−0.26 to +0.24°**, the joint at **−0.39 to +0.05°** and the delivered
+   ankle torque at **−7.0 to +2.6 N·m**, i.e. before the balance has asked for anything — the joints as a group book
+   **+105.2 °/s², driving in 24 of 24.** From 0.4 to 1.0 s they book **−838.8, resisting in 24 of 24**, and the leg
+   with the water it stands on books **+528.4** and the two weights **+246.8** [M]. The net is positive — toward the
+   lean he fell with — in **24 of 24 of the first window, 23 of 24 of the next two and 24 of 24 of the last** [M].
+8. **The counterfactual says the across tilt is the starting value and nothing else starts the lean.** The same water
+   and stances with the board straight down the fall line (`SIDE=0`, a third population): the across tilt, the roll,
+   the bank, the joint and the body's own rate are **0.0 at the first frame and still 0.0 at 0.200 s**, and the rail
+   does not pass 2° until **3.650–5.950 s** against the 45° arm's 0.217–0.983 [M]. **The across degree of freedom
+   does not move at all** until the cell's own symmetry breaks. All 24 rides still end before nine seconds and
+   **later than their own 45° twin in 23 of 24** — but only **15 of 24 end as a balance fall**; the other **9 lose
+   the board**, which runs straight down the face and stalls at **0.04–0.91 m/s** through the water. **P9 held in all
+   three of its parts, including the one I did not want**, and §5 withdraws the regime reading I first put on it.
+
+## 1. (A) The read that had to come first, and the three things it changed
+
+My brief said *"start from a read"*, and the read is in `AttachedRider.coupleStanding` and `AttachedRider.finish`.
+
+**(i) The bank's own equation is one row of a linear system, so its attribution can be exact.** Standing, the board's
+solve is **8 × 8** (9 × 9 for the new surfer) over `x = (Δv, Δω, Δṡ, Δu̇[, Δẇ])`: the board's six, the leg's rate, the
+bank's speed across the leg, and the body's speed along it [R]. `A` holds the **plant** — the two masses, the board's
+inertia tensor, the water's added mass and damping, and the ankle's and the leg's own stiffness taken implicitly over
+the substep. `b` holds the **sources** — every explicit force and torque. Because `x = A⁻¹ b` is linear in `b`,
+splitting `b` into named parts and back-substituting once per part gives a decomposition that **sums to the solve's own
+answer identically**. That is not a regression and not a correlation, and it is why §2's tables carry no error bars:
+they are an identity with sizes, as Part 34 §2.2's was.
+
+**(ii) The body's own lean rate is the sum of TWO of those unknowns, and a ledger on either one alone would be
+wrong.** `AttachedRider.finish` builds it in the code [R]:
+
+```
+angularVelocity = (0, ω_board.y, 0) + rollAxis · (bankSpeedAfter / L)      and, the new surfer,
+                                    + rollAxis · (ω_board · rollAxis)
+```
+
+so
+
+> `θ̇_body = Δu̇ / L + ω_board · rollAxis`
+
+— **the leg's own angle opening at the ankle, plus the deck rolling underneath it.** Every entry below is therefore
+booked three times: `own`, `relative` (the ankle half) and `deck` (the board half), with `own = relative + deck` per
+source and in total by construction (asserted to 1e-12 in `bankLedger.test.ts`). A ledger of the eighth unknown alone
+would have missed the half of the lean that is the board turning under the feet; the roll ledger (step 3.3h) alone
+missed the ankle.
+
+**(iii) And the quantity to check the ledger against is public, so the control did not have to be invented.**
+`rider.angularVelocity · rollAxis` **is** `Δu̇/L + ω·rollAxis` by the two lines above, so the ledger's total is the
+time derivative of a number the probe can read off the rider. §9 reports that check and **says plainly that it does not
+close**, and names why.
+
+**The three things these reads changed.** My plan had been (a) to attribute only the eighth unknown — which would have
+produced a ledger that explained a third of the lean and said nothing about the lock Part 34 measured; (b) to compare
+the ledger against the **geometric** bank angle, which is a different quantity (the lean of the centre of mass over the
+stance point, not the body's own angular velocity) and differs from it by a median **−1.1 to +0.1 °/s** [M]; and (c) to
+treat `carry` — the constraint's own momentum gap — as a candidate, which it cannot be: for the new surfer the body's
+velocity is **defined** as the rigid carry plus the three joint rates projected on an orthonormal triad, so the gap is
+zero by construction and books **under 1e-11 rad/s²** [M, R]. §7 keeps that as a refutation of my own brief.
+
+## 2. (B) Standing still, attributed — the unsteered arm on its own population
+
+**The cell is `fall.ts`'s and step 3.3k's own**: the Canyon-matched `FaceWater` (1.4 m / 16° / 5.7 m/s, 2.6 m deep,
+the board 0.75 fronts ahead of the crest and 45° off the fall line), the stance held, the stick **never touched**,
+eight relative entry speeds × three stances, 9 s a run.
+
+**The population is 24 TRAJECTORIES, not 48.** `?feltFrame=deck` changes only the **fall test's** reading, not a force
+[R], so the deck and world arms are the same 24 rides and differ only in when the test fires — which this round
+confirms: every column of §2.1 and §2.2 before the first fall is identical between the two arms to the digit [M]. Step
+3.3k reported them as two arms of 24, which is right for a fall count and wrong for an attribution, and I report one
+population of 24 here.
+
+**The datum, stated.** Every angle and every acceleration is in the **raw board frame**: `+` is the body's lean, or the
+deck's roll, toward the board's own **+x** (its left), about `AttachedRider.rollAxis` — the heading's own roll axis,
+yaw only, no roll and no pitch, the axis `roll`, `rail`, `bank.angle` and `rollRate` are all measured about [R].
+Beside it, each entry is also given **signed by the lean that actually happened** (`× sign(bank at the fall)`), so
+positive means *drives the lean he fell with*; the column's name says which (`LEAN-signed`). With the stick never
+touched there is no commanded turn to have an inside, so the `dir`-signed convention is not used anywhere in this part.
+
+### 2.1 The datum is 8.7°, and it is not a motion
+
+| **[M]** the unsteered arm, 24 trajectories | first frame | at 0.200 s |
+|---|---|---|
+| the face's own across tilt at the board, ° | **8.7–8.9** | 7.4–10.0 |
+| the deck's roll from the world vertical, ° | **8.8–8.9** | 9.0–9.7 |
+| **the body's bank from the world vertical, °** | **8.69–8.71** | **8.9–9.9** |
+| the joint's own angle θ − φ, ° | **−0.18–−0.14** | −0.7–0.7 |
+| **the rail** (roll less the face's tilt), ° | **−0.4–0.9** | — |
+| the body's own lean rate, °/s | 0 | 0.9–13.9 |
+
+**Three readings.**
+
+1. **The board is placed flat on the water and the body plumb to the deck, so both start at the face's own tilt.**
+   `fall.ts`, `deck.ts`, `stills.ts` and this probe all place the board with
+   `makeBasis(left, normal, forward)` on the sampled surface normal [R], and `AttachedRider.frame`'s unmeasured branch
+   mounts the body *square to the deck across* [R]. On a 16° face taken 45° off the fall line the across component of
+   that normal is **8.7–8.9°**, and that is what both angles read at t = 0.
+2. **So "the bank passes 10°" is 1.3° of movement.** This round reproduces step 3.3k's clock exactly — the bank passes
+   10° for good at **0.217–0.667 s**, the roll at **0.317–0.750**, the bank leading in **24 of 24 at a median +0.100 s**
+   [M] — and that clock is now a clock on a degree and a third.
+3. **The clock that is about motion is the rail's and the joint's, and it runs the other way round.** The **rail**
+   passes 2° at **0.217–0.983 s** and 10° at **0.500–1.183**; the **joint** passes 2° at **0.317–1.983** and 5° at
+   **0.983–2.000**; and the rail reaches 2° **before** the joint does in **18 of 20** runs where both clocks fire, at a
+   median lead of **0.650 s** [M]. **The pair leaves the face before the body leaves the deck.** Part 34's "the body
+   goes first" is true of the world-vertical angles, which both start 8.7° over; it is false of the motion.
+
+### 2.2 The lean is a residual, and the cancellation ratio is the first number to read
+
+| **[M]** 24 trajectories, °/s², the body's own lean | mount 0.017–0.200 | early 0.217–0.400 | mid 0.417–1.000 |
+|---|---|---|---|
+| the substeps the standing solve did **not** decide | **0.000** | **0.000** | 0.000–0.001 |
+| the net, LEAN-signed, mean of the runs' means | **+39.9** | **+60.9** | **+95.9** |
+| … its span | **+2.4–+68.7** | −2.4–+146.2 | −0.7–+191.3 |
+| … **positive — toward the lean he fell with** | **24 of 24** | **23 of 24** | **23 of 24** |
+| the gross, Σ \|entry\| | **411–820** | 641–3 796 | 582–17 958 |
+| **the cancellation ratio, gross / \|net\|** | **7–266 (median 12)** | 12–528 (33) | 19–12 483 (90) |
+
+**Two readings, and the first governs everything after it.**
+
+1. **Nothing here is a cause on its own.** A dozen entries of 100–8 000 °/s² produce a net of 40–96, so the lean is
+   the **few percent by which they fail to cancel**. The attribution is still exact — that is §9's P0 — but the right
+   way to read §2.3 is pairs and groups, not a winner.
+2. **The net is nevertheless one-signed from the very first frame.** +2.4 to +68.7 °/s² toward the lean he fell with in
+   **24 of 24** of the first 0.2 s, with the solve deciding every substep of it. There is no window in which the drive
+   is neutral and then turns.
+
+### 2.3 The sources, per entry, in °/s² of the body's own lean
+
+The full tables are in `results/33l/33l-unsteered-deck.txt`; the entries that are not identically zero are below,
+ordered by the mount window. Each cell is the **mean over the window of each run's own mean** (means sum; medians do
+not, which is this folder's own named error), and `driving` counts the runs whose LEAN-signed entry is positive.
+
+| **[M]** °/s², 24 trajectories | mount, own | driving | its `relative` half | its `deck` half | early, own | driving | mid, own | driving |
+|---|---|---|---|---|---|---|---|---|
+| **`gravity`** the rider's weight | **+96.9** (91.2–100.0) | **24/24** | **+88.2** | +8.7 | **+134.2** | **24/24** | **+341.8** | **24/24** |
+| **`weight`** the board's own | **−88.4** (−98.0–−79.4) | **0/24** | −63.3 | −25.1 | −93.2 | 0/24 | −95.0 | 0/24 |
+| `leg` the leg spring | −86.1 (−306.7–+61.9) | 4/24 | −73.5 | −12.6 | **+550.2** | 18/24 | **+3 814.6** | **24/24** |
+| **`ankle`** | **+58.2** (−78.6–+205.9) | 18/24 | **+166.3** | **−108.0** | −186.0 | 6/24 | **−904.2** | **0/24** |
+| `pressure` the planing hull | −48.1 (−159.7–+22.6) | 6/24 | −249.1 | +201.0 | −270.9 | 4/24 | **−3 320.4** | **0/24** |
+| `pitch` the pitch ankle and hip | +44.2 (9.6–86.5) | **24/24** | +175.3 | −131.1 | +69.7 | **24/24** | +82.1 | 16/24 |
+| `rails` | +34.2 (16.9–53.0) | **24/24** | +27.5 | +6.6 | +53.7 | **24/24** | +107.0 | **24/24** |
+| `fins` | +12.6 (−18.2–+51.0) | 18/24 | +0.7 | +11.9 | −227.8 | 3/24 | +75.5 | 18/24 |
+| `friction` | +9.3 (5.8–12.5) | **24/24** | −5.8 | +15.1 | +5.3 | 17/24 | −22.7 | 12/24 |
+| `addedMass` the explicit half | +4.2 (−1.1–+9.6) | 21/24 | −36.4 | +40.6 | +17.4 | 21/24 | −3.3 | 12/24 |
+| `yawCouple` the body's yaw and twist | +2.8 (0.3–5.9) | **24/24** | +14.2 | −11.4 | +4.6 | 22/24 | −2.3 | 9/24 |
+| `buoyancy` | −0.0 (−0.8–+0.9) | 13/24 | −9.2 | +9.2 | +3.7 | 21/24 | +37.5 | **24/24** |
+| `gyro` | −0.0 | 0/24 | −0.0 | +0.0 | −0.0 | 0/24 | −0.2 | 0/24 |
+| **`carry`** the constraint's own gap | **0** (< 1e-11) | — | 0 | 0 | **0** | — | **0** | — |
+| `riderWater`, `assist`, `drive`, `limbs`, `swing`, `twist`, `hand`, `suction`, `froth` | 0 or absent | — | — | — | — | — | — | — |
+
+**Five readings.**
+
+1. **`gravity` is the one entry with a sign, a size and a law.** Driving in **24 of 24 in every window**, at
+   **+96.9 → +134.2 → +341.8 °/s²** as the bank grows, and its ratio to the inverted pendulum's own `g sin θ / L`,
+   computed from the window's own measured bank and the window's own measured leg length (0.834–0.850 m), is
+   **0.906–0.952 (median 0.933)** in the mount window, **0.878–1.031 (0.978)** early and **0.952–1.127 (1.050)** in
+   mid [M]. The shortfall is the solve's own denominator — the water's added mass and the ankle's implicit stiffness
+   in `A` — and the agreement is what makes the identification a reading and not a story.
+2. **Its partner is the board's own weight, and that entry is not small.** −79.4 to −98.0 °/s², **opposing in 24 of
+   24**, and **32–92 % of the largest entry in the mount window (median 80 %)** [M]. The pendulum's base is a 7 kg
+   board on water, and pushing the base down un-leans the body about as fast as the rider's weight leans it: the two
+   weights together are **+8.5 °/s²** of the window's +39.9 net. **P5 is refuted for `weight` and held for `gyro`.**
+3. **From 0.4 s the biggest pair in the table is the leg against the water it stands on**: `leg` **+3 814.6** (driving
+   in 24 of 24) against `pressure` **−3 320.4** (opposing in 24 of 24), **7 135 °/s² gross for 495 net** [A on
+   measured means]. The leg presses the rider's weight onto the deck and the planing water holds it up, and the lean
+   is where the two lines of force fail to meet. It is also the largest **driving** entry in the window in
+   **24 of 24** runs, which is the half of my own P2 that failed.
+4. **The ankle's sign flips at the window where the balance wakes up.** +58.2 (driving in 18 of 24) through the first
+   0.2 s, −186.0 (6 of 24) over the next, −904.2 (**0 of 24**) from 0.4 to 1.0 s. And the first window is exactly the
+   one in which the balance has commanded **nothing**: the commanded rest is **−0.26 to +0.24°**, the joint
+   **−0.39 to +0.05°** and the delivered torque **−7.0 to +2.6 N·m** [M, step 3.3j's own ankle ledger, read beside
+   this one]. So the ankle's first 0.2 s is its passive damper on a joint that is closed, and its sign is not the
+   balance's choice.
+5. **Every term that is identically zero is in the table on purpose.** `carry` (< 1e-11), `assist` (COMPRESS_PULL,
+   CARVE_CARRY, LEAN_OUT_PULL — `compressAssist` returns at once on `newRider` [R]), `drive` (no leg drive),
+   `limbs` (`?agile` off), `suction` (0.0 N on every cell this track rides, Part 19) and `froth`. They are measured at
+   zero rather than assumed at zero, which is what makes the partition's own closure meaningful.
+
+### 2.4 The two halves swap over at 0.2 s, which is Part 34's clock in accelerations
+
+| **[M]** which half of `ownTotal` is larger in absolute value, 24 trajectories | mount | early | mid | last 0.5 s | last 0.2 s |
+|---|---|---|---|---|---|
+| **`relative`** (the leg's own angle at the ankle) | **17 of 24** | 7 | 8 | 4 | 5 |
+| **`deck`** (the board rolling under the feet) | 7 | **17** | **16** | **20** | **19** |
+
+**One reading.** Through the first 0.2 s the body's lean is mostly its own angle changing at the ankle; from 0.2 s on it
+is mostly the deck rolling underneath it. That is Part 34's *"the bank leads the roll by a median +0.100 s"* seen in
+the drive rather than in the angles, measured on the same 24 rides, and it is the strongest version of that ordering
+this track has: **the body's own half leads, the deck's half carries it.**
+
+### 2.5 The five groups, and the sentence they make
+
+The grouping is declared in the probe before the read (`bank.ts`'s `GROUP`): `support` is the leg's force with the
+water the hull stands on; `weightAll` the two weights; `foils` the fins, rails, friction and froth; `joints` every
+torque inside the body or between it and the deck; `other` the rider's own water force, the gyroscopic term and the
+entries that are zero.
+
+| **[M]** °/s², LEAN-signed, mean of the runs' means (positive of 24) | mount | early | mid |
+|---|---|---|---|
+| `support` the leg and the water under the hull | **−130.0** (0) | **+300.4** (18) | **+528.4** (22) |
+| `weightAll` the two weights | +8.5 (18) | +41.0 (21) | **+246.8** (24) |
+| `foils` fins, rails, friction | **+56.1** (**24**) | −168.8 (3) | +159.8 (20) |
+| **`joints`** every joint in the body | **+105.2** (**24**) | −111.7 (7) | **−838.8** (**0**) |
+| `other` | −0.0 (0) | −0.0 (0) | −0.2 (0) |
+| **the net** | **+39.9** (**24**) | **+60.9** (23) | **+95.9** (23) |
+
+**Two readings.**
+
+1. **Before the balance acts, the joints drive the lean in 24 of 24; after it acts, they resist it in 24 of 24 — and
+   lose.** From 0.4 to 1.0 s the joints book **−838.8 °/s²** against **+528.4 + 246.8 + 159.8 = +935.0** from the
+   standing contact, the weights and the foils, for a net of **+95.9** toward the lean. Every joint the body has,
+   pulling together, is 90 % of what it would need.
+2. **The ride window's own means are carried by one run and I am not reporting them as a group result.** `joints` over
+   the live unclamped ride has a mean of +6 266 °/s² and is **positive in 1 of 24**: one capsize books +165 089 and
+   drags the mean across zero. The mid window is the representative one and the ride window's means are in the result
+   files for completeness only.
+
+## 3. (B) The ankle's own authority, which is the answer to nine rounds of innocent verdicts
+
+Booked alone, the ankle's torque is an **internal** torque: it cannot change the pair's angular momentum, only move it
+between the body and the board. So its effect on the body's **absolute** lean is its effect on the joint minus
+whatever the deck does in answer, and the split is set by the two inertias.
+
+| **[M]** the ankle's entry, 24 trajectories, means of the runs' means | mount | early | mid |
+|---|---|---|---|
+| `relative`, °/s² | **+166.3** | **−466.9** | **−3 541.8** |
+| `deck`, °/s² | **−108.0** | **+280.9** | **+2 637.6** |
+| `own` = the two together | **+58.2** | **−186.0** | **−904.2** |
+| … driving the lean he fell with | 18 of 24 | 6 of 24 | **0 of 24** |
+| **`\|own / relative\|` per run, median** | **0.312** | **0.400** | **0.250** |
+| … its span over the 24 | 0.004–0.691 | 0.353–0.484 | 0.151–0.478 |
+| the same median over the live unclamped ride | | | **0.127** (0.056–1.779) |
+
+**The ride window's own `relative` and `deck` means are not in the table on purpose**: the ankle's `own` entry there
+averages +3 480 °/s² and is **positive in 1 of 24** — one capsize books +99 165 and carries the mean across zero, so
+the mean is that one run. The three windows above are the representative ones, and only the `|own/relative|` **median**
+is quoted for the ride.
+
+*(An earlier draft of this table carried −2 170.6 / +1 132.1 for `mid` and −4 691.3 / +3 777.0 for the ride. Those were
+**one Compress run's** figures read off the first smoke test and not the 24-run means; they are corrected above. The
+`|own/relative|` medians, which are the row the section's claim rests on, were per-run from the start and are
+unchanged.)*
+
+**And the inertias say why** [A on measured numbers]: the solve's own **board** roll inertia is **0.498–1.140 kg·m²**
+(step 3.3j's read (a), measured off the assembled matrix) while the **body's** about the stance point is
+`m L²` = 75 × (0.834–0.850)² = **52.2–54.2 kg·m²**. A torque between them moves the lighter one, and the lighter one is
+the board by a factor of **46–109**.
+
+**What this is and is not.** It **is** the measured reason the last nine rounds found every ankle limit innocent: the
+rest's own bound (Part 34), the sole's transmissible moment (3.3i), the hip (3.2x), the knee, the stance's reach, the
+whole-body counter-roll. **Widening, narrowing or bounding a torque that keeps a quarter of its authority cannot
+change the outcome**, and the A/B that proved it saved 0 of 96 runs. It is **not** a claim that the balance has no
+authority at all — a quarter is not zero, and §8 keeps the stronger version out. **P1 is half held and half refuted**:
+the two halves are large and opposite as predicted, but `|own/relative|` is **0.25–0.40 at the median in the three
+windows that matter**, not the under-0.25 I wrote, so the ankle keeps **more** of its authority than I predicted and
+still nothing like enough.
+
+## 4. (B) The owner's own low-speed cell, built here for the first time
+
+Step 3.3k's §8 named the gap in its own caveat: its unsteered arm runs at **4.99–10.00 m/s at the fall**, which is not
+*"the lower speed of getting positioning in a wave"*. This cell sets the entry **absolutely** — the board is placed on
+the flow, so the speed through the water at the first frame **is** the entry — at **1, 2, 3, 4, 5 and 6 m/s** ×
+three stances, the stick never touched, everything else `fall.ts`'s own. **It is a different population from
+§2's and nothing below is pooled with it.**
+
+| **[M]** the owner's cell, 18 runs an arm | deck filter | world filter |
+|---|---|---|
+| **the ride ended** | **18 of 18** | **18 of 18** |
+| … as a balance fall / “lost board” | **17 / 1** | **18 / 0** |
+| at, s | **0.52–7.10** | **0.12–6.90** |
+| **Compress** | **6 of 6**, 0.52–4.25 s | **6 of 6**, 0.13–4.03 s |
+| entry 1–3 m/s: fell | **9 of 9** | **9 of 9** |
+| … at, s (median) | 0.517–0.867 (**0.600**) | 0.117–0.483 (**0.183**) |
+| entry 4–6 m/s: fell | 9 of 9 | 9 of 9 |
+| … at, s (median) | 1.033–7.100 (1.267) | 0.767–6.900 (1.050) |
+| the speed through the water at the fall, m/s | 0.56–7.39 | 1.01–6.63 |
+| the rail at the fall, ° | **−82.8–+100.3** | −97.8–+27.0 |
+| the substeps the standing solve did not decide | **0.021–0.461** | 0.000–0.317 |
+
+**Four readings.**
+
+1. **The bar is not met and the cell is worse, not gentler.** At 1–3 m/s the fall comes at a median **0.600 s** on the
+   owner's own filter and **0.183 s** on the other, against step 3.3k's whole-arm minimum of **1.10 s**. **P6 and P7
+   both held.**
+2. **Below 4 m/s the board goes over the OTHER way.** The rail at the fall is **negative** (−17.0 to −82.8°, the −x
+   rail down) in every 1–3 m/s run and **positive** (+20.6 to +63.4°) in every 5–6 m/s one [M]. Entry 4 m/s is the
+   crossover and holds the two longest rides in the cell (4.25 s and 7.10 s on the deck filter). I have not measured
+   what sets the side and §8 keeps me off it.
+3. **And at those speeds the attribution does not describe the motion, so it is not reported for this cell.** The
+   contact goes infeasible and the board and rider are solved apart for **2.1–46.1 %** of the substeps on the deck
+   filter; the per-source entries have no consistent sign there (`gravity` spans **−469.3 to +426.0** over the ride
+   against §2.3's 24-of-24 at a tenth the spread). **The low-speed cell is reported as a fall count and a clock, and
+   nothing else.**
+4. **One honest limit of the cell.** At an asked entry of 1 m/s the board is already at **2.06–2.16 m/s** through the
+   water by 0.2 s — it accelerates down the face — so the cell's true floor is about 2 m/s, and the "1 m/s" rows are
+   named by what was asked, not by what was ridden. Both numbers are printed for every run.
+
+## 5. (B) The counterfactual, predicted before it ran, and it held in all three parts
+
+P0–P8's reads produced the 8.7° of §2.1, and the attribution then makes a falsifiable claim about a cell nobody had
+run: `gravity`'s entry is `g sin θ / L`, which is **zero at θ = 0**. So: the same water, the same stances, the stick
+never touched, the board placed **straight down the fall line** (`SIDE=0`) so the face's slope is all pitch.
+
+| **[M]** the flat-across cell, 24 runs (a THIRD population) | |
+|---|---|
+| the face's across tilt / the roll / the bank / the joint, first frame **and at 0.200 s**, ° | **0.0 / 0.0 / 0.0 / 0.0** |
+| the body's own lean rate at 0.200 s, °/s | **0.0** |
+| **the rail passes 2°** at, s (the 45° arm: 0.217–0.983) | **3.650–5.950** |
+| the bank passes 10° at, s (the 45° arm: 0.217–0.667) | 3.817–6.200 |
+| the ride ended | **24 of 24** |
+| … **as a balance fall** | **15 of 24** |
+| … as **"lost board"** — the board stalls and leaves him | **9 of 24**, at 0.04–0.91 m/s through the water |
+| at, s | **0.517–6.383** |
+| **later than the 45° arm's own run** | **23 of 24** |
+
+**Three readings, and the third is the one I did not want.**
+
+1. **P9a held exactly.** With no across tilt there is no lean: every angle is 0.0 at the first frame and still 0.0 at
+   0.200 s, and the cell stays exactly symmetric across for **3.65–5.95 s** before any rail appears. **The 8.7° is the
+   starting value, and nothing in the solve starts a lean without it.**
+2. **P9b held.** The fall comes later in 23 of 24, and the lean itself is delayed by about **3.5 s** against the 45°
+   arm's 0.217 s.
+3. **P9c held: he does not stand. 15 of 24 are still a balance fall** — so taking the tilt away buys 2–4 seconds and
+   not a ride. The other 9 of 24 **lose the board** rather than fall off it: pointed straight down the face the board
+   runs off the wave and stalls at **0.04–0.91 m/s** through the water, and the rider is left standing on nothing.
+
+**The caveat the cell has to carry, and it cost me a reading.** Pointed straight down the fall line the cell is
+**exactly** symmetric across, which is why the zeros are zeros — and the first version of this section read its
+`|roll| < 10°` count (4 of 24) as step 3.3j's **flat fall**, the regime Part 34 found 0 of 24 in the 45° cell.
+**That reading is withdrawn.** Three of those four are **"lost board"** endings with **neither** fall-test condition
+true, and the fourth is a balance fall whose across place `pointAcross` is **exactly 0** — so its fall is in the
+along/pitch direction, which this probe's across columns cannot see at all. **The flat-across cell is a counterfactual
+about the datum and nothing else: not a spot, not a playable cell, not a population to compare regimes or fall counts
+on.**
+
+## 6. The owner's bar, measured, with every population named
+
+**`fell` is read as the ride ending, and the two ways it can end are counted apart**, because the flat-across cell
+(§5) ends 9 of its 24 rides the second way and no previous Part had to separate them: **a balance fall** is
+`HumanBalance.fallen`, the two fall-test conditions together; **"lost board"** is the rider separating because the
+board has got away from him.
+
+| **[M]** arm | n | the ride ended | balance fall / lost board | when, s |
+|---|---|---|---|---|
+| **`bank.ts`, deck filter, the owner's own low-speed cell** (6 absolute entries × 3 stances) | **18** | **18 of 18** | **17 / 1** | **0.52–7.10** |
+| the same, **world** filter | 18 | **18 of 18** | **18 / 0** | **0.12–6.90** |
+| the same, deck filter, the ledger **off** (the purity check) | 18 | **18 of 18** | 17 / 1 | 0.52–7.10 |
+| `bank.ts`, deck filter, step 3.3k's unsteered arm (8 relative entries × 3 stances) | 24 | **24 of 24** | **23 / 1** | 1.10–2.07 |
+| the same, world filter | 24 | **24 of 24** | **24 / 0** | 0.77–1.95 |
+| the same, deck filter, the ledger **off** (the reproduction) | 24 | **24 of 24** | 23 / 1 | 1.10–2.07 |
+| the same, world filter, the ledger **off** | 24 | **24 of 24** | 24 / 0 | 0.77–1.95 |
+| `bank.ts`, deck filter, the flat-across counterfactual (`SIDE=0`) | 24 | **24 of 24** | **15 / 9** | 0.52–6.38 |
+
+**The owner's bar is "in Compress the surfer should not fall at the low speeds of getting into position", 100 %, not
+fewer. It is not met, and this round is the first to test it on a cell built for those words.** Compress's ride ends
+**6 of 6** in each low-speed arm and **8 of 8** in each unsteered one — every one of those 28 a **balance fall** — and
+**174 of 174 rides in this round ended before nine seconds, 161 of them as a balance fall and 13 by losing the
+board** (nine of those thirteen in the straight-down-the-face cell).
+
+## 7. What I refuted
+
+- **My brief's own question, by its datum.** *"What makes his body lean, standing still?"* — the lean is **not
+  created**. The body's bank from the world vertical is **8.69–8.71° at the first frame in 24 of 24** because the
+  board is placed flat on a face tilted 8.7–8.9° across and the body is mounted plumb to the deck. Step 3.3k's
+  48-of-48 clock is reproduced to the digit and is a clock on **1.3°** of movement.
+- **My brief's own ordering, in the only frame where it is about motion.** *"The body's bank passes 10° before the
+  deck's roll does"* holds (24 of 24, +0.100 s median) — but the **rail** passes 2° **before the joint** does in
+  **18 of 20**, at a median lead of **0.650 s**. In the angles that start at zero, **the pair leaves the face before
+  the body leaves the deck.**
+- **My own P3, and it was not even close.** I predicted `carry` — the constraint's own momentum gap — would be the
+  largest entry in the first measured window. It is **under 1e-11 rad/s² in 24 of 24 and 18 of 18**, and
+  **structurally so**: the body's velocity is defined as the rigid carry plus the three joint rates on an orthonormal
+  triad, so the gap cannot be anything else. A term I named as a candidate does not exist.
+- **My own P2's first half.** Gravity is **not** the largest driving entry over the last 0.5 s: the **leg spring** is,
+  in **20 of 24** runs (and in 24 of 24 of the mid window). Gravity is the largest driving entry only in the first
+  0.2 s, and only in 15 of 24. **P2's second half — the size — held at 0.862–1.127 of `g sin θ / L`.**
+- **My own P5, for `weight`.** The board's own weight is **32–92 % of the largest entry** in the first 0.2 s (median
+  80 %), not the under-5 % I predicted. `gyro` held at under 0.03 %.
+- **My own P1, half of it.** The ankle's two halves are large and opposite as predicted, but its `own` entry is
+  **0.25–0.40 of its `relative` half at the median** in the three windows that matter, not under 0.25.
+- **My own P8, as a bar.** The ledger's total, integrated over the ride, does **not** reproduce the body's own lean
+  rate to 20 %: the signed gap is **−153.2 to +4.8 °/s** on a rate reaching 74.8–186.8, and adding the two kinematic
+  terms I could measure moves it only to −150.5 to +6.0. §9 says what is missing and why it is not a missing force.
+- **Step 3.3k's reporting of its two filters as two populations**, for the purpose of an attribution. `?feltFrame=deck`
+  moves no force [R]; the 24 deck rides and the 24 world rides are the **same 24 trajectories** and differ only in
+  when the fall test fires, which every pre-fall column here confirms to the digit. Its 48-of-48 is right as a fall
+  count and is 24 trajectories as a mechanism.
+
+## 8. What I will not claim
+
+- **I will not claim gravity is "the cause" of the lean.** It is the one entry with a consistent sign in 24 of 24, a
+  consistent size and a closed form it matches to 14 % — and its net is nearly cancelled by the board's own weight
+  (the two together are +8.5 °/s² of the first window's +39.9 net), and the whole net is 1/12th of the gross. **The
+  measurement supports "the lean is a residual, and gravity is its one lawful term", and not a cause.**
+- **I will not claim the balance has no authority over the pair's roll.** Part 34 refused that inference without
+  measuring it; this round measures **a quarter to two fifths** of the ankle's authority surviving to the body, which
+  is small and is not zero. The stronger claim stays out.
+- **I will not claim the across tilt is the cause either.** Removing it delays the lean by 3.5 s and the fall by a
+  median of about 2.5 s, and **24 of 24 still fall**, 4 of them with the roll exactly zero. The tilt is the starting
+  value of an unstable quantity, which is a different thing from a cause.
+- **I will not report the low-speed cell's attribution.** The contact goes infeasible for up to 46 % of its substeps
+  and the per-source signs do not hold there. That cell gives a fall count, a clock and a side, and no mechanism.
+- **I will not claim the leg-against-pressure pair is a defect.** It is the standing contact doing its job: 3 815
+  against −3 320 °/s² is what holding 736 N up on a planing hull looks like through a board whose roll inertia is
+  0.5–1.1 kg·m². That the lean is the 500 °/s² they miss by is a **sensitivity**, and whether it is wrong is a
+  question for the round that tries to change it.
+- **I will not claim the ledger explains the lean rate's evolution.** It attributes the **drive**, exactly, on every
+  substep the standing solve decided. The step from the drive to the state does not close (§9), and the three terms
+  between them are kinematic re-projections, not forces.
+- **The `FaceWater` is a fit to Canyon, not Canyon**; the rider is **placed**, not paddled or popped up, and §2.1's
+  8.7° is a property of being placed; `SIDE=0` is a third population; every span above is **the whole population of
+  its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 9. The controls, and the one that does not close
+
+**P0, the three closures, on every substep of all 108 ledger runs** [M]:
+
+- `split`, `max |Σ parts − b|` over the rows, N·s and N·m·s: **1.110e-15** — the worst substep of the 24 unsteered
+  trajectories at full length, measured to the exponent and not to the result files' twelfth decimal, where every arm
+  prints **0.000000000000**.
+- `closure`, `max |Σ_source A⁻¹ part − A⁻¹ b|` on rows 3, 4, 5 and 7, m/s and rad/s: **5.329e-15**.
+- `residual`, this file's own `A⁻¹ b` against the game's `solveLinear` on the same rows: **exactly 0 — to the last
+  bit, on every substep.** An LU with partial pivoting written here and `legSpring`'s own `solveLinear` return the
+  identical doubles, which is the strongest form this control can take: the denominator every entry is divided by is
+  demonstrably the game's own.
+- `singular`: **0**. And the per-window sum of the per-source means against the window's own total:
+  **0.000000–0.005000 °/s²**, which is the result file's own rounding.
+- `bankLedger.test.ts` asserts all three under **1e-9** over 50 steps of an unsteered and a steered ride, and
+  `own = relative + deck` per source under **1e-12**.
+
+**P0b, the rider unchanged** [M]: `bank.ts` with the ledger **off** reproduces step 3.3k's published unsteered arm to
+the digit — **24 of 24 at 1.10–2.07 s** (deck) and **0.77–1.95 s** (world), roll at the fall **27.45–89.0°** and
+**20.9–68.8°**, bank **28.4–70.0°** and **20.7–70.0°**, rail **17.7–88.9°** and **10.8–68.8°**, regimes **A 0 / B 11 /
+C 13** and **A 0 / B 22 / C 2**, Compress past 60° in **7 of 8** — and with the ledger **on** every one of the 24 rows
+is identical in fall time, roll, bank and frame count on both filters, and 18 of 18 on the low-speed cell.
+`bankLedger.test.ts` asserts the bank, the body's own rate and the board's position **bit-identical** over 80 steps
+with the ledger on and off.
+
+**The control that does not close, named rather than buried.** `rider.angularVelocity · rollAxis` is the quantity the
+ledger is the derivative of, so `Σ ownTotal · dt` should reproduce its change. It does not: the signed gap is
+**−153.2 to +4.8 °/s** over the unsteered arm's unclamped frames, on a rate that reaches **74.8–186.8 °/s** [M]. Three
+terms sit between the drive and the state, and **none of them is a force**:
+
+1. **the leg's own length changing** — `bankSpeed / L` moves when `L` does, and Compress shortens the leg through its
+   first second;
+2. **the roll axis turning with the heading** — `d/dt (ω · u) = α · u + ω · u̇`;
+3. **the body's own `across` axis turning** — `bankSpeed` is **re-projected** onto the banked `across` at the start of
+   every substep [R], so a body whose velocity has not changed reads a different speed across once it has banked.
+
+The first two are measured here from frame differences of public fields and together close **half** the gap on a single
+Compress run (−60.5 → −29.2 °/s) and almost none of it over the arm (−153.2 → −150.5). The third is read in the code
+and **not** measured: it needs a substep-resolution ledger of its own. Against this, **the drive's own partition is
+exact to 1e-12 on every substep**, which is the claim §2 and §3 rest on, and the solve-apart paths — the substeps the
+standing system did not decide — are **0 of 1 048–2 112 in the mount and early windows of 24 of 24** and 0–586 over the
+whole ride [M].
+
+## 10. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the probe type-checked separately on a throwaway project extending the root's options with `types: ["node"]` and an
+  **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/bank.ts`, `src/physics/bankLedger.ts`, `src/physics/AttachedRider.ts`,
+  `src/physics/BoardBody.ts`, `src/physics/testing/FaceWater.ts` and `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 618 passed, 21 expected fail** — step 3.3k's 612 **plus this round's six new
+  tests** (`bankLedger.test.ts`), one new file.
+  `vitest run src/game src/scene/rig`: **70 files, 732 passed** — identical to step 3.3k's.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical to step 3.3k's.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round touches no solver, no wave and no spot file.
+- **the shipped rider is proved unchanged against step 3.3k's three published baselines, to the digit** (§9, P0b), and
+  `bankLedger.test.ts` proves the ledger is a pure observer bit for bit.
+- **the Canyon byte check, because `src/` changed** (`scripts/m1-cpu-bench.ts`, medium, 3 600 steps, **fresh**
+  spin-ups into new state paths), with the three checks **read** rather than assumed — the wrapper prepends
+  `globalThis.location = { search: '?canyonWaves=true' }` to the bundle (a prepended line, because a dynamic import
+  makes rolldown split the chunk), the grid line read, and the "spun up on the CPU in … s" line read so that no kept
+  `.sea` was imported:
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180 400 cells**, spun up on the CPU in **43.4 s**: snapshots
+    **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202 800 cells**, spun up on the CPU in **54.7 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  All four match, which they must: this round touches no solver, no wave, no spot file and no hull law, and every line
+  it adds to `BoardBody` and `AttachedRider` sits inside `if (bankLedger.on)`, which is false in the game. The raw
+  output is `results/33l/33l-canyon-byte-check.txt`.
+
+## 10b. The deletions column, read line by line
+
+`git diff --cached --numstat origin/main`, read file by file: **24 files changed, 3 113 insertions and EXACTLY ZERO
+deletions.** Every one of the 24 files has a `0` in the deletions column, and `--shortstat` prints
+`3 113 insertions(+)` with no deletions at all. **Nothing was removed, nothing was replaced in place and nothing was
+reverted.** That is possible because this round adds a ledger instead of threading one through existing arithmetic:
+
+- `src/physics/bankLedger.ts`, **+336 / −0** — a new file.
+- `src/physics/bankLedger.test.ts`, **+173 / −0** — a new file.
+- `src/physics/AttachedRider.ts`, **+53 / −0** — three `if (bankLedger.on)` blocks and one import line, all added
+  **beside** the shipped lines and never through them, so the arithmetic that writes `rhs` keeps its own
+  floating-point order with the ledger on and off (which is what makes §9's bit-identical purity check pass).
+- `src/physics/BoardBody.ts`, **+24 / −0** — one `if (bankLedger.on)` booking block, the `begin`/`close` calls, the
+  `verify` call after `solveLinear`, two `apart` counters and one import line.
+- `docs/research/new-rider/3.3/bank.ts`, **+641 / −0** — a new probe.
+- `docs/research/new-rider/3.3/README.md`, **+685 / −0** — this Part.
+- `docs/research/new-rider/3.3/results/33l/`, 18 files, **every one a pure addition**.
+
+`origin/main` is still **c3e87e2a**, this branch's own merge base, so there was no mid-round merge to rebase onto —
+and the column was read rather than that being assumed.
+
+## 11. Files (3.3l)
+
+- `src/physics/bankLedger.ts` — the bank ledger: 23 named sources, the split of `b`, an LU with partial pivoting, the
+  per-source back-substitution, the three closure tests, and the `own` / `relative` / `deck` split. **Off by default,
+  no behavioural switch of any kind, and the game pays one branch per substep while it is off.**
+- `src/physics/BoardBody.ts` — the board's own rows of `b` booked by source where `advance` assembles them, the
+  ledger's step begin/close, the `verify` call that checks this file's factorisation against `solveLinear`, and the
+  two counters for the substeps the standing system did not decide.
+- `src/physics/AttachedRider.ts` — the rider's own entries: `coupleYaw`'s kick, the four parts of `f`
+  (`gravity`, `riderWater`, `assist`, `carry`), the joints' rows (`leg`, `ankle`, `swing`, `twist`, `hand`, `pitch`,
+  `drive`, `limbs`), and the call that attributes the substep at the end of `coupleStanding`, before `solveLinear`
+  destroys `A` or `b`.
+- `src/physics/bankLedger.test.ts` — the six tests: the three closures at machine precision on an unsteered and a
+  steered ride, `own = relative + deck` per source, `carry` at floating-point zero, that nothing is booked while the
+  ledger is off, and that the trajectory is **bit-identical** with it on and off.
+- `docs/research/new-rider/3.3/bank.ts` — the probe: the datum columns (the face's across tilt, the rail, the joint),
+  the three clocks, the per-source attribution per window with the cancellation ratio and the five groups, the
+  inverted pendulum's own yardstick `g sin θ / L` computed from the window's own measured bank and leg length, the
+  two kinematic terms, the apart share per window, step 3.3j's ankle ledger read beside this one, and `ENTRIES` — the
+  **absolute** entry speed the owner's low-speed cell is built on.
+- `docs/research/new-rider/3.3/results/33l/` — five arms with their printed tables beside their rows, the three
+  reproduction arms with the ledger off, `33l-predictions.md` (every prediction as written before its read, P9
+  included and marked as written after P0–P8's reads and before its own) and `33l-canyon-byte-check.txt`.
+
+## 12. For the owner, in plain words — and the shot list
+
+**You asked me to go after the thing that makes his body lean. I did, and the first thing I owe you is that his body
+does not start plumb.**
+
+The wave face is a slope. Your test spot's face is tilted about **nine degrees sideways** where the board sits, the
+game puts the board flat on that slope, and it stands the man square to the board. So **before anything moves, his
+body is already nine degrees off upright** — twenty-four rides out of twenty-four, measured at the very first frame.
+Last round I told you his body's lean "passes ten degrees" a fifth of a second in. That is true and it is **one and a
+third degrees of actual leaning**. I reported a starting value as a motion, and I am sorry.
+
+**And when I took the tilt away, nothing happened — for three and a half seconds.**
+
+I ran the same wave with the board pointed straight down the face instead of across it, so there is no sideways tilt.
+His lean, the board's roll and the angle at his ankle all read **exactly zero** for the first fifth of a second and
+stay there: the board does not get two degrees onto a rail until **three and a half to six seconds** in, against a
+fifth of a second before. **The nine degrees is where it starts.** But it only buys him two to four seconds: fifteen
+of those twenty-four rides still end with him falling off, and the other nine end with the board running off the wave
+and leaving him, because straight down the face is away from the wave. **So the tilt is the starting push and not the
+whole story.**
+
+**Now the honest bad news about "the cause": there isn't one.**
+
+I built an exact ledger of who leans him. It is exact — I can take the game's own equation apart source by source and
+the pieces add back up to the game's own answer to twelve decimal places, which is the one thing I am certain of in
+this round. And what it shows is that **a dozen forces of a few hundred to a few thousand degrees-per-second-squared
+produce a net of about forty**. They nearly cancel. His lean is the small amount by which they miss.
+
+The one piece that behaves like a law is **his own weight on a leg that is not upright**. It drives the lean in
+twenty-four rides out of twenty-four in every window of every ride, and its size matches the textbook formula for a
+balancing pole — `g·sin(lean)/leg length` — to within about ten per cent. **He leans because he is a pole balanced on
+a board, and the only thing he is referenced to is the board.** But even that is nearly cancelled by the board's own
+weight, so I will not sell it to you as *the* cause.
+
+**And here is the number I think is the real find, because it explains nine rounds of me telling you the ankle is
+innocent.**
+
+**His ankle keeps only about a quarter of its own strength.** When his ankle pushes to right him, it also pushes the
+board the other way — and the board, in the water, is between **forty-six and a hundred and nine times easier to roll
+than his body is**. So three quarters of everything his ankle does goes into rolling the board under him instead of
+standing him up. Measured: a median of **0.31, 0.40, 0.25 and 0.13** of the ankle's effort surviving to his body, in
+the four windows of the ride.
+
+**That is why widening the ankle's limit last round saved nobody in ninety-six rides, and why the sole's limit, the
+hip, the knee and the stance's reach were all innocent too.** You cannot fix a muscle that keeps a quarter of its
+force by changing how far it is allowed to reach. **If you want him to stand up, the next change has to be about
+something other than the ankle's command — the board has to be harder to roll, or he needs a second thing to push
+against.**
+
+**Your bar: still not met, and I tested it on your own words this time.**
+
+You said *"in compress the surfer should not fall at the lower speed of getting positioning in a wave."* Every round
+so far ran him at seven to ten metres a second, which is not that. I built the cell you described — **one, two, three,
+four, five and six metres a second through the water**, stick never touched. **Seventeen of eighteen rides on your own
+setting end with him falling off (the eighteenth ends with the board getting away), and all eighteen on the other
+setting are falls.** In Compress, **six of six on each, every one a fall**. And it is **worse** down there, not
+gentler: below three metres a second he goes over in **about six tenths of a second**, against a best of 1.1 seconds at
+the faster speeds. One odd thing I can see but cannot explain yet: **below four metres a second he falls onto the
+other rail** — the opposite side from the fast rides. I am not going to guess why.
+
+**174 of 174 rides in this round ended before nine seconds — 161 of them with him falling off, and thirteen with the
+board getting away from him, nine of those thirteen in the straight-down-the-face cell.**
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot. One change at a time, as always. **Nothing in this round changes the
+game**, so these are all about your eyes on things I measured on the bench.
+
+1. **`?rider=new&feltFrame=deck&canyonWaves=true`, hands off the stick, Compress. Watch the first half second.** The
+   measurement says he is already nine degrees out of upright before he has done anything, and that the **board's rail
+   bites before his body leaves the deck** — the opposite order from what I told you last round. **The question: when
+   he goes, does it look like the board tipping and taking him, or like him toppling off a board that stays put?** If
+   it looks like the board, my clock is right this time; if it looks like him, I have the frames wrong again.
+2. **The same, pointed straight DOWN the face instead of across it** — take off and go straight, no angle. The
+   measurement says this is the one cell where he stands plumb, and that he lasts **two to four seconds longer**;
+   it also says you will probably run off the front of the wave before much else happens, which is what it did on the
+   bench in nine of twenty-four. **The question: in the seconds before you lose the wave, does going straight feel
+   noticeably more stable than angling across?** If it does, the nine-degree start is something you can feel and not
+   just something I can measure.
+3. **Get into position slowly and don't take off** — paddle up, stand, trim at walking pace. The measurement says this
+   is the **worst** case, not the easiest: six tenths of a second. **The question: is that what it feels like — that
+   the slow part is where he is least stable?** This is your own bar and it is the cell I most want your eyes on.
+4. **And a ruling, not a ride.** Everything at the ankle is now measured and the reason it was all innocent is
+   measured too: the ankle keeps a quarter of its force because the board rolls too easily. There are three honest
+   next moves and I can only run one:
+   - **make the board harder to roll** — its roll resistance in the solve is 0.5 to 1.1 kg·m², and I can measure what
+     a real board's is and whether ours is short;
+   - **give him a second thing to push against** — the two-body rider, which is the route the parked duck-dive work
+     already named as the faithful one;
+   - **go after the 70° clamp** from last round, which is still a real defect but which I showed arrives after the
+     fall has started.
+   **My own recommendation is the first**, because it is a measurement before it is a change, and because if the
+   board's roll resistance is right then the second is the only route left and we should stop looking for a tuning fix.
+   **Your call.**

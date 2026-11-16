@@ -5,6 +5,7 @@ import { RAIL_BAND, buildBoardShape, type BoardShape } from './boardShape';
 import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
 import { hollowWetShare, railDepth } from './deckHollow';
 import { RAIL_SUCTION, WATER, WET_RAMP, createPatchForce, patchForce, planingScales, submergedShare, wettedShare, type WorldPatch } from './hullForces';
+import { bankLedger } from './bankLedger';
 import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
 import type { BoardSpraySheet } from '../wave/SprayCloud';
@@ -864,6 +865,7 @@ export class BoardBody implements BoardContactBody {
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
     if (BoardBody.yawLedger) for (const key of Object.keys(this.yaw) as (keyof BoardBody['yaw'])[]) this.yaw[key] = 0;
     if (BoardBody.rollLedger) for (const key of Object.keys(this.roll) as (keyof BoardBody['roll'])[]) this.roll[key] = 0;
+    if (bankLedger.on) bankLedger.begin();
     this.rider?.beginStep();
     this.substepsTaken = 0;
     this.stepSpan = dt;
@@ -886,6 +888,7 @@ export class BoardBody implements BoardContactBody {
       q.rider = q.total - (q.buoyancy + q.pressure + q.addedMass + q.radiation + q.friction + q.bed + q.fins + q.rails + q.froth + q.suction + q.gyro);
       for (const key of Object.keys(q) as (keyof BoardBody['roll'])[]) q[key] *= inverseDt;
     }
+    if (bankLedger.on) bankLedger.close(dt);
     this.rider?.endStep(dt, water, this);
     for (let k = 0; k < this.count; k += 1) {
       const jx = this.reaction[k * 3];
@@ -1454,6 +1457,22 @@ export class BoardBody implements BoardContactBody {
       rhs[4] += h * frothTy;
       rhs[5] += h * frothTz;
     }
+    if (bankLedger.on) {
+      // **Step 3.3l, the bank ledger**: the board's own rows of `b`, split by source, exactly as the six lines above
+      // sum them. Recomputed rather than threaded through those lines, so the shipped arithmetic above is untouched
+      // and its floating-point order is the same with the ledger on and off (`bankLedger.test.ts`).
+      bankLedger.beginSubstep();
+      bankLedger.bookBoard('weight', 0, h * weight, 0, 0, 0, 0);
+      bankLedger.bookBoard('buoyancy', h * totals.bx, h * totals.by, h * totals.bz, h * totals.btx, h * totals.bty, h * totals.btz);
+      bankLedger.bookBoard('pressure', h * totals.px, h * totals.py, h * totals.pz, h * totals.ptx, h * totals.pty, h * totals.ptz);
+      bankLedger.bookBoard('suction', h * totals.sx, h * totals.sy, h * totals.sz, h * totals.stx, h * totals.sty, h * totals.stz);
+      bankLedger.bookBoard('friction', h * totals.fx, h * totals.fy, h * totals.fz, h * totals.ftx, h * totals.fty, h * totals.ftz);
+      bankLedger.bookBoard('fins', h * ft[0], h * ft[1], h * ft[2], h * ft[3], h * ft[4], h * ft[5]);
+      bankLedger.bookBoard('rails', h * ft[6], h * ft[7], h * ft[8], h * ft[9], h * ft[10], h * ft[11]);
+      bankLedger.bookBoard('gyro', 0, 0, 0, -h * gyro[0], -h * gyro[1], -h * gyro[2]);
+      bankLedger.bookBoard('addedMass', waterX, waterY, waterZ, waterTx, waterTy, waterTz);
+      if (frothX !== 0 || frothZ !== 0) bankLedger.bookBoard('froth', h * frothX, 0, h * frothZ, h * frothTx, h * frothTy, h * frothTz);
+    }
     if (BoardBody.yawLedger) {
       const y = this.yaw;
       y.buoyancy += h * totals.bty;
@@ -1505,13 +1524,18 @@ export class BoardBody implements BoardContactBody {
       }
       rider.coupleStanding(s8, r8, h);
       solveLinear(s8, r8, n);
+      // Step 3.3l: this file's own answer against the game's, on the rows the bank ledger reads (read-only).
+      if (bankLedger.on) bankLedger.verify(r8);
       // `legPower: 'cap'` (ruling 27's A-lite), or the new surfer standing (its power window): a met contact over the
       // legs' power is solved apart too, and apart the board takes only what the legs transmit, within their power (`pushCapped`).
       if (rider.settleStanding(r8, h, this) && !(rider.powerCapped && rider.overPower(r8, h))) {
         for (let i = 0; i < 6; i += 1) rhs[i] = r8[i];
       } else if (rider.powerCapped) {
+        // Step 3.3l: the standing system did not decide this substep, so its attribution does not describe it.
+        if (bankLedger.on) bankLedger.apart += 1;
         this.pushCapped(system, rhs, rider, h);
       } else {
+        if (bankLedger.on) bankLedger.apart += 1;
         rider.pushBoard(rhs);
         solve6(system, rhs);
       }

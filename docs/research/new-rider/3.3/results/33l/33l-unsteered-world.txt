@@ -1,0 +1,172 @@
+
+# the cell, read
+n 24  the ride ended 24 of 24  (balance fall 24, other 0: none)  at 0.77–1.95 s
+entry asked 4.43–10.44 m/s  through the water, first live frame 4.44–10.50  at the fall 5.00–9.71
+roll at the fall 20.9–68.8°  bank 20.7–70.0°  joint -1.9–11.1°  rail 10.8–68.8°
+THE DATUM, first frame: the face's across tilt 8.7–8.9°, the deck's roll 8.8–8.9°, the body's bank 8.7–8.7°, the joint -0.2–-0.1°
+at 0.200 s: tilt 7.4–10.0°, roll 9.0–9.7°, bank 8.9–9.9°, joint -0.7–0.7°, the body's own rate 0.9–13.9 °/s
+regimes A/B/C 0 / 22 / 2
+the bank passes 10° first in 24 of 24, median 0.100 s
+the clocks: the rail passes 2° at 0.217–0.983 s and 10° at 0.500–1.183; the joint passes 2° at 0.317–1.533 and 5° at 1.000–1.050; the bank passes 10° at 0.217–0.667
+
+# the controls (P0)
+split 0.000000000000–0.000000000000  closure 0.000000000000–0.000000000000  residual 0.000000000000–0.000000000000
+sum − total, worst window 0.000000–0.005000 °/s²
+apart 0–15 substeps of 724–1866, share 0.0000–0.0124  singular 0–0
+the control, all frames (46–115): -3.0–-2.2 → integrated 44.7–104.5 against the read 64.8–163.3 °/s, signed gap -87.4–1.8, worst single step 0.231–5.916
+the control, clean frames (46–115): -3.0–-2.2 → integrated 44.7–104.5 against the read 44.1–163.3 °/s, signed gap -87.4–3.7, worst single step 0.231–5.916
+the control, kin frames (46–115): -3.0–-2.2 → integrated 57.9–111.2 against the read 64.8–163.3 °/s, signed gap -65.2–1.6, worst single step 0.226–4.158
+the geometric bank's own rate, a DIFFERENT quantity, less the body's own: median -1.1–0.0 °/s
+cancellation ratio (Σ|entry| over |total|) by window: mount 7–266  early 12–528  mid 19–12161  late 21–16931  last02 13–404  ride 15–375
+
+# the five groups, °/s², LEAN-signed means (+ drives the lean he fell with)
+window	support	weightAll	foils	joints	other	total
+mount	-130.0	8.5	56.1	105.2	-0.0	39.9
+early	300.4	41.0	-168.8	-111.7	-0.0	60.9
+mid	694.7	212.1	78.3	-887.6	-0.2	97.4
+late	667.2	448.8	-171.2	-858.7	-0.2	85.9
+last05	761.8	296.9	15.2	-957.8	-0.3	115.8
+last02	497.3	397.3	441.6	-1088.9	-0.3	247.0
+ride	633.7	199.3	-25.0	-715.7	-0.2	92.1
+
+# mount: the body's own lean acceleration per source, °/s², MEANS over the window, 24 runs
+t 0.017–0.200…  bank 8.7–9.0°  roll 8.9–9.2°  joint -0.4–0.1°  leg 0.834–0.850 m  g sinθ/L 100.4–105.6 °/s²  face tilt 8.1–9.5°  rail -0.4–0.9°  apart share 0.000–0.000  joint -0.39–0.05° rest -0.26–0.24° torque -7.0–2.6 N·m  the body's own rate 1.0–6.6 °/s
+total own 2.4–68.7  = relative -35.6–96.8 + deck -60.0–41.5
+source	own, mean of means	own, span	LEAN-signed, mean	relative, mean	deck, mean	driving in
+gravity	96.9	91.2–100.0	96.9	88.2	8.7	24 of 24
+weight	-88.4	-98.0–-79.4	-88.4	-63.3	-25.1	0 of 24
+leg	-86.1	-306.7–61.9	-86.1	-73.5	-12.6	4 of 24
+ankle	58.2	-78.6–205.9	58.2	166.3	-108.0	18 of 24
+pressure	-48.1	-159.7–22.6	-48.1	-249.1	201.0	6 of 24
+pitch	44.2	9.6–86.5	44.2	175.3	-131.1	24 of 24
+rails	34.2	16.9–53.0	34.2	27.5	6.6	24 of 24
+fins	12.6	-18.2–51.0	12.6	0.7	11.9	18 of 24
+friction	9.3	5.8–12.5	9.3	-5.8	15.1	24 of 24
+addedMass	4.2	-1.1–9.6	4.2	-36.4	40.6	21 of 24
+yawCouple	2.8	0.3–5.9	2.8	14.2	-11.4	24 of 24
+buoyancy	-0.0	-0.8–0.9	-0.0	-9.2	9.2	13 of 24
+gyro	-0.0	-0.0–0.0	-0.0	-0.0	0.0	0 of 24
+carry	0.0	0.0–0.0	0.0	0.0	0.0	0 of 24
+
+# early: the body's own lean acceleration per source, °/s², MEANS over the window, 24 runs
+t 0.217–0.400…  bank 9.0–11.7°  roll 9.2–10.2°  joint -0.6–2.2°  leg 0.713–0.847 m  g sinθ/L 103.7–158.1 °/s²  face tilt 6.4–10.2°  rail -0.7–3.4°  apart share 0.000–0.000  joint -0.62–2.06° rest 0.14–2.29° torque -10.1–16.6 N·m  the body's own rate 1.2–24.6 °/s
+total own -2.4–146.2  = relative -98.2–92.6 + deck -50.8–244.4
+source	own, mean of means	own, span	LEAN-signed, mean	relative, mean	deck, mean	driving in
+leg	550.2	-564.3–1572.9	550.2	829.4	-279.2	18 of 24
+pressure	-270.9	-737.1–61.5	-270.9	-541.6	270.7	4 of 24
+fins	-227.8	-414.1–119.5	-227.8	-188.9	-39.0	3 of 24
+ankle	-186.0	-630.6–414.6	-186.0	-466.9	280.9	6 of 24
+gravity	134.2	93.3–157.7	134.2	127.6	6.6	24 of 24
+weight	-93.2	-118.7–-66.4	-93.2	-60.6	-32.6	0 of 24
+pitch	69.7	8.0–176.1	69.7	218.4	-148.7	24 of 24
+rails	53.7	35.0–78.6	53.7	43.8	9.9	24 of 24
+addedMass	17.4	-11.0–38.4	17.4	-20.5	37.8	21 of 24
+friction	5.3	-12.6–18.7	5.3	-17.6	22.9	17 of 24
+yawCouple	4.6	-3.0–9.4	4.6	32.2	-27.5	22 of 24
+buoyancy	3.7	-1.5–8.3	3.7	28.3	-24.6	21 of 24
+gyro	-0.0	-0.0–0.0	-0.0	-0.0	-0.0	0 of 24
+carry	0.0	0.0–0.0	0.0	0.0	0.0	0 of 24
+
+# mid: the body's own lean acceleration per source, °/s², MEANS over the window, 24 runs
+t 0.417–1.000…  bank 10.3–26.7°  roll 10.0–23.6°  joint -1.1–3.8°  leg 0.564–0.850 m  g sinθ/L 118.8–447.9 °/s²  face tilt 2.0–10.0°  rail 0.1–20.9°  apart share 0.000–0.007  joint -1.13–3.73° rest -2.26–1.70° torque 2.6–37.1 N·m  the body's own rate 6.0–60.1 °/s
+total own -0.7–183.7  = relative -109.6–63.0 + deck -53.0–238.1
+source	own, mean of means	own, span	LEAN-signed, mean	relative, mean	deck, mean	driving in
+leg	3625.6	134.3–8102.3	3625.6	4966.0	-1340.3	24 of 24
+pressure	-2966.6	-7486.8–-12.3	-2966.6	-3063.2	96.7	0 of 24
+ankle	-955.5	-1753.3–-75.8	-955.5	-2993.1	2037.6	0 of 24
+gravity	305.0	113.1–488.9	305.0	288.6	16.3	24 of 24
+rails	99.4	34.8–167.9	99.4	69.7	29.7	24 of 24
+weight	-92.9	-144.5–-37.6	-92.9	34.5	-127.4	0 of 24
+pitch	72.8	-35.0–346.7	72.8	519.8	-447.0	16 of 24
+swing	-31.6	-31.6–-31.6	-31.6	-23.1	-8.5	0 of 1
+buoyancy	31.1	2.4–66.3	31.1	61.0	-30.0	24 of 24
+friction	-19.7	-118.6–18.3	-19.7	-12.5	-7.2	12 of 24
+addedMass	4.6	-54.7–68.5	4.6	309.2	-304.6	13 of 24
+yawCouple	-3.6	-19.3–6.7	-3.6	-55.8	52.2	8 of 24
+fins	-1.4	-434.1–341.2	-1.4	-141.8	140.3	13 of 24
+gyro	-0.2	-0.6–0.0	-0.2	0.0	-0.2	3 of 24
+carry	0.0	0.0–0.0	0.0	0.0	0.0	0 of 24
+
+# late: the body's own lean acceleration per source, °/s², MEANS over the window, 8 runs
+t 1.017–1.250…  bank 17.9–50.9°  roll 17.3–42.9°  joint 0.6–8.9°  leg 0.540–0.849 m  g sinθ/L 203.5–754.1 °/s²  face tilt 0.0–10.2°  rail 7.6–42.9°  apart share 0.000–0.061  joint 0.70–8.73° rest -3.59–6.58° torque 33.9–67.1 N·m  the body's own rate 45.8–107.4 °/s
+total own -0.2–190.6  = relative -332.9–246.7 + deck -205.7–483.2
+source	own, mean of means	own, span	LEAN-signed, mean	relative, mean	deck, mean	driving in
+leg	6277.1	1109.6–9402.0	6277.1	8515.5	-2238.4	8 of 8
+pressure	-5691.5	-8417.4–-410.7	-5691.5	-86.6	-5604.9	0 of 8
+ankle	-712.0	-1335.3–-109.8	-712.0	-9827.3	9115.2	0 of 8
+gravity	519.3	113.0–794.2	519.3	395.4	123.9	8 of 8
+fins	-201.5	-598.3–210.0	-201.5	53.2	-254.6	3 of 8
+pitch	-137.4	-422.6–57.3	-137.4	158.8	-296.2	1 of 8
+buoyancy	76.9	8.8–114.0	76.9	158.2	-81.3	8 of 8
+rails	71.2	4.4–122.1	71.2	3.6	67.6	8 of 8
+weight	-70.5	-95.2–-43.1	-70.5	246.1	-316.7	0 of 8
+friction	-40.9	-132.9–13.8	-40.9	29.0	-69.9	2 of 8
+swing	-16.4	-45.0–-4.1	-16.4	-14.9	-1.5	0 of 5
+addedMass	4.7	-63.0–130.9	4.7	284.6	-279.9	3 of 8
+yawCouple	1.0	-11.5–19.9	1.0	-21.1	22.1	4 of 8
+gyro	-0.2	-0.8–0.2	-0.2	0.3	-0.5	2 of 8
+riderWater	0.0	-0.0–0.0	0.0	0.2	-0.2	1 of 3
+carry	0.0	0.0–0.0	0.0	0.0	0.0	0 of 8
+
+# last05: the body's own lean acceleration per source, °/s², MEANS over the window, 24 runs
+t 0.767–1.250…  bank 13.6–48.4°  roll 12.9–46.7°  joint 0.6–6.0°  leg 0.542–0.850 m  g sinθ/L 155.0–700.9 °/s²  face tilt 0.0–9.9°  rail 3.1–46.4°  apart share 0.000–0.031  joint 0.62–5.77° rest -1.71–4.41° torque 18.1–50.7 N·m  the body's own rate 22.6–87.0 °/s
+total own 34.4–186.7  = relative -167.1–67.6 + deck -23.8–252.1
+source	own, mean of means	own, span	LEAN-signed, mean	relative, mean	deck, mean	driving in
+leg	4710.7	886.2–10428.9	4710.7	6172.3	-1461.6	24 of 24
+pressure	-3995.6	-9468.4–-282.7	-3995.6	-2542.0	-1453.6	0 of 24
+ankle	-954.6	-1577.9–-372.1	-954.6	-4830.4	3875.9	0 of 24
+gravity	386.5	154.8–723.9	386.5	336.1	50.4	24 of 24
+weight	-89.6	-145.3–-49.5	-89.6	87.4	-177.0	0 of 24
+rails	88.2	33.4–171.9	88.2	49.0	39.2	24 of 24
+fins	-48.5	-513.5–482.6	-48.5	-129.3	80.8	9 of 24
+buoyancy	48.3	7.2–149.8	48.3	95.9	-47.6	24 of 24
+friction	-24.5	-143.3–17.7	-24.5	-0.2	-24.3	10 of 24
+swing	-16.0	-33.6–-0.5	-16.0	-13.2	-2.8	0 of 6
+pitch	4.5	-366.7–212.7	4.5	437.4	-432.9	12 of 24
+yawCouple	-3.7	-16.8–8.5	-3.7	-53.5	49.8	7 of 24
+addedMass	-1.6	-56.5–66.2	-1.6	338.8	-340.4	11 of 24
+gyro	-0.3	-1.0–0.0	-0.3	0.1	-0.4	4 of 24
+riderWater	0.0	-0.0–0.0	0.0	0.4	-0.4	1 of 3
+carry	0.0	0.0–0.0	0.0	0.0	0.0	0 of 24
+
+# last02: the body's own lean acceleration per source, °/s², MEANS over the window, 24 runs
+t 1.067–1.250…  bank 16.3–60.9°  roll 15.9–59.0°  joint -0.0–10.5°  leg 0.538–0.850 m  g sinθ/L 185.0–854.1 °/s²  face tilt 0.0–9.8°  rail 6.3–59.0°  apart share 0.000–0.076  joint 0.08–10.34° rest -4.61–6.81° torque 30.6–79.0 N·m  the body's own rate 38.7–125.8 °/s
+total own 53.1–442.6  = relative -449.6–150.5 + deck -97.4–682.0
+source	own, mean of means	own, span	LEAN-signed, mean	relative, mean	deck, mean	driving in
+leg	5627.4	1476.7–11069.1	5627.4	7625.9	-1998.6	24 of 24
+pressure	-5181.1	-10840.5–-487.2	-5181.1	-1568.3	-3612.8	0 of 24
+ankle	-1010.3	-1875.3–-45.9	-1010.3	-7592.6	6582.3	0 of 24
+gravity	489.3	188.5–843.3	489.3	399.3	90.0	24 of 24
+fins	373.9	-752.3–1336.9	373.9	70.4	303.6	16 of 24
+rails	95.8	21.6–194.6	95.8	33.3	62.5	24 of 24
+weight	-92.0	-146.5–-50.4	-92.0	177.9	-269.9	0 of 24
+buoyancy	68.0	10.1–212.3	68.0	142.8	-74.8	24 of 24
+pitch	-48.9	-527.8–200.6	-48.9	376.4	-425.3	11 of 24
+swing	-40.4	-86.9–-1.2	-40.4	-33.2	-7.2	0 of 6
+friction	-28.1	-157.4–36.2	-28.1	19.2	-47.3	8 of 24
+yawCouple	-19.6	-60.4–23.4	-19.6	-149.8	130.2	7 of 24
+addedMass	-16.9	-127.1–153.6	-16.9	443.7	-460.6	10 of 24
+gyro	-0.3	-1.4–0.3	-0.3	0.8	-1.1	6 of 24
+riderWater	0.0	-0.1–0.1	0.0	0.9	-0.9	1 of 3
+carry	0.0	0.0–0.0	0.0	0.0	0.0	0 of 24
+
+# ride: the body's own lean acceleration per source, °/s², MEANS over the window, 24 runs
+t 0.217–1.250…  bank 11.9–27.9°  roll 11.5–24.8°  joint 0.3–4.1°  leg 0.579–0.849 m  g sinθ/L 136.3–412.8 °/s²  face tilt 2.4–10.0°  rail 1.6–21.4°  apart share 0.000–0.015  joint 0.26–3.99° rest -0.91–2.51° torque 8.9–35.9 N·m  the body's own rate 14.6–53.6 °/s
+total own 31.6–152.7  = relative -78.7–19.2 + deck 46.5–190.2
+source	own, mean of means	own, span	LEAN-signed, mean	relative, mean	deck, mean	driving in
+leg	3238.7	336.4–6536.9	3238.7	4382.1	-1143.4	24 of 24
+pressure	-2641.7	-6017.1–-99.2	-2641.7	-2241.5	-400.2	0 of 24
+ankle	-760.4	-1242.2–-324.5	-760.4	-3040.4	2280.0	0 of 24
+gravity	290.8	129.3–444.2	290.8	265.3	25.5	24 of 24
+fins	-94.1	-371.5–161.5	-94.1	-150.6	56.6	5 of 24
+weight	-91.5	-137.2–-53.4	-91.5	30.8	-122.3	0 of 24
+rails	83.9	41.5–127.9	83.9	55.9	28.1	24 of 24
+pitch	47.4	-79.0–186.8	47.4	412.3	-364.9	16 of 24
+buoyancy	30.0	3.2–59.8	30.0	64.5	-34.4	24 of 24
+friction	-14.9	-94.0–12.3	-14.9	-8.9	-6.0	10 of 24
+swing	-7.3	-23.2–-0.3	-7.3	-5.6	-1.7	0 of 6
+addedMass	6.6	-28.1–52.8	6.6	231.9	-225.3	14 of 24
+yawCouple	-1.0	-8.1–7.2	-1.0	-29.4	28.4	9 of 24
+gyro	-0.2	-0.4–0.0	-0.2	0.0	-0.2	3 of 24
+riderWater	0.0	0.0–0.0	0.0	0.0	-0.0	1 of 3
+carry	0.0	0.0–0.0	0.0	0.0	0.0	0 of 24

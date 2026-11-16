@@ -3,6 +3,7 @@ import type { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { LIP_CONTACT, LIP_QUERY_MARGIN, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import type { BoardShape } from './boardShape';
+import { bankLedger } from './bankLedger';
 import { WATER } from './hullForces';
 import { RIDER_LEG } from './legSpring';
 import { MinimumJerkTrack } from './MinimumJerkTrack';
@@ -4347,6 +4348,8 @@ export class AttachedRider {
       for (let j = 0; j < 3; j += 1) system[(3 + i) * 6 + 3 + j] += inertia * nv[i] * nv[j];
       rhs[3 + i] += kick * nv[i];
     }
+    // Step 3.3l, the bank ledger (read-only): the kick on the board's own rows, as a named source.
+    if (bankLedger.on) bankLedger.bookTorque('yawCouple', kick * n.x, kick * n.y, kick * n.z);
     this.yawCoupled = true;
     tb.coupled = true;
   }
@@ -4420,6 +4423,24 @@ export class AttachedRider {
     if (free) mismatch.addScaledVector(this.forward, this.standingBody.speed);
     mismatch.sub(this.velocity);
     const f = this.scratch2.copy(this.external).multiplyScalar(h).addScaledVector(mismatch, -m);
+    if (bankLedger.on) {
+      // **Step 3.3l, the bank ledger (read-only)**: `f`'s four named parts, each spread over the same rows the lines
+      // below spread `f` over. `external` is `gravity + waterForce + assistForce + carryForce + leanOutForce
+      // (+ driveForce)`, and the last four are identically zero for the new surfer (`compressAssist` returns at once
+      // on `newRider`); `assist` is booked anyway so the partition is read rather than assumed. The bookings are
+      // recomputed beside the shipped lines and never through them, so the arithmetic below is untouched.
+      const w = this.forward;
+      const banking = this.banking;
+      const g = this.gravity;
+      const wf = this.waterForce;
+      const ax = this.assistForce.x + this.carryForce.x + this.leanOutForce.x + (this.drives ? this.driveForce.x : 0);
+      const ay = this.assistForce.y + this.carryForce.y + this.leanOutForce.y + (this.drives ? this.driveForce.y : 0);
+      const az = this.assistForce.z + this.carryForce.z + this.leanOutForce.z + (this.drives ? this.driveForce.z : 0);
+      bankLedger.bookBody('gravity', h * g.x, h * g.y, h * g.z, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+      bankLedger.bookBody('riderWater', h * wf.x, h * wf.y, h * wf.z, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+      bankLedger.bookBody('assist', h * ax, h * ay, h * az, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+      bankLedger.bookBody('carry', -m * mismatch.x, -m * mismatch.y, -m * mismatch.z, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+    }
     if (free) this.standingBody.couple(system, rhs, N, h, m, this.forward, a, b, f, this.legLength, this.across);
     rhs[0] += f.x;
     rhs[1] += f.y;
@@ -4453,6 +4474,38 @@ export class AttachedRider {
       rhs[6] -= h * n.dot(force);
       if (this.banking) rhs[7] -= h * t.dot(force);
       if (free) rhs[8] -= h * this.forward.dot(force);
+    }
+    if (bankLedger.on) {
+      // **Step 3.3l**: the joints' own entries, then the substep's attribution — `A` and `b` as the game has them,
+      // before `solveLinear` destroys either. Read-only throughout.
+      bankLedger.bookRow('leg', 6, h * (this.leg.force - h * this.legStiffness * this.leg.rate));
+      if (this.banking) {
+        bankLedger.bookRow('ankle', 7, -(h * this.ankleTorque) / length);
+        bankLedger.bookRow('swing', 7, -(h * this.swingTorque) / length);
+      }
+      const ra = this.rollAxis;
+      bankLedger.bookTorque('swing', -h * this.swingTorque * ra.x, -h * this.swingTorque * ra.y, -h * this.swingTorque * ra.z);
+      bankLedger.bookTorque('twist', -h * this.twistTorque * n.x, -h * this.twistTorque * n.y, -h * this.twistTorque * n.z);
+      bankLedger.bookRow('hand', 4, h * this.handYaw);
+      if (free) {
+        const sb = this.standingBody;
+        bankLedger.bookRow('pitch', 8, -(h * (sb.torque + sb.hip.torque)) / length);
+        if (sb.hip.torque !== 0) bankLedger.bookTorque('pitch', -h * sb.hip.torque * t.x, -h * sb.hip.torque * t.y, -h * sb.hip.torque * t.z);
+      }
+      if (this.drives) {
+        const d = this.driveForce;
+        const dt = cross(this.driveFoot, d, this.localScratch);
+        bankLedger.bookBoard('drive', -h * d.x, -h * d.y, -h * d.z, -h * dt.x, -h * dt.y, -h * dt.z);
+      }
+      if (this.agile) {
+        const force = this.limbForce;
+        const lever = cross(a, force, this.localScratch);
+        bankLedger.bookTorque('limbs', h * (this.limbTorque.x - lever.x), h * (this.limbTorque.y - lever.y), h * (this.limbTorque.z - lever.z));
+        bankLedger.bookRow('limbs', 6, -h * n.dot(force));
+        if (this.banking) bankLedger.bookRow('limbs', 7, -h * t.dot(force));
+        if (free) bankLedger.bookRow('limbs', 8, -h * this.forward.dot(force));
+      }
+      bankLedger.solve(system, rhs, N, length, this.rollAxis.x, this.rollAxis.y, this.rollAxis.z);
     }
   }
 

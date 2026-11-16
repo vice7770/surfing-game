@@ -1,0 +1,10 @@
+
+# the cell, read
+n 24  the ride ended 24 of 24  (balance fall 24, other 0: none)  at 0.77–1.95 s
+entry asked 4.43–10.44 m/s  through the water, first live frame 4.44–10.50  at the fall 5.00–9.71
+roll at the fall 20.9–68.8°  bank 20.7–70.0°  joint -1.9–11.1°  rail 10.8–68.8°
+THE DATUM, first frame: the face's across tilt 8.7–8.9°, the deck's roll 8.8–8.9°, the body's bank 8.7–8.7°, the joint -0.2–-0.1°
+at 0.200 s: tilt 7.4–10.0°, roll 9.0–9.7°, bank 8.9–9.9°, joint -0.7–0.7°, the body's own rate 0.9–13.9 °/s
+regimes A/B/C 0 / 22 / 2
+the bank passes 10° first in 24 of 24, median 0.100 s
+the clocks: the rail passes 2° at 0.217–0.983 s and 10° at 0.500–1.183; the joint passes 2° at 0.317–1.533 and 5° at 1.000–1.050; the bank passes 10° at 0.217–0.667
