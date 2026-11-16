@@ -366,6 +366,16 @@ export interface SurfZoneConfig {
    */
   riderBody?: 'two' | 'control' | 'symmetric';
   /**
+   * 'point' | 'fixed' | 'plant': the balance's two **optional** costs — the bank's cost as each stance's own limit
+   * (step 3.2n) and the capture point's own rank-one cost (step 3.2j), **neither of which the shipped design has** —
+   * turned on together, with the capture point's ω₀ the point mass's `√(g/L)` ('point', which is 3.2j's and 3.2n's own
+   * design and the control), the body's own with its feet held ('fixed'), or the plant's own solved rate ('plant')
+   * (step 3.4b; `RideSessionOptions.riderCost`, `DesignWeights.captureOmega`). It changes the **cost** the gains are
+   * designed against, no force in the game. The new surfer (`?rider=new`) only, and meant to ride alongside
+   * `?riderBody=two`. Every spot. The `?riderCost` dev switch, opt-in; online rooms run the default.
+   */
+  riderCost?: 'point' | 'fixed' | 'plant';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

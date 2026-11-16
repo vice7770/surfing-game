@@ -672,3 +672,560 @@ Canyon, `?canyonWaves=true`, your test spot, and `?rider=new&feltFrame=deck` as 
      job than making the model's two bodies, it is the route the parked duck-dive work named as the faithful one, and
      it is the only version of this that fixes the two reads this step made worse.
    **My recommendation is the first, then the second, and the third when you want the duck-dive back.** Your call.
+
+# Part 2 — neither of the cost function's two named constants is in the shipped cost function, only one of them was
+the point mass's, and that one was already five times wrong on the plant that shipped
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-two-body-b`, cut from `main` at
+**99854a51** (Part 1's merge), so Part 1 is its base. Its brief is Part 1 §8 item 1 and §15's first ruling item:
+*"the cost function's two point-mass constants — the smallest honest step, and the only one that could turn a better
+plant into a better ride."*
+
+It ships **`captureOmega`** (`'line' | 'fixed' | 'solved'`, the three definitions of the lean's own divergence rate),
+**`captureOmega()`** as the one place in the cost function that holds one, **`costWeights()`** and
+**one new opt-in switch with three values** (`?riderCost=point|fixed|plant`, off by default and pinned off for online
+rooms), **four new tests**, and **1 008 rides over forty-eight arms**: the shipped plant and the two-body plant × the
+shipped cost function and the three cost arms × five cells, plus eight arms on a common one-second window.
+**119 947 control ticks read, 106 313 of them live.**
+
+**The plant is untouched.** Φ, Γ, the senses, the delay, the filter's noises, the twelve derivatives, the rail
+schedule and `?riderBody`'s own assembly are exactly what Part 1 merged; a test asserts Φ and Γ are identical across
+all four cost arms on both plants. **Only the cost changed.**
+
+## 0. The nine sentences the round is for
+
+1. **The owner's bar is NOT met and no arm of this round comes close.** On the owner's own low-speed cell — entries
+   set **absolutely** at 1–6 m/s through the water × three stances, the stick never touched — the eight arms end
+   **18 of 18** every time, with medians on the deck filter of **1.033 s shipped, 1.267 with the two costs on,
+   1.217 with the constant corrected**, and on the two-body plant **1.033 → 0.850 → 0.883**; **Compress falls 6 of 6
+   in all eight** [M]. **Across the forty-eight arms, 1 008 of 1 008 rides ended before nine seconds and Compress
+   fell in every one.**
+2. **Neither constant the brief sent me to fix is in the shipped cost function, so the step as named cannot change
+   the shipped ride by one bit.** `DEFAULT_WEIGHTS` holds `stateScale`, `commandScale`, `rho`, `processNoise`,
+   `senseNoise`, `bias` and `heaveSense` — and **neither `feetReach` nor `captureScale`** [M, read off the object, not
+   the source]. `captureRow`'s ω₀ is read only inside `if (capture)` and the bank limit only inside
+   `if (w.feetReach)`. The round's own correction applied to the shipped weights is byte-identical at **every one of
+   the 306 points of the schedule the game reads — worst entry exactly 0** [M, tested], and non-vacuous with the two
+   weights on (smallest relative move over the 306 points **1.19 × 10⁻²**). 3.2j built `captureScale` and did not keep
+   it; 3.2n built `feetReach` and did not keep it; both of those rounds' own READMEs say so in as many words.
+   **The brief's "the only one that could turn a better plant into a better ride" is refuted as written.**
+3. **Of the two, only one was ever the point mass's.** `feetReach / L` is where the centre of mass sits over the feet,
+   `h sin θ`, and a rigid body's centre of mass sits at `h` whatever its own `J` is — so the bank limit is
+   **kinematic, inertia-free, and the same number for a point mass and for a body** [A, tested on the capture row's
+   own θ coefficient at all three stances]. **I did not change it, and Part 1's §8 item 1 is half the size it says.**
+4. **The one that is a plant constant was already wrong on the plant that SHIPPED, by two and a half times more than
+   Part 1's plant made it wrong.** `√(g/L)` is **3.417–4.223 rad/s** (3.885) over the 306 points. The **shipped**
+   plant's own solved lean divergence — the body's own weight `m g h θ` through the plant's own lateral compliance —
+   is **19.284–23.952 (21.971)**, which is **5.656×** it; the two-body plant's is **7.644–8.605 (8.229)**, **2.118×**
+   [M]. *The inconsistency the brief attributes to step 3.4a is the smaller half of an inconsistency that was already
+   in the shipped design.*
+5. **And there is no unique lean rate on this plant to be consistent with — three honest definitions disagree by
+   5.7× and the matrices cannot choose between them.** Held feet and no body: 3.885. Held feet with the body's own
+   inertia: 3.559 (**0.916×**, the `fixed` arm). The plant's own freedoms: 8.229 (**2.118×**, the `plant` arm). And the
+   plant's own whole `θ̈` per `θ` — the thing a divergence rate would be read from — is **negative at 306 of 306
+   points on both plants** (−641 to −147, median −379 rad/s² per rad shipped; −92 to −27, −60 two-body), because the
+   ankle's own 800 N·m/rad spring is in the plant and dominates gravity by one to two orders [M]. **The capture
+   point's own premise — a lean that runs away at ω₀ — is false on this plant's own A**, which is why the switch ships
+   three values and the ride decides rather than the algebra.
+6. **Turning the two weights on is a factor of three to four on the ride; correcting the constant is per cent to tens
+   of per cent.** Unsteered deck: **1.183 → 4.317 s** with the weights on (×3.65), and **4.317 → 4.000** when the
+   constant is corrected (×0.93). Every `plant`-against-`point` ratio over the ten plant × cell combinations sits in
+   **0.74–1.64** [M]. **P7 held.** *The brief asked for the constant and the constant is the small term.*
+7. **The ROLL ROW MOVED — the row six rounds called immovable — and the plant did not change.** With Φ and Γ identical
+   and only the gains different, the roll row's relative error against the bank ledger falls **10.050 → 2.622** on the
+   shipped plant and **9.087 → 2.259** on the two-body one, and its sign goes **0.338 → 0.673** and **0.321 → 0.679**;
+   better in **10 of 10** plant × cell combinations on both reads, and in the five of ten where the sign started below
+   a coin it crossed above it [M].
+8. **And a control I predicted before it ran splits that finding in half.** On a window every arm survives
+   (`SECONDS=1`, so the window is 0.2–1.0 s and **nobody has fallen in any of 192 runs**), the shipped plant's gain
+   **disappears** — 9.774 → 9.418, **×1.04** against ×3.83 at nine seconds — and the two-body plant's **keeps 55 %**
+   — 6.512 → 2.944, **×2.21** against ×4.02 [M]. **So on the shipped plant the roll row's gain is the trajectory and
+   not the gains; on the two-body plant about half of it is the gains. P9 is refuted on one plant and held on the
+   other, and I will not report the nine-second number without this one beside it.**
+9. **The gain is not the rider doing less.** In the weighted two-body arms the game's **own** lean acceleration is
+   **168–220 °/s² against 83** and its own roll acceleration **349–411 against 162**, while the measured rail falls
+   from **15.6° to 8.0°** and the speed from **8.7 to 6.5 m/s** [M]. The relative error halves to quarters while the
+   motion it is measured against **doubles**.
+
+## 1. (A) The four reads that had to come first
+
+**R1 [M, not R].** `DEFAULT_WEIGHTS`'s own keys, printed from the object rather than read off the source:
+`stateScale, commandScale, rho, processNoise, senseNoise, bias, heaveSense`. `'feetReach' in DEFAULT_WEIGHTS` is
+**false** and `'captureScale' in DEFAULT_WEIGHTS` is **false**. Both constants the brief names live behind `if`s that
+no default opens.
+
+**R2 [R].** 3.2's own README says it twice and in its own merge table: *"`captureScale` is absent from
+`DEFAULT_WEIGHTS`; 3.2j built it and did not keep it"*; *"`feetReach` is an available weight, absent from
+`DEFAULT_WEIGHTS`"*; *"`feetReach` is absent from `DEFAULT_WEIGHTS` and every use of it is behind
+`if (w.feetReach)`"*. **This was not hidden. Part 1 wrote "the cost function is now inconsistent with the plant in two
+named places" and that sentence is true of two weights; the brief read it as true of the shipped cost function.**
+
+**R3 [R]. A documentation defect in the brief's own quoted place, now corrected.** `DesignWeights.feetReach`'s own
+comment said *"It also sets the capture point's own cost (`captureScale`) to the same metres unless that is given
+separately"*. **It does not**: `design` reads `const capture = w.captureScale` with no fallback, and the comment eight
+lines below it says the opposite — *"`feetReach` sets the bank's ranking and nothing else"*. Two comments in one file
+disagreed about one `if`. The sentence is replaced by what the code does.
+
+**R4 [R]. A third site of the point-mass ω₀, and it is the only live one.** `HumanBalance.capture` computes
+`ω₀ = √(g_eff / h)` from the felt gravity and the centre of mass's height and it is **on by default** — it drives the
+knees and the arms through `sensedCapturePast` (`strategies`), while the hip's own gain `HIP_CAPTURE_GAIN` is **0**
+[R]. It is **consistent there**, because the game's own rider *is* a point mass on a scalar leg (Part 1 R1) — so it
+is Part 1 §8 **item 3** that would make it wrong, not item 1, and that is a thing to carry into item 3 rather than a
+defect now.
+
+## 2. (B) Whether either constant is in the shipped cost function — the column, not the code read
+
+| **[M]** over the 306 schedule points (17 speeds × 3 depths × 6 rails) | result |
+|---|---|
+| the correction (`captureOmega: 'fixed'` and `'solved'`) on the **shipped** weights, against the shipped design's `K` | **worst entry exactly 0**, 306 of 306 |
+| the same correction with the two weights **on**, smallest relative move of `K` over the 306 points | **1.19 × 10⁻²** |
+| `'feetReach' in DEFAULT_WEIGHTS` / `'captureScale' in DEFAULT_WEIGHTS` | **false / false** |
+
+**Two readings.** The first line is the refutation and the second is what stops it being a refutation of the whole
+step: the constant is dead in the shipped design and alive the moment the weights are set, so the round's question is
+answerable but only on an arm that sets them. The tests assert both, and the non-vacuity bound is the one that would
+have caught a `captureOmega` that fell through a type guard — 3.4a's own first build did exactly that.
+
+## 3. (B) The lean's own divergence rate, by every definition that has one
+
+| **[M]** rad/s, 306 schedule points, medians in brackets | the SHIPPED plant | the TWO-BODY plant | two/shipped | against `line` |
+|---|---|---|---|---|
+| `line` = `√(g/L)` — a point mass, feet nailed down (what ships) | 3.4174–4.2233 (**3.8849**) | the same | 1.0000 | 1.0000 |
+| `fixed` = `√(m g L / (J + m L²))` — the body's own inertia, feet still nailed | 3.4174–4.2233 (3.8849) | 3.1614–3.8395 (**3.5587**) | 0.9160 | **0.9160** |
+| `solved` = `√(C₁₁ m g L)` — the plant's own lateral compliance, the board free | 19.2841–23.9523 (**21.9711**) | 7.6443–8.6045 (**8.2290**) | **0.3745** | **5.6555 / 2.1182** |
+| the plant's **whole** `θ̈` per `θ` (`A[3][2]`), rad/s² per rad | −641.4 to −147.0 (−378.8) | −92.1 to −27.1 (−59.9) | — | **positive at 0 of 306** |
+| the plant's largest real **unstable eigenvalue** of its own 10×10 `A` | 0.4226–7.1585 (3.8213) | 0.3397–6.0141 (2.3513) | 0.6153 | 0.9836 / 0.6053 |
+| … the share of that eigenvector's own norm on `(θ, θ̇)` / on `(φ, φ̇)` | 0.735 / 0.663 | 0.718 / 0.649 | — | — |
+
+**Five readings.**
+
+1. **`√(g/L)` is the rate of a pendulum whose feet are nailed down, and this plant's feet are not nailed down.** On
+   the **shipped** plant — a point mass, no body inertia at all — the free reading is already **5.656×** the line,
+   because the board's own sway mass is 2.54 kg against the rider's 73 and the lean's own weight shoves the board
+   out from under the feet. **The ω₀ in the cost function was never this plant's.**
+2. **The body's inertia moves the held reading by 8.4 % and the free one by a factor of 2.67.** `0.9160` and
+   `0.3745` [M] — and `1/0.3745 = 2.670 = √7.13`, which is Part 1 §6 reading 3's seven-fold bank inertia, arrived at
+   from the other side. **P4 and P5 both held**, at 2.67× and 8.4 %.
+3. **The held reading is the mass matrix's own bank diagonal and nothing else, and that is the one quantity a
+   diagonal honestly is.** `|√(m g h / M₁₁) − fixed| = 0.0000` at all 306 points on both plants [M, tested]. Stated
+   because this folder has twice read a diagonal of `A` as a physical quantity it was not: a diagonal **is** the
+   coordinate's inertia **with the others held**, which is exactly the definition `fixed` carries and exactly what
+   `solved` does not.
+4. **The plant's own whole lean coefficient is negative everywhere, so the quantity ω₀ is supposed to be does not
+   exist on this plant with the sign the formula needs.** The ankle's 800 N·m/rad spring is in the plant at every
+   tick and beats gravity by one to two orders. The capture point is a theorem about a body falling about a support
+   under gravity alone; the internal model's lean is a **sprung** coordinate. **I am not going to call any of the
+   three "the right one" from the matrices.**
+5. **The plant's unstable mode is a coupled one, so it is not a lean rate.** Three-quarters of its eigenvector sits
+   on the lean and two-thirds on the board, at 0.42–7.16 rad/s. Its median, 3.821, happens to sit within 1.7 % of the
+   line's 3.885 on the shipped plant. **I will not net that against reading 1.** They are two quantities and this
+   folder has made that mistake in both directions already.
+
+## 4. (B) What the correction does to the gains, before any ride
+
+| **[M]** the two weights ON, `plant`'s constant against `point`'s, 306 points | the SHIPPED plant | the TWO-BODY plant |
+|---|---|---|
+| `\|ΔK\| / \|K\|` | 0.0119–2.1237 (**0.1795**) | 0.0074–0.2858 (**0.1064**) |
+| the ankle's own gain on the **bank** | 0.7709–1.1367 (0.9496) | 0.8642–1.0098 (0.9510) |
+| the ankle's own gain on the bank's **rate** | 0.4602–1.0289 (**0.6828**) | 0.6738–0.9911 (**0.8262**) |
+| the capture row's own `θ̇` coefficient, m per rad/s (tall / crouch / Compress) | line **0.2458 / 0.1673 / 0.1302**; solved **0.0435 / 0.0296 / 0.0230** | fixed **0.2657 / 0.1826 / 0.1432**; solved **0.1098 / 0.0790 / 0.0639** |
+
+**Two readings.** A faster ω₀ weights the lean's **rate** less, so the corrected cost asks the ankle for **32 % less
+gain on the bank rate** on the shipped plant and 17 % less on the two-body one, with the gain on the bank itself
+within 5 %. And the capture row's `θ` coefficient is `L` in all four — §5's kinematic reading, in the row itself.
+
+## 5. (B) The bank limit is kinematic, and that is half the brief gone
+
+`feetReach / L` is the lean at which the capture point leaves the feet. The capture point's own lean coefficient is
+where the centre of mass sits over the feet: `h sin θ`, about `h θ`. **A rigid body's centre of mass sits at `h`
+whatever its own inertia about it is**, so the limit is the same for a point mass and for a body with any `J`, and
+the shipped `stateScale[2] × (L_tall / L)` ranking carries no inertia to correct. Measured in the row itself: the
+`θ` coefficient is **0.8400 / 0.6500 / 0.5500 m per rad** — exactly `L` — in all three modes and on both plants, and
+every other entry of the row is 0 [M, tested]. The limits themselves are **8.87° / 11.46° / 13.54°** against the
+shipped ranking's **2.86° / 3.70° / 4.38°**, which is 3.2n's own "the ranking, not the level" and is not touched here.
+
+**So Part 1 §8 item 1 names two constants and one of them was not a constant of the body at all.** *The brief's half
+that called itself settled is the half that was wrong, for the seventh consecutive round.*
+
+## 6. (B) The fall, every arm — the owner's bar first
+
+| **[M]** median s (span), ×/× the arm above | shipped plant: off → point → fixed → plant | two-body plant: off → point → fixed → plant |
+|---|---|---|
+| **the owner's low speed, deck (18)** | **1.033** → **1.267** → 1.267 → **1.217** | **1.033** → **0.850** → 0.850 → **0.883** |
+| the same, world (18) | 0.767 → 1.233 → 1.233 → 1.133 | 0.733 → 0.600 → 0.600 → **0.983** |
+| unsteered, deck (24) | 1.183 → **4.317** → 4.317 → 4.000 | 1.450 → 4.050 → 3.950 → 3.933 |
+| unsteered, world (24) | 0.950 → **4.467** → 4.467 → 3.317 | 1.283 → 3.883 → 3.983 → 3.883 |
+| steered, deck (18) | 3.067 → **1.967** → 1.967 → 2.033 | 2.500 → **1.300** → 1.300 → **1.667** |
+| **Compress, every cell** | **6 of 6 / 8 of 8 in all four** | **6 of 6 / 8 of 8 in all four** |
+
+**Five readings.**
+
+1. **The bar is not met and it is not close.** 18 of 18 on the owner's cell in all eight arms; Compress 6 of 6 in all
+   eight; **1 008 of 1 008 rides over the forty-eight arms ended**. **P6 held.**
+2. **The weights are a factor of three to four on the straight arms and a third off the held turn, on both plants.**
+   ×3.65 and ×4.70 unsteered; ×0.64 and ×0.52 steered. **That is the same trade every repair this folder has
+   measured** — and it is the *weights*, measured in 3.2j and 3.2n and rejected there on the same shape of evidence.
+3. **Turning the weights on is better than leaving them off on the shipped plant's own low-speed cell and WORSE on the
+   two-body plant's.** 1.033 → 1.267 and 0.767 → 1.233 against 1.033 → 0.850 and 0.733 → 0.600 [M]. **P8 is refuted
+   on one plant and held on the other**, which is the second time this round a prediction split by plant.
+4. **Correcting the constant lengthens the ride where the ride is shortest and shortens it where it is longest — on
+   the plant it was derived for.** On the two-body plant `plant` against `point` is longer on the owner's deck cell
+   (×1.04), on its world twin (**×1.64**) and on the held turn (**×1.28**), level unsteered world and ×0.97 unsteered
+   deck. On the **shipped** plant it is shorter in four cells of five (×0.96, ×0.92, ×0.93, ×0.74) and longer in one
+   (×1.03) [M]. **Four of five each way, in opposite directions, by the plant the constant was read from** — which is
+   the round's own best evidence that consistency between the cost and the plant is a real effect. **It is also five
+   cells, not a population of cells, and I am not going to call it a mechanism.**
+5. **`fixed` is `point` on the shipped plant, byte for byte, and that is a control rather than a result.** With no
+   body the held reading **is** the point mass's, so the two arms must be one arm: **1 260 ride-column reads over six
+   cells, 0 mismatches** [M], the assertion written before the columns were read. On the two-body plant they differ
+   in every cell.
+
+## 7. (B) The rows, per arm — and the row six rounds called immovable
+
+| **[M]** per-run medians, unsteered deck 24 | lean row | roll row | one-step bank-rate residual | lean sign | roll sign |
+|---|---|---|---|---|---|
+| shipped plant, shipped cost (3.3p's own) | 3.540 | **10.050** | 2.552 | 0.696 | **0.338** |
+| shipped plant + the weights, `point` | 4.764 | **2.622** | 4.925 | 0.674 | **0.673** |
+| shipped plant + the weights, `plant` | 4.565 | 4.449 | 4.888 | 0.645 | 0.618 |
+| two-body plant, shipped cost (3.4a's own) | 1.638 | 9.087 | 1.097 | 0.716 | 0.321 |
+| two-body + the weights, `point` | 1.026 | 2.259 | 1.051 | 0.702 | 0.679 |
+| two-body + the weights, **`fixed`** | **0.899** | **2.135** | **0.982** | 0.719 | 0.680 |
+| two-body + the weights, `plant` | 1.137 | 2.957 | 1.270 | 0.669 | 0.643 |
+
+| **[M]** the common one-second window, 0.2–1.0 s, **nobody fallen in 192 runs** | lean row | roll row | residual | roll sign |
+|---|---|---|---|---|
+| shipped plant, shipped cost | 3.190 | 9.774 | 2.948 | 0.354 |
+| shipped plant + the weights, `point` | 4.650 | **9.418** | 4.822 | 0.500 |
+| two-body plant, shipped cost | 1.301 | 6.512 | 1.244 | 0.417 |
+| two-body + the weights, `point` | **0.740** | **2.944** | 0.788 | 0.583 |
+| two-body + the weights, `fixed` | 0.746 | 3.105 | **0.750** | 0.583 |
+| two-body + the weights, `plant` | 0.825 | 3.510 | 0.823 | 0.563 |
+
+**Six readings.**
+
+1. **The roll row's error and its sign are not properties of the model alone.** The model is byte-identical across
+   the four cost arms — Φ, Γ and the ledger's own controls unchanged, asserted and read — and the roll row still
+   falls from 10.050 to 2.622 and its sign crosses a coin. **Six rounds have cleared the inertias, the side force,
+   the rail schedule, the speed clamp, the free-versus-held table, the body's shape and the conditioning on the
+   premise that the roll row is the model's; part of it is where the controller takes the rider.**
+2. **And at nine seconds that part is most of it on the shipped plant and about half of it on the two-body one.** The
+   common window is the instrument: the shipped plant keeps **×1.04** of a ×3.83 and the two-body plant **×2.21** of a
+   ×4.02 [M]. **P9 refuted on one plant, held on the other.** *The arm with a body in its plant is the arm where the
+   gains themselves buy a better row; the arm without one only rides somewhere gentler.*
+3. **The weights buy the lean row and the residual only on the plant that has the body.** Lean row with the weights
+   on: **worse in 3 of 5 cells** on the shipped plant (3.540 → 4.764, 3.310 → 4.290, 3.833 → 4.931) and **better in
+   4 of 5** on the two-body plant; the one-step bank-rate residual **worse in 4 of 5** shipped and **better in 5 of 5**
+   two-body [M]. **The consistency that buys the rows is the plant's having a body at all, not which ω₀ is used.**
+4. **The best rows this folder has measured are `two-fixed`'s, and I will not call them a better plant.** 0.899 /
+   2.135 / 0.982 with both signs above a coin, against Part 1's 1.039 / 10.066 / 0.884 — but those were scored as a
+   counterfactual on the **shipped** ride and these are scored on **their own**, which is 2.7× longer and visits
+   different states. **Both are printed; neither is the other**, which is Part 1 §9 reading 3's own warning applied to
+   this round.
+5. **The most plant-consistent ω₀ is the worst of the three on the rows and the best of the three on the fall where
+   the fall is shortest.** `plant` reads 1.137 / 2.957 / 1.270 against `fixed`'s 0.899 / 2.135 / 0.982, and rides
+   longer than both on the owner's world cell (0.983 against 0.600) and on the held turn (1.667 against 1.300) [M].
+   **Those two facts point opposite ways and I am not going to resolve them with an argument.**
+6. **The rider is not riding less.** §0 sentence 9's numbers: the game's own lean and roll accelerations roughly
+   double in the weighted two-body arms while the measured rail halves. A relative error that falls while its
+   denominator doubles is not a quiet ride.
+
+## 8. What I refuted
+
+- **The brief's own premise, as written**: *"the cost function's two point-mass constants — the smallest honest step,
+  and the only one that could turn a better plant into a better ride."* **Neither constant is in the shipped cost
+  function** (§2, worst entry exactly 0 over 306 points), so correcting them cannot turn anything into a better ride
+  until two weights that 3.2j and 3.2n each measured and rejected are turned on. **Seventh consecutive round to find
+  its error in the half its brief called settled.**
+- **Half of "two point-mass constants"**: `feetReach / L` is **kinematic** and carries no inertia (§5), so there was
+  one constant, not two.
+- **The size and the ownership of the one that was real**: `√(g/L)` is **5.656×** out on the **shipped** plant and
+  **2.118×** out on the two-body one (§3). The defect is not something Part 1 created; Part 1 made it **2.7× smaller**.
+- **My own P8, on one plant.** I predicted the two weights would be worse than leaving them off on the owner's
+  low-speed cell on **both** plants, because that is what 3.2j and 3.2n measured in the game. On the shipped plant
+  they are **better** (1.033 → 1.267 deck, 0.767 → 1.233 world). On the two-body plant they are worse. **A prediction
+  that splits by plant is a prediction I should not have written as one sentence.**
+- **My own P9, on one plant, and it is the round's most useful refutation.** I predicted the roll row's whole gain
+  would be the trajectory. On the shipped plant it is (×1.04 of ×3.83). **On the two-body plant 55 % of it survives a
+  window nobody falls in**, so the gains themselves do buy a better roll row there — which no round of this folder
+  has measured before.
+- **A documentation defect in the brief's own quoted sentence** (§1 R3): `feetReach` does **not** set `captureScale`,
+  and the file said both.
+- **My own first reading of the Canyon byte check, refuted by my own control within the hour.** From a run that had
+  silently imported a kept `.sea` I wrote that Part 1's published hashes were stale. **A fresh spin-up reproduces them
+  exactly, on `main` and on this branch, on both arms** (§11b). The stale thing was the state file in a shared
+  scratchpad, and the brief's own instruction to read the "spun up on the CPU" line is what exposed it.
+- **"Six rounds say the roll row does not move."** It moves, by 2–4× and across its sign, with the plant
+  byte-identical (§7). What has not moved is the roll row **at a fixed trajectory on the shipped plant** — which is a
+  narrower statement than the one the folder has been carrying.
+
+## 9. What I will not claim
+
+- **I will not claim the owner's bar is any closer.** 1 008 of 1 008, Compress in every arm, the low-speed deck cell
+  at 1.033 s shipped against 1.267 at best and **0.850 at worst**.
+- **I will not claim the two weights should ship.** They are a factor of 3.7 on straight running and a **third off
+  the held turn**, and 3.2j and 3.2n each rejected them in the game on the lower stances' saved shove, which this
+  round did not re-measure.
+- **I will not claim which ω₀ is right.** Three definitions, 5.7× apart, the plant's own whole lean coefficient
+  negative at 306 of 306 points, and the best-on-the-rows arm (`fixed`) and the best-on-the-fall-where-it-matters arm
+  (`plant`) are different arms.
+- **I will not claim the roll row's gain is a repair.** Half of it is the trajectory even on the two-body plant, and
+  all of it is on rides that are three to four times longer than the ones the row was measured on before.
+- **I will not claim anything from five cells as a mechanism** — §6 reading 4's four-of-five-each-way is a direction,
+  not a population of spots, and the low-world arm's own ledger control still degrades as Part 1 §11 says.
+- **I will not claim the live `ω₀` in `HumanBalance` is wrong.** It is right for the rider the game has (a point
+  mass); it becomes wrong exactly when Part 1 §8 item 3 is done.
+- **Carried, not mine, not touched**: `steadyTurn`'s `ref.u[0]` peaking at 2 675°; the `cos³` added-mass frame
+  defect; `AttachedRider.frame`'s 70° bank clamp at three sites; the roll row per source against the game (Part 1 §8
+  item 2); the game's own rider as two bodies (item 3).
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 10. The controls
+
+**C1, the state is a read**: the reconstruction pushed back through the controller's own `C`, **peak over every tick
+of every one of the 1 008 runs: exactly 0**; tick spacing **0.000e+0 s** off `CONTROL_STEP` [M].
+
+**C2, the plant is untouched by the cost**: `Φ` and `Γ` identical across all four cost arms on both plants, at the
+schedule point the test reads, and `K` different in all of them [tested]. Over the rides, the ledger's own control
+(`−deckTotal` against the game's own `φ̇` change) reads **0.009–0.046 (0.020)** on the shipped arm and
+**0.005–0.050 (0.026)** on the two-body one — 3.3o's, 3.3p's and Part 1's own spans.
+
+**C3, the fix cannot move the shipped rider**: `captureOmega: 'fixed'` and `'solved'` on `DEFAULT_WEIGHTS` against the
+shipped design's `K`, **306 of 306 points, worst entry exactly 0** [M, tested].
+
+**C4, and it is not vacuous**: with the two weights on, the same change moves `K` by at least **1.19 × 10⁻²** relative
+at every one of the 306 points [M, tested], and the `?riderCost` values are named exhaustively in `AttachedRider`
+rather than passed through, because 3.4a's own first build had a value fall into the default arm.
+
+**C5, `fixed` is `point` with no body, in the matrices and in the ride**: `captureOmega(y, g, 'fixed')` equals
+`'line'` to twelve decimals on every plant without a body [tested], the designs are `toEqual`-identical [tested], and
+**ridden, 1 260 column reads over six cells with 0 mismatches** [M] — written as an assertion before the columns were
+read.
+
+**C6, the held reading is the mass matrix's own diagonal**: `|√(m g h / M₁₁) − fixed| = 0.0000` at all 306 points on
+both plants [M], and `'solved'` is `√(C₁₁ m g h)` off `lateralCompliance` to twelve decimals [tested].
+
+**C7, the groups still sum to the row**: peak **6.8 × 10⁻¹²** (roll) and **7.1 × 10⁻¹²** (bank) over every live tick
+of every run of every one of the forty-eight arms [M].
+
+**C8, 3.3p and Part 1 reproduced on this tree, which is what makes §6 and §7 comparisons**: the shipped arms' roll row
+**10.050 / 9.366 / 2.725 / 7.420 / 4.035**, lean row **3.540 / 3.310 / 3.833 / 3.722 / 8.298**, bank-rate residual
+**2.552 / 3.097 / 4.620 / 3.634 / 5.131**, roll sign **0.338 / 0.333 / 0.579 / 0.378 / 0.605** and falls
+**1.183 / 0.950 / 1.033 / 0.767 / 3.067 s** — **every one 3.3p's published figure to the digit**; and the two-body
+arms' falls **1.450 / 1.283 / 1.033 / 0.733 / 2.500 s** — **every one Part 1 §9's, to the digit** [M].
+
+**C9, a positive control predicted before it ran**: §0 sentence 8's common window. I predicted the roll row's gain
+would mostly vanish there. It vanished on one plant and did not on the other, which is why it is a control and not a
+decoration.
+
+**C10, the capture row's own support**: every entry outside `θ` and `θ̇` is **0** in all three modes at all three
+stances, and the two-argument call is the shipped row byte for byte [tested].
+
+## 11. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`: **exit 0**
+- the probes type-checked **separately** on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/plant.ts`, `docs/research/new-rider/3.4/cost.ts`, `src/physics/rollModel.ts`,
+  `src/physics/predictiveBalance.ts`, `src/physics/AttachedRider.ts`, `src/physics/bankLedger.ts` and `@types/node`
+  (672 files). **It found three unused-binding errors in this round's own probe**, which are fixed.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 634 passed, 21 expected fail** — Part 1's 630 plus this round's four.
+  `vitest run src/game src/scene/rig`: **70 files, 735 passed** — Part 1's 734 plus the switch's own.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical to Part 1's.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round touches no solver, no wave and no spot file,
+  and its one `SurfZoneSimulation.ts` change is one more optional config field threaded to the rider.
+- **the shipped rider is proved unchanged with every switch off**: the five shipped arms reproduce 3.3p's published
+  rows and falls to the digit (C8), and the correction itself is byte-identical on the shipped weights over all 306
+  schedule points (C3).
+
+### 11b. The Canyon byte check — it passes, and reading the "spun up" line is what made it mean anything
+
+`src/` changed (ten files, three of them tests), so the check was run with the brief's three reads **done** rather
+than assumed: the wrapper prepends `globalThis.location = { search: … }` to the bundle, the grid line is read, and the
+**"spun up on the CPU in … s" line is read** so that no kept `.sea` is imported silently.
+
+| **[M]** 3 600 steps | grid | spin-up | snapshots | state |
+|---|---|---|---|---|
+| **fresh**, Canyon B (`?canyonWaves=true`), **this branch** | 400 × 451 | **44.4 s** | **`a367d938f15fa934`** | **`9e5831f80e38abd9`** |
+| **fresh**, Canyon B, **`main` at `99854a51`**, tree clean | 400 × 451 | 47.9 s | `a367d938f15fa934` | `9e5831f80e38abd9` |
+| **fresh**, the default Canyon, **this branch** | 400 × 507 | **68.7 s** | **`ea3d57a4d49f4b48`** | **`a1a2555739210f96`** |
+| *the first attempt*, Canyon B, **a kept `.sea` imported** (no spin-up line), this branch | 400 × 451 | — | `d236d12d682dc4f6` | `ab2156bcafecc1c0` |
+| *the same kept `.sea`* on **`main`**, as the control | 400 × 451 | — | `d236d12d682dc4f6` | `ab2156bcafecc1c0` |
+| *the same kept `.sea`*, the default Canyon, branch **and** `main` | 400 × 507 | — | `a8ac71b70eac2add` | `6319ed883e54b32e` |
+
+**All four fresh hashes are the brief's own references, to the character** — Canyon B `a367d938f15fa934` /
+`9e5831f80e38abd9` on **both** the branch and a clean `main`, and the default Canyon `ea3d57a4d49f4b48` /
+`a1a2555739210f96`. **The check passes.**
+
+**And the way it nearly did not is worth the three lines.** The first run printed **no "spun up" line**, so it had
+imported a kept `.sea` from the scratchpad path Part 1's own run names — a path **another session has been writing
+benches into**, so the state there was no longer Part 1's — and it produced hashes that match neither reference.
+I wrote, from that run alone, that *"the reference is stale"*. **It is not: a fresh spin-up on `main` reproduces it
+exactly, and so does the branch's.** What was stale was the kept state. **The brief's instruction to read the spin-up
+line is the whole reason that was caught**, and the control that settled it was branch-against-`main` on the **same**
+sea (identical on both arms) followed by a fresh spin-up on each. The raw record of all four runs, in order, is
+`results/34b/34b-canyon-byte-check.txt`.
+
+**And it cannot differ, for a reason that is read and not inferred**: every behavioural line of this round is behind
+`DesignWeights.captureScale` and `DesignWeights.feetReach`, which no default sets (§2, worst entry exactly 0 over all
+306 schedule points), `captureOmega`'s `'line'` branch is `Math.sqrt(gravity / y.height)` — the expression that
+shipped — and `riderCostSwitch()` returns `{}` for every address but its own three values.
+
+## 12. Files (3.4b)
+
+- `src/physics/predictiveBalance.ts` — `CaptureOmega` and **`captureOmega()`**, the one place in the cost function
+  that holds a lean divergence rate, with its three definitions each stated and each derivable from the plant it is
+  handed; `captureRow`'s fourth argument (`'line'` by default, so the two-argument call is byte for byte the row that
+  shipped); `DesignWeights.captureOmega`; `COST_FEET_REACH`, `COST_CAPTURE_SCALE` and `costWeights()`, the switch's
+  two weights at the values 3.2n and 3.2j measured; and the corrections to `DesignWeights.feetReach`'s own comment
+  (§1 R3 — it does **not** set `captureScale`, and the ω₀ in the sentence that followed was the nailed-feet one).
+- `src/physics/AttachedRider.ts` — `AttachedRiderOptions.riderCost`, reaching the same weights route `waterHeel` and
+  `riderBody` do, with the three values **named exhaustively** rather than passed through.
+- `src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts` (`riderCostSwitch`), `src/main.ts` — the switch's own chain and its pin for online rooms.
+- `src/physics/predictiveBalance.test.ts`, `src/game/PhysicalMode.test.ts` — **four new tests**: the correction is
+  byte-identical on the shipped weights over all 306 schedule points **and** non-vacuous with the two weights on; the
+  three definitions each against their own statement (including `fixed` against the mass matrix's own bank diagonal
+  and `fixed` ≡ `line` with no body); the capture row's own support and its `L` coefficient in every mode (§5's
+  kinematic reading); and the switch's address with its room pin.
+- `docs/research/new-rider/3.4/cost.ts` — **the round's own matrix probe**: the liveness column, the five candidate
+  ω₀ with the two reads that say what the plant's own instability is, the gains both ways, and the capture row and
+  bank limit per stance. Read-only.
+- `docs/research/new-rider/3.3/plant.ts` — step 3.3p's probe, extended with **`COST=point|fixed|plant`** so the
+  ridden arm is the same probe on the same cells, and with the arm's own ω₀ printed in every run's row so no arm's
+  number is ever reported against another arm's constant.
+- `docs/research/new-rider/3.4/results/34b/` — the forty-eight arms as `.jsonl` and `.txt`, `34b-summary.txt`,
+  `34b-omega.txt`/`.jsonl`, `34b-canyon-byte-check.txt` and `34b-predictions.md` (every prediction as written before
+  its read, each with its own falsification, plus the four reads R1–R4 made before anything ran, and P9 written
+  after the forty arms and before the control that tests it).
+- `docs/research/new-rider/3.4/README.md` — this Part.
+
+## 13. For the owner, in plain words — and the shot list
+
+**I was sent to fix two numbers in his balance's rulebook. One of them was not broken, and neither of them is
+switched on.**
+
+**One: the two numbers live in two rules the balance does not use.** His balance scores every possible move against a
+list of what it minds — how far he is leaning, how fast, how hard his ankle is working. Two extra items were written
+for that list in earlier rounds and **neither was kept**: one that says each stance has its own lean limit, and one
+that scores where his weight is heading rather than only where it is. They are in the code, with their measurements,
+switched off. So "fix the two constants in those rules" cannot change the rider that ships **at all** — and I proved
+that rather than argued it: with the fix applied, his gains come out identical at all 306 points of the table he
+reads, to the last bit.
+
+**Two: of the two numbers, only one was ever about his body.** The other one is where his weight sits over his feet,
+and that is the same distance whether you model him as a weight on a stick or as a real body — **it is geometry, not
+inertia**. So last round's "two point-mass constants" was one.
+
+**Three: and the one that was real was already five times wrong before last round touched anything.** The number is
+how fast a lean runs away from you. The rulebook says **3.9 a second**. On the plant that *ships* — a weight on a
+stick, as it always was — it is **22 a second**, because his board weighs two and a half kilos sideways and his lean
+shoves it out from under his feet. Last round's two-body plant made it **8**. So last round did not create this
+problem: **it made it two and a half times smaller.**
+
+**Four: and I cannot tell you which number is right, because the lean in his model does not actually run away.** His
+ankle is a stiff spring in that model and it always wins: the model's own lean coefficient is **negative at every one
+of the 306 table points**, on both plants. The whole idea the number comes from — a body toppling about its feet
+under gravity alone — **is not what his model describes.** So I shipped all three readings as a switch and let the
+riding decide, instead of picking one with an argument.
+
+**Five: and then the real result, which I did not go looking for.** When I turned those two unused rules **on**, the
+straight ride went from **1.2 seconds to 4.3** — three and a half times — and the held turn got a third *shorter*.
+That is the trade this track has measured a dozen times. But the thing worth your attention is the other half:
+**the board's half of the model, the half I told you last round was now the whole problem, got four times more
+accurate and started getting the direction of the board's roll right more often than a coin** — and the model itself
+did not change by one byte. Only the gains did. **Part of what six rounds have blamed on the model is where the
+controller takes him.** I then built the control that tests that: on a one-second window nobody falls in, the gain
+**vanishes** on the old plant and **half of it survives** on the two-body one. So: on the plant with a real body in
+it, better gains really do buy a better model; on the old plant, he was just riding somewhere gentler.
+
+**Six: your bar is not met, and on your own slow cell one of these arms is worse than what ships.** Getting into
+position slowly in Compress: still six of six, and the median time is **1.033 s shipped**, 1.267 with the rules on,
+**0.850** with the rules on top of the two-body plant. One thousand and eight test rides this round, every one ended
+inside nine seconds.
+
+**My honest summary: the step I was sent to do was half a step, it is measured, and the fall did not move. The thing
+I would chase next is the accident — that the gains move the board's half of the model at all.**
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot, and `?rider=new&feltFrame=deck` as always.
+
+1. **`?rider=new&feltFrame=deck&riderCost=point`, no stick, just glide.** The bench says he stays up **three and a
+   half times longer** than what ships. **That is the biggest ride effect this track has produced, and it comes from
+   two rules two earlier rounds rejected** — on probes, not on your ride. **Does he feel steadier, or does he feel
+   like he is refusing to turn?** That is the question those two rounds answered with "it costs the lower stances
+   their save", and your ride is the only thing that can overrule them.
+2. **The same, and hold a turn.** The bench says the held turn goes from 3.07 s to 1.97 — **a third shorter**. If the
+   turn gives way much earlier, that is this number and it is the reason not to ship these two rules.
+3. **`?riderBody=two&riderCost=plant` against `?riderBody=two&riderCost=point`.** This is the actual question I was
+   sent to answer — the corrected constant against the old one, on the plant that has a body. The bench says the
+   difference is **tens of per cent, not a factor**: the corrected one rides **longer** on your own slow cell and on
+   a held turn and slightly shorter running straight. **Can you feel a difference at all?** If you cannot, that is
+   worth knowing: it would say the constant is not where the next effort goes.
+4. **`?riderBody=two&riderCost=fixed` once.** On the shipped plant this is **byte-identical** to `point` (1 260
+   machine comparisons, 0 mismatches) — on the two-body plant it is the arm with **the best model accuracy this whole
+   investigation has recorded** (lean row 0.899, board row 2.135, both signs better than a coin). **If the best
+   numbers feel worst, I want to know that before I chase them further.**
+5. **And a ruling, not a ride.** What I think step three is, in order:
+   - **The accident, which is the biggest thing this round found: the gains move the board's row.** Six rounds have
+     been measuring the roll row as if it were a property of the model. It is partly a property of the trajectory,
+     and on the two-body plant about half of it is the gains themselves. **I would measure the roll row per source
+     against the game at a FIXED trajectory** — the same recorded ride, three sets of gains — which is Part 1 §8
+     item 2's measurement with this round's control built into it. That is the first thing I would do.
+   - **The two rules themselves, properly, against your bar and not against a probe.** They are the factor of three
+     and a half in the ride and nobody has ridden them. Shot 1 and shot 2 are that measurement, and they are yours.
+   - **The game's own rider as two bodies** (Part 1 §8 item 3). It is still the only thing that fixes the two reads
+     Part 1 made worse, it is still the route the parked duck-dive work named as the faithful one — **and this round
+     found that the live capture point in the game's own rider, the one that lowers his knees, carries the same
+     nailed-feet ω₀. It is right today because the game's rider is a weight on a stick. It stops being right the day
+     item 3 lands**, so it belongs in item 3's own scope.
+   **My recommendation is the first, then your two shots, then the third. Your call.**
+
+## 14. The deletions column, read line by line
+
+`git diff --cached --numstat origin/main` before the commit, read file by file: **113 files, 5 637 insertions and 19
+deletions** (this section included), and **all nineteen deletions read one by one.**
+
+```
+ 22   2  docs/research/new-rider/3.3/plant.ts
+ 31   1  src/game/PhysicalMode.test.ts
+ 18   0  src/game/PhysicalMode.ts
+  2   2  src/main.ts
+ 23   3  src/physics/AttachedRider.ts
+  8   0  src/physics/RideSession.ts
+115   1  src/physics/predictiveBalance.test.ts
+ 76   9  src/physics/predictiveBalance.ts
+  1   1  src/wave/SurfZoneRunner.ts
+ 10   0  src/wave/SurfZoneSimulation.ts
+```
+
+`src/game/PhysicalMode.ts` (**+18**), `src/physics/RideSession.ts` (**+8**), `src/wave/SurfZoneSimulation.ts`
+(**+10**), `docs/research/new-rider/3.4/cost.ts` (**+294**), `docs/research/new-rider/3.4/README.md` (**+557**) and
+the **101** files under `results/34b/` are **insertions only, zero deletions.**
+
+- **`predictiveBalance.ts`, 9** — and **five of them are the only real removal of the round**: the `rollModel` import
+  (re-added with `lateralCompliance`); **the five comment lines of `DesignWeights.feetReach` that said it sets
+  `captureScale` and that each stance's ω₀ is `√(g/L)`** — both false of the code (§1 R3), replaced by what the code
+  does and by the measured rate; `captureRow`'s signature (re-added with `mode`); `row[3] = y.height / Math.sqrt(…)`
+  (re-added as `y.height / captureOmega(y, gravity, mode)`, whose `'line'` branch **is** that expression); and
+  `design`'s own `captureRow(y, 9.81, nState)` call (re-added with `w.captureOmega ?? 'line'`).
+- **`AttachedRider.ts`, 3**: the `predictiveBalance` import (re-added with `costWeights` and `type CaptureOmega`) and
+  the two lines of the `weights` expression, both re-added with `costs` in them and nothing dropped —
+  `options.balance?.weights`, `heelWeights`, `bodyWeights` and `DEFAULT_WEIGHTS` are all still there, in order.
+- **`plant.ts`, 2**: its `predictiveBalance` import (re-added with `captureOmega`) and the summary's header line
+  (re-added with the arm's own `body` and `cost`).
+- **`main.ts`, 2**: the online-room override comment and the override line itself, both re-added with `riderCost` in
+  them.
+- **`PhysicalMode.test.ts`, 1**, **`predictiveBalance.test.ts`, 1** and **`SurfZoneRunner.ts`, 1**: one import line
+  each and the config spread line, each re-added with one more name.
+
+**A token-by-token check was run rather than trusted to the eye**: every identifier on every one of the nineteen
+deleted lines was searched for across the round's insertions. **Every code identifier is present.** The only tokens
+that are not are twelve ordinary English words (`carries`, `coming`, `difference`, `express`, `faster`, `going`,
+`larger`, `matters`, `most`, `radians`, `share`, `delay`) and all twelve are from the five removed comment lines —
+the intended removal named above.

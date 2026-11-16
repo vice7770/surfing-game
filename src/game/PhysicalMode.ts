@@ -569,6 +569,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?riderBody=two`: the balance's internal plant gives the rider's body an inertia of its own and solves the lateral
     // accelerations together, instead of a point mass on a massless leg with a substituted force at the feet (step 3.4a), opt-in, to ride.
     ...riderBodySwitch(),
+    // `?riderCost=point|fixed|plant`: the balance's two optional costs (the bank's own limit per stance, the capture point's
+    // rank-one cost) turned on together, with the capture point's ω₀ the point mass's, the body's own or the plant's own (step 3.4b), opt-in, to ride.
+    ...riderCostSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1178,6 +1181,21 @@ export function waterHeelSwitch(search?: string): { waterHeel?: 'tilt' | 'predic
 export function riderBodySwitch(search?: string): { riderBody?: 'two' | 'control' | 'symmetric' } {
   const v = devParam('riderBody', search)?.trim().toLowerCase();
   return v === 'two' || v === 'control' || v === 'symmetric' ? { riderBody: v } : {};
+}
+
+/**
+ * The `?riderCost=point|fixed|plant` dev switch (`SurfZoneConfig.riderCost`, step 3.4b): opt-in, the new surfer's
+ * balance designs its gains against **two costs the shipped design does not have** — the bank's cost as each stance's
+ * own limit (`feetReach`, step 3.2n) and the capture point's own rank-one cost (`captureScale`, step 3.2j) — with the
+ * capture point's lean divergence rate ω₀ taken from the point mass with its feet held (`point`, which is exactly
+ * 3.2j's and 3.2n's own design and the control that separates the weights from the constant), from the body's own
+ * inertia with its feet still held (`fixed`), or from the plant's own lateral compliance (`plant`), which is the
+ * plant the design is actually built on. Anything else, the shipped cost function, which has neither weight.
+ * docs/research/new-rider/3.4.
+ */
+export function riderCostSwitch(search?: string): { riderCost?: 'point' | 'fixed' | 'plant' } {
+  const v = devParam('riderCost', search)?.trim().toLowerCase();
+  return v === 'point' || v === 'fixed' || v === 'plant' ? { riderCost: v } : {};
 }
 
 /**

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { eigenvalues, lateralCompliance, lateralMass } from './rollModel';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, closedLoop, continuousPlant, design, discretise, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -242,5 +242,119 @@ describe('the two-body rider as a plant (step 3.4a, `riderBody`)', () => {
     expect(two.phi).not.toEqual(off.phi);
     const sym = scheduledDesign(7, 0.195, 0, { ...DEFAULT_WEIGHTS, riderBody: 'symmetric' });
     expect(sym.k).not.toEqual(off.k);
+  });
+});
+
+describe('the cost function on the plant it is designed on (step 3.4b, `captureOmega`, `riderCost`)', () => {
+  // **Neither of step 3.4a's two named point-mass constants is in the shipped cost function.** `captureRow`'s ω₀ is
+  // read only when `captureScale` is set and the bank limit only when `feetReach` is, and `DEFAULT_WEIGHTS` sets
+  // neither (3.2j and 3.2n each built one and did not keep it). So the round's own correction must be byte-identical
+  // on the shipped weights at every point of the schedule the game reads — and must move every point once the two
+  // weights are on, or the correction is vacuous.
+  it('cannot move the shipped design, because the shipped design has neither weight', () => {
+    expect('captureScale' in DEFAULT_WEIGHTS).toBe(false);
+    expect('feetReach' in DEFAULT_WEIGHTS).toBe(false);
+    let worst = 0;
+    let smallest = Number.POSITIVE_INFINITY;
+    let cells = 0;
+    for (const v of SCHEDULE_SPEEDS) for (const d of SCHEDULE_DEPTHS) for (const rail of SCHEDULE_RAILS) {
+      const { y, t } = plantAt(v, d, { rail });
+      const base = design(y, t, DEFAULT_WEIGHTS);
+      for (const mode of ['fixed', 'solved'] as const) {
+        const same = design(y, t, { ...DEFAULT_WEIGHTS, captureOmega: mode });
+        for (let i = 0; i < base.k.length; i += 1) for (let j = 0; j < base.k[i].length; j += 1) {
+          worst = Math.max(worst, Math.abs(same.k[i][j] - base.k[i][j]));
+        }
+      }
+      // Non-vacuity: with the two weights on, the same change must reach K at every point.
+      const point = design(y, t, { ...DEFAULT_WEIGHTS, ...costWeights('point') });
+      const plant = design(y, t, { ...DEFAULT_WEIGHTS, ...costWeights('plant') });
+      let move = 0;
+      let big = 1e-12;
+      for (let i = 0; i < point.k.length; i += 1) for (let j = 0; j < point.k[i].length; j += 1) {
+        move = Math.max(move, Math.abs(point.k[i][j] - plant.k[i][j]));
+        big = Math.max(big, Math.abs(point.k[i][j]));
+      }
+      smallest = Math.min(smallest, move / big);
+      cells += 1;
+    }
+    expect(cells).toBe(SCHEDULE_SPEEDS.length * SCHEDULE_DEPTHS.length * SCHEDULE_RAILS.length);
+    expect(worst).toBe(0);
+    expect(smallest).toBeGreaterThan(1e-3);
+  });
+
+  // The three definitions, each asserted from its own statement rather than from a number typed in beside it.
+  // `'fixed'` is the bank coordinate's inertia with the other three lateral coordinates **held**, which is what a mass
+  // matrix's diagonal honestly is — and that is the only quantity read off a diagonal here.
+  it('is √(g/L) held and point-mass, the mass matrix\'s own diagonal held with a body, and the plant\'s own compliance free', () => {
+    for (const d of SCHEDULE_DEPTHS) {
+      const { y } = plantAt(7, d, {});
+      const { y: two } = plantAt(7, d, { body: true });
+      const m = y.mass;
+      const h = y.height;
+      // `'line'`: the point mass with its feet nailed down.
+      expect(captureOmega(y, 9.81, 'line')).toBeCloseTo(Math.sqrt(9.81 / h), 12);
+      // With no body at all the first two definitions are the same number, which is why the shipped row is `'line'`.
+      expect(captureOmega(y, 9.81, 'fixed')).toBeCloseTo(captureOmega(y, 9.81, 'line'), 12);
+      // `'fixed'` with a body is the mass matrix's own bank diagonal, `J + m h²`, held.
+      const held = Math.sqrt((m * 9.81 * h) / lateralMass(two, two.body)[1][1]);
+      expect(captureOmega(two, 9.81, 'fixed')).toBeCloseTo(held, 12);
+      expect(captureOmega(two, 9.81, 'fixed')).toBeCloseTo(Math.sqrt((m * 9.81 * h) / ((two.body?.inertia ?? 0) + m * h * h)), 12);
+      // `'solved'` is the plant's own compliance, which the bank ledger publishes — and on the SHIPPED plant it is
+      // already several times `√(g/L)`, because the board is free to recoil under the feet.
+      expect(captureOmega(y, 9.81, 'solved')).toBeCloseTo(Math.sqrt(lateralCompliance(y, { inertia: 0, feetRoll: false })[1][1] * m * 9.81 * h), 12);
+      expect(captureOmega(y, 9.81, 'solved') / captureOmega(y, 9.81, 'line')).toBeGreaterThan(4);
+      // The body's inertia slows the free reading by about √7 and the held one by under a tenth.
+      expect(captureOmega(two, 9.81, 'solved') / captureOmega(y, 9.81, 'solved')).toBeLessThan(0.45);
+      expect(captureOmega(two, 9.81, 'fixed') / captureOmega(y, 9.81, 'fixed')).toBeGreaterThan(0.9);
+    }
+  });
+
+  // **The limit the second constant sets is kinematic.** The capture point's own θ coefficient is where the centre of
+  // mass sits over the feet, `L`, and a rigid body's centre of mass sits at `L` whatever its own inertia is — so
+  // `feetReach / L` is the same lean for a point mass and for a body, and of 3.4a's two named constants only ω₀ was
+  // the point mass's. The θ̇ coefficient is the one that moves.
+  it('keeps the capture point\'s own lean coefficient at L for every body, and moves only its rate coefficient', () => {
+    for (const d of SCHEDULE_DEPTHS) {
+      const { y: two } = plantAt(7, d, { body: true });
+      const line = captureRow(two, 9.81, 10, 'line');
+      for (const mode of ['line', 'fixed', 'solved'] as const) {
+        const row = captureRow(two, 9.81, 10, mode);
+        expect(row[2]).toBe(two.height);
+        expect(row.filter((_, i) => i !== 2 && i !== 3)).toEqual(new Array<number>(8).fill(0));
+        if (mode !== 'line') expect(row[3]).not.toBe(line[3]);
+      }
+      // Backward compatibility: the two-argument call is the shipped row, byte for byte.
+      expect(captureRow(two, 9.81, 10)).toEqual(line);
+    }
+  });
+
+  // The switch's own weights, at the values 3.2n and 3.2j measured and neither tuned here.
+  it('turns on the two weights the shipped design has not, and sets only ω₀ between its three values', () => {
+    expect(costWeights('point')).toEqual({ feetReach: COST_FEET_REACH, captureScale: COST_CAPTURE_SCALE, captureOmega: 'line' });
+    expect(costWeights('fixed')).toEqual({ feetReach: COST_FEET_REACH, captureScale: COST_CAPTURE_SCALE, captureOmega: 'fixed' });
+    expect(costWeights('plant')).toEqual({ feetReach: COST_FEET_REACH, captureScale: COST_CAPTURE_SCALE, captureOmega: 'solved' });
+    expect(COST_FEET_REACH).toBe(0.13);
+    expect(COST_CAPTURE_SCALE).toBe(0.013);
+    // And the three designs are three designs, on the two-body plant as on the shipped one.
+    for (const body of [undefined, 'two'] as const) {
+      const w = { ...DEFAULT_WEIGHTS, ...(body ? { riderBody: body } : {}) } as DesignWeights;
+      const off = scheduledDesign(7, 0.195, 0, w);
+      const point = scheduledDesign(7, 0.195, 0, { ...w, ...costWeights('point') });
+      const fixed = scheduledDesign(7, 0.195, 0, { ...w, ...costWeights('fixed') });
+      const plant = scheduledDesign(7, 0.195, 0, { ...w, ...costWeights('plant') });
+      expect(point.k).not.toEqual(off.k);
+      expect(plant.k).not.toEqual(point.k);
+      expect(plant.k).not.toEqual(fixed.k);
+      // **And a control that falls out of the definitions**: with no body, `'fixed'` IS `'line'` — the held reading
+      // only differs from the point mass's because the body has an inertia — so on the shipped plant the `fixed` arm
+      // must be the `point` arm byte for byte, and on the two-body plant it must not be.
+      if (body) expect(fixed.k).not.toEqual(point.k);
+      else expect(fixed.k).toEqual(point.k);
+      // The plant is untouched by the cost: Φ and Γ are the arm's own plant's, whatever the cost is.
+      expect(point.phi).toEqual(off.phi);
+      expect(plant.phi).toEqual(off.phi);
+      expect(plant.gamma).toEqual(off.gamma);
+    }
   });
 });

@@ -184,6 +184,13 @@ export interface RideSessionOptions {
    * inertia at zero, which reproduces the shipped plant. By default the body is a point mass on a massless leg.
    */
   riderBody?: 'two' | 'control' | 'symmetric';
+  /**
+   * The cost function on the plant it is designed on (step 3.4b; `AttachedRiderOptions.riderCost`): it turns on the
+   * balance's two optional costs — the bank's cost as each stance's own limit and the capture point's rank-one cost,
+   * neither of which the shipped design has — with ω₀ the point mass's ('point', the control), the body's own with its
+   * feet held ('fixed') or the plant's own ('plant'); the `?riderCost` dev switch. By default neither cost exists.
+   */
+  riderCost?: 'point' | 'fixed' | 'plant';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -292,6 +299,7 @@ export class RideSession {
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
+      ...(options.riderCost ? { riderCost: options.riderCost } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

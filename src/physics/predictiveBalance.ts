@@ -18,7 +18,7 @@
  * the board's yaw rate, its slip, the twist and the upper body's yaw rate, the ankle's lagged rest and the twist's
  * lagged torque); commands [u_a, u_t].
  */
-import { HEAVE_AT, N_HEAVE, boardDerivatives, twistRows, twistStateCount, type HeavePlant, type RiderBody, type TwistPlant, type YawPlant } from './rollModel';
+import { HEAVE_AT, N_HEAVE, boardDerivatives, lateralCompliance, twistRows, twistStateCount, type HeavePlant, type RiderBody, type TwistPlant, type YawPlant } from './rollModel';
 
 export type Mat = number[][];
 export const zeros = (r: number, c: number): Mat => Array.from({ length: r }, () => new Array<number>(c).fill(0));
@@ -699,13 +699,29 @@ export interface DesignWeights {
    * designer all three stances have the same room, when the lowest has 53 % more than the tallest — and the owner can
    * feel it: he reached for the stance that should save him and it dropped him.
    *
-   * It also sets the capture point's own cost (`captureScale`) to the same metres unless that is given separately,
-   * which is what carries the **cross term** between the bank and its rate at each stance's own ω₀ = √(g/L) — the
-   * difference between a bank that is coming back and one that is going over. A low stance falls faster (ω₀ 4.22
-   * against 3.42) and the fixed 0.1 s delay is a larger share of its time constant (0.42 against 0.34), so that is
-   * exactly where the cross term matters most and where a diagonal cost in radians cannot express it.
+   * **Step 3.4b corrects two sentences that stood here.** (1) *"It also sets the capture point's own cost
+   * (`captureScale`) to the same metres unless that is given separately"* — **it does not**: `design` reads
+   * `w.captureScale` with no fallback to this weight, and the comment at the rank-one term says the opposite
+   * (*"`feetReach` sets the bank's ranking and nothing else"*). The capture point's cost is reached only by setting
+   * `captureScale` outright. (2) The ω₀ in the sentence that followed, *"each stance's own ω₀ = √(g/L) … 4.22 against
+   * 3.42"*, is the rate of a pendulum whose **feet are nailed down**; this plant's feet are free, and its own rate is
+   * 15–17 rad/s (`captureOmega`, Part 2 §3). The **cross term** this weight is about is real; its coefficient was the
+   * wrong plant's.
+   *
+   * **The limit itself is inertia-free and step 3.4b did not change it.** `feetReach / L` is where the centre of mass
+   * sits over the feet, `h sin θ`, which is the same for a point mass and for a body with any `J` — so of 3.4a's two
+   * named point-mass constants only `captureRow`'s ω₀ was one (Part 2 §5).
    */
   feetReach?: number;
+  /**
+   * **Step 3.4b: which plant's own lean divergence rate the capture point's row uses** (`captureRow`, `captureOmega`).
+   * Omitted: `'line'`, `√(g/L)`, exactly what shipped. `'fixed'` adds the body's own inertia with the feet held;
+   * `'solved'` reads the plant's own lateral compliance, which is the plant the design is actually built on.
+   *
+   * **It reaches nothing unless `captureScale` is set**, which no default does — so this weight cannot move the
+   * shipped rider, and the column that says so is Part 2 §2.
+   */
+  captureOmega?: CaptureOmega;
   /**
    * The largest acceptable heave, heave rate, pitch and pitch rate (m, m/s, rad, rad/s), used only when the plant
    * carries them as states (`YawPlant.heave`, ruling 29t item 2). **Omitted, and omitted by default, they carry no
@@ -864,6 +880,25 @@ export const DEFAULT_WEIGHTS: DesignWeights = {
 };
 
 /**
+ * **Step 3.4b: the two weights `?riderCost` turns on, at the values earlier rounds measured and did not keep** —
+ * `feetReach` the feet's own half-width (0.13 m, step 3.2n, the same half-width the rest of the rider uses) and
+ * `captureScale` the capture point's own cost (0.013 m, step 3.2j's margin peak in all three stances). **Neither is
+ * tuned here**: 3.4b changes which plant's ω₀ the second one is built with and nothing else about either.
+ */
+export const COST_FEET_REACH = 0.13;
+export const COST_CAPTURE_SCALE = 0.013;
+/**
+ * The weights `AttachedRiderOptions.riderCost` sets, by value: `'point'` turns the two costs on with the **point
+ * mass's** ω₀ = √(g/L), which is 3.2j's and 3.2n's own design and the control that separates the weights from the
+ * constant; `'fixed'` and `'plant'` are the same two weights with `captureOmega` the body's own held-feet rate and the
+ * plant's own solved rate. Unset: nothing — the shipped cost function has neither weight (Part 2 §2).
+ */
+export function costWeights(mode: 'point' | 'fixed' | 'plant'): { feetReach: number; captureScale: number; captureOmega: CaptureOmega } {
+  const captureOmega: CaptureOmega = mode === 'plant' ? 'solved' : mode === 'fixed' ? 'fixed' : 'line';
+  return { feetReach: COST_FEET_REACH, captureScale: COST_CAPTURE_SCALE, captureOmega };
+}
+
+/**
  * One design: the internal model (Φ, Γ, the senses; with the bias, the estimate's model has the two bias states after
  * the ten), the LQR gain on the ten, the filter's gain and the predictor's terms over `steps` frames.
  */
@@ -895,12 +930,42 @@ export interface Design {
  * The capture point across as a row over the state, m per rad: ξ = L (θ + θ̇/ω₀) with L the centre of mass over the feet
  * and ω₀ = √(g/L) (Hof, Gazendam and Sinke 2005, on this plant's point-mass body). The feet can bring it back while it
  * is inside their half-width; past that the ankle has no authority left, whatever rest it is asked for.
+ *
+ * **Step 3.4b: `mode` is whose divergence rate ω₀ is** (`DesignWeights.captureOmega`), because `√(g/L)` is the
+ * **point-mass, held-feet** one and step 3.4a's plant is neither:
+ *
+ * - `'line'` — `√(g/L)`, what ships: a point mass whose feet are nailed down.
+ * - `'fixed'` — `√(m g L / (J + m L²))`, the same body with **its own inertia** and its feet still nailed down.
+ * - `'solved'` — `√(C₁₁ m g L)`, the body's own weight `m g L θ` put through the plant's **own** lateral compliance,
+ *   i.e. with the board free to recoil under the feet, which is what the plant the design is built on actually does.
+ *
+ * The three coincide only when the body has no inertia **and** the feet are held; this plant's feet are not held, so
+ * even with no body `'line'` and `'solved'` differ, and by far more than the body's inertia moves either (Part 2 §3).
  */
-export function captureRow(y: YawPlant, gravity = 9.81, n = N_STATE): number[] {
+export function captureRow(y: YawPlant, gravity = 9.81, n = N_STATE, mode: CaptureOmega = 'line'): number[] {
   const row = new Array<number>(n).fill(0);
   row[2] = y.height;
-  row[3] = y.height / Math.sqrt(gravity / y.height);
+  row[3] = y.height / captureOmega(y, gravity, mode);
   return row;
+}
+/** Which plant's own lean divergence rate the capture point's row uses (`captureRow`, step 3.4b). */
+export type CaptureOmega = 'line' | 'fixed' | 'solved';
+/**
+ * **Step 3.4b: the lean's own divergence rate ω₀, rad/s, by `captureRow`'s three definitions** — the one place in the
+ * cost function that holds one, so the plant's own body and the plant's own freedoms reach it from a single line.
+ */
+export function captureOmega(y: YawPlant, gravity = 9.81, mode: CaptureOmega = 'line'): number {
+  const h = y.height;
+  if (mode === 'line') return Math.sqrt(gravity / h);
+  const j = y.body?.inertia ?? 0;
+  if (mode === 'fixed') return Math.sqrt((y.mass * gravity * h) / (j + y.mass * h * h));
+  // The plant's own: the body's weight is `m g h` on the bank row's own generalised force and the plant answers it
+  // with `C₁₁ m g h θ` — the same compliance the bank ledger publishes and `lateralMass` assembles. With no body and
+  // the shipped asymmetric coupling this is the **shipped** plant's own answer, and it is not `g/h`: the board is free
+  // to recoil under the feet, and `√(g/h)` is the rate of a pendulum whose feet are nailed down.
+  const c = lateralCompliance(y, y.body ?? { inertia: 0, feetRoll: false });
+  const solved = c[1][1] * y.mass * gravity * h;
+  return solved > 0 ? Math.sqrt(solved) : Math.sqrt(gravity / h);
 }
 /**
  * **Step 3.3p: the part of the plant's first column the water's three HEEL derivatives own**, per radian of `φ`, by
@@ -964,7 +1029,9 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
   // that the tall stance's design does not move (step 3.2n).
   const capture = w.captureScale;
   if (capture) {
-    const row = captureRow(y, 9.81, nState);
+    // Step 3.4b: `captureOmega` is which plant's own divergence rate the row's rate coefficient is; omitted it is
+    // `'line'`, `√(g/L)`, byte for byte what shipped.
+    const row = captureRow(y, 9.81, nState, w.captureOmega ?? 'line');
     const weight = 1 / (capture * capture);
     for (let i = 0; i < nState; i += 1) for (let j = 0; j < nState; j += 1) q[i][j] += weight * row[i] * row[j];
   }

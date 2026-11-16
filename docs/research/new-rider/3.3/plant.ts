@@ -128,7 +128,7 @@ import { BoardBody } from '../../../../src/physics/BoardBody';
 import { createWaterSample } from '../../../../src/physics/SurfWater';
 import { FaceWater } from '../../../../src/physics/testing/FaceWater';
 import { bankLedger, BANK_SOURCES, type BankSource } from '../../../../src/physics/bankLedger';
-import { CONTROL_STEP, bodyInertiaAt, continuousPlant, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
+import { CONTROL_STEP, bodyInertiaAt, captureOmega, continuousPlant, discretise, heelColumn, plantAt, railLimit } from '../../../../src/physics/predictiveBalance';
 import { lateralCompliance, type RiderBody, type TwistPlant, type YawPlant } from '../../../../src/physics/rollModel';
 
 const DEG = 180 / Math.PI;
@@ -167,6 +167,15 @@ const BODY = process.env.BODY === 'two' ? 'two' : process.env.BODY === 'control'
  * function of the body's inertia instead of at one value. Unset, the sourced inertia itself (`bodyInertiaAt`).
  */
 const BODYJ = process.env.BODYJ ? Number(process.env.BODYJ) : undefined;
+/**
+ * **Step 3.4b's switch**: `COST=point|fixed|plant` rides the balance's two optional costs — the bank's cost as each
+ * stance's own limit (`feetReach`, step 3.2n) and the capture point's rank-one cost (`captureScale`, step 3.2j),
+ * **neither of which the shipped design has** — with the capture point's own ω₀ the point mass's `√(g/L)` (`point`,
+ * which is 3.2j's and 3.2n's own design and the control that separates the weights from the constant), the body's own
+ * with its feet held (`fixed`), or the plant's own solved rate (`plant`). Unset: the shipped cost function.
+ */
+const COST = process.env.COST === 'point' ? 'point' : process.env.COST === 'fixed' ? 'fixed'
+  : process.env.COST === 'plant' ? 'plant' : undefined;
 /** The three body plants scored as counterfactuals on every ride, whatever `BODY` is. */
 const BODIES: { key: 'Ctl' | 'Sym' | 'Two'; body: RiderBody | true }[] = [
   { key: 'Ctl', body: { inertia: 0, feetRoll: false } },
@@ -175,6 +184,8 @@ const BODIES: { key: 'Ctl' | 'Sym' | 'Two'; body: RiderBody | true }[] = [
 ];
 
 type Stance = 'tall' | 'crouch' | 'compress';
+/** The three stances' own depths in `STANCE_TABLE`, so an ω₀ can be read at the stance the run held. */
+const STANCE_DEPTH: Record<Stance, number> = { tall: 0, crouch: 0.195, compress: 0.3 };
 const STANCES = (process.env.STANCES ?? 'tall,crouch,compress').split(',') as Stance[];
 
 const f = (v: number, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : '–');
@@ -530,6 +541,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(FELT ? { feltFrame: FELT } : {}),
     ...(WHEEL ? { waterHeel: WHEEL } : {}),
     ...(BODY ? { riderBody: BODY } : {}),
+    ...(COST ? { riderCost: COST } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -1464,6 +1476,14 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ankleBankRatioTwoMed: r(median(live.map((xx) => (Math.abs(xx.ankleBankGame) > 1e-12 ? Math.abs(xx.ankleBankTwo / xx.ankleBankGame) : Number.NaN)).filter(Number.isFinite)), 3),
     body: BODY ?? 'point',
     bodyJ: BODYJ ?? 1,
+    cost: COST ?? 'off',
+    // Step 3.4b: the ω₀ the arm's own cost function was built with, rad/s, read off the ridden plant at this run's own
+    // stance and 7 m/s — the cost function's own constant, printed with the arm so no arm's number is reported
+    // against another arm's constant.
+    omegaLine: r(captureOmega(plantAt(7, STANCE_DEPTH[st], {}).y, 9.81, 'line'), 4),
+    omegaFixed: r(captureOmega(plantAt(7, STANCE_DEPTH[st], { body: true }).y, 9.81, 'fixed'), 4),
+    omegaSolved: r(captureOmega(plantAt(7, STANCE_DEPTH[st], { body: true }).y, 9.81, 'solved'), 4),
+    omegaSolvedShipped: r(captureOmega(plantAt(7, STANCE_DEPTH[st], {}).y, 9.81, 'solved'), 4),
   };
   return out;
 }
@@ -1484,7 +1504,7 @@ for (const row of rows) emit(row);
 // still counts.
 const num = (k: string) => rows.map((x) => x[k]).filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
 const sh = (k: string) => span(num(k), 3);
-process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}\n`);
+process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}, body ${BODY ?? 'point'}${BODYJ !== undefined ? ` x${BODYJ}` : ''}, cost ${COST ?? 'off'}\n`);
 process.stdout.write(`# fell ${rows.filter((x) => x.fell).length} of ${rows.length}, at ${span(num('fellAt'), 3)} s, median ${f(median(num('fellAt')), 3)}\n`);
 process.stdout.write(`# P0a sense residual, peak over runs: ${peak(num('senseOff')).toExponential(3)}  | tick spacing off: ${peak(num('spacingOff')).toExponential(3)} s\n`);
 process.stdout.write(`# P0c ledger split ${peak(num('ledgerSplit')).toExponential(2)} closure ${peak(num('ledgerClosure')).toExponential(2)} residual ${peak(num('ledgerResidual')).toExponential(2)} apart ${peak(num('ledgerApart'))}\n`);

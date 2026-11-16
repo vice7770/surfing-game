@@ -13,7 +13,7 @@ import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, ride
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
 import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, railPull, stanceAt, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, railPull, stanceAt, type CaptureOmega, type DesignWeights } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -1505,6 +1505,21 @@ export interface AttachedRiderOptions {
    * ships so that the control can be ridden as well as tested.
    */
   riderBody?: 'two' | 'control' | 'symmetric';
+  /**
+   * **The cost function on the plant it is designed on** (step 3.4b, `?riderCost=point|fixed|plant`): it turns on the
+   * balance's own two optional costs — the bank's cost as **each stance's own limit** (`feetReach`, step 3.2n) and the
+   * **capture point's** rank-one cost (`captureScale`, step 3.2j), neither of which the shipped design has — and sets
+   * which plant's own lean divergence rate ω₀ the second one is built with.
+   *
+   * `'point'` is the point mass's `√(g/L)`, which is 3.2j's and 3.2n's own design and **the control that separates
+   * turning the weights on from correcting the constant**; `'fixed'` is the body's own inertia with its feet held;
+   * `'plant'` is the plant's own solved rate, which is the plant the design is actually built on. Opt-in, off by
+   * default, pinned off for online rooms, and meant to be ridden **alongside `?riderBody=two`**.
+   *
+   * `docs/research/new-rider/3.4/README.md` Part 2 has the measurement, including the column that says this switch
+   * cannot move the shipped rider.
+   */
+  riderCost?: 'point' | 'fixed' | 'plant';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2343,8 +2358,13 @@ export class AttachedRider {
     // Step 3.4a: `riderBody` reaches the same weights route, so an explicit `riderBody` in `balance.weights` wins.
     const bodyWeights: { riderBody: 'two' | 'control' | 'symmetric' } | undefined = options.riderBody
       ? { riderBody: options.riderBody } : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...options.balance?.weights }
+    // Step 3.4b: `riderCost` reaches the same weights route, so an explicit `feetReach`, `captureScale` or
+    // `captureOmega` in `balance.weights` still wins. Named exhaustively rather than passed through, so a value that
+    // is not one of the three cannot fall into the default arm silently (3.4a's own first build did).
+    const costs: { feetReach: number; captureScale: number; captureOmega: CaptureOmega } | undefined = options.riderCost === 'point'
+      || options.riderCost === 'fixed' || options.riderCost === 'plant' ? costWeights(options.riderCost) : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...options.balance?.weights }
       : undefined;
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
