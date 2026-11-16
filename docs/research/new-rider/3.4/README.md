@@ -1879,3 +1879,656 @@ rebased onto it.
   recomputed from a different number than the one it was first read from; the two spans that changed when I checked
   them against the 40-arm population rather than one arm's are §0 sentences 6, 7 and 9, and they are corrected in
   place with the population named.
+
+# Part 4 — the first second is the mount's own equilibrium read by a model whose roll datum is the world's
+vertical: the window this folder has always filtered out is the worst of the ride, 21.6–32.4 times, and the
+placement's defect is permanent while only its share is a transient
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-two-body-d`, cut from `main` at
+**f6f891ef** (Part 3's merge plus its follow-up), so Part 3 is its base. Its brief is item 1 of Part 3 §14's own
+step-four list, the round's own ruling: *"**The glide's first second** — 6–11× there, 1.0–2.4× after, same runs, nothing explains it; it sits
+exactly where the owner says 'gets on the board'. **Instrument the placement, not the plant.**"*
+
+It ships **no source change at all** — `git diff origin/main -- src/ server/` is **empty** — and instead extends
+`3.3/plant.ts` with two read-only switches (`MOUNT=<path>`, a per-**frame** record from frame 1, and `PLACE=level`,
+the mount's own positive control) and adds `3.4/mount.ts`, which reads the dumps and generates every table below.
+**Ten arms, 210 rides, 23 446 frames and 23 446 control ticks of which 20 264 are 3.4c's own live population**: the
+shipped and the two-body plants on each of the three cells (the glide, the owner's own low speed, a commanded turn),
+the glide once more with Part 2's two cost weights on, and **three more with only the mount changed** (`PLACE=level`
+on the glide, on the two-body glide and on the owner's own cell).
+
+**The owner rode this track before Part 3 and their two sentences are still the frame:** *"gets on the board down
+turn just falls very easily"* and *"seems that the movement is very fluid in the sense that doesnt look like a stick
+but an actual human movement."* **Nothing here proposes reverting the two-body plant**; the two-body arms are here
+because the owner rides it.
+
+## 0. The ten sentences the round is for
+
+1. **The owner's bar is NOT met in any arm. 210 of 210 rides ended before nine seconds and Compress fell in 70 of
+   70** [M], over ten arms. The owner's own low-speed cell is **1.033 s** on both plants, the glide **1.183 /
+   1.450 s**, the turn **3.067 / 2.500 s** — **every one Part 2's and Part 3's published figure to the digit**
+   (§12 C1), and the mount's own control arm is **0.383 s**.
+2. **The window the whole folder filters out is the worst of the ride.** `3.3/plant.ts`'s own `live` filter is
+   `t > 0.2 && clamped === 0`, commented *"the placement's contact transient"* [R] — so **no number in 3.3k…3.4c
+   contains the mount's first twelve frames.** Measured for the first time: the roll row's error there is
+   **29.6× (off), 21.6× (point), 32.4× (two-body)** on the glide against the 6.6–12.6× of 3.4c's own first second,
+   **7.3×** on the owner's own cell and **6.5×** on a turn [M, 264 / 264 / 264 / 198 / 198 ticks].
+3. **And the filter's own premise is wrong: the placement's transient is not over at 0.2 s.** The board's own heel
+   against the water does not exceed the face's tilt under it until **0.583 s** (24 of 24 runs) on the glide and
+   **0.392–0.458 s** (18 of 18) on the low and steered cells [M].
+4. **The age profile splits exactly, because a geometric mean is multiplicative.**
+   `gm(|m−g|/|g|) ≡ gm(|m−g|)/gm(|g|)`, read with its own closure (3 × 10⁻⁸ at the median, 6.4 × 10⁻⁶ peak, the
+   residue of the three means dropping different zero entries). From the mount to the settled ride on the arm with
+   by far the largest settled population (`point`, 264 ticks then 1 592 at 3–5 s, against 23–469 on the other
+   nine): **21.598 → 1.921 is ×3.69 of numerator and ×3.04 of denominator — 54 % and 46 % of it in log terms**
+   [M]. On 3.4c's own windows (0.2–1.0 s against >1.5 s) it is
+   ×3.56 and ×1.46, **77 % and 23 %** [M]. **Half of the mount's error is that the game's own board is quiet
+   there**, and no round before this one has separated the two.
+5. **The game's board is quiet at the mount because the mount is built as an equilibrium.** `board.place` builds the
+   board's up axis from the **water's normal** [R], so at frame 1 its heel against the water is **0.046–0.059°**
+   (0.23–0.24° as a geometric mean over the window) while the face's tilt under it is **8.81–8.82°**. The game's
+   own roll row there is **30.5–44.3 °/s²**; at the **same 5–10° of board roll** later in the ride it is
+   **114–222 °/s²**, two to five times louder [M, two-way read].
+6. **The model cannot be in that equilibrium, because its roll datum is the world's vertical.** Its water term at
+   the mount is **2 724 °/s² against the game's 184, and of the opposite sign** (signed medians +2 782 and −254),
+   and **84 % of it is the phantom heel** — the face's tilt read as the board's, exactly one column of the plant
+   (`rollAccFull − rollAccTilt`, `heelColumn` imported, not reimplemented). The phantom alone is **51–75 times the
+   game's whole roll row** at the mount [M].
+7. **The phantom is not a transient. Only its share is.** It is **2 278 °/s² at the mount and 391–443 °/s² after
+   three seconds**, where the net error is 259 and the game's whole row 135 — still **1.5–1.7× the game's row and
+   0.8–1.6× the error it is supposed to explain** [M]. Its share of the model's own water term falls
+   **0.84 → 0.07**. And **the reference is wrong in the same datum for the whole ride**: `|φ_ref|` is **exactly
+   0.0000° at every one of 18 182 frames of every unsteered, low and level run**, while the face's tilt under the
+   board is 7.6–10.5° at the median [M] — the trim the loop holds is level with the **world**, not with the face.
+8. **Nothing in the mount's own initialisation has a one-second scale, so the first second is not a filter
+   transient.** The loop sends **exactly zero for frames 1–6 in 144 of 144 frames of 24 of 24 runs** (the estimate
+   is zeroed by `resetBalance` and the filter cannot run until the sense line is longer than the delay, `steps = 6`
+   [R]); it first sends anything at **0.117 s**; the felt vertical starts at the **world's** gravity (−7.545° across
+   the deck, where the deck's own tilt is −8.85°) and is within a degree of the **face's normal** by **0.250 s**,
+   24 of 24 [M]. **The one mount quantity with a near-second scale is the geometry of sentence 3.**
+9. **The positive control, predicted before it ran, and it moves the mount's window by sixteen times.**
+   `PLACE=level` changes **only** the placement — the board's up axis the world's vertical instead of the water's
+   normal, same water, heading, entry and rider. The mount's first 0.2 s goes from **21.6–29.6× to 1.329×**, the
+   game's own roll row from **33–44 to 1 290 °/s²** (×29–39), the model's water term from **2 724 to 355** (×0.13),
+   and the share of ticks on which the model **over**-predicts from **1.000 to 0.280** [M]. **The rider falls
+   sooner, 0.383 s against 1.183/1.450** — an instrument, not a result.
+10. **Three of my own nine predictions are refuted, and one of them is this round's own leading explanation.**
+    Conditioning on the phantom's share of the heel the model reads does **not** flatten the age profile: at a share
+    **under a quarter** the error still runs **20.8 → 5.6 → 2.0 → 2.0** with age, and at a fixed age the share does
+    not order the error and partly reverses it (20.8 / 13.8 / 7.0 / 8.1 / 3.4 from least phantom to most) [M].
+    **So the phantom heel is the mount's biggest single term error and it is not, by itself, what makes the first
+    second different.** I have two measured halves and I am not going to collapse them into one cause.
+
+## 1. (A) The five reads that had to come first
+
+**R1 [R]. The probe's mount is the game's mount, which is what lets this Part speak to the owner's sentence.**
+`AttachedRider`'s attach path calls `resetBalance()` — `predictor.reset()`, `controlDue = 0`, `heldAnkleRaw = 0` —
+and sets `pairFresh = true`, and it is the same path whichever way the rider arrives at `phase: 'standing'`
+[R, `AttachedRider.ts:2650–2730`, `:3806–3815`]. So the estimate's zero, the felt vertical's world gravity and the
+cleared sense line are the game's own stand-up, not the probe's artefact.
+
+**R2 [R]. The mount places the board FLUSH with the water and the body SQUARE to the deck, and the second has a
+stated physical reason that contradicts the plant's datum.** The probe's `board.place` builds the orientation from
+the basis `(left, normal, forward)` with `normal` the water's own [R, `plant.ts`], so the heel is zero by
+construction. The body's placement is the game's: *"the body square to the deck … on a planing board, across too:
+as a body balances on a board sliding freely down its face, **where the felt vertical is the face's normal**"*
+[R, `AttachedRider.ts:2655–2657`]. **The mount's own argument is that the vertical that matters is the face's
+normal; every one of the twelve captive derivatives in the balance's plant is read at the roll from the world's
+level** [R, 3.3p §6]. The two disagree by exactly the face's tilt, and §5 is the size of that.
+
+**R3 [R]. The loop cannot act for six frames and that is arithmetic, not a tuning.** `PredictiveController.reset`
+empties `senses` and `estimate`; `tick` only runs the filter `if (this.senses.length > N)` with `N = d.steps`, and
+`estimate` is `new Array(ne).fill(0)` until then [R, `predictiveBalance.ts:1304–1312, 1375–1400`]. With
+`PREDICT_DELAY = 0.1 s` and `CONTROL_STEP = 1/60 s`, `N = 6`. And with `x̂ = 0` and the reference's own `x_ref = 0`
+on an unsteered arm, `u = u_ref − K(x̂ − x_ref) = u_ref = 0` **exactly** — which §4 reads at every frame rather than
+inferring.
+
+**R4 [R]. The delay line is undelayed until it has filled.** `DelayLine.at` returns `values[first]` when
+`t <= times[first]` [R, `humanBalance.ts:218–224`], so for the first `BALANCE_DELAY = 0.1 s` the human loop reads
+the mount's own first frame held, not a delayed sense. A third 0.1 s constant, and the third one shorter than the
+second this Part is about.
+
+**R5 [R]. `MOUNT` and `PLACE` are reads and a placement, and neither can reach the game.** `MOUNT` writes columns
+the probe already has (plus `rider.predictor.reference`, `.sent`, `.raw` and `AttachedRider.pairFelt`, each named in
+`RiderInner` as this probe names every private it reads). `PLACE` changes the probe's own `board.place` call and
+nothing else. §12 C2 is the read that they change no ride: **0 differing cells over 24 runs × 349 columns** with
+both dumps off against both on.
+
+## 2. (B) The window every published figure in this folder excludes
+
+| **[M]** the mount's first 0.2 s, every tick, 12 frames a run | n | gm rel | gm \|err\| | gm \|the game's row\| | gm \|the model's row\| | the phantom | phantom / the game's row | model over-predicts in |
+|---|---|---|---|---|---|---|---|---|
+| **the glide, shipped cost** (`off`) | 264 | **29.610** | 989.7 | **33.4** | 977.0 | 2 279.2 | **68.2** | **1.000** |
+| the glide, + the two weights (`point`) | 264 | **21.598** | 956.2 | **44.3** | 923.5 | 2 278.2 | **51.5** | **1.000** |
+| the glide, the **two-body** plant | 264 | **32.429** | 988.5 | **30.5** | 975.9 | 2 279.3 | **74.8** | **1.000** |
+| **the owner's own low-speed cell** | 198 | 7.303 | 1 076.8 | 147.4 | 1 112.0 | 1 781.3 | 12.1 | 0.798 |
+| a commanded turn | 198 | 6.454 | 398.4 | 61.7 | 386.6 | 1 361.7 | 22.1 | 0.889 |
+| **the same `point` glide at 0.2–1.0 s**, 3.4c's own first second | 1 152 | 6.6–12.6 | 843–1 166 | 87–129 | 828–1 022 | 1 255–2 234 | 12.4–23.6 | 0.93–0.97 |
+
+**Four readings.**
+
+1. **The first number this round measured is three times the number six rounds have been quoting, and it was
+   excluded by a filter that calls it a transient.** 21.6–32.4× against 6.6–12.6×, on the same arms, 264 ticks each
+   [M]. The filter is `t > 0.2` and it has been in every window since 3.3k [R].
+2. **The filter's premise is measurable and it is wrong.** "The placement's contact transient" is not over at
+   0.2 s: the board's own heel first exceeds the face's tilt at **0.583 s** on the glide (24 of 24 runs) and
+   0.392–0.458 s on the low and steered cells (18 of 18) [M, §4]. **Either the window should start after the
+   geometry has turned over, or — better — the mount should be reported rather than dropped**, which is what this
+   Part does.
+3. **At the mount the model over-predicts in 1.000 of ticks on all three glide arms** (264 of 264 each) [M]. Not
+   scattered error: a one-signed offset.
+4. **And the error is the model's whole row.** `gm |(m − g)/m|` is **1.013–1.181** in every age bin of the glide
+   arms to 1.0 s [M]: the game's row is a small correction to the model's, not a thing the model is near.
+   Equivalently **predicting "the deck is not rolling" beats the model's own row in 1.000 of the mount's ticks on
+   both glide arms** (264 of 264 each) and in 0.54–0.98 of every later bin; on the owner's own low cell the mount's
+   share is 0.778.
+
+## 3. (B) The split, which is an identity and not a decomposition
+
+`rollRel = (m − g)/|g|`, and a geometric mean is multiplicative, so **`gm(|m−g|/|g|)` is exactly
+`gm(|m−g|)/gm(|g|)`**. The profile this folder has quoted for six rounds is therefore the product of two profiles,
+and this is the first round to print them apart.
+
+| **[M]** `point`, the arm with by far the largest settled population (1 592 ticks at 3–5 s against 23–469 on the other nine) | the mount, 0–0.2 s (264) | the settled ride, 3–5 s (1 592) | the ratio | log share |
+|---|---|---|---|---|
+| **gm rel** | **21.598** | **1.921** | **×11.24** | — |
+| gm \|the model's absolute error\|, °/s² | 956.2 | 259.0 | ×3.69 | **54 %** |
+| gm \|the game's own roll row\|, °/s² | **44.3** | 134.8 | ×3.04 | **46 %** |
+| the closure of the identity, relative | 3.3 × 10⁻⁸ | 4.0 × 10⁻⁶ | — | — |
+
+| **[M]** the same arm on **3.4c's own windows**, live ticks | 0.2–1.0 s (1 152) | >1.5 s (3 477) | ratio | log share |
+|---|---|---|---|---|
+| gm rel | 9.627 | 1.856 | ×5.19 | — |
+| gm \|error\| | — | — | ×3.56 | **77 %** |
+| gm \|the game's row\| | — | — | ×1.46 | **23 %** |
+
+**Four readings.**
+
+1. **Which half carries the profile depends on which window you ask about, and this is the first round that can
+   say so.** From the mount it is **half the denominator**; from 3.4c's own first second it is **a quarter**. My own
+   P1 said "at least a third" and is **upheld on the first and refuted on the second**; both are printed with their
+   windows named, because the one number has already been three quantities in this folder.
+2. **The model's error does not settle in the first second and a half; on the shipped cost arm it rises.** 989.7 →
+   676.2 → 730.1 → 1 526.2 → **2 642.5** → 5 100.2 °/s² over 0–1.5 s [M, `off`], while the game's row rises faster
+   (33.4 → 851.0), so the ratio falls from 29.6 to 6.0. On the `point` arm the error is flat to 1 s (956 → 1 166)
+   and only falls once the ride has flattened out (257–259 at 2–5 s). **"The row gets better after a second and a
+   half" is, on these arms, the game getting louder and the ride getting flatter.**
+3. **The closure is read and it is not machine zero, for a stated reason.** 3 × 10⁻⁸ to 6 × 10⁻⁶ relative: the three
+   geometric means drop different entries (a tick with `m = g` exactly, or `g = 0`, leaves one mean and not
+   another). Printed rather than asserted, and small enough that no reading above turns on it.
+4. **The denominator's own size is the mount's, not the arm's.** 30.5–44.3 °/s² at the mount on all three glide
+   arms — the shipped cost, the two weights and the two-body plant agree to within a half [M].
+
+## 4. (B) The mount's own frames, and what settles over what time
+
+| **[M]** the glide, `off`, medians over 24 runs, **from frame 1** | fr 1 | fr 6 | fr 7 | fr 12 | fr 24 | fr 60 |
+|---|---|---|---|---|---|---|
+| t, s | 0.0167 | 0.1000 | **0.1167** | 0.2000 | 0.4000 | 1.0000 |
+| the filter running, share of runs | **0.00** | **0.00** | **1.00** | 1.00 | 1.00 | 1.00 |
+| the command **exactly** zero, share | **1.00** | **1.00** | 0.00 | 0.00 | 0.00 | 0.00 |
+| the estimate **exactly** zero, share | **1.00** | **1.00** | 0.00 | 0.00 | 0.00 | 0.00 |
+| the estimate's own φ, ° | 0.000 | 0.000 | −0.332 | −1.999 | −5.717 | −27.295 |
+| the state's own φ, ° | **−8.847** | −8.998 | −9.079 | −9.573 | −10.701 | −40.019 |
+| the reference's φ, ° | **0.000** | **0.000** | **0.000** | **0.000** | **0.000** | **0.000** |
+| the felt vertical across the deck, ° | **−7.545** | −3.981 | −3.539 | −1.579 | **0.017** | −4.818 |
+| its magnitude, m/s² | **9.534** | 7.568 | 7.194 | 6.785 | 10.020 | 8.127 |
+| the board's roll from the world's level, ° | 8.857 | 9.005 | 9.079 | 9.575 | 10.811 | 40.534 |
+| the face's tilt under it, ° | 8.824 | 8.880 | 8.889 | 8.856 | 8.326 | 5.037 |
+| **the board's own heel against the water, °** | **0.059** | 0.331 | 0.437 | 1.006 | 3.184 | 36.756 |
+| the body's bank from the world's level, ° | 8.697 | 8.809 | 8.917 | 9.655 | 13.267 | 42.663 |
+| the game's own roll row, °/s² | −4.4 | −50.9 | −42.7 | 74.1 | −149.6 | 50.2 |
+
+| **[M]** the mount's three settling reads, per arm | the loop first sends anything | the felt vertical within 1° of the face's normal | the board's heel first exceeds the face's tilt |
+|---|---|---|---|
+| the glide, `off` / `point` / two-body (24 runs each) | **0.117 s, 24 of 24** | **0.250 s, 24 of 24** | **0.583 / 0.583 / 0.592 s, 24 of 24** |
+| the owner's own low cell, shipped / two-body (18) | 0.117 s, 18 of 18 | 0.183 / 0.175 s, 18 of 18 | **0.392 / 0.425 s, 18 of 18** |
+| the turn, shipped / two-body (18) | **0.017 s** (the reference is not zero there) | 0.233 / 0.258 s, **12 of 18** | 0.458 / 0.392 s, 18 of 18 |
+| `PLACE=level`, the glide (24) | 0.117 s | **0.017 s** (the deck IS level) | **0.017 s, 22 of 24** |
+
+**Five readings.**
+
+1. **The loop is silent for exactly six frames, and it is an identity rather than a transient.** The command is
+   **exactly** zero in 144 of 144 frames of 24 of 24 runs on every unsteered and low arm, because the estimate is
+   zero, the filter cannot run before the sense line is longer than the delay, and the reference's own command is
+   zero where no lean is asked [R, §1 R3]. **On the steered arm it is not zero** (the lean asked makes
+   `u_ref ≠ 0`), 0 of 108 — so this is an unsteered and low-cell fact and it is named as one.
+2. **Every stated mount constant is 0.05–0.1 s and every measured settling is 0.018–0.30 s.** `MOTOR_LAG = 0.05`,
+   `PREDICT_LAG = 0.05`, `BALANCE_DELAY = 0.1`, `SPECIFIC_FORCE_TIME = 0.1`, `PREDICT_DELAY = 0.1` [R, five
+   constants, three files]. **So the first second is not a filter, a lag or a delay line filling.**
+3. **The one mount quantity with a near-second scale is the geometry**: the board is placed with **0.06° of its own
+   heel under 8.82° of face tilt**, and its heel does not exceed the tilt until **0.583 s** (glide) or
+   **0.392–0.458 s** (low, steered). That is the clock the error profile runs on, and §6 is the read that says it is
+   not the whole of it.
+4. **The mount's own two halves disagree about which vertical is real, for a quarter of a second.** The body is
+   placed square to the deck on the argument that the felt vertical is the face's normal [R, §1 R2] — and the felt
+   vertical the body's own balance reads at frame 1 is the **world's** gravity, 7.545° across the deck, reaching the
+   face's normal only at **0.250 s** [M]. Its magnitude is **9.534 m/s² at frame 1 against 8.127 at a second**, so
+   the capture point's own `ω₀ = √(|felt|/h)` is **8 % high** at the mount [M, and `ω₀` is `captureRow`'s, the
+   quantity Part 2 §5 found carried for three different things].
+5. **The reference is the datum defect in its purest form and it is not the mount's.** `|φ_ref|` is **exactly
+   0.0000°** at every one of **18 182 frames** of the eight unsteered, low and `PLACE=level` arms, peak exactly
+   0.0000 [M], while the face's tilt under the board is 6.6–10.5° at the median. **The trim the loop holds is the board
+   level with the WORLD for the whole ride.** On the **steered** arm it is not zero and not sane either — median
+   **43.7–44.7°, peak 172–2 249°** — which is 3.4c's own carried `steadyTurn` flag turning up in a new column, and
+   it refutes my own P7 as written. **Flagged, not mine, not touched.**
+
+## 5. (B) The phantom heel, as one exact column of the plant
+
+Every one of the twelve captive derivatives was measured **per radian of the board's heel against a flat free
+surface**; the model is fed `φ`, the roll from the **world's** level [R, both in 3.3p §6]. The size of the
+difference is exactly `rollAccFull − rollAccTilt` — the plant against step 3.3p's tilt plant, whose extra input
+column is `heelColumn` **imported** from `predictiveBalance`.
+
+| **[M]** `point`, the glide, gm \|°/s²\| | the model's water | the model's ankle | the model's rest | the model's row | the game's water+board | the game's ankle | the game's row | the phantom | phantom / the model's water | phantom / the game's row | removing it HELPS in |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **0–0.2 s, the mount** (264) | **2 724** | 1 025 | 582 | 924 | **184** | 192 | **44** | **2 278** | **0.84** | **51.5** | **0.246** |
+| 0.2–0.4 (288) | 3 132 | 533 | 1 360 | 828 | 323 | 283 | 129 | 2 234 | 0.71 | 17.4 | 0.253 |
+| 0.4–0.6 (288) | 3 728 | 805 | 1 737 | 901 | 227 | 406 | 87 | 2 047 | 0.55 | 23.6 | 0.403 |
+| 0.6–1.0 (576) | 4 073 | 1 105 | 1 739 | 1 004 | 558 | 573 | 105 | 1 413 | 0.35 | 12.4–13.2 | 0.597 |
+| 1.0–1.5 (720) | 4 983 | 1 722 | 2 033 | 1 023 | 654 | 1 546 | 222 | 962 | **0.21** | 3.7 | 0.483 |
+| 1.5–3.0 (1 872) | 1 782 | 836 | 982 | 461 | 481 | 567 | 189 | 302 | **0.07** | 0.6–1.0 | 0.100–0.249 |
+| **3.0 s and after** (1 674) | 569 | 317 | 380 | 258 | 278 | 307 | **129** | **394** | 0.34 | **1.5–1.7** | 0.161–0.244 |
+| the signed medians at the mount | **+2 782** | — | −689 | — | **−254** | — | — | **+2 326** | — | — | — |
+
+**Five readings.**
+
+1. **At the mount the model's water term is the phantom.** 0.84 of it, 2 724 °/s² against the game's own 184 **of
+   the opposite sign** [M]. The board is flat on the water and the model believes it is heeled by nine degrees.
+2. **The phantom alone is fifty to seventy-five times the game's whole roll row at the mount** (51.5 on `point`,
+   68.2 on `off`, 74.8 on the two-body plant) [M]. That is the sharpest single number in this Part.
+3. **And it is permanent. Only its share is a transient.** After three seconds it is still **394 °/s²** — 1.5–1.7×
+   the game's whole row and 0.8–1.6× the net error it is supposed to explain — while its share of the model's own
+   water term has fallen from 0.84 to 0.07–0.34 [M]. **The mount does not create the datum defect; it is the one
+   moment in the ride when the defect is the whole of the model's heel.**
+4. **Removing it alone makes the row worse almost everywhere, which is Part 3 §3 reading 1 at the mount.**
+   Subtracting the phantom brings the row **closer in 0.246 of the mount's ticks** and 0.100–0.253 of the settled
+   ride's; it helps in 0.40–0.60 only in the 0.4–1.0 s band [M]. **The row is the small difference of two large
+   terms of opposite sign** (the model's water +2 782 against its own remainder −689, the game's water −254), so a
+   correct repair of one term of it overshoots. **My own P5 predicted this direction before the arms ran and it
+   holds.** 3.3p's ridden `?waterHeel` arms are the same result from the other side (10.050 → 11.640 pooled, and a
+   0.283 s ride).
+5. **`?waterHeel` is NOT a recommendation of this Part.** 3.3p measured it ridden and it halves the owner's own
+   cell. What this Part adds is **where** the defect lives and **how big** it is at the mount, not a switch to turn
+   on.
+
+## 6. (B) My own leading explanation, refuted by my own two-way read
+
+If the first second were the phantom's share of the heel the model reads, then conditioning on
+`|tilt| / |roll|` — that share, per tick — would flatten the age profile.
+
+| **[M]** `point`, the glide, the **gm relative error** | 0–0.2 s | 0.2–0.6 | 0.6–1.0 | 1.0–1.5 | 1.5–3.0 | 3.0+ |
+|---|---|---|---|---|---|---|
+| the phantom is **under a quarter** of the model's heel | — | — | **20.8** (197) | 5.6 (435) | 2.0 (1 710) | 2.0 (1 197) |
+| a quarter to a half | — | 15.6 (72) | 13.8 (143) | 3.1 (139) | 1.0 (77) | 1.7 (150) |
+| a half to four fifths | — | 9.9 (204) | 7.0 (124) | 2.1 (76) | 1.3 (38) | 1.4 (104) |
+| four fifths to all of it | **21.5** (186) | 5.7 (198) | 8.1 (18) | 2.1 (18) | 0.9 (37) | 1.3 (56) |
+| **more** than all of it (the heel's sign is the tilt's) | **21.8** (78) | 8.3 (97) | 3.4 (94) | 6.8 (52) | — | 1.7 (165) |
+| every tick | **21.6** (264) | 8.4 (576) | 10.8 (576) | 4.4 (720) | 1.9 (1 872) | 1.9 (1 674) |
+
+| **[M]** the same arm, **gm \|the game's own roll row\|**, °/s², by the board's own roll | 0–0.2 s | 0.2–0.6 | 0.6–1.0 | 1.0–1.5 | 1.5–3.0 | 3.0+ |
+|---|---|---|---|---|---|---|
+| the board rolled **5–10°** from the world's level | **44.3** (264) | 114.1 (273) | 143.7 (98) | 186.0 (121) | 222.3 (397) | 140.8 (239) |
+| 10–15° | — | 93.2 (288) | 84.6 (201) | 202.4 (135) | 374.0 (156) | 162.0 (128) |
+| 15–25° | — | 278.5 (15) | 100.3 (237) | 258.4 (301) | 468.6 (325) | 237.4 (179) |
+
+**Four readings.**
+
+1. **The phantom's share does not explain the profile.** With the phantom **under a quarter** of the model's heel
+   the error still runs **20.8 → 5.6 → 2.0 → 2.0** with age [M, 197 to 1 710 ticks a cell]. **A ten-fold age
+   profile with almost no phantom in it.**
+2. **And within an age the share does not order the error — it partly reverses it.** At 0.6–1.0 s:
+   20.8 / 13.8 / 7.0 / 8.1 / 3.4 going from the least phantom to the most [M]. **The cells with the most phantom
+   are the better ones**, which is §5 reading 4 from the other side: the phantom is partly cancelling something
+   else.
+3. **What does survive conditioning is the mount's own equilibrium.** At a **fixed** 5–10° of board roll the game's
+   own roll row is **44.3 °/s² in the mount's first 0.2 s and 114–222 later — two to five times louder at the same
+   angle** [M]. The placement is built to be an equilibrium (§1 R2) and the board is not in one again.
+4. **So I have two measured halves and no single cause.** The numerator's half is the model's row being ~1 000 °/s²
+   at a state the game answers with 33–44; the denominator's half is that equilibrium. The phantom is the largest
+   single term in the first, 84 % of the term it lives in, **and conditioning on it does not reproduce the
+   profile.** **I am not going to supply a mechanism that my own instrument refuses.**
+
+## 7. (B) The mount's own positive control: `PLACE=level`
+
+One thing changed in the **mount** — the board's up axis the **world's** vertical instead of the water's normal, at
+the same position, heading, entry speed and rider. Predicted in `34d-predictions.md` before it ran.
+
+| **[M]** the glide's first 0.2 s, 264 ticks each | `PLACE=flush` (shipped) | **`PLACE=level`** | the move | predicted? |
+|---|---|---|---|---|
+| the board's own heel at frame 1, ° | **+0.059** | **−8.668** | — | by construction |
+| its roll from the world's level at frame 1, ° | +8.857 | **−0.002** | — | by construction |
+| **gm \|the game's own roll row\|**, °/s² | **33–44** | **1 290** | **×29–39** | yes (over 400) |
+| gm \|the model's own row\|, °/s² | 924–977 | **661** | ×0.68 | **no** (predicted under 300) |
+| the model's own **water** term, °/s² | **2 724** | **355** | **×0.13** | yes, in the term |
+| **gm rel** | **21.6–29.6** | **1.329** | **×16–22** | yes |
+| the model **over**-predicts in | **1.000** | **0.280** | the sign flips | yes |
+| the ride's own median, s | 1.183 / 1.450 | **0.383** | ×0.26–0.32 | yes (under 1.0) |
+
+**Four readings.**
+
+1. **Sixteen to twenty-two times, from changing nothing but how the board is laid on the water.** The mount's own
+   window goes from 21.6–29.6× to **1.329×** [M, 264 ticks each]. **The first window's blow-up is the mount's
+   geometry**, demonstrated rather than argued.
+2. **And it is mostly the denominator.** The game's row goes up ×29–39 while the model's goes **down only ×0.68**;
+   the model's absolute error actually **rises** (990 → 1 714 °/s²) [M]. **The mount's window is not a window where
+   the model is especially wrong in °/s² — it is a window where the game's board is especially quiet.**
+3. **My own P6 is half refuted and the half that failed is informative.** The model's **water term** collapses
+   ×0.13 exactly as the phantom predicts; **its row does not**, because a board laid level on a 9° face starts
+   rolling at once (roll 0.00° → 6.30° in twelve frames) and the row's other terms — the rate, the ankle, the
+   remainder — take over. **A term's repair is not a row's repair**, for the fourth time in this folder.
+4. **The rider falls three times sooner on it and that is not a result.** 0.383 s against 1.183/1.450 [M, 24 of 24
+   each]. **`PLACE=level` is an instrument. Nothing in this Part proposes changing the placement.**
+
+## 8. (B) The owner's own cell, where the mount switches rule at four metres a second
+
+| **[M]** the low cell at frame 1, 18 runs, the entry set absolutely | the board's roll, ° | **the body's bank, °** | bank / roll | the board's own heel, ° | the ride's own end, s |
+|---|---|---|---|---|---|
+| entry **1 m/s** (3 runs) | 8.338 | **−0.036** | **−0.004** | −0.712 | 0.600–0.633 |
+| entry 2 (3) | 8.334 | **−0.037** | −0.004 | −0.682 | 0.517–0.533 |
+| entry 3 (3) | 8.329 | **−0.038** | −0.005 | −0.651 | 0.550–0.867 |
+| entry **4** (3) | 8.895 | **8.715** | **0.980** | −0.052 | 1.383–7.100 |
+| entry 5 (3) | 8.883 | 8.709 | 0.980 | −0.028 | 1.200–1.350 |
+| entry 6 (3) | 8.872 | 8.703 | 0.981 | −0.003 | 1.033–1.183 |
+
+**Three readings.**
+
+1. **Nine of the eighteen runs of the owner's own bar cell are mounted with the body plumb to the world and nine
+   square to the deck, and the switch is a one-metre-a-second step in the entry.** `PLANING_SPEED = 4` [R,
+   `AttachedRider.ts:342`], and the attach path takes the planing branch only above it [R, `:2668`]. **The body's
+   own starting lean differs by 8.37° across that step** [M] — and the three entries below it are the owner's own
+   "getting into position" speeds.
+2. **And the three slowest runs are over before the mount's geometry has turned over.** They end at
+   **0.517–0.867 s**, against a heel-exceeds-tilt crossover of 0.392 s and a felt-vertical settling of 0.183 s [M].
+   **On the owner's own cell the whole ride is the mount.**
+3. **I am not claiming which placement is right.** The game's own argument for square-to-the-deck is the felt
+   vertical being the face's normal [R], and §4 reading 4 measures that the felt vertical does not read the face's
+   normal for the first 0.25 s. **That is a contradiction inside the mount, measured; which side of it to move is
+   step five's question and the owner's.**
+
+## 9. (B) The owner's bar
+
+| **[M]** median s, 210 rides, deck filter | runs | fell | median | span | Compress fell | Compress median |
+|---|---|---|---|---|---|---|
+| the glide, shipped cost | 24 | **24** | **1.183** | 1.100–2.067 | **8 of 8** | 1.217 |
+| the glide, + the two weights | 24 | 24 | 4.317 | 1.717–6.083 | 8 of 8 | 3.900 |
+| the glide, the two-body plant | 24 | 24 | **1.450** | 1.083–2.683 | 8 of 8 | 1.483 |
+| **the owner's own low cell**, shipped / two-body | 18 / 18 | 18 / 18 | **1.033 / 1.033** | 0.517–7.100 / 0.500–6.233 | **6 of 6 / 6 of 6** | 1.183 / 1.167 |
+| the turn, shipped / two-body | 18 / 18 | 18 / 18 | **3.067 / 2.500** | 1.367–4.117 / 1.317–3.183 | 6 of 6 / 6 of 6 | 3.317 / 2.717 |
+| **`PLACE=level`**, the glide / two-body / low | 24 / 24 / 18 | all | **0.383 / 0.383 / 0.933** | 0.283–5.400 | 8 of 8 / 8 of 8 / 6 of 6 | 1.133 / 1.033 / 0.933 |
+
+**Three readings.**
+
+1. **The bar is not met in any arm and nothing in this round was built to move it.** 210 of 210 rides ended;
+   **Compress fell in 70 of 70** [M]. It is a measurement round with no source change: §14's own first line.
+2. **Every one of the seven shipped-placement medians is Part 2's and Part 3's own figure to the digit** — 1.183,
+   4.317, 1.450, 1.033, 1.033, 3.067, 2.500 — which is §12 C1, and the fall lists match **value for value, 18 of
+   18** on the low cell [M].
+3. **And the rides end inside or just after the mount's own window.** The glide at 1.183–1.450 s against a
+   crossover at 0.583 s; the owner's cell at 1.033 s against 0.392 s; its three slowest entries at 0.517–0.867 s.
+   **Every fall this folder has measured happens within two crossovers of the mount.** That is a coincidence of
+   timing stated as one — **I am not claiming the mount causes the fall.**
+
+## 10. What I refuted
+
+- **The filter that has defined every population in this folder since 3.3k, as a description of itself.**
+  `live = t > 0.2 && clamped === 0`, *"the placement's contact transient"* [R]. The transient it names is not over
+  at 0.2 s — the board's own heel does not exceed the face's tilt until **0.583 s** (24 of 24 glide runs) — and the
+  window it drops is **the worst of the whole ride, 21.6–32.4× against 6.6–12.6×** (§2). **Twenty-ninth
+  consecutive round to find its brief's premise wrong, and ninth to find it in the half the brief called settled** —
+  here the half that said the first second had been measured at all.
+- **"The roll row's error settles after a second and a half."** The model's **absolute** error does not settle: on
+  the shipped cost arm it **rises** 989.7 → 2 642.5 → 5 100.2 °/s² through the first 1.5 s, and the ratio falls
+  only because the game's own row rises faster (33.4 → 851.0) [M]. On the `point` arm it is flat to a second and
+  falls once the ride has flattened out. **What settles is the quotient, and half of the quotient is the game.**
+- **My own P1, as written, on one of its two windows.** "The denominator carries at least a third": **46 % from the
+  mount to the settled ride, 23 % on 3.4c's own windows** [M]. The prediction was right about the mount and wrong
+  about the window six rounds have used, and both are printed with their populations named.
+- **My own P6's model half.** `PLACE=level` was predicted to take the model's row under 300 °/s²; it takes it to
+  **661** from 924–977. Its **water term** does collapse, ×0.13. **A term's repair is not a row's repair.**
+- **My own P7, on the steered arm.** `|φ_ref|` is exactly 0.0000° at every frame of every unsteered, low and level
+  run (18 182 frames over eight arms) and is a median **43.7–44.7°** with a peak of **2 249°** on the steered
+  arm — 3.4c's own carried `steadyTurn` flag, in a new column. Flagged, not mine, not touched.
+- **This round's own leading explanation, by this round's own instrument.** The phantom heel is 84 % of the model's
+  water term at the mount and 51–75× the game's whole row, **and conditioning on its share does not flatten the age
+  profile**: 20.8 → 5.6 → 2.0 → 2.0 with the phantom under a quarter of the heel, and within an age the share
+  partly **reverses** the ordering (§6). **The biggest term error is not the same thing as the cause of the
+  profile.**
+- **"Fix the water's heel datum" as a repair, measured at the mount this time.** Subtracting the phantom brings the
+  row closer in **0.246 of the mount's ticks**: it hurts in three of four. The row is the small difference of two
+  large terms of opposite sign (+2 782 against −689, the game's own −254), so a correct repair of one of them
+  overshoots. 3.3p measured the ridden version (pooled 10.050 → 11.640; a 0.283 s ride).
+- **A median convention that would have read as a difference of ride.** My first table printed **0.950 s** for the
+  low cell's median where the whole folder prints **1.033** — the folder's `median` is `qt(v, 0.5)`, the **upper**
+  element of the middle pair [R, `plant.ts:241`], not the pair's mean, and the eighteen fall times are identical
+  value for value. **`3.4/mount.ts` now carries the folder's own convention with a comment saying why.**
+
+## 11. What I will not claim
+
+- **I will not claim the bar is any closer.** 210 of 210, Compress 70 of 70, the owner's own cell at 1.033 s, and
+  the mount's control arm three times worse.
+- **I will not claim a single cause for the first second.** I have two measured halves — a model row of ~1 000 °/s²
+  at a state the game answers with 33–44, and a placement built as an equilibrium — and the term that dominates the
+  first does not reproduce the profile when I condition on it (§6). **Part 3 said "I have a fact and not a
+  mechanism"; I have two facts, their sizes, and a positive control, and still not a mechanism.**
+- **I will not claim `?waterHeel` as the repair**, nor any other one-term fix. 3.3p rode it and it halves the
+  owner's own cell; §5 reading 4 says why one term cannot be fixed alone here.
+- **I will not claim the placement should change.** `PLACE=level` is an instrument; it falls three times sooner. The
+  game's own argument for the flush placement is physical and stated [R], and **the contradiction §4 reading 4
+  measures is between the placement and the model's datum, not inside the placement.**
+- **I will not claim the mount causes the owner's fall.** The rides end at 1.03–1.45 s and the mount's geometry
+  turns over at 0.39–0.58 s; that is timing, not causation, and §9 reading 3 says so on its face.
+- **I will not claim the two-body plant is better or worse here.** At the mount the three glide arms agree to within
+  a half on every column (§3 reading 4); the mount is not where the two plants differ. Part 1 measured its lean row
+  better in 96 of 96 and the owner felt it; **nothing in this Part is an argument for reverting it.**
+- **I will not offer any bot ride as evidence of feel**, anywhere in this document.
+- **Carried, flagged, not mine, not touched**: `steadyTurn`'s own reference (median 43.7–44.7°, peak 2 249° on the
+  steered arm, §4 reading 5); the `cos³` added-mass frame defect; `AttachedRider.frame`'s 70° bank clamp; the live
+  point-mass `ω₀` in `HumanBalance.capture`, which §4 reading 4 now also measures as **8 % high at the mount**; the
+  game's own rider as two bodies.
+
+## 12. The controls
+
+**C1, every one of 3.4c's seven shipped-placement arms reproduced column by column, not median by median.** The
+per-run summaries of `off-unsteered`, `point-unsteered`, `two-off-unsteered`, `off-low`, `two-off-low`,
+`off-steered` and `two-off-steered` against 3.4c's own files: **144 runs × 349 columns, and the only differing
+columns are the 37 that `GAINS=1` writes** — null on this round's side, because this round does not run that switch.
+**Every other column is identical to the digit in all seven arms** [M], and the low cell's eighteen fall times match
+value for value.
+
+**C2, the two new switches change no ride.** `off-unsteered` with `MOUNT` and `TICKS` **off** against the same arm
+with both **on**: **0 differing cells over 24 runs × 349 columns** [M].
+
+**C3, no source change, which is stronger than a hash.** `git diff origin/main -- src/ server/` prints **nothing**,
+so the Canyon byte check cannot differ from Part 2's by construction and the brief's own gate (`src/` changing) is
+not met. The whole round is one probe extension and one new probe under `docs/`.
+
+**C4, the identity §3 rests on, read at every bin.** `gm(rel)` against `gm(|err|)/gm(|game|)`: **3 × 10⁻⁸ at the
+median and 6.4 × 10⁻⁶ at the peak**, relative, over every bin of every arm, with the residue's own cause named (the
+three means drop different zero entries) [M].
+
+**C5, the folder's own closures, on this round's arms.** The sense reconstruction **exactly 0** and the tick spacing
+**exactly 0** in all ten arms; the ledger's split, closure and residual **exactly 0**; the model's six groups plus
+remainder to **8.2 × 10⁻¹³**; the ledger's twenty-three-source partition to **2.5 × 10⁻¹¹**; the five matched gaps'
+partition to **1.3 × 10⁻¹¹** [M, peaks over every arm].
+
+**C6, 3.4a's zero-inertia control, both halves.** Over the **306 points of the schedule** the game reads
+(17 speeds × 3 depths × 6 rails): the shipped-weights fix against the shipped design, **worst entry 0.000e+0**, and
+non-vacuous with the two weights on (smallest relative move **1.193 × 10⁻²**) [M, `3.4/cost.ts`, re-run on this
+tree]. Per tick: the control plant's own `A` against the shipped plant's **1.2 × 10⁻¹⁴**, its roll row's relative
+error **1.2 × 10⁻¹⁰**, the foot force **7.3 × 10⁻¹¹**, the asymmetric coupling's own corner **1 × 10⁻¹⁵** [M, peaks
+over all ten arms].
+
+**C7, the generated summary and the independent implementation agree.** Every table in this Part is generated by
+`3.4/mount.ts` into `34d-summary.txt`; every headline figure was first computed by a separate throwaway script in
+another language, and the two agree **to every printed digit** on §2, §3, §5, §6 and §7. The one place they
+disagreed was the median convention, and that is §10's last bullet.
+
+**C8, the predictions were written before the arms.** `34d-predictions.md` holds nine, each with its own
+falsification, committed before any arm of this round ran; three are refuted (§10) and the refutations are in this
+document rather than in the file.
+
+## 13. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`: **exit 0**
+- the probes type-checked **separately** on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, `--listFiles` confirming **671 files** including
+  `docs/research/new-rider/3.3/plant.ts`, `docs/research/new-rider/3.4/mount.ts`, `3.4/row.ts`, `3.4/cost.ts`,
+  `src/physics/bankLedger.ts`, `src/physics/predictiveBalance.ts`, `src/physics/rollModel.ts`,
+  `src/physics/AttachedRider.ts` and `@types/node`. (It caught one unused helper in `mount.ts`, which is why the
+  probes are checked separately rather than trusted to the root project, whose `include` is `["src"]`.)
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code
+  above is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 634 passed, 21 expected fail** — Part 2's and Part 3's exactly.
+  `vitest run src/game src/scene/rig`: **70 files, 735 passed** — the same.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail**.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round changes no file under `src/`.
+- **The Canyon byte check is not run and the reason is stronger than a hash** (§12 C3): the brief gates it on `src/`
+  changing and `git diff origin/main -- src/ server/` is empty.
+- **The shipped rider is proved unchanged with every switch off by the same read** — there is no source change for a
+  switch to be off of — and §12 C1 reproduces 3.4c's seven arms column by column, 144 runs × 312 columns.
+
+## 14. Files (3.4d)
+
+- `docs/research/new-rider/3.3/plant.ts` — step 3.3p's probe, extended with **`MOUNT=<path>`**, one row per **frame
+  from frame 1** (the predictor's tick count, its sense line against the delay it needs, whether its filter has
+  started, its estimate of the two angles against the state the game is in, its command bias, the reference it
+  holds, the felt vertical's size and its angle across the deck, the ankle's lagged rest and the raw command, the
+  geometry including the board's own heel beside the face's tilt and where on the face it is, and the game's own
+  roll row off the ledger) and **`PLACE=level`**, the mount's own positive control. Its per-tick dump now carries
+  **every** tick with a `live` column (3.4c's own population is `live === 1`) plus the tilt plant's own roll row,
+  from which the phantom is one subtraction. **Read-only; nothing under `src/` changed.**
+- `docs/research/new-rider/3.4/mount.ts` — **new**: the analysis. The age profile split exactly with its own
+  closure, the two rows' own terms with the phantom beside them, the two-way reads over the phantom's share and over
+  the board's roll, the mount's own frames with three settling reads, the falls and the controls. Read-only; it
+  reads the `.jsonl` dumps and imports nothing from `src/`.
+- `docs/research/new-rider/3.4/results/34d/` — the ten arms as `.jsonl` (per run), `.ticks.jsonl` (per tick) and
+  `.mount.jsonl` (per frame), with `34d-summary.txt` (every table above, generated) and `34d-predictions.md` (nine
+  predictions as written **before** their reads, each with its own falsification). **The per-frame and per-tick
+  dumps are kept in full for all ten arms, gzipped**: 10 MB together against 49 MB raw, every figure in this Part is
+  read from one of them, and the mount's first twelve frames exist nowhere else. `3.4/mount.ts` reads `.jsonl` or
+  `.jsonl.gz` either way, and the generated summary is **byte-identical** read from the raw dumps and from the
+  gzipped ones (the same MD5) — the read that says the compression lost nothing.
+- `docs/research/new-rider/3.4/README.md` — this Part.
+
+## 15. For the owner, in plain words — and the shot list
+
+**You said *"gets on the board down turn just falls very easily."* I spent this round on the moment he gets on the
+board, and I have five things to tell you.**
+
+**One: the worst moment of his whole ride was being thrown away by a filter, for six rounds.** Every measurement
+this track has published starts a fifth of a second after he stands up, with a note in the code calling that fifth
+of a second "the placement's transient". It is not a transient and it is not small: in those first twelve frames
+his balance's guess about how fast the board is rolling is wrong by **twenty-two to thirty-two times**, against the
+six to eleven times we have been quoting. **The single worst number on this track was the one nobody was allowed to
+see.**
+
+**Two: and half of that number is not him being wrong — it is the board being quiet.** When the game puts him on
+the board, it lays the board **flat on the water**, which means the water is pushing it almost nowhere: the board's
+real roll force at that instant is **thirty-three units** where a moment later, at the very same board angle, it is
+**a hundred and fifty to two hundred**. His balance, meanwhile, is shouting **a thousand**. So the "error" is partly
+a big guess divided by a very small truth. **I can now say how much: about half of it, in the right units.**
+
+**Three: and the other half has a name, a size, and it never goes away.** His balance measures the board's tilt
+**from the world's upright** — but the water's own numbers were measured from the **water's** surface. On a wave
+face those differ by the slope of the face. At the moment he stands up the board is flat on a nine-degree face, so
+**everything his balance thinks is "tilt" is the face, not the board** — eighty-four per cent of the water part of
+his guess, and **fifty to seventy-five times** the real force on the board. That part shrinks as he actually starts
+leaning, but it never leaves: **three seconds in it is still one and a half times the whole real force.** And the
+posture he is steering toward is "board level with the world" at **every single frame of every single run** —
+never "level with the wave".
+
+**Four: I proved it by moving one thing and nothing else.** I laid the board **level with the world** instead of
+flat on the face — same wave, same speed, same direction, same rider — and his first fifth of a second went from
+**twenty-two to thirty times wrong down to one and a third**, with the real force on the board going up thirty-fold
+and the sign of his mistake flipping over. **Only the placement changed.** (He also falls three times faster that
+way, so it is a measuring tool and not a suggestion.)
+
+**Five: and the honest part. Fixing the tilt datum on its own makes him worse, and I checked.** His guess is the
+small difference between two big mistakes that point opposite ways, so correcting either one overshoots — removing
+the face-tilt mistake makes the answer worse in **three ticks out of four** at the moment he stands up. I also
+tested my own best explanation and it failed: when I look only at ticks where almost none of his tilt is the face's,
+**the first second is still ten times worse than the settled ride.** So I have the two halves, their sizes and a
+control, and I do **not** have one cause. I am telling you that rather than picking one.
+
+**And one thing I found about your own slow speeds.** At the entry speeds you use getting into position, the game
+mounts him **two different ways** depending on a one-metre-a-second line: below four metres a second his body is
+placed **upright to the world**, above it **square to the deck** — an eight-degree difference in where his body
+starts. Half of your own test cell is mounted one way and half the other. And the three slowest runs are **over
+inside nine tenths of a second**, before the board has even started leaning more than the wave does. **On your own
+cell, the whole ride is the mount.**
+
+**Your bar is not met and this round did not try.** 210 test rides, 210 ended, Compress fell in all 70 of its own.
+Nothing in the game changed.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot, `?rider=new&feltFrame=deck`, and **`?riderBody=two` on everything** —
+the plant you rode and liked, and nothing in this round argues against it.
+
+1. **Ride and pay attention to the first half second only.** Stand up and watch what the board does under you before
+   you do anything. My numbers say his balance is at its most wrong **in the first twelve frames**, that it is
+   wrong in **one direction** there (it thinks the board is about to snap flat when it is already flat on the
+   water), and that it is silent for the first six frames by construction. **Does the board feel like it is being
+   corrected toward "level with the world" the moment you stand up?** That is the one thing a bench cannot tell me
+   and the shape I would expect you to feel.
+2. **Then try standing up on the flattest part of the wave you can find, and on the steepest.** The whole of this
+   round says the defect's size is the **face's slope** at the moment you stand. If getting on the board is
+   noticeably easier where the face is flat, that is this round's finding from the chair.
+3. **And a ruling, not a ride.** What I think step five is, in order:
+   - **The datum, in both places, together.** The water's terms are read from the world's upright and the trim the
+     loop holds is "level with the world" at every frame. Those are the same mistake in two places, and 3.3p's own
+     `?waterHeel` arm changed only the first and got worse. **Changing both at once has never been measured**, and
+     it is the one repair this round's numbers point at. It is the same switch plus the reference, already written.
+   - **The mount's own contradiction, which is one line of code and an eight-degree difference on your own cell.**
+     The body is placed square to the deck on the argument that the felt vertical is the face's normal — and the
+     felt vertical his balance actually reads for the first quarter second is the **world's** upright. Below four
+     metres a second the placement rule flips. **Pick one of the two and make the mount agree with itself.**
+   - **Not the gains, not another cost constant, and not the body.** Part 3 settled the first two; the mount is the
+     same on all three plants to within a half, so it is not the body either.
+   **My recommendation is the first, then the second. Your call.**
+
+## 16. The deletions column, read line by line
+
+`git diff --cached --numstat origin/main` before the commit, read file by file. **`src/` and `server/` are empty on
+both sides of the diff — not one byte of the game changed** — and the whole round is one probe extension, one new
+probe and a results folder.
+
+```
+  91   6  docs/research/new-rider/3.3/plant.ts
+ 653   0  docs/research/new-rider/3.4/README.md
+ 273   0  docs/research/new-rider/3.4/mount.ts
+   … and 42 files under docs/research/new-rider/3.4/results/34d/, insertions only
+──────────────────────────────────────────────
+45 files, 2 868 insertions, 6 deletions
+```
+
+`git diff --cached --numstat origin/main -- src/ server/` prints **nothing at all**.
+
+- **`docs/research/new-rider/3.3/plant.ts` — six deletions, and every one is a line re-emitted in place. Read as a
+  column, one by one:**
+  1. `const forward = level.addScaledVector(normal, …)` → the same line with `up` for `normal`, where
+     `up === normal` unless `PLACE=level`.
+  2. `const left = new Vector3().crossVectors(normal, forward)` → the same, `up` for `normal`.
+  3. `new Vector3(0, here.surfaceY, pz).addScaledVector(normal, board.shape.centerOfMass.y)` → the same, `up` for
+     `normal`. `here.surfaceY`, `pz` and `board.shape.centerOfMass.y` all still present.
+  4. `new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward))` → the same,
+     `makeBasis(left, up, forward)`.
+  5. `for (const xx of live)` → `for (const xx of ticks)`, the per-tick dump widened to every tick with a `live`
+     column. **`live` itself is not deleted**: it is still the filter every summary statistic in the file is
+     computed over, and `live === 1` in the dump is that same expression.
+  6. The dumped object's first line, re-emitted with `place`, `live`, `clamped` and `ticks` added and **nothing
+     dropped**: `body`, `cost`, `stance`, `steer`, `entryAsked` and `extra` are all still there, in order.
+  **A token-by-token check was run rather than trusted to the eye**: every identifier on all six deleted lines was
+  searched for across the round's insertions, and **all twenty-one are present**.
+- **Every other file in the round is insertions only, zero deletions**:
+  `docs/research/new-rider/3.4/mount.ts` (new), `docs/research/new-rider/3.4/README.md` (this Part appended, Parts 1
+  to 3 untouched) and the forty-two files under `results/34d/`.
+- **One line was deleted from `mount.ts` after it was written and before it was committed** — an unused `binOf`
+  helper the separate probe type-check caught (`TS6133`). It was never called; `twoWay` does its own banding. It
+  does not appear in the diff because it never reached a commit, and it is recorded here rather than left out.
+- **And one number was corrected rather than published**: the falls table first printed 0.950 s for the owner's own
+  cell where the folder prints 1.033, because `mount.ts` used a symmetric median and the folder's `median` is
+  `qt(v, 0.5)` [R, §10]. The eighteen fall times are identical value for value to 3.4c's; only the convention
+  differed, and `mount.ts` now carries the folder's with a comment saying why.

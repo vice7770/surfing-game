@@ -192,6 +192,30 @@ const COST = process.env.COST === 'point' ? 'point' : process.env.COST === 'fixe
  */
 const TICKS = process.env.TICKS;
 const GAINS = process.env.GAINS === '1';
+/**
+ * **Step 3.4d's two switches**, both off by default, so every arm with them unset is step 3.4c's own probe on
+ * step 3.4c's own cells.
+ *
+ * `MOUNT=<path>`: append one row **per FRAME from frame 1** to a `.jsonl` — not per live control tick. Every window
+ * in this folder since step 3.3k begins at `t > 0.2` ("the placement's contact transient", the filter below), so
+ * **the mount's own first twelve frames have never been inside a published number**, and step 3.4c's step-four
+ * item 1 asks for exactly them. The row carries what the mount sets and how long each of its settings takes to
+ * settle: the predictor's own tick count, the length of its sense line and whether its filter has started
+ * (`senses.length > steps`), its estimate of the two angles and its command bias, the reference it holds, the felt
+ * vertical the capture point is read from (`pairFresh` sets it to the WORLD's gravity on the first loaded substep and
+ * low-passes it over `SPECIFIC_FORCE_TIME` [R]), the ankle's lagged rest, the board's own heel against the water
+ * beside the face's tilt under it, and the game's own roll row off the ledger. Nothing about the ride changes.
+ *
+ * `PLACE=level`: **the mount's own positive control.** The shipped placement builds the board's up axis from the
+ * **water's normal** (`board.place` below, the basis `(left, normal, forward)`), so at frame 1 the board is flush
+ * with the face: its heel against the water is ~0° while its roll from the WORLD's level — the angle the model's
+ * water terms are read at [R] — is the face's whole tilt. `PLACE=level` builds the same basis from the **world's**
+ * vertical, at the same position, the same heading and the same entry speed, so `roll = 0` and the real heel is
+ * `−tilt`. It changes the probe's own placement and nothing under `src/`; it is the instrument for which half of the
+ * first second's error is the mount's own geometry, and the rider is expected to fall sooner on it.
+ */
+const MOUNT = process.env.MOUNT;
+const PLACE = process.env.PLACE === 'level' ? 'level' : 'flush';
 /** The four cost arms' own weight sets, named, for `GAINS`. `off` is the shipped cost function. */
 const COST_ARMS: { key: string; w: DesignWeights }[] = [
   { key: 'off', w: DEFAULT_WEIGHTS },
@@ -253,6 +277,12 @@ interface RiderInner {
   schedTilt: number;
   /** The rail the schedule was read at, rad — `min(SCHEDULE_RAIL_CAP, …)` of the lean ASKED for, not the board's rail. */
   schedRail: number;
+  /**
+   * Step 3.4d: the felt specific force the capture point and the body's rest are read from, m/s², low-passed over
+   * `SPECIFIC_FORCE_TIME` and **set to the world's gravity on the first loaded substep** (`pairFresh`) [R]. On the
+   * deck's own axes with `feltFrame: 'deck'`, which every arm of this round rides.
+   */
+  pairFelt: { x: number; y: number; z: number };
 }
 
 /** The six groups of the plant that can be zeroed exactly, and the twelve coefficients each owns. */
@@ -702,14 +732,19 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
   const alongFlow = here.flowX * fall.x + here.flowZ * fall.z;
   const entry = entry0 ?? ((FACE[2] - alongFlow) / Math.cos(45 / DEG) + extra);
   const normal = new Vector3(here.normalX, here.normalY, here.normalZ).normalize();
+  // Step 3.4d's `PLACE=level`: the mount's own positive control. The axis the board's basis is built from is the
+  // water's normal as it ships (`flush`, the board flat on the face) or the WORLD's vertical (`level`, the board
+  // level and so really heeled against the face by its whole tilt). Everything else — the position, the heading, the
+  // entry speed, the rider — is the same expression it was.
+  const up = PLACE === 'level' ? new Vector3(0, 1, 0) : normal;
   const hAng = (Math.atan2(fall.x, fall.z) * DEG + SIDE) / DEG;
   const level = new Vector3(Math.sin(hAng), 0, Math.cos(hAng));
-  const forward = level.addScaledVector(normal, -level.dot(normal)).normalize();
-  const left = new Vector3().crossVectors(normal, forward).normalize();
+  const forward = level.addScaledVector(up, -level.dot(up)).normalize();
+  const left = new Vector3().crossVectors(up, forward).normalize();
   const board = new BoardBody();
   board.place(
-    new Vector3(0, here.surfaceY, pz).addScaledVector(normal, board.shape.centerOfMass.y),
-    new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, normal, forward)),
+    new Vector3(0, here.surfaceY, pz).addScaledVector(up, board.shape.centerOfMass.y),
+    new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(left, up, forward)),
     forward.clone().multiplyScalar(entry).add(new Vector3(here.flowX, here.flowY, here.flowZ)),
   );
   const rider = new AttachedRider(board.shape, {
@@ -778,6 +813,47 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     const vFwd = (board.velocity.x - flowX) * fwd.x + (board.velocity.z - flowZ) * fwd.z;
     const vSide = (board.velocity.x - flowX) * sideV.x + (board.velocity.z - flowZ) * sideV.z;
     const beta = Math.atan2(vSide, Math.abs(vFwd) < 1e-6 ? 1e-6 : vFwd);
+
+    // **Step 3.4d: the mount's own record, one row a FRAME from frame 1**, outside the control-tick gate below and
+    // outside the `t > 0.2` window every published figure in this folder is filtered to. Every column is a read.
+    if (MOUNT) {
+      const dM = ctl.blendedDesign;
+      const eM = ctl.estimate;
+      const nM = dM ? dM.phi.length : 0;
+      const liveM = bankLedger.on && bankLedger.unitSteps > 0;
+      appendFileSync(MOUNT, `${JSON.stringify({
+        body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0,
+        extra: entry0 === null ? extra : null,
+        frame: i + 1, t: r(t, 4),
+        // what the predictor has: its own ticks, its sense line against the delay it needs, and whether its filter runs
+        predTicks: rider.predictor.ticks, senses: ctl.senses.length, steps: dM ? dM.steps : null,
+        filterOn: dM ? (ctl.senses.length > dM.steps ? 1 : 0) : 0,
+        // the estimate it holds — zeroed by `resetBalance` and not updated until the sense line is longer than the
+        // delay [R] — against the state the game is actually in, both in the model's own sign (φ = −roll, θ = −bank)
+        estPhi: eM.length ? r(eM[0] * DEG, 4) : null, estTheta: eM.length > 2 ? r(eM[2] * DEG, 4) : null,
+        truePhi: r(-roll, 4), trueTheta: r(-bank, 4),
+        bias0: eM.length > nM && nM ? r(eM[nM], 6) : null, bias1: eM.length > nM + 1 && nM ? r(eM[nM + 1], 6) : null,
+        // the reference it is holding, in degrees, the same signs
+        refPhi: r(rider.predictor.reference.x[0] * DEG, 4), refTheta: r(rider.predictor.reference.x[2] * DEG, 4),
+        // the felt vertical the capture point and the body's rest are read from, on the deck's own axes with
+        // `feltFrame: 'deck'`: its size, and its angle ACROSS the deck, which is the datum the body balances to
+        feltMag: r(Math.hypot(inner.pairFelt.x, inner.pairFelt.y, inner.pairFelt.z), 4),
+        feltAcross: r(Math.atan2(inner.pairFelt.x, inner.pairFelt.y) * DEG, 4),
+        // the geometry: the board's roll from the world's level, the face's tilt under it, its own heel against the
+        // water (the difference), the body's bank, and where on the face it is
+        roll: r(roll, 4), tilt: r(tilt, 4), rail: r(rail, 4), bank: r(bank, 4),
+        speed: r(board.velocity.length(), 4), through: r(through, 4),
+        aheadFronts: r((board.position.z - water.crestZ()) / water.front, 4),
+        faceFrac: r(water.faceFraction(board.position.z), 4),
+        headOff: r(Math.atan2(fwd.x, fwd.z) * DEG, 3),
+        // the ankle's lagged rest and the raw command behind it
+        ankleRest: r(inner.ankleRest, 6), heldAnkleRaw: r(inner.heldAnkleRaw, 6),
+        sent0: r(rider.predictor.sent[0], 6), raw0: r(rider.predictor.raw[0], 6), ankleRoom: r(inner.ankleRoom, 4),
+        // the game's own roll row off the ledger, the same sign and scale as every other figure in this folder
+        rollGame: liveM ? r(-bankLedger.deckTotal * DEG, 4) : null,
+        attached: rider.attached ? 1 : 0, upright: rider.upright ? 1 : 0, phase: rider.phase,
+      })}\n`);
+    }
 
     if (bankLedger.on) {
       ledgerSplit = Math.max(ledgerSplit, bankLedger.split);
@@ -1595,10 +1671,15 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
   // **Step 3.4c: the per-tick dump.** One row per LIVE tick, with the state the tick was taken at and the roll row's
   // own columns, so the matched-state comparison across gain arms is made on ticks and not on run medians. Nothing
   // here is computed for the dump; every column is already on the row.
+  // **Step 3.4d widens it to every tick with a `live` column**, because the window every figure in this folder is
+  // filtered to begins at `t > 0.2` and the mount's own first twelve frames are what 3.4c's step-four item 1 asks
+  // for. `live === 1` is exactly 3.4c's own population (`t > 0.2 && clamped === 0`), so filtering on it reproduces
+  // 3.4c's dump row for row.
   if (TICKS) {
-    for (const xx of live) {
+    for (const xx of ticks) {
       appendFileSync(TICKS, `${JSON.stringify({
-        body: BODY ?? 'point', cost: COST ?? 'off', stance: st, steer, entryAsked: entry0, extra: entry0 === null ? extra : null,
+        body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0, extra: entry0 === null ? extra : null,
+        live: xx.t > 0.2 && xx.clamped === 0 ? 1 : 0, clamped: xx.clamped, ticks: xx.ticks,
         t: r(xx.t, 4),
         // the state the tick sits at, every one a read off the ride
         speed: r(xx.speed, 3), railMeas: r(xx.railMeas, 3), roll: r(xx.roll, 3), bank: r(xx.bank, 3),
@@ -1628,6 +1709,10 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
           [`substBank_${arm.key}`, r(xx.relSubstBank[arm.key], 6)],
           [`substHelps_${arm.key}`, xx.substHelps[arm.key]],
         ])),
+        // **Step 3.4d**: the same tick's roll row with the water's heel read against the WATER instead of the world's
+        // level — step 3.3p's own tilt plant, `heelColumn` imported from `predictiveBalance`. The difference
+        // `rollAccFull − rollAccTilt` is the phantom heel: exactly one column of the plant times the face's own tilt.
+        rollAccTilt: r(xx.rollAccTilt, 4), relTilt: r(xx.relTilt, 6), rollSignTilt: xx.rollSignTilt,
         // the two-body plant's own roll row on the same tick, so the per-source read has both plants
         rollAccTwo: r(xx.rollAccTwo, 4), relTwo: r(xx.relTwo, 6),
         mWaterAllTwo: r(xx.mWaterAllTwo, 4), mAnkleTwo: r(xx.mAnkleTwo, 4), mRestTwo: r(xx.mRestTwo, 4),
