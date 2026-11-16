@@ -3164,3 +3164,542 @@ the probe's own `Env:`, doc and `WHEEL` lines); `server/` is empty on both sides
   round's own 2×2 test, replaced by the first-tick read when the forty-tick version refuted its own assertion
   (§8). It does not appear in the diff because it never reached a commit, and it is recorded here rather than left
   out.
+
+## 0. The ten sentences the round is for
+
+1. **The owner's bar is NOT met in any arm. 533 of 534 rides ended before nine seconds and Compress fell in 177 of
+   178** [M], over twenty-four arms, and the one survivor is a single `s24-ref` Compress run. Nothing in this round
+   moves the bar and nothing in it was built to: it is a measurement.
+2. **The brief's premise is false. The two halves do not cancel — they ADD.** The command's own last line puts the
+   prediction half at `−K·Δx̂` and the reference half at `+Δu_ref + K·Δx_ref` [R], and `K·Δx̂` and `K·Δx_ref` come
+   out with **opposite** signs, so the two contributions share one. `tiltSameSign` is **0 in 56 757 of 56 757 ticks
+   of 24 arms** [M]. `cancelShare = |both| / max(|pred|, |ref|)` is **1.575–1.686 on every arm and every window** —
+   over one everywhere, which is a reinforcement of about one and six tenths.
+3. **And it is exact in the game's own `tick`, not just in my arithmetic.** Four shipped controllers, one tick each,
+   the same sense line and a 10° tilt: the raw ankle command is **0.000000000 / 0.155631330 / 0.344847850 /
+   0.500479180 rad** on off / predict / ref / both, and
+   **`|raw_both + raw_off − raw_predict − raw_ref| = 0.000e+0`** [M]. On the rides themselves, at frame 1, per run,
+   the same residual is **1.000 × 10⁻⁶ — the dump's own rounding — in 24 of 24 and 18 of 18 runs** [M].
+4. **The brief's named instrument cannot contain the interaction, and the reason is one word: monotone.** Part 4 §5's
+   term table at the mount, unfiltered, across off / predict / ref / both: the model's water term **2 693 → 2 810 →
+   2 956 → 3 044**, the game's **248 → 749 → 1 154 → 1 305**, the model's row **954 → 1 762 → 2 823 → 3 470**, the
+   game's row **32 → 542 → 1 035 → 2 901 °/s²**, and the signed medians likewise [M, 288 ticks an arm]. **Every
+   column rises in that order while the rides go 1.450 → 4.033 → 3.683 → 0.683 s. A monotone instrument cannot
+   explain a non-monotone fact**, and the phantom is the one column that nearly refuses to move at all
+   (2 280 → 2 023, falling).
+5. **The reach is proportional to the face's own tilt, measured to two per cent over a 3.4-fold range.**
+   `gm |rowTiltBoth| / gm |tilt|` at the mount is **202.02–202.13** on an 8° face, **203.44–203.70** on the 16° one
+   and **204.17–206.00** on a 24° one, at tilts of 4.06°, 8.22° and 12.04–14.06° [M, 288 ticks an arm, 12 arms].
+   **P13, written before those arms ran, upheld.**
+6. **So the face sweep was built, and it refutes the fact the brief handed me.** *"Two halves that each help"* is a
+   property of the 16° face. On an 8° face **neither half helps**: off **4.600**, predict **3.300**, ref **3.000**,
+   both **2.250 s** [M, 24 runs an arm]. On a 24° face one helps and one hurts: **0.917 / 1.600 / 0.833 / 0.233**.
+7. **What does reproduce is `both`.** Against its own cell's shipped-datum arm, `both` is **×0.47 (glide), ×0.42
+   (the owner's cell), ×0.49 (8°) and ×0.25 (24°)** [M, 4 cells, 84 runs]. **It is the worst of the four in all
+   four cells, and it roughly halves the ride wherever it is on.** That is the interaction, and it is the sum.
+8. **The ankle's own bound is exactly where the sum lands — and the bound is NOT why `both` falls.** The bound is
+   `ANKLE_REST_RANGE = 0.25 rad = 14.32°` at **every one of 56 757 ticks** [M], and at frame 1 `both` asks
+   **1.805 × it on the glide and 2.315 × on the owner's cell**, on the bound in **24 of 24 and 18 of 18 runs** and
+   in **0.462 and 0.783** of the mount's first twelve frames [M]. **`?ankleRange=wide` doubles the bound and buys
+   nothing**: the glide goes **1.450 → 1.467, 4.033 → 4.033, 3.683 → 3.700, 0.683 → 0.717 s** — every arm one run of
+   24 — while the bound stops binding (`both` on it in 0.010 of the mount, from 0.462) [M]. **My own P17 is refuted,
+   and the 8° face says the same thing independently**: there `both` is never clamped (ask/bound **0.862**, on the
+   bound in 0.010) and still rides **×0.49**.
+9. **Two cells and two faces disagree about everything except that, so nothing here is pooled.** The ratio
+   `|K·Δx_ref| / |K·Δx̂|` at the mount is **0.954–0.959 on the glide and 0.780–0.835 on the owner's own cell** —
+   **smaller** on the cell, which refutes my own P4 as written, the one prediction I called the positive control.
+   What survives in its place is **the ask against the bound**: 0 / 0.545 / 1.251 / 1.805 on the glide against 0 /
+   0.888 / 1.427 / 2.315 on the cell [M].
+10. **Of my own twenty predictions, eight are upheld, nine are refuted, one is convention-dependent and two are half
+    each** (§8), and the nine include **both of the first two, which were the brief's premise written in my own
+    hand**, and **P17, which was this round's own discriminator.** I have a mechanism measured four ways, a
+    proportionality to 2 %, a named instrument shown to be the wrong instrument for the question, and the obvious
+    remedy refuted. **I do not have the bar, and I built nothing.**
+
+## 1. (A) The four reads that had to come first
+
+**R1 [R]. The command's own last line, and the two places the tilt reaches it.** `PredictiveController.tick` ends
+`u_q = ref.u_q − b̂_q − Σ_j K_q[j] (x̂_j − x_ref,j)` and then clamps [R, `predictiveBalance.ts:1453–1462`]. The
+datum's two halves enter that line in two different places: the **prediction** half adds
+`Δx̂_i = Σ_{jj<N} predD[jj][i][0]·τ` to the estimate and nothing else [R, `:1438`], and the **reference** half hands
+`drive_i = gammaD[i][0]·τ` to `steadyTurn` on the equilibrium's right-hand side [R, `:1442`, `:1261`], which moves
+`x_ref` **and** `u_ref`. `τ` is the face's own tilt in the model's sign, `faceTilt = −(roll − rail)` rad
+[R, `AttachedRider.ts:3536`].
+
+**R2 [R]. So at a fixed state and a fixed operating point the command is EXACTLY additive in the two halves.**
+`steadyTurn` least-squares-solves a linear system whose right-hand side the drive enters additively, and `x[2]`,
+`x[6]` are written after the solve [R, `:1255–1274`], so `Δx_ref` and `Δu_ref` are the drive's own response alone,
+whatever lean and twist are asked (§10 C4 measures that rather than assuming it). Writing `u_off` for the shipped
+command at that point:
+
+| the flag | the command there |
+|---|---|
+| off | `u_off` |
+| `predict` | `u_off − K·Δx̂` |
+| `ref` | `u_off + Δu_ref + K·Δx_ref` |
+| **`both`** | **`u_off + Δu_ref + K·Δx_ref − K·Δx̂`** |
+
+**`both = predict + ref − off`, identically.** The brief's premise needs `K·Δx̂` and `K·Δx_ref` to **share** a sign,
+so that `−K·Δx̂` and `+K·Δx_ref` subtract. §3 is the measurement of their signs, and they never do.
+
+**R3 [R]. The instrument can be built at the exact operating point out of one design object, and whether that is
+legitimate is itself a measurement.** `design` builds `gammaD` and `predD` whenever `w.waterHeel` is set, and the
+shipped comment says Φ, Γ, the LQR gain and the filter are untouched by the flag [R, `:1090–1103`, `:793`]. So
+`design(y, t, {…w, waterHeel: 'both'})` gives one `phi`, `gamma`, `k`, `steps`, `gammaD` and `predD` for **all four
+arms at one point** — the same function of the operating point on each — and §10's C2 is the read that forcing the
+flag on moves no entry of any of them, instead of the comment's word for it.
+
+**R4 [R]. Part 4 §5's whole term table was already in step 3.4e's kept dumps, on all sixteen of its arms.** `eWater`,
+`eAnkle`, `eRest`, `gWaterBoard`, `gAnkleSrc`, `gRestSrc`, `rollAccFull`, `rollAccTilt`, `rollAccGame`, `rollAccTwo`,
+`mWaterAllTwo`, `mAnkleTwo`, `mRestTwo` [R]. **The brief's named instrument needed no new ride at all**, and §2 is
+it. The arms were re-run anyway, because the round's own new columns are per-tick and because re-running is what
+makes §10's C1 a control instead of an assurance.
+
+## 2. (B) The brief's named instrument, run on the four datum arms — and it is monotone where the rides are not
+
+| **[M]** the mount, `t ≤ 0.2 s`, **unfiltered from frame 1**, the shipped plant rebuilt at the controller's point | n | M water | G water | **phantom** | M row | **G row** | gm \|err\| | sgn M water | sgn G water | sgn phantom | ph / G row |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **the glide, the datum off** | 288 | 2 693 | **248** | **2 280** | 954 | **32** | 958 | +2 751 | −272 | +2 339 | **72.0** |
+| the glide, the prediction alone | 288 | 2 810 | 749 | 2 177 | 1 762 | 542 | 1 229 | +2 893 | −907 | +2 227 | 4.0 |
+| the glide, the reference alone | 288 | 2 956 | 1 154 | 2 123 | 2 823 | 1 035 | 1 629 | +3 640 | −1 010 | +2 163 | 2.1 |
+| **the glide, both** | 288 | **3 044** | **1 305** | **2 023** | **3 470** | **2 901** | 978 | **+3 773** | **−1 295** | **+1 994** | **0.7** |
+| **the owner's cell, off** | 216 | 1 139 | 661 | 1 803 | 1 228 | 159 | 1 137 | +1 392 | −484 | +1 643 | 11.3 |
+| the owner's cell, the prediction alone | 203 | 2 047 | 947 | 1 809 | 2 377 | 932 | 1 890 | +2 173 | −1 097 | +1 686 | 1.9 |
+| the owner's cell, the reference alone | 185 | 1 940 | 993 | 1 755 | 2 471 | 1 202 | 1 551 | +2 028 | −1 225 | +1 570 | 1.5 |
+| the owner's cell, both | 189 | 2 117 | 1 253 | 1 744 | 3 112 | 2 481 | 1 083 | +2 339 | −1 403 | +1 623 | 0.7 |
+
+**Five readings.**
+
+1. **The brief's own question gets a measured answer and the answer is "not in this table".** Every column rises
+   monotonically in off < predict < ref < both on **both** cells — the model's water term, the game's, the model's
+   row, the game's row, and all three signed medians — while the rides on the same eight arms are **1.450 / 4.033 /
+   3.683 / 0.683** and **1.033 / 0.967 / 0.483 / 0.433 s** [M]. **A monotone instrument cannot produce a
+   non-monotone fact.** That is the whole of what Part 4 §5's table, run on four arms instead of one, has to say
+   about the interaction, and it is a real result rather than a shrug: the row's terms are where the ride **went**,
+   not which half it **ran**.
+2. **The phantom is the one column that barely moves, and it moves the wrong way.** 2 280 → 2 177 → 2 123 → 2 023 on
+   the glide and 1 803 → 1 809 → 1 755 → 1 744 on the cell [M] — a 12.7 % and a 3.7 % span, **falling** as the datum
+   is corrected, because the phantom is `heelColumn · tilt` and the corrected arms spend the mount at a slightly
+   smaller tilt (gm |tilt| 8.794 → 7.850° over `t ≤ 0.2 s`). **My own P5 is refuted by that 12.7 %** (I predicted 5 %), and the reason is the
+   refutation: the datum arms **send a command at frame 1**, so their trajectories differ inside the mount window
+   itself and they do not meet the same face.
+3. **P6 and P10 are upheld, and P10 is Part 4's own reading for the fifth time.** The model's water term is within
+   **1.13 ×** across the four glide arms (2 693–3 044); the model's own absolute error at the mount is **958 → 1 229
+   → 1 629 → 978 °/s²**, within a factor of two of the shipped arm's **or worse on all three** [M]. **The quotient
+   moves because the game's own row goes up ninety times (32 → 2 901 °/s²). A ratio repaired by its denominator is
+   not a repair**, and this is the fourth round in a row to print that sentence about a different switch.
+4. **`ph / G row` collapses 72.0 → 0.7 and that is the same sentence again.** The phantom's dominance over the game's
+   whole roll row falls by a hundred times across the four arms, and **not one part of that is the phantom** (it
+   falls 11 %); all of it is the game's row [M].
+5. **The two-body plant's own columns say the same thing and are printed in the summary rather than here.** Every
+   arm's table is given twice, on `rollAccFull` and on `rollAccTwo` (the plant the owner rides), and under the
+   folder's `live` filter as well as unfiltered, in `results/34f/34f-summary.txt` §1. **Nothing in any of the four
+   versions is non-monotone.**
+
+## 3. (B) The interaction, where it actually is: the two halves ADD, measured four ways
+
+| **[M]** the mount, `t ≤ 0.2 s`, unfiltered, gm \|°/s²\| in the roll row's units | n | pred | ref FF | ref FB | ref | **BOTH** | **cancelSh** | **sameSign** | \|Δφ̂\|, ° | \|Δφ_ref\|, ° | Δφ_ref/Δφ̂ |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **the glide**, off / predict / ref / both | 288 ea | 660 / 630 / 615 / 587 | 513 / 490 / 483 / 461 | 611 / 583 / 572 / 546 | 1 126 / 1 075 / 1 057 / 1 009 | **1 789 / 1 708 / 1 674 / 1 599** | **1.589 / 1.589 / 1.585 / 1.584** | **0.000 ×4** | 5.64 / 5.38 / 5.22 / 4.98 | 8.79 / 8.40 / 8.22 / 7.85 | 1.560–1.577 |
+| **the owner's cell**, the same four | 216/203/185/189 | 633 / 623 / 576 / 569 | 451 / 452 / 438 / 437 | 547 / 551 / 531 / 525 | 1 002 / 1 007 / 973 / 967 | **1 652 / 1 647 / 1 563 / 1 551** | **1.645 / 1.634 / 1.606 / 1.604** | **0.000 ×4** | 6.09 / 6.08 / 5.81 / 5.77 | 9.67 / 9.62 / 9.21 / 9.21 | 1.583–1.595 |
+| every arm of the round, every window (mount / live / all) | 24 arms | — | — | — | — | — | **1.575–1.686** | **0.000** | — | — | 1.239–1.595 |
+
+**Four readings.**
+
+1. **`cancelShare` is over one everywhere, so the word for this is reinforcement.** 1.575 at its smallest
+   (`s8-tilt`, the mount) and 1.686 at its largest (`g-predict`, the live window), on **8 arms × 3 windows and 14 further arms at the mount — 38 arm-windows** [M].
+   **The brief's *"it is the shape of a cancellation"* is refuted by the sign of one column**, and so are my own P1
+   and P2, which said the same thing in my hand.
+2. **The two terms never share a sign — not once.** `tiltSameSign` is **0 in 56 757 of 56 757 ticks of 24 arms**
+   [M], so `−K·Δx̂` and `+K·Δx_ref` have the same sign in every tick that has ever been recorded of this switch.
+   **P14, upheld; P1, refuted in the same column.**
+3. **And the additivity is the game's own line, read two ways rather than asserted from R2.** Four shipped
+   `PredictiveController`s, one tick each, the same sense line, a 10° tilt: raw ankle **0.000000000 / 0.155631330 /
+   0.344847850 / 0.500479180** rad, raw twist **0 / −53.879680146 / −34.274178704 / −88.153858850** N·m, and
+   **`|raw_both + raw_off − raw_predict − raw_ref| = 0.000e+0`** on both channels; with the tilt handed in as
+   **zero** all four agree outright (spread 0.000e+0) [M, §10 C4b]. And on the rides, at frame 1, **per run**: the
+   same residual is **1.000 × 10⁻⁶, which is the dump's own sixth decimal, in 24 of 24 and 18 of 18 runs** [M].
+   **The sum is the game's, not the probe's.**
+4. **P3 is upheld and it is why the reference's half is the bigger one.** `|Δφ_ref| / |Δφ̂|` is **1.560–1.595** at the
+   mount on every arm [M]: the reference takes the same input `τ` to its equilibrium while the prediction takes it
+   over the 0.1 s sensing delay, so the equilibrium's shift is about three fifths larger. **Each half is "where the
+   tilt takes you"; the loop gets both and goes there twice.**
+
+## 4. (B) The ankle's own bound — where the sum lands, and the arm that proves it is not the cause
+
+| **[M]** frame 1, the mount dump's `raw0` (asked) against `sent0` (sent) | runs | bound, rad | asked, rad, the span | ask / bound | on the bound, fr 1 | on the bound, fr 1–12 | median ride, s |
+|---|---|---|---|---|---|---|---|
+| **the glide**, off | 24 | 0.2500 | 0.000000 | 0.000 | 0 of 24 | 0.000 | 1.450 |
+| the glide, the prediction alone | 24 | 0.2500 | 0.086328–0.193536 | 0.545 | 0 of 24 | 0.000 | 4.033 |
+| the glide, the reference alone | 24 | 0.2500 | 0.270765–0.350214 | **1.251** | **24 of 24** | 0.188 | 3.683 |
+| **the glide, both** | 24 | 0.2500 | **0.357093–0.543750** | **1.805** | **24 of 24** | **0.462** | **0.683** |
+| **the owner's cell**, off / predict / ref / both | 18 ea | 0.2500 | 0 / 0.0826–0.2219 / 0.2709–0.3569 / **0.3535–0.5788** | 0 / 0.888 / 1.427 / **2.315** | 0 / 0 / **18 of 18** / **18 of 18** | 0.176 / 0.158 / 0.411 / **0.783** | 1.033 / 0.967 / 0.483 / 0.433 |
+| **the bound DOUBLED** (`ARANGE=wide`), the glide's four | 24 ea | **0.5000** | the same asks | 0 / 0.273 / 0.625 / **0.902** | 0 / 0 / 0 / **3 of 24** | 0.000 / 0.000 / 0.000 / **0.010** | **1.467 / 4.033 / 3.700 / 0.717** |
+| the bound doubled, the owner's cell: off / both | 18 ea | 0.5000 | the same asks | 0 / 1.158 | 0 / 12 of 18 | 0.032 / **0.153** | **1.033 / 0.433** |
+| **the 8° face**, off / predict / ref / both | 24 ea | 0.2500 | 0 / 0.0383–0.0898 / 0.1263–0.1671 / 0.1646–0.2569 | 0 / 0.263 / 0.599 / **0.862** | 0 / 0 / 0 / **3 of 24** | 0.000 ×3 / **0.010** | 4.600 / 3.300 / 3.000 / **2.250** |
+| the 24° face, off / predict / ref / both | 24 ea | 0.2500 | 0 / 0.1519–0.3211 / 0.4484–0.5614 / 0.6016–0.8825 | 0 / 0.858 / **1.996** / **2.861** | 0 / 3 of 24 / **24 of 24** / **24 of 24** | 0.000 / 0.031 / **0.628** / **0.691** | 0.917 / 1.600 / 0.833 / **0.233** |
+
+**Five readings.**
+
+1. **The bound is a constant and a physical one, read before it was moved.** `ANKLE_REST_RANGE = 0.25 rad = 14.32°`
+   at **every one of 56 757 ticks of 24 arms** [M], and it is *"`bankAuthority`'s `restRange` at one body weight on
+   a 0.13 m sole"* — the rest at which the feet's centre of pressure reaches the sole's edge, past which *"more only
+   rolls the board away onto its rail"* [R, `AttachedRider.ts:408–419`, `:3090–3108`]. **Not a tuning knob.**
+2. **The sum lands squarely on it.** `both` asks **1.805 ×** the bound on the glide and **2.315 ×** on the owner's own
+   cell at frame 1, and the loop's command is the clamp's — not the loop's — in **24 of 24 and 18 of 18 runs**, and
+   through **0.462 and 0.783** of the mount's first twelve frames [M]. On the arm the owner would ride (`l-tilt`) the
+   ankle sits on its bound for the **first seven frames straight**, `raw0` falling 0.579 → 0.297 while `sent0` reads
+   **0.25000 to five decimals** [M, 18 runs, §3 of the summary].
+3. **And it is not why `both` falls. `?ankleRange=wide` takes the bound out of the picture and the ride does not
+   care.** The glide's four medians go **1.450 → 1.467, 4.033 → 4.033, 3.683 → 3.700, 0.683 → 0.717 s** — every one
+   a move of at most one run of 24 — while `both` goes from on the bound in 0.462 of the mount to **0.010** [M, 24
+   runs an arm]. On the owner's own cell the median does not move at all (1.033 → 1.033, 0.433 → 0.433) [M, 18 runs].
+   **My own P17 is refuted and it was this round's own discriminator**: of the two explanations it was built to tell
+   apart, *"the correction does not fit through the ankle"* is dead and *"the correction is too big"* is what is
+   left. **P18 is upheld** (the bound stops binding) and that is what makes the refutation mean something: the
+   switch did the thing it was for and the ride still did not move.
+4. **The 8° face says it again, independently and without any switch.** There `both` asks **0.862** of the bound and
+   is on it in **0.010** of the mount — never clamped in any way that matters — and still rides **2.250 s against
+   its own face's 4.600, a factor of 0.489** [M, 24 runs each]. `g-tilt-wide` is **0.717 against 1.467, a factor of
+   0.489** [M]. **Two routes past the clamp, two factors that agree to three digits** — and two numbers are not a
+   law, so it is printed and not promoted.
+5. **P19 is upheld on the glide and refuted on the owner's cell, which is two cells and two answers again.** With
+   the datum off, doubling the bound changes **0 of 27 648** of the glide's mount column reads and first changes
+   anything at **t = 0.883 s**; on the owner's cell it changes **1 964 of 20 736** and first changes something at
+   **t = 0.15 s**, inside the mount [M]. **The shipped bound already binds at the mount on the owner's own cell with
+   no datum correction at all** (on the bound in 0.176 of its first twelve frames) — which is a fact about the cell
+   the owner rides and is flagged rather than chased here.
+
+## 5. (B) The face sweep — the proportionality, and the premise
+
+| **[M]** 24 runs an arm, the glide cell, the two-body plant | the datum off | the prediction alone | the reference alone | **both** |
+|---|---|---|---|---|
+| **an 8° face** (`FACE=1.4,8,5.7`), tilt 4.06° | **4.600** | 3.300 (**×0.72**) | 3.000 (**×0.65**) | **2.250 (×0.49)** |
+| **the 16° face** (the folder's own), tilt 8.22° | **1.450** | 4.033 (**×2.78**) | 3.683 (**×2.54**) | **0.683 (×0.47)** |
+| **a 24° face**, tilt 12.04–14.06° | **0.917** | 1.600 (**×1.74**) | 0.833 / 1.017 (**×0.91 / ×1.11**) | **0.233 (×0.25)** |
+| the owner's own low cell, 18 runs, the 16° face | **1.033** | 0.967 (×0.94) | 0.483 (×0.47) | **0.433 (×0.42)** |
+| **`gm \|rowTiltBoth\| / gm \|tilt\|`** at the mount, °/s² per ° | — | — | — | **202.02–202.13 / 203.44–203.70 / 204.17–206.00** |
+
+**Four readings.**
+
+1. **P13 is upheld and it is the roundest number in the round.** The reach per degree of face tilt is **202.0, 203.6
+   and 205.0** on the three faces — a **2.0 % span over a 3.4-fold range of tilt** [M, 288 ticks × 12 arms] — which
+   is what `Δx̂ ∝ τ` and `drive ∝ τ` being linear [R] predicts and is now measured rather than read.
+2. **P11 is refuted, and the refutation is bigger than the prediction.** I predicted that halving the face would
+   lift `both` to or above `ref`. It does not (2.250 against 3.000) — **and on that face no datum arm helps at all**:
+   off is the best of the four at 4.600 s. **So *"each half alone nearly triples the ride"*, the fact the brief
+   handed me, is a property of the 16° face and not of the correction.** Fourth refutation of this brief's own
+   premises, after the cancellation, P5 and P17.
+3. **P12 is convention-dependent and therefore not settled.** On the 24° face `ref`'s median is **0.833 s** under the
+   convention step 3.4e published with (fallers only, as `datum.ts` computes it) and **1.017 s** under `mount.ts`'s
+   (a non-faller counts as 9 s), against `off`'s 0.917 [M]. **One of 24 runs survived nine seconds and the verdict
+   turns on it.** Recorded as convention-dependent rather than scored, and both conventions are printed for every
+   arm in the summary.
+4. **What reproduces across all four cells is `both`, and only `both`.** ×0.47, ×0.42, ×0.49, ×0.25 of its own
+   cell's shipped arm [M, 84 runs]. The single halves range from ×0.65 to ×2.78 — **they flip sign with the face**.
+   **The interaction's sign is robust; the premise about its two halves is not.**
+
+## 6. (B) What I will not infer from these arms, with the reads that stopped me
+
+1. **The overshoot is not the discriminator, and my first read of it was survivorship.** Looking at the per-frame
+   medians I had `g-tilt`'s board roll at **−61° at 1.0 s** and nearly wrote the mechanism around it. That frame has
+   **n = 4 of 24 runs** — the other twenty are already over [M]. Read **per run** instead: `g-predict` and `g-ref`
+   cross level in **24 of 24** runs and reach **−54.5° and −71.6°** and ride 4.033 and 3.683 s, while `g-tilt`
+   crosses in **17 of 24** and reaches only **−6.4°** because it dies first [M]. **The arms that overshoot most ride
+   longest. The overshoot is a consequence of surviving, not a cause of falling**, and the first version of this
+   section said the opposite.
+2. **The command's size does not order the rides, and it orders them backwards inside an arm.** Across the glide's
+   four arms `gm |rollCmd|` at the mount is **41.5 / 327.1 / 681.3 / 734.4 °/s²** and over 0.2–0.6 s it is **71.4 /
+   130.6 / 256.3 / 504.2** — monotone, while the rides are not, so **P7 is refuted** (I predicted `both` quietest;
+   it is loudest). And **within** each arm, the Spearman of a run's own first-half-second command against its own
+   fall time is **negative on 19 of 24 arms** (the glide's four: +0.095, −0.541, −0.530, −0.308), so **P9 is refuted
+   too**: the runs that command harder fall sooner while the arms that command harder ride longer. **Two levels, two
+   signs, one quantity — and I am not pooling them or calling either one the mechanism.**
+3. **P8 is refuted and the heel says nothing I can use.** `gm |roll − tilt|` over every tick is **7.18 / 5.72 / 6.67
+   / 10.17°** on the glide's four arms — `both`'s board is the most heeled, not the least [M]. The "flush board" idea
+   this round started with is dead.
+4. **I will not claim the two halves are separable along a trajectory.** Everything in §3 is a decomposition **at a
+   point**, on each arm's own recorded ride. A moved trim sends different commands and the commands enter the
+   forward prediction — step 3.4e's own refuted draft — and the term tables in §2 are the measurement of how far the
+   trajectories do diverge, inside the mount window itself (gm `|tilt|` 8.794 → 7.850° over the four glide arms).
+5. **And I will not say which amount of correction is right.** The round says the loop gets 1.6 times one half's
+   worth and that one half's worth is sometimes too much and sometimes too little depending on the face. **There is
+   no arm here that delivers a half-sized correction, because none exists**: the switch has four values and no scale.
+   §9's step seven is that arm.
+
+## 7. (B) The owner's bar
+
+| **[M]** 534 rides, 24 arms, the deck filter, the folder's own `qt(v, 0.5)` | runs | fell | median, s | Compress fell | Compress median, s |
+|---|---|---|---|---|---|
+| **the glide**: off / predict / ref / both | 24 ea | **24 of 24 ea** | 1.450 / 4.033 / 3.683 / **0.683** | **8 of 8 ea** | 1.483 / 4.367 / 4.150 / 0.683 |
+| **the owner's cell**: off / predict / ref / both | 18 ea | **18 of 18 ea** | **1.033** / 0.967 / 0.483 / 0.433 | **6 of 6 ea** | 1.167 / 1.050 / 0.483 / 0.433 |
+| the glide, the bound doubled: off / predict / ref / both | 24 ea | 24 of 24 ea | 1.467 / 4.033 / 3.700 / 0.717 | 8 of 8 ea | 1.483 / 4.367 / 4.133 / 0.750 |
+| the owner's cell, the bound doubled: off / both | 18 ea | 18 of 18 ea | **1.033** / 0.433 | 6 of 6 ea | 1.167 / 0.433 |
+| the 8° face: off / predict / ref / both | 24 ea | 24 of 24 ea | **4.600** / 3.300 / 3.000 / 2.250 | 8 of 8 ea | **4.600** / 4.633 / 3.650 / 2.767 |
+| the 24° face: off / predict / ref / both | 24 ea | 24 / 24 / **23** / 24 | 0.917 / 1.600 / 1.017 / 0.233 | 8 of 8 / 8 of 8 / **7 of 8** / 8 of 8 | 0.933 / 1.600 / **3.217** / 0.267 |
+| the two `GAINS`-off control arms | 24 / 18 | 24 / 18 | 1.450 / 1.033 | 8 of 8 / 6 of 6 | 1.483 / 1.167 |
+
+**Three readings.**
+
+1. **The bar is not met in any arm.** *"Compress must never fall at the low speeds of getting into position,
+   100 %"*, and Compress fell in **177 of 178 runs** [M]. The single survivor is one `s24-ref` run, on a 24° face
+   that is not the owner's spot, and that arm's Compress median of **3.217 s** is the only Compress figure above
+   three seconds outside the 8° face.
+2. **The longest ride in the round is the shipped rider on a gentler face.** `s8-off` is **4.600 s**, 24 of 24, with
+   a Compress median of **4.600 s** — against **1.450 s** on the 16° face and **0.917 s** on the 24° one [M]. **The
+   test wave's own steepness is doing more to the fall than any switch in this round**, which is a measurement and
+   not a recommendation: the owner's note that *"gentle waves are no reason to fall"* cuts the other way, and 4.6 s
+   is still not nine.
+3. **And the owner's own low cell moves on nothing in this round.** 1.033 s off, 0.967 / 0.483 / 0.433 on the three
+   datum arms, 1.033 with the ankle's bound doubled [M, 18 runs each]. **The one switch that has ever moved that
+   cell is still step 3.4e's `?mountAgree=deck`, at 1.167 s.**
+
+## 8. What I refuted
+
+- **The brief's premise, by the sign of one column.** *"Two halves that each help and together hurt … is the shape
+  of a cancellation."* It is a **reinforcement**: `cancelShare` **1.575–1.686** on 24 arms and every window, and
+  `tiltSameSign` **0 of 56 757 ticks** [M]. **Thirty-first consecutive round to find its brief's premise wrong, and
+  eleventh to find it in the half the brief called settled.**
+- **The brief's own supporting fact, by a face.** *"Each half alone nearly triples the ride"* holds on the 16° face
+  and **nowhere else**: on an 8° face off is the best of the four (4.600 against 3.300 / 3.000 / 2.250) and on a 24°
+  face one half helps and one hurts [M, 24 runs an arm].
+- **The brief's named instrument, as an instrument for this question.** Every column of Part 4 §5's term table, on
+  both cells, filtered and unfiltered, on both plants, is **monotone in off < predict < ref < both** where the rides
+  are not [M]. The table is right; it is about where the ride went.
+- **My own P1 and P2, which were the brief's premise in my hand**, in 0 of 56 757 ticks and 0 of 38 arm-windows.
+- **My own P4, the one I called the positive control.** `|K·Δx_ref| / |K·Δx̂|` at the mount is **0.954–0.959 on the
+  glide and 0.780–0.835 on the owner's cell** — smaller where I predicted at least 20 % larger [M]. What orders the
+  two cells instead is the **ask against the ankle's bound** (0.545 / 1.251 / 1.805 against 0.888 / 1.427 / 2.315).
+- **My own P5, by 12.7 %**, and the reason is better than the prediction: the datum arms **command at frame 1**, so
+  their mount windows are already different trajectories (gm `|tilt|` 8.794 → 7.850°).
+- **My own P7 and P8.** `both` is the **loudest**-commanding arm at the mount (734.4 against 41.5 °/s²) and over
+  0.2–0.6 s (504.2 against 71.4), and its board is the **most** heeled (10.17° against 7.18°) [M].
+- **My own P9, at both levels and in opposite directions.** Negative on **19 of 24** arms within the arm; the
+  louder-commanding **arms** ride longer. **Recorded as two readings, not resolved into one.**
+- **My own P11, and my own P17 — this round's own discriminator.** Doubling the ankle's bound takes `both` off the
+  bound (0.462 → 0.010 of the mount) and moves the glide's medians by **at most one run of 24** [M]. **The clamp is
+  a passenger.** The 8° face, where `both` is never clamped and still rides ×0.49, is the independent second read.
+- **My own P19, on one of its two cells.** With the datum off the bound never binds at the glide's mount (0 of
+  27 648 reads) and **does** bind at the owner's cell's mount (first difference at 0.15 s) [M].
+- **My own first draft of §6 reading 1, by my own instrument, before it was committed.** It had the mechanism built
+  on `g-tilt`'s board rolling to −61° by one second. **That frame is 4 of 24 runs**; the per-run read says the arms
+  that overshoot most ride longest. **A median over survivors is not a median over runs**, and this folder has
+  caught that twice now.
+
+## 9. What I will not claim
+
+- **I will not claim the bar is any closer.** 533 of 534, Compress **177 of 178**, and the owner's own cell is
+  1.033 s off and 1.033 s with the ankle's bound doubled.
+- **I will not claim a cause for `both` beyond the sum.** I have measured that the two halves add, exactly, in the
+  game's own line, and that the sum is about 1.6 times either half; I have measured that the clamp is not what the
+  sum does its damage through; and I have **not** measured what a 0.6-times or 1.2-times correction does, because
+  **no such arm exists**. "1.6 times is too much" is an inference from four cells, not a measurement of a scale.
+- **I will not claim the term table is wrong.** It reproduces Part 4's own figures and it answers a different
+  question than the brief asked it. **A monotone instrument is not a broken one.**
+- **I will not claim the 8° face is a recommendation.** `s8-off`'s 4.600 s is the longest ride in the round and it
+  is still not nine seconds, Compress still fell 8 of 8, and the face is not the owner's spot. **The face arms are
+  an instrument.**
+- **I will not claim `?ankleRange=wide` should be on or off.** It is step 3.3k's switch, it does what it says, and on
+  these arms it buys one run of 24. Its own flag columns (`ankleRoomHere`, and this round's `predOverRoom` /
+  `refOverRoom`) differ by construction and are excluded by name from every comparison that uses it.
+- **I will not claim the two cells or the three faces can be pooled.** They order the arms differently and every
+  table above names its own population.
+- **I will not offer any bot ride as evidence of feel**, anywhere in this document.
+- **Carried, flagged, not mine, not touched**: `steadyTurn`'s own reference on a **steered** arm (Part 4's median
+  43.7–44.7°, peak 2 249°) — this round ran no steered arm either, so it still does not close; the `cos³` added-mass
+  frame defect; `AttachedRider.frame`'s 70° bank clamp (which is what the `live` filter's `clamped` column is, and
+  **not** the ankle's clamp this round is about — the two were nearly confused in §4's first draft and are now named
+  apart); the live point-mass `ω₀` in `HumanBalance.capture`; the `live` filter itself, unchanged for the third
+  round running. **New flag, measured and not chased:** `cmdRebuild` at the exact point is **0.605 median, 51.76
+  peak** on the shipped glide arm [M] — the blend's own error on the rebuilt command, which step 3.4c's
+  counterfactuals rest on.
+
+## 10. The controls
+
+**C1, the shipped rider is byte-identical to step 3.4e's, over 14 742 column reads.** `g-off-nog` and `l-off-nog`
+against step 3.4e's own `g-off` and `l-off`, column by column over every shared column of the per-run summary:
+**24 × 351 = 8 424 reads, 0 differing**, and **18 × 351 = 6 318 reads, 0 differing** [M]. This round's five new
+summary columns are excluded **by name**. **And the `-nog` arms are the comparison for a reason that is itself a
+measurement**: step 3.4e ran without `GAINS=1`, so **37** of its columns are `null` by construction (13 `gain*` /
+`cmdRebuild*`, 24 `subst*`), and comparing a `GAINS=1` arm prints 888 and 666 differences that are every one a
+`null` against a number. Both pairs are printed in the summary rather than the flattering one.
+
+**C1b, and the rides themselves, three ways on all eight datum arms.** The tick count, the frame count and the fall
+median against step 3.4e's own: **2193/5144/4144/845 and 1433/1309/555/497 ticks, the same frames, and 1.450 /
+4.033 / 3.683 / 0.683 and 1.033 / 0.967 / 0.483 / 0.433 s — every one identical** [M].
+
+**C2, the flag's reach into the design is exactly nothing.** `design(y, t, w)` against
+`design(y, t, {…w, waterHeel: 'both'})`, every entry of Φ, Γ and the LQR gain, at every tick of every arm:
+**peak difference 0.00e+0** [M]. The shipped comment said so; this is the measurement.
+
+**C3, the flat equilibrium is the origin, exactly.** `steadyTurn(Φ, Γ, 0, 0)` with no drive: peak **0.00e+0** over
+every state and both commands at every tick of every arm [M]. And on the game's own `tick`, with the tilt handed in
+as zero, all four flags agree outright (spread **0.000e+0**).
+
+**C4, `steadyTurn`'s superposition, measured because `solveSmall` pivots.** The drive's own response is the same
+whatever lean and twist are asked — `(x_ref(b, t, drive) − x_ref(b, t)) − x_ref(0, 0, drive)` — **peak 0.00e+0**
+relative, at every tick of every arm [M]. Without this, `Δx_ref` is not a property of the tilt and §1 R2's table is
+wrong.
+
+**C4b, the additivity off the GAME'S own `tick`, not the probe's arithmetic.** Four shipped controllers, one tick
+each: **`|raw_both + raw_off − raw_predict − raw_ref| = 0.000e+0`** on both channels at a 10° tilt, with the four
+commands **not** equal (spread from off 8.815e+1), and **0.000e+0** spread at zero tilt [M]. Printed as a `#` line
+by every arm the probe runs.
+
+**C5, the folder's own five closures on all 24 arms** (peaks): the sense reconstruction **exactly 0**, the tick
+spacing **exactly 0**, the ledger's split, closure and residual **exactly 0** [M]. `ledgerApart` is printed apart as
+**a count of substeps** (peak 16) and is not a closure.
+
+**C6, the per-run frame-1 additivity on the rides.** `|raw_tilt + raw_off − raw_predict − raw_ref|` at frame 1, run
+by run: **peak 1.000 × 10⁻⁶ against a scale of 0.54–0.58 rad, 24 of 24 and 18 of 18** [M] — the dump's own sixth
+decimal, which is the precision the column is written at.
+
+**C7, the compression lost nothing.** `34f-summary.txt` regenerated from the **gzipped** per-tick and per-frame
+dumps is **byte-identical** to the one generated from the raw ones, `md5 02ea0daf9c65516e1953e111e2d829e6` both
+ways [M].
+
+**C8, the predictions were written before their arms**, in three blocks in `results/34f/34f-predictions.md`:
+P1–P10 and C1–C6 committed in `97206098` before any arm ran, P11–P16 in `7d0a0e1` after the first instrument had
+run and **with the refutation of the brief's premise declared in the same commit**, and P17–P20 in `f9d6ace9`, before any `ARANGE` arm existed. **Nine of the twenty are refuted and one is convention-dependent**, and the refutations are in
+this document rather than in that file.
+
+## 11. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`: **exit 0**
+- the probes type-checked **separately**, on a throwaway project extending the root's options with `types: ["node"]`
+  and an **absolute** `typeRoots`: **exit 0**, `--listFiles` confirming **673 files** including `3.3/plant.ts`,
+  `3.4/cancel.ts`, `3.4/datum.ts`, `3.4/mount.ts`, `3.4/cost.ts`, `3.4/row.ts`, `src/physics/predictiveBalance.ts`,
+  `src/physics/AttachedRider.ts`, `src/physics/bankLedger.ts` and `@types/node`. Every exit code above is read **on
+  its own line and never through a pipe**.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran.
+- `vitest run src/physics`: **58 files, 635 passed, 21 expected fail**.
+  `vitest run src/game src/scene/rig`: **70 files, 736 passed**.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail**.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**.
+  All four are step 3.4e's own figures to the test.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: nothing in this round touches the solver, the sea, the
+  snapshot or any spot's configuration.
+- **`src/` does not change in this round, and that is a stronger read than any hash of the Canyon's state.**
+  `git diff --numstat main -- src/ server/` is **empty**: two files move, `docs/research/new-rider/3.3/plant.ts`
+  (the ride probe) and `docs/research/new-rider/3.4/cancel.ts` (new, the analysis), plus the results folder. **If no
+  byte of the game moves, no ride of the game can**, and the Canyon byte check would be a slower way of asking a
+  question the diff has already answered. C1's 14 742 column reads against step 3.4e's own arms are the measurement
+  that the probe's own change moved no ride either.
+
+## 12. Files (3.4f)
+
+- `docs/research/new-rider/3.3/plant.ts` — **read-only, and the only ride probe.** The 3.4f per-tick columns
+  (`rowTiltPred`, `rowTiltRefFF`, `rowTiltRefFB`, `rowTiltRef`, `rowTiltBoth`, `cancelShare`, `dxHatPhi`,
+  `dxRefPhi`, `kDxHatA`, `kDxRefA`, `tiltSameSign`, `predOverRoom`, `refOverRoom`, `heelDesignOff`, `refFlatOff`,
+  `superOff`) with the algebra in the `Tick` comment; five per-run summary columns; `ARANGE=load|wide` (step 3.3k's
+  own shipped switch, ridden with `WHEEL` for the first time) and its `arange` label column; and `additivity()`,
+  C4b's read off the game's own `tick`, printed once per arm. It imports `PredictiveController` and `steadyTurn`
+  from `src/physics/predictiveBalance` and **writes nothing**.
+- `docs/research/new-rider/3.4/cancel.ts` — **new**: the analysis. Part 4 §5's term table on the four datum arms ×
+  two cells × two plants × two filters; the two halves in the command; the loop's own error, the ankle's bound and
+  the overshoot **per run**; the falls on the folder's own median; the face sweep; P9 inside each arm; and the
+  controls. It reads the `.jsonl` dumps and imports **nothing** from `src/`.
+- `docs/research/new-rider/3.4/results/34f/` — **24 arms** as `.jsonl` (per run), `.ticks.jsonl.gz` (per tick) and
+  `.mount.jsonl.gz` (per frame), with `34f-summary.txt` (every table above, generated) and `34f-predictions.md`
+  (twenty predictions in three blocks, each committed before its own arms). 29 MB gzipped against 162 MB raw, and
+  the summary is byte-identical read either way (§10 C7).
+- `docs/research/new-rider/3.4/README.md` — this Part.
+- **`src/` and `server/`: nothing.**
+
+## 13. For the owner, in plain words — and the shot list
+
+**Last round I told you the two halves of the wave-tilt fix each help on their own and hurt together, and said it
+looked like they cancel. They don't cancel. They add up.**
+
+**One: I found the line, and it is one line.** The rider's balance works out a correction twice over — once in what
+it *predicts* the wave will do to him, once in what it *aims* at. Both corrections point the same way. So with both
+halves on he asks for about **one and six tenths** of the right-sized correction, and he over-does it. I checked
+this four different ways, including by running the game's own balance code four times side by side: the two halves
+add to the last decimal place.
+
+**Two: the obvious fix is not the fix, and I tested it rather than guessing.** With both halves on he asks his ankle
+for about **twice the range his feet actually have** — so the game pins it at the limit for the first few frames.
+There is already a switch that doubles that range. I turned it on. **Nothing happened**: your test cell went from a
+1.033 second ride to 1.033, and the glide from 0.683 to 0.717 — one ride in twenty-four. **So it is not that the
+correction cannot get through his ankle. It is that the correction is too big.**
+
+**Three: and here is the uncomfortable one.** I ran the same four arms on a **gentler wave** (half the face angle)
+and on a **steeper** one. On the gentle wave **neither half helps** — the plain shipped rider is the best of the
+four, and it rides **4.6 seconds**, the longest ride anywhere in this round. On the 16° wave we have always tested
+on, each half nearly triples the ride. **So "each half helps" was never a fact about the fix; it was a fact about
+our test wave.** The one thing that holds everywhere is that **both halves together roughly halve the ride**, on
+every wave I tried.
+
+**Four: your bar is not met.** 534 test rides, 533 ended before nine seconds, and Compress fell in 177 of its 178.
+
+**Five: I built nothing.** This round is a measurement. The thing I would build next is in the shot list.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your spot, `?physical&rider=new&feltFrame=deck&riderBody=two` — the body you said feels
+human, on everything.
+
+1. **Nothing new to ride from this round, and I would rather say so than invent a shot.** Every arm here is a bench
+   measurement of switches you have already been told to leave off. `&waterHeel=tilt` still halves your cell and
+   `&ankleRange=wide` still changes nothing on it.
+2. **If you want one ride anyway, ride `&mountAgree=deck` again.** It is still the only switch in three rounds that
+   has moved your own cell (1.033 → 1.167 s, and your three slowest stand-ups 0.617 → 1.000 s), and step 3.4e asked
+   you whether standing up slowly feels less like being thrown. **That question is still open and a bench cannot
+   answer it.**
+3. **And one ruling I would like, not a ride.** This round's own finding is that the fix is **1.6 times too big**.
+   The switch has four values and **no scale** — there is no way to ask for a half-sized or a 60 % correction, so I
+   cannot measure whether the right amount exists. **Adding that scale is one number in one line.** It is step
+   seven and it is the first thing in it.
+4. **What I think step seven is, in order:**
+   - **A scale on the correction, and a sweep of it.** The round's one new fact is that the two halves add to about
+     1.6 ×, and that the clamp is not what breaks it. **The missing arm is a correction at 0.3, 0.5, 0.8, 1.0 and
+     1.3 times, on both cells and on all three faces.** If there is a size that helps, the sweep finds it; if
+     nothing helps at any size, the datum correction is finished as a route and that is worth knowing too. It is one
+     multiplier in `tick`'s two tilt lines, opt-in, off by default — and it is the only step I can name that the
+     measurement actually points at.
+   - **The face, as a thing we chose rather than a thing we measured.** The shipped rider rides **4.600 s** on an 8°
+     face, **1.450 s** on the 16° one we test on, and **0.917 s** on a 24° one. Nothing about the rider changed
+     between those. **Before any more switches, it is worth settling whether the test face is the face you ride**,
+     because every number in this folder since 3.3k is 16°, and your spot's own arm was last calibrated at 16°
+     (PR #223). That is a read and a ruling, not a build.
+   - **Not another datum arm, not the term table, not the clamp, not the gains, not the cost, not the body, not the
+     `live` filter.** The first is refuted as a question (the interaction is the sum), the second is refuted as an
+     instrument (monotone where the rides are not), the third is refuted as a cause (one run of 24), and the rest
+     were settled by Parts 3, 4 and 5.
+   **My recommendation is the first, then the second. Your call.**
+
+## 14. The deletions column, read line by line
+
+`git diff --cached --numstat main`, read file by file. **Three deletions, and every one is a line re-emitted in
+place with something added. `src/` and `server/` are empty on both sides.**
+
+```
+ 223   3  docs/research/new-rider/3.3/plant.ts
+ 504   0  docs/research/new-rider/3.4/README.md        (this Part appended, Parts 1-5 untouched)
+ 401   0  docs/research/new-rider/3.4/cancel.ts        (new)
+ 205   0  docs/research/new-rider/3.4/results/34f/34f-predictions.md
+ 622   0  docs/research/new-rider/3.4/results/34f/34f-summary.txt
+   …  …   and 72 further files under results/34f/, insertions only (48 of them binary `.gz`, 24 `.jsonl`)
+──────────────────────────────────────────────
+77 files, 2 489 insertions, 3 deletions
+```
+
+- **`docs/research/new-rider/3.3/plant.ts`, 3, and that is all three of them.**
+  - **The import line**, re-emitted with two names added. Read as a **column** and not by eye: the old line names
+    **12** imports and the new one **14**; the dropped set is **empty** and the added set is exactly
+    `['PredictiveController', 'steadyTurn']`. `CONTROL_STEP`, `DEFAULT_WEIGHTS`, `type DesignWeights`,
+    `bodyInertiaAt`, `captureOmega`, `continuousPlant`, `costWeights`, `design`, `discretise`, `heelColumn`,
+    `plantAt` and `railLimit` are all still there.
+  - **The two arm-label lines** (`:911` on the `MOUNT` dump and `:1850` on the `TICKS` dump), each re-emitted with
+    `arange: ARANGE ?? 'ships'` spliced in. Read as a column: **2** entries before and **3** after, dropped set
+    **empty**, and `wheel: WHEEL ?? 'off'` and `mount: MOUNTA ?? 'ships'` both still present on both lines. The
+    per-run summary's own `arange` is an **insertion**, not a re-emission, which is why it is not in this list.
+- **Every other file is insertions only, zero deletions**: `docs/research/new-rider/3.4/cancel.ts` (new),
+  `docs/research/new-rider/3.4/README.md` (this Part appended), and the 74 files of `results/34f/`.
+- **`git diff --cached --numstat main -- src/ server/` prints nothing at all.** That is §11's own seatbelt and it is
+  this round's strongest single line: **no byte of the game moved.**
+- **And one thing was written and then deleted before it was committed**: the first draft of §6 reading 1, which had
+  this round's mechanism built on `g-tilt`'s board rolling to −61° by one second. Its own per-frame table said
+  `n = 4 of 24` and the paragraph was replaced by the per-run read that contradicts it (§8's last bullet). It is not
+  in the diff because it never reached a commit, and it is recorded here rather than left out.
