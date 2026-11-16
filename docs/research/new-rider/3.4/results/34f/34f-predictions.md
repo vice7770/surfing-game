@@ -117,3 +117,53 @@ them.
 
 **C6.** `src/` does not change in this round at all, which is a stronger read than any hash of the Canyon's state:
 if no byte of the game moves, no ride of the game can.
+
+---
+
+# The second block: the brief's premise is refuted, and these are the predictions for the arms that test what replaces it
+
+**Written after P1–P10's own instrument first ran and before the face sweep's arms ran, and before any `l-*.mount`
+column of this round or of step 3.4e had been read.** The refutations below are measured, so they are stated here as
+facts and not as predictions; what follows them is pre-registered.
+
+**The brief's premise — *"it is the shape of a cancellation"* — is false, and my own P1 and P2 are refuted with
+it.** On one 99-tick smoke run of the glide (`tall`, `extra 0`, the two-body plant) the two feedback terms come out
+`K·Δx̂ = −0.1756` and `K·Δx_ref = +0.1547` rad — **opposite signs**, so their contributions to the command
+(`−K·Δx̂` and `+K·Δx_ref`) have the **same** sign and **ADD**. In the roll row's own units the prediction half's
+reach is **−651 °/s²**, the reference half's **−1 045**, and `both`'s is their sum, **−1 696 °/s²** —
+`cancelShare = 1.62`. **It is not a cancellation; it is a reinforcement of about one and six tenths.** P1 predicted
+the same sign for the two terms and P2 predicted a cancellation under a half; both are refuted, and P3 (the
+reference's term the larger, 8.82° against 4.96° of roll) is upheld.
+
+**And P7 and P8 are refuted off step 3.4e's own kept dumps.** `gm |rollCmd|` over the glide's mount window is
+**41.5 / 327.1 / 681.3 / 734.4 °/s²** on off / predict / ref / both — `both` is the **loudest**, not the quietest.
+`gm |roll − tilt|` over every tick is **7.18 / 5.72 / 6.67 / 10.17°** — `both`'s heel is the **largest**, not the
+smallest.
+
+**The replacement, which the predictions below test.** Each half alone commands a correction that brings the board
+back toward level and it oscillates and survives; the two halves' reaches **add**, so `both` commands about 1.6
+times as much, the board goes **through** level and over onto the other rail, and the ride ends. The quantity both
+reaches are proportional to is the **face's own tilt**, so the face is the parameter the mechanism lives on.
+
+**P11 — the reinforcement is proportional to the tilt, so the face decides whether `both` over-corrects.** On a
+shallower face (`FACE=1.4,8,5.7`, every other thing equal) `both`'s glide median will be **at or above `ref`'s on
+that same face**, where on the 16° face it is 0.19 × `ref`'s. *Falsified* if `both` is still below `ref`.
+
+**P12 — and on a steeper face the single halves join it.** On `FACE=1.4,24,5.7`, `ref` alone's glide median will be
+**below `off`'s on that same face**, where on the 16° face it is 2.54 × `off`'s. *Falsified* if `ref` is at or above
+`off` there.
+
+**P13 — the reach scales with the tilt.** The gm of `|rowTiltBoth|` over the mount will scale with the gm `|tilt|`
+across the three faces to within ±25 % of proportionality. *Falsified* outside that.
+
+**P14 — and the two terms' disagreement is the plant's, not the face's.** `tiltSameSign` will be **0 in more than
+0.95 of ticks** on every arm of every face. *Falsified* by any arm above 0.05.
+
+**P15 — the owner's own cell, unread, will show the same thing, and there the reference half alone already
+over-corrects.** On the low cell at frame 1, `|sent0|` will sit **exactly on the ankle's own bound in 18 of 18 runs
+on both `ref` and `tilt`** (it does on the glide, where `sent0 = +0.25000` to five decimals on both). *Falsified* by
+any run off the bound.
+
+**P16 — and the term table will still not contain any of it.** P5 and P6 stand as written: the brief's named
+instrument will separate the arms by where their rides went and not by which half they ran, and the **phantom** at
+the mount will agree across the four glide arms within 5 %.
