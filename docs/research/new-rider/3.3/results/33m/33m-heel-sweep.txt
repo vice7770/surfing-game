@@ -1,0 +1,22 @@
+{"mode":"heel","heel":0,"wetted":0.1778,"projection":0.9997,"addedTotal":32.94,"addedSurface":0.51312,"addedPlate":0.51299,"plateRatio":1,"cosCubedInverse":1,"law":1,"arm":0.1248,"armPlate":0.1248}
+{"mode":"heel","heel":10,"wetted":0.2232,"projection":0.9842,"addedTotal":47.21,"addedSurface":0.71206,"addedPlate":0.80723,"plateRatio":1.134,"cosCubedInverse":1.047,"law":1.083,"arm":0.1228,"armPlate":0.1308}
+{"mode":"heel","heel":20,"wetted":0.2454,"projection":0.9388,"addedTotal":56.22,"addedSurface":0.73577,"addedPlate":1.04069,"plateRatio":1.414,"cosCubedInverse":1.205,"law":1.174,"arm":0.1144,"armPlate":0.1361}
+{"mode":"heel","heel":30,"wetted":0.2542,"projection":0.8653,"addedTotal":55.27,"addedSurface":0.54335,"addedPlate":1.07785,"plateRatio":1.984,"cosCubedInverse":1.54,"law":1.288,"arm":0.0991,"armPlate":0.1396}
+{"mode":"heel","heel":40,"wetted":0.2617,"projection":0.7655,"addedTotal":50.1,"addedSurface":0.33993,"addedPlate":1.09172,"plateRatio":3.212,"cosCubedInverse":2.225,"law":1.444,"arm":0.0824,"armPlate":0.1476}
+{"mode":"heel","heel":50,"wetted":0.2672,"projection":0.6428,"addedTotal":42.8,"addedSurface":0.1751,"addedPlate":1.10133,"plateRatio":6.29,"cosCubedInverse":3.765,"law":1.67,"arm":0.064,"armPlate":0.1604}
+{"mode":"heel","heel":60,"wetted":0.2651,"projection":0.501,"addedTotal":33.71,"addedSurface":0.06598,"addedPlate":1.1073,"plateRatio":16.783,"cosCubedInverse":8,"law":2.098,"arm":0.0442,"armPlate":0.1812}
+{"mode":"heel","heel":70,"wetted":0.2553,"projection":0.3445,"addedTotal":23.46,"addedSurface":0.0148,"addedPlate":1.11429,"plateRatio":75.285,"cosCubedInverse":24.995,"law":3.012,"arm":0.0251,"armPlate":0.2179}
+# step 3.3m, P4's static control: a BARE board on still water at a HELD heel about its own long axis.
+# the shipped generalized added roll inertia (surface normal, area x |n.u|) against the PLATE-normal form
+# (own normal, own wetted area), off the same arrays at the same heel. No rider: the ride is not in this cell.
+
+| heel ° | wetted m² | the patches own \|n.u\| | water inertia kg | shipped kg·m² | plate kg·m² | ratio | cos^-3 | ratio x cos^3 | arm m | plate arm m |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0.1778 | 0.9997 | 32.94 | 0.51312 | 0.51299 | 1 | 1 | 1 | 0.1248 | 0.1248 |
+| 10 | 0.2232 | 0.9842 | 47.21 | 0.71206 | 0.80723 | 1.134 | 1.047 | 1.083 | 0.1228 | 0.1308 |
+| 20 | 0.2454 | 0.9388 | 56.22 | 0.73577 | 1.04069 | 1.414 | 1.205 | 1.174 | 0.1144 | 0.1361 |
+| 30 | 0.2542 | 0.8653 | 55.27 | 0.54335 | 1.07785 | 1.984 | 1.54 | 1.288 | 0.0991 | 0.1396 |
+| 40 | 0.2617 | 0.7655 | 50.1 | 0.33993 | 1.09172 | 3.212 | 2.225 | 1.444 | 0.0824 | 0.1476 |
+| 50 | 0.2672 | 0.6428 | 42.8 | 0.1751 | 1.10133 | 6.29 | 3.765 | 1.67 | 0.064 | 0.1604 |
+| 60 | 0.2651 | 0.501 | 33.71 | 0.06598 | 1.1073 | 16.783 | 8 | 2.098 | 0.0442 | 0.1812 |
+| 70 | 0.2553 | 0.3445 | 23.46 | 0.0148 | 1.11429 | 75.285 | 24.995 | 3.012 | 0.0251 | 0.2179 |

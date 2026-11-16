@@ -103,6 +103,12 @@ const lu = new Float64Array(MAX * MAX);
 const pivots = new Int32Array(MAX);
 const solution = new Float64Array(MAX);
 const total = new Float64Array(MAX);
+/**
+ * Step 3.3m: the scratch one UNIT right-hand side is built in, so the plant's own compliances can be read off the
+ * same LU the attribution uses. Nothing in the game writes it.
+ */
+const unit = new Float64Array(MAX);
+const response = new Float64Array(MAX);
 
 let factored = false;
 let order = 0;
@@ -184,6 +190,53 @@ export const bankLedger = {
   /** Substeps whose matrix this file could not factor (reported, never hidden). */
   singular: 0,
 
+  /**
+   * **Step 3.3m: the PLANT's own compliances, read off the same LU, with no force in any of them.**
+   *
+   * The attribution above divides every source by `A⁻¹`. These rows read `A⁻¹` itself, by back-substituting **unit**
+   * right-hand sides, so each is a property of the plant alone on the substep it was taken. Every one is a mean over
+   * the step (`close` divides by `unitSteps`, not by `dt` — they are not time integrals).
+   *
+   * The axis is **`AttachedRider.rollAxis`**, the same axis the `deck` column is read on, so an inertia here and an
+   * entry above are about one axis and one can be divided by the other.
+   *
+   * - `rollDeckPer`, `rollRelativePer` — the response to **one unit of roll impulse on the board's own rows**
+   *   (`b = r̂` on rows 3–5, zero elsewhere), rad/s per N·m·s: the deck's own roll and the joint's `Δu̇ / L`.
+   *   `1 / rollDeckPer` is **the roll inertia the integrator actually divides a roll moment by, with the rider
+   *   coupled** — which is not `r̂ᵀ A_rot r̂` on `BoardBody.system`, because that array is the board's rows **before**
+   *   `coupleStanding` adds the rider, and because the board's roll is coupled to its own translation and to both
+   *   joint rates.
+   * - `ankleOwn`, `ankleRelative`, `ankleDeck` — the response to **one unit of ankle torque-impulse as the code
+   *   books it**: `b[7] = 1/L` and nothing else, which is `coupleStanding`'s own `rhs[7] += −h τ / L` with τ = −1.
+   *   `u` is a **relative** coordinate (the body's speed across the leg, over and above the rigid carry), so a joint
+   *   torque belongs in its row alone and the reaction on the board is carried by the kinematics; `pair…` below is
+   *   the counterfactual that books the couple twice, kept so that is read and not assumed.
+   *   `ankleOwn = ankleRelative + ankleDeck`, as the ledger's own three columns do.
+   *   `|ankleOwn / ankleRelative|` is **the ankle's own authority over the body's absolute lean, from `A` alone** —
+   *   the same ratio step 3.3l measured through the ankle's actual torque, with the torque divided out.
+   * - `pairOwn`, `pairRelative`, `pairDeck` — the same unit torque with `−r̂` also booked on rows 3–5.
+   * - `bodyHeld` — `A[7][7] · L²`, kg·m²: the body's own roll inertia about the stance point as the matrix holds it,
+   *   which is `m L² + h (k_ankle h + c_ankle)` by `coupleStanding`'s own line, i.e. the body's end of the ratio read
+   *   off the matrix instead of inferred from `m L²`.
+   */
+  unitSteps: 0,
+  /**
+   * Substeps skipped because the body was **not banking** (`AttachedRider.banking` false — landing, or standing below
+   * planing, which the owner's own low-speed cell reaches). There row 7 is not the ankle's at all: `coupleStanding`
+   * writes `system[7][7] += 1` and no coupling, and `rhs[7]` is never written [R], so a unit read of it would be a
+   * read of a dummy row. Counted and skipped rather than reported.
+   */
+  unitSkipped: 0,
+  rollDeckPer: 0,
+  rollRelativePer: 0,
+  ankleOwn: 0,
+  ankleRelative: 0,
+  ankleDeck: 0,
+  pairOwn: 0,
+  pairRelative: 0,
+  pairDeck: 0,
+  bodyHeld: 0,
+
   /** A new step: every entry back to zero. `BoardBody.step` calls it. */
   begin(): void {
     for (const key of BANK_SOURCES) {
@@ -200,6 +253,17 @@ export const bankLedger = {
     this.closure = 0;
     this.residual = 0;
     this.singular = 0;
+    this.unitSteps = 0;
+    this.unitSkipped = 0;
+    this.rollDeckPer = 0;
+    this.rollRelativePer = 0;
+    this.ankleOwn = 0;
+    this.ankleRelative = 0;
+    this.ankleDeck = 0;
+    this.pairOwn = 0;
+    this.pairRelative = 0;
+    this.pairDeck = 0;
+    this.bodyHeld = 0;
   },
 
   /** A new substep: the split of `b` back to zero. `BoardBody.advance` calls it where it assembles its own rows. */
@@ -261,7 +325,10 @@ export const bankLedger = {
    * The substep's attribution: `A` as the game assembled it and `b` as it stands, the leg's length and the heading's
    * own roll axis. Called at the end of `AttachedRider.coupleStanding`, before `solveLinear` destroys either.
    */
-  solve(system: Float64Array, rhs: Float64Array, n: number, length: number, rx: number, ry: number, rz: number): void {
+  solve(
+    system: Float64Array, rhs: Float64Array, n: number, length: number,
+    rx: number, ry: number, rz: number, banking: boolean,
+  ): void {
     order = n;
     for (let i = 0; i < n * n; i += 1) lu[i] = system[i];
     for (let i = 0; i < n; i += 1) whole[i] = rhs[i];
@@ -309,6 +376,48 @@ export const bankLedger = {
       Math.abs(sumDeck - (total[3] * rx + total[4] * ry + total[5] * rz)),
     );
     if (gap > this.closure) this.closure = gap;
+    // **Step 3.3m: the plant's own compliances off the same LU.** Three unit right-hand sides, no force in any of
+    // them. Read after the attribution so nothing above can see them; `lu` and `pivots` are the same factorisation.
+    // Not banking, row 7 is a dummy (`system[7][7] = 1`, no coupling, `rhs[7]` unwritten), so the read is skipped.
+    if (!banking) {
+      this.unitSkipped += 1;
+      return;
+    }
+    this.unitSteps += 1;
+    // (i) one unit of roll impulse on the board's own rows.
+    unit.fill(0);
+    unit[3] = rx;
+    unit[4] = ry;
+    unit[5] = rz;
+    substitute(lu, n, unit, 0, response);
+    this.rollDeckPer += response[3] * rx + response[4] * ry + response[5] * rz;
+    this.rollRelativePer += response[7] / length;
+    // (ii) one unit of ankle torque-impulse, as `coupleStanding` books it: row 7 alone.
+    unit.fill(0);
+    unit[7] = 1 / length;
+    substitute(lu, n, unit, 0, response);
+    {
+      const rel = response[7] / length;
+      const deck = response[3] * rx + response[4] * ry + response[5] * rz;
+      this.ankleRelative += rel;
+      this.ankleDeck += deck;
+      this.ankleOwn += rel + deck;
+    }
+    // (iii) the counterfactual: the same torque with the board's reaction couple booked as well.
+    unit.fill(0);
+    unit[7] = 1 / length;
+    unit[3] = -rx;
+    unit[4] = -ry;
+    unit[5] = -rz;
+    substitute(lu, n, unit, 0, response);
+    {
+      const rel = response[7] / length;
+      const deck = response[3] * rx + response[4] * ry + response[5] * rz;
+      this.pairRelative += rel;
+      this.pairDeck += deck;
+      this.pairOwn += rel + deck;
+    }
+    this.bodyHeld += system[7 * n + 7] * length * length;
   },
 
   /** After `solveLinear`: this file's own answer against the game's, on the four rows the ledger reads. */
@@ -332,5 +441,16 @@ export const bankLedger = {
     this.ownTotal *= inverse;
     this.relativeTotal *= inverse;
     this.deckTotal *= inverse;
+    // Step 3.3m: the compliances are not time integrals, so they are means over the substeps that were read.
+    const over = this.unitSteps > 0 ? 1 / this.unitSteps : 0;
+    this.rollDeckPer *= over;
+    this.rollRelativePer *= over;
+    this.ankleOwn *= over;
+    this.ankleRelative *= over;
+    this.ankleDeck *= over;
+    this.pairOwn *= over;
+    this.pairRelative *= over;
+    this.pairDeck *= over;
+    this.bodyHeld *= over;
   },
 };

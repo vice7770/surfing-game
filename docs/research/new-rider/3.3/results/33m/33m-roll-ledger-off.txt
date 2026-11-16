@@ -1,0 +1,87 @@
+{"mode":"ride","rider":"new","stance":"tall","extra":-3,"entryAsked":null,"entry":4.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.317,"frames":79,"liveFrames":67,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":4.552,"throughFall":5.957,"rollFall":27.45,"bankFall":28.39,"railFall":17.73,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"tall","extra":-2,"entryAsked":null,"entry":5.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.15,"frames":69,"liveFrames":57,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":5.522,"throughFall":6.741,"rollFall":49.66,"bankFall":48.97,"railFall":40.29,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"tall","extra":-1,"entryAsked":null,"entry":6.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.15,"frames":69,"liveFrames":57,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":6.491,"throughFall":8.197,"rollFall":72.13,"bankFall":68.14,"railFall":65.74,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"tall","extra":0,"entryAsked":null,"entry":7.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.75,"frames":105,"liveFrames":88,"cleanFrames":0,"cleanShare":0,"clampedFrames":5,"throughFirst":7.458,"throughFall":8.186,"rollFall":76.1,"bankFall":70,"railFall":76.1,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"tall","extra":1,"entryAsked":null,"entry":8.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.317,"frames":79,"liveFrames":63,"cleanFrames":0,"cleanShare":0,"clampedFrames":4,"throughFirst":8.426,"throughFall":9.308,"rollFall":67.17,"bankFall":70,"railFall":67.17,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"tall","extra":1.5,"entryAsked":null,"entry":8.935,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.1,"frames":66,"liveFrames":54,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":8.911,"throughFall":9.607,"rollFall":49.97,"bankFall":57.05,"railFall":48.96,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"tall","extra":2,"entryAsked":null,"entry":9.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.167,"frames":70,"liveFrames":58,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":9.396,"throughFall":9.995,"rollFall":55.56,"bankFall":66.2,"railFall":55.56,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"tall","extra":3,"entryAsked":null,"entry":10.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.4,"frames":84,"liveFrames":71,"cleanFrames":0,"cleanShare":0,"clampedFrames":1,"throughFirst":10.365,"throughFall":8.434,"rollFall":59.27,"bankFall":70,"railFall":59.27,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":-3,"entryAsked":null,"entry":4.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.433,"frames":86,"liveFrames":67,"cleanFrames":0,"cleanShare":0,"clampedFrames":7,"throughFirst":4.442,"throughFall":5.739,"rollFall":70.3,"bankFall":70,"railFall":61.63,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":-2,"entryAsked":null,"entry":5.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.133,"frames":68,"liveFrames":56,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":5.434,"throughFall":6.511,"rollFall":54.94,"bankFall":54.93,"railFall":46.45,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":-1,"entryAsked":null,"entry":6.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.167,"frames":70,"liveFrames":51,"cleanFrames":0,"cleanShare":0,"clampedFrames":7,"throughFirst":6.432,"throughFall":7.626,"rollFall":62.21,"bankFall":70,"railFall":56.22,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":0,"entryAsked":null,"entry":7.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":2.067,"frames":124,"liveFrames":104,"cleanFrames":0,"cleanShare":0,"clampedFrames":8,"throughFirst":7.444,"throughFall":5.399,"rollFall":88.87,"bankFall":70,"railFall":88.87,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":1,"entryAsked":null,"entry":8.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.183,"frames":71,"liveFrames":59,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":8.46,"throughFall":9.829,"rollFall":57.23,"bankFall":67.08,"railFall":56.6,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":1.5,"entryAsked":null,"entry":8.935,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.1,"frames":66,"liveFrames":54,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":8.969,"throughFall":9.966,"rollFall":59.42,"bankFall":67.2,"railFall":58.81,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":2,"entryAsked":null,"entry":9.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.15,"frames":69,"liveFrames":56,"cleanFrames":0,"cleanShare":0,"clampedFrames":1,"throughFirst":9.478,"throughFall":9.764,"rollFall":59.27,"bankFall":70,"railFall":59.27,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"crouch","extra":3,"entryAsked":null,"entry":10.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.283,"frames":77,"liveFrames":65,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":10.499,"throughFall":9.591,"rollFall":56.86,"bankFall":68.28,"railFall":56.86,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":-3,"entryAsked":null,"entry":4.435,"steer":0,"felt":"deck","ledger":"off","fell":"lost board","fellAt":1.6,"frames":96,"liveFrames":74,"cleanFrames":0,"cleanShare":0,"clampedFrames":10,"throughFirst":4.466,"throughFall":5.988,"rollFall":89,"bankFall":48.91,"railFall":82.36,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":-2,"entryAsked":null,"entry":5.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.267,"frames":76,"liveFrames":57,"cleanFrames":0,"cleanShare":0,"clampedFrames":7,"throughFirst":5.453,"throughFall":7.216,"rollFall":64.07,"bankFall":70,"railFall":57.55,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":-1,"entryAsked":null,"entry":6.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.117,"frames":67,"liveFrames":52,"cleanFrames":0,"cleanShare":0,"clampedFrames":3,"throughFirst":6.448,"throughFall":8.246,"rollFall":80.04,"bankFall":70,"railFall":75.45,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":0,"entryAsked":null,"entry":7.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.933,"frames":116,"liveFrames":95,"cleanFrames":0,"cleanShare":0,"clampedFrames":9,"throughFirst":7.45,"throughFall":4.982,"rollFall":85.04,"bankFall":70,"railFall":85.04,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":1,"entryAsked":null,"entry":8.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.217,"frames":73,"liveFrames":58,"cleanFrames":0,"cleanShare":0,"clampedFrames":3,"throughFirst":8.454,"throughFall":9.385,"rollFall":61.41,"bankFall":70,"railFall":61.32,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":1.5,"entryAsked":null,"entry":8.935,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.117,"frames":67,"liveFrames":53,"cleanFrames":0,"cleanShare":0,"clampedFrames":2,"throughFirst":8.957,"throughFall":9.759,"rollFall":63.89,"bankFall":70,"railFall":63.81,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":2,"entryAsked":null,"entry":9.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.15,"frames":69,"liveFrames":54,"cleanFrames":0,"cleanShare":0,"clampedFrames":3,"throughFirst":9.461,"throughFall":9.7,"rollFall":61.53,"bankFall":70,"railFall":61.53,"railMedian":null,"railPeak":null}
+{"mode":"ride","rider":"new","stance":"compress","extra":3,"entryAsked":null,"entry":10.435,"steer":0,"felt":"deck","ledger":"off","fell":"balance","fellAt":1.183,"frames":71,"liveFrames":59,"cleanFrames":0,"cleanShare":0,"clampedFrames":0,"throughFirst":10.469,"throughFall":9.683,"rollFall":49.16,"bankFall":59.99,"railFall":49.16,"railMedian":null,"railPeak":null}
+# step 3.3m — the roll resistance both ends, read off the matrix the integrator inverts.
+# cell: relative entries -3,-2,-1,0,1,1.5,2,3 x tall,crouch,compress x steer 0; felt=deck; rider=new; ledger=off
+# n = 24 runs. FaceWater 1.4/16/5.7 , 2.6 m deep — a FIT to Canyon, not Canyon.
+
+| what | n | median | span |
+|---|---|---|---|
+| the ride ended | 24 of 24 | — | 1.100–2.067 s |
+| … as a balance fall | 23 | — | — |
+| the speed through the water at the fall, m/s | 24 | 8.43 | 4.98–9.99 |
+| the rail at the fall, ° | 24 | 59.3 | 17.7–88.9 |
+| clean frames, share of live | 24 | 0.000 | 0.000–0.000 |
+| **the board ALONE, r̂ᵀA_rot r̂ (3.3j's quantity), kg·m²** | 0 | – | – |
+| … the same on the board's LONG axis (3.3j's datum) | 0 | – | – |
+| … near trim (rail < 10°) | 0 | – | – |
+| … past 60° of rail | 0 | – | – |
+| the dry board, r̂ᵀIr̂, kg·m² | 0 | – | – |
+| the hull's roll damping, N·m·s/rad | 0 | – | – |
+| **the COUPLED roll inertia, 1/(Δω·r̂), kg·m²** | 0 | – | – |
+| … near trim | 0 | – | – |
+| … past 60° of rail | 0 | – | – |
+| … over the board-alone read | 0 | – | – |
+| **the ankle's authority \|own/relative\|, from A alone** | 0 | – | – |
+| … near trim | 0 | – | – |
+| … past 60° of rail | 0 | – | – |
+| … the paired counterfactual's | 0 | – | – |
+| **the body's own, 1/ankleOwn, kg·m²** | 0 | – | – |
+| **the body's own as HELD, A[7][7]·L², kg·m²** | 0 | – | – |
+| … their ratio (P1a: 1.00) | 0 | – | – |
+| **the inertia ratio the authority implies, I_board/I_body** | 0 | – | – |
+| … as a board inertia (× bodyOwn), kg·m² | 0 | – | – |
+| … over the board-alone read | 0 | – | – |
+| **1/\|ankleDeck\|, kg·m² — must BE the board-alone read** | 0 | – | – |
+| … over the board-alone read (derived: 1.000) | 0 | – | – |
+| the REDUCED mass across, bodyOwn/L², kg | 0 | – | – |
+| the leg's own length L, m | 0 | – | – |
+| **the ankle's absolute authority, °/s² per N·m** | 0 | – | – |
+| the ankle torque actually delivered, \|N·m\| | 0 | – | – |
+| … its peak over the ride, \|N·m\| | 0 | – | – |
+| **3.3l's own booked ankle ratio, same frames (P2a)** | 0 | – | – |
+| … its gap to the unit read, peak | 0 | – | – |
+| … the same where |relAnkle| > 10 °/s², median | 0 | – | – |
+| … the same, peak | 0 | – | – |
+| the ankle's booked entry over −τ·plant (≈1) | 0 | – | – |
+| the shipped added roll inertia, surface normal, kg·m² | 0 | – | – |
+| the PLATE-normal reconstruction, kg·m² | 0 | – | – |
+| … their ratio, all | 0 | – | – |
+| … near trim | 0 | – | – |
+| … past 60° of rail | 0 | – | – |
+| the shipped form past 60° of rail, kg·m² | 0 | – | – |
+| the PLATE form past 60° of rail, kg·m² | 0 | – | – |
+| **the cos⁻³ law: ratio × cos³(rail) (P4a: 1.00)** | 0 | – | – |
+| the patches' own \|n̂·û\| | 0 | – | – |
+| the wetted bottom area, m² | 0 | – | – |
+| … near trim | 0 | – | – |
+| the water's inertia the patches carry, kg | 0 | – | – |
+| … near trim | 0 | – | – |
+| the arm it acts at, √(I/m), m | 0 | – | – |
+| … near trim | 0 | – | – |
+
+# the controls, worst over every run
+| linearity P0a | split | closure | residual | singular | apart substeps | booked substeps | not-banking substeps |
+|---|---|---|---|---|---|---|---|
+| – | – | – | – | – | 0 | 0 | 0 |

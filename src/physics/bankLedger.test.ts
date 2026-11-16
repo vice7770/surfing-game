@@ -66,6 +66,10 @@ const run = (steps: number, ledger: boolean, steer = 0) => {
       split: number; closure: number; residual: number; steps: number;
       sumOwn: number; sumRel: number; sumDeck: number; own: number; rel: number; deck: number;
       halves: number; carry: number;
+      // Step 3.3m: the plant's own compliances, off the same LU. `linear` is their linearity control.
+      unitSteps: number; unitSkipped: number; rollDeckPer: number; rollRelativePer: number;
+      ankleOwn: number; ankleRelative: number; ankleDeck: number; pairOwn: number; bodyHeld: number;
+      linear: number;
     }[] = [];
     for (let i = 0; i < steps; i += 1) {
       board.step(1 / 60, water);
@@ -97,6 +101,19 @@ const run = (steps: number, ledger: boolean, steer = 0) => {
         deck: bankLedger.deckTotal,
         halves,
         carry: bankLedger.own.carry,
+        unitSteps: bankLedger.unitSteps,
+        unitSkipped: bankLedger.unitSkipped,
+        rollDeckPer: bankLedger.rollDeckPer,
+        rollRelativePer: bankLedger.rollRelativePer,
+        ankleOwn: bankLedger.ankleOwn,
+        ankleRelative: bankLedger.ankleRelative,
+        ankleDeck: bankLedger.ankleDeck,
+        pairOwn: bankLedger.pairOwn,
+        bodyHeld: bankLedger.bodyHeld,
+        // The three unit solves go through ONE `A⁻¹`, so the paired torque's response is the ankle's less the roll
+        // unit's, identically. Relative to the largest of the three so it is a precision and not a size.
+        linear: Math.abs(bankLedger.pairOwn - (bankLedger.ankleOwn - (bankLedger.rollRelativePer + bankLedger.rollDeckPer)))
+          / Math.max(1e-30, Math.abs(bankLedger.pairOwn), Math.abs(bankLedger.ankleOwn)),
       });
     }
     return seen;
@@ -159,6 +176,44 @@ describe('bankLedger', () => {
       expect(row.steps).toBe(0);
       expect(row.sumOwn).toBe(0);
       expect(row.own).toBe(0);
+      // Step 3.3m: the unit reads are off with it too, so a probe cannot read a stale compliance.
+      expect(row.unitSteps).toBe(0);
+      expect(row.unitSkipped).toBe(0);
+      expect(row.rollDeckPer).toBe(0);
+      expect(row.ankleOwn).toBe(0);
+      expect(row.bodyHeld).toBe(0);
+    }
+  });
+
+  it('P0a (step 3.3m): the three unit solves are one A⁻¹, and the ankle unit closes in its own two halves', () => {
+    const seen = run(50, true);
+    for (const row of seen) {
+      expect(row.unitSteps).toBeGreaterThan(0);
+      // On this cell the body is banking on every substep, so nothing was skipped and the test is not vacuous.
+      expect(row.unitSkipped).toBe(0);
+      // The linearity of the three unit right-hand sides through one factorisation.
+      expect(row.linear).toBeLessThan(1e-9);
+      // `own = relative + deck` for the unit read as well as for every source.
+      expect(Math.abs(row.ankleOwn - (row.ankleRelative + row.ankleDeck)))
+        .toBeLessThan(1e-12 * Math.max(1, Math.abs(row.ankleRelative)));
+      // A roll impulse rolls the deck the way it was applied, and an ankle torque rolls it the other way: the two
+      // signs are opposite on every substep, which is what makes `|own/relative| < 1` a split and not a sign error.
+      expect(row.rollDeckPer).toBeGreaterThan(0);
+      expect(row.ankleDeck).toBeLessThan(0);
+      // Both compliances are finite and the board's roll inertia they imply is of order 1 kg·m², not 1e-2 or 1e2.
+      expect(1 / row.rollDeckPer).toBeGreaterThan(0.02);
+      expect(1 / row.rollDeckPer).toBeLessThan(100);
+    }
+  });
+
+  it('P0b (step 3.3m): the compliances change no trajectory — still bit-identical with the ledger on and off', () => {
+    const off = run(80, false);
+    const on = run(80, true);
+    for (let i = 0; i < off.length; i += 1) {
+      expect(on[i].bank).toBe(off[i].bank);
+      expect(on[i].x).toBe(off[i].x);
+      // and the compliances were actually read on those steps, so the test is not vacuous.
+      expect(on[i].unitSteps).toBeGreaterThan(0);
     }
   });
 

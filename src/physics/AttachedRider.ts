@@ -4505,7 +4505,7 @@ export class AttachedRider {
         if (this.banking) bankLedger.bookRow('limbs', 7, -h * t.dot(force));
         if (free) bankLedger.bookRow('limbs', 8, -h * this.forward.dot(force));
       }
-      bankLedger.solve(system, rhs, N, length, this.rollAxis.x, this.rollAxis.y, this.rollAxis.z);
+      bankLedger.solve(system, rhs, N, length, this.rollAxis.x, this.rollAxis.y, this.rollAxis.z, this.banking);
     }
   }
 

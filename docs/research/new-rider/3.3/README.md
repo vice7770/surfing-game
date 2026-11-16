@@ -5767,3 +5767,600 @@ game**, so these are all about your eyes on things I measured on the bench.
    **My own recommendation is the first**, because it is a measurement before it is a change, and because if the
    board's roll resistance is right then the second is the only route left and we should stop looking for a tuning fix.
    **Your call.**
+
+# Part 36 — the board's roll resistance is right, the body's end of the ratio was the matrix's diagonal, and the ankle has twenty times the authority the lean needs
+
+Written 2026-11-16 by the build agent (Opus 5, effort high) on branch `claude/rider-new-33m`, cut from `main` at
+**698a25d1** (step 3.3l's merge), so Part 35 is its base. It ships **nine read-only rows on the bank ledger**
+(`bankLedger`, still off by default, still no behavioural switch of any kind), two new tests, one new probe, and
+**156 rides over seven arms plus three controls** — **84 with the new reads on** (24 unsteered trajectories on each
+fall filter and 18 of the owner's own low-speed cell on each), **24 with them off** as the purity check, **48 of
+step 3.3l's own probe re-run** on and off as the reproduction, two still-water controls and one **eight-angle static
+heel sweep**.
+
+Tags as in 3.2, 3.3 and 3.4: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source;
+**[I]** my inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
+
+## 0. The seven sentences the round is for
+
+1. **The owner's bar is not met, and the round reproduces step 3.3l's measurement of it to the digit.** On the
+   owner's own low-speed cell — entries set **absolutely** at 1, 2, 3, 4, 5 and 6 m/s through the water × three
+   stances, the stick never touched — **18 of 18 rides end on the deck filter at 0.517–7.100 s (17 a balance fall, 1
+   the board getting away) and 18 of 18 on the world one at 0.117–6.900 s, all eighteen a balance fall; Compress
+   falls 6 of 6 on each** [M]. Below 3 m/s the fall comes at a median **0.600 s** (deck) and **0.183 s** (world).
+   Across all four ride arms, **84 of 84 runs reproduce step 3.3l's published rows to the digit** on fall time, fall
+   kind, roll, bank and rail at the fall, frame count and speed through the water — with the new reads on **and**
+   off.
+2. **The board's roll resistance IS right, and that is the round's answer to its own brief.** Near trim the solve's
+   board-alone roll inertia is **0.702–1.009 kg·m²** on the lean's own axis (24 trajectories), of which the dry board
+   is **0.026–0.032** and the water **0.68–0.98** [M]. Against the advisor's own sourced Gracey route recomputed at
+   **our measured** wetted area (0.296–0.401 m², median 0.363, over a 0.464 m beam, so a wetted length of
+   0.64–0.86 m), the surface-piercing planing value is **0.39–0.56 kg·m² (median 0.50)** and the fully-ventilated one
+   **0.19–0.28 (0.25)**, with the unhalved deeply-submerged two-sided bound at **0.77–1.13 (0.99)**
+   [A on the advisor's own [M] figure read, which reproduces its published 0.94 to the digit at its assumed 0.75 m].
+   **Median against median we are 1.7× the sourced planing value, 3.4× the fully-ventilated one and 0.86 of the deep
+   bound: our whole measured band sits between the surface-piercing value and the two-sided bound. The one correction
+   the code still does not take — the rising rail ventilating — would make it SMALLER. There is no correctness case
+   for raising it, and raising it was the route step 3.3l recommended.**
+3. **But the ratio step 3.3l built on it is wrong, and the error is on the body's side.** `A[7][7] · L²`, the
+   matrix's own diagonal, is **22.22–52.82 kg·m²** — exactly `m L²`, exactly the "52–54" Part 35 put on the body's
+   side, reproduced to the digit in the dry control (52.72 at L = 0.838 m) [M]. **The body's EFFECTIVE roll inertia,
+   read as `1 / own` off a unit ankle torque through the matrix the integrator inverts, is 1.00–2.52 kg·m², a median
+   of 1.56 — a twenty-second of the diagonal** (`bodyOwn / bodyHeld` = **0.037–0.054**) [M]. **A diagonal is not an
+   effective inertia.** So the inertia ratio the measurement implies is **0.273–0.955, median 0.529** — the board is
+   about as hard to roll as the body's own end, not **46–109 times easier.** Part 35's §3 arithmetic is refuted by
+   the matrix it was about.
+4. **And the ratio's board side is step 3.3j's number, exactly — so that read was right, and it IS the right
+   board-side denominator; only what it was divided by was wrong.** Derived before it was measured: an ankle torque rolls the deck at precisely `τ / I₀` with `I₀` the **board-alone** roll
+   inertia, so `1 / |ankleDeck|` must reproduce `r̂ᵀ A_rot r̂`. Measured: **0.650–1.130 kg·m², at a per-frame ratio of
+   0.821–1.505 with a median of 0.9886** [M]. The board's end of the ratio was never the problem; the body's was.
+5. **The ankle's measured authority of a quarter to two fifths is right, is a property of `A` alone, and is NOT a
+   shortage.** From the plant with the torque divided out, `|own / relative|` is **0.214–0.488 (median 0.346)**, and
+   step 3.3l's booked ankle ratio on the same frames is **0.214–0.496 (median 0.340)**, the two differing by a median
+   of **0.0004–0.0027** wherever the booked ratio has a denominator [M]. **P2a held.** But in absolute terms the
+   ankle moves the body's own lean at **21–58 °/s² per N·m (median 36)**, it delivers a median **5.4–36.6 N·m** and
+   peaks at **40.1–90.4**, and its own booked entry over the ride is **−36 to −1 271 °/s², median −655** — against a
+   net lean drive of **+39.9 to +95.9 °/s²** (Part 35 §2.2). **Median against median, a quarter of the ankle's
+   authority is still 6.8× the net the lean is running at, and its peak torque is 15–55× it. It is not starved. It
+   loses anyway.**
+6. **The `cos³` decay is a frame defect, and the static heel sweep settles it where the ride could not.** A bare
+   board held at heel on still water, wetted area **growing** from 0.178 to 0.265 m² as it rolls: the shipped
+   generalized added roll inertia goes **0.513 → 0.736 (20°) → 0.0148 kg·m² (70°)**, a **fiftyfold collapse from its
+   own peak**, while the plate-normal reconstruction off the same arrays goes **0.513 → 1.078–1.114 and is FLAT from
+   30° to 70°** [M]. The reason is the generalized **arm**: the shipped form's `√(I/m)` falls **0.125 → 0.025 m**
+   while the plate's rises **0.125 → 0.218 m**, because pointing the water's inertia at the surface normal makes the
+   lever the patch's **horizontal** offset. **At 70° the model has the water's inertia acting at an effective
+   arm of 2.5 cm from the roll axis while the wetted rail is 22 cm out from it, and a hull facet rolled to vertical
+   can accelerate sideways through water with no added inertia at all.** On the ride it costs **20.25–39.23×** past 60° of rail (5 runs), and it drags the ankle's
+   authority there from 0.344–0.500 near trim to **0.002–0.037** [M].
+7. **So: the two-body rider is NOT established as the only route left, because the premise that would have
+   established it is gone — and the case against a tuning fix at the ankle is nevertheless stronger than step 3.3l
+   made it.** The ankle is not weak, the board is not light in roll, and the ends of the ratio are comparable. What
+   the round leaves standing is that the plant is not the problem, which points at the **command** and at the
+   falls' own kinds, and §8 refuses to pick between the three routes on this measurement.
+
+## 1. (A) The read that had to come first, and the array the last two rounds were reading
+
+My brief asked whether 0.498–1.140 kg·m² is right. The read that mattered was **which array it came off.**
+
+**(i) `BoardBody.system` is the board's six rows BEFORE the rider is in them** [R, `BoardBody.ts:1514–1526`]:
+
+```
+if (rider?.attached) rider.coupleYaw(system, rhs, this);     // the body's yaw inertia: IS in `system`
+if (rider?.attached && rider.upright) {
+  const s8 = (n === 9 ? this.system9 : this.system8).fill(0);
+  for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) s8[i * n + j] = system[i * 6 + j];
+  rider.coupleStanding(s8, r8, h);                           // the rider's mass and carry: in the COPY
+  solveLinear(s8, r8, n);
+}
+```
+
+So step 3.3j's `x̂ᵀ A_rot x̂` is the board, the water, the foils and `coupleYaw` — **a correct read of the board
+alone**, which is what it called itself. What Part 35 §3 did with it is the error: it divided it into a body-side
+number taken from `m L²`, and the matrix the integrator inverts is the 8×8/9×9 copy, where the rider's own coupling
+sits in the same rotational block (`m((a·b) δ_ij − b_i a_j)`, which on `rollAxis` is ≈ `m L²` ≈ 53) **and** in two
+coupling columns that take most of it back out again.
+
+**(ii) So the honest read is `A⁻¹`, not `A`.** The bank ledger already factors the full system once a substep to
+attribute `b`; this round back-substitutes **three unit right-hand sides** through the same LU, which contain no
+force at all:
+
+| the unit read | `b` | what comes out |
+|---|---|---|
+| one unit of **roll impulse** on the board's rows | `r̂` on rows 3–5 | `1 / (Δω·r̂)` = the roll inertia the integrator divides a roll moment by, with the rider coupled |
+| one unit of **ankle torque-impulse**, as the code books it | `1/L` on row 7 | the ledger's three columns, with the torque divided out: `ankleOwn`, `ankleRelative`, `ankleDeck` |
+| the same, with the board's reaction couple **also** booked | `1/L` on row 7, `−r̂` on rows 3–5 | the counterfactual, so the booking is read and not assumed |
+
+and reads `A[7][7] · L²` beside them, which by `coupleStanding`'s own line is `m L² + h (k_ankle h + c_ankle)` [R].
+
+**(iii) And the derivation that made it falsifiable, written before the probe ran** (`results/33m/33m-predictions.md`,
+P1). Reduce the plant to the board's roll `φ` about `rollAxis` with inertia `I₀`, the board's own lateral freedom,
+and the body's across coordinate `u` — which is **relative**, because `coupleStanding` defines
+`velocity = v + ω × carried + up ṡ + across u̇` [R]. A unit torque in the `u` row alone then gives
+
+> `|deck| = 1 / I₀` exactly, `own = 1 / (L² · m M / (m + M))`, and `|own/relative| = I₀ / (I₀ + L² m M/(m+M))`
+
+with `M` the board's own mass across. **`m L²` never appears.** It cannot: the reaction to the ankle's torque is
+taken by a board that is free to slide and roll, and `1/M` at 2.5 kg is thirty times `1/m` at 75.
+
+**The three things these reads changed.** My brief predicted the coupled roll inertia would read **20–60 kg·m²**
+(P1b) and `1/ankleOwn` would read **52–56** (P1a). Both are **refuted**: 0.59–1.13 and 1.00–2.52. And P2b's
+*direction* held while its arithmetic did not — the ends are comparable, but because the body's end is small, not
+because the board's is large.
+
+## 2. (B) Both ends of the ratio, off the matrix the integrator inverts
+
+**The cell is step 3.3k's and 3.3l's own**: the Canyon-matched `FaceWater` (1.4 m / 16° / 5.7 m/s, 2.6 m deep, the
+board 0.75 fronts ahead of the crest and 45° off the fall line), the stance held, the stick **never touched**, eight
+relative entry speeds × three stances, 9 s a run — **24 trajectories**, read on both fall filters as step 3.3l
+established they are one population.
+
+**The datum, stated.** Every inertia below is about **`AttachedRider.rollAxis`** — the heading's own roll axis, yaw
+only, the axis the ledger's `deck` column and the body's bank are measured about — so an inertia here and an entry in
+Part 35 §2.3 are about one axis. 3.3j's own datum (the board's long axis) is printed beside it; the two agree to
+**0.674–0.911 against 0.699–0.932**, a 2–5 % difference, so nothing below turns on which was used. Every row is a
+per-run median over the frames the standing 8×8/9×9 decided whole **and** the body banked through (the only window
+the unit reads describe), after the 0.2 s mount transient and with the `MAX_BANK` clamp's frames excluded (the clamp is a known defect, queued, **not this round's**; **0–10** clamped
+frames a run on the deck arm and **0–2** on the world one).
+
+| **[M]** 24 trajectories, deck filter / world filter | median | span over the 24 |
+|---|---|---|
+| **the board ALONE, `r̂ᵀ A_rot r̂` — step 3.3j's quantity**, kg·m² | 0.786 / 0.836 | **0.699–0.909 / 0.699–0.932** |
+| … near trim (rail < 10°) | 0.879 / 0.879 | **0.702–1.009** (both) |
+| … past 60° of rail (5 runs / 2 runs) | 0.083 / 0.094 | 0.078–0.094 (both) |
+| … the dry board `r̂ᵀ I r̂` (step 3.3h's `I_zz`) | 0.0285 | 0.0261–0.0321 |
+| **the COUPLED roll inertia, `1 / (Δω·r̂)`**, kg·m² | 0.79 / 0.92 | **0.59–1.13 / 0.62–1.19** |
+| … near trim | 1.13 / 1.13 | 1.02–1.21 (both) |
+| … over the board-alone read | 0.9 / 1.0 | **0.8–1.5** (both) |
+| **`1 / \|ankleDeck\|` — derived to BE the board-alone read**, kg·m² | 0.822 / 0.945 | **0.650–1.130 / 0.658–1.192** |
+| … its per-frame ratio to the board-alone read (derived: 1.000) | **0.9886 / 1.0371** | 0.821–1.505 / 0.814–1.508 |
+| **the body's own as HELD, `A[7][7] · L²`**, kg·m² | 31.25 / 31.26 | **22.22–52.82 / 22.24–52.77** |
+| **the body's own EFFECTIVE, `1 / ankleOwn`**, kg·m² | **1.56 / 1.55** | **1.00–2.52 / 0.99–2.44** |
+| … their ratio (P1a predicted 1.00) | **0.0453 / 0.0447** | **0.037–0.054** (both) |
+| the REDUCED mass across it is made of, `bodyOwn / L²`, kg | 3.31 / 3.28 | **2.71–3.98 / 2.71–4.07** |
+| the leg's own length `L`, m | 0.653 | 0.551–0.850 |
+| **the inertia ratio the authority implies, `I₀ / I_body`** | **0.529 / 0.570** | **0.273–0.955 / 0.338–0.955** |
+| the hull's own roll damping (the pressure part), N·m·s/rad | 9.0 / 9.8 | 6.3–10.1 / 6.3–11.9 |
+
+**Five readings.**
+
+1. **`1 / |ankleDeck|` is the board-alone read, to within the difference between a step mean and an end-of-step
+   read.** The derived identity holds at a median of **0.9886** per frame. The spread (0.82–1.51) is not an error in
+   either: `ankleDeck` is a mean over the step's ~16 substeps and `r̂ᵀ A_rot r̂` is read once, at the last of them, so
+   a frame in which the rail moved reads the two at different poses. **Step 3.3j measured the right number, on the
+   right axis, and it is the denominator the ankle's own torque divides by.** Nothing in Part 35's board-side
+   arithmetic is withdrawn.
+2. **The body's side is where the error is, and it is a whole class of error: a diagonal read as an effective
+   inertia.** `A[7][7] · L²` is `m L²` — it is literally what Part 35 §3 computed, and the dry control confirms it to
+   the digit (52.72 kg·m² at the tall stance's L = 0.8384 m). But `A` is not diagonal: the body's across coordinate
+   is coupled to the board's roll and to the board's own three translations, and the matrix's inverse is what the
+   integrator uses. **`1 / ankleOwn`, the inertia the ankle's torque actually sees at the body, is 1.00–2.52 kg·m².**
+3. **And what it is made of is the board's own mass, not the rider's.** `bodyOwn / L²` is **2.71–3.98 kg** against
+   the board's bare 2.54 kg [M] — the reduced mass `m M / (m + M)` of a 75 kg body and a light board across. Inverted
+   at the median, `M = 1 / (1/3.31 − 1/75)` = **3.46 kg** [A], which is the board's own 2.54 kg plus about **0.9 kg**
+   of water and foil resisting it sideways over a 1 ms substep. The 75 kg rider contributes almost nothing to the
+   combination, because `1/75` is a thirtieth of `1/3`. **The ankle's torque leans the body mostly by
+   shooting a light board out from under his foot**, which is a real lean in the inverted-pendulum sense Part 35 §2.3
+   identified (his centre of mass ends up off his foot) and is how `AttachedRider.finish` builds the body's angular
+   velocity [R].
+4. **So the two ends are comparable and the 46–109× is refuted.** `I₀ / I_body` = **0.273–0.955**, median 0.529: the
+   board is between a quarter and all of the body's own end, on the same axis, off the same matrix, in the same
+   frame.
+5. **The rider's coupling changes the board's roll inertia by a factor of 0.8–1.5, not 50.** `1/(Δω·r̂)` on the full
+   system is 0.59–1.13 against the board alone's 0.70–0.91: the `m L²` that `coupleStanding` adds to the rotational
+   block is taken back out by the two coupling columns, because the ankle is compliant over a 1 ms substep and the
+   board can roll under the body almost freely. **A standing rider is not a welded mass.**
+
+## 3. (B) The authority, and why a quarter of it is not a shortage
+
+| **[M]** 24 trajectories, deck filter | median | span |
+|---|---|---|
+| **`\|ankleOwn / ankleRelative\|`, the ankle's authority from `A` ALONE** | **0.346** | **0.214–0.488** |
+| … near trim (rail < 10°) | 0.448 | 0.344–0.500 |
+| … past 60° of rail (5 runs) | **0.029** | **0.002–0.037** |
+| **step 3.3l's own BOOKED ankle ratio, on these frames** | **0.340** | **0.214–0.496** |
+| … its gap to the unit read, where `\|relAnkle\| > 10 °/s²` | **0.0009** | 0.0004–0.0027 (peak 0.0023–0.150) |
+| the ankle's booked entry over `−τ × plant` (made of: ≈ 1) | **1.000** | 1.000–1.001 |
+| the paired counterfactual's authority | 0.189 | 0.097–0.318 |
+| **the ankle's ABSOLUTE authority, °/s² per N·m** | **36** | **21–58** |
+| the ankle torque it actually delivered, \|N·m\| | 28.11 | 5.43–36.62 |
+| … its peak over the ride, \|N·m\| | 58.14 | **40.14–90.36** |
+
+**Four readings.**
+
+1. **P2a held, and it is the tie between two instruments.** The authority read off the plant with no force in it, and
+   the ratio step 3.3l booked through the ankle's actual torque, agree to a median of **0.0009** — because the
+   booked entry *is* the plant's response times a torque that cancels, which the `−τ × plant` row confirms at
+   **1.000–1.001**. **Step 3.3l's 0.25–0.40 is right. Its explanation is not.**
+2. **A quarter of the ankle's authority is, at the median, nearly an order of magnitude more than the lean needs.**
+   36 °/s² per N·m at a median delivered 28.1 N·m is about **1 000 °/s²** of the body's own absolute lean, and the
+   booked entry agrees: `ankle` `own` over these 24 rides is **−36 to −1 271 °/s², median −655** (Part 35's mid
+   window read −904), against a net lean drive of **+39.9 to +95.9 °/s²**. **Median against median that is 6.8×,
+   and the ankle's own peak torque of 40–90 N·m is 15–55×.** The lowest of the 24 books −36 °/s², so I will **not**
+   claim every run has an order of magnitude — the median does, and no run is short of the net by a factor.
+   Whatever closed nine rounds, it was not the ankle's authority being too small.
+3. **The code's booking is the right one, and the counterfactual says so.** Booking the ankle's couple on the
+   board's rows **as well** gives an authority of 0.097–0.318 — **lower**, not higher — because `u` is a relative
+   coordinate whose reaction the kinematics already carry, so the explicit couple double-counts it and over-rolls the
+   deck. **P2d held in its direction and failed in its size prediction: I predicted the paired read would be larger.**
+4. **Past 60° of rail the ankle really does lose almost everything, and that is §4's defect, not the inertia.**
+   0.002–0.037 against 0.344–0.500 near trim, and §4 shows the whole of that collapse is the added-mass frame.
+   **Part 35's own clock puts the fall's start at trim** (the rail does not pass 2° until 0.217–0.983 s), so this is
+   about the recovery and not the onset.
+
+## 4. (B) The `cos³` decay: a frame defect, settled on a static cell
+
+Located in the code before anything ran [R, `BoardBody.ts:1352–1382`]: the water's inertia is pointed along the
+**water's own surface normal û** (`sample.normalX…`), its magnitude scaled by `projection = |n̂·û|`, and assembled on
+the generalized direction `[û, r × û]`, so the roll–roll element carries `y² cos³φ`. The ride measured the law —
+`ratio × cos³(rail)` = **1.016–1.151** over 24 runs — but the ride cannot separate the cosines from the wetted area
+shrinking. **The static control can**, and it is a bare board (no rider, nothing of the ride's dynamics in it) held
+at heel on still water, with the two forms read off the same arrays at the same angle:
+
+| **[M]** heel ° | wetted m² | `\|n̂·û\|` | water inertia kg | **shipped kg·m²** | **plate kg·m²** | ratio | cos⁻³ | **the shipped ARM m** | **the plate arm m** |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0.178 | 1.000 | 32.9 | **0.513** | 0.513 | 1.00 | 1.00 | 0.125 | 0.125 |
+| 10 | 0.223 | 0.984 | 47.2 | 0.712 | 0.807 | 1.13 | 1.05 | 0.123 | 0.131 |
+| 20 | 0.245 | 0.939 | 56.2 | **0.736** | 1.041 | 1.41 | 1.21 | 0.114 | 0.136 |
+| 30 | 0.254 | 0.865 | 55.3 | 0.543 | **1.078** | 1.98 | 1.54 | 0.099 | 0.140 |
+| 40 | 0.262 | 0.766 | 50.1 | 0.340 | **1.092** | 3.21 | 2.23 | 0.082 | 0.148 |
+| 50 | 0.267 | 0.643 | 42.8 | 0.175 | **1.101** | 6.29 | 3.77 | 0.064 | 0.160 |
+| 60 | 0.265 | 0.501 | 33.7 | 0.066 | **1.107** | 16.8 | 8.00 | 0.044 | 0.181 |
+| 70 | 0.255 | 0.345 | 23.5 | **0.015** | **1.114** | **75.3** | 25.0 | **0.025** | **0.218** |
+
+**Four readings, and the first kills the alternative explanation.**
+
+1. **It is not the area.** The wetted bottom area **grows** from 0.178 to 0.265 m² as the board rolls, and the water
+   inertia the patches carry peaks at 20° and is still 23.5 kg at 70°. The shipped roll inertia nevertheless falls
+   **fiftyfold from its own peak**, and the plate-normal form off the same arrays is **flat from 30° to 70°**
+   (1.078–1.114 kg·m²), which is what a plate's added roll inertia must do once it is fully wetted.
+2. **The mechanism is the generalized ARM, and it is the frame.** `(r × û)·x̂` with `û` the surface normal is the
+   patch's **horizontal** offset from the roll axis, not its distance from it. So the shipped arm collapses
+   **0.125 → 0.025 m** while the patch physically travels **outward**, to 0.218 m, as the rail goes down.
+   **At 70° the model has the water's inertia acting at an effective arm of 2.5 cm from the roll axis while the
+   wetted rail is 22 cm out from it, and a hull facet rolled to vertical can accelerate sideways through water with
+   no added inertia at all** — because the water in this model can only push along one direction, the surface's.
+3. **The decay is STEEPER than `cos³`, so P4a is refuted in its exponent and held in its direction.** `ratio × cos³`
+   rises from **1.00 to 3.01** over the sweep: the magnitude's cosine and the arm's two cosines are joined by the
+   wetted patch moving off the horizontal, so the true loss at 70° is **75×**, not the 25× `cos⁻³` gives. The ride's
+   own figure, **1.016–1.151**, is that same factor over the ride's smaller rails.
+4. **I am not calling it an arithmetic slip, and I will not call the plate form "the truth".** Pointing the entrained
+   water at the free surface over the patch's projected area is a consistent Wagner-type water-entry model, and it is
+   the right limit for a hull **landing** on water. It is the wrong limit for **roll inertia at planing speed**,
+   where the one measured source we have is Gracey's swung flat plate in **exactly our mode** and has no roll
+   dependence at all. And the advisor's own §2 says plainly that **nobody has measured `A₄₄` for a flat,
+   surface-piercing planing surface at beam Froude 3.5 and 20–60° of roll** [S], so §8 keeps me off "correct".
+
+## 5. (B) The board's roll resistance against the sourced order, at our own measured geometry
+
+The advisor's consult (merged `5481822d`) sourced the planing added roll inertia two independent ways that agree to
+7 %, then halved twice. Its arithmetic used an **assumed** wetted length of 0.75 m; this round measured the cell's
+own.
+
+| **[M]/[A]** near trim (rail < 10°), 24 trajectories | |
+|---|---|
+| the wetted bottom area | **0.296–0.401 m²** (median 0.363) |
+| … over the 0.464 m beam (`boardReference.ts`) [R], so the wetted length | **0.64–0.86 m** |
+| the water's inertia the patches carry | **52.5–76.2 kg** at an arm of **0.110–0.116 m** |
+| **the solve's board-alone roll inertia** | **0.702–1.009 kg·m²** |
+| … of which the dry board | 0.026–0.032 |
+| … **so the water's share** | **0.68–0.98 kg·m²** |
+| the advisor's deeply-submerged two-sided bound at our length [A on its [M] figure read] | **0.77–1.13 kg·m²** (median **0.99**) |
+| … halved once, surface-piercing (its correction (a)) | **0.39–0.56** (**0.50**) |
+| … halved again, the rising rail ventilating (its (b)) | **0.19–0.28** (**0.25**) |
+| **our water's share over the sourced planing value, median against median** | **1.7×** |
+| … over the fully-ventilated one | **3.4×** |
+| … over the unhalved deep bound | **0.86×** |
+
+**Three readings.**
+
+1. **It is not short. It is generous, and the advisor predicted exactly this.** Its own reading of our constants —
+   *"by the code's own constants that is 0.61–1.17 kg·m² at trim"* [S] — brackets the 0.70–1.01 measured here, and
+   its comment that our uniform spread gives 1.33× the deep plate's own `ρπb⁴/128` accounts for the band's top.
+   **Two honesties about the sourced column.** Its `k'` is read off Gracey's figure 8 at `b/c` **0.62–1.19**, and our
+   measured wetted patches put `b/c` at **0.537–0.727**, so the two widest areas need a linear **extrapolation** of
+   `k'` below the figure's own range (0.225 and 0.242 against its 0.25 floor) — the whole band moves by under 10 % if
+   `k'` is held at 0.25 instead. And the comparison above is **median against median**: the sourced value is a
+   function of the measured wetted length, so the two bands are not independent and a band-over-band ratio would
+   overstate the spread both ways.
+2. **The missing correction has the wrong sign for the fall.** The code takes the surface-piercing halving
+   (`ADDED_MASS_PER_AREA = π/8`, one-sided against the deep plate's `π/4`) [R] and does **not** take the ventilation
+   halving. Taking it would move 0.68–0.98 toward 0.26–0.51 — **less** roll resistance, not more.
+3. **And the damping side is unchanged.** The hull's own roll damping on these arms is **6.3–11.9 N·m·s/rad** as the
+   pressure part alone, which is step 3.3j's 7.0–10.7 reproduced; its pooled pressure-plus-radiation figure of
+   9.4–16.2 brackets ITTC's sourced 12.7 [S], and the advisor's "the roll is damping-limited, so the terminal rate
+   does not contain the inertia at all" stands untouched by this round.
+
+## 6. The owner's bar, measured, with every population named
+
+| **[M]** arm | n | the ride ended | balance fall / lost board | when, s | Compress |
+|---|---|---|---|---|---|
+| **`roll.ts`, deck filter, the owner's low-speed cell** (6 absolute entries × 3 stances) | **18** | **18 of 18** | **17 / 1** | **0.517–7.100** | **6 of 6**, 0.517–4.250 |
+| the same, **world** filter | 18 | **18 of 18** | **18 / 0** | **0.117–6.900** | **6 of 6**, 0.133–4.033 |
+| … its 1–3 m/s third | 9 | 9 of 9 | — | 0.517–0.867 (median **0.600**) deck; 0.117–0.483 (**0.183**) world | — |
+| … its 4–6 m/s third | 9 | 9 of 9 | — | 1.033–7.100 (1.267) deck; 0.767–6.900 (1.050) world | — |
+| `roll.ts`, deck filter, step 3.3k's unsteered arm (8 relative entries × 3 stances) | 24 | **24 of 24** | **23 / 1** | 1.100–2.067 | **8 of 8**, 1.117–1.933 |
+| the same, world filter | 24 | **24 of 24** | **24 / 0** | 0.767–1.950 | **8 of 8**, 0.833–1.700 |
+| the same, deck filter, the new reads **off** (the purity check) | 24 | **24 of 24** | 23 / 1 | 1.100–2.067 | 8 of 8 |
+| `bank.ts` (step 3.3l's own probe), deck filter, ledger on and off | 24 + 24 | **24 of 24** each | 23 / 1 each | 1.100–2.067 each | 8 of 8 each |
+
+**The owner's bar is "in Compress the surfer should not fall at the low speeds of getting into position", 100 %, not
+fewer. It is not met.** Compress's ride ends **6 of 6** in each low-speed arm and **8 of 8** in each unsteered one,
+every one a balance fall, and **156 of 156 rides in this round ended before nine seconds — 151 of them a balance fall
+and 5 by losing the board.** And it is still **worse** at the low speeds, not gentler: a median **0.600 s** below
+3 m/s against the unsteered arm's own minimum of 1.100.
+
+## 7. What I refuted
+
+- **Step 3.3l's own mechanism, the one that closed nine rounds.** *"The board's roll inertia in the solve is
+  0.498–1.140 kg·m² against the body's `m L²` ≈ 52–54 … the lighter one is the board by a factor of 46–109."* The
+  board's side is right; the body's side is the **matrix's diagonal** (`A[7][7] · L²` = 22.22–52.82, exactly `m L²`),
+  and the **effective** value is **1.00–2.52 kg·m²**, a twenty-second of it. The ratio is **0.273–0.955**. This is my
+  own error as much as 3.3l's: my brief restated it as settled arithmetic and told the round not to re-derive it.
+- **My own P1b, and it was not close.** I predicted the coupled roll inertia would read 20–60 kg·m² because
+  `coupleStanding` adds `m L²` to the rotational block. It reads **0.59–1.13**: the coupling columns take it back out,
+  and a compliant ankle over a 1 ms substep does not weld a body to a deck.
+- **My own P1a.** `1 / ankleOwn` is **not** `A[7][7] · L²` to within 5 %; it is **0.037–0.054** of it.
+- **My own P2b's arithmetic, while its direction held.** The ends are comparable, but because the body's end is
+  small, not because the board's is large — and the implied board inertia is **0.650–1.130**, which is the board's own
+  read back again, not a hidden 20 kg·m².
+- **My own P2d's size.** The paired counterfactual's authority is **lower** (0.097–0.318), not higher.
+- **My own P4a's exponent.** The plate-to-shipped ratio is **steeper** than `cos⁻³`: `ratio × cos³` rises to **3.01**
+  at 70° of heel, so the loss is 75× and not 25×.
+- **"The ankle keeps a quarter of its force, so you cannot fix it by changing how far it is allowed to reach"** —
+  held as written, **and its reason is wrong and its size is a red herring**. A quarter of **36 °/s² per N·m** at a
+  delivered **28.1 N·m** books a median **−655 °/s²**, which is **6.8×** the **+39.9 to +95.9 °/s²** the lean is
+  running at — and its peak torque of 40–90 N·m is 15–55×.
+- **The inference that the two-body rider is therefore the only route left.** It does not follow from this
+  measurement, because the measurement that would have forced it is withdrawn. §8 says what does and does not follow.
+
+## 8. What I will not claim
+
+- **I will not claim the two-body rider is the only route left.** The premise step 3.3l set for that conclusion — *"if
+  the board's roll resistance is right then (b) is the only route left"* — had a second half I have now refuted, so
+  the implication's antecedent is true and its reasoning is gone. What this round establishes is narrower and I will
+  not stretch it: **the plant is not short of authority at the ankle**, so no ankle limit, no ankle gain and no board
+  roll inertia is the fix. That is consistent with the two-body rider and it does not single it out.
+- **I will not claim the plate-normal form is correct.** Nobody has measured `A₄₄` for a flat, surface-piercing
+  planing surface at beam Froude 3.5 and 20–60° of roll [S, the advisor's own §2]. What I measured is that the
+  shipped form loses 75× of it while the wetted area grows and the wetted patch moves **outward** from the axis, and
+  that its generalized arm falls to 2.5 cm on a 22 cm rail. **That is a defect with a mechanism; the right value is
+  still unmeasured.**
+- **I will not claim fixing the added-mass frame would stop the fall.** Near trim the two forms agree to **1–4 %**,
+  and Part 35's clock puts the lean's start at trim and the rail past 2° only at 0.217–0.983 s. It would change the
+  **recovery** past 60° of rail, where the ankle's authority is 0.002–0.037 instead of about 0.4, and that is
+  **untested**.
+- **I will not claim what the ankle is losing to.** This round measures that it is not losing for want of authority.
+  Part 35 measured that the lean is a residual of a dozen terms that nearly cancel, and that the joints as a group
+  resist it in 24 of 24 after 0.4 s and lose by 10 %. Which of those two sentences is the binding one is the next
+  round's and not this one's.
+- **I will not report the low-speed cell's inertias as a mechanism.** The contact goes infeasible there — the clean
+  share is **0.000–0.979** (4 of 18 runs on the deck filter have no clean frame at all) — and its board-alone read
+  spans 0.061–1.153 against the unsteered arm's 0.699–0.909. That cell gives this round a fall count and a clock, as
+  it gave step 3.3l one.
+- **The heel sweep is a static cell**: a bare board held at an angle on still water with no forward speed, no
+  planing and no rider. Its numbers are a control on the **form of the added-inertia term** and are not the ride's.
+- **The `FaceWater` is a fit to Canyon, not Canyon**; the rider is **placed**, not paddled or popped up; every span
+  above is **the whole population of its arm**, not a confidence interval.
+- **No bot ride is offered as evidence of feel anywhere in this document.**
+
+## 9. The controls
+
+**P0a, linearity, on every substep of all 84 ledger-on runs across the four ride arms** [M]: the three unit solves
+go through one `A⁻¹`, so `pairOwn = ankleOwn − (rollRelativePer + rollDeckPer)` identically. **Worst over all 84
+runs, relative to the largest of the three: 1.6e-14.**
+
+**P0c, step 3.3l's three closures, unchanged** [M], worst over the same 84: `split` **7e-15**, `closure` **9e-15**,
+`residual` **exactly 0 on every substep of every run** — this file's own factorisation against the game's
+`solveLinear`, which is what makes the denominator every unit read divides by demonstrably the game's own.
+`singular`: **0**. The solve-apart substeps are **1 809 of 31 801** on the unsteered deck arm, **19 of 24 199** on
+the world one and **4 083 / 1 020** on the two low-speed arms, and are excluded frame by frame.
+
+**P0b, the rider unchanged, two ways** [M]:
+- **step 3.3l's own probe, re-run**: `bank.ts` with the ledger on **and** off reproduces its published
+  `33l-unsteered-deck.jsonl` on **every** column checked — fall time, fall kind, roll, bank and rail at the fall,
+  frame count, speed through the water, the 8.69–8.71° first-frame bank, and all four of its clocks — **0 mismatches
+  over 24 runs × 2 arms**.
+- **this round's own probe**: `roll.ts` with the new reads off against the same four arms with them on — **0
+  mismatches over 24 runs**; and against step 3.3l's published low-speed and world arms — **0 mismatches over 18 + 18
+  + 24 runs**. **84 runs, to the digit.**
+- `bankLedger.test.ts` asserts the trajectory **bit-identical** with the ledger on and off over 80 steps, and that
+  the new rows are zero while it is off, so a probe cannot read a stale compliance.
+
+**The read's own positive control, `MODE=dry`** [M]: a board lifted clear of the water, standing rider.
+`r̂ᵀ A_rot r̂` = **0.026157** against the dry tensor's **0.026207**, and `A[7][7] · L²` = **52.72 kg·m²**, which is
+`75 × 0.8384²` to the digit — **the body's diagonal is `m L²` and the read of it is right.** The dry cell's
+`r̂ᵀ A_rot r̂` carries step 3.3j's own caveat and is reported with it: with no wetted patch the contact is infeasible
+on every substep (**apart 16 of 16**) and `solve6` eliminates `system` in place, so the matrix read **after** the step
+is half-eliminated (asymmetry **0.0037**) — the compliances, which are read **inside** `coupleStanding` before
+`solveLinear`, are not affected by that and the two blocks' offsets are confirmed by the `m L²` agreement.
+
+**The guard that never fired, reported because it is in the code** [M]: row 7 is the ankle's only while the body is
+**banking** (`AttachedRider.banking` — false landing, and false standing below planing, which the owner's own
+low-speed cell reaches); there `coupleStanding` writes `system[7][7] += 1` with no coupling and never writes
+`rhs[7]` [R], so a unit read of it would be a read of a dummy row. The ledger counts and **skips** those substeps,
+and the count is **0 of 97 090 booked substeps across all four ride arms** — including the 1 m/s entries. So the
+low-speed cell's reads are not contaminated by that; what contaminates them is the apart share, as step 3.3l said:
+its clean frame share is **0.000–0.979** on the deck filter, with 4 of 18 runs having no clean frame at all.
+
+**And the two-inertia derivation, checked on the float control** [M]: a board on still water with a standing rider
+gives `I₀` = **2.187**, `I_body` = **1.420** and a measured authority of **0.5923**, against the derived
+`I₀/(I₀ + I_body)` = **0.6063** — **2.3 %**, on a cell whose numbers are nothing like the ride's. The derivation of
+§1(iii) is the reason the round could predict what `m L²` would and would not do before it read anything.
+
+## 10. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`:
+  **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`:
+  **exit 0**
+- the probe type-checked separately on a throwaway project extending the root's options with `types: ["node"]` and an
+  **absolute** `typeRoots`: **exit 0**, with `--listFiles` confirming it covered
+  `docs/research/new-rider/3.3/roll.ts`, `src/physics/bankLedger.ts`, `src/physics/AttachedRider.ts`,
+  `src/physics/BoardBody.ts`, `src/physics/testing/FaceWater.ts`, `src/physics/PlaneWater.ts` and `@types/node`.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran and every exit code above
+  is `tsc`'s own, read on its own line and never through a pipe.
+- `vitest run src/physics`: **58 files, 620 passed, 21 expected fail** — step 3.3l's 618 **plus this round's two new
+  tests** in `bankLedger.test.ts` (8 of 8 in that file), no new file.
+  `vitest run src/game src/scene/rig`: **70 files, 732 passed** — identical to step 3.3l's.
+  `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail** —
+  identical to step 3.3l's.
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**, the reference.
+  `src/wave/SurfZoneSimulation.test.ts` is closed by reading: this round touches no solver, no wave and no spot file.
+- **the shipped rider is proved unchanged against step 3.3l's published baselines, 84 runs to the digit** (§9, P0b),
+  and `bankLedger.test.ts` proves the new rows are a pure observer bit for bit.
+- **the Canyon byte check, because `src/` changed** (`scripts/m1-cpu-bench.ts`, medium, 3 600 steps, **fresh**
+  spin-ups into new state paths, **built from the final tree after the banking guard went in**), with the three
+  checks **read** rather than assumed — the wrapper prepends `globalThis.location = { search: '?canyonWaves=true' }`
+  to the bundle, the grid line read, and the "spun up on the CPU in … s" line read so that no kept `.sea` was
+  imported:
+  - Canyon B (`?canyonWaves=true`), **400 × 451 = 180 400 cells**, spun up on the CPU in **87.0 s**: snapshots
+    **a367d938f15fa934**, state **9e5831f80e38abd9** — **the same as main.**
+  - the default Canyon, **400 × 507 = 202 800 cells**, spun up on the CPU in **57.3 s**: snapshots
+    **ea3d57a4d49f4b48**, state **a1a2555739210f96** — **the same as main.**
+
+  All four match, which they must: this round touches no solver, no wave, no spot file and no hull law, and both
+  lines it adds to `src/` sit inside `if (bankLedger.on)`, which is false in the game. The raw output is
+  `results/33m/33m-canyon-byte-check.txt`.
+
+## 10b. The deletions column, read line by line
+
+`git diff --numstat origin/main` after the rebase, read file by file: **17 files changed, 2 216 insertions and
+EXACTLY THREE deletions.** Fourteen of the seventeen have a `0` in the deletions column. The three are named here
+rather than hidden, and **each is a single line replaced in place, not a removal**:
+
+- `src/physics/bankLedger.ts`, **+121 / −1** — the `−1` is `solve`'s own signature line, widened from seven
+  parameters to eight so the ledger is told whether the body is **banking** (§9's guard: not banking, row 7 is a
+  dummy and the unit read would be a read of nothing). Everything else in the file is added **beside** the shipped
+  lines and never through them, which is what makes the bit-identical purity check pass.
+- `src/physics/AttachedRider.ts`, **+1 / −1** — the matching call, `bankLedger.solve(…, this.banking)`, **inside the
+  existing `if (bankLedger.on)` block**, which is false in the game. It is the round's only touch of that file.
+- `docs/research/water-physics/consult-log.md`, **+1 / −1** — the advisor's roll-inertia row is one long line, and
+  its `Outcome` changed from *"awaiting the surfer track"* to the measured outcome. The row's question, its answer
+  and its sources are byte-identical; only the trailing `Outcome` sentence is new.
+
+**Nothing was reverted and no file was removed.** The 14 pure additions are this Part, the probe, the two new tests
+and the twelve result files (the eleven arms plus the Canyon byte check).
+
+**And main moved under this round, which the column made visible before the rebase.** This branch was cut from
+**698a25d1** and `origin/main` became **7c3d1217** while it ran — one commit,
+`docs/superpowers/handoffs/2026-11-16-surfer-and-wave-handoff.md`, a new documentation file and **no source**. Read
+against `origin/main` **before** the rebase the same column showed a seventeenth file at **−114**, which was only
+this branch not yet having it; the branch was rebased onto `7c3d1217` and that line is gone, leaving the sixteen
+above. **The column was read against both bases rather than one being assumed, and the only reason the base moved is
+a document this round does not touch.**
+
+## 11. Files (3.3m)
+
+- `src/physics/bankLedger.ts` — **nine read-only rows, filled inside the existing `solve` from the same LU**, by
+  back-substituting three **unit** right-hand sides: `rollDeckPer` / `rollRelativePer` (one unit of roll impulse on
+  the board's rows), `ankleOwn` / `ankleRelative` / `ankleDeck` (one unit of ankle torque-impulse as the code books
+  it, row 7 alone), `pairOwn` / `pairRelative` / `pairDeck` (the same with the board's reaction couple also booked,
+  the counterfactual) and `bodyHeld` (`A[7][7] · L²`). They contain no force: they are `A⁻¹` itself. Still **off by
+  default, still no behavioural switch of any kind**, and the game still pays one branch per substep while it is off.
+- `src/physics/bankLedger.test.ts` — two new tests: **P0a**, the three unit solves are one `A⁻¹` (under 1e-9
+  relative), `ankleOwn = ankleRelative + ankleDeck`, the two deck signs opposite on every substep and the implied
+  board inertia of order 1; and **P0b**, the trajectory still bit-identical with the ledger on and off *while the
+  compliances are actually being read*. The "books nothing while it is off" test now covers the new rows too, so a
+  probe cannot read a stale compliance.
+- `docs/research/new-rider/3.3/roll.ts` — the probe: the unit reads per frame, step 3.3j's pre-coupling read on
+  **two** axes with step 3.3j's own symmetry gate, the plate-normal reconstruction off the same patch arrays, the
+  measured wetted area and the arm the water's inertia acts at, step 3.3l's own booked ankle entry read beside the
+  plant's response, the two still-water controls, and **`MODE=heel`**, the eight-angle static heel sweep that
+  separates the cosines from the wetted area.
+- `docs/research/new-rider/3.3/results/33m/` — twelve files: the two unsteered arms (deck and world), the two
+  low-speed arms (deck and world), the ledger-off purity arm, step 3.3l's own probe re-run on and off as the
+  reproduction, the two still-water controls, the eight-angle heel sweep, `33m-predictions.md` (every prediction as
+  written before its read, each with its own falsification) and `33m-canyon-byte-check.txt`.
+- `docs/research/water-physics/consult-log.md` — the advisor's roll-inertia row's `Outcome` filled in: its ranked
+  read (a) ran and its prediction held, its sourced order is **above** ours by 1.3–1.9×, and its own flagged `cos³`
+  artefact is now a measured defect with a mechanism.
+
+## 12. For the owner, in plain words — and the shot list
+
+**Last round I told you his ankle keeps only a quarter of its strength because the board is forty-six to a hundred
+and nine times easier to roll than his body. I went to check that number, and the number is wrong. I'm sorry — I
+wrote it, and my own brief for this round told this round not to re-check it.**
+
+Here is what is actually true, and it is more useful.
+
+**The board is NOT fifty times easier to roll. It is about as hard as the thing it is pushing against.** The board's
+roll resistance is about 0.7 to 1.0 — that part of last round was right. But I compared it against the man's whole
+body, 53, and that 53 is not the number the game's own equation uses. It is a number sitting on the **diagonal** of
+the equation, and the equation is not diagonal: when his ankle pushes, the board is free to **slide sideways** as
+well as roll, and a board weighs two and a half kilos. The real figure on the body's side of that comparison is
+**1.0 to 2.5**, not 53. So the two sides are roughly equal, and the quarter he keeps is just what you get when a
+muscle pushes between two things of similar weight. **It is not a leak and it is not a fault.**
+
+**And here is the number that matters more, which I should have printed last round.** His ankle moves his body's
+lean at about **36 degrees per second squared for every newton-metre**, and it is delivering **28 newton-metres**,
+peaking near **60 to 90**. That is about **a thousand degrees per second squared**. The lean he is losing to is
+running at **forty to ninety-six** — and what the game's own books show his ankle actually contributing, averaged
+over each ride, is a median of **655**. **So his ankle is putting out about seven times what is beating him, and at
+its peak fifteen to fifty times, and it still loses.** The reason nine rounds of ankle limits were all innocent was
+never that his ankle is too weak. I had that wrong twice over.
+
+**Your question — is the board's roll resistance right? Yes, and if anything it is generous.** I took the wave
+advisor's sourced numbers and redid them with our board's **measured** wet area instead of its assumed one: a real
+planing board of our size should be around **0.25 to 0.50**, and we are at **0.68 to 0.98** — about **one and a half
+to three times what the source says**, and just under the absolute ceiling for a plate with water on both sides. The
+one correction we still have not applied would make us **smaller**, not bigger. **There is nothing to fix there, and
+raising it was the thing I recommended last round. Scratch that.**
+
+**One real bug found, and it is not the one I was looking for.** When the board goes up on a rail, the game loses
+almost all of the water's resistance to rolling. I put a bare board on flat water and held it over at ten-degree
+steps. Its wet area actually **grows** as it tips. But the water's resistance to rolling falls from 0.74 at twenty
+degrees to **0.015 at seventy** — fifty times smaller — because of how the code aims the water's push. It only ever
+pushes straight up out of the surface, so a rail that has rolled over to vertical can swing sideways through water as
+if the water weren't there. Written in the code's own terms: at seventy degrees the water's grip on the roll acts
+as if it were only **2.5 cm** out from the board's centre line, when the wet rail is **22 cm** out from it.
+**That is wrong.** It does not
+explain the fall — the fall starts while he is still flat, where the error is one to four per cent — but it does mean
+that **once he is on a rail, his ankle's effect drops from about four tenths to three hundredths.** It is a real
+defect in his chances of *recovering*, and it is now measured rather than suspected.
+
+**Your bar: still not met, and I measured it again rather than quoting last round.**
+
+Your own low-speed cell — one to six metres a second, stick never touched. **Eighteen of eighteen rides end with him
+off the board on your setting, eighteen of eighteen on the other. In Compress, six of six on each.** Below three
+metres a second it is **six tenths of a second**. Every single one of those numbers matches last round to the
+digit, and so do all eighty-four runs I re-ran as a check, so neither round made them up.
+
+**One hundred and fifty-six of one hundred and fifty-six rides in this round ended before nine seconds — a hundred
+and fifty-one with him falling off, five with the board getting away.**
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your test spot. **Nothing in this round changes the game**, so these are your eyes on
+things I measured on the bench.
+
+1. **`?rider=new&feltFrame=deck&canyonWaves=true`, hands off the stick, Compress. Watch what happens once a rail is
+   down.** The measurement says that from the moment the board is sixty degrees over, the water stops resisting the
+   roll almost entirely. **The question: once he's on a rail, does it go over as if the water had let go of it — a
+   sudden free flop rather than a resisted roll?** If it does, the defect above is something you can feel.
+2. **The same, and watch the first half second instead.** Nothing I found this round changes Part 35's reading of the
+   onset: he starts nine degrees off upright and the rail bites before his body leaves the deck. I still want your
+   eyes on **which of the two looks like it goes first**, because that is the one call in the last two rounds that
+   rests on my frames rather than on an identity.
+3. **Get into position slowly and don't take off.** Still the worst case, still six tenths of a second, still your
+   own bar. Unchanged and unmet.
+4. **And a ruling, not a ride — and this time the list is shorter than last round's, not longer.** I can rule out two
+   of the three things I offered you:
+   - **"make the board harder to roll" is dead.** Measured against the source, it is already generous, and the
+     correction it is missing goes the other way.
+   - **"the ankle keeps a quarter, so widen or re-aim the ankle" is dead too, and for a better reason than last
+     round's.** It is already putting out about seven times what is beating him, and at its peak fifteen to fifty
+     times. More of it cannot help.
+   What is left, and I can run one:
+   - **fix the added-mass frame** — the defect in item 1. It is a **correctness** fix with a sourced mechanism, and I
+     would not sell it to you as a fall fix: it changes nothing until a rail is down, by which time Part 35's clock
+     says the fall has begun. It would be the first thing this track has fixed rather than measured.
+   - **go after the command, not the plant.** Everything on the ankle's *strength* side is now measured and clean, so
+     what is left is **what the balance asks for and when** — Part 34 measured that the command saturates and the
+     rest does not, and nobody has read the loop that writes it.
+   - **the two-body rider**, still the route the parked duck-dive work named as the faithful one. **I am no longer
+     telling you it is the only one left**, because the reasoning I gave you for that last round is the thing this
+     round refuted.
+   **My own recommendation is the second** — the command — because the plant is now measured from end to end and
+   found innocent, and because it is the only one of the three that could plausibly meet your bar rather than make
+   the game more correct. **Your call.**
