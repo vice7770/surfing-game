@@ -112,3 +112,17 @@ Every round is briefed to **refute its own brief**. Twenty-one consecutive round
 been worth more than the build every time. Briefs say so explicitly, name the likeliest error in the brief, and
 require a prediction written before the read plus a positive control. **Agents that publish their own failed
 predictions are the ones producing the findings.**
+
+## OWNER'S RULING, 2026-11-16 evening — the goal is bigger than the fall
+
+I offered to ship the **old** rider as the playable one and keep the new one as research. **They declined, with a reason that redefines the target:**
+
+> *"the older rider, was ok but the movement was fake as the speed increase and the balance were a bit off. The snap position showed that the physics behind it were not valid. We can always go back to it and improve it but **we need a new system to make the game work with all skills and make it a good game**."*
+
+**So "stop falling" was too small a target.** The goal is a rider whose body is genuinely where the physics puts it, so that **every skill emerges rather than being posed**. The old rider's kinematic counter-roll is exactly why it cannot be extended: a pose is not a consequence.
+
+**Two requirements nobody has ever tested, both from that sentence:**
+- **"the movement was fake as the speed increased"** — every one of the 27 rounds ran one speed band. **Nobody has looked at what the body does as speed rises.**
+- **"the snap showed the physics behind it were not valid"** — the snap has **never been measured on the new rider at all.** It is the hardest case and the one most likely to expose an approximately-real body.
+
+**Measure progress by whether a skill works for the right reason, not by the fall count.**
