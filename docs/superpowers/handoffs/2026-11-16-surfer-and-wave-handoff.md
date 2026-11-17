@@ -280,3 +280,24 @@ Predictions: **3 upheld, 5 refuted, 2 half.** Two refutations were of the round'
 2. **Do not sweep the wave** (3.4h) and **do not touch the clamp** (3.4i) — both are settled dead ends.
 3. **The shot list for the owner** is Part 9 §12: `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&bankClamp=off` against the same address without it. **The round expects them to feel the same; if they do not, that is news.**
 4. **The owner's own open question, from 3.4h:** does a slow topple at 1.2 m/s feel better or worse than being thrown at 6.5? **If worse, "make the ride longer" is the wrong target.**
+
+### STEP TEN DISPATCHED — and the constant is not one number, it is FOUR that disagree
+
+Located by the caller before briefing the advisor, so the next session does not have to:
+
+| value (N·m/rad) | where it lives | what it actually is |
+| --- | --- | --- |
+| **100** | `src/physics/rollModel.ts:163`, `hullStiffness` in the default plant | what the rider's **balance controller assumes** |
+| **860 / 1650** | `src/physics/rollModel.test.ts:71–82` | **our own carve lab's** measurement of the real board |
+| **733** | derived | what `ANKLE_REST_RANGE = 0.25` **solves to** if the ankle is to have authority |
+| **12–54** | 3.4i, on the ride | what the **simulated hull actually delivers** |
+
+**And 3.4i's "series" result is not a discovery — it is written in our own code** at `src/physics/rollModel.ts:183–186`: `series = (k·hullStiffness)/(k + hullStiffness)`, `share = k/(k + hullStiffness)`. The round re-derived from measurement what `bankAuthority` already states in closed form. That is a *confirmation*, which is worth having, but it should not be reported as a new mechanism.
+
+**The fork the advisor's answer decides:**
+- **If the true stiffness is near 860–1650**, the board's water forces under-deliver roll stiffness by **20–100 ×** → a **hydrodynamics bug**, not a tuning constant, and `#285`'s "the board's planing forces are already realistic" needs re-reading, because **that study looked at heave and pitch, never roll.**
+- **If the true stiffness is near 12–54**, then a board genuinely cannot hold a standing rider in a turn, and the rider's control has to come from somewhere else entirely — which would reframe the whole track.
+
+**The sub-question that matters most to the owner's actual complaint:** our bare-board control loses all roll stiffness by **15–20° of heel and reverses past 20°**. The owner falls *the moment he commits to a turn*. If that collapse is physical, the game is right and the rider needs another route; if it is our artefact, **it is the bug, and it is one law.**
+
+Advisor consulted 2026-11-17 at weekly 96 %; its doc lands in `docs/research/water-physics/` with a PR, unmerged.
