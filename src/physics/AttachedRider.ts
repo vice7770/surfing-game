@@ -1476,6 +1476,31 @@ export interface AttachedRiderOptions {
    * bounds a *force or a command* and not a reading, and moving them would make this two changes.
    */
   bankClamp?: 'off';
+  /**
+   * **The lean asked for capped at what the speed can hold, on the switch's own minimum radius** (`askCap`, step 3.5a,
+   * the owner's ruling of 2026-11-17: *"Yes — cap the ask"*): `'1.5' | '2' | '4' | '4.5' | '9'`, R_min in metres, so the
+   * bound on the **commanded** bank is `θ_max = atan(v² / (g R_min))` — 4.9° at 1.3 m/s, 25° at 3, 52° at 5 and 65°
+   * at 6.5 on the advisor's 2.0 m (`docs/research/water-physics/board-roll-stiffness.md` §7).
+   *
+   * **Read this before calling it new.** The cap already ships, at `TURN_RADIUS = 4.5 m`, and it already bounds
+   * **both** the balance's reference (`leanAsked`, the predictor's) and the steer's own request (`bankReference`) —
+   * the two the owner's ruling names. 4.5 m is *tighter* than 2.0 m, not looser (2.2° at 1.3 m/s against 4.9°,
+   * 29.5° at 5 against 52°), and shipped the cap is **0 off the plane**, i.e. below `PLANING_DROP = 3 m/s` the rider
+   * already asks to stand perfectly upright. So this switch does two separable things and `'4.5'` isolates the
+   * second: it **replaces R_min** and it **removes the planing gate**, applying the formula at every speed. At 1.5, 2
+   * and 4 m it therefore *loosens* what the rider may ask for and tightens nothing; `'9'`, double the shipped radius,
+   * is the one value that asks for less than the game does wherever the board planes.
+   *
+   * **R_min is the one unsourced number in it** — nobody has published a shortboard's minimum carved radius; 2.0 m is
+   * the advisor's judgement [I] from a 1.778 m board's rail line, 1.5 and 4 its own bracket, 9 step 3.5a's own
+   * tightening arm, and 4.5 the constant the game chose in 2026-10 from a Canyon ride report and Forsyth et al.
+   * 2024's 3.8 m bottom turns.
+   *
+   * **Not a hidden motor:** it bounds a *command* and adds no torque, damper, brake or yaw moment. The only thing it
+   * changes outside the two reference lines is the rail the gain schedule is read at, which is `leanAsked`'s own
+   * function already. Opt-in, off by default (the `?askCap` dev switch), pinned off in the online rooms.
+   */
+  askCap?: '1.5' | '2' | '4' | '4.5' | '9';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -2092,6 +2117,12 @@ export class AttachedRider {
    */
   private readonly bankMax: number;
   /**
+   * Step 3.5a (`askCap`): the minimum carved radius the commanded lean is bounded by, m — `TURN_RADIUS` as it ships.
+   * `askUngated` is true only with the switch on, and is what lets the bound apply off the plane as well.
+   */
+  private readonly askRadius: number;
+  private readonly askUngated: boolean;
+  /**
    * **Step 3.4i, a measurement and nothing else: the bank the geometry gives, BEFORE `bankMax` clamps it, rad.**
    * Written at the same three sites in `frame` that write `bank.angle`, on the same expression, and **read by nothing
    * in the game** — so it is recorded on the shipped rider byte for byte and the published fall classifier's 45°
@@ -2258,8 +2289,14 @@ export class AttachedRider {
    * water the cap is built on, m/s; `planing` 1 while the board planes, and the cap is **0 off the plane**. Nothing in
    * the game reads these; they exist because the cap and its speed are the two quantities step 3.3f's turn census is
    * about and reconstructing them outside the class would re-derive `planing`'s own latch.
+   *
+   * **Step 3.5a adds three, and they are the measurement of the cap itself:** `want` the lean the steer and the hand
+   * asked for **before** the cap (the predictor's own line while `predictive`, the reference's otherwise), so
+   * `|want| > cap` is exactly a clip; `held` the formula's own value, `min(MAX_BANK, atan(v²/(g R)))`, **before** the
+   * planing gate turns it into 0; `radius` the R it was built on, m (TURN_RADIUS, blended toward SNAP_RADIUS under
+   * Snap, or the `askCap` switch's own). Read by nothing in the game.
    */
-  readonly leanProbe = { cap: 0, ask: 0, speedThrough: 0, planing: 0 };
+  readonly leanProbe = { cap: 0, ask: 0, speedThrough: 0, planing: 0, want: 0, held: 0, radius: 0 };
   /**
    * **Step 3.3i: the ankle's own ledger**, off unless `AttachedRider.ankleLedger` is set, and read by nothing in the
    * game. Step 3.3h measured the board's roll residual at **+33.47 N·m** through the commanded turn and concluded that
@@ -2435,6 +2472,12 @@ export class AttachedRider {
     this.ankleRange = options.ankleRange === 'load' || options.ankleRange === 'wide' ? options.ankleRange : undefined;
     // Step 3.4i: `Math.PI` is no bound — `frame`'s own `atan2` reading cannot exceed it — so the branch is one value.
     this.bankMax = options.bankClamp === 'off' ? Math.PI : MAX_BANK;
+    // Step 3.5a: the five values are matched as strings and never parsed (`Number(null) === 0`), and with the switch
+    // unset `askRadius` is TURN_RADIUS and `askUngated` false, so `prepareBank`'s expression is the shipped one.
+    this.askRadius = options.askCap === '1.5' ? 1.5 : options.askCap === '2' ? 2
+      : options.askCap === '4' ? 4 : options.askCap === '4.5' ? 4.5 : options.askCap === '9' ? 9 : TURN_RADIUS;
+    this.askUngated = options.askCap === '1.5' || options.askCap === '2' || options.askCap === '4'
+      || options.askCap === '4.5' || options.askCap === '9';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -3431,21 +3474,27 @@ export class AttachedRider {
     // The bank asked for, no more than a turn at the board's speed through the water can hold, eased in.
     const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
     const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
-    // Snap: the lean a tail-weighted turn can hold (SNAP_RADIUS).
-    const radius = this.snapping > 0 ? TURN_RADIUS + this.snapping * (SNAP_RADIUS - TURN_RADIUS) : TURN_RADIUS;
-    const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius))) : 0;
+    // Snap: the lean a tail-weighted turn can hold (SNAP_RADIUS). Step 3.5a (`askCap`): `askRadius` is TURN_RADIUS as
+    // it ships and the switch's own R_min with it on, and the blend toward Snap's tighter turn is unchanged either way.
+    const radius = this.snapping > 0 ? this.askRadius + this.snapping * (SNAP_RADIUS - this.askRadius) : this.askRadius;
+    const held = Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius)));
+    // Shipped, a board that is not planing asks for no lean at all; with `askCap` the formula is the bound at every
+    // speed, which is what the owner was shown ("about 5° at walking pace") and what a 0 cannot be.
+    const most = this.askUngated || this.planing ? held : 0;
     // `snapPivot: 'lean'`: under Snap the steer asks for as much lean as the tight turn holds (SNAP_RAIL_RANGE).
     // snap-upturn: a Snap turning the board up the face (a bottom turn) asks for the steer's rail, not the top turn's.
     const snapLeans = this.snapLean && this.snapping > 0 && !(this.upturnKept && this.turningUp());
     const railRange = snapLeans ? RAIL_RANGE + this.snapping * (SNAP_RAIL_RANGE - RAIL_RANGE) : RAIL_RANGE;
-    const asked = Math.max(-most, Math.min(most, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
+    const wantRef = this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK;
+    const asked = Math.max(-most, Math.min(most, wantRef));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
+    const wantOwn = this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK;
     if (this.predictive) {
       // The new surfer's balance by prediction (step 3.2e): the lean the player asks (the steer, the hand) is its
       // reference, eased as the bank's. The line held on its own (`holdLine`, a heading loop of the old rider's) is left
       // out: as a reference it rang with the board's yaw and grew (docs/research/new-rider/3.2 Part 5).
-      const own = Math.max(-most, Math.min(most, this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK));
+      const own = Math.max(-most, Math.min(most, wantOwn));
       // Step 3.2q's lean hold was applied here and is gone (see `leanHeld`'s note): the lean the player asks for is
       // again the steer's own, eased at `leanPace`, as it was in 3.2p.
       const towardOwn = (own - this.leanAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
@@ -3456,6 +3505,11 @@ export class AttachedRider {
     this.leanProbe.ask = this.predictive ? this.leanAsked : this.bankReference;
     this.leanProbe.speedThrough = speed;
     this.leanProbe.planing = this.planing ? 1 : 0;
+    // Step 3.5a, read-only and nothing else: the request BEFORE the cap (the reference's own and the predictor's), the
+    // formula's value before the planing gate, and the radius it was built on, so "what the cap binds" is a column.
+    this.leanProbe.want = this.predictive ? wantOwn : wantRef;
+    this.leanProbe.held = held;
+    this.leanProbe.radius = radius;
     if (this.freeBody) {
       this.humanBank(h, roll, rail, rollRate);
       return;

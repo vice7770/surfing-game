@@ -344,6 +344,22 @@ export interface SurfZoneConfig {
    */
   bankClamp?: 'off';
   /**
+   * '1.5' | '2' | '4' | '4.5': **the minimum carved radius the rider's COMMANDED lean is bounded by, m** (step 3.5a,
+   * the owner's ruling of 2026-11-17 *"cap the ask"*; `RideSessionOptions.askCap`, `AttachedRiderOptions.askCap`), so
+   * the bound on both the balance's own reference and the steer's request is `θ_max = atan(v² / (g R_min))` — 4.9° at
+   * 1.3 m/s, 25° at 3, 52° at 5 on the advisor's 2.0 m.
+   *
+   * **The cap already ships** at `TURN_RADIUS = 4.5 m` on both lines, and shipped it is **0 off the plane**, so below
+   * 3 m/s the rider already asks to stand plumb. Every value here therefore *loosens* the low-speed ask and tightens
+   * nothing: the switch replaces R_min **and** removes the planing gate, and `'4.5'` isolates the gate alone. R_min is
+   * the one unsourced number in it — nobody has published a shortboard's minimum carved radius.
+   *
+   * It bounds a **command**: no torque, damper, brake or yaw moment is added, and no force in the game changes. The
+   * new surfer and the old both read it, since both reference lines are capped in `prepareBank`. Every spot. The
+   * `?askCap` dev switch, opt-in, to ride, and pinned off in the online rooms.
+   */
+  askCap?: '1.5' | '2' | '4' | '4.5' | '9';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is
