@@ -1163,3 +1163,63 @@ Asked whether the deepen button should fire **automatically at turn entry** — 
 | **E** | the dip fires on their input only | **already built** |
 
 **Open and waiting on them:** the dip's self-release; **Crouch's value** (waits on their `?kneeRoom=achieved` ride, because tall sinks up to 0.27 m on its own); and **PRs #389 and #392**, both refused to the caller by the classifier.
+
+## ⭐ STEP 3.5d (merged `d15ce9f5`, PR #394) — **THE ANSWER: THE BOARD ROLLS OUT FROM UNDER HIM BECAUSE HE IS TRYING TO STAND UP STRAIGHT**
+
+`docs/research/new-rider/3.5/README.md` Part 1; reader `3.5/roll.ts`. **Every number is the owner's own rider and address** — `RIDER=new FELT=deck BODY=two` = `?rider=new&feltFrame=deck&riderBody=two` — at the folder's placement (AHEAD 0.75, SIDE −45, 9 s, stance held). **None is the plain `?rider=new`'s.** Instrument-only: **no byte under `src/` or `server/` changed.**
+
+### THE TERM IS THE RIDER'S OWN ANKLE, BEFORE THE FALL
+
+`bankLedger.deck`'s exact 23-way partition of the deck's roll acceleration, owner's face (`FACE=1.4,7.32,5.7`), 1–3 m/s, inside 25° of roll, 3 runs and 85–99 frames each:
+
+| stance | ankle | second | third | net | Σ\|terms\| |
+| --- | --- | --- | --- | --- | --- |
+| tall | **−606 °/s², 45 %** | addedMass +219 (16 %) | pressure +125 (9 %) | −80 | 1 344 |
+| crouch | **−1 008, 56 %** | leg +341 (19 %) | addedMass +179 (10 %) | −283 | 1 807 |
+| compress | **−920, 53 %** | leg +284 (16 %) | addedMass +204 (12 %) | −202 | 1 728 |
+
+**3.6–5.3× the net, same sign in 3 of 3 runs of every stance**, identical on both windows. First or second in every other readable cell: **52/52/54 %** planing at 4–6 m/s; **15 / 19 / 32 %** on the 4.650 s glide arm over **1 373–1 557 frames of 8 runs a stance** (the round's largest population).
+
+**IT IS A CORRECTION ACTING AS A DRIVE, AND IN THIS PLANT THOSE ARE THE SAME FRAMES BY IDENTITY, NOT CORRELATION:** `mAnkle = −τ_ankle` and `dk_ankle = ankleDeck × (−τ_ankle)` with `ankleDeck` negative. Measured: the ankle's moment **opposes the body's lean in 54.8–92.9 %** of booked frames, its deck roll **carries the body further the way it is already leaning in 54.8–92.3 %** (the same frames wherever `ankleDeck` keeps its sign), and goes with the deck's own roll rate in **73.7–100 %**.
+
+> **The board rolls out from under him because he is trying to stand up straight.**
+
+### BEFORE THE FALL OR PART OF IT — BOTH, AND SEPARATING THE WINDOWS CHANGED THE ANSWER
+
+**The drive is before the fall; the ANGLE is the capsize.** The roll rate hits 90 % of its peak while still inside 25° of roll in **13 of 18 runs**, and **47–80 %** of the swing (owner's face; 18–55 % on the Canyon-matched one) arrives after that, **with the net at 0.1–1.6 % of the traffic throughout — a coast at 84–341 °/s with nothing restoring it.** **In the capsize window the largest term is planing pressure (38–43 %), not the ankle.** **Read pooled over the whole window, `tall` would have been attributed to `pressure` (27.2 % against the ankle's 25.6 %)** — so the instruction to split the windows changed the answer in one stance of three. **This is 3.4l's lesson applying a second time.**
+
+### ⚠️ MY LEADING CANDIDATE IS REFUTED
+
+I briefed added mass and radiation as *"the strongest candidate on the board — start here."* **They are the second largest term and they OPPOSE the roll on the median of every arm and window: −5.4 to −43.4 N·m against the rider's +12.1 to +61.2**, and in the deck attribution `addedMass` sits **against** the ankle in 3 of 3 runs of every stance. **3.4n's 45–56 % was the SIDE FORCE in the owner's cell; it does not carry to the roll row.**
+
+### TWO NEW CONSTANTS, AND AN OLD ONE CONFIRMED TWICE
+
+- **The board's roll inertia is 0.02620 kg·m² = 2 186 °/s² per N·m** (`bodyInertia[8]`, which *is* `ẑᵀ R I Rᵀ ẑ` exactly). **The net it takes is 0.01–1.09 % of the largest term** — terms **92–1 000× larger cancelling** — and the 0.013–0.665 N·m that survives is 28–1 450 °/s². **The board is a hair trigger, measured.**
+- **Frame 1 of the mount alone puts 12–26 % of the peak roll rate on** at the crawl (−28 °/s on f73, −58 on s16), with a first ankle torque of **−12.3…−45.0 N·m, 6–24× the planing arms' −1.4…−2.0**, stance-independent to a tenth of a degree per second. This is 3.4f's "pinned on its bound for the mount's first seven frames" **seen on the board's roll row.**
+- **3.3h's static +33.47 / −33.40 does not hold dynamically, a second time:** the hull answers only **−6.4…−14.5 N·m** of the rider's +12.1…+61.2, and `|ankleOwn/ankleRel|` = **0.071–0.579**, i.e. **42–93 % of every ankle correction is cancelled by the deck rolling the other way.** 3.4i's series result, now in the ledger's own terms, per arm.
+
+### 🔸 FREE RESULT, AND IT IS HUGE FOR THE OWNER: THE STICK IS INERT AT 1–3 m/s
+
+Stick hard over against stick never touched, same face, entries 1–3 m/s: **67 767 column-values over 461 frames of 9 runs on `f73`, 0 mismatches; 371 frames of 9 runs on `s16`, 0 mismatches** — every column but the `steer` input itself. At 4–6 m/s the same pair is a **different ride** (543 vs 903 frames).
+
+> **At the speeds where the owner falls, their input makes no difference whatever.** The stick-side twin of 3.5a's `askCap=9` control, on the shipped build. **This is their *"the compress is still too slow and barely turns now, if turn a bit falls immediately"* — measured.**
+
+### A NEW, UNEXAMINED MECHANISM ON HIS OWN TEST SPOT
+
+On the **Canyon-matched face (`FACE=1.4,16,5.7`) at 1–3 m/s the standing contact is infeasible from frame 1 in 9 of 9 runs** — median **10–11 of 16 substeps `apart`**, only **22 % of frames fully booked** — so the per-source attribution has **no contiguous window there at all**, and **no published figure of this track has ever been read on those substeps.** On the 12–42 frames a stance that are booked the ankle is in the three largest of every row and largest in compress's own in25 (−3 454, 33 %), **but 12–29 frames is too thin to rank terms and the round does not.**
+
+### WHAT IT EXPLICITLY DID NOT CLAIM
+
+**It did not say the ankle's gain is too high.** Nine rounds moved the ankle's range, bound and datum and changed nothing; step ten settled that no hull value saves it; 3.2y retired the benchmark. **"A loop whose correction is its own disturbance is not fixed by changing its gain"** — a smaller correction makes a smaller disturbance and the same ride.
+
+**What it names is the PATH:** the correction leaves the body through **the one joint in series with a ≈100 N·m/rad hull on a 0.0262 kg·m² board**, while **`swing` — the joint that would act against the rider's own mass, paired and visible — carries 0.1–0.4 % of the traffic on every arm and stance.**
+
+### CONTROLS
+
+`dkClose` and `dkSplit` = **0.0e+0 on every frame of every arm** (the 23-way partition is exact). Independent reconstruction of the headline term, `ankleDeck × (−τ)`, reproduces `dk_ankle`'s median within **0.93–1.08**. The model-free trajectory control (`−rlTotal/I_board`) agrees in sign on **90.4–95.2 % of 145–161 frames**, ratio 0.66–1.11. **Reference arms reproduce exactly** — `f73-l` 18 of 18 at median 1.450 s, `s16-l` 1.033 s, `f73-g` 24 of 24 at 4.650 s, step 3.5c's own three. `tsc -b` clean.
+
+### THE THREE FOLLOW-UPS, IN THE ROUND'S OWN ORDER
+
+1. **Whether the correction may leave through the UPPER BODY instead** — a question about what the owner's surfer does with his shoulders, **so it is HIS to rule on.**
+2. **The mount's first frame**, where `?mountAgree=deck` is still the only measured handle (**and was once wrongly sold to him as the switch that mattered**).
+3. **The Canyon face's infeasible contact** above.
