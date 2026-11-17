@@ -840,3 +840,46 @@ On `?rider=new`, as % of the game's own straight leg (0.88 m): **tall 59–88 %,
 **A and B are NOT the same thing — but B cannot be judged by riding until A is settled**, because whatever B picks will be ridden on a tall stance that wanders 0.26 m on its own. **The owner's instruction was "fix the crouch collision first then build the dip", and this is what that means concretely: option 4 is the fix, and it is already shipped behind a switch.**
 
 **Carried, settled:** `kneeStrength` 3.0 / 2.25 / 2.1 / 1.9 body weights comes from **geometry alone** (`standingBody.ts:113–117`), matching Zöger 2025 (n = 28) and Lynch 2021 (n = 59) — a static strength curve that **survives the infinite-stamina ruling intact**, so **every option inherits a self-releasing deep rung for free. No stamina system is proposed anywhere.**
+
+## STEP 3.5a (PR #389, **NOT MERGED — a test gap, see the end**) — ⚠️⚠️ THE CAP THE OWNER AUTHORISED ALREADY SHIPS, AND TIGHTER. I PUT THE QUESTION TO THEM ON A WRONG FACT.
+
+**Verified by the caller directly in `AttachedRider.ts` at `1a2cfd65`:**
+```
+const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed*speed)/(WATER.gravity*radius))) : 0;
+const asked = Math.max(-most, Math.min(most, this.steer*railRange + ...));   // the steer's reference
+const own   = Math.max(-most, Math.min(most, this.steer*railRange + ...));   // the predictive rider's
+```
+`TURN_RADIUS = 4.5` (`:491`), `PLANING_DROP = 3` (`:343`), the bound at `:3434–3448`. **In place since 2026-10.**
+
+- **`θ_max = atan(v²/(g·R))` already bounds BOTH lines the owner's ruling names** — the predictor's reference *and* the steer's.
+- **At `R = 4.5 m` it is TIGHTER than the advisor's 2.0 m at all twelve speeds** — 2.19° vs 4.92° at 1.3 m/s, 29.5° vs 51.9° at 5. **So R_min = 2.0 m is a LOOSENING, not a cap.**
+- **Below `PLANING_DROP = 3 m/s` the ask cap is EXACTLY 0** — stick hard over, peak as well as median, `planing` 0.000 across the whole live window of 9 runs. **The rider already asks to stand perfectly plumb there.**
+- **THE 42–52° I QUOTED TO THE OWNER IS THE BANK THE BODY *REACHES* AT THE FALL, NOT THE LEAN IT *REQUESTS*.** The request is exactly `steer × 50° + handBend × 5.73°` — **0.00° at stick 0**, confirmed to the digit, peak = median in every run.
+
+> **THE TWENTY-THIRD ERROR, AND THE MOST EXPENSIVE KIND: it cost the owner a decision, not a round.** I asked them to rule on whether the game may cap what the rider asks for, describing a 42–52° ask that does not exist. The quantity was already pinned, and tighter than the fix I proposed. **Before putting a design question to the owner, read the code that would implement it.**
+
+### What the round measured anyway, and it is worth having
+
+**28 arms, 540 runs, 540 of 540 fell, Compress 180 of 180.** The 100 % bar is unmet at every radius and stick setting. Published arms reproduce exactly (`f73-l` 18/18 at 1.450 s; `s16-l` 18/18 at 1.033; `f73-g` 24/24 at 4.650).
+
+- **With the stick CENTRED the cap never clips — all five radii are BIT-IDENTICAL. The build is inert there, and that is the result.** So the 626-of-626 falls and the 20–45° balance-fall population are untouched **by measurement, not by inference.**
+- With the stick **hard over** the shipped cap clips **every live tick**, holding the ask at **18–23° against a request of 50°**; **38–48 % of the owner's low cell's live ticks are off the plane, where the cap is 0.0°.**
+- **Looser is SHORTER at every stick setting.** Compress medians hard over: ships **1.283 s** → 2 m 0.817 → 1.5 m 0.833 → 4.5 m 0.833 → **9 m 1.133**. `askCap=9` (double the shipped radius) is **the only value that lengthens anything** — 3 cells of 6, 6–8 runs each, fall count pinned at 100 %. **A lead, not a result.**
+- **TURN INITIATION DID NOT GET WORSE:** time to 5° of rail **0.333 / 0.317 / 0.333 s** shipped vs the same at 2 m vs 0.350 / 0.317 / 0.317 at 9 m; peak yaw rate **rises** at both ends (100–148 °/s shipped, 165–193 at 2 m, 167–178 at 9 m).
+- **BOTH OF THE ADVISOR'S PREDICTIONS ARE REFUTED, and its "locked upright, unable to initiate" failure mode IS THE SHIPPED GAME:** stick hard over at 1–3 m/s the ask is **0.00°** and the board still rails to **56–84°** and swings **21–36° of heading** before falling — never running out of wave. Both predictions reasoned about a quantity that was already pinned.
+- **Positive control:** at `askCap=9` the half-stick and full-stick arms are **bit-identical over 18 runs** — both saturate the cap. **The rider acts on the ask, not the stick.**
+- **No hidden motors, and none was tempted:** two factors inside one `min`/`max` pair bounding a commanded angle. **No torque, damper, brake or yaw moment; no force function, ledger or solver in the diff.** *"The bound's problem is that it has nothing to bind, not that it fails to hold."*
+
+### Byte-identity measured, Canyon included
+
+`f73-l` exact; the 37 new probe columns move no ride (**0 mismatches over 6 966 column-values of 18 runs**, 73 log lines identical); all five radii bit-identical with the stick centred on three arms. **Canyon byte check PASSED with a fresh spin-up on both legs** (`--state` deleted first so both printed the spin-up line, 48.9 s / 47.0 s; grid B 400 × 451 = 180 400, 3 600 steps): `main` and branch both **`a367d938f15fa934` / `9e5831f80e38abd9`**, the recorded reference. A 240-step imported leg gives `548f3db7ca81d898` / `475f8c56c9debccc` on all three bundles.
+
+### ⚠️ WHY IT IS NOT MERGED — the one real gap
+
+**The full `vitest run` never completed.** The machine has 8 GB and was at **~60 MB of free pages**; three attempts (default workers, `--maxWorkers=4`, `--maxWorkers=2` over `src/physics` alone) **died silently with no summary and no exit output — an OOM kill.** Passed on a quiet machine: **`PhysicalMode.test.ts` 106/106**, **`SurfZoneRunner.test.ts` 43/43** by hand, **`uniformSnapshot` + `poolBarrelPerf` 10/10** (both had failed at 270 s and 102 s against a 60 s timeout *in the saturated run* and pass alone — **load timeouts, not findings**). `tsc -b` clean. **The remaining physics suites were NOT run.**
+
+**The caller checked the machine and found 15 MB of free pages with 8.8 GB of 10 GB swap in use, so re-running them would likely OOM again and would take the machine away from the owner while they are riding.** The merge is therefore **held on the owner's word**, not on a probe bar — the code change is two factors in a `min`/`max` with no force touched and default byte-identity *measured*, so the risk is low, but the suites are a seatbelt and seatbelts are the one thing not to skip.
+
+### Ruling B is unblocked
+
+**3.5a does NOT materially change Compress** — default byte-identical by construction, and with the stick centred identical at every radius across 60 runs. **So Ruling B can be built on exactly the Compress that was measured when it was ruled**, answering the caveat recorded with that ruling. Only caveat is a file one: 3.5a edits `prepareBank`, so **B should start from this branch, or from `main` after it lands.**
