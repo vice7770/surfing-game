@@ -561,3 +561,45 @@ At 6.0–6.4 m/s the ride sits at **0.039–0.068 m / 3.0–4.5°** where the ta
 **Not claimed:** trim and draft are a **geometric proxy** for the hull's regime, not derivatives, so §3's "no honest row exists below 4 m/s" is untouched and **no row was written.** `f73-g` was **abandoned, not truncated** — its design goes singular partway (pre-existing) and its partial dump is excluded. The clamp still does not cause the falls (626 of 626; the honest band falls too).
 
 **The owner's shot is unchanged and still decisive:** Canyon `?canyonWaves=true`, **two take-offs at a crawl and two with speed already made, same spot** — thrown **toward his own lean** inside the first second on the slow ones only = real; same feel = close the lead.
+
+## STEP 3.4m (PR #386, **NOT MERGED — the classifier refused the merge, so it is the owner's**) — THE FIX IS REFUTED BY ITS OWN PRIMARY METRIC, AND THE 4 m/s FLOOR LEAD IS CLOSED
+
+Built: `?plantFloor=4.5` (also `=5`, `=6`), opt-in, `plantFloor: undefined` pinned in `main.ts`'s online overrides. Ride address: `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&plantFloor=4.5`.
+
+**THE NULL IS THE RESULT, AND IT CLOSES THREE ROUNDS OF MY OWN REASONING.**
+
+### The decisive read — same ticks, state held, row swapped and nothing else
+
+A new `yModelFloor` counterfactual column: the sign flips on **4.1 % / 0.5 % / 0.0 %** of clamped ticks, and the share goes **0.718 → 0.718, 0.519 → 0.514, 0.397 → 0.397**. **Crouch's 0.167 and compress's 0.292 are BIT-IDENTICAL.** The magnitude gets **worse** (`|model/game|` 0.916 → 1.210, 1.470 → 1.976, 2.036 → 2.823). Ride-side, no floor meets the target and **tall gets worse on both cuts (0.824 → 0.083)** — those moves are **the trajectory, not the sign.**
+
+### WHY, and this is the round's real finding
+
+Read off `LabPlant`'s own `[N, Y, K]` header over all 17 rows: **only two of the twelve derivatives change sign across 4–12 m/s, and BOTH ARE YAW MOMENTS** (N per rad of slip, N per rad of roll rate). **Not one of the four SIDE-FORCE derivatives changes sign at any row** (Y_φ −177.6→−395.3, Y_β +343.8→+3741.4, Y_r +43→+117, Y_φ̇ −8.0→−30.1).
+
+> **So no choice of row can repair the sign of Y.** It can only re-weight four fixed-sign terms, and the weights barely move (slipSide/heelSide −1.936 at `'4'`, −1.684 at `'4.5'`, −1.952 at `'5'`). **And the turnover that does exist lies between 4.5 and 5, so the fix eleven rounds converged on does not even cross the sign change it was named after.**
+>
+> **The diagnosis joined two true facts that share no mechanism.** Both halves are real — the clamp is a genuine flaw, and the sign is genuinely wrong in crouch and compress — **but the first does not cause the second.**
+
+### TWO CORRECTIONS TO THE PUBLISHED RECORD — both mine, both reported to the owner
+
+1. **3.4k Part 11 §2's "the roll moment per radian of roll is −37.2 at 4" reads `roll[0]`, which by the table's own `[N, Y, K]` header is the YAW moment per radian of roll.** The roll moment per radian of roll is `roll[2]` = **−268.7 / −322.0 / −310.0 — no anomaly at all.** (The slip yaw-moment figures 3.4k quoted are right.) **A column index read as the wrong physical quantity: the nineteenth frame error in this track.**
+2. **THE SHIPPED CONTROLLER NEVER DESIGNS AT 1.31 m/s.** `PredictiveController.blend` clamps to `SCHEDULE_SPEEDS[0] = 4` and reads `scheduledDesign` at grid speeds only, so **every sub-4 tick runs the v = 4 column.** `floor.ts`'s 2.461/3.974/3.280 and 6.082/7.006/5.159 are the model **at the tick's own V** — the right quantity for a sign share, **but NOT the gains the game runs.** The schedule's 4.0 column is `K_ankle[β]` **0.180/0.642/0.884** and `K_ankle[θ]` **2.949/2.630/2.291**, so **the clamp's real cost is ~1.3–1.5× on the bank gain, not 2.5–4×.**
+   **Consequence: 3.4l "VINDICATED" the wrong quantity, and I reported that vindication to the owner.** The sign claim itself survives — at the controller's own design point the shares are **0.689 / 0.509 / 0.380** against 0.718/0.519/0.397.
+
+### Controls, all measured, all clean
+
+**Default byte-identical:** 168 model comparisons **and the whole gain schedule (306 cells × 767 numbers) identical bit for bit**; `f73-l` reproduces 3.4i's arm exactly (**18 of 18, 0.617–2.533 s, median 1.450 s**). **The switch IS 3.4k's row swap** (bit-identical at floors 5 and 6; 3.6e−15 at 4.5, because the shipped lookup reaches row `'4.5'` as an f = 1 mix). **Schedule control is exact: exactly 18 of 306 cells move at floor 4.5 and they are exactly the 18 below the floor; largest difference at or above the floor is 0.** **The 6.47 m/s cells do not move a digit at any floor.**
+
+**Canyon byte check, fresh spin-up both legs**, wrapper prepended, grid read as **B 400 × 451 = 180 400**, 3 600 steps, "spun up on the CPU" present (78.0 s main, 45.0 s branch): `main` **a367d938f15fa934 / 9e5831f80e38abd9**, branch **the same** — and that is also this handoff's recorded B reference. A 240-step imported-`.sea` leg covers the one guard line added after that bundle was built: all three bundles give **548f3db7ca81d898 / 475f8c56c9debccc**.
+
+**Fall counts (reported, never targeted):** 18/18, 18/18, 24/24 at every floor; medians unmoved; **`s16-g`'s whole fall table byte-identical** at floor 4.5. One worsening: longest ride `s16-l` 6.233 → 1.417 s and `f73-l` 2.533 → 1.700 (one run each). Tests: **3 651 passed, 23 expected fail**, one perf test that **passes alone in 28.76 s** under three concurrent heavy jobs; `SurfZoneRunner.test.ts` 43/43; `tsc` clean. Diff **2 262 insertions / 20 deletions, every deletion a line replaced in place** (caller verified each one).
+
+**A design choice worth keeping:** a floor was chosen over a **draft-keyed** lookup *because the numbers forbid the latter* — 3.4l measured the honest band's board at 0.039–0.068 m of draft, whose nearest rows are `'8.5'`–`'12'`, so a draft lookup would hand the controller the 9–12 m/s derivatives at 6 m/s **and wreck the one band that works.**
+
+### WHERE THIS LEAVES THE TRACK
+
+**CLOSE THE 4 m/s FLOOR LEAD.** It is a real flaw (~1.3–1.5× on the bank gain) but **it cannot be the sign fault**, and three rounds now have an answer.
+
+**STILL OPEN AND NOW THE WHOLE QUESTION:** *why is the model's side force wrong-signed in crouch and compress, before the fall, below 4 m/s* — **0.167 and 0.292 against 0.900 and 0.932 honest** — when **no row of the table can produce that sign**? It is not the row. It is in how `Y` is assembled from the four fixed-sign derivatives, or in a state fed to them. **Tall is 0.824 and must not be targeted** (3.4l: its earlier figure was the capsize).
+
+**The owner's shot:** the `&plantFloor=4.5` address against the same without it. **We expect the same feel or slightly worse slow take-offs. If a slow take-off feels clearly BETTER, that beats every measurement above and is news.**
