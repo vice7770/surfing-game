@@ -7,6 +7,25 @@ description: Read a surfing video (YouTube, Shorts, any page that plays in a bro
 
 Surfing biomechanics barely exists as a published field. Twice now, a clip or photograph the owner chose has beaten the literature outright and corrected numbers this project had already published. **A reference the owner picked is evidence, and it is often the best evidence available.** This skill exists because that evidence is locked inside video, which Claude cannot watch.
 
+## What these reads are FOR — the standing purpose, which outranks any question of the day
+
+**The owner's own words, 2026-11-17:** *"What i really want from this videos is for you to study surf movements to improve the riding engine."*
+
+**So the product is a general understanding of how surfers move, not an answer to whatever is currently open.** Read the whole body through the whole section, broadly and **without a thesis.**
+
+This needs saying because it has already gone wrong: a brief once made the day's hot question (foam contact) the read's item 1, and the owner corrected it — *"the video is not focusing on the foam, Even tho that is important."* **A clip is not a test fixture for this week's hypothesis.** If a read happens to settle an open question, that is a **by-product**, and it is reported as one.
+
+**What the engine most lacks is not the list of positions but the movement between them**, so give the frame budget to the ordinary business of riding:
+
+- **how the body gets from one position to the next** — the transitions, not just the poses it visits
+- **what leads and what follows**: hips, shoulders, head, arms, and in what order
+- **what the legs do through a turn, and what the upper body is doing at the same moment**
+- **weight fore and aft along the board**, not only up and down
+- **how a move starts and how it ends**, including the unglamorous parts — trimming, waiting, adjusting, recovering
+- **anything repeated, with counts.** A thing done five times is worth more than one spectacular moment.
+
+**Let the mapping table's rows come from what is actually on screen**, not from a list of questions someone handed you. The **"not at all"** rows are how this work reaches the engine.
+
 ## Who runs this
 
 Dispatch an agent with **`model: "sonnet"` and no `effort` parameter** (so it runs at its default). Reading stills and filling a table is not hard reasoning; it is patience and honesty. A cheap model doing twenty screenshots carefully beats an expensive one doing five and inferring the rest — and the expensive one is needed elsewhere.
