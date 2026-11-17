@@ -301,3 +301,75 @@ Located by the caller before briefing the advisor, so the next session does not 
 **The sub-question that matters most to the owner's actual complaint:** our bare-board control loses all roll stiffness by **15–20° of heel and reverses past 20°**. The owner falls *the moment he commits to a turn*. If that collapse is physical, the game is right and the rider needs another route; if it is our artefact, **it is the bug, and it is one law.**
 
 Advisor consulted 2026-11-17 at weekly 96 %; its doc lands in `docs/research/water-physics/` with a PR, unmerged.
+
+## STEP TEN'S ANSWER (advisor, PR #380, merged) — THE HULL IS RIGHT, AND THE REAL FIND IS THAT NO HULL VALUE CAN SAVE THE RIDER
+
+**`K_hull ≈ 100 N·m/rad at 5–7 m/s` (bracket 65–145); 0–65 and falling below 3 m/s; ≈350 at 12 m/s.** One constant cannot carry it: `K = C·Δ·b/(τ·λ)`, C = 0.055 ± 0.015, and λ halves and halves again with speed.
+
+**So the hull is right within about 1.5×, and it is NOT the bug. This refutes step 3.4i's own headline, and the caller's report of it to the owner.**
+
+### The four numbers, settled
+
+- **100** (`src/physics/rollModel.ts:163`) — **right, and the only one that is.** It is `carve-lab.md`'s prone-rider kick: 1.35 Hz on 1.33 kg·m² = **97 N·m/rad**.
+- **860–1650** (`rollModel.test.ts:71–82`) — **REJECTED.** It is couple ÷ steady rail with the board free to yaw, sway and turn, and **the lab's own table refutes it**: the rail reaches 63 % in **0.02–0.05 s** while the same board's free roll mode is 1.35 Hz. An 860 N·m/rad spring on 1.33 kg·m² rings at **4.0 Hz** and cannot settle in 0.03 s. What settles in 0.03 s is the **sway/yaw force balance** — a *manoeuvring compliance* with the fins and the turn's acceleration in it. Its two 3 m/s rows, taken before a turn builds, read **91 and 232** — the right order.
+- **733** — a back-solve from `ANKLE_REST_RANGE`. **Discard.**
+- **12–54** (3.4i's on-ride fit) — the saturated tail, see below.
+
+### The collapse is real; the REVERSAL was ours
+
+`M(φ)` rises near-linearly to **φ_c = 2τλ**, then saturates at **0.30·Δ·b = 103 N·m** (167 N·m under a 52° turn's load factor), stiffness decaying as **(φ_c/φ)² from the restoring side, never through zero.**
+
+- Loaded board at 5–7 m/s: **φ_c = 25–33°** — past every rail those rides reach.
+- `hull.ts`'s **bare** board at 8 m/s: its wetted area at trim gives **φ_c = 1.8°**, so **every row from 2° on is the saturated tail.** "Collapses to zero by 15–20°" is **φ_c = 1.8° seen through a sweep that starts at 2°.**
+- **The sign reversal is an artefact of a control that carried 2.54 kg instead of 75.5.** Its plateau should be 7 N·m for its 50 N and reads −8.6 to −16.
+- Reversal *is* documented, but elsewhere and not for us: transverse stability loss at **length Froude 2–5** (Katayama, Fujimoto & Ikeda 2006 — 8–21 m/s for us, and at *small* heel), and negative pressure on a flat plate's rolled-down chine (NACA TN 4187, unquantified). **Our shipped section is `'flat'` (`BoardBody.ts:551`), which is why `suction` reads 0.00 on all four of 3.4i's arms.**
+
+### THE PREMISE THIS KILLS, AND IT IS THE TRACK'S BIGGEST RESULT
+
+Through `bankAuthority`'s own two-spring formula at `k` = 800 and ±0.25 rad:
+
+| K_hull | rolled into the board | ±0.25 rad buys | lean held |
+| --- | --- | --- | --- |
+| 12–54 (3.4i's fit) | 94–99 % | 3.0–12.6 N·m | 0.4–1.8° |
+| **100 (physical)** | **89 %** | **22.2 N·m** | **3.2°** |
+| 150 | 84 % | 31.6 | 4.5° |
+| 860 (rejected) | 48 % | 104 | 15.6° |
+
+**At a physically PERFECT hull, a standing rider's ankle holds about three degrees of lean.** We already deliver **~80 %** of a correct hull's authority; going to 150 buys **1.3° more**. **No reachable hull value stops a 42–52° fall.**
+
+> **A surfer is not held up by the board's roll spring at all.** He is held by keeping his mass over the board and by the lateral acceleration of a turn he steers under himself — **which is what 3.4i's own `mCoup` already measures as the budget's largest term.**
+
+### AND IT KILLS 3.4i's 316 N·m BAR — the runs ended in a pose no surfer reaches
+
+- Holding **52.3°** needs **12.7 m/s²** of lateral acceleration: a turn of radius **0.13 m at the 1.3 m/s those runs are doing.**
+- The holdable bank is **`θ = atan(v²/(g·R))`**: with R = 2–4 m, **2.5–4.9° at 1.3 m/s**, 13–25° at 3, 33–52° at 5.
+- **Worse:** Savitsky plus the board's own 259 N of buoyancy says a **73 kg rider on this 25.75 L board sinks below ≈3.2–4.3 m/s** (perhaps 2.5 with the face's orbital lift). **The low-speed arms run at 1.16–1.31 m/s — below that, and below C_V 0.6 where Savitsky itself stops being valid.** Planing begins at **≈6.1 m/s**; the owner's turns at 1.2–6.5 m/s are displacement and semi-planing.
+
+### Mechanisms, and what we have
+
+Waterplane shift — **yes** (and it goes to **zero** once a 25.75 L board under 73 kg is submerged, below ≈3 m/s). Dynamic lift-centre migration — **yes**, `planingScales`' 1/√x spray-root law. Rail suction — **only under `?hull=rail`**. Added mass — correctly excluded (it is an inertia).
+
+**The one place we are light, and it is bounded:** Savitsky's lift splits into dynamic ∝ λ^0.5 and buoyant ∝ λ^2.5; per unit beam those grade as ℓ^0.5 and ℓ², so the lift-weighted exponent is **0.9 at 7 m/s, 1.4 at 5.** We carry the dynamic grading and book the buoyant share as the board's slab volume, which saturates. **Our spanwise grading is low by 1.8–2.8× — a factor of two, not twenty.**
+
+### Two of 3.4i's figures re-framed (frame errors, as asked)
+
+- **"the hull answers 11.2–17.2 %"** — a **real** board answers a tenth to a sixth too: the law gives 4.8 of 44.5 N·m on `f73-g` (11 %) and 23.5 of 191.6 on `s16-g` (12 %); we book 5.40 (12 %) and 32.98 (17 %). **Our number was never the anomaly it was reported as.** And "3.3–19.9 % of the half-beam" sits **inside TN 4187's measured ±21 % envelope.**
+
+### THE ONE CHANGE RECOMMENDED — and it needs the owner's ruling first
+
+**Do not touch the hull's roll stiffness.** Instead **cap what the rider ASKS for at what the speed can hold:** the balance's reference bank and the steer's rail hold obey **`θ_max = atan(v²/(g·R_min))`, R_min = 2.0 m** → 4.9° at 1.3 m/s, 25° at 3, 52° at 5, 65° at 6.5. **Binding only where the falls are.**
+
+**The advisor argues it is not a hidden motor** — it changes what the rider *tries* to do, not what the water does to him, and it is what a real surfer does. **THE OWNER MUST RULE ON THAT**, because they rejected #215's pivot on exactly this boundary. Do not build it until they do.
+
+- **If right:** Compress stands through slow positioning; the 1.2–1.5 s topple stops being how runs end; the **20–45° balance-fall population (10 of 24 on his own face) mostly goes**; falls at speed unchanged.
+- **If wrong:** he feels **locked upright and unable to initiate** at low speed, and runs end by running out of wave. A quick, clear read either way.
+- **The one unsourced number is `R_min` = 2.0 m** — the advisor's judgement from a 1.778 m board's rail line. Nobody has published a shortboard's minimum carved radius.
+
+**Water-side alternative:** carry Savitsky's buoyant share by local wetted length (ℓ²) instead of slab volume → exponent 0.5 → 0.9–1.4, stiffness 78–98 → **140–200**, free per frame, physically right — **and it will not stop the falls** (4.5° of lean instead of 3.1°). Large blast radius: sinkage and trim move with it.
+
+### TWO CALLS ONLY THE OWNER CAN MAKE
+
+1. **Does the board keep sinking below ≈3 m/s as physics says it must, or does it carry a rider slower than physics allows** so that the slow positioning they want is rideable? This is a game-design call dressed as a physics one.
+2. **Does `?hull=rail` become the default?** It is the only route to the measured buried-rail suction and to a curve that droops at large rail.
+
+Sources: NACA TN 4187 (fig. 14(a) read from the NTRS scan); Sadati, Zeraatgar & Babuei 2022 carrying Brown & Klosinski's PMM roll moments; Katayama, Fujimoto & Ikeda 2006. **Honest limit: nobody has measured a surfboard-proportioned planing surface under a standing rider at `Fn_∇` 0.5–3.** TN 4187 has the right section at C_V 7–18 against our 0.6–3.0; the PMM series has the right Froude band at 15–30° of deadrise. **They extrapolate through the same law and agree with each other — that agreement, not either number, is the warrant.**
