@@ -307,16 +307,20 @@ sooner, not the turn failing to start.
   is therefore identical by measurement. Re-running it would have produced the same table at the cost of 10 minutes.
 - No new face, placement, hull law, ankle range or plant row was touched.
 - The owner's spot's own five `FACE` rows (PR #223) are still unrun in this folder, as they were in 3.4.
-- **The full `vitest run` did NOT complete, and that is an environment limit rather than a result.** This machine has
-  8 GB and was down to ~60 MB of free pages; three attempts at the whole suite (once at the default worker count,
-  once at `--maxWorkers=4`, once at `--maxWorkers=2` over `src/physics` alone) **died silently with no summary line
-  and no exit output**, which is what an OOM kill looks like here. What *was* run and passed, each on a quiet
-  machine: **`src/game/PhysicalMode.test.ts` 106 of 106** (the switch's own test, including the `main.ts` online-room
-  pin), **`src/wave/SurfZoneRunner.test.ts` 43 of 43** by hand as the standing note requires, and
-  **`src/wave/uniformSnapshot.test.ts` + `src/wave/barrel/poolBarrelPerf.test.ts` 10 of 10** — the last two because
-  they had failed in the saturated run at 270 s and 102 s against a 60 s timeout, and they pass alone, so those were
-  load timeouts and not findings. `tsc -b` is clean. **The physics suites beyond those were not run; a caller with
-  more RAM should run them before merging.**
+- **The full `vitest run` in one process did NOT complete, and that is an environment limit rather than a result.**
+  This machine has 8 GB and was down to ~60 MB of free pages; two attempts at the whole suite (the default worker
+  count, then `--maxWorkers=4`) **died with no summary line at all** — an OOM kill. **Run in pieces it passes:**
+  - **`src/physics` at `--maxWorkers=2`: 21 files, 352 passed + 16 expected-fail (368).** Vitest's own exit code was
+    1 because worker *starts* kept being killed after the files had finished, so the exit code is the machine and the
+    summary is the result; both are in `results/35a/`.
+  - **`src/game/PhysicalMode.test.ts` 106 of 106** — the switch's own test, including the `main.ts` online-room pin.
+  - **`src/wave/SurfZoneRunner.test.ts` 43 of 43**, by hand, as the standing note requires.
+  - **`src/wave/uniformSnapshot.test.ts` + `src/wave/barrel/poolBarrelPerf.test.ts` 10 of 10.** Both had failed in the
+    saturated run, at 270 s and 102 s against a 60 s timeout, and both pass alone — **load timeouts, not findings**,
+    and one of them is the Canyon byte-identity test.
+  - `tsc -b` clean.
+  - **Not run: the rest of `src/wave`, `src/scene`, `src/game` beyond `PhysicalMode`, `server/` and `scripts/`.** A
+    caller with more RAM should run the whole suite in one process before merging.
 
 ## 8. Files (3.5a)
 
@@ -332,7 +336,7 @@ sooner, not the turn failing to start.
 - `docs/research/new-rider/3.5/read.py` — every table above, rebuilt from the dumps (gunzip them first).
 - `docs/research/new-rider/3.5/results/35a/*.log.gz` — the 28 arms, raw; `35a-read.txt` the read;
   `35a-canyon-main.txt` and `35a-canyon-branch.txt` the two fresh 3 600-step Canyon legs, `35a-canyon-240.txt` the
-  three-bundle 240-step leg.
+  three-bundle 240-step leg, `35a-tests-physics.txt` the `src/physics` suite run with its own summary line.
 
 ## 9. The handoff's own caveat about Ruling B, answered
 
