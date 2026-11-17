@@ -4355,3 +4355,625 @@ sides.**
   where the arm breaks**, with **no clean face of H ≥ 1 m in 193**. The multi-crest read (`feltFaces`) replaced it
   before any published arm ran, and step 5e's own version is **kept in the probe and printed as the control** rather
   than dropped.
+# Part 8 — the placement arm is NOT free: `AHEAD` moves four quantities at once and reaches every slope twice, and
+the one knob that moves only the water under the board is the FACE. On the owner's own 5.5°, with no flat-water
+frames at all, **626 of 626 rides fell and Compress fell in 205 of 205**
+
+Written 2026-11-17 by the build agent (Opus 5, effort high) on branch `claude/rider-place-34h`, cut from `main` at
+**9cf08a90** (Part 7's merge plus the handoff), so Part 7 is its base. Its brief is the handoff's own first resume
+item: *"**The placement arm — free, and start here.** `AHEAD` 0.50 / 0.65 / 0.75 / 0.90 puts the board on 16.0 /
+14.6 / 12.3 / 5.9° of the *same* wave — as wide as the whole `FACE` sweep without changing the wave."* **Nothing
+under `src/` or `server/` moves** (§10), so this round adds no switch: there is no default to keep, because no
+default exists to change.
+
+## 0. The ten sentences the round is for
+
+1. **Part C's answer first, because it is the one the owner is waiting on: the falls persist, and that is the good
+   result.** **626 rides, 29 arms, nine placements from just under the crest to the very bottom of the face, two faces, and
+   626 of 626 fell. Compress fell in 205 of 205. Not one run of the 626 reached nine seconds; the longest was 7.75 s** [M].
+   So **the 24-of-24 at 12.3° was not a test artefact**, and the twenty-three rounds of falls-per-runs findings the
+   handoff put on its FACE-CONDITIONAL list are **unconditional again**. What was conditional is the *ride time*,
+   and only that.
+2. **The handoff's own span is confirmed to the digit, analytically.** `AHEAD` 0.50 / 0.65 / 0.75 / 0.90 puts the
+   board on **16.00 / 14.62 / 12.14 / 5.89°** along the face and **11.46 / 10.45 / 8.65 / 4.17°** across the deck, at
+   `faceFrac` **0.500 / 0.282 / 0.156 / 0.028** [M, exact: the closed forms agree with `FaceWater.sampleAt` and
+   `.faceFraction` to **1.8 × 10⁻¹⁵°** and **2.2 × 10⁻¹⁶** at the same twelve placements, §9 C1]. The handoff's
+   "12.3" is 3.4g's *measured frame-1* value after one frame of drift, and this round's own frame-1 read reproduces
+   it: **12.12°** over 24 runs and **12.33°** over 18 [M].
+3. **But "free" is refuted three times over, and that is this round's own first finding.** `AHEAD` does not move one
+   quantity, it moves **four**, and they are not independent: the **slope** under the board, **where on the face**
+   the board sits, the **room** left between the board and the trough (past which `FaceWater` is a flat still lake),
+   and — because `3.3/plant.ts` builds its `EXTRAS` entry as `(c − u)/cos 45°` with `u` the water's own flow at the
+   placement [R, `:813`] — **the entry speed band itself**, which runs **5.28 → 8.03 m/s** over the sweep against
+   the glide cell's own 6 m/s span of `EXTRAS` [M]. Every ride in this round is therefore on **absolute** entries.
+4. **And `4 AHEAD (1 − AHEAD)` is symmetric, so every slope below the nominal one is reached twice** — once high on
+   the face and once low — and the two are **not** the same ride. **12.30° high rides 1.100 s against 12.12° low at
+   1.467 s; 5.80° high rides 2.200 s against 5.52° low at 2.750 s** [M, 22–24 runs an arm, the same eight absolute
+   entries]. **The slope under the board does not by itself set the ride time.**
+5. **The knob that moves only the water under the board is the FACE, at the shipped placement.**
+   `FACE=1.4,7.32,5.7` at `AHEAD` 0.75 puts the board on **5.50° along / 3.91° across at `faceFrac` 0.1560** — and
+   the owner's own clean face near the take-off presents **5.4–5.8°** at **0.157 of its height** [M/R, 3 seeds,
+   5 677 faces in 3.4g plus this round's own 1 527-face control]. Same height fraction, same 7.435 m/s entry
+   baseline, same heading, and a crest-to-trough run of **16.35 m** against his measured **15.4 m (11.2–24.4)** [M].
+   **It is the closest the folder has ever come to the water he rides**, and it rides **4.650 s** against 1.467 —
+   with **24 of 24 still falling**.
+6. **Part B's mechanism, named and tested: the off-face frames are the board running off the ONSHORE end of the
+   face, and the three-fold spread across arms is survivorship, measured.** `faceFrac` recomputed from
+   `aheadFronts` alone closes to **1.2 × 10⁻⁴ over 21 621 frames of 3.4f's eight arms and 58 210 of this round's 23 reported ones**
+   [M, §9 C2], every off-face frame has `aheadFronts` **0.981–2.013** (past the trough) and **0 of them** is behind
+   the crest, so it is **geometry, not a guard, a datum or a `Number(null)`**. In a window every arm lives through
+   (t 0.2–0.7 s) the share is **0 of 720 / 720 / 720 / 427 / 505 / 255** on 3.4f's six 16° arms [M]: **the arms do
+   not differ there at all.** `g-tilt`'s "0 of 845" is because **no frame of it reaches 1.15 s**, which is where
+   `g-off`'s first off-face frame is. **So it cannot be the interaction Part 5 could not explain** — the arrow runs
+   from ride length to flat water, not back.
+7. **It is not a probe defect, and it is worse than the handoff thought: on the shipped glide arm the ride ENDS on
+   flat water in 15 of 24 runs**, at `faceFrac` **0.0000** and `|tilt|` **0.000°** [M]. The board needs only
+   **1.83 m** of onshore gain at `AHEAD` 0.75 and gains at **+1.228 m/s**, so it leaves the face at **1.150 s** and
+   the recorded fall comes **0.300 s later** — and which runs leave is chosen by the **entry speed**: every run at
+   `extra ≥ 0` leaves, no run at `extra ≤ −1` does. **The bias has a sign: the flat-water frames LENGTHEN the ride.**
+8. **Taking them out flips an ordering inside the folder's own table.** Counting only the frames with a face under
+   the board, 3.4f's four glide arms read **1.183 / 2.250 / 2.900 / 0.683 s** against the published **1.450 /
+   4.033 / 3.683 / 0.683** — so **`ref` overtakes `predict`**, which it does not in the published row [M, the same
+   24 runs an arm, this round's probe reproducing all sixteen published medians exactly, §9 C3]. **The owner's own
+   cell is clean** (0–11 % off-face, and 0 % on every arm of the gentler face), so **1.033 s was never contaminated.**
+9. **`?mountAgree=deck`, the only switch in four rounds that had moved the owner's cell, is now measured on a second
+   face — and what it does is not what its median said.** Its median gain is **1.033 → 1.167 s** at 12.33° and
+   **1.450 → 1.450 s** at 5.55° [M, 18 runs each]; but on **both** faces it lifts the runs **below the plant
+   tables' 4 m/s floor** (**0.617 → 1.000 s** and **0.833 → 1.000 s**, 9 runs each) and leaves the 4–6 m/s runs
+   **identical to the millisecond in 9 of 9** [M]. **So it is a mount fix for sub-floor entries, its direction is
+   not face-conditional and its median is**, and on neither face does it stop a single fall.
+10. **Of my ten scored predictions five are upheld, four are refuted and one is half** (§6b), and the refutations
+    are the useful ones: `?mountAgree=deck`'s median does not survive the face change (**P6**), the fall mix does **not**
+    move toward the slow stall — **stalls are 0 of 309 on every glide arm in this round** and the falls are
+    capsizes of **42.6–70.0°** median bank at **1.16–8.97 m/s** through the water (**P10**), and the low-side 5.5°
+    placements are **not** dominated by off-face frames in the way I predicted (**P8**, 28.7–29.1 % of frames, not
+    over 60 %, and **0 of 24 runs end** off the face because the crest catches them up). **I built nothing and the
+    owner's bar is untouched.**
+
+## 1. (A) The four reads that had to come first
+
+**R1 [R]. `FaceWater`'s placement algebra, closed.** `η = H (1 − smoothstep(a/front))` with
+`front = 1.5 H / tan(slope)` and `smoothstep(t) = t²(3 − 2t)` [R, `src/physics/testing/FaceWater.ts`], so at
+`a = AHEAD · front` the height fraction is `1 − smoothstep(AHEAD)` — **which is exactly the probe's own `faceFrac`
+column** — and the slope is `atan(tan(slope) · 4 AHEAD (1 − AHEAD))`. The factor `4 AHEAD (1 − AHEAD)` is **1 at
+mid-face and symmetric about it**, which is R1's load-bearing half: *the placement cannot pick a slope without also
+picking which side of the face it is on.*
+
+**R2 [R]. The entry speed is a function of the placement.** `3.3/plant.ts:813`:
+`entry = entry0 ?? ((FACE[2] − alongFlow) / cos 45° + extra)`, and `alongFlow` is `FaceWater`'s own
+`u = c η/(d + η)` **at the placement**. So an `EXTRAS` arm at `AHEAD` 0.0925 rides a band centred **2.67 m/s slower**
+than one at `AHEAD` 0.95. This read is why the first batch of this round's arms was thrown away and re-run on
+`ENTRIES`: the discarded arms are declared in §13.
+
+**R3 [R]. The game never calls `design` at the controller's exact point; the probe does.** `scheduledDesign` is
+called at **table points** (`plantAt(speed, depth, …)`, cached by `speed|depth|rail|weights`) and the controller
+**blends** them [R, `predictiveBalance.ts:1186–1213`, `:1348–1357`]. The probe's `design(y, tw, wArm)` at
+`3.3/plant.ts:1381` is a **measurement** call at the exact point, feeding `heelDesignOff` and the 3.4f columns and
+nothing the ride reads. That matters because at a placement high on the face its `dlqr` **throws `singular`** — so
+**the throw is the probe's, not the game's, and no rider in the game can reach it.** It is why the three high-side
+arms were run **one process per (stance, entry)**: a throw then costs that one run (§9 C4).
+
+**R4 [R]. The two kinds of fall have one published definition and this round uses it unchanged.** *"(a) the sudden
+fall into the face: the body's bank past 45° at the end …; (b) the slow stall: cause `balance` with the bank within
+20° of upright and the speed through the water under 2.5 m/s; (c) anything else"* [R,
+`docs/research/face-hold-2026-11-10/kinds.py.txt:1–2`], read off `3.3/plant.ts`'s own `bankFall` and `throughFall`
+[R, `:1921–1923`]. **And its threshold sits on a clamped column**: `AttachedRider` hard-clamps the measured bank at
+`MAX_BANK = 70°` [R, the handoff's queued round], and `bankFall` is **70.00 exactly** in 6–21 of 24 runs an arm
+here [M]. **So "sudden" partly counts runs that reached the clamp**, and §4's mix is reported with that said.
+
+## 2. (B) Part A — the placement sweep, exact, and the four quantities it moves
+
+| **[M]** `FACE=1.4,16,5.7`, `front` 7.32 m; exact (§9 C1) | `faceFrac` | **along the face** | **across the deck** (ψ 45°) | room to the trough | the water `u` | the `EXTRAS` entry | where on the owner's own face that slope lives |
+|---|---|---|---|---|---|---|---|
+| `AHEAD` **0.0925** (upper) | **0.976** | **5.50°** | **3.89°** | 6.65 m | 1.964 m/s | 5.284 m/s | **0.157 of H** |
+| 0.15 (upper) | 0.939 | 8.32° | 5.90° | 6.23 m | 1.915 | 5.353 | 0.283 of H |
+| **0.25** (upper) | 0.844 | **12.14°** | 8.65° | 5.49 m | 1.781 | 5.543 | above its profile |
+| 0.35 (upper) | 0.718 | 14.62° | 10.45° | 4.76 m | 1.590 | 5.813 | above its profile |
+| **0.50** (mid) | 0.500 | **16.00°** | 11.46° | 3.66 m | 1.209 | 6.351 | above its profile |
+| **0.65** | 0.282 | **14.62°** | 10.45° | 2.56 m | 0.751 | 6.999 | above its profile |
+| **0.75 — the folder's own** | **0.156** | **12.14°** | **8.65°** | **1.83 m** | 0.442 | **7.435** | above its profile |
+| 0.85 | 0.061 | 8.32° | 5.90° | 1.10 m | 0.181 | 7.806 | 0.283 of H |
+| **0.90** | 0.028 | **5.89°** | **4.17°** | 0.73 m | 0.085 | 7.941 | 0.173 of H |
+| **0.9075** | 0.024 | **5.50°** | **3.89°** | 0.68 m | 0.073 | 7.958 | **0.157 of H** |
+| 0.95 | 0.007 | 3.12° | 2.21° | 0.37 m | 0.022 | 8.030 | 0.077 of H |
+
+**And the owner's own wave, read again this round as its own control** — Canyon B (`?canyonWaves=true`, `canyonBed
+'b'`, grid **400 × 451**, read off the built config), swell **Practice**, tide mid, stage 2, CPU, **seed 3**,
+60–160 s every 0.2 s, seven columns, **the clean ridable faces whose crest is within 25 m of the take-off, n 1 527
+faces**, spun up fresh on the CPU in **47.2 s** (read, so nothing was imported):
+
+| **[M]** | H | run | `local` | **at 0.16 of H** | steepest at | the profile up the face |
+|---|---|---|---|---|---|---|
+| this round, seed 3, n **1 527** | **1.43 m** (1.06–1.90) | **15.4 m** (11.2–24.4) | **12.2°** (7.6–17.3) | **5.8°** (2.9–8.5) | **0.63** | 2.3 / 5.5 / **5.8** / 9.0 / 11.2 / 11.7 / 11.9 / 10.2 / 6.3° |
+| step 3.4g, seed 3, n 2 194, 60–200 s [R] | 1.39 m | — | 11.7° | **5.6°** | 0.62 | 2.3 / 5.3 / **5.6** / 8.7 / 10.8 / 11.2 / 11.4 / 9.6 / 6.0° |
+| step 3.4g, seeds 1 / 2 / 3, n 5 677 [R] | 1.39 / 1.67 / 1.39 | — | 11.5 / 11.9 / 11.7° | **5.5 / 5.4 / 5.6°** | 0.63 / 0.63 / 0.62 | — |
+
+**So the target is 5.4–5.8° across three seeds and two windows**, and the two reads of seed 3 agree to **0.2°** at
+the board's place on a window 40 s shorter. *n* counts faces, not independent waves.
+
+**Four readings, and the first two are the round's own refutations of its brief.**
+
+1. **The span is real and exact, and the handoff's four numbers are right.** 16.00 / 14.62 / 12.14 / 5.89° against
+   its 16.0 / 14.6 / 12.3 / 5.9, and `faceFrac` 0.500 / 0.282 / 0.156 / 0.028 against its 0.50 / 0.27 / 0.16 / 0.03.
+   **Confirmed, not refuted** — and the only discrepancy, 12.14 against 12.3, is the one frame of drift between the
+   placement and the first dumped frame, which this round measures at **12.12° (24 runs) and 12.33° (18 runs)** [M].
+2. **"Free" is refuted.** Of the four columns the placement moves, **two have nothing to do with the face's angle**:
+   the room (0.37–6.65 m, an **18-fold** range) and the entry band (5.28–8.03 m/s, **2.67 m/s**, which is **45 %**
+   of the glide cell's whole `EXTRAS` span). An `AHEAD` sweep on `EXTRAS` is therefore a sweep of **two** things at
+   once, and this round's own first batch of six arms was discarded for exactly that (§13).
+3. **There is no placement on this wave that puts the board on his 5.4–5.8° where his wave presents it.** His clean
+   face gives 5.5° at **0.157 of its height**; `AHEAD` 0.9075 gives that slope at `faceFrac` **0.024** and `AHEAD`
+   0.0925 at **0.976** — a factor of **6.5** either way. **And the shipped placement's 12.14° is above his clean
+   profile's highest point** (11.9° at 0.70 of H, n 1 527): on the median clean face near his take-off, the water
+   the board is put on **does not occur at any height at all**. It occurs on his **breaking** faces, which read
+   9.8–11.5° at 0.16 of H and reach 19.3° [M/R].
+4. **The face's own slope is the one knob that moves the water under the board and nothing else the probe sets.**
+   `FACE=1.4,7.32,5.7` at `AHEAD` 0.75 holds `faceFrac` (0.1560), the heading (ψ 45°), the entry baseline
+   (7.435 m/s), the height (1.4 m), the depth (2.6 m) and the crest speed (5.7 m/s), and moves the slope from
+   **12.14° to 5.50°**. It is **not** a change of one number in the water: the front grows **7.32 → 16.35 m**, so
+   the room grows 1.83 → 4.09 m and the face's curvature halves. **Both of those move the wave TOWARD the owner's
+   own** (his run is 15.4 m, 11.2–24.4), which is why this is the round's headline arm and not a confound to
+   apologise for — but it is two consequences of one knob and it is named as such.
+
+## 3. (B) Part B — the frames with no face under the board
+
+### 3a. The mechanism, against the brief's own four candidates
+
+| **[M]** the candidate | the read | the verdict |
+|---|---|---|
+| **a guard returning a zero rather than an absence** | `faceFrac` recomputed from `aheadFronts` alone, as `1 − smoothstep` (or 1 behind the crest), against the dumped column: peak residual **1.2 × 10⁻⁴** over 3.4f's **21 621** frames and this round's **58 210** | **refuted — it is geometry**; and rows whose four columns are not all finite: **0** [R, 3.4g §3 reading 7] |
+| **running off the BACK of the patch** | the `aheadFronts` of the off-face frames: **0.981–2.013** on every arm; **behind the crest: 0 frames** of 71 000. `faceFraction` returns **1** for `ahead < 0` by construction [R], so it cannot appear | **refuted, and impossible** |
+| **outside the lateral extent** | `FaceWater` is *"the same along x"* [R]; `sampleAt` ignores `x` entirely | **refuted by construction** |
+| **a datum or initialisation artefact** | the share at the ride's own age: **0 % in the first 0.5 s of every arm of both rounds** | **refuted** |
+| **the board running off the FRONT, onto the flat still water ahead of the trough** | `aheadFronts ≥ 0.981` is at or past the trough, where `FaceWater`'s surface is `H(1 − smoothstep(≥1)) = 0` and its flow is `c·0/(d+0) = 0` — **flat to the last bit and still to the last bit** | **this is it** |
+
+**And the quantitative closure**: at `AHEAD` 0.75 the board has **1.83 m** of face left; on `g-off` it gains on the
+wave at a median **+1.228 m/s**, which is **1.49 s** of room, against a measured median first-off-face frame at
+**1.150 s** [M, 24 runs]. On `s8-off` the room is **3.74 m** and the drift is **−0.270 m/s** (the crest gains on the
+board), and **3 of 24** runs ever leave [M].
+
+### 3b. It is survivorship, and the three-fold spread is not a property of the arms
+
+| **[M]** step 3.4f's own arms | published median | **t 0.2–0.7 s, off-face** | off-face, all frames | runs that leave | **own duration off, median** | **ends off the face** |
+|---|---|---|---|---|---|---|
+| `g-off` (the shipped glide arm) | 1.450 s | **0 of 720** | 22.5 % | 15 of 24 | **16.4 %** | **15 of 24** |
+| `g-predict` | 4.033 s | **0 of 720** | 31.6 % | 14 of 24 | **31.1 %** | 0 of 24 |
+| `g-ref` | 3.683 s | **0 of 720** | 14.0 % | 6 of 24 | 0.0 % | 0 of 24 |
+| `g-tilt` (`both`) | 0.683 s | **0 of 427** | 0.0 % | 0 of 24 | 0.0 % | 0 of 24 |
+| `l-off` (the owner's cell) | 1.033 s | **0 of 505** | 11.0 % | 1 of 18 | 0.0 % | 0 of 18 |
+| `l-tilt` | 0.433 s | **0 of 255** | 0.0 % | 0 of 18 | 0.0 % | 0 of 18 |
+| `s8-off` | 4.600 s | 0 of 720 | 5.5 % | 3 of 24 | 0.0 % | 0 of 24 |
+| `s24-off` | 0.917 s | 16 of 715 | 8.8 % | 10 of 24 | 0.0 % | **10 of 24** |
+
+**Four readings.**
+
+1. **At a matched age the arms are identical, and the identity is zero.** Seven of the eight read **0 of 427–720**
+   frames in t 0.2–0.7 s [M]. The only arm with any is `s24-off`, whose face is **4.72 m** long. **So the
+   three-fold spread the handoff called *"a live candidate"* for Part 5's unexplained ordering is a difference of
+   ride LENGTH, not of arm**, and `g-tilt`'s and `l-tilt`'s zeroes are because **their longest frame is at 1.183 s
+   and 0.683 s** against a median first-off-face of 1.150–1.550 s. **The candidate is refuted**, and by the arms'
+   own frames.
+2. **But the shipped glide arm's ride ENDS on a flat still lake in 15 of 24 runs**, with `faceFrac` **0.0000** and
+   `|tilt|` **0.000°** at the last frame [M] — which the handoff did not know and which is worse than a share of
+   frames. The fall comes **0.300 s** (0.067–1.900) after the board leaves the face.
+3. **Which runs leave is chosen by the entry speed, so the bias is systematic and signed.** On `g-off` **every** run
+   at `extra ≥ 0` leaves the face and **no** run at `extra ≤ −1` does; the three longest rides in the arm (1.800,
+   2.117, 2.683 s) are all `extra = 3` and spend **0.98 / 1.32 / 1.90 s** of themselves on flat water [M]. **The
+   flat-water frames lengthen the ride**, and they lengthen the fastest runs most.
+4. **The owner's own cell is clean.** `l-off` **1 of 18** runs, `l-tilt` 0 of 18, and **0 of 18 on every arm of the
+   gentler face in this round** [M] — because its 1–6 m/s entries are slower than the wave, so the crest catches the
+   board up (drift **−0.97 to −2.25 m/s**) instead of the board outrunning it. **1.033 s was never contaminated.**
+
+### 3c. What it does to the published rows, and the ordering it flips
+
+| **[M]** the same 24 / 18 runs an arm, this round's probe | published median | **on-face prefix** (`until off`) | **total face time** | the ordering |
+|---|---|---|---|---|
+| the glide: `off` / `predict` / `ref` / `both` | **1.450 / 4.033 / 3.683 / 0.683** | 1.183 / 1.783 / 1.583 / 0.683 | **1.183 / 2.250 / 2.900 / 0.683** | **`ref` overtakes `predict`** |
+| the owner's cell: `off` / `predict` / `ref` / `both` | 1.033 / 0.967 / 0.483 / 0.433 | **unchanged** | **unchanged** | unchanged |
+| the 8° face: `off` / `predict` / `ref` / `both` | 4.600 / 3.300 / 3.000 / 2.250 | 2.283 / 3.300 / 3.000 / 2.250 | **3.417** / 3.300 / 3.000 / 2.250 | unchanged, and `off`'s lead narrows to 0.117 s |
+| the 24° face: `off` / `predict` / `ref` / `both` | 0.917 / 1.600 / 1.017 / 0.233 | 0.833 / 1.067 / 0.733 / 0.233 | 0.817 / 1.067 / 0.833 / 0.233 | unchanged |
+
+**Two readings, and a refusal.**
+
+1. **This probe reproduces all sixteen published medians exactly** — 1.450, 4.033, 3.683, 0.683, 1.033, 0.967,
+   0.483, 0.433, 4.600, 3.300, 3.000, 2.250, 0.917, 1.600, 1.017, 0.233 [M, §9 C3] — so the corrected columns beside
+   them are the same runs read a second way and not a different arm.
+2. **One ordering in the folder's own table does not survive the correction.** Part 6 published `predict` 4.033 >
+   `ref` 3.683 and called the two halves' effects *"a property of the 16° face"*; on face time they are **2.250 <
+   2.900** [M]. And `s8-off`'s lead over `s8-predict` falls from **1.300 s to 0.117 s**. **`both` is untouched on
+   all four cells** — it never leaves the face.
+3. **I will not call either column the right one.** The published median is *the time before the rider fell*, which
+   is what the owner's bar is about; the face-time column is *the time there was a wave under him*, which is what a
+   comparison across arms needs. **They are two quantities, both printed, and the probe now carries both.** That is
+   this round's probe fix: `place.ts`'s §R prints `median s`, `until off, med` and `face time, med` side by side.
+
+## 4. (B) Part C — the falls, at the placement and on the face that put the board where he rides
+
+**All arms: `RIDER=new FELT=deck BODY=two` — the rider the owner actually rode on 2026-11-16 night — the stance
+held, the stick never touched, 9 s a run, and the SAME eight absolute entries (4.435 … 10.435 m/s) at every
+placement so the entry band cannot move with it.**
+
+| **[M]** the glide cell, 24 runs an arm unless said | at the board: along / across | `faceFrac` | **fell** | **median s** | **face time, med** | Compress fell | off-face frames |
+|---|---|---|---|---|---|---|---|
+| `p50-g`, mid-face | **16.00 / 11.89°** | 0.496 | **24 of 24** | **1.050** | 1.050 | **8 of 8** | 5.4 % |
+| `p35-g`, upper | 14.71 / 10.85° | 0.714 | **24 of 24** | 1.000 | 1.000 | **8 of 8** | 5.8 % |
+| `p65-g`, lower | 14.60 / 10.77° | 0.280 | **24 of 24** | 1.183 | 1.083 | **8 of 8** | 9.5 % |
+| `p25-g`, upper | **12.30 / 8.96°** | 0.839 | **24 of 24** | **1.100** | 1.100 | **8 of 8** | 14.2 % |
+| **`c-a75-g-abs`, the shipped placement** | **12.12 / 8.82°** | **0.156** | **24 of 24** | **1.467** | 1.183 | **8 of 8** | 22.6 % |
+| `p15-g`, upper (23 runs) | 8.50 / 6.10° | 0.936 | **23 of 23** | 2.000 | 1.667 | **7 of 7** | 35.7 % |
+| `p0925-g`, upper (22 runs) | **5.80 / 4.12°** | 0.973 | **22 of 22** | 2.200 | 1.833 | **7 of 7** | 47.3 % |
+| `p90-g`, lower | 5.91 / 4.21° | 0.028 | **24 of 24** | 2.700 | 1.967 | **8 of 8** | 29.1 % |
+| `p9075-g`, lower | **5.52 / 3.93°** | 0.024 | **24 of 24** | **2.750** | 2.067 | **8 of 8** | 28.7 % |
+| **`f73-g` — the 7.32° face at the shipped placement** | **5.50 / 3.91°** | **0.156** | **24 of 24** | **4.650** | **4.483** | **8 of 8** | **1.2 %** |
+
+| **[M]** the owner's own cell, `ENTRIES=1…6`, 18 runs an arm unless said | at the board | `faceFrac` | **fell** | **median s** | Compress fell | Compress med | off-face |
+|---|---|---|---|---|---|---|---|
+| `p50-l`, mid-face | **16.00 / 11.89°** | 0.506 | **18 of 18** | **0.933** | **6 of 6** | 1.033 | 0.0 % |
+| `p25-l`, upper (16 runs) | 12.09 / 8.80° | 0.845 | **16 of 16** | 1.233 | **5 of 5** | 1.233 | 0.0 % |
+| **`a75-l-off`, the shipped placement** | **12.33 / 8.98°** | 0.163 | **18 of 18** | **1.033** | **6 of 6** | 1.167 | 11.0 % |
+| `p90-l` / `p9075-l`, lower | 6.28 / 4.47° · 5.89 / 4.20° | 0.032 / 0.028 | **18 of 18** ea | **1.133** ea | **6 of 6** ea | 1.200 ea | 0.0 % |
+| `p0925-l`, upper (13 runs) | 5.43 / 3.86° | 0.977 | **13 of 13** | 1.583 | **2 of 2** | *7.283* | 30.6 % |
+| **`f73-l` — the 7.32° face** | **5.55 / 3.95°** | **0.160** | **18 of 18** | **1.450** | **6 of 6** | **1.450** | **0.0 %** |
+
+**Six readings, and the first is Part C's answer.**
+
+1. **The falls persist, everywhere, and that is the result the brief said would be equally good.** **626 rides, 29
+   arms, 626 of 626 fell. Compress: 205 of 205.** The longest ride of the 626 is **7.75 s** and **nothing reached
+   nine seconds** [M]. The owner's bar — *"in Compress the surfer should not fall at the low speeds of getting into
+   position … 100 %"* — is **not met at any slope under the board from 5.4° to 16.0°, on either side of the face, at any of the nine
+   placements, on two faces, at entry speeds from 1 to 10.4 m/s.** **The 24-of-24 at 12.3° was not a test artefact.**
+2. **The ride time is strongly ordered by the slope under the board, and that is real.** On the lower face the glide
+   cell runs **1.050 → 1.183 → 1.467 → 2.700 → 2.750 s** as the slope falls **16.00 → 14.60 → 12.12 → 5.91 →
+   5.52°** [M, 24 runs each], monotone in five steps, and on the corrected face-time column it is **1.050 → 1.083 →
+   1.183 → 1.967 → 2.067 s** — still monotone. **P3 upheld.**
+3. **But the slope is not sufficient, and the symmetry proves it.** **12.30° high on the face rides 1.100 s against
+   12.12° low at 1.467; 5.80° high rides 2.200 against 5.52° low at 2.750** [M]. The same water angle, two sides,
+   and the lower side rides **1.25–1.33 ×** longer. The lower side is also where the water is slower (`u` 0.07–0.44
+   against 1.78–1.96 m/s) and the room is shorter. **This is a measurement that the handoff's one-number-per-
+   placement framing cannot carry.**
+4. **And the room is worth as much as the slope.** `f73-g` and `p9075-g` put the board on the **same** slope — 5.50°
+   against 5.52° — and ride **4.650 s** against **2.750**. What differs is the face: 16.35 m of front against 7.32,
+   4.09 m of room against 0.72, `faceFrac` 0.156 against 0.024 [M]. **A ×1.69 ride difference at a matched slope.**
+5. **`f73-g` is the longest glide median in the folder and the first one with no flat water in it.** 4.650 s against
+   `s8-off`'s 4.600, with **1.2 % of frames off the face** against `s8-off`'s 5.5 % and `g-off`'s 22.6 %, and a
+   **face time of 4.483 s** [M]. Its structure is clean and bimodal by entry: the four runs at 8.435–10.435 m/s ride
+   **4.65–5.18 s** with **0 off-face frames**, the four at 4.435–7.435 ride **1.67–2.48 s**. **P4 upheld.**
+6. **The owner's own cell barely moves, and this is the sentence that matters for his bar.** Its median spans
+   **0.933 → 1.450 s** across every placement and both faces — a factor of **1.55**, against the glide cell's
+   **4.43** — and **18 of 18 fall in all of them** [M]. **P5 upheld.** Its entries are 1–6 m/s and the plant's own
+   tables begin at **4 m/s** [R], so three of its six speeds are below the floor on every arm. **Making the wave
+   gentler does not reach the cell the owner's bar is about.**
+
+### 4b. The kinds of fall, and a third population the classifier does not name
+
+| **[M]** by the published classifier (§1 R4) | sudden | **slow stall** | other | \|bank\| at the fall, median (span) | `through` at the fall |
+|---|---|---|---|---|---|
+| `c-a75-g-abs`, 12.12° | **24** | **0** | 0 | **70.0°** (52.6–70.0) | 6.47 m/s |
+| `p50-g`, 16.00° | 15 | **0** | 9 | 57.8° (30.9–70.0) | 8.97 m/s |
+| `p9075-g`, 5.52° | 12 | **0** | 12 | 50.8° (7.8–70.0) | 2.45 m/s |
+| **`f73-g`, 5.50°** | 14 | **0** | 10 | **48.5°** (32.6–70.0) | **1.31 m/s** |
+| `a75-l-off`, 12.33° (18) | 15 | **0** | 3 | 63.7° (29.4–70.0) | 2.86 m/s |
+| **`f73-l`, 5.55°** (18) | 8 | **0** | 10 | **42.6°** (29.4–70.0) | **1.16 m/s** |
+| 3.4f's `l-predict` / `l-ref` / `l-tilt` (18 ea) [M] | 10 / 6 / 8 | **6 / 6 / 4** | 2 / 6 / 6 | — | — |
+
+**Three readings.**
+
+1. **P10 is refuted: the mix does not move toward the slow stall on the gentler face. It moves toward "other".**
+   **0 stalls in 309 glide runs of this round**, on every slope from 5.5 to 16.0°, and the `other` share rises from
+   **0 of 24** at 12.12° to **9–12 of 24** on the gentler and upper arms [M]. The stalls that exist in this folder
+   are in the owner's own **low-speed** cell with a datum arm on — 3.4f's `l-predict`, `l-ref`, `l-tilt`, 4–6 of 18
+   each — and **not one of this round's own arms produced one.**
+2. **What "other" is, is a slow capsize, and it is a third kind.** On `f73-g` the ten `other` falls end with a
+   median bank of **48.5°** at **1.31 m/s** through the water — too banked for the stall's 20° and, where they fall
+   between 20 and 45°, not past the sudden kind's threshold either. **The gentler the face, the slower the fall and
+   the smaller the bank it falls at**: 70.0° at 6.47 m/s on the shipped arm against 42.6° at 1.16 m/s on `f73-l`.
+   **The fall is becoming a slow topple, and the two published kinds do not have a name for it.**
+3. **And the column the classifier reads is clamped.** `bankFall` is **70.00 exactly** in **21 of 24** runs of the
+   shipped arm and 6–8 of 24 on the gentler ones [M, §1 R4]. So part of "sudden 24 of 24 → 14 of 24" is **how many
+   runs reached `MAX_BANK`**, not how the fall changed. **The mix is reported; it is not a finding until the clamp
+   round has run.**
+
+## 5. (B) `?mountAgree=deck` on a second face — the handoff's resume item 3
+
+| **[M]** the owner's own cell, 18 runs an arm | median, all 18 | **median, entries 1–3 m/s** (9 runs) | the 4–6 m/s runs | fell | Compress |
+|---|---|---|---|---|---|
+| `a75-l-off`, 12.33° | **1.033 s** | **0.617 s** (0.500–1.000) | — | 18 of 18 | 6 of 6 |
+| `c-a75-l-mdeck`, 12.33° | **1.167 s** (**×1.13**) | **1.000 s** (0.833–1.300) — **×1.62** | **identical to the millisecond in 9 of 9** | 18 of 18 | 6 of 6 |
+| `f73-l`, 5.55° | **1.450 s** | **0.833 s** (0.617–1.283) | — | 18 of 18 | 6 of 6 |
+| `f73-l-mdeck`, 5.55° | **1.450 s** (**×1.00**) | **1.000 s** (0.833–1.250) — **×1.20** | **identical to the millisecond in 9 of 9** | 18 of 18 | 6 of 6 |
+
+**Three readings.**
+
+1. **P6 is refuted as stated and upheld as a mechanism.** Its **median** gain does not survive the face change
+   (×1.13 → ×1.00), so *"the only switch in four rounds that has moved the owner's cell"* **is face-conditional as a
+   headline**. But on **both** faces it lifts the nine runs below the plant tables' 4 m/s floor, and on both it
+   leaves the nine at or above the floor **bit-identical** [M]. **So the switch is a sub-floor mount fix, its
+   direction holds on two faces, and its published number was a property of where the other nine runs happened to
+   sit around the median.**
+2. **It lands the sub-floor runs on the same 1.000 s from both sides** — 0.617 → 1.000 and 0.833 → 1.000 — which is
+   what a fix to the mount's own geometry, rather than to the ride, would do.
+3. **And it stops no fall on either face.** 18 of 18 and 6 of 6 Compress, both arms, both faces [M].
+
+## 6. (B) Part D — what the rest would cost, and what would change sign or ordering
+
+**The measured unit cost, so the price is not a guess.** One 24-run glide arm with its per-frame dump is **about
+30 s** of one core and **1.5–3.5 MB** of dump; one 18-run owner's-cell arm about **20 s** and 1 MB. **This round is
+29 arms and 626 rides, and it cost about 15 minutes of one core plus 12 MB committed gzipped.** A `TICKS=` dump
+multiplies the bytes by roughly 7 and the time by about 1.6 [R, 3.4f's own 29 MB for 24 arms], and nothing in this
+round needed one.
+
+**So the honest price of the whole re-run is small, and the expensive part is not the CPU.**
+
+| what | arms × runs | CPU | verdict |
+|---|---|---|---|
+| **the four datum arms × two cells, on the corrected face** | 8 × 24/18 | **~4 min** | **already done in this round** (`f73-g`, `f73-g-predict`, `f73-g-ref`, `f73-g-tilt`, `f73-l`, `f73-l-tilt`) |
+| `?mountAgree=deck` on a second face | 2 × 18 | ~40 s | **already done** (§5) |
+| **every falls-per-runs figure of steps 3.3f–3.4f** | ~24 × 24 | **~12 min** | **does not need re-running: the counts are saturated.** 626 of 626 here, on nine placements and two faces |
+| the whole of Parts 1–6's **ride-time** tables, on the corrected face | ~48 arms | ~25 min of CPU | **the CPU is nothing; the rewriting is the cost.** Six Parts of tables and readings |
+| **`ARANGE=wide`** (the ankle's bound) on the corrected face | 4 × 24 | ~2 min | **cheap and worth it**: 3.4f measured it *"never clamped"* on 8° and binding on 16° |
+| PR #223's **bowl** row, `FACE=2.1,21,6.1 DEPTH=3.4` | 2 × 24/18 | ~1 min | **cheap, and the handoff's item 2** — the part of the arm the owner rides **into**, never run |
+| #223's **set** row, `FACE=1.95,16,6.8 DEPTH=3.7` | 2 × 24/18 | ~1 min | cheap; moves the face's **length**, which §2 reading 4 shows is worth as much as its angle |
+| the clamp round (`MAX_BANK`) | — | — | **blocks §4b**: the fall-kind mix cannot be read while its threshold sits on a clamped column |
+
+**And the handoff's FACE-CONDITIONAL list, entry by entry, with what this round does to it.**
+
+| the entry | what this round says | status now |
+|---|---|---|
+| *"each half alone nearly triples the ride"* | on the corrected face `off` is best of four — **4.650 / 3.283 / 2.983 / 2.250** — as on 8° and unlike 16° | **refutation CONFIRMED on a third face** |
+| the **ordering** `off < predict / ref` | **off is first** on both gentle faces; and on the 16° face **`predict` and `ref` swap** once the flat-water frames come out (2.250 against 2.900) | **face-conditional AND contaminated**; two separate reasons |
+| `both` roughly **halves** the ride | ×0.47 / 0.42 / 0.49 / 0.25 [R] and **×0.48** on `f73-g`, **×0.66** on `f73-l` | **robust in sign on six cells** |
+| the shipped medians **1.450 / 1.033 s** | **1.467 / 1.033** reproduced; at 5.5° they are **4.650 / 1.450**; across every placement **1.000–2.750 / 0.933–1.583** | **conditional by ×4.4 on the glide cell and ×1.55 on the owner's** |
+| **`?mountAgree=deck`'s 1.033 → 1.167** | **×1.13 → ×1.00** on the median; **×1.62 → ×1.20** on the sub-floor runs | **the median is conditional; the mechanism is not** (§5) |
+| the ankle's clamp binding at the mount | not measured here | **still open; 2 min of CPU** |
+| the two **kinds** of fall | **0 stalls in 309 runs**; the mix moves to "other", and the column is clamped | **re-opened, and blocked on the clamp round** |
+| **every falls-per-runs figure of Parts 1–6 and of 3.3f–3.3p** | **626 of 626, 205 of 205 Compress, nine placements, two faces** | **NOT conditional. Unconditional again.** |
+
+### 6b. The ten predictions, scored against the file committed before the arms (`bc63d94a`)
+
+| | what it said | what the arms say | verdict |
+|---|---|---|---|
+| **P1** | `c-a75-g-abs` reproduces `g-off`'s **1.450 s, 24 of 24** to the frame | **22 of 24 runs identical, 24 of 24 within 0.034 s**, median **1.467** | **half**: the rides reproduce, the median moves one frame because two runs crossed it — the eight absolute entries are the `EXTRAS` values rounded to three decimals |
+| **P2** | **the falls persist at every placement and on every face** | **626 of 626; Compress 205 of 205** | **upheld**, and it is Part C's answer |
+| **P3** | the median rises **monotonically** as the slope under the board falls | on the lower face **1.050 → 1.183 → 1.467 → 2.700 → 2.750 s** over **16.00 → 5.52°**, monotone in five steps, and monotone again on the face-time column | **upheld** on the lower face; on the **upper** face it is not the same curve (§4 reading 3), which P3 did not anticipate |
+| **P4** | `f73-g` gives **the longest glide median in the folder**, above 4.600 s | **4.650 s**, and with **1.2 %** off-face against `s8-off`'s 5.5 % | **upheld** |
+| **P5** | the owner's own cell **moves less**, staying inside a factor of two of 1.033 s | **0.933–1.583 s** over every placement and both faces — ×0.90 to ×1.53 | **upheld** |
+| **P6** | `?mountAgree=deck` **keeps its sign** on the 7.32° face | the **median** goes ×1.13 → **×1.00**; the **sub-floor runs** go ×1.62 → **×1.20** | **refuted as stated**, upheld as a mechanism (§5) |
+| **P7** | `both` is still **the shortest** of the four datum arms | **2.250** of 4.650 / 3.283 / 2.983 / 2.250 — ×0.48 | **upheld**, a sixth cell |
+| **P8** | the **low-side** 5.5° placements are **over 60 %** off-face | **28.7–29.1 %**, and **0 of 24 runs end** off the face | **refuted**, and for the opposite reason: the crest catches them up |
+| **P9** | the **upper-side** placements have **almost no** off-face frames | **47.3 %** and **35.7 %** — the **highest** shares in the round | **refuted**, and the sign is inverted: they have the most room *and* the longest rides, so they have the most time to cross it |
+| **P10** | the fall mix moves toward the **slow stall** on gentler faces | **0 stalls in 309 glide runs**; what grows is a kind the classifier does not name | **refuted** (§4b) |
+
+**Five upheld, four refuted, one half** — and the four refutations are P6, P8, P9 and P10, every one of which was a
+prediction about the *mechanism* rather than about a ride time.
+
+## 7. What I refuted
+
+- **The handoff's own word, "free", by four columns of one table.** `AHEAD` moves the slope, the height fraction,
+  the room and the entry band together, and two of those four have nothing to do with the face's angle (§2).
+  **My own first batch of six arms was discarded for walking into it** (§13).
+- **My own P6.** I predicted `?mountAgree=deck` would keep its median gain on a second face. It does not (×1.00),
+  and the measurement that saved the finding — the sub-floor split — was a read I made **because** the median came
+  out flat (§5).
+- **My own P10, and the brief's framing of it.** I predicted the fall mix would move toward the slow stall on
+  gentler faces, as #223 measured on its own mild arm. **There are no stalls at all in 309 glide runs**, and what
+  grows is a kind the classifier does not name (§4b).
+- **My own P8 and P9, in size and in sign, and they are the pair.** I predicted the **low**-side 5.5° placements
+  would be over 60 % off-face and the **upper**-side ones almost clean. It is **the other way round**: the low side
+  is **28.7–29.1 %** with **0 of 24 runs ending** off the face, because the crest **catches it up** (drift −0.35 to
+  −0.40 m/s); the upper side is **35.7 % and 47.3 %**, the highest shares in the round, because it has 6.2–6.7 m of
+  face to cross, outruns the wave at **+2.0 to +2.4 m/s** and lives long enough to do it. **I had the room right and
+  the direction of travel backwards.**
+- **The handoff's live candidate for Part 5's unexplained ordering**, by the arms' own frames: at a matched age the
+  off-face share is **0 of 427–720 on seven of eight arms** (§3b).
+- **And 3.4g's reading 6, which declined to separate two confounds, is now separated in one direction.** It wrote
+  *"the arms that sit flattest ride longest and the arms that ride longest have more time to drift onto flat water;
+  these dumps cannot separate those."* The matched-age read separates them: **flat water cannot cause the early
+  divergence, because there is none of it before 0.5 s in any arm.** The other direction — that long rides acquire
+  flat water — is confirmed and signed (§3b reading 3).
+
+## 8. What I will not claim
+
+1. **I will not claim `f73` is the owner's wave.** It matches him on five quantities at once — the slope at the
+   board (5.50 against 5.4–5.8°), the height fraction (0.156 against 0.157), the height (1.4 against 1.43 m), the
+   crest speed (5.7 against 5.6 m/s) and the crest-to-trough run (16.35 against 15.4 m) — and it is **wrong on his
+   `local`** (7.32° against 12.2°) and on where his steepest point sits (**0.50 against 0.63 of H**). **A smoothstep
+   cannot have his toe and his peak at once**, which is 3.4g's §4b reading 4, and this round chose the toe because
+   the toe is where the board is. **It is a better model of the water under the rider and a worse model of his wave.**
+2. **I will not claim the room is a mechanism.** §4 reading 4 is **two arms**, matched on slope and differing in
+   three things (front length, room, height fraction). It is a measurement that the slope is insufficient, not an
+   attribution to the room.
+3. **I will not read `p0925-l`'s Compress median.** It is **2 runs**, because four of that cell's six Compress runs
+   were lost to the probe's own singular design (§9 C4). It is printed in italics in §4 and nothing is built on it.
+4. **I will not call the upper/lower asymmetry the water's.** The two sides differ in the along-face current by a
+   factor of **4 to 27** as well as in the room, and `FaceWater`'s current is `c η/(d + η)`, a construction, not a
+   measurement of anything.
+5. **I will not say the face-time column is the ride time.** §3c reading 3.
+6. **No claim at all about feel.** 626 bot rides, not one of them evidence of anything the owner would feel. The
+   shot list in §12 is the only thing in this document that can answer that.
+7. **And I will not price the clamp round's outcome.** §4b's mix sits on a column clamped at 70° and I do not know
+   which way it moves when the clamp does.
+
+## 9. The controls
+
+- **C1, Part P's algebra against `FaceWater` itself.** The closed forms for the slope and the height fraction
+  against `sampleAt` and `faceFraction` at the same twelve placements, on four faces: **peak |Δslope| 1.8 × 10⁻¹⁵°,
+  peak |ΔfaceFrac| 2.3 × 10⁻¹⁶** [M]. So §2's table is the probe's own water and not an algebra that resembles it.
+- **C2, the `faceFrac` identity.** `faceFrac` recomputed from `aheadFronts` alone against the dumped column: peak
+  **1.2 × 10⁻⁴** over **21 621** frames of 3.4f's eight arms and **58 210** of this round's 23 reported ones [M]. The residual is
+  the dump's own 4-decimal rounding.
+- **C3, the published medians, reproduced.** This round's probe, reading 3.4f's own kept `.jsonl` files, prints
+  **1.450 / 4.033 / 3.683 / 0.683 / 1.033 / 0.967 / 0.483 / 0.433 / 4.600 / 3.300 / 3.000 / 2.250 / 0.917 / 1.600 /
+  1.017 / 0.233** — **all sixteen of Part 6 §7's medians, to the millisecond** [M, `34h-34f-reread.txt`]. And
+  `c-a75-g-abs`, the shipped placement re-run here on **absolute** entries, gives **1.467 s** against `g-off`'s
+  **1.450**: the eight entries are the same eight rounded to three decimals, so the runs differ in their last digits
+  and the median moves by one frame. **Declared, not hidden.**
+- **C4, the join, and the runs that were lost.** The two dumps are joined on `(stance, entry)` and not on their
+  order, because in the three per-process arms a crashed run leaves per-frame rows and **no** summary row.
+  **Unjoined summary rows: 0 of 626.** Spare per-frame runs, dropped from both parts: **2 of `p0925-g`, 1 of
+  `p15-g`, 2 of `p25-l`, 5 of `p0925-l`** — every one of them a `design` throw, logged per arm in `*.lost`.
+  **Reading `runs[i]` instead of joining put a 7.28 s per-frame record against a 1.100 s ride in this round's own
+  first draft**, and the fix is in the committed probe.
+- **C5, the Canyon control.** This round's own read of Canyon B reproduces 3.4g's seed-3 profile to **0.2–0.5°** at
+  every height fraction on a window 40 s shorter, off a sea spun up fresh on the CPU in **47.2 s** and a config read
+  for `canyonBed 'b'` and grid **400 × 451** [M, §2].
+- **C6, `fell` is read as a column and not as a diff.** 626 of 626 is `summary.filter(r => r.fell).length`, and the
+  survivor list is **empty**; the longest ride of the 626 is 7.75 s, printed from the same column.
+- **C7, the committed dumps read the same as the scratch ones.** §R run against `results/34h/` after gzipping gives
+  the same table as against the scratchpad [M].
+
+## 10. Seatbelts
+
+- **`git diff --numstat main -- src/ server/` prints nothing at all.** No byte of the game moves in this round, so
+  no ride of the game can. Two files are added (`3.4/place.ts`, the results folder) and one is appended to
+  (`3.4/README.md`); `3.3/plant.ts` is **unchanged** — this round rode it exactly as Part 7 left it.
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**. `-p server/tsconfig.json`: **exit 0**.
+- the probes type-checked **separately**, on a throwaway project extending the root's options with
+  `types: ["node", "@webgpu/types", "three"]` and an **absolute** `typeRoots`: **exit 0**, `--listFiles` confirming
+  **915 files** including `3.4/place.ts`, `3.4/face.ts` and `3.3/plant.ts`. Every exit code read **on its own line
+  and never through a pipe**; the worktree's `node_modules` is a **symlink**, so `npx` never ran.
+- `vitest`: the three merge suites, below.
+- **The Canyon byte check**, below, with its three cautions: the wrapper **prepended to the bundle**, the **grid**
+  read, and the **spin-up line** read so nothing was imported.
+- `src/wave/SurfZoneSimulation.test.ts` is closed by reading: nothing in this round touches the solver, the sea, a
+  snapshot or any spot's configuration, and its own per-test timeout is 644.5 minutes [R], so it could not gate
+  anything if it did.
+
+### 10b. The suites and the Canyon byte check
+
+| **[M]** 3 600 steps, fresh spin-up, this branch (`bc63d94a`) | grid | spin-up | snapshots | state |
+|---|---|---|---|---|
+| **Canyon B** (`?canyonWaves=true`) | **400 × 451** | **58.3 s** | **`a367d938f15fa934`** | **`9e5831f80e38abd9`** |
+| the brief's own reference | 400 × 451 | — | `a367d938f15fa934` | `9e5831f80e38abd9` |
+| **the default Canyon** | **400 × 507** | **54.3 s** | **`ea3d57a4d49f4b48`** | **`a1a2555739210f96`** |
+| the brief's own reference | 400 × 507 | — | `ea3d57a4d49f4b48` | `a1a2555739210f96` |
+
+**All four hashes are the brief's own references, to the character.** The three cautions, each read rather than
+assumed: the wrapper is `globalThis.location = { search: '?canyonWaves=true' };` **prepended to the bundle** with
+`cat`, so `devTools.ts:9` sees a real `search`; the **grids are read off the bench's own line** and they are the two
+different spots (180 400 against 202 800 cells); and the **spin-up lines are 58.3 s and 54.3 s**, so neither run
+imported a kept `.sea` — both `--state` paths were new files in this round's scratchpad. The raw record, with the
+grid and spin-up lines in place, is `results/34h/34h-canyon-byte-check.txt`. The p50/p95 timings in it were taken
+while other work ran on the machine and **nothing in this document quotes them**.
+
+**And the check cannot have failed, for a reason that is read and not inferred: `git diff --numstat main -- src/
+server/` prints nothing.** The byte check is run anyway, because the brief asked for it and because a diff is a
+claim about the files while the hashes are a claim about the bytes the sea actually produced.
+
+- `vitest run src/physics`: **58 files, 635 passed, 21 expected fail** — step 3.4e's and 3.4f's own figures to the
+  test.
+- `vitest run src/game src/scene/rig`: **70 files, 736 passed** — the same.
+- `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts`: **56 files, 482 passed, 2 expected fail**.
+- `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand: **43 of 43**.
+
+## 11. Files (3.4h)
+
+- **`docs/research/new-rider/3.4/place.ts` — new, and the only file of code in this round.** Part **P**, the
+  placement sweep's closed forms with the control against `FaceWater`'s own `sampleAt` and `faceFraction`, the
+  entry-speed column and the owner's own measured profile as data; Part **O**, the off-face read with the
+  `faceFrac`-from-`aheadFronts` identity, the matched-age window, the per-run share and the drift; Part **R**, the
+  falls with each arm's own frame-1 geometry, the published median beside `until off` and `face time`, the published
+  fall-kind classifier, and every run printed. It imports `FaceWater` and `createWaterSample` from `src/` for Part P
+  and **nothing at all** for Parts O and R, and it **writes nothing**.
+- **`docs/research/new-rider/3.3/plant.ts` — unchanged.** This round rode Part 7's own probe byte for byte; every
+  arm here is `AHEAD`, `FACE`, `ENTRIES`, `WHEEL` and `MOUNTA`, all five of which already existed.
+- `docs/research/new-rider/3.4/results/34h/` — **29 arms** as `.jsonl` (per run) and `.mount.jsonl.gz` (per frame),
+  **12 MB gzipped against 55 MB raw**, plus:
+  - `34h-predictions.md`, committed at **bc63d94a** before any arm of §4 was read, with Parts P and O declared as
+    already read;
+  - `34h-summary.txt`, Parts P, O and R generated over this round's arms;
+  - `34h-34f-reread.txt`, the same two parts over **step 3.4f's own kept dumps** — §9 C3's control and §3c's table;
+  - `34h-canyon-b-control.txt`, this round's own Canyon B read (§2, C5);
+  - `34h-canyon-byte-check.txt`, the four hashes with their grids and spin-up lines;
+  - `p0925-g.lost`, `p15-g.lost`, `p25-l.lost`, `p0925-l.lost` — the ten runs lost to the probe's own singular
+    exact-point design, named by stance and entry (§9 C4).
+- `docs/research/new-rider/3.4/README.md` — this Part, appended below Part 7's last line.
+- **`src/` and `server/`: nothing.**
+
+## 12. For the owner, in plain words — and the shot list
+
+**Last round I told you our test wave was your wave in the moment it breaks, and that the board was sitting on
+twice the water yours gives. I have now put the board on your own water. He still falls, every time.**
+
+**One: the number you were waiting for.** I ran **626 rides** — nine different spots on the wave's face from just
+under the crest to the very bottom, two different waves, speeds from 1 to 10.4 metres a second. **All 626 fell.
+Compress fell in all 205 of its runs. Nothing got past 7.75 seconds, and nine is the bar.** That sounds like bad
+news and it is actually the good kind: it means the last twenty-three rounds of *"he falls every time"* were **not**
+an accident of a test wave that was too steep. The target is real.
+
+**Two: what the gentler water does change.** The ride gets about **three times longer** on the flatter wave — 1.5
+seconds to 4.7 — and the fall itself changes character. On the steep wave he is thrown at 70° of lean doing 6.5
+metres a second. On the gentle one he topples at 43–48° doing 1.2 metres a second. **It is the same fall in slow
+motion**, not a different one. **And your own slow stand-up barely moves at all**: 1.03 seconds on the steep wave,
+1.45 on the gentle one, 18 of 18 falling in both. Making the wave kinder does not reach the part of the ride you
+complained about.
+
+**Three: a mistake in the last four rounds that I found and can now state.** Our test wave is a single hump with
+flat water in front of it. On the standard test the board **outruns the wave after about 1.2 seconds** and spends
+the rest of the "ride" on a dead flat lake — and in **15 of 24 runs the recorded fall happens on that lake**, not on
+a wave at all. So some of the ride times in my last four reports were partly time spent on still water. **Your own
+slow cell was never affected** (your board is slower than the wave, so the wave catches it). The probe now reports
+both numbers side by side and I have re-stated the affected tables.
+
+**Four: `&mountAgree=deck`, the one switch that looked like progress, measured again.** It still helps — it makes
+your three slowest stand-ups last **half again as long** — and it does that on both waves, so it is a real fix to
+how the rider is first placed on the board. **But it stops no falls at all**, and its headline number (1.03 → 1.17)
+was an accident of where the other runs sat. I would keep it; I would stop calling it progress.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your spot, `?physical&rider=new&feltFrame=deck&riderBody=two` — the body you said feels
+human.
+
+1. **Nothing new to ride from this round. There is no switch in it.** It is a measurement, and it says the thing we
+   were worried about is not a measurement error.
+2. **If you ride one thing, ride the bowl** — the end of the arm where it bends. Every arm in this folder has been
+   fitted to your **take-off**, and your spot's bowl is **19–22°** where the take-off is 16° [R, PR #223]. If
+   falling feels different there, that is a row we have never tested and it is one minute of CPU to add.
+3. **And one question only you can answer, because a bench cannot.** On the gentle wave the fall became a **slow
+   topple at 1.2 m/s** instead of a throw at 6.5. **Does a slow topple feel better or worse than being thrown?**
+   If it feels worse — if slowly sinking is more annoying than being flicked off — then "make the ride longer" is
+   the wrong target and I should stop optimising it.
+
+**My recommendation, in order.** The rider-side levers are spent and the water-side ones are now measured too, so
+I would stop sweeping the wave.
+
+- **Step nine: the two-body rider's second half.** The handoff's own ruling after your 2026-11-16 ride was that
+  *"the BODY is right and feels right; what remains wrong is what the board does underneath him"*, and the roll
+  inertia finding (3.3l: the ankle keeps only **0.25–0.40** of its authority over the body, because the board's roll
+  inertia is 0.5–1.1 kg·m² against the body's 52–54) is still the only unexplained mechanism on the chain. **This
+  round removes the last excuse for not facing it**: it is not the wave.
+- **Then the clamp round**, because §4b cannot be read until it runs: the fall-kind classifier's 45° threshold sits
+  on a column `AttachedRider` hard-clamps at 70°.
+- **Not** another face, another placement, another datum arm or another stance. Nine placements and two faces say the same thing the one face said.
+
+## 13. The deletions column, read line by line
+
+`git diff --numstat main HEAD`, read for the **deletions** column before every push, which has caught a silent
+revert on sixteen consecutive rounds:
+
+- **`docs/research/new-rider/3.4/place.ts`** — new, insertions only.
+- **`docs/research/new-rider/3.4/results/34h/…`** — new, insertions only. `34h-predictions.md` was committed at
+  **bc63d94a** before the arms and **has not been edited since**, so within the branch its own numstat is `0` in
+  both columns after that commit.
+- **`docs/research/new-rider/3.4/README.md`** — Part 8 appended below Part 7's last line. **Parts 1–7 are
+  byte-identical, and the `0` in this file's deletions column is the check for it.**
+- **`git diff --numstat main -- src/ server/` prints nothing at all** — §10's seatbelt and this round's strongest
+  single line.
+- **`docs/research/new-rider/3.3/plant.ts` does not appear in the diff at all.** This is the first round since 3.3k
+  that did not touch the ride probe.
+- **What was written and then thrown away, declared rather than left out.** The round's **first** six arms
+  (`a25-g-off`, `a50-g-off`, `a65-g-off`, `a75-g-off`, `a90-g-off`, `a9075-g-off`, `a75-l-off`) were run on
+  `EXTRAS`, the probe's **relative** entry, before §1 R2 was read. `EXTRAS` takes the water's own flow at the
+  placement off the entry, so those arms rode a speed band that moved with the placement by up to 2.67 m/s and
+  **their ride times are not comparable across placements.** They were re-run on `ENTRIES` as the `p*` arms and
+  **only the `ENTRIES` arms are reported** — except `a75-l-off`, which was already on `ENTRIES=1…6` and is the
+  owner's own cell's shipped row, and `a75-g-off`, which is §9 C3's own `EXTRAS`-against-`ENTRIES` comparison.
+  **All seven are committed as `.jsonl` anyway**, because a discarded arm that is quoted nowhere is still part of the
+  record of what the round ran; what is *not* committed is the per-frame dump of `a0925-g-off`, the one `EXTRAS` arm
+  that crashed partway and has no summary row at all to join it to (§1 R3). **No table in §2–§6 reads any of the
+  five.**
+- **And one real error of my own, found by its own control and fixed in the committed probe.** The first draft of
+  §R joined each summary row to `runs[i]` of the per-frame dump. In the three arms run one process per run, a
+  crashed run leaves per-frame rows with **no** summary row, so the two files hold different numbers of runs: the
+  draft printed a **7.28 s** per-frame record against a **1.100 s** ride. The probe now joins on
+  `(stance, entry)` and prints `unjoined` — **0 of 626** — and §9 C4 is that control.

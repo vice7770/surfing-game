@@ -127,7 +127,7 @@ if (part('P')) {
     const H = 1.4;
     const front = (1.5 * H) / Math.tan(slope / DEG);
     out(`\n## P. \`FACE=1.4,${slope},5.7\` — the front is ${f(front, 2)} m; the placement's FOUR quantities, exact`);
-    out(`  (\`AHEAD\` is the placement in fronts; ψ = 45° is the probe's own \`SIDE = −45\`; the room is the face left between the board and the trough; `EXTRAS entry` is the speed band's own baseline, which the placement moves too)`);
+    out(`  (\`AHEAD\` is the placement in fronts; ψ = 45° is the probe's own \`SIDE = −45\`; the room is the face left between the board and the trough; \`EXTRAS entry\` is the speed band's own baseline, which the placement moves too)`);
     out(['AHEAD', 'faceFrac', 'along °', 'tilt(45°) °', 'room m', 'room fronts', 'the water u m/s', 'EXTRAS entry m/s', 'Canyon frac', 'side'].map((s, i) => pad(s, i ? 13 : 8)).join(''));
     for (const a of AHEADS) {
       const frac = 1 - smooth(a);
@@ -166,7 +166,23 @@ if (part('P')) {
 
 // ------------------------------------------------------------------ the dumps
 interface Frame { frame: number; t: number; aheadFronts: number; faceFrac: number; tilt: number; roll: number; headOff: number; speed: number; stance: string }
-interface Run { stance: string; extra: number | null; entryAsked: number | null; fell: string | false; fellAt: number; mount: string; wheel: string }
+interface Run {
+  stance: string; extra: number | null; entryAsked: number | null; fell: string | false; fellAt: number;
+  mount: string; wheel: string; bankFall: number; throughFall: number;
+}
+/**
+ * **The two kinds of fall, by the track's own published classifier** [R, `docs/research/face-hold-2026-11-10/
+ * kinds.py.txt:1–2`], restated here so no round invents a third definition:
+ * **sudden** — the body's bank past **45°** at the end; **stall** — cause `balance` with the bank within **20°** of
+ * upright *and* the speed through the water under **2.5 m/s**; **other** — anything else. The columns are
+ * `3.3/plant.ts`'s own `bankFall` and `throughFall`, the state at the last frame [R, `:1921–1923`].
+ */
+const fallKind = (r: Run): 'sudden' | 'stall' | 'other' => {
+  if (!r.fell) return 'other';
+  if (Math.abs(r.bankFall) > 45) return 'sudden';
+  if (r.fell === 'balance' && Math.abs(r.bankFall) <= 20 && r.throughFall < 2.5) return 'stall';
+  return 'other';
+};
 
 const read = (path: string): string => (existsSync(path) ? readFileSync(path, 'utf8')
   : existsSync(`${path}.gz`) ? gunzipSync(readFileSync(`${path}.gz`)).toString('utf8') : '');
@@ -183,6 +199,22 @@ function runsOf(rows: Frame[]): Frame[][] {
   return o;
 }
 const armNames = () => (ARMS.length ? ARMS : []);
+/**
+ * **A run's own key, and why the two dumps are joined on it rather than on their order.** Some arms here were run
+ * **one process per (stance, entry)**, because the probe's own exact-point measurement `design` can throw `singular`
+ * at a placement high on the face (§C) and a throw in one batch kills the arm's remaining runs. A crashed run writes
+ * its per-frame rows and **no summary row**, so in those arms the two dumps hold different numbers of runs and
+ * `summary[i]` is **not** `runs[i]`. Joining on `(stance, entryAsked ?? extra)` — a key both files carry and which is
+ * unique inside an arm, since `STEERS` is a single value throughout — makes the join independent of order, and
+ * `joinMiss` below is the count that says whether it closed. Reading `runs[i]` instead put a 7.28 s per-frame record
+ * against a 1.100 s ride in this round's own first draft.
+ */
+const keyOf = (r: { stance: string; entryAsked?: number | null; extra?: number | null }) => `${r.stance}|${r.entryAsked ?? r.extra ?? 0}`;
+const joinRuns = (summary: Run[], runs: Frame[][]): { run: Frame[] | undefined; miss: number }[] => {
+  const by = new Map<string, Frame[]>();
+  for (const run of runs) if (run.length) by.set(keyOf(run[0]), run);
+  return summary.map((r) => ({ run: by.get(keyOf(r)), miss: by.has(keyOf(r)) ? 0 : 1 }));
+};
 
 // ------------------------------------------------------------------ O. the frames with no face under the board
 if (part('O')) {
@@ -191,9 +223,14 @@ if (part('O')) {
   out(['arm', 'frames', 'runs', 'off-face %', 'ident. resid', 'their aheadFronts', 'behind crest', 'matched 0.2–0.7 s'].map((s, i) => pad(s, i ? 14 : 18)).join(''));
   const keep: { name: string; rows: Frame[]; runs: Frame[][] }[] = [];
   for (const name of armNames()) {
-    const rows = lines<Frame>(`${DIR}/${name}.mount.jsonl`);
-    if (!rows.length) { out(`  ${name}: no dump`); continue; }
-    const runs = runsOf(rows);
+    const rows0 = lines<Frame>(`${DIR}/${name}.mount.jsonl`);
+    if (!rows0.length) { out(`  ${name}: no dump`); continue; }
+    // **One population for Parts O and R.** In the per-process arms a crashed run leaves its per-frame rows behind
+    // with no summary row (see `joinRuns`), so the frames of runs the falls table cannot see are dropped here too.
+    const summary = lines<Run>(`${DIR}/${name}.jsonl`);
+    const allRuns = runsOf(rows0);
+    const runs = summary.length ? joinRuns(summary, allRuns).map((j) => j.run).filter((r): r is Frame[] => !!r) : allRuns;
+    const rows = runs.flat();
     keep.push({ name, rows, runs });
     let resid = 0;
     for (const r of rows) resid = Math.max(resid, Math.abs((r.aheadFronts < 0 ? 1 : 1 - smooth(r.aheadFronts)) - r.faceFrac));
@@ -235,20 +272,32 @@ if (part('O')) {
 // ------------------------------------------------------------------ R. the falls
 if (part('R')) {
   out('\n## R. The falls, both conventions, with each arm\'s own frame-1 geometry and its on-face time');
-  out(['arm', 'frame 1: faceFrac', 'along °', 'tilt °', 'runs', 'fell', 'median s', 'ON-FACE med s', 'Compress fell', 'Compress med s'].map((s, i) => pad(s, i ? 15 : 18)).join(''));
+  out(['arm', 'frame 1: faceFrac', 'along °', 'tilt °', 'runs', 'fell', 'median s', 'until off, med', 'face time, med', 'Compress fell', 'Compress med s', 'sudden/stall/other', 'spare runs/unjoined'].map((s, i) => pad(s, i ? 15 : 18)).join(''));
   for (const name of armNames()) {
     const summary = lines<Run>(`${DIR}/${name}.jsonl`);
     const rows = lines<Frame>(`${DIR}/${name}.mount.jsonl`);
     if (!summary.length) { out(`  ${name}: no summary`); continue; }
     const runs = rows.length ? runsOf(rows) : [];
-    const first = runs.map((r) => r[0]);
+    const joined = joinRuns(summary, runs);
+    const joinMiss = joined.reduce((a, j) => a + j.miss, 0);
+    const first = joined.map((j) => j.run?.[0]).filter((r): r is Frame => !!r);
     const end = (r: Run) => (r.fell ? r.fellAt : 9);
-    // The on-face time: the first off-face frame's own `t`, or the ride's own end if the board never leaves the face.
-    const onFace = summary.map((r, i) => {
-      const run = runs[i];
+    /**
+     * **Two different quantities, both printed, because a board can leave the face and come back** (`g-predict`
+     * does): `untilOff` is the time until the board **first** leaves the face — the length of the ride's unbroken
+     * on-face prefix — and `faceTime` is the **total** time it had a face under it, the on-face frames counted and
+     * divided by 60. Neither is the other, and neither is the published ride time.
+     */
+    const untilOff = summary.map((r, i) => {
+      const run = joined[i].run;
       if (!run) return Number.NaN;
       const o = run.find((x) => x.faceFrac <= 0.001);
       return o ? o.t : end(r);
+    });
+    const faceTime = summary.map((_r, i) => {
+      const run = joined[i].run;
+      if (!run) return Number.NaN;
+      return run.filter((x) => x.faceFrac > 0.001).length / 60;
     });
     const cm = summary.filter((r) => r.stance === 'compress');
     const psi = first.length ? Math.abs(q(first.map((r) => r.headOff), 0.5)) : 45;
@@ -256,7 +305,9 @@ if (part('R')) {
     const along = Math.atan(Math.tan(tilt / DEG) / Math.sin(psi / DEG)) * DEG;
     out([name, f(first.length ? q(first.map((r) => r.faceFrac), 0.5) : Number.NaN, 4), f(along, 2), f(tilt, 2),
       `${summary.length}`, `${summary.filter((r) => r.fell).length}`, f(q(summary.map(end), 0.5), 3),
-      f(q(onFace, 0.5), 3), `${cm.filter((r) => r.fell).length} of ${cm.length}`, f(q(cm.map(end), 0.5), 3),
+      f(q(untilOff, 0.5), 3), f(q(faceTime, 0.5), 3), `${cm.filter((r) => r.fell).length} of ${cm.length}`, f(q(cm.map(end), 0.5), 3),
+      `${summary.filter((r) => fallKind(r) === 'sudden').length}/${summary.filter((r) => fallKind(r) === 'stall').length}/${summary.filter((r) => fallKind(r) === 'other').length}`,
+      `${runs.length - summary.length}/${joinMiss}`,
     ].map((s, i) => pad(s, i ? 15 : 18)).join(''));
   }
   out('\n  and every run of every arm, because a median over a bimodal population is a knife edge:');
@@ -265,8 +316,9 @@ if (part('R')) {
     const rows = lines<Frame>(`${DIR}/${name}.mount.jsonl`);
     if (!summary.length) continue;
     const runs = rows.length ? runsOf(rows) : [];
+    const joined2 = joinRuns(summary, runs);
     const cells = summary.map((r, i) => {
-      const run = runs[i];
+      const run = joined2[i].run;
       const o = run?.find((x) => x.faceFrac <= 0.001);
       const t = r.fell ? r.fellAt : 9;
       return `${(r.extra ?? r.entryAsked ?? 0).toString()}:${t.toFixed(2)}${o ? `/${o.t.toFixed(2)}` : ''}`;
