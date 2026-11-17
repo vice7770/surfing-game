@@ -9,7 +9,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, askCapSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1338,6 +1338,68 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { askCap: undefined }).askCap).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).askCap).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?stanceDeep` dev switch (step 3.5b; **shipped by default since step 3.5c**, the owner's ruling D of
+  // 2026-11-17 "keep the row"): the stance ladder's fourth rung — the tube tuck's 0.45 m — is read by the balance's
+  // plant and by its gain schedule, instead of every leg past Compress's 0.30 m being designed and coupled as
+  // Compress. `off` is the old three-row plant, kept so a ride can be priced against this track's published history;
+  // `on` says the shipped behaviour out loud, so step 3.5b's own addresses keep working. An online room is pinned to
+  // the ship default, which is now the fourth rung.
+  it('carries `?stanceDeep=off` and `=on` (the row ships; `off` is the old 0.30 m clamp), and ignores anything else', () => {
+    expect(stanceDeepSwitch('?stanceDeep=off')).toEqual({ stanceDeep: 'off' });
+    expect(stanceDeepSwitch('?stanceDeep=OFF')).toEqual({ stanceDeep: 'off' });
+    expect(stanceDeepSwitch('?stanceDeep=on')).toEqual({ stanceDeep: 'on' });
+    expect(stanceDeepSwitch('?stanceDeep=ON')).toEqual({ stanceDeep: 'on' });
+    for (const search of ['', '?stanceDeep', '?stanceDeep=', '?stanceDeep=deep', '?stanceDeep=0', '?stanceReach=keep']) {
+      expect(stanceDeepSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      for (const [search, want] of [['?stanceDeep=off', 'off'], ['?stanceDeep=on', 'on']] as const) {
+        vi.stubGlobal('location', { search });
+        for (const spot of ['point', 'pool', 'canyon'] as const) {
+          expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceDeep, `${spot} ${search}`).toBe(want);
+        }
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      // The pin is still `undefined`, and `undefined` is now the fourth rung rather than the 0.30 m clamp.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bstanceDeep: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { stanceDeep: undefined }).stanceDeep).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceDeep).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?deepen=on` dev switch (step 3.5b, the owner's ruling C): opt-in, full manual crouch reaches the tube tuck's
+  // 0.45 m anywhere and Compress does not fade it away, so the crouch key deepens whatever stance is held — on the
+  // owner's input only, with no clock and no stamina; anything else, and an online room, the tuck under a curl only.
+  it('deepens the held stance to the tuck with `?deepen=on` (an opt-in dev switch), and keeps the tube gate otherwise', () => {
+    expect(deepenSwitch('?deepen=on')).toEqual({ deepen: 'on' });
+    expect(deepenSwitch('?deepen=ON')).toEqual({ deepen: 'on' });
+    for (const search of ['', '?deepen', '?deepen=', '?deepen=off', '?deepen=dip', '?snapDepth=deep']) {
+      expect(deepenSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?deepen=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).deepen, spot).toBe('on');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bdeepen: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { deepen: undefined }).deepen).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).deepen).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

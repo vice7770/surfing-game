@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { eigenvalues, lateralCompliance, lateralMass } from './rollModel';
-import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -261,6 +261,123 @@ describe('the two-body rider as a plant (step 3.4a, `riderBody`)', () => {
     // Between the table's depths it interpolates, and outside it holds.
     expect(bodyInertiaAt(73, -1, 0.84)).toBe(bodyInertiaAt(73, 0, 0.84));
     expect(bodyInertiaAt(73, 9, 0.55)).toBe(bodyInertiaAt(73, 0.3, 0.55));
+  });
+
+  // Step 3.5b: the ladder's fourth rung, the tube tuck's 0.45 m, read only when it is asked for (`?stanceDeep=on`).
+  // The three shipped rows and the 0.30 m clamp must be untouched without the flag — that is what "default
+  // byte-identical" means here — and with it the ladder must reach the tuck's measured row rather than clamp.
+  it('reads the tuck\'s fourth row only with `deep`, and leaves the three shipped rows and the 0.30 m clamp alone', () => {
+    // The row itself, as `3.2/inertia.probe.ts` measured it at the tuck posture (arms in the game's own pose).
+    expect(STANCE_TUCK).toEqual({ depth: 0.45, height: 0.4, lower: 0.857, upper: 2.44 });
+    expect(STANCE_TABLE_DEEP.length).toBe(4);
+    expect(STANCE_TABLE.length).toBe(3);
+    expect(BODY_FRONTAL_SHARE_TUCK).toBe(0.2624);
+    // Off: identical to the three-row lookup at and below Compress, and clamped onto Compress past it.
+    for (const d of [0, 0.1, 0.195, 0.25, 0.3, 0.35, 0.45, 2]) {
+      expect(stanceAt(d), `depth ${d}`).toEqual(stanceAt(Math.min(0.3, Math.max(0, d))));
+    }
+    expect(stanceAt(0.45)).toEqual({ height: 0.55, lower: 1.24, upper: 1.96 });
+    expect(stanceAt(0.33)).toEqual({ height: 0.55, lower: 1.24, upper: 1.96 });
+    // On: the same at and below Compress, the tuck's own row at 0.45, and interpolated between.
+    for (const d of [0, 0.1, 0.195, 0.25, 0.3]) expect(stanceAt(d, true), `depth ${d}`).toEqual(stanceAt(d));
+    expect(stanceAt(0.45, true)).toEqual({ height: 0.4, lower: 0.857, upper: 2.44 });
+    expect(stanceAt(9, true)).toEqual(stanceAt(0.45, true));
+    const mid = stanceAt(0.375, true);
+    expect(mid.height).toBeCloseTo(0.475, 12);
+    expect(mid.lower).toBeCloseTo((1.24 + 0.857) / 2, 12);
+    expect(mid.upper).toBeCloseTo((1.96 + 2.44) / 2, 12);
+    // The achieved depth Compress actually reaches on `?rider=new` (step 3.3f: up to 0.044 m over the command), which
+    // is why the row is not purely additive: off it is clamped onto Compress, on it is already off that row.
+    expect(stanceAt(0.344).height).toBe(0.55);
+    expect(stanceAt(0.344, true).height).toBeLessThan(0.55);
+    // The body's frontal share takes the same two readings.
+    expect(bodyInertiaAt(73, 0.45, 0.4)).toBeCloseTo(0.2099 * 73 * 0.4 * 0.4, 10);
+    expect(bodyInertiaAt(73, 0.45, 0.4, true)).toBeCloseTo(0.2624 * 73 * 0.4 * 0.4, 10);
+    expect(bodyInertiaAt(73, 0.3, 0.55, true)).toBe(bodyInertiaAt(73, 0.3, 0.55));
+    // The gain schedule's own knots: a SECOND clamp on the same quantity, so the row needs the knot to reach a gain.
+    expect(SCHEDULE_DEPTHS).toEqual([0, 0.195, 0.3]);
+    expect(SCHEDULE_DEPTHS_DEEP).toEqual([0, 0.195, 0.3, 0.45]);
+  });
+
+  // **Step 3.5c (the owner's ruling D of 2026-11-17, "keep the row"): the fourth rung is now the DEFAULT.**
+  // The two lookups above take an explicit `deep` flag and are unchanged; what this test pins is the POLICY — the
+  // two places that decide what `undefined` means. Both must read the row, so that a rider built with no options and
+  // a weights object that never heard of the field both get the measured plant, and only an explicit `false` goes
+  // back to the three rows. Without this test the flip is invisible: every lookup test above passes either way.
+  it('ships the tuck row by default, and reaches the old three-row plant only on an explicit false (step 3.5c)', () => {
+    // The shipped value, said out loud in one place.
+    expect(DEFAULT_WEIGHTS.stanceDeep).toBe(true);
+    // Read site 1 — `scheduledDesign`'s plant. `undefined` weights, and a partial object without the field, must both
+    // give the row; `false` must give the clamped plant, and the two must actually differ at a deep depth.
+    // (`rail` is the THIRD argument and the weights the fourth — passing the weights third silently makes `rail` an
+    // object and every gain NaN, which is what this test's own first draft did.)
+    const shipped = scheduledDesign(7, 0.45, 0);
+    const spelled = scheduledDesign(7, 0.45, 0, { ...DEFAULT_WEIGHTS, stanceDeep: true });
+    const omitted = scheduledDesign(7, 0.45, 0, { ...DEFAULT_WEIGHTS, stanceDeep: undefined });
+    const old = scheduledDesign(7, 0.45, 0, { ...DEFAULT_WEIGHTS, stanceDeep: false });
+    expect(Number.isFinite(shipped.k[0][0])).toBe(true);
+    expect(shipped.k).toEqual(spelled.k);
+    expect(shipped.k).toEqual(omitted.k);
+    expect(shipped.k).not.toEqual(old.k);
+    // The shipped leg IS the tuck's plant, and the old leg IS the clamped one, both to the last bit.
+    const tuck = plantAt(7, 0.45, { stanceDeep: true });
+    const clamped = plantAt(7, 0.45, { stanceDeep: false });
+    expect(tuck.y.height).toBe(0.4);
+    expect(clamped.y.height).toBe(0.55);
+    expect(shipped.k).toEqual(design(tuck.y, tuck.t, { ...DEFAULT_WEIGHTS, stanceDeep: true }).k);
+    expect(old.k).toEqual(design(clamped.y, clamped.t, { ...DEFAULT_WEIGHTS, stanceDeep: false }).k);
+    // Read site 2 — the gain schedule's knots inside `PredictiveController.blend`, reached through the public tick.
+    // The fourth knot is what lets a design be built at 0.45 at all (step 3.5b's second clamp), so a controller with
+    // no weights must send what the explicit-`true` one sends and not what the `false` one sends.
+    const limits = { ankle: 0.25, twist: 30 };
+    const run = (w?: DesignWeights): number[][] => {
+      const c = new PredictiveController(w);
+      const sense = [0.02, 0, 0.05, 0, 0, 0, 0, 0];
+      const o: number[][] = [];
+      for (let i = 0; i < 6; i += 1) o.push([...c.tick(sense, 7, 0.45, 0.05, 0, limits)]);
+      return o;
+    };
+    const shipTick = run(undefined);
+    expect(run({ ...DEFAULT_WEIGHTS, stanceDeep: true })).toEqual(shipTick);
+    expect(run({ ...DEFAULT_WEIGHTS })).toEqual(shipTick);
+    const oldTick = run({ ...DEFAULT_WEIGHTS, stanceDeep: false });
+    expect(oldTick).not.toEqual(shipTick);
+    // At and below Compress the knots pick the same two designs either way, so the default moves nothing there —
+    // the row's whole effect is on the ticks that were being clamped onto 0.30 m.
+    const atDepth = (d: number, w?: DesignWeights): number[][] => {
+      const c = new PredictiveController(w);
+      const sense = [0.02, 0, 0.05, 0, 0, 0, 0, 0];
+      const o: number[][] = [];
+      for (let i = 0; i < 6; i += 1) o.push([...c.tick(sense, 7, d, 0.05, 0, limits)]);
+      return o;
+    };
+    for (const d of [0, 0.195, 0.3]) {
+      expect(atDepth(d, undefined), `depth ${d}`).toEqual(atDepth(d, { ...DEFAULT_WEIGHTS, stanceDeep: false }));
+    }
+  });
+
+  // Step 3.5b: the plant the tuck's row gives, against the plant Compress's row gives at the same depth — the cost of
+  // the missing row, stated as numbers rather than asserted. Both legs are the same call with one flag.
+  it('shortens the pendulum, raises the lean rate and lightens the plant at the tuck (step 3.5b)', () => {
+    const shipped = plantAt(7, 0.45);
+    const deep = plantAt(7, 0.45, { stanceDeep: true });
+    expect(shipped.y.height).toBe(0.55);
+    expect(deep.y.height).toBe(0.4);
+    // The pendulum 37.5 % high without the row, omega0 = sqrt(g/L) 15 % low, the point mass's inertia 1.89x.
+    expect(shipped.y.height / deep.y.height).toBeCloseTo(1.375, 10);
+    expect(Math.sqrt(9.81 / deep.y.height) / Math.sqrt(9.81 / shipped.y.height)).toBeCloseTo(1.1726, 3);
+    expect((shipped.y.mass * shipped.y.height ** 2) / (deep.y.mass * deep.y.height ** 2)).toBeCloseTo(1.8906, 3);
+    // The rider's yaw inertia on the board FALLS at the tuck and the twist rotor's RISES: the thighs' share moves from
+    // the board onto the twist as the knees fold (`3.2/inertia.probe.ts`'s `yawSplit`).
+    expect(deep.y.riderYawInertia).toBeLessThan(shipped.y.riderYawInertia);
+    expect(deep.t.inertia).toBeGreaterThan(shipped.t.inertia);
+    expect(deep.y.riderYawInertia / shipped.y.riderYawInertia).toBeCloseTo(0.691, 3);
+    expect(deep.t.inertia / shipped.t.inertia).toBeCloseTo(1.245, 3);
+    // At and below Compress nothing moves at all.
+    for (const d of [0, 0.195, 0.3]) {
+      expect(plantAt(7, d, { stanceDeep: true }).y.height, `depth ${d}`).toBe(plantAt(7, d).y.height);
+      expect(plantAt(7, d, { stanceDeep: true }).y.riderYawInertia, `depth ${d}`).toBe(plantAt(7, d).y.riderYawInertia);
+    }
   });
 
   // The switch's own address: `'control'` must give the shipped design and `'two'` must not — otherwise the ridden

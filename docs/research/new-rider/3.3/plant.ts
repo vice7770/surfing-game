@@ -244,6 +244,19 @@ const SLIP = process.env.SLIP === 'lab' ? 'lab' : undefined;
 const ASKCAP = process.env.ASKCAP === '1.5' ? '1.5' : process.env.ASKCAP === '2' ? '2'
   : process.env.ASKCAP === '4' ? '4' : process.env.ASKCAP === '4.5' ? '4.5' : process.env.ASKCAP === '9' ? '9'
   : undefined;
+/**
+ * **Step 3.5c: `STDEEP=on|off` rides `?stanceDeep`** (`AttachedRiderOptions.stanceDeep`) — the stance ladder's fourth
+ * rung, the tube tuck's 0.45 m, read by the balance's plant (`STANCE_TUCK`, `BODY_FRONTAL_SHARE_TUCK`) and by its gain
+ * schedule's fourth knot (`SCHEDULE_DEPTHS_DEEP`), instead of every leg deeper than Compress being designed and
+ * coupled on Compress's row behind `stanceAt`'s 0.30 m clamp.
+ *
+ * **The default changed under this switch on 2026-11-17 (the owner's ruling D, "keep the row").** Before it the row
+ * was opt-in, so `STDEEP` unset meant the old plant; after it `STDEEP` unset is the **new** plant and `STDEEP=off` is
+ * the old one. That is exactly why both spellings are accepted here rather than one: the three reference arms
+ * (`f73-l`, `s16-l`, `f73-g`) have to be readable on both plants from the same probe, because every ride time this
+ * folder published before the ruling was measured on a pendulum 37.5 % too long and an inertia 1.89 × out.
+ */
+const STDEEP = process.env.STDEEP === 'on' ? 'on' : process.env.STDEEP === 'off' ? 'off' : undefined;
 /** The floor's own number for `plantAt`, m/s: the shipped lookup's own when `FLOOR` is unset. */
 const FLOOR_OPT: { plantFloor: number } | undefined = FLOOR ? { plantFloor: Number(FLOOR) } : undefined;
 /**
@@ -992,6 +1005,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(COST ? { riderCost: COST } : {}),
     ...(ARANGE ? { ankleRange: ARANGE } : {}),
     ...(BANKC ? { bankClamp: BANKC } : {}),
+    ...(STDEEP ? { stanceDeep: STDEEP } : {}),
     ...(FLOOR ? { plantFloor: FLOOR } : {}),
     ...(ASKCAP ? { askCap: ASKCAP } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
@@ -2811,7 +2825,7 @@ for (const row of rows) emit(row);
 // still counts.
 const num = (k: string) => rows.map((x) => x[k]).filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
 const sh = (k: string) => span(num(k), 3);
-process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}, body ${BODY ?? 'point'}${BODYJ !== undefined ? ` x${BODYJ}` : ''}, cost ${COST ?? 'off'}, plant floor ${FLOOR ?? '4 (ships)'}\n`);
+process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}, body ${BODY ?? 'point'}${BODYJ !== undefined ? ` x${BODYJ}` : ''}, cost ${COST ?? 'off'}, plant floor ${FLOOR ?? '4 (ships)'}, stance ladder ${STDEEP ?? 'as it ships'}\n`);
 {
   const a10 = additivity(10);
   const a0 = additivity(0);

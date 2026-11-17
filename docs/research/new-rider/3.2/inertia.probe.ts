@@ -259,7 +259,11 @@ it('the rider yaw inertia by posture (de Leva 1996)', () => {
   emit({ posture: 'anatomical, arms out level', inertia: r(o.total, 3), arms: r(o.arms, 3), ratio: r(o.total / a.total, 2) });
   // The surfing stances: hips 0.78 / 0.585 / 0.48 m over the deck (tall, the pumping crouch, Compress), sitting back
   // and leaning the trunk forward more as they go lower; the knees forward (toward the toes) and a little out.
-  const stances: [string, number, number, number][] = [['tall', 0.78, 0.04, 0.15], ['crouch', 0.585, 0.08, 0.35], ['compress', 0.48, 0.1, 0.5]];
+  // Step 3.5b adds the fourth rung, the tube tuck (`AttachedRider.MANUAL_CROUCH_DEPTH` = 0.45 m of leg depth, so the
+  // hips 0.78 − 0.45 = 0.33 m over the deck). Its `back` and `lean` are this ladder's OWN trend carried on, not a new
+  // guess: the last segment's slopes (0.190 m/m and 1.429 rad/m) give 0.129 m and 0.714 rad, and a straight fit through
+  // all three gives 0.131 and 0.661 — so 0.13 and 0.714 are used and `the tuck posture's own spread` below sweeps them.
+  const stances: [string, number, number, number][] = [['tall', 0.78, 0.04, 0.15], ['crouch', 0.585, 0.08, 0.35], ['compress', 0.48, 0.1, 0.5], ['tuck', 0.33, 0.13, 0.714]];
   for (const [name, hip, back, lean] of stances) for (const arms of ['in', 'pose', 'out'] as const) {
     const v = verticalInertia(posture(hip, back, lean, [0.3, 1, 0], arms));
     emit({ posture: name, arms, comHeight: r(v.com[2], 3), comAcross: r(v.com[1], 3), inertia: r(v.total, 3), arms_: r(v.arms, 3), legs: r(v.legs, 3) });
@@ -277,12 +281,28 @@ it('the rider body\'s frontal-plane inertia by posture, for the two-body rider (
   // The same three posed stances as the yaw read above, and the same anatomical control, about the board's long axis
   // through the body's own centre of mass. `pose` is the game's own arm pose, which is the one the stance table was
   // built on; `in` and `out` are printed so the arms' share is visible rather than asserted.
-  const stances: [string, number, number, number][] = [['tall', 0.78, 0.04, 0.15], ['crouch', 0.585, 0.08, 0.35], ['compress', 0.48, 0.1, 0.5]];
+  const stances: [string, number, number, number][] = [['tall', 0.78, 0.04, 0.15], ['crouch', 0.585, 0.08, 0.35], ['compress', 0.48, 0.1, 0.5], ['tuck', 0.33, 0.13, 0.714]];
   for (const [name, hip, back, lean] of stances) for (const arms of ['in', 'pose', 'out'] as const) {
     const v = frontalInertia(posture(hip, back, lean, [0.3, 1, 0], arms));
     emit({
       part: 'frontal', posture: name, arms, comHeight: r(v.comHeight, 3), h: r(v.h, 3),
       own: r(v.own, 3), pointMass: r(v.pointMass, 3), aboutAnkle: r(v.aboutAnkle, 3), share: r(v.share, 4),
+    });
+  }
+});
+
+it('the tuck posture\'s own spread (step 3.5b): the fourth row against its back and lean', () => {
+  // The fourth row's `back` and `lean` are the ladder's trend carried on, and that extrapolation is the row's own error
+  // bar. Nine postures at the tuck's hip height (0.33 m), the game's own arm pose, the same segments and the same two
+  // readings (`yawSplit` at the centre of mass for `lower`/`upper`, `frontalInertia` for `height` and the share).
+  for (const back of [0.1, 0.13, 0.16]) for (const lean of [0.5, 0.714, 0.9]) {
+    const parts = posture(0.33, back, lean, [0.3, 1, 0], 'pose');
+    const v = verticalInertia(parts);
+    const s = yawSplit(parts, 'com');
+    const f = frontalInertia(parts);
+    emit({
+      part: 'tuck-spread', back, lean, comHeight: r(v.com[2], 3), aboveAnkle: r(f.h, 3),
+      lower: r(s.lower, 3), upper: r(s.tt, 3), share: r(f.share, 4),
     });
   }
 });

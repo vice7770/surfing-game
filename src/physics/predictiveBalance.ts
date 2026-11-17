@@ -556,6 +556,34 @@ export const STANCE_TABLE = [
   { depth: 0.195, height: 0.65, lower: 1.37, upper: 1.68 },
   { depth: 0.3, height: 0.55, lower: 1.24, upper: 1.96 },
 ] as const;
+/**
+ * **Step 3.5b: the fourth rung, the tube tuck** — 0.45 m of leg depth (`AttachedRider.MANUAL_CROUCH_DEPTH`, which is
+ * also what `?snapDepth=deep` loads Snap to and what the deepen button asks for), so the hips 0.78 − 0.45 = 0.33 m
+ * over the deck. **Measured, not guessed:** `docs/research/new-rider/3.2/inertia.probe.ts` posed at that hip height
+ * in the game's own arm pose, the same de Leva (1996) segment table and the same two readings the three rows above
+ * were taken from — `yawSplit(…, 'com')`'s `withBoard` and `twist` for `lower` and `upper`, which reproduce
+ * 1.373/1.435, 1.372/1.679 and 1.241/1.958 for tall, crouch and Compress to the thousandth.
+ *
+ * `height` is the whole body's centre of mass over the feet, m, and 0.40 is **`docs/research/new-rider/design.md`'s
+ * own tube-tuck row** (its ladder 0.85 / 0.65 / 0.55 / 0.40 is where the three rows above came from), confirmed by the
+ * probe at 0.394 m above its ankle line — the same reading sits 0.012–0.031 m under the three shipped rows, so 0.40
+ * is both the design's value and the measurement's, inside the posture's own 0.363–0.423 m spread.
+ *
+ * **The row's error bar is the posture, and it was swept rather than asserted** (`3.2/inertia.probe.ts`, *the tuck
+ * posture's own spread*): the hip height is fixed by the leg depth, but how far the hips sit back (`back`) and how far
+ * the trunk leans (`lean`) are this ladder's own trend carried on — 0.13 m and 0.714 rad from the last segment's
+ * slopes, 0.131 and 0.661 from a straight fit through all three. Over back 0.10–0.16 m × lean 0.50–0.90 rad the row
+ * reads `lower` 0.748–1.027, `upper` 1.973–2.873 and the frontal share 0.2527–0.2811. **So `upper` is the soft number
+ * (±18 %) and `lower` the firm one (±14 %), and neither is tuned to the thousandth.**
+ *
+ * Two things the row says that are worth reading before riding it: going from Compress to the tuck the rider's yaw
+ * inertia **on the board falls 31 %** (1.241 → 0.857) while the twist rotor's **rises 25 %** (1.958 → 2.440), because
+ * the thighs' share moves from the board onto the twist as the knees fold; and the pendulum shortens 0.55 → 0.40 m,
+ * which is ω₀ = √(g/L) **4.22 → 4.95 rad/s** and `m h²` **22.1 → 11.7 kg·m²**.
+ */
+export const STANCE_TUCK = { depth: 0.45, height: 0.4, lower: 0.857, upper: 2.44 } as const;
+/** Step 3.5b: the ladder with the tuck's row, which `stanceAt(depth, true)` reads; shipped by default since 3.5c. */
+export const STANCE_TABLE_DEEP = [...STANCE_TABLE, STANCE_TUCK] as const;
 export const TWIST_STIFFNESS = 20;
 export const TWIST_DAMPING = 3;
 /** 3.2d's guess at the board's roll inertia with the water's, kg·m² (the gate's range 0.03–0.3). Step 3.2e uses the game's own (BOARD_INERTIA). */
@@ -593,21 +621,53 @@ export function boardInertiaAt(speed: number): { roll: number; yaw: number } {
  * The three sit at `STANCE_TABLE`'s own depths, so they are read with the interpolation `stanceAt` uses.
  */
 export const BODY_FRONTAL_SHARE = [0.1685, 0.1917, 0.2099] as const;
+/**
+ * Step 3.5b: the tuck's own frontal share, read from the same probe, the same posture and the same arm pose as
+ * `STANCE_TUCK` (0.2624; its absolute is 4.026 kg·m² against `m h²` of 11.318). Swept over the posture's spread it is
+ * 0.2527–0.2811, so it is good to about ±7 %.
+ */
+export const BODY_FRONTAL_SHARE_TUCK = 0.2624;
+/** Step 3.5b: the shares with the tuck's, read with `STANCE_TABLE_DEEP`'s interpolation; shipped by default (3.5c). */
+export const BODY_FRONTAL_SHARE_DEEP = [...BODY_FRONTAL_SHARE, BODY_FRONTAL_SHARE_TUCK] as const;
 
-/** The body's own frontal-plane inertia about its own centre of mass, kg·m² (`BODY_FRONTAL_SHARE` × m h²). */
-export function bodyInertiaAt(mass: number, depth: number, height: number): number {
-  const d = Math.max(0, Math.min(STANCE_TABLE[2].depth, depth));
-  const i = d <= STANCE_TABLE[1].depth ? 0 : 1;
-  const f = (d - STANCE_TABLE[i].depth) / (STANCE_TABLE[i + 1].depth - STANCE_TABLE[i].depth);
-  const share = BODY_FRONTAL_SHARE[i] + f * (BODY_FRONTAL_SHARE[i + 1] - BODY_FRONTAL_SHARE[i]);
+/**
+ * The body's own frontal-plane inertia about its own centre of mass, kg·m² (`BODY_FRONTAL_SHARE` × m h²).
+ *
+ * `deep` (step 3.5b; what ships since 3.5c): the tuck's row is read too, so a depth past Compress's 0.30 m is interpolated
+ * toward 0.45 m instead of being clamped there. Omitted or false, the three shipped shares and the 0.30 m clamp, bit
+ * for bit as they were.
+ */
+export function bodyInertiaAt(mass: number, depth: number, height: number, deep = false): number {
+  const shares = deep ? BODY_FRONTAL_SHARE_DEEP : BODY_FRONTAL_SHARE;
+  const table = deep ? STANCE_TABLE_DEEP : STANCE_TABLE;
+  const last = table.length - 1;
+  const d = Math.max(0, Math.min(table[last].depth, depth));
+  let i = 0;
+  while (i < last - 1 && d > table[i + 1].depth) i += 1;
+  const f = (d - table[i].depth) / (table[i + 1].depth - table[i].depth);
+  const share = shares[i] + f * (shares[i + 1] - shares[i]);
   return share * mass * height * height;
 }
 
-export function stanceAt(depth: number): { height: number; lower: number; upper: number } {
-  const d = Math.max(0, Math.min(STANCE_TABLE[2].depth, depth));
-  const i = d <= STANCE_TABLE[1].depth ? 0 : 1;
-  const a = STANCE_TABLE[i];
-  const b = STANCE_TABLE[i + 1];
+/**
+ * The stance at a leg depth, m: the body's centre of mass over the feet and the yaw inertia's two shares, linear
+ * between the table's own depths and held at its ends.
+ *
+ * `deep` (step 3.5b; what ships since 3.5c, `?stanceDeep=off` to turn it off): the tuck's row (`STANCE_TUCK`) is read too, so the ladder reaches 0.45 m
+ * instead of stopping at Compress's 0.30. **This is not a purely additive change and it is not meant to look like
+ * one:** on `?rider=new` the ACHIEVED depth already passes 0.30 m in 0.28–0.95 of Compress's live ticks (step 3.3f's
+ * uncommanded knee drop, up to 0.044 m on top of the command), so those ticks stop being clamped onto Compress's row
+ * and start being interpolated toward the tuck's. That is the whole point of the switch and it is why it is a switch.
+ * Omitted or false, the 0.30 m clamp and the three shipped rows, bit for bit as they were.
+ */
+export function stanceAt(depth: number, deep = false): { height: number; lower: number; upper: number } {
+  const table = deep ? STANCE_TABLE_DEEP : STANCE_TABLE;
+  const last = table.length - 1;
+  const d = Math.max(0, Math.min(table[last].depth, depth));
+  let i = 0;
+  while (i < last - 1 && d > table[i + 1].depth) i += 1;
+  const a = table[i];
+  const b = table[i + 1];
   const f = (d - a.depth) / (b.depth - a.depth);
   return { height: a.height + f * (b.height - a.height), lower: a.lower + f * (b.lower - a.lower), upper: a.upper + f * (b.upper - a.upper) };
 }
@@ -649,7 +709,7 @@ const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
  * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
  * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
  */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean; body?: boolean | number | RiderBody; plantFloor?: number } = {}): { y: YawPlant; t: TwistPlant } {
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean; body?: boolean | number | RiderBody; plantFloor?: number; stanceDeep?: boolean } = {}): { y: YawPlant; t: TwistPlant } {
   // Step 3.4m (`?plantFloor`): the lowest row of `PLANT_SPEEDS` the water's twelve derivatives may be read at. Only
   // the table lookup moves — `speed` itself still enters the kinematic rows, the rail correction, the board's inertia
   // and the heave plant at its true value, as it always did.
@@ -660,7 +720,9 @@ export function plantAt(speed: number, depth: number, opts: { rollInertia?: numb
   // more states, which is the only consistent pair: the free table has the re-trim folded in already.
   const c = opts.sink ? frozenCorrection(speed, opts.rail ?? 0) : railCorrection(speed, opts.rail ?? 0);
   const scaled = { roll: lab.roll.map((x, k) => (x + c.roll[k]) * s[k]), slip: lab.slip.map((x, k) => (x + c.slip[k]) * s[3 + k]), yaw: lab.yaw.map((x, k) => (x + c.yaw[k]) * s[6 + k]), rate: lab.rate.map((x, k) => (x + c.rate[k]) * s[9 + k]) };
-  const st = stanceAt(depth);
+  // Step 3.5b (shipped since 3.5c): the ladder reads the tuck's row too, so a depth past 0.30 m is no longer clamped
+  // onto Compress's pendulum, inertia and bank limit. Omitted, the three rows and the 0.30 m clamp as they shipped.
+  const st = stanceAt(depth, opts.stanceDeep);
   const heave = opts.heave ?? (opts.sink ? heavePlantAt(speed, opts.rail ?? 0, st.height) : undefined);
   const board = boardInertiaAt(speed);
   const y: YawPlant = {
@@ -676,7 +738,7 @@ export function plantAt(speed: number, depth: number, opts: { rollInertia?: numb
   // (`bodyInertiaAt`); a number is the inertia outright, and **0 is the control** that must reproduce this plant
   // exactly — which is why the test is not truthiness: `false` is off, `0` is the control.
   if (opts.body !== undefined && opts.body !== false) {
-    y.body = opts.body === true ? { inertia: bodyInertiaAt(y.mass, depth, st.height) }
+    y.body = opts.body === true ? { inertia: bodyInertiaAt(y.mass, depth, st.height, opts.stanceDeep) }
       : typeof opts.body === 'number' ? { inertia: opts.body } : opts.body;
   }
   return { y, t: { inertia: st.upper, stiffness: opts.twistStiffness ?? TWIST_STIFFNESS, damping: opts.twistDamping ?? TWIST_DAMPING } };
@@ -862,6 +924,24 @@ export interface DesignWeights {
    * rooms.
    */
   plantFloor?: number;
+  /**
+   * **The stance ladder's fourth rung read, the tube tuck's 0.45 m** (step 3.5b; **shipped by default since step 3.5c
+   * and the owner's ruling D of 2026-11-17, "keep the row"**).
+   *
+   * **`undefined` means SET.** Only an explicit `false` goes back to the three shipped rows and `stanceAt`'s 0.30 m
+   * clamp, under which every depth past Compress is designed with Compress's pendulum length (0.55 m, **37.5 % too
+   * long**), body inertia (**1.89x** out), rider yaw inertia and bank limit - which on `?rider=new` is already
+   * 0.28-0.95 of Compress's own live ticks, because the balance's uncommanded knee drop adds up to 0.044 m on top of
+   * the command (step 3.3f). A partial weights object that omits the field therefore gets the shipped row, not the
+   * old plant, and `DEFAULT_WEIGHTS` states it as `true` out loud so the shipped value is readable in one place.
+   *
+   * Set, two things happen together and neither works without the other: `plantAt` reads `STANCE_TUCK` (so the
+   * pendulum, `m h^2`, `riderYawInertia`, the twist rotor and `riderCost`'s bank limit all reach the tuck's values),
+   * and the gain schedule gains a fourth knot at 0.45 m (`SCHEDULE_DEPTHS_DEEP`) so a design is actually built there.
+   *
+   * It changes the **plant**, not the control law, and it is **not purely additive** - see `stanceAt`.
+   */
+  stanceDeep?: boolean;
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -925,6 +1005,11 @@ export const DEFAULT_WEIGHTS: DesignWeights = {
   // ankle's bound at 5 m/s before the capture point leaves the feet, and the peak of the model's disturbance margin in
   // all three stances (tall 47.7 → 78.7 rad/s², crouch 48.2 → 78.9, Compress 48.4 → 73.1). In the game it costs the
   // crouch and Compress saved shove as above, so it stays a measured design and not the default. Part 10 §2 and §4.
+  // **The stance ladder's fourth rung SHIPS** (step 3.5c, the owner's ruling D of 2026-11-17, "keep the row"): the
+  // tuck's measured pendulum (0.40 m against the clamp's 0.55, 37.5 % too long), body inertia (1.89x out) and bank
+  // limit, instead of every leg deeper than Compress being designed on Compress's row. Stated here out loud as well
+  // as defaulted at each read site, so the shipped value is readable in one place. `false` is `?stanceDeep=off`.
+  stanceDeep: true,
 };
 
 /**
@@ -1218,6 +1303,16 @@ export function leastDamping(values: readonly { re: number; im: number }[], step
  */
 export const SCHEDULE_SPEEDS = Array.from({ length: 17 }, (_, i) => 4 + 0.5 * i);
 export const SCHEDULE_DEPTHS = [0, 0.195, 0.3];
+/**
+ * **Step 3.5b: the gain schedule's own fourth knot, the tuck's 0.45 m — shipped by default since step 3.5c.**
+ *
+ * This is a SECOND clamp on the same quantity, and it is independent of `stanceAt`'s. The designs the controller
+ * blends are only ever computed at the knots in this list (`PredictiveController.blend` -> `scheduledDesign`), and the
+ * depth is clamped to the last one before the knots are picked - so **a fourth `STANCE_TABLE` row on its own would
+ * change no gain at all**: every design would still be built at depth 0.30 and read Compress's row. The row reaches
+ * the gains only through the knot, so the two go together and one switch turns both on.
+ */
+export const SCHEDULE_DEPTHS_DEEP = [0, 0.195, 0.3, 0.45];
 /** Step 3.2f: the schedule's rails, rad (the measured table's angles). */
 export const SCHEDULE_RAILS = RAIL_ANGLES.map((a) => (a * Math.PI) / 180);
 const designCache = new Map<string, Design>();
@@ -1238,12 +1333,17 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
     // Step 3.4m: the table's floor is a plant too, so it enters here beside the body, through the same weights the
     // cache's key already carries. `undefined` is the shipped floor and leaves `labAt` exactly as it was.
     const floor: { plantFloor: number } | undefined = w.plantFloor !== undefined ? { plantFloor: w.plantFloor } : undefined;
-    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor });
+    // Step 3.5b: the tuck's row is a plant too, so it enters beside the body and the floor, through the same weights
+    // the cache's key already carries. `undefined` leaves `stanceAt` on its three shipped rows.
+    // Step 3.5c (ruling D): the row ships, so `undefined` is `true` here and only an explicit `false` reaches the
+    // three-row ladder. A partial weights object that never heard of the field gets the shipped plant.
+    const ladder: { stanceDeep: boolean } = { stanceDeep: w.stanceDeep ?? true };
+    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor, ...ladder });
     d = design(y, t, w);
     if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
       // The gains stay the shipped ones, designed on the free plant, with no gain on the four board states: the rider
       // feels and anticipates the board, and does not try to steer it. `DesignWeights.heaveGains` has the measurement.
-      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor });
+      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor, ...ladder });
       const gains = design(ten.y, ten.t, { ...w, heaveSense: false });
       const pad = new Array<number>(d.phi.length - N_STATE).fill(0);
       d = { ...d, k: gains.k.map((row) => [...row, ...pad]) };
@@ -1367,9 +1467,18 @@ export class PredictiveController {
     const v = Math.max(SCHEDULE_SPEEDS[0], Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 1], speed));
     const v0 = Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 2], Math.floor(v * 2) / 2);
     const fv = (v - v0) / 0.5;
-    const dp = Math.max(0, Math.min(SCHEDULE_DEPTHS[2], depth));
-    const i0 = dp <= SCHEDULE_DEPTHS[1] ? SCHEDULE_DEPTHS[0] : SCHEDULE_DEPTHS[1];
-    const i1 = dp <= SCHEDULE_DEPTHS[1] ? SCHEDULE_DEPTHS[1] : SCHEDULE_DEPTHS[2];
+    // Step 3.5b (`?stanceDeep`): the schedule's depths reach the tuck's 0.45 m knot. The walk over the knots gives
+    // the same pair the three-knot list always computed (d <= 0.195 takes [0, 0.195] and anything deeper
+    // [0.195, 0.3]), so the only ticks the fourth knot moves are the ones that were being clamped onto 0.30 m.
+    // Step 3.5c (ruling D): the fourth knot SHIPS, so `undefined` weights and weights without the field both take it
+    // and only an explicit `false` takes the three-knot list.
+    const knots = (this.weights?.stanceDeep ?? true) ? SCHEDULE_DEPTHS_DEEP : SCHEDULE_DEPTHS;
+    const deepest = knots.length - 1;
+    const dp = Math.max(0, Math.min(knots[deepest], depth));
+    let kd = 0;
+    while (kd < deepest - 1 && dp > knots[kd + 1]) kd += 1;
+    const i0 = knots[kd];
+    const i1 = knots[kd + 1];
     const fd = (dp - i0) / (i1 - i0);
     const rails = SCHEDULE_RAILS;
     const a = Math.max(0, Math.min(railLimit(v), Math.abs(rail)));

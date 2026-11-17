@@ -707,3 +707,382 @@ points the next round at the cap's radius rather than at the cap's existence.
 currently forbidden to lean at all. Physics says a turn that slow holds about 2°, and a real surfer at walking pace
 does stay nearly plumb. Should the game let it ask for those 2–5° anyway — `&askCap=4.5` is exactly that and nothing
 else — or keep the zero? Nothing I can measure answers that; it is whether the board feels dead in your hands.
+
+---
+
+# Step 3.5 — the stance ladder: the fourth rung and the deepen button (merged from PR #392)
+
+**Folder note, written at the rebase of 2026-11-17:** the section below was written on PR #392's own branch (steps 3.5b and 3.5c), independently of the two documents above. PR #389 (step 3.5a) landed on `main` first, so #392 was rebased onto it; the section is **appended rather than interleaved, so nothing is lost**, and its own top-level title is kept verbatim as this heading. The rebase itself, and the seatbelts re-run on the rebased tree, are the last section of this document.
+
+Rounds in this folder, newest last. Step 3.5a's own section arrives with PR #389, which was still open when 3.5b was
+cut; 3.5b branched from `main` at **183c4828** and touches nothing 3.5a touches except `AttachedRider`'s options block.
+
+---
+
+## Step 3.5b (2026-11-17) — the fourth `STANCE_TABLE` row and the deepen button, both opt-in
+
+Built on the owner's **ruling C** — *"keep the held compress, both patterns are real"* — so **nothing is taken away**:
+no stance's depth is changed, Compress stays held, and the dip is an addition. Crouch's value is out of scope (it waits
+on the owner's ride of `?kneeRoom=achieved`).
+
+**The two switches, spelled exactly:**
+
+| | URL | what it turns on |
+|---|---|---|
+| the fourth rung | **`?stanceDeep=on`** | `STANCE_TUCK` is read by the balance's plant **and** the gain schedule gains a fourth knot at 0.45 m |
+| the dip | **`?deepen=on`** | full manual crouch (the owner's existing crouch key) reaches the tuck's 0.45 m **anywhere**, and Compress no longer fades it |
+
+Both are off by default, pinned `undefined` for online rooms in `main.ts` (asserted by a test that reads `main.ts`), and
+each has its own `…Switch()` in `PhysicalMode.ts` with its own test. They are independent: either can be ridden alone.
+
+### 1. THE FOURTH ROW, MEASURED — and a second clamp the brief did not know about
+
+**The row, from `docs/research/new-rider/3.2/inertia.probe.ts`** (de Leva 1996's segment table, the game's own arm
+pose, posed at the tuck's hip height of 0.78 − 0.45 = **0.33 m** over the deck — the same probe, the same table and the
+same two readings the three shipped rows were taken from, which it reproduces to the thousandth):
+
+```
+STANCE_TUCK = { depth: 0.45, height: 0.40, lower: 0.857, upper: 2.440 }   BODY_FRONTAL_SHARE_TUCK = 0.2624
+```
+
+| field | value | where it came from |
+|---|---|---|
+| `depth` | **0.45 m** | `AttachedRider.MANUAL_CROUCH_DEPTH`, already in the code and already shipped as `?snapDepth=deep` |
+| `height` | **0.40 m** | `design.md`'s own tube-tuck row (its ladder 0.85 / 0.65 / 0.55 / **0.40** is where the three shipped rows came from), **confirmed by the probe at 0.394 m** above its ankle line — the same reading sits 0.012–0.031 m under the three shipped rows, so 0.40 is both the design's number and the measurement's |
+| `lower` | **0.857 kg·m²** | `yawSplit(posture(0.33, 0.13, 0.714), 'com').withBoard`, arms in the game's pose |
+| `upper` | **2.440 kg·m²** | the same call's `twist` |
+| frontal share | **0.2624** | `frontalInertia(...).share`, absolute 4.026 kg·m² against `m h²` = 11.318 |
+
+**The row's error bar is the POSTURE, and it was swept rather than asserted.** The hip height is fixed by the leg
+depth; how far the hips sit back (`back`) and how far the trunk leans (`lean`) are the ladder's own trend carried on —
+**0.13 m and 0.714 rad** from the last segment's slopes, 0.131 and 0.661 from a straight fit through all three. Swept
+over `back` 0.10–0.16 m × `lean` 0.50–0.90 rad (nine postures, the new `it` block *the tuck posture's own spread*):
+
+| | taken | swept range |
+|---|---|---|
+| CoM above the ankle | 0.394 m | 0.363–0.423 (**±8 %**) |
+| `lower` | 0.857 | 0.748–1.027 (**±14 %**) |
+| `upper` | 2.440 | 1.973–2.873 (**±18 %**) |
+| frontal share | 0.2624 | 0.2527–0.2811 (**±7 %**) |
+
+So `upper` is the soft number and nothing here is tuned to the thousandth.
+
+**Two things the row says.** Compress → tuck, the rider's yaw inertia **on the board falls 31 %** (1.241 → 0.857) while
+the **twist rotor's rises 25 %** (1.958 → 2.440), because the thighs' share moves from the board onto the twist as the
+knees fold. And the pendulum shortens 0.55 → 0.40 m: ω₀ = √(g/L) **4.22 → 4.95 rad/s**, `m h²` **22.1 → 11.7 kg·m²**.
+Measured in the plant (`predictiveBalance.test.ts`): the missing row made the pendulum **37.5 % high**, ω₀ **15 % low**
+and the point mass's inertia **1.89×** — the handoff's three figures, now checked against the code.
+
+> **⚠ THE SECOND CLAMP, which the brief's list of three places did not include and which refutes part of its premise.**
+> `SCHEDULE_DEPTHS = [0, 0.195, 0.3]` and `PredictiveController.blend` clamps the depth to its last knot *before*
+> picking the two designs to blend — and **a design is only ever built at a knot.** So **a fourth `STANCE_TABLE` row on
+> its own would have changed no gain at all**: every design would still have been built at depth 0.30 and read
+> Compress's row. The row reaches the gains only through a fourth knot, which is why one switch turns both on
+> (`SCHEDULE_DEPTHS_DEEP`). `stanceRoom` and `hipRange` were indeed already done, as the brief said.
+
+### 2. WHAT THE ROW DOES TO EXISTING COMPRESS — it is NOT additive, and the cost is 0.7 s of median ride
+
+**Population for every number below:** the Canyon-matched `FaceWater` (1.4 m, 16°, 5.7 m/s, 2.6 m deep — **a fit to
+Canyon, not Canyon**), **5 entry speeds × 4 sticks = 20 runs per stance per leg**, 9 s each, live window 0.5 s → the
+frame before `attached` goes false (`AttachedRider.separate` writes neither `phase` nor `upright`, so every rider
+column freezes after it — that trap already corrupted a published figure, and this window avoids it). Probe
+`3.5/depth.ts`; rows in `3.5/results/35b-row-{off,on}.jsonl`. **Per stance, never pooled.**
+
+| leg | stance | **fell** | ride, s (range) | **median, s** | rows bit-identical to the off leg | ride moved |
+|---|---|---|---|---|---|---|
+| `?rider=new` | tall | 20 of 20 → 20 of 20 | 1.200–4.150 → 1.200–4.150 | **2.883 → 2.883** | **20 of 20** | 0 of 20 |
+| `?rider=new` | crouch | 20 of 20 → 20 of 20 | 1.317–4.250 → 1.317–4.250 | **2.950 → 2.950** | 8 of 20 | 3 of 20, by **±0.017 s** (one frame) |
+| `?rider=new` | **Compress** | **20 of 20 → 20 of 20** | 1.117–3.983 → **0.933–3.900** | **3.067 → 2.367** | **0 of 20** | **17 of 20, −1.633 to +0.233 s** |
+| default rider | all three | 20 of 20 ea → 20 of 20 ea | unchanged | unchanged | **60 of 60** | 0 of 60 |
+
+**The headline, with its population: on 20 runs of this one cell the fourth row shortens Compress's median ride from
+3.067 s to 2.367 s — 0.70 s, 23 % — and does not change the fall count, which was already 20 of 20 and stays 20 of 20
+with `balance` the cause in every run.** Seventeen of the twenty runs move; the worst single cell loses **1.633 s**, and
+three runs gain up to 0.233 s. **The owner must hear this: the row is correct physics and it makes the ride they already
+have shorter on this cell.** It is one cell and one rider; it is not a claim about every wave.
+
+The plant under Compress, same runs, read at each tick's **achieved** depth: pendulum L **0.550 m pinned → 0.522–0.550**,
+ω₀ **4.223 → 4.224–4.341 rad/s**, `riderCost`'s bank limit **4.38° → 4.38–4.62°**. The achieved depth passes the 0.30 m
+ceiling in **0.11–0.96 of Compress's live ticks, 20 of 20 runs** — which is why the clamp was already biting, and why
+"default byte-identical" would have been false while appearing true had the row been merged on by default.
+
+**Crouch is the quiet case worth naming:** its ride is identical to the millisecond in 17 of 20 and one frame off in 3,
+with the same median — so the row is not a free-for-all, it is proportional to how far past 0.30 m the leg actually got.
+
+### 3. THE DIP — it lands in the footage's band, and it does NOT self-release
+
+`?deepen=on` ungates one existing posture target. `manualCrouchShare(1, 0) × CROUCH_DEPTH` = **0.45 m**, so full crouch
+commands the tuck over whatever stance is held, and Compress stops fading it away. No new input, no new force, no new
+quantity, **no clock, no timer, no fatigue and no stamina anywhere in it.**
+
+Same cell, same 20 runs a leg (`35b-dip-{off,on}.jsonl`, `35b-dip-on-row-on.jsonl`):
+
+| leg | commanded | leg holds | hips | **% of the 0.88 m straight leg** | footage |
+|---|---|---|---|---|---|
+| shipped (tuck inputs, no curl) | 0.300 m | 0.300–0.333 | 0.451–0.481 m | **51–55 %** | the sustained crouch band |
+| **`?deepen=on`** | **0.450 m** | 0.447–0.450 | **0.331–0.353 m** | **38–40 %** | **inside the 35–50 % spike band ✔** |
+| `?deepen=on&stanceDeep=on` | 0.450 m | 0.389–0.450 | 0.331–0.416 m | 38–47 % | inside it ✔ |
+
+Without the fourth row, **0.98–1.00 of the dip's live ticks are clamped onto Compress's plant** — the dip is exactly the
+case the row is for, and the two want riding together.
+
+> **DOES IT SELF-RELEASE WITHOUT A CLOCK? NO — and I did not build one.**
+>
+> Measured with a momentary press (`DIP=<from>,<hold>`: the crouch key pressed over Compress and let go), 20 runs a
+> hold length, four hold lengths, base depth read in 19 of 20 each:
+>
+> | hold | reached 0.45 m | time to reach it | **ROSE WHILE STILL HELD** | back to its pre-press depth after the release |
+> |---|---|---|---|---|
+> | 0.25 s | **0 of 19** | — | **0 of 19 runs, 0 ticks** | 0.300–0.533 s (14 of 19 lasted that long) |
+> | 0.50 s | 7 of 19 | 0.450–0.483 s | **0 of 19 runs, 0 ticks** | 0.333–1.300 s (10 of 19) |
+> | 0.70 s | 15 of 19 | 0.450–0.517 s | **0 of 19 runs, 0 ticks** | 0.350–0.533 s (7 of 19) |
+> | 1.50 s | 15 of 19 | 0.450–0.517 s | **0 of 19 runs, 0 ticks** | 0.350–0.483 s (5 of 19) |
+>
+> **The dip's duration is the press's duration, full stop.** The depth is a commanded leg-spring rest length; nothing in
+> the code can raise it. **`kneeStrength` cannot**, and this is worth stating plainly because the brief offered it as the
+> reason: it falls with depth (3.0 / 2.25 / 2.1 / 1.9 body weights, `standingBody.ts:113–117`) but it bounds the **force
+> the legs may push with**, not the length they are held at — too much load makes the body sink *below* the rest, never
+> rise. A static strength curve limits how deep and how hard, not how long.
+>
+> **So if the owner wants the dip to come back up on its own, that needs a mechanism we do not have, and it would be a
+> clock or a new rule. I have not built, proposed or hidden one.** What the measurement does say is that the leg's own
+> pace is the real floor on the dip's duration: it needs **0.45–0.52 s** to cover the last 0.15 m (`CROUCH_ACCELERATION`
+> 6 m/s², `CROUCH_SPEED` 1.5 m/s), so a **0.25 s press never arrives** and the footage's 0.25–0.7 s spike band is only
+> half-reachable. The whole tall → low → tall cycle, pressed for 0.5–0.7 s, is **0.85–1.05 s** — which does land inside
+> the footage's 1–1.5 s cycle.
+
+**Still unasked, and the default stands:** whether the dip should fire **automatically at turn entry**, as all five clips
+show it. An automatic dip is the game moving the owner's body for them — the boundary ruling A sits on — so it is on
+their input only until they say otherwise.
+
+**What the dip costs on this cell, stated rather than buried:** dipping over Compress (with the row on) leaves the fall
+count at 20 of 20 at every hold length and moves the median ride by **−0.084 / −0.200 / −0.150 / −0.133 s** for holds of
+0.25 / 0.5 / 0.7 / 1.5 s, against shipped Compress's 3.067 s, with single runs between −2.033 and +0.817 s. Held at the
+tuck for the whole ride, the median is **1.650 s** (`?deepen=on`) or **1.750 s** (with the row) against 3.067 s. **The
+deep stance is a worse place to live on this cell, and that is a finding, not a bug to smooth over.** One cell, one
+rider, 20 runs an arm.
+
+### 4. SEATBELTS
+
+- **Default byte-identity MEASURED, not asserted.** The same probe built on `main` (183c4828) and on this branch, no
+  switch set: **120 runs (60 on `?rider=new`, 60 on the default rider), 38 columns each — 4 560 column-values, 0
+  mismatches.** The tuck arm adds **20 more runs, 0 mismatches**. The default rider is inert under `?stanceDeep=on` too:
+  **60 of 60 rows bit-identical with the switch on**, because the row reaches only `coupleYaw` (gated on `freeBody`) and
+  the predictive controller's own weights.
+- **Canyon byte check PASSED on BOTH paths** (`3.5/results/35b-canyon-byte-check.txt`). Wrapper
+  `globalThis.location = { search: '?canyonWaves=true' }` **prepended to the bundle**; grid read: **B 400 × 451 =
+  180 400**, render 401 × 511, solver t 22.000; 240 steps.
+  - **fresh spin-up** on each leg (47.7 s / 44.6 s): `e3dbec2465df6c10` / `abb6419d6cca4c3a` — **identical**.
+  - **both legs importing the same kept `.sea`** (neither printed the spin-up line): `548f3db7ca81d898` /
+    `475f8c56c9debccc` — **identical**, and the same pair the handoff recorded for a 240-step imported leg.
+  - Caution (3) reproduced here: the same bundle gives those two different pairs on the two paths, so they are never
+    compared with each other.
+- **No hidden motors.** The diff adds **no force, no torque, no damper and no brake.** Piece 1 replaces two table
+  lookups with longer-table lookups; piece 2 widens the gate on an existing posture target. No force function, ledger
+  or solver is in the diff, and no kinematic prescription is realised by whatever force it takes.
+- **Suites, all run on this branch with `--maxWorkers=1`:** `src/physics` **58 files, 637 passed** (21 expected fails,
+  the suite's own); `src/scene/rig` + `src/game` **70 files, 740 passed**; `src/wave/SurfZoneRunner.test.ts` by hand
+  (it is outside the merge suite) **43/43**. Inside those: `predictiveBalance.test.ts` 22/22 and `PhysicalMode.test.ts`
+  107/107. `tsc -b` clean. `src/wave/SurfZoneSimulation.test.ts` declares 644.5 minutes of timeout and was not run.
+
+---
+
+## Step 3.5c (2026-11-17) — ruling D built: the row SHIPS. And the 0.70 s it was said to cost is the plain rider's, not the owner's
+
+The owner's **ruling D** — *"keep the row"* — read as **the correct physics ships by default**, since keeping it
+behind a switch is indistinguishable from holding it. This round flips the default and then does the job the ruling
+made necessary: **re-measure the three standing reference arms**, because every ride time this track has published was
+taken on a pendulum 37.5 % too long and an inertia 1.89 × out.
+
+**The switch, spelled exactly:**
+
+| URL | what it does |
+|---|---|
+| *(nothing)* | **the fourth rung — what now ships.** `STANCE_TUCK` in the balance's plant and the gain schedule's fourth knot at 0.45 m |
+| **`?stanceDeep=off`** | the old three-row ladder and `stanceAt`'s 0.30 m clamp, kept so a ride can still be priced against this track's published history |
+| `?stanceDeep=on` | the shipped behaviour said out loud, so step 3.5b's own addresses keep working |
+
+`?deepen=on` is **untouched and still opt-in** — the owner has not ruled it in, and its two questions are still open.
+Compress's and Crouch's **depth values are untouched** (ruling C; Crouch waits on the `?kneeRoom=achieved` ride).
+
+### 1. THE HEADLINE, AND IT REFUTES THE PRICE THE OWNER WAS QUOTED
+
+The owner accepted the row **knowing it costs 0.70 s (23 %) of Compress's median ride**. That figure is real, it
+reproduces here exactly, and **it belongs to a rider they do not ride.**
+
+| cell, Compress's row, 20 runs | OLD plant | NEW default | Δ median | runs moved |
+|---|---|---|---|---|
+| **plain `?rider=new`** (3.5b's own probe and cell) | 3.067 s | **2.367 s** | **−0.700 s** | 17 of 20, −1.633 … +0.233 s |
+| **plain `?rider=new`** (this round's probe, same face/entries/sticks) | 3.083 s | **2.367 s** | **−0.716 s** | 16 of 20, −1.684 … +0.416 s |
+| **`?rider=new&feltFrame=deck&riderBody=two`** — *the address the owner rode on 2026-11-16* — s16 face | 2.517 s | **2.567 s** | **+0.050 s** | 15 of 20, −0.900 … +1.533 s |
+| the same, **f73 face** (the owner's own slope) | 2.200 s | **2.250 s** | **+0.050 s** | 17 of 20, −1.450 … +0.833 s |
+
+> **On the rider the owner actually rides, the row does not cost 0.70 s. It is +0.050 s — a hair LONGER — on both
+> faces, and 0.000 s on all three reference arms.** The row is just as *active* on their rider (15 and 17 of 20 runs
+> move, single runs by as much as −1.450 and +1.533 s); what is absent is the net loss.
+
+**The cause, read in the code and then measured, not inferred:** `3.5/depth.ts` passes **neither `feltFrame: 'deck'`
+nor `riderBody: 'two'`** (`depth.ts:180–187`). So step 3.5b's whole cell — and its headline — is the plain predictive
+rider with a **point-mass body and a world-frame felt vertical**, not the two-body deck-filter rider of the 2026-11-16
+ride. Swapping only that one thing on this round's probe, same face, same five entries, same four sticks, moves the
+row's effect from **−0.716 s to +0.050 s**. The probes themselves agree: plain-rider plant.ts gives −0.716 against
+depth.ts's −0.700, 16 ms apart on 20 runs.
+
+**I am not calling 3.5b wrong.** Its arm is correctly measured and correctly labelled `?rider=new`. What was wrong was
+carrying that number to the owner as the price of the row **without saying which rider it was on** — and I would have
+repeated it had this round not re-measured. The honest statement from here on:
+
+> **The row's net cost is a property of the cell AND the rider, not of the row.** It is **−0.70 s** on the plain
+> rider, **+0.05 s** on the owner's rider in a turn, and **0.000 s** on all three published reference arms.
+> **Falls are 20 of 20 → 20 of 20 and 18/18, 24/24 everywhere; no fall count moves anywhere in this round.**
+
+### 2. THE THREE REFERENCE ARMS, RE-MEASURED — they re-base to themselves
+
+**Population, said in full:** `3.3/plant.ts`, the probe steps 3.4i/3.4l/3.4m/3.4n published these arms from, with one
+added env switch (`STDEEP=on|off`) and nothing else changed. `RIDER=new FELT=deck BODY=two`, `AHEAD` 0.75, `SIDE` −45,
+9 s a run, the stance **held**, the stick **never touched**. `f73` = `FACE=1.4,7.32,5.7`; `s16` = `FACE=1.4,16,5.7`;
+`-l` = absolute entries 1–6 m/s × 3 stances = 18 runs; `-g` = the glide cell's eight absolute entries 4.435–10.435 m/s
+× 3 = 24. The live window and the fall classifier are the probe's own. **Per stance, never pooled** — the pooled `ALL`
+row is printed only because that is the row the handoff quotes. Full tables in `3.5/results/35c-reference-arms.txt`.
+
+| arm | published (old plant) | **NEW default** | fell | runs moved | span of the moves |
+|---|---|---|---|---|---|
+| **`f73-l`** | **18 of 18, 0.617–2.533 s, median 1.450 s** | **18 of 18, 0.617–2.533 s, median 1.450 s** | 18/18 → 18/18 | **2 of 18** (both Compress) | −0.084 … +0.017 s |
+| **`s16-l`** | 18 of 18, median **1.033 s** | 18 of 18, 0.500–6.233 s, median **1.033 s** | 18/18 → 18/18 | **2 of 18** (both Compress) | −0.034 … −0.017 s |
+| **`f73-g`** | 24 of 24, median **4.650 s** | 24 of 24, 1.667–5.183 s, median **4.650 s** | 24/24 → 24/24 | **1 of 24** (Compress) | −0.200 s |
+
+Per stance, every median and every range is identical to the digit on all three arms:
+
+| arm | tall | crouch | Compress |
+|---|---|---|---|
+| `f73-l` | 1.483 → **1.483** s | 1.500 → **1.500** | 1.450 → **1.450** |
+| `s16-l` | 1.050 → **1.050** | 1.033 → **1.033** | 1.167 → **1.167** |
+| `f73-g` | 4.950 → **4.950** | 4.833 → **4.833** | 4.650 → **4.650** |
+
+> **So the three figures every round cites do not need replacing. They are the same numbers on the new plant.** The
+> handoff's instruction — *"re-measure the reference arms and replace those numbers"* — is carried out, and the answer
+> is that the replacement equals the original. **The new plant's figures are, for the record, `f73-l` 18 of 18 at
+> 0.617–2.533 s median 1.450 s; `s16-l` 18 of 18 at 0.500–6.233 s median 1.033 s; `f73-g` 24 of 24 at 1.667–5.183 s
+> median 4.650 s** — quote these from now on, and note they are measured on the shipped row.
+>
+> **The old numbers are records of a different plant, not errors** — and on these three arms the two plants happen to
+> read the same.
+
+**Why they do not move, and it is only half an explanation.** The row can only act where the achieved leg depth passed
+the old 0.30 m ceiling. Measured on `3.5/depth.ts` (`ceilingShare`, the share of live ticks past 0.3005 m, 5 entries ×
+the stick shown, per stance):
+
+| face | stick | tall | crouch | **Compress** |
+|---|---|---|---|---|
+| s16 (16°) | 0 | 0.00 | 0.00–0.12 | **0.44–0.61** |
+| s16 | 0.25–1 | 0.00 | 0.00–0.42 | **0.11–0.96** |
+| f73 (7.32°) | 0 | 0.00 | 0.00–0.01 | **0.00–0.16** |
+| f73 | 0.25–1 | 0.00 | 0.00–0.40 | **0.00–0.95** |
+
+**Tall is 0.00 everywhere, on every arm and every cell, which is why tall is bit-identical in 20 of 20 and 6 of 6 and
+8 of 8 runs.** On the gentle `f73` face at stick 0 the ceiling barely bites (0.00–0.16), which explains `f73-l` and
+`f73-g`. **It does NOT explain `s16-l`**, where the ceiling bites in 0.44–0.61 of Compress's ticks and the ride still
+does not move at the median. **So on these arms the row changes the plant and not the outcome, and "ceilingShare
+predicts the cost" is refuted as stated** — it is necessary, not sufficient.
+
+### 3. THE SEATBELT, in the other direction — and it is stronger than byte-identity of a default
+
+"Default byte-identical" no longer applies, because the default is *meant* to move. The replacement check is that
+**`?stanceDeep=off` reproduces the old plant exactly**, and it does, in the strongest form available:
+
+- **`?stanceDeep=off` on the new build is byte-identical to the pre-flip default**, file for file, on all three
+  reference arms: **54 runs × 359 summary columns, 0 mismatches** (`cmp` on the whole `.jsonl`, not a column subset).
+  And the pre-flip default reproduces the **published** figures to the digit, which is how the chain closes to the
+  printed numbers rather than to a re-run of itself.
+- **The new default is byte-identical to the pre-flip `?stanceDeep=on`**, the same 54 runs × 359 columns, 0
+  mismatches. **So the flip is a default change and nothing else: no third behaviour appeared.**
+- **Second instrument, independently:** `3.5/depth.ts` on 3.5b's own cell. `?stanceDeep=off` reproduces 3.5b's
+  published `off` leg **run for run, 60 of 60**, and the new default reproduces its published `on` leg **run for run,
+  60 of 60** — including Compress's 3.067 → 2.367 s.
+- **A probe control that is worth recording:** `plant.ts`'s own measurement ledgers (`LEDGER=on`, its default —
+  `bankLedger`, `BoardBody.rollLedger`, `BoardBody.yawLedger`, all off in the game) **do not move the ride**:
+  `LEDGER=off` gives identical medians on all three stances of the 20-run turn cell. The folder had asserted this;
+  it is now measured.
+
+**One discrepancy I could not close, recorded rather than smoothed over.** On nominally the same face, entries and
+sticks, `plant.ts` and `depth.ts` give **different old-plant Compress medians for the plain rider** — 3.083 s against
+3.067 s, which is one frame and fine — but for the owner's rider the two probes cannot be compared at all, because
+`depth.ts` has no `FELT`/`BODY` switches. The two probes also differ in the manoeuvre: `depth.ts` holds the stick over
+until the board has turned `ACROSS` = 85° and then **releases** it (`depth.ts:251`), while `plant.ts` holds it for the
+whole run. **Both differences are reads, not guesses, and the rider difference alone is enough to carry the −0.716 s,
+so I did not isolate the manoeuvre.** Anyone comparing a `depth.ts` figure with a `plant.ts` figure should check both.
+
+### 4. THE CANYON BYTE CHECK — at the 3 600-step reference, and the path named
+
+**The reference pair does not move, and it was verified at its own step count rather than assumed.**
+`3.5/results/35c-canyon-byte-check.txt`.
+
+- Wrapper `globalThis.location = { search: '?canyonWaves=true' }` **prepended to the bundle** (checked by reading the
+  bundle's first line, because a bare string silently benches the *default* Canyon via `devTools.ts:9`).
+- Grid read: **B 400 × 451 = 180 400** cells, render 401 × 511, solver t 22.000.
+- **The path is named: FRESH SPIN-UP** — the bench printed `spun up on the CPU in 49.0 s`, which is the same path the
+  3 600-step reference was taken on (`wave-strategy-alternatives/c2-step5a.md`, *"medium, 3600 steps, fresh
+  spin-ups"*). A fresh spin-up and an imported `--state` give different pairs on `main` alone (step 3.4i measured it),
+  so the two are never compared.
+
+| | snapshots | state |
+|---|---|---|
+| reference (3 600 steps, fresh) | `a367d938f15fa934` | `9e5831f80e38abd9` |
+| **this branch, 3 600 steps, fresh** | **`a367d938f15fa934`** | **`9e5831f80e38abd9`** |
+
+**Identical in both columns.** Expected — the row changes the rider's balance plant and the sea's solver imports
+nothing from the rider — but verified live. **This is a stronger check than step 3.5b's**, which ran a 240-step A/B
+and explicitly refused to quote the 3 600-step reference because a different step count cannot be compared with it.
+
+### 5. SEATBELTS, the rest
+
+- **No hidden motors.** The `src/` diff is **five executable lines** plus two switch functions and their docs:
+  `stanceDeep?: 'on' | 'off'`, `this.stanceDeepRow = options.stanceDeep !== 'off'`, `ladderWeights` saying `false`
+  only on `'off'`, `DEFAULT_WEIGHTS.stanceDeep = true`, and the two `?? true` defaults at the plant's and the
+  schedule's read sites. **No force, torque, damper, brake, impulse or velocity assignment anywhere in it** —
+  grepped over every added line. **All 50 `src/` deletions were read individually: every one is a comment line or a
+  type/assignment line replaced in place.** No clock, timer, fatigue or stamina is added, proposed or hidden.
+- **The default rider is untouched by construction and by measurement** — step 3.5b measured it inert under the row
+  (60 of 60 bit-identical), and the flip changes which branch of the same gate the new rider takes, not whether the
+  gate exists.
+- **`?deepen=on` is byte-unchanged** — not a line of it is in this diff.
+- **Suites, all on this branch with `--maxWorkers=1`:** `src/physics` **58 files, 638 passed** (21 expected fails, the
+  suite's own — 637 on 3.5b, +1 for this round's policy test); `src/scene/rig` + `src/game` **70 files, 740 passed**;
+  `src/wave/SurfZoneRunner.test.ts` by hand, since it is outside the merge suite, **43/43**. Inside those:
+  `predictiveBalance.test.ts` **23/23** and `PhysicalMode.test.ts` **107/107**. `tsc -b` **clean**.
+  `src/wave/SurfZoneSimulation.test.ts` declares 644.5 minutes of per-test timeout and was not run; it cannot gate.
+- **The new test is the one that makes the flip visible.** Every pre-existing `stanceAt`/`plantAt` test passes either
+  way, because those take an explicit flag. The added test pins the **policy** instead — `DEFAULT_WEIGHTS.stanceDeep`
+  and the two places that decide what `undefined` means, checked at the plant (`scheduledDesign`) and at the gain
+  schedule's knots (through `PredictiveController.tick`, the public route into `blend`). It also pins that at depths
+  0, 0.195 and 0.3 the two legs are identical, so the row's whole effect is on the ticks that were being clamped.
+- **An error this round made and caught, worth recording because the type checker caught it and the test runner did
+  not:** the first draft of that test called `scheduledDesign(7, 0.45, { ...DEFAULT_WEIGHTS })` — **three arguments,
+  so the weights object landed in the `rail` slot and every gain came back `NaN`**, and the test failed with a
+  confusing diff rather than a type error, because vitest does not type-check. `scheduledDesign(speed, depth, rail,
+  weights)`. **Run `tsc -b`, not just the suite.**
+
+### 6. WHAT THIS ROUND DID NOT DO
+
+- **Did not touch `?deepen=on`** — not a line of it is in the diff. The owner has not ruled it in and its two
+  questions are open: does it fire automatically at turn entry, and do they want a self-release at all.
+- **Did not touch Compress's or Crouch's depth values** (ruling C; Crouch waits on the `?kneeRoom=achieved` ride).
+- **Did not add a clock, timer, fatigue or stamina.** The owner cancelled that explicitly, and `kneeStrength` returns
+  `2·KNEE_TORQUE/d` — **a force bound, not a length** — so it still cannot raise the body and is not re-proposed.
+- **Did not change the row's own numbers.** `STANCE_TUCK` and `BODY_FRONTAL_SHARE_TUCK` are step 3.5b's measured
+  values to the digit.
+- **Did not edit the handoff.** This branch is behind `main` on that file by 140 lines, so editing it here would hand
+  the owner a conflict. The replacement figures and the Canyon result are in the hand-back for the orchestrator.
+- **Did not re-run Parts 1–6 of step 3.4's ride tables.** They were taken on the old plant and they are *records of a
+  different plant*. On the three arms checked here the two plants read the same, which is a reason to expect most of
+  them to survive — **not a demonstration that they do.** Anything quoted from them should still say which plant.
+
+### 7. WHAT THE OWNER SHOULD BE TOLD, in one line each
+
+1. **The row ships. Their ruling is built.** `?stanceDeep=off` gets the old plant back for comparison.
+2. **The 0.70 s they accepted does not exist on the rider they ride.** It is +0.05 s on their rider on two faces and
+   0.000 s on all three reference arms. **I quoted them a price measured on a different rider, and that was my error,
+   not theirs.**
+3. **No fall count moves anywhere in this round.** The acceptance bar is untouched: Compress still falls.
+4. **Nothing else about the ride changes** — the three published reference numbers are the same on the new plant, and
+   the Canyon sea is byte-identical at the folder's own 3 600-step reference.

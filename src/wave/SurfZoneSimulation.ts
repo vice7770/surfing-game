@@ -360,6 +360,32 @@ export interface SurfZoneConfig {
    */
   askCap?: '1.5' | '2' | '4' | '4.5' | '9';
   /**
+   * Step 3.5b, **shipped by default since step 3.5c**: **the stance ladder's fourth rung read**, the tube tuck's
+   * 0.45 m of leg depth (`STANCE_TUCK`, measured from de Leva's segments in `3.2/inertia.probe.ts`). Without it
+   * `stanceAt` clamps the depth at Compress's 0.30 m, and on `?rider=new` the ACHIEVED depth already passes that
+   * ceiling in 0.11-0.96 of Compress's live ticks because the balance's own knee drop adds up to 0.044 m over the
+   * command (step 3.3f) - so the balance designed and coupled those ticks as Compress, on a pendulum 37.5 % too long
+   * and an inertia 1.89x out. The row adds the tuck to `stanceAt`/`bodyInertiaAt` **and** a fourth knot to the gain
+   * schedule (neither reaches the gains without the other).
+   *
+   * **The owner's ruling D of 2026-11-17, "keep the row"**, with its cost stated: 0.70 s off Compress's median ride
+   * on step 3.5b's own 20-run cell, falls unchanged at 20 of 20. `'off'` is the old three-row plant, kept so a ride
+   * can be priced against this track's pre-ruling numbers; `'on'` is the shipped behaviour said out loud. The new
+   * surfer only; no force and no hull law. Every spot. The `?stanceDeep` dev switch, pinned to the ship default in
+   * the online rooms.
+   */
+  stanceDeep?: 'on' | 'off';
+  /**
+   * Step 3.5b: **the deepen button** (ruling C's addition of 2026-11-17, *"keep the held compress, both patterns are
+   * real"*). `'on'`: full manual crouch reaches the tube tuck's depth (MANUAL_CROUCH_DEPTH, 0.45 m) anywhere, not only
+   * under a tube's curl, and Compress no longer fades that extra tuck away - so the crouch key deepens whatever stance
+   * is held, landing in the 35-50 %-of-standing spike band four of the five video references show at turn entry. **On
+   * the owner's input only: no automatic dip, and no clock, timer, fatigue or stamina anywhere in it** (the owner's
+   * *"lets leave it as infite stamina"*). One existing posture target is ungated; no force and no new quantity. Every
+   * spot. The `?deepen=on` dev switch, opt-in, to ride, and pinned off in the online rooms.
+   */
+  deepen?: 'on';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

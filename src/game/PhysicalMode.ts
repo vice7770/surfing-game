@@ -567,6 +567,10 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // bounded by atan(v²/(g R_min)) at every speed on this minimum carved radius in metres, in place of the shipped
     // 4.5 m with no ask at all off the plane (step 3.5a, the owner's ruling of 2026-11-17), opt-in, to ride.
     ...askCapSwitch(),
+    // `?stanceDeep=off`: the stance ladder's fourth rung, the tube tuck's 0.45 m, read by the balance's plant and by its gain schedule, SHIPS (step 3.5b, the owner's ruling D of 2026-11-17 "keep the row"; the achieved depth already passed the old 0.30 m clamp in 0.11-0.96 of Compress's live ticks), and `off` is the old three-row plant, kept to price a ride against this track's published history.
+    ...stanceDeepSwitch(),
+    // `?deepen=on`: the deepen button — full manual crouch reaches the tube tuck's 0.45 m anywhere and Compress does not fade it away, so the crouch key dips whatever stance is held (step 3.5b, ruling C; on the owner's input only, no clock and no stamina), opt-in, to ride.
+    ...deepenSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
@@ -1196,6 +1200,48 @@ export function bankClampSwitch(search?: string): { bankClamp?: 'off' } {
 export function askCapSwitch(search?: string): { askCap?: '1.5' | '2' | '4' | '4.5' | '9' } {
   const v = devParam('askCap', search)?.trim().toLowerCase();
   return v === '1.5' || v === '2' || v === '4' || v === '4.5' || v === '9' ? { askCap: v } : {};
+}
+
+/**
+ * The `?stanceDeep` dev switch (`SurfZoneConfig.stanceDeep`, step 3.5b, **shipped by default since step 3.5c**):
+ * **the stance ladder's fourth rung — the tube tuck's 0.45 m of leg depth — read by the balance**. Without it
+ * `stanceAt` clamps the depth at Compress's 0.30 m (`predictiveBalance.ts`) and the gain schedule clamps it again at
+ * its own last knot, so every leg deeper than Compress is designed with Compress's pendulum length (0.55 m, **37.5 %
+ * too long**), body inertia (**1.89x** out), rider yaw inertia and bank limit. On `?rider=new` the **achieved** depth
+ * already passes that ceiling in **0.11–0.96 of Compress's live ticks, 20 of 20 runs** (step 3.3f's uncommanded knee
+ * drop, up to 0.044 m on top of the command), so the clamp was never a deep-stance-only matter. The row is
+ * `STANCE_TUCK` (measured from de Leva's segments, `3.2/inertia.probe.ts`) plus the schedule's fourth knot, together
+ * — **neither reaches the gains without the other.**
+ *
+ * **The owner's ruling D of 2026-11-17 was "keep the row", read as the correct physics shipping by default**, shown
+ * that on step 3.5b's own cell it takes 0.70 s (23 %) off Compress's median ride with the fall count unchanged at
+ * 20 of 20. **`off` is the old three-row plant, kept so a ride can still be priced against this track's published
+ * history** — every ride time it published before that ruling was measured on the clamped plant. `on` is the shipped
+ * behaviour spelled out loud, so step 3.5b's own addresses keep working. Anything else, the shipped fourth rung.
+ *
+ * Nothing on the default rider, no force and no hull law.
+ */
+export function stanceDeepSwitch(search?: string): { stanceDeep?: 'on' | 'off' } {
+  const v = devParam('stanceDeep', search)?.trim().toLowerCase();
+  return v === 'on' || v === 'off' ? { stanceDeep: v } : {};
+}
+
+/**
+ * The `?deepen=on` dev switch (`SurfZoneConfig.deepen`, step 3.5b, the owner's ruling C of 2026-11-17): opt-in, **the
+ * deepen button**. Full manual crouch reaches the tube tuck's depth (`MANUAL_CROUCH_DEPTH`, 0.45 m) **anywhere**, not
+ * only under a tube's curl, and Compress no longer fades that extra tuck away — so the crouch key deepens whatever
+ * stance the rider is in, landing in the **35–50 % of straight-legged standing hip height** spike band that four of
+ * the five video references show at turn entry (`docs/research/new-rider/3.5/stance-frame.md`). Ruling C keeps the
+ * held Compress, so this is an **addition**: no stance's depth is changed.
+ *
+ * **On the owner's input only.** All five clips tie the dip to turn entry, but an automatic dip is the game moving the
+ * owner's body for them and they have not been asked. And there is **no clock, timer, fatigue or stamina** in it (the
+ * owner's *"lets leave it as infite stamina"*): the depth is a commanded leg length, so the dip lasts as long as the
+ * key is held. Nothing is added but the reach of an existing posture target — no force, no new quantity. Anything
+ * else, the tuck under a curl only, as it ships.
+ */
+export function deepenSwitch(search?: string): { deepen?: 'on' } {
+  return devParam('deepen', search)?.trim().toLowerCase() === 'on' ? { deepen: 'on' } : {};
 }
 
 /**

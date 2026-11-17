@@ -172,6 +172,10 @@ export interface RideSessionOptions {
   ankleRange?: 'load' | 'wide';
   /** Step 3.4i: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (`AttachedRiderOptions.bankClamp`): 'off' (the `?bankClamp=off` dev switch); by default MAX_BANK, as it always was. */
   bankClamp?: 'off';
+  /** Step 3.5b, shipped by default since 3.5c (the owner's ruling D, "keep the row"): the stance ladder's fourth rung, the tube tuck's 0.45 m, read by the balance's plant and its gain schedule (`AttachedRiderOptions.stanceDeep`). 'off' (the `?stanceDeep=off` dev switch) is the old three-row ladder and `stanceAt`'s 0.30 m clamp. */
+  stanceDeep?: 'on' | 'off';
+  /** Step 3.5b: the deepen button — full manual crouch reaches the tuck's 0.45 m anywhere and Compress does not fade it (`AttachedRiderOptions.deepen`): 'on' (the `?deepen=on` dev switch); by default the tuck under a tube's curl only, as it always was. */
+  deepen?: 'on';
   /**
    * Step 3.5a: the minimum carved radius the COMMANDED lean is bounded by, m (`AttachedRiderOptions.askCap`): '1.5',
    * '2', '4', '4.5' or '9' — the `?askCap` dev switch — so the bound on both reference lines is `atan(v²/(g R_min))` at
@@ -321,6 +325,8 @@ export class RideSession {
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.bankClamp ? { bankClamp: options.bankClamp } : {}),
       ...(options.askCap ? { askCap: options.askCap } : {}),
+      ...(options.stanceDeep ? { stanceDeep: options.stanceDeep } : {}),
+      ...(options.deepen ? { deepen: options.deepen } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),

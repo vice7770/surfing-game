@@ -65,6 +65,8 @@ import { BoardBody } from '../../../../src/physics/BoardBody';
 import { createWaterSample } from '../../../../src/physics/SurfWater';
 import { deckHeight, stanceFeet } from '../../../../src/physics/riderPosture';
 import { stanceRoom } from '../../../../src/physics/humanBalance';
+import { stanceAt } from '../../../../src/physics/predictiveBalance';
+import { DEFAULT_WEIGHTS, STANCE_TABLE } from '../../../../src/physics/predictiveBalance';
 import { KNEE_STIFFNESS } from '../../../../src/physics/standingBody';
 import { RIDER_LEG } from '../../../../src/physics/legSpring';
 import { FaceWater } from '../../../../src/physics/testing/FaceWater';
@@ -91,6 +93,24 @@ const STEERS = (process.env.STEERS ?? '0.5,1').split(',').map(Number);
 const ACROSS = Number(process.env.ACROSS ?? 85);
 const KNEEROOM = process.env.KNEEROOM === 'achieved' ? 'achieved' : undefined;
 const REACH = process.env.REACH === 'keep' ? 'keep' : undefined;
+/**
+ * Step 3.5b: the ladder's fourth rung read by the balance (`?stanceDeep`), and the deepen button (`?deepen=on`).
+ *
+ * **Step 3.5c: `STANCEDEEP=off` is now the interesting arm**, because the owner's ruling D of 2026-11-17 ("keep the
+ * row") made the rung the DEFAULT. Unset is the shipped plant; `off` is the old three-row ladder with `stanceAt`'s
+ * 0.30 m clamp, which is the leg 3.5b's own tables were the `off` column of.
+ */
+const STANCEDEEP = process.env.STANCEDEEP === 'on' ? 'on' : process.env.STANCEDEEP === 'off' ? 'off' : undefined;
+const DEEPEN = process.env.DEEPEN === 'on' ? 'on' : undefined;
+/** `AttachedRider.MANUAL_CROUCH_DEPTH`, re-stated so `cmd` is computed from the code's number and not from prose. */
+const MANUAL_CROUCH_DEPTH = 0.45;
+/**
+ * Step 3.5b's dip, timed: `DIP=<from>,<hold>` presses the crouch key from `from` s for `hold` s **on top of whatever
+ * stance the cell holds** and lets it go again, so the tall -> low -> tall cycle can be read off the leg's own trace
+ * rather than argued about. It answers one question: **does the deepening come back up on its own while the key is
+ * still held?** Nothing is timed inside the game — the press is this probe's input, exactly as a player's would be.
+ */
+const DIP = process.env.DIP ? process.env.DIP.split(',').map(Number) : undefined;
 const TICKS = process.env.TICKS === '1';
 /**
  * `KEEP=1`: keep stepping after the rider has come off, as step 3.3e's probe did, so its own window (0.5 s → 9 s, the
@@ -125,6 +145,9 @@ function stanceInputs(rider: AttachedRider, s: Stance): void {
  */
 function commanded(s: Stance): number {
   if (s === 'tall') return 0;
+  // Step 3.5b's deepen button (`DEEPEN=on`) ungates the tuck, so full manual crouch commands MANUAL_CROUCH_DEPTH
+  // anywhere and Compress no longer fades it: `manualCrouchShare(1, 0) × CROUCH_DEPTH` = 0.45 m.
+  if (DEEPEN && (s === 'tuck' || s === 'crouch')) return MANUAL_CROUCH_DEPTH;
   if (s === 'crouch') return CROUCH_SHARE * CROUCH_DEPTH;
   return CROUCH_DEPTH;
 }
@@ -159,6 +182,8 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     ...(RIDER === 'new' ? { rider: 'new' as const } : {}),
     ...(KNEEROOM ? { kneeRoom: KNEEROOM } : {}),
     ...(REACH ? { stanceReach: REACH } : {}),
+    ...(STANCEDEEP ? { stanceDeep: STANCEDEEP } : {}),
+    ...(DEEPEN ? { deepen: DEEPEN } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -172,7 +197,11 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
   const deckY = deckHeight(board.shape, (feet.rear + feet.front) / 2);
 
   // Live frames (0.5 s to the frame before the rider comes off) and 3.3e's window (0.5 s to the end, frozen included).
-  const live = { rest: [] as number[], got: [] as number[], target: [] as number[], knees: [] as number[], sag: [] as number[], slackGap: [] as number[], load: [] as number[] };
+  const live = { rest: [] as number[], got: [] as number[], target: [] as number[], knees: [] as number[], sag: [] as number[], slackGap: [] as number[], load: [] as number[],
+    // Step 3.5b: the plant the balance is actually designing on at this tick's ACHIEVED depth, read the way the plant
+    // reads it (`stanceAt(yawDepth, deep)`): the pendulum length L, m; the lean rate omega0 = sqrt(g/L), rad/s; and
+    // `riderCost`'s own bank limit, deg (`stateScale[2] × STANCE_TABLE[0].height / L`, `design`'s rank-one term).
+    plantL: [] as number[], omega0: [] as number[], bankLimit: [] as number[], yawLower: [] as number[], twistUpper: [] as number[] };
   const dead = { rest: [] as number[], got: [] as number[] };
   let slackBind = 0;
   let follows = 0;
@@ -193,6 +222,14 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
   /** The first time, s, the leg's own rest reaches the depth the button commands (within 5 mm), and the body with it. */
   let tCmd = Number.NaN;
   let tGot = Number.NaN;
+  /** The dip's own trace: when the leg reaches the tuck after the press, the deepest it gets, whether it RISES while
+   *  the key is still held (any rise over 5 mm off its own deepest, before the release), and when it is back up. */
+  let dipDeepest = 0;
+  let dipReached = Number.NaN;
+  let dipRoseHeld = 0;
+  let dipBackUp = Number.NaN;
+  let dipAtRelease = Number.NaN;
+  let dipBase = Number.NaN;
 
   if (TICKS) process.stdout.write('t\tknees\tcmd\ttarget\trest\tgot\thips\tsag\tslack\tslackBind\tlegLoad\tattached\n');
 
@@ -212,6 +249,8 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     if (!Number.isFinite(t85) && turned >= ACROSS) t85 = t;
     if (!centred && turned >= ACROSS) centred = true;
     rider.steer = centred ? 0 : steer;
+    // The dip, as a momentary press of the crouch key over the cell's own stance (step 3.5b).
+    if (DIP) rider.crouch = t >= DIP[0] && t < DIP[0] + DIP[1] ? 1 : (st === 'crouch' || st === 'tuck' ? 1 : 0);
 
     // The rider comes off through `separate`, which touches neither `phase` nor `upright` (step 3.3f).
     if (!off && !rider.attached) {
@@ -234,6 +273,17 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     const slack = rider.leg.extension - legLoad / k;
     const onSlack = Math.abs(rider.leg.rest - Math.min(0, slack)) < 1e-9;
 
+    if (DIP) {
+      const held = t >= DIP[0] && t < DIP[0] + DIP[1];
+      if (!Number.isFinite(dipBase) && t >= DIP[0] - STEP * 1.5 && t < DIP[0]) dipBase = restDepth;
+      if (held && !off) {
+        if (restDepth > dipDeepest) dipDeepest = restDepth;
+        else if (dipDeepest - restDepth > 0.005) dipRoseHeld += 1;
+        if (!Number.isFinite(dipReached) && restDepth >= MANUAL_CROUCH_DEPTH - 0.005) dipReached = t - DIP[0];
+      }
+      if (!Number.isFinite(dipAtRelease) && t >= DIP[0] + DIP[1]) dipAtRelease = restDepth;
+      if (t >= DIP[0] + DIP[1] && !Number.isFinite(dipBackUp) && Number.isFinite(dipBase) && restDepth <= dipBase + 0.005) dipBackUp = t - (DIP[0] + DIP[1]);
+    }
     if (cmd > 0 && !Number.isFinite(tCmd) && restDepth >= cmd - 0.005) tCmd = t;
     if (cmd > 0 && !Number.isFinite(tGot) && gotDepth >= cmd - 0.005) tGot = t;
     if (t > 0.5) {
@@ -249,6 +299,13 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
         live.sag.push(restDepth - gotDepth);
         live.slackGap.push(restDepth - Math.max(0, -Math.min(0, slack)));
         live.load.push(legLoad / (rider.mass * 9.81));
+        // Step 3.5c: the rung ships, so the probe's reported plant follows the rider's — only `off` reads three rows.
+        const st2 = stanceAt(-rider.leg.rest, STANCEDEEP !== 'off');
+        live.plantL.push(st2.height);
+        live.omega0.push(Math.sqrt(9.81 / st2.height));
+        live.bankLimit.push(DEFAULT_WEIGHTS.stateScale[2] * (STANCE_TABLE[0].height / st2.height) * DEG);
+        live.yawLower.push(st2.lower);
+        live.twistUpper.push(st2.upper);
         if (onSlack) slackBind += 1;
         if (restDepth > 0.3005) pastCeiling += 1;
         // "Followed": the rest the leg holds is within 5 mm of the depth the chain asks for.
@@ -278,11 +335,21 @@ function oneRun(st: Stance, extra: number, steer: number): Record<string, unknow
     slackShare: r(liveTicks > 0 ? slackBind / liveTicks : Number.NaN, 3),
     ceilingShare: r(liveTicks > 0 ? pastCeiling / liveTicks : Number.NaN, 3),
     loadMedian: r(median(live.load), 2),
+    // The plant at the achieved depth (step 3.5b): with the row the deep ticks leave Compress's pendulum.
+    plantLMedian: r(median(live.plantL)), plantLLeast: r(sorted(live.plantL)[0]),
+    omega0Median: r(median(live.omega0), 3), bankLimitMedian: r(median(live.bankLimit), 3),
+    yawLowerMedian: r(median(live.yawLower), 3), twistUpperMedian: r(median(live.twistUpper), 3),
     // 3.3e's own window, the frozen frames included, for the artefact's size.
     deadN: deadTicks, deadRestMedian: r(median(dead.rest)), deadGotMedian: r(median(dead.got)),
     deadShare: r(deadTicks > 0 ? (deadTicks - liveTicks) / deadTicks : Number.NaN, 3),
     tCmd: r(tCmd, 3), tGot: r(tGot, 3),
     fellAt: r(fellAt, 3), cause, t85: r(t85, 3),
+    // The dip's own trace (step 3.5b, `DIP=<from>,<hold>`): all seconds; `dipRoseHeld` is the count of ticks where the
+    // leg sat more than 5 mm above its own deepest WHILE THE KEY WAS STILL HELD — a self-release would be non-zero.
+    ...(DIP ? {
+      dipFrom: DIP[0], dipHold: DIP[1], dipBase: r(dipBase), dipDeepest: r(dipDeepest), dipReached: r(dipReached, 3),
+      dipRoseHeld, dipAtRelease: r(dipAtRelease), dipBackUp: r(dipBackUp, 3),
+    } : {}),
   };
 }
 
@@ -302,18 +369,19 @@ for (const extra of EXTRAS) {
 if (!TICKS) {
   // `r()` returns null for a NaN and `Number(null) === 0`, so nulls are carried through as NaNs, which `sorted` drops.
   const col = (st: Stance, k: string) => rows.filter((x) => x.stance === st).map((x) => (x[k] === null || x[k] === undefined ? Number.NaN : Number(x[k])));
-  console.log(`\n# step 3.5b — where the commanded depth goes, rider=${RIDER}${KNEEROOM ? ` kneeRoom=${KNEEROOM}` : ''}${REACH ? ` reach=${REACH}` : ''}`);
+  console.log(`\n# step 3.5b — where the commanded depth goes, rider=${RIDER}${KNEEROOM ? ` kneeRoom=${KNEEROOM}` : ''}${REACH ? ` reach=${REACH}` : ''}${STANCEDEEP ? ` stanceDeep=${STANCEDEEP}` : ' stanceDeep=as it ships'}${DEEPEN ? ' deepen=on' : ''}`);
   console.log(`# Canyon-matched FaceWater ${FACE[0]} m / ${FACE[1]}° / ${FACE[2]} m/s, ${DEPTH} m deep — a FIT to Canyon, not Canyon.`);
   console.log(`# ${EXTRAS.length} entry speeds × ${STEERS.length} sticks = ${EXTRAS.length * STEERS.length} runs a stance, ${SECONDS} s each; LIVE frames only (0.5 s → the frame before the rider comes off).`);
   console.log('# All depths are metres of leg shortening below the riding stance. hips = 0.78 m (the placed pelvis) − got.');
-  console.log(`\n| stance | cmd, m | knee travel | knees | **target, m** | **rest, m** | **got, m** | **hips, m** | sag, m | followed | on slack | past 0.30 | load, BW | fell, s | live ticks | dead share |`);
-  console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+  console.log(`\n| stance | cmd, m | knee travel | knees | **target, m** | **rest, m** | **got, m** | **hips, m** | sag, m | followed | on slack | past 0.30 | load, BW | fell, s | live ticks | dead share | plant L, m | omega0 | bank limit, deg | yaw lower | twist upper |`);
+  console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const st of order) {
     const n = rows.filter((x) => x.stance === st).length;
     console.log(`| ${st} | ${f(median(col(st, 'cmd')))} | ${f(median(col(st, 'kneeTravel')))} | ${span(col(st, 'kneesMedian'), 2)} `
       + `| ${span(col(st, 'targetMedian'))} | ${span(col(st, 'restMedian'))} | ${span(col(st, 'gotMedian'))} | ${span(col(st, 'hipsMedian'))} `
       + `| ${span(col(st, 'sagMedian'))} | ${span(col(st, 'followShare'), 2)} | ${span(col(st, 'slackShare'), 2)} | ${span(col(st, 'ceilingShare'), 2)} | ${span(col(st, 'loadMedian'), 2)} `
-      + `| ${span(col(st, 'fellAt'), 2)} (${rows.filter((x) => x.stance === st && x.cause).length}/${n}) | ${span(col(st, 'n'), 0)} | ${span(col(st, 'deadShare'), 2)} |`);
+      + `| ${span(col(st, 'fellAt'), 2)} (${rows.filter((x) => x.stance === st && x.cause).length}/${n}) | ${span(col(st, 'n'), 0)} | ${span(col(st, 'deadShare'), 2)} `
+      + `| ${span(col(st, 'plantLMedian'))} | ${span(col(st, 'omega0Median'), 2)} | ${span(col(st, 'bankLimitMedian'), 2)} | ${span(col(st, 'yawLowerMedian'))} | ${span(col(st, 'twistUpperMedian'))} |`);
   }
   // The paired contrast, cell by cell: the same entry speed and stick, tall against each deeper stance.
   console.log('\n| cell (entry, stick) | knees tall | hips tall, m | stance | hips, m | **Δ hips, m** | Δ on 3.3e\'s window, m |');

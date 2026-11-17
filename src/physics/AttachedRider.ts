@@ -1501,6 +1501,39 @@ export interface AttachedRiderOptions {
    * function already. Opt-in, off by default (the `?askCap` dev switch), pinned off in the online rooms.
    */
   askCap?: '1.5' | '2' | '4' | '4.5' | '9';
+  /**
+   * **The stance ladder's fourth rung read by the balance** (step 3.5b, built as `?stanceDeep=on`; **SHIPPING BY
+   * DEFAULT since step 3.5c and the owner's ruling D of 2026-11-17, "keep the row"**): `STANCE_TUCK`, the tube tuck's
+   * 0.45 m of leg depth, enters `stanceAt` and the gain schedule, so a leg deeper than Compress's 0.30 m stops being
+   * designed and coupled as Compress. Without it `stanceAt` clamps at 0.30, and the ACHIEVED depth already passes
+   * that in 0.28-0.95 of Compress's live ticks on `?rider=new` (step 3.3f's uncommanded knee drop, up to 0.044 m over
+   * the command), so the row **changes existing Compress ticks** as well as reaching the deep ones.
+   *
+   * The measured row is the correct pendulum (0.40 m against the clamp's 0.55, which was **37.5 % too long**), the
+   * correct body inertia (the clamp's was **1.89x** out) and the correct bank limit, so the owner ruled that it ships.
+   *
+   * `'off'` restores the three-row ladder and the 0.30 m clamp bit for bit, which is the only way to price a ride
+   * against this track's own pre-ruling history: **every ride time published before 2026-11-17 was measured on the
+   * clamped plant.** Omitted, or `'on'`, is the shipped fourth rung.
+   *
+   * It touches the balance's internal plant and the rider's yaw coupling (`coupleYaw`); no force, no hull law and
+   * nothing at all on the default rider.
+   */
+  stanceDeep?: 'on' | 'off';
+  /**
+   * **The deepen button** (step 3.5b, `?deepen=on`, ruling C's addition): full manual crouch reaches the tube tuck's
+   * depth (MANUAL_CROUCH_DEPTH, 0.45 m) **anywhere**, not only under a tube's curl, and Compress no longer fades that
+   * extra tuck away - so the owner's crouch key deepens whatever stance is held, which is the 35-50 %-of-standing
+   * spike band four of the five video references show at turn entry (`docs/research/new-rider/3.5/stance-frame.md`).
+   *
+   * **On the owner's input only**: no automatic dip, no clock, no timer, no fatigue and no stamina. The depth is a
+   * commanded leg length, so the dip lasts exactly as long as the key is held and the legs come back up when it is
+   * let go - see step 3.5b's README section for why nothing in the code can bring the rider up on its own.
+   *
+   * Opt-in, off by default and pinned off for online rooms. One existing posture target is ungated; no force and no
+   * new quantity. Anything else, the tuck under a curl only, as it ships.
+   */
+  deepen?: 'on';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -2105,6 +2138,10 @@ export class AttachedRider {
   private readonly mountFelt: boolean;
   /** The knees' travel read at the depth the leg has reached rather than the one commanded (`kneeRoom: 'achieved'`, step 3.3f). */
   private readonly kneeRoomAchieved: boolean;
+  /** Step 3.5b: the stance ladder's tuck row read by `stanceAt` and the gain schedule (`stanceDeep: 'on'`). */
+  private readonly stanceDeepRow: boolean;
+  /** Step 3.5b: full manual crouch reaches the tube tuck's depth anywhere, not only under a curl (`deepen: 'on'`). */
+  private readonly deepens: boolean;
   /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
   private readonly stanceReach: 'keep' | undefined;
   /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
@@ -2478,6 +2515,10 @@ export class AttachedRider {
       : options.askCap === '4' ? 4 : options.askCap === '4.5' ? 4.5 : options.askCap === '9' ? 9 : TURN_RADIUS;
     this.askUngated = options.askCap === '1.5' || options.askCap === '2' || options.askCap === '4'
       || options.askCap === '4.5' || options.askCap === '9';
+    // Step 3.5c (ruling D, "keep the row"): the fourth rung SHIPS, so only an explicit `'off'` goes back to the
+    // three-row ladder and its 0.30 m clamp. Matched as a string and never parsed — `Number(null) === 0`.
+    this.stanceDeepRow = options.stanceDeep !== 'off';
+    this.deepens = options.deepen === 'on';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -2504,8 +2545,15 @@ export class AttachedRider {
     // the default arm silently — and `Number(null) === 0`, so the three are matched as strings and never parsed.
     const floorWeights: { plantFloor: number } | undefined = options.plantFloor === '4.5' ? { plantFloor: 4.5 }
       : options.plantFloor === '5' ? { plantFloor: 5 } : options.plantFloor === '6' ? { plantFloor: 6 } : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...options.balance?.weights }
+    // Step 3.5b: `stanceDeep` reaches the same weights route, so an explicit `stanceDeep` in `balance.weights` wins
+    // and the design cache's key carries it. The plant and the schedule's fourth knot both hang off this one flag.
+    // Step 3.5c (ruling D, "keep the row"): the row ships, so the ONLY thing this has to say is `false`, out loud,
+    // when the switch says `'off'`. Left `undefined` otherwise, so a rider built with no options at all still hands
+    // `PredictiveController` an undefined `weights` exactly as it always did — and both read sites now default that
+    // to the fourth rung (`DEFAULT_WEIGHTS.stanceDeep`, `blend`'s `?? true`).
+    const ladderWeights: { stanceDeep: boolean } | undefined = options.stanceDeep === 'off' ? { stanceDeep: false } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...options.balance?.weights }
       : undefined;
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
@@ -4114,7 +4162,10 @@ export class AttachedRider {
     // have to pull the body down, and unloaded feet lose their grip.
     // Under a tube's curl full manual crouch folds into the deep tuck; anywhere else it is the pumping crouch.
     const crouchAsked = this.crouchAsked;
-    const crouch = this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
+    // Step 3.5b's deepen button (`deepen: 'on'`): the tuck's depth is reachable anywhere, and Compress does not fade
+    // it, so the crouch key deepens whatever stance is held. Off, the tuck is a tube's clearance only, as it ships.
+    const crouch = this.deepens ? manualCrouchShare(crouchAsked, 0)
+      : this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
     const compress = Math.max(0, Math.min(1, this.compressAsked));
     const snap = this.snapping;
     // Snap's driving legs (`snapLegs: 'drive'`): its load let out as the board comes round (SNAP_DRIVE_DEPTH).
@@ -4548,7 +4599,7 @@ export class AttachedRider {
     const w = board.angularVelocity;
     const turn = n.x * w.x + n.y * w.y + n.z * w.z;
     if (!this.yawCoupled) this.yawSpin = turn;
-    const stance = stanceAt(this.yawDepth);
+    const stance = stanceAt(this.yawDepth, this.stanceDeepRow);
     const lower = this.yawScale * stance.lower;
     const upper = this.yawScale * (stance.upper + TWIST_BODY_ARMS * Math.max(0, Math.min(1, this.human.arms)));
     if (!tb.coupled) tb.upper = turn + tb.rate;

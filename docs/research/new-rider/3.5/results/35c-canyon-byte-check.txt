@@ -1,0 +1,37 @@
+# Step 3.5c — the Canyon byte check, AT THE FOLDER'S OWN 3,600-STEP REFERENCE, so the reference itself is verified
+# rather than a shorter A/B being substituted for it.
+#
+# The handoff's three cautions, each honoured and each visible below:
+#   (1) the wrapper is `globalThis.location = { search: '?canyonWaves=true' }` PREPENDED to the bundle (a bare string
+#       silently benches the default Canyon via `devTools.ts:9`) — verified by reading the bundle's first line;
+#   (2) the GRID is printed and read — B 400 x 451 = 180400 cells, render 401 x 511, solver t 22.000;
+#   (3) the "spun up on the CPU in ... s" line IS printed, so this is the FRESH SPIN-UP path — the same path the
+#       3,600-step reference was taken on (`docs/research/wave-strategy-alternatives/c2-step5a.md`: "medium, 3600
+#       steps, fresh spin-ups"). A fresh spin-up and an imported --state give DIFFERENT pairs on `main` alone
+#       (step 3.4i measured it), so the path is named and the two are never compared.
+#
+# Build: ./node_modules/.bin/rolldown scripts/m1-cpu-bench.ts -o bench-branch.raw.mjs --format esm --platform node
+#        then the wrapper prepended:  { echo "globalThis.location = { search: '?canyonWaves=true' };"; cat ... }
+# Run:   node bench-branch-B.mjs --spot canyon --steps 3600 --state <a path with no kept .sea>
+
+##### Canyon B, 3,600 steps, fresh spin-up, branch claude/35b-fourth-row + step 3.5c
+
+spun up on the CPU in 49.0 s
+canyon medium, 64 components, 400 x 451 = 180400 cells, render 401 x 511, solver t 22.000
+
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+
+##### Against the handoff's reference pair
+
+  reference (3,600 steps, fresh spin-ups):  a367d938f15fa934 / 9e5831f80e38abd9
+  this branch:                              a367d938f15fa934 / 9e5831f80e38abd9
+                                            ====> IDENTICAL, both columns.
+
+# So THE REFERENCE PAIR DOES NOT MOVE and does not need re-recording. That is the expected result and it was verified
+# rather than assumed: the row changes the rider's balance plant (STANCE_TABLE / the gain schedule's knots), and the
+# sea's solver imports nothing from the rider. The hash covers the published snapshots and the final state arrays, so
+# the sea stepped and published the same bytes.
+#
+# Note this is a stronger check than step 3.5b's: 3.5b ran a 240-step A/B between the two trees and explicitly refused
+# to quote the 3,600-step reference as a pass, because a different step count cannot be compared with it. This round
+# ran the reference's own step count on its own path, so the published pair itself is confirmed live.
