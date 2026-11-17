@@ -563,6 +563,10 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...ankleRangeSwitch(),
     // `?bankClamp=off`: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (step 3.4i; step 3.4h read `bankFall` at 70.00 exactly in 21 of 24 runs, so the fall classifier's 45 degree threshold sat on a truncated column), opt-in, to ride.
     ...bankClampSwitch(),
+    // `?askCap=1.5|2|4|4.5|9`: the lean the rider ASKS for — the balance's own reference and the steer's request alike —
+    // bounded by atan(v²/(g R_min)) at every speed on this minimum carved radius in metres, in place of the shipped
+    // 4.5 m with no ask at all off the plane (step 3.5a, the owner's ruling of 2026-11-17), opt-in, to ride.
+    ...askCapSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
@@ -1161,6 +1165,37 @@ export function ankleRangeSwitch(search?: string): { ankleRange?: 'load' | 'wide
  */
 export function bankClampSwitch(search?: string): { bankClamp?: 'off' } {
   return devParam('bankClamp', search)?.trim().toLowerCase() === 'off' ? { bankClamp: 'off' } : {};
+}
+
+/**
+ * The `?askCap=1.5|2|4|4.5|9` dev switch (`SurfZoneConfig.askCap`, step 3.5a, the owner's ruling of 2026-11-17 —
+ * *"Yes — cap the ask"*): opt-in, **the lean the rider asks for bounded by what its speed can hold**, on this minimum
+ * carved radius in metres. The bound is `θ_max = atan(v² / (g R_min))` and it applies to **both** reference lines
+ * `prepareBank` writes — the balance's own (`leanAsked`, the predictor's reference) and the steer's
+ * (`bankReference`) — which are the two the ruling names. On the advisor's 2.0 m
+ * (`docs/research/water-physics/board-roll-stiffness.md` §7) it is **4.9° at 1.3 m/s, 25° at 3, 52° at 5, 65° at 6.5**.
+ *
+ * **The cap is not new, and that is the first thing to know about this switch.** `AttachedRider.prepareBank` has
+ * bounded both lines by exactly this formula since 2026-10, at `TURN_RADIUS = 4.5 m` — *tighter* than 2.0 m, giving
+ * 2.2° at 1.3 m/s against 4.9° and 29.5° at 5 against 52° — and shipped the bound is **0 whenever the board is not
+ * planing**, so below `PLANING_DROP = 3 m/s` the rider already asks to stand perfectly plumb. So every value of this
+ * switch at or below 4.5 m **loosens** the low-speed ask and tightens nothing, and the switch does two separable
+ * things: it replaces R_min and it removes the planing gate. `4.5` keeps the shipped radius and isolates the gate;
+ * `9` is the opposite direction — double the shipped radius, so a genuinely TIGHTER cap wherever the board planes —
+ * and it is here because the loosening direction was measured worse and the tightening one had to be measured too.
+ *
+ * **R_min is the one unsourced number here.** Nobody has published a shortboard's minimum carved radius: 2.0 m is the
+ * advisor's judgement from a 1.778 m board's rail line, 1.5 and 4 the bracket it offered beside it, 9 this round's own
+ * tightening arm, and 4.5 the constant the game already chose from a Canyon ride report and Forsyth et al. 2024's 3.8 m bottom turns.
+ *
+ * It bounds a **command**, so it is **not a hidden motor**: no torque, damper, brake or yaw moment is added, and no
+ * force the water or the board applies is touched. Both riders read it, since both reference lines live in
+ * `prepareBank`. Nothing on the default rider. Anything else, the shipped 4.5 m with its planing gate, as before.
+ * docs/research/new-rider/3.5 Part 1.
+ */
+export function askCapSwitch(search?: string): { askCap?: '1.5' | '2' | '4' | '4.5' | '9' } {
+  const v = devParam('askCap', search)?.trim().toLowerCase();
+  return v === '1.5' || v === '2' || v === '4' || v === '4.5' || v === '9' ? { askCap: v } : {};
 }
 
 /**

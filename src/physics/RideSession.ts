@@ -173,6 +173,12 @@ export interface RideSessionOptions {
   /** Step 3.4i: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (`AttachedRiderOptions.bankClamp`): 'off' (the `?bankClamp=off` dev switch); by default MAX_BANK, as it always was. */
   bankClamp?: 'off';
   /**
+   * Step 3.5a: the minimum carved radius the COMMANDED lean is bounded by, m (`AttachedRiderOptions.askCap`): '1.5',
+   * '2', '4', '4.5' or '9' — the `?askCap` dev switch — so the bound on both reference lines is `atan(v²/(g R_min))` at
+   * every speed. By default `TURN_RADIUS = 4.5 m` and **0 off the plane**, the cap the game has shipped since 2026-10.
+   */
+  askCap?: '1.5' | '2' | '4' | '4.5' | '9';
+  /**
    * The water's own heel datum for the balance's internal model (step 3.3p; `AttachedRiderOptions.waterHeel`):
    * 'tilt' reads the twelve captive derivatives' three heel coefficients at the board's heel against the **water**
    * and hands the face's own tilt to the predictor as a measured input (the `?waterHeel=tilt` dev switch); by default
@@ -314,6 +320,7 @@ export class RideSession {
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.bankClamp ? { bankClamp: options.bankClamp } : {}),
+      ...(options.askCap ? { askCap: options.askCap } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),

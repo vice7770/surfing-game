@@ -233,6 +233,17 @@ const FLOOR = process.env.FLOOR === '4.5' ? '4.5' : process.env.FLOOR === '5' ? 
  * `yModelNegB` tick for tick. Unset, every column is the one steps 3.3p–3.4m published.
  */
 const SLIP = process.env.SLIP === 'lab' ? 'lab' : undefined;
+/**
+ * **Step 3.5a: `ASKCAP=1.5|2|4|4.5|9` rides `?askCap`** (`AttachedRiderOptions.askCap`) — the minimum carved radius the
+ * rider's COMMANDED lean is bounded by, m, so the bound on both reference lines `prepareBank` writes is
+ * `atan(v²/(g R_min))` at every speed. Shipped (`ASKCAP` unset) the bound is already there, at `TURN_RADIUS = 4.5 m`,
+ * and it is **0 whenever the board is not planing**. So `ASKCAP=4.5` is the planing gate removed and nothing else, and
+ * the others are that plus a different radius: 1.5, 2 and 4 LOOSEN what may be asked for, and 9 — double the shipped
+ * radius — tightens it wherever the board planes.
+ */
+const ASKCAP = process.env.ASKCAP === '1.5' ? '1.5' : process.env.ASKCAP === '2' ? '2'
+  : process.env.ASKCAP === '4' ? '4' : process.env.ASKCAP === '4.5' ? '4.5' : process.env.ASKCAP === '9' ? '9'
+  : undefined;
 /** The floor's own number for `plantAt`, m/s: the shipped lookup's own when `FLOOR` is unset. */
 const FLOOR_OPT: { plantFloor: number } | undefined = FLOOR ? { plantFloor: Number(FLOOR) } : undefined;
 /**
@@ -417,6 +428,22 @@ interface Tick {
   speedClamped: number;
   /** The rail the schedule was read at, °, against the board's own measured |rail|, and the table's own limit there. */
   schedRail: number;
+  /**
+   * **Step 3.5a: the ask cap, read off `AttachedRider.leanProbe` and nothing derived.** `askWant` the lean the steer
+   * and the hand asked for BEFORE the cap, °; `askCap` the bound actually applied, ° (**0 off the plane** as it
+   * ships); `askHeld` the formula's own `atan(v²/(g R))` before that gate, °; `askAsk` the eased reference after it,
+   * °; `askRadius` the R it was built on, m; `askPlaning` 1 while the board planes; `askClip` 1 on a tick where the
+   * cap actually bound the request (`|want| > cap`, to 1e-12 rad). The speed the cap is built on is the board's
+   * forward speed THROUGH the water (`leanProbe.speedThrough`, `askSpeed`), which is not `speed` (the controller's).
+   */
+  askWant: number;
+  askCap: number;
+  askHeld: number;
+  askAsk: number;
+  askRadius: number;
+  askSpeed: number;
+  askPlaning: number;
+  askClip: number;
   /** Step 3.3p: the tilt the controller was handed, °, in the model's own sign (0 unless `waterHeel` is on). */
   schedTilt: number;
   railMeas: number;
@@ -953,6 +980,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(ARANGE ? { ankleRange: ARANGE } : {}),
     ...(BANKC ? { bankClamp: BANKC } : {}),
     ...(FLOOR ? { plantFloor: FLOOR } : {}),
+    ...(ASKCAP ? { askCap: ASKCAP } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -1809,6 +1837,17 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         speedClamped: speedUsed < TABLE_FLOOR || speedUsed > TABLE_CEIL ? 1 : 0,
         schedRail: schedRail * DEG,
         schedTilt: inner.schedTilt * DEG,
+        // **Step 3.5a**: the ask cap as `prepareBank` last wrote it on this tick's own `board.step` (the last of the
+        // board's substeps, which is the state every other column on this row is also read after). Nothing derived:
+        // `askClip` is the one comparison, `|want| > cap` in RADIANS before either is turned into degrees.
+        askWant: rider.leanProbe.want * DEG,
+        askCap: rider.leanProbe.cap * DEG,
+        askHeld: rider.leanProbe.held * DEG,
+        askAsk: rider.leanProbe.ask * DEG,
+        askRadius: rider.leanProbe.radius,
+        askSpeed: rider.leanProbe.speedThrough,
+        askPlaning: rider.leanProbe.planing,
+        askClip: Math.abs(rider.leanProbe.want) > rider.leanProbe.cap + 1e-12 ? 1 : 0,
         railMeas: Math.abs(rail),
         railUsable: railLimit(speedUsed) * DEG,
         trimWorld,
@@ -2161,6 +2200,9 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         // game's three off `BoardBody`'s own water ledgers, `:1690` the model's three off the twelve derivatives at
         // the tick's own state). `speedUsed`/`speedClamped` come along so the clamp can be read tick by tick.
         speedUsed: r(xx.speedUsed, 4), speedClamped: xx.speedClamped,
+        // Step 3.5a: the ask cap's own columns, every one already on the row.
+        askWant: r(xx.askWant, 4), askCap: r(xx.askCap, 4), askHeld: r(xx.askHeld, 4), askAsk: r(xx.askAsk, 4),
+        askRadius: r(xx.askRadius, 3), askSpeed: r(xx.askSpeed, 4), askPlaning: xx.askPlaning, askClip: xx.askClip,
         kGame: r(xx.kGame, 4), kModel: r(xx.kModel, 4),
         yGame: r(xx.yGame, 4), yModel: r(xx.yModel, 4), yModelRail: r(xx.yModelRail, 4),
         // Step 3.4m: the row's own counterfactual at the same state (floor 4.5), so the sign share with row '4' and
@@ -2234,6 +2276,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     mount: MOUNTA ?? 'ships',
     arange: ARANGE ?? 'ships',
     bankClamp: BANKC ?? 'ships',
+    askCapArm: ASKCAP ?? 'ships',
     stance: st,
     extra: entry0 === null ? extra : null,
     entryAsked: entry0,
@@ -2252,6 +2295,42 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     rollFall: r(end?.roll ?? Number.NaN, 2),
     bankFall: r(end?.bank ?? Number.NaN, 2),
     railFall: r(end?.rail ?? Number.NaN, 2),
+    // --- **Step 3.5a: what the ask cap actually binds, and whether a turn starts.**
+    // The clip share is over the SAME live window as every other figure here (`t > 0.2`, outside the MAX_BANK clamp),
+    // and it is `|want| > cap` tick by tick, counted on the row. The speed bands are the board's speed THROUGH the
+    // water (`askSpeed`), which is the speed the cap is built on — not the controller's `speed`.
+    askClipShare: r(share(live.map((xx) => xx.askClip === 1)), 4),
+    askClipBelow2: r(share(live.filter((xx) => xx.askSpeed < 2).map((xx) => xx.askClip === 1)), 4),
+    askClip2to3: r(share(live.filter((xx) => xx.askSpeed >= 2 && xx.askSpeed < 3).map((xx) => xx.askClip === 1)), 4),
+    askClip3to4: r(share(live.filter((xx) => xx.askSpeed >= 3 && xx.askSpeed < 4).map((xx) => xx.askClip === 1)), 4),
+    askClip4to6: r(share(live.filter((xx) => xx.askSpeed >= 4 && xx.askSpeed < 6).map((xx) => xx.askClip === 1)), 4),
+    askClipAbove6: r(share(live.filter((xx) => xx.askSpeed >= 6).map((xx) => xx.askClip === 1)), 4),
+    askN: live.length,
+    askNBelow2: live.filter((xx) => xx.askSpeed < 2).length,
+    askN2to3: live.filter((xx) => xx.askSpeed >= 2 && xx.askSpeed < 3).length,
+    askN3to4: live.filter((xx) => xx.askSpeed >= 3 && xx.askSpeed < 4).length,
+    askN4to6: live.filter((xx) => xx.askSpeed >= 4 && xx.askSpeed < 6).length,
+    askNAbove6: live.filter((xx) => xx.askSpeed >= 6).length,
+    askWantMed: r(median(absCol(live, 'askWant')), 3),
+    askWantPeak: r(Math.max(0, ...absCol(live, 'askWant')), 3),
+    askCapMed: r(median(col(live, 'askCap')), 3),
+    askHeldMed: r(median(col(live, 'askHeld')), 3),
+    askAskMed: r(median(absCol(live, 'askAsk')), 3),
+    askAskPeak: r(Math.max(0, ...absCol(live, 'askAsk')), 3),
+    askSpeedMed: r(median(col(live, 'askSpeed')), 3),
+    askPlaningShare: r(share(live.map((xx) => xx.askPlaning === 1)), 4),
+    // **Turn initiation, over EVERY tick from the mount** (not the live window): the first time the board's rail
+    // against the water reaches 5, 10 and 20°, the peaks it and the body's bank reach, and the turn the board
+    // actually makes — the peak yaw rate and the integral of |yaw rate| over the run, both °. `null` means the
+    // threshold was never reached in the run, which is exactly "the turn did not happen".
+    askRail5: r(ticks.find((xx) => Math.abs(xx.rail) >= 5)?.t ?? Number.NaN, 3),
+    askRail10: r(ticks.find((xx) => Math.abs(xx.rail) >= 10)?.t ?? Number.NaN, 3),
+    askRail20: r(ticks.find((xx) => Math.abs(xx.rail) >= 20)?.t ?? Number.NaN, 3),
+    askBank10: r(ticks.find((xx) => Math.abs(xx.bank) >= 10)?.t ?? Number.NaN, 3),
+    askRailPeak: r(Math.max(0, ...absCol(ticks, 'rail')), 2),
+    askBankPeak: r(Math.max(0, ...absCol(ticks, 'bank')), 2),
+    askYawPeak: r(Math.max(0, ...absCol(ticks, 'stYawRate')) * DEG, 2),
+    askYawTurned: r(absCol(ticks, 'stYawRate').reduce((u, v) => u + v, 0) * STEP * DEG, 2),
     // --- P0 controls
     senseOff: r(senseOff, 15),
     spacingOff: r(spacingOff, 12),
