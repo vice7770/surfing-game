@@ -440,3 +440,30 @@ Where it lives, verified:
 **So at the owner's own falling speeds — 1.16 and 1.31 m/s — the balance controller is designed on the water's derivatives at 4 m/s: a 3× extrapolation.** And today's advisor puts that regime **below planing entirely** (planing starts ≈6.1 m/s) with **the board sinking below ≈3.2–4.3 m/s**, so the clamped-to-4 derivatives describe water the board is not even in.
 
 **This is 3.4k, it is the sharpest lead the track has, and it lands exactly on the owner's bar** (*"should not fall in the lower speed of getting positioning"*). The question: **do the modelled `a_y` and the solved one agree in size at 1.2–1.3 m/s, or does the 4 m/s floor make the controller's model wrong where the owner falls?** Note what it does *not* implicate: the hull's ~100, the clamp, the wave, the placement, or the ankle's range.
+
+## KIRRA 50–196 s (merged `2b202100`, PR #383) — PULSED DEPTH CONFIRMED ON A SECOND CLIP, AND TWO CORRECTIONS TO THE FIRST 50 s
+
+`docs/research/new-rider/3.4/kirra-reference-50-196s.md`. ~85 frames, 3–4 s steps over 50–196 s plus 1–1.5 s steps in the four close shots. Source 854×480; rider **90–110 px in the close shots** (57–65, 129–146, 163–195 s) and **25–45 px in the wide shots** (79–125 s), **which are unreadable**. Read on **sonnet at default effort**, ~158 k tokens.
+
+### TWO CORRECTIONS TO `kirra-reference.md`, both load-bearing
+
+1. **THE CLIP IS NOT ONE RIDER.** It is a montage of **at least five surfers** (bare-chested bald; long hair in a red rash vest; bare-chested on an orange board; dark clothes in the wides; one in a pink top), and the description also credits Rastovich and Parkinson. **Nothing from this clip may be quoted as "Kelly does X"** — including from the first 50 s, which never checked. Cross-clip comparisons drawn from it are **between riders**, not within one.
+2. **THE SLOW-MOTION FACTOR IS FOUND AT LAST — about 3× or 4×.** The description says **"72fps / 96fps 4K"** and the frame timestamps fall on multiples of **1/24 s**, so at 24 fps playback real time = slowed time **÷ 3–4** (which shot is which is unverified). **Every duration in `kirra-reference.md` is therefore 3–4× too long**, and that doc's "a turn takes 3–4 slowed s" becomes **≈1 real s** — i.e. in line with Forsyth's measured 0.96 s, not three times it. **This retires the comparison problem the skill was written to warn about.**
+
+### The three disagreements, answered
+
+1. **Arms: it depends on the manoeuvre, and the deepest moments agree with Nias — but the shape is sharper than "both arms in".** At the deepest points of the red-vest rider's turns (182, 187, 191, 192 s) **the LEAD hand goes low, to the front knee or the board rail, and the other arm trails low and back.** It is **one hand reaching for the board**, not both pulled in. Arms go out roughly level **only when upright or mid-carve** (143, 184, 190, 195 s). **About 1 arm in ~20 turn frames is above shoulder height, and that one is uncertain.** The first 50 s's "arms wide at the crouch" is **a different rider**, so neither generalises.
+2. **DEPTH IS PULSED IN EVERY TURN THAT COULD BE READ.** Dips to hips **45–60 %** last **1–2 slowed s = 0.25–0.7 REAL s**; **no dip lasted longer than two consecutive 1 s samples.** Counts: **3 dips** in shot A (57–64 s), **2** in the tube shot (129–140 s), **3** in the red-vest shot (182–195 s). **The first 50 s's "tube crouch held 15+ slowed s" was neither reproduced nor refuted** — the longest continuous rider shot in this section is only 8 s. **Honest, and the right answer.**
+3. **The low comes AT TURN ENTRY through the spray peak, with tall on both sides** — 3 of 3 sampled turns, and a tall frame precedes the low in 2 of them (184 tall, 186 low, 187–188 low, 190 up). **Agrees with Nias and Pupo.**
+
+### THE CONVERGENCE THAT MATTERS
+
+**Two independent clips now agree that the deep stance is a pulse, with real durations that overlap:** Nias **0.25–0.5 s**, Kirra **0.25–0.7 s**. **The game's Compress is a HELD shape and it falls in 205 of 205 measured rides.** Three clips, five-plus riders, and **not one held deep stance over ~1 s anywhere that could be read.**
+
+**Tall → low → tall inside a turn: confirmed three more times, 4–5 slowed s = 1–1.5 real s.**
+
+**New "not at all" row: ARM HEIGHT THAT DEPENDS ON STANCE.** The arms go low at the deepest point and level after, and **nothing in the game ties the arms to the dip.**
+
+**Still unreadable after four reads:** hips fore-aft over the tail (three-quarter/behind camera, spray over the board); head and gaze (**faces 5–8 px wide** — this may never be settleable from video and should stop being asked of it); the lip manoeuvre's hips.
+
+**Caveat the round flagged itself:** its Part B mapping used **the earlier docs' description** of what the game has, **not a fresh read of the rider code.** Those 13 rows are second-hand and should be re-checked against the code before any of them is built on.
