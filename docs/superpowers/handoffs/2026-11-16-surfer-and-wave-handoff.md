@@ -373,3 +373,41 @@ Waterplane shift — **yes** (and it goes to **zero** once a 25.75 L board under
 2. **Does `?hull=rail` become the default?** It is the only route to the measured buried-rail suction and to a curve that droops at large rail.
 
 Sources: NACA TN 4187 (fig. 14(a) read from the NTRS scan); Sadati, Zeraatgar & Babuei 2022 carrying Brown & Klosinski's PMM roll moments; Katayama, Fujimoto & Ikeda 2006. **Honest limit: nobody has measured a surfboard-proportioned planing surface under a standing rider at `Fn_∇` 0.5–3.** TN 4187 has the right section at C_V 7–18 against our 0.6–3.0; the PMM series has the right Froude band at 15–30° of deadrise. **They extrapolate through the same law and agree with each other — that agreement, not either number, is the warrant.**
+
+## VIDEO REFERENCE 3 (merged `cee7bc42`, PR #381) — "3 feet Nias Glass": THE GAME'S COMPRESS IS A HELD SHAPE AND REAL RIDING HAS NO SUCH STATE
+
+`docs/research/new-rider/3.4/video-ref-3.md`. The owner's **first-ever** movement reference, read at last (https://www.youtube.com/shorts/GD8vS7_faSo, 16.36 s, 480×854, rider 55–95 px, drone from high and behind — **bad for knees**, every figure ±15° on knees and ±10 points on hip height). Read with the `surf-video-read` skill on **sonnet at default effort**, which cost ~132 k tokens against an Opus round's ~460 k. **The cheap-model instruction in that skill is correct and should stay.**
+
+### THE FINDING, and it is about the exact stance that fails
+
+- **Between turns she is UPRIGHT: knees 150–165°, hips 85–95 % of standing.**
+- **The deep position is a SPIKE, NOT A STATE.** Twice it goes to **hips 35–50 %** (at 6.0 s almost kneeling, front knee 70–90°; at 8.25–8.5 s folded over the board) and each shows in **one or two consecutive frames — 0.25–0.5 s as sampled**, released immediately.
+- **A held crouch longer than 1 s: NEVER. No pump rhythm.** Five near-upright stances between turns; three sharp drops to hips ≤ 50 %.
+- **The game's Compress is HELD, and that held shape has no counterpart anywhere in this clip.** This is the mapping table's most important row, and **Compress is the stance that falls 205 of 205.** We have spent the track trying to make a *held* deep posture survive a turn that real riders enter and leave in half a second.
+
+### The owner's own reading, scored precisely
+
+- *"crouching, not compressing"* — **right for most of the ride** (upright between turns, pulsing to a crouch of hips 55–65 % / knees 100–115° for 0.5–1 s on the tail in the foam at 10.5–11 s) — **and wrong at two points, where she is BELOW the game's Crouch (0.65 m) and at or below its Compress (0.55 m).**
+- *"Compress should be more down and sharper"* — **confirmed.** The real dips are **deeper AND quicker** than a held Compress, and they release at once.
+- *"around two seconds turning"* — **fits one of three turns.** Turn A (bottom turn into a rail carve) ≈ **1 s**; Turn B (lip turn) ≈ **1.5 s**; Turn C (carve into a tail crouch in the foam) ≈ **2 s**, exit unseen. **Slow-motion factor: none stated and NOT verifiable** (`playbackRate` 1, spray looks real-time, no clock in frame) — so treat as probably real time, unconfirmed. If real, turn C is **twice** the measured 0.96 s bottom turn.
+
+### THE ARMS — a flat disagreement with both earlier references
+
+Both Kirra and Pupo show arms **spread wide and level at the loaded part of the turn**. Here, at the two deepest moments, **both arms are LOW and drawn IN toward the board**, and they only go out level **after** the turn. **At the moment the board changes direction: low and pulled in, not thrown out.** Never above shoulder height in any frame — **not even in the near-vertical lip hit at 8.75 s.** They track the trunk; no independent swing seen.
+
+### The four standing gaps, scored against this clip
+
+| gap | this clip |
+| --- | --- |
+| tall → low → tall **inside** a turn | **Confirmed, but far faster: 1–1.5 s** against Kirra's 3–4 *slowed* seconds. And **the low comes at the START of the turn** — agrees with Pupo, **contradicts Kirra's tall-before-the-low shape.** |
+| hips **fore-aft over the tail** | **Weakly** confirmed, foam turn only; from above, hips-over-tail cannot be separated from hips-low-over-centre. **Not an independent second confirmation.** |
+| lip manoeuvre with **no stance and no arm control** | **Confirmed** — at 8.75 s the board is near vertical, trunk twisted, arms low. |
+| **head / gaze** | **Cannot judge** — the face is a few pixels wide. Still unresolved after three clips. |
+
+### New "not at all" rows
+
+The **fast self-releasing dip**; a **turn-timed tall → deep → tall cycle**; a **body or arm stance for the lip manoeuvre**; **upper-body lead** (shoulders ~30–45° ahead of the hips coming down the face — **and body yaw was DROPPED**, see the snap-stance work). Partly-there: tail-weighted hips and arms pulling in at the deepest point (W/S trim and arm positions exist; **the stance and the stance-to-arms link do not**).
+
+### Still unread
+
+**The Kirra clip is 195.6 s and only the first 50 s have been read** (which is what the owner asked for). 145 s unread, and it is the richest remaining material if its later sections hold open-face turns.
