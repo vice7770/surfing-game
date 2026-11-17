@@ -1456,3 +1456,15 @@ Pumping with the trunk over straight legs; a crouch made of 76° of fold over a 
 | 12 | `https://www.youtube.com/shorts/HhJo76wwkZc` | whole | queued |
 
 **One at a time**, on the owner's instruction. **Four clips in the queue is now the most material this track has ever had waiting**, and the reads have got slower as they got better (video 8 took ~33 min for a 15 s clip, because the 1080p step, the auto-crop and the silhouette outline are what make a leg readable at all). **That is the right trade — six low-resolution reads produced an impression; two high-resolution ones produced the four-channel finding.**
+
+**Queue, 2026-11-17 — video 13 added. FIVE waiting.**
+
+| # | URL | scope |
+| --- | --- | --- |
+| 9 | `https://www.youtube.com/watch?v=qUm3eO2EFBc` | **first 30 s only** — reading |
+| 10 | `https://www.youtube.com/watch?v=oRL0q5rDZWc` | **15 s → 55 s only** — **owner: its waves are like Canyon's**, so it also says per movement whether their Canyon rider could attempt it |
+| 11 | `https://www.youtube.com/shorts/Ew5j1uqExVA` | whole |
+| 12 | `https://www.youtube.com/shorts/HhJo76wwkZc` | whole |
+| 13 | `https://www.youtube.com/shorts/9k-MU6Q5Lhc` | whole |
+
+**The owner is sending clips faster than the reads complete** (~30 min each at the quality that produced the four-channel finding). They were offered a shallower, faster pass — four channels only, no transitions, roughly a third of the work — and **the default stays thorough until they say otherwise.** Do not silently speed up: the six low-resolution reads produced an impression, and the two high-resolution ones produced the finding the engine work now rests on.
