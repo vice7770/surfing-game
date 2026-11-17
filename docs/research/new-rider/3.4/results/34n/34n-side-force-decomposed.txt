@@ -1,0 +1,179 @@
+# Step 3.4n. The side force decomposed on BOTH sides, term by term, on the same ticks.
+#
+# THE QUESTION (the one the track narrowed to): why is the model's side force wrong-signed in crouch and compress,
+# before the fall, below 4 m/s? 3.4m proved no row of `PLANT_SPEEDS` can produce the observed sign, so the fault had
+# to be in HOW `Y` is assembled, in a STATE fed to it, or in a term the model has no derivative for.
+#
+# THE ANSWER: a STATE. The probe derives the slip as `beta = atan2(v_left, v_fwd)` -- + sliding toward the board's
+# LEFT -- and feeds it to derivatives measured against the lab's slip, `atan2(-v_left, v_fwd)`, + sliding RIGHT
+# [R, `../roll-plant/plant.ts:368`; `rollModel.ts`'s `boardDerivatives` flips the lab's N and Y into the model's axes
+# and does NOT flip the slip variable]. `sideV` is the board's local +x, and +x is its LEFT
+# (`finForces.ts`: `side: 1` is "the board's left"; `BoardBody.buildFoils` puts it at `+x`). So the slip term of
+# `yModel` has carried the wrong sign since step 3.3p, and it is the model's LARGEST term exactly where beta is
+# large, which is below 4 m/s. Second, smaller cause: 45-56 % of the game's own side force in the owner's cell is
+# added mass + wave radiation, which the twelve derivatives DO NOT CONTAIN (measured: at +1 deg of slip off straight
+# the lab's dY/dbeta by part is fins 315.1, rails 22.9, friction 11.5, pressure -11.5, buoyancy 0.0,
+# waterInertia 0.0, radiation 0.0 at 4 m/s [R, `../../3.2/results/plant-speeds.jsonl`]), and in that cell the
+# inertial part OPPOSES the quasi-static one on 0.79-1.00 of ticks.
+#
+# THE RIG. `3.3/plant.ts` with: the game's ten water side forces each dumped on its own (they sum to `yGame`
+# identically); the model's four side-force addends, their four derivatives and their four states; the
+# counterfactual `yModelNegB` (the slip term's sign flipped and nothing else); the controller's own slip estimate;
+# and `SLIP=lab`, a one-line opt-in that puts the derived state in the lab's frame. No byte under `src/` or
+# `server/` is changed by this round.
+#
+# ARMS. 3.4l's and 3.4m's own, unchanged: `RIDER=new FELT=deck BODY=two`, AHEAD 0.75, SIDE -45, 9 s a run, the
+# stance held, the stick never touched. `f73-l` = FACE 1.4,7.32,5.7 ENTRIES 1..6 x 3 stances (18 runs);
+# `s16-l` = FACE 1.4,16,5.7, the same entries (18); `s16-g` = FACE 1.4,16,5.7, the default eight relative
+# entries (24). 4 990 tick rows, 4 038 live.
+#
+# THE CONTROLS, all measured:
+#   1. `f73-l` reproduces 3.4i's, 3.4l's and 3.4m's published arm EXACTLY: fell 18 of 18, 0.617-2.533 s,
+#      median 1.450 s. The new columns move no ride.
+#   2. The whole published metric is reproduced to the digit (0.718/0.519/0.397 on cut A, 0.824/0.167/0.292 on B,
+#      0.908/0.900/0.932 on C, at 3.4m's own n), so this is 3.4l's and 3.4m's instrument and not another one.
+#   3. The default dump is byte-identical with the `SLIP` switch added (`diff` on the whole 1 364-row dump: equal).
+#   4. `SLIP=lab` moves NO ride -- it is a probe-local state: `f73-l` fell 18 of 18, 0.617-2.533 s, median 1.450 s
+#      under it, and every ride column (t, speed, roll, bank, railMeas, yGame, ysPress, ysAdded, stPhi, stYawRate,
+#      stRollRate, ySrcSum) is identical to 0.000e+00.
+#   5. `yModel` under `SLIP=lab` equals the default run's `yModelNegB` tick for tick (largest difference
+#      0.000e+00 N), and `yModelNegB` under it equals the default's `yModel` (0.000e+00 N).
+#   6. The three identities below, read not asserted.
+#   7. The quasi-static cut does NOT manufacture agreement: in the honest band it leaves the share where it was
+#      (0.908/0.900/0.932 -> 0.896/0.896/0.922), and the inertial part opposes the quasi-static one on only
+#      0.10-0.26 of ticks there against 0.79-1.00 in the owner's cell.
+#   8. The ride's own least-squares derivatives (bottom) reproduce the table's four in the honest band -- Y_phi
+#      382/409/494 against 396/400/396, Y_beta -1016/-1305/-1516 against -1062/-1164/-1036, Y_r 99/123/147
+#      against 92/98/91, Y_phidot 11/38/37 against 17/18/17 -- WITH beta in the model's frame. In the probe's
+#      frame the same fit reads +1016/+1305/+1516 against a table that says -1062/-1164/-1036.
+#
+# FALL COUNTS (reported, not targeted): `f73-l` 18 of 18 (0.617-2.533, median 1.450), `s16-l` 18 of 18
+# (0.500-6.233, median 1.033), `s16-g` 24 of 24 (1.083-2.683, median 1.450) -- 3.4l's and 3.4m's own numbers.
+# 3.4h's 626 of 626 stands and was never in question here.
+#
+# rows 4990, live 4038; per arm f73-l: 1364/1112  s16-l: 1433/1180  s16-g: 2193/1746
+# IDENTITY 1  the ten sources against `yGame`:   largest |sum - yGame|  = 0.000e+00 N
+# IDENTITY 2  the four terms against `yModel`:   largest |sum - yModel| = 2.000e-04 N
+# IDENTITY 3  `yModelNegB` against its own line: largest difference     = 2.000e-04 N
+
+## 1. WHO CARRIES THE GAME'S SIDE FORCE. Median |source| N, and the modal largest source, per stance
+cut                                stance        n  |yGame|      Buoy     Press     Added       Rad      Fric       Bed      Fins     Rails     Froth      Suct   largest (share of ticks)
+A clamped (<4 m/s), |roll|<=25     tall        241     56.0      14.9      62.1       3.3      12.1       0.9       0.0      14.8       1.4       0.0       0.0   Press 0.74, Fins 0.12
+A clamped (<4 m/s), |roll|<=25     crouch      216     41.9      13.5      35.3       9.7      11.5       0.7       0.0      20.6       1.5       0.0       0.0   Press 0.50, Fins 0.25
+A clamped (<4 m/s), |roll|<=25     compress    184     35.7      14.0      34.0      11.9      13.5       1.1       0.0      24.0       1.6       0.0       0.0   Press 0.50, Fins 0.28
+
+B clamped, speed<=1.6, |roll|<=25  tall         17     32.8      16.6      46.4      10.4      18.8       1.6       0.0      26.4       2.4       0.0       0.0   Press 0.65, Fins 0.35
+B clamped, speed<=1.6, |roll|<=25  crouch       24     37.9      13.7      23.7      24.4      17.8       2.2       0.0      38.0       2.2       0.0       0.0   Fins 0.46, Press 0.29
+B clamped, speed<=1.6, |roll|<=25  compress     24     35.6      14.4      40.3      13.4      15.7       1.7       0.0      23.0       1.6       0.0       0.0   Press 0.54, Fins 0.33
+
+C unclamped (4-12), |roll|<=25     tall        653    126.0      13.3      61.7      21.1      10.6       0.2       0.0      12.8       1.7       0.0       0.0   Press 0.81, Added 0.18
+C unclamped (4-12), |roll|<=25     crouch      862    122.5       9.9      68.8      12.5       8.6       0.3       0.0      12.1       1.4       0.0       0.0   Press 0.76, Added 0.22
+C unclamped (4-12), |roll|<=25     compress    588    131.8      11.3      66.6      20.1      11.0       0.3       0.0      14.3       2.0       0.0       0.0   Press 0.75, Added 0.24
+
+## 2. WHO CARRIES THE MODEL'S SIDE FORCE. Median |term| N, the states, and the derivatives
+cut                                stance        n  |yModel|   |heel|   |slip|    |yaw|   |rate|  phi deg  beta deg  r rad/s    Y_beta      Y_r
+A clamped (<4 m/s), |roll|<=25     tall        241      54.7     33.2     27.9     45.3      3.6    10.71      4.64    0.654    -343.8     70.0
+A clamped (<4 m/s), |roll|<=25     crouch      216      83.0     22.0     43.1     38.1      5.1     7.10      7.18    0.545    -343.8     69.0
+A clamped (<4 m/s), |roll|<=25     compress    184      75.2     22.4     56.5     38.0      6.6     7.23      9.42    0.490    -343.8     71.8
+
+B clamped, speed<=1.6, |roll|<=25  tall         17      42.7     51.6    115.1    108.6     15.2    16.63     19.17    1.128    -343.8     96.9
+B clamped, speed<=1.6, |roll|<=25  crouch       24     141.0     26.9    256.6    102.5     15.8     8.68     42.76    1.002    -343.8    107.3
+B clamped, speed<=1.6, |roll|<=25  compress     24      68.0     40.7    194.5     69.9     13.0    13.14     32.41    0.664    -343.8    104.2
+
+C unclamped (4-12), |roll|<=25     tall        653     103.9     71.4     24.5     26.4      3.5     9.96      1.10    0.246   -1061.5     92.2
+C unclamped (4-12), |roll|<=25     crouch      862      86.2     65.0     17.4     23.2      3.9     9.50      0.90    0.244   -1165.4     97.7
+C unclamped (4-12), |roll|<=25     compress    588     113.3     70.8     19.4     25.9      3.8     9.91      0.90    0.228   -1037.6     90.9
+
+## 3. THE SIGN. The published metric, and the three counterfactuals, on the SAME ticks
+#   yGame  = all ten sources (3.4l's and 3.4m's own quantity)
+#   yQuasi = yGame - ysAdded - ysRad: the game's QUASI-STATIC water side force, the only part a captive
+#            derivative measured at a held state can represent (added mass and wave radiation answer the
+#            board's own acceleration and velocity into the surface, not its roll/slip/yaw)
+#   negB   = the model with the derived slip's sign reversed and nothing else
+cut                                stance        n |  model vs yGame |  negB vs yGame |  model vs yQuasi |  negB vs yQuasi
+A clamped (<4 m/s), |roll|<=25     tall        241 |     0.718 (n=241) |    0.817 (n=241) |      0.759 (n=241) |     0.892 (n=241)
+A clamped (<4 m/s), |roll|<=25     crouch      216 |     0.519 (n=216) |    0.727 (n=216) |      0.611 (n=216) |     0.931 (n=216)
+A clamped (<4 m/s), |roll|<=25     compress    184 |     0.397 (n=184) |    0.663 (n=184) |      0.505 (n=184) |     0.848 (n=184)
+
+B clamped, speed<=1.6, |roll|<=25  tall         17 |     0.824 (n= 17) |    0.882 (n= 17) |      0.824 (n= 17) |     1.000 (n= 17)
+B clamped, speed<=1.6, |roll|<=25  crouch       24 |     0.167 (n= 24) |    0.667 (n= 24) |      0.167 (n= 24) |     1.000 (n= 24)
+B clamped, speed<=1.6, |roll|<=25  compress     24 |     0.292 (n= 24) |    0.792 (n= 24) |      0.417 (n= 24) |     1.000 (n= 24)
+
+C unclamped (4-12), |roll|<=25     tall        653 |     0.908 (n=653) |    0.989 (n=653) |      0.896 (n=653) |     0.983 (n=653)
+C unclamped (4-12), |roll|<=25     crouch      862 |     0.900 (n=862) |    0.947 (n=862) |      0.896 (n=862) |     0.942 (n=862)
+C unclamped (4-12), |roll|<=25     compress    588 |     0.932 (n=588) |    0.997 (n=588) |      0.922 (n=588) |     0.986 (n=588)
+
+## 4. THE MAGNITUDE. Median |model/game| against the whole ledger and against its quasi-static part
+cut                                stance        n  |yQuasi| N  added share  |m/yGame|  |m/yQuasi|  |negB/yQuasi|
+A clamped (<4 m/s), |roll|<=25     tall        241        76.2        0.055      0.916       0.829          1.082
+A clamped (<4 m/s), |roll|<=25     crouch      216        55.3        0.224      1.470       1.147          1.598
+A clamped (<4 m/s), |roll|<=25     compress    184        49.9        0.323      2.036       1.638          1.981
+
+B clamped, speed<=1.6, |roll|<=25  tall         17        60.1        0.463      2.238       0.663          4.822
+B clamped, speed<=1.6, |roll|<=25  crouch       24        76.9        0.563      4.487       3.688          4.731
+B clamped, speed<=1.6, |roll|<=25  compress     24        65.2        0.450      2.481       0.967          5.026
+
+C unclamped (4-12), |roll|<=25     tall        653        77.9        0.168      0.811       1.165          0.752
+C unclamped (4-12), |roll|<=25     crouch      862        86.1        0.093      0.712       0.922          0.817
+C unclamped (4-12), |roll|<=25     compress    588        86.5        0.170      0.700       1.029          0.764
+
+## 5. THE CONTROLLER'S OWN SLIP ESTIMATE, against the probe's derived one (`stBeta`)
+cut                                stance        n  |stBeta| deg  |estBeta| deg  same sign  est vs -stBeta
+A clamped (<4 m/s), |roll|<=25     tall        241          4.64           2.55      0.498           0.502  (n=241/241)
+A clamped (<4 m/s), |roll|<=25     crouch      216          7.18           2.28      0.417           0.583  (n=216/216)
+A clamped (<4 m/s), |roll|<=25     compress    184          9.42           2.42      0.533           0.467  (n=184/184)
+
+B clamped, speed<=1.6, |roll|<=25  tall         17         19.17           2.89      1.000           0.000  (n=17/17)
+B clamped, speed<=1.6, |roll|<=25  crouch       24         42.76           2.81      0.667           0.333  (n=24/24)
+B clamped, speed<=1.6, |roll|<=25  compress     24         32.41           2.53      1.000           0.000  (n=24/24)
+
+C unclamped (4-12), |roll|<=25     tall        653          1.10           3.27      0.248           0.752  (n=653/653)
+C unclamped (4-12), |roll|<=25     crouch      862          0.90           2.53      0.348           0.652  (n=862/862)
+C unclamped (4-12), |roll|<=25     compress    588          0.90           4.17      0.279           0.721  (n=588/588)
+
+## 6. THE PART THE TWELVE DERIVATIVES DO NOT CONTAIN: added mass + wave radiation, against the rest
+#   The lab's own per-part reads say so: at +1 deg of slip off straight, dY/dbeta by part is
+#   fins 315.1, rails 22.9, friction 11.5, pressure -11.5, buoyancy 0.0, waterInertia 0.0, radiation 0.0
+#   at 4 m/s (and 951.1 / 57.3 / 28.6 / -5.7 / 0.0 / 0.0 / 0.0 at 6) [R, 3.2/results/plant-speeds.jsonl].
+cut                                stance        n  |added+rad| N  |yQuasi| N  share of |yGame|  opposes yQuasi  and bigger
+A clamped (<4 m/s), |roll|<=25     tall        241           13.5        76.2             0.236           0.564       0.149
+A clamped (<4 m/s), |roll|<=25     crouch      216           16.6        55.3             0.483           0.680       0.269
+A clamped (<4 m/s), |roll|<=25     compress    184           23.6        49.9             0.705           0.707       0.315
+
+B clamped, speed<=1.6, |roll|<=25  tall         17           29.3        60.1             1.040           1.000       0.118
+B clamped, speed<=1.6, |roll|<=25  crouch       24           36.1        76.9             0.978           0.792       0.333
+B clamped, speed<=1.6, |roll|<=25  compress     24           29.4        65.2             0.951           1.000       0.208
+
+C unclamped (4-12), |roll|<=25     tall        653           31.2        77.9             0.252           0.104       0.213
+C unclamped (4-12), |roll|<=25     crouch      862           18.2        86.1             0.147           0.258       0.232
+C unclamped (4-12), |roll|<=25     compress    588           30.0        86.5             0.292           0.159       0.247
+
+
+################ THE INDEPENDENT CHECK: the ride's own side-force derivatives ################
+
+# live ticks 4038
+# The game's own quasi-static side force regressed on the model's four states, beta in the MODEL's frame.
+# `table` is `PLANT_SPEEDS` at the band's own median row, through `boardDerivatives` (the median of the
+# dumped per-tick derivative columns, which ARE the model's own numbers at those ticks).
+
+cut                                stance        n |  Y_phi fit     table |  Y_beta fit     table |   Y_r fit    table |  Y_pdot fit   table |     R2     scale
+A clamped (<4 m/s), |roll|<=25     tall        241 |      392.1     177.6 |        -6.1    -343.8 |      10.3     70.0 |        -1.9     8.0 |  0.955   3.8e+01
+A clamped (<4 m/s), |roll|<=25     crouch      216 |      403.9     177.6 |       -57.6    -343.8 |      -2.3     69.0 |         1.5     8.0 |  0.768   5.7e+01
+A clamped (<4 m/s), |roll|<=25     compress    184 |      235.7     177.6 |       -88.6    -343.8 |      -2.6     71.8 |         8.2     8.0 |  0.751   7.4e+01
+
+C unclamped (4-12), |roll|<=25     tall        653 |      382.3     396.3 |     -1015.5   -1061.5 |      98.5     92.2 |        11.1    17.2 |  0.681   7.5e+02
+C unclamped (4-12), |roll|<=25     crouch      862 |      409.0     399.9 |     -1304.5   -1164.4 |     123.4     97.8 |        38.4    18.1 |  0.858   8.9e+02
+C unclamped (4-12), |roll|<=25     compress    588 |      494.4     395.6 |     -1516.2   -1036.0 |     146.5     91.0 |        37.3    17.1 |  0.774   8.5e+02
+
+# And the same fit with beta in the PROBE's frame (+stBeta), which is the sign the shipped probe feeds the
+# derivatives: the fitted coefficient must simply change sign, and the comparison with the table's own
+# negative number is then the one that fails.
+cut                                stance        n |  Y_beta fit (probe frame)     table
+A clamped (<4 m/s), |roll|<=25     tall        241 |                       6.1    -343.8
+A clamped (<4 m/s), |roll|<=25     crouch      216 |                      57.6    -343.8
+A clamped (<4 m/s), |roll|<=25     compress    184 |                      88.6    -343.8
+
+C unclamped (4-12), |roll|<=25     tall        653 |                    1015.5   -1061.5
+C unclamped (4-12), |roll|<=25     crouch      862 |                    1304.5   -1164.4
+C unclamped (4-12), |roll|<=25     compress    588 |                    1516.2   -1036.0
+

@@ -224,6 +224,15 @@ const BANKC = process.env.BANKC === 'off' ? 'off' : undefined;
  */
 const FLOOR = process.env.FLOOR === '4.5' ? '4.5' : process.env.FLOOR === '5' ? '5'
   : process.env.FLOOR === '6' ? '6' : undefined;
+/**
+ * **Step 3.4n: `SLIP=lab` puts the probe's derived slip in the frame the twelve derivatives were measured in.**
+ * The probe derives β as `atan2(v_left, v_fwd)`; the lab's slip — the variable every row of `PLANT_SPEEDS` is a
+ * derivative with respect to — is `atan2(−v_left, v_fwd)`, the opposite sign (see the `beta` line). The switch
+ * changes a probe-local state and **nothing the game reads**, so no ride can move under it: step 3.4n's own control
+ * is that `f73-l` runs identically with it on, and that every `yModel` column under it equals the default run's
+ * `yModelNegB` tick for tick. Unset, every column is the one steps 3.3p–3.4m published.
+ */
+const SLIP = process.env.SLIP === 'lab' ? 'lab' : undefined;
 /** The floor's own number for `plantAt`, m/s: the shipped lookup's own when `FLOOR` is unset. */
 const FLOOR_OPT: { plantFloor: number } | undefined = FLOOR ? { plantFloor: Number(FLOOR) } : undefined;
 /**
@@ -613,6 +622,58 @@ interface Tick {
   /** The face's own tilt under the board, °: the whole difference between the two rows above. */
   tilt: number;
 
+  // --- 8b. step 3.4n: the side force DECOMPOSED on both sides, term by term, at the same tick ---
+  /**
+   * The model's own four side-force terms, N, which sum to `yModel` exactly: the heel, the slip, the yaw rate and the
+   * roll rate, each the derivative `loads` uses times the state it multiplies [R, `loads`]. Nothing is recomputed —
+   * these are the four addends of the line that makes `yModel`.
+   */
+  ymHeel: number;
+  ymSlip: number;
+  ymYaw: number;
+  ymRate: number;
+  /** The four derivatives themselves at this tick, in the MODEL's axes (`YawPlant`), N per rad or per rad/s. */
+  dHeelSide: number;
+  dSlipSide: number;
+  dYawSide: number;
+  dRateSide: number;
+  /** The four states the four terms are read at, in the model's own signs: φ, β, r, φ̇ (rad, rad/s). */
+  stPhi: number;
+  stBeta: number;
+  stYawRate: number;
+  stRollRate: number;
+  /**
+   * **Step 3.4n's counterfactual**: `yModel` with the derived slip's sign reversed **relative to whatever `stBeta`
+   * holds** and nothing else — i.e. the slip term's sign flipped, `ymHeel − ymSlip + ymYaw + ymRate`. Unset, the
+   * probe builds β as `atan2(vSide, vFwd)` with `sideV` the board's **left**, while the model's β is the lab's,
+   * `atan2(−v_left, v_fwd)`, + sliding RIGHT
+   * [R, `../roll-plant/plant.ts:368` and `rollModel.ts`'s `boardDerivatives`, which flips N and Y into the model's
+   * axes and does NOT flip the slip variable], so this column is the model's side force at the tick's own state with
+   * β in the frame the twelve derivatives were measured in.
+   */
+  yModelNegB: number;
+  /** The controller's own estimate of the slip, rad (`PredictiveController.estimate[5]`), against `stBeta`. */
+  estBeta: number;
+  /** The board's own velocity through the water in its level pair, m/s: along the heading, and along its LEFT. */
+  vFwd: number;
+  vLeft: number;
+  /**
+   * **The game's own side force by source**, N, in the model's own sign (+ the board's right) — the ten water sources
+   * of `BoardBody.forces` each dotted with the board's left and negated, exactly as `yGame` sums them, so the ten add
+   * to `yGame` to the last bit (`ySrcSum` is their sum, dumped so the identity is read and not asserted).
+   */
+  ysBuoy: number;
+  ysPress: number;
+  ysAdded: number;
+  ysRad: number;
+  ysFric: number;
+  ysBed: number;
+  ysFins: number;
+  ysRails: number;
+  ysFroth: number;
+  ysSuct: number;
+  ySrcSum: number;
+
   // --- 9. step 3.3p: the TILT plant — the same plant with the water's own terms read at the heel against the water ---
   /** Its implied mean roll and lean acceleration, °/s², and its own relative error against the game's. */
   rollAccTilt: number;
@@ -988,7 +1049,17 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     // so this is the angle between where the board points and where it is going, in the level plane.
     const vFwd = (board.velocity.x - flowX) * fwd.x + (board.velocity.z - flowZ) * fwd.z;
     const vSide = (board.velocity.x - flowX) * sideV.x + (board.velocity.z - flowZ) * sideV.z;
-    const beta = Math.atan2(vSide, Math.abs(vFwd) < 1e-6 ? 1e-6 : vFwd);
+    const betaLeft = Math.atan2(vSide, Math.abs(vFwd) < 1e-6 ? 1e-6 : vFwd);
+    /**
+     * **Step 3.4n: the frame of the derived slip, and the one switch for it.** `betaLeft` is + sliding toward the
+     * board's **left** (`sideV` is the board's local +x, which is its left: `finForces.ts`' `side: 1` is "the board's
+     * left" and `BoardBody.buildFoils` puts it at `+x`). Every derivative in `PLANT_SPEEDS` was measured against the
+     * lab's slip, `atan2(−v_left, v_fwd)` — **+ sliding RIGHT** [R, `../roll-plant/plant.ts:368`] — and
+     * `boardDerivatives` flips the lab's N and Y into the model's axes **without flipping the slip variable**, so the
+     * model's β is the lab's. `SLIP=lab` puts the derived state in that frame; unset, it is `betaLeft` as every
+     * figure from step 3.3p to step 3.4m was read, so the default is the instrument those rounds ran.
+     */
+    const beta = SLIP === 'lab' ? -betaLeft : betaLeft;
 
     // **Step 3.4d: the mount's own record, one row a FRAME from frame 1**, outside the control-tick gate below and
     // outside the `t > 0.2` window every published figure in this folder is filtered to. Every column is a read.
@@ -1321,6 +1392,17 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       let waterK = Number.NaN;
       let waterY = Number.NaN;
       let waterN = Number.NaN;
+      // Step 3.4n: the ten per-source side forces, NaN where the ledger is off, like the three totals above.
+      let ysBuoy = Number.NaN;
+      let ysPress = Number.NaN;
+      let ysAdded = Number.NaN;
+      let ysRad = Number.NaN;
+      let ysFric = Number.NaN;
+      let ysBed = Number.NaN;
+      let ysFins = Number.NaN;
+      let ysRails = Number.NaN;
+      let ysFroth = Number.NaN;
+      let ysSuct = Number.NaN;
       if (BoardBody.rollLedger) {
         const rl = board.roll;
         waterK = rl.buoyancy + rl.pressure + rl.addedMass + rl.radiation + rl.friction + rl.bed + rl.fins + rl.rails + rl.froth + rl.suction;
@@ -1330,7 +1412,27 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         waterY = -(fo.buoyancy.dot(sideV) + fo.pressure.dot(sideV) + fo.addedMass.dot(sideV) + fo.radiation.dot(sideV)
           + fo.friction.dot(sideV) + fo.bed.dot(sideV) + fo.fins.dot(sideV) + fo.rails.dot(sideV) + fo.froth.dot(sideV)
           + fo.suction.dot(sideV));
+        // **Step 3.4n: the same ten, each on its own**, in the same sign and off the same vectors, so the ten columns
+        // add to `waterY` identically and "which term carries the game's side force" is a read and not an inference.
+        ysBuoy = -fo.buoyancy.dot(sideV);
+        ysPress = -fo.pressure.dot(sideV);
+        ysAdded = -fo.addedMass.dot(sideV);
+        ysRad = -fo.radiation.dot(sideV);
+        ysFric = -fo.friction.dot(sideV);
+        ysBed = -fo.bed.dot(sideV);
+        ysFins = -fo.fins.dot(sideV);
+        ysRails = -fo.rails.dot(sideV);
+        ysFroth = -fo.froth.dot(sideV);
+        ysSuct = -fo.suction.dot(sideV);
       }
+      // **Step 3.4n: the model's four side-force terms, the four addends of `loads`' own `y` line.** Each is the
+      // derivative the shipped plant uses times the state it multiplies, so the four add to `mk.y` to the last bit.
+      const ymHeel = y.heelSide * x[0];
+      const ymSlip = y.slipSide * x[5];
+      const ymYaw = y.yawSide * x[4];
+      const ymRate = y.rollRateSide * x[1];
+      // The same sum with the derived slip's sign reversed and NOTHING else (see the `yModelNegB` docstring).
+      const yModelNegB = ymHeel - ymSlip + ymYaw + ymRate;
 
       // **The signs, read rather than assumed.** `rollAxis` is + rolling the deck toward the board's +x, which is the
       // probe's + roll and so the model's **−φ** [R, bankLedger's own datum paragraph + instrument 1's identity];
@@ -1799,6 +1901,33 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         yModelRail: mkRail.y,
         nModelRail: mkRail.n,
         tilt,
+        ymHeel,
+        ymSlip,
+        ymYaw,
+        ymRate,
+        dHeelSide: y.heelSide,
+        dSlipSide: y.slipSide,
+        dYawSide: y.yawSide,
+        dRateSide: y.rollRateSide,
+        stPhi: x[0],
+        stBeta: x[5],
+        stYawRate: x[4],
+        stRollRate: x[1],
+        yModelNegB,
+        estBeta: ctl.estimate.length > 5 ? ctl.estimate[5] : Number.NaN,
+        vFwd,
+        vLeft: vSide,
+        ysBuoy,
+        ysPress,
+        ysAdded,
+        ysRad,
+        ysFric,
+        ysBed,
+        ysFins,
+        ysRails,
+        ysFroth,
+        ysSuct,
+        ySrcSum: ysBuoy + ysPress + ysAdded + ysRad + ysFric + ysBed + ysFins + ysRails + ysFroth + ysSuct,
         rollAccTilt: rollTilt * DEG,
         bankAccTilt: bankTilt * DEG,
         relTilt: relOf(rollTilt * DEG, rollGame),
@@ -2039,6 +2168,17 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         kModelFloor: r(xx.kModelFloor, 4), yModelFloor: r(xx.yModelFloor, 4), nModelFloor: r(xx.nModelFloor, 4),
         kModelSched: r(xx.kModelSched, 4), yModelSched: r(xx.yModelSched, 4), nModelSched: r(xx.nModelSched, 4),
         nGame: r(xx.nGame, 4), nModel: r(xx.nModel, 4),
+        // **Step 3.4n: the side force decomposed on BOTH sides at the same tick.** The model's four addends, the four
+        // derivatives and the four states behind them; the counterfactual with the derived slip's sign reversed; the
+        // controller's own slip estimate; the board's velocity pair; and the game's ten water sources on their own,
+        // which add to `yGame` (`ySrcSum`, dumped so the identity is read).
+        ymHeel: r(xx.ymHeel, 4), ymSlip: r(xx.ymSlip, 4), ymYaw: r(xx.ymYaw, 4), ymRate: r(xx.ymRate, 4),
+        dHeelSide: r(xx.dHeelSide, 4), dSlipSide: r(xx.dSlipSide, 4), dYawSide: r(xx.dYawSide, 4), dRateSide: r(xx.dRateSide, 4),
+        stPhi: r(xx.stPhi, 6), stBeta: r(xx.stBeta, 6), stYawRate: r(xx.stYawRate, 6), stRollRate: r(xx.stRollRate, 6),
+        yModelNegB: r(xx.yModelNegB, 4), estBeta: r(xx.estBeta, 6), vFwd: r(xx.vFwd, 4), vLeft: r(xx.vLeft, 4),
+        ysBuoy: r(xx.ysBuoy, 4), ysPress: r(xx.ysPress, 4), ysAdded: r(xx.ysAdded, 4), ysRad: r(xx.ysRad, 4),
+        ysFric: r(xx.ysFric, 4), ysBed: r(xx.ysBed, 4), ysFins: r(xx.ysFins, 4), ysRails: r(xx.ysRails, 4),
+        ysFroth: r(xx.ysFroth, 4), ysSuct: r(xx.ysSuct, 4), ySrcSum: r(xx.ySrcSum, 4),
         // **Step 3.4l, Check 2: the board's own trim and draft on the ride.**
         trimWorld: r(xx.trimWorld, 3), facePitch: r(xx.facePitch, 3), trimFace: r(xx.trimFace, 3),
         draftFace: r(xx.draftFace, 4), draftFlat: r(xx.draftFlat, 4), wetShare: r(xx.wetShare, 4),
