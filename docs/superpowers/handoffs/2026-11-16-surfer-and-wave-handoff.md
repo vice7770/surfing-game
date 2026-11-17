@@ -1223,3 +1223,21 @@ On the **Canyon-matched face (`FACE=1.4,16,5.7`) at 1–3 m/s the standing conta
 1. **Whether the correction may leave through the UPPER BODY instead** — a question about what the owner's surfer does with his shoulders, **so it is HIS to rule on.**
 2. **The mount's first frame**, where `?mountAgree=deck` is still the only measured handle (**and was once wrongly sold to him as the switch that mattered**).
 3. **The Canyon face's infeasible contact** above.
+
+## �video QUEUE — THREE CLIPS THE OWNER SENT, NOT YET READ (reads paused for the machine, 2026-11-17)
+
+The owner paused the video reads so their own ride would not be judging my CPU load. **These three are owed and must not be lost:**
+
+| # | URL | scope |
+| --- | --- | --- |
+| 7 | `https://www.youtube.com/shorts/oCelSQ2iteU` | whole clip |
+| 8 | `https://www.youtube.com/shorts/Th2TMrOUx1E` | whole clip |
+| 9 | `https://www.youtube.com/watch?v=qUm3eO2EFBc` | **first 30 seconds only** |
+
+**Both paused reads were killed early** — #7 had barely started; #8 reported *"Good quality where the tracker locked on; it lost him in 3 of 6"* and was about to add temporal continuity and widen the crop. **Nothing was published, so both start fresh.**
+
+**Read them with the skill, and note what the skill now says that it did not when the first six were read:**
+1. **The standing purpose is first in the file now** — *"study surf movements to improve the riding engine"* — after the owner corrected a brief of mine that had made the day's hot question (foam) item 1. **Read broadly, without a thesis. The engine's thinnest part is the movement BETWEEN positions**: transitions, what leads and follows, what the legs do while the upper body does something else, fore-aft weight, how moves start and end, and counts for anything repeated.
+2. **One tab per read.** Two reads ran at once in a single shared pane tab and could have handed each other's frames over as data. **`tabs_create` first, pass the `tabId` on every call, report which tab, and discard any frame not provably from your own clip at the intended timestamp.**
+3. **The stale-frame trap survives a 1 s wait** — a hidden pane freezes painting and a screenshot silently returns the previous frame. **Stamp `currentTime` and a frame counter into the canvas; take two screenshots per draw and read the second.**
+4. **Above ~200 px the binding error is the hip landmark, not resolution** (waistband ≈0.60 of stature vs trochanter 0.53) → **±10–15 points on every hip figure.** Shoulder-to-waistband scale, cross-checked, **report disagreement rather than picking a winner.**
