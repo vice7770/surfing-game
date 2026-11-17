@@ -1435,3 +1435,13 @@ Pumping with the trunk over straight legs; a crouch made of 76° of fold over a 
 **Why this raises its value above the others:** Canyon with `?canyonWaves=true` is **the spot they actually ride and judge on** ([[rider-test-spot-canyon-b]]), so a clip on water of that kind makes its **movement** more directly transferable than a clip from a reef or a point break. **It does NOT mean read the wave** — the standing instruction to ignore the wave holds, and they confirmed it today when they corrected a brief of mine for making foam its item 1. **What it means is that whatever the rider does there is the closest thing we have to "what a surfer does on the owner's own wave."**
 
 **So when video 10 is read, say for each movement whether it is one the owner's Canyon rider could even attempt**, given what the engine has: one body number (leg depth) against the footage's four (leg depth, trunk fold, arm carriage, arm timing), no fore-aft hip axis, and — measured today — **a stick that is inert below 4 m/s** and **an ankle correction that is itself what rolls the board.** That mapping is the point of the read.
+
+**Queue, updated again 2026-11-17 — video 11 added:**
+
+| # | URL | scope | state |
+| --- | --- | --- | --- |
+| 9 | `https://www.youtube.com/watch?v=qUm3eO2EFBc` | **first 30 s only** | reading |
+| 10 | `https://www.youtube.com/watch?v=oRL0q5rDZWc` | **15 s → 55 s only** | queued — **the owner says its waves are like Canyon's**, so it gets the extra job of saying, per movement, whether their Canyon rider could even attempt it |
+| 11 | `https://www.youtube.com/shorts/Ew5j1uqExVA` | whole (no scope given) | queued |
+
+**One at a time**, on the owner's instruction — which also keeps two reads out of one browser tab, a collision that nearly corrupted a read earlier today.
