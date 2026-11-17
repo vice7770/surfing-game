@@ -1445,3 +1445,14 @@ Pumping with the trunk over straight legs; a crouch made of 76° of fold over a 
 | 11 | `https://www.youtube.com/shorts/Ew5j1uqExVA` | whole (no scope given) | queued |
 
 **One at a time**, on the owner's instruction — which also keeps two reads out of one browser tab, a collision that nearly corrupted a read earlier today.
+
+**Queue, 2026-11-17 — video 12 added:**
+
+| # | URL | scope | state |
+| --- | --- | --- | --- |
+| 9 | `https://www.youtube.com/watch?v=qUm3eO2EFBc` | **first 30 s only** | reading |
+| 10 | `https://www.youtube.com/watch?v=oRL0q5rDZWc` | **15 s → 55 s only** | queued — **the owner says its waves are like Canyon's**; it gets the extra job of saying, per movement, whether their Canyon rider could even attempt it |
+| 11 | `https://www.youtube.com/shorts/Ew5j1uqExVA` | whole | queued |
+| 12 | `https://www.youtube.com/shorts/HhJo76wwkZc` | whole | queued |
+
+**One at a time**, on the owner's instruction. **Four clips in the queue is now the most material this track has ever had waiting**, and the reads have got slower as they got better (video 8 took ~33 min for a 15 s clip, because the 1080p step, the auto-crop and the silhouette outline are what make a leg readable at all). **That is the right trade — six low-resolution reads produced an impression; two high-resolution ones produced the four-channel finding.**
