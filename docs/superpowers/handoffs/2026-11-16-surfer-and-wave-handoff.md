@@ -1319,3 +1319,45 @@ At the one frame where the A/B is exact, hull inside a lens, **32 cells a stance
 `dkClose`/`dkSplit` = 0 on all **59 228** rows. The null channels are **exactly 0.000000 °/s** on all 72 cells with no lens. **Reference arms on the base:** `f73-l` 18 of 18, 0.617–2.533 s, median **1.450 s**; `s16-l` **1.033 s**. **`main` moved twice mid-round and the round MEASURED the move rather than assuming it:** the water is byte-identical, the `tall` arm identical on all 3 799 rows, and `crouch`/`compress` diverge **no earlier than frame 37** (PR #392's stance work) — **so both ride arms were re-run on `0daeb64c`** and every table is that run's.
 
 > **For the owner, in the round's own words:** *"the foam is not what is throwing you off — it is the same ankle that throws you off in a turn, working harder because the water at the foam is steeper, moving and sometimes not under the board at all."*
+
+## ⭐ VIDEO REFERENCE 7 (merged `8ae99367`, PR #396) — **THE GAME HAS ONE NUMBER FOR THE BODY WHERE THE FOOTAGE HAS AT LEAST THREE**, AND OUR "CROUCHES" MAY HAVE BEEN TRUNK FOLDS
+
+`docs/research/new-rider/3.5/video-ref-7-ripcurl-tube-and-trim.md`. One ride, one rider, **one continuous shot**, regular-footed and frontside, back to camera. **Read on a 1080×1920 stream with the rider ≈620 px tall — by far the best resolution of the series.** Read without a thesis, on the owner's correction.
+
+**The clip is a tube and then nine seconds of trim, with ZERO direction changes in thirteen seconds** — no bottom turn, carve, cutback, snap, pump, floater, air or take-off, and she is **invisible inside the barrel for 2.95 s.** So it is almost entirely the "unglamorous" material, which is where the read went.
+
+### ⚠️ THE FINDING THAT RE-READS THE WHOLE SERIES: "CROUCH" HAS BEEN READ TOO GENEROUSLY
+
+**Three of this clip's four lows LOOK like crouches and measure 75–85 % — the low edge of Tall. The depth is in the TRUNK, not the legs.** Clip 6 brushed this (its L1 read 65–75 %); **with 3× the pixels it is unmistakable.**
+
+> **So some of the series' middle-band numbers may be measuring a folded trunk over long legs.** Every hip percentage in the six earlier reads is now suspect in that specific way — **not wrong, but possibly measuring the wrong joint.**
+
+**And the conclusion that follows is the most actionable thing the videos have produced:**
+
+> **The game has ONE number for the body (leg depth) where the footage has at least THREE independent ones — leg depth, trunk fold, arm carriage — plus the fore-aft hip axis.** The round would act on **row 2 first: legs extended while the trunk stays folded.**
+
+### THE TRANSITIONS — going down and coming up are NOT mirror images
+
+- **Out of the tuck (3.80 → 5.40 s): the legs lead the trunk by about half a second.** The hips rise 3.85–4.70 while the trunk stays folded near horizontal, then she spends **~0.5 s standing on near-extended legs with the trunk still folded 50–60°**, and **the head comes up last.**
+- **Down into a crouch (11.50 → 12.40 s): knees and trunk move together within 0.3 s.**
+- The one complete cycle watchable end-to-end (5.85–6.70) is **symmetric** — so **the asymmetry may belong to recovering from a tuck, not to crouching generally.** Stated as a limit, not a law.
+- **The arms run on their own clock: 120° of shoulder in 0.36 s with the legs and trunk unchanged.**
+- **Fore-aft is worked by the HIPS, not the feet:** hips travel aft toward the rear foot while the shoulders go forward over the front foot, both feet planted — **0 steps in 13 s, rear foot never off the pad.** This **confirms Kirra's fore-aft "not at all" gap on a second rider and locates it in the hips.**
+
+### MORE DISAGREEMENTS
+
+- **"Deep ⇒ arms spread" now joins "tall ⇒ arms spread" as refuted.** Four arm carriages inside the Tall band in one clip, and **the narrowest, lowest arms at the single deepest leg position. Arm height and leg depth are independent channels.**
+- **The top of the resting band is higher than we had it:** this rider reaches **90–100 % (essentially straight legs) for ~1.7 s** — above the 75–95 % all six clips reported, and **~10 points above the game's Tall ceiling (89 %).**
+- **It cannot add to the 8-of-9 turn tally, because there are no turns.** *Worth recording that a ride can contain none.*
+- **Agrees** with clips 1–4 on deep-moment depth (35–50 %) and with clip 6 that depth tracks how hard the manoeuvre loads the legs.
+- **Seven clips, still no rider sustaining the shipped Crouch rung (66 %).**
+
+### HONESTY NOTES TO CARRY
+
+- **The hold-vs-spike question cannot be answered from this clip, structurally.** Its 0.45 s low at 35–50 % is a **LOWER BOUND, not a spike** — the 2.95 s immediately before it is inside the barrel, **exactly where a tube tuck would be held. Do not let it be quoted as a 0.45 s spike.**
+- **Resolution finding worth reusing: the pane serves 360×640 until you enlarge the viewport AND RELOAD — then 1080×1920.** Enlarging alone did nothing. All depth figures were re-measured on the 1080 stream.
+- **No knee angles reported, deliberately** — two scaling methods disagreed by **30 %** on the same frame.
+- **Every hip figure carries ±15 points:** a one-piece suit with short legs hides the trochanter and the gluteal fold, so the scale had to be calibrated inside the clip.
+- **Slow motion: not measured, but 3–4× excluded** by a 0.36 s / ~120° arm drop; reads at or near real time, no duplicated frames.
+- **The rider is NOT named.** The "stephanie gilmore highlights" text beside the player is YouTube's search suggestion, not an identification.
+- **The stale-frame trap fired FOUR times and the canvas stamp caught every one.** A `wait 0.55 s` between draw and screenshot made single screenshots reliable. **The one-tab rule worked:** `tab-1` created and passed on every call; the pre-existing `seed` tab also holds the URL because the first `navigate` opened the pane before `tab-1` existed, but **no measurement came from it.**
