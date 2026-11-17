@@ -682,3 +682,33 @@ Asked what Compress should become, given four videos and five-plus riders show *
 **Why queued, not parallel:** 3.5a edits the rider's bank reference and stance handling, and Ruling B edits stance depths and their timing — **the same files.** Two agents there at once would collide and neither result could be trusted. **Build B immediately after 3.5a merges.**
 
 **One caveat the owner was shown and accepted:** the cap may change how Compress behaves enough that Ruling B looks different afterwards. They chose three depths anyway. **If 3.5a's result materially changes Compress's behaviour, say so before building B rather than building it blind.**
+
+### ⚠️ RULING B SUPERSEDED — the owner revised it, and their version is better than mine
+
+**Do not build "three depths" as recorded above.** The owner revised it in the same session, in their own words:
+
+> *"your recommended suggestion is good, but I still want the stances and you want a button to make the stance deeper like the videos? the compress should be quite deep already, the crouch could be worked on to match the video to have a better system"*
+
+and, asked whether holding a deep stance should cost anything:
+
+> *"yes add the cost, legs that tire"*
+
+**THE AGREED DESIGN (supersedes Ruling B):**
+1. **Keep all four stances** — Tall, Crouch, Compress, Snap. Nothing is replaced or collapsed.
+2. **Keep Compress's depth.** The owner's reading is that it is already about right, **and the footage agrees** — the videos' deepest moments land at or just below it. **The depth was never the fault; HOLDING it is.**
+3. **Rework Crouch** to the sustained moderate crouch in the footage (hips 55–65 % of standing, knees 100–115°, held 0.5–1 s).
+4. **A button that momentarily deepens the current stance**, self-releasing, like the videos' dips.
+5. **Legs that tire** — holding a deep stance costs something real.
+
+**Where I was wrong:** my "three depths" implied we needed a new, deeper place. We do not. **The owner found the smaller and more precise change before I did** — the deep position we have is right, and what no rider does is *live* in it.
+
+**My argument that survived, and that they accepted:** if staying deep is free there is never a reason to come up, so the tall → low → tall rhythm can never emerge and would have to be animated instead. **That is why the cost is in.**
+
+### ⚠️ TWO THINGS THAT MUST BE SETTLED BEFORE THIS IS BUILT (prep round dispatched, read-only)
+
+1. **THE CONVERSION NOBODY HAS MEASURED.** The videos report depth as **a percentage of standing hip height**; our stances are in **metres**; **the game's own standing hip height has never been measured.** So the two frames cannot currently be compared, and **a Crouch rework tuned on a guessed conversion would be the twenty-first frame error.** The prep round measures it and re-expresses all four stances as percentages. It is also **re-checking `video-ref-3.md`'s claim** that the deep spikes are *"below the game's Crouch (0.65 m) and at or below its Compress (0.55 m)"* — **that claim may itself compare a hip fraction to a stance metre with no conversion.**
+2. **A TIMESCALE OBJECTION TO "LEGS THAT TIRE", MINE, NOT YET CONFIRMED.** Muscle fatigue acts over **tens of seconds**; the footage's dips last **0.25–0.7 s** and the whole cycle **1–1.5 real s**. **If that holds, fatigue cannot be what brings a rider up after half a second** — it would only stop a rider camping in a crouch for ten seconds or more. **Worth having, but it will NOT produce the rhythm, and the owner has been told so plainly before the build is spent.** The prep round confirms or refutes it and, if I am right, **names what actually brings a surfer up out of the dip in half a second** (candidates: the turn ending; unweighting to change rail; the board's own loading and unloading; extending through the exit to project speed).
+
+**The mechanism constraint:** fatigue is legitimate **only** as a fall in what the legs *can* do — their available force or torque declining with sustained effort and recovering when unloaded. **Never a brake, a damper, an added torque, or a timer that moves the body.** `?legPower=cap` already exists and the prep round says whether fatigue belongs there.
+
+**Still unasked:** whether the dip fires **on the owner's input only** or **automatically at turn entry**. **Default to their input.**
