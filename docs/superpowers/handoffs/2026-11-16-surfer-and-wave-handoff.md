@@ -1241,3 +1241,29 @@ The owner paused the video reads so their own ride would not be judging my CPU l
 2. **One tab per read.** Two reads ran at once in a single shared pane tab and could have handed each other's frames over as data. **`tabs_create` first, pass the `tabId` on every call, report which tab, and discard any frame not provably from your own clip at the intended timestamp.**
 3. **The stale-frame trap survives a 1 s wait** — a hidden pane freezes painting and a screenshot silently returns the previous frame. **Stamp `currentTime` and a frame counter into the canvas; take two screenshots per draw and read the second.**
 4. **Above ~200 px the binding error is the hip landmark, not resolution** (waistband ≈0.60 of stature vs trochanter 0.53) → **±10–15 points on every hip figure.** Shoulder-to-waistband scale, cross-checked, **report disagreement rather than picking a winner.**
+
+## 🔴 TWO ROUNDS WERE IN FLIGHT WHEN THIS WAS WRITTEN (2026-11-17) — restart them if the session ended
+
+The owner asked whether to quit the Claude app to free the machine. **Quitting kills these two.** Neither had published anything, so **both start fresh.**
+
+### 1. The foam question — came from the owner's own ride, and is the newest lead
+
+Their words after riding `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two`:
+
+> *"there seems to be a balance improvement. Very similar to the pre refactor old surfer on the turning motion and the position. But still cannot surf, now the board slips underneath the surfer which we are aware, **this happen on turns and on tip of the wave foam that creates instability**"*
+
+**"The board slips underneath the surfer" is step 3.5d's finding, felt from the ride** — that half is settled. **The question is the foam, which nobody has ever measured.**
+
+**The brief, in order:** (1) **establish what the foam IS to the board** — does the solver give foamed water a different height, slope, velocity, density or drag, **or is the foam drawn only, with the board feeling nothing? Answer that first and cite the code, because it decides the round** — if draw-only, the owner's felt instability at the foam cannot be the foam's physics, and **that is itself the finding**; (2) if it reaches the board, measure its share in 3.5d's own exact 23-way partition (`3.5/roll.ts`, `dkClose`/`dkSplit` = 0.0e+0 on every frame), **separating foamed ticks from clean ones**; (3) if it does not, find what else differs where they feel it — a steeper or more curved surface near the tip, larger velocity shear, **or the board losing contact** (3.5d: on the Canyon-matched face at 1–3 m/s the standing contact is **infeasible from frame 1 in 9 of 9 runs**, median 10–11 of 16 substeps `apart`, only 22 % of frames fully booked, **and no published figure of this track has ever been read on those substeps**); (4) the owner says it happens **"on turns AND on the tip of the wave foam"** — **say whether those are one mechanism or two, with numbers, or that you cannot tell.**
+
+**Why it is live rather than a guess:** the board's roll inertia is **0.02620 kg·m² = 2 186 °/s² per N·m**, and the net torque that turns it is **0.01–1.09 % of the largest term** — forces 92–1 000× larger cancelling. **On a balance that fine a foam patch under one rail could dominate.** Video 6 also caught a rider **bracing against foam**, logged with **"no game name"**.
+
+### 2. The PR #392 rebase — the merge the owner authorised
+
+**`main` is at the squash-merge of PR #389 (`660cc94e` and later).** **PR #392** (branch `claude/35b-fourth-row`) carries steps **3.5b** (the `STANCE_TUCK` row + the fourth gain knot + `?deepen=on`) and **3.5c** (which makes the row the **default** and adds `?stanceDeep=off`). A squash of it onto the new `main` **conflicts in nine files, seven of them source**: `PhysicalMode.ts`, `PhysicalMode.test.ts`, `main.ts`, `AttachedRider.ts`, `RideSession.ts`, `SurfZoneRunner.ts`, `SurfZoneSimulation.ts`, plus `3.3/plant.ts` and `3.5/README.md`.
+
+**The conflicts are mechanical and of one kind — both branches add a dev switch, so both edit the same switch lists** (the import and assertions in `PhysicalMode.test.ts`, the comment line and `undefined`-pins list in `main.ts`, the passthrough in `SurfZoneRunner.ts`, the options plumbing elsewhere). **Both switches must survive: `?askCap` from main and `?stanceDeep`/`?deepen` from the branch — verify by reading.** `AttachedRider.ts` is the careful one: #389 refactored `prepareBank`'s `most`/`asked`/`own` around new `askRadius`/`askUngated` fields while #392 touched stance and plant plumbing. **Keep both behaviours; if a conflict cannot be resolved without choosing between them, stop and report.**
+
+**`3.5/README.md` on `main` now holds TWO concatenated documents** (3.5d's, then 3.5a's, with a note at the join). **Append 3.5b and 3.5c rather than replacing anything.**
+
+**Re-verify on the REBASED tree, because the earlier runs were on a different base:** the three reference arms must still read `f73-l` **18 of 18, 0.617–2.533 s, median 1.450 s**, `s16-l` **1.033 s**, `f73-g` **24 of 24, 4.650 s**; **`?stanceDeep=off` must reproduce the old plant** (3.5c had it byte-identical over 54 runs × 359 columns, 0 mismatches); **the two switches must not interact**; and the **Canyon pair must still be `a367d938f15fa934` / `9e5831f80e38abd9` at 3 600 steps with a fresh spin-up**. Suites `--maxWorkers=1`. **Report every deletion file by file.**
