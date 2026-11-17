@@ -5639,3 +5639,154 @@ expressions in `frame`, the three `begin()`/`close()`/loop lines in `bankLedger`
 and `main.ts`'s pinned-list line. **No file under `src/` is deleted, renamed or emptied, and no probe of any earlier
 round loses a line: `3.3/plant.ts` gains an env read, three privates and the dump's columns and loses nothing.** The
 whole-branch number is in the PR body.
+
+# Part 10 — step 3.4j: is the stance point's across acceleration in the balance's own model?
+
+**One question, read off the matrices and not off the comments. The answer is YES, in all three places, with the right
+sign and the right frame, and it is the LARGEST single term in the controller's bank row — 95.8–96.7 % of that row's
+L1 norm on the shipped plant, over all twelve table cells read (4 speeds × 3 stances).**
+
+**So the advisor's closing sentence — "which is what your own `mCoup` already measures as the budget's largest term",
+offered as the thing the rider is held by and implicitly as the thing we lack — does not land as a gap.** `mCoup` is
+the largest term in the *solve's* budget (3.4i §3) **and** the largest term in the *controller's internal model*. The
+rider is not blind to it. **The advisor's physics is not refuted; its implied diagnosis is.** Nothing here touches the
+hull's ~100 N·m/rad, the clamp, the wave, the placement or the ankle's range.
+
+## 1. Where it is, by line
+
+**(a) `rollModel.ts` — the shipped plant (`yawRows`, the no-`body` branch), lines 689–694:**
+
+```
+const slipAcc = side.map((w, j) => (w + push[j]) / (y.boardMass * v));
+slipAcc[4] -= 1;                                              // β̇ = a_y/V − r
+const feet = slipAcc.map((s, j) => v * s + y.feetStation * yawAcc[j]);
+feet[4] += v;                                                 // undoes the −1 above, so `feet` is a_y + x_f ṙ
+const bankAcc = cop.map((t, j) => (-t - m * hh * feet[j]) / (m * hh * hh));
+bankAcc[2] += g / hh;
+```
+
+`feet` **is** the stance point's across acceleration — the board's own lateral acceleration `a_y = V(β̇ + r)` plus the
+yaw-acceleration lever at the feet station `x_f ṙ` — and the body's bank row carries it at `−feet / h`. That is exactly
+the `− m h a_f` term an inverted pendulum omits by assuming its base is still, i.e. the controller-side twin of
+`coupleStanding`'s `m t̂·(Δv + Δω × b)`. It is a **state-dependent disturbance**: not a separate state, a linear
+functional of the states the loop already carries (β and r).
+
+**(b) `rollModel.ts`'s older five-state `plantMatrix` (line 60)** carries it as an explicit state instead: `a = a_lat/g`
+with `−topple/inertia` on the bank row, driven by `ȧ = (φ − a)/T`. That model does not ship (its own header says so).
+
+**(c) `predictiveBalance.ts` — the design, the Kalman filter and the Smith predictor all run on (a).** `continuousPlant`
+(line 173) is `twistRows` re-ordered; `design` (line 996) discretises it, and Φ, Γ, K and L are all built on it. So the
+prediction over the delay and the LQR gain both have the term in them.
+
+**(d) `humanBalance.ts` — the capture test has it too, by a different route: the felt vertical.** `capture` reads
+`felt`, which `AttachedRider.captureStep` (lines 5038–5072) builds as the **pair's specific force** — the momentum
+difference of board + body over the substep, plus `g ŷ`, low-passed — and then
+`nx = felt.x/|felt|`, `px = offset.x − height·nx` (`humanBalance.ts:472` — **the brief cited 428; that line is the knees' motor lag, and the term is twelve lines in the same method at 472**). Subtracting `height·nx` is the
+accelerating-base correction written as a frame tilt: `nx ≈ a_x/g`, so `px ≈ offset.x − h a_x/g`. **The brief asked whether `humanBalance.ts:428` is the term; the
+term is real and is at line 472, not 428.**
+
+**What is genuinely absent, and it is small and already named:** the `z_d φ̈` lever (the feet sit 0.031 m over the
+board's centre of mass, so the board's roll acceleration moves them across). The shipped `feet` row omits it while the
+roll row still carries `z_d F` — half of a pair. `?riderBody=two`'s `feetRoll` adds it; 3.4a measured it at **3.7 % of
+the roll row**. Also absent from (d): the stance point's rotational term `Δω × b`, deliberately — the comment at
+`captureStep` records that the feet's *own* specific force swung by a g and more against the 2.54 kg board and read a
+fall in 0.07 s of a lean begun (the don't-retry list), which is why the **pair's** centre of mass is used instead.
+
+## 2. The brief's two suspicions, read
+
+- **`predictiveBalance.ts` "the rider feels and anticipates the board; it does not pretend to steer it"** is at
+  **line 1031**, inside the comment on `DesignWeights.heaveScale`, and it is about the board's **heave and pitch**
+  states carrying no cost because neither command can heave or pitch the board. **It is not an admission about the
+  across acceleration.** (The same sentence repeats at line 1205 for the same reason.) The brief's "may be exactly the
+  admission, or may be about something else" resolves to the second.
+- **`humanBalance.ts:428`** *is* the across-acceleration term, as above.
+
+## 3. The sign and the frame, checked against a column and not a comment
+
+The identity below is read entirely off the assembled matrix `A = twistRows(y, t, 1, n)` — the bank row against the
+plant's **own** slip and yaw rows — with no reference to any comment:
+
+> **`A[3][j] = −( V·(A[5][j] + [j = 4]) + x_f·A[4][j] ) / h`** for every column `j`, with the bracket the `β̇ = a_y/V − r`
+> bookkeeping at the yaw-rate column.
+
+**It holds on every column of all twelve shipped cells.** Worked at column 5 (the slip), 1.31 m/s tall:
+`A[5][5] = −1.0332e+2`, `A[4][5] = −3.0316e+1`, `V = 1.31`, `x_f = −0.244`, `h = 0.84` →
+`−(1.31·(−103.32) + (−0.244)(−30.32))/0.84 = +1.5233e+2`, and `A[3][5] = +1.5233e+2`. Matched at every cell
+(5 significant figures printed; the predicted and the actual column entry are the same number).
+
+**The sign is right, by the pendulum and not by assertion.** A positive slip gives `a_y = V·A[5][5] = −135.4 m/s²` —
+the stance point accelerates toward **−x** — and the body's bank accelerates **+**: the base runs out from under the
+body one way and the body goes over the other. `θ` and `φ` are positive toward the same rail (the file header), so this
+is the across axis of the board's own frame, which is the frame `coupleStanding`'s `t̂` is in.
+
+**The frame of (d) is also right.** `pairFelt` is `a + g ŷ` in the world (`captureStep`: `ay = Δp_y/(h·total) + gravity`),
+which is the accelerometer's specific force `a − g⃗`, then rotated into the deck's axes. A stance point accelerating
+`+x` gives `nx > 0` and `px` more negative, i.e. the body effectively leaning toward `−x` of the feet. Correct.
+
+**No frame error found. The seventeenth was not here.**
+
+## 4. How big it is in the controller's own bank row
+
+L1 norm of each part of the bank row, over the whole 11-state row, at the four arms' speeds and the three stances
+(**12 shipped cells; this is a model read, not a ride — one number per cell, no distribution**):
+
+| speed | stance | `|coup|` the base-acceleration part | `|grav|` | `|rest|` the ankle/cop part | coup's share |
+| --- | --- | --- | --- | --- | --- |
+| 1.31 (`f73-g`) | tall / crouch / compress | 1384.9 / 2368.7 / 3372.4 | 11.7 / 15.1 / 17.8 | 49.7 / 83.0 / 115.9 | **0.958 / 0.960 / 0.962** |
+| 1.16 (`f73-l`) | tall / crouch / compress | 1388.4 / 2373.3 / 3377.8 | 11.7 / 15.1 / 17.8 | 49.7 / 83.0 / 115.9 | **0.958 / 0.960 / 0.962** |
+| 6.47 (`s16-g`) | tall / crouch / compress | 1760.0 / 2856.3 / 3963.4 | 11.7 / 15.1 / 17.8 | 49.7 / 83.0 / 115.9 | **0.966 / 0.967 / 0.967** |
+| 6.50 (`s16-l`-ish) | tall / crouch / compress | 1765.6 / 2863.6 / 3972.1 | 11.7 / 15.1 / 17.8 | 49.7 / 83.0 / 115.9 | **0.966 / 0.967 / 0.967** |
+
+With `?riderBody=two` the same shares are **0.596–0.678** — the identity stops holding exactly there, as it must,
+because the two-body solve adds the `z_d φ̈` lever and the body's own inertia, which is that switch's whole content.
+
+**The question 2 of the brief ("if it is absent, how large is what the controller is not modelling") does not apply.**
+What it is not modelling is the 3.7 %-of-the-roll-row `z_d φ̈` half-pair, already measured in 3.4a and already
+switchable.
+
+## 5. And it is not modelled-but-unusable: both ranks are full
+
+A term in a plant is only usable if the states carrying it can be reconstructed from the senses and reached by the
+commands. Both checked on the shipped 10-state design (`senseMatrix`'s seven senses; `discretise` at `CONTROL_STEP`),
+six cells, 2 speeds × 3 stances:
+
+- **observability rank 10 of 10 in all six cells.** The slip β is **not** directly sensed (the header says so), but it
+  is reconstructable: `r` falls straight out of two senses (`ω_u` and `ω_u − r`), and β follows through the dynamics.
+- **controllability rank 10 of 10 in all six cells.**
+- **and the shipped LQR actually feeds back on it:** `K_ankle[β]` = **2.461 / 3.974 / 3.280** rad per rad at 1.31 m/s
+  (tall / crouch / compress) and **0.433 / 0.586 / 0.646** at 6.47, against `K_ankle[θ]` = 6.082 / 7.006 / 5.159 and
+  0.927 / 1.048 / 1.093. **The gain on the slip is 40–63 % of the gain on the bank itself at 1.3 m/s and 47–59 % at
+  6.5.** The loop is not ignoring the base.
+
+## 6. The consequence, in one sentence — and the (a)-or-(b)
+
+**The falls are not a missing model term: the balance already models the stance point's across acceleration, with the
+right sign and frame, as the dominant entry of its bank row, and it can both observe and act on the states that carry
+it — so whatever stops the rider holding a turn is not the controller's ignorance of `mCoup`, and the next round must
+not be briefed as "add the term".**
+
+**On (a) vs (b): the question is moot as asked, because there is nothing to fix in the model.** Had the term been
+absent, adding it would have been **(a)** — a change to the internal model only, which is Φ, Γ, K and L rebuilt on a
+different plant, no force and no hidden motor; that is exactly the shape of `?riderBody=two` (3.4a's own scope line:
+"a change of plant, not of controller"). **The thing that is still open — the advisor's `θ_max = atan(v²/(g·R_min))`
+ask-cap — is a different animal and it is NOT (a):** it changes the **reference** the loop holds, which is the
+commanded bank, so it changes what the ankle does and therefore the forces at the deck. That makes it closer to **(b)**
+in effect while being (a) in mechanism: no new force term is written down, but a real force (the ankle's, paired with
+its reaction on the board's roll row) changes because the command changed. **Whether that counts as a hidden motor is
+still the owner's ruling and this round does not settle it; it only narrows it to "a bound on the command", not "a
+force added".** It is not built here.
+
+## 7. What this round did NOT do
+
+- Shipped nothing. **No file under `src/` is changed by this round** — the three probes were run from scratch files
+  and removed, and the §3 identity is short enough to re-derive from the lines quoted in §1.
+- No ride, no fall counts, no byte check (nothing to byte-check: the default is unchanged by construction, there being
+  no change).
+- Did not re-open the hull (~100), the clamp, the wave, the placement or the ankle's range.
+- Did not build the ask-cap.
+
+**The honest limit of this round:** everything above is a read of the controller's **model**, at table points, with one
+number per cell. It says the term is there, correctly signed and dominant. It does **not** say the model's *value* for
+that term matches what the solve delivers — the controller's plant is the captive-derivative table, clamped at 4 m/s
+below that speed, and the 1.16–1.31 m/s arms both sit under the clamp. **Whether the modelled `a_y` and the solved one
+agree in size at the owner's own speeds is the obvious next measurement, and it is a different question from this one.**
