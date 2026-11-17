@@ -790,3 +790,53 @@ The owner reversed it within the hour, after being shown the timescale objection
 `video-ref-3.md`'s "0.65 m" and "0.55 m" are `STANCE_TABLE`'s **whole-body centre-of-mass height above the feet** (`predictiveBalance.ts:555–557`, defined at `rollModel.ts:27–29` as the inverted pendulum's length), **not hips.** The hips in those stances are **0.585 and 0.48 m** — the CoM sits a constant **6–7 cm** above the pelvis in every stance, **a quarter of Compress's whole travel.** It propagated `video-ref-2.md:44` → `video-ref-3.md:37,57` → `kirra-reference-50-196s.md:103` (which states *"I did not re-read the rider code"*). **Converted properly, the spikes at 0.31–0.44 m of hip ARE deeper than both and land on the tube tuck — so the conclusion survives and only the arithmetic was wrong.**
 
 **ROOT CAUSE FIXED:** `.claude/skills/surf-video-read/SKILL.md` asked for *"hip height as a fraction of standing height"* and **never defined the denominator.** It now says **straight-legged standing hip height**, explains why 100 % is a pose that never appears in a clip, and **forbids setting a video fraction beside a game metre without converting**, pointing at `3.5/stance-frame.md`.
+
+## CROUCH COLLISION DIAGNOSED (merged `ace845fe`, PR #390) — ⚠️ COMPRESS IS NOT SHALLOW. TALL SINKS. And a published number of ours was 64–93 % frozen frames.
+
+`docs/research/new-rider/3.5/crouch-collision.md` + probe `3.5/depth.ts`. **Read-only; 0 files under `src/`.** Population for every number: the Canyon-matched `FaceWater` (1.4 m, 2.6 m deep, 16°, 5.7 m/s — **a fit to Canyon, not Canyon**), 3 entry speeds × 2 sticks = **6 runs per stance per rider**, live window 0.5 s → the frame before `attached` goes false (**6 of 6 fall on both riders**). Per stance, never pooled.
+
+### PROBLEM A — MY BRIEF'S PREMISE IS REFUTED. The category was a fourth one I did not list.
+
+**The new rider achieves 100–111 % of its commanded depth — and reaches it FASTER than the default rider** (0.300 m at **0.600–0.717 s** vs **0.767–0.817 s**; `rest − got` = 0.000–0.003 m). All three of my candidate bugs are answered with a column: the command **arrives** (`cmd` 0.300 every live tick), is **followed**, and is **not lost** (minimum `rest` after arrival 0.295–0.298 m, in 1–11 ticks of 31–164).
+
+> **The fourth category: THE DATUM MOVED.** Tall's own target reaches **0.003–0.299 m with nothing pressed**, putting its hips at **0.518–0.777 m** — within **0.067 m** of Compress's.
+
+| live frames | `cmd` | `rest` | `got` | hips |
+| --- | --- | --- | --- | --- |
+| Compress, `?rider=new` | 0.300 | 0.300–0.333 | 0.300–0.329 | **0.451–0.480 m** |
+| Compress, default | 0.300 | 0.300 | 0.298–0.299 | **0.481–0.482 m** |
+| tall, `?rider=new` | 0 | 0.003–0.270 | 0.003–0.262 | **0.518–0.777 m** |
+| tall, default | 0 | 0.000 | ≈0 | **0.780–0.781 m** |
+
+**Compress is the same stance on both riders within 0.031 m. TALL is not.** Δ tall→Compress is **0.066–0.297 m (new)** against **0.299–0.300 (default)** — **the gap closed from the top, not the bottom.**
+
+**Cause, read not inferred:** `stanceRoom(0).kneeTravel` **is** `CROUCH_DEPTH` = 0.30 (`humanBalance.ts:160`, verified: `at(0.3, 0.15, 0, 0.195)`), and `prepareLeg` **adds the balance's knee correction on top of the command** — `asked = Math.min(asked, -(heldDepth + human.knees × travel))` (`AttachedRider.ts:4088`, verified). **So a standing rider at `knees` = 1 sinks 0.295 m for free in 1.4 s, and the button then only adds 0.05 m.** This is **step 3.3f's finding, independently reproduced on a probe written from scratch.**
+
+### ⚠️ 3.3e's PUBLISHED NUMBER — WHICH I QUOTED TO THE OWNER — WAS A FROZEN-FRAME ARTEFACT
+
+3.3e's "Compress adds only 0.025–0.115 m in 4 of 6 runs" **reproduces exactly on its own window** (0.025 / 0.045 / 0.047 / 0.115 / 0.188 / 0.250 — its published band to the thousandth) **with 0.64–0.93 of that window being FROZEN FRAMES.** Right arithmetic, wrong window — **`AttachedRider.separate` (`:4586`) never sets `phase` or `upright`, so every rider column freezes after separation**, and that known trap had already corrupted a published figure. **The twenty-second.** *I presented that number to the owner as the collision.*
+
+**Nothing clamps, scales, filters or rate-limits the depth downward:** the feet-only-push `slack` clamp (`:4137`) binds in **0.00 of live ticks in all three new-rider stances**; `CROUCH_SPEED`/`CROUCH_ACCELERATION` are identical on both riders.
+
+### THE FOURTH `STANCE_TABLE` ROW IS NEEDED TODAY, NOT JUST FOR THE DIP
+
+On the shipped `?rider=new` the **achieved** depth is already past `stanceAt`'s 0.30 m ceiling in **0.28–0.95 of Compress's live ticks, 6 of 6 runs** (0.006–0.417 of Crouch's), because the knee drop adds up to 0.044 m. **Cost today ≈0.042 m of pendulum length, 4 % in ω₀ — small, reported not promoted.** Missing-row cost if the dip goes to 0.45: pendulum **37 % high**, ω₀ **15 % low**, plant inertia **1.9×**, `riderYawInertia`/twist frozen at Compress's, and with `riderCost`'s `feetReach` the **bank limit frozen too**. **Measurable, not a guess:** `3.2/inertia.probe.ts` yields `height`/`lower`/`upper`/`BODY_FRONTAL_SHARE` from de Leva's segments — one posture line and a run.
+
+**Two of my worries cleared by reading:** the plant is fed the **achieved** depth (`yawDepth`, `:3622, 4497`), **not** the commanded one, so it is *not* solving a knee-dropped tall stance on a tall pendulum; and **`stanceRoom` already has a 0.45 m row and `hipRange` already covers 0.30–0.45 m** — only `STANCE_TABLE`/`stanceAt` and `BODY_FRONTAL_SHARE` are keyed on three depths. **Half the fourth-row worry was unfounded.**
+
+### PROBLEM B — the measured ladder is NOT the constants' ladder
+
+On `?rider=new`, as % of the game's own straight leg (0.88 m): **tall 59–88 %, Crouch 56–66 %, Compress 51–55 % — OVERLAPPING**, with **0.26 m of spread on tall (86 % of Compress's whole travel) that nothing the player does controls.** **The measured Crouch already reaches inside the footage's 55–65 % band.**
+
+**So the collision is not a design problem. It is the uncommanded knee drop.** Four options, costs stated, **none picked** (the owner decides):
+
+1. **Crouch → 0.27–0.30, Compress → 0.34–0.45.** Touches `CROUCH_SHARE` and `CROUCH_DEPTH` — and `CROUCH_DEPTH` is **the unit for `SNAP_DEPTH`, `SNAP_DEPTH_DEEP`, `CARVE_FLEX`, `SNAP_DRIVE_DEPTH`, the tuck blend, the `deepest` window and the default rider's leg softening: one constant, six behaviours.** Fourth row + `BODY_FRONTAL_SHARE` required. Breaks: at the bands' inner edges the two end **0.04 m apart** — the very separation complained of; `stanceRoom(0.34–0.45).kneeTravel` = 0.036–0, so **the balance's knee strategy is nearly disabled in both deep stances**; every 3.2–3.4 population re-bases.
+2. **Crouch → 0.27–0.30 alone, Compress held.** **One number, no fourth row, no re-basing — cheapest by far.** Breaks: at 1.00 Crouch **is** Compress (0.03 m apart at 0.90) — two buttons, one stance; and "Tall absorbs the gap" has nowhere to go, since **what already fills 66–89 % is the uncommanded knee drop.**
+3. **Ladder untouched, dip on the new button.** No depth constant moves; 0.45 exists twice already (`MANUAL_CROUCH_DEPTH`, `?snapDepth=deep`), so it is an input plus a ~0.5 s clock. Fourth row required. **Lowest risk to everything tuned at 0 / 0.195 / 0.30.** Breaks: Crouch keeps 66 %, which no clip shows, and the footage's holdable crouch stays covered by Compress under the wrong name — **a naming problem, the owner's to accept.**
+4. **Settle the ladder's DETERMINISM before its values** — `?kneeRoom=achieved` (shipped, opt-in, **off** by default) lifts tall's hips 0.518–0.777 → **0.615–0.777 m** and the Δ floor **0.066 → 0.157 m** (22 % → **52 %** of the designed 0.30). Answers none of B; **makes B judgeable by riding.**
+
+### THE COUPLING THAT DECIDES THE ORDER
+
+**A and B are NOT the same thing — but B cannot be judged by riding until A is settled**, because whatever B picks will be ridden on a tall stance that wanders 0.26 m on its own. **The owner's instruction was "fix the crouch collision first then build the dip", and this is what that means concretely: option 4 is the fix, and it is already shipped behind a switch.**
+
+**Carried, settled:** `kneeStrength` 3.0 / 2.25 / 2.1 / 1.9 body weights comes from **geometry alone** (`standingBody.ts:113–117`), matching Zöger 2025 (n = 28) and Lynch 2021 (n = 59) — a static strength curve that **survives the infinite-stamina ruling intact**, so **every option inherits a self-releasing deep rung for free. No stamina system is proposed anywhere.**
