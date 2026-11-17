@@ -603,3 +603,55 @@ Read off `LabPlant`'s own `[N, Y, K]` header over all 17 rows: **only two of the
 **STILL OPEN AND NOW THE WHOLE QUESTION:** *why is the model's side force wrong-signed in crouch and compress, before the fall, below 4 m/s* — **0.167 and 0.292 against 0.900 and 0.932 honest** — when **no row of the table can produce that sign**? It is not the row. It is in how `Y` is assembled from the four fixed-sign derivatives, or in a state fed to them. **Tall is 0.824 and must not be targeted** (3.4l: its earlier figure was the capsize).
 
 **The owner's shot:** the `&plantFloor=4.5` address against the same without it. **We expect the same feel or slightly worse slow take-offs. If a slow take-off feels clearly BETTER, that beats every measurement above and is news.**
+
+## STEP 3.4n (merged `1a2cfd65`, PR #387) — ⚠️ THE "WRONG SIGN" WAS OUR OWN PROBE HOLDING LEFT AND RIGHT BACKWARDS. THE MODEL WAS RIGHT.
+
+**READ THIS BEFORE QUOTING ANY `yModel`, `kModel` OR `nModel` FIGURE FROM PARTS 11, 12 OR 13.**
+
+**The model's side force is not wrong-signed. The probe's derived slip is.** `docs/research/new-rider/3.3/plant.ts:1052` builds β as **`atan2(vSide, vFwd)` — positive sliding LEFT** — and feeds it to twelve derivatives the lab measured against **`atan2(−vb.x, vb.z)` — positive sliding RIGHT** (`roll-plant/plant.ts:368`). `boardDerivatives` (`rollModel.ts:968`) flips the lab's N and Y into the model's axes and **does not flip the slip variable**, so the model's β *is* the lab's. **The caller verified both lines and the switch directly.** Four independent reads agree the board's local `+x` is its **left**: `finForces.ts`' `side: 1`, `BoardBody.buildFoils`, the lab's own slip line, and the cross product.
+
+**Why it masqueraded as a low-speed defect:** the slip term is the model's **largest** exactly where β is large — β median **0.90–1.10°** in the honest band, **4.64–9.42°** below 4 m/s, **19–43° in the owner's own cell.** So one flipped state produces a wrong-signed `Y` **below 4 m/s and nowhere else** — **precisely the band structure 3.4k read as the clamp, 3.4l audited as surviving conditioning, and 3.4m could not fix with any row. 3.4m's null is now EXPLAINED rather than merely confirmed: the fault was in a state, so no row could ever have moved it.**
+
+### The proof, on 3.4l's arms and cuts, per stance, never pooled
+
+`negB` = the slip term's sign flipped and nothing else. `yQuasi = yGame − ysAdded − ysRad` — **exactly the set of parts the lab's derivative contains.**
+
+| cut | stance | n | published | negB | vs yQuasi | **both** |
+| --- | --- | --- | --- | --- | --- | --- |
+| A clamped, \|roll\| ≤ 25 | tall | 241 | 0.718 | 0.817 | 0.759 | **0.892** |
+| | crouch | 216 | **0.519** | 0.727 | 0.611 | **0.931** |
+| | compress | 184 | **0.397** | 0.663 | 0.505 | **0.848** |
+| B ≤ 1.6 m/s | crouch | 24 | **0.167** | 0.667 | 0.167 | **1.000** |
+| | compress | 24 | **0.292** | 0.792 | 0.417 | **1.000** |
+| C honest | crouch | 862 | 0.900 | 0.947 | 0.896 | **0.942** |
+| | compress | 588 | 0.932 | 0.997 | 0.922 | **0.986** |
+
+**The honest band — the control that should merely not get WORSE — gets BETTER, to 0.942–0.986. That is what a frame fix does and a fudge does not.**
+
+**An independent check with no frame argument in it:** the ride's own least-squares side-force derivatives reproduce the table in the honest band **with β in the model's frame** — Y_φ 382/409/494 vs 396/400/396, **Y_β −1016/−1305/−1516 vs −1062/−1164/−1036**, Y_r 99/123/147 vs 92/98/91 — and read **+1016/+1305/+1516** in the probe's frame. **The data picks the lab's frame.**
+
+### BLAST RADIUS — what carries the flipped sign and what does not
+
+**CARRIES IT:** `yModel`/`kModel`/`nModel`, their ratios and **every sign share** (3.3p, 3.4k, 3.4l, 3.4m), the one-step residuals, and the model's implied accelerations. `x[5]` is one column of the state the probe feeds every model-side instrument.
+
+**DOES NOT:** anything read off the matrices themselves — **3.4j's bank-row shares (95.8–96.7 %) and its `A[3][j]` identity**, the gain tables, **3.4m's bit-identical row swap and its "no side-force derivative changes sign at any row"** — and **every ride, every fall count and every trim/draft column.** The probe never writes a state back into the game.
+
+`SLIP=lab` is **opt-in** so the affected figures can be re-read in one run; **the round deliberately did not flip the default**, because that would move dozens of published columns in a single commit. **Good judgement — keep it that way until a round re-reads them deliberately.**
+
+### H1 IS REAL, SECOND, AND NOT THE TERM THE BRIEF GUESSED
+
+**45–56 % of the game's own side force in the owner's cell is added mass + wave radiation, which the twelve derivatives do not contain at all.** Measured in the lab's own per-part columns (`dY/dβ` at +1° off straight, 4 m/s): fins **315.1**, rails 22.9, friction 11.5, pressure −11.5, buoyancy **0.0**, **waterInertia 0.0, radiation 0.0** N/rad. **In that cell the inertial part OPPOSES the quasi-static one on 0.79–1.00 of ticks, against 0.10–0.26 in the honest band.** **It is an inertia, not a force** — the model's sway mass is the dry **2.54 kg** against the **2.78–3.69 kg** 3.3p measured off the game's own `A⁻¹` — **so no row can ever be it.**
+
+**My brief's "test first and hardest" hypothesis is REFUTED:** hydrostatic pressure on the buried rail carries a median **13–17 N** in every band and is **never** the largest source. **Planing pressure is largest** (0.50–0.81 of ticks), fins second. **H3 (the assembly) is a null.**
+
+### Instrument-only, so no ruling and no hashes
+
+**Neither model-only nor a force change — INSTRUMENT-ONLY.** The shipped controller **has no slip sense** and never builds β from a velocity ratio (it reconstructs it in its filter); `PLANT_SPEEDS` is read by `plantAt` alone and `plantAt` by `predictiveBalance.ts` alone. **No byte under `src/` or `server/` changed** — 17 files, 1 213 insertions, **1 deletion**, verified by the caller. Controls: `f73-l` reproduces 3.4i exactly (18 of 18, median 1.450 s); the published metric returns **to the digit** at 3.4m's own n; the default dump is **byte-identical** with `SLIP=lab` added; `SLIP=lab` **moves no ride** (every ride column identical to 0.000e+00) and its `yModel` equals the default's `yModelNegB` **tick for tick at 0.000e+00 N**; the ten sources sum to `yGame` at 0.000e+00; `tsc` clean.
+
+**Also corrected:** the Y-derivative signs quoted in my 3.4n brief (`Y_φ −177.6`, `Y_β +343.8`, …) are **the lab's**; the model's are flipped on N and Y. **3.4m's no-turnover conclusion is untouched.**
+
+### STILL OPEN
+
+**The magnitude below 4 m/s** (0.83–1.64× on cut A; the clamped band's fitted `Y_β` is a twentieth to a quarter of the row's, consistent with the derivative being 92 % fins and lift ∝ V²). **The missing inertial term** (H1 above) — the first genuinely unmodelled physics the track has found. And a **new lead, recorded with populations and deliberately NOT promoted to a cause:** the filter's own β is **2.5–4.2°** where the board's is 0.9–1.1°, and sign-agrees on only **0.65–0.75** of honest-band ticks.
+
+**It does not move the falls.** 3.4h's **626 of 626** stands; every arm fell in every run. **What it changes is what eleven rounds of a metric meant.**
