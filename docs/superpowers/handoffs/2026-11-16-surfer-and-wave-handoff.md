@@ -1095,3 +1095,45 @@ Four arm patterns in 2.9 s: pop-up, **both hands on the deck/rail**; drop into t
 
 1. **The stale-frame trap is worse than a 1 s wait fixes.** The pane falls to `document.hidden`, **painting freezes, and a screenshot silently returns the previous frame** — a failure that looks exactly like data. Proven defences, now in the skill: **print the reached `currentTime` and a frame counter into the canvas**, and **take two screenshots per draw and read the second.** Closing the artifact pane restored painting once; a local HTTP sink would bypass it but the pane blocks localhost with `ERR_BLOCKED_BY_CLIENT`.
 2. **Above ~200 px the binding error is no longer resolution but the HIP LANDMARK** — a waistband sits at ≈0.60 of stature where the trochanter is at 0.53, so **±10–15 points on every hip figure however sharp the image.** Read from a **shoulder-to-waistband** scale, cross-check against head-to-hip, and **report disagreement rather than picking a winner.** Video 6 also reported **no knee angles at all** rather than guess them — the right call, now written down.
+
+## ⚠️ RULING D'S PRICE WAS WRONG — CORRECTED BY STEP 3.5c (pushed to `claude/35b-fourth-row`, so **PR #392 now carries 3.5b + 3.5c as ONE merge**, still the owner's)
+
+**The 0.70 s I quoted the owner is the PLAIN `?rider=new`'s. On the rider they actually ride it is +0.050 s, and on all three reference arms it is 0.000 s.**
+
+| Compress, 20 runs, same face / entries / sticks | old plant | new default | Δ |
+| --- | --- | --- | --- |
+| plain `?rider=new`, 3.5b's own probe and cell | 3.067 | 2.367 | **−0.700 s** |
+| plain `?rider=new`, this round's probe | 3.083 | 2.367 | **−0.716 s** |
+| **`?rider=new&feltFrame=deck&riderBody=two` — the owner's own address, s16** | 2.517 | **2.567** | **+0.050 s** |
+| the same, **f73 (the owner's own slope)** | 2.200 | **2.250** | **+0.050 s** |
+
+**Cause, read then measured:** `3.5/depth.ts:180–187` passes **neither `feltFrame: 'deck'` nor `riderBody: 'two'`**, so 3.5b's headline is the **point-mass, world-felt-frame** rider. Swapping only that one thing moves the row's effect from **−0.716 s to +0.050 s.** The row is just as *active* on the owner's rider (15 and 17 of 20 runs move, single runs −1.450 … +1.533 s) — **the net loss is what is absent, not the effect.**
+
+**3.5b is not wrong:** its arm is correctly measured and correctly labelled `?rider=new`. **What was wrong is my carrying that number to the owner as "the row's price" without saying which rider — and the ruling was taken on it.** The twenty-fourth number in the wrong frame, and the second time today a decision was put to the owner on one (the ask-cap was the first). **Falls are unchanged everywhere: 20/20 → 20/20, 18/18, 24/24. No fall count moves.**
+
+### RULING D's "RE-MEASURE THE REFERENCE ARMS" IS DONE — AND NOTHING NEEDS REPLACING
+
+| arm | published (old plant) | **new default** | runs moved |
+| --- | --- | --- | --- |
+| `f73-l` | 18 of 18, 0.617–2.533 s, median **1.450 s** | 18 of 18, 0.617–2.533 s, median **1.450 s** | 2 of 18 (Compress), −0.084 … +0.017 s |
+| `s16-l` | 18 of 18, median **1.033 s** | 18 of 18, median **1.033 s** | 2 of 18 (Compress), −0.034 … −0.017 s |
+| `f73-g` | 24 of 24, median **4.650 s** | 24 of 24, median **4.650 s** | 1 of 24 (Compress), −0.200 s |
+
+Per stance identical on all three; **tall and crouch bit-identical run for run.** **So the three figures every round cites can be quoted as the NEW plant's, unchanged** — and the earlier warning that *"no new ride time may be compared to a pre-Ruling-D one"* is **withdrawn for these three arms.** It still holds for any figure measured on the plain `?rider=new` cell, where the plants genuinely differ by 0.7 s.
+
+### The flip, and the seatbelts
+
+**`?stanceDeep=off`** gives the old three-row ladder and the 0.30 m clamp; **nothing** gives the fourth rung (what now ships); `?stanceDeep=on` says the shipped behaviour out loud so 3.5b's published addresses keep working. **Five executable lines**, `DEFAULT_WEIGHTS.stanceDeep = true` and `?? true` at the two read sites. **All 50 `src/` deletions read individually — every one a comment or a type/assignment line replaced in place. No force, torque, damper, brake or velocity assignment.**
+
+- **`?stanceDeep=off` is byte-identical to the pre-flip default on all three arms: 54 runs × 359 summary columns, 0 mismatches (`cmp` on whole files)** — and the pre-flip default reproduces the published figures exactly, **so the chain closes to print.**
+- **The new default is byte-identical to the pre-flip `?stanceDeep=on`**, same 54 × 359. **The flip is a default change and nothing else; no third behaviour appeared.**
+- Second instrument: `depth.ts` reproduces 3.5b's published `off` leg **60 of 60** and its `on` leg **60 of 60**, including 3.067 → 2.367.
+- **THE CANYON REFERENCE PAIR DID NOT MOVE**, and this check is stronger than 3.5b's: **3 600 steps, FRESH SPIN-UP** (the "spun up on the CPU in 49.0 s" line printed — the path the reference was taken on), wrapper prepended **and verified by reading the bundle's first line**, grid read **B 400 × 451 = 180 400** → **`a367d938f15fa934` / `9e5831f80e38abd9`, identical in both columns. Nothing to re-record.**
+- Suites: `src/physics` **58 files / 638 passed** (21 expected fails), `src/scene/rig` + `src/game` **70 / 740**, `SurfZoneRunner` **43/43** by hand, `predictiveBalance.test.ts` 23/23, `PhysicalMode.test.ts` 107/107, `tsc -b` clean.
+
+### Two honest loose ends it recorded rather than smoothed
+
+1. **`ceilingShare` does not predict the cost.** Ticks past the old 0.3005 m ceiling are **tall 0.00 everywhere** and Compress **0.00–0.16** on f73 (which explains `f73-l`/`f73-g`), **but 0.44–0.61 on s16 at stick 0 where the ride still does not move.** *"ceilingShare predicts the cost" is refuted as stated* — necessary, not sufficient. **The mechanism is half-explained and labelled as such.**
+2. **`depth.ts` and `plant.ts` figures are NOT comparable for the owner's rider.** `depth.ts` has no `FELT`/`BODY` switches, **and** the two differ in the manoeuvre (`depth.ts:251` releases the stick at `ACROSS` = 85°; `plant.ts` holds it the whole run). The rider difference alone carries the −0.716 s, so the manoeuvre was not isolated. **Anyone comparing a `depth.ts` number with a `plant.ts` number must check both.**
+
+Its own slip, recorded in the README: a policy test first called `scheduledDesign(7, 0.45, {weights})` — three args, so the weights landed in `rail` and every gain was `NaN`. **vitest does not type-check; `tsc -b` caught it.**
