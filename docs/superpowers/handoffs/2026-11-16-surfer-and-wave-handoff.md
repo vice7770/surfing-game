@@ -883,3 +883,47 @@ const own   = Math.max(-most, Math.min(most, this.steer*railRange + ...));   // 
 ### Ruling B is unblocked
 
 **3.5a does NOT materially change Compress** — default byte-identical by construction, and with the stick centred identical at every radius across 60 runs. **So Ruling B can be built on exactly the Compress that was measured when it was ruled**, answering the caveat recorded with that ruling. Only caveat is a file one: 3.5a edits `prepareBank`, so **B should start from this branch, or from `main` after it lands.**
+
+## VIDEO REFERENCE 5 (merged `ba3f92ba`, PR #391) — ⚠️ THE OWNER'S OWN FIFTH CLIP SHOWS **HELD LOWS**, AND RULING B'S PREMISE IS NOW CONTESTED
+
+`docs/research/new-rider/3.5/video-ref-5-dave-rasta.md`. "Dave Rasta flowing." — title only, **rider identity not verified**. 12.24 s, **360×640**, ~24 fps, rider **80–120 px** → ±15° on a joint, **±10 points on a hip fraction**. ~60 stills plus zooms at 0.25–0.5 s steps. **Slow-motion factor: could not be determined** (`playbackRate` 1, page silent); looks real time but unproven, **and every duration below depends on it.** Probably more than one wave: same rider and board throughout, no hard cut, but framing changes at 2.5–3.0 s and 9.0–9.25 s → treated as three segments.
+
+### THIN SPOT 1 — ANSWERED, AND AGAINST THE PREVIOUS FOUR CLIPS: **YES, THREE HELD LOWS IN THREE TURNS**
+
+| segment | low period | duration | hips (% of straight-legged standing) | rung |
+| --- | --- | --- | --- | --- |
+| S1 turn | 0.5 → ~2.25 s | **~1.75 s** | 40–55 % at the deepest | Compress, reaching into the tuck band |
+| S2 turn | 5.0 → ~7.0 s | **~2 s** | 45–55 % | Compress / tuck boundary |
+| S3 turn | 9.25 s → clip end | **≥ 2.9 s, release never seen** | 45–60 % | Compress, touching the tuck band |
+
+**None is a spike.** The hips stay low across 4–7 consecutive sampled frames while the board turns, and **the rider changes shape inside the low without coming up.**
+
+**Sensitivity to the unknown slow-motion factor, which the round did itself:** at 2× slowed these become ~0.9 / 1 / ≥1.5 s — **still holds.** Only **~3× or more** turns them back into spikes, **and nothing observed suggests 3×.**
+
+**Honest limits, stated by the round:** **solid** that the rider is well below the Tall band for seconds; **weak** at telling 45 % from 60 % in rear views at 100 px. **One rider, three turns, one of them cut off by the clip's end — it did not generalise.** And **trunk foreshortening biases the reported percentages HIGH, so the true holds may be deeper still.**
+
+> **So "across four clips and five-plus riders, nobody holds a deep stance" — which I gave the owner as the basis for Ruling B — is contested by the owner's own fifth clip. This is the FIRST clip that SUPPORTS a held Compress instead of contradicting it.**
+
+### THIN SPOT 2 — the low still arrives at ENTRY (3 of 3, tall before it 3 of 3) — but here it is **not released**
+
+It stays through the peak in 3 of 3 and into the exit in 2 of 3. **So the shape is `tall → held low → tall` on a 2–3 s scale**, not the earlier clips' `tall → brief low → tall` on a 1–1.5 s scale. **Two distinct patterns now exist in the evidence, not one.**
+
+### THE ARMS — a THIRD distinct answer, and a synthesis finally emerges
+
+At the loaded low point of all three turns: **the lead hand is down at the rail, board or knee, and the REAR ARM IS UP AND BACK, fist at about head height or above.** Spread, level arms appear **only in the tall between-turn frames.** **And the rear arm moves against the trunk — which no earlier clip showed.**
+
+Across five clips the arms read: wide-and-level (Kirra first 50 s, Pupo) / both-low-and-in (Nias) / lead-down-other-trailing-low (Kirra remainder) / **lead-down-rear-UP (this one)**. **The synthesis that now fits all five: arms are spread and level only when TALL; as soon as the rider is low the LEAD hand goes down. The disagreement is only about the OTHER arm** — and that may be the manoeuvre, not the rider.
+
+### CROUCH'S 66 % GAP — CONFIRMED A FIFTH TIME
+
+**No sustained frame sits at 66 %.** The rider passes through 65–75 % for ~0.5 s on the way up or down (2.5–2.75 s, 7.5 s) and **never stays.** Five clips, and Crouch-as-shipped still has no counterpart anywhere.
+
+Where the clip's time goes: ~10 of its 25 half-second slots at **45–65 %** (Compress or deeper), ~10 more at **65–80 %**, and the **Tall rung (85–90 %) only at 8.0–8.5 s**, about 1 s, with arms fully spread.
+
+### MAPPING
+
+**Have it:** held Compress depth (**the first clip to support it**); Tall. **Partly:** the deepest hold touching the tuck band (the game has it only as `?snapDepth=deep`); the hand drag but not the stance-tied arm pose; hips over the tail; upper-body lead. **Not at all:** a `tall → low-at-entry → held → tall` sequence **timed to the turn**; and **the lead-hand-down + rear-arm-up pairing at the peak of a held low.** Not in the clip: drop-in, tube ride, pump (no rhythm seen). **Turn length 2.5–3.5 s of video clock — not comparable to the measured 0.96 s bottom turn until the slow-motion factor is known.**
+
+### WHAT THIS DOES TO RULING B — THE OWNER MUST BE TOLD, NOT MANAGED
+
+Ruling B (and its revision) rests on *"four videos, five-plus riders, no held deep stance anywhere."* **That statement is no longer true of the evidence.** The design still has support — Crouch's 66 % is unused in five clips out of five, and the low still arrives at entry in every readable turn — **but "the deep place must stop being somewhere the rider can live" is now contradicted by one of the owner's own references.** The honest position: **two patterns exist, a ~0.5 s dip and a ~2 s hold, and we have one clip for the hold and four for the dip.** Do not quietly keep building the dip as though this clip did not land.
