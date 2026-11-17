@@ -1418,3 +1418,14 @@ Counts: Tall-band frames **6**, Compress-band **0**, below 55 % **0**, **at the 
 Pumping with the trunk over straight legs; a crouch made of 76° of fold over a 95 % leg; **the arm leading a manoeuvre in time**; **the two legs at different depths**; the lead-arm reach through the load; the lead arm thrown across the body at the top.
 
 > **Four of the six are one gap seen from different sides: the game has ONE number for the body where this footage has at least FOUR — leg depth, trunk fold, arm carriage, and arm TIMING.**
+
+### VIDEO QUEUE, updated 2026-11-17 — the owner asked for **one video at a time**
+
+| # | URL | scope | state |
+| --- | --- | --- | --- |
+| 7 | `https://www.youtube.com/shorts/oCelSQ2iteU` | whole | **DONE** — merged `8ae99367` |
+| 8 | `https://www.youtube.com/shorts/Th2TMrOUx1E` | whole | **DONE** — merged `22004a4d` |
+| 9 | `https://www.youtube.com/watch?v=qUm3eO2EFBc` | **first 30 s only** | reading |
+| 10 | `https://www.youtube.com/watch?v=oRL0q5rDZWc` | **15 s → 55 s only** | queued |
+
+**One at a time is the owner's instruction**, and it also keeps two reads out of one browser tab, which nearly corrupted a read earlier today.
