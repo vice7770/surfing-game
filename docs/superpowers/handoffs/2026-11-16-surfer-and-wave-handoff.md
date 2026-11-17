@@ -143,3 +143,20 @@ Their two sentences, both unprompted:
 **So the split is clean and confirmed from both sides: the BODY is right and feels right; what remains wrong is what the board does underneath him and what the loop commands.** Those are the roll row and the gains — exactly step 3.4c's job.
 
 **Keep the two-body plant.** It is the only change on this track that improved something without trading, and it is the foundation the owner's "system for all skills" needs: a body that moves like a person is what every skill has to be built on.
+
+## THE OWNER'S OWN MOVEMENT REFERENCE — Kirra, read frame by frame (2026-11-17)
+
+They gave **https://www.youtube.com/watch?v=3nfW6OLiyYw** ("Kelly Slater's Iconic session at Kirra | Slowed Down", first 50 s) with:
+
+> *"this is a beautiful wave that translates what i would like this improvement movement mechanics to achieve. The wave itself is a tube, **that part I dont care for now**, what I care is the **movement pieces** of the wave and I wish I could have a playable movement like that."*
+
+**Nobody here can watch video.** It was read by **screenshotting the browser pane** — 17 stills at 2.5 s steps plus 6 close crops — by a cheap low-effort agent, per the owner's own instruction. Written up at `docs/research/new-rider/3.4/kirra-reference.md` (merged `601f6629`).
+
+**Two findings that change the work:**
+
+1. **THE TURNS ARE TALL → LOW → TALL, and the hips go BACK OVER THE TAIL.** Entry: rise and square up. Load: hips drop back over the tail, chest down the face, held ~1.5–2 s. Exit: straighten as the board comes flat. **This REOPENS something step 3.3e closed.** The owner said *"crouching, not compressing"*; 3.3e refuted that as stated because **our** Compress is a held crouch with no cycle — **and the reference says the sport has the cycle and we do not.** It is also **two axes**: a vertical one we model and a **fore-aft** one we do not model at all.
+2. **Depth is confirmed, again, as not the problem.** Tube (held 15+ s): knees 90–120°, hips 50–70 % of standing. Turn tall: 130–150°, 75–85 %. **Our Compress is ~66° on that scale — deeper than his deepest.** Second independent source after Seixas.
+
+**Arms** stay at or below shoulder height and follow the trunk, spread one forward one back through a turn — which is what `?stanceReach=keep` only just gave back.
+
+**Three limits it volunteered, all load-bearing:** the camera is **side-on, so lean and rail angle are precisely what cannot be read** (the quantity this whole track turns on); it is **a montage of at least three rides**; and **the slow-motion factor is unknown**, so "a turn takes 3–4 video seconds" is **not** comparable to Forsyth's measured 0.96 s. Pixel estimates, ±15° at best, every one labelled.
