@@ -411,3 +411,32 @@ The **fast self-releasing dip**; a **turn-timed tall → deep → tall cycle**; 
 ### Still unread
 
 **The Kirra clip is 195.6 s and only the first 50 s have been read** (which is what the owner asked for). 145 s unread, and it is the richest remaining material if its later sections hold open-face turns.
+
+## STEP 3.4j (merged `13001074`, PR #382) — THE RIDER IS **NOT** BLIND TO THE TERM, AND THE REAL LEAD IS A 4 m/s FLOOR
+
+**Q1: PRESENT, with the right sign and frame, and it is the LARGEST term in the controller's own bank row** — **95.8–96.7 %** of that row's L1 norm across **12 table cells** (4 speeds × 3 stances, one number per cell; **a model read, not a ride**). `|coup|` 1 384.9–3 972.1 against `|rest|` (ankle/cop) 49.7–115.9 and `|grav|` 11.7–17.8. Under `?riderBody=two`: **0.596–0.678**.
+
+**So the advisor's closing sentence is right as physics and WRONG as a diagnosis of our rider. The next round must NOT be briefed as "add the term".**
+
+Where it lives, verified:
+- **`src/physics/rollModel.ts:689–694`** (`yawRows`, the shipped no-`body` branch): `feet` = the board's lateral acceleration `a_y = V(β̇ + r)` plus the yaw lever `x_f ṙ`, and the body's bank row carries it at **`−feet / h`**. That **is** the `−m h a_f` term an inverted pendulum omits — the controller-side twin of `coupleStanding`'s `m t̂·(Δv + Δω × b)`. A state-dependent disturbance, not a separate state.
+- **`predictiveBalance.ts:173`** (`continuousPlant`) and **`:996`** (`design`): Φ, Γ, K and L are all built on that plant, so **the Smith predictor and the Kalman filter have it.**
+- **`humanBalance.ts:472`** carries it a second way as the felt vertical's tilt, from the pair's specific force assembled in `AttachedRider.captureStep` (`:5038–5072`).
+
+**Not modelled-but-unusable:** observability **10 of 10** and controllability **10 of 10** in all six cells tested. **The shipped LQR actively feeds back on it:** `K_ankle[β]` = 2.461 / 3.974 / 3.280 at 1.31 m/s and 0.433 / 0.586 / 0.646 at 6.47, against `K_ankle[θ]` = 6.082 / 7.006 / 5.159 and 0.927 / 1.048 / 1.093 — **40–63 % of the gain carried on the bank itself.**
+
+**Q3: no frame error. The eighteenth was not here.** A matrix-only identity, read off assembled `A` with no reference to any comment, holds **on every column of all twelve cells**: **`A[3][j] = −( V·(A[5][j] + [j = 4]) + x_f·A[4][j] ) / h`**. Worked at column 5, 1.31 m/s tall: predicted +1.5233e+2, actual +1.5233e+2.
+
+**Genuinely absent, and small:** the `z_d φ̈` half-pair (0.031 m deck height; 3.4a measured it at **3.7 %** of the roll row; `?riderBody=two`'s `feetRoll` adds it), and `capture`'s **deliberate** omission of `Δω × b` (already on the don't-retry list).
+
+**TWO OF MY BRIEF'S CUES WERE WRONG — correct them in any future brief:**
+- `predictiveBalance.ts`'s *"feels and anticipates the board; it does not pretend to steer it"* (at **1031**, repeating at 1205) sits inside the comment on **`DesignWeights.heaveScale`** and is about the board's **heave and pitch** carrying no cost, because neither command can heave or pitch the board. **It is NOT an admission about the across acceleration**, and I offered it as one.
+- **`humanBalance.ts:428` is the KNEES' MOTOR LAG.** The `px = offset.x − height·nx` line is twelve lines on, at **472**. My long-standing note cited 428 and was wrong.
+
+### THE LEAD THIS ROUND ENDS ON, AND I VERIFIED IT MYSELF
+
+> **`PLANT_SPEEDS` runs `4 4.5 5 5.5 6 6.5 7 7.5 8 8.5 9 9.5 10 10.5 11 11.5 12` — seventeen speeds, and the lowest is 4 m/s. `labAt` (`predictiveBalance.ts:618`) clamps with `Math.max(speeds[0], …)`.**
+
+**So at the owner's own falling speeds — 1.16 and 1.31 m/s — the balance controller is designed on the water's derivatives at 4 m/s: a 3× extrapolation.** And today's advisor puts that regime **below planing entirely** (planing starts ≈6.1 m/s) with **the board sinking below ≈3.2–4.3 m/s**, so the clamped-to-4 derivatives describe water the board is not even in.
+
+**This is 3.4k, it is the sharpest lead the track has, and it lands exactly on the owner's bar** (*"should not fall in the lower speed of getting positioning"*). The question: **do the modelled `a_y` and the solved one agree in size at 1.2–1.3 m/s, or does the 4 m/s floor make the controller's model wrong where the owner falls?** Note what it does *not* implicate: the hull's ~100, the clamp, the wave, the placement, or the ankle's range.
