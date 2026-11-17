@@ -33,6 +33,7 @@ The knowledge base of the water-physics advisor: why the game's breaking waves, 
 | [basilisk-profiles.md](basilisk-profiles.md) | The first Basilisk runs: validation against Pick & Feddersen, Padang Padang's first tube, library cost, the profile format |
 | [reef-ledge-runs.md](reef-ledge-runs.md) | The Reef's own ledge in Basilisk, with periodic waves: the step, the thick lip and jet, the tube's time course, Padang's swell lag |
 | [padang-padang.md](padang-padang.md) and [padang-padang-build-sheet.md](padang-padang-build-sheet.md) | The break, and its sourced bed, bearings, tide, swell and wind |
+| [board-roll-stiffness.md](board-roll-stiffness.md) | The surfboard's roll restoring moment under a standing rider: the number, why the bare-board collapse past 20° is an artefact, and why no hull value stops the fall |
 | [breaking.md](breaking.md) | Why the solver's face stays near 17°, the crest-speed trigger, the stop rule, directional spread |
 | [solver-stability.md](solver-stability.md) | Why the biggest Reef swells blow up, what published models do, and the options |
 | [solver-rewrite-sketch.md](solver-rewrite-sketch.md) | What option (a)'s rewrite would take, following FUNWAVE-TVD's form |
