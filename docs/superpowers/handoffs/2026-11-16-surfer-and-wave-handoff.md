@@ -955,3 +955,69 @@ Shown that their own fifth clip holds a deep stance for 1.75–2.9 s where four 
 **Measure the row, do not guess it:** `3.2/inertia.probe.ts` yields `height`/`lower`/`upper`/`BODY_FRONTAL_SHARE` from de Leva's segments — one posture line and a run. **`stanceRoom` already has a 0.45 m row and `hipRange` already covers 0.30–0.45 m**, so only `STANCE_TABLE`/`stanceAt` and `BODY_FRONTAL_SHARE` are keyed on three depths.
 
 **Still unasked, and the default stands:** whether the dip fires **on the owner's input only** (the default, and what is being built) or **automatically at turn entry** as all five clips show. An automatic dip is the game moving their body for them — the boundary Ruling A sits on — **so ask before choosing automatic.**
+
+## STEP 3.5b (PR #392, **NOT MERGED — classifier refused the merge, so it is the owner's**, like #389) — THE FOURTH RUNG AND THE DIP, BUILT; AND MY "IT SELF-RELEASES FOR FREE" IS REFUTED
+
+Switches, both off by default, both pinned `undefined` in `main.ts`'s online overrides with a test reading `main.ts`:
+
+| | URL | what it turns on |
+| --- | --- | --- |
+| the fourth rung | **`?stanceDeep=on`** | `STANCE_TUCK` in the balance's plant **and** a fourth gain-schedule knot at 0.45 m |
+| the dip | **`?deepen=on`** | the owner's **existing crouch key** reaches the tuck's 0.45 m anywhere, and Compress no longer fades it away |
+
+**They are independent — either rides alone — but the dip wants the row with it** (without it, **0.98–1.00 of the dip's live ticks are clamped onto Compress's plant**).
+
+### The measured row
+
+```
+STANCE_TUCK = { depth: 0.45, height: 0.40, lower: 0.857, upper: 2.440 }   BODY_FRONTAL_SHARE_TUCK = 0.2624
+```
+From `3.2/inertia.probe.ts` — de Leva (1996) segments posed at the tuck's hip height (0.78 − 0.45 = **0.33 m** over the deck), read by the same two functions that **reproduce the three shipped rows to the thousandth.** `height` 0.40 is **both** `design.md`'s own tube-tuck row *and* the probe's 0.394 m, which agree. **The posture is the error bar and it was swept, not asserted:** over back 0.10–0.16 m × lean 0.50–0.90 rad, `lower` ±14 %, `upper` ±18 %, share ±7 %. **Nothing tuned to the thousandth.**
+
+Physics confirmed in a test: pendulum 0.55 → 0.40 m (**the missing row was 37.5 % high**), ω₀ 4.22 → 4.95 rad/s (**15 % low**), `m h²` 22.1 → 11.7 (**1.89×**). New: Compress → tuck, the rider's yaw inertia **on the board falls 31 %** while the **twist rotor's rises 25 %**, as the thighs' share moves from the board onto the twist when the knees fold.
+
+### ⚠️ A SECOND CLAMP MY BRIEF MISSED — the row alone would have changed NOTHING
+
+**`SCHEDULE_DEPTHS = [0, 0.195, 0.3]` (`:1220`) and `PredictiveController.blend` clamps to its last knot at `:1370` BEFORE picking the two designs to blend** — and a design is only ever built *at* a knot. **Verified by the caller directly.** So a fourth `STANCE_TABLE` row on its own would have left every design built at depth 0.30 reading Compress's row. The row reaches the gains **only** through a fourth knot (`SCHEDULE_DEPTHS_DEEP`), which is why one switch turns both on. **My brief's "only `STANCE_TABLE`/`stanceAt` and `BODY_FRONTAL_SHARE` are keyed on three depths" was wrong** (`stanceRoom` and `hipRange` were indeed already done, as it said).
+
+### ⚠️ THE TRAP WAS REAL, AND IT COSTS 0.7 s OF COMPRESS'S RIDE
+
+**Population:** Canyon-matched `FaceWater` (1.4 m, 16°, 5.7 m/s, 2.6 m deep — **a fit to Canyon, not Canyon**), **5 entry speeds × 4 sticks = 20 runs per stance per leg**, live window 0.5 s → the frame before `attached` goes false (**no frozen frames**). Per stance, never pooled.
+
+| stance | fell | median ride | rows bit-identical | ride moved |
+| --- | --- | --- | --- | --- |
+| tall | 20/20 → 20/20 | 2.883 → **2.883** | **20 of 20** | 0 of 20 |
+| crouch | 20/20 → 20/20 | 2.950 → **2.950** | 8 of 20 | 3 of 20, by ±0.017 s (one frame) |
+| **Compress** | **20/20 → 20/20** | **3.067 → 2.367** | **0 of 20** | **17 of 20, −1.633 … +0.233 s** |
+| default rider | 20/20 each | unchanged | **60 of 60** | 0 of 60 |
+
+> **The correct pendulum, inertia and bank limit make the ride the owner already has SHORTER — 0.70 s off Compress's median (23 %), worst cell −1.633 s, and the fall count does not budge (20 of 20 → 20 of 20, cause `balance` every run).** Three runs gain up to +0.233 s. One cell, one rider.
+
+Under Compress the plant goes L 0.550 **pinned** → 0.522–0.550 m, ω₀ 4.223 → 4.224–4.341, bank limit 4.38° → 4.38–4.62°, and the achieved depth passes the old 0.30 ceiling in **0.11–0.96 of Compress's live ticks, 20 of 20.** **So default-on would have been "byte-identical" in appearance only** — the trap recorded with Ruling C was real. **Crouch is the proportionality check:** the row's effect scales with how far past 0.30 m the leg actually got.
+
+### ⚠️ THE DIP DOES NOT SELF-RELEASE, AND MY REASON WAS WRONG — I told the owner this twice
+
+`?deepen=on` puts the hips at **0.331–0.353 m = 38–40 %** of the 0.88 m straight leg, **inside the footage's 35–50 % spike band** (20 runs). But:
+
+| hold | reached 0.45 m | time to reach | **rose while still held** |
+| --- | --- | --- | --- |
+| 0.25 s | **0 of 19** | — | **0 of 19 runs, 0 ticks** |
+| 0.50 s | 7 of 19 | 0.450–0.483 s | **0 of 19 runs, 0 ticks** |
+| 0.70 s | 15 of 19 | 0.450–0.517 s | **0 of 19 runs, 0 ticks** |
+| 1.50 s | 15 of 19 | 0.450–0.517 s | **0 of 19 runs, 0 ticks** |
+
+**The dip's duration is the press's duration, full stop. And the reason I gave for a free self-release cannot work: `kneeStrength` bounds the FORCE the legs may push with, not the LENGTH they are held at** — the caller verified it returns `2·KNEE_TORQUE / d`, a force. **Too much load makes the body sink BELOW the rest, never rise.** **I told the owner "it springs back for a physical reason you already own" in two separate messages. That was wrong.** **A self-release needs a mechanism we do not have, and it would be a clock or a new rule. None is built, proposed or hidden.**
+
+What the measurement does give: the leg's own pace needs **0.45–0.52 s** for the last 0.15 m (`CROUCH_ACCELERATION` 6 m/s², `CROUCH_SPEED` 1.5 m/s), so **a 0.25 s press never arrives** and the footage's 0.25–0.7 s band is **only half-reachable**; a 0.5–0.7 s press gives a whole tall → low → tall cycle of **0.85–1.05 s**, inside the footage's 1–1.5 s.
+
+**And the deep stance is a worse place to live, on this cell:** held at the tuck for the whole ride the median is **1.650 s** (`?deepen=on`) or 1.750 s (with the row), against shipped Compress's 3.067 s. **A finding, not a bug** — and note it cuts *against* the four clips' dip reading and *with* video 5's holds being something other than a resting place.
+
+### Seatbelts
+
+**Default byte-identity MEASURED:** same probe on `main` and the branch, no switch set — **140 runs × 38 columns, 0 mismatches** (60 `?rider=new`, 60 default, 20 tuck arm); **the default rider is inert under `?stanceDeep=on` too, 60 of 60 identical with the switch ON.** **Canyon byte check passed on BOTH paths** at 240 steps (grid B 400×451 = 180 400, wrapper prepended): fresh spin-up `e3dbec2465df6c10`/`abb6419d6cca4c3a` identical; both-imported `548f3db7ca81d898`/`475f8c56c9debccc` identical, the pair the handoff already records for a 240-step imported leg. **Caution (3) reproduced on one bundle** — the two paths give different pairs. The 3 600-step reference is **not** quoted as a pass (different step count). Suites: `src/physics` **58 files / 637 passed** (21 expected fails), `src/scene/rig` + `src/game` **70 / 740**, `SurfZoneRunner` **43/43** by hand, `predictiveBalance.test.ts` 22/22, `PhysicalMode.test.ts` 107/107, `tsc -b` clean. **No force, torque, damper, brake, impulse or velocity assignment in the `src/` diff** — the caller read all 35 deletions and all are replacements in place.
+
+### THREE QUESTIONS FOR THE OWNER
+
+1. **The row costs 0.7 s of Compress's median ride on this cell, with falls unchanged at 100 %.** It is the *correct* pendulum, inertia and bank limit — and it makes the ride they already have shorter. **Keep it, or hold it until the dip is ridden with it?**
+2. **Should the dip be automatic at turn entry?** All five clips tie it to entry; what is built is **their input only.**
+3. **Nothing can bring the dip up on its own.** If they want that, it is **a clock or a new rule, and it needs their ruling before anyone builds it.**
