@@ -4977,3 +4977,600 @@ revert on sixteen consecutive rounds:
   crashed run leaves per-frame rows with **no** summary row, so the two files hold different numbers of runs: the
   draft printed a **7.28 s** per-frame record against a **1.100 s** ride. The probe now joins on
   `(stance, entry)` and prints `unjoined` — **0 of 626** — and §9 C4 is that control.
+
+# Part 9 — the 70° clamp cannot move the fall mix, because the classifier's threshold is 45° and a truncation at 70
+cannot carry a reading across it; the roll budget closes to **the last bit** once the stance point's own acceleration
+is in it; and the term a real surfer has that we do not is **the water's own centre of lift travelling across the
+board's beam — ours travels 3.3–19.9 % of it, and the hull answers 11.2–17.2 % of the moment the rider's own weight
+puts on the deck**
+
+Written 2026-11-17 by the build agent (Opus 5, effort high) on branch `claude/rider-clamp-34i`, cut from `main` at
+**2b5574ce** (Part 8's merge plus the handoff), so Part 8 is its base. Its brief is the handoff's own resume items 2
+and 3: lift the clamp so §4b can be read, close the roll budget in one frame, and name the term that is missing.
+**One opt-in switch is added** (`?bankClamp=off`) and **two measurement-only reads** (`AttachedRider.bankRaw` and
+`bankLedger`'s N·m view); the default game is byte-identical and §10 is the control that says so.
+
+## 0. The ten sentences the round is for
+
+1. **Part B's answer first, because the brief asked for it first: the budget closes, exactly, and it closes to
+   machine zero — but only when the stance point's own acceleration is one of the terms.** Over **9 016 frames of 84
+   rides on four arms**, the partition of the body's own moment row and the identity `diagonal + coupling = the sum
+   of the moments` both close at **0.0 × 10⁰ N·m — not small, zero to the last bit** [M]. **P1 upheld.**
+2. **And the budget a force diagram of the body alone would write does NOT close: it is out by 1.24–3.32 ×**
+   `|mTotal|` **at the median of the per-run medians** [M, 24/18/24/18 runs]. **P2 is upheld in its direction and
+   refuted in its size: I predicted ≥ 10 × and it is 1.2–3.3 ×.** The missing term is named, measured and exact —
+   `Σ_{j≠7} A[7][j] x[j] · L / dt`, the stance point accelerating under the feet — and **it is the largest single
+   term in the budget on three of the four arms** (`|mCoup|` 54.3 / 436.6 / 194.7 / 454.9 N·m against `|mTotal|`
+   39.3 / 57.0 / 137.8 / 103.1) [M].
+3. **Part C: the term a real surfer has that we do not is the water's own roll answer, and it is undersized by
+   between 6 × and 60 × depending on which of the game's own three figures you measure it against.** On the board's
+   own roll row the hull's whole water column — pressure, buoyancy, suction, friction, fins, rails — answers
+   **11.2–17.2 %** of the moment the rider's own weight puts on the deck, on **every** arm [M]. Divided by one body
+   weight, that is a centre of lift that has travelled **0.0075–0.046 m** across a **0.232 m** half-beam: **3.3–19.9
+   % of the width the load could use** [M/A]. **The board's hull does not push back where a surfer pushes.**
+4. **The stiffness is the quantity, and it is 12–54 N·m/rad on the ride against the 733 the game's own ankle range
+   was derived from.** `ANKLE_REST_RANGE = 0.25 rad` is `footReach · m g / series` with `series = k K/(k + K)`, which
+   at `k` = `HUMAN_ANKLE_STIFFNESS` = 800 and `DESIGN_PARAMS.mass` = 75 kg solves to **K_hull = 733 N·m/rad** (697 at
+   the reference rider's own 73 kg) [A on the code's own constants]; `rollModel.DESIGN_PARAMS` carries **100**; and `rollModel`'s own comment cites the carve lab's measured **850–1 700** [R]. **Measured: 12–54 N·m/rad
+   over the ride (a fit, R² 0.514–0.822), and 70–153 at trim on a bare board that collapses to zero by 15–20° of
+   heel and reverses past 20°** [M, §5]. **So the ankle and the hull are in series and the series stiffness is the
+   HULL's**: 11.8–50.6 N·m/rad, **1.5–6.3 % of the ankle's own 800**, and the ankle's whole commanded ±0.25 rad buys
+   **3.0–12.6 N·m** of righting against gravity's measured **39–197** [A on two [M]s].
+5. **Part A: the clamp cannot move the fall mix, and the handoff's reason for a clamp round is refuted by
+   arithmetic.** The published classifier's first test is `|bank| > 45°` and the clamp is at **70°**; a reading
+   truncated at 70 is already past 45, so **it cannot cross the threshold in either direction.** Re-read on the
+   unclamped column the mix is **identical on all eight arms** — 14/0/10, 8/0/10, 24/0/0, 15/0/3 — to the run [M].
+   **P8 refuted, and it was my own prediction.**
+6. **But the third population now has a name, and it is one thing.** `other` is **23 of 23** runs across every arm a
+   **balance fall with the body's bank between 20° and 45°** — too banked for the published stall's 20°, not past the
+   sudden kind's 45° [M]. Not one is a non-balance cause, a fast fall under 20°, or a run that did not fall.
+   **The third kind is the mid-bank topple, and it is 10 of 24 on the owner's own face.**
+7. **The clamp is nevertheless truncating the magnitude, which is why it was worth lifting.** On step 3.4h's own
+   shipped arm `|bankFall|` reads **70.0°** and the unclamped column reads **86.8°** at the same falls [M], and
+   3.4h's "70.00 exactly in 21 of 24" is reproduced here as **21 of 24 past the clamp at the fall**. Every ride time,
+   every fall count and every fall kind of 3.4h stands; only the *size* of the bank at the fall was understated.
+8. **Lifting the clamp changes almost nothing, and the control proves the switch is what it says it is.** Four
+   paired arms, `bankClamp` shipped against `off`: **ratio 1.000 on all four medians, 84 of 84 still fall**, and the
+   two riders are **identical in 19 columns on 84 of 84 runs up to the first clamped frame, with no mismatch
+   anywhere** [M]. **P9 refuted as stated** (no arm median moved; two Compress cells moved, 1.483 → 1.583 and
+   1.167 → 1.200), **P10 upheld.**
+9. **Two of my brief's three premises are already dead on `main`, and the third is a category error.** The ankle does
+   **not** carry the whole 33 N·m — its own moment about the contact is **0.2–26.9 N·m** against gravity's **3.7–196.8**
+   [M], so **P4 is refuted and reversed: gravity is the largest entry on the body's row, by 1.4–25 ×, on every arm.**
+   And 3.3h's static "+33.47 against −33.40, net +0.04" does **not** reproduce dynamically: `bdTotal` is
+   **+8.0 to +137.2 N·m** [M], **P5 refuted.** The "52–54 kg·m² against 0.5–1.1" is step 3.3m's refuted diagonal, and
+   this round reproduces 3.3m's correction independently: `bodyHeld` **31.3–37.3** against `1/ankleOwn` **1.15–2.02**,
+   a ratio of **27 ×**, and the inertia ratio `I₀/I_body` is **0.958–6.166** — on two arms the **board is harder to
+   roll than the body's own end** [M].
+10. **What the round does NOT say.** It does not say the hull's roll stiffness is the cause of the fall — it says it
+    is the term the budget is missing a real surfer's version of, and that the three figures the game itself was
+    designed against are all 2–140 × larger than the one it delivers. **No ride was taken and no claim about feel is
+    made** (§8). The owner's bar is unmet on every arm: **84 of 84 fell, Compress 28 of 28.**
+
+## 1. (A) The four reads that had to come first
+
+**R1 [R]. The clamp is on a READING, and the reading is a datum for two forces.** `AttachedRider.frame` writes
+`bank.angle` at three sites — `:5129` (standing, measured), `:5140` (a new mount, square to the deck) and `:5159`
+(the old rider) — each `Math.max(-MAX_BANK, Math.min(MAX_BANK, angle))` with `MAX_BANK = 70°` [R]. That angle is then
+(i) the ankle's own spring datum, `HUMAN_ANKLE_STIFFNESS × (bank.angle − roll − ankleRest) + …` [R, `:3581`], and
+(ii) the body's own frame, `standingBody.frame(heading, bank.angle, bodyFrame)` [R, `:5147`]. **So past 70° the
+spring pulls against a lean the body is not at.** Every *other* `MAX_BANK` in the file bounds a force or a command —
+`SNAP_RAIL_RANGE`, `railPull`'s fixed point, `CARVE_CARRY`'s tangent, the steer's rail hold — and this round leaves
+all of them exactly as they ship, so the switch is one change.
+
+**R2 [R]. The classifier's threshold is BELOW the clamp, which settles the handoff's reason for this round before
+any arm runs.** *"(a) the sudden fall into the face: the body's bank past **45°** at the end; (b) the slow stall:
+cause `balance` with the bank within 20° of upright and the speed through the water under 2.5 m/s; (c) anything
+else"* [R, `docs/research/face-hold-2026-11-10/kinds.py.txt:1–2`]. **45 < 70.** A clamp at 70 can only make a large
+reading smaller *within* the "sudden" class; it can never move a run from "sudden" to anything else, nor the other
+way. The handoff's *"that mix cannot be read until the clamp round has run"* is therefore wrong as reasoning, and
+§2 confirms it as measurement. What the clamp *can* do is hide the bank's own size, and §2 measures that too.
+
+**R3 [R]. The bank's row of the standing solve is a generalized IMPULSE, so a moment comes out of it with no
+derivative in it.** `coupleStanding` writes `rhs[7] += t̂·f − h(τ_ankle + τ_swing)/L` with `f = h·external − m·mismatch`
+and `t̂ = across`, the body's own across axis [R, `AttachedRider.ts`]. The row's unit is N·s — a generalized impulse
+for the linear coordinate `u`, the body's speed across the leg — so **`b[7] · L / dt` is the mean moment over the
+step about the stance point**, at the leg's own lever. The ankle's entry returns exactly `−τ_ankle`; gravity's
+returns `L (m g · t̂)` = `−m g L sin θ_body`, the inverted pendulum's own term. And `A[7][7] = m + h(k h + c)/L²`, so
+`A[7][7] · L² = m L² + h(k h + c)` is `bodyHeld` — the body's own roll inertia about the stance point **as the matrix
+holds it**, which step 3.3m warned is a **diagonal** and not an effective inertia [R, 3.3 README Part 36 §2].
+
+**R4 [R]. The hull's forces are in the HULL's own frame on the roll row, and the ledger's arms are the right ones —
+checked, because this was my first candidate for a frame error and it is not one.** `patchForce` returns
+`out.pressure = −pressure · n̂` with `n̂` the **patch's own normal** [R, `hullForces.ts:406`], and the roll ledger books
+it as `pressure × rollOf(cx, cy, cz)` with `cx = r × n̂` — the hull normal — while `radiation` and `addedMass` are
+booked on `sx = r × û`, the water's surface normal, which is the frame they act in [R, `BoardBody.ts:1544–1556`,
+`:1621–1623`]. **So §5's small stiffness is not step 3.3m's `cos³` arm defect reappearing in the pressure**: that
+defect is in the added-mass term and the added-mass term is excluded from every "hull" figure below, because it
+resists a roll **rate** and not a roll **angle**. My own suspicion is refuted by the read.
+
+## 2. (B) Part A — the fall mix on a column that is not truncated
+
+**All arms `RIDER=new FELT=deck BODY=two`** — the rider the owner rode on 2026-11-16 night — the stance held, the
+stick never touched, 9 s a run, `AHEAD` 0.75, `SIDE` −45. Two faces: **`f73`** = `FACE=1.4,7.32,5.7`, step 3.4h's
+corrected face, which puts the board on **5.50°** at `faceFrac` 0.156, the owner's own water; **`s16`** =
+`FACE=1.4,16,5.7`, the folder's standing face at **12.1°**. Two cells: **`-g`** the glide cell, eight absolute
+entries 4.435–10.435 m/s × three stances = 24 runs; **`-l`** the owner's own low-speed cell, 1–6 m/s × three = 18.
+A `c` suffix is `bankClamp: 'off'`.
+
+| **[M]** the published classifier, read twice on the same runs | runs | fell | med s | **published mix** s/st/o | \|bank\| at the fall, med | **RAW mix** | **\|bankRaw\| at the fall, med (span)** | past the clamp at the fall |
+|---|---|---|---|---|---|---|---|---|
+| **`f73-g`**, 5.50°, clamp ships | 24 | **24** | 4.650 | **14/0/10** | 48.5° | **14/0/10** | **48.5° (33–86)** | 6 of 24 |
+| `f73-gc`, clamp off | 24 | **24** | 4.650 | 14/0/10 | 48.5° | 14/0/10 | 48.5° (33–82) | 6 of 24 |
+| **`f73-l`**, 5.55°, clamp ships | 18 | **18** | 1.450 | **8/0/10** | 42.6° | **8/0/10** | **42.6° (29–89)** | 6 of 18 |
+| `f73-lc`, clamp off | 18 | **18** | 1.450 | 8/0/10 | 42.6° | 8/0/10 | 42.6° (29–89) | 6 of 18 |
+| **`s16-g`** — step 3.4h's own `c-a75-g-abs` | 24 | **24** | 1.467 | **24/0/0** | **70.0°** | **24/0/0** | **86.8° (53–90)** | **21 of 24** |
+| `s16-gc`, clamp off | 24 | **24** | 1.467 | 24/0/0 | 86.0° | 24/0/0 | 86.0° (53–90) | 21 of 24 |
+| **`s16-l`** — 3.4h's own `a75-l-off` | 18 | **18** | 1.033 | **15/0/3** | 63.7° | **15/0/3** | 63.7° (29–89) | 7 of 18 |
+| `s16-lc`, clamp off | 18 | **18** | 1.033 | 15/0/3 | 63.7° | 15/0/3 | 63.7° (29–81) | 7 of 18 |
+
+**Four readings.**
+
+1. **The mix does not move, on any arm, by a single run — and the reason is R2's arithmetic and not a null result.**
+   The clamp sits at 70° and the classifier's first test is 45°, so truncating a reading at 70 cannot carry it across
+   45. **The handoff's and step 3.4h's "the mix cannot be read until the clamp round has run" is refuted**, and it is
+   refuted the cheap way: by reading the two thresholds against each other. **P8, my own prediction, is refuted with
+   it** — I predicted the mix would move toward "sudden" and the "other" population halve.
+2. **What the clamp DID hide is the bank's own size: 16.8° of it on the shipped face.** `s16-g`'s `|bankFall|`
+   reads **70.0°** clamped and its `|bankRaw|` **86.8°** at the same falls, with runs out to **90°** [M] — so the
+   published column understated the lean at the fall by **19 % of its true size** [A on two [M]s]. **Step 3.4h's
+   "`bankFall` is 70.00 exactly in 21 of 24" is reproduced exactly** as 21 of 24 runs past the clamp at the fall.
+   So every figure 3.4h published stands; the one sentence that needed this round is *"part of 'sudden 24 of 24 → 14
+   of 24' is how many runs reached MAX_BANK"* — and the answer is **none of it**.
+3. **The gentle face's falls really are at a smaller bank, unclamped.** `f73-g` 48.5° and `f73-l` 42.6° against
+   `s16-g`'s 86.8°, on the uncensored column, at 1.31 and 1.16 m/s through the water against 6.47 [M]. **3.4h's
+   "the same fall in slow motion" survives the clamp being lifted off it.**
+4. **And the clamp is rare on the owner's own water.** The median run on `f73-g`, `f73-l` and `s16-l` has **0.0 %**
+   of its frames clamped; `s16-g`'s has 8.4 % [M]. Over the whole window the count is **38 of 4 743**, **36 of 1 148**,
+   **161 of 1 908** and **37 of 1 217** frames [M].
+
+### 2b. What `other` IS — the third population, named
+
+| **[M]** `other`, split into the classifier's own disjoint complement, read on `bankRaw` | `other` | **bank 20–45°, a balance fall** | bank ≤ 20°, through ≥ 2.5 | bank ≤ 20°, cause ≠ balance | 20–45° but not balance | did not fall |
+|---|---|---|---|---|---|---|
+| `f73-g` / `f73-gc` | 10 of 24 | **10** | 0 | 0 | 0 | 0 |
+| `f73-l` / `f73-lc` | 10 of 18 | **10** | 0 | 0 | 0 | 0 |
+| `s16-g` / `s16-gc` | 0 of 24 | 0 | 0 | 0 | 0 | 0 |
+| `s16-l` / `s16-lc` | 3 of 18 | **3** | 0 | 0 | 0 | 0 |
+
+**`other` is one thing, in 23 of 23 runs: a balance fall with the body's bank between 20° and 45°.** Not a
+non-balance cause, not a fast fall under 20°, not a run that survived. The two published kinds leave a gap between
+their own thresholds and **the whole third population lives in it** — and on the owner's own face it is **10 of 24**
+of the glide cell and **10 of 18** of his own. The fall causes bear it out: `balance` in **23 of 24** on both glide
+arms and **18 of 18** on both low arms, the one exception a `lost board` [M].
+
+### 2c. The switch's own A/B, and the control that it is one change
+
+| **[M]** `bankClamp` shipped → `off`, same face, entries and stances | runs | fell | med s | ratio | runs with a clamped frame | **identical in 19 columns up to the first clamped frame** | first mismatch |
+|---|---|---|---|---|---|---|---|
+| `f73-g` → `f73-gc` | 24 | 24 / 24 | 4.650 → 4.650 | **1.000** | 7 of 24 | **24 of 24** | none |
+| `f73-l` → `f73-lc` | 18 | 18 / 18 | 1.450 → 1.450 | **1.000** | 6 of 18 | **18 of 18** | none |
+| `s16-g` → `s16-gc` | 24 | 24 / 24 | 1.467 → 1.467 | **1.000** | 21 of 24 | **24 of 24** | none |
+| `s16-l` → `s16-lc` | 18 | 18 / 18 | 1.033 → 1.033 | **1.000** | 7 of 18 | **18 of 18** | none |
+
+**Three readings.** **(1)** The switch stops no fall: **84 of 84** on both sides, Compress **28 of 28**. **(2)** It
+moves no arm's median — ratio 1.000 four times — and **P9 is refuted as stated**; what it does move is two Compress
+cells, `s16-gc` **1.483 → 1.583 s** and `s16-lc` **1.167 → 1.200**, both *longer*, on 8 and 6 runs. **(3)** The
+control holds: the two riders are bit-identical in 19 columns on **84 of 84** runs until the clamp first bites, with
+**no mismatch at any frame of any run** — so the switch changes the rider **only** where it says it does.
+**P10 upheld.**
+
+## 3. (B) Part B — the roll budget about the contact, closed, with the residual printed
+
+**The window, stated.** Every row is a **median of the per-run medians** over `t > 0.2 s` (the folder's own mount
+filter) to the fall, on the frames the standing 8×8/9×9 decided whole and the body banked through. `early` is
+`t` 0.2–0.7 s, step 3.4h's matched age, where step 3.3l put the fall's start. **Every term is a mean over its own
+frame** — the ledger's own step mean — and an instantaneous value at the fall frame is a different quantity, printed
+only in §2.
+
+| **[M]** window `ride`, N·m | runs | frames | **\|mTotal\|** the moments' sum | **\|mDiag\|** `A[7][7]x[7]L/dt` | **\|mCoup\|** the stance point's own | opposed in sign | **single body** `bodyHeld × ownAcc` | **\|residual\|** | **resid / \|mTotal\|** | split max | resid max |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **`f73-g`**, 5.50° | 24 | 4 743 | **39.3** | 29.8 | **54.3** | 71.5 % | **1.0** | **50.7** | **1.29** | **0.0e+0** | **0.0e+0** |
+| **`f73-l`**, 5.55° | 18 | 1 148 | **57.0** | **464.5** | **436.6** | **95.4 %** | −28.8 | **189.3** | **3.32** | **0.0e+0** | **0.0e+0** |
+| **`s16-g`**, 12.1° | 24 | 1 908 | **137.8** | 87.4 | **194.7** | 80.0 % | 24.5 | **171.1** | **1.24** | **0.0e+0** | **0.0e+0** |
+| **`s16-l`**, 12.3° | 18 | 1 217 | **103.1** | **519.8** | **454.9** | **93.6 %** | 47.6 | **263.0** | **2.55** | **0.0e+0** | **0.0e+0** |
+| the same four, window `early` | — | 696 / 515 / 696 / 487 | 41.0 / 39.6 / 90.9 / 95.8 | 15.2 / **254.0** / 47.9 / **589.1** | 53.9 / **251.4** / 132.1 / **572.2** | 82.8 / 96.6 / 79.3 / 96.6 % | −8.8 / −6.2 / −8.1 / 20.6 | 51.6 / 88.6 / 121.9 / 237.1 | 1.26 / 2.24 / 1.34 / 2.48 | 0.0e+0 | 0.0e+0 |
+
+**Six readings, and the first two are the brief's own question.**
+
+1. **The budget closes, and it closes exactly.** `Σ sources − the whole row` is **0.0 × 10⁰ N·m** and
+   `diagonal + coupling − the sum of the moments` is **0.0 × 10⁰ N·m**, as maxima over **9 016 frames** of 84 rides
+   on four arms [M]. Not "below a tolerance": the two controls are **zero to the last bit**, because the partition is
+   of the right-hand side the game assembled and the split is of the row the game solved. **P1 upheld, and nothing in
+   this section may be quoted without it.**
+2. **The single-body budget does NOT close, and it is out by 1.24–3.32 ×.** `bodyHeld × ownAcc` — what a force
+   diagram of the body alone puts on the left — is **1.0 / −28.8 / 24.5 / 47.6 N·m** against moments summing to
+   **39.3 / 57.0 / 137.8 / 103.1** [M]. **P2 is upheld in direction and refuted in size: I predicted ≥ 10 × and it
+   is 1.2–3.3 ×.** My licence for the 10 × was **one frame of one smoke run**, where it reads 33 ×; the ride's
+   median is a different quantity and this is that error made in my own prediction file.
+3. **The missing term is the stance point accelerating under the feet, it is exact, and it is the budget's largest
+   term on three of four arms.** `|mCoup|` is **54.3 / 436.6 / 194.7 / 454.9 N·m** [M]. It is not a fudge and not a
+   residual: it is `Σ_{j≠7} A[7][j] x[j] · L / dt`, the other columns of the row the solve already writes, and
+   `coupleStanding`'s own assembly says what that is. Row 7 carries `m t̂` on the board's three translations and
+   `m (b × t̂)` on its three rotations [R], so the sum is `m t̂ · (Δv + Δω × b) · L / dt` — **the rider's mass times
+   the across component of the STANCE POINT's own acceleration, at the leg's lever** [A on the code's own lines].
+   It is the term an inverted-pendulum force diagram omits by assuming its base is still. **The body's lean is not what
+   the moments on it do to it; it is mostly what the deck does underneath it.**
+4. **The two internal terms nearly cancel, and on the owner's own cell they cancel by an order of magnitude.**
+   `|mDiag|` 464.5 against `|mCoup|` 436.6 on `f73-l` and 519.8 against 454.9 on `s16-l`, opposed in sign in
+   **95.4 %** and **93.6 %** of frames, for a net of 57.0 and 103.1 [M]. **The low-speed cell the owner's bar is
+   about is where the cancellation is tightest** — an 8–9 × cancellation, which is step 3.3p's conditioning finding
+   seen in newton-metres instead of in the model's own rows.
+5. **`P3 is refuted.`** I predicted `|mDiag|` and `|mCoup|` would each be ≥ 5 × `|mTotal|` and opposed in ≥ 90 % of
+   frames. On `f73-g` they are **0.76 ×** and **1.38 ×**, and the opposed share is **71.5 %** [M]. **The cancellation
+   is a property of the owner's low-speed cell, not of the budget**, and a prediction that pooled them was wrong.
+6. **And the single-body left-hand side is near zero on the glide arm, which is the one honest piece of good news.**
+   `bodyHeld × ownAcc` = **1.0 N·m** over 4 743 frames of `f73-g` [M]: at the median the body's own lean is barely
+   accelerating at all while 39.3 N·m of moment acts on it. **The median frame of the owner's own face is not a body
+   toppling.** The fall is in the tail and at the end, which is where §2's 42.6–48.5° at 1.16–1.31 m/s lives.
+
+### 3a. Every moment on the body's own row, by source
+
+| **[M]** window `ride`, N·m, signed median of the per-run medians | runs | **ankle** | **gravity** | water on body | carry | swing | assist | limbs | **Σ = mTotal** | the ankle's τ |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `f73-g` tall / crouch / **compress** | 8 ea | 0.2 / −1.2 / **−3.9** | **38.7 / 42.0 / 43.8** | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 40.8 / 40.2 / **39.3** | 1.0 / 1.7 / 4.3 |
+| `f73-l` tall / crouch / **compress** | 6 ea | 0.4 / 7.4 / **9.5** | **11.3 / 3.7 / 3.7** | 0.00 / 0.03 / 0.45 | 0.00 | 0.20 / 0 / 0 | 0.00 | 0.00 | 18.5 / 13.6 / **9.0** | 2.4 / −3.9 / −6.2 |
+| `s16-g` tall / crouch / **compress** | 8 ea | −19.8 / −26.3 / **−26.9** | **196.8 / 184.0 / 172.4** | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 175.3 / 138.6 / **133.5** | 23.6 / 28.6 / 28.0 |
+| `s16-l` tall / crouch / **compress** | 6 ea | −12.5 / 2.5 / **24.7** | **93.4 / 32.3 / 83.4** | 0.00 / 0 / 1.61 | 0.00 | 0.00 | 0.00 | 0.00 | 87.5 / 40.0 / **76.4** | 28.5 / 6.7 / 6.3 |
+
+**Three readings.**
+
+1. **`P4 is refuted and reversed: gravity is the largest entry, not the ankle, on every arm and every stance.**
+   Gravity's own moment about the stance point is **3.7–196.8 N·m** against the ankle's **0.2–26.9** — a factor of
+   **1.4 to 25** [M]. And gravity's entry is exactly `−m g L sin θ_body`, so it is readable as an angle: on `f73-g`
+   its 38.7 / 42.0 / 43.8 N·m at `L` = 0.849 / 0.654 / 0.550 m is a body leaning **3.6° / 5.0° / 6.4°** off its own
+   feet at `m` = 73 kg [A on three [M]s per stance], against §5's `|bank|` median of **5.75°** **pooled over the
+   three stances** — the same order from two independent columns, and **not** a tie, because the two populations are
+   not the same one.
+2. **So my brief's "the ankle already carries the whole 33 N·m" is wrong as a statement about the body's roll.** The
+   33.47 N·m of step 3.3h is a **static roll balance on the BOARD**, which §3b reads dynamically and finds does not
+   hold either. What carries the body against gravity here is **not the ankle**: it is `mCoup`, the stance point
+   accelerating — which is physically right (a surfer leans into a turn and the board's own lateral acceleration
+   holds him up) and is exactly why the hull's answer in §3b and §5 is the quantity that matters.
+3. **The water on the body, the carry, the swing, the assist and the limbs are all ~0.00 N·m**, on every arm and
+   stance [M]. The `assist` entry is booked anyway so the partition is read rather than assumed — `compressAssist`
+   returns at once on `newRider` [R] — and it reads 0.00, which is that control.
+
+### 3b. The board's own roll row, by source — and 3.3h's static balance does not hold dynamically
+
+| **[M]** window `ride`, N·m about `rollAxis` | runs | **bdTotal** | pressure | buoyancy | suction | friction | fins | rails | addedMass | gyro | **gravity (the rider's own)** | **ankle** |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **`f73-g`** | 24 | **+38.91** | −2.89 | −0.77 | 0.00 | 0.01 | −0.20 | 0.03 | −0.63 | −0.00 | **+44.49** | **0.00** |
+| **`f73-l`** | 18 | **+8.03** | +3.34 | −0.42 | 0.00 | 0.01 | 0.60 | 0.04 | 0.25 | 0.02 | **+3.59** | **0.00** |
+| **`s16-g`** | 24 | **+137.18** | **−25.72** | −3.67 | 0.00 | 0.02 | −0.11 | 0.11 | −3.14 | −0.00 | **+191.62** | **0.00** |
+| **`s16-l`** | 18 | **+34.10** | +12.95 | +2.48 | 0.00 | 0.02 | 0.26 | 0.00 | 0.23 | 0.00 | **+33.75** | **0.00** |
+
+**Three readings.**
+
+1. **`P6 upheld, as a read: the ankle books exactly 0.00 on the board's roll row, on every frame of every arm.**
+   `coupleStanding` writes the ankle's torque into row 7 alone and the board's reaction is carried by the kinematics
+   [R], and step 3.3m's counterfactual showed booking it twice gives the ankle *less* authority, not more. **So "the
+   board's roll spring" and "the water on the rail" — two of the five terms my brief asked me to put in the body's
+   budget — are not on the body's row at all.** They reach the body only through `mCoup`. That is a read, and it is
+   the structural reason §5's stiffness is the quantity to measure rather than a moment on the body.
+2. **`P5 is refuted: the board's roll row does not nearly cancel.`** `bdTotal` is **+8.0 to +137.2 N·m**, which is
+   0.87 / 2.24 / 0.72 / 1.01 of its own largest entry [A on the table] — not the ≤ 0.25 I predicted. **Step 3.3h's
+   "+33.47 against −33.40, net +0.04" is a static balance and this round does not reproduce it on a ride.**
+3. **And the hull answers a tenth to a sixth of what the rider puts on the deck.** Summing the six water entries the
+   pressure field owns — pressure, buoyancy, suction, friction, fins, rails — against the rider's own `gravity`
+   entry: **5.40 / 8.77 / 32.98 / 17.47 N·m against 44.49 / 78.45 / 191.62 / 145.74**, a ratio of **0.121 / 0.112 /
+   0.172 / 0.120** [M]. **11.2–17.2 %, on all four arms, on two faces, at two speed bands.** §4 is what that is.
+
+## 4. (B) Part C — the term a real surfer has that we do not, argued from §3's numbers
+
+**The question the budget forces.** §3a says gravity applies **39–197 N·m** about the stance point and the ankle
+answers **0.2–26.9**. §3 says the body nevertheless barely accelerates in lean at the median, because `mCoup` — the
+stance point's own acceleration — carries the rest. **So the thing that holds a surfer up is the board accelerating
+under him, and the thing that lets him choose that acceleration is the water pushing back on a loaded rail.** §3b
+measures that push at **11.2–17.2 %** of what he is putting in. **That is the term.**
+
+| **[M]/[A]** the same four arms, window `ride` | **the hull's six water entries, N·m** | **the rider's own, N·m** | **hull / rider** | **the CoP travel it implies, m** | **of the 0.232 m half-beam** | rail ° med |
+|---|---|---|---|---|---|---|
+| `f73-g`, 5.50° | **5.40** | 44.49 | **0.121** | **0.0075** | **3.3 %** | 3.96 |
+| `f73-l`, 5.55° | **8.77** | 78.45 | **0.112** | **0.0122** | **5.3 %** | 15.36 |
+| `s16-g`, 12.1° | **32.98** | 191.62 | **0.172** | **0.0461** | **19.9 %** | 19.28 |
+| `s16-l`, 12.3° | **17.47** | 145.74 | **0.120** | **0.0244** | **10.5 %** | 27.37 |
+
+`CoP travel` is the hull's own roll moment divided by **one body weight, 716 N** — how far across the board the
+water's centre of lift has had to move to make that moment — against the board's own half-beam, **0.232 m** on the
+0.464 m beam [R, `boardReference.ts`]. It is **[A] on one [M] and one [R]**, and it assumes the whole moment is the
+load's own centre moving, which is the most generous reading available: any part of the moment that is not the load
+shifting makes the travel smaller still.
+
+**The argument, in four steps, each from a number above.**
+
+1. **A planing board's roll answer is a load times a lever, and the lever available is the beam.** With the rider's
+   716 N and the centre of lift free to reach the rail, the restoring moment available is **716 × 0.232 = 166 N·m**
+   [A]. **Ours delivers 5.4–33.0.** The load is there; the lever is not being used.
+2. **As a stiffness, that is 12–54 N·m/rad on the ride, and the game's own three figures for it are 100, 733 and
+   850–1 700.** §5 measures the stiffness two ways. **Every one of the game's own design figures is 2–140 × larger
+   than what the hull delivers**, and the largest of them is the one the *carve lab measured* [R].
+3. **The ankle and the hull are in SERIES, so the series stiffness is the hull's, and the ankle's own 800 N·m/rad
+   is irrelevant to it.** The code says so itself: `bankAuthority`'s `series = k K_hull/(k + K_hull)` [R,
+   `rollModel.ts:185`]. At `k` = `HUMAN_ANKLE_STIFFNESS` = 800 [R] and the measured `K_hull` = 12–54, **series = 11.8–50.6 N·m/rad — 1.5–6.3 % of
+   the ankle's own**, and `share = k/(k + K_hull)` = **0.937–0.985**, meaning **94–99 % of every ankle correction
+   rolls the board instead of righting the body** [A on the code's own formula with this round's [M]].
+4. **And so the ankle's whole commanded range buys a fraction of gravity's own term at the lean the falls reach.**
+   `ANKLE_REST_RANGE` is ±0.25 rad; at the measured series stiffness that is **3.0–12.6 N·m** of righting [A].
+   Against the **ride-median** gravity term that is **7–33 %** on the glide arm at 5.50° (38.7–43.8 N·m) and
+   **2–7 %** on the steep one (172.4–196.8) [M]. **On the owner's own low-speed cell it is adequate at the median
+   and nowhere near adequate at the fall**: the ride-median gravity term there is only 3.7–11.3 N·m, but his six
+   Compress runs on `f73-l` end at a median **52.3°** of unclamped bank, where gravity's own term is
+   `m g L sin θ` = **316 N·m** at that stance's own `L` = 0.558 m [A on two [M]s] — **25 to 105 × the whole
+   commanded range.** (The median is of six runs and the span of their own banks is 34.4–81.3°, so the figure is
+   quoted with its population and not as a property of the cell.) Nine rounds have asked why widening,
+   bounding or re-deriving the ankle's range changed nothing. **This is why: the range is multiplied by a stiffness
+   that is 1/27th of the one its own formula was solved at.**
+
+**The term, named: the hull's hydrodynamic roll stiffness — the water's own centre of lift travelling across the
+beam as the rider loads a rail.** It is in the brief's own list as *"the foot's pressure distribution across the
+board's width"*, and the measurement moves which side of that contact is the limiting one: **the foot's pressure
+is not the short side — the water's is.** The foot can reach its own 0.13 m sole edge (3.3i: the joint is at its
+bound in 1 of 72, so it is not even trying); the water's centre of lift travels **3.3–19.9 %** of its 0.232 m.
+
+**What this is NOT, named one by one, because four of these have been proposed and closed on this track.**
+- **Not the roll inertia.** Step 3.3m sourced it and found it generous (1.7 × the planing value) [R], and §5
+  reproduces its numbers independently. An inertia resists a **rate**; this is a missing **spring**.
+- **Not the ankle's own stiffness.** 800 N·m/rad, already above a braced human's [R, 3.3i], and in series with
+  12–54 it cannot matter: `share` is 0.937–0.985.
+- **Not counter-roll at the ankle, hip or whole body.** Each lowers the roll and none moves the fall (3.2w/x/y) —
+  and §4 step 3 says why: they all push against the same compliance.
+- **Not the board's width.** The width is there (0.464 m); **the water is not using it.**
+- **Not added mass on the wall.** The brief's second candidate. `addedMass` on the board's roll row is
+  **−3.14 to +0.25 N·m** [M] — two orders under the rider's own — and it is an inertia besides.
+- **And not the clamp.** §2.
+
+## 5. (B) The stiffness, measured twice, with the second one a static control
+
+**The ride's own fit, over the window, per run, N·m/rad** — and it is a **fit**, labelled as one, of the hull's six
+water entries against the board's heel against the water:
+
+| **[M]** window `ride` | runs | `bodyHeld` kg·m² | **`1/ankleOwn`** kg·m² | **`1/\|ankleDeck\|`** kg·m² | `I₀/I_body` | ankle authority | **K_hull, fit, N·m/rad** | **R² of that fit** |
+|---|---|---|---|---|---|---|---|---|
+| `f73-g` | 24 | 31.32 | **1.15** | 1.229 | **0.958** | 0.511 | **−35** | 0.822 |
+| `f73-l` | 18 | 31.41 | **1.30** | 1.368 | **1.190** | 0.496 | **−12** | 0.514 |
+| `s16-g` | 24 | 31.33 | **1.71** | 0.674 | **2.548** | 0.287 | **−54** | 0.769 |
+| `s16-l` | 18 | 37.34 | **2.02** | 0.461 | **6.166** | 0.204 | **−18** | 0.588 |
+
+**The static control, because a fit over a trajectory confounds the heel with the speed, the trim and the depth.**
+A **bare board** (no rider, so none of the ride's dynamics is in it) on a flat free surface, driven forward at a
+**held** speed and **held** at a heel about its own long axis, the roll ledger read after 40 steps. One deterministic
+cell per row, so **there is no population here to take a median over**, and the pose is held rather than trimmed, so
+the magnitudes are a bare board's and **only the shape transfers** — which is the whole point of printing it.
+
+| **[M]** `hull` N·m (bare board, held pose) | heel 0° | 2° | 5° | **10°** | **15°** | **20°** | 30° |
+|---|---|---|---|---|---|---|---|
+| 4 m/s | −0.00 | −2.44 | −4.89 | −7.93 | −8.49 | −9.26 | −8.63 |
+| 6 m/s | 0.00 | −3.68 | −7.39 | −11.10 | −11.30 | −12.46 | −11.52 |
+| 8 m/s | −0.00 | −5.33 | −10.75 | −14.60 | −15.16 | −15.95 | −15.05 |
+| **the stiffness `dτ/dφ`, N·m/rad, at 8 m/s** | **−152.6** | −123.2 | −66.4 | **−25.3** | **−7.7** | **+0.4** | **+5.1** |
+| the same at 6 m/s | −105.4 | −84.7 | −53.2 | −22.4 | −7.8 | −0.8 | +5.4 |
+| the same at 4 m/s | −69.9 | −56.0 | −39.3 | −20.6 | −7.6 | −0.5 | +3.6 |
+| the same at 0 m/s (hydrostatic alone) | −34.3 | −33.8 | −29.5 | −17.0 | −4.7 | −0.3 | +0.8 |
+| the wetted area, m², at 8 m/s | 0.0412 | 0.0999 | 0.1527 | 0.1826 | 0.1987 | 0.2191 | 0.2510 |
+
+**Five readings.**
+
+1. **At trim the hull is stiff and it scales with speed: 70 / 105 / 153 N·m/rad at 4 / 6 / 8 m/s**, against 34 at
+   rest [M]. So the hydrodynamic part exists and is the larger part. **It is the only figure in this round that is
+   the same order as the game's own `DESIGN_PARAMS.hullStiffness = 100`.**
+2. **And it collapses, to nothing, by the heel every ride reaches.** 153 → **25** by 10°, **−7.7** by 15°, **+0.4**
+   at 20° and **+5.1** at 30° at 8 m/s, and the same shape at every speed [M]. The rides' own median rail is
+   **3.96–27.37°** (§4's table) and the bank at the fall is **42.6–86.8°** (§2). **Past 20° the hull stops
+   resisting the roll and begins to assist it.**
+3. **It is not the wetted area: the area GROWS** 0.041 → 0.251 m² across the sweep while the moment saturates at
+   **−9 to −16 N·m** [M]. This is step 3.3m's §4 reading 1 reappearing in a different quantity, and §1 R4 is the
+   read that says the *mechanism* is not the same one: the pressure is in the hull's frame with the hull's arm.
+4. **So the fit and the control agree on the number that matters.** The ride's fit gives **12–54 N·m/rad** over rails
+   of 4–27°, and the control gives **−7.7 to −25.3** over heels of 10–15° — the band the rides live in [M]. The
+   trim-stiffness of 70–153 is real and is **not** what the ride is operating at.
+5. **And this round reproduces step 3.3m's two corrections independently, which is the tie between the two rounds.**
+   `1/ankleOwn` = **1.15–2.02 kg·m²** against 3.3m's 1.00–2.52; `1/|ankleDeck|` = **0.461–1.368** against its
+   0.650–1.130; the authority **0.204–0.511** against its 0.214–0.488; `bodyHeld` **31.3–37.3** against its
+   22.22–52.82 [M both]. **The inertia ratio is 0.958–6.166 — on `s16-g` and `s16-l` the board is 2.5 × and 6.2 ×
+   HARDER to roll than the body's own end.** My brief's "0.5–1.1 against 52–54, so the ankle keeps 0.25–0.40" is a
+   diagonal divided by an effective inertia, and **it is dead twice over.**
+
+## 6. The owner's bar
+
+> *"In compress the surfer should not fall in the lower speed of getting positioning in a wave … because the center
+> of gravity is supposed to do that."* **100 %, not "fewer".**
+
+| **[M]** Compress only, the stick never touched | runs | fell | median s | the mix, on the unclamped column |
+|---|---|---|---|---|
+| `f73-g`, the owner's own 5.50°, glide entries | 8 | **8** | 4.650 | 5/0/3 |
+| `f73-l`, the owner's own 5.55°, **his own 1–6 m/s** | 6 | **6** | **1.450** | 4/0/2 |
+| `s16-g`, 12.1° | 8 | **8** | 1.483 | 8/0/0 |
+| `s16-l`, 12.3°, his own 1–6 m/s | 6 | **6** | 1.167 | 5/0/1 |
+| with `bankClamp: 'off'`, all four | 28 | **28** | 4.650 / 1.450 / **1.583** / **1.200** | the **mix** unchanged, run for run |
+
+**28 of 28, both sides of the switch. The bar is not met and this round does not move it.** What it moves is the
+reason, and the reason is on his own cell: his six Compress runs on `f73-l` fall at **34.4 / 36.0 / 46.0 / 52.3 /
+71.4 / 81.3°** of unclamped bank, a median of **52.3°**, where gravity's own moment about his feet is
+`m g L sin θ` = **316 N·m** at `L` = 0.558 m [A on two [M]s]. At §4's series stiffness of **11.8–50.6 N·m/rad** the
+whole ±0.25 rad his ankle may command is **3.0–12.6 N·m** — **a twenty-fifth to a hundredth of it** — whatever the
+stance does. *"The center of gravity is supposed to do that"* is exactly right, and the hull
+is what is not letting it: **94–99 % of every correction he makes rolls the board instead.**
+
+## 7. What I refuted
+
+1. **The handoff's own reason for this round: *"that mix cannot be read until the clamp round has run"*.** The
+   classifier's threshold is **45°** and the clamp is **70°**; a truncation above a threshold cannot carry a reading
+   across it. The mix is **identical on all eight arms, run for run** [M], and the read that settles it is two
+   constants against each other (§1 R2).
+2. **My own P8**, which predicted the mix would move toward "sudden" and halve the "other" population. It moved by
+   **zero runs**. The prediction and its reasoning are both in `34i-predictions.md` at `36105b1a`.
+3. **My brief's premise that the ankle carries the whole 33 N·m.** Gravity's moment about the stance point is
+   **1.4–25 × the ankle's**, on every arm and stance [M]. **P4 refuted and reversed.**
+4. **Step 3.3h's static roll balance, as a statement about a ride.** +33.47 against −33.40, net +0.04 does not
+   reproduce: `bdTotal` is **+8.0 to +137.2 N·m** and the hull answers **11.2–17.2 %** of the rider's own entry [M].
+   **P5 refuted.** 3.3h's own measurement is not withdrawn — it was static and it was right as such.
+5. **My brief's "the board's roll inertia is 0.5–1.1 against the body's 52–54".** A diagonal against an effective
+   inertia, already refuted by step 3.3m on `main`, and reproduced here: the ratio is **0.958–6.166** and on two arms
+   the board is the **harder** end [M].
+6. **My own P2 and P3 in their sizes.** The single-body budget is out by **1.24–3.32 ×**, not ≥ 10 ×, and the two
+   internal terms are each ≥ 5 × the net **only on the owner's low-speed cell**, not on the glide arm (0.76 × and
+   1.38 ×) [M]. My licence for the 10 × was **one frame of one smoke run**, which reads 33 ×. **That is this
+   round's own instance of the error this track keeps making, and it is in my prediction file in my own hand.**
+7. **My own first candidate for a frame error, refuted by reading it.** I suspected the roll ledger booked the
+   planing pressure on the water's surface normal, which would have made §5's collapse step 3.3m's `cos³` arm defect
+   in a new place. It books it on `r × n̂`, the hull's own normal, and the added-mass entries on `r × û` — both right
+   [R, §1 R4].
+8. **My own P9 as stated.** No arm's median moved at all with the clamp lifted; four ratios of **1.000** [M].
+
+### 7b. The ten predictions, scored against the file committed before the arms (`36105b1a`)
+
+**Three upheld (P1, P6, P10), five refuted (P3, P4, P5, P8, P9-as-stated), two half (P2, P7).** The scorecard is
+`results/34i/34i-predictions-scored.md`, line by line against the committed file. **Two of the refutations are of my
+own reasoning rather than of a size** — P8, which a comparison of two constants would have settled before I wrote
+it, and P7, where I named the wrong face for step 3.4h's own "21 of 24" figure.
+
+## 8. What I will not claim
+
+1. **I will not claim the hull's roll stiffness is the cause of the fall.** It is the term the budget is missing a
+   real surfer's version of, and the three figures the game was designed against are 2–140 × larger than the one it
+   delivers. **No counterfactual was run on it**, so "raise it and he stops falling" is not measured and I am not
+   offering it. Step 3.3m's own warning stands: *nobody has measured `A₄₄` for a flat, surface-piercing planing
+   surface at beam Froude 3.5 and 20–60° of roll*, and the same is true of its stiffness.
+2. **I will not call `166 N·m` the right answer.** It is `716 × the half-beam` — the moment a load makes if its own
+   centre of lift reaches the rail — and a real board's centre of lift does not reach its rail at every heel. It is
+   an **upper bound on one mechanism**, and it is in §4 as a scale, not a target.
+3. **`K_hull` from the ride is a FIT** (R² 0.514–0.822), over a window in which the speed, the trim and the depth
+   all move. The static control is a **bare board at a held pose**, so its magnitudes are not the loaded ones. I
+   quote the two as agreeing on an **order** over the heels the rides reach, and on nothing finer.
+4. **The CoP travel is [A] on one [M] and one [R]**, and it assumes the whole hull moment is the load's own centre
+   moving — the most generous reading there is. Any other part of that moment makes the travel smaller.
+5. **I will not re-interpret a single one of step 3.4h's published numbers.** §2 reproduces its arms **to the digit**
+   (§9 C1) and finds its tables right; the only thing it changes is the *size* of the bank at the fall on the steep
+   face, 70.0 → 86.8°, which 3.4h itself flagged and declined to quote.
+6. **No ride was taken and nothing here is a claim about feel.** The owner rides and judges.
+7. **"The body barely accelerates in lean at the median" is a median, not a ride.** `f73-g`'s single-body left-hand
+   side is 1.0 N·m over 4 743 frames and its rides still end at 42.6–48.5° of bank. The tail is the fall.
+8. **I will not claim `series = 11.8–50.6` is what the body feels.** It is `bankAuthority`'s own formula evaluated at
+   this round's measured `K_hull`, and that formula is a two-spring reduction of a 9×9 solve. The exact statement is
+   §3's: 94–99 % of an ankle correction rolls the board, which **is** off the matrix the integrator inverts
+   (`ankleDeck`/`ankleOwn`, §5).
+
+## 9. The controls
+
+**C1. This round's four default arms reproduce step 3.4h's own arms to the digit.** `f73-g`, `f73-l`, `s16-g`
+(= 3.4h's `c-a75-g-abs`) and `s16-l` (= its `a75-l-off`): **84 of 84 runs matched on 7 columns — `fellAt`, `fell`,
+`bankFall`, `rollFall`, `railFall`, `throughFall`, `frames` — with 0 mismatches** [M], and the frame counts agree
+too (5 031 against 3.4h's 5 031). **So `bankRaw` and the ledger's N·m view changed nothing**, which is the control
+that §2 and §3 are measured on the shipped rider.
+
+**C2. The partition and the identity are both exactly zero**, over 9 016 frames: `momentSplit` and `momentResidual`
+are `0.0e+0` as maxima on every arm [M]. The existing `ledgerSplit`/`ledgerClosure`/`ledgerResidual` controls are
+unchanged by this round's additions.
+
+**C3. The `assist` entry reads 0.00 N·m** on every arm and stance, as `compressAssist`'s early return on `newRider`
+requires [R] — the partition is read, not assumed. **The `bdAnkle` entry reads 0.00** on every frame, as
+`coupleStanding`'s row-7-only booking requires [R].
+
+**C4. The two dumps are joined on `(stance, entry)` and `unjoined` is 0 on all eight arms** [M], which is step
+3.4h's own §9 C4 control carried forward. No run crashed in this round: 24/24/18/18 summary rows and 24/24/18/18
+joined per-frame runs on every arm.
+
+**C5. `A` is symmetric, so the compliances this round quotes off it have their own free control**, already in the
+ledger: `sideRollPer` against `rollSwayPer` [R, step 3.3p]. Nothing here reads a corner that does not have one.
+
+**C6. The static heel sweep's own control is its 0 m/s row**, which must be the hydrostatic stiffness alone and
+reads **−34.3 N·m/rad at trim** against the planing rows' −69.9 / −105.4 / −152.6 [M]: the hydrodynamic part is
+1.0–3.5 × the hydrostatic one, which is the sign that the control is measuring a planing hull and not a float.
+
+## 10. Seatbelts
+
+- **`./node_modules/.bin/tsc --noEmit -p tsconfig.json`: exit 0**, with `node_modules` symlinked from the main
+  checkout (never `npx tsc` in a worktree — the handoff's trap).
+- **The default game is byte-identical.** `bankMax` is `MAX_BANK` unless `bankClamp === 'off'`; `bankRaw` is written
+  and read by nothing; `bankLedger`'s new fields are filled only while `on`, which is false in the game. **C1 is the
+  measurement that says so**, 84 runs on 7 columns.
+- **No unpaired force.** This round adds no force at all. `bankClamp: 'off'` *removes* a truncation from a reading;
+  the ankle's spring then sees the angle the geometry gives, which is the paired quantity it was always meant to see.
+- **The switch is pinned off in the online rooms** (`main.ts`'s `overrides`), and `PhysicalMode.test.ts` reads that
+  pin out of `main.ts` and fails if it is removed.
+- **The suites.** `vitest run --exclude 'src/wave/SurfZoneSimulation.test.ts'` — the excluded file declares 644.5
+  minutes of per-test timeout and cannot gate anything (`c2-step5g.md` §7.3). **367 files passed, 37 skipped;
+  3 651 tests passed, 23 expected-fail, 43 skipped; 431 s; exit 0.**
+- **`SurfZoneRunner.test.ts` is outside the merge suite** and is run by hand after start/spray/duck changes; this
+  round touches none of those.
+
+## 11. Files (3.4i)
+
+- **`src/physics/AttachedRider.ts`** — `AttachedRiderOptions.bankClamp?: 'off'`, the private `bankMax`, the public
+  measurement field `bankRaw`, and the three clamp sites in `frame` reading `this.bankMax` instead of the constant.
+  Nothing else moves; every other `MAX_BANK` is untouched.
+- **`src/physics/bankLedger.ts`** — the N·m view of the partition it already splits: `moment` and `momentTotal` per
+  source, `diagonal`, `coupling`, `boardMoment` and `boardMomentTotal`, with `momentSplit` and `momentResidual` as
+  their controls. Filled only while `on`.
+- **`src/physics/RideSession.ts`, `src/wave/SurfZoneSimulation.ts`, `src/wave/SurfZoneRunner.ts`,
+  `src/game/PhysicalMode.ts`, `src/main.ts`** — the switch's chain and its room pin, one line each.
+- **`src/game/PhysicalMode.test.ts`** — `bankClampSwitch` parsed, applied at three spots, pinned off in the room,
+  and absent by default.
+- **`docs/research/new-rider/3.3/plant.ts`** — `BANKC=off`, three privates added to `RiderInner` (`legLength`,
+  `ankleTorque`, `legLoad`), and the per-frame dump's new columns: `bankRaw`, `clampedBank`, the whole moment budget
+  and the board's roll row by source. The arms it runs are otherwise Part 8's own.
+- **`docs/research/new-rider/3.4/clamp.ts` — new.** Part **A**, the fall mix read twice with the `other` population
+  split into its disjoint causes and the clamp A/B with its identical-prefix control; Part **B**, the budget on both
+  windows with the per-source body row and board row; Part **C**, the compliances, the hull's answer and the CoP
+  travel. Imports nothing from `src/` and writes nothing.
+- **`docs/research/new-rider/3.4/hull.ts` — new.** The static control: a bare board at a held heel and a held forward
+  speed on `PlaneWater`, read through the game's own roll ledger.
+- **`docs/research/new-rider/3.4/results/34i/`** — eight arms as `.jsonl` (per run) and `.mount.jsonl.gz` (per
+  frame), **6.4 MB gzipped**, plus `34i-predictions.md` (committed at `36105b1a`, before any arm was read),
+  `34i-summary.txt`, `34i-hull-stiffness.txt` and `34i-canyon-byte-check.txt`.
+- **`docs/research/new-rider/3.4/README.md`** — this Part, appended below Part 8's last line.
+
+## 12. For the owner, in plain words — and the shot list
+
+**Short version: I found the thing that was missing, and it is not in the surfer. It is in the water under the
+board.**
+
+When you stand on a board and lean, your foot presses harder on one side. A real board answers that: the water under
+it pushes back harder on that side, and the push moves across the board toward your foot. That push is what you
+stand against. It is the whole reason leaning works.
+
+**Our board gives back a tenth of it.** I measured what the surfer's weight asks of the board, and what the water
+answers, on four different waves: he asks for 44 to 192, and the water answers 5 to 33. The water's push moves
+**3 to 20 % of the way across the board** when it should travel much further. So when he leans, there is not much
+there to lean on, and 94 to 99 % of every correction his ankle makes just rolls the board instead of standing him
+up. His ankle is strong — stronger than a real person's braced ankle. It is pushing against something soft.
+
+**And it gets worse exactly where he falls.** On a flat board the water's push is firm. By the time the board is
+tilted 15–20°, the push is gone. Past 20° the water starts helping him over instead of holding him up. He falls at
+43–87° of lean.
+
+**Two smaller things.** First, the 70° limit on how far his body was allowed to lean, which I was sent to lift:
+lifting it changes nothing. His falls are counted at 45°, and a limit at 70 cannot hide anything at 45. The only
+thing it hid was how far over he really goes — 87° instead of 70° on the steeper wave. Second, I can now name the
+third kind of fall we could not name: it is **a fall at 20–45° of lean** — not thrown, not a slow stall, just over.
+It is **10 of 24 falls on your own wave.**
+
+**I did not fix anything.** I am not going to raise the water's push and tell you it is fixed, because nobody has
+measured what that number should be for a board like ours, and a number I pick to stop the falls is a number I
+picked. **The next round should ask the water-physics advisor what the right one is, then change that one thing and
+have you ride it.**
+
+### The shot list, if you want to ride it
+
+Nothing in this round changes the game, so there is nothing new to feel. If you want to check the one switch it
+adds:
+
+`?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&bankClamp=off`
+
+against the same address without `&bankClamp=off`. **I expect them to feel the same** — the bench says 84 of 84
+rides are identical until the body is past 70°, which is after the fall has started. If they feel *different*, that
+is news and worth telling me.
+
+The question only you can answer is still step 3.4h's: **does a slow topple at 1.2 m/s feel better or worse than
+being thrown at 6.5?** If worse, "make the ride longer" is the wrong target.
+
+## 13. The deletions column, read line by line
+
+`git diff --stat origin/main HEAD` before the push, read for the deletions number, as every round since step 3.2 has.
+This round's own, read with `git stash` so the uncommitted docs do not hide it: **8 files under `src/`, 193
+insertions and 7 deletions** — and every one of the seven is a line **replaced in place**: the three `MAX_BANK` clamp
+expressions in `frame`, the three `begin()`/`close()`/loop lines in `bankLedger` the new entries were threaded into,
+and `main.ts`'s pinned-list line. **No file under `src/` is deleted, renamed or emptied, and no probe of any earlier
+round loses a line: `3.3/plant.ts` gains an env read, three privates and the dump's columns and loses nothing.** The
+whole-branch number is in the PR body.
