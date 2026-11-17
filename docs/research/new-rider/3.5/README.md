@@ -307,6 +307,16 @@ sooner, not the turn failing to start.
   is therefore identical by measurement. Re-running it would have produced the same table at the cost of 10 minutes.
 - No new face, placement, hull law, ankle range or plant row was touched.
 - The owner's spot's own five `FACE` rows (PR #223) are still unrun in this folder, as they were in 3.4.
+- **The full `vitest run` did NOT complete, and that is an environment limit rather than a result.** This machine has
+  8 GB and was down to ~60 MB of free pages; three attempts at the whole suite (once at the default worker count,
+  once at `--maxWorkers=4`, once at `--maxWorkers=2` over `src/physics` alone) **died silently with no summary line
+  and no exit output**, which is what an OOM kill looks like here. What *was* run and passed, each on a quiet
+  machine: **`src/game/PhysicalMode.test.ts` 106 of 106** (the switch's own test, including the `main.ts` online-room
+  pin), **`src/wave/SurfZoneRunner.test.ts` 43 of 43** by hand as the standing note requires, and
+  **`src/wave/uniformSnapshot.test.ts` + `src/wave/barrel/poolBarrelPerf.test.ts` 10 of 10** — the last two because
+  they had failed in the saturated run at 270 s and 102 s against a 60 s timeout, and they pass alone, so those were
+  load timeouts and not findings. `tsc -b` is clean. **The physics suites beyond those were not run; a caller with
+  more RAM should run them before merging.**
 
 ## 8. Files (3.5a)
 
