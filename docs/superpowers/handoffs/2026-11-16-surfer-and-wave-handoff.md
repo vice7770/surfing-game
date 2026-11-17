@@ -519,3 +519,45 @@ Then: **at 1.16, 1.31, 2 and 3 m/s the towed board settles to trim 90.00° and d
 ### THE OWNER'S SHOT — cheap and decisive
 
 **Canyon, `?canyonWaves=true`: two take-offs at a crawl and two with speed already made, same spot.** If the slow ones throw him over **toward his own lean** inside the first second and the fast ones do not, this is a real part of the low-speed cell. **If they feel the same, it is not, and the lead should be closed.** It predicts a **discontinuity at 4 m/s, not a trend.**
+
+## STEP 3.4l (merged `2a95acfe`, PR #385) — 3.4k AUDITED: THE SIGN SURVIVES, THE MAGNITUDE IS OVERSTATED, AND §2 IS VINDICATED
+
+`README.md` **Part 12**; results `results/34l/`. **`src/` and `server/` byte-identical to `main`** — the only code change is the probe `3.3/plant.ts`, whose existing `TICKS=` dump now carries the Part 7 force columns and six trim/draft columns. **Nothing is computed for the dump that was not already on the row**, and the identity check holds: `f73-l` re-run reproduces 3.4i's published arm **exactly — 18 of 18 fell, 0.617–2.533 s, median 1.450 s.** 4 990 tick rows, 4 038 live. `tsc --noEmit` clean.
+
+### CHECK 1 — the wrong sign is NOT a zero-crossing artefact
+
+Clamped live ticks at `speed ≤ 1.6 m/s`, terciles of `|yGame|` **within each stance**, never pooled. **Sign right:** tall **0.448 / 0.379 / 0.433**, crouch **0.174 / 0.333 / 0.458**, compress **0.222 / 0.519 / 0.250** (low/mid/high). At a fixed gate `|yGame| > 100 N`: **0.407 / 0.514 / 0.333** on 54 / 37 / 39 ticks.
+
+**The control is what makes it conclusive.** In the honest unclamped band the share **RISES** with the force and reaches **1.000 on the top tercile in all three stances — 315 / 378 / 313 ticks, not one disagreement** — up from 0.841 / 0.844 / 0.913 on their own low terciles. **A correct model behaves exactly as this conditioning predicts; the clamped cell does not.**
+
+**But 3.4k's MAGNITUDE claim is overstated.** `|model/game|` falls monotonically with the force in every cell: **1.86–6.06 on the low tercile against 0.61–1.16 on the high one.** So *"the side force is 1.6–2.3× too large"* describes the ticks where the force is **smallest**. **At the ticks that matter the model has roughly the RIGHT SIZE and the WRONG SIGN** — sharper than 3.4k's own "the magnitude is the smaller half of it".
+
+### THE CONFOUND NEITHER 3.4k NOR THE BRIEF NAMED — and it changes one stance's verdict
+
+**Only 19 / 34 / 29 % of the ≤ 1.6 m/s live ticks have the board rolled inside 25°** (against 64 / 61 / 64 % over the whole clamped band and 69 / 76 / 63 % honest): **at a crawl the live window is mostly the capsize itself.** On the inside-25° cut: **tall 0.824 (n = 17)**, crouch **0.167 (24)**, compress **0.292 (24)**, against **0.908 / 0.900 / 0.932** honest at the same filter.
+
+> **So the wrong sign is REAL BEFORE THE FALL in crouch and compress — and TALL's published 0.409 is largely a reading of the capsize and must NOT be quoted as design error.** The defect is in the owner's own stance and the one next to it, not in standing up straight.
+
+### CHECK 2 — HALF SUNK, but NOT at row `'4'`, so §2 is VINDICATED
+
+Live ticks, board inside 25° of roll:
+
+| band | ticks (t/c/c) | speed med | `trimFace` med | `draftFace` med | wetShare | nearest row |
+| --- | --- | --- | --- | --- | --- | --- |
+| clamped < 4 | 241 / 216 / 184 | 3.00 / 3.12 / 2.82 | **17.2 / 17.3 / 16.0°** | **0.301 / 0.281 / 0.273 m** | 0.60 / 0.56 / 0.58 | **`'4.5'` by draft, `'5.5'` by trim** |
+| clamped ≤ 1.6 | 17 / 24 / 24 | 1.50 / 1.26 / 1.33 | 5.9 / 4.4 / 4.7° | 0.145 / 0.102 / 0.111 m | 0.65 / 0.59 / 0.59 | `'9'`–`'11'` / `'6'`–`'6.5'` |
+| honest 4–12 | 653 / 862 / 588 | 6.09 / 6.39 / 6.02 | 3.0 / 4.5 / 3.8° | 0.039 / 0.068 / 0.044 m | 0.54 / 0.52 / 0.50 | `'10.5'`–`'12'` / `'8.5'`–`'9.5'` |
+
+Table comments: `'4'` **46.4° / 0.513 m**, `'4.5'` 25.9 / 0.293, `'5'` 19.3 / 0.215, `'5.5'` 15.3 / 0.166, `'6'` 12.6 / 0.133, `'6.5'` 10.7 / 0.109.
+
+1. **Not planing** — 4–7× the draft and 4–5× the trim of the honest band, 56–60 % of patches wet against 50–54 %. **3.4k's correction to its own brief is confirmed from the ride's side too.**
+2. **But row `'4'` is NOT the nearest honest row** — it is the deepest, most-trimmed row the table owns, while the ride's own pair lands on **`'4.5'` by draft in all three stances** (per-tick modal nearest `'4.5'`, `'4'` second) and **`'5.5'` by trim.**
+3. **Therefore §2's 2.5–4× is NOT overstated — it is VINDICATED.** §2 swapped row `'4'` for `'4.5'`, `'5'` and `'6'`, and **the rows the board's own trim and draft pick out are inside that swap cluster. 3.4k's own escape hatch does not fire, and the next round's model-only fix is pointed the right way.**
+
+### A NEW LEAD, recorded not pursued
+
+At 6.0–6.4 m/s the ride sits at **0.039–0.068 m / 3.0–4.5°** where the table's rows at that speed record **0.109–0.133 m / 10.7–12.6°**. **The game's board on a face is consistently LESS sunk than the captive rig at the same speed** — the face's own orbital lift, which is the advisor's and 3.4k's argument for captive holds in `FaceWater` rather than flat water. **So table and ride disagree about regime beyond the clamp as well** — but the honest band's sign is right 92–98 %, **so that mismatch is not costing the sign.**
+
+**Not claimed:** trim and draft are a **geometric proxy** for the hull's regime, not derivatives, so §3's "no honest row exists below 4 m/s" is untouched and **no row was written.** `f73-g` was **abandoned, not truncated** — its design goes singular partway (pre-existing) and its partial dump is excluded. The clamp still does not cause the falls (626 of 626; the honest band falls too).
+
+**The owner's shot is unchanged and still decisive:** Canyon `?canyonWaves=true`, **two take-offs at a crawl and two with speed already made, same spot** — thrown **toward his own lean** inside the first second on the slow ones only = real; same feel = close the lead.
