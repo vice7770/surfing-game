@@ -1,0 +1,101 @@
+rider new felt deck body two — the owner's own address; spot canyon bed b (?canyonWaves=true), practice swell, seed 1
+arms all, noAir, noFroth; placements 0, 3, 8 m seaward of the foam toe; side -45°; 36 s of sea after a 24 s spin-up
+trials 3, riders 162, rows 12041, LIVE rows 11879
+  trial 1 at t 24.0167 s, x -124, foam toe z -68.5, its own air 0.0547, the face there 9.45°, the lens 0 m thick
+  trial 2 at t 29.0333 s, x -154, foam toe z -96.5, its own air 0.0551, the face there 12.024°, the lens 0 m thick
+  trial 3 at t 34.05 s, x -104, foam toe z -76.5, its own air 0.0504, the face there 8.607°, the lens 0 m thick
+
+=== 1. the foam the board is actually in — arm `all`, LIVE frames, by placement ===
+ahead   n  inLens  airMax    airL    airR  |dAir|med  |dAir|p90  wet/48    draft  lensRise  |surfRate|
+    0 1198  0.00  0.0511  0.0393  0.0406     0.0011     0.0034    36.0   0.4579    0.0000       0.342
+    3 1329  0.00  0.0274  0.0232  0.0227     0.0006     0.0017    32.0   0.3906    0.0000       0.118
+    8 1431  0.00  0.0103  0.0072  0.0071     0.0002     0.0008    32.0   0.3640    0.0000       0.074
+
+=== 2. frame 1 — the exact A/B: the arms are placed from one state and differ only in the water ===
+ahead      arm   n  rate(all)    d rate   d/rate%  d rlTotal   d/net%  d deckAcc
+    0    noAir  18    21.4528    0.0233      0.11    0.00060     0.10     0.0250
+    0  noFroth  18    21.4528    0.0000      0.00    0.00000     0.00     0.0000
+    3    noAir  18    12.4125    0.0079      0.06    0.00025     0.07     0.0083
+    3  noFroth  18    12.4125    0.0000      0.00    0.00000     0.00     0.0000
+    8    noAir  18     0.8065    0.0002      0.02    0.00000     0.00     0.0002
+    8  noFroth  18     0.8065    0.0000      0.00    0.00000     0.00     0.0000
+
+=== 2b. frame 1, FOAMED cells only (the `all` arm has a lens under the hull), per stance ===
+stance        arm   n  rate(all)  d rate med  d rate max  d/rate%med  d/rate%max  dDeck/Σ|terms| med  max
+
+--- frame 1: which sources each channel moves, FOAMED cells, median |Δ dk_s| over the cells, °/s² ---
+
+=== 3. the ride — fall times, s, per placement × arm (stances and entries pooled inside the cell) ===
+ahead      arm  runs  fell   median     min     max  held
+    0      all    18    18    0.933   0.633   2.133     0
+    0    noAir    18    18    0.942   0.633   2.133     0
+    0  noFroth    18    18    0.933   0.633   2.133     0
+    3      all    18    18    1.325   0.700   1.933     0
+    3    noAir    18    18    1.325   0.700   2.450     0
+    3  noFroth    18    18    1.325   0.700   1.933     0
+    8      all    18    18    1.467   0.883   1.967     0
+    8    noAir    18    18    1.233   0.883   1.983     0
+    8  noFroth    18    18    1.467   0.883   1.967     0
+
+--- fall times per stance, arm by arm, by placement ---
+ahead  0 tall       all 6/6 med 0.967  noAir 6/6 med 0.967  noFroth 6/6 med 0.967
+ahead  0 crouch     all 6/6 med 0.908  noAir 6/6 med 0.925  noFroth 6/6 med 0.908
+ahead  0 compress   all 6/6 med 1.175  noAir 6/6 med 1.125  noFroth 6/6 med 1.175
+ahead  3 tall       all 6/6 med 1.117  noAir 6/6 med 1.133  noFroth 6/6 med 1.117
+ahead  3 crouch     all 6/6 med 1.325  noAir 6/6 med 1.325  noFroth 6/6 med 1.325
+ahead  3 compress   all 6/6 med 1.133  noAir 6/6 med 1.142  noFroth 6/6 med 1.133
+ahead  8 tall       all 6/6 med 1.300  noAir 6/6 med 1.308  noFroth 6/6 med 1.300
+ahead  8 crouch     all 6/6 med 1.267  noAir 6/6 med 1.275  noFroth 6/6 med 1.267
+ahead  8 compress   all 6/6 med 1.500  noAir 6/6 med 1.233  noFroth 6/6 med 1.500
+
+=== 4. bankLedger.deck, °/s² — arm `all`, LIVE frames with apartSub == 0, FOAMED vs CLEAN ticks, split at 25° of roll ===
+   foamed: at least one hull patch inside a roller lens. clean: none. in25 = before the fall, out25 = the capsize.
+foamed in25  tall      n 0 — too thin to rank, and this reader does not
+foamed in25  crouch    n 0 — too thin to rank, and this reader does not
+foamed in25  compress  n 0 — too thin to rank, and this reader does not
+foamed out25 tall      n 0 — too thin to rank, and this reader does not
+foamed out25 crouch    n 0 — too thin to rank, and this reader does not
+foamed out25 compress  n 0 — too thin to rank, and this reader does not
+clean  in25  tall      runs 18 n 1078 net     -7.2 Σ|terms|     67.2  ankle -24.3 (36%) | leg -18.7 (28%) | pressure +9.6 (14%) | fins +5.8 (9%)
+clean  in25  crouch    runs 18 n 1019 net     -3.8 Σ|terms|     57.0  ankle -27.0 (47%) | leg -12.5 (22%) | pressure +5.5 (10%) | fins +3.8 (7%)
+clean  in25  compress  runs 18 n  961 net     -3.4 Σ|terms|     29.3  ankle -13.4 (46%) | leg -6.1 (21%) | fins +2.8 (10%) | pressure +1.7 (6%)
+clean  out25 tall      runs 18 n  119 net    -11.8 Σ|terms|   1898.4  leg +801.9 (42%) | pressure -591.2 (31%) | pitch +161.6 (9%) | addedMass -109.7 (6%)
+clean  out25 crouch    runs 11 n   57 net    -42.8 Σ|terms|   2117.2  leg +1014.2 (48%) | pressure -648.8 (31%) | addedMass -172.2 (8%) | pitch +93.9 (4%)
+clean  out25 compress  runs 14 n  100 net    175.0 Σ|terms|   2875.2  leg +979.5 (34%) | pressure -824.8 (29%) | ankle +496.0 (17%) | addedMass -276.2 (10%)
+
+--- the froth row itself, arm `all`, LIVE frames with a lens under the board ---
+  dk_froth °/s²    n    0 median —  p90 —  max —
+  bdFroth N·m      n    0 median —  p90 —  max —
+  rlFroth N·m      n    0 median —  p90 —  max —
+
+=== 4b. BoardBody.roll, N·m — arm `all`, LIVE frames, with and WITHOUT an `apart` substep in them ===
+apart  window stance      runs     n     rider   inertial      hull     froth        net   net/largest
+ no   in25  tall         18  1078     0.082      0.257    -0.121     0.000    -0.0005        0.0018
+ no   in25  crouch       18  1019     0.286      0.187     0.004     0.000    -0.0013        0.0045
+ no   in25  compress     18   961     0.076      0.520     0.204     0.000    -0.0019        0.0037
+ no   out25 tall         18   119     1.300     -0.095    -0.752     0.000     0.0118        0.0091
+ no   out25 crouch       11    57     1.441      1.349     0.990     0.000     0.0534        0.0371
+ no   out25 compress     14   100   -10.043      5.773     2.352     0.000    -0.1006        0.0100
+ yes  in25  tall          1    10   -21.190      9.723     9.028     0.000    -0.0063        0.0003
+ yes  in25  crouch        9    31   -37.686     24.605     4.163     0.000    -0.4037        0.0107
+ yes  in25  compress      4    23    14.513    -10.023    -1.156     0.000     0.1152        0.0079
+ yes  out25 tall         13    75    -3.082     -2.446     0.681     0.000     0.0804        0.0261
+ yes  out25 crouch       17   247     0.000      0.583     1.579     0.000     0.1399        0.0886
+ yes  out25 compress     17   238    -2.361      1.749     1.225     0.000    -0.0679        0.0288
+
+=== 7. the water each placement is on — arm `all`, LIVE frames ===
+ahead     n  |tilt| med  |tilt| p90  speed med  breaking med  bore %
+    0  1198        6.13        8.57       3.03         0.000     0.0
+    3  1329        2.04        3.77       2.57         0.000     0.0
+    8  1431        1.05        3.28       2.56         0.000     0.0
+
+=== 5. contact — the hull in the water, arm `all`, LIVE frames, by placement ===
+ahead     n  wet med  wet=0 %  apart med  booked %  draft med  draft<0 %
+    0  1198     36.0      0.0        0.0      72.9     0.4579        0.0
+    3  1329     32.0      0.0        0.0      87.7     0.3906        0.0
+    8  1431     32.0      0.0        0.0      90.6     0.3640        0.0
+
+=== 6. the roll — peak |rail| and peak roll rate per run, LIVE frames, by placement × arm ===
+ahead  0  all: rail 55.0° rate 139°/s  noAir: rail 54.8° rate 139°/s  noFroth: rail 55.0° rate 139°/s
+ahead  3  all: rail 53.0° rate 104°/s  noAir: rail 53.8° rate 107°/s  noFroth: rail 53.0° rate 104°/s
+ahead  8  all: rail 55.9° rate 106°/s  noAir: rail 55.7° rate 106°/s  noFroth: rail 55.9° rate 106°/s

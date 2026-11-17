@@ -1,0 +1,175 @@
+rider new felt deck body two — the owner's own address; spot canyon bed b (?canyonWaves=true), medium swell, seed 1
+arms all, noAir, noFroth, noCarry; placements 0, 1, 2, 3, 5, 8 m seaward of the foam toe; side -45°; 33 s of sea after a 22 s spin-up
+trials 6, riders 864, rows 59228, LIVE rows 58366
+  trial 1 at t 22.0167 s, x -64, foam toe z -21.5, its own air 0.0514, the face there 9.519°, the lens 0.0327 m thick
+  trial 2 at t 26.5667 s, x -68, foam toe z -5.5, its own air 0.0503, the face there 7.52°, the lens 0.0281 m thick
+  trial 3 at t 30.5833 s, x -80, foam toe z -67.5, its own air 0.0619, the face there 13.313°, the lens 0.0121 m thick
+  trial 4 at t 34.6 s, x -102, foam toe z -99.5, its own air 0.0556, the face there 13.271°, the lens 0.0291 m thick
+  trial 5 at t 38.6167 s, x -74, foam toe z -81.5, its own air 0.0551, the face there 13.16°, the lens 0 m thick
+  trial 6 at t 42.6333 s, x -140, foam toe z -54.5, its own air 0.0551, the face there 8.022°, the lens 0 m thick
+
+=== 1. the foam the board is actually in — arm `all`, LIVE frames, by placement ===
+ahead   n  inLens  airMax    airL    airR  |dAir|med  |dAir|p90  wet/48    draft  lensRise  |surfRate|
+    0 1977  0.61  0.9000  0.2891  0.1465     0.0105     0.3481    31.0   0.1578    0.0000       0.356
+    1 2115  0.39  0.0455  0.0356  0.0306     0.0016     0.1765    32.0   0.2033    0.0000       0.286
+    2 2364  0.62  0.9000  0.2538  0.3233     0.0217     0.1447    32.0   0.2293    0.0056       0.123
+    3 2405  0.41  0.0322  0.0274  0.0256     0.0013     0.0740    32.0   0.3810    0.0000       0.129
+    5 2663  0.00  0.0099  0.0059  0.0058     0.0004     0.0007    32.0   0.3919    0.0000       0.075
+    8 2980  0.00  0.0031  0.0017  0.0017     0.0001     0.0003    32.0   0.3828    0.0000       0.043
+
+=== 2. frame 1 — the exact A/B: the arms are placed from one state and differ only in the water ===
+ahead      arm   n  rate(all)    d rate   d/rate%  d rlTotal   d/net%  d deckAcc
+    0    noAir  36    39.7051    0.0000      0.00    0.00000     0.00     0.0000
+    0  noFroth  36    39.7051    0.0000      0.00    0.00000     0.00     0.0000
+    0  noCarry  36    39.7051    2.8332      7.14    0.08145     7.18     7.9494
+    1    noAir  36     9.9405    0.0963      0.97    0.00220     0.77     0.1434
+    1  noFroth  36     9.9405    0.0006      0.01    0.00000     0.00     0.0007
+    1  noCarry  36     9.9405    1.4196     14.28    0.04530    15.89     1.1671
+    2    noAir  36    16.1657    0.8705      5.38    0.02445     4.18     0.9131
+    2  noFroth  36    16.1657    0.5666      3.50    0.01520     2.60     0.5933
+    2  noCarry  36    16.1657    0.0000      0.00    0.00000     0.00     0.0000
+    3    noAir  36     8.5739    0.0095      0.11    0.00030     0.10     0.0099
+    3  noFroth  36     8.5739    0.0000      0.00    0.00000     0.00     0.0000
+    3  noCarry  36     8.5739    0.0000      0.00    0.00000     0.00     0.0000
+    5    noAir  36     6.8868    0.0007      0.01    0.00000     0.00     0.0007
+    5  noFroth  36     6.8868    0.0000      0.00    0.00000     0.00     0.0000
+    5  noCarry  36     6.8868    0.0000      0.00    0.00000     0.00     0.0000
+    8    noAir  36     3.7395    0.0004      0.01    0.00000     0.00     0.0004
+    8  noFroth  36     3.7395    0.0000      0.00    0.00000     0.00     0.0000
+    8  noCarry  36     3.7395    0.0000      0.00    0.00000     0.00     0.0000
+
+=== 2b. frame 1, FOAMED cells only (the `all` arm has a lens under the hull), per stance ===
+stance        arm   n  rate(all)  d rate med  d rate max  d/rate%med  d/rate%max  dDeck/Σ|terms| med  max
+tall         noAir  32     12.904      0.8936     27.5823        6.55      790.12               1.457%  53.07%
+tall       noFroth  32     12.904      0.2311      6.8400        2.77      119.09               0.416%  44.77%
+tall       noCarry  32     12.904      0.0411     39.0724        0.43      203.51               0.121%  244.42%
+crouch       noAir  32     12.925      0.8811     30.6014        6.33      840.74               1.693%  56.33%
+crouch     noFroth  32     12.925      0.2325      6.8380        2.75      119.39               0.384%  44.77%
+crouch     noCarry  32     12.925      0.0414     39.3810        0.43      208.88               0.121%  249.83%
+compress     noAir  32     12.925      0.8811     30.6014        6.33      840.74               1.693%  56.33%
+compress   noFroth  32     12.925      0.2325      6.8380        2.75      119.39               0.384%  44.77%
+compress   noCarry  32     12.925      0.0414     39.3810        0.43      208.88               0.121%  249.83%
+
+--- frame 1: which sources each channel moves, FOAMED cells, median |Δ dk_s| over the cells, °/s² ---
+   noAir n  96 Σ|Δ| 152.96  addedMass 74.76 (49%) | ankle 29.84 (20%) | leg 16.78 (11%) | pressure 16.13 (11%) | pitch 6.23 (4%)
+ noFroth n  96 Σ|Δ| 73.41  ankle 35.59 (48%) | addedMass 34.52 (47%) | leg 1.61 (2%) | fins 1.06 (1%) | pressure 0.25 (0%)
+ noCarry n  96 Σ|Δ| 4.81  fins 2.09 (44%) | ankle 2.02 (42%) | leg 0.55 (11%) | weight 0.06 (1%) | pitch 0.06 (1%)
+
+=== 3. the ride — fall times, s, per placement × arm (stances and entries pooled inside the cell) ===
+ahead      arm  runs  fell   median     min     max  held
+    0      all    36    36    0.917   0.217   1.717     0
+    0    noAir    36    36    0.958   0.183   1.750     0
+    0  noFroth    36    36    0.983   0.200   1.717     0
+    0  noCarry    36    36    0.900   0.233   1.733     0
+    1      all    36    36    0.975   0.617   2.367     0
+    1    noAir    36    36    1.000   0.633   2.400     0
+    1  noFroth    36    36    0.983   0.650   2.367     0
+    1  noCarry    36    36    0.992   0.600   2.367     0
+    2      all    36    35    0.983   0.617   1.900     1
+    2    noAir    36    36    0.900   0.617   1.967     0
+    2  noFroth    36    36    0.992   0.617   1.900     0
+    2  noCarry    36    35    0.983   0.617   2.850     1
+    3      all    36    36    1.142   0.633   1.867     0
+    3    noAir    36    36    1.175   0.633   2.150     0
+    3  noFroth    36    36    1.017   0.633   2.250     0
+    3  noCarry    36    36    1.117   0.633   2.733     0
+    5      all    36    36    1.092   0.583   2.650     0
+    5    noAir    36    36    1.092   0.583   2.633     0
+    5  noFroth    36    36    1.092   0.583   2.650     0
+    5  noCarry    36    36    1.092   0.583   2.650     0
+    8      all    36    36    1.433   0.833   2.617     0
+    8    noAir    36    36    1.425   0.833   2.683     0
+    8  noFroth    36    36    1.433   0.833   2.617     0
+    8  noCarry    36    36    1.433   0.833   2.617     0
+
+--- fall times per stance, arm by arm, by placement ---
+ahead  0 tall       all 12/12 med 0.975  noAir 12/12 med 1.025  noFroth 12/12 med 1.067  noCarry 12/12 med 0.942
+ahead  0 crouch     all 12/12 med 0.825  noAir 12/12 med 0.875  noFroth 12/12 med 0.867  noCarry 12/12 med 0.817
+ahead  0 compress   all 12/12 med 0.883  noAir 12/12 med 0.950  noFroth 12/12 med 0.917  noCarry 12/12 med 0.900
+ahead  1 tall       all 12/12 med 0.925  noAir 12/12 med 0.900  noFroth 12/12 med 0.900  noCarry 12/12 med 1.058
+ahead  1 crouch     all 12/12 med 0.992  noAir 12/12 med 1.033  noFroth 12/12 med 0.983  noCarry 12/12 med 0.983
+ahead  1 compress   all 12/12 med 0.975  noAir 12/12 med 1.000  noFroth 12/12 med 1.033  noCarry 12/12 med 0.975
+ahead  2 tall       all 12/12 med 0.933  noAir 12/12 med 0.825  noFroth 12/12 med 0.933  noCarry 12/12 med 0.958
+ahead  2 crouch     all 12/12 med 1.000  noAir 12/12 med 0.975  noFroth 12/12 med 1.042  noCarry 11/12 med 0.983
+ahead  2 compress   all 11/12 med 0.917  noAir 12/12 med 0.883  noFroth 12/12 med 1.025  noCarry 12/12 med 1.008
+ahead  3 tall       all 12/12 med 1.067  noAir 12/12 med 0.967  noFroth 12/12 med 0.900  noCarry 12/12 med 1.067
+ahead  3 crouch     all 12/12 med 1.167  noAir 12/12 med 1.258  noFroth 12/12 med 1.158  noCarry 12/12 med 1.167
+ahead  3 compress   all 12/12 med 1.017  noAir 12/12 med 1.108  noFroth 12/12 med 1.100  noCarry 12/12 med 0.992
+ahead  5 tall       all 12/12 med 1.083  noAir 12/12 med 1.117  noFroth 12/12 med 1.083  noCarry 12/12 med 1.083
+ahead  5 crouch     all 12/12 med 1.092  noAir 12/12 med 1.092  noFroth 12/12 med 1.092  noCarry 12/12 med 1.092
+ahead  5 compress   all 12/12 med 1.183  noAir 12/12 med 1.192  noFroth 12/12 med 1.183  noCarry 12/12 med 1.183
+ahead  8 tall       all 12/12 med 1.417  noAir 12/12 med 1.417  noFroth 12/12 med 1.417  noCarry 12/12 med 1.417
+ahead  8 crouch     all 12/12 med 1.500  noAir 12/12 med 1.492  noFroth 12/12 med 1.500  noCarry 12/12 med 1.500
+ahead  8 compress   all 12/12 med 1.225  noAir 12/12 med 1.225  noFroth 12/12 med 1.225  noCarry 12/12 med 1.225
+
+=== 4. bankLedger.deck, °/s² — arm `all`, LIVE frames with apartSub == 0, FOAMED vs CLEAN ticks, split at 25° of roll ===
+   foamed: at least one hull patch inside a roller lens. clean: none. in25 = before the fall, out25 = the capsize.
+foamed in25  tall      runs 33 n 1077 net    -57.8 Σ|terms|    228.1  ankle -78.5 (34%) | leg +70.0 (31%) | pressure -31.3 (14%) | addedMass +23.4 (10%)
+foamed in25  crouch    runs 31 n  933 net    -53.1 Σ|terms|    178.2  ankle -66.4 (37%) | pressure -47.6 (27%) | leg +40.3 (23%) | addedMass +6.0 (3%)
+foamed in25  compress  runs 33 n 1038 net    -65.1 Σ|terms|    157.1  ankle -66.5 (42%) | leg +40.7 (26%) | pressure -25.2 (16%) | addedMass +8.9 (6%)
+foamed out25 tall      runs 10 n   84 net    -20.9 Σ|terms|   3087.9  leg +1359.2 (44%) | pressure -939.9 (30%) | ankle -214.8 (7%) | addedMass -191.3 (6%)
+foamed out25 crouch    runs 11 n  118 net    -80.7 Σ|terms|   1991.6  leg +1033.9 (52%) | pressure -543.7 (27%) | addedMass -112.2 (6%) | pitch +96.1 (5%)
+foamed out25 compress  runs 14 n  129 net    -29.5 Σ|terms|   3202.8  leg +1395.2 (44%) | pressure -985.8 (31%) | addedMass -249.7 (8%) | ankle +166.0 (5%)
+clean  in25  tall      runs 49 n 2595 net     10.0 Σ|terms|     36.8  addedMass -13.3 (36%) | ankle +8.8 (24%) | pitch -7.4 (20%) | pressure +1.9 (5%)
+clean  in25  crouch    runs 49 n 2412 net      7.4 Σ|terms|     59.4  addedMass -27.4 (46%) | pressure -9.7 (16%) | ankle +8.4 (14%) | fins -5.8 (10%)
+clean  in25  compress  runs 50 n 2261 net     12.9 Σ|terms|     79.3  addedMass -36.4 (46%) | ankle +21.6 (27%) | pressure -8.7 (11%) | leg -4.4 (6%)
+clean  out25 tall      runs 47 n  308 net    -72.0 Σ|terms|   2325.7  leg +819.3 (35%) | pressure -644.3 (28%) | ankle -346.0 (15%) | pitch +214.1 (9%)
+clean  out25 crouch    runs 38 n  207 net    -68.5 Σ|terms|   2136.0  leg +954.4 (45%) | pressure -651.2 (30%) | addedMass -225.9 (11%) | fins -84.2 (4%)
+clean  out25 compress  runs 49 n  410 net     -0.8 Σ|terms|   2441.5  leg +995.9 (41%) | pressure -769.7 (32%) | addedMass -263.9 (11%) | pitch +159.8 (7%)
+
+--- the froth row itself, arm `all`, LIVE frames with a lens under the board ---
+  dk_froth °/s²    n 4486 median 0.00000  p90 3.79940  max 423.22777
+  bdFroth N·m      n 4486 median 0.00000  p90 0.20420  max 0.83950
+  rlFroth N·m      n 4486 median 0.00000  p90 0.10560  max 0.93460
+
+=== 4b. BoardBody.roll, N·m — arm `all`, LIVE frames, with and WITHOUT an `apart` substep in them ===
+apart  window stance      runs     n     rider   inertial      hull     froth        net   net/largest
+ no   in25  tall         72  3672    -0.761      0.601     0.431     0.000    -0.0009        0.0012
+ no   in25  crouch       70  3345    -0.599      0.721     0.306     0.000     0.0009        0.0012
+ no   in25  compress     72  3299    -0.756      0.897     0.699     0.000    -0.0016        0.0018
+ no   out25 tall         56   392     0.945     -0.954     1.205     0.000     0.0530        0.0440
+ no   out25 crouch       48   325     0.147     -0.214     1.648     0.000     0.0460        0.0279
+ no   out25 compress     59   539    -8.971      3.266     2.607     0.000    -0.0515        0.0057
+ yes  in25  tall         30   228    13.500     -5.327    -1.629     0.000     0.2025        0.0150
+ yes  in25  crouch       47   310     0.004     -0.416     0.724     0.000     0.0740        0.1021
+ yes  in25  compress     30   243     0.419     -0.625     0.167     0.000     0.1946        0.3115
+ yes  out25 tall         65   560     1.202     -0.488    -0.663     0.000    -0.0378        0.0315
+ yes  out25 crouch       62   874    -0.448     -0.474     1.331     0.000     0.0092        0.0069
+ yes  out25 compress     65   717    -1.012     -0.027     1.299     0.000    -0.0638        0.0491
+
+=== 7. the water each placement is on — arm `all`, LIVE frames ===
+ahead     n  |tilt| med  |tilt| p90  speed med  breaking med  bore %
+    0  1977        5.41        9.57       3.06         0.000    49.1
+    1  2115        4.35        8.81       2.53         0.000    32.2
+    2  2364        1.55        4.32       4.64         0.000    61.0
+    3  2405        3.20        6.83       3.10         0.000    22.5
+    5  2663        1.71        7.54       2.61         0.000     0.0
+    8  2980        0.86        2.23       2.40         0.000     0.0
+
+=== 5. contact — the hull in the water, arm `all`, LIVE frames, by placement ===
+ahead     n  wet med  wet=0 %  apart med  booked %  draft med  draft<0 %
+    0  1977     31.0      3.5        0.0      61.6     0.1578        3.5
+    1  2115     32.0      1.1        0.0      67.8     0.2033        1.1
+    2  2364     32.0      0.0        0.0      82.2     0.2293        0.0
+    3  2405     32.0      0.0        0.0      87.2     0.3810        0.0
+    5  2663     32.0      0.0        0.0      84.0     0.3919        0.0
+    8  2980     32.0      0.0        0.0      88.7     0.3828        0.0
+
+=== 6. the roll — peak |rail| and peak roll rate per run, LIVE frames, by placement × arm ===
+ahead  0  all: rail 65.9° rate 190°/s  noAir: rail 68.2° rate 192°/s  noFroth: rail 68.1° rate 196°/s  noCarry: rail 66.6° rate 196°/s
+ahead  1  all: rail 66.0° rate 184°/s  noAir: rail 68.4° rate 179°/s  noFroth: rail 60.8° rate 173°/s  noCarry: rail 63.8° rate 175°/s
+ahead  2  all: rail 53.6° rate 145°/s  noAir: rail 53.1° rate 149°/s  noFroth: rail 55.1° rate 148°/s  noCarry: rail 55.3° rate 132°/s
+ahead  3  all: rail 54.7° rate 122°/s  noAir: rail 54.2° rate 121°/s  noFroth: rail 54.7° rate 126°/s  noCarry: rail 54.4° rate 120°/s
+ahead  5  all: rail 53.9° rate 127°/s  noAir: rail 54.1° rate 126°/s  noFroth: rail 53.9° rate 127°/s  noCarry: rail 53.9° rate 127°/s
+ahead  8  all: rail 54.8° rate 120°/s  noAir: rail 54.8° rate 122°/s  noFroth: rail 54.8° rate 120°/s  noCarry: rail 54.8° rate 120°/s
+
+=== the FIELD (no rider): 1980 frames of the corridor, medium swell, seed 1 ===
+frames with any foamed corridor point: 1772 of 1980
+foamed corridor points a frame: median 243 of 506 wet ones; inside a lens median 452
+α at 0.02 m under the surface (the frame's own deepest-foam point): median 0.4906 p90 0.5905 max 0.6245
+α at 0.05 m under the surface (the frame's own deepest-foam point): median 0.1722 p90 0.2662 max 0.3204
+α at 0.10 m under the surface (the frame's own deepest-foam point): median 0.1236 p90 0.1731 max 0.1864
+α at 0.20 m under the surface (the frame's own deepest-foam point): median 0.1236 p90 0.1731 max 0.1864
+the lens there: thickness median 0.0960 m p90 0.1337 max 0.1525; grip median 26.61 Pa max 136.51 Pa
+dα/dy between 0.02 and 0.10 m: median 4.88 p90 6.14 max 6.60 per m
+largest across-beam Δα anywhere in the corridor (two points 0.5 m apart, same draft): median 0.0282 p90 0.0436 max 0.0569
