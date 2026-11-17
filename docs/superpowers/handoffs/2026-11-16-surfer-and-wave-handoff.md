@@ -1514,3 +1514,59 @@ Pumping with the trunk over straight legs; a crouch made of 76° of fold over a 
 ### WHAT IT DID NOT ESTABLISH
 
 **The stage reader was not traced**, so the drawing's independence claim is **bounded to within one stage** — across-stage independence is unmeasured. **The multiplayer wire was not checked** (several channels are local-only, so another player's drawn body reads fewer channels than your own). `predictiveBalance`'s internal plant was not read beyond the stance tables.
+
+## ⭐ VIDEO REFERENCE 9 (merged `5b5ce495`, PR #399) — **EITHER CHANNEL CAN CARRY A WHOLE POSTURE CHANGE ALONE**, and the leg-chain metric is SATURATED
+
+`docs/research/new-rider/3.5/video-ref-9-ponta-preta.md`. First 30 s of a long-form clip, **Ponta Preta, Sal** — a long right-hand point. **TWO riders in THREE shots:** 0.00–12.15 rider A, **12.15–21.45 rider B (bare chest — the best hip landmark the series has had)**, 21.45–30.00 rider A again; cuts located to ±0.05 s by wardrobe. Both regular-footed and frontside. `tabId` **`tab-1`**.
+
+**The movement is busy and chained: ≥13 direction changes in 30 s, one every ~2.3 s**, with the riders driving down the line **folded almost in half over straight legs** for ~0.4 s at a time. **This DISAGREES flatly with video 7's zero direction changes in 13 s.**
+
+### ⭐ THE HEADLINE — it refines videos 7 and 8 rather than repeating them
+
+Videos 7 and 8 said **the trunk is the loud channel.** **Rider A here agrees** (50–60° of trunk over a 96 % leg chain). **Rider B shows the OPPOSITE nine seconds later: +59 % of hip with the trunk motionless.**
+
+> **Each channel is observed carrying a whole posture change ALONE, in one clip. They are not one dominant channel and one quiet one — they are genuinely independent, and either can do the work by itself.**
+
+### ⚠️ AND IT UNDERMINES A FINDING I REPORTED FROM CLIPS 7 AND 8 — with a mechanism
+
+**The leg chain is SATURATED in broadside footage, not merely an upper bound.** A surfer's knee bends **along the board**; the board lies **across the image**; the bend projects onto the hip–ankle line and largely disappears. Video 9's leg chain read **96–100 % on every frame — including a rider folded over his own board** — while a vertical ruler (hip ÷ head-length) read **~30–66 %** on the same frames. **The two disagree by ~30 points, and the round refused to reconcile them or name a rung for any frame.**
+
+> **So "every rider stays in the Tall band" is UNTESTED wherever it rests on a leg chain in broadside footage — clips 7, 8 and 9.** **I reported that as a finding; it is weaker than I said.**
+
+**Not a reason to return to the waistband scale** (it fails on wetsuits and over-read the leg by 50 %). **The robust ruler needs no hip landmark at all: apparent stature in head-lengths — 4.86–6.24 = 63–81 % of standing, moving 17 points in 0.27 s.** **And the actionable ask: footage shot from the water or down the line, not from the beach**, because the projection is what hides the knee.
+
+### ARM TIMING — CONFIRMED AT FRAME LEVEL, third clip
+
+Rider B at 1/30 s: rear arm **above the shoulder 18.034**, **above the head 18.067**, **rail bites 18.100**, **spray 18.134** — **the arm leads by 0.07–0.10 s and stays overhead 0.7 s.** Rider A: arm up 7.63, turn begins 7.90 — **0.3 s of lead. 2 of 2 resolved direction changes.**
+
+**The one exception, and it is informative:** the **roundhouse cutback** (8.00–9.10, 1.10 s) is carried on the **LEAD** arm reaching past the rail, with **no overhead arm at all.** So the overhead arm belongs to some manoeuvres and not others.
+
+### THE TRANSITIONS — and the sharpest gap yet
+
+- **T2, rider B (13.77 → 15.23): down 0.33 s with the LEGS ALONE (trunk unchanged at 30–35°) → HOLD 0.60 s in which the trunk UN-FOLDS 35° → <10° WHILE THE LEGS STAY DOWN → up 0.27 s** (hips +59 %, trunk already vertical). **Arms spread wide AS the body arrives, not before.**
+
+> **That hold is the sharpest "not at all" the series has produced: a deep leg position held 0.6 s while the trunk un-folds under it — TWO CHANNELS MOVING IN OPPOSITE DIRECTIONS AT THE SAME TIME.** The game's drawn trunk is a function of leg depth, so **it cannot represent this at all** — the two are forced to move together.
+
+- **T4, rider B (17.97 → 18.80, 0.83 s): beat zero is THE ARM**, then entry 0.06 s, load 0.27 s, exit 0.40 s — and **the trunk is still folded 60–70° a full 0.4 s AFTER the board has come round.**
+- **T1, rider A's trim pump: ~4 trunk fold/unfold half-cycles in 2.3 s, ~0.55 s each, leg chain 100 %.** **This AGREES with video 8 to within 10 % (~0.6 s) — the most reproducible figure the series has.**
+- **A THIRD form of the down-transition (legs only)**, so video 7's knees-and-trunk versus video 8's trunk-only **stays unsettled** — now three forms, which is itself the finding.
+
+### THE OTHER SCORES
+
+- **Trunk fold ~5° to ~70°**, visiting the whole range; two sustained extremes — **50–60° held 0.40 s** and **under 10° held 0.53 s**.
+- **Arm carriage: five carriages, counts 6/5/4/5/2, independent of depth again** — the deepest leg frame has arms at waist height, the tallest has them wide. **Both "tall ⇒ spread" and "deep ⇒ spread" stay refuted.**
+- **Fore-aft hips: confirmed, FOURTH clip**, 0 steps in ~3.5 s of legible feet.
+- **Crouch (66 %): this clip ABSTAINS for the first time** — its two rulers bracket 66 % from both sides.
+- **At or near real time** (30 fps, every frame distinct; 4× excluded by a 0.27 s squat-to-stand, 2× by three manoeuvre durations against the published 0.96 s / 0.8 s).
+- **Two legs separately: NOT measurable here** — rider B's boardshorts reach his knee, so the knee is inside black cloth **in exactly the deepest frames.**
+
+### A NEW GAP NOBODY HAD NAMED: **RATE**
+
+**Nothing in the game chains turns every 2.3 s.** The footage's density is itself a requirement, separate from any single movement.
+
+### METHOD — four findings, now in the skill (the round did not edit it)
+
+- **`setPlaybackQualityRange` reaches 1440p and 2160p** on long-form video where enlarge-and-reload stops at 1080p. **2160p is the WRONG choice — the pane dropped to ~1 fps and produced real stale frames; 1440p was reliable.** A long-form watch page may have **no consent gate**, unlike a Short.
+- **The pane returns an 800×600 screenshot whatever the viewport**, so a **1020×760** overlay canvas is the largest that fits. **Tiles that look "undrawn" may simply be outside it — identical in appearance to the composited-canvas failure.**
+- **☠️ A FOLLOWING AUTO-CROP NORMALISES THE RIDER'S APPARENT SIZE (±15 % between tiles) AND PRODUCED A FALSE "BIG EXTENSION" READING** before it was caught. **Never judge height from a strip of auto-cropped tiles.** Crop to find; measure on a fixed frame.
+- Tools worth reusing: a **redness-based rider finder** and a **`seeked` + `requestVideoFrameCallback` seek with mediaTime verification and retry**, which **removed the stale-frame problem outright at 1440p.**

@@ -67,7 +67,10 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 
 - **A consent gate now stands in front of YouTube.** Answer it — **`Reject all`**, which is the privacy-preserving option — **before any `<video>` element exists at all.** Until then there is nothing to seek.
 - **The pane can return a PARTIALLY DRAWN canvas**, and this is a *different* failure from the stale video frame: a montage the page had finished drawing came back with half its tiles missing, twice. **The timestamp stamp cannot catch it**, because the stamp is correct — only the picture is incomplete. Fix: a **2.2–2.5 s wait**, or take a second screenshot and compare.
-- **Two tools are worth building before you measure a dark-wetsuit clip**, because video 8 was unreadable without them: an **auto-crop that finds a black wetsuit against water** (it located the rider in **128 of 140** frames) and a **silhouette edge outline**. No leg in that clip was readable otherwise.
+- **Two tools are worth building before you measure a dark-wetsuit clip**, because video 8 was unreadable without them: an **auto-crop that finds a black wetsuit against water** (it located the rider in **128 of 140** frames) and a **silhouette edge outline**. No leg in that clip was readable otherwise. Video 9 added a **redness-based finder** (maroon top or bare skin against teal water) and a **`seeked` + `requestVideoFrameCallback` seek with mediaTime verification and retry**, which removed the stale-frame problem outright at 1440p.
+- **☠️ AN AUTO-CROP THAT FOLLOWS THE RIDER NORMALISES HIS APPARENT SIZE, AND IT WILL LIE TO YOU ABOUT HEIGHT.** Video 9's crop varied the rider's apparent scale by **±15 % between tiles** and **produced a false "big extension" reading** before it was caught. **Never judge height or depth from a strip of auto-cropped tiles.** Crop to find the rider; measure on a fixed frame.
+- **Go beyond 1080p with the player's own API, but not to the top.** `setPlaybackQualityRange` reaches **1440p and 2160p** on long-form video, where "enlarge the viewport and reload" stops at 1080p. **2160p is the wrong choice — the pane dropped to ~1 fps and produced real stale frames. 1440p was reliable.** Note that a long-form watch page may have **no consent gate** at all, unlike a Short.
+- **The pane returns an 800×600 screenshot whatever the viewport is**, so a **1020×760** overlay canvas is the largest that fits inside it. **Tiles that look "undrawn" may simply be outside the screenshot — and that looks identical to the composited-canvas failure above.** Check which one you have before blaming the page.
 
 ### ⭐ MEASURE LEG DEPTH BY THE LEG CHAIN, NOT BY A WAISTBAND SCALE
 
@@ -76,6 +79,18 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 **Use `|hip→ankle| ÷ (|hip→knee| + |knee→ankle|)`.** It needs no stature estimate, it **maps straight onto the game's own leg spring**, and it degrades honestly: **it is an upper bound**, because a knee you cannot see reads as 100 %. Say so when you quote it.
 
 **And measure the two legs separately.** Video 8 found them at **97 % / 86 %** in one frame and **88 % / 76 %** in another. **The game has one leg spring; a rider has two legs at different extensions.**
+
+#### ⚠️ BUT THE LEG CHAIN IS SATURATED IN BROADSIDE FOOTAGE — know this before you quote it
+
+**Video 9 found the mechanism, and it is geometric, not a resolution problem.** A surfer's knee bends **along the board**; the board lies **across the image**; so the bend projects onto the hip–ankle line and **largely disappears.** Video 9's leg chain read **96–100 % on every frame, including a rider folded over his own board**, while a vertical ruler (hip ÷ head-length) read **~30–66 %** on the same frames. **The two rulers disagree by about 30 points, and that round refused to reconcile them or name a rung for any frame. That was the right call.**
+
+> **So "every rider stays in the Tall band" is UNTESTED wherever it rests on a leg chain in broadside footage — which is clips 7, 8 and 9.**
+
+**This is not a reason to go back to the waistband scale** (it fails on wetsuits and over-read the leg by 50 %). It is a reason to:
+- **quote the leg chain as saturated, not merely as an upper bound**;
+- **report a second, independent ruler** — **apparent stature in head-lengths** needs no hip landmark at all and is the most robust thing available (video 9: **4.86–6.24 head-lengths = 63–81 % of standing**, moving 17 points in 0.27 s);
+- **say when the two rulers disagree, and name no rung rather than picking one**;
+- and **ask the owner for footage shot from the water or down the line** rather than from the beach, because the projection is what hides the knee.
 
 ### What the error bar actually is
 
