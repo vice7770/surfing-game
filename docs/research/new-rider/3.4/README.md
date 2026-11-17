@@ -3703,3 +3703,655 @@ place with something added. `src/` and `server/` are empty on both sides.**
   this round's mechanism built on `g-tilt`'s board rolling to −61° by one second. Its own per-frame table said
   `n = 4 of 24` and the paragraph was replaced by the per-run read that contradicts it (§8's last bullet). It is not
   in the diff because it never reached a commit, and it is recorded here rather than left out.
+
+# Part 7 — the 16° is the right metric and the owner's own wave, but it is that wave in the moment it BREAKS: his
+clean face reads 11.7°, and the probe puts the board where the test wave gives 12.3° and his spot gives 5.6° — twice
+the water under the same board
+
+Written 2026-11-16/17 by the build agent (Opus 5, effort high) on branch `claude/rider-two-body-g`, cut from
+`main` at **dde6bb66** (Part 6's merge), so Part 6 is its base. Its brief is item 2 of Part 6 §13's own step-seven ruling:
+*"**Settle whether the 16° test face is the face the owner rides.** … A read and a ruling, not a build."* **Nothing
+under `src/` or `server/` moves and no rider runs on a sea in this round** (§11).
+
+**The owner confirmed the spot mid-round, in their own words**: *"Measure the `?canyonWave=true` its the one i test
+on"* — so every Canyon figure below is **Canyon B**, read off the built config and the solver's own grid rather than
+off the URL (§10 C1), on the owner's own default swell (`DEFAULT_CONDITIONS.swell = 'practice'` [R]).
+
+## 0. The ten sentences the round is for
+
+1. **The ruling, in one sentence: the metric is right, the wave is the owner's own, the 16° is its BREAKING moment
+   rather than the face he rides along — and the probe has never put the board on 16° of anything.**
+   `FaceWater` at `FACE=1.4,16,5.7` reads **`local` 16.0°, `turn` 16.0°, `upper80` 13.1°, `chord2` 15.6°**
+   [M, analytic]; the board is placed 0.75 fronts onshore of the crest, which is **`faceFrac` 0.16**, and there the
+   same water reports **12.1–12.3° along the face** and **8.8–9.0° across the board** at frame 1, in **24 of 24 and
+   18 of 18 runs of every arm** [M, 21 621 frames of 8 arms].
+2. **So "the 16° face" was never the water the rider is on, and that is this folder's own sentence, now measured in
+   the loop's own column.** Step 3.2t wrote *"every '16° face' and '31° face' in this thread is the face's steepest
+   point; it is not the water the board is on"*; what is new here is the number at the board — and the **chain**
+   from one to the other, closed to **0.003° over 21 621 frames** (§10 C2): `|tilt| = |atan(tan(slope_at_faceFrac) ·
+   sin ψ)|`, with ψ the crossing angle the probe sets at 45°.
+3. **The metric is not confused, and the four are printed together so it cannot be.** `FaceWater`'s `slope` option is
+   *"the face's slope at its steepest"* [R] and it is realised exactly: the probe's own read of it through the same
+   `sampleAt` the board is handed gives `local` **16.00°**. On `FaceWater` **`local` and `turn` are identical by
+   construction** (its trough is flat), so for the test wave there is no 16-against-31 ambiguity at all; the two
+   differ only on a real face.
+4. **The provenance of 16° is the owner's own spot, not the pool.** It is **PR #223's fit to Canyon B's arm** —
+   `CANYON_B_MATCH`'s `height 1.4 m, depth 2.6 m, slope 16°, speed 5.7 m/s`, fitted to a solver measurement of
+   Canyon B at the take-off (x −112): **crest 1.39 m (1.10–1.79), 5.6 m/s (5.2–6.3), steepest slope 15.5°
+   (13.5–16.6) median before breaking, highest per wave 18.2°** [R, `calibration-canyon.md`, 3 Practice seeds, 22
+   clean breaks at that column]. The **pool's** own matched rows are **19° and 21°**, and the old default test wave
+   was **20°** [R, `calibration.md`] — so the coincidence with step 5e's *"the 2 m pool reads `local` 16.4°"* is a
+   coincidence and nothing in this folder was ever fitted to the pool.
+5. **The fit is right to half a degree against the window #223 fitted it in, and that window is the breaking
+   moment — it is not the gentle end of the owner's ride, it is the sharp end of it.** 16.0° against #223's 15.5°
+   (13.5–16.6) in the 3.0–0.4 s before the wave breaks at the take-off; but the **same calibration** measured the same
+   arm steepening onshore to **19.6° (17.7–21.7) in the bowl at x −52 and 21.6° at x −42**, and **Big at
+   18.4–20.1°** [R]; and the **highest** `local` inside any one wave's own pre-break window is a couple of degrees
+   more again — **18.2°** at the take-off, **23.6–24.3°** in the bowl [R]. **The spot is not one face: #223 fitted it
+   five rows, from 1.4 m at 16° to 2.85 m at 21°, and this folder has only ever run the first.**
+6. **And the second half of the ruling is a factor of two at the place that matters.** On the owner's own swell the
+   spot's **clean ridable** faces give **5.5 / 5.4 / 5.6°** at 0.16 of their height, where the test wave gives
+   **12.3°** [M, 3 seeds, 5 677 faces against an exact analytic figure]. **×2.2.** The spot's **breaking** faces give
+   **10.5 / 11.5 / 10.1°** there — so **the probe's placement sits on water like the spot's breaking face, not like
+   the face a rider trims along.**
+7. **The cause is the profile's shape, and it is why matching a face by its steepest angle does not match it where a
+   board is.** The spot's steepest point sits at **0.62–0.64 of the height** [M; #223 read 0.60–0.65], `FaceWater`'s
+   at **0.50** by construction, so the real face keeps a long gentle toe: at 0.16 of the height it gives
+   **0.46–0.48** of its own `local` where the smoothstep gives **0.77** [M]. The two waves agree to within a fifth
+   high on the face and are a factor of **three** apart at 0.05 of it.
+8. **The two published Canyon numbers were never in conflict — the window was.** Step 5e's **`local` 5.4° (most
+   20.7)** reproduces here **to every digit including `n`** on its own configuration (§10 C3), and it reads
+   **7.8–8.7°** on the owner's swell, because it takes the tallest crest in a 90 m window that **ends at z −110** —
+   offshore of the arm's own onsets at z −98 … −102 [R, #223]. Conditioned on the water a rider is on, the same seas
+   read **11.5–11.9°**. **Step 5e's ruling that Canyon B cannot present 30–45° stands** (0 of 22 989 faces reach
+   30°), **and its stated maximum should be 26.7°, not 20.7°** [M].
+9. **A third conditionality, unnamed until now, is in every ride time this folder has published: a fifth to a third
+   of the frames have no face under the board at all.** `faceFrac ≤ 0.001` — at or past the trough, where
+   `FaceWater` is exactly flat and exactly still by construction [R] — in **22.5 %** of the shipped glide arm's
+   frames, **31.6 %** of the prediction arm's, **14.0 %** of the reference arm's and **11.0 %** of the owner's own
+   cell's, against **0 of 845** and **0 of 497** on the two `both` arms, which die before they get there [M, 21 621
+   frames]. **The arms differ in that share by three times, so their ride times are not times on a face.**
+10. **Of my own ten predictions six are upheld, two are refuted and two are half** (§5c), and the two refuted are
+    **P1** (I expected the spot's clean face at 13–18° and it is 11.5–11.9°) and **P5**, the round's own quantitative
+    bridge (I expected 0.6–0.8 of `local` at the board's place and it is 0.46–0.48). **Both refutations make the gap
+    bigger than I predicted.** I have the ruling, its metric, its populations and its cause; **the owner's bar is
+    untouched and I built nothing.**
+## 1. (A) The five reads that had to come first
+
+**R1 [R]. `FaceWater`'s one angle is `local`, by its own documentation and by construction.** `slope` is *"the face's
+slope at its steepest, degrees"*, and the surface is a smoothstep over `front = 1.5 H / tan(slope)`, *"so it is
+steepest halfway down at `slope`, concave below and convex above"* [R, `src/physics/testing/FaceWater.ts:1–45`]. So
+the steepest point sits at **0.50 of the height** by construction, and the trough is **flat** — which is why `turn`
+(the slope change from the trough to the steepest point) **equals** `local` on it, and why the 16-against-31
+confusion step 5e warns about cannot arise for the test wave. It is *"the same along x and never breaks"* [R], which
+is the first thing a spot is not.
+
+**R2 [R]. The probes' number comes from the owner's own spot, and the folder says so on its own title page.**
+`fall.ts`: *"the Canyon-matched `FaceWater` (1.4 m, 2.6 m deep, 16°, 5.7 m/s — PR #223's **fit** to Canyon B's arm,
+not Canyon)"* [R, `3.3/fall.ts:48–49`], and `plant.ts` repeats it with the placement [R, `:106–108`]. `FACE`'s
+default is the string `'1.4,16,5.7'` and `DEPTH`'s is `2.6` [R, `plant.ts:143–144`]. **PR #223's own fitted table**
+gives `height 1.4 · depth 2.6 · slope 16 · speed 5.7` for *"Practice, typical (arm)"*, and its `depth` is **not** the
+measured 2.2 m: it is chosen so that `FaceWater`'s current `c·η/(d+η)` reproduces the measured 2.0 m/s at the crest
+[R, `calibration-canyon.md` part 2].
+
+**R3 [R]. The owner's spot is Canyon B on the Practice swell, and both halves of that are defaults, not choices.**
+`?canyonWaves=true` maps to `canyonBed: 'b'` — *"version B, the waves before version C"* [R,
+`PhysicalMode.ts:464`, `:1362–1369`] — and the conditions the game starts from are
+`DEFAULT_CONDITIONS = { swell: 'practice', tide: 'mid', wind: 'calm', time: 'midday' }` [R,
+`SurfConditions.ts:68`]. **Step 5e's Canyon row ran `medium`** [R, `c2-step5e-face.ts`, part C], so it is not the
+owner's swell; §4 runs both and prints both.
+
+**R4 [R]. The dumped `tilt` column is the controller's own datum, not a quantity of the probe's.** The game computes
+`faceTilt = −(roll − rail)` and its comment names it *"the face's own tilt under the board — the angle the measured
+`rail` is `roll` less, which is `atan2(waterUp · side, waterUp.y)`"* [R, `AttachedRider.ts:3530–3536`], and
+`plant.ts` writes exactly `tilt = atan2(nW · sideV, nW.y)` with `rail = roll − tilt` [R, `plant.ts:891–893`]. **So
+§3's column is the number the loop reads when `?waterHeel` is on, in the loop's own sign.** Part 5 quoted its frame-1
+value as **8.811°** and Part 6's mount figures as **gm |tilt| 8.22°** on the 16° face; §3 is the whole distribution
+behind those, per arm.
+
+**R5 [R]. The four metrics, and which of them each published number is.** Step 5e defines `local`, `upper80`,
+`chord2`/`chord1` and `turn` [R, `c2-step5e.md` §1]. **16° is `local`** — on the probes' wave by construction and in
+PR #223's measurement by name (*"steepest slope"*). **31.3° and 51.0° are `turn`** [R, step 3.2t's own table].
+**20.7° is `local`**, a **maximum over 3 356 faces** of Canyon B and not a median [R, step 5e §4]. §4's tables print
+all four for every population, so no row can be read in the wrong frame.
+
+## 2. (B) The test face itself, reduced step 5e's four ways
+
+| **[M]** `FaceWater` read along +z through the same `sampleAt` the board is handed, every 5 cm; analytic, so exact | front, m | **local** | upper80 | chord2 | chord1 | **turn** | steepest at | **at the board's own place (0.16 of H)** |
+|---|---|---|---|---|---|---|---|---|
+| **`FACE=1.4,8,5.7`** (Part 6's gentle arm) | 14.94 | **8.00** | 6.53 | 7.96 | 7.99 | **8.00** | 0.50 of H | **6.1°** |
+| **`FACE=1.4,16,5.7`** (the folder's own, since 3.3f) | 7.32 | **16.00** | 13.13 | 15.62 | 15.91 | **16.00** | 0.50 of H | **12.3°** |
+| **`FACE=1.4,24,5.7`** (Part 6's steep arm) | 4.72 | **24.00** | 19.88 | 22.71 | 23.68 | **24.00** | 0.50 of H | **18.8°** |
+| the 16° face's profile up the face | — | 5 % **7.5°** · 15 % 11.9° · 16 % **12.3°** · 30 % 14.9° · 45 % 15.9° · 50 % **16.0°** · 70 % 14.8° · 85 % 12.0° · 95 % 7.7° | | | | | | |
+
+**Four readings.**
+
+1. **`local` is realised to the second decimal, so the probe's own instrument agrees with the construction**: 8.00,
+   16.00, 24.00 against the `slope` asked for [M]. That is the control that makes the rest of this round's angles
+   comparable with step 5e's.
+2. **`local` and `turn` are the same number on this wave**, to the second decimal, on all three faces [M] — the
+   trough is flat, so there is nothing for `turn` to subtract. **The test wave cannot be read in the wrong one of
+   those two metrics.**
+3. **`upper80` is 2.3–4.1° below `local`** (13.13 against 16.00), which is the curvature, and it is the metric
+   Carini's 4 200 real waves are in: her plunging median is 16.45° and her 95th 27.46° [S, via step 5e]. **Our 16°
+   test face sits at the median of her population on `local` and just below it on her own metric.**
+4. **The profile is symmetric about mid-face and it falls away fast**: 16.0° at the half-height, **12.3° at 0.16**
+   and **7.5° at 0.05** [M]. **The face's nominal angle is available at exactly one height**, and where the board is
+   put decides which part of it the ride happens on. §3 is where the board is put.
+
+## 3. (B) The face the board actually MEETS — step 3.4f's own kept dumps, nothing re-run
+
+| **[M]** every frame of every run, step 3.4f's `*.mount.jsonl.gz` | frames | runs | **faceFrac**, median (5–95 %) | **along the face**, ° | **across the board (`tilt`)**, ° | frame 1: along / across | C2 resid, ° |
+|---|---|---|---|---|---|---|---|
+| **the glide, the datum off** (`g-off`, local 16°) | 2 193 | 24 | **0.096** (0.000–0.350) | **10.1** (0.0–15.4) | **6.6** (0.0–10.2) | **12.1 / 8.8** | 0.0019 |
+| the glide, the prediction alone | 5 144 | 24 | 0.033 (0.000–0.306) | 6.4 (0.0–14.9) | 4.0 (0.0–11.0) | 12.1 / 8.8 | 0.0028 |
+| the glide, the reference alone | 4 144 | 24 | 0.073 (0.000–0.268) | 9.0 (0.0–14.4) | 6.4 (0.0–11.9) | 12.1 / 8.8 | 0.0023 |
+| **the glide, both** (`g-tilt`) | 845 | 24 | 0.161 (0.092–0.261) | **12.3** (9.9–14.3) | **8.6** (6.1–11.9) | 12.1 / 8.8 | 0.0016 |
+| **the owner's cell, the datum off** (`l-off`) | 1 433 | 18 | **0.277** (0.000–0.483) | **14.6** (0.0–16.0) | **9.6** (0.0–13.7) | **12.3 / 9.0** | 0.0023 |
+| the owner's cell, both (`l-tilt`) | 497 | 18 | 0.202 (0.163–0.309) | 13.3 (12.3–15.0) | 9.3 (7.9–10.9) | 12.3 / 9.0 | 0.0011 |
+| **the 8° face, off** (`s8-off`) | 5 097 | 24 | 0.110 (0.001–0.354) | **5.3** (0.4–7.7) | **2.6** (0.2–5.2) | **6.0 / 4.3** | 0.0009 |
+| **the 24° face, off** (`s24-off`) | 1 268 | 24 | 0.130 (0.000–0.375) | **17.3** (0.0–23.4) | **12.5** (0.0–16.6) | **18.4 / 13.9** | 0.0030 |
+
+**Five readings.**
+
+1. **At frame 1 the board meets 12.1–12.3° of face and the loop reads 8.8–9.0°, in every run of every 16° arm** —
+   the spread across 24 runs is **0.3°** [M]. **Part 5's 8.811° and Part 6's gm |tilt| 8.22° are this number**, and
+   neither is 16°. The folder's own name for its cell — *"the 16° face"* — is the wave's steepest point, 0.34 of its
+   height above where the board was put.
+2. **The chain is measured, not asserted.** `|atan(tan(slope at the board's own `faceFrac`) · sin ψ)|` against the
+   dumped `tilt`, frame by frame: **peak 0.0009–0.0030° over 21 621 frames of 8 arms** [M, §10 C2]. So the two
+   columns above are one quantity read two ways, and the **0.71** between them is `sin 45°` — the probe's own
+   crossing angle, **not** a property of any face.
+3. **Part 6's face sweep, restated in the water the board was on.** The shipped rider rides **4.600 s** where the
+   board meets **6.0° / 4.3°**, **1.450 s** where it meets **12.1° / 8.8°**, and **0.917 s** where it meets
+   **18.4° / 13.9°** [M, 24 runs an arm]. The sweep is real and its direction is unchanged; what moves is the
+   **numbers it should be quoted at**, and every one of them is about two thirds of the label it has carried.
+4. **The arms do not ride the same face, and over a whole ride the gap is far wider than Part 6's mount window
+   showed.** Part 6 measured gm |tilt| **8.794 → 7.850°** over `t ≤ 0.2 s`; over **every** frame the four glide arms'
+   medians are **10.1 / 6.4 / 9.0 / 12.3°** along the face — a **1.9-fold** spread — because the long-riding arms
+   spend their time nearer the trough (`faceFrac` 0.033 against 0.161) [M]. **A comparison of ride times across these
+   arms is not a comparison at a fixed face**, and this is the measurement of by how much.
+5. **And on three of the four glide arms the board spends between a seventh and a third of the ride with no face
+   under it at all.** `faceFrac ≤ 0.001` — at or past the trough, where `FaceWater`'s surface is **exactly flat and
+   exactly still** by construction [R] — happens in **494 of 2 193 (22.5 %)** frames of the shipped glide arm,
+   **1 627 of 5 144 (31.6 %)** of the prediction arm, **581 of 4 144 (14.0 %)** of the reference arm and **157 of
+   1 433 (11.0 %)** of the owner's own cell, against **0 of 845** and **0 of 497** on the two `both` arms, which die
+   before they get there [M]. **A ride time on these arms is not a time spent on a face**, and the arms differ in
+   that share by three times.
+6. **I will not turn readings 4 and 5 into a mechanism.** The arms that sit flattest ride longest *and* the arms
+   that ride longest have more time to drift onto flat water; these dumps cannot separate those, exactly as Part 6
+   §6's overshoot could not. It is printed as a confound on the comparison, not as a cause of anything.
+7. **The guards, because `Number(null) === 0`.** Rows whose four read columns are not all finite numbers: **0 of
+   21 621** across the eight arms [M]. So every zero above is a measured zero.
+## 4. (B) Canyon B's own water — and why the two published Canyon numbers are both right
+
+Step 5e published **`local` 5.4° (2.3–17.7, most 20.7) over 3 356 faces** of Canyon B's arm; PR #223 published
+**15.5° (13.5–16.6)** at the same spot's take-off. **Both are `local`, and both are right**: they are different
+windows over different populations of the same water. This section measures them on one sea, at one set of instants,
+with one reducer.
+
+**The populations, named.** `?canyonWaves=true` (`canyonBed 'b'`, grid 400 × 451), tide mid, stage 2, CPU, the arm's
+columns, the face read along the ray through `PhysicalSurfWater.forSimulation` — the water the bodies read, at the
+render nodes the snapshot draws — every 5 cm. `n` counts **faces**, not independent waves: consecutive frames of the
+same crest are correlated, so a 1 826-face population is of the order of tens of waves. The median is the folder's
+own convention (`q(v, 0.5)`, the **upper middle element**), the band is the 5th–95th, and *most* is the maximum.
+
+### 4a. Step 5e's swell (medium, seed 1, 60–120 s, its own six columns, every 0.1 s) — the control, and the window
+
+| **[M]** | n | H, m | **local** | upper80 | chord2 | **turn** | **at 0.16 of H** | steepest at |
+|---|---|---|---|---|---|---|---|---|
+| **step 5e's own read**: the tallest crest in z −200 … −110, one face a column-frame | **3 356** | **0.72** (0.37–1.59) | **5.4** (2.3–17.7, most **20.7**) | 4.2 | 5.3 | 5.0 | **3.4** | 0.58 |
+| **step 5e's published row, for comparison** [R, `c2-step5e.md` §4] | 3 356 | 0.72 (0.37–1.59) | 5.4 (2.3–17.7, most 20.7) | 4.2 | 5.3 | 5.0 | — | 0.58 |
+| every crest of H ≥ 0.30 m in z −175 … −60 (this round's window, which reaches the onsets) | 10 069 | 0.65 (0.36–1.52) | 6.2 (2.6–17.7, most 21.1) | 4.8 | 6.0 | 6.0 | 3.7 | 0.58 |
+| **the clean ridable faces**: H ≥ 1.00 m, nothing breaking anywhere on them | **1 826** | **1.33** (1.03–1.63) | **12.2** (5.5–18.8, most 20.8) | 10.0 | 11.9 | **12.2** | **6.1** (3.3–9.3) | **0.62** |
+| the clean faces of H ≥ 1.30 m (#223's sets) | 979 | 1.49 (1.32–1.65) | **14.5** (10.5–19.4, most 20.8) | 12.0 | 14.0 | 14.5 | **7.1** (5.1–9.5) | 0.64 |
+| **the clean faces whose crest is within 25 m of the take-off** (z −125) | **1 084** | **1.36** (1.09–1.65) | **13.4** (7.8–19.3, most 20.8) | 11.0 | 12.9 | **13.4** | **6.6** (3.8–9.4) | 0.63 |
+| the **breaking** faces (`breaking > 0` anywhere on them) | 1 532 | 1.11 (0.59–1.54) | **15.1** (11.5–19.5, most 21.1) | 11.6 | 14.2 | 14.7 | **9.7** (6.7–14.1) | 0.53 |
+
+**C3 passes exactly: the first two rows are the same numbers, to every digit printed, including `n`.** So the copies
+of step 5e's `faceOf`, `band`, `q` and `feltFace` in this round's probe are its reducer, and everything below is
+comparable with everything it published.
+
+### 4b. The owner's own swell (practice, seeds 1 / 2 / 3, 60–200 s, seven columns x −122 … −62, every 0.2 s)
+
+Three seeds, each printed on its own line, **never pooled**: the medians are of faces, and the seeds are the only
+independent thing here.
+
+| **[M]** seed 1 / 2 / 3 | n | H, m | **local** | upper80 | chord2 | **turn** | **at 0.16 of H** | steepest at |
+|---|---|---|---|---|---|---|---|---|
+| **step 5e's own read** (the tallest crest in z −200 … −110) | 4 594 / 4 617 / 4 617 | 1.18 / 1.58 / 1.26 | **7.8 / 8.7 / 8.3** (max 19.8 / 21.5 / 20.3) | 6.3 / 6.2 / 6.7 | 7.5 / 8.5 / 8.0 | 7.1 / 8.3 / 7.6 | **3.6 / 3.1 / 3.8** | 0.62 ×3 |
+| every crest of H ≥ 0.30 m in z −175 … −60 | 7 953 / 7 165 / 7 871 | 1.25 / 1.47 / 1.28 | **12.1 / 14.2 / 13.2** (max **26.7** / 22.5 / 21.2) | 9.6 / 11.0 / 10.4 | 11.5 / 13.5 / 12.7 | 11.2 / 13.1 / 12.4 | 5.8 / 7.6 / 6.6 | 0.60 / 0.57 / 0.59 |
+| **the clean ridable faces** (H ≥ 1.00 m, nothing breaking) | 3 485 / 2 510 / 3 537 | **1.34 / 1.69 / 1.39** | **10.5 / 10.3 / 10.9** (max 20.9 / 21.8 / 20.3) | 8.6 / 8.2 / 8.9 | 10.2 / 10.1 / 10.6 | **10.5 / 10.3 / 10.9** | **4.9 / 4.7 / 5.1** | 0.63 / 0.64 / 0.63 |
+| the clean faces of H ≥ 1.30 m (#223's sets) | 1 968 / 1 942 / 2 182 | 1.46 / 1.82 / 1.51 | 12.0 / 11.0 / 12.3 | 9.9 / 8.7 / 10.2 | 11.7 / 10.7 / 12.0 | 12.0 / 11.0 / 12.3 | 5.7 / 5.0 / 5.9 | 0.63 / 0.64 / 0.63 |
+| **the clean faces within 25 m of the take-off** (z −125) | **2 152 / 1 331 / 2 194** | **1.39 / 1.67 / 1.39** | **11.5 / 11.9 / 11.7** (max 19.4 / 21.8 / 20.1) | 9.5 / 9.5 / 9.6 | 11.2 / 11.6 / 11.4 | **11.5 / 11.9 / 11.7** | **5.5 / 5.4 / 5.6** | 0.63 / 0.63 / 0.62 |
+| **the breaking faces** (`breaking > 0` anywhere on them) | 2 621 / 3 157 / 2 911 | 1.34 / 1.56 / 1.35 | **16.9 / 18.4 / 16.5** (max **26.7** / 22.5 / 21.2) | 12.8 / 13.9 / 12.6 | 16.0 / 17.5 / 15.6 | 16.6 / 18.2 / 16.1 | **10.5 / 11.5 / 10.1** | 0.52 / 0.51 / 0.52 |
+| the share of all faces with any breaking on them | — | — | **33.0 % / 44.1 % / 37.0 %** of 7 953 / 7 165 / 7 871 | | | | | |
+
+**The profile up the face, the clean faces within 25 m of the take-off, against the test wave's own** [M]:
+
+| of the height | 5 % | 15 % | **16 %** | 30 % | 45 % | **50 %** | 70 % | 85 % | 95 % |
+|---|---|---|---|---|---|---|---|---|---|
+| **Canyon B, Practice, seed 3** (n 2 194) | 2.3° | 5.3° | **5.6°** | 8.7° | 10.8° | 11.2° | **11.4°** | 9.6° | 6.0° |
+| **the 16° test face** | 7.5° | 11.9° | **12.3°** | 14.9° | 15.9° | **16.0°** | 14.8° | 12.0° | 7.7° |
+| the ratio | 0.31 | 0.45 | **0.46** | 0.58 | 0.68 | 0.70 | 0.77 | 0.80 | 0.78 |
+
+**Six readings.**
+
+1. **The two published Canyon numbers are the same metric over two windows, and both reproduce here.** Step 5e's own
+   read gives **5.4°** on its own swell (its published figure, to the digit) and **7.8–8.7°** on the owner's, because
+   it takes **one** face a column-frame — the tallest crest in a 90 m window that **ends at z −110**, offshore of
+   where the arm's onsets sit (z −98 … −102 [R, #223]) — so most of its population is open swell. Conditioned on the
+   water a rider is actually on, the same sea reads **11.5–11.9°**. **Neither number was wrong; the window was the
+   whole disagreement.**
+2. **The spot's clean ridable face is 11.5–11.9° `local`, and its breaking face is 16.5–18.4°.** The test wave's
+   **16.0°** sits **between** them: about **4° steeper than the face a rider rides** and about **1° gentler than the
+   face in the moment it breaks**. PR #223's **15.5°** is the same water in its own narrower window — the 3.0–0.4 s
+   before it breaks at that column — and it lands, as it should, between my clean 11.7° and my breaking 16.5°.
+   **Three populations, three numbers, one wave, and they are consistent.**
+3. **At the place the board is actually put, the gap is a factor of two and it is the round's real number.** The
+   clean faces near the take-off give **5.4–5.6°** at 0.16 of their height; the test wave gives **12.3°**. **×2.2.**
+   Against the **breaking** faces (10.1–11.5°) the test wave is within 10 %. So the probe's placement is on water
+   like the spot's **breaking** face, not like the face a rider trims on.
+4. **The reason is the profile's shape, not its peak, and `steepest at` is the tell.** The spot's steepest point sits
+   at **0.62–0.64 of H** (#223 measured 0.60–0.65 [R]); `FaceWater`'s sits at **0.50** by construction. So the real
+   face has a **long gentle toe** and gives only **0.46–0.48 of its own `local`** at 0.16 of the height, where the
+   smoothstep gives **0.77**. The two waves agree best high on the face (0.77–0.80 of each other at 0.70–0.95 of H)
+   and worst at the bottom (**0.31** at 0.05). **Matching a face by its steepest angle does not match it where a
+   board sits.**
+5. **`local` and `turn` are the same number on the spot's clean faces too** — 10.5 / 10.3 / 10.9 against 10.5 / 10.3
+   / 10.9 — because its trough is nearly flat as well [M]. **So no figure in this round depends on telling those two
+   apart**, and the metric confusion step 5e warned about cannot be hiding in it. `upper80` sits 1.9–2.1° below
+   `local`, as it does on the test wave (2.9°) and in 5e's own rows.
+6. **Step 5e's ruling stands, and its maximum was understated.** In the corrected window, on the owner's own swell,
+   **not one face of 22 989 reaches 30°** — but the steepest reaches **26.7°** (seed 1), against step 5e's published
+   maximum of **20.7°** [M]. So *"Canyon B cannot present the 30–45° a bottom turn wants"* is unchanged; *"its
+   steepest is 20.7°"* should read **26.7°**, and the extra 6° is in the water that is breaking, which 5e's window
+   never reached.
+## 5. (B) Do they match? The ruling, quantity by quantity
+
+| **[M]/[R]** the same quantity on both sides, each with its own metric named | **the test face** (`FACE=1.4,16,5.7`, 2.6 m) | **Canyon B, the owner's spot** (`?canyonWaves=true`, Practice) | the gap, and which way |
+|---|---|---|---|
+| **`local`**, the face's steepest slope | **16.00°** [M, exact] | **11.5 / 11.9 / 11.7°** on the clean ridable faces near the take-off [M, 3 seeds, 5 677 faces]; **16.9 / 18.4 / 16.5°** while breaking [M]; **15.5° (13.5–16.6)** in the 3.0–0.4 s before breaking [R, #223]; **19.6°** in the bowl, **21.6°** further in [R, #223] | **the test is ~4° steeper than the clean face and ~1° gentler than the breaking one; it is 3–6° gentler than the bowl** |
+| **`turn`**, the slope change trough → steepest | **16.00°** (identical to `local`: the trough is flat) [M] | **11.5 / 11.9 / 11.7°** on the same faces — identical to its own `local` too [M, 3 seeds] | **the two metrics cannot be confused on either wave** |
+| **`upper80`**, Carini's window | **13.13°** [M] | **9.5 / 9.5 / 9.6°** near the take-off [M] | the test is 3.6° steeper on Carini's own metric |
+| the crest's height over the trough | **1.40 m** | **1.39 m (1.10–1.79)** at the take-off; 1.80 m on the sets; 2.31 m on Big [R] | **the median matches; the test is one wave and the spot is a factor of 1.6 between its tenth and ninetieth** |
+| the crest's speed | **5.7 m/s** | **5.6 m/s (5.2–6.3)** [R] | matches |
+| where the steepest point sits | **0.502 of H** [M] | **0.62–0.64 of H** [M, 3 seeds; #223 read 0.60–0.65] | **the test's steep band is lower on the face, so its toe is far steeper than the spot's** |
+| **the slope where the board actually is** (`faceFrac` 0.16) | **12.3°** [M] | **5.5 / 5.4 / 5.6°** on the clean face near the take-off; **10.5 / 11.5 / 10.1°** on the breaking one [M] | **×2.2 against the face a rider trims on, ×1.1 against the one that is breaking — the ruling's real number** |
+| **the datum the loop reads** (across the deck, ψ 45°) | **8.8°** [M, 24 of 24 runs] | **3.9°** at the same place and heading on the clean face [I, 5.6° × sin 45°] | the factor 0.71 is the **heading**, not the face |
+| the water at the crest / at the steepest point / at the trough | **2.0 / 1.21 / 0.00 m/s** [M] | **1.9–2.1 / 1.2–1.3 / −0.65 to −1.0 m/s** [R, #223] | the crest and the steepest point match **by construction** (#223 fitted `depth` to them); **the trough does not: the spot's runs seaward and the test's is still** |
+| the peel | **none — one face repeated along x, never breaking** [R] | **about 12.5 m/s along x, in sections**, faster than any rider in these tables travels [R] | **outside what `FaceWater` can represent at all** |
+| the crest-to-trough run | **7.35 m** [M] | **11.2–14.2 m** (sets 16.6 m) [R] | the test's face is **a third to a half shorter** |
+
+**Four readings, and the first is the ruling.**
+
+1. **The answer, in the metric both sides are measured in: the test's 16° is the owner's wave in the moment it
+   breaks, not the wave he rides along.** `local` **16.00°** against the spot's **11.5–11.9°** on the clean ridable
+   faces near the take-off [M, 3 seeds] and **16.5–18.4°** on the faces that are breaking [M]. PR #223's **15.5°**
+   is the same water in the narrower window just before it breaks, and it falls between my two. The **height** and
+   the **crest speed** match (1.39–1.67 m against 1.4; 5.6 against 5.7 m/s), and the water at the crest matches
+   because #223 fitted the depth to make it. **So: right wave, right metric, and about four degrees steep for the
+   part of the ride that is not the breaking moment.**
+2. **And it is the wrong question, because the probe never puts the board on that 16°.** The board is placed at
+   `faceFrac` **0.16**, where the same wave is **12.3°**, and the loop's datum is **8.8°**. **A reader of this folder
+   who assumed "16° face" meant 16° of water under the rider was out by a factor of 1.3 along the face and 1.8 in the
+   loop's own column** — and the three faces Part 6 swept are **6.0 / 12.1 / 18.4°** at the board, not 8 / 16 / 24.
+3. **The spot is five fitted rows and the folder has run one.** #223's own table: the arm at **1.4 m / 16°**, the
+   Practice **set** at **1.95 m / 16°**, the **bowl** at **2.1 m / 21°**, Big at **2.3 m / 19°** and Big's sets at
+   **2.85 m / 21°** [R]. **Three of those five are steeper than anything this folder has ridden**, and Part 6's own
+   sweep says the shipped rider goes from 1.450 s to 0.917 s between 16° and 24°.
+4. **What `FaceWater` cannot carry is not the angle.** #223 listed it and nothing since has closed it: the **peel at
+   12.5 m/s in sections**, the **trough running seaward at 0.65–1.3 m/s** where the test's is still, a face **a third
+   to a half longer**, the **spread** (1.6 × in height between the tenth and ninetieth percentile, and 16 of 38 waves
+   pass the take-off without breaking there), and the bowl's jump. **The test face is a good fit to one of the
+   spot's rows and a poor model of the spot**, and those are different statements.
+
+### 5c. The ten predictions, scored against the file committed before the arms (`e7e657ca`)
+
+| | what it said | what the arms say | verdict |
+|---|---|---|---|
+| **P1** | the clean faces near the take-off read `local` **13–18°** | **11.5 / 11.9 / 11.7°** [M, 3 seeds] | **refuted**, and below the band |
+| **P2** | step 5e's own read comes out **under 8°** on the same sea | **5.4°** on its own swell, **7.8 / 8.7 / 8.3°** on the owner's | **refuted as stated** on two of three practice seeds; the point it was testing — that the window, not the metric, is the disagreement — is upheld |
+| **P3** | `local` and `turn` agree within **1°** on the clean faces | **identical** on all three seeds (10.5 / 10.3 / 10.9 both) | **upheld** |
+| **P4** | `upper80` sits **2–4°** below `local` | **1.9 / 2.1 / 2.0°** below | **upheld**, at the edge |
+| **P5** | the slope at 0.16 of H is **0.6–0.8 ×** their own `local` | **0.46 / 0.46 / 0.48 ×** | **refuted**, and this is the round's own bridge: the gap at the board is **bigger** than I predicted |
+| **P6** | `breaking > 0` on at least **2 %** of faces | **33.0 / 44.1 / 37.0 %** | **upheld** |
+| **P7** | the steepest point at **0.55–0.70 of H** | **0.63 / 0.64 / 0.63** | **upheld**, and it matches #223's 0.60–0.65 |
+| **P8** | the clean faces' median height **1.1–1.5 m** | **1.34 / 1.69 / 1.39 m** | **half**: two seeds inside, seed 2 at 1.69 m is outside |
+| **P9** | the breaking faces' `local` **at or above** the clean ones' | **16.9 / 18.4 / 16.5** against **10.5 / 10.3 / 10.9** | **upheld** |
+| **P10** | **no face reaches 30°** | 0 of 22 989; the steepest is **26.7°** | **upheld** |
+
+**Six upheld, two refuted, two half** — and the two refutations are the two that carried the round's own arithmetic.
+## 6. (B) What this does to the folder's conclusions — named one by one, and what would have to be re-run
+
+**Three conditionalities, not one.** Every ride-time number in this folder since step 3.3f carries all three, and they
+are different: the face's **nominal** angle (`FACE`'s second number, swept once, in Part 6 §5), **where on that face
+the board is put** (`AHEAD`, never swept, and §3 is the first measurement of what it costs), and **the heading it
+crosses at** (`SIDE = −45°`, never swept, and it is the factor **sin ψ = 0.71** between §3's two columns).
+
+**Not face-conditional** — these are identities, constants, reads, or were themselves measured across the sweep:
+
+| the finding | why it stands | population |
+|---|---|---|
+| `both = predict + ref − off`, identically, and the frame-1 residual **1.000 × 10⁻⁶** | the command's own algebra, and it was measured on **all 24 arms**, the 8° and 24° faces among them | 24 arms, 56 757 ticks [M, Part 6 §3] |
+| `tiltSameSign` **0 of 56 757** and `cancelShare` **1.575–1.686** | the same 24 arms, both other faces included | 38 arm-windows [M] |
+| the reach per degree of tilt, **202.02–206.00 °/s² per °**, a 2.0 % span | this one is **validated by** the sweep, not threatened by it: it is the quantity that was measured on all three faces | 288 ticks × 12 arms [M] |
+| `ANKLE_REST_RANGE = 0.25 rad` at every tick | a constant of the plant, read and then measured | 56 757 ticks [M] |
+| `?waterHeel=tilt` carries the datum into both places; `Design` is untouched by the flag (peak 0.00e+0) | reads and an exact control | every tick of every arm [M, Part 5 R1, Part 6 C2] |
+| the model's absolute error being within 2 × of the shipped arm's or worse on all three datum arms — *"a ratio is not a repair"* | a statement about two columns at one operating point, and the operating point is the one each arm actually ran | 288 ticks an arm [M] |
+
+**Face-conditional** — every one of these is a 16°-only measurement, and the sweep shows the 16° row is not
+representative:
+
+| the finding | what the sweep does to it | status |
+|---|---|---|
+| *"each half alone nearly triples the ride"* | on 8° **no** datum arm helps (off 4.600 best of four); on 24° one helps and one hurts | **already declared refuted** by Part 6 §5 |
+| the **ordering** off < predict / ref | flips with the face | **face-conditional** |
+| `both` roughly **halves** the ride | ×0.47 / 0.42 / 0.49 / 0.25 — holds in **sign** on four cells, varies 2 × in size | **robust in sign, conditional in size** |
+| the shipped rider's own medians, **1.450 s** (glide) and **1.033 s** (the owner's cell) | **4.600 s** on 8°, **0.917 s** on 24°, nothing about the rider changed | **face-conditional, by a factor of five** |
+| **`?mountAgree=deck`'s 1.033 → 1.167 s** — the only switch in four rounds that has moved the owner's cell | measured on **one face only**, never on another | **face-conditional and untested**; §9's step eight |
+| the ankle's clamp binding at the mount | at 16° on the owner's cell it binds with the datum **off**; at 8° `both` is **never** clamped | **face-conditional**, and Part 6 measured it so |
+| the two **kinds** of fall (sudden into the face / slow stall) | PR #223 measured the mix moving with the face: the gentler 16° arm shifts falls from sudden to stall (mild: 2 sudden, 14 stalls) | **face-conditional**, measured [R, #223 part 3] |
+| every falls-per-runs figure of Parts 1–6 and of steps 3.3f–3.3p | all 16°, all at `AHEAD` 0.75, all at ψ 45° | **triply conditional** |
+
+**What would have to be re-run, and what would not.** Nothing above needs re-running to be **valid at 16°** — the
+arms are what they are and their populations are named. What needs new arms before anything in this folder may be
+said about **the owner's spot** is short and specific:
+
+1. **The bowl's face.** `FACE=2.1,21,6.1` with `DEPTH=3.4` — PR #223's own fitted row for the part of the arm the
+   owner rides **into**, which this folder has never run. The sweep's 24° row is close to it and rides **0.917 s**
+   against 16°'s 1.450.
+2. **The sets' height.** `FACE=1.95,16,6.8`, `DEPTH=3.7` — #223's own Practice-set row. Height moves the face's
+   **length**, not its angle, and nothing in this folder has varied it.
+3. **`?mountAgree=deck` on a second face.** It is the only live candidate in four rounds and it exists on one face.
+4. **`AHEAD`, as a sweep.** 0.50 / 0.65 / 0.75 / 0.90 of the front, which on the **same** 16° wave puts the board on
+   **16.0° / 14.6° / 12.3° / 5.9°** (`faceFrac` 0.50 / 0.27 / 0.16 / 0.03) — **a range as wide as the whole `FACE`
+   sweep, reached without changing the wave at all.** `FaceWater`'s profile is symmetric about mid-face, so 0.25 of
+   the front gives the same 12.3° high on the face that 0.75 gives low on it: the placement picks the **slope**, and
+   the side of the face it picks it on is a second, independent choice.
+
+**And what does not need re-running:** the algebra, the controls, the constants, the reads, the proportionality and
+the term table's reading. **A monotone instrument is still monotone on any face**, and the reason Part 6 could reject
+it is internal to its own cell: the table and the rides it was compared against are the same arms.
+## 7. (B) The owner's bar, separately
+
+**The bar is not met, it is not closer, and this round could not have moved it: it ran no rides.** The bar is the
+owner's own sentence — *"in compress the surfer should not fall in the lower speed of getting positioning in a wave …
+100 %"* — and where Part 6 left it is where it still is: **533 of 534 rides ended before nine seconds and Compress
+fell in 177 of 178**, over twenty-four arms [M, Part 6 §7]. **Nothing in this document is a ride**; the only
+new rides it names are in §9's step eight.
+
+**What the round does add to the bar is a correction to how it should be quoted.** The best Compress figure anywhere
+in the folder is **4.600 s on Part 6's 8° arm** — which is a face the board meets at **4.3°** across the deck, a
+fifth of the owner's spot at its steepest point and less than half of what the folder's own cell gives the loop. The
+bar is nine seconds on the owner's spot. **No arm in this folder has ever been run on the part of that spot the owner
+rides into** (§6's list, item 1).
+
+## 8. What I refuted
+
+- **The brief's own premise, as it expected.** *"The likeliest error is my assumption that there is a single face to
+  compare against."* There is not one: PR #223's own calibration gives Canyon B **five** fitted rows (16° on the arm,
+  21° in the bowl, 19–21° on Big, heights 1.4–2.85 m), the arm's `local` runs **15.5° before breaking and 15–18.5°
+  while breaking**, and the spot is **a peel at about 12.5 m/s along x, in sections** that `FaceWater` cannot carry
+  at all [R]. **The folder's one cell is one of five rows of one swell of one spot.**
+- **My own framing of the question, by my own part F.** I set out to settle "is 16° right" and the answer is that the
+  **16° is right and irrelevant**: it is `local`, it is a half-degree fit to the owner's own take-off in that metric,
+  and the board is never on it. **The quantity that governs the ride is the slope where the board sits**, and on the
+  same wave that is **12.3°**, with **8.8°** reaching the loop.
+- **The suggestion that the probes' 16° came from the 2 m pool's 16.4°.** It did not: the pool's own fitted rows are
+  **19° and 21°** and the old default test wave was **20°** [R, `calibration.md`]; the probes' row is
+  `CANYON_B_MATCH`'s, dated **2026-11-10**, and both `fall.ts` and `plant.ts` name PR #223 in their headers [R].
+  **The coincidence is a coincidence**, and step 5e's sentence about it is about a different wave measured over a
+  different population.
+- **The reading that step 5e's Canyon row contradicts PR #223's.** It does not: they are the same metric over
+  different windows, and §4 reproduces **both** on one sea at one set of instants — 5e's own figure **to every digit
+  including `n`** on its own configuration, and #223's between my clean (11.7°) and breaking (16.5°) buckets.
+- **Step 5e's stated maximum, by 6°.** *"Over 3 356 faces the steepest is 20.7°"* — in a window that reaches the
+  arm's own onsets, on the owner's own swell, the steepest is **26.7°** [M, 22 989 faces]. **Its ruling is
+  untouched**: still **0 of 22 989** over 30°.
+- **My own P1 and P5, and P5 was this round's own bridge.** The spot's clean ridable face is **11.5–11.9°**, not the
+  13–18° I predicted; and at the board's own place it gives **0.46–0.48** of its `local`, not the 0.6–0.8 I took
+  from the test wave's shape. **Both make the gap larger than I predicted, which is the direction that should make a
+  reader trust it less, not more — so the populations are printed three seeds apart and never pooled.**
+- **The unstated assumption that a ride in these arms happens on a face.** On three of the four glide arms the board
+  is at or past the trough — on water `FaceWater` makes **exactly flat and exactly still** — in **11.0 % to 31.6 %**
+  of all frames, and on the shipped glide arm in **22.5 %** [M, 21 621 frames]. **Twenty rounds of ride times
+  include that**, and no document in the folder has said so.
+- **My own P6, before this round's long arms ran.** The 7 s pilot window found `breaking > 0` on **5 of 193 faces**
+  — above the 2 % I predicted, so P6 survives — but it found **0 clean faces of H ≥ 1 m in 193**, which is why the
+  arms in §4 are 140 s long and why a short window cannot answer this question at all.
+
+## 9. What I will not claim
+
+- **I will not claim the test face should change.** It is a fitted row of the owner's own spot and the fit is good in
+  the metric both sides are measured in. What I claim is that **four more rows of the same calibration exist and one
+  of them is the part of the arm the owner rides into**, and that the **placement**, not the row, is where the
+  folder's labels went wrong.
+- **I will not claim a ride time for any face I have not run.** §6's four items are arms that do not exist yet;
+  nothing here predicts what they will give, and Part 6's own sweep is the warning: the ordering of the datum arms
+  changes sign between faces.
+- **I will not claim that `FaceWater` is or is not adequate for the owner's spot.** PR #223 listed six things it
+  cannot copy — the peel, the long toe and the seaward trough, the steepest point's place, the spread, the bowl's
+  jump, and faces under 1 m of grid — and measured that its **rider tables are "not harsher"** than the default
+  wave's on the same plans [R]. **That was a different experiment** (climbing riders with the stick over) from this
+  folder's arms (unsteered, the stick never touched), and I am not pooling the two.
+- **I will not claim the board's `faceFrac` in the probes is where a rider sits on a real wave.** Nobody has
+  measured that on Canyon B. The one real-rider number anywhere near it is the catch study's trace of a pop-up
+  *"0.79 up a 20° face"* [R, `canyon-catch-2026-10-29`] — **on a different Canyon bed, before `?canyonWaves` existed**,
+  and one trace is not a number.
+- **I will not offer any bot ride as evidence of feel**, anywhere in this document.
+- **I will not re-open what Part 6 settled**: the two datum halves add (`cancelShare` 1.575–1.686, `tiltSameSign` 0 of
+  56 757), the term table is monotone where the rides are not, and the ankle's clamp is a passenger.
+- **Carried, flagged, not mine, not touched**: `steadyTurn`'s own reference on a **steered** arm (four rounds with no
+  steered arm); the `cos³` added-mass frame defect; `AttachedRider.frame`'s 70° bank clamp (which is what the `live`
+  filter's `clamped` column is, **not** the ankle's); the live point-mass `ω₀`; the `live` filter itself; and
+  `cmdRebuild` at 0.605 median / 51.76 peak.
+## 10. The controls
+
+**C1, the spot is Canyon B and the probe proves it from the config, not the URL.** Every Canyon arm prints
+`spot canyon · canyonBed b · swell <the arm's> · grid 400 × 451 = 180 400 · stage 2`, read off the built
+`SurfZoneConfig` and the solver's own grid [M]. **Canyon B is 400 × 451 = 180 400; the default Canyon is
+400 × 507 = 202 800** — a different spot, and this line is what tells them apart.
+
+**C2, the chain from the face's angle to the loop's datum, measured frame by frame.** `|atan(tan(slope at the board's
+own `faceFrac`) · sin ψ)|` against step 3.4f's dumped `tilt`: **peak 0.0009–0.0030° on 21 621 frames of 8 arms**,
+against a scale of 2.6–17.3° [M]. Without this, §3's two columns are two different quantities and the 0.71 between
+them is a guess.
+
+**C3, this round's copy of step 5e's reducer reproduces step 5e's own Canyon row** on step 5e's own configuration —
+medium swell, seed 1, tide mid, its six columns, its window (the tallest crest in z −200 … −110), every 0.1 s, node
+spacing 1 m. `faceOf`, `band`, `q` and `feltFace` are copies rather than imports because importing
+`c2-step5e-face.ts` runs its own parts and then calls `process.exit(0)`; the control is what makes the copies
+legitimate.
+
+**C4, the swell is the owner's own**, `DEFAULT_CONDITIONS.swell = 'practice'` [R], and step 5e's `medium` is printed
+beside it rather than instead of it.
+
+**C5, part F's instrument against its own construction.** `FaceWater`'s realised `local` is **8.00 / 16.00 / 24.00°**
+against the `slope` asked for, and its steepest point sits at **0.502–0.503 of H** against the construction's 0.5
+[M]. The probe reads the face through `sampleAt`, the same call the board is handed, not through a finite difference
+of its own.
+
+**C6, part B is a read of kept dumps and nothing was re-run.** Every figure in §3 comes out of step 3.4f's own
+`results/34f/*.mount.jsonl.gz`, which are in the repository; the frame and run counts match Part 6's own
+(**2 193 / 5 144 / 4 144 / 845** and **1 433 / … / 497** frames, 24 and 18 runs) [M]. **If the rides are not re-run,
+they cannot disagree with Part 6**, and the counts are the check that the right arms were read.
+
+**C6b, and the one column this round turns on reproduces step 3.4f's own printed table to the digit.** Step 3.4f's
+`34f-summary.txt` prints the glide's per-frame table with `tilt` **8.824°** at frame 1 over its 24 runs; this round's
+read of the same dump gives a frame-1 median of **8.8242°** [M]. Its `gm |tilt| mt` column reads **4.262 / 8.794 /
+14.055°** for the 8° / 16° / 24° faces — so **the folder has been printing the across-deck tilt beside the label
+"the 16° face" since step 3.3k**; what is new here is the chain that connects the two, and the slope **along** the
+face in between. (Part 6 §5 quoted the 16° row's tilt as **8.22°**, which is the `g-ref` arm's own value; across that
+row's four arms the column runs **7.850–8.794°**. Named because a number quoted without its arm is how this folder
+has gone wrong before, not because it changes anything.)
+
+**C7, the predictions were committed before the arms that test them**, in `results/34g/34g-predictions.md` at
+**e7e657ca**, with parts F and B declared **given** in the same file because they had already run. Every score in
+§5 is against that file as committed.
+
+## 11. Seatbelts
+
+- `./node_modules/.bin/tsc --noEmit -p .`: **exit 0**
+- `./node_modules/.bin/tsc --noEmit -p server/tsconfig.json`: **exit 0**
+- the probe type-checked **separately**, on a throwaway project extending the root's options with
+  `types: ["node", "@webgpu/types"]` and **absolute** `typeRoots` (the root's own config is `include: ["src"]`, so a
+  `docs/` probe is outside it): **exit 0**. Every exit code above is read **on its own line and never through a
+  pipe**. `@webgpu/types` is in the list because this probe imports the solver, which the 3.4f probes did not.
+- the worktree's `node_modules` is a **symlink** to the main checkout's, so `npx` never ran.
+- **The four suites, run although nothing they cover moves** (§11's last bullet is why they could have been skipped):
+  `vitest run src/physics` **58 files, 635 passed, 21 expected fail**; `vitest run src/game src/scene/rig`
+  **736 passed**; `vitest run src/ui src/dev src/net src/audio src/devTools.test.ts` **56 files, 482 passed, 2 expected fail**;
+  `vitest run src/wave/SurfZoneRunner.test.ts`, outside the merge suite and run by hand, **43 of 43**. Every one is
+  step 3.4f's own figure to the test.
+- **And one red that was not news, chased because a red there would be:** the first pass of `SurfZoneRunner.test.ts`
+  came back **1 failed, 42 passed**, and the `src/ui …` suite **1 failed, 481 passed** — both run while **three
+  Canyon solver arms and two other suites** had every core busy. Re-run on a quiet machine they are **43 of 43** and
+  **56 files, 482 passed, 2 expected fail**. Both files time the solver, `src/` is byte-identical to `main` (the next bullet), and a timing red
+  under five CPU-bound jobs is a measurement of the machine. **It is recorded rather than dropped, because the
+  folder's own rule is that a red in that file is news.**
+- **`src/` and `server/` do not change in this round, and that is a stronger read than any hash of the Canyon's
+  state.** `git diff --numstat main -- src/ server/` prints **nothing at all**: the only files that move are
+  `docs/research/new-rider/3.4/face.ts` (new), `docs/research/new-rider/3.4/README.md` (this Part appended) and
+  `results/34g/`. **If no byte of the game moves, no ride of the game can**, so the Canyon byte check would be a
+  slower way of asking a question the diff has already answered — and the four test suites and
+  `SurfZoneRunner.test.ts` cover code none of which this round touches.
+- **The sea was spun fresh in every arm and the "spun up on the CPU in … s" line is printed with the solver's own
+  time after it** (38.9–77.5 s, solver at t 22.0–24.0 s). No `.sea` cache was read or written.
+
+## 12. Files (3.4g)
+
+- **`docs/research/new-rider/3.4/face.ts` — new, and the only file with code in this round.** Three parts: **F**, the
+  test `FaceWater` reduced step 5e's four ways through the same `sampleAt` the board is handed; **B**, the face the
+  board meets, read out of step 3.4f's kept per-frame dumps with the projection control; **C**, Canyon B's own water
+  over a window that reaches the arm's onsets, in six populations, with step 5e's own read printed beside it as the
+  control. It imports from `src/` and **writes nothing** but its own `--out` json.
+- `docs/research/new-rider/3.4/results/34g/` — `34g-predictions.md` (committed before the arms),
+  `34g-summary.txt` (every table above, as the probe printed it: parts F and B, the C3 control arm and the three
+  practice arms) and the five `*.json` the probe wrote beside them.
+- `docs/research/new-rider/3.4/README.md` — this Part. Parts 1 to 6 untouched.
+- **`src/` and `server/`: nothing.**
+## 13. For the owner, in plain words — and the shot list
+
+**You asked one question — "is the 16° test wave the wave I actually ride?" — and the answer has two halves.**
+
+**One: the 16° itself is your own spot, measured — nobody picked it off the wave pool.** Back on 10 November we
+measured Canyon B with `?canyonWaves=true` properly: at the take-off its waves are **1.39 m tall, moving at
+5.6 m/s**, and in the last three seconds before each one breaks its steepest part is **15.5°**. The test wave was
+built to match that: **1.4 m, 5.7 m/s, 16°**. I re-measured the same spot on your own swell this round and the
+height came out **1.39 m** again, to the centimetre.
+
+**But the 16° is your wave at the moment it breaks, not the face you ride along.** Measured over the clean,
+ridable faces — the ones you are actually trimming on — your spot's steepest part is **11.7°**, and only once it
+starts breaking does it reach **16.5–18.4°**. So the test wave is about **four degrees steeper** than the face you
+spend most of a ride on.
+
+**Two: the test never puts the surfer on that part of the wave, and that is the real finding.** "16°" is the wave's
+**steepest point**, which on the test wave is halfway up its face. The test drops the board **near the bottom of the
+face** — at 16 % of the height — and down there the same wave is only **12.3°**. Then, because the board crosses at
+45° rather than pointing straight down the face, the balance loop reads **8.8°** of it. **So every ride in this
+folder for twenty rounds has been on a 12° face read as 9°, labelled 16°.** I checked that chain against the game's
+own recorded numbers on 21 621 frames and it closes to three thousandths of a degree.
+
+**And at that same spot on the face, your wave gives 5.6°.** Twice as gentle. The reason is the shape: a real wave's
+steepest part sits about **two thirds** of the way up and it keeps a long gentle **toe** at the bottom; the test
+wave's smoothstep puts its steepest part exactly halfway up and has almost no toe. **Matching a wave by its steepest
+angle does not match it where a board actually sits** — which is the one sentence I would keep from this round.
+
+**Why that matters to you, in one line:** last round I told you the surfer lasts **4.6 s** on a gentle wave, **1.45 s**
+on our test wave and **0.92 s** on a steep one. Those three faces are, under the board, **4.3°, 8.8° and 13.9°**. The
+difference between "he stays up" and "he falls in under a second" is about **nine degrees of water under his feet** —
+and the test has been choosing that by where it drops him, not by what wave it builds.
+
+**Three: your spot is not one wave, and we have only ever run one row of it.** The same 10 November measurement
+found the arm **steepening as it goes**: 15.5° at the take-off, **19.6° in the bowl**, **21.6°** further in — and
+within any one wave the steepest moment is a couple of degrees more again (18.2° at the take-off, 24° in the bowl).
+Its five fitted rows run from **1.4 m at 16°** to **2.85 m at 21°**, and **every number in this folder is the first
+one.** On last round's sweep, going from 16° to 24° took the surfer from 1.45 s to 0.92 s — so the parts of your
+wave we have never tested are the harder parts.
+
+**Also worth knowing: for a fifth to a third of each test ride there is no wave under the board at all.** The test
+drops him near the bottom of the face, and once he drifts past the trough the water there is dead flat and dead
+still by construction — 22 % of the frames on the plain arm, 32 % on one of the others. **Nobody had checked that,
+and it means the ride times have been part ride and part flat water.**
+
+**Four: your bar is where it was.** 534 test rides last round, 533 under nine seconds, Compress fell in 177 of 178.
+**This round ran no rides at all** — it is a read — so nothing in it moves that, and nothing in it was meant to.
+
+### The shot list, if you want to ride it
+
+Canyon, `?canyonWaves=true`, your spot, `?physical&rider=new&feltFrame=deck&riderBody=two` — the body you said feels
+human, on everything.
+
+1. **Nothing new to ride from this round.** It is a measurement with no switch in it. If you ride anything, ride
+   **`&mountAgree=deck`** again — still the only switch in four rounds that has moved your own low-speed cell
+   (1.033 → 1.167 s, your three slowest stand-ups 0.617 → 1.000 s), and step 3.4e's question about whether standing
+   up more slowly *feels* less like being thrown is still open and a bench cannot answer it.
+2. **One thing worth watching while you ride, and it is free.** Ride a wave on the arm and then ride one **into the
+   bowl** (the end of the arm, where it bends). If falling feels different in the bowl, that is the 19–22° row we
+   have never tested, and it would tell us where to point the next arms.
+3. **And one ruling I would like.** Last round's recommendation was a **scale on the correction** (a 0.3 / 0.5 / 0.8
+   / 1.0 / 1.3 × sweep). I still think that is the next build — **but it should be run on more than one face and
+   with the board placed somewhere other than the bottom of it**, because this round shows those two choices move
+   the water under his feet as much as the wave does. **Your call on the order; my recommendation is below.**
+
+**My recommendation, in order:**
+
+- **Step eight (a): the scale sweep, on three rows instead of one.** Part 6's own next step, run on the take-off row
+  (1.4 m / 16°), the **bowl** row (2.1 m / 21°, 3.4 m deep) and the **set** row (1.95 m / 16°, 3.7 m deep) — all
+  three of them PR #223's own fits to your spot. One multiplier in one line, opt-in, off by default.
+- **Step eight (b): a placement arm, which costs nothing to build because the switch exists.** `AHEAD` is already an
+  environment variable on the probe. 0.50 / 0.65 / 0.75 / 0.90 of the face's length puts the board on **16.0 / 14.6 /
+  12.3 / 5.9°** of the *same* wave. If the ride times move as much across that as they did across the face sweep,
+  then "which wave" was never the question and "where on it" always was.
+- **Not** another datum arm, not the term table, not the clamp, not the gains, not the cost, not the body, not the
+  `live` filter — Parts 3 to 6 settled those.
+
+## 14. The deletions column, read line by line
+
+`git diff --cached --numstat dde6bb66` — **the merge base, and reading it against `main`'s tip instead is the first
+thing this column caught** (below). **Zero deletions anywhere; nine files; `src/` and `server/` empty on both
+sides.**
+
+```
+ 638   0  docs/research/new-rider/3.4/README.md                       (this Part appended, Parts 1-6 untouched)
+ 441   0  docs/research/new-rider/3.4/face.ts                         (new; 4 lines of it were re-emitted mid-round, below)
+  48   0  docs/research/new-rider/3.4/results/34g/34g-predictions.md  (new, committed before the arms)
+ 305   0  docs/research/new-rider/3.4/results/34g/34g-summary.txt     (new, generated)
+   1   0  …/34g-fb.json, 34g-medium-5e.json, 34g-practice-1/2/3.json  (new, one line each)
+──────────────────────────────────────────────
+9 files, 1 437 insertions, 0 deletions, nothing under src/ or server/
+```
+
+- **`git diff --cached --numstat main` prints four files with deletions and not one of them is mine.**
+  `.claude/skills/surf-video-read/SKILL.md` (0/67), `docs/research/new-rider/3.4/kirra-reference.md` (0/65),
+  `docs/research/new-rider/3.4/video-ref-2.md` (0/80) and
+  `docs/superpowers/handoffs/2026-11-16-surfer-and-wave-handoff.md` (0/17). **They are `main`'s own additions since
+  this branch was cut**: `main` moved from **dde6bb66** to **7b7b2cc5** mid-round, six commits of another session's
+  video-reference work, and against a tip that has files a branch does not, every one of them reads as a deletion.
+  **Read against the merge base, which is what a pull request diffs, the column is zero.** None of those six commits
+  touches this README, `src/` or `server/` (`git diff --name-only dde6bb66..main --` on all three prints nothing), so
+  there is nothing to merge and nothing conflicts. **This is the column doing its job, and it is recorded rather than
+  quietly corrected.**
+
+- **`docs/research/new-rider/3.4/face.ts` is new against the merge base (441 / 0), but it was committed before the
+  arms ran** (with the predictions, at `e7e657ca`) and then edited, so **within the branch** it has a deletions
+  column of its own — `git diff --numstat e7e657ca` reads **20 / 4** — and all four are read here like any other:
+  - **the per-arm json line of part B**, re-emitted with `nonFinite, offFace` added. Read as a column: **3** entries
+    before and **5** after, dropped set **empty** — `frames`, `runs` and `slope` are all still there.
+  - **part C's header line**, re-emitted with the literal `every 0.1 s` replaced by `every ${f(EVERY, 2)} s`;
+    every other field of the line (`swell`, `tide mid`, `stage 2`, `CPU`, `FROM`–`UNTIL`, `columns`, `seeds`,
+    `window z`) is still there, in the same order.
+  - **`next += 0.1;` → `next += EVERY;`**, the same statement with the constant named.
+  - **one `report(...)` label**, re-emitted as *"every crest of H ≥ 0.30 m in z …"* so the bucket's own prominence
+    floor is printed with it rather than left to the code.
+- **`git diff --numstat main -- src/ server/` prints nothing at all.** That is §11's seatbelt and this round's
+  strongest single line.
+- **`docs/research/new-rider/3.4/README.md`**: Part 7 appended below Part 6's last line; the first six Parts are
+  byte-identical, which the numstat's `0` in the deletions column is the check for.
+- **Nothing was written and then deleted before committing in this round**, with one exception recorded here rather
+  than left out: the probe's part C first read its faces the way step 5e does — **one face a column-frame, the
+  tallest crest in a 90 m window that stops at z −110** — and the pilot run showed that window sits **offshore of
+  where the arm breaks**, with **no clean face of H ≥ 1 m in 193**. The multi-crest read (`feltFaces`) replaced it
+  before any published arm ran, and step 5e's own version is **kept in the probe and printed as the control** rather
+  than dropped.
