@@ -5633,8 +5633,8 @@ being thrown at 6.5?** If worse, "make the ride longer" is the wrong target.
 ## 13. The deletions column, read line by line
 
 `git diff --stat origin/main HEAD` before the push, read for the deletions number, as every round since step 3.2 has.
-This round's own, read with `git stash` so the uncommitted docs do not hide it: **8 files under `src/`, 193
-insertions and 7 deletions** — and every one of the seven is a line **replaced in place**: the three `MAX_BANK` clamp
+This round's own: **41 files, 2 467 insertions and 7 deletions** against `origin/main`, of which, read with
+`git stash` so the docs do not hide them, **8 files under `src/`, 193 insertions and 7 deletions** — and every one of the seven is a line **replaced in place**: the three `MAX_BANK` clamp
 expressions in `frame`, the three `begin()`/`close()`/loop lines in `bankLedger` the new entries were threaded into,
 and `main.ts`'s pinned-list line. **No file under `src/` is deleted, renamed or emptied, and no probe of any earlier
 round loses a line: `3.3/plant.ts` gains an env read, three privates and the dump's columns and loses nothing.** The
