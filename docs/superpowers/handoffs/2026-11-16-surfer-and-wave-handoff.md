@@ -160,3 +160,32 @@ They gave **https://www.youtube.com/watch?v=3nfW6OLiyYw** ("Kelly Slater's Iconi
 **Arms** stay at or below shoulder height and follow the trunk, spread one forward one back through a turn — which is what `?stanceReach=keep` only just gave back.
 
 **Three limits it volunteered, all load-bearing:** the camera is **side-on, so lean and rail angle are precisely what cannot be read** (the quantity this whole track turns on); it is **a montage of at least three rides**; and **the slow-motion factor is unknown**, so "a turn takes 3–4 video seconds" is **not** comparable to Forsyth's measured 0.96 s. Pixel estimates, ±15° at best, every one labelled.
+
+## THE FACE RULING (step 3.4g, merged) — READ THIS BEFORE QUOTING ANY RIDE TIME
+
+> ***"The metric is right, the wave is the owner's own, and the 16° is that wave in the moment it BREAKS — not the face he rides along. And the probe has never put the board on 16° of anything: it sits where the test wave gives 12.3° and his spot gives 5.6°."***
+
+Measured on **Canyon B, practice swell — the owner's own default** (earlier readings used `medium`, which is not his), 3 seeds, 22 989 faces, never pooled. Metric is **`local`**, and on these faces `turn` is identical to it, so the 16-vs-31 trap is not hiding here.
+
+- **His clean ridable face: 11.5–11.9°.** His **breaking** face: 16.5–18.4°. The probes' `FACE=1.4,16,5.7` is **16.00° exactly** — the breaking figure.
+- **Where the board actually sits** (`faceFrac` 0.16): test **12.1–12.3°** along the face / **8.8–9.0°** across the deck; **his spot 5.4–5.6°. ×2.2.**
+- **The cause is the profile, not the peak**: his steepest is at **0.62–0.64 of H**, `FaceWater`'s at **0.50**. The two agree high on the face and are **×3 apart at 0.05 of it**. *"Matching a face by its steepest angle does not match it where a board sits."*
+- **PR #223 fitted the spot FIVE rows and this folder has run ONE** (the arm steepens to 19.6–21.6° in the bowl; the peel runs ~12.5 m/s in sections, which `FaceWater` cannot carry).
+- **5e and #223 do not disagree** — 5e's window ends offshore of the onsets. Its ruling stands; **its stated maximum should be 26.7°, not 20.7°.**
+
+**FACE-CONDITIONAL (all measured on the one row — do not quote as facts about his spot):** every ride time and falls-per-runs figure since 3.3f (**triply** conditional — face, placement `AHEAD`, heading `SIDE`); the shipped medians 1.450 s / 1.033 s (**4.600 at 8°, 0.917 at 24°**); the datum arms' ordering; the clamp's relevance; **and `?mountAgree=deck`'s 1.033 → 1.167 s, the only switch in four rounds that has moved the owner's cell.**
+
+**NOT CONDITIONAL (safe):** `both = predict + ref − off` and its 1.0×10⁻⁶ residual; `tiltSameSign` 0 of 56 757; `cancelShare` 1.575–1.686; the reach 202.02–206.00 °/s² per ° (validated *by* the sweep); `ANKLE_REST_RANGE`; "a ratio is not a repair"; the algebra, controls, constants and reads.
+
+**AN UNNAMED CONDITIONALITY IN EVERY RIDE TIME, found sideways:** the board has **no face under it at all** (`faceFrac ≤ 0.001`, where `FaceWater` is exactly flat and exactly still) in **22.5 %** of the shipped glide arm's frames, **31.6 %** of the prediction arm's, 11.0 % of the owner's cell's — **and 0 of 845 / 0 of 497 on the two `both` arms, which die first.** A three-fold difference across the very arms whose ordering Part 5 could not explain. **This is a live candidate for that interaction.**
+
+## WHERE TO RESUME (weekly budget reset)
+
+**Surfer, step eight, in this order:**
+1. **The placement arm — free, and start here.** `AHEAD` 0.50 / 0.65 / 0.75 / 0.90 puts the board on **16.0 / 14.6 / 12.3 / 5.9°** of the *same* wave — as wide as the whole `FACE` sweep without changing the wave.
+2. Part 6's scale sweep (0.3/0.5/0.8/1.0/1.3×) on **three** of #223's rows, not one: take-off, **bowl** (`FACE=2.1,21,6.1 DEPTH=3.4`), **set** (`1.95,16,6.8 DEPTH=3.7`).
+3. Re-run `?mountAgree=deck` on a second face before it is called progress again.
+
+**Wave track: still parked on the owner's two questions** (`&foamAlbedo=on` — does the broken water read right against the blue in one frame; `&foamAlbedo=bubbles` — is the aged lace a sandy stain). **Five rounds shipped without a ride; do not ship a sixth.**
+
+**Movement references:** `kirra-reference.md` and `video-ref-2.md`, plus the skill `.claude/skills/surf-video-read/` (model `sonnet`, effort default) that produced the second. Their two "not at all" rows are the standing gaps: **a lip manoeuvre has no stance and no arm control — our moves are named only after they happen** — and **head/gaze has no role at all.**
