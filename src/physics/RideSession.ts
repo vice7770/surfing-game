@@ -170,6 +170,8 @@ export interface RideSessionOptions {
   ankleLimit?: 'feet';
   /** The bound on the rest the balance may command at the ankle (step 3.3k; `AttachedRiderOptions.ankleRange`): 'load' off the live sole or 'wide' doubled (the `?ankleRange=load|wide` dev switch); by default ANKLE_REST_RANGE's own 14.32°. */
   ankleRange?: 'load' | 'wide';
+  /** Step 3.4i: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (`AttachedRiderOptions.bankClamp`): 'off' (the `?bankClamp=off` dev switch); by default MAX_BANK, as it always was. */
+  bankClamp?: 'off';
   /**
    * The water's own heel datum for the balance's internal model (step 3.3p; `AttachedRiderOptions.waterHeel`):
    * 'tilt' reads the twelve captive derivatives' three heel coefficients at the board's heel against the **water**
@@ -304,6 +306,7 @@ export class RideSession {
       ...(options.stanceReach ? { stanceReach: options.stanceReach } : {}),
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
+      ...(options.bankClamp ? { bankClamp: options.bankClamp } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),

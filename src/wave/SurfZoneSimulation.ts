@@ -333,6 +333,17 @@ export interface SurfZoneConfig {
    */
   ankleRange?: 'load' | 'wide';
   /**
+   * Step 3.4i: **the 70 degree clamp on the MEASURED bank lifted.** `AttachedRider.frame` measures the body's bank as
+   * how far its centre of mass leans over the feet and clamps that **reading** to plus or minus MAX_BANK at three
+   * sites; the reading is then the datum for the ankle's own spring and for the body's frame, so past 70 degrees the
+   * spring pulls against a lean the body is not at. Step 3.4h measured `bankFall` at 70.00 exactly in 21 of 24 runs
+   * of the shipped arm, so the published fall classifier's 45 degree threshold sits on a truncated column. `'off'`
+   * removes those three clamps and nothing else: every other MAX_BANK bounds a force or a command, not a reading.
+   * The new surfer (`?rider=new`) only; no force and no hull law is touched. Every spot. The `?bankClamp=off` dev
+   * switch, opt-in, to ride, and pinned off in the online rooms.
+   */
+  bankClamp?: 'off';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

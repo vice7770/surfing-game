@@ -1455,6 +1455,27 @@ export interface AttachedRiderOptions {
    * demand is untouched and the A/B is one change. The old rider's `bankStep` is untouched.
    */
   ankleRange?: 'load' | 'wide';
+  /**
+   * **The 70° clamp on the MEASURED bank lifted** (`bankClamp: 'off'`, step 3.4i): the three sites in `frame` that
+   * write `bank.angle` stop clamping the reading to ±MAX_BANK. Opt-in, off by default (the `?bankClamp=off` dev
+   * switch), pinned off in the online rooms.
+   *
+   * **What the clamp is, read before it is moved.** `frame` measures the body's bank as *how far its centre of mass
+   * leans over the feet* and clamps that reading to ±70°. The reading is not a command: it is then the datum for the
+   * **ankle's own spring** (`HUMAN_ANKLE_STIFFNESS × (bank.angle − roll − ankleRest)`) and for the body's own frame
+   * (`StandingBody.frame`). So past 70° the spring pulls against a lean the body is not at, and the body's frame
+   * stops following its own centre of mass — *a force from a truncated reading.*
+   *
+   * **It is not offered as a fix.** Steps 3.3k and 3.3l both measured the clamp arriving **after** the fall is under
+   * way. This switch exists so the fall mix can be read on a rider whose bank column is not truncated, and so "does
+   * the clamp change the falls themselves" is a measurement rather than an assumption. Its counterpart `bankRaw` is
+   * recorded **always** and changes nothing, so the same mix can be re-read on the shipped rider byte for byte.
+   *
+   * It moves one thing: the three clamps in `frame`. Every other `MAX_BANK` — the steer's rail hold, `railPull`'s own
+   * fixed point, `CARVE_CARRY`'s tangent, `SNAP_RAIL_RANGE` — is left exactly as it ships, because each of those
+   * bounds a *force or a command* and not a reading, and moving them would make this two changes.
+   */
+  bankClamp?: 'off';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -2047,6 +2068,18 @@ export class AttachedRider {
   private readonly ankleLimit: 'feet' | undefined;
   /** The bound on the rest the balance may command, off the live sole or doubled (`ankleRange`, step 3.3k); undefined by default. */
   private readonly ankleRange: 'load' | 'wide' | undefined;
+  /**
+   * Step 3.4i: the bound the three sites in `frame` clamp the MEASURED bank to, rad. `MAX_BANK` as it ships; `Math.PI`
+   * with `bankClamp: 'off'`, which is no bound at all, since `atan2` cannot return more.
+   */
+  private readonly bankMax: number;
+  /**
+   * **Step 3.4i, a measurement and nothing else: the bank the geometry gives, BEFORE `bankMax` clamps it, rad.**
+   * Written at the same three sites in `frame` that write `bank.angle`, on the same expression, and **read by nothing
+   * in the game** — so it is recorded on the shipped rider byte for byte and the published fall classifier's 45°
+   * threshold can be read off a column that is not truncated. Equal to `bank.angle` wherever the clamp is not biting.
+   */
+  bankRaw = 0;
   /** Step 3.3p: the internal model reads the water's derivatives at the heel against the water (`waterHeel`); false by default. */
   private readonly waterHeel: boolean;
   /** The face's own tilt under the board, rad, in the MODEL's own sign (the probe's reversed), 0 unless `waterHeel`. Read-only. */
@@ -2382,6 +2415,8 @@ export class AttachedRider {
     this.stanceReach = options.stanceReach === 'keep' ? 'keep' : undefined;
     this.ankleLimit = options.ankleLimit === 'feet' ? 'feet' : undefined;
     this.ankleRange = options.ankleRange === 'load' || options.ankleRange === 'wide' ? options.ankleRange : undefined;
+    // Step 3.4i: `Math.PI` is no bound — `frame`'s own `atan2` reading cannot exceed it — so the branch is one value.
+    this.bankMax = options.bankClamp === 'off' ? Math.PI : MAX_BANK;
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -5091,16 +5126,24 @@ export class AttachedRider {
         this.standingBody.measure(this.heading, boardUp, Math.atan2(cz, cy), lean);
         if (this.banking) {
           const angle = this.standingBody.bankOf(this.heading, lean) - Math.atan2(cx, Math.hypot(cy, cz));
-          this.bank.angle = Math.max(-MAX_BANK, Math.min(MAX_BANK, angle));
+          // Step 3.4i: the reading, then the bound. `bankRaw` is the reading itself, recorded always and read by
+          // nothing in the game; `bankMax` is MAX_BANK as it ships and Math.PI — no bound — with `bankClamp: 'off'`.
+          this.bankRaw = angle;
+          this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
         }
       } else {
         this.standingBody.measure(this.heading, boardUp, Math.atan2(cz, cy));
         // A new mount on a planing board: square to the deck across as well (`mount`).
-        if (this.banking) this.bank.angle = Math.max(-MAX_BANK, Math.min(MAX_BANK, this.standingBody.bankOf(this.heading, boardUp) - Math.atan2(cx, Math.hypot(cy, cz))));
+        if (this.banking) {
+          const angle = this.standingBody.bankOf(this.heading, boardUp) - Math.atan2(cx, Math.hypot(cy, cz));
+          this.bankRaw = angle;
+          this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
+        }
       }
       if (!this.banking) {
         this.bank.angle = 0;
         this.bank.rate = 0;
+        this.bankRaw = 0;
       }
       this.standingBody.frame(this.heading, this.bank.angle, this.bodyFrame);
       this.up.copy(Y).applyQuaternion(this.bodyFrame);
@@ -5114,10 +5157,12 @@ export class AttachedRider {
         const lean = this.scratch2.subVectors(this.position, this.baseWorld).sub(sway);
         const side = this.scratch.copy(X).applyQuaternion(this.heading);
         const angle = Math.atan2(lean.dot(side), lean.y) - Math.atan2(this.localCenter.x - this.base.x, this.localCenter.y - this.base.y);
-        this.bank.angle = Math.max(-MAX_BANK, Math.min(MAX_BANK, angle));
+        this.bankRaw = angle;
+        this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
       } else if (!this.banking) {
         this.bank.angle = 0;
         this.bank.rate = 0;
+        this.bankRaw = 0;
       }
       this.bodyFrame.copy(this.heading).multiply(this.bankTurn.setFromAxisAngle(Z, -this.bank.angle));
       this.up.copy(Y).applyQuaternion(this.bodyFrame);
@@ -5126,6 +5171,7 @@ export class AttachedRider {
     } else {
       this.bank.angle = 0;
       this.bank.rate = 0;
+      this.bankRaw = 0;
       this.swing.angle = 0;
       this.swing.rate = 0;
       this.swingTorque = 0;

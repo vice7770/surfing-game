@@ -9,7 +9,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1278,6 +1278,33 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { ankleRange: undefined }).ankleRange).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).ankleRange).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?bankClamp=off` dev switch (step 3.4i): opt-in, the 70° clamp on the MEASURED bank lifted at
+  // `AttachedRider.frame`'s three sites — the reading the ankle's own spring and the body's frame are built on, and
+  // which step 3.4h found at 70.00 exactly in 21 of 24 runs; anything else, and an online room, the clamp as it ships.
+  it('lifts the measured bank\'s 70° clamp with `?bankClamp=off` (an opt-in dev switch), and clamps it otherwise', () => {
+    expect(bankClampSwitch('?bankClamp=off')).toEqual({ bankClamp: 'off' });
+    expect(bankClampSwitch('?bankClamp=OFF')).toEqual({ bankClamp: 'off' });
+    for (const search of ['', '?bankClamp', '?bankClamp=', '?bankClamp=on', '?bankClamp=lift', '?ankleRange=load']) {
+      expect(bankClampSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?bankClamp=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).bankClamp, spot).toBe('off');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bbankClamp: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { bankClamp: undefined }).bankClamp).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).bankClamp).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

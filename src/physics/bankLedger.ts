@@ -302,6 +302,43 @@ export const bankLedger = {
   pairRelative: 0,
   pairDeck: 0,
   bodyHeld: 0,
+  /**
+   * **Step 3.4i: the same partition read as MOMENTS, N·m, so the roll budget can be closed instead of attributed.**
+   *
+   * Everything above divides `b` by `A⁻¹`, which answers *who leans him*. These rows read `b` itself, which answers
+   * *what moment is on him* — and the two are different questions, because `A` is not diagonal. The conversion is
+   * exact and has no derivative in it: `coupleStanding` writes the bank's row as a **generalized impulse across the
+   * leg**, N·s (`rhs[7] += t̂·f − h(τ_ankle + τ_swing)/L` [R]), so
+   *
+   * > `moment = Σ_substeps b[7] · L / dt`, N·m
+   *
+   * is the mean over the step of the moment that source applies to the body about the stance point, on the body's
+   * own across axis `t̂` at the leg's own lever `L`. The ankle's entry comes back as exactly `−τ_ankle`; gravity's as
+   * `−m g L sin θ_body`, the inverted pendulum's own term. **The datum and sign are the ledger's throughout: positive
+   * leans the body toward the board's +x.**
+   *
+   * - `moment` / `momentTotal` — per source, and off the whole right-hand side. `momentSplit` is the partition's own
+   *   positive control, N·m.
+   * - `diagonal` — `A[7][7] · x[7] · L / dt`: the body's **own** inertia times its **relative** lean acceleration,
+   *   which is the only part of the budget a single-body reading would contain.
+   * - `coupling` — `Σ_{j≠7} A[7][j] · x[j] · L / dt`: everything the rest of the solve puts on the same row — the
+   *   stance point's own acceleration under the feet, which is the budget's **inertial term** and has no entry in any
+   *   force diagram. `diagonal + coupling = momentTotal` identically, and `momentResidual` is the max departure.
+   * - `boardMoment` / `boardMomentTotal` — the same sources' moments about `rollAxis` on the **board's** rows, N·m:
+   *   the hull's roll spring, the water on the rail, the fins, and the rider's own share through the arm. These have
+   *   **no entry in the body's row at all** — they reach the body only through `coupling` — and that is a read, not a
+   *   claim: `bookBoard` writes rows 0–5 and nothing else [R].
+   *
+   * Only filled while `on`, like everything else here, and read by nothing in the game.
+   */
+  moment: zeroes(),
+  momentTotal: 0,
+  diagonal: 0,
+  coupling: 0,
+  momentSplit: 0,
+  momentResidual: 0,
+  boardMoment: zeroes(),
+  boardMomentTotal: 0,
 
   /** A new step: every entry back to zero. `BoardBody.step` calls it. */
   begin(): void {
@@ -309,7 +346,15 @@ export const bankLedger = {
       this.own[key] = 0;
       this.relative[key] = 0;
       this.deck[key] = 0;
+      this.moment[key] = 0;
+      this.boardMoment[key] = 0;
     }
+    this.momentTotal = 0;
+    this.diagonal = 0;
+    this.coupling = 0;
+    this.momentSplit = 0;
+    this.momentResidual = 0;
+    this.boardMomentTotal = 0;
     this.ownTotal = 0;
     this.relativeTotal = 0;
     this.deckTotal = 0;
@@ -429,11 +474,28 @@ export const bankLedger = {
       if (off > this.split) this.split = off;
     }
     substitute(lu, n, whole, 0, total);
+    // **Step 3.4i: the moment budget, off the same `b`, the same `A` and the same solution.** The board's roll row
+    // first, because it is read whether or not the body is banking; then the body's own row and its exact split into
+    // the diagonal and the coupling, which is the budget's inertial term.
+    this.boardMomentTotal += whole[3] * rx + whole[4] * ry + whole[5] * rz;
+    if (banking && n > 7) {
+      const mWhole = whole[7] * length;
+      const mDiagonal = system[7 * n + 7] * total[7] * length;
+      let mCross = 0;
+      for (let j = 0; j < n; j += 1) if (j !== 7) mCross += system[7 * n + j] * total[j];
+      mCross *= length;
+      this.momentTotal += mWhole;
+      this.diagonal += mDiagonal;
+      this.coupling += mCross;
+      const off = Math.abs(mDiagonal + mCross - mWhole);
+      if (off > this.momentResidual) this.momentResidual = off;
+    }
     this.relativeTotal += total[7] / length;
     this.deckTotal += total[3] * rx + total[4] * ry + total[5] * rz;
     this.ownTotal += total[7] / length + total[3] * rx + total[4] * ry + total[5] * rz;
     let sumRelative = 0;
     let sumDeck = 0;
+    let sumMoment = 0;
     for (let s = 0; s < COUNT; s += 1) {
       let any = false;
       for (let row = 0; row < n; row += 1) {
@@ -441,6 +503,15 @@ export const bankLedger = {
           any = true;
           break;
         }
+      }
+      const keyM = BANK_SOURCES[s];
+      // Step 3.4i: the moments are the right-hand side itself, so they are booked before the `continue` that skips
+      // a source with no entry at all — an all-zero source books zero, which is the honest reading of it.
+      this.boardMoment[keyM] += parts[s * MAX + 3] * rx + parts[s * MAX + 4] * ry + parts[s * MAX + 5] * rz;
+      if (banking && n > 7) {
+        const own = parts[s * MAX + 7] * length;
+        this.moment[keyM] += own;
+        sumMoment += own;
       }
       if (!any) continue;
       substitute(lu, n, parts, s * MAX, solution);
@@ -458,6 +529,11 @@ export const bankLedger = {
       Math.abs(sumDeck - (total[3] * rx + total[4] * ry + total[5] * rz)),
     );
     if (gap > this.closure) this.closure = gap;
+    // Step 3.4i: the moments' own partition, in N·m·s, against the whole row the game assembled.
+    if (banking && n > 7) {
+      const offM = Math.abs(sumMoment - whole[7] * length);
+      if (offM > this.momentSplit) this.momentSplit = offM;
+    }
     // **Step 3.3m: the plant's own compliances off the same LU.** Three unit right-hand sides, no force in any of
     // them. Read after the attribution so nothing above can see them; `lu` and `pivots` are the same factorisation.
     // Not banking, row 7 is a dummy (`system[7][7] = 1`, no coupling, `rhs[7]` unwritten), so the read is skipped.
@@ -575,7 +651,14 @@ export const bankLedger = {
       this.own[key] *= inverse;
       this.relative[key] *= inverse;
       this.deck[key] *= inverse;
+      // Step 3.4i: an impulse-moment over the step becomes the step's mean moment, N·m.
+      this.moment[key] *= inverse;
+      this.boardMoment[key] *= inverse;
     }
+    this.momentTotal *= inverse;
+    this.diagonal *= inverse;
+    this.coupling *= inverse;
+    this.boardMomentTotal *= inverse;
     this.ownTotal *= inverse;
     this.relativeTotal *= inverse;
     this.deckTotal *= inverse;

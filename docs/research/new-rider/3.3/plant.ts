@@ -202,6 +202,14 @@ const COST = process.env.COST === 'point' ? 'point' : process.env.COST === 'fixe
  */
 const ARANGE = process.env.ARANGE === 'load' ? 'load' : process.env.ARANGE === 'wide' ? 'wide' : undefined;
 /**
+ * **Step 3.4i: `BANKC=off` lifts the 70° clamp on the MEASURED bank** (`AttachedRiderOptions.bankClamp`, the
+ * `?bankClamp=off` dev switch). The clamp is on a *reading* — how far the body's centre of mass leans over its feet —
+ * and that reading is the datum for the ankle's own spring and for the body's frame, so lifting it changes the ride.
+ * Unset, the clamp ships. The counterpart column `bankRaw` is recorded with the clamp ON as well, by the rider itself,
+ * and changes nothing: that is how §A reads the fall mix on a byte-identical rider.
+ */
+const BANKC = process.env.BANKC === 'off' ? 'off' : undefined;
+/**
  * **Step 3.4c's two switches**, both off by default, so every arm with them unset is step 3.4b's own probe on
  * step 3.4b's own cells.
  *
@@ -312,6 +320,12 @@ interface RiderInner {
    * deck's own axes with `feltFrame: 'deck'`, which every arm of this round rides.
    */
   pairFelt: { x: number; y: number; z: number };
+  /** Step 3.4i: the leg's own length, m — the lever every moment in the bank ledger's N·m view is taken at. */
+  legLength: number;
+  /** Step 3.4i: the ankle's own torque as the solve got it, N·m (bounded only with `ankleLimit: 'feet'`). */
+  ankleTorque: number;
+  /** Step 3.4i: the load through the legs along the body's own up, N — `soleBound`'s own first factor. */
+  legLoad: number;
 }
 
 /** The six groups of the plant that can be zeroed exactly, and the twelve coefficients each owns. */
@@ -837,6 +851,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(BODY ? { riderBody: BODY } : {}),
     ...(COST ? { riderCost: COST } : {}),
     ...(ARANGE ? { ankleRange: ARANGE } : {}),
+    ...(BANKC ? { bankClamp: BANKC } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -936,6 +951,58 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         sent0: r(rider.predictor.sent[0], 6), raw0: r(rider.predictor.raw[0], 6), ankleRoom: r(inner.ankleRoom, 4),
         // the game's own roll row off the ledger, the same sign and scale as every other figure in this folder
         rollGame: liveM ? r(-bankLedger.deckTotal * DEG, 4) : null,
+        // **Step 3.4i, Part A: the bank the geometry gives, BEFORE the 70° clamp.** `AttachedRider.bankRaw`, written
+        // at the same three sites in `frame` that write `bank.angle`, on the same expression, read by nothing in the
+        // game. With the clamp as it ships `|bankRaw| ≥ |bank|` and the two are equal wherever it is not biting.
+        bankRaw: r(rider.bankRaw * DEG, 4), bankClamp: BANKC ?? 'ships',
+        clampedBank: Math.abs(rider.bankRaw * DEG) > 70.0000001 ? 1 : 0,
+        // **Step 3.4i, Part B: the roll budget about the contact, N·m, every term, off the ledger's own partition of
+        // the solve's right-hand side** (`bankLedger.moment`, `b[7] · L / dt`; positive leans the body toward the
+        // board's +x, the ledger's own datum). `mTotal` is the whole row; `mDiag` is `A[7][7] · x[7] · L / dt`, the
+        // only term a single-body budget contains; `mCoup` is every other column of the same row — the stance point's
+        // own acceleration under the feet, the budget's inertial term. `mDiag + mCoup = mTotal` identically and
+        // `mResid` is the departure. `bd…` are the same sources' moments about `rollAxis` on the BOARD's rows.
+        legLen: r(inner.legLength, 5), ankleTau: r(inner.ankleTorque, 4), legLoad: r(inner.legLoad, 2),
+        mTotal: liveM ? r(bankLedger.momentTotal, 4) : null,
+        mDiag: liveM ? r(bankLedger.diagonal, 4) : null,
+        mCoup: liveM ? r(bankLedger.coupling, 4) : null,
+        mSplit: liveM ? r(bankLedger.momentSplit, 12) : null,
+        mResid: liveM ? r(bankLedger.momentResidual, 12) : null,
+        mAnkle: liveM ? r(bankLedger.moment.ankle, 4) : null,
+        mGrav: liveM ? r(bankLedger.moment.gravity, 4) : null,
+        mRWater: liveM ? r(bankLedger.moment.riderWater, 4) : null,
+        mCarry: liveM ? r(bankLedger.moment.carry, 4) : null,
+        mSwing: liveM ? r(bankLedger.moment.swing, 4) : null,
+        mAssist: liveM ? r(bankLedger.moment.assist, 4) : null,
+        mLimbs: liveM ? r(bankLedger.moment.limbs, 4) : null,
+        bdTotal: liveM ? r(bankLedger.boardMomentTotal, 4) : null,
+        bdBuoy: liveM ? r(bankLedger.boardMoment.buoyancy, 4) : null,
+        bdPress: liveM ? r(bankLedger.boardMoment.pressure, 4) : null,
+        bdSuct: liveM ? r(bankLedger.boardMoment.suction, 4) : null,
+        bdFric: liveM ? r(bankLedger.boardMoment.friction, 4) : null,
+        bdFins: liveM ? r(bankLedger.boardMoment.fins, 4) : null,
+        bdRails: liveM ? r(bankLedger.boardMoment.rails, 4) : null,
+        bdAdded: liveM ? r(bankLedger.boardMoment.addedMass, 4) : null,
+        bdGyro: liveM ? r(bankLedger.boardMoment.gyro, 4) : null,
+        bdWeight: liveM ? r(bankLedger.boardMoment.weight, 4) : null,
+        bdGrav: liveM ? r(bankLedger.boardMoment.gravity, 4) : null,
+        bdCarry: liveM ? r(bankLedger.boardMoment.carry, 4) : null,
+        bdRWater: liveM ? r(bankLedger.boardMoment.riderWater, 4) : null,
+        bdSwing: liveM ? r(bankLedger.boardMoment.swing, 4) : null,
+        bdAnkle: liveM ? r(bankLedger.boardMoment.ankle, 4) : null,
+        bdYaw: liveM ? r(bankLedger.boardMoment.yawCouple, 4) : null,
+        bdTwist: liveM ? r(bankLedger.boardMoment.twist, 4) : null,
+        bdFroth: liveM ? r(bankLedger.boardMoment.froth, 4) : null,
+        // the two sides of the lean, rad/s², and the plant's own inertias — so the budget's LHS can be built from
+        // the measured acceleration and the ledger's attribution read against the moments on the same frame
+        ownAcc: liveM ? r(bankLedger.ownTotal, 5) : null,
+        relAcc: liveM ? r(bankLedger.relativeTotal, 5) : null,
+        deckAcc: liveM ? r(bankLedger.deckTotal, 5) : null,
+        bodyHeld: liveM ? r(bankLedger.bodyHeld, 5) : null,
+        ankleOwn: liveM ? r(bankLedger.ankleOwn, 8) : null,
+        ankleRel: liveM ? r(bankLedger.ankleRelative, 8) : null,
+        ankleDeck: liveM ? r(bankLedger.ankleDeck, 8) : null,
+        rollDeckPer: liveM ? r(bankLedger.rollDeckPer, 8) : null,
         attached: rider.attached ? 1 : 0, upright: rider.upright ? 1 : 0, phase: rider.phase,
       })}\n`);
     }
@@ -1904,6 +1971,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     wheel: WHEEL ?? 'off',
     mount: MOUNTA ?? 'ships',
     arange: ARANGE ?? 'ships',
+    bankClamp: BANKC ?? 'ships',
     stance: st,
     extra: entry0 === null ? extra : null,
     entryAsked: entry0,

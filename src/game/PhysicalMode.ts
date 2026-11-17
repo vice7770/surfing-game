@@ -561,6 +561,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...ankleLimitSwitch(),
     // `?ankleRange=load|wide`: the bound on the rest the balance may command at the ankle, off the live sole or doubled (step 3.3k; step 3.3j measured the shipped ±14.32° at its stop in 62 of 72 falls), opt-in, to ride.
     ...ankleRangeSwitch(),
+    // `?bankClamp=off`: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (step 3.4i; step 3.4h read `bankFall` at 70.00 exactly in 21 of 24 runs, so the fall classifier's 45 degree threshold sat on a truncated column), opt-in, to ride.
+    ...bankClampSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
@@ -1142,6 +1144,20 @@ export function ankleLimitSwitch(search?: string): { ankleLimit?: 'feet' } {
 export function ankleRangeSwitch(search?: string): { ankleRange?: 'load' | 'wide' } {
   const v = devParam('ankleRange', search)?.trim().toLowerCase();
   return v === 'load' || v === 'wide' ? { ankleRange: v } : {};
+}
+
+/**
+ * The `?bankClamp=off` dev switch (`SurfZoneConfig.bankClamp`, step 3.4i): opt-in, **the 70 degree clamp on the
+ * MEASURED bank lifted** at `AttachedRider.frame`'s three sites. The bank there is a *reading* — how far the body's
+ * centre of mass leans over its feet — and it is the datum the ankle's own spring and the body's frame are built on,
+ * so past MAX_BANK the spring pulls against a lean the body is not at. Step 3.4h measured `bankFall` at 70.00 exactly
+ * in 21 of 24 runs of the shipped arm, which is why the published fall classifier's 45 degree threshold could not be
+ * read. `off` removes those three clamps and nothing else: every other MAX_BANK in the file bounds a force or a
+ * command and is left as it ships. Nothing on the default rider, no force and no hull law. Anything else, the clamp
+ * as before.
+ */
+export function bankClampSwitch(search?: string): { bankClamp?: 'off' } {
+  return devParam('bankClamp', search)?.trim().toLowerCase() === 'off' ? { bankClamp: 'off' } : {};
 }
 
 /**
