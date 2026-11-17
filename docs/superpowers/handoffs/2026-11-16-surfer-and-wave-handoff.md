@@ -712,3 +712,26 @@ and, asked whether holding a deep stance should cost anything:
 **The mechanism constraint:** fatigue is legitimate **only** as a fall in what the legs *can* do — their available force or torque declining with sustained effort and recovering when unloaded. **Never a brake, a damper, an added torque, or a timer that moves the body.** `?legPower=cap` already exists and the prep round says whether fatigue belongs there.
 
 **Still unasked:** whether the dip fires **on the owner's input only** or **automatically at turn entry**. **Default to their input.**
+
+### ⚠️ "LEGS THAT TIRE" IS REVERSED — INFINITE STAMINA STANDS. Do not build fatigue.
+
+The owner reversed it within the hour, after being shown the timescale objection:
+
+> *"lets stop the work of legs that tire, lets leave it as infite stamina"*
+
+**So: no fatigue, no stamina drain, no cost on holding a stance. Stamina is infinite and that is settled.** The prep round's fatigue research was stopped mid-flight; its stance-height task continues.
+
+**Why they were right to reverse:** fatigue acts over **tens of seconds**, while the footage's dips last **0.25–0.7 s** and the whole cycle **1–1.5 real s**. It could never have produced the rhythm — it would only have stopped a rider camping in a crouch for ten seconds or more. **Building it would have spent a round and a ride on something that cannot deliver what it was wanted for.** Raising the objection *before* the build was the cheapest thing done all day.
+
+**WHAT THIS COSTS, AND IT SHOULD BE SAID PLAINLY:** my argument for the cost was that *if staying deep is free there is never a reason to come up, so the tall → low → tall rhythm cannot emerge and has to be animated instead.* **That argument is unanswered, not refuted** — it is simply no longer being acted on. **So the rhythm will not appear on its own.** Either it is driven by something else (see below), or it is authored.
+
+**THE AGREED DESIGN, now final:**
+1. **Keep all four stances** — Tall, Crouch, Compress, Snap.
+2. **Keep Compress's depth.**
+3. **Rework Crouch** to the footage's sustained moderate crouch.
+4. **A button that momentarily deepens the current stance**, self-releasing.
+5. **Infinite stamina. No fatigue.**
+
+**THE QUESTION THIS PROMOTES TO THE TOP:** if neither fatigue nor a timer brings the rider up, **what does?** Candidates, none yet established: **the turn itself ending; unweighting to change rail; the board's own loading and unloading of the legs; extending through the exit to project speed.** The last is the most promising because it is a *reason* to rise rather than a limit on staying down — and a reason is what makes a skill emerge. **This is the next design question for the owner, and it is more interesting than the one just closed.**
+
+**Still unasked:** whether the deepen button fires **on the owner's input only** or **automatically at turn entry**. **Default to their input.**
