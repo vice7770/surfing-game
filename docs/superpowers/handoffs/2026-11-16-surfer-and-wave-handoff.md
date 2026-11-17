@@ -1468,3 +1468,49 @@ Pumping with the trunk over straight legs; a crouch made of 76° of fold over a 
 | 13 | `https://www.youtube.com/shorts/9k-MU6Q5Lhc` | whole |
 
 **The owner is sending clips faster than the reads complete** (~30 min each at the quality that produced the four-channel finding). They were offered a shallower, faster pass — four channels only, no transitions, roughly a third of the work — and **the default stays thorough until they say otherwise.** Do not silently speed up: the six low-resolution reads produced an impression, and the two high-resolution ones produced the finding the engine work now rests on.
+
+## ⭐⭐ BODY-CHANNEL SURVEY (merged `7dc807c0`, PR #398) — THE FOUR-CHANNEL CLAIM IS WRONG IN BOTH DIRECTIONS, AND THAT IS THE GOOD NEWS
+
+`docs/research/new-rider/3.5/body-channels.md`. **Read-only code survey; nothing measured, every number a code reading with three inferences marked `[I]`.** Surveyed `main` at `e8e5ef1e`.
+
+> **"The game has ONE number for the body where the footage has at least FOUR" does not survive the code. The game holds SIX quantities answering to the five channels, and almost none is independently driven. So the footage's four channels are THREE DISCONNECTIONS AND ONE GENUINE ABSENCE — not four missing features.** Those cost completely different things to fix, which was the round's whole point.
+
+| # | channel | exists? | independent or slaved? | player reach? | physics or drawing? | **fix** |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | **leg depth** | yes — `leg.rest`/`leg.extension`, **one scalar for BOTH legs** (`AttachedRider.ts:2084`) | it **is** the independent variable | yes | **physics, fully** — a real spring, row 6 of the board's solve, key to four inertia tables | — |
+| 2 | **trunk fold** | **three different things, none of them one fold.** Shipped rider: **none at all.** `?rider=new`: `StandingBody.hip.angle`. Drawing: `HumanoidRig.hingeAngle` | **drawing: SLAVED by a one-line formula.** `?rider=new`: angle independent, **range** slaved to `hipRange(depth)` | **no** | **split** — the new rider's hip is a **paired, booked torque**, but **the mass model never folds** | **geometry** for the cheap fix; force only if the player commands it |
+| 3 | **arm carriage** | yes, **one scalar** — `HumanBalance.arms` 0–1, `?rider=new` only. **No height, no spread, no left/right** | **SLAVED TWICE** — capped by `stanceRoom(depth).arms`, and triggered by **the same expression that drops the knees** | on/off only | **physics, but as INERTIA only** (swing 6→10 kg·m², yaw +0.85, twist +0.87). **Where the arms ARE reaches nothing** | **geometry** for position; the inertia path is already honest |
+| 4 | **arm timing** | **NO — and the sign is BACKWARDS** | simultaneous by construction | no | n/a | **sequencing** — two existing time constants |
+| 5 | **fore-aft hip axis** | yes, but a **rigid translation** of pelvis, torso, head **and both arms together** | independent (W/S is its own axis) | **yes**, W/S | physics | **force**, and **downstream of channel 2** |
+
+**One leg spring, not two.** Video 8's **97 % / 86 %** and **88 % / 76 %** splits **are not expressible.** The *drawing* already has two legs (separate `kneeFront`/`kneeRear` targets); **the physics has one rest length, one stiffness, one solve row.** A second spring is a **force** change → **the owner's ruling.**
+
+### THE THREE FINDINGS FOR THE OWNER
+
+**1. The drawn trunk fold IS the drawn leg depth, explicitly — and the caller verified the line.** `HumanoidRig.ts:1383–1385`: **`wanted = ((tall + (deep − tall) × depth) × π)/180`**, with `depth = (STANDING_PELVIS − pelvisOverDeck)/CROUCH_DEPTH` (`stanceBlend.ts:75`) — **the pelvis's height and nothing else.** The only second input is which of thirteen key poses is active. **At the backside bottom turn the drawn trunk cannot move with depth at all (30 → 30°)**; at trim frontside, **video 8's 23 points of leg buy about 8° against the footage's 60°.** **That is a mechanism for "every stance reads as a pose" — the round did NOT prove it is the cause and says so.**
+
+**2. `?rider=new` ALREADY HAS AN HONEST TRUNK ROTOR THAT THE MASS MODEL CANNOT SEE — and this is the cheap end.** `StandingBody.hip` (**8 kg·m², 200 N·m**) is driven **independently of depth**, by the ankle loop's excess past 80 % of the feet's reach, **on its own delay and lag** — i.e. **the second clock video 7 says a body must have.** Its torque is **paired** (`rhs[8]`, `rhs[3..5]`) and its power is **booked**. **But `hip.angle` is read in only three places and never moves `this.parts`** — so the CoM, `bodyInertiaAt`, `riderYawInertia` and `stanceAt().height` are **all computed from an UNFOLDED trunk while a 23 kg torso and a 5 kg head swing through 60°.**
+
+> **Rotating the parts with it is GEOMETRY, not force** — it states where the mass already is, for a torque already paired. **By the round's reading it needs no ruling.**
+
+**3. The arms and knees share ONE trigger, and the knees are THREE TIMES faster — caller verified.** `humanBalance.ts:423–431`: both driven by **`Math.max(hip, capture)`**; knees drop at **`MOTOR_LAG` = 0.05 s**, arms spread at **`ARMS_TIME` = 0.15 s**, knees return at 0.6 s. **The footage has the arm overhead FIRST and HELD in 3 of 4 readable direction changes.** **The one orderable pair in the game runs the wrong way round — a pure sequencing change.**
+
+### THE NARROWER, MORE USEFUL VERSION OF THE CLAIM
+
+**On what the owner actually rides there is no trunk-fold quantity at all.** `StandingBody` is gated behind `freeBody = newRider && upright && standing` (`AttachedRider.ts:2610`) — the `?rider=new` opt-in. **The shipped physics body is seven point masses in one hard-coded posture, moved by exactly one scalar vertical shift (leg extension) and one rigid horizontal translation of five of the seven parts (`shifts()` excludes only the legs). NO PART IS EVER ROTATED ABOUT ANOTHER.** So the claim's strongest form is right **for the default rider**, which is narrower and more useful than what was being quoted.
+
+### WHAT THE GAME ALREADY GETS RIGHT
+
+**The feet.** Fixed at 0.30 m from the tail and +0.63 m, **never moved while standing — zero steps by construction**, which matches video 7's **0 steps in 13 s and the rear foot never off the pad.**
+
+### THREE THINGS NOT TO CONFUSE WITH CHANNEL 2
+
+**`?agile=on`'s trunk** is a genuinely paired pitch rotor whose reaction splits the two feet's loads — but it is **±10°** (the file records that 20° *"threw every rider"*) and runs **only inside a Snap stamp**. **The lateral `swing` (±1.2 rad) is NOT this channel** — it is trunk **roll**, drawn at only **0.35** of its angle, and cannot make video 8's silhouette. And **`kneeStrength = 2·KNEE_TORQUE/d` is a FORCE, not a depth limit.**
+
+### FRAMES NAMED, since this track has mis-framed twenty-five numbers
+
+**Pelvis 0.78 m is a placed part height**; **`STANCE_TABLE`'s 0.84 / 0.65 / 0.55 are whole-body CoM above the feet**; **`leg.rest`'s 0 / 0.195 / 0.30 / 0.45 are a spring rest-length shortening.** Using `stance-frame.md` §3's conversion: the game's Tall is **89 %** of its own straight leg, Crouch **66 %**, Compress **55 %**, tuck **38 %** — so against video 8's **6 of 6 frames between 76 % and 99 %**, **only the game's Tall rung is inside that clip's band, and every other rung sits below every readable frame in it.**
+
+### WHAT IT DID NOT ESTABLISH
+
+**The stage reader was not traced**, so the drawing's independence claim is **bounded to within one stage** — across-stage independence is unmeasured. **The multiplayer wire was not checked** (several channels are local-only, so another player's drawn body reads fewer channels than your own). `predictiveBalance`'s internal plant was not read beyond the stance tables.
