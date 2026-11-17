@@ -57,6 +57,12 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 
 **So every read claims its own tab:** call `tabs_create` first, keep the `tabId`, and **pass it explicitly on every call afterwards** — `navigate`, `javascript_tool`, `computer`, `read_page`, all of them. **Omitting `tabId` targets whatever tab is active, which may be another agent's.** Say in the report which `tabId` was used. **Discard any frame you cannot prove came from your own clip at the timestamp you intended** — a thin honest read beats a fuller one built on someone else's video.
 
+### Get the high-resolution stream — it is worth more than any other single step
+
+**The pane serves 360×640 until you enlarge the viewport AND RELOAD. Then it serves 1080×1920.** Enlarging alone does nothing — video 7 found this, and the difference is a rider **620 px tall instead of 55–120**, which is what made the trunk-versus-legs finding visible at all. **Do this before taking a single measurement frame.**
+
+**And a `wait` of about 0.55 s between the draw and the screenshot made single screenshots reliable** where a 1 s wait alone had not. The canvas stamp still goes in — video 7's stale-frame trap fired **four times** and the stamp caught every one.
+
 ### What the error bar actually is
 
 A 854×480 source puts the rider at 40–90 px, which is **±15° on any joint angle at best**. **But above roughly 200 px the resolution stops being the binding constraint and the HIP LANDMARK becomes it:** a boardshorts waistband sits at about **0.60 of stature** where the trochanter is at **0.53**, so **every hip figure carries ±10–15 points however sharp the image.** Read depth from a **shoulder-to-waistband** scale (robust to head tilt) and cross-check against a head-to-hip scale; **where the two disagree, report the disagreement instead of picking a winner.**
@@ -70,6 +76,20 @@ A 854×480 source puts the rider at 40–90 px, which is **±15° on any joint a
 ### Part A — what the body does
 
 - **Stance through the ride.** Knee angle and hip height as a fraction of standing height, and **when** each occurs. Note that a tube and an open-face turn are different stances in the same clip.
+
+  ### ⭐ REPORT LEG DEPTH AND TRUNK FOLD SEPARATELY. They are different channels and conflating them has already corrupted this series.
+
+  **Video 7, read at 1080p with the rider 620 px, found that three of its four "crouches" measured 75–85 % — the low edge of Tall — because the depth was in the TRUNK, not the legs.** Clip 6 brushed the same thing at 65–75 %. **So some middle-band numbers in the six earlier reads may be a folded trunk over long legs, read as a crouch — measuring the wrong joint.**
+
+  **There are at least THREE independent body channels in the footage, and the game has ONE (leg depth):**
+
+  1. **leg depth** — the hips' height, which is what the game's stance ladder sets
+  2. **trunk fold** — the trunk's angle from vertical, which moves on its own clock
+  3. **arm carriage** — height and spread, **also independent**: video 7 found four carriages inside the Tall band, with the **narrowest, lowest arms at its single deepest leg position**. *Both* "tall ⇒ arms spread" and "deep ⇒ arms spread" are refuted.
+
+  Plus a fourth the game does not model at all: **the fore-aft hip axis.** Video 7 had **0 steps in 13 s and the rear foot never off the pad**, while the hips travelled aft toward the rear foot and the shoulders went forward over the front — **so fore-aft is worked by the hips, not by footwork.**
+
+  **Give each channel its own number at each moment.** A single "how low is he" figure throws away two thirds of what the clip is telling us, and it is why every stance in the game reads as a pose.
 
   **Say which standing height you divided by, every time: it means STRAIGHT-LEGGED standing hip height, and nothing else.** Riders are never straight-legged on a board, so your 100 % is a pose you will not see in the clip — that is correct and expected, and a reader who assumes otherwise is off by up to 20 points, which is more than the gap between two of the game's own stances.
 
