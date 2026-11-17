@@ -5003,7 +5003,7 @@ and 3: lift the clamp so §4b can be read, close the roll budget in one frame, a
    term in the budget on three of the four arms** (`|mCoup|` 54.3 / 436.6 / 194.7 / 454.9 N·m against `|mTotal|`
    39.3 / 57.0 / 137.8 / 103.1) [M].
 3. **Part C: the term a real surfer has that we do not is the water's own roll answer, and it is undersized by
-   between 6 × and 60 × depending on which of the game's own three figures you measure it against.** On the board's
+   between 2 × and 140 × depending on which of the game's own three figures you measure it against.** On the board's
    own roll row the hull's whole water column — pressure, buoyancy, suction, friction, fins, rails — answers
    **11.2–17.2 %** of the moment the rider's own weight puts on the deck, on **every** arm [M]. Divided by one body
    weight, that is a centre of lift that has travelled **0.0075–0.046 m** across a **0.232 m** half-beam: **3.3–19.9
@@ -5015,7 +5015,9 @@ and 3: lift the clamp so §4b can be read, close the roll budget in one frame, a
    over the ride (a fit, R² 0.514–0.822), and 70–153 at trim on a bare board that collapses to zero by 15–20° of
    heel and reverses past 20°** [M, §5]. **So the ankle and the hull are in series and the series stiffness is the
    HULL's**: 11.8–50.6 N·m/rad, **1.5–6.3 % of the ankle's own 800**, and the ankle's whole commanded ±0.25 rad buys
-   **3.0–12.6 N·m** of righting against gravity's measured **39–197** [A on two [M]s].
+   **3.0–12.6 N·m** of righting — against a gravity term that measures **3.7–196.8 N·m** across the twelve
+   arm-and-stance cells and **316 N·m** at the lean his own Compress actually falls at (§4 step 4)
+   [A on two [M]s].
 5. **Part A: the clamp cannot move the fall mix, and the handoff's reason for a clamp round is refuted by
    arithmetic.** The published classifier's first test is `|bank| > 45°` and the clamp is at **70°**; a reading
    truncated at 70 is already past 45, so **it cannot cross the threshold in either direction.** Re-read on the
@@ -5050,10 +5052,11 @@ and 3: lift the clamp so §4b can be read, close the roll budget in one frame, a
 ## 1. (A) The four reads that had to come first
 
 **R1 [R]. The clamp is on a READING, and the reading is a datum for two forces.** `AttachedRider.frame` writes
-`bank.angle` at three sites — `:5129` (standing, measured), `:5140` (a new mount, square to the deck) and `:5159`
-(the old rider) — each `Math.max(-MAX_BANK, Math.min(MAX_BANK, angle))` with `MAX_BANK = 70°` [R]. That angle is then
-(i) the ankle's own spring datum, `HUMAN_ANKLE_STIFFNESS × (bank.angle − roll − ankleRest) + …` [R, `:3581`], and
-(ii) the body's own frame, `standingBody.frame(heading, bank.angle, bodyFrame)` [R, `:5147`]. **So past 70° the
+`bank.angle` at three sites — on this branch `:5132` (standing, measured), `:5140` (a new mount, square to the
+deck) and `:5161` (the old rider) — each `Math.max(-MAX_BANK, Math.min(MAX_BANK, angle))` with `MAX_BANK = 70°` [R].
+That angle is then (i) the ankle's own spring datum, `HUMAN_ANKLE_STIFFNESS × (bank.angle − roll − ankleRest) + …`
+[R, `:3616` for the predictive balance and `:3502` for the reactive one], and (ii) the body's own frame,
+`standingBody.frame(heading, bank.angle, bodyFrame)` [R, `:5148`]. **So past 70° the
 spring pulls against a lean the body is not at.** Every *other* `MAX_BANK` in the file bounds a force or a command —
 `SNAP_RAIL_RANGE`, `railPull`'s fixed point, `CARVE_CARRY`'s tangent, the steer's rail hold — and this round leaves
 all of them exactly as they ship, so the switch is one change.
@@ -5079,7 +5082,7 @@ holds it**, which step 3.3m warned is a **diagonal** and not an effective inerti
 checked, because this was my first candidate for a frame error and it is not one.** `patchForce` returns
 `out.pressure = −pressure · n̂` with `n̂` the **patch's own normal** [R, `hullForces.ts:406`], and the roll ledger books
 it as `pressure × rollOf(cx, cy, cz)` with `cx = r × n̂` — the hull normal — while `radiation` and `addedMass` are
-booked on `sx = r × û`, the water's surface normal, which is the frame they act in [R, `BoardBody.ts:1544–1556`,
+booked on `sx = r × û`, the water's surface normal, which is the frame they act in [R, `BoardBody.ts:1578–1589`,
 `:1621–1623`]. **So §5's small stiffness is not step 3.3m's `cos³` arm defect reappearing in the pressure**: that
 defect is in the added-mass term and the added-mass term is excluded from every "hull" figure below, because it
 resists a roll **rate** and not a roll **angle**. My own suspicion is refuted by the read.
@@ -5289,7 +5292,9 @@ shifting makes the travel smaller still.
    is irrelevant to it.** The code says so itself: `bankAuthority`'s `series = k K_hull/(k + K_hull)` [R,
    `rollModel.ts:185`]. At `k` = `HUMAN_ANKLE_STIFFNESS` = 800 [R] and the measured `K_hull` = 12–54, **series = 11.8–50.6 N·m/rad — 1.5–6.3 % of
    the ankle's own**, and `share = k/(k + K_hull)` = **0.937–0.985**, meaning **94–99 % of every ankle correction
-   rolls the board instead of righting the body** [A on the code's own formula with this round's [M]].
+   rolls the board instead of righting the body** — **[A] on the code's own two-spring formula with this round's
+   [M], and not a read of the 9×9**, whose own analogous number is the authority `|own/relative|` = **0.204–0.511**
+   in §5's table (§8 item 8 keeps the two apart).
 4. **And so the ankle's whole commanded range buys a fraction of gravity's own term at the lean the falls reach.**
    `ANKLE_REST_RANGE` is ±0.25 rad; at the measured series stiffness that is **3.0–12.6 N·m** of righting [A].
    Against the **ride-median** gravity term that is **7–33 %** on the glide arm at 5.50° (38.7–43.8 N·m) and
@@ -5349,7 +5354,7 @@ the magnitudes are a bare board's and **only the shape transfers** — which is 
 | the same at 0 m/s (hydrostatic alone) | −34.3 | −33.8 | −29.5 | −17.0 | −4.7 | −0.3 | +0.8 |
 | the wetted area, m², at 8 m/s | 0.0412 | 0.0999 | 0.1527 | 0.1826 | 0.1987 | 0.2191 | 0.2510 |
 
-**Five readings.**
+**Six readings, and the last one is a caveat the control's own columns force.**
 
 1. **At trim the hull is stiff and it scales with speed: 70 / 105 / 153 N·m/rad at 4 / 6 / 8 m/s**, against 34 at
    rest [M]. So the hydrodynamic part exists and is the larger part. **It is the only figure in this round that is
@@ -5370,6 +5375,13 @@ the magnitudes are a bare board's and **only the shape transfers** — which is 
    22.22–52.82 [M both]. **The inertia ratio is 0.958–6.166 — on `s16-g` and `s16-l` the board is 2.5 × and 6.2 ×
    HARDER to roll than the body's own end.** My brief's "0.5–1.1 against 52–54, so the ankle keeps 0.25–0.40" is a
    diagonal divided by an effective inertia, and **it is dead twice over.**
+6. **The caveat, in the control's own numbers: in the held pose the hull's moment is very nearly cancelled by the
+   water's inertia.** At 8 m/s and 2° the `hull` sum is **−5.33** and `addedMass` is **+4.66 N·m**, and the ledger's
+   own `total` — the board's `I·Δω` over the step — is **−0.38** [M]. That is what a plate pushed into water does:
+   the pressure field's moment is taken up by the water it entrains. **So `hull` is the pressure field's own
+   restoring gradient and not the net torque on a free board**, which is the quantity a spring's `dτ/dφ` is and the
+   quantity §4 step 3 puts in series with the ankle — but a reader who takes the 70–153 N·m/rad as "what the board
+   would right itself at if released" would be wrong, and §8 item 9 says so.
 
 ## 6. The owner's bar
 
@@ -5390,7 +5402,8 @@ reason, and the reason is on his own cell: his six Compress runs on `f73-l` fall
 `m g L sin θ` = **316 N·m** at `L` = 0.558 m [A on two [M]s]. At §4's series stiffness of **11.8–50.6 N·m/rad** the
 whole ±0.25 rad his ankle may command is **3.0–12.6 N·m** — **a twenty-fifth to a hundredth of it** — whatever the
 stance does. *"The center of gravity is supposed to do that"* is exactly right, and the hull
-is what is not letting it: **94–99 % of every correction he makes rolls the board instead.**
+is what is not letting it: on the code's own two-spring reduction **94–99 % of every correction he makes rolls the
+board instead** (§8 item 8 on what that figure is and is not).
 
 ## 7. What I refuted
 
@@ -5446,10 +5459,16 @@ it, and P7, where I named the wrong face for step 3.4h's own "21 of 24" figure.
 6. **No ride was taken and nothing here is a claim about feel.** The owner rides and judges.
 7. **"The body barely accelerates in lean at the median" is a median, not a ride.** `f73-g`'s single-body left-hand
    side is 1.0 N·m over 4 743 frames and its rides still end at 42.6–48.5° of bank. The tail is the fall.
-8. **I will not claim `series = 11.8–50.6` is what the body feels.** It is `bankAuthority`'s own formula evaluated at
-   this round's measured `K_hull`, and that formula is a two-spring reduction of a 9×9 solve. The exact statement is
-   §3's: 94–99 % of an ankle correction rolls the board, which **is** off the matrix the integrator inverts
-   (`ankleDeck`/`ankleOwn`, §5).
+8. **I will not claim `series = 11.8–50.6` or the 94–99 % share is off the matrix.** Both are
+   `bankAuthority`'s own two-spring formula [R, `rollModel.ts:185`] evaluated at this round's measured `K_hull`, and
+   that formula is a reduction of a 9×9 solve, not the solve. **The matrix's own analogous number is a different
+   quantity and is in §5's table**: the ankle's authority `|own/relative|` is **0.204–0.511**, so 49–80 % of the
+   joint's own motion does not arrive at the body as absolute lean. **The two must not be quoted as one** — that
+   substitution is the kind of thing step 3.3m caught my brief doing with a diagonal.
+9. **And I will not call the static control's 70–153 N·m/rad "the rate the board rights itself at".** In the held
+   pose the water's inertia takes almost all of the pressure field's moment (§5 reading 6: −5.33 against +4.66, a
+   net `I·Δω` of −0.38 N·m). The figure is a **pressure-field gradient**, which is the right thing to put in series
+   with the ankle and the wrong thing to read as a free board's righting rate.
 
 ## 9. The controls
 
@@ -5471,8 +5490,9 @@ requires [R] — the partition is read, not assumed. **The `bdAnkle` entry reads
 3.4h's own §9 C4 control carried forward. No run crashed in this round: 24/24/18/18 summary rows and 24/24/18/18
 joined per-frame runs on every arm.
 
-**C5. `A` is symmetric, so the compliances this round quotes off it have their own free control**, already in the
-ledger: `sideRollPer` against `rollSwayPer` [R, step 3.3p]. Nothing here reads a corner that does not have one.
+**C5. This round reads no new corner of `A⁻¹`.** `ankleOwn`, `ankleRelative`, `ankleDeck`, `rollDeckPer` and
+`bodyHeld` are step 3.3m's own five, unchanged, and §5 reading 5 is the tie: all five reproduce 3.3m's published
+bands on four arms it never ran. **The one genuinely new instrument is the N·m view, and C2 is its control.**
 
 **C6. The static heel sweep's own control is its 0 m/s row**, which must be the hydrostatic stiffness alone and
 reads **−34.3 N·m/rad at trim** against the planing rows' −69.9 / −105.4 / −152.6 [M]: the hydrodynamic part is
