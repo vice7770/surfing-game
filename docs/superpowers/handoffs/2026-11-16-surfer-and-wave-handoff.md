@@ -655,3 +655,30 @@ Read off `LabPlant`'s own `[N, Y, K]` header over all 17 rows: **only two of the
 **The magnitude below 4 m/s** (0.83–1.64× on cut A; the clamped band's fitted `Y_β` is a twentieth to a quarter of the row's, consistent with the derivative being 92 % fins and lift ∝ V²). **The missing inertial term** (H1 above) — the first genuinely unmodelled physics the track has found. And a **new lead, recorded with populations and deliberately NOT promoted to a cause:** the filter's own β is **2.5–4.2°** where the board's is 0.9–1.1°, and sign-agrees on only **0.65–0.75** of honest-band ticks.
 
 **It does not move the falls.** 3.4h's **626 of 626** stands; every arm fell in every run. **What it changes is what eleven rounds of a metric meant.**
+
+## ⚖️ TWO OWNER RULINGS, 2026-11-17 — BOTH AUTHORISED, ONE BUILDING, ONE QUEUED
+
+### RULING A — "Yes, cap the ask." (step 3.5a, BUILDING)
+
+Asked whether the game may limit what the rider **asks for** to what its speed can hold, given it targets 42–52° of lean at 1.3 m/s (a 13 cm turn radius), **the owner chose "Yes — cap the ask."** The option they picked states explicitly: *"The rider never requests a lean its speed cannot hold, **whether the request came from your stick or from its own balance**."*
+
+**So the cap binds BOTH the balance's own reference AND the stick's request. Do not narrow it to one.** `θ_max = atan(v²/(g·R_min))`, `R_min = 2.0 m` → 4.9° at 1.3 m/s, 25° at 3, 52° at 5, 65° at 6.5. **Opt-in, default byte-identical. `R_min` is the advisor's judgement and the one unsourced number.**
+
+**This is the first change in the whole track the owner has said yes to.** It is a bound on a reference, not a force — but it sits near the no-hidden-motors line, which is why they ruled. **If building it ever requires adding a force to make it stick, that is the cheat: stop and report instead.**
+
+### RULING B — "Three depths." (QUEUED behind 3.5a)
+
+Asked what Compress should become, given four videos and five-plus riders show **no held deep stance anywhere** (upright between turns at hips 85–95 %, a deep spike of **0.25–0.7 s** at turn entry, **never held beyond ~1 s in any readable clip**) while our Compress is held for as long as the key is pressed and **falls 205 of 205** — **the owner chose "Three depths."**
+
+**What they authorised:**
+1. **Upright**;
+2. **a moderate crouch they CAN still hold** — explicitly kept, because *"getting into position at low speed"* is their stated priority and they must not lose a holdable low stance;
+3. **a quick deep dip of about 0.5 s that springs back out on its own** — the very deep pose **stops being somewhere the rider can live**, which is where every fall happens.
+
+**This matches the video evidence exactly** (`video-ref-3.md`, `kirra-reference-50-196s.md`, `video-ref-2.md`): the low comes **at turn entry**, tall on both sides, tall → low → tall in **1–1.5 real s**.
+
+**Open sub-question NOT yet put to them:** whether the dip is **triggered by their input only**, or **fires automatically on turn entry** as the videos show. **Default to their input** — an automatic dip is the game moving the body for them, which is the same boundary Ruling A sits on. **Ask before choosing automatic.**
+
+**Why queued, not parallel:** 3.5a edits the rider's bank reference and stance handling, and Ruling B edits stance depths and their timing — **the same files.** Two agents there at once would collide and neither result could be trusted. **Build B immediately after 3.5a merges.**
+
+**One caveat the owner was shown and accepted:** the cap may change how Compress behaves enough that Ruling B looks different afterwards. They chose three depths anyway. **If 3.5a's result materially changes Compress's behaviour, say so before building B rather than building it blind.**
