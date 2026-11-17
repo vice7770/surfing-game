@@ -1,12 +1,16 @@
-# Step 3.5 — the ask cap
+# Step 3.5 — the owner's two rulings
 
 The owner's bar is unchanged and is still the acceptance test: **in Compress the surfer must never fall at the low
 speeds of getting into position — 100 %, not "fewer".** Tall may legitimately fall on a sharp turn.
 
-This folder opens because step 3.5a is the first change in the whole new-rider track that the **owner explicitly
-authorised**. Asked whether the game may limit what the rider *asks* for to what its speed can hold, they answered
+This folder holds the two changes the **owner explicitly authorised** on 2026-11-17 — the first the whole new-rider
+track has had. **Ruling A, the ask cap, is step 3.5a and is Part 1 below.** Ruling B, the stance rework, is queued
+behind it and its prep round is `stance-frame.md` in this folder.
+
+Ruling A: asked whether the game may limit what the rider *asks* for to what its speed can hold, they answered
 **"Yes — cap the ask"**, on the water-physics advisor's recommendation
-(`docs/research/water-physics/board-roll-stiffness.md` §7).
+(`docs/research/water-physics/board-roll-stiffness.md` §7), and the option they chose says the bound applies
+*"whether the request came from your stick or from its own balance"* — so both reference lines, not one.
 
 Tags as in 3.2, 3.3 and 3.4: **[M]** measured by a probe here; **[R]** read in the code; **[S]** from a source;
 **[I]** my inference from a stated model; **[A]** arithmetic on measured numbers, labelled as such.
@@ -102,7 +106,8 @@ bound has nothing to bind, and the honest finding is that it is inert, not that 
 1. **The ride, switch unset.** `f73-l` reproduces step 3.4i's, 3.4l's, 3.4m's and 3.4n's published arm **exactly:
    18 of 18 fell, 0.617–2.533 s, median 1.450 s.** `s16-l` reproduces **18 of 18, median 1.033 s** and `f73-g`
    **24 of 24, median 4.650 s** — 3.4h's own two other published cells.
-2. **The eight new probe columns move no ride.** The same `f73-l` command before and after the columns were added:
+2. **The 37 new probe columns move no ride** (8 per tick, 29 per run). The same `f73-l` command before and after the
+   columns were added:
    **0 mismatches over 6 966 column-values of 18 runs**, and the log's 73 non-JSON lines **identical**.
 3. **The switch is inert with the stick centred, at every value.** Against `f73-l.ships`: `a15`, `a2`, `a4` and `a9`
    differ in **two columns only** (`askCapMed`, `askHeldMed` — both instrument columns describing the cap), `a45` in
@@ -113,9 +118,12 @@ bound has nothing to bind, and the honest finding is that it is inert, not that 
    imported `--state` give different hashes on `main` alone: the wrapper
    `globalThis.location = { search: '?canyonWaves=true' }` **prepended to the bundle**, the grid read as **B,
    400 × 451 = 180 400 cells**, `--spot canyon --steps 3600`, a `--state` path deleted first so the
-   "spun up on the CPU in … s" line is present on both. **`main`: `a367d938f15fa934` / `9e5831f80e38abd9` — the
-   handoff's own recorded B reference, to the digit.** The branch's pair is in
-   `results/35a/35a-canyon-branch.txt` beside it.
+   "spun up on the CPU in … s" line is present on both (48.9 s on `main`, 47.0 s on the branch — wall clock, which
+   the hash does not depend on). **`main` gives `a367d938f15fa934` / `9e5831f80e38abd9` — the handoff's own recorded B reference, to the
+   digit — and the branch gives the same two.** A second, cheap leg covers the doc-comment edits made to
+   `AttachedRider.ts` after that bundle was built: **from the same imported `.sea` over 240 steps, the `main` bundle,
+   the branch bundle and the final branch bundle all give `548f3db7ca81d898` / `475f8c56c9debccc`**, which is also
+   3.4m's own recorded 240-step pair.
 5. **The model's own identity.** `3.5/cap.ts` reproduces the advisor's four quoted cells at `R = 2 m` (4.92 / 24.64 /
    51.88 / 65.09° against 4.9 / 25 / 52 / 65) and checks the direction claim over twelve speeds.
 
@@ -313,9 +321,21 @@ sooner, not the turn failing to start.
 - `docs/research/new-rider/3.5/cap.ts` — the model-only arithmetic; `results/35a/35a-model.txt` is its output.
 - `docs/research/new-rider/3.5/read.py` — every table above, rebuilt from the dumps (gunzip them first).
 - `docs/research/new-rider/3.5/results/35a/*.log.gz` — the 28 arms, raw; `35a-read.txt` the read;
-  `35a-canyon-main.txt` and `35a-canyon-branch.txt` the two fresh 3 600-step Canyon legs.
+  `35a-canyon-main.txt` and `35a-canyon-branch.txt` the two fresh 3 600-step Canyon legs, `35a-canyon-240.txt` the
+  three-bundle 240-step leg.
 
-## 9. For the owner, in plain words
+## 9. The handoff's own caveat about Ruling B, answered
+
+The handoff records: *"the cap may change how Compress behaves enough that Ruling B looks different afterwards … if
+3.5a's result materially changes Compress's behaviour, say so before building B rather than building it blind."*
+
+**It does not, and the answer is as strong as it can be: on the default rider the diff is byte-identical by
+construction and measured identical on 60 runs, and with the stick centred it is identical at every radius too.**
+Compress falls 6 of 6 at the same millisecond on `f73-l` at all five radii. **Ruling B can be built on exactly the
+Compress that was measured when it was ruled.** The only caveat left is a file one: 3.5a edits `prepareBank`, which is
+in the same method as the stance's bank handling, so B should start from this branch or from main after it lands.
+
+## 10. For the owner, in plain words
 
 **The thing you said yes to is already in the game, and it is stricter than what you were offered.** Your rider has
 never been allowed to ask for a big lean at walking pace: since October it has been limited to the lean a 4.5-metre

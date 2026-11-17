@@ -1313,7 +1313,7 @@ describe('PhysicalMode', () => {
   // The `?askCap=1.5|2|4|4.5|9` dev switch (step 3.5a): opt-in, the minimum carved radius the rider's COMMANDED lean is
   // bounded by, m, so the bound is atan(v²/(g R_min)) at every speed in place of the shipped 4.5 m with no ask at all
   // off the plane; anything else, and an online room, the cap as it ships.
-  it('bounds the commanded lean on `?askCap=1.5|2|4|4.5`\'s own minimum radius (an opt-in dev switch), and on the shipped 4.5 m turn otherwise', () => {
+  it('bounds the commanded lean on `?askCap=1.5|2|4|4.5|9`\'s own minimum radius (an opt-in dev switch), and on the shipped 4.5 m turn otherwise', () => {
     expect(askCapSwitch('?askCap=1.5')).toEqual({ askCap: '1.5' });
     expect(askCapSwitch('?askCap=2')).toEqual({ askCap: '2' });
     expect(askCapSwitch('?askCap=4')).toEqual({ askCap: '4' });
