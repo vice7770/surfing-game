@@ -1137,3 +1137,29 @@ Per stance identical on all three; **tall and crouch bit-identical run for run.*
 2. **`depth.ts` and `plant.ts` figures are NOT comparable for the owner's rider.** `depth.ts` has no `FELT`/`BODY` switches, **and** the two differ in the manoeuvre (`depth.ts:251` releases the stick at `ACROSS` = 85°; `plant.ts` holds it the whole run). The rider difference alone carries the −0.716 s, so the manoeuvre was not isolated. **Anyone comparing a `depth.ts` number with a `plant.ts` number must check both.**
 
 Its own slip, recorded in the README: a policy test first called `scheduledDesign(7, 0.45, {weights})` — three args, so the weights landed in `rail` and every gain was `NaN`. **vitest does not type-check; `tsc -b` caught it.**
+
+## ⚖️ RULING E (2026-11-17) — "THE DIP SHOULD FIRE ON MY INPUT ONLY"
+
+Asked whether the deepen button should fire **automatically at turn entry** — which all five of the first clips tie it to — or only on their own input, the owner ruled:
+
+> ***"the dip should fire on my input only"***
+
+**No code change needed: that is exactly what step 3.5b built** (`?deepen=on`, the owner's existing crouch key reaching the tuck's 0.45 m, fired by them and nobody else). **The ruling confirms the default rather than changing it.**
+
+**Why it matters anyway:** it settles the boundary a second time, the same one Ruling A sits on. **An automatic dip would be the game moving their body for them**, and the owner has now drawn that line twice in one day — **do not propose an automatic stance change again without putting it to them first.** Note that video 6 weakened the case for automatic-at-entry in any case: **the low there came BEFORE the turn and was spent BY it**, so "turn entry" is not even a reliable trigger (8 of 9 now, not 8 of 8).
+
+### THE ONE STANCE QUESTION STILL OPEN
+
+**Do they want the dip to self-release at all?** Measured: **it rose while still held in 0 of 19 runs, 0 ticks, at every hold length** (0.25 / 0.5 / 0.7 / 1.5 s). **`kneeStrength` cannot do it** — it returns `2·KNEE_TORQUE / d`, a **force** bounding what the legs may push with, not the **length** they are held at, and too much load makes the body sink *below* the rest rather than rise. **So a self-release can only be a clock or a new rule, and neither is built, proposed or hidden.** Also measured: the leg's own pace needs **0.45–0.52 s** for the last 0.15 m, so **a 0.25 s press never arrives** and the footage's 0.25–0.7 s band is only half-reachable at the leg's current speed.
+
+### THE RULINGS, AS THEY NOW STAND
+
+| | ruling | state |
+| --- | --- | --- |
+| **A** | cap what the rider asks for | **already shipped and tighter** (`TURN_RADIUS = 4.5 m`, 0 off the plane); the switch is PR #389 |
+| **B** | Compress as a dip, not a pose | **superseded by C** |
+| **C** | keep the held Compress, both patterns are real | the dip is an **addition**; nothing taken away |
+| **D** | keep the row | shipped by default; **its price was the wrong rider's — on theirs it is +0.050 s, not −0.700** |
+| **E** | the dip fires on their input only | **already built** |
+
+**Open and waiting on them:** the dip's self-release; **Crouch's value** (waits on their `?kneeRoom=achieved` ride, because tall sinks up to 0.27 m on its own); and **PRs #389 and #392**, both refused to the caller by the classifier.
