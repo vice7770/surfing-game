@@ -395,6 +395,20 @@ interface Tick {
   schedTilt: number;
   railMeas: number;
   railUsable: number;
+  /**
+   * **Step 3.4l, Check 2**: the board's own trim and draft on the ride, to the captive lab's own definitions
+   * (`../roll-plant/plant.ts:357–368`). `trimWorld` ° nose up + from the world's level (the lab's own `asin(f.y)`);
+   * `facePitch` ° the SURFACE's own pitch along the board's heading; `trimFace = trimWorld − facePitch`, the trim
+   * against the water the board is actually in. `draftFace` m is the deepest patch under the water's own surface
+   * over it (negative: the hull clear of the water); `draftFlat` m the lab's own number with the surface at y = 0;
+   * `wetShare` the share of the shape's patches under the surface.
+   */
+  trimWorld: number;
+  facePitch: number;
+  trimFace: number;
+  draftFace: number;
+  draftFlat: number;
+  wetShare: number;
 
   // --- 2. the one-step residual of the controller's own blended model, per component ---
   /** `|Φx+Γu−x⁺|` on the board's roll rate and the body's bank rate, °/s. */
@@ -868,6 +882,15 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
   const sideV = new Vector3();
   const boardUp = new Vector3();
   const nW = new Vector3();
+  /**
+   * **Step 3.4l, Check 2**: the scratch for the board's own trim and draft on the ride, the two columns step 3.4k's
+   * cheapest-first list asks for. `fwd3` is the board's forward axis in THREE dimensions (`fwd` above is its level
+   * projection, which cannot carry a pitch); `pW` is a patch in the world; `psample` is a SECOND water sample, so the
+   * per-patch reads do not clobber `cen` — `SurfWater.sampleAt` writes into the sample it is handed and returns it.
+   */
+  const fwd3 = new Vector3();
+  const pW = new Vector3();
+  const psample = createWaterSample();
   const ticks: Tick[] = [];
   let fell = '';
   let fellAt = Number.NaN;
@@ -904,6 +927,35 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     const through = Math.hypot(board.velocity.x - flowX, board.velocity.z - flowZ);
     nW.set(cen.normalX, cen.normalY, cen.normalZ).normalize();
     const tilt = Math.atan2(nW.dot(sideV), nW.y) * DEG;
+    // **Step 3.4l, Check 2: the board's own trim and draft on the RIDE, to the captive lab's own definitions.**
+    // The lab reads them off `../roll-plant/plant.ts:357–368`: `draft = max over the shape's patches of −p.y` with
+    // the patch taken into the WORLD by `BoardBody.toWorld`, and `pitch = euler(q).pitch = asin(f.y)` with `f` the
+    // board's forward axis — i.e. the draft under a FLAT free surface at y = 0 and the trim from the world's level.
+    // On a face neither datum is the water, so both are taken against the water the board is actually in and the
+    // flat-water pair is printed beside them:
+    //   `draftFace` = max over patches of (the water's own surface over that patch − the patch's own y), m. Negative
+    //   means the whole hull is clear of the water. `draftFlat` is the lab's own number, surface at y = 0.
+    //   `trimWorld` = the lab's own `asin(f.y)`, °, nose up +. `facePitch` is the SURFACE's own pitch along the
+    //   board's heading — for a plane `n·x = c`, `dy/ds = −(n·ŝ)/n_y`, so it is `atan2(−n·fwd, n_y)` — and
+    //   `trimFace = trimWorld − facePitch` is the board's trim against the water under it. On flat water
+    //   `facePitch = 0` and `trimFace = trimWorld`, which is the lab's own case and the control on the definition.
+    fwd3.set(0, 0, 1).applyQuaternion(board.orientation);
+    const trimWorld = Math.asin(Math.max(-1, Math.min(1, fwd3.y))) * DEG;
+    const facePitch = Math.atan2(-nW.dot(fwd), nW.y) * DEG;
+    const trimFace = trimWorld - facePitch;
+    let draftFace = -Infinity;
+    let draftFlat = -Infinity;
+    let wet = 0;
+    for (const patch of board.shape.patches) {
+      board.toWorld(patch.position, pW);
+      const sfc = water.sampleAt(pW.x, pW.y, pW.z, psample);
+      const sy = sfc.outsideDomain ? 0 : sfc.surfaceY;
+      const d = sy - pW.y;
+      if (d > draftFace) draftFace = d;
+      if (-pW.y > draftFlat) draftFlat = -pW.y;
+      if (d > 0) wet += 1;
+    }
+    const wetShare = wet / board.shape.patches.length;
     const bank = rider.bank.angle * DEG;
     const rail = roll - tilt;
     // The slip: the board's own sideslip through the water, rad. `fwd` and `sideV` are the heading's own level pair,
@@ -1615,6 +1667,12 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         schedTilt: inner.schedTilt * DEG,
         railMeas: Math.abs(rail),
         railUsable: railLimit(speedUsed) * DEG,
+        trimWorld,
+        facePitch,
+        trimFace,
+        draftFace,
+        draftFlat,
+        wetShare,
         resRollRate,
         resBankRate,
         ratioRollRate,
@@ -1920,6 +1978,18 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         // the state the tick sits at, every one a read off the ride
         speed: r(xx.speed, 3), railMeas: r(xx.railMeas, 3), roll: r(xx.roll, 3), bank: r(xx.bank, 3),
         through: r(xx.through, 3), schedRail: r(xx.schedRail, 4), tilt: r(xx.tilt, 3),
+        // **Step 3.4l, Check 1: the force-against-force columns of Part 7, PER TICK.** Step 3.4k could only read
+        // their arm medians off the summarised dump, so its sign shares were not conditioned on the force's own
+        // size. Nothing here is computed for the dump: every column is already on the row (`:1686–1691` builds the
+        // game's three off `BoardBody`'s own water ledgers, `:1690` the model's three off the twelve derivatives at
+        // the tick's own state). `speedUsed`/`speedClamped` come along so the clamp can be read tick by tick.
+        speedUsed: r(xx.speedUsed, 4), speedClamped: xx.speedClamped,
+        kGame: r(xx.kGame, 4), kModel: r(xx.kModel, 4),
+        yGame: r(xx.yGame, 4), yModel: r(xx.yModel, 4), yModelRail: r(xx.yModelRail, 4),
+        nGame: r(xx.nGame, 4), nModel: r(xx.nModel, 4),
+        // **Step 3.4l, Check 2: the board's own trim and draft on the ride.**
+        trimWorld: r(xx.trimWorld, 3), facePitch: r(xx.facePitch, 3), trimFace: r(xx.trimFace, 3),
+        draftFace: r(xx.draftFace, 4), draftFlat: r(xx.draftFlat, 4), wetShare: r(xx.wetShare, 4),
         // the roll row, both sides and both halves
         rollAccGame: r(xx.rollAccGame, 4), rollAccModel: r(xx.rollAccModel, 4), rollAccFull: r(xx.rollAccFull, 4),
         rollRel: r(xx.rollRel, 6), relFull: r(xx.relFull, 6), rollSign: xx.rollSign,

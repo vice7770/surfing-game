@@ -6057,3 +6057,221 @@ model that is right. So fixing this would fix the slow take-off and leave the re
 made, from the same spot. **If the slow ones drop you by throwing you over toward your own lean inside the first
 second and the fast ones do not, this is a real part of it. If they feel the same, it is not, and we should say so and
 move on.**
+
+# Part 12 — step 3.4l: the two things step 3.4k listed under "Not claimed"
+
+**Two cheap checks and nothing else, both named by step 3.4k itself. The answers in one line each: the sign finding
+is NOT a zero-crossing artefact — it holds at the largest forces and in two stances it is WORSE there (0.000–0.500
+on the top tercile against 0.954–0.986 where the table is honest), so the headline SURVIVES. The magnitude half of
+it is overstated: the 1.6–2.3× is carried by the smallest-force third (ratio 1.86–6.06 there against 0.61–1.16 on
+the largest third), so at the ticks where the side force matters the model has roughly the right SIZE and the wrong
+SIGN. And the game's board below 4 m/s is NOT planing — draft 0.27–0.30 m against 0.039–0.068 m where the table is
+honest, trim 16.0–17.2° against 3.0–4.5° — but it is NOT at row `'4'` either: its own trim and draft land on rows
+`'4.5'`–`'5.5'`, which are exactly the rows §2 swapped in, so §2's 2.5–4× is NOT overstated. If anything this
+vindicates it.**
+
+**And one confound 3.4k did not name, found while cutting the data and stated before anyone builds on the band: at
+the owner's own speeds the clamped live window is mostly the capsize itself.** Only **19 / 34 / 29 %** of the
+≤ 1.6 m/s live ticks (tall / crouch / compress) have the board rolled inside 25°, against **64 / 61 / 64 %** over
+the whole clamped band and **69 / 76 / 63 %** where the table is honest. So any figure read on that band is thin
+(17–24 ticks a stance survive the roll filter) and is partly a reading of the fall rather than of the design. The
+sign finding survives that cut in crouch and compress (0.167, 0.292) and **does not survive it in tall** (0.42 over
+the whole window → **0.824** inside 25° of roll, n = 17).
+
+## 0. The rig, and the one identity check it needs
+
+`3.3/plant.ts` with step 3.4k's own prescription applied and nothing else: the Part 7 force-against-force columns
+(`yGame`/`yModel`/`kGame`/`kModel`/`nGame`/`nModel`, plus `speedUsed`/`speedClamped`) and six new trim/draft columns
+are now written **per tick** by the `TICKS=` switch step 3.4c already added. **Nothing is computed for the dump that
+was not already on the row** — `3.3/plant.ts:1686–1691` builds the game's three off `BoardBody`'s own per-source
+water ledgers and `:1690` the model's three off the twelve derivatives at the tick's own state. **No byte under
+`src/` or `server/` is changed by this round**, so there is no switch to add, no default to keep and nothing to
+byte-check in the game; the byte check this round owes is on the *probe*, and it is below.
+
+**The identity check: `f73-l` re-run with the new columns reproduces step 3.4i's published arm exactly** — 18 of 18
+fell, **0.617–2.533 s, median 1.450 s**, against `results/34i/f73-l.log`'s `fell 18 of 18, at 0.617–2.533 s, median
+1.450`. The added columns move no ride.
+
+**Arms** (step 3.4i's own, `RIDER=new FELT=deck BODY=two`, `AHEAD` 0.75, `SIDE` −45, 9 s a run, the stance held, the
+stick never touched): `f73-l` (FACE 1.4,7.32,5.7, `ENTRIES=1..6` × 3 stances, 18 runs), `s16-l` (FACE 1.4,16,5.7,
+the same entries, 18) and `s16-g` (FACE 1.4,16,5.7, the default eight relative entries, 24). **4 990 tick rows,
+4 038 of them live.** `f73-g` was attempted and **abandoned**: the design goes singular partway through that arm
+(`dare` → `inverse` throws `singular`), a pre-existing limit of the probe at that cell, not a change of this round.
+Its partial dump is excluded, so nothing here is read off a truncated arm.
+
+**Column definitions, read before quoting, all three the captive lab's own** (`../roll-plant/plant.ts:357–368`):
+`draftFace` m is the deepest patch under **the water's own surface over that patch** (`BoardBody.toWorld` into the
+world, the surface sampled per patch, because on a face it is not at y = 0); `trimWorld` ° is the lab's own
+`asin(f.y)`, nose up +; `facePitch` ° is the **surface's** own pitch along the board's heading (for a plane
+`n·x = c`, `dy/ds = −(n·ŝ)/n_y`, so `atan2(−n·fwd, n_y)`); **`trimFace = trimWorld − facePitch`** is the board's trim
+against the water under it, and on flat water `facePitch = 0` so `trimFace` is the lab's own number — which is the
+control on the definition. `wetShare` is the share of patches under the surface.
+
+## 1. CHECK 1 — the sign share conditioned on `|yGame|`. Not a zero-crossing artefact.
+
+**Live ticks, clamped (`speedUsed` outside 4–12) with `speed ≤ 1.6 m/s` — the owner's own cell — terciles of
+`|yGame|` taken WITHIN each stance's cell, never pooled:**
+
+| stance | n | speed med | tercile | n | `|yGame|` med N | `|model/game|` med | **sign right** |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| tall | 88 | 1.190 | **all** | 88 | 113.2 | 1.517 | **0.420** |
+| | | | low | 29 | 57.2 | 2.434 | 0.448 |
+| | | | mid | 29 | 112.2 | 1.295 | 0.379 |
+| | | | **high** | 30 | **144.7** | **0.782** | **0.433** |
+| crouch | 71 | 1.240 | **all** | 71 | 101.1 | 2.124 | **0.324** |
+| | | | low | 23 | 34.7 | 4.162 | 0.174 |
+| | | | mid | 24 | 101.0 | 3.122 | 0.333 |
+| | | | **high** | 24 | **133.8** | **1.203** | **0.458** |
+| compress | 82 | 1.218 | **all** | 82 | 95.1 | 1.836 | **0.329** |
+| | | | low | 27 | 34.2 | 2.582 | 0.222 |
+| | | | mid | 27 | 93.5 | 2.158 | 0.519 |
+| | | | **high** | 28 | **148.0** | **1.114** | **0.250** |
+
+**And the control, the same table where no tick is clamped** (the honest band, `s16-g` and the fast ticks of the two
+`-l` arms):
+
+| stance | n | speed med | tercile | n | `|yGame|` med N | `|model/game|` med | **sign right** |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| tall | 945 | 6.649 | all | 945 | 140.9 | 0.891 | 0.937 |
+| | | | low | 315 | 89.3 | 0.688 | 0.844 |
+| | | | **high** | 315 | **247.5** | **0.982** | **1.000** |
+| crouch | 1 134 | 6.824 | all | 1 134 | 140.3 | 0.749 | 0.924 |
+| | | | low | 378 | 75.1 | 0.729 | 0.841 |
+| | | | **high** | 378 | **242.8** | **0.723** | **1.000** |
+| compress | 937 | 6.704 | all | 937 | 179.0 | 0.736 | 0.957 |
+| | | | low | 312 | 107.2 | 0.825 | 0.913 |
+| | | | **high** | 313 | **311.5** | **0.631** | **1.000** |
+
+**Read it in three sentences.**
+
+1. **The wrong sign is not concentrated at small forces.** On the clamped cell the top tercile's own `|yGame|`
+   medians are **133.8–148.0 N** — nowhere near zero — and the sign share there is **0.433 / 0.458 / 0.250**, i.e.
+   no better than the cell's own average in tall and compress and still worse than a coin toss in all three.
+2. **The honest band does the opposite, which is the control that makes (1) readable.** There the share **rises**
+   with the force and reaches **1.000 on the top tercile in all three stances** — 315, 378 and 313 ticks with not
+   one sign disagreement — while its own low tercile sits at 0.841–0.913. So the instrument behaves exactly as a
+   correct model should when conditioned on magnitude, and the clamped cell does not.
+3. **But the MAGNITUDE half of 3.4k's headline is overstated, and the direction is the same in both bands.** The
+   ratio falls monotonically with the force: 2.43 → 0.78 (tall), 4.16 → 1.20 (crouch), 2.58 → 1.11 (compress), and
+   on the whole clamped band under a roll filter it runs **1.86–6.06** on the low tercile against **0.61–1.16** on
+   the high one. **So "the model's side force is 1.6–2.3× too large" is a statement about the ticks where the force
+   is smallest. At the ticks where it matters the model has roughly the right size and the wrong sign** — which
+   sharpens 3.4k's own sentence ("the magnitude is the smaller half of it") rather than contradicting it.
+
+**And the confound, stated with its numbers.** Filtering the same cells to ticks with the board rolled inside 25° —
+i.e. before the capsize has taken the geometry over — leaves only **17 / 24 / 24** ticks at ≤ 1.6 m/s (19 / 34 /
+29 % of the live ticks there), against 241 / 216 / 184 over the whole clamped band (61–64 %) and 653 / 862 / 588 in
+the honest band (63–76 %). On that cut the sign share is **tall 0.824 (n = 17), crouch 0.167 (24), compress 0.292
+(24)**, against **0.908 / 0.900 / 0.932** in the honest band at the same roll filter. **So in crouch and compress
+the wrong sign is there before the fall; in tall it is not, and tall's published 0.409 is in large part a reading of
+the capsize.** With 17 ticks nothing stronger than that should be said about tall.
+
+## 2. CHECK 2 — the game's board below 4 m/s is half sunk, but it is NOT at row `'4'`
+
+**The columns step 3.4k's cheapest-first list asked for, live ticks, the board rolled inside 25° so the capsize's own
+pitch-up is not being read as a trim (populations for both cuts are in the results file):**
+
+| band | stance | ticks | speed med | **`trimFace` med °** (10–90) | **`draftFace` med m** (10–90) | `wetShare` | nearest row by trim / by draft |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **clamped (< 4 m/s)** | tall | 241 | 3.00 | **17.24** (5.2–31.9) | **0.3011** (0.109–0.530) | 0.604 | **`'5.5'` / `'4.5'`** |
+| | crouch | 216 | 3.12 | **17.25** (3.0–31.2) | **0.2812** (0.064–0.473) | 0.562 | **`'5.5'` / `'4.5'`** |
+| | compress | 184 | 2.82 | **15.96** (3.1–32.5) | **0.2728** (0.064–0.481) | 0.583 | **`'5.5'` / `'4.5'`** |
+| **clamped, ≤ 1.6 m/s** | tall | 17 | 1.50 | 5.85 | 0.1454 | 0.646 | `'9'` / `'6'` |
+| | crouch | 24 | 1.26 | 4.35 | 0.1024 | 0.594 | `'11'` / `'6.5'` |
+| | compress | 24 | 1.33 | 4.66 | 0.1106 | 0.594 | `'9.5'` / `'6.5'` |
+| **honest (4–12)** | tall | 653 | 6.09 | **3.03** (1.7–7.9) | **0.0388** (0.016–0.122) | 0.542 | `'12'` / `'9.5'` |
+| | crouch | 862 | 6.39 | **4.46** (1.3–11.1) | **0.0675** (0.004–0.170) | 0.521 | `'11'` / `'8.5'` |
+| | compress | 588 | 6.02 | **3.75** (1.1–10.0) | **0.0444** (0.008–0.148) | 0.500 | `'10.5'` / `'9'` |
+
+`PLANT_SPEEDS`' own trim and draft per row, off its own comments [R, `predictiveBalance.ts:204–220`]: `'4'` 46.4°
+0.513 m, `'4.5'` 25.9° 0.293, `'5'` 19.3° 0.215, `'5.5'` 15.3° 0.166, `'6'` 12.6° 0.133, `'6.5'` 10.7° 0.109,
+`'7'` 9.2° 0.091, `'12'` 2.9° 0.017.
+
+**The verdict, in the brief's own two words: HALF SUNK, but not at row `'4'`.**
+
+1. **It is not planing.** Below 4 m/s the board carries **0.27–0.30 m** of draft at **16.0–17.2°** of trim with
+   **56–60 %** of its patches wet; in the honest band the same board carries **0.039–0.068 m** at **3.0–4.5°** with
+   **50–54 %** wet. **That is 4–7× the draft and 4–5× the trim**, and it is the table's own non-planing regime, not
+   planing water. **So step 3.4k's correction to its own brief is confirmed from the ride's side too**: row `'4'`
+   does not describe water the board is not in.
+2. **But row `'4'` is not the nearest honest row.** 46.4° and 0.513 m is the deepest, most-trimmed row the table
+   owns, and the ride's own pair lands a row or three shallower: nearest by draft **`'4.5'`** in all three stances
+   (per-tick modal nearest row `'4.5'` with `'4'` second), nearest by trim **`'5.5'`**. At the owner's own ≤ 1.6 m/s
+   ticks it is shallower still — 0.10–0.15 m and 4.4–5.9°, nearest rows `'6'`–`'6.5'` — although that is 17–24
+   ticks a stance and should be quoted as such.
+3. **Therefore §2's 2.5–4× is NOT overstated.** §2 swapped row `'4'` for rows **`'4.5'`, `'5'` and `'6'`** and found
+   those three agree with each other within ~1.8× and disagree with the shipped row by 2.5–4×. **The rows the
+   board's own trim and draft pick out are inside that swap cluster.** So the swap was not a sensitivity about an
+   arbitrary neighbour: it was, by this measurement, a swap toward the row the board is actually in. Step 3.4k's
+   §4 offered "if it is half sunk at 40–50° of trim and ~0.5 m of draft, row `'4'` is the nearest honest row and
+   §2's 2.5–4× is an overstatement" — **the board is half sunk, but at 16–17° and 0.27–0.30 m, not 40–50° and
+   0.5 m, so that refutation does not fire.**
+4. **One thing the honest band also says, and it is a new lead and not this round's business.** At 6.0–6.4 m/s the
+   game's board sits at **0.039–0.068 m of draft and 3.0–4.5° of trim**, where the table's rows at that speed record
+   **0.109–0.133 m and 10.7–12.6°** — nearest rows `'8.5'`–`'12'`. **The game's board on a wave face is consistently
+   LESS sunk than the captive rig at the same speed**, which is what the face's own orbital lift and slope would do
+   and is the same argument §3's item 2 makes for measuring in `FaceWater`. It means the clamp is not the only place
+   the table and the ride disagree about regime — but the honest band's model is right to 7–23 % with the sign right
+   on 92–98 %, so whatever that mismatch costs, it is not costing the sign.
+
+## 3. What this round refuted, and what it will not claim
+
+**Refuted:** step 3.4k's §4 escape hatch — *"if the game's board at `speedUsed` ≈ 1.3 m/s turns out to be half sunk
+at 40–50° of trim, row `'4'` is the nearest honest row the table has and §2's 2.5–4× is an overstatement."* The
+board **is** half sunk and row `'4'` is **not** the nearest row; the nearest rows are the ones §2 already swapped in.
+
+**Also refuted, in my own brief:** its framing that this round could only confirm or demolish. It does both in
+different places — the sign survives, the magnitude is overstated, §2 is vindicated — and it found a confound
+neither it nor 3.4k named (the ≤ 1.6 m/s live window is mostly the capsize).
+
+**I will not claim:**
+- that tall's wrong sign is real before the fall. 17 ticks inside 25° of roll, share 0.824. **Crouch and compress's
+  is** (0.167 and 0.292 on 24 ticks each, against 0.900–0.932 in the honest band on the same cut) — and that is
+  still 24 ticks a stance.
+- that trim and draft are derivatives. They are a **geometric** proxy for which regime the hull is in, measured to
+  the lab's own two definitions so the two can be compared at all. The ride's water is also moving with the board,
+  so the same draft at a lower through-speed is not the same hydrodynamics; nothing here is a sub-4 m/s row and
+  **§3's finding that no honest row exists below 4 m/s is untouched.**
+- that the clamp causes the falls. 3.4k's constraint is carried unchanged: 626 of 626, and the honest band falls too.
+- anything about the hull's ≈100 N·m/rad, the 70° clamp, the wave, the placement, the ankle's range, or "the rider
+  is blind to the across acceleration" (3.4j: present, correctly signed, 95.8–96.7 % of the bank row). None
+  re-opened. No comparison against the old rider's retired benchmark.
+
+## 4. What this round did NOT do
+
+- **Shipped nothing.** The only file changed is the probe `3.3/plant.ts` (six trim/draft columns on the per-tick
+  dump and the Part 7 force columns carried into it); `src/` and `server/` are byte-identical to `main`. The probe
+  change is identity-checked against step 3.4i's own published arm (§0).
+- Did not write a row into `PLANT_SPEEDS`, did not build the `θ_max` ask-cap, did not touch `labAt`.
+- Did not ride `f73-g` (singular design, pre-existing) and did not re-run the captive rig.
+
+## 5. Files (3.4l)
+
+- `3.4/results/34l/34l-sign-magnitude-and-trim.txt` — both checks in full, with every cut's populations.
+- `3.4/results/34l/f73-l.ticks.jsonl.gz`, `s16-l.ticks.jsonl.gz`, `s16-g.ticks.jsonl.gz` — the per-tick dumps
+  (4 990 rows), and the three arms' own summary dumps beside them.
+- `3.4/results/34l/34l-read.py`, `34l-read-cuts.py` — the reads above, so every table can be rebuilt from the dumps.
+
+## 6. For the owner, in plain words
+
+**Two questions were open about last round's finding, and both are now answered.**
+
+**First: was "the balance pushes the wrong way at your falling speed" just noise about zero?** No. When the sideways
+push is at its biggest — about 140 N, a fifth of your own weight — the balance still gets its direction wrong two
+times in three on two of the three stances. Where the balance's table is honest, the same test gets the direction
+right **every single time** out of three hundred. So the finding stands. What does NOT stand is the size: the "twice
+too big" was measured mostly on the small pushes; on the big ones the size is about right and only the direction is
+wrong.
+
+**Second: is the board at your falling speed sliding on top of the water or ploughing through it?** Ploughing —
+about 30 cm deep and 17° nose-up, against 4 cm and 3° when you have speed. So the balance's table is at least
+reading the right kind of water. **But the particular line it falls back on is too deep even for that**: the board's
+own depth and angle match the table's 4.5-to-5.5 m/s lines, not the 4 m/s line the code pins it to. **So last
+round's fix — use the next lines up instead of the 4 m/s one — is pointed the right way, and this round makes it a
+better bet than it looked.**
+
+**One honest caveat, and it changes nothing you would ride.** At a crawl you fall so fast that there is barely any
+ride to measure: only about a fifth to a third of those moments have the board still roughly level. **Your shot is
+unchanged and still the thing that would settle it**: Canyon with `?canyonWaves=true`, two take-offs at a crawl and
+two with speed already made, same spot. If the slow ones throw you over **toward your own lean** inside the first
+second and the fast ones do not, this is real. If they feel the same, it is not, and we close the lead.
