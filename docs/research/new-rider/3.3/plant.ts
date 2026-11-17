@@ -352,6 +352,13 @@ interface RiderInner {
   ankleTorque: number;
   /** Step 3.4i: the load through the legs along the body's own up, N — `soleBound`'s own first factor. */
   legLoad: number;
+  /**
+   * **Step 3.5d: the axis every `deck` reading of the bank ledger is taken on** — the world vector `(0, 0, −1)`
+   * turned by the board's heading (yaw only), which `prepareBank` writes and `bankLedger.solve` is handed. Read so
+   * the deck's own roll RATE can be printed on the same axis as the per-source roll accelerations, instead of being
+   * differenced off the `roll` column.
+   */
+  rollAxis: { x: number; y: number; z: number; dot(v: { x: number; y: number; z: number }): number };
 }
 
 /** The six groups of the plant that can be zeroed exactly, and the twelve coefficients each owns. */
@@ -398,6 +405,12 @@ const RIDER_SOURCES: BankSource[] = BANK_SOURCES.filter((s) => !WATER_SOURCES.in
  * that a source added to `BANK_SOURCES` later lands here rather than being dropped silently.
  */
 const REST_SOURCES: BankSource[] = RIDER_SOURCES.filter((s) => s !== 'ankle' && s !== 'twist');
+/**
+ * **Step 3.5d: the sources the `MOUNT=` dump books the deck's roll per, which is `BANK_SOURCES` itself** — all
+ * twenty-three, zeroes included, so the dump's own sum is the ledger's whole partition and a source added later
+ * lands in the dump rather than being dropped silently.
+ */
+const DECK_KEYS: BankSource[] = [...BANK_SOURCES];
 
 const dot = (row: readonly number[], x: readonly number[]) => { let s = 0; for (let j = 0; j < x.length; j += 1) s += row[j] * x[j]; return s; };
 
@@ -965,6 +978,12 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
 
   const ctl = rider.predictor as unknown as ControlInner;
   const inner = rider as unknown as RiderInner;
+  /**
+   * **Step 3.5d**: the board's own private tensor, named rather than reached for anonymously. `bodyInertia` is the
+   * board-frame inertia the integrator rotates into the world each substep (`rotateTensor`, `:2252`); its zz entry is
+   * the roll inertia about the roll ledger's own datum, the board's long axis.
+   */
+  const boardIn = board as unknown as { bodyInertia: number[] };
   const fwd = new Vector3();
   const sideV = new Vector3();
   const boardUp = new Vector3();
@@ -1068,6 +1087,13 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       const eM = ctl.estimate;
       const nM = dM ? dM.phi.length : 0;
       const liveM = bankLedger.on && bankLedger.unitSteps > 0;
+      /**
+       * **Step 3.5d's own gate, and it is NOT `liveM`.** The unit compliance reads (`rollDeckPer`, `ankle…`) are
+       * taken only where the body is banking, because row 7 is a dummy otherwise [R, `bankLedger.ts`]; the per-source
+       * `deck` attribution is booked on every substep the 8×8/9×9 decided, banking or not. So it has its own gate —
+       * the ledger ran and factored at least one substep this step.
+       */
+      const liveD = bankLedger.on && bankLedger.steps > 0;
       appendFileSync(MOUNT, `${JSON.stringify({
         body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0,
         extra: entry0 === null ? extra : null,
@@ -1152,6 +1178,68 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         ankleRel: liveM ? r(bankLedger.ankleRelative, 8) : null,
         ankleDeck: liveM ? r(bankLedger.ankleDeck, 8) : null,
         rollDeckPer: liveM ? r(bankLedger.rollDeckPer, 8) : null,
+        // **Step 3.5d: the DECK's own roll acceleration, attributed per source** — `bankLedger.deck`, rad/s² about
+        // `rollAxis`, the exact `A⁻¹` partition of the same right-hand side the `bd…` moments are read off. The sign
+        // is the `roll` column's own second derivative: `deckAcc` (= `bankLedger.deckTotal`) is `roll̈`, and
+        // `rollGame` above prints the model's `φ̈ = −deckTotal`. These are the accelerations, so they integrate
+        // TWICE to the roll angle, which is the only way a per-source share of a 56–84° rail can be stated.
+        // `dkSum` is the partition's own sum and `dkClose` the ledger's own closure, both printed per frame so the
+        // attribution is read and not asserted. Every source is booked, zeroes included.
+        ...(liveD
+          ? {
+            dkSum: r(DECK_KEYS.reduce((a, k) => a + bankLedger.deck[k], 0), 6),
+            dkClose: r(bankLedger.closure, 12),
+            dkSplit: r(bankLedger.split, 12),
+            ...Object.fromEntries(DECK_KEYS.map((k) => [`dk_${k}`, r(bankLedger.deck[k], 6)])),
+            // the same sources' MOMENTS on the board's roll row, N·m, for the five the `bd…` list above leaves out
+            bdLeg: r(bankLedger.boardMoment.leg, 4), bdHand: r(bankLedger.boardMoment.hand, 4),
+            bdPitch: r(bankLedger.boardMoment.pitch, 4), bdDrive: r(bankLedger.boardMoment.drive, 4),
+            bdLimbs: r(bankLedger.boardMoment.limbs, 4), bdAssist: r(bankLedger.boardMoment.assist, 4),
+          }
+          : {}),
+        // **Step 3.5d: the deck's own roll RATE on the ledger's own axis**, °/s — `rollAxis · ω_board`, read off the
+        // board rather than differenced off the `roll` column, so the double integral of the attribution has a
+        // measured rate to be checked against. And the hull's own state while it rolls (step 3.4l's own three
+        // columns, which until now were written only by the `TICKS=` dump): the deepest patch under the water over
+        // it, the board's trim against that water, and the share of patches under it.
+        rollRateAxis: r(inner.rollAxis.dot(board.angularVelocity) * DEG, 4),
+        /**
+         * **Step 3.5d: the ROLL ledger beside the bank ledger's board rows, because they are two different
+         * quantities and only one of them describes every substep.**
+         *
+         * `bd…`/`dk…` above are `bankLedger`'s partition of the standing solve's own right-hand side. On a substep
+         * the standing system did **not** decide — the contact infeasible, so the board takes only the projected
+         * push (`pushBoard` + `solve6`) — that attribution does not describe the substep, and the ledger counts those
+         * as `apart` [R, `BoardBody.ts:1535–1538`, `bankLedger.ts:189`]. `apartSub`/`bookSub` print both counts per
+         * frame so the share is read rather than assumed.
+         *
+         * `rl…` is `BoardBody.roll`, which books an angular impulse on **every** substep and whose `rlTotal` is the
+         * board's own `I·Δω` projected on the axis — the roll the board actually took. Its datum is the board's own
+         * long axis (+z), **the opposite sense to `rollAxis`** (`(0,0,−1)` turned by the heading), so `rl…` and
+         * `bd…`/`dk…` carry opposite signs by construction; and `rlRider` is a **residual** (`total` less every water
+         * entry and the gyro), not a measured contact torque [R, `BoardBody.ts:353–372`].
+         */
+        apartSub: bankLedger.apart, bookSub: bankLedger.steps, subs: board.substepsTaken,
+        rlTotal: r(board.roll.total, 4), rlBuoy: r(board.roll.buoyancy, 4), rlPress: r(board.roll.pressure, 4),
+        rlAdded: r(board.roll.addedMass, 4), rlRad: r(board.roll.radiation, 4), rlFric: r(board.roll.friction, 4),
+        rlBed: r(board.roll.bed, 4), rlFins: r(board.roll.fins, 4), rlRails: r(board.roll.rails, 4),
+        rlFroth: r(board.roll.froth, 4), rlSuct: r(board.roll.suction, 4), rlGyro: r(board.roll.gyro, 4),
+        rlRider: r(board.roll.rider, 4),
+        /**
+         * **Step 3.5d: the board's OWN roll inertia about the ledger's own datum, kg·m²** — `bodyInertia[8]`, the zz
+         * entry of the board's body-frame tensor, which **is** `ẑᵀ R I Rᵀ ẑ` for `ẑ = R e_z` exactly (the rotation
+         * cancels), so this is the inertia `rl…` divides by with no frame argument in it. It is the board ALONE:
+         * `1 / rollDeckPer` above is the coupled one the integrator meets with the rider and the water's implicit
+         * added mass in it. Printed per frame (it is a constant of the run) so no table has to import it.
+         */
+        rollInerBoard: r(boardIn.bodyInertia[8], 6),
+        rollInerXX: r(boardIn.bodyInertia[0], 6), rollInerYY: r(boardIn.bodyInertia[4], 6),
+        draftFace: r(draftFace, 5), trimFace: r(trimFace, 4), wetShare: r(wetShare, 4),
+        // **Step 3.5d: what the rider is ASKING for at this frame, and whether the board planes** — `leanProbe`, the
+        // read-only record step 3.3f added (`cap` the speed's own bound, `ask` the eased lean the balance holds).
+        // Below `PLANING_DROP = 3 m/s` the cap is exactly 0, which is the fact this round's question rests on.
+        askDeg: r(rider.leanProbe.ask * DEG, 4), capDeg: r(rider.leanProbe.cap * DEG, 4),
+        planingNow: rider.leanProbe.planing, throughProbe: r(rider.leanProbe.speedThrough, 4),
         attached: rider.attached ? 1 : 0, upright: rider.upright ? 1 : 0, phase: rider.phase,
       })}\n`);
     }
