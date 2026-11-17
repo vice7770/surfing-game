@@ -4832,7 +4832,7 @@ prediction about the *mechanism* rather than about a ride time.
   **915 files** including `3.4/place.ts`, `3.4/face.ts` and `3.3/plant.ts`. Every exit code read **on its own line
   and never through a pipe**; the worktree's `node_modules` is a **symlink**, so `npx` never ran.
 - `vitest`: the three merge suites, below.
-- **The Canyon byte check**, below, with its three cautions: the wrapper **prepended to the bundle**, the **grid**
+- **The Canyon byte check**, §10b below, with its three cautions: the wrapper **prepended to the bundle**, the **grid**
   read, and the **spin-up line** read so nothing was imported.
 - `src/wave/SurfZoneSimulation.test.ts` is closed by reading: nothing in this round touches the solver, the sea, a
   snapshot or any spot's configuration, and its own per-test timeout is 644.5 minutes [R], so it could not gate
@@ -5425,11 +5425,15 @@ board instead** (§8 item 8 on what that figure is and is not).
    internal terms are each ≥ 5 × the net **only on the owner's low-speed cell**, not on the glide arm (0.76 × and
    1.38 ×) [M]. My licence for the 10 × was **one frame of one smoke run**, which reads 33 ×. **That is this
    round's own instance of the error this track keeps making, and it is in my prediction file in my own hand.**
-7. **My own first candidate for a frame error, refuted by reading it.** I suspected the roll ledger booked the
+7. **The handoff's own third Canyon caution is now measured rather than warned about — on `main`, not on this
+   branch.** The same build, grid, seed and step count gives **`c601393e8d626f2a`/`23bc1585cc56f647`** spun up fresh
+   and **`1d7f9125628f21d2`/`ff3d2edee6c660ad`** from the same state imported [M, §10b]. Nothing is refuted here; a
+   warning became a number, and the number says the two cannot be told apart from the hashes alone.
+8. **My own first candidate for a frame error, refuted by reading it.** I suspected the roll ledger booked the
    planing pressure on the water's surface normal, which would have made §5's collapse step 3.3m's `cos³` arm defect
    in a new place. It books it on `r × n̂`, the hull's own normal, and the added-mass entries on `r × û` — both right
    [R, §1 R4].
-8. **My own P9 as stated.** No arm's median moved at all with the clamp lifted; four ratios of **1.000** [M].
+9. **My own P9 as stated.** No arm's median moved at all with the clamp lifted; four ratios of **1.000** [M].
 
 ### 7b. The ten predictions, scored against the file committed before the arms (`36105b1a`)
 
@@ -5509,11 +5513,51 @@ reads **−34.3 N·m/rad at trim** against the planing rows' −69.9 / −105.4 
   the ankle's spring then sees the angle the geometry gives, which is the paired quantity it was always meant to see.
 - **The switch is pinned off in the online rooms** (`main.ts`'s `overrides`), and `PhysicalMode.test.ts` reads that
   pin out of `main.ts` and fails if it is removed.
+- **The Canyon byte check: identical on both grids**, `main` against this branch, like for like — §10b.
 - **The suites.** `vitest run --exclude 'src/wave/SurfZoneSimulation.test.ts'` — the excluded file declares 644.5
   minutes of per-test timeout and cannot gate anything (`c2-step5g.md` §7.3). **367 files passed, 37 skipped;
   3 651 tests passed, 23 expected-fail, 43 skipped; 431 s; exit 0.**
 - **`SurfZoneRunner.test.ts` is outside the merge suite** and is run by hand after start/spray/duck changes; this
   round touches none of those.
+
+### 10b. The Canyon byte check, in its A/B form, and the handoff's third caution confirmed on `main`
+
+**The three cautions, each honoured and each visible in `results/34i/34i-canyon-byte-check.txt`:** the wrapper is
+`globalThis.location = { search: '?canyonWaves=true' }` **prepended to the bundle** for the B grid and absent for
+the default one; the **grid** is printed and read, **B 400 × 451 = 180 400** and **default 400 × 507 = 202 800**;
+and the **"spun up on the CPU in … s"** line is printed, with every pairing **like for like** on it.
+
+| **[M]** 120 steps, same machine, same seed, both runs of a pair importing the SAME state | snapshots | final state |
+|---|---|---|
+| **Canyon B** — `main` (`2b5574ce`) | `daad779700490728` | `07cbc2c756e95179` |
+| **Canyon B** — this branch | **`daad779700490728`** | **`07cbc2c756e95179`** |
+| **the default Canyon** — `main` | `1d7f9125628f21d2` | `ff3d2edee6c660ad` |
+| **the default Canyon** — this branch | **`1d7f9125628f21d2`** | **`ff3d2edee6c660ad`** |
+
+**Identical in both columns on both grids.** No reference hash from an earlier round is quoted: the folder's
+references were taken at **3 600** steps with a fresh spin-up and cannot be compared with a 120-step run. What is
+compared is **the two trees against each other**, which is what the seatbelt is for, and which is a tighter test
+than matching a figure from another machine-day.
+
+**Why 120 and not 3 600, stated rather than hidden.** The machine ran out of memory — **8 GB of RAM with 57 MB
+free** and swapping onto a volume **98 % full** — and a 3 600-step arm that takes about ten minutes rested took over
+an hour and was abandoned twice. The per-step rate is unaffected (**77.7–85.8 ms** of CPU solver against step 3.4h's
+84.3–88.4), so the cost was wall clock, not the measurement. 120 steps hashes 120 consecutive snapshots and the
+whole final state over two seconds of sea, with the rider stepped on every one of them (`board` 0.98–1.08 ms p50 in
+both columns), which is enough for any difference in the board's or the rider's code to appear.
+
+**And the third caution is now a measurement, taken on `main` alone.** Same build, same grid, same 120 steps, same
+seed, the only difference being whether the sea was spun up in that process or imported:
+
+| **[M]** `main` alone, the default Canyon | snapshots | final state |
+|---|---|---|
+| **FRESH spin-up** | `c601393e8d626f2a` | `23bc1585cc56f647` |
+| **the same state imported** | `1d7f9125628f21d2` | `ff3d2edee6c660ad` |
+
+**A kept `.sea` does not reproduce a fresh spin-up's hashes, confirmed with nothing else changed.** The handoff's
+warning is real, it is not about this branch, and it is why every pairing above is like for like. **It also means a
+round that benches fresh and compares against a reference taken fresh is fine, and a round that benches an imported
+state and compares against that reference is not — and the two cannot be told apart from the hashes alone.**
 
 ## 11. Files (3.4i)
 
@@ -5538,7 +5582,8 @@ reads **−34.3 N·m/rad at trim** against the planing rows' −69.9 / −105.4 
   speed on `PlaneWater`, read through the game's own roll ledger.
 - **`docs/research/new-rider/3.4/results/34i/`** — eight arms as `.jsonl` (per run) and `.mount.jsonl.gz` (per
   frame), **6.4 MB gzipped**, plus `34i-predictions.md` (committed at `36105b1a`, before any arm was read),
-  `34i-summary.txt`, `34i-hull-stiffness.txt` and `34i-canyon-byte-check.txt`.
+  `34i-predictions-scored.md`, `34i-summary.txt`, `34i-hull-stiffness.txt` and `34i-canyon-byte-check.txt` (the
+  A/B hashes, both grids, with the fresh-against-imported measurement on `main`).
 - **`docs/research/new-rider/3.4/README.md`** — this Part, appended below Part 8's last line.
 
 ## 12. For the owner, in plain words — and the shot list

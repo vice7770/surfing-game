@@ -1,3 +1,62 @@
-##### step 3.4i, FRESH spin-up, Canyon B (?canyonWaves=true), this branch (36105b1a2a269358ba32fb48f5f0b5498711dcd9)
-spun up on the CPU in 47.1 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/34i/bench/I-b.sea
+# Step 3.4i — the Canyon byte check, in its A/B form: `origin/main` against this branch, same machine, same seed,
+# same step count, both grids. 120 steps, not 3,600, for the reason in the note at the bottom.
+#
+# The handoff's three cautions, each honoured and each visible below:
+#   (1) the wrapper is `globalThis.location = { search: '?canyonWaves=true' }` PREPENDED to the bundle for the B grid
+#       and absent for the default one (a bare string silently benches the default Canyon via `devTools.ts:9`);
+#   (2) the GRID is printed and read — B 400 × 451 = 180400, default 400 × 507 = 202800;
+#   (3) the "spun up on the CPU in … s" line is printed, and every pairing below is LIKE FOR LIKE on it: within a
+#       pair both runs import the SAME state, so the only difference between them is the code.
+#
+# No reference hash from an earlier round is quoted here. The folder's references
+# (B a367d938f15fa934/9e5831f80e38abd9, default ea3d57a4d49f4b48/a1a2555739210f96) were taken at 3,600 steps with a
+# fresh spin-up and CANNOT be compared with a 120-step run. What is compared is the two trees against each other,
+# which is what the seatbelt is for.
+
+##### Canyon B (?canyonWaves=true) — the state spun up FRESH by `main` and imported by both runs
+
+spun up on the CPU in 45.1 s; kept in .../34i/ab/ab2-b.sea
 canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+
+main    (origin/main, 2b5574ce)      hashes: snapshots daad779700490728, state 07cbc2c756e95179
+branch  (claude/rider-clamp-34i)     hashes: snapshots daad779700490728, state 07cbc2c756e95179
+                                     ====> IDENTICAL, both columns
+
+##### the default Canyon — the state spun up FRESH by `main` and imported by both runs
+
+spun up on the CPU in (the fresh run below); kept in .../34i/ab/ab2-d.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+
+main    (origin/main, 2b5574ce)      hashes: snapshots 1d7f9125628f21d2, state ff3d2edee6c660ad
+branch  (claude/rider-clamp-34i)     hashes: snapshots 1d7f9125628f21d2, state ff3d2edee6c660ad
+                                     ====> IDENTICAL, both columns
+
+##### and the handoff's third caution, measured on `main` ALONE while this was being set up
+
+The same build, the same grid, the same 120 steps, the same seed — the ONLY difference being whether the sea was
+spun up in that process or imported from a kept `.sea`:
+
+main, default Canyon, FRESH spin-up   hashes: snapshots c601393e8d626f2a, state 23bc1585cc56f647
+main, default Canyon, SAME state imported  hashes: snapshots 1d7f9125628f21d2, state ff3d2edee6c660ad
+
+**A kept `.sea` does not reproduce a fresh spin-up's hashes, confirmed on `main` with nothing else changed.** The
+caution is real, it is not about this branch, and it is why every pairing above is like for like.
+
+##### why 120 steps and not 3,600
+
+The machine ran out of memory: 8 GB of RAM with **57 MB free** (`vm_stat`: 3,577 free pages of 16 KB) and swapping
+onto a volume with **5.5 GB free at 98 % full**. A 3,600-step arm that takes about 10 minutes rested took over an
+hour and was abandoned twice. The stepping rate itself is unaffected when run in the foreground (77.7–85.8 ms a step
+of CPU solver, in line with step 3.4h's 84.3–88.4), so the cost is wall clock and not the measurement.
+
+**What 120 steps does and does not buy.** It hashes 120 consecutive snapshots and the whole final state, over two
+seconds of simulated sea, which is enough for any difference in the board's or the rider's code to appear — the
+rider is stepped on every one of them (`board` 0.98–1.08 ms p50 in both columns). It is NOT the folder's own 3,600
+and it must not be quoted against the folder's own reference hashes.
+
+##### the stage timings, for the record (p50/p95 ms over the 120 steps)
+
+Canyon B      main    breaking 1.21/1.61  foam 2.54/3.13  board 1.08/2.20  snapshot 4.63/5.60  stages 12.88/16.13  water 77.7
+Canyon B      branch  breaking 1.20/1.32  foam 2.53/2.64  board 0.98/2.14  snapshot 4.47/4.74  stages 12.59/13.95  water 79.0
+default       main    breaking 1.36/1.46  foam 3.55/4.55  board 1.06/2.12  snapshot 5.23/5.56  stages 15.43/17.39  water 85.8
+default       branch  breaking 1.35/1.46  foam 3.47/3.77  board 1.01/2.23  snapshot 5.14/5.47  stages 15.35/17.53  water 85.7
