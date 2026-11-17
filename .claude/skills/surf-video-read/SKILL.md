@@ -30,6 +30,10 @@ A real constraint worth planning around: a 854×480 source puts the rider at 40�
 ### Part A — what the body does
 
 - **Stance through the ride.** Knee angle and hip height as a fraction of standing height, and **when** each occurs. Note that a tube and an open-face turn are different stances in the same clip.
+
+  **Say which standing height you divided by, every time: it means STRAIGHT-LEGGED standing hip height, and nothing else.** Riders are never straight-legged on a board, so your 100 % is a pose you will not see in the clip — that is correct and expected, and a reader who assumes otherwise is off by up to 20 points, which is more than the gap between two of the game's own stances.
+
+  **And never compare your fraction to one of the game's metres without converting.** This has already happened three times: `video-ref-2.md`, `video-ref-3.md` and `kirra-reference-50-196s.md` all set a hip fraction against `STANCE_TABLE`'s 0.65 m and 0.55 m, which are **whole-body centre-of-mass heights above the feet**, not hips — the CoM sits 6–7 cm above the pelvis in every stance, a quarter of Compress's whole travel. The hip numbers and the conversion are in `docs/research/new-rider/3.5/stance-frame.md`; **read it before you put a game number next to a video number.**
 - **Each turn, in four beats**: entry, load, peak, exit. Where the weight goes, what the shoulders and hips do relative to the board, whether the upper body leads or follows.
 - **The arms.** Height, spread, and whether they track the trunk or move independently.
 - **Timing**, read off the player's own clock. **Find the slow-motion factor or say you could not** — "a turn takes 3–4 video seconds" is not comparable to a real bottom turn's 0.96 s, and conflating them has already happened here.

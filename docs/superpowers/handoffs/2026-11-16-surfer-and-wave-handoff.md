@@ -735,3 +735,58 @@ The owner reversed it within the hour, after being shown the timescale objection
 **THE QUESTION THIS PROMOTES TO THE TOP:** if neither fatigue nor a timer brings the rider up, **what does?** Candidates, none yet established: **the turn itself ending; unweighting to change rail; the board's own loading and unloading of the legs; extending through the exit to project speed.** The last is the most promising because it is a *reason* to rise rather than a limit on staying down — and a reason is what makes a skill emerge. **This is the next design question for the owner, and it is more interesting than the one just closed.**
 
 **Still unasked:** whether the deepen button fires **on the owner's input only** or **automatically at turn entry**. **Default to their input.**
+
+## STANCE FRAME (merged `63b4295c`, PR #388) — THE LADDER IS MEASURED, THE OWNER'S INSTINCT HOLDS, AND THE DIP ALREADY EXISTS IN THE CODE
+
+`docs/research/new-rider/3.5/stance-frame.md`. **The caller verified every code line below personally.**
+
+### The conversion, and my brief picked the wrong denominator
+
+**Standing hip height is 0.78 m above the deck** (`riderPosture.ts:100`, the pelvis part's placed height — and that file says at `:83–87` that these heights are *"illustrative, not measured"*). `AttachedRider.ts:3853` uses it as the stance's hip. **The game's own STRAIGHT leg puts the hip at 0.88 m** (`:3854`, `stance + LEG_EXTENSION`, `LEG_EXTENSION = 0.1` at `:808`).
+
+**0.88 m is the right denominator and 0.78 m is not.** All four video documents read the rider's upright, between-turns stance at **75–95 %, never 100 %** — their 100 % is a straight-legged stand no rater ever sees. Against 0.88 m the game's Tall reads **89 %, inside the footage's own resting band**; against 0.78 m it reads 100 %, outside every clip's. **The two frames differ by up to 20 points — more than the gap between the game's Crouch and its Compress.** This is a calibration against the videos' own resting reading, not a preference.
+
+| stance | leg depth | hips, m | **÷ 0.88 m** | footage |
+| --- | --- | --- | --- | --- |
+| Tall | 0 | 0.78 | **89 %** | resting band 75–95 % ✔ |
+| Crouch | 0.195 | 0.585 | **66 %** | **no counterpart in any clip** |
+| Compress | 0.30 | 0.48 | **55 %** | sustained crouch 55–65 % ✔ |
+| Snap (shipped) | 0.30 | 0.48 | 55 % | — |
+| tuck / `?snapDepth=deep` | 0.45 | 0.33 | **38 %** | deep spikes 35–50 % ✔ |
+
+### "Compress should be quite deep already" — THE OWNER IS RIGHT, and now we know what it is right FOR
+
+**Compress at 55 % sits exactly in the footage's sustained, holdable crouch band (55–65 %).** So Compress's depth is already correct **for the moderate crouch they wanted kept.** The footage's **deep spikes are 35–50 %**, and Compress is 5–20 points shallower — nowhere near them.
+
+> **So the 0.5 s dip belongs deeper, at 0.34–0.47 m of leg depth — which is `MANUAL_CROUCH_DEPTH` = 0.45 m, the tube tuck, ALREADY IN THE CODE and already shipped as the opt-in `?snapDepth=deep`.**
+
+**Crouch is the stance that is actually wrong.** Its 0.195 m / 66 % falls in the gap between the footage's resting band and its crouch band — **no counterpart in any of the four clips.** The footage wants **0.21–0.30 m**.
+
+**So the ladder the footage asks for is 0 / ~0.30 / ~0.45 m — and all three depths already exist as constants.**
+
+**THE COLLISION TO RESOLVE BEFORE BUILDING:** move Crouch to 55–65 % while Compress keeps 55 %, and the two end up **0–10 points apart** — which is precisely the defect 3.3e measured **on the rider the owner actually rides**: on `?rider=new`, Compress adds only **0.025–0.115 m** over tall in 4 of 6 runs, against **0.300–0.336 in 6 of 6** on the default rider. **Crouch and Compress would collapse into each other.**
+
+### THE ONE THING THAT BLOCKS THE BUILD
+
+**`stanceAt` clamps the depth at 0.30 m** — `predictiveBalance.ts:607`, `Math.min(STANCE_TABLE[2].depth, depth)` (read and confirmed). **So every stance deeper than Compress — the tuck, `?snapDepth=deep`, and the dip if it goes where the footage says — is INVISIBLE TO THE BALANCE PLANT**, which designs it with Compress's pendulum length, Compress's body inertia and Compress's bank limit. **A fourth `STANCE_TABLE` row is needed**, and `BODY_FRONTAL_SHARE` (`:595`) and `hipRange` (`standingBody.ts:98–103`) are keyed on the same three depths.
+
+### AND THE DIP SELF-RELEASES FOR A REASON WE ALREADY HAVE — no stamina system needed
+
+**`kneeStrength` already makes the legs weaker as the dip deepens: 3.0 / 2.25 / 2.1 / 1.9 body weights** tall / crouch / Compress / tuck (`standingBody.ts:113–117`, `KNEE_TORQUE = 300`), matching **Zöger 2025 (n = 28)** and **Lynch 2021 (n = 59)** in direction and roughly in magnitude. **That is a static strength curve, not fatigue** — so it survives the owner's infinite-stamina ruling untouched, and it is the mechanical reason rung 3 should spring back. **It needs no new quantity.**
+
+### WHAT BRINGS A SURFER UP IN 0.25–0.7 s — it is not fatigue, and (a) is measured
+
+(a) **the turn ends — 0.96 ± 0.04 s (n = 6 riders / 835 turns, Forsyth 2024) and 0.8 ± 0.03 s (n = 4 / 2 060, Shormann 2020)** — high confidence and quantitative. **The dip's duration IS the turn's duration.**
+(b) the legs cannot hold the load down there (1.9–2.25 vs 3.0 BW, three agreeing samples) — high in direction.
+(c) the leg's travel runs out, so extension is the only move left — **certain, it is our own code.**
+(d) extending through the exit drives the turn (Komissarov 2022, Kogelbauer 2024) — **borrowed from ski and skate, and the ski sign is OPPOSITE to the surf footage's. Do not lean on it.** (My own earlier guess that (d) was "the most promising" is therefore withdrawn; (a) is the answer.)
+
+### THE ERROR BAR — carry it to the owner and do not tune past it
+
+±10 points of video error is **±0.09 m** on a 0.88 m leg, and the denominator spread is worth another **±0.1 m**. **The conversion is good to about ±0.1 m against a ladder whose entire travel is 0.45 m.** Build to the three rungs and **judge by riding; do not tune to the centimetre.** The knee-angle cross-check (footage 100–115°; our Crouch 82.5°; the drawn rig's gauge 104°/102° at a 0.117 m drop) brackets the hold at **0.12–0.20 m** — a **0.1 m disagreement with the percentage route, unresolved on paper**, and that is the same error bar showing honestly.
+
+### THE TWENTY-FIRST FRAME ERROR, in three of our own documents — and the conclusion survives it
+
+`video-ref-3.md`'s "0.65 m" and "0.55 m" are `STANCE_TABLE`'s **whole-body centre-of-mass height above the feet** (`predictiveBalance.ts:555–557`, defined at `rollModel.ts:27–29` as the inverted pendulum's length), **not hips.** The hips in those stances are **0.585 and 0.48 m** — the CoM sits a constant **6–7 cm** above the pelvis in every stance, **a quarter of Compress's whole travel.** It propagated `video-ref-2.md:44` → `video-ref-3.md:37,57` → `kirra-reference-50-196s.md:103` (which states *"I did not re-read the rider code"*). **Converted properly, the spikes at 0.31–0.44 m of hip ARE deeper than both and land on the tube tuck — so the conclusion survives and only the arithmetic was wrong.**
+
+**ROOT CAUSE FIXED:** `.claude/skills/surf-video-read/SKILL.md` asked for *"hip height as a fraction of standing height"* and **never defined the denominator.** It now says **straight-legged standing hip height**, explains why 100 % is a pose that never appears in a clip, and **forbids setting a video fraction beside a game metre without converting**, pointing at `3.5/stance-frame.md`.
