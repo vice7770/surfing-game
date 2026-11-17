@@ -1361,3 +1361,60 @@ At the one frame where the A/B is exact, hull inside a lens, **32 cells a stance
 - **Slow motion: not measured, but 3–4× excluded** by a 0.36 s / ~120° arm drop; reads at or near real time, no duplicated frames.
 - **The rider is NOT named.** The "stephanie gilmore highlights" text beside the player is YouTube's search suggestion, not an identification.
 - **The stale-frame trap fired FOUR times and the canvas stamp caught every one.** A `wait 0.55 s` between draw and screenshot made single screenshots reliable. **The one-tab rule worked:** `tab-1` created and passed on every call; the pre-existing `seed` tab also holds the URL because the first `navigate` opened the pane before `tab-1` existed, but **no measurement came from it.**
+
+## ⭐ VIDEO REFERENCE 8 (merged `22004a4d`, PR #397) — **THE TRUNK IS THE LOUD CHANNEL AND THE LEGS ARE THE QUIET ONE**, and the game has one leg spring where a rider has two
+
+`docs/research/new-rider/3.5/video-ref-8-malibu-montage.md`. 15.221 s, uploader **@hunterjoness**, **1080×1920 at 60 fps** (video 7's viewport-then-reload step works and is what got it — the pane served 720×1280 before). Rider 96–616 px, typically 250–400. `tabId` **`tab-1`**, passed on every call. **It is a MONTAGE — at least eight shots, at least three boards, so these are figures about *surfers*, not *a* surfer**; two cuts proven at 1/60 s and one suspected cut **refuted** the same way.
+
+### THE FINDING, and it reproduces video 7 on a different rider, break and camera
+
+**In ALL SIX frames where the leg chain is readable the legs sit at 76–99 % of their own straight length — the Tall band, every one. Over the same frames the trunk swings from ~20° to ~76° from vertical.** **One channel moves 23 points; the other 60 degrees.**
+
+| t | leg depth | trunk fold | arm carriage |
+| --- | --- | --- | --- |
+| 14.30 | **99 %** — top of Tall | ~31° | **rear arm above the head** |
+| 14.70 | **95 %** — Tall | **~76°, near horizontal** | **both hands hanging at the deck** |
+
+> **t = 14.70 looks like the deepest crouch in the clip. It is a Tall stance wearing a crouch's silhouette.**
+
+Counts: Tall-band frames **6**, Compress-band **0**, below 55 % **0**, **at the shipped Crouch depth (66 %) 0.** **Eight clips, still no rider there** — and the one near-66 % reading is low-confidence and **contradicted 0.2 s later by 88 % / 76 % on the same rider in the same turn.**
+
+### TWO THINGS NO EARLIER READ HAS
+
+1. **The rear arm goes overhead BEFORE the legs extend — 3 of the 4 resolvable direction changes (5.20, 9.45, 13.20) — and stays up through the manoeuvre.** Videos 6 and 7 showed arm carriage is *independent*; **this one TIMES it.** The arm is not decoration following the body; it leads.
+2. **The two legs sit at different extensions in the same frame: 97 % / 86 % (14.40) and 88 % / 76 % (13.30). The game has ONE leg spring.**
+
+### THE TRANSITIONS
+
+- **T1, unfold in trim (~1.0 s): the legs finish before the trunk starts** — ~0.3 s of long legs under a 40–60° trunk. **Same order as video 7's T1.**
+- **T2, fold-down (~0.3 s): TRUNK ONLY** — 35° → 76° while the leg goes 97 % → 95 %.
+- **T3, the turn (~1.4 s) in four beats:** entry 0.15 s (**the rear leg extends back first**) → load 0.30 s (lead arm reaches forward-down past the rail) → **peak 0.20 s, where the first thing to rise is the REAR ARM, not a hip** → exit 0.25 s (lead arm thrown forward and down across the body). Then a carve alternating compress–extend–compress–extend in 0.5 s.
+- **T5, pumping: ~4 trunk fold/unfold half-cycles in 2.9 s of trim with NO direction change** — and **the leg chain measured at 99 % mid-fold.** Pumping here is a trunk movement over straight legs.
+- **T6, fore-aft:** shoulders forward over the front foot, hips back, feet planted — **three separate shots. The fore-aft gap is now confirmed a third time** (Kirra, video 7, this).
+
+### ⚠️ TIMING — AND IT SHOULD WORRY US ABOUT THE ENGINE
+
+60 fps, every frame distinct (31 samples at 1/120 s fell into 15 groups of exactly 2), so **slow motion is excluded; at or near real time.**
+
+> **A complete bottom-turn → climb → top-turn runs 1.00 s, against the literature's 0.96 ± 0.04 s for a bottom turn ALONE. The snap runs 0.35 s.**
+
+**This is the first time the series has timed a turn against a published one.** It also means **Kirra's unverified 3–4× is not a property of surf clips generally** — that clip was slowed, these are not.
+
+### DISAGREEMENTS
+
+- **DISAGREES with video 7 on the down-transition** — **trunk-only here, knees-and-trunk there.** Both single observations, so the reading is that **the down-transition is not one fixed thing**, not that either is wrong.
+- **AGREES with video 7 against the first six** that the resting stance reaches **90–100 %**, above the game's Tall ceiling (89 %). **Two clips now.**
+
+### METHOD — IT OVERRODE MY SKILL AND WAS RIGHT, so the skill now says its way
+
+**It abandoned the shoulder-to-waistband scale and said why:** a full black wetsuit has no waistband, and the trunk scale **over-read the leg by ~50 % on the same frame.** It used **`|hip→ankle| ÷ (|hip→knee| + |knee→ankle|)`** instead — **no stature estimate needed, maps straight onto the game's leg spring, and it is an upper bound** (an unseen knee reads 100 %). **Both the method and its limit are now in the skill.**
+
+**Also now in the skill:** a **consent gate stands in front of YouTube** (`Reject all` — the privacy-preserving option — is required **before any `<video>` exists**); the pane can return a **partially drawn canvas**, which is a **different failure from the stale frame and the timestamp stamp cannot catch it** (the stamp is right, the picture is incomplete — fix with a 2.2–2.5 s wait or a second screenshot); and the two tools without which no leg in this clip was readable — a **black-wetsuit auto-crop** (found the rider in **128 of 140** frames) and a **silhouette edge outline**.
+
+**Declined honestly:** the two deepest-looking moments are **unmeasurable** — the board hides the feet in any loaded turn and the snap takes the trunk out of plane. **Structural, not a resolution problem.** And the page text naming a long-form video is reported as **adjacent page text, not an identification.**
+
+### THE "NOT AT ALL" ROWS
+
+Pumping with the trunk over straight legs; a crouch made of 76° of fold over a 95 % leg; **the arm leading a manoeuvre in time**; **the two legs at different depths**; the lead-arm reach through the load; the lead arm thrown across the body at the top.
+
+> **Four of the six are one gap seen from different sides: the game has ONE number for the body where this footage has at least FOUR — leg depth, trunk fold, arm carriage, and arm TIMING.**

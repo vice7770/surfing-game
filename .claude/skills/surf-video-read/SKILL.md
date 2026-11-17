@@ -63,6 +63,20 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 
 **And a `wait` of about 0.55 s between the draw and the screenshot made single screenshots reliable** where a 1 s wait alone had not. The canvas stamp still goes in — video 7's stale-frame trap fired **four times** and the stamp caught every one.
 
+### Three more things that will stop you dead if you do not know them
+
+- **A consent gate now stands in front of YouTube.** Answer it — **`Reject all`**, which is the privacy-preserving option — **before any `<video>` element exists at all.** Until then there is nothing to seek.
+- **The pane can return a PARTIALLY DRAWN canvas**, and this is a *different* failure from the stale video frame: a montage the page had finished drawing came back with half its tiles missing, twice. **The timestamp stamp cannot catch it**, because the stamp is correct — only the picture is incomplete. Fix: a **2.2–2.5 s wait**, or take a second screenshot and compare.
+- **Two tools are worth building before you measure a dark-wetsuit clip**, because video 8 was unreadable without them: an **auto-crop that finds a black wetsuit against water** (it located the rider in **128 of 140** frames) and a **silhouette edge outline**. No leg in that clip was readable otherwise.
+
+### ⭐ MEASURE LEG DEPTH BY THE LEG CHAIN, NOT BY A WAISTBAND SCALE
+
+**Video 8 abandoned the shoulder-to-waistband scale above and was right to.** A full black wetsuit has no waistband, and on the same frame the trunk scale **over-read the leg by about 50 %.**
+
+**Use `|hip→ankle| ÷ (|hip→knee| + |knee→ankle|)`.** It needs no stature estimate, it **maps straight onto the game's own leg spring**, and it degrades honestly: **it is an upper bound**, because a knee you cannot see reads as 100 %. Say so when you quote it.
+
+**And measure the two legs separately.** Video 8 found them at **97 % / 86 %** in one frame and **88 % / 76 %** in another. **The game has one leg spring; a rider has two legs at different extensions.**
+
 ### What the error bar actually is
 
 A 854×480 source puts the rider at 40–90 px, which is **±15° on any joint angle at best**. **But above roughly 200 px the resolution stops being the binding constraint and the HIP LANDMARK becomes it:** a boardshorts waistband sits at about **0.60 of stature** where the trochanter is at **0.53**, so **every hip figure carries ±10–15 points however sharp the image.** Read depth from a **shoulder-to-waistband** scale (robust to head tilt) and cross-check against a head-to-hip scale; **where the two disagree, report the disagreement instead of picking a winner.**
