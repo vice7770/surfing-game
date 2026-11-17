@@ -467,3 +467,55 @@ Where it lives, verified:
 **Still unreadable after four reads:** hips fore-aft over the tail (three-quarter/behind camera, spray over the board); head and gaze (**faces 5–8 px wide** — this may never be settleable from video and should stop being asked of it); the lip manoeuvre's hips.
 
 **Caveat the round flagged itself:** its Part B mapping used **the earlier docs' description** of what the game has, **not a fresh read of the rider code.** Those 13 rows are second-hand and should be re-checked against the code before any of them is built on.
+
+## STEP 3.4k (merged `52b68629`, PR #384) — THE FLOOR'S FAULT IS A **SIGN**, AND THE FIX IS MODEL-ONLY
+
+`docs/research/new-rider/3.4/README.md` **Part 11**; probe `3.4/floor.ts` (model only, restores `PLANT_SPEEDS` and prints the restored row); results in `results/34k/`.
+
+### PART A — the magnitude is the smaller half. **The finding is the SIGN.**
+
+At the owner's own falling speeds (arms with median tick speed ≤ 1.6 m/s and **100 % of ticks clamped**, 34h + 34i):
+
+| stance | arm-rows | live ticks | speed med | side force `|model/game|` | **sign right** |
+| --- | --- | --- | --- | --- | --- |
+| tall | 13 | 334 | **1.31** | 1.622 | **0.409** |
+| crouch | 13 | 316 | 1.252 | 2.216 | **0.345** |
+| compress | 12 | 274 | 1.226 | 2.329 | **0.280** |
+
+**Where no tick is clamped (33 335 live ticks, three stances, both rounds): ratio 0.77–0.93 and sign right on 0.92–0.98.** Roll moment `K` is 2.5–3.6× in **both** bands (3.3o already published that), **so it is not `K` that moves — the side force and the yaw moment are, and they move only under the clamp.**
+
+> **The term that is 95.8–96.7 % of the controller's own bank row (3.4j) points the WRONG WAY on 59–72 % of clamped ticks, against 2–8 % where the table is honest. Worse than a coin toss.**
+
+### PART D — unambiguously **(a), model-only. NO OWNER'S RULING NEEDED.**
+
+Traced, not asserted: `labAt`/`PLANT_SPEEDS` are read by **`plantAt` alone**; `plantAt` has exactly **two** shipped callers, both inside `predictiveBalance.ts` (`:1201`, `:1206`); a grep of `src/` and `server/` finds no other consumer (only the test file). From there the table reaches **Φ, Γ, K, L and nothing else. No water force in the game is computed from it** — those come from `BoardBody`'s ledgers, which is exactly what makes Part A's model-against-game comparison possible. The only change outside the model is the ankle's **commanded rest angle**, and the ankle is a real spring already paired by its reaction on the board's roll row. **Not a hidden motor; the shape of `?riderBody=two`; NOT the ask-cap's shape.**
+
+### PART B — the mechanism: row `'4'` is the table's own **SIGN-TURNOVER ROW**
+
+Negative control passes first: the shipped design reproduces 3.4j's gains exactly, and **the 6.47 m/s cells do not move a digit under any row swap.**
+
+Swapping row `'4'` for the next **measured** row (4.5 m/s), at 1.31 m/s: `K_ankle[β]` 2.461/3.974/3.280 → **0.772/1.004/1.048** (÷2.5–4.0); `K_ankle[θ]` → 2.714/2.551/2.275 (÷2.2–2.8); and **`K_twist[θ]` in Compress FLIPS SIGN (+99.8 → −383.7).** Rows 4.5/5/6 agree within ~1.8× of each other and disagree with the shipped row by 2.5–4×, so **the shipped low-speed design is an outlier produced by ONE row.**
+
+**Why:** yaw moment per rad of slip runs **+143.8 at 4, +41.3 at 4.5, −28.6 at 5, −161.0 at 6**, and stays negative to 12. Row `'4'`'s own comment records **trim 46.4°, draft 0.513 m**. **The clamp does not extrapolate the planing table downward — it pins every sub-4 m/s design to the one row where the hull changed regime and the signs turned over**, which is exactly why Part A's failure is a sign and not a size.
+
+### A CORRECTION TO THE CALLER'S BRIEF — carry it forward
+
+The brief said the clamped 4 m/s derivatives "may describe water the board is not even in." **Wrong.** Row `'4'` is **a measured row taken at 46.4° of trim and 0.513 m of draft — measured IN the non-planing regime.** The fault is not that it describes planing water; it is that it is **the sign-turnover row that every sub-4 speed inherits. Different fault, different fix.**
+
+### THE LIMIT, MEASURED NOT ASSUMED — there is no honest row below 4 m/s
+
+Pipeline verified first (group `all`, `Kdeck`, the 1° roll / 1° slip / −0.1 rad/s cases and the mean of the two `rollRate-deck` cases **reproduce all twelve of row `'4'`'s derivatives exactly** off the stored dump; a fresh run reproduces eleven exactly and the roll-rate triple to 2–3 %).
+
+Then: **at 1.16, 1.31, 2 and 3 m/s the towed board settles to trim 90.00° and draft 3.002 m** — `Flat`'s own bed (`waterDepth: 3`, `bedY: -3`). **The board stands on end and sinks through the tank floor. 73 kg of rider on a 2.54 kg board has no equilibrium below planing**, so **there is no honest row to measure there.** The four low-speed triples are in the results **only so nobody re-runs the rig expecting a row; they must not enter `PLANT_SPEEDS`.**
+
+**What it would take, cheapest first: (1)** add a **draft/trim column to the ride dump** — nobody knows whether the game's board at `speedUsed` ≈ 1.3 m/s is planing or half sunk, and **if it is half sunk then row `'4'` may be the NEAREST honest row and §2's 2.5–4× is overstated**; (2) captive holds in `FaceWater` instead of flat water; (3) a rider that floats (the real low-speed case); (4) system ID from the ride's own force columns.
+
+### THE CONSTRAINT, CARRIED — this is NOT the phenomenon
+
+3.4h's **626 of 626** falls span 1 to 10.4 m/s, and **the honest band falls too** (33 335 ticks, model right to 7–23 %, correctly signed 92–98 %). **The clamp can explain at most the low-speed cell and is already refuted as the cause of the falls.**
+
+**Not claimed:** the sign share is **not** conditioned on magnitude at tick level (`|yGame|` medians 68.8–89.6 N, so not a median zero-crossing artefact, but the dumps carry no tick-level `yGame`) — **fix is one re-run of `3.3/plant.ts` on these arms keeping the tick rows, no new rider**; and the band confounds "clamped" with "slow" by construction, which §2 separates model-only.
+
+### THE OWNER'S SHOT — cheap and decisive
+
+**Canyon, `?canyonWaves=true`: two take-offs at a crawl and two with speed already made, same spot.** If the slow ones throw him over **toward his own lean** inside the first second and the fast ones do not, this is a real part of the low-speed cell. **If they feel the same, it is not, and the lead should be closed.** It predicts a **discontinuity at 4 m/s, not a trend.**
