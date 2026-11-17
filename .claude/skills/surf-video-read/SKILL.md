@@ -23,7 +23,24 @@ Otherwise: **the browser pane renders video, and a screenshot of the browser is 
 4. Where the rider is small, add `computer {action: "zoom", region: [x0,y0,x1,y1]}` crops at the few moments that matter.
 5. **If it will not play, say so and stop.** Guessing from the title is worse than returning nothing, because a guess gets quoted later as a measurement.
 
-A real constraint worth planning around: a 854×480 source puts the rider at 40–90 px tall, which is **±15° on any joint angle at best**.
+### The stale-frame trap, and the two defences that actually work
+
+**The browser pane falls to `document.hidden`, which freezes painting — and then a screenshot silently returns the PREVIOUS frame.** This is not fixed by waiting a second after the seek; video 6's read found it survives that, and an earlier read had to discard its whole first batch to it. **A stale frame is the worst possible failure here, because it looks exactly like data.**
+
+Two defences, both proven:
+
+- **Print the reached `currentTime` and a frame counter into the canvas**, so staleness is self-evident in the image you are reading rather than invisible.
+- **Take two screenshots per draw and read the second.**
+
+Closing the artifact pane restored painting once. Posting canvas PNGs to a local HTTP sink would bypass the problem entirely, but the pane blocks localhost with `ERR_BLOCKED_BY_CLIENT`.
+
+### What the error bar actually is
+
+A 854×480 source puts the rider at 40–90 px, which is **±15° on any joint angle at best**. **But above roughly 200 px the resolution stops being the binding constraint and the HIP LANDMARK becomes it:** a boardshorts waistband sits at about **0.60 of stature** where the trochanter is at **0.53**, so **every hip figure carries ±10–15 points however sharp the image.** Read depth from a **shoulder-to-waistband** scale (robust to head tilt) and cross-check against a head-to-hip scale; **where the two disagree, report the disagreement instead of picking a winner.**
+
+**A camera behind and above the rider foreshortens a folded trunk and over-reads depth by up to 10 points.** If that bias decides whether a low reaches a rung, **say the number is undecidable rather than naming the rung.**
+
+**And if the image will not support a measurement, do not report one.** Video 6 deliberately reported **no knee angles at all** rather than guess them, which is the right call and costs nothing.
 
 ## What to report
 

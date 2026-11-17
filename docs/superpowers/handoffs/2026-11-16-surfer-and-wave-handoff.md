@@ -1046,3 +1046,52 @@ Asked whether to keep the measured fourth rung — **the correct pendulum (0.40 
 2. **Do they want the dip to self-release at all**, knowing `kneeStrength` cannot do it (it bounds force, not length) and that **it would have to be a clock or a new rule?** Measured: **rose while still held, 0 of 19 runs, 0 ticks, at every hold length.**
 
 **And PRs #389 (the ask-cap) and #392 (this row and the dip) are both the owner's to merge** — the classifier refused both.
+
+## VIDEO REFERENCE 6 (merged `ce2cb0ee`, PR #393) — DEPTH TRACKS THE **MANOEUVRE**, AND TWO SETTLED RULES BREAK
+
+`docs/research/new-rider/3.5/video-ref-6-mason-ho.md`. Mason Ho, @ripcurl Short, 25.98 s, **read after 11 s only on the owner's revised scope**. **The best-quality read of the series: 720×1280 with the rider 200–300 px, 2–4× every earlier clip.** Hard cut at 10.2 → 10.7 s, so the post-11 s footage is its own shot; he is invisible 12.95–16.30 s, long enough to hide a splice, so conclusions are per segment.
+
+### THE LOWS — there are none
+
+| # | window | duration | hips | rung | starts | released | manoeuvre |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| L1 | 11.32 → 11.95 | **≈0.63 s** | 65–75 % read (55–75 % with camera bias) | **the Crouch gap (66 %)** | **BEFORE the turn** — end of the pop-up, through the drop | **Yes, released INTO the turn** | take-off + drop, **not a turn** |
+| L2 | 12.85 → 12.95 | ≈0.10–0.15 s | 65–75 % | Crouch gap | board running straight | not seen | **brace against foam — no game name** |
+| L3 | 17.40 → 17.55 | ≈0.15 s | 75–80 % | Tall, low edge | mid-trim, no direction change | not seen | trim, a weight settle |
+
+**No sustained low below 65 %. Nothing in the Compress band (55–65 %). Nothing near the tuck. Held lows: 0. Dips: 0.**
+
+### WHAT DISTINGUISHES A HELD LOW FROM A DIP — **the MANOEUVRE, and the zero is the evidence**
+
+The round says plainly it **cannot** separate the candidates from a clip containing neither, and reports itself as a **one-turn read.** But across six clips depth now tracks **how hard the manoeuvre loads the legs**: **deep spikes with snaps, lip hits and tubes (clips 1–4); held lows through long carves (clip 5); and here — a drop, one unhurried bottom turn and a coast along a shoulder — no low at all.** A pro rider, same sport: **when nothing asks the legs to bend, they stay long.**
+
+> **This weakens "the rider" as the explanation — a sixth rider produced neither pattern — and supports the manoeuvre as the controlling variable.** Wave shape, speed, distance travelled and rail engagement: **cannot tell, stated as such.**
+
+**And it names a THIRD kind of low neither category covers: a landing/absorption crouch that the NEXT manoeuvre spends** — not a turn-entry dip, not a sustained carve low.
+
+### ⚠️ RULE BREAK 1 — the low can come BEFORE the turn and be spent BY it
+
+All five earlier clips put the low at **turn entry: 8 of 8 readable turns.** Here he is **lowest at the end of the drop, already extending when the board starts to come round, and TALLEST at the turn's peak.** So `tall → low-at-entry → held → tall` **is not present**; the sequence is **low → tall, with the turn in the tall half.** **Now 8 of 9.** Caveats given: one turn, and a bottom turn off a take-off, so it may say more about take-offs than about turns.
+
+**Notably this is the one time the ski/skate sign matches** — `stance-frame.md` §6(d)'s *extend through the arc*, which had disagreed with all the surf footage. **It was retired as "borrowed from ski and skate, opposite sign"; it now has one surf frame on its side.**
+
+### ⚠️ RULE BREAK 2 — "tall ⇒ arms spread" is DEAD
+
+Four arm patterns in 2.9 s: pop-up, **both hands on the deck/rail**; drop into the turn, **lead hand low + rear arm UP to head height** (video 5's pairing, **reproduced on a different rider** — caveat: which arm is lead is inferred from the nose direction, not observed); tall trim after the turn, **both arms spread wide and level** (5 frames, classic Kirra/Pupo); tall trim on the shoulder, **both arms hanging LOW below the waist** (7 frames, **no arm above the shoulder in any of them**).
+
+> **He is in the Tall band in both of the last two, by the same measurement, and the arms are completely different. Arm height is NOT a function of leg depth. It tracks the manoeuvre.** The five-clip synthesis ("spread and level only when tall") is refuted.
+
+### SLOW-MOTION FACTOR BOUNDED — a first for this series
+
+**Not slowed, and ≥2× is ruled out.** `playbackRate` 1, nothing in title or page. The physical argument: **pop-up 0.20 s** (prone 11.117 → on feet 11.317) against published pop-ups of 0.4–0.7 s, so a 2× slowdown needs a real pop-up of ≤0.13 s; and **the bottom turn reads 0.35–0.40 s** against measured real bottom turns of **0.96 ± 0.04 s and 0.8 ± 0.03 s** — **far too short to be slowed.** Best reading: real time, possibly slightly sped up. A frame-cadence test **failed its own control** (same timestamp, two hashes) and is reported as a failure, not a number.
+
+**Worth noting on its own: a real bottom turn here is 0.35–0.40 s against the 0.8–0.96 s this track has been using as the published benchmark.** Either this turn is unusually fast or the benchmark does not describe this kind of turn.
+
+### THE 66 % CROUCH RUNG — something is finally near it, but it is not a riding stance
+
+~0.6 s at 65–75 %, **the first time in six clips.** But **it is a drop, not a riding stance**, and the error bar spans the rung. **Not a confirmation** — and L1's own number (68–74 % read) is the one the doc flags as **not to be quoted without its caveat**, because a behind-and-above camera over-reads a folded trunk by up to 10 points, making **"does the deepest moment touch Compress" genuinely undecidable.**
+
+### TWO METHOD FINDINGS NOW FOLDED INTO THE SKILL
+
+1. **The stale-frame trap is worse than a 1 s wait fixes.** The pane falls to `document.hidden`, **painting freezes, and a screenshot silently returns the previous frame** — a failure that looks exactly like data. Proven defences, now in the skill: **print the reached `currentTime` and a frame counter into the canvas**, and **take two screenshots per draw and read the second.** Closing the artifact pane restored painting once; a local HTTP sink would bypass it but the pane blocks localhost with `ERR_BLOCKED_BY_CLIENT`.
+2. **Above ~200 px the binding error is no longer resolution but the HIP LANDMARK** — a waistband sits at ≈0.60 of stature where the trochanter is at 0.53, so **±10–15 points on every hip figure however sharp the image.** Read from a **shoulder-to-waistband** scale, cross-check against head-to-hip, and **report disagreement rather than picking a winner.** Video 6 also reported **no knee angles at all** rather than guess them — the right call, now written down.
