@@ -53,6 +53,10 @@ Two defences, both proven:
 
 Closing the artifact pane restored painting once. Posting canvas PNGs to a local HTTP sink would bypass the problem entirely, but the pane blocks localhost with `ERR_BLOCKED_BY_CLIENT`.
 
+**And the version of this that bites hardest: TWO READS IN ONE TAB.** The browser pane is shared across agents, and a fresh pane has exactly **one** tab. On 2026-11-17 two video reads ran at once and `tabs_context` showed a single tab — **so each was seeking `currentTime` in a tab the other was navigating, and a screenshot could return the other clip's frame.** Nothing in the image says which video it came from.
+
+**So every read claims its own tab:** call `tabs_create` first, keep the `tabId`, and **pass it explicitly on every call afterwards** — `navigate`, `javascript_tool`, `computer`, `read_page`, all of them. **Omitting `tabId` targets whatever tab is active, which may be another agent's.** Say in the report which `tabId` was used. **Discard any frame you cannot prove came from your own clip at the timestamp you intended** — a thin honest read beats a fuller one built on someone else's video.
+
 ### What the error bar actually is
 
 A 854×480 source puts the rider at 40–90 px, which is **±15° on any joint angle at best**. **But above roughly 200 px the resolution stops being the binding constraint and the HIP LANDMARK becomes it:** a boardshorts waistband sits at about **0.60 of stature** where the trochanter is at **0.53**, so **every hip figure carries ±10–15 points however sharp the image.** Read depth from a **shoulder-to-waistband** scale (robust to head tilt) and cross-check against a head-to-hip scale; **where the two disagree, report the disagreement instead of picking a winner.**
