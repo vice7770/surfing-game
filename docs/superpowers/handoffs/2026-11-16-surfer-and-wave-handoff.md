@@ -1021,3 +1021,28 @@ What the measurement does give: the leg's own pace needs **0.45–0.52 s** for t
 1. **The row costs 0.7 s of Compress's median ride on this cell, with falls unchanged at 100 %.** It is the *correct* pendulum, inertia and bank limit — and it makes the ride they already have shorter. **Keep it, or hold it until the dip is ridden with it?**
 2. **Should the dip be automatic at turn entry?** All five clips tie it to entry; what is built is **their input only.**
 3. **Nothing can bring the dip up on its own.** If they want that, it is **a clock or a new rule, and it needs their ruling before anyone builds it.**
+
+## ⚖️ RULING D (2026-11-17) — "KEEP THE ROW"
+
+Asked whether to keep the measured fourth rung — **the correct pendulum (0.40 m, not a 37.5 %-high 0.55), the correct inertia (1.89× out) and the correct bank limit — knowing it takes 0.70 s (23 %) off Compress's median ride on 20 runs with the fall count unchanged at 20 of 20**, or to hold it until the dip had been ridden with it, the owner ruled:
+
+> ***"keep the row"***
+
+**Read as: the correct physics SHIPS — default, not parked behind a switch**, since keeping it behind a switch is indistinguishable from holding it. **The owner was told that reading explicitly and that it is one line to reverse.**
+
+### WHAT THIS COSTS, AND IT MUST BE SAID IN EVERY ROUND FROM NOW ON
+
+> **Every ride time this track has published was measured on a pendulum 37.5 % too long and an inertia 1.89× out, in whatever share of Compress's ticks passed the old 0.30 m ceiling (0.11–0.96, 20 of 20 runs).** Making the row default **re-bases all of them**, including the standing reference arms every round cites — `f73-l` **18 of 18, 0.617–2.533 s, median 1.450 s**, `s16-l` 1.033 s, `f73-g` 4.650 s.
+
+**So the next round's first job is to RE-MEASURE the reference arms on the new default and replace those numbers**, or every future byte-identity check and every ride comparison is against a figure from the wrong plant. **Until that is done, do not compare a new ride time to a pre-Ruling-D one.** Old numbers are not wrong *as records*; they are records of a different plant.
+
+**Keep a switch for the old behaviour** (e.g. `?stanceDeep=off`) so the two can still be A/B'd — the comparison is the only way to price anything against the track's own history.
+
+**Not changed by this ruling:** the fall counts. **20 of 20 → 20 of 20, cause `balance` in every run**, so nothing about the falls is re-based — only the ride times. Compress's and Crouch's **depth values** also stay out of scope (Ruling C, and Crouch's value still waits on the `?kneeRoom=achieved` ride).
+
+### STILL OPEN, BOTH NEEDING THE OWNER
+
+1. **Should the dip fire automatically at turn entry?** All five clips tie it to entry; what is built is **their input only.** An automatic dip is the game moving their body for them — Ruling A's boundary. **Ask, do not assume.**
+2. **Do they want the dip to self-release at all**, knowing `kneeStrength` cannot do it (it bounds force, not length) and that **it would have to be a clock or a new rule?** Measured: **rose while still held, 0 of 19 runs, 0 ticks, at every hold length.**
+
+**And PRs #389 (the ask-cap) and #392 (this row and the dip) are both the owner's to merge** — the classifier refused both.
