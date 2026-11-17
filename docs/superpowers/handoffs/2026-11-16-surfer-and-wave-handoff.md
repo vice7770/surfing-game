@@ -1267,3 +1267,55 @@ Their words after riding `?physical&canyonWaves=true&rider=new&feltFrame=deck&ri
 **`3.5/README.md` on `main` now holds TWO concatenated documents** (3.5d's, then 3.5a's, with a note at the join). **Append 3.5b and 3.5c rather than replacing anything.**
 
 **Re-verify on the REBASED tree, because the earlier runs were on a different base:** the three reference arms must still read `f73-l` **18 of 18, 0.617–2.533 s, median 1.450 s**, `s16-l` **1.033 s**, `f73-g` **24 of 24, 4.650 s**; **`?stanceDeep=off` must reproduce the old plant** (3.5c had it byte-identical over 54 runs × 359 columns, 0 mismatches); **the two switches must not interact**; and the **Canyon pair must still be `a367d938f15fa934` / `9e5831f80e38abd9` at 3 600 steps with a fresh spin-up**. Suites `--maxWorkers=1`. **Report every deletion file by file.**
+
+## STEP 3.5e (merged `9e6de1b8`, PR #395) — THE FOAM IS A PASSENGER, NOT A CAUSE — AND IT CORRECTS TWO THINGS 3.5d AND I TOLD THE OWNER
+
+`docs/research/new-rider/3.5/README.md` Part 2; probe `3.5/foam.ts`, reader `3.5/foamread.ts`. **Read-only, no `src/` byte changed.** All figures `RIDER=new FELT=deck BODY=two` — the owner's own address — on the **real Canyon sea as `?canyonWaves=true` builds it** (`canyonBed: 'b'`), CPU, 1/60 s, stance held, stick untouched. **1 026 riders.**
+
+### ⚠️ CORRECTION 1 — 3.5d MEASURED ON WATER WITH NO FOAM AT ALL, BY CONSTRUCTION
+
+3.5d ran on `FaceWater`, which writes **`breaking: 0, voidFraction: 0`** and no roller lens on every sample — **the caller verified this directly at `src/physics/testing/FaceWater.ts:81`.** 3.5d's own dumps agree: **`dk_froth` and `rlFroth` are 0 on all 9 641 frames of all five arms.** So its celebrated partition was taken on foam-free synthetic water.
+
+**The headline SURVIVES where the owner rides**, which is why this is a correction and not a retraction: on **foamed** ticks of the real Canyon the ankle still leads in all three stances at **34 % / 37 % / 42 %** (1 077 / 933 / 1 038 frames of 33 / 31 / 33 runs), and on the **practice swell — the owner's own default — where no roller lens ever reaches the hull (0 of 11 879 live frames)** it leads at **36 % / 47 % / 46 %** (1 078 / 1 019 / 961 frames, 18 runs each). **Three waters, one leader.**
+
+### ⚠️ CORRECTION 2 — "HIS FEET ARE NOT IN CONTACT ON YOUR OWN CANYON FACE, 9 OF 9 RUNS" WAS THE SYNTHETIC 16° PLANE, NOT CANYON
+
+I told the owner that as a fact about their spot. **On the real Canyon `apartSub`'s median is 0 of 16 at every placement.** s16's 10–11 of 16 was the **synthetic 16° plane's**, because the real face under the board is **0.86–5.41°** across the heading, not 16°. **The twenty-fifth number in the wrong frame, and the third today that reached the owner.**
+
+**But the substeps were then read for the first time in this track, and the answer inverts the worry:** on fully booked frames the board's net roll moment is **0.12–0.18 % of its largest term** (3.5d's hair trigger reproduces on real water); on a frame holding an `apart` substep it is **1.5 / 10.2 / 31.2 %** (228 / 310 / 243 frames of 30 / 47 / 30 runs). **An infeasible contact is where the board is LEAST balanced — not a hole in the instrument.**
+
+### ⚠️ CORRECTION 3 — THE PARTITION'S LEADER DEPENDS ON THE WATER, NOT ONLY THE RIDER
+
+**On CLEAN ticks of the same real sea the leader is `addedMass` at 36–46 %, with the ankle second.** **This is a caution on every published share in this folder.** The ankle leads on foamed ticks and on the practice swell; it does not lead everywhere.
+
+### THE FOAM DOES REACH THE BOARD — five channels, none of them in 3.5d's instrument
+
+**(1) the hull's density** — `ρ(1−α)` multiplies hydrostatic support, planing pressure, submerged drag, rail suction *and its cap*, and skin friction, so a patch of air gives exactly `(1−α)` of clean water's force (`hullForces.ts:319`); **(2) the roller lens's froth drag**, with its own roll torque and ledger row (**Canyon only**); **(3) the lens's carried flow**; **(4) the lens's own height — the surface a body feels IS the lens's top** (`PhysicalSurfWater.ts:359`); **(5) the plate's added mass and the planing hollow.**
+
+**Not reaching the board:** the drawn whitewater (`FoamField` is read by no body — physics only *writes* spray sheets), the plume's turbulence (fall body only), and the plume's effect on height or flow (never written back to the solver). **Lens α reaches 0.9; a plume is capped at 0.2.** At the hull (1 980 corridor frames): **α 0.49 at 0.02 m of draft, 0.17 at 0.05, 0.12 at 0.10**; lens 0.096 m thick, grip 27 Pa, dα/dy **4.88 per metre**.
+
+### BUT ITS SHARE IS SMALL, AND OVER A RIDE IT CHANGES NOTHING
+
+At the one frame where the A/B is exact, hull inside a lens, **32 cells a stance**: removing the **air** moves the deck's roll acceleration by a median **1.46 / 1.69 / 1.69 %** of Σ|terms| (roll rate 6.6/6.3/6.3 %, max cells 53–56 %); the **froth drag** by **0.42 / 0.38 / 0.38 %**; the **carried flow** by **0.12 %**. The froth row itself: `dk_froth` **median 0, p90 3.80 °/s², max 423.**
+
+**Over a whole ride:** at the foam the fall is **0.917 s as it ships**, against **0.958 / 0.983 / 0.900 s** with the air / froth / carry removed; 8 m seaward, **1.433 / 1.425 / 1.433 / 1.433 s.** Peak rail and rate move 0–13 % with **no arm consistently better.**
+
+### WHAT THE FOAM ACTUALLY ADDS — traffic, not a mechanism
+
+**Σ|terms| 157–228 on foamed ticks against 37–79 clean (2.0–6.2×)**, and the ankle's own term **−66 to −79 °/s² against +8.4 to +21.6.** So the foam makes the same loop work harder.
+
+**And the across-rail air asymmetry is made by the HEEL, not the field:** the corridor's horizontal gradient is **≤0.057 over a beam anywhere**, while under the board it goes **0.024 → 0.056 → 0.093 → 0.111 → 0.219** at 0–5 / 5–10 / 10–20 / 20–45 / 45–90° of rail (1 929 / 624 / 738 / 779 / 410 frames). **It follows the roll.** The asymmetry is a consequence of banking, not a cause of it.
+
+**My hypothesis is refuted as a cause** — and **added mass again**, which opposes the rider's residual on **11 of 12 cells.**
+
+### WHAT IT COULD NOT DO, STATED PLAINLY
+
+**Channel 4 — the lens's own height — cannot be removed by a wrapper** (it is made inside `heightAt`, not on the sample), **and it is where the remaining signal is**: at the foam the surface under the board moves at **0.356 m/s** against 0.043 at the control, the hull is **entirely clear of the water on 3.5 %** of live frames, and only **61.6 %** of frames are fully booked against 88.7 %.
+
+**And a confound it could not remove: the foam toe sits on a face six times steeper across the heading (5.41° vs 0.86°)**, so the earlier fall at the foam is **not** attributed to the foam — *"the only safe statement from it is the negative one."* A matched-steepness read, **offered as an indication only**, has the foamed runs peaking at **1.4–2.2×** the clean roll rate in three of four tilt bands.
+
+### Controls
+
+`dkClose`/`dkSplit` = 0 on all **59 228** rows. The null channels are **exactly 0.000000 °/s** on all 72 cells with no lens. **Reference arms on the base:** `f73-l` 18 of 18, 0.617–2.533 s, median **1.450 s**; `s16-l` **1.033 s**. **`main` moved twice mid-round and the round MEASURED the move rather than assuming it:** the water is byte-identical, the `tall` arm identical on all 3 799 rows, and `crouch`/`compress` diverge **no earlier than frame 37** (PR #392's stance work) — **so both ride arms were re-run on `0daeb64c`** and every table is that run's.
+
+> **For the owner, in the round's own words:** *"the foam is not what is throwing you off — it is the same ankle that throws you off in a turn, working harder because the water at the foam is steeper, moving and sometimes not under the board at all."*
