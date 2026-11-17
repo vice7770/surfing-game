@@ -227,3 +227,56 @@ Ten predictions were committed before the arms were read: **five upheld, four re
 2. **The roll-inertia finding (3.3l), which this round removes the last excuse for not facing:** the ankle keeps only **0.25–0.40** of its authority over the body because the board's roll inertia is **0.5–1.1 kg·m²** against the body's **52–54**.
 3. **Then the clamp round** — §4b of Part 8 cannot be read until `AttachedRider`'s 70° clamp (three sites) is lifted behind a switch.
 4. **The question only the owner can answer, and it is a ride question:** *does a slow topple at 1.2 m/s feel better or worse than being thrown at 6.5?* **If worse, "make the ride longer" is the wrong target** and step nine should change.
+
+## STEP 3.4i (merged `abf4a591`, PR #379) — THE CAUSE IS NAMED: THE ANKLE AND THE HULL ARE IN SERIES, AND THE HULL IS THE SOFT ONE
+
+**This is the round the whole track was walking toward. After twenty-four rounds the mechanism has a name, a number and a source.**
+
+### Part C — the term a real surfer has that we do not
+
+**The water's own roll answer: the centre of lift travelling across the board's beam as the rider loads a rail.**
+
+- On the board's roll row the hull's whole water column answers only **11.2–17.2 %** of the moment the rider's weight puts on the deck — every arm, two faces, two speed bands. Divided by one body weight, that is a centre of lift that has travelled **0.0075–0.046 m of a 0.232 m half-beam: 3.3–19.9 % of the width the load could use.**
+- **As a stiffness it is undersized 2–140 ×.** On the ride: **12–54 N·m/rad** (a fit, R² 0.514–0.822). On a bare-board static control: **70–153 N·m/rad at trim, collapsing to zero by 15–20° of heel and REVERSING past 20°** — i.e. gone at exactly the heel the rides reach. Against the game's own three figures: **100** (`DESIGN_PARAMS.hullStiffness`), **733** (what `ANKLE_REST_RANGE = 0.25` solves to), **850–1 700** (the carve lab's own measurement).
+- **THE SERIES RESULT, which explains nine rounds of null results at once.** On the code's own two-spring reduction the ankle and the hull are in **series**, so `share = k/(k+K)` = **0.937–0.985**: **94–99 % of every ankle correction rolls the board instead of righting the body.** The owner's whole ±0.25 rad of commanded ankle rest buys **3.0–12.6 N·m** against the **316 N·m** gravity applies at the **52.3°** his own Compress runs fall at. **That is why widening, bounding and re-deriving the ankle for nine rounds changed nothing.**
+- **Ruled out here and not to be re-proposed:** the roll inertia (3.3m sourced it generous; reproduced), the ankle's own 800 N·m/rad, counter-roll, board width, **added mass on the wall (−3.14 to +0.25 N·m on the board's roll row)**, and the clamp.
+- **No counterfactual was run, deliberately:** nobody has measured `A₄₄`'s stiffness for a flat surface-piercing planing surface at our Froude number. **Step ten: ask the water-physics advisor what it should be, change that ONE thing, and have the owner ride it.**
+
+### Part B — the budget closes exactly, and the term a body-only diagram omits
+
+Over **9 016 frames of 84 rides on four arms**, the partition of the body's moment row and the identity `diagonal + coupling = Σ moments` both close at **0.0×10⁰ N·m — zero to the last bit**, not "within tolerance".
+
+**A force diagram of the body alone is out by 1.24 / 3.32 / 1.24 / 2.55 ×** `|mTotal|` (median of per-run medians; 24/18/24/18 runs). The missing term is not a fudge: it is `Σ_{j≠7} A[7][j] x[j]·L/dt`, which `coupleStanding`'s own assembly makes **`m t̂·(Δv + Δω × b)·L/dt` — the rider's mass times the across acceleration of the stance point, at the leg's lever.** It is exactly the term an inverted pendulum omits by assuming its base is still, and it is the **largest single term on three of four arms** (`|mCoup|` 54.3 / 436.6 / 194.7 / 454.9 N·m against `|mTotal|` 39.3 / 57.0 / 137.8 / 103.1).
+
+**Gravity, not the ankle, is the largest moment on the body — by 1.4 to 25 ×** (3.7–196.8 N·m against 0.2–26.9), on every arm and every stance.
+
+### Part A — the clamp could never have moved the mix, by arithmetic
+
+The classifier's first test is **45°** and the clamp is **70°**: **a truncation above a threshold cannot carry a reading across it.** The mix is identical on all eight arms, run for run (14/0/10, 8/0/10, 24/0/0, 15/0/3). **The handoff's "that mix cannot be read until the clamp round runs" is REFUTED — my claim, and two constants would have settled it before I wrote the brief.**
+
+What the clamp did hide is the bank's **size**: **70.0 → 86.8°** at the same falls on the shipped face (3.4h's "70.00 in 21 of 24" reproduced exactly). And **the third population now has a name and is one thing: a balance fall at 20–45° of bank, in 23 of 23 runs** — 10 of 24 on the owner's own face. Nothing else.
+
+**`?bankClamp=off` stops no fall** (84 of 84, Compress 28 of 28, both sides), moves no arm median (four ratios of 1.000; two Compress cells +6.7 % and +2.8 %), and its control holds: the two riders are identical in 19 columns on 84 of 84 runs until the clamp first bites.
+
+### Two of the brief's three premises were dead, and one was my own re-import
+
+- **The ankle does not carry the whole 33 N·m** — gravity is 1.4–25 × it.
+- **"0.5–1.1 kg·m² against 52–54" is step 3.3m's ALREADY-REFUTED diagonal, and I put it back into a brief.** Reproduced independently here: `1/ankleOwn` **1.15–2.02 kg·m²**, inertia ratio **0.958–6.166**, and **on two arms the board is the HARDER end to roll.** This is the diagonal-of-`A` error for the third time in this track.
+- **3.3h's static "+33.47 / −33.40, net +0.04" does not hold dynamically:** `bdTotal` runs **+8.0 to +137.2 N·m**.
+
+### A HOLE IN THE CANYON SEATBELT, now a number
+
+On `main` alone, with the same build, grid, seed and step count, a **fresh spin-up** gives `c601393e8d626f2a` / `23bc1585cc56f647` while an **imported `--state`** gives `1d7f9125628f21d2` / `ff3d2edee6c660ad`. **So the fresh and imported cases cannot be told apart from the hashes alone**, and the handoff's reference hashes are only meaningful for one path. **Put this in every future brief: the third caution is no longer advice, it is a measured divergence.**
+
+Note also that this round's byte check ran as a **120-step A/B** rather than the 3 600-step reference, because the machine was at **57 MB of free RAM swapping onto a 98 %-full disk** and the long arm went from 10 minutes to over an hour. §10b records what 120 steps does and does not buy. Disk is back to 6.9 GB free (61 % used).
+
+**My own count correction:** the round reported 2 467 insertions / 7 deletions; measured against the merge base it is **2 572 / 8**. All eight are lines replaced in place, and the physics change is `bankRaw = angle` recorded before a clamp by `this.bankMax`, which is `MAX_BANK` unless the switch says `off` — **default unchanged by construction**, and separately measured at 84 of 84 runs over 7 columns with 0 mismatches.
+
+Predictions: **3 upheld, 5 refuted, 2 half.** Two refutations were of the round's own reasoning, and P2's "≥10 ×" came from **one frame of one smoke run** reading 33 × where the ride median is 1.3 × — this track's own error, inside a prediction file.
+
+### WHERE TO RESUME (weekly hit 96 % on 2026-11-17; reset 14:00)
+
+1. **Step ten, and it is now a one-constant question:** ask the **water-physics advisor** what `A₄₄`'s roll stiffness should be for a flat surface-piercing planing surface at our Froude number, change **that one thing**, and have the owner ride it. Do not re-derive the ankle.
+2. **Do not sweep the wave** (3.4h) and **do not touch the clamp** (3.4i) — both are settled dead ends.
+3. **The shot list for the owner** is Part 9 §12: `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&bankClamp=off` against the same address without it. **The round expects them to feel the same; if they do not, that is news.**
+4. **The owner's own open question, from 3.4h:** does a slow topple at 1.2 m/s feel better or worse than being thrown at 6.5? **If worse, "make the ride longer" is the wrong target.**
