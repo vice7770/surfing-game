@@ -119,6 +119,7 @@
  *   RIDER=new FELT=deck node <scratch>/pl.mjs
  *
  * Env: `RIDER=new|old`, `STANCES`, `EXTRAS`, `ENTRIES`, `STEERS`, `SECONDS`, `FELT=deck`, `LEDGER=off`,
+ * `FLOOR=4.5|5|6` (step 3.4m's switch: the balance's plant table read off a higher measured row),
  * `WHEEL=tilt|predict|ref` (step 3.3p's switch with step 3.4e's fourth cell), `MOUNTA=deck|felt|both` (step 3.4e's
  * switch), `OUT`, `TRACE`.
  */
@@ -209,6 +210,22 @@ const ARANGE = process.env.ARANGE === 'load' ? 'load' : process.env.ARANGE === '
  * and changes nothing: that is how §A reads the fall mix on a byte-identical rider.
  */
 const BANKC = process.env.BANKC === 'off' ? 'off' : undefined;
+/**
+ * **Step 3.4m: `FLOOR=4.5|5|6` rides `?plantFloor`** (`AttachedRiderOptions.plantFloor`,
+ * `DesignWeights.plantFloor`) — the lowest row of `PLANT_SPEEDS` the balance's internal model may be built on. Shipped
+ * (`FLOOR` unset) `labAt` clamps to the table's first speed, so **every design at or below 4 m/s reads row `'4'`**,
+ * the table's own sign-turnover row. It is handed to the rider AND to this probe's own `plantAt` calls, because
+ * `yModel`/`kModel`/`nModel` are the model's own three built from the twelve derivatives at the tick's state, so the
+ * columns the sign share is read on come off the same table the ride is designed on. Unset, every arm is step 3.4l's
+ * own probe on step 3.4l's own cells.
+ *
+ * `speedUsed`/`speedClamped` keep the SHIPPED 4–12 definition whatever `FLOOR` says, so the clamped cut is the same
+ * population of ticks in both arms and the before/after is read on the same ticks.
+ */
+const FLOOR = process.env.FLOOR === '4.5' ? '4.5' : process.env.FLOOR === '5' ? '5'
+  : process.env.FLOOR === '6' ? '6' : undefined;
+/** The floor's own number for `plantAt`, m/s: the shipped lookup's own when `FLOOR` is unset. */
+const FLOOR_OPT: { plantFloor: number } | undefined = FLOOR ? { plantFloor: Number(FLOOR) } : undefined;
 /**
  * **Step 3.4c's two switches**, both off by default, so every arm with them unset is step 3.4b's own probe on
  * step 3.4b's own cells.
@@ -577,6 +594,14 @@ interface Tick {
   kModel: number;
   yModel: number;
   nModel: number;
+  /** Step 3.4m: the same three with the table read off a 4.5 m/s floor, at the SAME state (the row's counterfactual). */
+  kModelFloor: number;
+  yModelFloor: number;
+  nModelFloor: number;
+  /** Step 3.4m: the same three at the speed the controller's own schedule designs at below 4 m/s (V = 4). */
+  kModelSched: number;
+  yModelSched: number;
+  nModelSched: number;
   /**
    * The same three with the board's **heel relative to the water** put in where the model puts its world roll. The
    * lab measured every derivative per radian of heel against a flat free surface, and the model is fed `φ`, the
@@ -866,6 +891,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     ...(COST ? { riderCost: COST } : {}),
     ...(ARANGE ? { ankleRange: ARANGE } : {}),
     ...(BANKC ? { bankClamp: BANKC } : {}),
+    ...(FLOOR ? { plantFloor: FLOOR } : {}),
   } as ConstructorParameters<typeof AttachedRider>[1]);
   board.attach(rider);
   stanceInputs(rider, st);
@@ -975,7 +1001,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0,
         extra: entry0 === null ? extra : null,
         // Step 3.4e: which datum cell and which mount this arm ran, on every row, so a pooled read cannot mix arms.
-        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships', arange: ARANGE ?? 'ships',
+        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships', arange: ARANGE ?? 'ships', floor: FLOOR ?? 'ships',
         frame: i + 1, t: r(t, 4),
         // what the predictor has: its own ticks, its sense line against the delay it needs, and whether its filter runs
         predTicks: rider.predictor.ticks, senses: ctl.senses.length, steps: dM ? dM.steps : null,
@@ -1098,7 +1124,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       const schedRail = inner.schedRail;
 
       // --- 4/5. the plant the controller is reading, rebuilt at its own point, and the six groups off it.
-      const { y, t: tw } = plantAt(speedUsed, depth, { rail: schedRail });
+      const { y, t: tw } = plantAt(speedUsed, depth, { rail: schedRail, ...FLOOR_OPT });
       const full = continuousPlant(y, tw);
       // **The decomposition is in the controller's own discrete form, not the continuous one.** The plant's own roll
       // mode is near 32 rad/s and the step is 1/60 s, so `(Φ − I)/h` is NOT `A` — P0g measures the gap and it is the
@@ -1131,7 +1157,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
 
       // The same plant at the board's MEASURED rail, for P3c.
       const railUse = Math.min(railLimit(speedUsed) * DEG, Math.abs(rail));
-      const atRail = plantAt(speedUsed, depth, { rail: (railUse / DEG) });
+      const atRail = plantAt(speedUsed, depth, { rail: (railUse / DEG), ...FLOOR_OPT });
       const atRailC = continuousPlant(atRail.y, atRail.t);
       const atRailD = discretise(atRailC.a, atRailC.b, CONTROL_STEP);
       const rollAtRail = meanAcc(atRailD.phi, atRailD.gamma, 1);
@@ -1176,7 +1202,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         // value and the control and the symmetry-only plant are untouched by it.
         const use = key === 'Two' && BODYJ !== undefined
           ? { inertia: BODYJ * bodyInertiaAt(y.mass, depth, y.height) } : body;
-        const pp = plantAt(speedUsed, depth, { rail: schedRail, body: use });
+        const pp = plantAt(speedUsed, depth, { rail: schedRail, body: use, ...FLOOR_OPT });
         const cc = continuousPlant(pp.y, pp.t);
         const dd = discretise(cc.a, cc.b, CONTROL_STEP);
         bodyPlants[key] = { y: pp.y, t: pp.t, a: cc.a, b: cc.b, phi: dd.phi, gamma: dd.gamma };
@@ -1274,6 +1300,22 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
       // The model's own φ is `−roll` in radians by instrument 1's identity, so the heel against the water in the
       // same sign is `−rail`.
       const mkRail = loads(y, -rail / DEG);
+      // **Step 3.4m: the floor's own counterfactual, on THIS tick's state.** The same three loads from the same
+      // state with the table read off a floor of 4.5 m/s instead of the shipped 4 — i.e. row `'4.5'` instead of row
+      // `'4'` wherever the tick is below the floor, and the identical row above it. It is computed on EVERY ride,
+      // whatever `FLOOR` says, so "does the row change the sign" is answered on one trajectory's own ticks and not
+      // across two rides that have diverged. Above 4.5 m/s `mkFloor` is `mk` to the digit, which is the control.
+      const floorPlant = plantAt(speedUsed, depth, { rail: schedRail, plantFloor: 4.5 });
+      const mkFloor = loads(floorPlant.y, x[0]);
+      // **Step 3.4m: and the same three at the SPEED THE CONTROLLER ACTUALLY DESIGNS AT.** `PredictiveController`'s
+      // own `blend` clamps the schedule's speed to `SCHEDULE_SPEEDS[0] = 4` and reads `scheduledDesign` at the GRID
+      // speeds only [R, `predictiveBalance.ts`'s `blend`], so below 4 m/s the design every tick runs on is the
+      // v = 4 column — the plant at **V = 4 m/s**, not at the tick's own V. `mk` above is the model read at the
+      // tick's V, which is 3.4j's, 3.4k's and 3.4l's quantity; `mkSched` is the controller's own. The twelve
+      // derivatives do not carry V, but `boardDerivatives`' yaw sweep over the feet station does
+      // (`yawSide = Y_r + ahead·Y_β/V`), so the two are not the same number and both are printed.
+      const schedPlant = plantAt(4, depth, { rail: schedRail });
+      const mkSched = loads(schedPlant.y, x[0]);
       // The game's own: the ten water sources of each ledger. `modelY` is the board's right, which is the opposite of
       // the probe's own `sideV` (the board's +x, its left), and `nGame`'s sign flips with it.
       let waterK = Number.NaN;
@@ -1747,6 +1789,12 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         kModel: mk.k,
         yModel: mk.y,
         nModel: mk.n,
+        kModelFloor: mkFloor.k,
+        yModelFloor: mkFloor.y,
+        nModelFloor: mkFloor.n,
+        kModelSched: mkSched.k,
+        yModelSched: mkSched.y,
+        nModelSched: mkSched.n,
         kModelRail: mkRail.k,
         yModelRail: mkRail.y,
         nModelRail: mkRail.n,
@@ -1972,7 +2020,7 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     for (const xx of ticks) {
       appendFileSync(TICKS, `${JSON.stringify({
         body: BODY ?? 'point', cost: COST ?? 'off', place: PLACE, stance: st, steer, entryAsked: entry0, extra: entry0 === null ? extra : null,
-        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships', arange: ARANGE ?? 'ships',
+        wheel: WHEEL ?? 'off', mount: MOUNTA ?? 'ships', arange: ARANGE ?? 'ships', floor: FLOOR ?? 'ships',
         live: xx.t > 0.2 && xx.clamped === 0 ? 1 : 0, clamped: xx.clamped, ticks: xx.ticks,
         t: r(xx.t, 4),
         // the state the tick sits at, every one a read off the ride
@@ -1986,6 +2034,10 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
         speedUsed: r(xx.speedUsed, 4), speedClamped: xx.speedClamped,
         kGame: r(xx.kGame, 4), kModel: r(xx.kModel, 4),
         yGame: r(xx.yGame, 4), yModel: r(xx.yModel, 4), yModelRail: r(xx.yModelRail, 4),
+        // Step 3.4m: the row's own counterfactual at the same state (floor 4.5), so the sign share with row '4' and
+        // with row '4.5' is read on ONE ride's ticks.
+        kModelFloor: r(xx.kModelFloor, 4), yModelFloor: r(xx.yModelFloor, 4), nModelFloor: r(xx.nModelFloor, 4),
+        kModelSched: r(xx.kModelSched, 4), yModelSched: r(xx.yModelSched, 4), nModelSched: r(xx.nModelSched, 4),
         nGame: r(xx.nGame, 4), nModel: r(xx.nModel, 4),
         // **Step 3.4l, Check 2: the board's own trim and draft on the ride.**
         trimWorld: r(xx.trimWorld, 3), facePitch: r(xx.facePitch, 3), trimFace: r(xx.trimFace, 3),
@@ -2382,6 +2434,9 @@ function oneRun(st: Stance, extra: number, entry0: number | null, steer: number)
     body: BODY ?? 'point',
     bodyJ: BODYJ ?? 1,
     cost: COST ?? 'off',
+    // Step 3.4m: the lowest row of `PLANT_SPEEDS` this arm's internal model was built on, on every row, so a pooled
+    // read cannot mix the shipped floor with a raised one.
+    floor: FLOOR ?? 'ships',
     // Step 3.4b: the ω₀ the arm's own cost function was built with, rad/s, read off the ridden plant at this run's own
     // stance and 7 m/s — the cost function's own constant, printed with the arm so no arm's number is reported
     // against another arm's constant.
@@ -2416,7 +2471,7 @@ function additivity(tiltDeg: number): { resid: number; spread: number; raw: Reco
   const raw: Record<string, number[]> = {};
   const sent: Record<string, number[]> = {};
   flags.forEach((wh, i) => {
-    const c = new PredictiveController({ ...DEFAULT_WEIGHTS, ...(BODY ? { riderBody: BODY } : {}), ...(wh ? { waterHeel: wh } : {}) });
+    const c = new PredictiveController({ ...DEFAULT_WEIGHTS, ...(BODY ? { riderBody: BODY } : {}), ...(wh ? { waterHeel: wh } : {}), ...FLOOR_OPT });
     const out2 = c.tick(sense, FACE[2], DEPTH, 0, 0, limits, 0, -tiltDeg / DEG);
     // **`raw` is the command BEFORE the clamp and `sent` after it** [R, `tick`: `this.raw[q] = u[q]` then the two
     // `Math.max/min`]. The additivity is a property of the control law, so it is read on `raw`; `sent` is printed
@@ -2449,7 +2504,7 @@ for (const row of rows) emit(row);
 // still counts.
 const num = (k: string) => rows.map((x) => x[k]).filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
 const sh = (k: string) => span(num(k), 3);
-process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}, body ${BODY ?? 'point'}${BODYJ !== undefined ? ` x${BODYJ}` : ''}, cost ${COST ?? 'off'}\n`);
+process.stdout.write(`\n# step 3.3p — the internal plant against the game, ${rows.length} runs, ${RIDER} rider, ${FELT ?? 'world'} filter, ledger ${LEDGER}, heel ${WHEEL ?? 'level'}, body ${BODY ?? 'point'}${BODYJ !== undefined ? ` x${BODYJ}` : ''}, cost ${COST ?? 'off'}, plant floor ${FLOOR ?? '4 (ships)'}\n`);
 {
   const a10 = additivity(10);
   const a0 = additivity(0);

@@ -1,0 +1,5 @@
+spun up on the CPU in 78.0 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyonB-main.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.83/6.84, roller 0.97/3.37, front 0.00/0.00, lip 0.04/0.07, foam 3.99/13.29, airSources 0.08/0.25, aeration 1.97/6.78, contact 0.00/0.00, board 0.97/3.67, bubbles 0.23/0.44, spray 0.36/1.05, sounds 0.00/0.01, snapshotFields 6.38/20.42, snapshot 7.23/22.41, summary 0.62/1.55
+  CPU stages per step (step − water + snapshot + summary): 21.54/50.00; water (CPU solver, not timed on the device) 186.9
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9

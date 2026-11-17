@@ -577,6 +577,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?riderCost=point|fixed|plant`: the balance's two optional costs (the bank's own limit per stance, the capture point's
     // rank-one cost) turned on together, with the capture point's ω₀ the point mass's, the body's own or the plant's own (step 3.4b), opt-in, to ride.
     ...riderCostSwitch(),
+    // `?plantFloor=4.5|5|6`: the balance's internal model is built on the lowest MEASURED row of its water table at or above
+    // this speed, so a design below 4 m/s stops inheriting row '4', the table's own sign-turnover row (step 3.4m), opt-in, to ride.
+    ...plantFloorSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1232,6 +1235,37 @@ export function riderBodySwitch(search?: string): { riderBody?: 'two' | 'control
 export function riderCostSwitch(search?: string): { riderCost?: 'point' | 'fixed' | 'plant' } {
   const v = devParam('riderCost', search)?.trim().toLowerCase();
   return v === 'point' || v === 'fixed' || v === 'plant' ? { riderCost: v } : {};
+}
+
+/**
+ * The `?plantFloor=4.5|5|6` dev switch (`SurfZoneConfig.plantFloor`, step 3.4m): opt-in, the lowest row of the
+ * balance's own water table (`PLANT_SPEEDS`) its internal model may be built on, m/s.
+ *
+ * Shipped, `labAt` clamps the lookup with `Math.max(speeds[0], …)` and the table starts at 4, so **every design at or
+ * below 4 m/s is built on row `'4'`** — and row `'4'` is the table's own **sign-turnover row**: measured at 46.4° of
+ * trim and 0.513 m of draft (the deepest, most trimmed row it owns), with the yaw moment per radian of slip at
+ * **+143.8** against **+41.3, −28.6 and −161.0** at 4.5, 5 and 6, and the roll moment per radian of roll at **−37.2**
+ * against −98.0 at both 4.5 and 5. So the clamp does not extrapolate the planing table downward; it pins every sub-4
+ * m/s design to the one row where the signs have turned over, and step 3.4l measured the consequence: before the fall
+ * (the board inside 25° of roll) the model's side force — 95.8–96.7 % of the controller's own bank row — has the
+ * **wrong sign** on crouch and compress ticks, a sign-correct share of 0.167 and 0.292 against 0.900 and 0.932 where
+ * the table is honest.
+ *
+ * `4.5` is the row the game's own board picks out down there by its draft (0.273–0.301 m at 16.0–17.3° of trim, modal
+ * nearest row per tick in all three stances); `5` and `6` are the other two rows step 3.4k's sensitivity swapped in,
+ * kept so the bracket can be ridden. **Every value is a row the lab measured and none is invented** — the captive rig
+ * has no equilibrium below planing (at 1.16–3 m/s the towed board settles to 90.00° of trim and 3.002 m of draft, i.e.
+ * stood on end and through the lab's bed), so there is no honest row below 4 to offer.
+ *
+ * It is a change of **plant**, not of controller: Φ, Γ, K and L are rebuilt on a different measured row and nothing
+ * else moves. The table is read by `plantAt` alone and `plantAt` by `predictiveBalance.ts` alone, so no water force in
+ * the game is computed from it; the only thing that changes outside the model is the ankle's commanded rest angle, and
+ * the ankle is a real spring already paired by its reaction on the board's roll row. **Not a hidden motor.** Nothing
+ * on the default rider. Anything else, the shipped floor of 4. docs/research/new-rider/3.4 Part 13.
+ */
+export function plantFloorSwitch(search?: string): { plantFloor?: '4.5' | '5' | '6' } {
+  const v = devParam('plantFloor', search)?.trim().toLowerCase();
+  return v === '4.5' || v === '5' || v === '6' ? { plantFloor: v } : {};
 }
 
 /**

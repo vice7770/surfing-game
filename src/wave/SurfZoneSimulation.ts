@@ -396,6 +396,17 @@ export interface SurfZoneConfig {
    */
   riderCost?: 'point' | 'fixed' | 'plant';
   /**
+   * '4.5' | '5' | '6': the lowest row of the balance's own plant table (`PLANT_SPEEDS`) its internal model may be
+   * built on, m/s (step 3.4m; `RideSessionOptions.plantFloor`, `DesignWeights.plantFloor`). Shipped, the lookup
+   * clamps to the table's first speed, so **every design at or below 4 m/s reads row `'4'`** — the table's own
+   * sign-turnover row, measured at 46.4° of trim and 0.513 m of draft, while the game's board down there rides at
+   * 16.0–17.3° and 0.273–0.301 m, nearest measured row `'4.5'` (README Parts 11–12). Each value is a row the lab
+   * measured; none is invented. It changes the **plant** the design, the filter and the predictor are built on; it
+   * changes no control law and no force in the game. The new surfer (`?rider=new`) only. Every spot. The
+   * `?plantFloor` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  plantFloor?: '4.5' | '5' | '6';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

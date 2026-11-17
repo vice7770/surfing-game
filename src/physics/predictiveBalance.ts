@@ -611,11 +611,28 @@ export function stanceAt(depth: number): { height: number; lower: number; upper:
   const f = (d - a.depth) / (b.depth - a.depth);
   return { height: a.height + f * (b.height - a.height), lower: a.lower + f * (b.lower - a.lower), upper: a.upper + f * (b.upper - a.upper) };
 }
-/** The lab's plant at any speed in the table's range, linear between its speeds. */
-export function labAt(speed: number): LabPlant {
+/**
+ * The lab's plant at any speed in the table's range, linear between its speeds.
+ *
+ * **`floor`, the lowest row the lookup may land on, m/s** (step 3.4m, `?plantFloor`): omitted, it is the table's own
+ * first speed — 4 — so **every design below 4 m/s is built on row `'4'`**. That row is the table's own
+ * **sign-turnover row**: measured at trim 46.4° and draft 0.513 m, the deepest and most trimmed row the table owns,
+ * with the yaw moment per radian of slip running **+143.8 at 4, +41.3 at 4.5, −28.6 at 5 and −161.0 at 6** (negative
+ * to 12) and the roll moment per radian of roll **−37.2 at 4** against −98.0 at both 4.5 and 5. So the clamp does not
+ * extrapolate the planing table downward; it pins every sub-4 m/s design to the one row where the hull has changed
+ * regime and the signs have turned over (README Part 11 §2), and the game's own board down there is at 16.0–17.3° of
+ * trim and 0.273–0.301 m of draft, whose nearest measured row is `'4.5'` (README Part 12 §2). A `floor` above the
+ * table's first speed makes the lookup land on the next **measured** row instead — no row is invented, and nothing at
+ * or above the floor moves. README Part 13.
+ */
+export function labAt(speed: number, floor?: number): LabPlant {
   const speeds = Object.keys(PLANT_SPEEDS).map(Number).sort((x, y) => x - y);
   if (speeds.length === 0) throw new Error('no plant table');
-  const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
+  // A floor outside the table, or not a number at all, is the table's own first speed: the lookup must not be able to
+  // return a NaN plant because a caller handed it one (`Number(null) === 0`, and 0 would simply be the shipped floor).
+  const asked = floor !== undefined && Number.isFinite(floor) ? floor : speeds[0];
+  const lowest = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], asked));
+  const v = Math.max(lowest, Math.min(speeds[speeds.length - 1], speed));
   let i = 0;
   while (i < speeds.length - 2 && v > speeds[i + 1]) i += 1;
   const lo = PLANT_SPEEDS[String(speeds[i])];
@@ -632,8 +649,11 @@ const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
  * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
  * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
  */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean; body?: boolean | number | RiderBody } = {}): { y: YawPlant; t: TwistPlant } {
-  const lab = labAt(speed);
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean; body?: boolean | number | RiderBody; plantFloor?: number } = {}): { y: YawPlant; t: TwistPlant } {
+  // Step 3.4m (`?plantFloor`): the lowest row of `PLANT_SPEEDS` the water's twelve derivatives may be read at. Only
+  // the table lookup moves — `speed` itself still enters the kinematic rows, the rail correction, the board's inertia
+  // and the heave plant at its true value, as it always did.
+  const lab = labAt(speed, opts.plantFloor);
   const s = opts.scales ?? new Array<number>(12).fill(1);
   // Step 3.2f: the rail's own correction (`railCorrection`), so the schedule covers carving as it covers speed and stance.
   // Step 3.2p: `sink` reads the HELD table instead (`frozenCorrection`) and carries the board's heave and pitch as four
@@ -825,6 +845,23 @@ export interface DesignWeights {
    * positive control shipped so that it can be ridden as well as tested.
    */
   riderBody?: 'two' | 'control' | 'symmetric';
+  /**
+   * **The lowest row of `PLANT_SPEEDS` the design may read, m/s** (step 3.4m, `?plantFloor=4.5|5|6`). Omitted, it is
+   * the table's own first speed, 4 — which is what ships, and which makes every design at or below 4 m/s read row
+   * `'4'`, **the table's own sign-turnover row** (`labAt` has the derivatives that turn over, README Part 11 §2).
+   *
+   * **It is a change of plant, not of controller**, the same shape as `riderBody` and 3.4a's own scope line: Φ, Γ, K
+   * and L are rebuilt on a different row of a table the lab already measured, and nothing else moves. The table is
+   * read by `plantAt` alone and `plantAt` by this file alone, so **no water force in the game is computed from it**
+   * (README Part 11 §5); the only thing that changes outside the model is the ankle's commanded rest angle, and the
+   * ankle is a real spring whose torque is already paired by its reaction on the board's roll row. Not a hidden motor.
+   *
+   * The value must be a speed the table measured. `4.5` is the row the game's own board picks out below 4 m/s by its
+   * draft (modal nearest row per tick, all three stances; README Part 12 §2); `5` and `6` are the other two rows
+   * step 3.4k's sensitivity swapped in, kept so the bracket can be ridden. Off by default and pinned off for online
+   * rooms.
+   */
+  plantFloor?: number;
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -1198,12 +1235,15 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
     const body: boolean | RiderBody | undefined = w.riderBody === 'two' ? true
       : w.riderBody === 'control' ? { inertia: 0, feetRoll: false }
         : w.riderBody === 'symmetric' ? { inertia: 0 } : undefined;
-    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}) });
+    // Step 3.4m: the table's floor is a plant too, so it enters here beside the body, through the same weights the
+    // cache's key already carries. `undefined` is the shipped floor and leaves `labAt` exactly as it was.
+    const floor: { plantFloor: number } | undefined = w.plantFloor !== undefined ? { plantFloor: w.plantFloor } : undefined;
+    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor });
     d = design(y, t, w);
     if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
       // The gains stay the shipped ones, designed on the free plant, with no gain on the four board states: the rider
       // feels and anticipates the board, and does not try to steer it. `DesignWeights.heaveGains` has the measurement.
-      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}) });
+      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor });
       const gains = design(ten.y, ten.t, { ...w, heaveSense: false });
       const pad = new Array<number>(d.phi.length - N_STATE).fill(0);
       d = { ...d, k: gains.k.map((row) => [...row, ...pad]) };
