@@ -58,6 +58,8 @@ const UNTIL = Number(option('until') ?? 160);
 const SEEDS = (option('seeds') ?? '1,2,3').split(',').map(Number);
 const SWELL = option('swell') ?? 'practice';
 const MIN_H = Number(option('minH') ?? 1.0);
+/** How often a frame is read, s. Step 5e read every 0.1 s; the stepping costs the same either way. */
+const EVERY = Number(option('every') ?? 0.1);
 const RESULTS = option('results') ?? 'docs/research/new-rider/3.4/results/34f';
 const OUT = option('out');
 const DEG = 180 / Math.PI;
@@ -219,6 +221,10 @@ function feltFaces(
       else if (ys[j] > ys[trough] + 0.05) break;
     }
     if (trough - i < 4) continue;
+    // A prominence floor, so the window's ripples do not each become a "face": 0.3 m of crest over the trough ahead,
+    // read before the reduction runs. Every bucket this round reports is filtered to H ≥ 1.0 m anyway, and the
+    // unconditioned bucket is a dilution control, not a claim.
+    if (ys[i] - ys[trough] < 0.3) continue;
     const up: { d: number; y: number }[] = [];
     const upSlope: number[] = [];
     const upU: number[] = [];
@@ -319,6 +325,15 @@ if (part('B')) {
     const predicted: number[] = [];
     const measured: number[] = [];
     const resid: number[] = [];
+    // Two guards, because `Number(null) === 0` and a zero would enter the population silently: a count of rows whose
+    // four columns are not all finite numbers, and the share of frames where the board is **off the face entirely**
+    // (`faceFrac` at the trough, where the slope has run out and is a real zero rather than a missing one).
+    let nonFinite = 0;
+    let offFace = 0;
+    for (const r of rows) {
+      if (![r.tilt, r.faceFrac, r.aheadFronts, r.headOff].every((v) => typeof v === 'number' && Number.isFinite(v))) nonFinite += 1;
+      if (r.faceFrac <= 0.001) offFace += 1;
+    }
     for (const r of rows) {
       const z = water.crestZ() + r.aheadFronts * water.front;
       water.sampleAt(0, 0, z, sample);
@@ -335,9 +350,10 @@ if (part('B')) {
     console.log(`    the slope the water reports there, ALONG the face: ${band(along)}° · at frame 1 ${band(along.filter((_, i) => rows[i].frame === 1))}°`);
     console.log(`    the tilt the loop reads, ACROSS the board: ${band(measured)}° · at frame 1 ${band(measured.filter((_, i) => rows[i].frame === 1))}°`);
     console.log(`    C2, the projection against the dump: |atan(tan(slope)·sin ψ)| − |tilt| peak ${f(q(resid, 1), 6)}°`);
+    console.log(`    the guards: rows whose four columns are not all finite ${nonFinite} of ${rows.length} · frames with the board OFF the face (faceFrac ≤ 0.001) ${offFace} of ${rows.length} (${f((100 * offFace) / rows.length)} %)`);
     lines.push(name);
     dump[name] = {
-      frames: rows.length, runs: first.length, slope,
+      frames: rows.length, runs: first.length, slope, nonFinite, offFace,
       faceFrac: q(rows.map((r) => r.faceFrac), 0.5), faceFrac95: q(rows.map((r) => r.faceFrac), 0.95),
       along: q(along, 0.5), alongFrame1: q(along.filter((_, i) => rows[i].frame === 1), 0.5),
       tilt: q(measured, 0.5), tiltFrame1: q(measured.filter((_, i) => rows[i].frame === 1), 0.5),
@@ -353,7 +369,7 @@ if (part('C')) {
   /** This round's own window, which reaches onshore of the onsets (z −98 … −102 on Practice [R, PR #223]). */
   const Z0 = Number(option('z0') ?? -175);
   const Z1 = Number(option('z1') ?? -60);
-  console.log(`\n## C. Canyon B, the arm (?canyonWaves=true, swell ${SWELL}, tide mid, stage 2, CPU; ${f(FROM, 0)}–${f(UNTIL, 0)} s, every 0.1 s, columns ${COLUMNS.join(' ')}, seeds ${SEEDS.join(',')}, window z ${f(Z0, 0)} … ${f(Z1, 0)})`);
+  console.log(`\n## C. Canyon B, the arm (?canyonWaves=true, swell ${SWELL}, tide mid, stage 2, CPU; ${f(FROM, 0)}–${f(UNTIL, 0)} s, every ${f(EVERY, 2)} s, columns ${COLUMNS.join(' ')}, seeds ${SEEDS.join(',')}, window z ${f(Z0, 0)} … ${f(Z1, 0)})`);
   /** The take-off's own z and the half-width of the window around it that counts as "where the rider is". */
   const TAKEOFF = Number(option('takeoffZ') ?? -125);
   const NEAR = Number(option('near') ?? 25);
@@ -382,7 +398,7 @@ if (part('C')) {
     for (let t = FROM; t <= UNTIL; t += STEP) {
       while (sim.solver.time < t - 1e-9) sim.step(STEP);
       if (t < next) continue;
-      next += 0.1;
+      next += EVERY;
       frames += 1;
       for (const x of COLUMNS) {
         // step 5e's own read: the tallest crest in z −200 … −110, one face a column-frame.
@@ -406,7 +422,7 @@ if (part('C')) {
   }
   console.log(`  ${faces} faces in all, ${brAny} with breaking anywhere on them (${f((100 * brAny) / Math.max(1, faces))} %) — the control that the field is not zero by construction`);
   report('step 5e\'s own read: the TALLEST crest in z −200 … −110, one face a column-frame', fiveE);
-  report(`every crest in z ${f(Z0, 0)} … ${f(Z1, 0)} (this round's window, which reaches the onsets)`, all);
+  report(`every crest of H ≥ 0.30 m in z ${f(Z0, 0)} … ${f(Z1, 0)} (this round's window, which reaches the onsets)`, all);
   report(`the CLEAN faces: H ≥ ${f(MIN_H, 2)} m, nothing breaking anywhere on them`, clean);
   report('the clean faces of H ≥ 1.30 m (the calibration\'s sets)', bigClean);
   report(`the clean faces whose crest is within ${f(NEAR, 0)} m of the take-off (z ${f(TAKEOFF, 0)})`, nearClean);
