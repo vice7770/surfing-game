@@ -50,6 +50,19 @@ Read the code and `docs/research/new-rider/` for what actually exists before map
 
 A table with three columns: *what the rider does* → *which game stance or move* → *have it / partly / not at all*.
 
+**For depth, the mapping is now arithmetic rather than judgement — use this ladder.** It was measured in `docs/research/new-rider/3.5/stance-frame.md`; the denominator is the game's own **straight-legged** standing hip height, **0.88 m**, which is the frame that makes the game's resting stance land inside the footage's own resting band.
+
+| hips, as % of straight-legged standing | the game's stance | leg depth |
+|---|---|---|
+| **75–95 %** | **Tall** (reads 89 %) | 0 |
+| 66 % | **Crouch as it ships — and NO clip has ever shown a rider here.** Say so if your rider is in this gap. | 0.195 m |
+| **55–65 %** | **Compress** (reads 55 %) — the footage's *sustained, holdable* crouch | 0.30 m |
+| **35–50 %** | **the tube tuck**, shipped as `?snapDepth=deep` — the footage's *0.25–0.7 s spikes* | 0.45 m |
+
+So: give the hip percentage, then name the rung. **The band a rider sits in matters more than the exact number** — the conversion is good to about ±0.1 m on a ladder whose entire travel is 0.45 m, so **never report a stance match to the centimetre.**
+
+Two things worth checking in any new clip, because the evidence so far is thin on both: whether a rider **holds** a depth below ~65 % for more than a second (across four clips and five-plus riders, **none has**), and whether the deep spike arrives **at turn entry** (it has, in every readable turn so far).
+
 **The rows that say "not at all" are the valuable ones.** They are the gaps, and they are why this skill exists. The Kirra clip produced two: a **tall → low → tall cycle** inside a turn, and the hips moving **fore-aft over the tail** — an axis the game does not model at all.
 
 ### Part C — what you could not see
