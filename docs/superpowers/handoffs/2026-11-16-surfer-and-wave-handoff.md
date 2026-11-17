@@ -189,3 +189,41 @@ Measured on **Canyon B, practice swell — the owner's own default** (earlier re
 **Wave track: still parked on the owner's two questions** (`&foamAlbedo=on` — does the broken water read right against the blue in one frame; `&foamAlbedo=bubbles` — is the aged lace a sandy stain). **Five rounds shipped without a ride; do not ship a sixth.**
 
 **Movement references:** `kirra-reference.md` and `video-ref-2.md`, plus the skill `.claude/skills/surf-video-read/` (model `sonnet`, effort default) that produced the second. Their two "not at all" rows are the standing gaps: **a lip manoeuvre has no stance and no arm control — our moves are named only after they happen** — and **head/gaze has no role at all.**
+
+## STEP 3.4h (merged `0c3740b8`, PR #378) — THE FALLS ARE REAL, AND HALF THE FACE RULING'S CONDITIONAL LIST IS RELEASED
+
+**626 rides, 29 arms, 9 placements from just under the crest to the bottom of the face, 2 faces, entries 1–10.4 m/s: 626 of 626 fell.** Compress fell **205 of 205**. Nothing reached nine seconds; the longest ride was 7.75 s.
+
+**So the standing 24 of 24 at 12.3° was NOT a test artefact.** Every **falls-per-runs** figure the face ruling put on the FACE-CONDITIONAL list is **unconditional again, with no re-run needed**. Only the **ride time** was ever conditional on the face.
+
+**The ride time moves a great deal, and that is the whole of what the wrong face cost us:**
+- glide cell **1.467 → 4.650 s**; the owner's own cell **1.033 → 1.450 s** — and **18 of 18 still fall**.
+- The knob that reaches his water is the **FACE, not the placement**: `FACE=1.4,7.32,5.7` at the shipped `AHEAD` 0.75 gives **5.50° at faceFrac 0.1560** (his 0.157), same entry baseline, heading and height, 1.2 % off-face frames, crest-to-trough 16.35 m against his measured 15.4 m (11.2–24.4). **This is the closest the folder has come to the water he rides**, and it is where 4.650 s comes from.
+- **Room is worth as much as slope:** `f73-g` and `p9075-g` are the same slope (5.50 vs 5.52°) and ride **4.650 vs 2.750 s**.
+
+**The fall changes CHARACTER, not KIND:** 70.0° of bank at 6.47 m/s through the water on the steep arm against **42.6–48.5° at 1.16–1.31 m/s** on the gentle one. **The same fall in slow motion.** And **no slow stalls at all — 0 in 309 glide runs**, which refutes the fall-kind prediction: what grows is a slow topple the published classifier has no name for. Its 45° threshold sits on a column `AttachedRider` **clamps at 70°**, so that mix **cannot be read until the clamp round runs**.
+
+### Three refutations, two of them of this round's own brief
+
+1. **"The placement arm is free" — WRONG, and it was my word.** `AHEAD` moves **four** quantities: the slope; the **room** before the board runs off the face (0.37–6.65 m); the **entry-speed band** (5.28 → 8.03 m/s, 45 % of the glide cell's own span, because the probe's `EXTRAS` entry subtracts the water's flow at the placement); and, since `4·AHEAD·(1−AHEAD)` is symmetric, **every slope is reached twice** — 12.30° high rides 1.100 s, 12.12° low rides 1.467 s. Six arms were discarded and re-run on absolute entries. The span itself is confirmed exactly: `AHEAD` 0.50/0.65/0.75/0.90 → **16.00 / 14.62 / 12.14 / 5.89°** along the face, **11.46 / 10.45 / 8.65 / 4.17°** across the deck, to 1.8×10⁻¹⁵° against `FaceWater.sampleAt`.
+2. **The off-face hole is SURVIVORSHIP, not a mechanism.** It is the board running off the **onshore end** onto flat still water — `faceFrac` recomputed from `aheadFronts` closes to 1.2×10⁻⁴ over ~80 000 frames, every off-face frame is past the trough and **none** behind the crest. **At a matched age (t 0.2–0.7 s) the share is 0 on seven of eight arms**, so the three-fold spread is **ride length**. **The handoff's "live candidate for Part 5's unexplained ordering" is refuted by the arms' own frames.** Two things it did not know: the shipped glide arm's ride **ENDS on flat water in 15 of 24 runs**, chosen by entry speed (every `extra ≥ 0` run leaves, no `extra ≤ −1` run does), so the bias **lengthens** the ride; and removing those frames **flips an ordering in Part 6's own table** — `predict` vs `ref` is 2.250 vs 2.900 on face time against **4.033 vs 3.683 published**. **The owner's own cell was never contaminated (0–11 %).** Probe fix shipped in `place.ts`: published median, on-face prefix and total face time printed side by side.
+3. **`?mountAgree=deck` is REFUTED as a headline.** On a second face its median goes ×1.13 → **×1.00**. On both faces it lifts the sub-4 m/s runs (0.617→1.000, 0.833→1.000) and leaves the 4–6 m/s runs **bit-identical in 9 of 9**. **It is a sub-floor mount fix; it stops no fall. Stop calling it the only switch that moved the owner's cell.** (I told the owner it was. That was wrong and they have been told.)
+
+### What remains conditional, after 3.4h
+
+**RELEASED (no longer face-conditional):** all falls-per-runs figures, including 24 of 24 and 12 of 12.
+**STILL CONDITIONAL:** the ride-time medians 1.450 s / 1.033 s as *absolute* numbers — but their *direction* is now measured on two faces; the datum arms' ordering (and Part 6's `predict`/`ref` ordering is **flipped** by the flat-water fix); the clamp's relevance.
+**DEAD:** `?mountAgree=deck` as progress.
+
+### Part D's price for the rest
+
+The datum arms on the corrected face and `mountAgree` are **done in this round**. Falls-per-runs **need no re-run**. The bowl row (`FACE=2.1,21,6.1 DEPTH=3.4`) and `ARANGE=wide` are **~1–2 min of CPU each and worth it**. Re-running Parts 1–6's ride tables is **~25 min, and the cost is the rewriting, not the CPU**.
+
+Ten predictions were committed before the arms were read: **five upheld, four refuted, one half**; all four refutations were about mechanism, and P8/P9 were exactly backwards — the **upper** placements are the off-face ones (35.7 %, 47.3 %), not the lower.
+
+### WHERE TO RESUME, revised by 3.4h
+
+1. **Stop sweeping the wave.** Nine placements and two faces said what one face said. **The wave is no longer an excuse.**
+2. **The roll-inertia finding (3.3l), which this round removes the last excuse for not facing:** the ankle keeps only **0.25–0.40** of its authority over the body because the board's roll inertia is **0.5–1.1 kg·m²** against the body's **52–54**.
+3. **Then the clamp round** — §4b of Part 8 cannot be read until `AttachedRider`'s 70° clamp (three sites) is lifted behind a switch.
+4. **The question only the owner can answer, and it is a ride question:** *does a slow topple at 1.2 m/s feel better or worse than being thrown at 6.5?* **If worse, "make the ride longer" is the wrong target** and step nine should change.
