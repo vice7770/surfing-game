@@ -927,3 +927,31 @@ Where the clip's time goes: ~10 of its 25 half-second slots at **45–65 %** (Co
 ### WHAT THIS DOES TO RULING B — THE OWNER MUST BE TOLD, NOT MANAGED
 
 Ruling B (and its revision) rests on *"four videos, five-plus riders, no held deep stance anywhere."* **That statement is no longer true of the evidence.** The design still has support — Crouch's 66 % is unused in five clips out of five, and the low still arrives at entry in every readable turn — **but "the deep place must stop being somewhere the rider can live" is now contradicted by one of the owner's own references.** The honest position: **two patterns exist, a ~0.5 s dip and a ~2 s hold, and we have one clip for the hold and four for the dip.** Do not quietly keep building the dip as though this clip did not land.
+
+## ⚖️ RULING C (2026-11-17) — "KEEP THE HELD COMPRESS, BOTH PATTERNS ARE REAL"
+
+Shown that their own fifth clip holds a deep stance for 1.75–2.9 s where four earlier clips showed only 0.25–0.7 s spikes, the owner ruled:
+
+> ***"keep the held compress, both patterns are real"***
+
+**So the dip is an ADDITION, not a replacement, and the held Compress is now evidence-backed rather than a compromise.** The design, final:
+
+1. **Keep all four stances. Compress stays HELD** — supported by video 5.
+2. **A deepen button = the dip pattern**, self-releasing, landing in the footage's spike band (**35–50 % of standing = 0.45 m of leg depth**, which already exists as `MANUAL_CROUCH_DEPTH` and ships as `?snapDepth=deep`).
+3. **Rework Crouch** — still the one unused rung, **confirmed 5 clips of 5.**
+4. **Infinite stamina. No fatigue.**
+
+**Supersedes the "three depths" framing and its revision.** Nothing is taken away from the owner.
+
+### THE BUILD ORDER, AND WHY IT SPLITS
+
+**Crouch's VALUE waits on the owner's ride** of `?kneeRoom=achieved`, because tall sinks up to 0.27 m on its own and *"B cannot be judged by riding until A is settled"*. **But two pieces do NOT wait, and one of them is overdue:**
+
+- **The fourth `STANCE_TABLE` row is needed TODAY, not for the dip.** On the shipped `?rider=new` the **achieved** depth already passes `stanceAt`'s 0.30 m ceiling in **0.28–0.95 of Compress's live ticks, 6 of 6 runs**, so the balance plant is already designing those ticks with Compress's pendulum length, inertia and bank limit. Cost today ≈0.042 m / 4 % in ω₀; **if the dip reaches 0.45 m it becomes pendulum 37 % high, ω₀ 15 % low, inertia 1.9×, and the bank limit frozen.**
+- **The deepen button** is a new input that need not touch Crouch's or Compress's constants.
+
+**⚠️ A SUBTLETY THAT MUST NOT BE MISSED: the fourth row is NOT purely additive.** Because the 0.30 m clamp already bites in up to 95 % of Compress's ticks, adding the row **changes how existing Compress ticks are planned.** So **it has to be opt-in and its effect on existing Compress measured, not assumed** — otherwise "default byte-identical" is false while appearing true.
+
+**Measure the row, do not guess it:** `3.2/inertia.probe.ts` yields `height`/`lower`/`upper`/`BODY_FRONTAL_SHARE` from de Leva's segments — one posture line and a run. **`stanceRoom` already has a 0.45 m row and `hipRange` already covers 0.30–0.45 m**, so only `STANCE_TABLE`/`stanceAt` and `BODY_FRONTAL_SHARE` are keyed on three depths.
+
+**Still unasked, and the default stands:** whether the dip fires **on the owner's input only** (the default, and what is being built) or **automatically at turn entry** as all five clips show. An automatic dip is the game moving their body for them — the boundary Ruling A sits on — **so ask before choosing automatic.**
