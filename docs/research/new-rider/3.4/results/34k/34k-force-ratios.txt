@@ -1,0 +1,56 @@
+# Step 3.4k Part A. 3.3/plant.ts Part 7's FORCE-against-FORCE columns, read off the 34h and 34i arm dumps.
+# kModel/yModel/nModel = the model's water roll moment, side force and yaw moment from the twelve derivatives
+# read at the tick's own state (plantAt(speedUsed), so labAt-clamped below 4 m/s); kGame/yGame/nGame = BoardBody's
+# own per-source water ledgers at the same tick. No inertia and no solve on either side (3.3/plant.ts:1221-1232, 1686-1691).
+# *AbsRatioMed = median over the arm's live ticks of |model/game|; *SignRight = share of live ticks whose signs agree.
+# speedClampedShare (3.3/plant.ts:1613, 2092) = share of live ticks with speedUsed outside the table's 4-12 m/s.
+
+## A1 - banded by the clamp, per round and stance (arm medians of the per-tick arm medians)
+round	stance	band	arms	ticks	speedMed	y|ratio|	ySign	yModelMed	yGameMed	k|ratio|	kSign	n|ratio|	nSign
+34h	tall	all-clamped	31	1334	2.389	1.382	0.516	92.2	82.6	5.111	0.66	1.052	0.696
+34h	tall	part-clamped	58	9891	5.849	0.936	0.853	59.85	48.75	2.711	0.754	0.883	0.648
+34h	tall	honest	122	9828	6.891	0.929	0.921	120.35	125.85	2.855	0.865	0.606	0.667
+34h	crouch	all-clamped	27	985	2.169	1.238	0.509	105.7	90.2	3.267	0.758	1.056	0.567
+34h	crouch	part-clamped	71	11414	5.573	0.896	0.838	66.2	68.8	2.608	0.768	0.72	0.672
+34h	crouch	honest	112	8894	6.921	0.872	0.926	128.95	142.7	2.702	0.868	0.581	0.692
+34h	compress	all-clamped	27	967	2.297	1.094	0.585	81.9	95.9	3.172	0.731	0.997	0.6
+34h	compress	part-clamped	73	12330	5.923	0.934	0.841	59.2	71.9	2.494	0.767	0.592	0.677
+34h	compress	honest	105	8249	6.94	0.83	0.939	140.1	151.7	2.715	0.88	0.506	0.778
+34i	tall	all-clamped	12	392	2.423	1.573	0.485	84.95	78.55	11.941	0.742	1.268	0.74
+34i	tall	part-clamped	14	3032	5.859	0.88	0.921	34.0	36.3	3.789	0.514	0.88	0.738
+34i	tall	honest	30	2454	6.2	0.914	0.947	120.4	125.3	3.318	0.824	0.606	0.718
+34i	crouch	all-clamped	12	378	2.298	2.236	0.332	145.0	85.4	4.169	0.829	1.065	0.666
+34i	crouch	part-clamped	18	3802	5.855	0.792	0.881	51.8	58.9	4.763	0.718	0.587	0.845
+34i	crouch	honest	26	1982	6.412	0.851	0.955	147.2	179.9	3.584	0.884	0.636	0.727
+34i	compress	all-clamped	12	382	2.285	2.001	0.313	89.45	77.05	3.527	0.752	1.606	0.659
+34i	compress	part-clamped	19	3138	4.612	0.801	0.893	52.9	67.3	4.085	0.663	0.476	0.826
+34i	compress	honest	25	1928	6.507	0.769	0.978	144.2	187.3	3.396	0.912	0.458	0.821
+
+## A2 - the owner's own falling speeds: arms with speedMed <= 1.6 m/s AND 100% of ticks clamped (34h+34i pooled by stance only)
+stance	band	arms	ticks	speedMed	y|ratio|	ySign	yModelMed	yGameMed	k|ratio|	kSign	n|ratio|	nSign
+tall	all-clamped	13	334	1.31	1.622	0.409	131	68.8	6.726	0.769	1.748	0.7
+crouch	all-clamped	13	316	1.252	2.216	0.345	170.6	84.5	4.541	0.828	1.605	0.69
+compress	all-clamped	12	274	1.226	2.329	0.28	145.6	89.6	8.194	0.822	1.839	0.72
+
+## A3 - the captive rig at low speed (../roll-plant/plant.probe.ts PART=captive, SPEEDS=1.16,1.31,2,3,4; results/34k/plant-low-34k.jsonl)
+# The derivative pipeline is first VERIFIED against the published row '4': group 'all', Kdeck, the 1 deg roll case, the
+# 1 deg slip case, the -0.1 rad/s yaw-rate case and the mean of the two rollRate-deck cases reproduce
+# PLANT_SPEEDS['4'].roll/slip/yaw EXACTLY (-37.2,-177.6,-268.7 / 143.8,343.8,-63.0 / -18.7,43.0,-61.3) off the stored
+# 3.2/results/plant-speeds.jsonl. A FRESH run of the same probe at 4 m/s reproduces roll, slip and yaw exactly and the
+# roll-RATE triple to 2-3 % (-7.55,-8.0,-4.2 against the published -7.69,-8.0,-4.33), so eleven of the twelve are
+# reproducible byte-for-byte and the twelfth to a few per cent.
+#
+# The steady glide the rig settles into (2.5 s of tow, roll/yawRate/slip held, pitch and heave FREE):
+#   v=4.00  trim 46.41 deg  draft 0.5130 m   <- the published row, a half-sunk board
+#   v=3.00  trim 90.00 deg  draft 3.0021 m
+#   v=2.00  trim 90.00 deg  draft 3.0021 m
+#   v=1.31  trim 90.00 deg  draft 3.0020 m
+#   v=1.16  trim 90.00 deg  draft 3.0020 m
+# `Flat` (../roll-plant/plant.ts:16-25) returns waterDepth 3, bedY -3. A draft of 3.002 m at 90 deg of trim is the board
+# stood on end and sunk THROUGH the lab's bed. There is no steady glide at 1.16-3 m/s for a 73 kg point rider on a
+# 2.54 kg board, so the derivatives printed below are measured on a board on the bottom of the tank and are NOT a plant.
+#   v=1.16  roll [5.2,-1094.3,898.4]   slip [5.2,-1386.6,1136.2]  yaw [-14.9,-80.0,50.9]  rate [-17.52,20.95,-34.72]
+#   v=1.31  roll [6.9,-97.4,88.8]      slip [6.9,-383.9,321.4]    yaw [-16.6,1.0,-18.0]   rate [-19.29,29.20,-42.91]
+#   v=2.00  roll [14.9,-1976.7,1628.9] slip [14.9,853.7,-678.4]   yaw [-24.3,615.0,-525.7] rate [-28.27,-133.50,80.66]
+#   v=3.00  roll [33.8,-1306.3,1097.8] slip [33.2,2326.2,-1864.4] yaw [-35.5,679.0,-589.3] rate [-40.43,14.10,-51.92]
+# They are reported so nobody re-runs the rig expecting a row; they must not be put in PLANT_SPEEDS.

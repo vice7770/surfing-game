@@ -5790,3 +5790,270 @@ number per cell. It says the term is there, correctly signed and dominant. It do
 that term matches what the solve delivers — the controller's plant is the captive-derivative table, clamped at 4 m/s
 below that speed, and the 1.16–1.31 m/s arms both sit under the clamp. **Whether the modelled `a_y` and the solved one
 agree in size at the owner's own speeds is the obvious next measurement, and it is a different question from this one.**
+
+# Part 11 — step 3.4k: the 4 m/s floor under `PLANT_SPEEDS`, measured
+
+**One question. The lead 3.4j ended on: `labAt` (`predictiveBalance.ts:618`) clamps with `Math.max(speeds[0], …)` and
+`PLANT_SPEEDS` (`:203`) starts at 4 m/s, so at the owner's own falling speeds — 1.16 and 1.31 m/s — the balance is
+designed on the water's derivatives at 4 m/s. Does that matter, and by how much?**
+
+**The answer in one line: YES at the low-speed cell, and the size is that the model's side force — the term that makes
+`a_y`, 95.8–96.7 % of the controller's own bank row (3.4j) — is 1.6–2.3× too large and points the WRONG WAY on 59–72 %
+of ticks there, against 0.77–0.93× and 2–8 % wrong-signed where the table is honest. And extending the table downward
+is (a): a model-only change, no force written down, the shape of `?riderBody=two`. It needs no owner's ruling — but it
+needs an instrument that does not exist yet, because at 1.16–3 m/s the captive rig's board SINKS, so there is no
+honest row below 4 m/s to measure, and the one the clamp lands on is the table's own most anomalous row.**
+
+**And the constraint holds, loudly: this explains the low-speed cell and NOTHING ELSE.** 3.4h measured 626 of 626 falls
+over entries of 1 to 10.4 m/s, Compress 205 of 205. The arms with **no clamped tick at all** (420 arm-rows, 33 335 live
+ticks, Part A §1) have a model whose side force is right to 7–23 % with the sign right on 92–98 % of ticks — **and the
+rider still falls in every one of them.** If a later round reads this section as the cause of the falls, it has made
+the error 3.4i named: the clamp can move at most the arms below ~4 m/s.
+
+## 1. Part A — the size of the mismatch, per arm, with populations
+
+**The instrument is already in the dumps and I read its definition before quoting it.** `3.3/plant.ts` Part 7 is FORCE
+against FORCE with no inertia and no solve on either side: `kModel`/`yModel`/`nModel` are the model's water roll
+moment, side force and yaw moment built by `loads(y, x[0])` from the twelve derivatives at the tick's own state, with
+`y = plantAt(speedUsed, depth, …)` and therefore `labAt`-clamped below 4 m/s (`:1044`, `:1049`, `:1221`); and
+`kGame`/`yGame`/`nGame` are `BoardBody`'s own per-source water ledgers at the same tick (`:1227–1232`, `:1686–1691`).
+`yAbsRatioMed` is the **median over the arm's live ticks of `|yModel/yGame|`** (`:2124`), not a ratio of medians, and
+`ySignRight` is the share of live ticks whose two signs agree. `speedClampedShare` (`:1613`, `:2092`) is the share of
+live ticks whose `speedUsed` fell outside the table's 4–12 m/s. **All of these are already dumped in 34h and 34i**, so
+Part A needs no new ride. **A counting honesty: the dumps carry counterfactual variants beside each ride (for
+instance `?bankClamp=off`), and a variant that does not change the water's forces has force columns identical to its
+partner's — so the row counts below are ARM-ROWS, not independent rides, and the tick counts are the honest measure of
+population.**
+
+Banded by the clamp, **arm by arm, never pooled across stances**, from the 34h and 34i arm dumps
+(`results/34k/34k-force-ratios.txt` §A1 has all eighteen rows; each figure is the median over that band's arms of that
+arm's own per-tick median):
+
+| round | stance | band | arms | live ticks | speed med | **side force `|model/game|`** | **sign right** | roll moment `|ratio|` | yaw moment `|ratio|` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 34h | tall | **every tick clamped** | 31 | 1 334 | 2.39 | **1.382** | **0.516** | 5.111 | 1.052 |
+| 34h | tall | no tick clamped | 122 | 9 828 | 6.89 | 0.929 | 0.921 | 2.855 | 0.606 |
+| 34h | crouch | **every tick clamped** | 27 | 985 | 2.17 | **1.238** | **0.509** | 3.267 | 1.056 |
+| 34h | crouch | no tick clamped | 112 | 8 894 | 6.92 | 0.872 | 0.926 | 2.702 | 0.581 |
+| 34h | compress | **every tick clamped** | 27 | 967 | 2.30 | **1.094** | **0.585** | 3.172 | 0.997 |
+| 34h | compress | no tick clamped | 105 | 8 249 | 6.94 | 0.830 | 0.939 | 2.715 | 0.506 |
+| 34i | tall | **every tick clamped** | 12 | 392 | 2.42 | **1.573** | **0.485** | 11.941 | 1.268 |
+| 34i | tall | no tick clamped | 30 | 2 454 | 6.20 | 0.914 | 0.947 | 3.318 | 0.606 |
+| 34i | crouch | **every tick clamped** | 12 | 378 | 2.30 | **2.236** | **0.332** | 4.169 | 1.065 |
+| 34i | crouch | no tick clamped | 26 | 1 982 | 6.41 | 0.851 | 0.955 | 3.584 | 0.636 |
+| 34i | compress | **every tick clamped** | 12 | 382 | 2.29 | **2.001** | **0.313** | 3.527 | 1.606 |
+| 34i | compress | no tick clamped | 25 | 1 928 | 6.51 | 0.769 | 0.978 | 3.396 | 0.458 |
+
+**And at the owner's own speeds rather than the clamped band's middle** — the arms whose median tick speed is at or
+below 1.6 m/s with **100 % of ticks clamped** (§A2; 34h and 34i together, by stance, never pooled across stances):
+
+| stance | arms | live ticks | speed med | side force `|model/game|` | **sign right** | `|yModel|` N | `|yGame|` N | roll `|ratio|` | yaw `|ratio|` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tall | 13 | 334 | **1.31** | **1.622** | **0.409** | 131.0 | 68.8 | 6.726 | 1.748 |
+| crouch | 13 | 316 | **1.252** | **2.216** | **0.345** | 170.6 | 84.5 | 4.541 | 1.605 |
+| compress | 12 | 274 | **1.226** | **2.329** | **0.280** | 145.6 | 89.6 | 8.194 | 1.839 |
+
+**The mismatch's size, stated once: 1.6–2.3× in magnitude, and the sign wrong on 59–72 % of ticks.** The magnitude is
+the smaller half of it. A dominant bank-row term that is twice too big is a badly tuned loop; one whose **sign** is
+wrong more often than right is a loop feeding back the opposite way, and 0.280–0.409 is worse than a coin toss.
+
+**What held up in the honest band is the control that makes this readable.** Where no tick is clamped the same model's
+side force is 0.77–0.93× with the sign right on 92–98 % — so the instrument is not simply broken, and the roll moment
+`K` (2.5–3.6× everywhere, which 3.3o already published) is not what moved: **the side force and the yaw moment are,
+and they move only under the clamp.**
+
+**Two honesties about this, both stated before anyone builds on it.**
+
+1. **The sign share is not yet conditioned on magnitude.** `|yGame|` at those arms is 68.8–89.6 N, so the typical tick
+   is far from zero and the disagreement is not a zero-crossing artefact *at the median*. But the share is taken over
+   **all** live ticks, and the dumps carry no tick-level `yGame`, so I cannot show the share restricted to
+   `|yGame| > 20 N`. **What it would take:** re-run `3.3/plant.ts` on these arms with the tick rows kept (it already
+   computes them; only the dump is summarised). One run, no new rider.
+2. **The band confounds the clamp with low speed itself.** Everything below 4 m/s is clamped by construction, so
+   "clamped" and "slow" cannot be separated by banding the arms. §2 separates them a different way — model-only, with
+   the speed held and only the row swapped.
+
+## 2. Part B — what the clamp costs the design, with only measured rows
+
+**`plantAt`'s `speed` is NOT clamped.** V enters the kinematic rows at its true value (`v * slipAcc`, the feet
+station's lever, `boardDerivatives(scaled, speed, 0.236)`); only the twelve water derivatives, `boardInertiaAt` and
+`lab.drag` are pinned to row '4'. So "what does the clamp cost" is exactly "how far does the design move when the row
+the clamp lands on moves", and the honest way to ask it is to swap row '4' for the **next rows the table actually
+measured** — 4.5, 5 and 6 m/s — holding V at 1.16 and 1.31. **No row is invented and none is designed on.**
+`docs/research/new-rider/3.4/floor.ts`, dump `results/34k/34k-design-sensitivity.jsonl`.
+
+**The control passes first:** the shipped design reproduces 3.4j's figures exactly — `K_ankle[θ]` 6.082 / 7.006 /
+5.159 and `K_ankle[β]` 2.461 / 3.974 / 3.280 at 1.31 m/s, and 0.927 / 1.048 / 1.093 and 0.433 / 0.586 / 0.646 at
+6.47. **And the 6.47 m/s cells do not move by a digit under any swap**, which is the negative control the swap
+needs: it touches only what the clamp touches.
+
+At **1.31 m/s** (tall / crouch / compress; one design per cell, a model read, no distribution):
+
+| row the clamp lands on | `K_ankle[β]` | `K_ankle[θ]` | `K_twist[θ]` |
+| --- | --- | --- | --- |
+| **'4' (shipped)** | **2.461 / 3.974 / 3.280** | **6.082 / 7.006 / 5.159** | −1897.5 / −520.2 / **+99.8** |
+| '4.5' | 0.772 / 1.004 / 1.048 | 2.714 / 2.551 / 2.275 | −853.1 / −578.1 / −383.7 |
+| '5' | 0.896 / 0.819 / 0.709 | 2.968 / 2.297 / 1.844 | −568.6 / −339.7 / −217.0 |
+| '6' | 1.305 / 1.291 / 1.070 | 3.448 / 3.148 / 2.590 | −918.3 / −477.1 / −230.2 |
+
+At **1.16 m/s** the same shape: `K_ankle[β]` 4.389 / 3.713 / 2.485 shipped against 0.975 / 1.196 / 1.180 at '4.5';
+`K_ankle[θ]` 9.908 / 7.141 / 4.528 against 3.146 / 2.899 / 2.496.
+
+**The cost, stated:** moving the clamped row by the table's own smallest step — 0.5 m/s, to the next measured row —
+**cuts the shipped gain on the slip by a factor of 2.5–4.0 and the gain on the bank by 2.2–2.8**, and in Compress at
+1.31 m/s it **flips the sign of the twist gain** (+99.8 → −383.7). The three swap rows agree with each other within
+about 1.8× and disagree with the shipped row by 2.5–4×, so **the shipped low-speed design is not bracketed by its
+neighbours: it is an outlier produced by one row.**
+
+**And the mechanism is visible in the table itself, which is the part that makes this more than a sensitivity.** Row
+'4' is the table's own anomaly: its comment records **trim 46.4°, draft 0.513 m** — a board that is not planing but
+half sunk — and several of its derivatives have the opposite sign to the entire rest of the table. The yaw moment per
+radian of slip runs **+143.8 at 4 m/s, +41.3 at 4.5, −28.6 at 5, −161.0 at 6** and stays negative to 12; the roll
+moment per radian of roll is **−37.2 at 4** against −98.0 at 4.5 and 5. **So the clamp does not extrapolate the
+planing table downward. It pins every sub-4 m/s design to the single row where the hull has changed regime and the
+signs have turned over** — which is exactly the shape of Part A's finding that what breaks under the clamp is the
+*sign* of the side force and the yaw moment, not their size.
+
+**Where honest derivatives below 4 m/s do not exist, and I will not invent a row.** §3 is the measurement.
+
+## 3. The rig cannot measure below 4 m/s, because the board sinks
+
+`../roll-plant/plant.probe.ts` PART=captive, SPEEDS=1.16,1.31,2,3,4, dump `results/34k/plant-low-34k.jsonl`.
+
+**The pipeline is verified against the published row before anything new is read.** Group `all`, the `Kdeck` column,
+the **1° roll** case, the **1° slip** case, the **−0.1 rad/s yaw-rate** case and the **mean of the two
+`rollRate-deck`** cases reproduce `PLANT_SPEEDS['4']`'s `roll`, `slip` and `yaw` **exactly** off the stored
+`3.2/results/plant-speeds.jsonl` (−37.2, −177.6, −268.7 / 143.8, 343.8, −63.0 / −18.7, 43.0, −61.3), and the `rate`
+triple exactly too (−7.69, −8.0, −4.33). A **fresh** run at 4 m/s reproduces roll, slip and yaw exactly and the
+roll-rate triple to 2–3 % (−7.55, −8.0, −4.20) — so eleven of the twelve are reproducible to the digit and the
+twelfth to a few per cent, and the twelfth is the one the 3.2 README already records a harness fix for.
+
+**Then the finding.** The rig's steady glide (2.5 s of tow, roll / yaw rate / slip held, **pitch and heave free**):
+
+| v m/s | trim ° | draft m |
+| --- | --- | --- |
+| 4.00 | 46.41 | 0.5130 |
+| 3.00 | **90.00** | **3.0021** |
+| 2.00 | **90.00** | **3.0021** |
+| 1.31 | **90.00** | **3.0020** |
+| 1.16 | **90.00** | **3.0020** |
+
+`Flat` (`../roll-plant/plant.ts:16–25`) returns `waterDepth: 3`, `bedY: -3`. **A draft of 3.002 m at 90° of trim is the
+board stood on its end and sunk through the lab's bed**, and the same number at four different speeds is the bed, not a
+balance. The physics is not a bug: 73 kg of rider on a 2.54 kg board cannot be held up by a surfboard's displacement,
+so below the speed at which the hull makes dynamic lift the assembly has **no equilibrium at all** — row '4' is already
+46° of trim and half a metre of draft, and 0.5 m/s slower there is no trim point to take a derivative about.
+
+**So "extend the table downward" is not a small job, and the four low-speed triples the probe prints are not a row.**
+They are recorded in `results/34k/34k-force-ratios.txt` §A3 only so nobody re-runs the rig expecting one, and **they
+must not be put in `PLANT_SPEEDS`.**
+
+**What it would take to get an honest sub-4 m/s row, in order of cost:**
+1. **A rider that floats.** The lab's rider is a rigid point mass; a real surfer at 1.3 m/s is mostly *in* the water
+   and displaces his own weight, which is why he does not sink. A `RiderKind` whose weight is partly carried by its own
+   buoyancy would have a trim point at 1.3 m/s. This is the physically right instrument and the largest change.
+2. **Derivatives on the wave face instead of flat water.** The game's board at 1.3 m/s is on a sloping, moving face,
+   not on a flat lake, and `speedUsed` is already relative to the local flow. A captive hold in `FaceWater` would be
+   measuring the water the board is actually in. **Cheapest open question first:** the mount dumps carry no draft or
+   trim column, so **nobody knows whether the game's board at `speedUsed` ≈ 1.3 m/s is planing or half sunk.** If it is
+   half sunk, row '4' may be the *closest* row the table owns and the clamp is less wrong than §2's sensitivity
+   suggests. Adding a draft/trim column to the ride dump is one run and should come before any table work.
+3. **System identification from the ride itself** — the force-against-force columns of `3.3/plant.ts` are already most
+   of this; kept per tick they would give the derivatives at the states the rider actually visits.
+
+## 4. Part C — is this plausibly the low-speed fall, and what would refute it
+
+**What it predicts, if it is a cause:** in the band below ~4 m/s the loop feeds the ankle back on a side force whose
+sign is wrong more often than right, so the command should be **wrong-way as often as it is late** — the rider should
+go over *toward* the lean rather than merely fail to catch it, and the fall should be the "sudden into the face" kind
+rather than the "slow stall" kind. It predicts a **discontinuity at 4 m/s**, not a trend: rides entered at 4.5 m/s and
+above should not show it, and 4.435 m/s arms (82 %, 75 %, 67 % of ticks clamped) should sit between.
+
+**How the owner could tell, and it is a shot and not a probe:** ride Canyon with `?canyonWaves=true` and take off
+**twice at a crawl and twice with speed already made**, same spot. If the slow take-offs drop him in a way the fast
+ones do not — going over toward his own lean within the first second, rather than stalling — that is the shape. **If
+both feel the same, this is not it.**
+
+**What refutes it outright, and either is cheap:**
+- **The honest band already falls.** 420 arm-rows and 33 335 live ticks with **no clamped tick**, a side force right to
+  7–23 % with the sign right on 92–98 %, and the rider falls in all of them. So the clamp is **already refuted as the
+  phenomenon** and can only be a term in the low-speed cell.
+- **The §3 open question.** If the game's board at `speedUsed` ≈ 1.3 m/s turns out to be half sunk at 40–50° of trim,
+  row '4' is the nearest honest row the table has and §2's 2.5–4× is an overstatement of the clamp's error. One dump
+  column decides it.
+
+## 5. Part D — the classification, exactly
+
+**Extending `PLANT_SPEEDS` downward, or measuring derivatives below 4 m/s, is (a): a model-only change.** Traced, not
+asserted:
+
+- `PLANT_SPEEDS` and `labAt` are read by **`plantAt` alone**, and `plantAt` is called from exactly two places in
+  shipped code, both inside `predictiveBalance.ts` (`:1201`, `:1206`, in `PredictiveController`). A grep of `src/` and
+  `server/` for `labAt`, `PLANT_SPEEDS` and `plantAt(` finds **no other consumer** — the only other hits are
+  `predictiveBalance.test.ts`.
+- From there the table reaches `continuousPlant` → `discretise` → Φ, Γ, **K** and **L**, and nothing else. **No water
+  force in the game is computed from it.** The game's water forces come from `BoardBody`'s own ledgers, which is why
+  Part A can put the two side by side as model against game.
+- The only thing that changes outside the model is the **ankle's commanded rest angle**, and the ankle is a real spring
+  whose torque is already paired by its reaction on the board's roll row (`coupleStanding`). **No force is written
+  down, no moment appears without a reaction, and no kinematic prescription is realised by whatever force it takes.
+  It is not a hidden motor.**
+- **This is the same shape 3.4j classified and the same shape `?riderBody=two` has** — 3.4a's own scope line, "a change
+  of plant, not of controller". It is NOT the shape of the `θ_max = atan(v²/(g·R_min))` ask-cap, which changes the
+  **reference** the loop holds and is still waiting on the owner.
+
+**So the next round does not need the owner's ruling to change the table.** What it needs is §3's instrument, and that
+is a measurement problem, not a permission problem.
+
+## 6. What I refuted, and what I will not claim
+
+**Refuted, in my own brief:** nothing about the clamp — the brief's premise is right and verified twice (the floor, and
+`labAt`'s `Math.max`). But **one of its framings is wrong and should not be repeated**: the brief and 3.4j both say the
+advisor "puts that regime below planing entirely … so the clamped 4 m/s derivatives may describe water the board is
+not even in." The 4 m/s row is **not an extrapolation of the planing rows** — it is a *measured* row, taken at 46.4°
+of trim and 0.513 m of draft, i.e. **measured in exactly the non-planing regime the advisor describes**. The fault is
+not that row '4' describes planing water; it is that row '4' is the table's **sign-turnover row** and the clamp makes
+every speed below 4 m/s inherit it (§2). Those are different faults with different fixes.
+
+**I will not claim:**
+- that the clamp causes the falls. It cannot: 626 of 626, and the honest band's 277 arms fall with a model that is
+  right. **At most the low-speed cell.**
+- that the side force's sign share survives conditioning on magnitude. Not measured; §1 says what it would take.
+- that an honest sub-4 m/s row exists. §3 says it does not, with the rig we have.
+- anything about the hull's ≈100 N·m/rad, the 70° clamp, the wave, the placement, the ankle's range, or "the rider is
+  blind to the across acceleration" (3.4j: present, correctly signed, 95.8–96.7 % of the bank row). None re-opened.
+- any comparison against the old rider's benchmark. Retired by 3.4y and not used here.
+
+## 7. What this round did NOT do
+
+- **Shipped nothing. No byte under `src/` or `server/` is changed**, so there is no switch to add, no default to keep
+  and nothing to byte-check. The two instruments are `3.4/floor.ts` (model only, and it restores `PLANT_SPEEDS` and
+  prints the restored row so a reader can see it) and `../roll-plant/plant.probe.ts` PART=captive, unmodified, at new
+  speeds.
+- No ride and no fall counts of its own: Part A reads 34h's and 34i's dumps.
+- Did not build the ask-cap, and did not write a row into `PLANT_SPEEDS`.
+
+## 8. Files (3.4k)
+
+- `3.4/floor.ts` — Part B, the design's sensitivity to the row the clamp lands on. Model only.
+- `3.4/results/34k/34k-design-sensitivity.jsonl` — its dump, 36 designs + the restore check.
+- `3.4/results/34k/plant-low-34k.jsonl` — the captive rig at 1.16, 1.31, 2, 3 and 4 m/s (`../roll-plant/plant.probe.ts`
+  PART=captive, unmodified).
+- `3.4/results/34k/34k-force-ratios.txt` — Part A §A1/§A2 in full (eighteen banded rows and three at the owner's own
+  speeds), the derivative pipeline's verification against row '4', and §A3's sunk-board table.
+
+## 9. For the owner, in plain words
+
+**Your balance is designed on a table of how the water pushes the board, and that table starts at 4 m/s. Below that it
+just re-uses the 4 m/s line. At the speed you fall at — about 1.2 m/s — the sideways push the balance *thinks* the
+water is making is about twice as big as the push the game actually makes, and it points the wrong way more often than
+the right way. Where the table is honest it is right to about a tenth and points the right way nineteen times in
+twenty.**
+
+**But this is not why you fall.** The rides that never touch the clamp — four hundred of them — fall too, with a
+model that is right. So fixing this would fix the slow take-off and leave the rest.
+
+**The shot that would tell us:** Canyon, `?canyonWaves=true`, two take-offs at a crawl and two with speed already
+made, from the same spot. **If the slow ones drop you by throwing you over toward your own lean inside the first
+second and the fast ones do not, this is a real part of it. If they feel the same, it is not, and we should say so and
+move on.**

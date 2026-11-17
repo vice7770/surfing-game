@@ -1,0 +1,37 @@
+{"tag":"shipped(labAt clamps to row 4)","v":1.16,"stance":"tall","Kank_theta":9.908,"Kank_beta":4.389,"Kank_phi":-0.156,"Kank_r":-1.129,"Ktw_theta":-1629.755,"Ktw_beta":-921.394}
+{"tag":"shipped(labAt clamps to row 4)","v":1.16,"stance":"crouch","Kank_theta":7.141,"Kank_beta":3.713,"Kank_phi":-0.031,"Kank_r":-0.942,"Ktw_theta":201.163,"Ktw_beta":53.186}
+{"tag":"shipped(labAt clamps to row 4)","v":1.16,"stance":"compress","Kank_theta":4.528,"Kank_beta":2.485,"Kank_phi":0.007,"Kank_r":-0.609,"Ktw_theta":460.259,"Ktw_beta":237.814}
+{"tag":"shipped(labAt clamps to row 4)","v":1.31,"stance":"tall","Kank_theta":6.082,"Kank_beta":2.461,"Kank_phi":-0.397,"Kank_r":-0.568,"Ktw_theta":-1897.517,"Ktw_beta":-1218.562}
+{"tag":"shipped(labAt clamps to row 4)","v":1.31,"stance":"crouch","Kank_theta":7.006,"Kank_beta":3.974,"Kank_phi":-0.137,"Kank_r":-0.904,"Ktw_theta":-520.163,"Ktw_beta":-524.018}
+{"tag":"shipped(labAt clamps to row 4)","v":1.31,"stance":"compress","Kank_theta":5.159,"Kank_beta":3.28,"Kank_phi":-0.018,"Kank_r":-0.718,"Ktw_theta":99.781,"Ktw_beta":-95.529}
+{"tag":"shipped(labAt clamps to row 4)","v":6.47,"stance":"tall","Kank_theta":0.927,"Kank_beta":0.433,"Kank_phi":-0.613,"Kank_r":-0.144,"Ktw_theta":-499.736,"Ktw_beta":-395.052}
+{"tag":"shipped(labAt clamps to row 4)","v":6.47,"stance":"crouch","Kank_theta":1.048,"Kank_beta":0.586,"Kank_phi":-0.714,"Kank_r":-0.135,"Ktw_theta":-426.685,"Ktw_beta":-387.158}
+{"tag":"shipped(labAt clamps to row 4)","v":6.47,"stance":"compress","Kank_theta":1.093,"Kank_beta":0.646,"Kank_phi":-0.798,"Kank_r":-0.118,"Ktw_theta":-353.234,"Ktw_beta":-342.225}
+{"tag":"row4:=4.5","v":1.16,"stance":"tall","Kank_theta":3.146,"Kank_beta":0.975,"Kank_phi":-0.588,"Kank_r":-0.27,"Ktw_theta":-930.244,"Ktw_beta":-459.763}
+{"tag":"row4:=4.5","v":1.16,"stance":"crouch","Kank_theta":2.899,"Kank_beta":1.196,"Kank_phi":-0.635,"Kank_r":-0.388,"Ktw_theta":-591.305,"Ktw_beta":-350.501}
+{"tag":"row4:=4.5","v":1.16,"stance":"compress","Kank_theta":2.496,"Kank_beta":1.18,"Kank_phi":-0.669,"Kank_r":-0.405,"Ktw_theta":-368.562,"Ktw_beta":-244.324}
+{"tag":"row4:=4.5","v":1.31,"stance":"tall","Kank_theta":2.714,"Kank_beta":0.772,"Kank_phi":-0.612,"Kank_r":-0.175,"Ktw_theta":-853.114,"Ktw_beta":-464.525}
+{"tag":"row4:=4.5","v":1.31,"stance":"crouch","Kank_theta":2.551,"Kank_beta":1.004,"Kank_phi":-0.674,"Kank_r":-0.282,"Ktw_theta":-578.106,"Ktw_beta":-389.276}
+{"tag":"row4:=4.5","v":1.31,"stance":"compress","Kank_theta":2.275,"Kank_beta":1.048,"Kank_phi":-0.723,"Kank_r":-0.315,"Ktw_theta":-383.69,"Ktw_beta":-302.393}
+{"tag":"row4:=4.5","v":6.47,"stance":"tall","Kank_theta":0.927,"Kank_beta":0.433,"Kank_phi":-0.613,"Kank_r":-0.144,"Ktw_theta":-499.736,"Ktw_beta":-395.052}
+{"tag":"row4:=4.5","v":6.47,"stance":"crouch","Kank_theta":1.048,"Kank_beta":0.586,"Kank_phi":-0.714,"Kank_r":-0.135,"Ktw_theta":-426.685,"Ktw_beta":-387.158}
+{"tag":"row4:=4.5","v":6.47,"stance":"compress","Kank_theta":1.093,"Kank_beta":0.646,"Kank_phi":-0.798,"Kank_r":-0.118,"Ktw_theta":-353.234,"Ktw_beta":-342.225}
+{"tag":"row4:=5","v":1.16,"stance":"tall","Kank_theta":3.103,"Kank_beta":0.905,"Kank_phi":-0.58,"Kank_r":-0.209,"Ktw_theta":-546.602,"Ktw_beta":-213.628}
+{"tag":"row4:=5","v":1.16,"stance":"crouch","Kank_theta":2.336,"Kank_beta":0.807,"Kank_phi":-0.624,"Kank_r":-0.285,"Ktw_theta":-324.755,"Ktw_beta":-137.293}
+{"tag":"row4:=5","v":1.16,"stance":"compress","Kank_theta":1.837,"Kank_beta":0.684,"Kank_phi":-0.65,"Kank_r":-0.303,"Ktw_theta":-209.334,"Ktw_beta":-79.862}
+{"tag":"row4:=5","v":1.31,"stance":"tall","Kank_theta":2.968,"Kank_beta":0.896,"Kank_phi":-0.591,"Kank_r":-0.156,"Ktw_theta":-568.646,"Ktw_beta":-241.935}
+{"tag":"row4:=5","v":1.31,"stance":"crouch","Kank_theta":2.297,"Kank_beta":0.819,"Kank_phi":-0.651,"Kank_r":-0.233,"Ktw_theta":-339.705,"Ktw_beta":-163.961}
+{"tag":"row4:=5","v":1.31,"stance":"compress","Kank_theta":1.844,"Kank_beta":0.709,"Kank_phi":-0.689,"Kank_r":-0.258,"Ktw_theta":-216.963,"Ktw_beta":-103.985}
+{"tag":"row4:=5","v":6.47,"stance":"tall","Kank_theta":0.927,"Kank_beta":0.433,"Kank_phi":-0.613,"Kank_r":-0.144,"Ktw_theta":-499.736,"Ktw_beta":-395.052}
+{"tag":"row4:=5","v":6.47,"stance":"crouch","Kank_theta":1.048,"Kank_beta":0.586,"Kank_phi":-0.714,"Kank_r":-0.135,"Ktw_theta":-426.685,"Ktw_beta":-387.158}
+{"tag":"row4:=5","v":6.47,"stance":"compress","Kank_theta":1.093,"Kank_beta":0.646,"Kank_phi":-0.798,"Kank_r":-0.118,"Ktw_theta":-353.234,"Ktw_beta":-342.225}
+{"tag":"row4:=6","v":1.16,"stance":"tall","Kank_theta":4.092,"Kank_beta":1.422,"Kank_phi":-0.688,"Kank_r":-0.396,"Ktw_theta":-893.942,"Ktw_beta":-206.327}
+{"tag":"row4:=6","v":1.16,"stance":"crouch","Kank_theta":3.456,"Kank_beta":1.291,"Kank_phi":-0.758,"Kank_r":-0.336,"Ktw_theta":-406.627,"Ktw_beta":-25.28}
+{"tag":"row4:=6","v":1.16,"stance":"compress","Kank_theta":2.711,"Kank_beta":1.011,"Kank_phi":-0.773,"Kank_r":-0.272,"Ktw_theta":-169.455,"Ktw_beta":81.512}
+{"tag":"row4:=6","v":1.31,"stance":"tall","Kank_theta":3.448,"Kank_beta":1.305,"Kank_phi":-0.669,"Kank_r":-0.363,"Ktw_theta":-918.279,"Ktw_beta":-251.11}
+{"tag":"row4:=6","v":1.31,"stance":"crouch","Kank_theta":3.148,"Kank_beta":1.291,"Kank_phi":-0.755,"Kank_r":-0.323,"Ktw_theta":-477.091,"Ktw_beta":-75.165}
+{"tag":"row4:=6","v":1.31,"stance":"compress","Kank_theta":2.59,"Kank_beta":1.07,"Kank_phi":-0.783,"Kank_r":-0.266,"Ktw_theta":-230.192,"Ktw_beta":44.478}
+{"tag":"row4:=6","v":6.47,"stance":"tall","Kank_theta":0.927,"Kank_beta":0.433,"Kank_phi":-0.613,"Kank_r":-0.144,"Ktw_theta":-499.736,"Ktw_beta":-395.052}
+{"tag":"row4:=6","v":6.47,"stance":"crouch","Kank_theta":1.048,"Kank_beta":0.586,"Kank_phi":-0.714,"Kank_r":-0.135,"Ktw_theta":-426.685,"Ktw_beta":-387.158}
+{"tag":"row4:=6","v":6.47,"stance":"compress","Kank_theta":1.093,"Kank_beta":0.646,"Kank_phi":-0.798,"Kank_r":-0.118,"Ktw_theta":-353.234,"Ktw_beta":-342.225}
+{"restored":{"roll":[-37.2,-177.6,-268.7],"slip":[143.8,343.8,-63],"yaw":[-18.7,43,-61.3],"rate":[-7.69,-8,-4.33],"drag":0.2312}}
