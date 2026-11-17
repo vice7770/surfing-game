@@ -1086,3 +1086,69 @@ and explicitly refused to quote the 3 600-step reference because a different ste
 3. **No fall count moves anywhere in this round.** The acceptance bar is untouched: Compress still falls.
 4. **Nothing else about the ride changes** — the three published reference numbers are the same on the new plant, and
    the Canyon sea is byte-identical at the folder's own 3 600-step reference.
+---
+
+# The rebase onto 3.5a, and the seatbelts re-run on the rebased tree (2026-11-17)
+
+**Why this section exists.** Every number steps 3.5b and 3.5c published was taken on a tree based at **183c4828**.
+PR **#389** (step 3.5a, the ask-cap) then squash-merged to `main` as **660cc94e**, and PR #392 stopped applying:
+**nine files conflicted, seven of them source.** A seatbelt measured on a different base is not a seatbelt, so all of
+them were re-run on the rebased tree. Full tables in `3.5/results/35c-rebase-seatbelts.txt`.
+
+## What the conflicts were, and that nothing was chosen between
+
+Both rounds add a dev switch, so both edit the same anchors — the import list and the switch assertions in
+`PhysicalMode.test.ts`, the roll-call comment and the `undefined` pin list in `main.ts`, the `SurfZoneConfig`
+passthrough in `SurfZoneRunner.ts`, and the options plumbing in `AttachedRider`, `RideSession` and
+`SurfZoneSimulation`. **Every conflict was additive and both sides were kept.** The resolved tree is a strict union:
+**every line either side deletes is one the OTHER side replaced in place**, checked line by line, and the switch
+order is `bankClamp, askCap, stanceDeep, deepen, buoyFrame` in every list that carries it.
+
+`AttachedRider.ts` was the one to be careful with, because #389 refactored `prepareBank` around new `askRadius` and
+`askUngated` fields while #392 touched the stance and plant plumbing. **Main's `askCap` code there is byte-identical
+to main's own** — `askRadius`, `askUngated`, `prepareBank`'s `most`/`held`/`want` and `leanProbe`'s three new columns
+— and 3.5c's five policy lines all survive (`DEFAULT_WEIGHTS.stanceDeep = true` and both `?? true` read sites).
+
+`3.5/README.md` was an add/add conflict: `main` held two concatenated documents (3.5d's, then 3.5a's) and the branch
+held its own. **The branch's is appended, not interleaved** — main's 709 lines and the branch's 373 are both present
+whole. Nothing was dropped.
+
+**`main` moved again mid-round**, from 660cc94e to **73b17ddb**, which touches only
+`.claude/skills/surf-video-read/SKILL.md`. `src/` and `docs/research` are byte-identical across that step, so every
+figure below stands on both.
+
+## The seatbelts, re-measured
+
+| seatbelt | on the rebased tree | verdict |
+|---|---|---|
+| **`f73-l`** | **18 of 18, 0.617–2.533 s, median 1.450 s** | the published figure, to the digit |
+| **`s16-l`** | **18 of 18, 0.500–6.233 s, median 1.033 s** | the published figure, to the digit |
+| **`f73-g`** | **24 of 24, 1.667–5.183 s, median 4.650 s** | the published figure, to the digit |
+| **`?stanceDeep=off` vs main's own default** | **60 runs × 388 columns, 0 mismatches** | byte-identical |
+| the flip still live (default vs `off`) | 7 / 4 / 10 rows of 18 / 18 / 24 move | no third behaviour |
+| **`?askCap` inert, stick centred, row ON** | only `askCapMed`/`askHeldMed` move; `4.5` moves `askCapMed` alone | **#389's claim 3, reproduced** |
+| the ask-cap arm, stick over, old plant both sides | 18 runs × 388 columns, 0 mismatches | identical to main's |
+| **Canyon B, 3 600 steps, fresh spin-up** | **`a367d938f15fa934` / `9e5831f80e38abd9`** | **the reference pair does not move** |
+
+So 3.5c's two central findings both survive #389 landing underneath them: the arms **re-base to themselves**, and
+`?stanceDeep=off` reaches the old plant. The second is now measured against a *stronger* reference than 3.5c had —
+not its own pre-flip default, but **`main` with the branch absent altogether**, two bundles from two trees.
+
+**The two switches do not interact.** With `stanceDeep` default-on, `?askCap` at all five radii still moves nothing
+but the two instrument columns that describe the cap, exactly as #389 measured it. The positive control says the cap
+is not merely dead: with the stick hard over, `ASKCAP=2` moves all 18 rows and the median ride 0.850 → 0.817 s.
+
+**A method error worth recording, because it first looked like a failed seatbelt.** My first version of the `askCap`
+check compared **whole rows** and read all 18 as differing. #389 never claimed whole-row identity with the switch
+*set* — it claimed identity on **every physics column**, with the cap's own instrument columns free to move. The test
+was wrong, not the tree; the column-wise check is the claim #389 actually made.
+
+**Suites, all `--maxWorkers=1`:** `src/physics` **58 files, 638 passed | 21 expected fail (659)**; `src/scene/rig` +
+`src/game` **70 files, 741 passed**; `src/wave/SurfZoneRunner.test.ts` by hand **43/43**; `tsc -b` **clean**. The
+rig+game **+1 against 3.5c's 740 is accounted for**: `PhysicalMode.test.ts` now holds 108 `it` blocks, 3.5c's 107
+plus the one `askCap` test #389 added. `src/wave/SurfZoneSimulation.test.ts` declares 644.5 minutes of per-test
+timeout and cannot gate anything; it was not run.
+
+**No hidden motors.** This round resolves conflicts and adds no force: no impulse, force, torque assignment, brake,
+damper or yaw moment on any added `src/` line, and the seven `clock|timer|fatigue|stamina` hits are all comment lines
+saying there is none.
