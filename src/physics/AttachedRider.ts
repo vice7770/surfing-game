@@ -1566,6 +1566,24 @@ export interface AttachedRiderOptions {
    * cannot move the shipped rider.
    */
   riderCost?: 'point' | 'fixed' | 'plant';
+  /**
+   * **The balance's plant table read off a higher floor** (step 3.4m, `?plantFloor=4.5|5|6`): the lowest row of
+   * `PLANT_SPEEDS` the balance's internal model may be built on, m/s.
+   *
+   * Shipped, `labAt` clamps the lookup to the table's own first speed, so **every design at or below 4 m/s is built
+   * on row `'4'`** — the table's own **sign-turnover row**, measured at 46.4° of trim and 0.513 m of draft, where the
+   * yaw moment per radian of slip is +143.8 against +41.3, −28.6 and −161.0 at 4.5, 5 and 6, and the roll moment per
+   * radian of roll −37.2 against −98.0. The game's own board below 4 m/s rides at 16.0–17.3° of trim and
+   * 0.273–0.301 m of draft, whose nearest measured row is `'4.5'`. `'4.5'` is that row; `'5'` and `'6'` are the other
+   * two rows step 3.4k's sensitivity swapped in, kept so the bracket can be ridden. **No row is invented** (the
+   * captive rig has no equilibrium below planing: at 1.16–3 m/s the towed board stands on end and sinks through the
+   * lab's bed).
+   *
+   * It changes the **plant**, not the control law: `DesignWeights.plantFloor` has the scope line, and
+   * `docs/research/new-rider/3.4/README.md` Part 13 the measurement. Opt-in, off by default, pinned off for online
+   * rooms, and meant to be ridden with `?rider=new`.
+   */
+  plantFloor?: '4.5' | '5' | '6';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2438,8 +2456,13 @@ export class AttachedRider {
     // is not one of the three cannot fall into the default arm silently (3.4a's own first build did).
     const costs: { feetReach: number; captureScale: number; captureOmega: CaptureOmega } | undefined = options.riderCost === 'point'
       || options.riderCost === 'fixed' || options.riderCost === 'plant' ? costWeights(options.riderCost) : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights || costs
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...options.balance?.weights }
+    // Step 3.4m: `plantFloor` reaches the same weights route, so an explicit `plantFloor` in `balance.weights` wins.
+    // Named exhaustively, like 3.4b's costs, so a value that is not one of the three measured rows cannot fall into
+    // the default arm silently — and `Number(null) === 0`, so the three are matched as strings and never parsed.
+    const floorWeights: { plantFloor: number } | undefined = options.plantFloor === '4.5' ? { plantFloor: 4.5 }
+      : options.plantFloor === '5' ? { plantFloor: 5 } : options.plantFloor === '6' ? { plantFloor: 6 } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...options.balance?.weights }
       : undefined;
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;

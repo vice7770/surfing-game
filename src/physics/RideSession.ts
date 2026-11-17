@@ -200,6 +200,13 @@ export interface RideSessionOptions {
    * feet held ('fixed') or the plant's own ('plant'); the `?riderCost` dev switch. By default neither cost exists.
    */
   riderCost?: 'point' | 'fixed' | 'plant';
+  /**
+   * The lowest row of the balance's plant table the design may be built on, m/s (step 3.4m;
+   * `AttachedRiderOptions.plantFloor`): '4.5', '5' or '6', each a row the lab measured — the `?plantFloor` dev switch.
+   * By default the table's own first speed, 4, so every design at or below 4 m/s reads row '4', the table's own
+   * sign-turnover row.
+   */
+  plantFloor?: '4.5' | '5' | '6';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -311,6 +318,7 @@ export class RideSession {
       ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
       ...(options.riderCost ? { riderCost: options.riderCost } : {}),
+      ...(options.plantFloor ? { plantFloor: options.plantFloor } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

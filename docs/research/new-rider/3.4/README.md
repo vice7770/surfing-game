@@ -6275,3 +6275,333 @@ ride to measure: only about a fifth to a third of those moments have the board s
 unchanged and still the thing that would settle it**: Canyon with `?canyonWaves=true`, two take-offs at a crawl and
 two with speed already made, same spot. If the slow ones throw you over **toward your own lean** inside the first
 second and the fast ones do not, this is real. If they feel the same, it is not, and we close the lead.
+
+# Part 13 — step 3.4m: the fix built, opt-in, and the measurement that refutes it
+
+**The eleven rounds before this one narrowed to one change, and this round built it: `?plantFloor=4.5|5|6`, an opt-in
+switch that stops a sub-4 m/s design inheriting row `'4'` of `PLANT_SPEEDS`. The default is byte-identical and that is
+measured, not asserted. And the primary metric says the change does not work: the sign-correct share of the model's
+side force before the fall moves 0.167 → 0.227 in crouch and 0.292 → 0.222 in compress, against the honest band's
+0.900 / 0.932 it was meant to reach, and in tall — the negative control — it falls from 0.824 to 0.083. The whole
+bracket (4.5, 5 and 6) is a null: nothing reaches 0.9.**
+
+**And the decisive read says it could not have worked, which is the round's real finding.** With the state held — the
+shipped ride's own ticks, row `'4'` swapped for row `'4.5'` in the model and nothing else — the sign of the side force
+flips on **4.1 % / 0.5 % / 0.0 %** of the clamped ticks (tall / crouch / compress) and the share moves
+**0.718 → 0.718, 0.519 → 0.514, 0.397 → 0.397**. Crouch's 0.167 and compress's 0.292 are **bit-identical** under the
+swap. The ride-side differences above are the *trajectory* changing, not the sign being repaired.
+
+**The mechanism, read off the table's own header and not off a comment: the side force has no sign turnover anywhere in
+the table.** Of the twelve derivatives exactly **two** change sign across the whole 4–12 m/s range, and **both are yaw
+moments** — N per radian of slip (+143.8, +41.3, −28.6, … −1115.5) and N per radian of roll rate (−7.69, −3.52, −1.63,
++0.87, … +8.01). **Not one of the four side-force derivatives changes sign at any row.** Y per radian of roll runs
+−177.6 → −395.3, Y per radian of slip +343.8 → +3741.4, Y per rad/s of yaw rate +43 → +117, Y per rad/s of roll rate
+−8.0 → −30.1. So **no choice of row can repair the sign of Y**; it can only re-weight four terms whose signs are
+fixed, and the weights barely move (slipSide/heelSide is −1.936 at row `'4'` against −1.684 at `'4.5'` and −1.952 at
+`'5'`). The brief's chain — "row `'4'` is the table's sign-turnover row" ∧ "in the clamped band the model's side force
+points the wrong way" ⟹ "fix the row and fix the sign" — joined two true facts that share no mechanism.
+
+**Nothing here re-opens** the hull's ≈100 N·m/rad, the 70° clamp, the wave, the placement, the ankle's range, or 3.4j's
+"the rider is not blind to the across acceleration". **The constraint is carried unchanged: 3.4h measured 626 of 626
+falls over 1–10.4 m/s and the honest band falls with a model that is right, so the clamp was already refuted as the
+cause of the falls.** Every arm here still falls in every run at every floor, which is the expected and accepted
+result.
+
+## 0. What was built, by line
+
+One mechanism, one constant: **the lowest row of `PLANT_SPEEDS` the lookup may land on.**
+
+- `predictiveBalance.ts` `labAt(speed, floor?)` — the lower clamp becomes `floor ?? speeds[0]`, itself clamped into the
+  table. Omitted, it is 4 and the function is what it was.
+- `plantAt(speed, depth, { plantFloor })` — passes it to `labAt` and **nothing else**: `speed` still enters the
+  kinematic rows, `railCorrection`/`frozenCorrection`, `boardInertiaAt` and `heavePlantAt` at its true value.
+- `DesignWeights.plantFloor?: number` — so it travels the route `riderBody` travels, and `scheduledDesign`'s cache key
+  already carries the weights, so two designs cannot be confused.
+- `AttachedRiderOptions.plantFloor?: '4.5' | '5' | '6'` → the weights, named exhaustively (`Number(null) === 0`, so the
+  three are matched as strings and never parsed), with an explicit `plantFloor` in `balance.weights` still winning.
+- `RideSessionOptions` → `SurfZoneConfig` → `SurfZoneRunner`'s passthrough → `PhysicalMode.ts`'s `plantFloorSwitch()`
+  with its comment line in the switch list, its own test, and **`plantFloor: undefined` in `main.ts`'s online-room
+  overrides**, which the test asserts by reading `main.ts`.
+
+**Why the floor and not a draft lookup**, which is what the brief suggested first. Selecting the row by the board's own
+measured draft is **worse supported by this folder's own numbers**: 3.4l §2 item 4 measured the game's board in the
+*honest* band at **0.039–0.068 m of draft and 3.0–4.5° of trim**, whose nearest rows are **`'8.5'`–`'12'`** — so a
+draft-keyed lookup would hand the controller the 8.5–12 m/s derivatives at 6 m/s and change the one band where the
+model is right to 7–23 % with the sign right on 92–98 %. It would also need the board's live draft plumbed into a
+controller that has no such input. The floor delivers the row the draft evidence picks (modal nearest row `'4.5'` per
+tick, all three stances, below 4 m/s) exactly where the evidence is, with one constant and no new input. `5` and `6`
+are offered beside it because those are the other two rows 3.4k's sensitivity swapped in, so the bracket can be ridden.
+
+**It is (a), a model-only change, and not a hidden motor** — 3.4k Part D's classification is carried, re-checked and
+unchanged: the table is read by `plantAt` alone, `plantAt` by this file alone, and from there it reaches Φ, Γ, K and L
+and nothing else. The only thing that changes outside the model is the ankle's **commanded rest angle**, and the ankle
+is a real spring already paired by its reaction on the board's roll row. **The `θ_max` ask-cap is NOT in this change.**
+
+## 1. The default is byte-identical, measured twice
+
+**On the model** (`3.4/floor-switch.ts`): `labAt(v)` and `plantAt(v, d, { rail })` with no floor against the same calls
+with `plantFloor: 4` — the table's own first speed, which is what the shipped clamp lands on — over 21 speeds from 0 to
+99 m/s, three stances and two rails: **168 comparisons, identical bit for bit, largest difference 0.** And the whole
+gain schedule, which is what the game reads: **17 speeds × 3 depths × 6 rails = 306 cells × 767 numbers a cell,
+identical bit for bit, largest difference 0.**
+
+**On the ride** (`3.3/plant.ts`, the switch unset): `f73-l` reproduces step 3.4i's and step 3.4l's own published arm
+**exactly — 18 of 18 fell, 0.617–2.533 s, median 1.450 s.** The two counterfactual column trios this round adds to the
+probe (§3, §4c) move no ride: the same arm prints the same table with them on.
+
+**And the switch is step 3.4k's own swap, verified against it.** `plantFloor: 5` and `plantFloor: 6` reproduce
+`floor.ts`'s `row4:=5` and `row4:=6` arms **bit for bit**; `plantFloor: 4.5` reproduces `row4:=4.5` to
+**3.6 × 10⁻¹⁵** — thirteen significant figures — because the shipped lookup reaches row `'4.5'` as an f = 1
+interpolation from row `'4'` rather than as the row itself, which is exactly how the shipped design at 4.5 m/s reaches
+it too. So the switch at floor 4.5 hands a sub-4 design the same numbers the shipped 4.5 m/s design is built on.
+
+## 2. The primary metric, ride against ride — the bracket is a null
+
+Step 3.4l's own arms, step 3.4l's own cuts, read the same way (`results/34m/34m-read.py`, `bracket.py`). **Every count
+is live ticks, per stance, never pooled.** `speedClamped` keeps the **shipped** 4–12 m/s definition in every arm, so
+"clamped" names the same band of speeds either side of the switch. **The rides are not the same ticks across arms —
+the switch changes the design, so it changes the trajectory — which is why every n is printed.**
+
+**Cut A — clamped (< 4 m/s), the board inside 25° of roll. The sign-correct share of the side force:**
+
+| stance | shipped (floor 4) | floor 4.5 | floor 5 | floor 6 |
+| --- | --- | --- | --- | --- |
+| tall | **0.718** (n = 241) | 0.516 (161) | 0.453 (150) | 0.528 (161) |
+| crouch | **0.519** (216) | 0.487 (156) | 0.497 (143) | 0.537 (147) |
+| compress | **0.397** (184) | 0.441 (152) | 0.438 (137) | 0.489 (135) |
+
+**Cut B — the same, at or below 1.6 m/s: the owner's own cell, and thin (12–27 ticks a stance):**
+
+| stance | shipped | floor 4.5 | floor 5 | floor 6 |
+| --- | --- | --- | --- | --- |
+| tall | **0.824** (n = 17) | 0.083 (12) | 0.083 (12) | 0.000 (15) |
+| crouch | **0.167** (24) | 0.227 (22) | 0.333 (18) | 0.316 (19) |
+| compress | **0.292** (24) | 0.222 (27) | 0.294 (17) | 0.222 (18) |
+
+**Cut C — the honest band (4–12 m/s), the control that must not move:**
+
+| stance | shipped | floor 4.5 | floor 5 | floor 6 |
+| --- | --- | --- | --- | --- |
+| tall | 0.908 (n = 653) | 0.913 (589) | 0.901 (583) | 0.937 (586) |
+| crouch | 0.900 (862) | 0.916 (595) | 0.910 (590) | 0.931 (576) |
+| compress | 0.932 (588) | 0.940 (568) | 0.936 (566) | 0.957 (554) |
+
+**Read it in four sentences.** (1) **The target is not met**: crouch's 0.167 reaches 0.227–0.333 and compress's 0.292
+reaches 0.222–0.294, against the 0.900 / 0.932 the brief set, and on the larger cut A (n = 135–241 rather than 12–27)
+crouch moves −0.032 to +0.018 and compress +0.041 to +0.092. (2) **Tall, the negative control, gets worse and not
+better** — 0.718 → 0.453–0.528 on cut A and 0.824 → 0.000–0.083 on cut B, where 3.4l had already warned that tall's
+cut-B number rests on 17 ticks. (3) **The control holds**: the honest band does not move (0.90–0.96 throughout), as it
+must, because those ticks read the same rows at every floor. (4) **The magnitude gets worse, not better** — the
+median `|model/game|` on cut B runs 4.49 → 5.31 → 9.04 → 11.55 in crouch and 2.48 → 3.38 → 11.24 → 15.47 in compress,
+which is what Y per radian of slip growing from +343.8 to +1031.3 across those rows must do.
+
+**The fall counts, reported and not targeted.** Every arm still falls in every run at every floor: `f73-l` 18 of 18,
+`s16-l` 18 of 18, `s16-g` 24 of 24. The medians do not move at floor 4.5 (1.450, 1.033, 1.450 either way). **`s16-g` is
+byte-identical in its whole fall table** — 24 of 24 at 1.083–2.683 s, median 1.450, at floor 4.5 as shipped — because
+that arm's ticks are all in the honest band, which is the ride-side control on the switch's reach. What does change is
+the **tail**, for the worse: the longest ride on `s16-l` goes from **6.233 s to 1.417 s** and on `f73-l` from 2.533 to
+1.700. One run each; stated, not built on.
+
+## 3. The decisive read: the same ticks, the same state, the row swapped
+
+Ride-against-ride cannot separate "the row repaired the sign" from "the trajectory moved". So the probe now carries the
+row's own counterfactual **on every ride**: `yModelFloor` is the same three water loads from **the same tick's state**
+with the table read off a 4.5 m/s floor (`3.3/plant.ts`, one `plantAt` and one `loads` a tick, nothing else).
+
+**On the shipped ride's own ticks, with the state held:**
+
+| cut | stance | n | share, row `'4'` | share, row `'4.5'` | ticks whose sign FLIPS | `\|ratio\|` row `'4'` → `'4.5'` |
+| --- | --- | --- | --- | --- | --- | --- |
+| A clamped, `\|roll\|` ≤ 25 | tall | 241 | 0.718 | **0.718** | 0.041 | 0.916 → 1.210 |
+| | crouch | 216 | 0.519 | **0.514** | 0.005 | 1.470 → 1.976 |
+| | compress | 184 | 0.397 | **0.397** | 0.000 | 2.036 → 2.823 |
+| B clamped, ≤ 1.6 m/s | tall | 17 | 0.824 | 0.706 | 0.235 | 2.238 → 3.046 |
+| | crouch | 24 | 0.167 | **0.167** | 0.000 | 4.487 → 6.900 |
+| | compress | 24 | 0.292 | **0.292** | 0.000 | 2.481 → 3.315 |
+| C honest band | tall | 653 | 0.908 | 0.908 | 0.000 | 0.811 → 0.829 |
+| | crouch | 862 | 0.900 | 0.900 | 0.000 | 0.712 → 0.727 |
+| | compress | 588 | 0.932 | 0.935 | 0.003 | 0.700 → 0.706 |
+
+**The two numbers the brief asked to move — 0.167 and 0.292 — do not move by a digit under the change itself.** The row
+swap flips the sign on nought to four per cent of the clamped ticks, and the magnitude it does move it moves the wrong
+way (1.3–1.4× further from the game). On the floor-4.5 ride the same two columns are identical to each other, which is
+the internal check that `FLOOR=4.5` really reaches the probe's model.
+
+## 4. Why — and three things the chain had wrong
+
+**4a. Which derivatives turn over, read off `LabPlant`'s own `[N, Y, K]` ordering.** Each array is
+[yaw moment, side force, roll moment] per radian of roll, per radian of slip, per rad/s of yaw rate and per rad/s of
+roll rate (the type's own header). Over all seventeen rows:
+
+| per | channel | 4 | 4.5 | 5 | 6 | 12 | one sign over all 17 rows? |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| roll | N (yaw moment) | −37.2 | −98.0 | −98.0 | −105.4 | −161.0 | yes |
+| roll | **Y (side force)** | −177.6 | −326.6 | −361.0 | −395.3 | −395.3 | **yes** |
+| roll | K (roll moment) | −268.7 | −322.0 | −310.0 | −296.8 | −448.6 | yes |
+| slip | N (yaw moment) | +143.8 | +41.3 | −28.6 | −161.0 | −1115.5 | **NO — it turns over** |
+| slip | **Y (side force)** | +343.8 | +550.0 | +704.7 | +1031.3 | +3741.4 | **yes** |
+| slip | K (roll moment) | −63.0 | −191.4 | −272.7 | −411.4 | −1006.1 | yes |
+| yaw | N (yaw moment) | −18.7 | −3.8 | −3.3 | −7.6 | −34.4 | yes |
+| yaw | **Y (side force)** | +43.0 | +31.0 | +37.0 | +50.0 | +117.0 | **yes** |
+| yaw | K (roll moment) | −61.3 | −32.5 | −30.0 | −31.7 | −43.3 | yes |
+| rate | N (yaw moment) | −7.69 | −3.52 | −1.63 | **+0.87** | +8.01 | **NO — it turns over** |
+| rate | **Y (side force)** | −8.0 | −12.0 | −13.9 | −17.0 | −30.1 | **yes** |
+| rate | K (roll moment) | −4.33 | −1.51 | −0.84 | −0.62 | −6.15 | yes |
+
+**Two of twelve turn over and both are yaw moments.** And the slip's yaw moment turns over **between 4.5 and 5**, so
+row `'4.5'` is on the **same side of that turnover as row `'4'`** (+41.3 beside +143.8): the fix the eleven rounds
+converged on does not even cross the sign change it was named after. **The side force's four derivatives keep their
+signs at every row, so the sign of the model's side force is very nearly row-independent**, and §3 measures exactly
+that.
+
+**4b. And 3.4k's second anomaly is a column misread.** README Part 11 §2 says *"the roll moment per radian of roll is
+−37.2 at 4 against −98.0 at 4.5 and 5"*. **−37.2 is `roll[0]`, which by the table's own `[N, Y, K]` header is the YAW
+moment per radian of roll.** The roll moment per radian of roll is `roll[2]`: **−268.7 at 4 against −322.0 at 4.5 and
+−310.0 at 5** — a 20 % step and no anomaly at all. The number quoted is real and the name on it is wrong, and the
+sentence it supports ("several of its derivatives have the opposite sign to the entire rest of the table") survives
+only for the slip's yaw moment, where 3.4k's own figures are right. **Nineteenth column error in a fortnight, found by
+reading the type's header before quoting the array.**
+
+**4c. The shipped controller never designs at 1.31 m/s, so 3.4k's §2 sensitivity is not the shipped controller's.**
+`PredictiveController.blend` clamps the schedule's speed to `SCHEDULE_SPEEDS[0] = 4` and reads `scheduledDesign` at the
+**grid** speeds only, so the design every sub-4 m/s tick runs on is the **v = 4 column** — the plant at **V = 4 m/s**
+with row `'4'`'s derivatives, not the plant at V = 1.31 with row `'4'`'s derivatives. `floor.ts`'s
+`K_ankle[β]` 2.461 / 3.974 / 3.280 and `K_ankle[θ]` 6.082 / 7.006 / 5.159 at 1.31 m/s — this round reproduces them
+exactly, which is the control on the instrument — are the model read at **the tick's own V**, which is the right
+quantity for `3.3/plant.ts`'s `yModel` columns and therefore for the sign share. **They are not the gains the game
+runs.** The schedule's own 4.0 m/s column is:
+
+| the schedule's 4.0 m/s column | K_ankle[β] (tall / crouch / compress) | K_ankle[θ] | K_twist[θ] |
+| --- | --- | --- | --- |
+| **shipped (floor 4)** | **0.180 / 0.642 / 0.884** | **2.949 / 2.630 / 2.291** | −540.5 / −413.9 / −334.9 |
+| floor 4.5 | 0.303 / 0.319 / 0.294 | 2.045 / 1.769 / 1.526 | −381.1 / −254.7 / −188.4 |
+| floor 5 | 0.610 / 0.613 / 0.543 | 1.957 / 1.800 / 1.593 | −506.1 / −320.2 / −215.7 |
+| floor 6 | 0.429 / 0.611 / 0.678 | 0.942 / 1.152 / 1.229 | −601.6 / −499.6 / −396.0 |
+
+So the clamp's cost **to the design the game actually runs** is about **1.3–1.5× on the bank gain** and a slip gain that
+rises in tall and falls by about half in crouch and Compress — **not the 2.5–4.0× 3.4k published**, which is the cost at
+a design point the shipped controller never builds. **And the sign share is insensitive to this too**, which the probe
+now measures rather than argues: `yModelSched` is the same three loads at the same state with the plant built at the
+controller's own design speed, V = 4 (the twelve derivatives carry no V at all; `boardDerivatives`' yaw sweep over the
+feet station, `yawSide = Y_r + ahead·Y_β/V`, is the only term that does, and it is positive either way — +104.9 at
+V = 1.31 against +63.3 at V = 4 on row `'4'`). On the shipped ride's own clamped ticks the sign-correct share at the
+controller's own design point is **0.689 / 0.509 / 0.380** (n = 241 / 216 / 184) against **0.718 / 0.519 / 0.397** at
+the tick's own V — the same number to within two or three ticks in a hundred — and at or below 1.6 m/s
+**0.588 / 0.208 / 0.167** against 0.824 / 0.167 / 0.292 (n = 17 / 24 / 24). **So step 3.4l's sign finding transfers
+to the design the game actually builds, and this correction is about the magnitude only.** The median `|model/game|`
+at the design point is a little smaller (0.828 / 1.345 / 1.872 against 0.916 / 1.470 / 2.036 on cut A), which is the
+yaw sweep's V in the denominator.
+
+**4d. The secondary metric, and its negative control.** `K_ankle[β]`, `K_ankle[θ]` and `K_twist[θ]` at 1.31 m/s
+(`plantAt(1.31, …)`, the quantity above): shipped **2.461 / 3.974 / 3.280**, **6.082 / 7.006 / 5.159** and
+−1897.5 / −520.2 / **+99.8**; at floor 4.5 **0.772 / 1.004 / 1.048**, **2.714 / 2.551 / 2.275** and
+−853.1 / −578.1 / −383.7, so Compress's twist gain does flip sign as 3.4k said the row swap would.
+**And the 6.47 m/s cells do not move a digit at any floor** — 0.433 / 0.586 / 0.646 and 0.927 / 1.048 / 1.093 and
+−499.7 / −426.7 / −353.2, identical at floors 4, 4.5, 5 and 6. At the schedule level the same control is exact:
+**at floor 4.5 exactly 18 of 306 schedule cells move, and they are exactly the 18 below the floor** (the 4.0 m/s
+column, 3 depths × 6 rails); 36 of 306 at floor 5 and 72 of 306 at floor 6, each time exactly the cells below the
+floor, with the largest difference among the cells at or above the floor **0**.
+
+**4e. The schedule stays continuous across the floor**, which a bare "clamp the schedule to 4.5" would not: at the
+crouch's depth and no rail, `K_ankle[θ]` runs 2.6304 (every v ≤ 4) → 2.4712 → 2.2325 → 1.9938 → 1.8347 (4.5) shipped,
+and flat 1.7695 → 1.7825 → 1.8021 → 1.8216 → 1.8347 (4.5) at floor 4.5. The switch removes a 43 % ramp across 4 → 4.5
+and leaves no step anywhere.
+
+## 5. What I refuted, and what I will not claim
+
+**Refuted, in my own brief, and this is the round's work:**
+- **"The obvious candidate is to select the row by the board's own measured draft."** It is worse supported: in the
+  honest band the game's board's draft picks rows `'8.5'`–`'12'` at 6 m/s (3.4l §2 item 4), so a draft-keyed lookup
+  changes the one band whose model is right. §0 states it.
+- **"Row `'4'` is the table's own sign-turnover row [therefore] the controller's dominant term points the wrong way."**
+  The turnover is in the **yaw moment**, not the side force; **no side-force derivative changes sign at any row**; and
+  the turnover it does name lies between 4.5 and 5, so the fix does not cross it (§4a).
+- **"Target: move 0.167 and 0.292 toward 0.900 / 0.932."** Measured, and they do not move: under the change itself,
+  with the state held, they are bit-identical (§3).
+- **"Report tall too as a negative control — it should not get worse."** It gets worse, on both cuts (§2).
+- **3.4k §2's 2.5–4.0× as "what the clamp costs the design"**: the design it is measured on is not one the shipped
+  controller builds (§4c).
+- **3.4k §2's "the roll moment per radian of roll is −37.2 at 4"**: that is the yaw moment per radian of roll (§4b).
+
+**I will not claim:**
+- that the switch helps. It does not, on the metric this round was told to judge it by. Its one defensible use is as
+  the instrument that closed the lead, and as an A/B the owner can ride if they want to feel it.
+- that the switch is harmful beyond what is measured. The shortened tails are one run each on two arms; the fall counts
+  and the medians do not move; the honest band does not move.
+- that anything here moves the falls, in either direction. 3.4h's 626 of 626 stands and was never in question.
+- that tall's cut-B numbers (12–17 ticks) mean anything on their own. Cut A's tall (n = 161–241) is the one that says
+  tall gets worse.
+- anything about the hull's ≈100 N·m/rad, the 70° clamp, the wave, the placement, the ankle's range, or "the rider is
+  blind to the across acceleration". None re-opened. No comparison against the old rider's retired benchmark.
+- that an honest sub-4 m/s row exists. 3.4k §3 is untouched: no row was invented and the switch only ever selects
+  among rows the lab measured.
+
+## 6. What this round did NOT do
+
+- Did not build the `θ_max = atan(v²/(g·R_min))` ask-cap, and nothing here bounds a command.
+- Did not write a row into `PLANT_SPEEDS`, and did not touch any row's numbers.
+- Did not change `PredictiveController.blend`'s own clamp: the floor does its work inside `labAt`, which is why the
+  schedule's grid, the kinematic V and every cell at or above the floor are untouched.
+- Did not re-run the captive rig, did not ride `f73-g` (singular design partway through that cell, pre-existing).
+- Did not suspend or weaken any probe. The cuts, the window and the `speedClamped` definition are step 3.4l's own.
+
+## 7. The controls, listed
+
+1. The default, bit for bit, on the model (168 comparisons; 306 schedule cells × 767 numbers) and on the ride
+   (`f73-l` 18 of 18, 0.617–2.533 s, median 1.450 s, step 3.4i's published arm).
+2. `floor.ts`'s own figures reproduced exactly at 1.16, 1.31 and 6.47 m/s, so the instrument is 3.4j's and 3.4k's.
+3. The switch against 3.4k's row swap: bit-identical at floors 5 and 6, 3.6 × 10⁻¹⁵ at 4.5.
+4. The 6.47 m/s cells unmoved at every floor; the schedule cells at or above the floor unmoved bit for bit.
+5. `s16-g`'s whole fall table unmoved at floor 4.5 — the arm the switch cannot reach.
+6. The honest band's sign share unmoved (cut C).
+7. On the floor-4.5 ride, `yModel` and `yModelFloor` identical — the check that the probe's switch reaches its model.
+8. The Canyon byte check: **the branch's hashes are `main`'s to the digit.** Protocol
+   stated, since a fresh spin-up and an imported `--state` give different hashes: **fresh spin-up on both legs**, the
+   wrapper `globalThis.location = { search: '?canyonWaves=true' }` **prepended to the bundle**, the grid read as
+   **B, 400 × 451 = 180 400 cells** (not the default's 202 800), `--spot canyon --steps 3600`, and the
+   "spun up on the CPU in … s" line present on both (78.0 s on `main`, 45.0 s on the branch — the wall clock, which the
+   hash does not depend on). `main` **`a367d938f15fa934` / `9e5831f80e38abd9`**, the branch **the same two**, and that
+   pair is also the handoff's own recorded B reference. A second leg covers the one guard line added to `labAt` after
+   that bundle was built: **the `main` bundle, the branch bundle and the final branch bundle all give
+   `548f3db7ca81d898` / `475f8c56c9debccc`** from the same imported `.sea` over 240 steps.
+
+## 8. Files (3.4m)
+
+- `3.4/floor-switch.ts` — the model reads: the default's identity, the switch against 3.4k's swap, both gain
+  quantities, the negative control, the continuity across the floor, and §4a's derivative table. Model only.
+- `3.3/plant.ts` — the `FLOOR=4.5|5|6` switch and the two counterfactual column trios (`*ModelFloor`, `*ModelSched`).
+  Identity-checked against step 3.4i's published arm.
+- `3.4/results/34m/34m-sign-share-and-gains.txt` — every table above with every cut's populations.
+- `3.4/results/34m/*.ticks.jsonl.gz`, `*.jsonl.gz`, `*.log` — the twelve arms (three arms × four floors; the per-tick
+  dumps for the shipped and floor-4.5 arms, the summary dumps and the logs for all four).
+- `3.4/results/34m/34m-read.py`, `bracket.py`, `same.py`, `sched.py` — the four reads, so every table above can be
+  rebuilt from the dumps (gunzip them first).
+- `3.4/results/34m/34m-model.txt` — `floor-switch.ts`'s own output, which §1, §4a, §4c–e are read off.
+- `3.4/results/34m/34m-canyon-*.txt` — the Canyon byte check's five legs, raw (both fresh 3600-step legs and the
+  three 240-step imported-state legs that cover the late guard line).
+
+## 9. For the owner, in plain words
+
+**We built the fix the last three rounds pointed at, and then measured it, and it does not work. Saying so is the
+result.**
+
+The balance keeps a table of how the water pushes the board, and below 4 m/s it was re-using the 4 m/s line. Last
+round found that line is the odd one out and that your board down there matches the 4.5 m/s line instead. So this round
+made the balance able to use the 4.5 line (or the 5, or the 6) — one switch, nothing else changed, and the default is
+exactly what you ride today, which we checked to the last digit on both the maths and a whole set of rides.
+
+**Then the test.** The thing we were trying to fix is that the balance's idea of the sideways push points the wrong way
+at your slow speeds. With the 4.5 line instead of the 4 line, and everything else held identical, **the direction is
+right on exactly the same share of moments — on two of the three stances it does not change by a single moment.** And
+when we looked at why, the table says it plainly: **the sideways push's four numbers never change direction anywhere in
+the table, from 4 m/s to 12.** What changes direction is a *turning* number, not a *sideways* one. The two were put
+together by mistake. So no line in that table could ever have fixed this.
+
+**What this closes.** The 4 m/s floor is no longer a lead. It is a real flaw and worth tidying one day, but it is not
+what drops you, and three rounds of work on it now have an answer.
+
+**If you want to feel it anyway**, the address is
+`?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&plantFloor=4.5` against the same address without
+`&plantFloor=4.5`. We expect them to feel the same, or the slow take-offs slightly worse. **If a slow take-off feels
+clearly better with it, that is news and it beats everything above.** `&plantFloor=5` and `&plantFloor=6` are the other
+two lines, for the same look.

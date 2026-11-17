@@ -1,0 +1,275 @@
+# Step 3.4m. The `?plantFloor=4.5|5|6` switch, built, and the primary metric measured on step 3.4l's own arms.
+#
+# THE SWITCH. `labAt(speed, floor)` takes the lowest row of `PLANT_SPEEDS` the lookup may land on. Shipped it is the
+# table's own first speed, 4, so every design at or below 4 m/s reads row '4'. `DesignWeights.plantFloor` carries it
+# through `scheduledDesign` -> `plantAt` -> `labAt`; `AttachedRiderOptions.plantFloor` and the `?plantFloor` dev
+# switch reach the same weights route. Nothing but the table lookup moves: `speed` still enters the kinematic rows,
+# the rail correction, the board's inertia and the heave plant at its true value.
+#
+# THE RIG. `3.3/plant.ts` with `FLOOR=4.5|5|6` (the probe's own switch for it) and ONE new counterfactual column
+# trio -- `kModelFloor`/`yModelFloor`/`nModelFloor`, the same three loads from the SAME tick state with the table
+# read off a 4.5 m/s floor -- computed on every ride whatever `FLOOR` says. That trio is what lets the question
+# "does the row change the sign" be answered on one trajectory's own ticks instead of across two rides that have
+# diverged.
+#
+# THE DEFAULT, MEASURED AND NOT ASSERTED.
+#   model: `labAt`/`plantAt` with no floor against the floor at 4 -- 168 comparisons, identical bit for bit;
+#          the whole gain schedule (17 speeds x 3 depths x 6 rails = 306 cells x 767 numbers a cell) identical.
+#   ride:  `f73-l` with the switch unset reproduces step 3.4i's and step 3.4l's published arm EXACTLY --
+#          18 of 18 fell, 0.617-2.533 s, median 1.450 s.
+#
+# ARMS. Step 3.4l's own, unchanged: `RIDER=new FELT=deck BODY=two`, AHEAD 0.75, SIDE -45, 9 s a run, the stance
+# held, the stick never touched. `f73-l` = FACE 1.4,7.32,5.7 ENTRIES 1..6 x 3 stances (18 runs); `s16-l` =
+# FACE 1.4,16,5.7, the same entries (18); `s16-g` = FACE 1.4,16,5.7, the default eight relative entries (24).
+#
+# CUTS. Step 3.4l's own (`../34l/34l-read-cuts.py`), so the before/after is read the same way:
+#   A = live, speedClamped == 1 (speedUsed outside the SHIPPED table's 4-12 m/s), |roll| <= 25 deg
+#   B = A and speed <= 1.6 m/s -- the owner's own cell, and THIN (12-27 ticks a stance)
+#   C = live, speedClamped == 0, |roll| <= 25 -- the honest band, the control that must not move
+# `speedClamped` keeps the SHIPPED 4-12 definition in both arms, so "clamped" names the same band of speeds on
+# either side of the switch. The sign share is over live ticks with both forces non-zero, as 3.4l took it.
+# Every count is ticks, per stance, NEVER pooled. The rides are NOT the same ticks across arms -- the switch
+# changes the design, so it changes the trajectory -- which is why every n is printed and why the same-ticks
+# counterfactual below is the decisive read.
+#
+# FALL COUNTS (reported, NOT targeted; 3.4h's 626 of 626 already refuted the clamp as the cause of the falls):
+#   f73-l  ships 18 of 18, 0.617-2.533 s, median 1.450 | floor 4.5 18 of 18, 0.650-1.700, median 1.450
+#          floor 5 18 of 18, 0.633-1.583, median 1.300 | floor 6 18 of 18, 0.683-1.933, median 1.317
+#   s16-l  ships 18 of 18, 0.500-6.233 s, median 1.033 | floor 4.5 18 of 18, 0.533-1.417, median 1.033
+#          floor 5 18 of 18, 0.567-1.467, median 1.033 | floor 6 18 of 18, 0.583-1.250, median 1.033
+#   s16-g  ships 24 of 24, 1.083-2.683 s, median 1.450 | floor 4.5 24 of 24, 1.083-2.683, median 1.450 (IDENTICAL:
+#          that arm's ticks are all in the honest band, so the switch cannot reach it -- the ride-side control)
+#          floor 5 24 of 24, 1.083-2.683, median 1.450 | floor 6 24 of 24, 1.033-2.667, median 1.450
+#   Every arm still falls in every run at every floor. The medians do not move. The longest ride SHORTENS
+#   (s16-l 6.233 -> 1.417 s; f73-l 2.533 -> 1.700), which is a worsening and is stated as one.
+
+## THE PRIMARY METRIC, ride against ride: the sign-correct share of the model's side force before the fall
+
+cut                                stance    |  floor 4 (ships) |        floor 4.5 |          floor 5 |          floor 6
+                                             |   n   share  |r| |   n   share  |r| |   n   share  |r| |   n   share  |r|
+A clamped (<4), |roll|<=25         tall      |  241  0.718  0.92 |  161  0.516  0.77 |  150  0.453  0.93 |  161  0.528  0.99
+A clamped (<4), |roll|<=25         crouch    |  216  0.519  1.47 |  156  0.487  1.44 |  143  0.497  1.72 |  147  0.537  1.24
+A clamped (<4), |roll|<=25         compress  |  184  0.397  2.04 |  152  0.441  1.86 |  137  0.438  1.89 |  135  0.489  1.09
+
+B clamped, speed<=1.6, |roll|<=25  tall      |   17  0.824  2.24 |   12  0.083  3.93 |   12  0.083  4.99 |   15  0.000  5.96
+B clamped, speed<=1.6, |roll|<=25  crouch    |   24  0.167  4.49 |   22  0.227  5.31 |   18  0.333  9.04 |   19  0.316 11.55
+B clamped, speed<=1.6, |roll|<=25  compress  |   24  0.292  2.48 |   27  0.222  3.38 |   17  0.294 11.24 |   18  0.222 15.47
+
+C unclamped (4-12), |roll|<=25     tall      |  653  0.908  0.81 |  589  0.913  0.80 |  583  0.901  0.85 |  586  0.937  0.89
+C unclamped (4-12), |roll|<=25     crouch    |  862  0.900  0.71 |  595  0.916  0.68 |  590  0.910  0.70 |  576  0.931  0.74
+C unclamped (4-12), |roll|<=25     compress  |  588  0.932  0.70 |  568  0.940  0.69 |  566  0.936  0.70 |  554  0.957  0.75
+
+
+## THE DECISIVE READ: the same ticks, the same state, row '4' against row '4.5' (the `yModelFloor` column)
+
+## on the SHIPPED ride's own ticks: sign share of the model's side force with row '4' and with row '4.5', SAME state
+cut                                stance        n | row4 sign row4.5 sign  flipped | row4 |r| row4.5 |r|
+A clamped (<4), |roll|<=25         tall        241 |     0.718       0.718    0.041 |    0.916      1.210
+A clamped (<4), |roll|<=25         crouch      216 |     0.519       0.514    0.005 |    1.470      1.976
+A clamped (<4), |roll|<=25         compress    184 |     0.397       0.397    0.000 |    2.036      2.823
+
+B clamped, speed<=1.6, |roll|<=25  tall         17 |     0.824       0.706    0.235 |    2.238      3.046
+B clamped, speed<=1.6, |roll|<=25  crouch       24 |     0.167       0.167    0.000 |    4.487      6.900
+B clamped, speed<=1.6, |roll|<=25  compress     24 |     0.292       0.292    0.000 |    2.481      3.315
+
+C unclamped (4-12), |roll|<=25     tall        653 |     0.908       0.908    0.000 |    0.811      0.829
+C unclamped (4-12), |roll|<=25     crouch      862 |     0.900       0.900    0.000 |    0.712      0.727
+C unclamped (4-12), |roll|<=25     compress    588 |     0.932       0.935    0.003 |    0.700      0.706
+
+## on the floor-4.5 ride's own ticks: sign share of the model's side force with row '4' and with row '4.5', SAME state
+cut                                stance        n | row4 sign row4.5 sign  flipped | row4 |r| row4.5 |r|
+A clamped (<4), |roll|<=25         tall        161 |     0.516       0.516    0.000 |    0.773      0.773
+A clamped (<4), |roll|<=25         crouch      156 |     0.487       0.487    0.000 |    1.442      1.442
+A clamped (<4), |roll|<=25         compress    152 |     0.441       0.441    0.000 |    1.863      1.863
+
+B clamped, speed<=1.6, |roll|<=25  tall         12 |     0.083       0.083    0.000 |    3.929      3.929
+B clamped, speed<=1.6, |roll|<=25  crouch       22 |     0.227       0.227    0.000 |    5.312      5.312
+B clamped, speed<=1.6, |roll|<=25  compress     27 |     0.222       0.222    0.000 |    3.381      3.381
+
+C unclamped (4-12), |roll|<=25     tall        589 |     0.913       0.913    0.000 |    0.796      0.796
+C unclamped (4-12), |roll|<=25     crouch      595 |     0.916       0.916    0.000 |    0.683      0.683
+C unclamped (4-12), |roll|<=25     compress    568 |     0.940       0.940    0.000 |    0.692      0.692
+
+
+## AND at the speed the controller's schedule actually designs at below 4 m/s (the `yModelSched` column)
+
+# the SHIPPED ride's own ticks. Three models at the same state: the tick's own V (3.4j/k/l's quantity),
+# the same with the table read off a 4.5 floor, and the CONTROLLER's own design point (V = 4, row '4').
+cut                                stance        n | V=tick row4 V=tick r4.5 V=4 (sched) | |r| V=tick  |r| V=4
+A clamped (<4), |roll|<=25         tall        241 |       0.718       0.718       0.689 |      0.916    0.828
+A clamped (<4), |roll|<=25         crouch      216 |       0.519       0.514       0.509 |      1.470    1.345
+A clamped (<4), |roll|<=25         compress    184 |       0.397       0.397       0.380 |      2.036    1.872
+
+B clamped, speed<=1.6, |roll|<=25  tall         17 |       0.824       0.706       0.588 |      2.238    1.071
+B clamped, speed<=1.6, |roll|<=25  crouch       24 |       0.167       0.167       0.208 |      4.487    4.317
+B clamped, speed<=1.6, |roll|<=25  compress     24 |       0.292       0.292       0.167 |      2.481    1.517
+
+
+## the terciles of |yGame| and the board's own regime, both arms (step 3.4l's CHECK 1 and CHECK 2, re-read)
+
+# live tick counts per arm (live == t > 0.2 s and the measured bank NOT at the 70 deg clamp)
+#   shipped floor 4  rows  4990  live  4038  f73-l: 1112  s16-l: 1180  s16-g: 1746
+#   floor 4.5        rows  4483  live  3524  f73-l: 999  s16-l: 782  s16-g: 1743
+
+## THE PRIMARY METRIC: the sign-correct share of the side force, per stance, never pooled
+
+cut                                stance    | shipped n   share  |ratio| | floor4.5 n   share  |ratio| |    move
+A clamped (<4 m/s), |roll|<=25     tall      |       241   0.718    0.916 |        161   0.516    0.773 |  -0.202
+A clamped (<4 m/s), |roll|<=25     crouch    |       216   0.519    1.470 |        156   0.487    1.442 |  -0.031
+A clamped (<4 m/s), |roll|<=25     compress  |       184   0.397    2.036 |        152   0.441    1.863 |  +0.044
+
+B clamped, speed<=1.6, |roll|<=25  tall      |        17   0.824    2.238 |         12   0.083    3.929 |  -0.740
+B clamped, speed<=1.6, |roll|<=25  crouch    |        24   0.167    4.487 |         22   0.227    5.312 |  +0.061
+B clamped, speed<=1.6, |roll|<=25  compress  |        24   0.292    2.481 |         27   0.222    3.381 |  -0.069
+
+C unclamped (4-12), |roll|<=25     tall      |       653   0.908    0.811 |        589   0.913    0.796 |  +0.005
+C unclamped (4-12), |roll|<=25     crouch    |       862   0.900    0.712 |        595   0.916    0.683 |  +0.016
+C unclamped (4-12), |roll|<=25     compress  |       588   0.932    0.700 |        568   0.940    0.692 |  +0.008
+
+## the same share by tercile of |yGame| WITHIN each stance cell (3.4l CHECK 1, so the magnitude cut survives)
+A clamped (<4 m/s), |roll|<=25     tall     
+    shipped floor 4  low n=  80 |yG|=  20.7 r= 1.862 sign=0.675 | mid n=  80 |yG|=  55.3 r= 0.756 sign=0.688 | high n=  81 |yG|= 135.5 r= 0.906 sign=0.790
+    floor 4.5        low n=  53 |yG|=  32.8 r= 1.295 sign=0.434 | mid n=  54 |yG|=  60.5 r= 0.471 sign=0.574 | high n=  54 |yG|= 103.1 r= 0.965 sign=0.537
+A clamped (<4 m/s), |roll|<=25     crouch   
+    shipped floor 4  low n=  72 |yG|=  14.2 r= 5.090 sign=0.417 | mid n=  72 |yG|=  41.9 r= 1.548 sign=0.486 | high n=  72 |yG|= 117.0 r= 0.610 sign=0.653
+    floor 4.5        low n=  52 |yG|=  17.9 r= 4.678 sign=0.385 | mid n=  52 |yG|=  55.7 r= 0.448 sign=0.500 | high n=  52 |yG|= 105.7 r= 0.951 sign=0.577
+A clamped (<4 m/s), |roll|<=25     compress 
+    shipped floor 4  low n=  61 |yG|=  10.5 r= 6.060 sign=0.410 | mid n=  61 |yG|=  35.0 r= 2.177 sign=0.459 | high n=  62 |yG|=  78.9 r= 1.155 sign=0.323
+    floor 4.5        low n=  50 |yG|=  14.3 r= 5.804 sign=0.260 | mid n=  51 |yG|=  53.9 r= 1.132 sign=0.451 | high n=  51 |yG|=  91.6 r= 0.785 sign=0.608
+
+B clamped, speed<=1.6, |roll|<=25  tall     
+    shipped floor 4  low n=   5 |yG|=  10.2 r= 3.549 sign=0.800 | mid n=   6 |yG|=  29.7 r= 2.696 sign=0.833 | high n=   6 |yG|=  93.6 r= 0.137 sign=0.833
+    floor 4.5        low n=   4 |yG|=  12.8 r=15.824 sign=0.250 | mid n=   4 |yG|=  42.8 r= 3.929 sign=0.000 | high n=   4 |yG|=  55.4 r= 2.272 sign=0.000
+B clamped, speed<=1.6, |roll|<=25  crouch   
+    shipped floor 4  low n=   8 |yG|=  15.2 r= 7.063 sign=0.500 | mid n=   8 |yG|=  37.9 r= 3.015 sign=0.000 | high n=   8 |yG|=  89.1 r= 5.421 sign=0.000
+    floor 4.5        low n=   7 |yG|=  10.0 r=30.081 sign=0.571 | mid n=   7 |yG|=  30.0 r= 5.038 sign=0.143 | high n=   8 |yG|= 102.3 r= 2.180 sign=0.000
+B clamped, speed<=1.6, |roll|<=25  compress 
+    shipped floor 4  low n=   8 |yG|=  11.1 r= 7.106 sign=0.125 | mid n=   8 |yG|=  35.6 r= 2.669 sign=0.250 | high n=   8 |yG|=  60.3 r= 0.655 sign=0.500
+    floor 4.5        low n=   9 |yG|=   9.2 r=17.682 sign=0.556 | mid n=   9 |yG|=  54.3 r= 4.162 sign=0.111 | high n=   9 |yG|=  83.0 r= 2.615 sign=0.000
+
+C unclamped (4-12), |roll|<=25     tall     
+    shipped floor 4  low n= 217 |yG|=  75.9 r= 0.647 sign=0.797 | mid n= 218 |yG|= 125.9 r= 0.787 sign=0.950 | high n= 218 |yG|= 149.7 r= 0.962 sign=0.977
+    floor 4.5        low n= 196 |yG|=  78.3 r= 0.651 sign=0.821 | mid n= 196 |yG|= 127.7 r= 0.813 sign=0.944 | high n= 197 |yG|= 150.0 r= 0.953 sign=0.975
+C unclamped (4-12), |roll|<=25     crouch   
+    shipped floor 4  low n= 287 |yG|=  67.8 r= 0.681 sign=0.833 | mid n= 287 |yG|= 122.5 r= 0.769 sign=0.882 | high n= 288 |yG|= 192.5 r= 0.675 sign=0.986
+    floor 4.5        low n= 198 |yG|=  81.7 r= 0.627 sign=0.828 | mid n= 198 |yG|= 148.3 r= 0.705 sign=0.919 | high n= 199 |yG|= 207.8 r= 0.689 sign=1.000
+C unclamped (4-12), |roll|<=25     compress 
+    shipped floor 4  low n= 196 |yG|=  89.6 r= 0.751 sign=0.903 | mid n= 196 |yG|= 131.8 r= 0.757 sign=0.939 | high n= 196 |yG|= 214.3 r= 0.675 sign=0.954
+    floor 4.5        low n= 189 |yG|=  91.4 r= 0.730 sign=0.889 | mid n= 189 |yG|= 137.2 r= 0.703 sign=0.979 | high n= 190 |yG|= 216.4 r= 0.673 sign=0.953
+
+## the board's own regime on the same cuts, and the nearest measured row (3.4l CHECK 2)
+cut                                stance    arm                  n    spd  trimFace   draft    wet | near trim/draft | modal draft row
+A clamped (<4 m/s), |roll|<=25     tall      shipped floor 4    241   3.00     17.24  0.3011  0.604 | '5.5' / '4.5' | [('4.5', 82), ('4', 73)]
+A clamped (<4 m/s), |roll|<=25     tall      floor 4.5          161   3.19     14.85  0.2526  0.583 | '5.5' / '5' | [('4.5', 44), ('5', 31)]
+A clamped (<4 m/s), |roll|<=25     crouch    shipped floor 4    216   3.12     17.25  0.2812  0.562 | '5.5' / '4.5' | [('4.5', 92), ('4', 39)]
+A clamped (<4 m/s), |roll|<=25     crouch    floor 4.5          156   3.02     11.25  0.2262  0.583 | '6.5' / '5' | [('4.5', 47), ('4', 29)]
+A clamped (<4 m/s), |roll|<=25     compress  shipped floor 4    184   2.82     15.96  0.2728  0.583 | '5.5' / '4.5' | [('4.5', 63), ('4', 32)]
+A clamped (<4 m/s), |roll|<=25     compress  floor 4.5          152   2.98      9.58  0.1859  0.562 | '7' / '5.5' | [('4.5', 38), ('4', 30)]
+
+B clamped, speed<=1.6, |roll|<=25  tall      shipped floor 4     17   1.50      5.85  0.1454  0.646 | '9' / '6' | [('4', 4), ('5.5', 3)]
+B clamped, speed<=1.6, |roll|<=25  tall      floor 4.5           12   1.38      4.89  0.1140  0.625 | '9.5' / '6.5' | [('5.5', 3), ('7.5', 2)]
+B clamped, speed<=1.6, |roll|<=25  crouch    shipped floor 4     24   1.26      4.35  0.1024  0.594 | '11' / '6.5' | [('4', 6), ('8.5', 5)]
+B clamped, speed<=1.6, |roll|<=25  crouch    floor 4.5           22   1.26      4.06  0.0913  0.594 | '10.5' / '7' | [('8.5', 5), ('4', 4)]
+B clamped, speed<=1.6, |roll|<=25  compress  shipped floor 4     24   1.33      4.66  0.1106  0.594 | '9.5' / '6.5' | [('4', 6), ('8.5', 4)]
+B clamped, speed<=1.6, |roll|<=25  compress  floor 4.5           27   1.26      5.92  0.1372  0.583 | '9' / '6' | [('4', 10), ('8.5', 4)]
+
+C unclamped (4-12), |roll|<=25     tall      shipped floor 4    653   6.09      3.03  0.0388  0.542 | '12' / '9.5' | [('12', 108), ('10.5', 83)]
+C unclamped (4-12), |roll|<=25     tall      floor 4.5          589   6.10      3.22  0.0420  0.542 | '12' / '9.5' | [('10.5', 82), ('11', 64)]
+C unclamped (4-12), |roll|<=25     crouch    shipped floor 4    862   6.39      4.46  0.0675  0.521 | '11' / '8.5' | [('12', 187), ('8.5', 129)]
+C unclamped (4-12), |roll|<=25     crouch    floor 4.5          595   6.36      4.54  0.0663  0.521 | '11' / '8.5' | [('8.5', 122), ('12', 110)]
+C unclamped (4-12), |roll|<=25     compress  shipped floor 4    588   6.02      3.75  0.0444  0.500 | '10.5' / '9' | [('12', 167), ('6.5', 55)]
+C unclamped (4-12), |roll|<=25     compress  floor 4.5          568   6.15      3.80  0.0445  0.500 | '10.5' / '9' | [('12', 164), ('6.5', 55)]
+
+
+## the model reads: the default's identity, the gains, the negative control and which derivatives turn over
+
+## 1. the default, measured: `labAt`/`plantAt`/`scheduledDesign` with no floor against the floor at the table's own first speed (4)
+- `labAt`/`plantAt`: **168 comparisons, identical bit for bit: true**, largest difference 0
+- the whole gain schedule: **306 cells x 767 numbers a cell, identical bit for bit: true**, largest difference 0
+
+## 2. the switch against step 3.4k's own row swap (`floor.ts`), the arm README Part 11 §2 published
+- `plantFloor: 4.5` against `row4:=4.5`: **identical bit for bit: false**, largest difference 3.552713678800501e-15 (9 cells, 27 numbers a cell)
+- `plantFloor: 5` against `row4:=5`: **identical bit for bit: true**, largest difference 0 (9 cells, 27 numbers a cell)
+- `plantFloor: 6` against `row4:=6`: **identical bit for bit: true**, largest difference 0 (9 cells, 27 numbers a cell)
+- the table is left as it was found: row '4' roll[0] -37.2, slip[0] 143.8 (shipped −37.2 and +143.8)
+
+## 3. the gains: the model at the tick's own V (3.4j/3.4k's quantity) and the design the game actually runs
+
+### (a) `plantAt(V, depth)` — the model read at the tick's own speed, which is what `3.3/plant.ts`'s `yModel` is built from
+
+| V m/s | floor | stance | K_ankle[β] | K_ankle[θ] | K_twist[θ] |
+| --- | --- | --- | --- | --- | --- |
+| 1.16 | **4 (ships)** | tall / crouch / compress | 4.389 / 3.713 / 2.485 | 9.908 / 7.141 / 4.528 | -1629.8 / 201.2 / 460.3 |
+| 1.16 | 4.5 | tall / crouch / compress | 0.975 / 1.196 / 1.180 | 3.146 / 2.899 / 2.496 | -930.2 / -591.3 / -368.6 |
+| 1.16 | 5 | tall / crouch / compress | 0.905 / 0.807 / 0.684 | 3.103 / 2.336 / 1.837 | -546.6 / -324.8 / -209.3 |
+| 1.16 | 6 | tall / crouch / compress | 1.422 / 1.291 / 1.011 | 4.092 / 3.456 / 2.711 | -893.9 / -406.6 / -169.5 |
+| 1.31 | **4 (ships)** | tall / crouch / compress | 2.461 / 3.974 / 3.280 | 6.082 / 7.006 / 5.159 | -1897.5 / -520.2 / 99.8 |
+| 1.31 | 4.5 | tall / crouch / compress | 0.772 / 1.004 / 1.048 | 2.714 / 2.551 / 2.275 | -853.1 / -578.1 / -383.7 |
+| 1.31 | 5 | tall / crouch / compress | 0.896 / 0.819 / 0.709 | 2.968 / 2.297 / 1.844 | -568.6 / -339.7 / -217.0 |
+| 1.31 | 6 | tall / crouch / compress | 1.305 / 1.291 / 1.070 | 3.448 / 3.148 / 2.590 | -918.3 / -477.1 / -230.2 |
+| 6.47 | **4 (ships)** | tall / crouch / compress | 0.433 / 0.586 / 0.646 | 0.927 / 1.048 / 1.093 | -499.7 / -426.7 / -353.2 |
+| 6.47 | 4.5 | tall / crouch / compress | 0.433 / 0.586 / 0.646 | 0.927 / 1.048 / 1.093 | -499.7 / -426.7 / -353.2 |
+| 6.47 | 5 | tall / crouch / compress | 0.433 / 0.586 / 0.646 | 0.927 / 1.048 / 1.093 | -499.7 / -426.7 / -353.2 |
+| 6.47 | 6 | tall / crouch / compress | 0.433 / 0.586 / 0.646 | 0.927 / 1.048 / 1.093 | -499.7 / -426.7 / -353.2 |
+
+### (b) `scheduledDesign(4, depth, 0)` — the schedule's 4.0 m/s column, the design EVERY sub-4 m/s tick runs on
+
+| floor | stance | K_ankle[β] | K_ankle[θ] | K_twist[θ] |
+| --- | --- | --- | --- | --- |
+| **4 (ships)** | tall / crouch / compress | 0.180 / 0.642 / 0.884 | 2.949 / 2.630 / 2.291 | -540.5 / -413.9 / -334.9 |
+| 4.5 | tall / crouch / compress | 0.303 / 0.319 / 0.294 | 2.045 / 1.769 / 1.526 | -381.1 / -254.7 / -188.4 |
+| 5 | tall / crouch / compress | 0.610 / 0.613 / 0.543 | 1.957 / 1.800 / 1.593 | -506.1 / -320.2 / -215.7 |
+| 6 | tall / crouch / compress | 0.429 / 0.611 / 0.678 | 0.942 / 1.152 / 1.229 | -601.6 / -499.6 / -396.0 |
+
+## 4. the negative control: every schedule cell at or above the floor is untouched
+- floor 4.5: **18 of 306 schedule cells move, and the 18 cells below the floor are exactly those** (largest difference among the cells AT or ABOVE the floor: 0)
+- floor 5: **36 of 306 schedule cells move, and the 36 cells below the floor are exactly those** (largest difference among the cells AT or ABOVE the floor: 0)
+- floor 6: **72 of 306 schedule cells move, and the 72 cells below the floor are exactly those** (largest difference among the cells AT or ABOVE the floor: 0)
+
+## 5. the schedule across the floor, so the reader can see there is no step in the gains
+
+`K_ankle[θ]` at the crouch's depth and no rail, read off the schedule exactly as `blend` mixes it (f = (v − v0)/0.5):
+
+| v m/s | shipped | floor 4.5 |
+| --- | --- | --- |
+| 3.00 | 2.6304 | 1.7695 |
+| 3.50 | 2.6304 | 1.7695 |
+| 4.00 | 2.6304 | 1.7695 |
+| 4.10 | 2.4712 | 1.7825 |
+| 4.25 | 2.2325 | 1.8021 |
+| 4.40 | 1.9938 | 1.8216 |
+| 4.50 | 1.8347 | 1.8347 |
+| 4.75 | 1.8461 | 1.8461 |
+| 5.00 | 1.8575 | 1.8575 |
+| 5.50 | 1.5485 | 1.5485 |
+
+## 6. which of the twelve derivatives turns over, read off the table's own `[N, Y, K]` ordering and not off a comment
+
+`LabPlant`'s own header: each array is **[N, Y, K]** — yaw moment, side force, roll moment — per rad of roll,
+per rad of slip, per rad/s of yaw rate and per rad/s of roll rate. So `roll[0]` is the YAW moment per radian of
+roll and `roll[2]` the roll moment per radian of roll; `slip[1]` is the SIDE FORCE per radian of slip.
+
+| per | channel | 4 | 4.5 | 5 | 6 | 12 | one sign over all 17 rows? |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| roll | N (yaw moment) | -37.2 | -98 | -98 | -105.4 | -161 | yes |
+| roll | Y (side force) | -177.6 | -326.6 | -361 | -395.3 | -395.3 | yes |
+| roll | K (roll moment) | -268.7 | -322 | -310 | -296.8 | -448.6 | yes |
+| slip | N (yaw moment) | 143.8 | 41.3 | -28.6 | -161 | -1115.5 | **NO — it turns over** |
+| slip | Y (side force) | 343.8 | 550 | 704.7 | 1031.3 | 3741.4 | yes |
+| slip | K (roll moment) | -63 | -191.4 | -272.7 | -411.4 | -1006.1 | yes |
+| yaw | N (yaw moment) | -18.7 | -3.8 | -3.3 | -7.6 | -34.4 | yes |
+| yaw | Y (side force) | 43 | 31 | 37 | 50 | 117 | yes |
+| yaw | K (roll moment) | -61.3 | -32.5 | -30 | -31.7 | -43.3 | yes |
+| rate | N (yaw moment) | -7.69 | -3.52 | -1.63 | 0.87 | 8.01 | **NO — it turns over** |
+| rate | Y (side force) | -8 | -12 | -13.9 | -17 | -30.1 | yes |
+| rate | K (roll moment) | -4.33 | -1.51 | -0.84 | -0.62 | -6.15 | yes |
+
+And the side force the controller actually assembles (`boardDerivatives`, which flips N and Y and carries the
+yaw sweep over the feet station at the tick's own V), at V = 1.31 m/s:
+
+| row | heelSide | slipSide | yawSide | rollRateSide | slipSide/heelSide |
+| --- | --- | --- | --- | --- | --- |
+| '4' | 177.6 | -343.8 | 104.9 | 8.00 | -1.936 |
+| '4.5' | 326.6 | -550.0 | 130.1 | 12.00 | -1.684 |
+| '5' | 361.0 | -704.7 | 164.0 | 13.90 | -1.952 |
+| '6' | 395.3 | -1031.3 | 235.8 | 17.00 | -2.609 |
