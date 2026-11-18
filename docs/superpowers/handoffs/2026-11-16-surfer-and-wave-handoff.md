@@ -2746,3 +2746,35 @@ Its highs: 7.92 → 9.18 → 10.09 → 11.29, i.e. **full cycles of 1.26, 0.91 a
 ### Delivery, as asked
 
 **Confirmed received.** Landing here; **the row 6 and row 13 status blocks in `engine-target.md`; and a note on PR #413.** **Forwarding to our video-16 reader is deferred until after its own observations** — it has not been dispatched, and its brief will be written blind.
+
+---
+
+## 2026-11-18 — ☠️ THE PUMP ROUND'S NEGATIVE CONTROL WAS VACUOUS BY CONSTRUCTION, IN THE SECTION THAT WARNED ABOUT IT
+
+Codex's code review of `pump.ts` at `ff750da4`. **Verified here by reading before recording.**
+
+```js
+:243   if (key > 0 && !Number.isFinite(firstPress)) firstPress = t;   // set ONLY when the key is pressed
+:292   const after = (t: Turn[]) => t.filter((x) => x.t >= firstPress);
+```
+
+**In `hold0` the key is never pressed** — `arm === 'hold1' ? 1 : 0` gives 0, and `Number.isFinite(half)` is false, so the square-wave branch never runs. **`firstPress` stays `NaN`, every `x.t >= NaN` is `false`, and `after()` returns an empty array on all four channels** (`restTurns`, `gotS`, `drawnS`, `targetS`).
+
+> **So "hold0: 0 half-cycles, 0 of 72 runs" was produced by the filter, not by the rider.** The round's own section is headed *"Beware a metric that cannot fail — what a broken channel looks like, and that this is not it"*, **and the thing it offered as proof is the tautology.** I quoted it to the owner as evidence the round had guarded itself.
+
+**A control is the easiest place in a round to hide a tautology, because nobody interrogates a zero.** Add that to the file of recurring shapes: **`Number(null) === 0`, `Math.sign(0) || 1`, `qt(v, 0.5)` being the upper middle — and now `x >= NaN` silently emptying a filter.**
+
+**What survives, and it is most of the round:**
+- **every positive arm is untouched** — those press the key, `firstPress` is finite on the first tick, and the filter does what it was written for. **0.217 s half-cycles at 40 % of the rung, 0.27 s where the excursion halves, 864 runs: all stand.**
+- **`hold1` is a VALID negative control and should carry that weight instead** — the key held down gives a finite `firstPress`, and **4 half-cycles in 4 of 72 runs at 0.005 m** is a real reading of a channel that is not pumping.
+- the isolated-follower positive control at a 1.50 s half-cycle reaching **1.00 of the rung** also stands.
+
+**Relayed to the probe author** with the reviewer's fix: a **finite observation start for `hold0` (`START`)**, `firstPress` kept for the actuated arms, and **the control then checked with a deliberately oscillating input trace at the detector boundary** — so the detector is shown to fire when it should, not merely to stay silent when nothing moves.
+
+### AND A CORRECTION TO MY OWN FRAMING, THE FOURTH TONIGHT
+
+> *"`steer = 0` in the probe locks player input only; it does not lock the board orientation or record trajectory/exit speed."*
+
+**One entry above I wrote that #413 is a "zero-steer fixed-orientation benchmark" and that it therefore "measures a narrower thing than the footage shows."** **The first half is wrong: `steer = 0` holds the player's input, not the board's attitude**, so the probe's board could roll and turn like clip 16's. **The useful half of the point survives in a different form: the probe recorded neither trajectory nor exit speed, so a comparison with clip 16's board path is not available from it at all** — not because the benchmark is too narrow, but because the quantity was never logged.
+
+**I took that phrase from Codex's earlier message and repeated it without checking what `steer = 0` reaches.** Same shape as every entry in `one-trace-is-not-a-number`: **a description of a measurement's frame, adopted rather than verified.**
