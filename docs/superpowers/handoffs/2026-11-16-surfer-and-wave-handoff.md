@@ -3047,3 +3047,69 @@ Hand above the crown on **three consecutive native 1/60 frames** (6.900 / 6.933 
 ### Method
 
 ☠️ **At 60 fps the `seeked` + 30 ms recipe returns a ONE-FRAME-OFF decode — 3 of 6 same-time probe pairs disagreed. A 260 ms settle plus a two-decode stability check gave 6 of 6 and 0 of 39.** ☠️ **The composited-canvas failure fired TWICE despite a 2.7 s wait**, and **a second screenshot cured it both times**; **an unstamped sheet is indistinguishable from data.** **The Browser pane dropped every tab mid-session** and **viewport emulation is cleared between turns** — one screenshot returned at 1.6× and was discarded. Scale **exactly 1.000 at 800×640, sixth session.** Two of four automatic rulers built, failed, **discarded with nothing quoted** (a head finder returned 49/50/116/129 px on one rider; a red-shorts hip finder merged with the board's red rail). **And it suspected a subject change at 8.0 s and refuted its own suspicion** at 0.72× — same yellow deck with a red rail at a different roll angle.
+
+---
+
+## 2026-11-18 — BOTH DISCARDED QUANTITIES MEASURED (PR #418, round 3.5i): ONE RETIRES A DECISION, ONE NARROWS IT
+
+**83 216 live substeps of 72 rides on the real Canyon B** (24 input cells, seed 1, medium, stage 2, `rider:'new' feltFrame:'deck' riderBody:'two'`) plus **4 544 substeps of three single-rider controls.** 1 411 insertions, 0 deletions, no `src/` change.
+
+### A — the hip clamp: ⭐ **EXACTLY ZERO, AND IT RETIRES THE DECISION**
+
+**0 N·m·s discarded, because the clamp NEVER FIRES.** The trunk rotor's angle **never exceeds 7.76°** of a range **never tighter than 21.1°**, and the rotor is away from rest on **237 of 83 216 substeps (0.28 %)**.
+
+**But it is a zero of FREQUENCY, not of size, and the round says so:** a firing at the rotor's own peak momentum would have cost **11.74 N·m·s** — only **0.29 % of the pitch ankle's 4 086 N·m·s** torque impulse over the same window, **but 2.7× the body's own median angular momentum about that axis (4.32 N·m·s).**
+
+> **RULING: there is nothing to pair. Leave the unpaired impulse as a comment. THE OWNER'S DECISION IS RETIRED** — which is the most useful outcome available, because this project has more open decisions than it has evenings to ride them.
+
+### B — the hand's residual moment: **negligible NOW, not negligible if the hand ever carries weight**
+
+Median **2.01 N·m**, max **23.68**, over **2 830 loaded substeps in 12 of 72 rides**:
+
+| against | share |
+| --- | --- |
+| the ankle's own torque (median 71.85 N·m) | **3.4 %** |
+| the weight moment about the feet (median 246.40 N·m) | **0.7 %** |
+| **the moment that same force DOES put on the board** | **1.9×** |
+| **the hand's own moment, by summed magnitude** | **63 %** (Σ\|dropped x,z\| 7 520 against Σ\|kept y\| 4 347 N·m) |
+
+**It is small only because the hand carries a median 2.66 N against the engine's own 286 N cap.** **At a loaded hand it scales to 180–260 N·m — 2.5–3.6× the ankle** (stated as a **linear extrapolation to the cap, not a measurement**). Pairing it costs **0.05–0.24 % of a ride's water work but 0.8–11× the work the retained yaw already does.**
+
+> **RULING: negligible as the engine stands; NOT negligible if the hand is ever made to carry weight. The decision is NARROWED, not retired** — and it becomes live the moment anyone builds a real hand-drag.
+
+**The reviewer's sentence is retired:** *"its magnitude and effect on a ride are unknown"* → **63 % of the hand's own moment by magnitude, 3.4 % of the ankle, on 3.4 % of the substeps of one stance in three, +3.33 J if paired.**
+
+### ⭐⭐ AND A USER-FACING BUG: HOLDING THE HAND KEY SWITCHES THE HAND OFF
+
+| arm | `rider.hand` | runs | loaded | substeps |
+|---|---|---|---|---|
+| plain | false | 18 | 6 | 1 802 |
+| stick | false | 18 | 5 | 893 |
+| **hand (KeyE)** | **true** | 18 | **0** | **0** |
+| handstick | true | 18 | 1 | 135 |
+
+**Stances: tall 0 of 24, crouch 0 of 24, compress 12 of 24.**
+
+**So the loaded hand in this game is the COMPRESS REACH, not the hand-drag feature row 19 is about.** `waveSide` (`:5719–5732`) **returns before the compress reach is considered when the key is held**, so **holding the key switches the reach off** and substitutes a wave-side test (water 0.05 m higher 0.6 m to one side) that passed on **163 of 41 328 key-held substeps (0.39 %), 28 of them dry.** The reach's own branch clamps the hand to the surface (`REACH_DIP` 0.03 m of a 0.08 m hand), which is why it always wets and why the force is 2.66 N.
+
+> **Press the hand key and you get LESS hand contact than not pressing it. 0 of 18 runs.** That is a plain defect, it is the owner's to rule on, and **row 19 cannot be judged on a feature that never loads.**
+
+### ⭐ And the finding that bears on PR #411: THE TRUNK ROTOR ONLY STIRS DURING THE FALL
+
+**The hip's torque is non-zero at a frame's end on 17 of 5 201 frames, in 5 of 72 runs, at 91.0–99.9 % of their own rides (median 99.3 %).** **Its drive is the ankle's excess — a symptom of the collapse — and it arrives `PITCH_DELAY` = 0.1 s later.**
+
+**So `?trunk=mass` can only act once the rider is already going.** It cannot help him stay up, because **its drive does not exist until he is falling.** This **independently reproduces PR #411's own caveat** ("inert on 42 of 60 arms", travel 0.05–4.49°) **on the owner's real spot with a different instrument** — so that caveat is no longer a synthetic-bench artefact.
+
+### Three of my own citations were wrong, and the round named them
+
+1. **`cross(hand − a, F_hand)` is not the residual.** It is **`cross(hand − CoM, F_hand)`** — `a` is *where the force reaches the board*, not a point in space. **I put the wrong formula in the brief and in the handoff.**
+2. **`separate` is at `:5227–5232`, not `:4586`** — `:4586` is `coupleYaw`. **The claim about it is correct; I have been passing the wrong line number in briefs all session.**
+3. **There is no "inertia changed" term to separate.** `HIP_PITCH_INERTIA` is a **module constant** (`standingBody.ts:93`); **the RANGE is what moves** (`hipRange(-leg.rest)`). I relayed a caution about separating an inertia change that does not exist — the round counted the range split anyway, and both classes are zero with both control-tested.
+
+### Controls, and the round refuting its own draft twice
+
+**Read-only proven:** probe on vs off, **5 273 rows, 56 unrounded columns, 295 288 values (400 748 with part arrays), 0 differences** — and since riders push water through `addReaction`, that covers the sea. **Positive A:** injected 2 rad/s at the limit → **15.9277 N·m·s recovered of an arithmetic 16.000**, and 15.9275 on the other classifier branch — **both branches exercised.** **Positive B:** an injected cross product recovered to **2.2 × 10⁻¹⁴ N·m.** **Identity: 83 216 of 83 216 unclamped substeps reproduce exactly, worst error 0.** 72 frozen frames dropped.
+
+⭐ **And it withdrew two of its own draft headlines using the single-rider control:** the roll component's *"one-signed in 12 of 12 rides"* (**the control splits 234 + / 419 −**) and *"pairing would add energy on balance"* (**the control gives −1.38 J against the bench's +3.33 J**). **Both were cell artefacts; both halves withdrawn; only the pitch sign published.** It also found that **the force/moment identities cannot be exact** — differencing a running accumulator loses bits — and that its first build's *"140 of 142 bad"* was **the instrument, not the engine.**
+
+**Not measured, stated so the zero is not over-read:** one spot, one seed, one swell size; rides 0.85–2.47 s, **all 72 detached**; `?trunk=mass` not used; the swing rotor's own clamp not measured; and the 180–260 N·m loaded-hand figure is an extrapolation.
