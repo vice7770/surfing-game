@@ -1666,3 +1666,65 @@ For **eight** metrics the laziest route to a good score is **not surfing** — s
 ### Honesty carried
 
 **Saturated leg chain marked beside all four rows that rest on it** (2, 6, 10, 14), with the mechanism, the consequence that **"no rider ever leaves the Tall band" is untested**, and the ask for **footage shot from the water or down the line.** **The frame of every number named in §4.3.** No metre figure inherited from the three reads that compared a hip fraction to a CoM height. **Single observations marked SINGLE** (rows 3, 11, 13, 16, both halves of 12). **Six disagreements stated rather than averaged** (§4.5). **No date and no certainty for rows 7, 8 and 16.** **Four asks of the owner in §6**, led by the footage-from-the-water one — *"the cheapest thing that would unblock the most."*
+
+## ⭐⭐⭐ THE PLAYING-AGENT SCOPE (merged `fac29fc9`, PR #401) — **"BUILD THE EVAL. DO NOT BUILD THE OPTIMISER."** And the reason is not the fall count.
+
+`docs/research/new-rider/3.5/playing-agent-scope.md`. Design only; no code, no constant, nothing measured.
+
+### ⭐ THE SHARPEST FINDING: YOU CANNOT SEARCH A FLAT SPACE
+
+> **The control space is provably flat where the owner rides.** 3.5d measured stick hard over against stick never touched at 1–3 m/s as **0 mismatches over 67 767 column-values**, and 3.5a names the mechanism — **below `PLANING_DROP = 3 m/s` the ask cap is exactly 0.** **An agent is a search over controls. You cannot search a flat space.**
+
+> **So the precondition for search is NOT "fix the fall" — it is "make the input reach the outcome below 4 m/s." The 4 m/s floor thread unblocks search, not the agent.**
+
+**And the design consequence: the first action space should be the STANCE KEYS and W/S, not the stick**, because the stick does nothing there.
+
+### THE RECOMMENDED OBJECTIVE — scored against the only powered population in the evidence base
+
+**One direction change, to the footage's shape, scored on what the game returns: duration, degrees turned, radius, lateral g, speed kept.** **Proposed, not chosen — the choice is the owner's.**
+
+**Why: it is scored against Forsyth et al. 2024's 0.96 ± 0.04 s / 99° / 3.8 m / 1.41 g on n = 6 riders and 835 turns — the only properly powered population anywhere in our evidence.** **Every movement number in the nine video reads has a population of 1–8 instances, 1–2 riders, 1 clip.** It also **fits inside the 1.0–1.45 s every ride currently lasts, so it has a gradient today** (3.5a already saw time-to-5°-of-rail 0.317–0.350 s and peak yaw 100–193 °/s move between arms), and **most of it is already computed**: `Maneuver` (`src/game/rideAnalysis.ts:28–52`) carries all five and `docs/research/ride-report.md` already prints them beside the Forsyth row.
+
+**⚠️ AND IT REJECTED MY OWN METRIC PROPOSAL, CORRECTLY: "match the footage's numbers" is CIRCULAR as stated, because the agent commands most of them — `PUMP_PERIOD` is already a constant (`Autopilot.ts:265`), so a pump-period score measures the constant.** *Link N direction changes* is the right **second** objective but scores 0 for every build today. *Ride a stretch of wave* is the rejected survival metric in another unit.
+
+### THE METRIC SET
+
+**Computable today with NO engine change — all five body channels are public readonly fields on `AttachedRider`:** `leg` (`:2084`), `standingBody.hip` (`:2239` → `standingBody.ts:158`), `swing` (`:2319`), `trunk` (`:1980`), `human.arms` (`:2247` → `humanBalance.ts:306`), plus turn duration/yaw/radius/lateral g/speed kept, direction-change count and time to 5° of rail. **So "needs new columns" almost never means "needs a game change" — it means a new file under `docs/research/`.**
+
+**Needs a probe (not game code):** the pump half-cycle measured on the **output** — and **⚠️ only non-circular on `?rider=new`'s `hip.angle`, which is independently driven**; channel-order cross-correlation; the drawn trunk read beside the physics one; per-manoeuvre ankle share.
+
+**⚠️ INEXPRESSIBLE — expressibility limits, not tuning gaps:** the arm lead (**no arm position exists**; `human.arms` shares the knees' trigger and the time constants run backwards); a **visible** trunk moving against the legs; two legs at different extensions (one spring, one solve row); hips-aft/shoulders-forward; arm carriage as a position.
+
+**⚠️ AND ONE HALF-EXPRESSIBLE TRAP WORTH MORE THAN THE REST: `hip.angle` exists and is paired honestly but NEVER MOVES `this.parts` — so a trunk eval can PASS while nothing the owner feels or sees changes.** Any trunk metric must read the parts, not the angle.
+
+### WHAT THE AGENT CONTROLS
+
+**`RideInput` (`RideSession.ts:23–56`), forwarded one-for-one at `:444–450`: `steer`, `trim`, `crouch`, `compress`, `snap`, `hand`, `rotate`.** **`Autopilot.next()` returns a `RideInput` and nothing else — player-equivalent BY CONSTRUCTION, and that is the hardest constraint on the work.** **Must not touch** any field `RideInput` cannot reach, and **must not choose its own `RiderPlacement` as part of the objective** — legitimate for starting a trial, but **an agent that picks its placement picks the gentlest face** (3.4h: the same stance rides **4.650 s on one face and 1.033 s on another**).
+
+### RIDES PER HOUR, AND PARALLELISM IS ZERO
+
+- **Bench** (`FaceWater` + `AttachedRider`, no sea): **48 runs/min ≈ 2 880 rides/hour, single process** — two rows of the 3.4 cost table agree exactly. **Caveats: those runs END IN A FALL, so throughput falls as the agent succeeds**; no peel, curl or shoulder, so nothing positional; and **×2.2 off the owner's water where the board sits.**
+- **Real sea:** `ride-report.md`'s own header — 58.4 min wall for 20 simulated min (**~2.9× real time**), **721 attempts → 5 stands → 4 rides ≥ 3 s. ~4 usable rides/hour** — **and it is a CATCH-RATE problem with a fix already in the code: `RiderPlacement` → ~120 rides/hour.**
+- **⚠️ PARALLELISM IS ZERO: 76 MB free pages, 7 783 of 8 192 MB swap in use; 3.5a was OOM-KILLED at `--maxWorkers=2`. One process at a time.**
+
+### ⚠️ `waveScore` CANNOT BE AN EVAL UNCHANGED
+
+It contains **`length: min(1, duration/20)`** and **halves the score on a fall within 1.5 s.** With every ride ending at 1.0–1.45 s, **the shipped score is saturated at the bottom exactly as the fall count is saturated at the top.**
+
+### THE SMALLEST USEFUL FIRST VERSION — no agent, no reward, no learning, no ruling
+
+**One research probe, `3.5/shape.ts`, in `depth.ts`'s pattern:** place the rider, **script one direction change with player inputs only**, log the five emergent turn numbers plus every body channel, report against Forsyth, and **break on `!rider.attached`, never `!upright`** (the `separate` freeze trap). **Plus V1b: the apparent-stature baseline** conceded to `engine-target.md` row 14 — **compute it, publish it, DO NOT score it** (its target, 63–81 % from 6 frames of one clip, is contested and contradicted in direction by videos 7 and 8; **but a baseline needs no agreed target and cannot be cheated**).
+
+### TWO MORE NUMBERS OF MINE IT CORRECTED RATHER THAN PROPAGATED
+
+**The "overhead ~0.7 s" is a HOLD duration, not a lead** — the lead is 0.07–0.30 s and they are different quantities. And **"cross-step" appears nowhere in the nine reads: the 0.55–0.60 s figure is a TRUNK half-cycle, not footwork.**
+
+### ITS ONE OPEN DISCREPANCY — **SETTLED HERE BY THE CALLER**
+
+It flagged that `body-channels.md` calls the trunk rotor absent *"on what the owner actually rides"* while the handoff records their address as including `rider=new`, and said this **decides whether a trunk eval measures the build they ride.**
+
+> **SETTLED: the owner rides `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two`.** It appears **24 times** in this handoff and they have confirmed it by riding it repeatedly. **So the trunk rotor IS present on the build they ride.** `body-channels.md`'s "absent" is true of the **shipped default** rider — which is **not** what the owner rides. **A trunk eval on their address measures a real rotor; it must still read `this.parts`, not `hip.angle`, because of the trap above.**
+
+### Doubts carried, not smoothed
+
+**No depth-matching eval is proposed at all** (leg-chain saturation and the 30-point ruler disagreement). **Clips 1–4's metre figures named tainted.** The down-transition's **three forms** mean an eval scores **separability, never one form**. The bottom turn's **1.00 s against 0.35–0.40 s clash is recorded, not averaged.** `engine-target.md` **defers the agent design to this document by name**, and §9 reconciles the two and states their one disagreement openly.
