@@ -2136,3 +2136,65 @@ Base: `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two`
 2. **`&armCarry=on`**, stick straight, then **hard over each way** — **lead hand down toward the inside rail, rear arm up and back, rear hand ABOVE THE HEAD at full stick, and still up for a moment after the stick comes back.**
 3. **The same with a HALF stick** — the pairing arrives, **the overhead arm does not.**
 4. **No switch**, as the control.
+
+## ⭐⭐⭐ VIDEO REFERENCE 12 (merged `1c5fb7d9`, PR #408) — **ROW 2 IS MEASURED DIRECTLY: 80° OF TRUNK WHILE THE LEGS BARELY MOVE**
+
+`docs/research/new-rider/3.5/video-ref-12-maldives-montage.md`. *"Jay Phillips in the Maldives"*, **39.341 s, 1440×2560, 24 fps**, read in full. `tabId` **`tab-3`**. **Merged as-is with no rebase — it auto-closed.** **The biggest rider the series has had:** head 76–130 px, standing-equivalent stature **≈650 px** and **≈1000 px** in the closest framings.
+
+### ⭐ THE HEADLINE — the first clip ever to measure BOTH channels on the SAME frames of ONE shot
+
+> **Two frames of the same shot, 2.4 s apart, same camera, same in-frame ruler: trunk `10°±8 → 90°±6` (+80°) while `hip-above-deck ÷ head-length` goes `3.83±0.4 → 3.22±0.5` — a ratio of ×0.84 ± 0.17, AN ERROR BAR THAT STILL CONTAINS "NO CHANGE AT ALL".**
+
+**That is `engine-target.md` row 2 measured rather than argued**, and **80° is the widest trunk span in the series** (V8 59°, V9 65°, V11 60°). **The trunk moves the whole way while the legs essentially do not.** Every earlier clip could only show the two channels on different frames or different shots.
+
+### ⚠️ THE LEG CHAIN REFUSED A FOURTH TIME — AND IT KILLED HALF OF MY OWN FOOTAGE ASK BY DELIVERING IT
+
+**The clip removed every earlier obstacle at once: bare legs, the knee visible as a joint, a rider 1.3–2× bigger than clip 11's, and TWO WHOLE SHOTS FILMED DOWN THE LINE FROM BEHIND — which is exactly what engine-target §6 asked for. It still saturates.**
+
+> **So V9's geometric mechanism is now DEMONSTRATED rather than inferred: the knee is visible, the bend is visible, and the ratio still reads 100 %.** Cause: **thigh foreshortening.** **And "down the line from behind" is WORSE, not better — from behind, the thigh points AT the lens instead of across it.**
+
+**⭐ And it produced the admissibility test that should gate every leg-chain reading from now on, needing no hip landmark: the PROJECTED THIGH/SHIN RATIO.** Anatomy ~**1.0–1.1**; it measured **0.31, 0.58, 1.15, 1.38, 1.52**. **Five attempts: one clean, one marginal, three refused — and both admissible readings are on frames where he is plainly extended**, which is the saturation in miniature.
+
+**⚠️ AND IT CORRECTED CLIPS 10 AND 11: "the backup ruler is dead on any raised lens" was TOO BROAD.** **Apparent stature is dead because it CONTAINS the fold; `hip-above-deck ÷ head-length` does not, and it still responds** (3.83 → 3.22, in the direction the eye says). **A usable ruler is rescued.**
+
+> **THE FOOTAGE ASK, CORRECTED A THIRD TIME: water-level, SIDE-ON — emphatically NOT from behind — knees not inside the boardshorts, rider ≥900 source px.**
+
+### OPPOSITE DIRECTIONS AND ONE-CHANNEL-FROZEN
+
+- **Trunk-vs-legs opposite-sign: NOT FOUND in 6 resolved transitions.** **So row 3 is SINGLE and now TWICE-not-reproduced** (clip 11's 7 transitions, clip 12's 6). Its own framing is right: ***"it remains the right acceptance test; it is not a frequency claim."***
+- **BUT arm-vs-trunk opposite signs: FOUND 3 of 3 turns** — the arm rises while the trunk folds, **0.17–0.33 s.** **Recorded as its own weaker line, not merged into row 3.**
+- **One-channel-frozen: 5 instances**, including **the whole body frozen 0.25 s** while the board planes (**V10's 0.44 s reproduced**), **the arm held 0.58 s** while the board rotated from vertical to flat, and **trunk-alone for 0.88 s** (**clip 11's 0.36 s more than doubled**). **Now on FOUR clips — the best-reproduced transition fact the series has.**
+
+### ⭐ TURN RATE — "THE RANGE IS THE REQUIREMENT" IS NOW DEMONSTRATED *WITHIN ONE RIDER*
+
+**It is a montage of 8 shots, all seven cuts confirmed at the native 1/24 s grid, so the whole-clip number is worthless.** Per shot: **S3 ≈6 changes in 7.96 s = one per 1.3 s; S6 1.7 s; S5 2.3 s; S8 2 in 9.59 s = one per 4.8 s, with ZERO in its last 6.2 s.**
+
+> **S3 and S8 are the same rider, same session, same camera — and they are 3.7× apart.** **Row 8's "the range is the requirement" is no longer a between-clips observation.**
+
+### THE BIG ARM — four clips now, and the exception reproduced
+
+**6 of 7 turns took it; 0 of 2 trim windows (1.75 s, 16 samples).** Lead **+0.04 to +0.12 s** on the three turns timeable (two more lower-bounded by cuts), **held 0.33–1.4 s.** **The one turn that declines it is carried on the LEAD arm reaching past the rail — V9's cutback exception reproduced in form, two clips, two riders.** **The arm lead is now on four clips**, against `engine-target.md` §4.6's corrected count of two — **that count needs updating again.**
+
+### ⚠️ THE PUMP CADENCE WEAKENS FURTHER
+
+**None — 0 half-cycles in 2 clean trim windows totalling 1.75 s at 0.125 s resolution (16 samples). This rider folds MONOTONICALLY rather than cycling.** It contributes **nothing either way**, and **it matches clip 11's other trim window, which also had no cycle.**
+
+> **Population now: 0.55–0.60 s on TWO clips, one weak dissent at ~0.36 s (V11), and TWO clips with no cycle present to measure. It is no longer "the series' most reproduced figure" and must stop being quoted as one.**
+
+### TWO FIRSTS, AND A THIRD FORE-AFT SEGMENT NOBODY HAD SEEN
+
+- **A deep folded crouch held ≥5.7 s, still held when the clip ends — DOUBLE V5's 2.9 s record for row 12.** But **it names NO DEPTH for it** (the hip is unfindable in whitewater) and **an early "~47 %" was computed and WITHDRAWN.**
+- **THE FIRST READABLE FACE IN TWELVE CLIPS** — eye, nose and mouth at a 90–130 px head, **head turned along the board's travel with the gaze below horizontal**, in 4 frames. **Row 18 has had no target at all in eleven clips; this is a start, not a target.**
+- **⭐ NEW AND IN NO PRIOR READ: the head and neck are thrust FORWARD of the shoulders by 110–230 px — a THIRD fore-aft segment** — **and it explains why thumbnails read as "folded" at frames whose trunk measures 10–18°.**
+
+### METHOD — four findings, all now in the skill, and two contradict what it said
+
+**⭐ A SMALLER VIEWPORT IS STRICTLY BETTER FOR MEASURING.** The canvas→screenshot scale is **0.625 at 1280×1000 — not the 0.78 clip 9 recorded, so the scale is NOT a constant and must be measured** — and **exactly 1.0 at 800×640**, where a 790×594 crop renders **1:1 for ~55 % more usable pixels.** **Stream quality and screenshot scale are two different knobs: maximise the first, minimise the second.**
+
+**☠️ SURVEY STRIPS LIE ABOUT ANGLES.** Reading 0.26× strips it wrote **"~70°"** for frames that measured **32–43°** at 1:1, and **"~45°"** for one that measured **10°**. **Strips find a moment; they never measure one.** Every angle it published came from a gridded frame at **≥0.86×.** **It did not rebuild the automated tracer.**
+
+**A PUBLISHED QUALITY CEILING CAN BE FICTITIOUS:** `hd2160` is published here and **A/Bs identical to `hd1440`** at the same field of view and final size. **Four clips, four ceilings, and the fourth shows the label can mean nothing** — the binding limit here was **motion blur at 24 fps.**
+
+### Housekeeping it raised, and the correction to it
+
+Its §5 says *"main's `b3598cac` (step 3.5g) reports rows 4, 5 and 15 as built"*. **Precisely: `b3598cac` is the HANDOFF ENTRY recording 3.5g; the CODE is in PR #407, which the classifier refused and which is still the owner's to merge.** **So those three arm rows are accurate about `main`'s `src/` as it stands, and will stop being accurate the moment #407 lands.**
