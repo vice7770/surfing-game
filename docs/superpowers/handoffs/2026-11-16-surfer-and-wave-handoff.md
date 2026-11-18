@@ -1617,3 +1617,52 @@ Their long-standing instruction was **the owner rides and judges; never use bot 
 
 - **`engine-target.md`** — the synthesis of nine reads plus the code survey, redirected to add **a "what would measure this" column** and **a feasibility section** (can the architecture express the target at all, or is it an **expressibility limit** rather than a tuning gap — a trunk that is a one-line function of leg depth cannot match a trunk moving opposite to the legs however it is tuned).
 - **`playing-agent-scope.md`** — the agent and eval design: the objective of play (**proposed, not chosen — it is the owner's call**), the metric set split into **computable today / needs new columns / inexpressible**, what the agent controls, **rides per hour on this machine**, and the smallest useful first version. **Most of the harness already exists** (`SurfZoneRunner`, the dev switches, and five probes that already drive headless rides with scripted inputs and dump per-tick columns) — **the gap may be much smaller than "code an agent" suggests.**
+
+## ⭐⭐ THE ENGINE TARGET (merged `a467a38f`, PR #400) — 18 ROWS, AND **NO BASELINE EXISTS FOR ANY OF THEM**
+
+`docs/research/new-rider/3.5/engine-target.md`. Synthesis of the nine video reads plus the code survey, **written against Ruling F** (it landed mid-round and was folded in, not retro-fitted). **Read-only; nothing built, ridden, measured or proposed.**
+
+### THE FIRST THREE ROWS, in priority order — and the first two need NO RULING
+
+1. **The trunk's fold must move the body's mass.** `?rider=new`'s `StandingBody.hip` is **already honest** — paired torque (`standingBody.ts:379–384`), booked power, its own clock — but `hip.angle` is read in three places that **never touch `this.parts`**, so the CoM, `bodyInertiaAt`, `riderYawInertia` and `stanceAt().height` are computed from an **unfolded** trunk while a **23 kg torso and a 5 kg head swing through 60°.** **GEOMETRY — it states where the mass already is. No ruling.**
+2. **The drawn trunk must stop being a function of leg depth.** `HumanoidRig.ts:1383–1385`. At trim frontside video 8's 23 points of leg buys **~8°** against the footage's **60°**; at the backside bottom turn (**30 → 30°**) it **cannot move with depth at all.** **GEOMETRY, drawing only. No ruling.**
+3. **Then the two must move in OPPOSITE directions at the same time** — video 9's deep leg **held 0.6 s while the trunk un-folds 35° → <10°**, plus a trunk still folded 60–70° a full 0.4 s after the board came round. **This builds nothing: it is the ACCEPTANCE TEST for rows 1 and 2.**
+
+**They are first because they are the only rows shippable without a ruling AND measurable without a longer ride** — and rows 3, 6, 9 and 11 are all downstream of them.
+
+### THE 18 ROWS BY CHANGE-KIND
+
+**geometry 9** (rows 1–6, 11, 12, 15) · **force 2** (row 9 the fore-aft differential, row 10 the second leg spring) · **blocked by survival 3** (row 7 turn beats, row 8 chaining rate, row 16 the foam brace) · **unknown 3** (13, 14, 18) · **already correct 1** (row 17, **zero steps — recorded so no round spends anything there**). Row 12 is geometry but **the owner has already ruled it** (C and E).
+
+### ⚠️ THE SINGLE BIGGEST THING IT CANNOT SAY — and it is exactly the gap the owner just asked to fill
+
+> **No quantity in the document has ever been computed on the game's OWN rider in the footage's units.** Every target is a footage number; **every game-side cell is a code reading.** **So there is no baseline, and therefore no eval, for any row.**
+
+**The sharpest instance is depth:** video 9's two rulers disagree by ~30 points, so **the document cannot say what leg depth the engine should reach.** **This is the bridge between the target and the playing agent: the agent's first job is not to play well — it is to produce the baseline that does not exist.**
+
+### CHEAT-RESISTANCE, as Ruling F demands
+
+For **eight** metrics the laziest route to a good score is **not surfing** — shake the trunk, cycle the arms, hold the key, stand still at the right height — each with a guard. **The general rule it produced, and it should govern the agent's design:**
+
+> **Every metric is a CHECK that the engine can express the footage, not an OBJECTIVE to maximise.** An objective of play is the owner's to choose, and the document deliberately **does not propose one.**
+
+### FEASIBILITY IN FOUR WORDS, not two
+
+**tuning gap / wiring gap / expressibility limit / absent quantity.** The governing sentence:
+
+> **On what the owner actually rides, rows 1 through 11 are ABSENT QUANTITIES, not tuning gaps** — the shipped body is seven point masses in one hard-coded posture and **no part is ever rotated about another.** **On `?rider=new` they are mostly wiring gaps and expressibility limits, which is far cheaper.**
+
+**Three things that cannot be asked for at all:** anything needing **a clock**, anything the game does **on its own initiative**, and any **kinematic prescription**.
+
+### ⚠️ TWO CORRECTIONS TO MY OWN RECORD
+
+1. **RULING F's TABLE OVERCOUNTS THE ARM LEAD: it is timed on TWO clips, not three.** The "2 of 2" is video 9; the "3 of 4" is video 8 — **two clips, three riders, two breaks.** The **three-clip** figure is the arm **PAIRING** (lead hand low + rear arm up: videos 5, 6, 7), and **none of those three times it against the board.** **Still the second-best reproduced figure after the pump period — but Ruling F's table must be read with this correction, not quoted as it stands.**
+2. **THE HOLD-VERSUS-DIP TALLY WAS WRONG, AND RULING C IS BETTER SUPPORTED THAN WHEN IT WAS MADE.** **Video 2 (Pupo) is a HELD low, not a dip**, and **video 1 sits on BOTH sides of its own question** — a tube held 15+ slowed seconds *and* dipping turns in the same clip. So it is **3 clips of dips (V1's turns, V3, V4) against 3 of holds (V1's tube, V2, V5)**, with **3 abstaining** and video 9 a 0.6 s near-miss. **Not "video 5 alone against four", which is what I told the owner.**
+
+### §8 — THE FRAMING I HAVE BEEN USING IS HALF RIGHT
+
+**The four-channel framing is the right INVENTORY and the wrong ORDERING PRINCIPLE**, so the document uses it only as the inventory. And **"arm carriage" and "arm timing" are not two channels but ONE CHANNEL AND ITS CLOCK** — which is why **row 5's sequencing change buys nothing visible until row 4 exists.**
+
+### Honesty carried
+
+**Saturated leg chain marked beside all four rows that rest on it** (2, 6, 10, 14), with the mechanism, the consequence that **"no rider ever leaves the Tall band" is untested**, and the ask for **footage shot from the water or down the line.** **The frame of every number named in §4.3.** No metre figure inherited from the three reads that compared a hip fraction to a CoM height. **Single observations marked SINGLE** (rows 3, 11, 13, 16, both halves of 12). **Six disagreements stated rather than averaged** (§4.5). **No date and no certainty for rows 7, 8 and 16.** **Four asks of the owner in §6**, led by the footage-from-the-water one — *"the cheapest thing that would unblock the most."*
