@@ -2596,3 +2596,14 @@ Two leads: **+0.16 s** (t = 6.60, **inside the broken lip**) and **+0.14 s ± 0.
 The review the owner relayed still opens with *"For Canyon, the owner's target is one bottom turn that carries speed into the climb."* **Codex's covering message now says only that "the Canyon bottom-turn speed and feel remain for Vicente to judge"**, which is a weaker and correct statement.
 
 **Relaying a document is not endorsing a sentence inside it**, so the objective is still unconfirmed and **nothing is built against it.** The question is in front of the owner with the source named. **The review's judging rubric for it is worth keeping either way**, because it is a description of what to watch rather than a target: follow the board from the descent into the trough, through the curved section, into its first sustained climb; **the banked board's change of heading should FOLLOW contact** between rider, board and water; **the rider may lower the hips, fold at the trunk or reach BEFORE the nose visibly comes around**; during the climb the rider can release the turn while keeping enough travel along the face to continue. **Speed through the water and the arc of the board belong to the board model, and the camera pan gives neither a calibrated speed nor a turn radius.**
+
+---
+
+## THE OWNER'S VIDEO QUEUE (live list — the owner's standing rule is **one at a time**)
+
+| # | URL | state |
+| --- | --- | --- |
+| 15 | `https://www.youtube.com/shorts/3yxY-F_AEds` | **reading now.** Brief leads with **row 6** — in trim with no direction change, which channel cycles? |
+| 16 | `https://www.youtube.com/shorts/NQ6dkvD2gHU` | **queued**, dispatched when 15 reports |
+
+Clips 1–14 are read. **Row 6 is the hottest row in the table** after video 14 contradicted both halves of it, so every brief from here leads with it until two clips agree.
