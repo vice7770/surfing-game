@@ -43,6 +43,7 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | 19 | `V8SCdpuYnKM` | https://www.youtube.com/shorts/V8SCdpuYnKM | **read — PR #422, not merged.** ⭐ **The first clip in nineteen that ENDS IN A WIPEOUT**, and its mechanism is the owner's own complaint |
 | 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | **read — PR #423, not merged.** ⭐ **The first RECOVERY from a lost stance in twenty clips** |
 | 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | ⏸️ **HELD, not dispatched.** Clip 20 proved the binding constraint is **the board's bearing to the lens**, which no new clip from a shore-side camera can fix. **Awaiting the owner's decision on whether to continue the queue.** |
+| 22 | `YybXum0o4YI` | https://www.youtube.com/shorts/YybXum0o4YI | **queued** |
 
 **Dispatch rule: the owner's standing instruction is ONE VIDEO AT A TIME**, so the queue is dispatched in order as
 each read reports. **Every brief is written blind** — an independent reviewer reads several of the same clips, and
