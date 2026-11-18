@@ -132,6 +132,83 @@ describe('the arm carriage (step 3.5g, engine-target rows 4, 5 and 15)', () => {
     expect(falling.inside).toBe(0);
   });
 
+  // ⚠️ THE BUG THIS TEST EXISTS FOR, and it is a REGRESSION test: the carriage used to be a MAGNITUDE (thresholded at
+  // ARM_REACH_FROM and filtered on ARM_HOLD_TIME) plus a SIGN adopted from the stick in ONE substep off ANY nonzero
+  // stick. The magnitude was thresholded and filtered; the sign was neither. So a full turn one way, released, then
+  // any touch of the stick the other way crossed the lead hand's lateral target over the board in a single substep.
+  // MEASURED ON THE OLD CODE, worst one-substep lateral move of the lead hand at h = 1/60 s:
+  //   reach 1.000 (no release)      -> 0.4348-0.4400 m   (2 x ARM_REACH_LEAD.across, the whole board)
+  //   reach 0.846 (0.1 s released)  -> 0.3681-0.3788 m
+  //   reach 0.651 (0.3 s released)  -> 0.2833-0.3011 m
+  // 18 cells: 3 release times x 6 return sticks (-0.06, -0.12, -0.24, -0.3, -0.5, -1). The band ABOVE the threshold
+  // (-0.3, -0.5, -1) jumps too, which is why gating the latch on the threshold would not have been a fix: any
+  // reversal with a residual reach reproduced it, scaled. SIGNED, the same 18 cells give 0.0034-0.0501 m.
+  //
+  // ⚠️ The figures above are the product `across x inside`, because on the OLD representation `across` was a
+  // magnitude and the rail lived in `inside`, so the module's own output could not show the jump — only the composed
+  // lateral could. **The composed version of this test, read on the DRAWN hand through `renderPoint`, is in
+  // `armCarry.test.ts`, and it is the one that reproduces the old 0.396 m frame-to-frame step.** What this test
+  // pins is the module's own lateral output, which is now the signed quantity the caller adds as it stands.
+  it('SWEEPS the lead hand through the stringer on a rail change instead of snapping it across', () => {
+    const bound = 0.06;
+    for (const release of [0, 0.1, 0.3]) {
+      for (const back of [-0.06, -0.12, -0.24, -0.3, -0.5, -1]) {
+        // Hold a positive stick to full reach, release for a moment, then touch the stick the other way.
+        const state = hold(1, 2);
+        expect(state.reach).toBeGreaterThan(0.99);
+        for (let t = 0; t < release; t += STEP) stepArmCarriage(state, STEP, 0, true);
+        const at = () => armCarriagePlace(state, true).across;
+        let prev = at();
+        let worst = 0;
+        const crossings: number[] = [];
+        for (let t = 0; t < 2; t += STEP) {
+          stepArmCarriage(state, STEP, back, true);
+          const now = at();
+          worst = Math.max(worst, Math.abs(now - prev));
+          if (prev > 0 && now <= 0) crossings.push(Math.abs(now - prev));
+          prev = now;
+        }
+        const cell = `release ${release} back ${back}`;
+        // No substep moves the lateral target more than a few centimetres. THIS IS THE ASSERTION THE BUG BROKE.
+        expect(worst, `${cell}: worst ${worst.toFixed(4)} m`).toBeLessThan(bound);
+        if (Math.abs(back) > ARM_REACH_FROM) {
+          // A stick that asks for a carriage: the hand goes THROUGH the stringer, once, in a small step, and ends up
+          // over the other rail on the new stick's sign.
+          expect(crossings.length, cell).toBe(1);
+          expect(crossings[0], cell).toBeLessThan(bound);
+          expect(Math.sign(state.reach), cell).toBe(-1);
+          expect(armCarriagePlace(state, true).across, cell).toBeLessThan(0);
+        } else {
+          // A stick inside the reach band asks for NO carriage, so the hand returns to the stringer and stops there —
+          // it does not change rails at all. **That is the whole of the old bug**: the latch flipped the rail on
+          // exactly these sticks, which ask for nothing, while the old reach was still fully out.
+          expect(crossings.length, cell).toBe(0);
+          expect(state.reach, cell).toBeGreaterThan(0);
+          expect(armCarriagePlace(state, true).across, cell).toBeLessThan(0.05);
+        }
+      }
+    }
+  });
+
+  // The representation itself: ONE signed reach, so `out` and `lift` are the same on either rail and only `across`
+  // mirrors — which is what makes the crossing above continuous.
+  it("carries the rail in the reach's own sign, with `out` and `lift` the same on both rails", () => {
+    const right = hold(1, 2);
+    const left = hold(-1, 2);
+    expect(right.reach).toBeCloseTo(-left.reach, 9);
+    expect(right.inside).toBe(1);
+    expect(left.inside).toBe(-1);
+    for (const lead of [true, false]) {
+      const a = armCarriagePlace(right, lead);
+      const b = armCarriagePlace(left, lead);
+      expect(b.out).toBeCloseTo(a.out, 9);
+      expect(b.lift).toBeCloseTo(a.lift, 9);
+      expect(b.across).toBeCloseTo(-a.across, 9);
+    }
+    // `over` is a magnitude: the overhead arm is the same shape on either rail.
+    expect(left.over).toBeCloseTo(right.over, 9);
+  });
+
   it('keeps the rest carriage inside the deadband, and answers nothing at all when not standing', () => {
     // A line held straight (the engine's own STEER_DEADBAND is 0.05, below ARM_REACH_FROM) keeps the rest carriage.
     expect(hold(0.05, 1).reach).toBe(0);

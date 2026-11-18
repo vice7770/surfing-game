@@ -17,7 +17,7 @@
  * | --- | --- | --- |
  * | `out` | the spread along the body's own trunk→arm axis, as a **share** of it — the existing `spread` | ARM_SPREAD 0.7 |
  * | `lift` | the hand's **height**, m, from the arm part's own placed point, along the body's up | 0 (today) |
- * | `across` | the hand **across** the board, m, toward the inside rail, along the body's across | 0 (today) |
+ * | `across` | the hand **across** the board, m, **signed** — the rail is its sign, along the body's across | 0 (today) |
  *
  * The arm part sits at **1.00 m above the deck, on the stringer, 0.45 m fore (left arm) or aft (right arm) of the
  * trunk** standing (`riderPosture.ts:93–102`, whose own comment says these heights are illustrative, not measured);
@@ -98,8 +98,14 @@ function ramp(x: number, from: number, full: number): number {
 
 /**
  * A carriage's three numbers: the spread as a share of the trunk→arm axis (ARM_SPREAD is today's), the hand's height
- * from the arm part's placed point in m, and its position across the board in m toward the **inside** rail (the
- * carriage's own `inside` sign multiplies it, so a negative `across` is away from that rail).
+ * from the arm part's placed point in m, and its position across the board in m.
+ *
+ * **`across` is SIGNED and already carries the rail**: `+` is the +x rail and `−` the −x rail, in the board's own
+ * frame, so the caller adds it along the board's across axis as it stands and multiplies it by nothing. The constants
+ * below quote `across` *toward the inside rail* — the sign the lead hand takes on a positive stick — and
+ * `armCarriagePlace` turns that into the board's frame by multiplying it by the **signed** reach. **That is the whole
+ * reason the state is signed**: a magnitude times a latched ±1 rail makes the hand teleport across the stringer the
+ * substep the stick changes sign, with the old reach still extended.
  */
 export interface ArmPlace {
   out: number;
@@ -167,7 +173,15 @@ export const ARM_OVER_FULL = 1;
 export const ARM_LEAD_TIME = 0.08;
 export const ARM_HOLD_TIME = 0.7;
 
-/** Below this much `reach`, with no ask, the carriage forgets which rail it was leaning over. */
+/**
+ * Below this much `|reach|` the carriage has no rail to report, so the derived `inside` reads 0.
+ *
+ * **It no longer latches anything, and the hold it was written for is kept by the signed state instead.** It used to
+ * be the release of a latched side: `inside` was adopted from the stick's sign in ONE substep and only forgotten once
+ * `reach` had come back past this value. The forgetting is all that survives — the rail is now the **sign of `reach`
+ * itself**, so a hold after a turn keeps its rail for exactly as long as the reach lasts, on the same
+ * ARM_HOLD_TIME curve as before, and the rail is let go when the reach is gone rather than on a separate test.
+ */
 export const ARM_SIDE_DROP = 0.05;
 
 /**
@@ -195,13 +209,21 @@ export const ARM_SIDE_DROP = 0.05;
  * leaves `standing` and the carriage stops being drawn at all.
  */
 
-/** The carriage's own state: how far into the pairing, how far overhead, and which rail the lead hand is dropping over. */
+/** The carriage's own state: how far into the pairing and over which rail, how far overhead, and the rail as a sign. */
 export interface ArmCarriageState {
-  /** 0–1: into the pairing (lead hand down at the rail, rear arm up and back). */
+  /**
+   * **−1 to 1, SIGNED**: how far into the pairing (lead hand down at the rail, rear arm up and back), and over
+   * **which** rail — `+` the +x rail, `−` the −x rail, in the board's own frame. One continuous quantity, so a rail
+   * change **sweeps the hand through the stringer** instead of teleporting it across.
+   */
   reach: number;
-  /** 0–1: the rear arm overhead, on top of `reach`. */
+  /** 0–1: the rear arm overhead, on top of `reach`. A magnitude — the overhead arm is the same shape on either rail. */
   over: number;
-  /** The rail the lead hand drops over, in the board's own frame (+1 the +x rail, −1 the −x rail, 0 none). Latched while the carriage is held, so a hold keeps its side. */
+  /**
+   * The rail the lead hand drops over (+1 the +x rail, −1 the −x rail, 0 none) — **derived, not stored state**: the
+   * sign of `reach` once there is enough of it to read (ARM_SIDE_DROP). It is written each substep for the probes and
+   * the tests; nothing in the drawing reads it, because the sign is already inside `across`.
+   */
   inside: number;
 }
 
@@ -222,8 +244,25 @@ export function resetArmCarriage(state: ArmCarriageState): void {
  * all**; `h` the substep, s. `rest` holds the carriage at the rest position whatever the stick says
  * (`armCarry: 'rest'`), which is row 15 on its own.
  *
- * The side is **latched**: it is taken from the stick's sign while there is one, and forgotten only once the carriage
- * has come back past ARM_SIDE_DROP, so the hold after a turn keeps the rail it was leaning over.
+ * ## ⚠️ The rail is the reach's own SIGN, and it was a LATCH, which snapped the hand across the board
+ *
+ * The first build carried the carriage as a **magnitude plus a latched sign**: `reach` was 0–1 from `|steer|`,
+ * thresholded at ARM_REACH_FROM and filtered on ARM_HOLD_TIME, while the rail was `Math.sign(steer)` adopted in
+ * **one substep** off **any** nonzero stick. The magnitude was thresholded and filtered; **the sign was neither.**
+ * So a full turn one way, released, and then **any** touch of the stick the other way flipped the rail while the old
+ * reach was still extended, and the lead hand's lateral target crossed the board in a single substep —
+ * **2 × ARM_REACH_LEAD.across, 0.44 m measured** at full reach, and **0.28 m** on a residual reach of 0.65 with a
+ * stick well above the threshold, so gating the latch on the threshold would only have narrowed the band it fires in.
+ * The defect was the representation, not the threshold.
+ *
+ * So `reach` is **one continuous signed quantity in [−1, 1]**: the target is `ramp(|steer|) × sign(steer)`, and a
+ * rail change is the state **passing through zero**, which draws the sweep through the stringer the footage shows
+ * (the roundhouse on the lead arm, and a lead/rear pairing that sweeps rather than snaps).
+ *
+ * **The rise/return asymmetry — which is the whole mechanism of row 5's arm lead — is kept exactly**: the step runs
+ * on ARM_LEAD_TIME when it carries `|reach|` **away** from zero on the side it is already on (reaching), and on
+ * ARM_HOLD_TIME whenever it carries it **toward** zero (returning, which a reversal begins with). A reversal is
+ * therefore a slow release of the old rail followed by a fast reach on the new one, not a jump.
  */
 export function stepArmCarriage(state: ArmCarriageState, h: number, steer: number, standing: boolean, rest = false): void {
   if (!standing) {
@@ -231,33 +270,43 @@ export function stepArmCarriage(state: ArmCarriageState, h: number, steer: numbe
     return;
   }
   const ask = rest ? 0 : Math.min(1, Math.abs(steer));
-  const reachAsked = ramp(ask, ARM_REACH_FROM, ARM_REACH_FULL);
+  const reachAsked = ramp(ask, ARM_REACH_FROM, ARM_REACH_FULL) * (ask > 0 ? Math.sign(steer) || 0 : 0);
   const overAsked = ramp(ask, ARM_OVER_FROM, ARM_OVER_FULL);
-  state.reach += (reachAsked - state.reach) * (1 - Math.exp(-h / (reachAsked > state.reach ? ARM_LEAD_TIME : ARM_HOLD_TIME)));
+  // Away from zero on the side it is already on = reaching (fast); anything else, a return or a reversal = holding.
+  const reaching = Math.abs(reachAsked) > Math.abs(state.reach) && (state.reach === 0 || reachAsked * state.reach > 0);
+  state.reach += (reachAsked - state.reach) * (1 - Math.exp(-h / (reaching ? ARM_LEAD_TIME : ARM_HOLD_TIME)));
   state.over += (overAsked - state.over) * (1 - Math.exp(-h / (overAsked > state.over ? ARM_LEAD_TIME : ARM_HOLD_TIME)));
-  const side = ask > 0 ? Math.sign(steer) || 0 : 0;
-  if (side !== 0) state.inside = side;
-  else if (state.reach < ARM_SIDE_DROP) state.inside = 0;
+  state.inside = Math.abs(state.reach) < ARM_SIDE_DROP ? 0 : Math.sign(state.reach);
 }
 
 /**
  * Where one hand is carried now: the three numbers for `lead` (the arm on the front foot's side) or the rear arm,
  * blended rest → reach by `state.reach`, and on the rear arm reach → overhead by `state.over`.
  *
+ * **`out` and `lift` read the reach's MAGNITUDE and `across` reads it SIGNED.** The hand goes out along the trunk→arm
+ * axis and down by **how far** into the carriage it is, whichever rail that is; it goes across by how far into the
+ * carriage it is **and which way**. The rest carriage is on the stringer (`ARM_REST.across` is 0 — the only rest value
+ * with no rail in it), so the lateral target is simply the carriage's own across times the signed reach, which
+ * **sweeps through the stringer** when the rail changes. The overhead arm's own across is signed the same way, and
+ * fades with the reach rather than with a sign, so there is no step anywhere in the channel.
+ *
  * **The lead hand does not go overhead.** V9's overhead passage has the rear arm up and the **lead arm reaching past
  * the rail**, and its roundhouse cutback is carried on the lead arm alone, so `over` moves one arm.
  */
 export function armCarriagePlace(state: ArmCarriageState, lead: boolean, out: ArmPlace = { out: 0, lift: 0, across: 0 }): ArmPlace {
   const to = lead ? ARM_REACH_LEAD : ARM_REACH_REAR;
-  const r = Math.max(0, Math.min(1, state.reach));
+  const signed = Math.max(-1, Math.min(1, state.reach));
+  const r = Math.abs(signed);
   out.out = ARM_REST.out + (to.out - ARM_REST.out) * r;
   out.lift = ARM_REST.lift + (to.lift - ARM_REST.lift) * r;
-  out.across = ARM_REST.across + (to.across - ARM_REST.across) * r;
+  // `signed === 0` is written out so a rest carriage reads +0 across rather than the −0 a negative constant times
+  // zero produces: `across` is read by a test with `toBe`, and the rest carriage is ON the stringer, not just at it.
+  out.across = signed === 0 ? 0 : to.across * signed;
   if (!lead && state.over > 0) {
     const o = Math.max(0, Math.min(1, state.over));
     out.out += (ARM_OVER_REAR.out - out.out) * o;
     out.lift += (ARM_OVER_REAR.lift - out.lift) * o;
-    out.across += (ARM_OVER_REAR.across - out.across) * o;
+    out.across += (ARM_OVER_REAR.across * signed - out.across) * o;
   }
   return out;
 }

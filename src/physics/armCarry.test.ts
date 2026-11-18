@@ -233,6 +233,49 @@ describe('the arm carriage on the ridden rider (`armCarry`, step 3.5g)', () => {
     expect(lead).toBeLessThan(0.5);
   });
 
+  // ⚠️ THE RAIL CHANGE, read on the DRAWN hand — the regression the signed reach exists for. The carriage used to be a
+  // magnitude plus a sign latched off ANY nonzero stick in ONE substep, so a loaded turn followed by a small flick the
+  // other way teleported the drawn lead hand across the board while the reach was still out. Here the whole reversal
+  // is walked frame by frame on `renderPoint` and every frame's step is bounded. The bound is 0.06 m per frame on the
+  // CARRIAGE's own contribution (the switch on minus an identical twin with it off, in the board's frame), so the
+  // board's own roll and the body's swing — which move the drawn hand for reasons that are not the carriage — are
+  // differenced out. On the old representation the carriage's own contribution stepped 0.28-0.44 m in one frame.
+  it('sweeps the drawn lead hand across the board on a rail change, with no frame-to-frame jump', () => {
+    const on = towed('on');
+    const off = towed();
+    const drive = (steer: number) => {
+      for (const { board, rider, tow } of [on, off]) {
+        rider.steer = steer;
+        tow();
+        board.step(STEP, new PlaneWater());
+      }
+    };
+    // The carriage's own contribution to the drawn LEAD hand (Regular: the left arm), across the board.
+    const across = () => handLocal(on.board, on.rider, LEFT_HAND).x - handLocal(off.board, off.rider, LEFT_HAND).x;
+    for (let i = 0; i < Math.round(1.2 / STEP); i += 1) drive(1);
+    const loaded = across();
+    // Loaded, the lead hand is carried out over the rail it is leaning on.
+    expect(loaded).toBeGreaterThan(0.15);
+    // Now a small flick the other way — inside the old latch's own trigger band (below ARM_REACH_FROM 0.25, so it
+    // asks for no reach at all) — and then hard over. Every frame's step is bounded and the hand ends the other side.
+    let worst = 0;
+    let prev = loaded;
+    let live = 0;
+    const sticks = [...Array(12).fill(-0.12), ...Array(60).fill(-1)];
+    for (const steer of sticks) {
+      drive(steer);
+      if (!on.rider.attached || !off.rider.attached) break;
+      live += STEP;
+      const now = across();
+      worst = Math.max(worst, Math.abs(now - prev));
+      prev = now;
+    }
+    expect(live, 'the live window').toBeGreaterThan(0.3);
+    expect(worst, `worst frame-to-frame move ${worst.toFixed(4)} m, live ${live.toFixed(3)} s`).toBeLessThan(0.06);
+    // And it is a sweep, not a stall: by the end of the live window the hand has left the rail it was on.
+    expect(prev).toBeLessThan(loaded * 0.5);
+  });
+
   // ROW 5, the HOLD, which is a DIFFERENT quantity from the lead: the carriage stays after the ask drops (V9's
   // overhead window is ~0.7 s, SINGLE). Read on the drawn hand, not on the carriage's own scalar.
   it('holds the drawn carriage after the stick comes back', () => {

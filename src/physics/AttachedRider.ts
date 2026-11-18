@@ -2164,8 +2164,9 @@ export class AttachedRider {
   private readonly deepens: boolean;
   /**
    * Step 3.5g: the arm carriage channel (`armCarry`), **drawing only**. `'rest'` holds the rest carriage whatever the
-   * stick says. `carriage` is its state — how far into the pairing, how far overhead, and which rail the lead hand is
-   * dropping over — advanced per substep beside `balanceMargin` and read only by `renderPoint`'s hand branch.
+   * stick says. `carriage` is its state — how far into the pairing and **over which rail, in one signed number**, how
+   * far overhead, and the rail as a derived sign — advanced per substep beside `balanceMargin` and read only by
+   * `renderPoint`'s hand branch.
    */
   private readonly armCarry: 'on' | 'rest' | undefined;
   private readonly carriage = createArmCarriage();
@@ -3076,7 +3077,10 @@ export class AttachedRider {
         const place = armCarriagePlace(this.carriage, lead, this.armPlace);
         out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread + place.out - ARM_SPREAD));
         out.addScaledVector(this.armUp.set(0, 1, 0).applyQuaternion(board.orientation), place.lift);
-        out.addScaledVector(this.armAcross.set(1, 0, 0).applyQuaternion(board.orientation), place.across * this.carriage.inside);
+        // `place.across` is already SIGNED in the board's own frame (the carriage's reach carries the rail in its
+        // sign), so it is added as it stands. It used to be a magnitude times a latched ±1 rail, which teleported the
+        // lead hand 0.44 m across the board in one substep when the stick changed sign with the reach still out.
+        out.addScaledVector(this.armAcross.set(1, 0, 0).applyQuaternion(board.orientation), place.across);
         return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
       }
       out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));

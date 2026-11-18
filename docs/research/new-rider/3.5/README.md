@@ -1917,3 +1917,102 @@ Two smaller differences worth recording rather than smoothing over:
 - Video 11's **carriage E** is *"both arms high/overhead with the body tucked"* for ~0.8 s through the lip hit. The
   tuck half is leg depth and the overhead half is reachable, but **the pairing of the two is not selectable** here:
   the channel reads the stick, not the lip.
+
+## 10. ⚠️ Review found a real bug in §1's representation: **the rail was a LATCH, and the hand snapped across the board**
+
+**Found by reading the code, then measured, then fixed on the same branch.** It is worth recording in full because the
+obvious narrow fix is **not** a fix.
+
+### 10.1 What was wrong
+
+The carriage was carried as a **magnitude plus a latched sign**:
+
+```
+ask        = |steer|                                  // MAGNITUDE only
+reachAsked = ramp(ask, ARM_REACH_FROM, ARM_REACH_FULL) // 0 until ask >= 0.25
+reach     += (reachAsked - reach) * (1 - e^(-h/tau))   // filtered: fast up, ARM_HOLD_TIME 0.7 s back
+side       = ask > 0 ? sign(steer) : 0                 // ANY nonzero stick
+if (side) inside = side                                // adopted in ONE substep
+```
+
+**The magnitude was thresholded and filtered; the sign was neither.** So: hold a full positive steer (`reach` → 1,
+`inside` = +1), release, then touch a **small negative** stick in **0.06–0.24** — nonzero, so the rail flipped
+instantly; below `ARM_REACH_FROM`, so nothing pulled the reach in. **A still-extended lead hand crossed the board in
+one substep.**
+
+### 10.2 Measured, before and after — and it is **not** masked downstream
+
+Worst **one-substep** move of the lead hand's lateral target, `h = 1/60 s`, **18 cells** — 3 release times (0, 0.1,
+0.3 s) × 6 return sticks (−0.06, −0.12, −0.24, −0.3, −0.5, −1):
+
+| reach at the reversal | old (magnitude + latch) | new (signed) |
+| --- | --- | --- |
+| **1.000** (no release) | **0.4348–0.4400 m** | 0.0052–0.0497 m |
+| 0.846 (0.1 s released) | 0.3681–0.3788 m | 0.0044–0.0437 m |
+| 0.651 (0.3 s released) | 0.2833–0.3011 m | 0.0034–0.0501 m |
+
+**0.44 m is `2 × ARM_REACH_LEAD.across` — the whole width of the carriage, in one substep.** The rear hand's own
+lateral stepped 0.0014–0.0228 m after the fix on the same 18 cells.
+
+**And it reaches the drawn point, which was the open question.** Read on `renderPoint` as the carriage's own
+contribution (the switch on minus an identical twin with it off, in the board's frame, so the board's roll and the
+body's swing are differenced out), a loaded +x turn followed by a **−0.12 flick** and then hard over stepped
+**0.3960 m in one frame** on the old code and is bounded at **0.06 m a frame** on the new. **So the jump was visible,
+not masked by the IK or by a hand contact** — a negative result would have been useful here and this is not one.
+
+### 10.3 Why gating the latch on the threshold would **not** have fixed it
+
+Hold +full, release, then push **−0.3** — *above* `ARM_REACH_FROM` — while `reach` is still 0.65: the gated latch
+adopts the new rail instantly anyway and the hand steps **0.28 m** (the table's third row, which contains exactly
+those cells). **Any reversal above the threshold with a residual reach reproduces the discontinuity, scaled.** The
+defect was the **representation**, not the threshold.
+
+### 10.4 The fix: one continuous **signed** reach
+
+- `reach` is now **−1 to 1**, driven from `ramp(|steer|, …) × sign(steer)`. A rail change is the state **passing
+  through zero**, which draws the sweep through the stringer the footage shows — V9's roundhouse is carried on the
+  lead arm, and the pairing sweeps rather than snaps.
+- **The rise/return asymmetry, which is the whole mechanism of row 5's lead, is kept exactly**: `ARM_LEAD_TIME` when
+  the step carries `|reach|` **away** from zero on the side it is already on, `ARM_HOLD_TIME` whenever it carries it
+  **toward** zero. Every case that existed before behaves exactly as before — a rise from the stringer is fast, a
+  release is slow, and a *reduction* of the stick while staying on one rail is slow, as it already was.
+- `armCarriagePlace` reads the **magnitude** for `out` and `lift` (the hand goes out and down by **how far** into the
+  carriage it is, whichever rail that is) and the **signed** value for `across` (how far **and which way**). `over`
+  stays a magnitude — the overhead arm is the same shape on either rail — and its own `across` is signed the same way,
+  so there is no step anywhere in the channel.
+- `AttachedRider.renderPoint` adds `place.across` **as it stands**; the `× inside` multiplication is gone.
+
+### 10.5 `ARM_SIDE_DROP`: the hold is **kept**, and there is no trade
+
+`ARM_SIDE_DROP` existed so that the hold after a turn kept the rail it was leaning over — the latch was released only
+once `reach` had come back past 0.05. **Under the signed representation the hold is kept for free, and this is not a
+near miss.** The rail is the **sign of `reach` itself**, and `reach` decays on exactly the ARM_HOLD_TIME curve it
+always did, so a hold after a turn keeps its rail for precisely as long as the reach lasts — the identical curve, not
+a similar one. **A naive signed filter drifting back to centre during the hold was the risk and it does not occur**,
+because the quantity that holds and the quantity that carries the rail are now the same number. `ARM_SIDE_DROP` keeps
+one job, the **derived** read: `inside` reports 0 below it, and the sign of `reach` above it. `inside` is no longer
+state and nothing in the drawing reads it; it stays for the probes and the tests.
+
+**One consequence worth stating rather than hiding.** A **full stick reversal** now takes **0.42 s** to bring the hand
+back to the stringer (the slow ARM_HOLD_TIME release) and **~0.57 s** to arrive over the new rail (the fast
+ARM_LEAD_TIME reach on the far side) — where the old code did it in one substep. **Whether the arm still *leads* the
+rail through a reversal could not be measured on this bench**: the attempt (towed at 6, 8, 10 m/s on `PlaneWater`,
+stick +1 for 1.2 s then −1) found the board's roll **never comes back** inside the live window at 6 m/s and the rider
+separates at **0.50 s** (8 m/s) and **0.25 s** (10 m/s), so `rollBack` is `NaN` in 3 of 3 arms. **So the alternative —
+running the reversal's first half on ARM_LEAD_TIME too, which would sweep in ~0.24 s — is NOT ruled out and NOT
+adopted**: it would change the return behaviour that already exists, and there is no measurement here that asks for
+it. It needs the owner's ride, or a bench where a rail change's own rail answer resolves.
+
+### 10.6 Tests
+
+- **Nothing in the 13 existing assertions encoded the magnitude-plus-latch representation**, so **no assertion was
+  changed, weakened or deleted** — all 13 pass unchanged. (`hold(-1, 2).inside === -1` and the latch-through-the-hold
+  assertions pass on the derived sign.)
+- **Three tests added**, and **all three fail on the pre-fix code** (checked by restoring both files from `HEAD` and
+  re-running): the 18-cell one-substep bound with its through-the-stringer crossing count (`armCarriage.test.ts`), the
+  signed-representation mirror (`out` and `lift` equal on both rails, `across` negated), and the **drawn-hand** frame
+  bound through a rail change (`armCarry.test.ts`), which is the one that reproduces the 0.396 m step.
+- The one-substep bound is **0.06 m at `h = 1/60 s`**, which is a deliberately pessimistic substep: a standing rider
+  runs `BoardBody` at `STANDING_SUBSTEPS` 32, so the real `h` is **dt/32 ≈ 0.52 ms** and the signed carriage's largest
+  possible move in one of those is **≈ 0.003 m**. **The old latch moved 0.44 m in that same 0.52 ms** — the sign was
+  the one quantity in the channel with no filter on it at all.
