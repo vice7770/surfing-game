@@ -2198,3 +2198,73 @@ Base: `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two`
 ### Housekeeping it raised, and the correction to it
 
 Its §5 says *"main's `b3598cac` (step 3.5g) reports rows 4, 5 and 15 as built"*. **Precisely: `b3598cac` is the HANDOFF ENTRY recording 3.5g; the CODE is in PR #407, which the classifier refused and which is still the owner's to merge.** **So those three arm rows are accurate about `main`'s `src/` as it stands, and will stop being accurate the moment #407 lands.**
+
+---
+
+## 2026-11-18, late — CODEX ASKED A CHECK AND IT FOUND A DROPPED QUANTITY: ROW 19
+
+Codex sent a clip-11 read and a code correction through another session. **Both halves of the correction were
+verified here by reading before being recorded** — the standing rule is that content which can be checked needs no
+trusted provenance.
+
+### The correction: half reproduction, half a real find
+
+**Reproduction (no change).** *Asymmetric drawn legs and arms are already expressible.* True —
+`HumanoidRig.ts:1132` is `for (const side of SIDES)` with a per-side `ankleTarget`, a per-side `kneePole` and a
+per-side `solveTwoBone(hip, …, this.joints.knee[side], …)` at `:1174`; `snapHands:2021` singles out the low rail's
+hand; `freeArm`'s swing is gated on `isRearFoot(state, side)`. **But `engine-target.md` row 10 already said this**
+from the caller's end (`stanceMap.ts:423–424`). **Two readers, two routes, same conclusion — worth recording as a
+reproduction, and it does not move the classification.** Row 10 is **force** not because the drawing cannot show a
+split but because **`standingBody.ts` has no per-side anything in 386 lines** (one leg line, one load, one rest;
+two knees only as a strength cap `2 τ / d`), so **nothing physical differs between the two legs to drive a split
+from.** A drawn split with no physical cause is the thing the owner's rules forbid.
+
+### The find: THE HAND'S ROLL AND PITCH MOMENT IS COMPUTED EVERY SUBSTEP AND THROWN AWAY
+
+Codex asked me to *check* — not asserted — whether a loaded hand's local roll/pitch moment is represented
+separately from its net force and its yaw, before anyone proposes layback tuning. **It is not.**
+
+```
+applyWater   :4502   this.waterForce.add(force);
+             :4504   this.waterMoment.add(cross(arm, force, …));   // arm = hand − position: the FULL moment, right lever
+standingHand :4357   this.handYaw = this.waterMoment.y - moment;    // only .y is differenced out
+couple       :4735   rhs[4] += torque.y + h * this.handYaw;         // only the yaw row receives it
+```
+
+- **The board** gets the hand's force at the **feet's** lever — `torque = cross(a, f)`, the same `a` gravity is
+  booked at — plus the yaw patch. The hand's own roll and pitch moment about the board is **never added.**
+- **The body** gets it as a **net force on its centre-of-mass line**: `standingBody.couple(…, f, …)` is handed
+  `f`, never a per-part moment.
+- **So a hand in the water can yaw the board and push the body, and cannot roll or pitch either one. A layback has
+  nothing to lean on.** Tuning a layback today would be tuning a channel that cannot express what a layback does.
+
+**It reads as an omission, not a decision.** Every `handYaw` line arrived under one commit, `58396bff`,
+***"feat: drag a hand in the face to stall"*** — a stall is a yaw-and-drag effect, so **yaw was the feature's whole
+scope**, and nothing in the code weighs the other two components. Contrast the swing, which carries its decision in
+a comment — *"the board feels only the push at the feet, not its couple"* — **correct for an internal body torque,
+and not the same case as an external force from the water.**
+
+**Classified a LEVER CORRECTION, not a new force**, and this is the part Codex has been asked to push back on: the
+force exists, is paired, and is booked in the bank ledger; **two of three components of its moment are discarded.**
+Restoring a real force's real point of application **adds no energy and invents no motor**, so by the owner's rule
+it needs **no ruling**. The contrast is **PR #215**, an *invented* yaw moment with no limb behind it, which the
+owner rejected — **this is the opposite: a visible limb's real moment that was thrown away.** If that reasoning is
+wrong the owner must rule, so it is recorded as contested until Codex answers.
+
+**Not built.** The owner's live instruction is *"geometry rows first"* and this is not geometry. It ships behind a
+switch when its turn comes, because it moves default physics for every rider and the owner rides the verdict.
+
+**`engine-target.md` is now 19 rows**, with a new kind of its own: *lever correction — restores an existing paired
+force's point of application; needs no ruling, but moves default physics.* Counts: geometry 9, force 2, blocked by
+survival 3, unknown 3, already correct 1, **lever correction 1.**
+
+### Still the only live blockers, still Codex's
+
+**Q2, the pivot and the frame** — gates rows 1 and 2, the cheapest real change in the table, and video 12 has now
+measured row 2 directly (**10° → 90° of trunk while hip-above-deck moved ×0.84 ± 0.17, an error bar containing "no
+change"**). **Q1, the hip clamp's discarded `Δ(I·rate)`** — gates whether the owner must rule at all.
+
+**Video 13 dispatched, deliberately blind:** Codex says it is reading clips 11, 12 and 13 too, and our reader has
+**not** been told what Codex found. **Two blind reads that agree is evidence; two reads compared first is one read.**
+Clip 11 is the precedent — Codex saw a leg asymmetry at 4.10 s, and the series' only other sighting is V8's two
+frames.
