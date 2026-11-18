@@ -3556,3 +3556,35 @@ Codex, at `3c6b8721`, `AttachedRider.project`:
 ### Codex's through-climb readout criteria, for whoever builds it
 
 **Follow the trajectory of a consistent point on the board; sample its velocity and the local water TOGETHER; and check actual up-face travel from turn entry through release.** ⚠️ **The local wave gauge reselects the highest crest, so a jump can reset its speed estimate while the frame still reports `valid`, and a crest passing a STATIONARY board can raise the face fraction.** **Separate a confirmed same-face climb from an early loss or an uncertain face identity.** Sources it cites: `waveFrame.ts:143`, `rideAnalysis.ts:249`, `App.ts:687`, `RideEndCard.ts:52`, `LogbookScreen.ts:26`. **Delivery: a compact optional field on the existing Logbook entry and screen, preserving early falls as partial observations** — a retry can end a ride before the worker publishes a detailed report, and **old entries have no such field.**
+
+---
+
+## 2026-11-18 — TWO MORE OWNER RIDES, AND ONE SHOWS THE `separate` BUG IS VISIBLE TO THE PLAYER
+
+**Two further phone videos of the laptop screen** (576×576, ~30 fps, 8.2 s and 9.0 s), read the same way — AVFoundation via `swift`, frames at 0.5 s. **Same caveat as before: a phone video of a screen; the rider is tens of pixels; nothing here is measured.**
+
+| | video A (8.234 s) | video B (8.982 s) |
+| --- | --- | --- |
+| paddling | to ~4.5 | to ~5.0 |
+| *"Getting up…"* | **~4.97** | **~5.48** |
+| standing and riding | — | **7.48, upright on a green face** |
+| ⭐ *"Wiped out…"* **shown** | **~6.97** | **~7.98** |
+| rider gone from the board | ~6.97 | **~8.48** |
+
+**B is the longest of the three rides the owner has sent.** Both still end in the whitewater, and **no recovery appears in any of them** — which is the gap the save-window round is building against.
+
+### ⭐ THE FINDING: AT 7.982 IN VIDEO B THE "WIPED OUT" PROMPT IS ALREADY SHOWING WHILE THE RIDER IS STILL DRAWN STANDING ON THE BOARD
+
+**Arms out, upright, on the deck, on a green face — with the wipeout prompt up.** He is gone by 8.482.
+
+> **There is a visible lag between the game declaring the wipeout and the drawn rider reflecting it, and there is a known code cause: `AttachedRider.separate` (`:5227–5232`) sets `attached`, `climbing`, `inContact` and `separation` and NEVER clears `phase` or `upright`.**
+
+**That defect has been treated all session as a PROBE hazard** — "every rider column freezes after separation", which corrupted one earlier round's figures to 64–93 % frozen frames. **This is the first evidence it is also visible to the player.** **It is a bug the owner can see, not only one that spoils measurements**, and it should be raised with him as such.
+
+⚠️ **Bounded: one instance, on a phone video, at ~0.5 s sampling.** A finer read of the original capture would pin it; **the mechanism is already known from the code either way.**
+
+### Unknown and asked
+
+**The owner sent all three videos without saying what differed between the runs** — same build, different switches, or different waves. **Given that `bodyBank` is parsed only on `claude/body-banks` and he said he played `main`, the likeliest reading is that all three are the shipped rider on main and the differences are wave and input.** **Asked, not assumed.**
+
+**And the two falls may not be the same failure:** the first video's board **slid out on a green face**; **B's wipeout coincides with the whitewater arriving** (the foreground is entirely foam by 8.482). **A section closing out and a balance failure are different events and must not be pooled.**
