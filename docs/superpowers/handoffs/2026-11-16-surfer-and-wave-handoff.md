@@ -3647,3 +3647,38 @@ Codex, reviewing `f4d0a09a`. **Relayed to the builder with an instruction to CHA
 2. **Independent x/z bounds leave PHANTOM CORNERS for a single palm.** `project:5603–5629` expands x and z independently, so the admissible region is a **rectangle** where it should be the **weighted convex region of the feet plus that one palm.** Worked case: feet x ±0.13, z ±0.35; palm patch x = [0.17, 0.23], z = [0.42, 0.48], palm capped at half the normal. **At x = 0.18 the maximum foot and palm x require 50 % of the load at the palm, so the resultant z must be ≥ 0.035 — yet the rectangle admits (0.18, −0.35), impossible even with that generous patch.**
 
 > **Both faults can only make the feature look BETTER than it is, and both land on the round's only positive numbers — the 14 cleared frames and the 2 returns to the feet.** **The verdict is untouched:** 90 of 90 still fall, `tip` binds 90/90 either way, and **the demand is a median 0.327 m outside the feet against a 0.102 m ceiling.** **Incidence across the 90 runs is unknown.**
+
+### The recount (`459f236c` on `claude/save-window`): both faults hold, 14 → 10, and the headline does not move
+
+**Challenged first, as asked, and neither could be refuted.** Fault (2) was **re-derived independently before reading Codex's numbers** — the truth is the convex region `{(1−λ)f + λp : f ∈ feet, p ∈ palm, 0 ≤ λ ≤ share}`, and at full x-extension the share is pinned *and* the palm sits at its own edge, so z is pinned with them. Reproduced on the engine's own arithmetic. Fault (1) holds in the source: `capture:488` is `pastX = max(0, |across| − halfAcross)` and `:495` is `beyond = pastX > reachAcross`.
+
+⚠️ **One correction back to Codex, to its worked case and not its conclusion: its palm patch is 0.03 m wide and the engine's is `HAND_RADIUS` = 0.08 m**, so its boundary figure (0.035) is not this engine's (**−0.11**). ☠️ **And the builder's own first test asserted Codex's number against the engine's patch and failed — the same frame error this track keeps making, recorded rather than smoothed.** **The fault reproduces either way.**
+
+| | published | **recounted against a feasible foot-plus-palm region** |
+|---|---|---|
+| `saveCleared` frames | **14 of 176** | ⭐ **10 of 176 (5.7 %)** — **4 phantom (28.6 %)** |
+| runs with any | **8 of 16** | ⭐ **5 of 16** |
+| demand feasible at all | — | **17 of 176 (9.7 %)** |
+| returns to the feet | **2 of 22** | **2** — ⚠️ **but 1 leaned on a phantom corner** |
+
+**The recount instrument is read-only and proved so: 495 894 values over 103 columns and 7 323 rows, 0 differences, 90 of 90 outcomes identical.**
+
+### ⭐ And fault (1) moves nothing measurable — for a reason worth keeping
+
+**`HumanBalance.capture` sets `frozen = load < CAPTURE_LOAD` and RETURNS BEFORE IT READS `reachAcross` AT ALL.** `CAPTURE_LOAD` is 0.2 body weights, and **palm-down frames carry a median capture load of 0.048 — because the palm goes down exactly when the feet go light.**
+
+> **So on 134 of 176 palm-down frames (76.1 %) the extension has no effect whatsoever.** On the 42 live frames: wrong-side credit **6**, the signed test flips `beyond` **1**, and `weightPast` (which `fallen` also requires) true on **0** of those. **The unsigned credit never changed `human.fallen` on an awake test.**
+
+⛔ **And it REFUSED to publish the frozen-frame comparison** (51 flips, 12 with `weightPast`) **because on a frozen substep `s.across` is stale while the extensions are current — the substep-against-a-step trap this track has already paid for.** Its own frozen-window check caught it.
+
+**Incidence:** 4 of 176 frames in 4 of 16 runs phantom-cleared; **47 of 176 carry a wrong-side credit, 6 of them on a live test**; of 22 windows, 4 affected by phantoms and 7 by wrong-side credit.
+
+**It measured the geometry and did NOT fix it, with its reasons written down to be overruled:** a behaviour fix means **projecting onto the convex region** rather than testing membership, **plus a signed credit that `capture`'s unsigned `pastX` cannot express today**, and it would **invalidate the default-unchanged proof and every number in the round** on a machine taking ten minutes a bench pass. **It is now stage-plan item 0, ahead of the water hand, with its exact shape written down, and `saveHolds` is in the tree ready for it.**
+
+### ⭐ And my `separate` claim is now conclusively dead, with the lines
+
+- **`RideSession.renderPoint` (`:418–419`)**: `this.rider.attached && !this.ducking ? this.rider.renderPoint(...) : this.surfer.getPartPosition(...)` — **stops routing to the attached rider the instant `attached` goes false.**
+- **`RideSession.phase` (`:361`)** returns `'fallen'` on the same flag.
+- **The detached body starts at the outgoing pose:** `surfer.start(rider.handoffState(this.handoff))` (`:479`, `:516`), seeded from *"the rider's own body, its parts where they were."*
+
+> **So `separate`'s frozen `phase`/`upright` CANNOT produce an upright rider under the "Wiped out" prompt. Production never reads it after the rider lets go. It matters only to probes calling the class directly — which is exactly what this handoff's note about it is for.** **And the same reading clears PR #425's own drawn palm: its `saveDown === 1` branch can never be reached after separation.**
