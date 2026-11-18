@@ -1633,3 +1633,287 @@ in a turn, working harder because the water at the foam is steeper, moving and s
    7–56 %, and nothing in this round moves that: on foamed ticks the ankle is 34–44 % and `swing` is not in any
    cell's four largest. Whether the balance may spend its correction through the shoulders instead is still the
    owner's call, and it is still the one change this track has measured a reason for.
+
+---
+
+# Part 3 — step 3.5g: **the arm carriage channel** (rows 4, 5 and 15), and two of the five rows handed over were not independent
+
+**The owner's instruction this round was built on.** Asked how long the movement work would take, they were given the
+split honestly — the geometry rows are estimable, the falling is not — and they answered: ***"geometry rows first"***.
+
+`engine-target.md` names **nine geometry rows** (1, 2, 3, 4, 5, 6, 11, 12, 15). Rows **1 and 2 are gated** on the
+pivot-and-frame decision asked of Codex (`consult-codex-2026-11-18.md`, Q2) — `HumanoidRig.poseHinge:1937–1938`
+already shifts the pelvis by `backForMass(state, angle)` to hold its *estimated* centre of mass, so rotating the
+physics mass before the pivot is agreed can **cancel or double** that compensation. Row **3** is their acceptance
+test, not a build. Row **12** the owner has already ruled (C and E). That left **rows 4, 5, 6, 11 and 15**.
+
+## 0. Which of the five are actually independent — and **two are not**
+
+| row | what it asks | independent of the pivot? | built? |
+| --- | --- | --- | --- |
+| **4** | arm carriage as its own channel, with a height and a spread, **independent of leg depth** | **yes.** The arms' drawn position is placed from the arm part and the trunk part, neither of which the pivot decision moves. Nothing in it reads a trunk angle | **yes** |
+| **5** | the arm **leads** the rail and then **holds** | **yes**, once row 4 exists — and the target already records that it buys nothing visible before then | **yes** |
+| **15** | both hands low over the deck, inside the rails | **yes** for the hands' position. **Partly gated** for the posture: see §1.3 | **yes, to the waist** |
+| **6** | pumping in trim is **trunk fold**, not leg depth | **NO.** Its own row says *"geometry, downstream of rows 1–2"*, and the channel it must run in is the drawn trunk, which is `HumanoidRig.ts:1383–1385`'s one-line function of leg depth — row 2 | **no** |
+| **11** | the down-transition is **not one thing** (knees+trunk, trunk only, legs only) | **NO.** Its own row says *"geometry — a constraint on rows 1–3, not separate work"*. Two of its three forms are trunk forms | **no** |
+
+**So three of the five were built and two were handed back.** Rows 6 and 11 are not separable from the trunk, and the
+trunk is the gate. Building either without it would have produced a leg-depth pump and a single down-transition —
+exactly what rows 6 and 11 exist to say is wrong.
+
+## 1. What the engine had, and the three things it could not say
+
+The game's only arm quantity is `HumanBalance.arms` — **one dimensionless scalar 0–1**, `?rider=new` only
+(`humanBalance.ts:306`). Physics reads it as an **inertia** and nothing else: `swingInertia` 6 → 10 kg·m²,
+`riderYawInertia`'s +0.85, the twist rotor's `TWIST_BODY_ARMS`. **Where the arms *are* reaches nothing.**
+
+And the drawn hand was one line (`AttachedRider.renderPoint`):
+
+```
+hand = armPart + spread × (armPart − torsoPart),   spread = ARM_SPREAD + ARM_ALARM × (1 − balanceMargin)
+```
+
+With the standing posture's placement (`riderPosture.ts:93–102` — the pelvis 0.78 m above the deck, the trunk 1.05 m,
+the arms **1.00 m on the stringer, 0.45 m fore and aft of the trunk**, the head 1.38 m), that puts **both** hands at
+**0.965 m above the deck and 0.765 m along the board from the trunk** — the same height, the same spread, **no across
+component and no left/right**. One arm pose per stage and depth, which is row 4's "1" against the footage's "≥ 4".
+
+So `armCarriage.ts` adds the three numbers the scalar lacks, per side: `out` (the spread, as the existing share of the
+trunk→arm axis), `lift` (the hand's **height** in m from the arm part's placed point) and `across` (the hand **across**
+the board in m, toward the inside rail).
+
+### 1.1 The four carriages, and the footage each comes from
+
+| carriage | what it is | population |
+| --- | --- | --- |
+| **rest** | both hands low, drawn in, inside the rails | **3 clips** — V8 §2.4 (5 windows, ~15 frames, *the clip's single most common arm position*), V9 §2.4 carriage A (6 windows, its most common), V7 (9 frames over 4 windows) |
+| **reach** | the pairing: **lead hand down at the rail, board or knee; rear arm up and back** | **3 clips** — V5 (3 of 3 turns), V6 (2 frames, with a which-arm caveat), V7 (carriages A and D). **None of the three times it against the board** |
+| **over** | the **rear arm above the head** | **2 clips, 3 riders, 2 breaks** — V9 2 of 2 at 1/30 s, V8 3 of 4 at 0.1–0.2 s |
+| **wide** | both out and level — **the shipped alarm behaviour, unchanged** | the engine's own `ARM_SPREAD + ARM_ALARM`; also V1/V2's spread-and-level |
+
+**Nothing in the channel reads leg depth, and that is the footage's own finding, not a convenience.** Both *"tall ⇒
+arms spread"* and *"deep ⇒ arms spread"* are **refuted**: V7 found **four carriages inside the Tall band** with the
+**narrowest, lowest** arms at its **deepest** leg position, and V8 found two Tall-band segments with arms wide in one
+and hanging below the waist in the other. What the channel reads instead is **the player's own stick**.
+
+**The overhead arm answers the top of the stick's throw only**, because the footage says the overhead arm belongs to
+some turns and not others: V10's bottom turn took it and a top turn 0.5 s later did not, and V9's 1.10 s roundhouse
+cutback went without it. **The capability is built; it is not a reflex.**
+
+### 1.2 ⚠️ Row 5 is NOT "re-ordering two existing time constants", and the brief's "no new constant" is wrong
+
+`engine-target.md` row 5 reads *"geometry / sequencing — re-ordering two existing time constants, no new force and no
+new constant."* **Read in the code, that is not available.** The two constants are `MOTOR_LAG` (0.05 s) and
+`ARMS_TIME` (0.15 s), and they are the clock of **`HumanBalance.arms`** — which is an **inertia**. Re-ordering them
+would move `swingInertia`, `riderYawInertia` and the twist rotor's share, i.e. **physics**, inside a switch that is
+otherwise drawing-only. So:
+
+- **`HumanBalance.arms` and both its constants are left exactly as they are.** Nothing in this step touches them.
+- The lead and the hold are the **carriage's own clock**: `ARM_LEAD_TIME = 0.08 s` up, `ARM_HOLD_TIME = 0.7 s` back.
+  **Two new constants, both drawing-only.** The row's "no new constant" does not survive, and the row should be
+  corrected rather than quoted.
+- **Neither constant is an animation duration and neither is the footage's own number.** They are exponential time
+  constants on a set-point. The **lead** is measured in §3 and the hold in §4; the footage's lead is **+0.07 to
+  +0.30 s** (2 clips, 3 riders, 2 breaks) and its hold **~0.7 s** (V9, **SINGLE**).
+
+The asymmetry is the point. The one orderable pair the game already had runs **backwards**: the knees reach their drop
+**three times faster** than the arms reach their spread (0.05 s against 0.15 s) and come back **four times slower**
+(`KNEE_RETURN_TIME` 0.6 s against 0.15 s). The footage has the arm **first and held**.
+
+### 1.3 ⚠️ The rest carriage stops at the waist, and row 2 is why
+
+V8's most-crouched frame has **both hands at the deck with the leg chain at 95 %**. Hands at the deck over straight
+legs is a **trunk fold** — rows 1 and 2, which are gated. Drawing the hands at the deck without the fold would draw a
+rider dangling his arms from an upright trunk. So the rest carriage lands the hand at **0.60 m above the deck**, below
+the pelvis's 0.78 m, which is where V8's **other** Tall-band segment also puts it (*"arms hanging below the waist"*).
+**The deck-height version of row 15 is downstream of row 2 and is not claimed here.**
+
+Likewise **V5's "the rear arm moves against the trunk"** is a trunk quantity and is not built.
+
+## 2. ⚠️ The balance alarm does **not** gate the carriage — a design refuted on the bench before it shipped
+
+The first build faded the carriage out as the balance alarm rose, so a near fall would read exactly as it ships.
+**Measured, and dropped.** `balanceMargin` on the default rider standing on `PlaneWater`, towed at 6 m/s, **frames
+31–180 of a 180-frame run — 150 frames a cell, 1 run a cell, 3 cells**:
+
+| stick | median margin | lowest margin |
+| --- | --- | --- |
+| 0 | **0.948** | 0.901 |
+| 0.45 | **0.444** | 0.003 |
+| 1 | **0.537** | 0.038 |
+
+**This rider's margin sits near a half through a turn and dips to within a few thousandths of nothing.** A carriage
+faded out at `1 − margin ≥ 0.5` would have been **7–13 % present in a median turn frame** — invisible in exactly the
+turns it is built for, and the first ride would have looked like nothing had been built.
+
+**One run a cell, on flat water, on the default rider: a small population, quoted as the reason for a design choice,
+not as a figure about surfing.**
+
+So the shipped alarm spread is left **exactly as it is** and the carriage is added **on top of it**. At a near fall
+both arms still fly out as they always did — the alarm reaches `ARM_ALARM` 0.8 of extra spread, which dominates the
+carriage's own — and on separation the phase leaves `standing` and the carriage stops being drawn at all.
+
+## 3. The LEAD, measured on the drawn hand against the board's own roll
+
+**24 arms: 3 tow speeds (6, 8, 10 m/s) × 2 stances × 4 sticks (0.5, 0.8, 1, −1), flat water, the default rider, 3 s a
+run.** The hand is "there" once a drawn hand has travelled **0.15 m** in the board's own frame; the rail has
+"answered" once the board has rolled **1°**. Both thresholds are stated because both set the number.
+
+| | |
+| --- | --- |
+| hand arrives | **0.0167–0.0333 s** (1–2 frames) |
+| board's first degree of roll | **0.1000 s** (6 frames), in **24 of 24** |
+| **lead** | **+0.0667 to +0.0833 s**, `qt(0.5)` **+0.0833 s** |
+| sign | **positive in 24 of 24** — the hand first, every arm |
+| inside the footage's 0.07–0.30 s band | **18 of 24** (the six outside are the half-stick cells at 0.0667 s, one frame short) |
+| live window | 1.517–3.000 s a run; the half-stick cells never fell inside 3 s |
+
+**⚠️ Three honesty notes on this number.** (a) It is resolved to **one frame, 1/60 s = 0.0167 s** — the lead is 4–5
+frames against 6, so the *sign* is solid and the *magnitude* is one frame wide. (b) It is **threshold-dependent**: a
+smaller roll threshold moves `rollAt` earlier and shrinks the lead, so this is "the hand reaches a fifth of its
+carriage four frames before the board reaches a degree", not a tuned match to the footage. (c) It is **flat water and
+the default rider**, not a wave.
+
+## 4. What the owner will SEE, and it is read on the drawn points every time
+
+**The trap this is written against:** `StandingBody.hip.angle` is paired honestly and **never moves `this.parts`**, so
+a metric read off a commanded value can pass while nothing visible has changed. **So nothing below is read off
+`armCarriage.reach`.** Every figure is read off `AttachedRider.renderPoint` — the **drawn** point, which is what the
+rig solves the arms from (`HumanoidRig.drawnHand`) and what goes into `RIDER_SNAPSHOT.points` on the wire.
+
+**At rest (`?armCarry=rest`, or `on` with the stick straight):** **both** drawn hands drop **more than 0.25 m** and
+draw **in** along the board, **with the legs untouched** — `rider.leg.height` and `rider.leg.extension` identical to
+the plain rider's, and the two drawn feet equal to the last bit. Across the board the hands stay on the stringer,
+inside the rails, to 1e−9.
+
+**In a turn (`?armCarry=on`, stick over):** the **rear** drawn hand ends **more than 0.5 m above** the lead one; the
+lead hand goes **out across** toward the rail it is leaning over (**+0.1 m or more** in the board's frame) and the rear
+hand goes across the **other** way. **Mirrored** by the stick's sign to 2 decimals, and **swapped** by the stance —
+Regular's lead arm is the left one, Goofy's the right.
+
+**Four distinct drawn carriages at one leg height**, counted on the two drawn hands at four sticks (0, 0.45, 0.8, 1):
+**4 of 4 distinct**. And the carriage's own contribution to the drawn hand (the switch on minus an otherwise identical
+twin with it off, in the board's frame) is the same **size** at three different commanded leg depths — **under 0.05 m
+of spread on each axis against a contribution over 0.4 m long**, with the drawn pelvis moved. The residual has a named
+cause and it is **not** the carriage reading depth: `renderPoint` turns the drawn point about the pelvis by the body's
+own **swing** (`SWING_DRAWN_CHEST`, a ±69° range), so the carriage's offset rides with the body's roll — which it
+should — and the swing angle differs at each crouch level. **The exact claim that the carriage reads no depth is
+asserted on the module's whole input surface, which is `(state, h, steer, standing, rest)`.**
+
+**And the hold:** 0.2 s after the stick comes back the carriage's own contribution is still **above 60 %** of its
+loaded value, and at 0.5 s it is lower than at 0.2 s — holding, then coming back, not parked. **⚠️ The live window is
+0.5 s and it is stated because `AttachedRider.separate` (`:4586`) never clears `phase` or `upright`, so a column read
+past a separation is frozen, not held.** Measured: **this rider separates about 0.55 s after the stick is released**
+(one run, flat water, the default rider — the 626-of-626 falling, not news). The carriage's full return is asserted in
+the unit test, which has no fall in it.
+
+**Snap's own arms still win where they fire.** `HumanoidRig.snapHands` copies the snapshot's hand point and then lerps
+it toward the water, so the carriage sets where Snap's lerp starts from: the two **compose** rather than fight.
+
+## 5. The switch
+
+**`?armCarry=on`** — the whole channel. **`?armCarry=rest`** — the rest carriage only, whatever the stick says, so
+row 15 can be ridden against row 4 + 5 in an A/B.
+
+Full conventions: `armCarrySwitch()` in `PhysicalMode.ts` with its own test, the switch comment line,
+`SurfZoneConfig` → `RideSession` → `AttachedRiderOptions` passthrough, and **`armCarry: undefined` pinned in
+`main.ts`'s online-room overrides**, asserted by a test that reads `main.ts`. The pin matters more than usual here:
+**the drawn hands are on the wire**, so an unpinned switch would reach other players' riders.
+
+## 6. The default is byte-identical, measured
+
+**1. On vs off, frame for frame.** The seven part masses, the board's full pose (position, orientation, velocity,
+angular velocity) and the rider's own state (`balanceMargin`, the leg's height / extension / force, the bank, the
+front-foot share, attached, upright) compared **every frame of 3 s — 180 frames × 42 columns = 7 560 values a run** —
+with the stick hard over, for **both** values of the switch against the default. **0 differences.**
+
+**2. The reference arms.** `3.3/plant.ts`, `RIDER=new FELT=deck BODY=two`:
+
+| arm | result | published |
+| --- | --- | --- |
+| **`f73-l`** (`FACE=1.4,7.32,5.7 ENTRIES=1..6`) | **18 of 18, 0.617–2.533 s, `qt(0.5)` 1.450 s** | 18 of 18, 0.617–2.533 s, median 1.450 s — **exact** |
+| **`s16-l`** (`FACE=1.4,16,5.7 ENTRIES=1..6`) | **18 of 18, 0.500–6.233 s, `qt(0.5)` 1.033 s** | median 1.033 s — **exact** |
+| **`f73-g`** | **could not be run** | 24 of 24, median 4.650 s |
+
+**⚠️ `f73-g` is a pre-existing break in the probe, not this round's, and that was established with a control.**
+`FACE=1.4,7.32,5.7` with the default relative entries throws `Error: singular` out of `inverse()` — and it throws
+**identically on an unmodified `main` checkout at the same line**. Its published invocation is not recoverable from
+this document: the default face with relative entries (`FACE=1.4,16,5.7`, the other obvious reading) gives **24 of 24,
+1.083–2.700 s, `qt(0.5)` 1.450 s**, not 4.650 s. **So the third reference arm is unavailable to any round until its
+spelling is recovered, and nothing here rests on it.**
+
+Note also that `qt(v, 0.5)` is the **upper** middle element: on `f73-l`'s 18 values the plain median is 1.3665 s and
+`qt(0.5)` is 1.450 s, which is the published figure. **Both are printed above so the next round does not re-find it.**
+
+## 7. Seatbelts
+
+| check | result |
+| --- | --- |
+| `./node_modules/.bin/tsc -b` | clean |
+| `src/physics`, `--maxWorkers=1` | **60 files, 651 passed, 21 expected fail** |
+| `src/scene/rig` + `src/game`, `--maxWorkers=1` | **70 files, 742 passed** |
+| `src/wave/SurfZoneRunner.test.ts`, by hand | **43 of 43** (the file is outside the merge suite, so a red there is news) |
+
+| **Canyon B byte check** — `scripts/m1-cpu-bench.ts`, medium, **3 600 steps**, `globalThis.location = { search: '?canyonWaves=true' }` **prepended to the bundle** | **snapshots `a367d938f15fa934`, state `9e5831f80e38abd9` — the published reference, exactly** |
+
+`src/wave/SurfZoneSimulation.test.ts` declares 644.5 minutes of per-test timeout and cannot gate anything, so it was
+not run.
+
+**The Canyon check's own provenance, because a fresh spin-up and an imported `--state` give different pairs.** It was
+a **fresh spin-up** — *"spun up on the CPU in 47.2 s"* — into a `--state` path that did not exist, and the grid line
+reads **`canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000`**, which is
+Canyon **B**: the wrapper is an object with a `search` field, not a bare string, so `devTools.ts:9` did not silently
+bench the default Canyon. The bundle was built before the rebase onto `main`'s new tip, and
+`git diff 2a8bd873..origin/main -- src/ server/ scripts/` is **empty**, so it is the same bytes either way.
+
+## 8. What this round did NOT do, and what it stopped on
+
+- **No force, anywhere.** Nothing in `armCarriage.ts` appears in any solve, ledger or work book. `partPosition`, the
+  seven point masses, the CoM, `bodyInertiaAt`, `riderYawInertia` and `HumanBalance.arms` are untouched. §6's 7 560
+  values a run are the measurement of that, not an assertion.
+- **Nothing was stopped for needing a force**, because nothing in rows 4, 5 or 15's drawn half needs one. The parts of
+  those rows that **do** need one are named in the target and were not approached: row 4's *"the owner's if the arms
+  are to move the board by more than their inertia"*, and row 15's *"the owner's if the hands are to do more than
+  their existing drag"*.
+- **Rows 6 and 11 were handed back** (§0), and rows **1, 2 and 3** were not touched: the pivot-and-frame gate holds.
+- **No clock, timer, fatigue or stamina.** The carriage follows the stick and its own return; it has no self-release
+  and nothing fires on the game's initiative (Ruling E).
+- **No ride was judged, no survival rate and no ride time is offered as a result** (Ruling F). The fall counts above
+  appear only as **unchanged controls** and as the reason a measurement window is 0.5 s long.
+- **Not ridden.** The owner rides and judges feel; this round measured the drawn geometry and the default's
+  byte-identity, and the shot list is in §4 — **stick straight, then hard over each way, on `?canyonWaves=true` with
+  `?armCarry=on`, then the same with `?armCarry=rest`.**
+
+## 9. Video 11 landed on `main` while this was being built — and it **strengthens every target and settles the one abstention**
+
+`video-ref-11-one-ride-60fps.md` arrived on `main` after this branch was cut, so it was read and folded in rather than
+guessed at. **It is the first single unbroken ride, at 60 fps, with a near side-on lens.** Every number below is
+quoted from it, and **nothing in the build changed as a result** — it confirms the three design choices that were
+already made, which is the most useful thing a new read can do.
+
+| what video 11 found | what it does to this step |
+| --- | --- |
+| *"the hand does go above the head"* — **video 10's abstention is settled**: a drone looking down hides a raised hand; this lens is side-on | **`ARM_OVER_REAR` is the carriage this settles.** It puts the rear hand at **1.55 m above the deck**, above the head's placed 1.38 m. It was built on V9 and V8; it is now on a **third clip at 1/60 s** |
+| **Lead +0.07–0.20 s, 2 of 2 turns, then held ≥0.17 s**; the rise itself takes **0.17–0.22 s** | The lead's reproduction becomes **three clips, four riders** — `engine-target.md` §4.6's *"two clips"* count should be corrected. §3's measured **+0.0667 to +0.0833 s** sits at the **bottom** of the widened band |
+| ⚠️ **Which manoeuvres take it, answered: 2 of 2 direction changes into a CLIMB take it; trim does NOT — 0 of 2 trim windows**, both hands low and no arm above the shoulder through 1.2 s and 0.7 s | **This is the strongest confirmation in the round.** The channel was built so `over` answers the **top** of the stick's throw only and the straight stick holds the **rest** carriage — i.e. a hard turn raises the arm and trim does not. That was designed off V10's bottom-turn-yes / top-turn-no and V9's roundhouse; video 11 reproduces it as a count |
+| **Both hands low over the deck in 4 separate windows — the clip's most common arm position**, and present at *both* a moderate fold and the clip's **deepest** open-face fold | **Row 15's population becomes 4 clips** (V7, V8 5 windows, V9 6 windows, V11 4 windows), and the **depth-independence** of carriage becomes **4 clips refuting it**. §1.1's "3 clips" for `rest` should be read as **4** |
+| *"the arms alone for ~0.10 s"*, legs bent, trunk folded, board flat — reproducing V10's 0.12–0.16 s | The carriage is **drawing-only and byte-identical in physics** (§6), so the arms moving while nothing else does is exactly what it produces. **One channel moving while the other three are frozen is now on two clips** |
+| **Five carriages**, A–E, *"carriage does not track depth"* | §4 measured **four** distinct drawn carriages at one leg height. **The fifth is named below and the channel cannot reach it** |
+
+### 9.1 The one shape the channel still cannot draw, named so no round claims it
+
+Video 11's **carriage B** is *"lead arm forward-down at about chest height, **rear arm back and LOW**"* (3 windows).
+**The channel cannot reach it.** Its `reach` pairing takes the rear arm **up** and back (`ARM_REACH_REAR.lift = +0.3`),
+on V5/V6/V7's three clips, and there is no carriage in which the lead arm is forward at chest height while the rear
+arm stays low. **That is a real gap, it is one more drawn carriage, and it needs no force** — but it is **not built**
+and **not measured**, and this round does not add it on one clip's three windows without the owner seeing the four
+that exist first.
+
+Two smaller differences worth recording rather than smoothing over:
+
+- Video 11's **carriage C** pairs the overhead rear arm with the **lead arm extended down-FORWARD**. This channel's
+  lead hand goes down and **ACROSS**, toward the inside rail, which is V5/V6/V7's *"down at the rail, board or knee"*.
+  **Two clips' worth of evidence point slightly different ways and the engine draws the across version.**
+- Video 11's **carriage E** is *"both arms high/overhead with the body tucked"* for ~0.8 s through the lip hit. The
+  tuck half is leg depth and the overhead half is reachable, but **the pairing of the two is not selectable** here:
+  the channel reads the stick, not the lip.

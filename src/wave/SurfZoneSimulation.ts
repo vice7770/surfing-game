@@ -386,6 +386,20 @@ export interface SurfZoneConfig {
    */
   deepen?: 'on';
   /**
+   * Step 3.5g: **the arm carriage channel** (`engine-target.md` rows 4, 5 and 15; the owner's "geometry rows first" of
+   * 2026-11-18). The drawn standing hands get a **height, a spread and a left/right of their own**, answering the
+   * player's own stick and **never leg depth** (both *"tall ⇒ arms spread"* and *"deep ⇒ arms spread"* are refuted by
+   * the footage): both hands low and drawn in at rest, the lead hand down at the rail with the rear arm up and back at
+   * a turn's load, and the rear arm overhead only on a hard ask. Fast up and slow back, so the hand can arrive before
+   * the rail bites and stay after the ask drops.
+   *
+   * `'on'` is the whole channel; `'rest'` holds the rest carriage whatever the stick says (row 15 on its own, for the
+   * A/B). **Drawing only: no part mass moves, no force is added and no existing force changes.** No clock, no timer,
+   * no fatigue and no stamina. Every spot. The `?armCarry=on|rest` dev switch, opt-in, to ride, and pinned off in the
+   * online rooms (the drawn hands are on the wire).
+   */
+  armCarry?: 'on' | 'rest';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

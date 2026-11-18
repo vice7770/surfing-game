@@ -3,6 +3,7 @@ import type { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { LIP_CONTACT, LIP_QUERY_MARGIN, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import type { BoardShape } from './boardShape';
+import { armCarriagePlace, createArmCarriage, resetArmCarriage, stepArmCarriage, type ArmPlace } from './armCarriage';
 import { bankLedger } from './bankLedger';
 import { WATER } from './hullForces';
 import { RIDER_LEG } from './legSpring';
@@ -1534,6 +1535,25 @@ export interface AttachedRiderOptions {
    * new quantity. Anything else, the tuck under a curl only, as it ships.
    */
   deepen?: 'on';
+  /**
+   * **The arm carriage channel** (step 3.5g, `engine-target.md` rows 4, 5 and 15; the owner's "geometry rows first"
+   * of 2026-11-18). The drawn standing hands get a **height, a spread and a left/right of their own**, answering the
+   * player's own stick and **never leg depth** — four carriages reachable at any one leg position, with the lead hand
+   * down at the rail and the rear arm up and back at a turn's load, the rear arm overhead only on a hard ask, and
+   * both hands low and drawn in at rest (the single most common arm position in two of the three sharpest clips).
+   *
+   * - `'on'` — the whole channel: the rest carriage, the pairing, the overhead arm, and the carriage's own fast rise
+   *   and slow return (so the hand can arrive **before** the rail bites and **stay** after the ask drops).
+   * - `'rest'` — the rest carriage only, whatever the stick says: row 15 on its own, for an A/B against `'on'`.
+   *
+   * **Drawing only.** It moves no part mass, adds no force and changes no existing force: `partPosition`, the seven
+   * point masses, the CoM, `bodyInertiaAt`, `riderYawInertia` and `HumanBalance.arms` (the arms' only physical path,
+   * which is an inertia) are all untouched. It touches exactly one expression — the standing hand branch of
+   * `renderPoint`, which is the **drawn** point. No clock, no timer, no fatigue, no stamina and no self-release.
+   *
+   * Opt-in, off by default and pinned off for online rooms. Anything else, the shipped one-scalar spread.
+   */
+  armCarry?: 'on' | 'rest';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -2142,6 +2162,20 @@ export class AttachedRider {
   private readonly stanceDeepRow: boolean;
   /** Step 3.5b: full manual crouch reaches the tube tuck's depth anywhere, not only under a curl (`deepen: 'on'`). */
   private readonly deepens: boolean;
+  /**
+   * Step 3.5g: the arm carriage channel (`armCarry`), **drawing only**. `'rest'` holds the rest carriage whatever the
+   * stick says. `carriage` is its state — how far into the pairing, how far overhead, and which rail the lead hand is
+   * dropping over — advanced per substep beside `balanceMargin` and read only by `renderPoint`'s hand branch.
+   */
+  private readonly armCarry: 'on' | 'rest' | undefined;
+  private readonly carriage = createArmCarriage();
+  private readonly armPlace: ArmPlace = { out: 0, lift: 0, across: 0 };
+  private readonly armUp = new Vector3();
+  private readonly armAcross = new Vector3();
+  /** Step 3.5g: the arm carriage's own state, for the probes and the tests to read without naming a private. All zeros off the switch. */
+  get armCarriage(): { readonly reach: number; readonly over: number; readonly inside: number } {
+    return this.carriage;
+  }
   /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
   private readonly stanceReach: 'keep' | undefined;
   /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
@@ -2519,6 +2553,7 @@ export class AttachedRider {
     // three-row ladder and its 0.30 m clamp. Matched as a string and never parsed — `Number(null) === 0`.
     this.stanceDeepRow = options.stanceDeep !== 'off';
     this.deepens = options.deepen === 'on';
+    this.armCarry = options.armCarry === 'on' || options.armCarry === 'rest' ? options.armCarry : undefined;
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -2909,6 +2944,8 @@ export class AttachedRider {
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
+    // Step 3.5g: a new mount starts with the arms at rest and no rail chosen (drawing only).
+    resetArmCarriage(this.carriage);
     this.contact.weight = Number.NaN;
     this.standingLine = undefined;
     this.standingHold = 0;
@@ -3029,6 +3066,19 @@ export class AttachedRider {
       if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
       const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
+      // Step 3.5g (`armCarry`, rows 4, 5 and 15): the arm carriage's own height, spread and across, **added on top of
+      // the shipped alarm spread, which is left exactly as it is** - the balance alarm does not gate the carriage, and
+      // `armCarriage.ts` has the measurement that decided that (this rider's margin sits near a half through a turn,
+      // so a margin-gated carriage would have been 7-13 % present in a median turn frame). **Drawing only**: the arm
+      // PART has not moved, so the CoM, the inertias and every force are exactly what they were.
+      if (this.armCarry && this.phase === 'standing') {
+        const lead = (index === 3) === (this.stance === 'regular');
+        const place = armCarriagePlace(this.carriage, lead, this.armPlace);
+        out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread + place.out - ARM_SPREAD));
+        out.addScaledVector(this.armUp.set(0, 1, 0).applyQuaternion(board.orientation), place.lift);
+        out.addScaledVector(this.armAcross.set(1, 0, 0).applyQuaternion(board.orientation), place.across * this.carriage.inside);
+        return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
+      }
       out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
       return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
     }
@@ -5048,6 +5098,9 @@ export class AttachedRider {
       this.contact.feasible = false;
     }
     this.balanceMargin = this.upright ? this.balanceMargin + (this.rawMargin - this.balanceMargin) * (1 - Math.exp(-h / MARGIN_TIME)) : 1;
+    // Step 3.5g: the arm carriage follows the player's own stick (`armCarry`), fast up and slow back. **Drawing only**:
+    // nothing below this line reads `carriage`, no part mass moves and no force is added. Off the switch it does not run.
+    if (this.armCarry) stepArmCarriage(this.carriage, h, this.steer, this.phase === 'standing' && this.attached, this.armCarry === 'rest');
     const felt = this.contact;
     if (this.agile) {
       // The legs' split moves the feet's shares past the line of force's.
