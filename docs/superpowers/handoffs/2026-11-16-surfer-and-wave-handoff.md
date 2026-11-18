@@ -3218,3 +3218,88 @@ Crossed on `FaceWater` with the wave's height and celerity held. **Boundary, as 
 4. ⚠️ **And it refutes the calibration's own rescue in practice: apparent stature's precondition is a fixed AND CHECKABLE lens elevation, which needs a horizon.** **The rescue is conditional on a landmark nobody has been checking for.**
 
 **Confirmed:** the 260 ms + two-decode recipe passes **a second 60 fps source** (6 of 6, 0 of 39); carriage A on an **eleventh** clip; **zero foot steps on an eighteenth.** Three automatic rulers built and **all three discarded**, nothing quoted.
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ THE BODY ALREADY BANKS. IT IS 0.1 s LATE. (PR #421, `?bodyBank=hip`)
+
+**My brief said "the body does not bank with the deck". That is false, and the refutation is the fix.** On the **shipped** rider, on the owner's own address and spot, over **7 208 live frames**:
+
+| | |
+| --- | --- |
+| `d(body bank)/d(deck bank)` through the origin | **0.8748** |
+| body banked the **same way** as the deck, deck past 2° | **5 844 of 5 987 frames (0.976)** |
+| at a deck bank of 28.7°, the body's own bank | **26.0°**, median mismatch **3.86°** |
+
+**A body standing plumb gives 0 on all three.** **PR #419 was not wrong about anything it measured** — it said of this quantity, correctly, *"the body's bank against the deck's — the quantity that is currently absent"*, meaning **unmeasured** — **and my brief built a cause on that gap.** Thirty-first frame error, and the costliest shape: **I turned "nobody has measured it" into "it does not happen."**
+
+### ⭐ WHAT THE BODY IS INSTEAD IS **LATE**
+
+- **The follow gain reaches 1.0000 at a lag of 6 frames = 0.100 s** — which is **`BALANCE_DELAY` to the millisecond** (0.9987 measured).
+- **On the analytic face the mismatch IS the deck's roll rate times a fixed time: 73, 73, 86, 88, 104 ms across five rate bands and 4 374 frames.**
+- **A 0.100 s lag reaches the stance's 10.9° at 109 °/s.** On his spot turning, the median roll rate is **55.1 °/s** and the **median per-rider peak is 194.7 °/s**, with **21.0 % of frames above 109.**
+
+> **THE STANCE IS NOT TOO NARROW FOR A BANKED DECK. IT IS TOO NARROW FOR A DECK THAT BANKS FAST.**
+
+⚠️ **On the real sea the ratio is 40–80 ms and not flat** — the sea's spikes are briefer than the lag — **so this is a law on the face and a direction on the sea.**
+
+### What was built: ONE MISSING TERM. No drive, no force, nothing invented.
+
+`project` constrains the contact force to a line **through the body's centre of mass** — the moment balance of a body with **no angular momentum of its own.** **But this body has a trunk rotor.** The identity is
+
+```
+p_x = com_x − height·F_x/N − (dH/dt)_roll/N
+```
+
+**and the code had the first two terms.** `?bodyBank=hip` adds the third. **`moment === 0` is the shipped expression character for character**, so the default is the old code by construction.
+
+⭐ **And the second finding: the actuator is `swing`, as suspected, but it did not need driving.** **3.5d's "0.1–0.4 % of the traffic" is the ankle's REST COMMAND it takes over — not its torque.** `humanSwingStep` adds the rotor's return and damping term **outside** its ±`SWING_TORQUE` clamp, so **the shipped rider's `swingTorque` already reaches a per-rider median peak of 165 N·m and a max of 303 N·m — and `project` discarded every newton-metre of it.** The term fires in **3 061 of 6 425 frames with the hip gain at zero.** **The rotor was already working hard; its effect was being thrown away.**
+
+### Does `tip` still fire 90 of 90? **No.**
+
+| 90 Canyon riders, stick hard over | shipped | `?bodyBank=hip` |
+|---|---|---|
+| **`tip` fired** | **90/90** at frame 46 | **66/90** at 38.5 |
+| CoP pinned | 3 745/7 208 = **52.0 %** | 2 072/6 425 = **32.3 %** |
+| mismatch past tolerance | 74/90, 0.101 of frames | **36/90, 0.025** |
+| mismatch at a 40°+ deck bank | 7.40° | **5.17°** |
+| tolerance, median peak | 12.4° | **38.6°** |
+| bank clamp hit / margin < 0.1 | 42/90 / 52/90 | **14/90 / 14/90** |
+| ⚠️ friction cone bound / `foot slip` | 6/90 / **0** | **28/90 / 2** |
+| ⚠️ median ride | **1.333 s** | **1.083 s** |
+
+**Sign checked WITHIN one run:** inward on **2 330 of 3 061 (76.1 %)**, median demand **0.0800 → 0.0355 m**, inside the ±0.130 m support **0.625 → 0.895.** **The 23.9 % that goes outward is the rotor's own damping term, reported rather than hidden.**
+
+### ⭐ Where the reaction went — and it refuted its own prediction
+
+**It wrote, before measuring, that the board's roll "is expected to get worse." It got BETTER:** median roll peak **65.7° → 52.4°**, median roll rate **55.1 → 45.2 °/s.**
+
+**The mechanism, from the code: `tip` makes the contact infeasible → the pair is SOLVED APART → and apart, the body is driven by the clipped contact and gravity alone, so the ankle's torque, the rotor's torque AND the pitch hip all VANISH.** **The shipped rider loses his own joints in 52 % of frames.** With the term, 32 % — and the ankle's counter-roll (3.5d: 45–56 % of the deck's roll acceleration) **reaches the board.**
+
+⚠️ **But that is a COST against `steep-faces-for-tricks`: 52° instead of 66° is a less committed turn, and only the owner can price it.**
+
+### A hip drive was built beside it and the measurement removed it
+
+| arm, same 90 riders | `tip` | median ride |
+|---|---|---|
+| **term alone** | **66/90** | 1.083 s |
+| term + drive | 76/90 | 0.917 s |
+| **drive alone** | **90/90 at frame 23.5** (shipped: 46) — ***earlier*** | — |
+
+**Ordering `term < term+drive < drive alone`.** **3.2x's "the more the hip throws, the sooner he falls" survives the correction that was supposed to pay for it** (3.2z's `reachAcross` double count). **`HIP_CAPTURE_GAIN` left at 0 for the third time, with the third measurement.**
+
+### Default unchanged — measured over 280 476 values, built TWICE
+
+The probe built against **this branch's `src` and against the merge base `1a29a6c7`'s own `src`**, same 96 cells: **5 292 frames × 53 shared columns = 280 476 values, 0 differences**, 96/96 summaries identical, and the two new read-out fields **0 in all 5 292.** Probe inert over **76 296 values.** `vitest src/physics` **58 files / 638 passed / 21 expected fail**; new `bodyBank.test.ts` 3 passed; `PhysicalMode.test.ts` **109** (covers the rejections, all three spots, and the **online-room pin**); `SurfZoneRunner.test.ts` 43 by hand. **Deletions: 5 lines, all replaced in place**, each gaining a ternary **whose zero branch is the old expression verbatim.** Every bench **`SINK=0.06`**; every median a **plain** median.
+
+### Three faults of its own, found by its own controls — and one pre-existing fact
+
+1. A bound control compared a **substep** relief against a **step** load and flagged a 67 m relief. The bounded quantity is the **moment**: `|copMoment| ≤ |swingTorque|`, **0 breaches in 15 238 frames.**
+2. **And `|copMoment| ≤ SWING_TORQUE` is NOT the bound** — the rotor's return term sits **outside** that clamp and reaches **303 N·m on the shipped rider.** **A pre-existing fact about `humanSwingStep`, found here and not fixed here.**
+3. Its positive control put the pair **in flight from frame 10**, testing launch rather than the clamp; **recorded as useless rather than quoted.**
+
+### Open, and the next lever named
+
+**90 of 90 still fall and the ride is 0.25 s shorter.** On the analytic face the term buys much less (`tip` 85.5 % → 81.7 % of frames) and **the cone cost is worst there (2/72 → 37/72).** The **stick-zero arm was not re-run.** **No body lean was added — the bench says the body already leans.**
+
+**Staged plan:** stage 2, the same term on `freeZ` for the pitch rotor (**three lines**); **stage 3, the lag — and the honest reading is that it may not be reducible** (the free body's own period is **~2.05 s against a 0.68 s roll**, and the ankle spring is a settled dead end), **with the one reachable lever being `HUMAN_BANK_FORWARD`, already in the code at 0.1 — a feed-forward on the player's own steering command, not a motor. That is the next thing to measure and it has not been.** Stage 4: 3.2z's double count.
