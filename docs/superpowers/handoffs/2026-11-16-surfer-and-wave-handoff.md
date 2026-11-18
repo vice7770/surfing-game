@@ -3113,3 +3113,59 @@ Median **2.01 N·m**, max **23.68**, over **2 830 loaded substeps in 12 of 72 ri
 ⭐ **And it withdrew two of its own draft headlines using the single-rider control:** the roll component's *"one-signed in 12 of 12 rides"* (**the control splits 234 + / 419 −**) and *"pairing would add energy on balance"* (**the control gives −1.38 J against the bench's +3.33 J**). **Both were cell artefacts; both halves withdrawn; only the pitch sign published.** It also found that **the force/moment identities cannot be exact** — differencing a running accumulator loses bits — and that its first build's *"140 of 142 bad"* was **the instrument, not the engine.**
 
 **Not measured, stated so the zero is not over-read:** one spot, one seed, one swell size; rides 0.85–2.47 s, **all 72 detached**; `?trunk=mass` not used; the swing rotor's own clamp not measured; and the 180–260 N·m loaded-hand figure is an extrapolation.
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ THE OWNER'S FALL IS DIAGNOSED (PR #419): THE BOARD ROTATES OUT FROM UNDER HIM, AND HIS STANCE TOLERATES 10.9° AGAINST A 20° TURN
+
+> **The board does not slide across his soles and it does not fly off them — it ROTATES out from under them.** Turning on his own spot the deck banks past **20° at 0.683 s**, **the body does not bank with it**, and his foot support is only **0.260 m across**, so the line from his centre of mass to the deck **leaves his feet 0.08 s later**, the centre of pressure **pins at the support edge (`limit = 'tip'`, 90 of 90 riders)**, and from there the contact cannot put force where the body needs it while the board keeps rotating away.
+
+**THE NUMBER THAT MAKES IT INEVITABLE: with the CoM a median 0.676 m above the deck, the stance allows 10.9° of mismatch between the body's lean and the deck's bank. A turn is worth 20°+.**
+
+**And `riderPosture.ts:96` sets that ±0.130 m ONCE FOR EVERY STANDING POSE** — the crouch and Compress are leg-depth changes that never leave `phase === 'standing'` — **so no stance a player can hold changes it.** **That is why his report is stance-independent, exactly as he said it was.** He diagnosed the invariance from the couch; the code says why.
+
+### The order of failure, 90 riders turning on his spot
+
+**roll > 20° (0.683 s, 80/90) → `tip` (0.767 s, 90/90) → overhang > 5 cm (0.842) → cone binds (1.008, 6/90) → leg in tension (1.100, 32/90) → margin < 0.1 (1.150) → load zero (1.217, only 11/90) → posture error (1.650).**
+
+**The contact failure is the LAST link, not the first.** Causes: `balance` **89**, `lost board` **1**, **`foot slip` 0.**
+
+### FOUR OF MY FIVE PREMISES FELL — and the most important one in the project's favour
+
+1. ⭐ **`legPower` EXISTS and is ALREADY ON for his rider.** `powerCapped = capsLegs || freeBody`, so `rider: 'new'` standing takes A-lite's branch **by default.** **Proved bit for bit: his address with and without `?legPower=cap` is identical over 416 832 values, 0 differences, 96 summaries identical.** **My strongest lead — "the one fix for this mechanism has been sitting unbuilt" — is wrong in the most useful way: it is built, shipped, running in what he rides, and he still falls.**
+2. **#285 is NOT the same event, and my "your description and that study are the same event" was wrong.** On his spot **none of its four bands is reached**: slope > +26° **0/180**, < −30° **0/180**, feet > 17 g **0/180**, power > 4 kW **1/180**. **The water under his board is −11.6° to +6.8°; #285 is about 26–50°. The Canyon has not got that water.**
+3. **"The trigger is increasing speed" is NOT reproduced in either stick arm.** Over 180 riders **faster rides last LONGER** — 0.95 → 3.62 s from 2 to 10 m/s at stick-zero, 0.95 → 2.28 s hard over. **What halves the ride is COMMITTING THE STICK.** (His *"stands 1 second"* is exact: **0.92–1.45 s turning at 4–8 m/s.**)
+4. ⭐ **"This is about the contact itself, not the body's attitude over a contact that holds" — REFUTED, and it matters most.** **`tip` IS a statement about the body's attitude over a still-loaded contact.** **The balance track is aimed at exactly the right thing**, and I told the owner it was not. **Withdrawn.**
+5. **`?physical` gates no physics** — only `start: 'ride'` vs `'menu'`. The benches have not been running a mode he does not use.
+
+### Speed or slope: neither alone — a STEP that coincides with the hull leaving the water
+
+Crossed on `FaceWater` with the wave's height and celerity held. **Boundary, as achieved speed: 8.60 m/s at 12°, 6.95 at 14°, 4.67 at 16°, 3.73 at 18°, below 2.03 at 20°.** Reproduces within **0.15 m/s** at 12–14° across two placements; moves 0.9–1.7 m/s at 16–18°. **Five slopes is five points and no closed form is offered.**
+
+### THE OPTIONS — seven, ordered by realism kept
+
+| row | option | what it costs / buys |
+| --- | --- | --- |
+| **0** | `?legPower=cap` | ⛔ **VOID — proved a no-op. Do not spend a ride on it** |
+| **1** | **let the body BANK with the deck** (spec step 3.1) | **the only option that removes the cause. Unbuilt and large** — and A-lite's own L3 analysis independently concluded *"only the body lean can fix this"* |
+| **2** | **widen the ±0.130 m foot support** | **the same function already uses ±0.18 m (prone) and ±0.23 m (push)**, so neither number is invented: they buy **14.9°** and **18.8°**. **Angle, not authority** — and **18.8° still does not cover a 20° turn** |
+| 3 | ankle/sole roll moment | the ankle already carries 45–56 % (3.5d) |
+| 4 | less roll per stick | **fights the thing he enjoys** |
+| 5 | gentler water | **pushing on the wrong end — it is not the water that is steep, it is the board** |
+| **6** | — | ⛔ **flagged as a CHEAT and recommended against**: a kinematic prescription, the retired `uprightVelocity` (3.2y), the shape rejected in #215 |
+| 7 | change what the take-off asks | — |
+
+### What to put to him first, in the round's own words
+
+**His *"realistic but unplayable"* is well founded: nothing unphysical is firing on his spot** — the energy leak is **already capped** and the throws are **2.9–5.9 g, not 17–58.** **The gap is 11° of stance against a 20° turn.** The two cheap things aimed at the clamp that actually fires are **row 2** (a geometry constant **only he can set**) and **row 3**; **the real fix is row 1 and it is the balance track's open problem.**
+
+⚠️ **And one gap named: his window is the first second after standing, and a real pop-up is not benched here at all** — every rider in every bench is **placed on the water already moving.**
+
+### ⚠️ FOUR FAULTS OF ITS OWN, AND THE FIRST AFFECTS EVERY BENCH IN THIS TRACK
+
+1. ⭐ **The flush placement every rig in this track uses** (`3.5/foam.ts`, `3.3/plant.ts`) **starts the hull DRY and the leg UNLOADED — frame 1 dry in 480 of 480** — costing a median **32 frames (0.53 s) of settling**, and **101 of 480 runs fell before ever becoming a ride.** **`SINK=0.06` fixes it.** **This contaminates existing benches in this track and should be fixed before the next one.**
+2. **`limit` is one substep of 32**; read as a step summary it reported flight for frames whose peak load was 0.89 body weights. **`limitTime` is the class's own answer.**
+3. Its first "slip rate" was measuring **the lean**, not the soles.
+4. Its own proposed predictor `demand` was **refuted** (64.3 % agreement over 32 100 frames) and **kept, labelled, so nobody builds on it.**
+
+**Instrument:** negative control (a mis-chosen first attempt documented rather than dropped), positive control (**`coneTan` sits at exactly 0.900 = `FOOT_FRICTION`**), two independent cone reads, `NaN` guarded explicitly, **probe inert over 81 575 values / 3 263 frames / 25 columns, 0 differences.** Canyon seatbelt: object-prepended wrapper, grid read off the solver **400 × 451 = 180 400**, spin-up 115.6 s. `vitest src/physics --maxWorkers=1`: **58 files, 638 passed, 21 expected fail.** **Every median a plain median — `qt(0.5)` used nowhere.**
