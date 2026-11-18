@@ -2344,8 +2344,7 @@ independent findings have since taken that apart, and all three arrived within t
 
 **The builder was corrected twice in flight** and told not to tune to any footage angle. **Rows 1 and 2 are
 unaffected in their justification**, because that justification is structural and needs no camera:
-`HumanoidRig.ts:1383–1385` interpolates the drawn trunk from leg depth, so **folding at a fixed leg depth is
-impossible at any value.** The acceptance test is row 3's capability question, not a magnitude.
+`HumanoidRig.ts:1383–1385` leaves the drawn trunk with **no channel of its own.** **(Narrowed 2026-11-18 by Codex, correcting me: the default hinge is stage- *and* depth-driven, and the tall/deep followers and `leanIn` CAN change it at a fixed depth — so "impossible at any value" was too strong. The real defect is narrower and confirmed: there is no independent mass-coupled rotor. Nothing couples the drawn fold to the body's mass.)** The acceptance test is row 3's capability question, not a magnitude.
 
 **This is my recurring error for the record, and it is the same one:** one clip, two frames, promoted to a headline,
 then handed to a builder as an acceptance number. The rule stays *say the population with the number* — and now
