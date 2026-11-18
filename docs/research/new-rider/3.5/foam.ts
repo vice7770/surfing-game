@@ -355,6 +355,19 @@ function stepRider(e: Rider): void {
     frame: e.frame, t: r(e.frame * STEP, 4),
     roll: r(roll, 4), tilt: r(tilt, 4), rail: r(roll - tilt, 4), bank: r(rider.bank.angle * DEG, 4),
     speed: r(board.velocity.length(), 4),
+    /**
+     * **Step 3.5f: the planing latch, on the real sea.** Five read-only columns, so "how much of a real Canyon ride
+     * sits in the 3–4 m/s band, and in which latch state" is a count and not an inference. `through` is the LATCH's
+     * own speed — `hypot(v.x − flowX, v.z − flowZ)`, the same expression `planingStep` tests against
+     * `PLANING_SPEED = 4` / `PLANING_DROP = 3` [R, `AttachedRider.ts:3493`] — and `throughProbe` is the CAP's,
+     * the component along the heading, which is a different quantity [R, `:3524`]. The other three are the game's
+     * own `leanProbe` record. Nothing about the ride changes.
+     */
+    through: r(Math.hypot(board.velocity.x - (cen.outsideDomain ? 0 : cen.flowX), board.velocity.z - (cen.outsideDomain ? 0 : cen.flowZ)), 4),
+    throughProbe: r(rider.leanProbe.speedThrough, 4),
+    planingNow: rider.leanProbe.planing,
+    capDeg: r(rider.leanProbe.cap * DEG, 4),
+    askDeg: r(rider.leanProbe.ask * DEG, 4),
     // the foam the board is in
     airMax: r(airMax, 4), airLeft: nL ? r(airL / nL, 4) : null, airRight: nR ? r(airR / nR, 4) : null,
     airAcross: nL && nR ? r(airL / nL - airR / nR, 4) : null,

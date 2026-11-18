@@ -1,0 +1,25 @@
+=== s16-s0
+# fell 51 of 51, at 0.500–6.233 s, median 1.050
+=== s16-s1
+# fell 51 of 51, at 0.283–1.300 s, median 0.467
+=== f73-s0
+# fell 51 of 51, at 0.617–2.933 s, median 1.233
+=== f73-s1
+# fell 51 of 51, at 0.350–1.367 s, median 0.833
+=== s16d-s0
+# fell 51 of 51, at 0.833–6.233 s, median 1.200
+=== s16d-s1
+# fell 51 of 51, at 0.283–1.450 s, median 0.667
+=== f73d-s0 (mountAgree=deck on the f73 face): the PROBE's own counterfactual design() throws, so the arm has no window
+
+Error: singular
+    at inverse (file:///private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/pl.mjs:17641:28)
+    at dlqr (file:///private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/pl.mjs:17711:13)
+    at design (file:///private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/pl.mjs:20155:12)
+    at oneRun (file:///private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/pl.mjs:26754:19)
+    at file:///private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/pl.mjs:27782:103
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.17.0

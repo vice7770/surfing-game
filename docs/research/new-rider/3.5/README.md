@@ -6,6 +6,14 @@
 classifier refused those merges, so they are the owner's. The other files beside this one are that work's own:
 `stance-frame.md`, `crouch-collision.md`, `depth.ts`, `video-ref-5-dave-rasta.md`, `video-ref-6-mason-ho.md`.
 
+**Step 3.5f — the planing latch's own band, 3–4 m/s — is in its own file, `planing-latch-band.md`** (reader
+`latch.ts`, arms `results/35f/`). Its headline: off the plane the stick moves **0 of 220 248 column-values**, of which
+**0 of 125 419 inside the band**, against **61.5–62.1 %** on the plane — so the two states are steering and no
+steering, not more and less of it. And the band's own hysteresis is **not** where the owner's "unresponsive" lives:
+on the real Canyon sea it holds 8.1–10.2 % of a planing ride and 0.0 % of a crawling one, and its off-plane half was
+never occupied in 24 riders — while **100 %** of a crawling Canyon ride is below `PLANING_DROP` with the ask cap at
+exactly 0.
+
 ---
 
 # Part 1 — step 3.5d: **the ankle rolls the board, and the 56–84° is the coast afterwards**
