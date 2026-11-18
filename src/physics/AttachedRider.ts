@@ -1534,6 +1534,29 @@ export interface AttachedRiderOptions {
    * new quantity. Anything else, the tuck under a curl only, as it ships.
    */
   deepen?: 'on';
+  /**
+   * **The trunk's fold moves the body's mass** (step 3.5h, rows 1 and 2 of `docs/research/new-rider/3.5/engine-target.md`),
+   * opt-in: 'mass' turns the hip rotor's own parts - the torso, the head and both arms, which is what
+   * `HIP_PITCH_INERTIA`'s 8 kg.m2 is a model of - about the **physical pelvis** (part 0) by
+   * `StandingBody.hip.angle`, about the board frame's x, which is the very axis `StandingBody.couple` already pairs
+   * the rotor's torque on (`this.across`). So the centre of mass, the inertia tensor, the per-part water forces and
+   * the drawn body all read the trunk where the rotor has put it.
+   *
+   * **Geometry, not force.** No torque, no drive, no constant and no new quantity: the rotor's torque was already
+   * paired (`standingBody.ts:379-384`) and its power already booked (`:5076-5078`), and until now its angle was read
+   * in three places that never touched `this.parts`, so the mass model computed every one of those quantities from an
+   * **unfolded** trunk while the trunk folded. `postureRate` is deliberately left alone: the fold's own centre-of-mass
+   * motion must arrive through the pair, never as a kinematic drive.
+   *
+   * **One pivot, one owner of the translation.** The pelvis and both legs stay where the balance put them, so the
+   * posture's translation keeps its single owner and the fold has exactly one pivot. The drawn body's own
+   * compensation (`HumanoidRig.poseHinge`'s `backForMass`) is stood down by the matching rig switch, so the pelvis is
+   * never moved twice.
+   *
+   * The new surfer (`?rider=new`) standing free only - there is no hip rotor anywhere else. Off by default and pinned
+   * off for online rooms (the `?trunk=mass` dev switch, to ride).
+   */
+  trunk?: 'mass';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -2142,6 +2165,8 @@ export class AttachedRider {
   private readonly stanceDeepRow: boolean;
   /** Step 3.5b: full manual crouch reaches the tube tuck's depth anywhere, not only under a curl (`deepen: 'on'`). */
   private readonly deepens: boolean;
+  /** Step 3.5h: the hip rotor's angle turns the mass model's own trunk, head and arms about the pelvis (`trunk: 'mass'`). */
+  private readonly trunkMass: boolean;
   /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
   private readonly stanceReach: 'keep' | undefined;
   /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
@@ -2237,6 +2262,13 @@ export class AttachedRider {
   private readonly windowed: boolean;
   /** The new surfer standing: the body's pitch on the board (`StandingBody`), and its forward axis (world). */
   readonly standingBody = new StandingBody();
+  /**
+   * Step 3.5h: the trunk fold the **mass model** carries this substep, rad about `this.across` at the pelvis, forward
+   * (nose) +. It is `standingBody.hip.angle` where `trunk: 'mass'` folded the parts and **0 otherwise**, so the gap
+   * between this and `hip.angle` is row 1's own metric - the trunk the physics draws its mass from against the trunk
+   * the rotor is actually at - and its target is zero.
+   */
+  trunkFold = 0;
   private readonly forward = new Vector3(0, 0, 1);
   /** The new surfer: the body's own push through the feet, low-passed over SPECIFIC_FORCE_TIME, N (world): the pitch reference's slow trim. */
   private readonly bodyPush = new Vector3(0, 1, 0);
@@ -2519,6 +2551,7 @@ export class AttachedRider {
     // three-row ladder and its 0.30 m clamp. Matched as a string and never parsed — `Number(null) === 0`.
     this.stanceDeepRow = options.stanceDeep !== 'off';
     this.deepens = options.deepen === 'on';
+    this.trunkMass = options.trunk === 'mass';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -5516,8 +5549,51 @@ export class AttachedRider {
       this.parts[i * 3] += this.balance.x + this.lean.x + this.armsGive;
       this.parts[i * 3 + 2] += this.balance.z + this.lean.z;
     }
+    this.foldTrunk();
     const center = postureCenter(this.parts, this.partMasses);
     this.localCenter.set(center.x, center.y, center.z);
+  }
+
+  /**
+   * **The trunk's fold in the mass model** (`trunk: 'mass'`, step 3.5h; rows 1 and 2 of
+   * `docs/research/new-rider/3.5/engine-target.md`). The hip rotor's own parts - the torso, the head and both arms,
+   * which is what `HIP_PITCH_INERTIA` is a model of - turn about the **physical pelvis** (part 0) by
+   * `StandingBody.hip.angle`, in `this.parts`' own board-local frame.
+   *
+   * **The axis and the sign, stated rather than inferred.** `this.parts` are board-local and the whole posture is
+   * carried into the world by `bodyFrame` (`frame()`, and `partPosition`), whose x axis **is** `this.across` - the
+   * axis `StandingBody.couple` already puts the rotor's couple on (`rhs[3..5] -= h * hip.torque * across`). So a
+   * right-handed rotation about local **+x** here is a rotation about `across` in the world, in every stance and at
+   * every bank, with no frame correction: the bank is in `bodyFrame`, not in `parts`. Right-handed about +x takes +y
+   * to +z, and +z is the heading, so a **positive** `hip.angle` pitches the trunk toward the **nose** - which is the
+   * sense `hip.angle` is written in (`pitchOf` is `atan2(local.z, local.y)`, forward +) and the sense that pairs: the
+   * same positive torque subtracts from `rhs[8]`, pushing the rest of the body **aft** along `forward`.
+   *
+   * Standing, every part of the posture sits on the stringer (x = 0, `riderPosture.regularPlaces`) and the goofy
+   * mirror only swaps parts across it, so **regular and goofy fold identically** and the pivot is the same point.
+   *
+   * **No force and no drive.** The torque was already paired and already booked; this only states where the mass it
+   * carries is. `postureRate` is left at 0 on purpose - the fold's own centre-of-mass motion arrives through the pair,
+   * and feeding it to `this.drive` would be a hidden kinematic motor.
+   */
+  private foldTrunk(): void {
+    this.trunkFold = 0;
+    if (!this.trunkMass || !this.freeBody) return;
+    const angle = this.standingBody.hip.angle;
+    if (!(angle !== 0)) return;
+    this.trunkFold = angle;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const pivotY = this.parts[1];
+    const pivotZ = this.parts[2];
+    for (let i = 1; i < RIDER_PARTS.length; i += 1) {
+      // The rotor is the trunk, the head and the arms: the legs stand on the deck and the pelvis is the pivot.
+      if (!this.shifts(i)) continue;
+      const y = this.parts[i * 3 + 1] - pivotY;
+      const z = this.parts[i * 3 + 2] - pivotZ;
+      this.parts[i * 3 + 1] = pivotY + y * cos - z * sin;
+      this.parts[i * 3 + 2] = pivotZ + y * sin + z * cos;
+    }
   }
 
   /**

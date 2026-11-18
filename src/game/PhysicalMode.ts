@@ -571,6 +571,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...stanceDeepSwitch(),
     // `?deepen=on`: the deepen button — full manual crouch reaches the tube tuck's 0.45 m anywhere and Compress does not fade it away, so the crouch key dips whatever stance is held (step 3.5b, ruling C; on the owner's input only, no clock and no stamina), opt-in, to ride.
     ...deepenSwitch(),
+    // `?trunk=mass`: the new surfer's hip rotor folds the mass model's trunk, head and arms about the pelvis, and the drawn trunk stops being a function of leg depth (step 3.5h, rows 1-2 of the engine target), opt-in, to ride.
+    ...trunkSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
@@ -1245,6 +1247,31 @@ export function deepenSwitch(search?: string): { deepen?: 'on' } {
 }
 
 /**
+ * The `?trunk=mass` dev switch (`SurfZoneConfig.trunk`, step 3.5h; rows 1 and 2 of
+ * `docs/research/new-rider/3.5/engine-target.md`): opt-in, **the trunk's fold moves the body's mass, and the drawn
+ * trunk stops being a function of leg depth.**
+ *
+ * Two halves of one state, and that is the point of doing them together:
+ * - **physics** (`AttachedRiderOptions.trunk`): the hip rotor's own parts — the torso, the head and both arms — turn
+ *   about the physical pelvis by `StandingBody.hip.angle`, about the same axis `couple()` already pairs the rotor's
+ *   torque on. The rotor's torque was already paired and its power already booked; its angle was simply never read
+ *   by `this.parts`, so the centre of mass, the inertia, the per-part water forces and the drawn body were all
+ *   computed from an **unfolded** trunk while the trunk folded. **Geometry: no force, no drive, no constant.**
+ * - **drawing** (`RIG_SWITCHES.trunk`): standing, the rig adds no fold of its own, because the physics' pelvis, torso
+ *   and head now carry one. `HumanoidRig.ts:1383–1385` interpolated the drawn trunk from the drawn leg depth and from
+ *   nothing else, so **folding at a fixed leg depth was impossible at any value** — that structural defect, not any
+ *   footage angle, is the reason for this change. **No footage figure licenses a target for the range** (after
+ *   thirteen clips the series has no gated measurement of trunk angular travel), so the range is reported as a fact
+ *   about the engine and the owner rides the feel.
+ *
+ * The new surfer (`?rider=new`) only — there is no hip rotor anywhere else, so without it the switch is ignored on
+ * both sides. Off by default and pinned off for online rooms.
+ */
+export function trunkSwitch(search?: string): { trunk?: 'mass' } {
+  return devParam('trunk', search)?.trim().toLowerCase() === 'mass' ? { trunk: 'mass' } : {};
+}
+
+/**
  * The `?buoyFrame=hull` dev switch (`SurfZoneConfig.buoyFrame`, step 3.3d, the wave-shape advisor's item 2): opt-in,
  * every spot's board resolves the water's hydrostatic support along the **hull** normal where the deck is dry and the
  * patch planes — Savitsky's own convention for a bottom wetted on one side — blending back to the water-surface normal
@@ -1786,6 +1813,15 @@ export class PhysicalMode {
     const compute = stage !== settings.stage ? 'auto' : settings.compute;
     const tier = stage === 2 && compute === 'auto' && gpuTier !== undefined && await gpuTier();
     const config = surfZoneConfigFor(settings, seed, tier, overrides);
+    // `?trunk=mass` with `?rider=new` (step 3.5h): standing, the drawn trunk is the physics' folded one and the rig
+    // adds no fold of its own (`RIG_SWITCHES.trunk`). **Read off the config that is actually in force, not off the
+    // address**, because an online room's `overrides` clear `rider` and `trunk` for the physics (`main.ts`): taken
+    // from the URL, joining a room from `?rider=new&trunk=mass` would stand the drawn hinge down on riders whose
+    // physics has no fold at all — which is the very drawn-against-physical disagreement this switch exists to
+    // remove. Every rider in a zone runs the zone's own config, the local one and the remote ones alike, so one flag
+    // off `config` is one flag per rider. Without the new surfer there is no hip rotor to read, so the drawing keeps
+    // its own hinge.
+    RIG_SWITCHES.trunk = config.trunk === 'mass' && config.rider === 'new' ? 'mass' : undefined;
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
     if (start !== this.starts) return false;
     // A swept spot's contact needs the barrel files in the surf zone (Part B, PR 4).
