@@ -2731,7 +2731,20 @@ Its highs: 7.92 → 9.18 → 10.09 → 11.29, i.e. **full cycles of 1.26, 0.91 a
 | **0.45 s** | **0.82** |
 | **0.60 s** | **0.93** |
 
-> **At the cadence clip 16 actually shows, the game delivers 82–93 % of its crouch rung — not 40 %.** The 40 % was computed at **0.22 s**, which has since been withdrawn as a one-window average over a turning passage. **Row 6's "2.5× short on depth" therefore evaporates at the only cadence anybody has sampled properly.** The game's own limit (**excursion halving at a 0.27 s half-cycle**) stands as a fact about the engine, and **the footage sits well clear of it.**
+> **CONDITIONALLY — and the conditions were pointed out to me, not by me.** The 82 % and 93 % **are valid for the
+> prescribed 0.45 s and 0.60 s GAME inputs** and **cannot yet be assigned to this filmed rider**, because **three
+> assumptions sit between the two numbers and none was checked**: the 1.26 / 0.91 / 1.20 s are **gaps between SAMPLED
+> TALL POSTURES, not measured peaks** (Codex said so when it gave them); **the playback's retiming is unknown**, so
+> the clip may not be real time; and **bending and rising need not take equal time**, so halving a full cycle to get a
+> half-cycle assumes a symmetry nobody has shown. **The wording that holds: IF the footage is real time AND the
+> strokes are symmetric AND the sampled postures sit near the peaks, the implied half-cycle is ~0.46–0.63 s, where the
+> game's own table gives 82–93 % of its rung.**
+>
+> **What survives unconditionally is the direction:** the only cadence anybody has sampled sits **far** from the
+> withdrawn 0.22 s, so **row 6's "2.5× short on depth" has lost its basis** — not because a better comparison replaced
+> it but because **no comparison is currently available at all.** The game's own limit (**excursion halving at a
+> 0.27 s half-cycle**) stands as a fact about the engine. **And the three qualitative cycles are clear and independent
+> of every timing assumption above**, so **periodic pumping is real whatever its period turns out to be.**
 
 **What this does NOT establish:** there is still **no footage depth**, so **nothing says 82–93 % of the game's rung is the right absolute depth.** The claim is narrower and worth having: **the follower is not the binding constraint at the cadence real riders use.** **No change to `LEG_FREQUENCY` is warranted, and the case for one is now weaker than it was an hour ago.**
 
@@ -2778,3 +2791,11 @@ Codex's code review of `pump.ts` at `ff750da4`. **Verified here by reading befor
 **One entry above I wrote that #413 is a "zero-steer fixed-orientation benchmark" and that it therefore "measures a narrower thing than the footage shows."** **The first half is wrong: `steer = 0` holds the player's input, not the board's attitude**, so the probe's board could roll and turn like clip 16's. **The useful half of the point survives in a different form: the probe recorded neither trajectory nor exit speed, so a comparison with clip 16's board path is not available from it at all** — not because the benchmark is too narrow, but because the quantity was never logged.
 
 **I took that phrase from Codex's earlier message and repeated it without checking what `steer = 0` reaches.** Same shape as every entry in `one-trace-is-not-a-number`: **a description of a measurement's frame, adopted rather than verified.**
+
+### The filter fault is now EXPERIMENTAL, not inferred — and `hold0`'s real answer is unknown
+
+Codex ran the exact detector and filter in isolation on **eight alternating 0 / 0.04 m samples: six turning points, five true half-cycles, ZERO after the existing `hold0` filter, five with a finite observation start.** **So the filter demonstrably destroys a signal that is there.** ⚠️ **What `hold0` actually gives remains OPEN until it is unmasked** — the control is not "wrong but probably fine", it is **unknown**, and no round may cite it either way until the probe author reports.
+
+### Codex's consolidated clips 14–16 reference
+
+**`codex/surf-motion-14-16` at `6bc742aa`**, file `docs/research/new-rider/3.5/video-review-14-16.md` — the full timestamped review for clips 14, 15 and 16 plus its code references and the minimal control check. **To be used as the common reference once our own independent readers finish**, never before, so the blind arrangement holds. **Clip 15's trough-and-climb cues are recorded two entries above** and are the thing to hand a rider/arms builder when one next runs; none is running now.
