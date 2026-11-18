@@ -1962,3 +1962,61 @@ git merge-base --is-ancestor origin/main <branch>   # already descended from mai
 **And the owner chose the build order when asked how long the work would take: *"geometry rows first"*.** They were given the split honestly — **the 9 geometry rows are 6–10 rounds, one to two days at this pace and estimable; the falling is diagnosed but has NO date after twenty-seven rounds** — and told that **the two halves are separable**, so they can have *"a surfer whose movement looks right, who still falls."* **They chose the look.**
 
 **The gate on rows 1 and 2:** Codex's pivot-and-frame answer (consult file Q2). **`poseHinge` already shifts the pelvis by `backForMass` to hold its estimated CoM, so building the physics rotation without agreeing the pivot risks cancelling or doubling it.** Codex is out of usage. **So the build starts with the geometry rows that are NOT gated — and row 3 is an acceptance test, not a build; row 12 the owner has already ruled (C and E).**
+
+## ⭐⭐⭐ STEP 3.5f (merged `c28d058f`, PR #405) — **THE HYSTERESIS LEAD IS CLOSED, AND THE GATE ITSELF IS THE ANSWER TO "UNRESPONSIVE"**
+
+`docs/research/new-rider/3.5/planing-latch-band.md`, reader `3.5/latch.ts`. Read-only; **no `src/` change**. All figures **`RIDER=new FELT=deck BODY=two`** — the owner's own address. **Merged WITHOUT a rebase**, the first to use the corrected practice: the branch was already descended from `main`, so its SHAs survived.
+
+### 1. The same stick DOES produce a different ride in the band — and it is TOTAL, not a gradient
+
+Each run paired against itself with **one input changed** (stick never touched vs hard over), same water, placement, stance and entry; **133 numeric columns a frame.**
+
+| face | state | run-pairs | frames | column-values | mismatches | share |
+| --- | --- | --- | --- | --- | --- | --- |
+| s16 (Canyon-matched) | **off the plane** | 24 | 561 | 74 613 | **0** | **0.00 %** |
+| s16 | planing | 42 | 1 093 | 145 369 | 89 366 | **61.48 %** |
+| f73 (owner's water) | **off the plane** | 27 | 1 095 | 145 635 | **0** | **0.00 %** |
+| f73 | planing | 36 | 1 312 | 174 496 | 108 419 | **62.13 %** |
+
+**Inside the band itself: 0 of 125 419 column-values on 943 off-plane frames at 3.0–4.0 m/s, against 61.6–63.5 % on the plane.** **So it is the GATE, not the speed** — the two latch states are **steering and no steering**, and inside the band which one you are in is history. **Both histories were built from entry speed alone, a thing a player causes; `planing` was never set by hand.** Null controls at matched speed spacing separate cleanly (heading 4.00–32.39° against 0.00–0.57°; peak yaw 98–339 against 2–44 °/s), and **100 of 100 latch changes across 204 runs match the rule in the source.**
+
+### 2. ⚠️ BUT THE BAND IS THIN AND ONE-SIDED ON THE OWNER'S OWN SPOT — **so it CANNOT be carrying the complaint. The lead is CLOSED.**
+
+Real Canyon (`?canyonWaves=true`, `canyonBed: 'b'`, stage 2, seed 1, medium), **24 riders, 1 291 live frames, stick at 0:**
+
+| entry | riders | live | below 3 m/s | in the 3–4 band | band ON plane | band **OFF** plane |
+| --- | --- | --- | --- | --- | --- | --- |
+| **2 m/s** | 12 | 541 | **100.0 %** | **0.0 %** | 0 | **0** |
+| **5 m/s** | 12 | 750 | 29.8–43.7 % | **8.1–10.2 %** | 66 | **0** |
+
+**Every band frame on the owner's spot is ON the plane. The off-plane side of the band is never occupied.** On the bench the longest any run sits there is **0.033–0.733 s**.
+
+### 3. ⭐ BUT IT DOES EXPLAIN "UNRESPONSIVE" — via the gate at `PLANING_DROP`, not the hysteresis above it
+
+> **100 % of 541 live frames of the slow Canyon riders are below 3 m/s with the ask cap at EXACTLY 0.** **A rider positioning at walking pace on the real Canyon has no steering authority at all, whatever his history.**
+
+And **6 of 12 fast riders cross `PLANING_DROP` at t = 0.77–0.82 s** and then spend **0.53–1.08 s off the plane while still attached.** **That is the measured form of the owner's own words.**
+
+### 4. ⭐ THREE UNEXPECTED FINDINGS, TWO OF WHICH CORRECT MY BRIEF
+
+**(a) Three speeds, two of them 4 — and THE POP-UP USES THE WRONG ONE.** The latch tests `hypot(v.x−flowX, v.z−flowZ)` (`:3493`); the cap tests **the component along the heading** (`:3524`); and the **mount** tests `board.velocity.length()` (`:2857`) — **with the water's flow still in it** — which runs a median **0.46–0.72 m/s ABOVE** the latch's own quantity. **So the pop-up latches the board ON at 3.655 m/s (s16) / 3.856 m/s (f73) through the water — inside the band — and the state the whole ride inherits is set by a quantity the latch never reads again.**
+
+**(b) The mount flips TWO things off that one test, and my brief said "the stick's whole authority", which was too narrow.** `reset:2857–2860` sets `planing` **and `banked`** — the body's placement, plumb across versus square to the deck. At the crossing, frame-1 bank is **−0.039° off / +8.717° on** (the face's whole tilt). **With the stick never touched — the ask identically 0 on both sides — that channel ALONE carries peak |Δroll| of 48.95–70.03° and 8.04–32.39° of heading.** **The body's starting bank is a bigger lever at the mount than the cap is.**
+
+**(c) Isolated, the cap's own channel turns the board WITHOUT rolling it.** With `?mountAgree=deck` pinning `banked`, the crossing flips `planing` alone: **Δheading 12.59–13.47° in 0.27 s** against nulls' 0.00–1.99°, but **peak |Δroll| only 2.12–2.89°** while peak **|Δbank| is 10.94–13.44°.** **The authority appears in yaw and the BODY's bank, not the board's roll — which sits exactly beside 3.5d's finding that the roll is the ankle's.** Stick never touched, the channel is inside its own nulls — inert, as it must be.
+
+### 5. Refuted, including its own first design
+
+The hysteresis band as the home of "unresponsive". That the latch gates only the ask cap (it also gates `banked` at the mount, `projecting` at `:3620`, the tall projection at `:4199`). **And its own opening design: a matched-speed bin comparison inside the band CANNOT answer the question** — the two states' frames in a bin come from different trajectories at different stages of their own roll, several bins are carried by one run, and the medians do not separate. **Printed with that caveat; the paired stick is the instrument that works.**
+
+### 6. ⭐ THE SWITCH THAT ADDRESSES IT IS ALREADY ON `main`
+
+The round named **`?askCap=4.5`** as *"the planing gate removed, `TURN_RADIUS = 4.5 m` kept"* and **believed PR #389 was unmerged. It is not — `askCap` shipped as `660cc94e`**, and the caller verified the line: **`const most = this.askUngated || this.planing ? held : 0;`** (`:3531`) — **so any `askCap` value removes the gate and applies the formula at every speed.**
+
+> **So the owner can ride the fix tonight: `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&askCap=4.5` — the planing gate removed, their own radius kept. §3 and §6 say that is the switch that would give the slow Canyon rider a stick at all.**
+
+**The other one-liner — the mount reading the latch's own speed — is named and explicitly NOT recommended**, because §5 shows the cap's channel there is small while §4(b) shows the `banked` channel beside it is not.
+
+### Known gaps, stated
+
+On the f73 face with `?mountAgree=deck` **the probe's own counterfactual `design()` throws `singular` four runs in**, so §5's single-channel read is **s16 only, 6 pairs**; whether the degeneracy is in the ride or only in the probe was not chased. **Untested: the stick moved DURING a run** (every arm holds its stick), and a **bigger or two-train Canyon sea** than seed 1's medium swell.
