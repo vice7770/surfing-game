@@ -2026,7 +2026,7 @@ it. It needs the owner's ride, or a bench where a rail change's own rail answer 
 | `src/scene/rig` + `src/game`, `--maxWorkers=1` | **70 files, 742 passed** — §7's figure exactly |
 | `src/physics/armCarriage.test.ts` + `armCarry.test.ts` | **16 of 16** (13 unchanged + 3 added) |
 | the same 3 added tests on the **pre-fix** files, restored from `HEAD` | **3 of 3 fail** — they are regression tests, not decoration |
-| `src/wave/SurfZoneRunner.test.ts`, by hand | **started and left running** — see the note below |
+| `src/wave/SurfZoneRunner.test.ts`, by hand | **43 of 43**, 76.3 s (outside the merge suite, so a red there is news) |
 
 **The default path is untouched, structurally and by measurement.** Both of the module's call sites are gated on
 `this.armCarry`, which is `undefined` by default, so the default rider never enters the channel at all; and
@@ -2039,8 +2039,5 @@ promise: the change is confined to `armCarriage.ts` and to one line inside that 
 `renderPoint`, which is **drawing**. No solver, grid, wave or force path is reachable from it, and §6's 7 560 values a
 run are the measurement of that on the rider itself.
 
-**⚠️ `src/wave/SurfZoneRunner.test.ts` was started by hand and had not finished inside this round's window.** It is
-outside the merge suite, another session was running a full suite on the same machine throughout, and it had run for
-**~50 minutes** when this was written. It is **not** a gate on a drawing-only change behind an opt-in switch — it
-enables no `armCarry` — but it is recorded as **unfinished rather than passed**, because an unfinished run is not a
-green one.
+`src/wave/SurfZoneSimulation.test.ts` declares 644.5 minutes of per-test timeout and cannot gate anything, so it was
+not run, as in §7.
