@@ -1,5 +1,8 @@
 # Video reference 12 (Jay Phillips, Maldives): the depth is in the trunk — 80° of fold against a hip that barely moves, measured on the same two frames of the same shot
 
+> ⚠️ **THIS DOCUMENT'S HEADLINE IS WITHDRAWN AND TWO OF ITS FRAME READINGS ARE CONTESTED. See §CORRECTIONS at the end before quoting anything from it.** The 80° span is not a usable figure — not a target, and not a lower bound — and the **t = 23.5 "hands low"** reading is contradicted by an independent read at higher resolution.
+
+
 Source: **https://www.youtube.com/shorts/HhJo76wwkZc**, title *"Jay Phillips in the Maldives #surf #maldives #snapperrocks"* (`@jacobk_media`). Length **39.341 s**, read in full. The **twelfth** reference the owner has sent.
 
 Delivered to the browser pane at **1440×2560** (`hd1440`), pinned for every measurement frame. This video is the **first Short in the series to publish `hd2160`** — and §1.2 records that 2160p bought **no extra detail at all**, which is worth knowing before another round spends a quality ladder on it. Stream is **24 fps** (§1.3), `playbackRate` 1, at or near real time (§1.4). `yt-dlp`, `ffmpeg` and `ffprobe` are all absent from this machine (checked, as the skill asks), so nothing was downloaded; every frame is a screenshot of the browser pane, **tab `tab-3`**, claimed with `tabs_create` and passed explicitly on every call.
@@ -426,3 +429,33 @@ Game-side entries are **code readings quoted from `3.5/body-channels.md` and `3.
 - **No automated trunk tracer was built.** Clip 11 built one, validated it against hand measurement, found it reading 9° where the hand read 39–43°, and discarded it; this round did not rebuild it, and §1.6 records that the **survey strips** mislead on trunk angle by 30–40° so that no later round reads angles off a thumbnail.
 - **An early depth figure for the held crouch (~47 % of the tallest frame) was computed and then withdrawn** when a second frame showed the hip landmark was a guess (§3.1b). It appears nowhere as a number.
 - **No conclusion is drawn about the wave, the lip, the foam or the spray**, which the owner has now asked six times.
+
+---
+
+# CORRECTIONS (2026-11-18, added after publication)
+
+**Two separate problems. The first withdraws this document's headline; the second contradicts one frame reading and has a knock-on effect on row 4.**
+
+## 1. The 80° span is withdrawn — it is not a target and not a lower bound
+
+Three findings, none of them from this read:
+
+1. **The trunk angle has an admissibility gate of its own**, the analogue of the leg chain's: projected shoulder→waistband ÷ head length must sit near **1.6–1.8** for the trunk to lie in the image plane. Video 13 is the first read in the series to test for it. **Six attempts, two passes — and both passes were VERTICAL trunks.** No visibly-folded frame has ever passed, in thirteen clips. **The 10° and 90° readings here were never gated.**
+2. **Hip-above-deck ÷ head length moves with STANCE WIDTH** — the feet moving apart lowers the hip with no knee change at all. **The ×0.84 was never checked for equal foot spacing between the two frames.** And the ±0.17 **contains 1**, so it permits a modest hip drop as readily as no change; this document's "an error bar that contains *no change*" stated only one of the two.
+3. **Decisively: a span is not a lower bound.** Foreshortening can only shrink a **single** angle from vertical, under a level camera, **with fixed yaw**. A **difference of two projected angles** has no such protection: *a fixed lean swivelled from facing the lens to side-on changes its apparent angle with zero anatomical flexion.* **These two frames are 2.4 s apart inside a turn, and the independent review confirms the board heading and the perspective both changed between them.** Its words: *"the two frames cannot calibrate an 80° hip rotor."*
+
+> **After thirteen clips there is no gated measurement of trunk angular travel anywhere in the series.** An image-plane angle is **a reference for visual range, not a prescribed rotor angle.** Row 2's target column loses its number; **row 2 itself survives on the code, which needs no camera.**
+
+## 2. The t = 23.5 frame: "hands low" is contradicted
+
+An independent read at **2160 × 3840** reports that at **23.47–23.68** — and verified again at **23.52 and 23.68** — the rider **stands tall with one hand alongside the back of his head, elbow high, and the opposite arm lower.** This read has it as *"hands low"* at 23.5, in four places (§the stature table, §the hip/trunk table, §the carriage list and §the carriage conclusion).
+
+**This read cannot adjudicate it** — its own frames are lower-resolution, and a stale-frame failure discovered the same day **defeats both of the defences this document relied on**: decode can freeze while `document.hidden` is false, `readyState` is 4, every seek resolves, `currentTime` returns exactly what was asked **and the canvas stamp is correct**. Only an out-of-order probe catches it. **So the frame labelled 23.5 here may not be the frame that was measured.** The higher-resolution read is taken as correct pending a re-read.
+
+**It also reports an intermediate reversal between the two headline frames**, which this document treats as a single transition: **24.20–24.35 lower, 24.87 partway up, 25.90 the trunk nearly level, 26.47 the nose rising and the arms spreading.** So the 23.5 → 25.9 pair spans **a recovery**, not one continuous fold.
+
+### The knock-on, and it runs against this document's own conclusion
+
+§ *"Carriage A occurs at the clip's straightest legs (23.5) and through its deepest, longest crouch (33.1–39.34). So carriage does not track depth."* **If the 23.5 frame has a hand beside the head, that sentence loses its first half** — and what remains (a **high** hand at the straightest legs, **low** hands at the deepest crouch) points the other way: it is **consistent with** arm height tracking leg depth in this clip.
+
+**This does not overturn row 4**, whose refutation of both depth links rests on **V6, V7, V8, V9 and V11**. But **V12 must be struck from that evidence until the frame is re-read**, and if the high hand holds, V12 is a **dissent** rather than a confirmation. Recorded here rather than quietly amended, because the measurement is not this read's to change.
