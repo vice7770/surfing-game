@@ -106,9 +106,18 @@ toggles. Medians are `qt(v, 0.5)`, the upper middle.
 | 0.60 s | 0.600 s | 0.182 m | 0.93 |
 | key never pressed | **0 half-cycles in 0 of 72 runs** | none | – |
 
-> **The channel reaches the footage's rhythm and not its depth.** It completes a half-cycle at **0.217 s** — within
-> 0.003 s of video 14's 0.22 s, over **401 half-cycles in 69 of 72 runs** — while carrying **40 % of the rung.**
-> **The excursion falls below half the rung at a half-cycle of 0.27 s, and 0.27 s is row 6's number.**
+> **The channel completes a half-cycle at 0.217 s** — over **401 half-cycles in 69 of 72 runs** — **while carrying
+> 40 % of the rung.** **The excursion falls below half the rung at a half-cycle of 0.27 s, and 0.27 s is row 6's
+> number.**
+>
+> ⚠️ **DO NOT READ THIS AS A MATCH TO THE FOOTAGE. CORRECTED 2026-11-18 after an independent clip-14 read.** The
+> 0.22 s it was briefly compared to is **a within-window average from one reader — 0.88 s divided by four, inside a
+> single window — not a cadence the rider was shown to sustain.** The reviewer **reproduces leg involvement and a
+> low trunk**, so the row's *direction* stands, but **could not independently count four equally identifiable
+> half-strokes, nor measure any physical compression at that camera angle.** And ⚠️ **the board was rolling and
+> turning through that passage — "from oblique to nearly end-on" — so "in trim with no direction change" may not
+> describe the window at all.** Row 6 is specifically about pumping **in trim**. **The game figure is sound; it is
+> the footage side of the comparison that has no reliable number — neither rate nor depth.**
 
 **The governor is the critically damped follower at `LEG_FREQUENCY = 12` rad/s**, whose step response needs
 **0.567 s** to come within 5 mm of the rung (50 % at 0.183 s, 90 % at 0.400 s, 95 % at 0.483 s). **Any half-period

@@ -2634,3 +2634,29 @@ Its first reading, **off a single tick trace**, blamed the balance's knee drop: 
 **Nobody knows whether 0.078 m is what video 14's rider does**, because **the footage's leg figures come off a saturated chain (99–100 % on every readable frame).** **The series has no measured pump depth in any clip.** So **40 % of the rung is a fact about the game, not a verdict against the footage** — only the rate was ever comparable. **No change is warranted yet**: the game pumps at the right rhythm with an amplitude nobody has shown to be wrong.
 
 **A metric that cannot fail was checked for, as instructed:** a flattened channel would record no turning point at all and report `none` in every arm — **which is exactly what the two no-pump arms do** (key never pressed: 0 half-cycles in 0 of 72; key held: 4 half-cycles in 4 of 72 at 0.005 m) **and exactly what the pumped arms do not.** The isolated follower at a 1.50 s half-cycle reaches **1.00 of the rung** as a positive control.
+
+---
+
+## 2026-11-18 — AN INDEPENDENT CLIP-14 READ TAKES THE FOOTAGE SIDE OF ROW 6 APART
+
+Codex read clip 14 at 1080×1920 in its own tab. **It reproduces the finding's direction and dismantles its number.**
+
+**What survives:** *"I can reproduce leg involvement and a low trunk."* **So legs cycling while the trunk stays folded stands as a direction.** Its own frames: chest low over the feet at 5.63, the board climbing at 6.12, hips low to the side with one high hand at 6.39, legs lengthening as the board points back down at 6.74; a different arm shape at the 8.44–8.86 crest passage; knees bent at 10.37, an obvious lengthening by 10.69–10.74, bending again by 11.18–11.31, **with no return to an upright trunk.**
+
+**What does not survive — three qualifications, each fatal to a different use of the number:**
+
+1. **The 0.22 s is a within-window average from one reader**, 0.88 s divided by four inside a single window — **not a general cadence**, and not shown to be sustained. *"Please label 0.22 s a within-window average from the original reader, not a general cadence."*
+2. **Four equally identifiable half-strokes could not be independently counted**, and **no physical compression is measurable at that camera angle.**
+3. ⚠️ **The board was rolling and turning through that passage — "from oblique to nearly end-on".** **So "in trim with no direction change" may not describe the window at all** — and **row 6 is specifically about pumping in trim.** If the pumping sits inside a turn, it is a different observation and row 6's footage evidence is not merely weak but possibly off-topic.
+
+### What this does to last round's result, and what it does not
+
+**PR #413's measurement is untouched.** 864 runs, 91 562 live ticks, `steer = 0` throughout: **the game's leg channel does 0.217 s half-cycles at 40 % of its rung, and 0.27 s is where the excursion halves.** That is a fact about the game and it stands.
+
+**What is withdrawn is the comparison.** I wrote *"within 0.003 s of video 14's 0.22 s"* into `engine-target.md` and told the owner the rhythm matched. **The game figure is sound; the footage figure it was matched against is a one-window average that a second reader could not reproduce, taken over frames where the board was turning.** Corrected in the status block. **Row 6 now has no reliable footage target at all — neither rate nor depth** (the depth was already unavailable: the leg chain saturates at 99–100 % on every readable frame, so **no clip in fifteen has given a pump depth**).
+
+> **So the state of row 6 is: the game's own numbers are known precisely, and there is nothing trustworthy to compare them to.** The classification correction stands (a quantitative shortfall, not an expressibility limit) **but the shortfall is against the game's own asked-for rung, not against any rider.**
+
+**Codex's instruction, adopted:** *"compare achieved game stroke in metres only when a calibrated reference exists"*, and **keep leg depth and trunk angle separately observable** in every brief. **Relayed to video 15's reader while it was running**, told not to try to confirm or beat 0.22 s, and instead to establish for itself whether the clip contains a genuinely trim stretch — no roll, no heading change — before asking which channel cycles in it. **A clip with no such stretch is a legitimate answer.**
+
+**Codex is sending clips 15 and 16 separately.** Ours are reading in parallel and blind, which is the arrangement that has produced every correction in this thread.
