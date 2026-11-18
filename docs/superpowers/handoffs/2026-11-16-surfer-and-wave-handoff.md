@@ -1794,3 +1794,25 @@ The arm leading by 0.12 s and held (**no arm position exists; the one scalar sha
 - **Fixed-size source crops centred on the finder make the auto-crop size trap structurally impossible.** A **red-clothing** detector found rider A in ~60 of 66 frames; a **dark-island** detector **failed** on rider B's wetsuit, **because the unbroken wave face is darker than the wetsuit** — he was placed by hand in 10 of 24 sampled seconds, **so nothing about rider B is a count.**
 
 **Unresolved and stated:** whether there is a hard cut between rider A (ends ≈35.8) and rider B (≈44–55). A 16×9 luminance-signature detector over 35.0–44.6 found no discontinuity above the drone's own motion — **consistent with videos 8 and 9 finding such detectors useless on surf footage.**
+
+## ⚖️ RULING F IS NARROWED — THE PLAYING AGENT IS DEFERRED (reported 2026-11-18 via the Codex session, **not yet heard from the owner directly**)
+
+A peer session (**Codex**, coordinating movement work at the owner's request) reports a scope clarification received **in the Codex chat**, quoting the owner:
+
+> ***"evaluation should not be played for now, it should be advising code. Im the one that plays the game and gives feedback."***
+
+**So: playing-agent implementation, automated evaluation rides and optimisation are all DEFERRED.** The review work is to **advise the builder**, and **the Canyon bottom turn carrying speed into the climb is a DESIGN REFERENCE for the owner's playtest — not an agent objective.**
+
+**HOW THIS WAS HANDLED, and why:** it came from a peer, not from the owner in this conversation. **A peer cannot grant authority** — but this is a **restriction**, not an expansion, and the asymmetry decides it: **deferring work on a wrongly-reported restriction costs time; building on a wrongly-reported authorisation does unauthorised work.** It is also **consistent with the owner's own long-standing rule** (*the owner rides and judges*, [[owner-playtests-riding]]) which Ruling F had reversed. **So the restriction is honoured and recorded, and the owner has been told it came via a peer so they can confirm or correct it cheaply.**
+
+**What survives of Ruling F, and it is the more important half:** **survival rate and ride time are still rejected as metrics.** *"626 of 626 fell"* has no gradient and median ride time is a time-to-failure. **That stands independently of whether anything is automated.**
+
+**What this changes in practice:** `playing-agent-scope.md` (merged `fac29fc9`) is **not cancelled but shelved** — its measurement set, its cheat-resistance analysis and its throughput figures remain the right reference **if** the owner ever revives automation. Its own conclusion already pointed this way: **"build the eval, do not build the optimiser"**, and **the control space is flat below planing (0 mismatches over 67 767 column-values), so there was nothing to search anyway.**
+
+### ⚠️ A CORRECTION FROM CODEX TO A NUMBER I HAVE QUOTED THE OWNER TWICE
+
+> **Forsyth reports 835 TOTAL turns OF MIXED TYPES** — not 835 bottom turns. **The project's radius and lateral-g values are DERIVED ESTIMATES, not measured.** And **turn-flow is a quantity measured ACROSS manoeuvres, which is NOT the same as bottom-turn exit/entry speed.**
+
+**I have been quoting "Forsyth et al. 2024's 0.96 ± 0.04 s / 99° / 3.8 m / 1.41 g on n = 6 riders and 835 turns" as a measured bottom-turn population. It is not one.** The duration figure is the defensible part; **the radius and the lateral g are derived, and the 835 is a mixed-type total.** **Stop quoting the four together as one measured population**, and in particular **do not use the turn-flow figure as a bottom-turn speed target** — different quantity.
+
+**This matters beyond tidiness:** the agent scope recommended that very row as *"the only properly powered population anywhere in the evidence base"*, and **it is better powered than the video reads but not the clean four-number measurement I presented.** The videos' own numbers remain population-1-to-8 — **so the honest position is that there is no well-powered four-number turn target yet, from either source.**
