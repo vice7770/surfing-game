@@ -5580,7 +5580,9 @@ export class AttachedRider {
     this.trunkFold = 0;
     if (!this.trunkMass || !this.freeBody) return;
     const angle = this.standingBody.hip.angle;
-    if (!(angle !== 0)) return;
+    // Nothing asked, or a rotor that has gone non-finite: the posture stays as the balance left it. The finiteness
+    // test is not decoration - a NaN here would turn every rotor part into NaN and take the whole body with it.
+    if (!Number.isFinite(angle) || angle === 0) return;
     this.trunkFold = angle;
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
