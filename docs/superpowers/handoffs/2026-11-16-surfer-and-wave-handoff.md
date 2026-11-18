@@ -2371,9 +2371,7 @@ been resumed to fix its own document and PR.
 - **Row 3 is three-times-not-reproduced: 18 resolved transitions, three riders, not one instance** of the two
   channels moving in opposite directions. Keep it as rows 1–2's acceptance test; **strike any reading of it as a
   frequency.** The footage does not ask for this to happen often — it asks that the engine not make it impossible.
-- **Row 5 takes its first miss: the arm lead is absent in 3 of 3 direction changes.** The tally goes 10 of 11 across
-  four clips → **10 of 14 across five.** Caveat kept: every direction change in this clip is inside a fast hollow
-  barrel section — no open-face snap in 17.7 s.
+- **Row 5 — CORRECTED, and the correction cut the OTHER way.** The reader first published *"the arm lead is absent in 3 of 3 direction changes"* — its first miss in the series. **Re-sampling at the native grid found a lead in the very passage its coarse survey had skipped:** rear hand above the crown at **3.100 ± 0.033 s**, the board still flat at 3.200 / 3.233 / 3.266 and banked by 3.300, so the rail bites at **3.283 ± 0.017** — **lead = +0.18 s ± 0.05, held ≥0.20 s**, inside the existing band. **So 0 of 3 becomes 1 of 4, and the series tally is 11 of 15 across five clips.** And the *shape* is worth more than the count: **the one lead is on the open-face turn where he sets his line; all three misses are inside the slab.** So a built lead should be **conditional**, not universal. A **fifth arm carriage** is added too — both arms forward, rear hand above the crown.
 - **Row 6: 0 pump half-cycles in 1.70 s of trim.** The 0.55–0.60 s cadence now stands on 2 clips, 1 weak dissent and
   **3 clips of "no cycle present."**
 - **Row 10 NOT MEASURED, and said so** — one knee admissible (thigh/shin 1.10), the other refused (2.66). Row 10
@@ -2398,3 +2396,36 @@ however it is drawn — **paired comparison frames cost nothing in scale.**
 A subagent switched the shared checkout to its own branch mid-commit, moving it off the branch this session was
 committing on. **No work was lost** (the row-19 commits were already pushed and `main` was untouched), but from now
 on **every agent that touches git gets a worktree.**
+
+---
+
+## 2026-11-18, §5 SUPERSEDED IN PART — the clip-13 reader corrected itself, and one correction ran backwards
+
+The reader verified every one of Codex's points on its own frames before changing anything, **found them all right**, and then the same re-sampling **reversed one of its own claims in the opposite direction from the challenge.** PR #410 now carries both commits; it is still open and must not be merged on the first version's figures.
+
+**What the clip actually supports:**
+
+| claim | first version | corrected |
+| --- | --- | --- |
+| the held posture | "8.75 s, continuously visible" | **longest stretch shown unchanged: 0.60 s (19 native frames).** Longest *readable* stretch of any kind: **3.77 s** (4.98–8.75) |
+| row 12 | "a new longest hold" | **row 12 gains nothing from this clip** and does not beat V12's ≥5.7 s |
+| visibility | continuous | **t = 8.990 the rider is not in frame at all**; **4.680** an unreadable shape under the lip; **11.320** legs and board only |
+| row 8 | ~3 direction changes | **4** |
+| row 15 | carriage A credited "0.00–7.00" | **6 windows, each with its sampling interval** — the old span contained a hand above the head |
+
+**Two method failures, both the reader's own and both now in the skill:**
+
+1. **A 0.5 s survey landed on look-alike frames** at 2.50 / 3.00 / 3.50 and read a compress–extend–compress as a hold. **The episode is unmistakable at 0.1 s:** deepest 2.6–3.0, most extended 3.10–3.20, bending again from 3.33, board banked by 3.300.
+2. **Three of that survey's twelve tiles were foreground paddlers, not the rider.** The reader *noticed they looked odd and did not act on it.* **That is the whole failure in one sentence** — and it is the same shape as every entry in my own error file: a sample whose frame was never checked.
+
+**The rule that came out of it, and it is a good one:** ***a posture claim needs timing-grade sampling; a visibility claim needs full frames.*** One coarse contact sheet produced two opposite errors here — a hold that was not held, and a lead that was there and was missed.
+
+**An instrument asymmetry worth carrying forward:** `hd2160` on this clip delivered 2160×3840 and then **froze the decode outright** — first frame real, every frame after identical, caught by the out-of-order probe. So **Codex's read had about 3.6× the resolution of ours on the same frames**, and where the two differ on a fine angle **the higher-resolution read wins.** The document marks which figures are ours alone at 1440p.
+
+**The footage ask is rewritten a fourth time: ~45° off the board's axis, level with the deck.** Clip 12 delivered down-the-line, clip 13 delivered water-level side-on, and **the measurement chain refused on both.**
+
+**Row 2's status is unchanged and explicitly stated in the document and the skill:** *after thirteen clips there is no gated measurement of trunk angular travel anywhere in the series, and the published spans are not even lower bounds wherever yaw moved.* **Rows 1 and 2 are left intact on the structural argument** — `HumanoidRig.ts:1383–1385` needs no camera. **What goes is the number in row 2's target column, not the row.**
+
+### A note for PR #407 (the arm carriage channel), which is the owner's to merge
+
+The corrected row 5 says a real lead is **conditional** — present on the open-face turn where the rider sets his line, absent in all three slab turns. **#407's lead is not conditioned on the wave at all**: it is emergent, from a carriage that *"rises fast and returns slowly, so the hand can arrive before the rail bites"*, driven by **the player's own stick and never leg depth**. **That may be the right kind of conditionality** — the player moves the stick deliberately when setting a line and holds it in a barrel — **but that is an inference, not a measurement**, and it is written down here as one. **It is not a reason to hold the PR**: #407 is drawing-only, opt-in, and the owner rides the verdict.
