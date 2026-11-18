@@ -3737,3 +3737,11 @@ git fetch && git checkout claude/ride-all-three && npm run dev
 **And a correction to me: `AttachedRider.separate` is at `:5428–5433` on the combined branch, not `:5227–5232`** — the merge shifted it ~201 lines. **I have been quoting the `main` number in briefs all session; it must be quoted with its branch.**
 
 **#421's read-out fault was carried across UNFIXED as instructed**, and confirmed harmless: the `tip` counts come off `limit`, set from `copX`/`freeX` **before** that line, and **nothing outside `AttachedRider` and its tests reads `centreOfPressure` at all.**
+
+### The merge bench is committed — `efa6e15b` on `claude/ride-all-three`
+
+**`merge-bench.ts`, `compare.py`, `table.py` in `docs/research/new-rider/3.5/`, 584 insertions, nothing else changed.** Committed **because the scratchpad has been cleared twice today** and the disk hit 99 % twice; anything left there dies on the next sweep. **The table is now re-runnable.**
+
+**Both traps are at the top of the files**, and a third in `compare.py` — *a zero means nothing unless the instrument can see a difference*, with the two one-part-in-10⁹ perturbations named as the thing to repeat, **and a warning that `SKIPCOLS` is both the honest way to compare across commits and the easy way to exclude the column that moved**, which is why it is echoed on every run. **That last one is a good instinct nobody asked for.**
+
+**And it checked rather than assumed, on all four counts:** `git diff 6f844999 efa6e15b -- src` is **empty**, so the merge and every number stand; **the committed copy is provably the same bench** — the eight import prefixes had to change for the new location, so it was re-bundled at the new path, re-run and compared against the file that produced the published row: **211 963 values, zero differences**; `docs/` is outside `tsconfig`'s `include` and `vitest`'s globs **by construction**, with `tsc -b` re-run clean afterwards; and both Python scripts were **smoke-run from their committed paths** and reproduce the published rows. **The PR body never claimed the bench was off the branch, so nothing in it went stale and it was left alone.**
