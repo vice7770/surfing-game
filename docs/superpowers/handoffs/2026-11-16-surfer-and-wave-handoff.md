@@ -2482,3 +2482,33 @@ Codex found it on `bc5cf144`; **verified here by reading before acting.** In `st
 **Fix in flight on `claude/arm-channel` itself** (so #407 updates, no fork), on a **continuous signed reach** that sweeps the hand through centre — which the footage supports anyway. **Two risks named rather than assumed:** the `ARM_LEAD_TIME`/`ARM_HOLD_TIME` asymmetry **is** the arm-lead mechanism and must stay asymmetric about distance from zero; and **`ARM_SIDE_DROP`'s hold may conflict** — a naive signed filter would drift the hand to centre during the very hold that is supposed to keep the rail. If they conflict, **keep the lead and say so.**
 
 **Budget at the time of dispatch, since the one-agent rule came from a credit squeeze that no longer binds:** Weekly · all models **30 %** with 6 d 3 h to reset, 5-hour **23 %**. Two surfer-track agents running deliberately.
+
+### The arm snap is FIXED — and "0.44 m in half a millisecond" is the honest severity
+
+**PR #407 now carries four commits** (`bc5cf144` the channel, then `816f3903` the fix, `a239308b` the seatbelt table, `684719d4` the runner). **1412 insertions / 4 deletions against the merge base — verified by me, and all four deletions are long single lines this branch itself had already replaced in place.**
+
+**The representation changed, not a threshold.** `state.reach` is now **−1 to 1**, target `ramp(|steer|, FROM, FULL) * sign(steer)`, and a rail change is **the state passing through zero**. Verified by reading the shipped function: the rise/return asymmetry is kept as `reaching = |reachAsked| > |state.reach| && (state.reach === 0 || reachAsked * state.reach > 0)` — **away from zero on the side it is already on is fast; a return or a reversal is slow.** `armCarriagePlace` uses the **magnitude** for `out`/`lift` and the **signed** value for `across`; `renderPoint`'s `* this.carriage.inside` is gone; `state.inside` is now **derived** (`|reach| < ARM_SIDE_DROP ? 0 : sign(reach)`) and nothing in the drawing reads it.
+
+| worst one-substep lateral move, lead hand, 18 cells | old | new |
+| --- | --- | --- |
+| reach 1.000 at the reversal | **0.4348–0.4400 m** | 0.0052–0.0497 m |
+| reach 0.846 (0.1 s released) | 0.3681–0.3788 m | 0.0044–0.0437 m |
+| reach 0.651 (0.3 s released) | 0.2833–0.3011 m | 0.0034–0.0501 m |
+
+**Three things worth more than the fix:**
+
+1. **"The narrow fix is not enough" is now MEASURED, not reasoned.** I had argued it by arithmetic — a reversal above the threshold with a residual reach jumps anyway, scaled. **The 0.651 row at −0.3 is exactly that case and it jumps 0.28 m.** The cheap gate is dead on evidence.
+2. **The severity was understated by everyone, including me.** A standing rider runs at `STANDING_SUBSTEPS = 32`, so the real substep is **≈ 0.52 ms**. **The old latch moved 0.44 m in half a millisecond.** The signed carriage's largest possible move in one of those is **≈ 0.003 m.**
+3. **It was NOT masked downstream** — the hoped-for negative result did not happen. Read on `renderPoint` as the carriage's own contribution (switch on minus an identical twin with it off, in the board's frame, so the board's roll and the body's swing difference out), a loaded +x turn then a **−0.12 flick** then hard over **stepped 0.3960 m in one frame** on the old code. **The jump reached the drawn hand.**
+
+**`ARM_SIDE_DROP`'s hold survives with NO trade, and the reason is structural rather than lucky:** the rail is now the sign of `reach` itself and `reach` decays on **exactly the `ARM_HOLD_TIME` curve it always did**, so the hold keeps its rail for precisely as long as the reach lasts — **the identical curve, not a similar one.** The risk I flagged (a naive signed filter drifting the hand to centre during the hold) **cannot occur, because the quantity that holds and the quantity that carries the rail are now the same number.** All 13 existing assertions pass **unchanged**; 3 added, and **all 3 fail on the pre-fix code**, checked by restoring both files from `HEAD`.
+
+**Default path proven, not asserted:** both call sites are gated on `this.armCarry` (`undefined` by default), and `armCarry.test.ts` compares the seven part masses, the board's full pose and the rider's state **every frame of 3 s — 7 560 values a run — with the switch on and off, 0 differences**, for both switch values. **No force, torque, damper, brake or velocity added or changed. Drawing only.**
+
+#### ⚠️ ONE OPEN QUESTION, AND IT IS THE OWNER'S RIDE TO SETTLE
+
+**A reversal is now slow on the way in and fast on the way out.** By the shipped condition the hand retracts on `ARM_HOLD_TIME` until `reach` crosses zero — **0.42 s to the stringer** — and then, the signs agreeing, goes out **fast** on the new rail, arriving at **~0.57 s**. **So the question is only about the first half.**
+
+**The alternative — running the retraction on `ARM_LEAD_TIME` too, sweeping in ~0.24 s, which sits inside V11's measured 0.17–0.22 s rise — is NOT RULED OUT and NOT ADOPTED.** The builder kept the conservative rule because it changes nothing that already existed and nothing measured asks for the other. **It tried to measure whether the arm still *leads* the rail through a reversal and the bench failed outright:** towed at 6, 8, 10 m/s on `PlaneWater`, +1 for 1.2 s then −1 — the board's roll never returns inside the live window at 6 m/s, and **the rider separates at 0.50 s (8 m/s) and 0.25 s (10 m/s), so "rail answered" is `NaN` in 3 of 3 arms.** Recorded in the module, the commit and README §10.5. **This one goes to the owner's eye, not to another probe.**
+
+**Housekeeping:** the fresh worktree arrived with **no `node_modules` at all** (not a stale symlink) — worth knowing for the next one. Two agent worktrees are left on disk (`.claude/worktrees/agent-a792386b9ee0b868c` and the clip-13 reader's `scratchpad/wt13`); at roughly **1.1 GB each** they want the owner's word before removal, per the standing cleanup rule.
