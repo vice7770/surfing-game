@@ -3384,7 +3384,7 @@ The probe built against **this branch's `src` and against the merge base `1a29a6
 | ~8.7 | gone |
 | 8.99 | HUD *"Wiped out — hold A to pull the leash and climb back on, or Y to paddle out"* |
 
-> **He stood for roughly 1.3–1.5 s and lost it — exactly the "stands 1 second" he reported, WITH the new switch on.**
+> ⚠️ **CORRECTED TWICE. (a) The switch was requested, not proven loaded — see the correction at the head of this section. (b) The standing duration above is VISUAL ELAPSED TIME ONLY.** Codex's reading of the same frames: the HUD still shows **"Getting up…" at 6.989, 7.489 AND 7.726** — *even though the rider looks upright by 7.726* — and **it has cleared by 7.993.** The deck and body diverge visibly over **8.39–8.83**, and the wipeout prompt is up at **8.993**. **And the HUD maps that prompt to both push and landing** (`src/ui/ridePrompt.ts:15`), so it is not a clean phase indicator either. **So: ~1.3 s of LOOKING upright, but the game's own reported phase does not clear until 7.99 — nearer 1.0 s — and the exact simulation transition, the speed, the loads and the cause of the fall are all unresolved from a phone recording.** **His "stands 1 second" is, if anything, more accurate than my reading of his video.**
 
 **The visual signature matches PR #419's diagnosis: the board goes out from under him while the body stays upright behind it.** And **it matches what clip 19's real surfer does NOT do** — the real rider answers the same event by **throwing both arms up and out and going taller**, staying up ~0.4 s. **Nothing like that is visible here.**
 
@@ -3538,3 +3538,21 @@ Codex, at `3c6b8721`, `AttachedRider.project`:
 **What survives:** `limit = 'tip'` is set at `:5512` from `copX !== freeX`, **upstream of the exposed reconstruction**, so **the published `tip` counts (90/90 shipped, 66/90 switched) are NOT invalidated.** #421's sign check reads as unaffected too — it used `freeX` and `copRelief = −moment/j.y` rather than the exposed column — **but that is a reading of its method, not a verification of its numbers, and #421's author should confirm it.**
 
 **Relayed to the save-window builder mid-run, because my own brief had told it to test "does the CoP unpin when a hand loads" — an unsafe test as written, replaced with `tip`.** It is told **not** to fix the column in its branch (that is #421's, and a silent fix would make the two PRs disagree), and **to keep four meanings separate: raw demand, clipped support, post-friction effective line, actual load.**
+
+### ⚠️ AND A SCOPE ERROR IN MY SAVE-WINDOW BRIEF: DECK LOAD IS NOT WATER FORCE
+
+**My brief told the builder: *"your feature is exactly 'the hand is made to carry weight', so measure the discarded residual and report it for the owner's row-19 decision."* That is wrong, and Codex caught it mid-build.**
+
+**PR #418 measured the EXTERNAL HAND-WATER force**, in `applyWater` (`AttachedRider.ts:4344, 4469, 4490`). **The save window puts a palm on the DRY DECK — an INTERNAL, equal-and-opposite impulse between rider and board at the palm.**
+
+> **A dry palm can carry substantial deck load with ZERO hand-water residual. So this feature does NOT make row 19's decision live, and the 180–260 N·m wet-hand extrapolation is NOT a prediction for the recovery.**
+
+**Relayed, with the instruction to log and name the two forces and the two moments separately — own normals, own frames, own denominators — and never to add the dry-deck load to `waterMoment`.** **My linkage is withdrawn.** If a dry-deck hand produces no water force, **row 19 stays exactly where #418 left it: shelved.**
+
+**And Codex's control design is adopted, because it isolates the mechanism without prescribing an outcome:** ⭐ ***a dry loaded palm with zero water reaction, compared against a CLEAR-DECK MISS, distinguishes the two without prescribing a successful stand.***
+
+**Two refinements also relayed:** my CoP warning **applies only where #421's hip term is active**, so **a save branch off unchanged `main` has zero of that mismatch** and is not hobbled (though `tip` remains the cleaner test); and **clip 20 is an ASSISTED RECOVERY, a different skill from carrying speed through a clean bottom turn** — the write-up must not blur them.
+
+### Codex's through-climb readout criteria, for whoever builds it
+
+**Follow the trajectory of a consistent point on the board; sample its velocity and the local water TOGETHER; and check actual up-face travel from turn entry through release.** ⚠️ **The local wave gauge reselects the highest crest, so a jump can reset its speed estimate while the frame still reports `valid`, and a crest passing a STATIONARY board can raise the face fraction.** **Separate a confirmed same-face climb from an early loss or an uncertain face identity.** Sources it cites: `waveFrame.ts:143`, `rideAnalysis.ts:249`, `App.ts:687`, `RideEndCard.ts:52`, `LogbookScreen.ts:26`. **Delivery: a compact optional field on the existing Logbook entry and screen, preserving early falls as partial observations** — a retry can end a ride before the worker publishes a detailed report, and **old entries have no such field.**
