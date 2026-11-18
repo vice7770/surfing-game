@@ -571,6 +571,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...stanceDeepSwitch(),
     // `?deepen=on`: the deepen button — full manual crouch reaches the tube tuck's 0.45 m anywhere and Compress does not fade it away, so the crouch key dips whatever stance is held (step 3.5b, ruling C; on the owner's input only, no clock and no stamina), opt-in, to ride.
     ...deepenSwitch(),
+    // `?armCarry=on|rest`: the arm carriage channel — the drawn standing hands get a height, a spread and a left/right of their own, answering the player's own stick and never leg depth (both depth links are refuted by the footage): both hands low and in at rest, the lead hand down at the rail with the rear arm up and back at a turn's load, the rear arm overhead on a hard ask only, fast up and slow back; `rest` is the rest carriage alone (step 3.5g, rows 4, 5 and 15 of `engine-target.md`; drawing only, no force, no clock), opt-in, to ride.
+    ...armCarrySwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
@@ -1242,6 +1244,37 @@ export function stanceDeepSwitch(search?: string): { stanceDeep?: 'on' | 'off' }
  */
 export function deepenSwitch(search?: string): { deepen?: 'on' } {
   return devParam('deepen', search)?.trim().toLowerCase() === 'on' ? { deepen: 'on' } : {};
+}
+
+/**
+ * The `?armCarry=on|rest` dev switch (`SurfZoneConfig.armCarry`, step 3.5g; `engine-target.md` rows 4, 5 and 15, built
+ * on the owner's **"geometry rows first"** of 2026-11-18): opt-in, **the arm carriage channel**.
+ *
+ * The game's only arm quantity is `HumanBalance.arms`, **one scalar 0–1** that physics reads as an **inertia**, and
+ * the drawn hand is that scalar's `ARM_SPREAD + ARM_ALARM × (1 − balanceMargin)` applied to **both** hands along the
+ * board — **no height, no spread and no left/right**, so there is exactly one arm pose per stage and depth. The
+ * footage refutes the depth link outright (V7 found **four carriages inside the Tall band** with the narrowest and
+ * lowest arms at its **deepest** leg position; V8 found two Tall-band segments with arms wide in one and hanging
+ * below the waist in the other), so this channel reads the **player's own stick** and never leg depth.
+ *
+ * - `'on'` — the whole channel. **rest**: both hands low and drawn in, inside the rails (the single most common arm
+ *   position in two of the three sharpest clips — V8 5 windows, V9 6 windows, V7 9 frames). **reach**: the pairing —
+ *   lead hand down at the rail, board or knee with the rear arm up and back (V5 3 of 3 turns, V6, V7). **over**: the
+ *   rear arm above the head, on the **top** of the stick's throw only, because the overhead arm belongs to some turns
+ *   and not others (V10's bottom turn took it and a top turn 0.5 s later did not; V9's roundhouse went without it).
+ *   The carriage rises fast and returns slowly, so the hand can arrive **before** the rail bites (the footage's lead
+ *   is **+0.07 to +0.30 s**, 2 clips, 3 riders) and **stay** after the ask drops (V9's overhead window ~0.7 s,
+ *   SINGLE). The balance alarm still wins, so a near fall reads as it does today.
+ * - `'rest'` — the rest carriage only, whatever the stick says: row 15 on its own, for an A/B against `'on'`.
+ *
+ * **Drawing only.** It touches one expression — the standing hand branch of `AttachedRider.renderPoint`, which is the
+ * **drawn** point. The seven point masses, `partPosition`, the CoM, `bodyInertiaAt`, `riderYawInertia` and
+ * `HumanBalance.arms` (the arms' only physical path) are all untouched, so **no force is added and no existing force
+ * changes**. No clock, timer, fatigue or stamina. Anything else, and an online room, the shipped one-scalar spread.
+ */
+export function armCarrySwitch(search?: string): { armCarry?: 'on' | 'rest' } {
+  const v = devParam('armCarry', search)?.trim().toLowerCase();
+  return v === 'on' || v === 'rest' ? { armCarry: v } : {};
 }
 
 /**

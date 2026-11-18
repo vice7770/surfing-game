@@ -176,6 +176,8 @@ export interface RideSessionOptions {
   stanceDeep?: 'on' | 'off';
   /** Step 3.5b: the deepen button — full manual crouch reaches the tuck's 0.45 m anywhere and Compress does not fade it (`AttachedRiderOptions.deepen`): 'on' (the `?deepen=on` dev switch); by default the tuck under a tube's curl only, as it always was. */
   deepen?: 'on';
+  /** Step 3.5g: the arm carriage channel — the drawn standing hands get a height, a spread and a left/right of their own, answering the stick and never leg depth (`AttachedRiderOptions.armCarry`): 'on' the whole channel, 'rest' the rest carriage only (the `?armCarry=on|rest` dev switch). Drawing only; by default the shipped one-scalar spread. */
+  armCarry?: 'on' | 'rest';
   /**
    * Step 3.5a: the minimum carved radius the COMMANDED lean is bounded by, m (`AttachedRiderOptions.askCap`): '1.5',
    * '2', '4', '4.5' or '9' — the `?askCap` dev switch — so the bound on both reference lines is `atan(v²/(g R_min))` at
@@ -327,6 +329,7 @@ export class RideSession {
       ...(options.askCap ? { askCap: options.askCap } : {}),
       ...(options.stanceDeep ? { stanceDeep: options.stanceDeep } : {}),
       ...(options.deepen ? { deepen: options.deepen } : {}),
+      ...(options.armCarry ? { armCarry: options.armCarry } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
