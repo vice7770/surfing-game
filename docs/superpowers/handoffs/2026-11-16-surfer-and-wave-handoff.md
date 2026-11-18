@@ -2991,3 +2991,59 @@ The reader says the 0.50/0.42 split is *"what the engine's single leg spring can
 > **The owner's ride address is `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on`.** **Every brief must use it, and every figure quoted to him must say whether it was measured on it.** `?physical` may be added for convenience; it only skips the menu.
 
 **This is my recorded error #24 recurring** — *"before quoting any figure to the owner, check it was measured on the rider AND ADDRESS they actually ride"* — and it recurred because **the address was never written down in one place.** It is now. **Caught this time before it cost a round, by asking him instead of assuming.**
+
+---
+
+## 2026-11-18 — ☠️ MY STATUS BLOCKS HAVE BEEN INVISIBLE TO EVERY AGENT I BRIEFED
+
+**Video 17's reader refuted its own brief and it was right. Verified by me immediately:**
+
+| ref | `engine-target.md` blob | `### STATUS` blocks |
+| --- | --- | --- |
+| `origin/main` | `3641c0e4` | **0** |
+| `origin/claude/video-13` | `3641c0e4` | **0** |
+| `origin/claude/video-16` | `3641c0e4` | **0** |
+| **`origin/claude/hand-moment-row`** | `47089c12` | **5** |
+
+**Every brief tonight said "read `engine-target.md`, including its status blocks". No agent working off `main` could see them** — all five live on the one branch nobody has merged. **Five readers were told to read a file that did not contain what the brief described.** They worked from the nine-clip synthesis instead, which is why several re-derived things that were already recorded.
+
+**Immediate fix, applied to video 18's brief and to every brief from here: name the branch explicitly —**
+
+```
+git show origin/claude/hand-moment-row:docs/research/new-rider/3.5/engine-target.md
+```
+
+**Proper fix: the owner merges that branch.** It now carries **the entire session's record** — row 19, five status blocks, every correction, the clip registry, the goal-level review, and the canonical ride address. **Until it merges, the shared reference exists only on a branch, and "read the shared reference" is a broken instruction.**
+
+---
+
+## 2026-11-18 — VIDEO 17 (PR #417): THE FEET DO NOT MOVE, AND A REAL RIDER DOES NOT ANSWER SPEED WITH A DEPTH CHANGE
+
+A **10.121 s** Malibu storm-surf ride — one long drive, one **vertical re-entry**, one whitewater recovery — on a **bright yellow deck with bare feet**, the clearest feet evidence since V7. 397 insertions, 0 deletions. **60 fps.**
+
+### ⭐ The owner's complaint, answered as far as footage can
+
+- **Row 17 gets its first reproduced ABSOLUTE number.** Front foot at **0.486 (t = 2.50) and 0.472 (t = 4.50) of board length from the nose, ±0.04, 2.0 s apart**; rear **0.890 / 0.861**; stance **0.404 / 0.389**. Hand-read at **1:1** with nose, tail and both contacts in one image. **It lands on top of V7's 44–49 %.** A third frame at t = 1.00 was **discarded for motion blur** rather than used.
+- ⭐ **NOT ONE FRAME SHOWS A FOOT SLIDING OR RE-PLACING** — 12 board-anchored tiles at 0.25 s, 10 at 0.5 s, plus the whole turn at 1/15, 1/30 and 1/60 s. **Through the re-entry (6.90–7.13) the legs are visible on the far side of a board rotating through vertical: feet planted, knees folding.** The only unreadable window is the landing, inside the rider's own spray.
+- ⭐⭐ **"Does the body drop into acceleration? No rule."** Head-above-deck falls **28 % in 0.58 s**, rises in 0.42 s, falls again over 0.75 s — **and then holds FLAT to ±4 % for 0.67 s in the middle of the drive, with the trunk frozen too (35–39° at both ends).** **A real rider does not answer speed with a depth change.** Directly relevant to the owner's report, and the next clip is briefed to confirm or refute it.
+- **What footage cannot say, stated:** *what force holds the foot down.*
+
+### Row 5 gains a conceptual problem bigger than its number
+
+Hand above the crown on **three consecutive native 1/60 frames** (6.900 / 6.933 / 6.967), the board's redirect through vertical at **7.20 ± 0.07** → **lead +0.33 s ± 0.08, held ≥0.10 s.** **And then it dissented against itself: the rail was already set at ≤6.60, BEFORE the arm.** **In a vertical re-entry the rail bites at the bottom and the redirect happens a third of a second later — so "the arm leads the rail" is NOT ONE EVENT**, and every reading in the series needs to say which it timed. **Which arm: refused** (his back is to the camera and he rotates inside the window). Tally **17 of 29 across eight clips.**
+
+**And it confirms clip 16's inference positively: a hand above the crown occurs EXACTLY ONCE in 9.6 s, in the clip's only turn.** **So a built arm lead must be conditional on a direction change** — which is a constraint on PR #407.
+
+### The rest
+
+**Row 3 under the corrected rule: 4 resolved — 2 same-sign down, 1 same-sign up, 1 frozen, 0 decoupled, 0 opposite-sign.** Series **47 resolved, no opposite sign, seven clips.** Decoupling: **4 of 4 in clip 15, 0 of 11 across clips 16 and 17.** Under the rule's own logic **this clip contributes one frozen window and nothing else.**
+
+**Row 8 gains an interior point:** 0 in 14 s → **1 in 9.6 s** → ≥10 in 18.56 s → ≥13 in 30 s. **Neither pattern: one direction change in 9.6 s.**
+
+**⛔ Rows 10 and 14 — bare legs and STILL refused**, an **eighth** distinct cause: **the rider is backlit**, so the legs are one dark mass with no placeable knee. **⛔ Row 2 — the red waistband DOES track the pelvis (first time in three clips) and the angles are readable (44°, 53°, 35°, 39°, ±8–10°) — but there is no HEAD LENGTH** (black hair merging into a shadowed back), so the ratio cannot be formed. **Seventeen clips, still no gated trunk travel.**
+
+**The footage ask gains two clauses: the rider must be LIT ON THE CAMERA SIDE, and the face lit AND turned toward the lens.** A waistband that finally tracked the pelvis bought nothing because the head failed instead.
+
+### Method
+
+☠️ **At 60 fps the `seeked` + 30 ms recipe returns a ONE-FRAME-OFF decode — 3 of 6 same-time probe pairs disagreed. A 260 ms settle plus a two-decode stability check gave 6 of 6 and 0 of 39.** ☠️ **The composited-canvas failure fired TWICE despite a 2.7 s wait**, and **a second screenshot cured it both times**; **an unstamped sheet is indistinguishable from data.** **The Browser pane dropped every tab mid-session** and **viewport emulation is cleared between turns** — one screenshot returned at 1.6× and was discarded. Scale **exactly 1.000 at 800×640, sixth session.** Two of four automatic rulers built, failed, **discarded with nothing quoted** (a head finder returned 49/50/116/129 px on one rider; a red-shorts hip finder merged with the board's red rail). **And it suspected a subject change at 8.0 s and refuted its own suspicion** at 0.72× — same yellow deck with a red rail at a different roll angle.

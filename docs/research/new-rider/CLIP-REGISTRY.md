@@ -38,8 +38,8 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 
 | # | ID | URL | state |
 | --- | --- | --- | --- |
-| 17 | `nyABF8GNwrU` | https://www.youtube.com/shorts/nyABF8GNwrU | **reading now** — brief leads with the feet and legs under acceleration, on the owner's live complaint |
-| 18 | `2Z_wZFjKAOU` | https://www.youtube.com/shorts/2Z_wZFjKAOU?t=2 | queued (**starts at 2 s**) |
+| 17 | `nyABF8GNwrU` | https://www.youtube.com/shorts/nyABF8GNwrU | **read — PR #417, not merged.** Row 17's first reproduced *absolute* foot position; **no foot slid in the whole clip** |
+| 18 | `2Z_wZFjKAOU` | https://www.youtube.com/shorts/2Z_wZFjKAOU?t=2 | **reading now** (starts at 2 s) — brief leads with the take-off and the feet |
 | 19 | `V8SCdpuYnKM` | https://www.youtube.com/shorts/V8SCdpuYnKM | queued |
 | 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | queued |
 | 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | queued |
