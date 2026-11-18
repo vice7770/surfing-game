@@ -2604,7 +2604,7 @@ The review the owner relayed still opens with *"For Canyon, the owner's target i
 | # | URL | state |
 | --- | --- | --- |
 | 15 | `https://www.youtube.com/shorts/3yxY-F_AEds` | **reading now.** Brief leads with **row 6** — in trim with no direction change, which channel cycles? |
-| 16 | `https://www.youtube.com/shorts/NQ6dkvD2gHU` | **queued**, dispatched when 15 reports |
+| 16 | `https://www.youtube.com/shorts/NQ6dkvD2gHU` | **queued**, dispatched when 15 reports. ⚠️ **ITS BRIEF MUST BE WRITTEN BLIND** — an independent read of this clip already exists in this handoff and **must not be quoted into the brief.** Ask it for a cadence and for the board's roll and heading beside any pumping; do not name a period |
 
 Clips 1–14 are read. **Row 6 is the hottest row in the table** after video 14 contradicted both halves of it, so every brief from here leads with it until two clips agree.
 
@@ -2702,3 +2702,47 @@ Codex read clip 15 (**Mikey February, 1080×1440**) and sent its observations **
 **Fifteen clips have said contact is unmeasurable; this is the first to call it plausible.** It stays **unmeasured** — and row 19's own gap is that **the hand's residual roll/pitch moment is discarded**, so even a measured contact would have nowhere to act. **No speed gain, pressure split or calibrated depth is claimed**, and none is adopted.
 
 **Where these land, as Codex asked:** this section of the handoff; the row 13 note above; and **delivery to our clip-15 reader deferred until after its independent pass.**
+
+---
+
+## 2026-11-18 — CLIP 16 REFUTES THE CLIP-15 HYPOTHESIS, AND AT ITS OWN CADENCE THE GAME'S PUMP IS NOT SHORT AT ALL
+
+Codex's independent **blind** read of clip 16 (`NQ6dkvD2gHU`, *"Top speed mid length"*) **is a counterexample to the hypothesis I recorded one entry above** — and it says so itself. **Received, confirmed, and held back from our video-16 reader**, which has not been dispatched yet and **must not be given these observations in its brief.**
+
+**An orange midlength keeps travelling screen-left while the rider alternates visibly taller and lower:**
+
+| 7.92 | 8.55 | 9.18 | 9.84 | 10.09 | 10.69 | 11.29 |
+|---|---|---|---|---|---|---|
+| high | low | high | low | high | low | high |
+
+**Rechecked out of order** (10.69 against 9.18 and 11.29 — the staleness defence applied unprompted): **the front knee folds, the hips approach the deck, then the hips rise and the knees open again with the feet still apart.** **At least three repeated height cycles**, the taller examples **roughly 0.9–1.3 s apart**, sampled postures rather than exact peaks.
+
+> **So the clip-15 hypothesis is refuted, conditionally and on Codex's own stated condition — "IF trim means sustained down-the-line travel."** Clip 15's depth changes are turn-phase-locked; **clip 16's are rider-timed and repeat while the board holds its line.** **Both patterns are real.** That is the same shape as **Ruling C** on Compress, where the owner ruled *"keep the held compress, both patterns are real"* — and the instruction here is identical: **keep both reachable, schedule neither, and infer no required thrust and no global cadence.**
+
+### ⭐ THE COMPARISON CODEX DECLINED TO MAKE, AND IT REVERSES LAST ROUND'S HEADLINE
+
+Codex rightly refuses to compare leg stroke **in metres** — no calibrated depth exists. **But it has given the first properly sampled CADENCE in the series, and a cadence can be compared to the game's own rung fraction without claiming the footage's depth.**
+
+Its highs: 7.92 → 9.18 → 10.09 → 11.29, i.e. **full cycles of 1.26, 0.91 and 1.20 s → half-cycles of about 0.46–0.63 s.** Against PR #413's own table:
+
+| half-cycle | share of the 0.195 m rung the game reaches |
+| --- | --- |
+| 0.22 s (the withdrawn figure) | **0.40** |
+| **0.45 s** | **0.82** |
+| **0.60 s** | **0.93** |
+
+> **At the cadence clip 16 actually shows, the game delivers 82–93 % of its crouch rung — not 40 %.** The 40 % was computed at **0.22 s**, which has since been withdrawn as a one-window average over a turning passage. **Row 6's "2.5× short on depth" therefore evaporates at the only cadence anybody has sampled properly.** The game's own limit (**excursion halving at a 0.27 s half-cycle**) stands as a fact about the engine, and **the footage sits well clear of it.**
+
+**What this does NOT establish:** there is still **no footage depth**, so **nothing says 82–93 % of the game's rung is the right absolute depth.** The claim is narrower and worth having: **the follower is not the binding constraint at the cadence real riders use.** **No change to `LEG_FREQUENCY` is warranted, and the case for one is now weaker than it was an hour ago.**
+
+### And a narrowing of my own round's frame — the third tonight
+
+> *"The board rolls and changes angle on the face and the arms and trunk also shift, so this is **down-the-line pumping with board movement**; **a zero-steer fixed-orientation benchmark is a narrower case.**"*
+
+**PR #413 ran at `steer = 0` throughout.** That was the right way to isolate the channel, **and it measures a narrower thing than the footage shows** — real pumping happens with the board rolling and changing angle, and with the arms and trunk moving too. **The 0.217 s / 40 % figures are sound for the case they measure and should always be quoted with that case attached.**
+
+**Nothing measurable about propulsion, in either clip:** *"neither speed gain, absolute speed, leg stroke in meters, nor a unique source of propulsion can be measured from the footage."* At **16.4** the rider leans into a broader turn and **17.2–19.2 is obscured by spray**, so that turn's outcome is unknown.
+
+### Delivery, as asked
+
+**Confirmed received.** Landing here; **the row 6 and row 13 status blocks in `engine-target.md`; and a note on PR #413.** **Forwarding to our video-16 reader is deferred until after its own observations** — it has not been dispatched, and its brief will be written blind.
