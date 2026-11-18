@@ -3588,3 +3588,51 @@ Codex, at `3c6b8721`, `AttachedRider.project`:
 **The owner sent all three videos without saying what differed between the runs** — same build, different switches, or different waves. **Given that `bodyBank` is parsed only on `claude/body-banks` and he said he played `main`, the likeliest reading is that all three are the shipped rider on main and the differences are wave and input.** **Asked, not assumed.**
 
 **And the two falls may not be the same failure:** the first video's board **slid out on a green face**; **B's wipeout coincides with the whitewater arriving** (the foreground is entirely foam by 8.482). **A section closing out and a balance failure are different events and must not be pooled.**
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ THE SAVE WINDOW IS BUILT AND IT DOES NOT SAVE HIM (PR #425). THE TWO REASONS POINT AT TWO OTHER PRs.
+
+**`?saveHands=deck`, with `?saveHands=miss` as Codex's clear-deck control. Off unchanged `main`, beside #421, not on it.** **No force, no torque, no drive, no clock, no constant of its own** — **two geometry changes to the contact that already exists:**
+
+1. **`project`** — while a palm is on the deck, the box the contact impulse's line may meet the deck inside **grows to that palm's patch edge**, limited by the palm's own strength at that substep's load: `span × min(1, cap/N)`, `cap = HAND_FORCE_LIMIT × m g × h`, **the engine's own hand cap.**
+2. **`captureStep`** — the same distance credited to `HumanBalance.capture`'s `reachAcross`/`reachAlong`. **Without this the window could not exist**: measured, **68 of 90 falls on his address are the capture test (`human.fallen`) and 22 of 90 the contact's posture exit** (0 sway, 0 flight), **so the contact's box alone leaves three falls in four untouched.**
+
+The palm's reach is from the shoulder, its travel from where the hand is carried, at `ARM_LENGTH / ARMS_TIME`. **It lifts the instant the demand returns inside the feet — nothing holds it down, so the window's length is the solve's answer**, not a clock. Drawn where the physics puts it.
+
+### The five measurements
+
+| | |
+|---|---|
+| **does `tip` clear?** | ⚠️ **sometimes, nowhere near enough.** The palm holds the clamp open on **14 of 176 palm-down frames (8.0 %), 8 of 16 runs** — but **`tip` binds in 90 of 90 runs either way**, 52.0 % → 52.1 % of frames |
+| **window / recovery** | **22 windows in 16 of 90 runs**, median **0.093 s**, longest **0.441 s**. **2 of 22** ended with the demand back inside the feet and the rider still riding. **90 of 90 still fall**, causes unchanged |
+| **hand force** | median **73.08 N**, **max 286.45 N against a 286.5 N cap** (11 frames at it) — **27× the water reach's 2.66 N median, 107× its peak** |
+| **row 19** | ⭐ **NULL, AND IT CLOSES IT.** The hand-**water** force is **bit-identical on both arms — 522 frames, median 6.97415 N, max 63.4862 N, the same digits.** **A dry palm has zero water reaction, so row 19 stays shelved.** The dry palm's own moment (median 8.4, max 102.2 N·m) **is not discarded — it rides inside the one contact pair** |
+| **default unchanged** | ⭐ **428 422 values over 84 shared columns and 7 298 matched rows, 0 differences; 90 of 90 outcomes identical** |
+
+### ⭐⭐ THE TWO REFUTATIONS, WHICH ARE THE ROUND'S REAL OUTPUT
+
+**1. THE DECK IS THE WRONG SURFACE FOR THIS FALL.** **A palm's patch edge cannot pass the rail**, so the across support grows by **0.102 m and no more** (measured ceiling 0.10194 m). **And when the palm lands, the demand is a median 0.327 m outside the feet — about twice the board's half-width — past what the palm covers on 159 of 176 palm-down frames.**
+
+> **No deck palm reaches that. A WATER hand can.** **So `waveSide`'s early return (PR #418's bug — holding the hand key switches the reach OFF) is now ON THE CRITICAL PATH** — **and the water hand brings row 19's force-class ruling back with it. Needed for the water hand; NOT for this one.**
+
+**2. THE RIDER CANNOT BEND, SO HE CAN BARELY REACH HIS OWN DECK.** Shoulder a median **0.829 m** above the deck against a **0.700 m** arm: **reachable on 0 of 2 481 tall frames, 59.7 % of crouch, and 1.0 % of compress — and all 22 windows were crouch windows.**
+
+> **Clip 20's real rider gets his hands down by FOLDING until his hips are above his shoulders — which is `?trunk=mass`, PR #411.** **This feature's reach is gated on another PR's geometry.**
+
+### Course corrections, each addressed
+
+**`tip` not the CoP column** — done, **plus an independent corroboration: on `main` the arithmetic makes `cx ≡ copX` short of friction saturation, so off this switch the exposed column IS the clipped point by construction.** **#421's hip-term fault does not exist on this base** (verified by reading both copies) **and was not "corrected" here.** **Row 19 withdrawn** — nothing added to `waterMoment`, the two forces logged separately with their own normals and denominators, **and the null reported.** **The clear-deck-miss control** is `'miss'`, and it doubles as the default-unchanged proof. **Assisted recovery ≠ bottom turn** — §7 refuses the comparison: **the engine's fall here is a ROLL tip (escape across on 983 frames of 1 075); clip 20's save is a PITCH collapse. The deck is narrow for a roll and wide for a pitch.** Clip 20's 0.93 s is quoted as **one instance, on a different event.** **The broken hand path: not used, not fixed, and said so** — the save's hand is a **dry deck** contact through the feet's own support machinery, which is why it carries **73 N instead of 2.66 N.**
+
+### ☠️ What went wrong, reported rather than smoothed
+
+- **A filter without a finiteness guard read 40 of 40 frames "pressed" on the shipped arm, where the field does not exist.** **Exactly the warned failure mode**; guarded everywhere now.
+- ☠️ **`shape.curves.width` is the FULL width and was read as a half-beam**, giving a 0.254 m span where the deck allows 0.102 m. **Caught because the arithmetic disagreed with the brief's own prediction.**
+- **The travel model was corrected after the first numbers**, so §4.6 **publishes the whole bench both ways** — and **the correction is a measured null** (0.6379 → 0.6410 m, 0.137 s either way), **so the verdict does not rest on it.**
+- Controls: determinism (487 076 values, 0 diffs), probe inert (109 470 values, 0 diffs), **palm and water hand never load on the same frame, 0 of 7 233 — measured, not assumed.**
+
+### ⚠️ ONE VERIFICATION GAP, STATED PLAINLY
+
+**The full `vitest run` was started and ABANDONED at ~25 minutes** — the machine was thrashing, the worker getting ~13 % of a CPU with swap near full. **Targeted suites all pass** (`saveHands` 6, `PhysicalMode` 109, `RideSession`, `AttachedRider`, `humanBalance`, `riderPosture`, `projection`, `projectionLean`, `riderBounds`, `SurfZoneRunner`, `deepCrouch`, three ledgers), typecheck clean. **The full suite has NOT been run on this branch.** **Deletions: 8 lines, every one a replaced line; nothing removed.**
+
+**His address:** `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&saveHands=deck` — **and the palm only appears in a crouch, which is the second finding and not a bug.**
