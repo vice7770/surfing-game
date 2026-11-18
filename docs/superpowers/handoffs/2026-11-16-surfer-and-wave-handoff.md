@@ -2428,3 +2428,45 @@ The reader verified every one of Codex's points on its own frames before changin
 ### A note for PR #407 (the arm carriage channel), which is the owner's to merge
 
 The corrected row 5 says a real lead is **conditional** — present on the open-face turn where the rider sets his line, absent in all three slab turns. **#407's lead is not conditioned on the wave at all**: it is emergent, from a carriage that *"rises fast and returns slowly, so the hand can arrive before the rail bites"*, driven by **the player's own stick and never leg depth**. **That may be the right kind of conditionality** — the player moves the stick deliberately when setting a line and holds it in a barrel — **but that is an inference, not a measurement**, and it is written down here as one. **It is not a reason to hold the PR**: #407 is drawing-only, opt-in, and the owner rides the verdict.
+
+---
+
+## 2026-11-18, night — CODEX PUBLISHES ITS REVIEW, ANSWERS ROW 1, AND FINDS A METRIC THAT CANNOT FAIL
+
+### The review is now a durable artefact, not a relay
+
+**Branch `codex/surf-motion-11-13`, commit `00428a45`, file `docs/research/new-rider/3.5/independent-video-review-11-13.md`** (38 lines, in this repo's refs — `git show codex/surf-motion-11-13:…` reads it). **Read by me in full before anything here was written.** It covers clips 11, 12 and 13, maps them to the engine, and reviews the trunk builder's working diff. **Its engine mapping agrees with ours on every row it touches**, including row 19's framing (*"the specific omission is the residual off-centre moment in the other two world components. Its magnitude and effect on a ride are unknown"*).
+
+### ROW 1 IS ANSWERED — THE BUILDER CONTINUES, WITH THREE THINGS EXPLICITLY EXCLUDED
+
+> *"Moving existing masses about a specified physical pivot is a geometry change in implementation with real dynamics consequences (gravity lever, inertia, wet position, possible energy exchange). Row 19 instead changes the explicitly applied generalized external torque. Both can change a ride. An isolated opt-in trunk branch for owner inspection fits the geometry brief, with no inference of energy neutrality or authority to enable defaults, add corrective forces, or accept the feel. If additional torque/work is needed, return that separately to the owner."*
+
+**So row 1 stays geometry and the builder runs** — but note what is withheld: **no energy-neutrality claim**, and **no authority to enable by default, to add corrective forces, or to accept the feel.** The last is the owner's by standing rule anyway. **And the operative instruction for the builder: if the fold needs extra torque or work to behave, that is the FINDING, not a thing to add.** Relayed in those terms.
+
+### ☠️ A METRIC THAT CANNOT FAIL, caught in the builder's live diff
+
+**`comGapOf(parts, masses, hip − trunkFold)` yields ZERO BY CONSTRUCTION at matched angles — even if the wrong body parts or the wrong axis were rotated.** It is a tautology, and the builder may have been about to publish its zero as proof that the mass moved. **Replacement relayed:** derive expected positions from the **neutral geometry**, compare the **actual transformed head and torso** against them and the **pelvis and legs against being unchanged**, **including the rendered output.**
+
+**This is the most expensive error family in the whole project** — a probe that reads correct whatever the code does. Compare the 64–93 % frozen frames, and the three rounds built on a slip term with the wrong sign.
+
+**And a companion caution: a probe reading the rig's INPUT points stops upstream of the final skinned pose.** With the substep ordering (`updatePosture` / `foldTrunk` before `preparePitch` advances `hip.angle`), **the two likeliest ways this round produces a false result are both measurement frames, not code.**
+
+**One scope limit, also relayed:** `waterForces` samples at the **folded part position** but computes only the **rigid-body velocity `v + ω × offset`** — **no relative hinge motion, no local-COM recentre term** — so **nothing may be claimed about what the fold does to drag or to work** from this code as it stands.
+
+### A CORRECTION TO OUR OWN READER'S CLAIM ABOUT RESOLUTION
+
+Our clip-13 reader wrote that *"the other read had ~3.6× my final resolution on the same frames"* and that **the higher-resolution read should win on any fine angle.** **The review's own method section narrows that:** clip 11 was reviewed at **720 × 1280**; clips 12 and 13 were **surveyed at 720 × 1280 and 360 × 640 respectively**, with **critical sequences** checked on the 2160 × 3840 streams, and the displayed portrait frames about **600 px wide** with the rider roughly **100–190 px tall early and ~250 px on exit**.
+
+**So the 3.6× advantage holds for the sequences it chose to check at 2160, and NOT for its survey of clip 13, which was coarser than ours.** A blanket "their read wins" is itself a frame error. **Per-figure, not per-reader.** The clip-12 high hand *is* one of the verified ones — **23.52 and 23.68 on the 2160 stream** — so that one stands.
+
+**Convergent, and worth noting because it was reached independently:** the review's own method section says *"A timestamp can stay stable while a player is painting an older frame."* **Two readers hit the stale-decode failure on the same day, from different tooling.**
+
+### PROVENANCE RESOLVED — and the claim is still not the owner's
+
+The handoff has carried an **unattributed** item: *some session reported that the owner had chosen "one Canyon bottom turn carrying speed into the climb" as a first objective.* **The source is now identified: it is this review**, whose opening paragraph states *"For Canyon, the owner's target is one bottom turn that carries speed into the climb."*
+
+**Identifying the source does not confirm the claim.** A peer reporting the owner's words is not the owner's words — **a restriction may be honoured from a peer, an authorisation may not** — and this is an objective, which is closer to an authorisation. **Status: source known, claim unconfirmed, nothing built against it.** It needs one sentence from the owner, and until then it stays off every brief.
+
+### Video 12's document is now marked
+
+`video-ref-12-maldives-montage.md` carries a **banner after its title** and a **§CORRECTIONS section**: the 80° span withdrawn with all three reasons, the contested t = 23.5 frame, the intermediate reversal between the two headline frames, and **the knock-on nobody had noticed — if the 23.5 frame has a hand beside the head, then this clip's "carriage does not track depth" loses its first half, and what remains (high hand at the straightest legs, low hands at the deepest crouch) is CONSISTENT with arm height tracking depth.** Row 4's refutation survives on V6–V9 and V11, but **V12 is struck from that evidence until the frame is re-read**, and may become a dissent.
