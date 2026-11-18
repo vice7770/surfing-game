@@ -1570,3 +1570,50 @@ Rider B at 1/30 s: rear arm **above the shoulder 18.034**, **above the head 18.0
 - **The pane returns an 800×600 screenshot whatever the viewport**, so a **1020×760** overlay canvas is the largest that fits. **Tiles that look "undrawn" may simply be outside it — identical in appearance to the composited-canvas failure.**
 - **☠️ A FOLLOWING AUTO-CROP NORMALISES THE RIDER'S APPARENT SIZE (±15 % between tiles) AND PRODUCED A FALSE "BIG EXTENSION" READING** before it was caught. **Never judge height from a strip of auto-cropped tiles.** Crop to find; measure on a fixed frame.
 - Tools worth reusing: a **redness-based rider finder** and a **`seeked` + `requestVideoFrameCallback` seek with mediaTime verification and retry**, which **removed the stale-frame problem outright at 1440p.**
+
+## ⚖️⚖️ RULING F (2026-11-18) — **SURVIVAL RATE IS REJECTED AS THE METRIC, AND THE OWNER WANTS A PLAYING AGENT.** This reverses a standing rule of theirs.
+
+Their words:
+
+> ***"we need to code some agent that will be able to play and have a evals to reach a objective of play. Because as of right now your are not skilled enough to play and keep the surfer up. All of it is up to me. So maybe the best approach is for you to scope and calculate if this videos will map to what is being built. Stating tests and survival rates is not a good metric"***
+
+### 1. "626 of 626 fell" IS DEAD AS A MEASURE, and they are right
+
+**It has not moved in twenty-five rounds, so it has NO GRADIENT** — it cannot tell anyone whether a change helped, only that the thing is still broken, which was already known. **And median ride time is a time-to-failure, not a measure of surfing.** **Stop reporting either as the headline of a round.**
+
+**The replacement is already in hand: the videos' reproducible numbers.** Say which are reproduced and across how many clips:
+
+| target | value | evidence |
+| --- | --- | --- |
+| pump half-cycle | **0.55–0.60 s** | clips 8 and 9, **within 10 % of each other — the most reproducible figure the series has** |
+| arm leads the rail | **0.07–0.30 s**, overhead ~0.7 s | **frame-level on three clips**, 2 of 2 and 3 of 4 resolved turns |
+| bottom-turn → climb → top-turn | **1.00 s** | clip 8, against the literature's **0.96 ± 0.04 s for a bottom turn ALONE** |
+| snap | **0.35 s** | clip 8 |
+| direction change | **one every ~2.3 s** (≥13 in 30 s) | clip 9 — **and clip 7 had ZERO in 13 s, so this is a capability, not a constant** |
+| steps while standing | **zero** | clips 7 and 9 — **the game already matches this by construction** |
+| trunk fold | **to 60°, independently of the legs** | clips 8 and 9 |
+
+**"Your pump is 1.4 s against the footage's 0.55" is actionable in a way "he fell" never was.**
+
+### 2. THE PLAYING AGENT — and it reverses their own rule, so handle it precisely
+
+Their long-standing instruction was **the owner rides and judges; never use bot rides as evidence of feel** ([[owner-playtests-riding]]). **They are now asking for the bot, because they have become the bottleneck.** **Keep the half that was right:**
+
+> **An agent can measure whether the movement matches the footage's numbers. It CANNOT tell anyone whether the game feels good.** The agent grinds measurable targets over many trials; **the owner still judges feel on a handful of rides.**
+
+### 3. ⚠️ THE FAILURE MODE THAT WOULD MAKE THIS WORSE THAN USELESS
+
+**An agent optimising a score finds the cheapest route to it, and this project has already lost months to exactly that:** the old rider's **`uprightVelocity` held the body plumb kinematically — a prescription realised by whatever force it took — and looked like a rider that did not fall.** Its benchmark is **retired and must never be measured against again.**
+
+**So two constraints are non-negotiable in the design:**
+- **The agent controls ONLY what a player controls** — the same stick, stance keys and W/S trim. **If it can set a state the player cannot, it is not playing the game and what it learns is worthless.**
+- **Every eval must be cheat-resistant.** For each metric, ask *what is the laziest way to score well, and is that way surfing?* **A score that rewards "upright" rewards standing still.**
+
+### 4. THE HONEST FEASIBILITY PROBLEM, which the scoping round must answer
+
+**The rider falls in 1.0–1.45 s under every input tried so far, 626 of 626. So an agent cannot out-play the physics** — if no input sequence survives, it will not find one. **What the agent buys is therefore: a gradient where there is none, search over a space the owner cannot cover by hand, and measurement of MOVEMENT rather than SURVIVAL.** **If the scoping concludes the agent is premature until something else is fixed, that is a legitimate and valuable answer.**
+
+### 5. What is in flight on this
+
+- **`engine-target.md`** — the synthesis of nine reads plus the code survey, redirected to add **a "what would measure this" column** and **a feasibility section** (can the architecture express the target at all, or is it an **expressibility limit** rather than a tuning gap — a trunk that is a one-line function of leg depth cannot match a trunk moving opposite to the legs however it is tuned).
+- **`playing-agent-scope.md`** — the agent and eval design: the objective of play (**proposed, not chosen — it is the owner's call**), the metric set split into **computable today / needs new columns / inexpressible**, what the agent controls, **rides per hour on this machine**, and the smallest useful first version. **Most of the harness already exists** (`SurfZoneRunner`, the dev switches, and five probes that already drive headless rides with scripted inputs and dump per-tick columns) — **the gap may be much smaller than "code an agent" suggests.**
