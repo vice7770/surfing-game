@@ -148,6 +148,85 @@ confidence because I have been wrong on exactly this kind of call twice today: `
 every newton still arrives through the leg spring. **But there is no reason to touch it yet: the game pumps at the
 right rhythm with an amplitude nobody has shown to be wrong.**
 
+### STATUS 2026-11-18: ⭐ ROW 3's ACCEPTANCE TEST SHOULD BE **DECOUPLING**, NOT AN OPPOSITE SIGN
+
+**Video 15 (PR #414) counted a category the series had never counted.** Over **10 resolved transitions with both
+channels legible, in one 18.56 s ride**: 3 same-sign up, 1 same-sign down, 2 frozen, **4 DECOUPLED — one channel
+moves while the other visibly does not — and 0 opposite-sign.**
+
+| | count | status |
+|---|---|---|
+| **opposite-sign** (row 3 as written) | **0 in 36 resolved transitions, five riders, five clips** | V9's single passage stays **SINGLE and five-times-not-reproduced** |
+| **DECOUPLED** | **4 in one ride** | **reproduced** |
+
+> **Both are equally unreachable in the engine.** `HumanoidRig.ts:1383–1385` forces the drawn trunk's correlation
+> with leg depth to **+1 within a stage**, so **a correlation of 0 is exactly as impossible as −1.** **So rows 1 and
+> 2 can have a REPRODUCED acceptance test instead of a single-instance one** — and PR #411 should be judged on
+> whether the two channels can **decouple**, not only on whether they can oppose.
+
+**That is the strongest footage justification rows 1–2 have ever had**, and it arrives from a category nobody was
+looking for. **Row 3's wording should be widened to "a correlation other than +1" rather than "opposite signs".**
+
+### ROW 6: THE CLIP CONTAINS ALMOST NO TRIM, AND THAT IS THE FINDING
+
+**The rider turns every ~1.9 s and the longest flat-board, constant-heading stretch in 22.661 s is 0.56 s.** Board
+roll and heading were checked on **full frames** for every candidate, and **three otherwise pump-looking passages
+were rejected** because the board's bottom became visible (rail roll) or its nose swung — at **10.80, 13.36,
+17.28**. Three survived: **10.16–10.72 (0.56 s), 12.88–13.20 (0.32 s), 16.80–17.12 (0.32 s)**.
+
+In the two longest, **the body's height over the board rises then falls once while the trunk's fold is visibly
+unchanged** (6 frames at 0.08 s, fixed 260 px crops at magnification **exactly 1.00**, head length 40/40/37 px so
+it is not a zoom). In the third, **both channels rise together — no cycle.** **The arm carriage does not change at
+all through either.**
+
+**No cadence and no depth were published, deliberately** — two half-strokes in 0.56 s is not a rhythm, and dividing
+the window would be the **within-window average** this series has already withdrawn once. **And the height change is
+not called a leg extension in any unit, because the knee is never identifiable as a joint anywhere in the clip**
+(thigh inside boardshorts, ankle in spray; three attempts at 2.3–3.0×, three refusals).
+
+**Against row 6's target (0.55–0.60 s, in the TRUNK, legs not working): neither half reproduces, and clips 14 and 15
+are on the same side of it.** **Target column should read: "contested, and no clip has yet shown a sustained trim
+cadence."**
+
+### Row 5: its own evidence row is clip-specific, and the arm is not fixed
+
+Row 5's evidence quotes V9's **rear** arm, which is correct for V9. **Video 15 shows the LEAD hand doing the same
+job at ~14.36** (reaching up and forward over the nose) **and the REAR hand at 20.28.** **Both arms do it** — so the
+row's intent is "an arm leads the rail", not "the rear arm leads". **Three leads in 7 resolved direction changes**
+(+0.10 s ± 0.04 at 20.38, ≥ +0.20 s at 8.44, **≥ +0.50 s at ~14.90 — the longest in the series**). Tally **16 of 28
+across seven clips.**
+
+**Clip 14's top-of-wave / bottom-of-wave separator is REPRODUCED** (all three leads at the top, all four clean
+misses at the bottom) and **clip 13's open-face/slab separator is contradicted again** — **but a borderline at the
+top that does NOT lead (11.70) means it is not a rule even inside this clip.** **No separator may be built from
+this.**
+
+### Row 16 becomes a finding, and two rows gain reproductions
+
+- **Row 16 — second anticipatory brace, resolved at the native grid.** A floater lands into whitewater at ~18.08,
+  met with the body **already folded and compressed from ≤17.92**, **both channels frozen across 4 native frames**,
+  and the ride continues standing for a further **4.3 s**. **With clip 14 that is a finding, not a sighting:
+  the brace is anticipation, not a reaction after contact.**
+- **Row 11 — the first reproduction of any down-transition form in the series:** two more instances of V9's
+  "legs only" (10.32→10.56, 13.04→13.20). V7's and V8's forms stay single.
+- **Row 8 —** fastest sustained chaining in the series (**≤1.86 s**, a lower bound) on the **longest single ride read
+  (18.56 s)**. **Row 15 —** carriage A on an eighth clip. **Row 9 —** shoulders forward of hips in 5 frames.
+- **Row 4 — its first NON-confirming clip**, recorded as a counterweight rather than skipped: this clip's
+  straightest-legged, most upright passage (17.04–17.20) carries its **widest** arms, which is consistent with
+  "tall ⇒ arms spread". **Seven clips refuted that implication and one consistent case does not restore it.**
+
+### Two ⛔ refusals whose CAUSES are new
+
+- **Row 2 — the trunk gate cannot be RUN at all**, not merely not passed: **this rider wears a loose T-shirt over his
+  boardshorts, so there is no visible waistband anywhere in 22.661 s.** **The gate needs a garment edge that TRACKS
+  THE PELVIS** — a waistband, a wetsuit seam, bare skin. **A loose shirt hem in a 5 m/s airflow is not a landmark.**
+  So "calibrate within the clip" was necessary and **not sufficient.**
+- **Row 18 — the series finally got its frame and lost it to LIGHT.** For the first time in fifteen clips a **90 px
+  head and the board's nose are unambiguous together** (t = 19.000) — and the head is a **backlit flat silhouette,
+  no eye, no mouth.** The in-image angle between the head's facing line and the board's long axis is **16° ± 8°**,
+  head below the axis, **reported as a projection mixing yaw with pitch, not a yaw.** **The footage ask gains a
+  clause: nose legible AND head ≥60 px AND the face LIT, not backlit.**
+
 ### Rows by kind of change
 
 | kind | count | rows |

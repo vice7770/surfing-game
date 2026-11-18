@@ -2799,3 +2799,35 @@ Codex ran the exact detector and filter in isolation on **eight alternating 0 / 
 ### Codex's consolidated clips 14–16 reference
 
 **`codex/surf-motion-14-16` at `6bc742aa`**, file `docs/research/new-rider/3.5/video-review-14-16.md` — the full timestamped review for clips 14, 15 and 16 plus its code references and the minimal control check. **To be used as the common reference once our own independent readers finish**, never before, so the blind arrangement holds. **Clip 15's trough-and-climb cues are recorded two entries above** and are the thing to hand a rider/arms builder when one next runs; none is running now.
+
+---
+
+## 2026-11-18 — VIDEO 15 (PR #414): ROWS 1–2 GET A *REPRODUCED* ACCEPTANCE TEST, AND THE CLIP HAS NO TRIM IN IT
+
+**Mikey February / SHORTYHEAD, 22.661 s, 25 fps, 1080×1440 — a 3:4 stream inside a 9:16 Short, which makes it the largest rider in five clips (head 37–90 px).** Two shots: a 4.08 s opener then **one continuous 18.56 s ride, the longest the series has read**, with **≥10 direction changes, one per ≤1.86 s.** 418 insertions, 0 deletions. Full detail in `engine-target.md`'s new status block.
+
+### ⭐ The result: DECOUPLING, a category nobody was counting
+
+**10 resolved transitions with both channels legible: 3 same-sign up, 1 same-sign down, 2 frozen, 4 DECOUPLED, 0 opposite-sign.** **Opposite-sign is now 0 in 36 transitions over five riders and five clips** — V9's single passage stays single and five-times-not-reproduced. **Decoupling was reproduced four times in one ride.**
+
+**And both are equally impossible in the engine**: `HumanoidRig.ts:1383–1385` forces the drawn trunk's correlation with leg depth to **+1 within a stage**, so **0 is as unreachable as −1.** **So PR #411 should be judged on whether the channels can DECOUPLE, not only on whether they can oppose — and that gives rows 1 and 2 a reproduced acceptance test in place of a single-instance one.** It is the strongest footage justification those rows have ever had, and it came from a category that was not in the table.
+
+### The reader refused the brief's premise, correctly, and it was the right call
+
+**My brief said "a second clip could settle row 6". It could not, and the reason is structural:** the row assumes a clip contains a **stretch of trim** in which to measure a cadence. **This rider turns every ~1.9 s; the longest flat-board, constant-heading stretch in 22.661 s is 0.56 s.** The reader rejected **three** otherwise pump-looking passages after checking the board's roll and heading on full frames (10.80, 13.36, 17.28 — rail roll or a swinging nose), and says plainly: *"A clip with no such stretch is a legitimate answer, and this is one."*
+
+**It also says my mid-run correction is what made that visible** — without it, it would have measured a "pump" across 12.88–14.00 **that contains a bottom turn at 13.4–13.6.** That is the correction chain working: Codex caught clip 14's turning passage, I relayed it, and it stopped clip 15 making the same mistake.
+
+**In the two surviving windows the body's height over the board cycles once while the trunk's fold is visibly unchanged.** **No cadence and no depth published, deliberately** — and **the height change is not called a leg extension in any unit, because the knee is never identifiable as a joint in the whole clip.**
+
+### Convergence with the independent read, and ours supplies the mechanism
+
+Codex's blind read of the same clip found *bend for the turn → extend on the climb → re-compress on the redirect*, and warned that counting those as periodic trim strokes would overstate the evidence. **Ours independently explains WHY it looks that way: there is almost no trim in the clip to be periodic in.** **Two blind reads, one describing the pattern and the other its cause.** They also agree on the big arm event at 14.0–14.9 — Codex's *"opposed hands at 14.04–14.89"*, ours timing a **≥ +0.50 s lead at ~14.90, the longest in the series.**
+
+### Method, all of it new
+
+- **☠️ Trap 9 fired INVISIBLY and in a worse form than recorded.** The composited-canvas failure returned **a complete, plausible image of the PREVIOUS render** — not missing tiles. **Only a stamp drawn into the canvas caught it.** 0.9 s inside the draw was not enough; **2.7 s** was, over ~30 renders. **Stamp every composite.**
+- **☠️ Trap 8 in a new form: a tracker's LOCK is not proof of the subject.** Six tiles were centred by a redness finder on **a foreground paddler.** Its failure is not absence and its success is not presence.
+- **Cut detection: difference only the TOP THIRD of the frame.** Whole-frame gave one 5× nominee against a **1.4× noise floor**; top-third sits at **0.1–0.7 within a shot** and produced a **40× step** at the single real cut (4.08–4.10), cleanly separating three fast pans from cuts.
+- **25 fps is now 3 of 15 clips** (2 duplicates in 9 steps at 1/30 here, 0 at 1/25). **A Short's stream need not be 9:16** — 3:4 buys more rider pixels at the same width.
+- **Automated colour segmentation of a backlit rider returns garbage** — the "hair" mask covered the whole wave face. **Built, run, discarded, nothing quoted from it.** That last clause is the part worth imitating.
