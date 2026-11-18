@@ -305,13 +305,13 @@ to ±3° is **~0.25 s, shorter than clip 15's 0.56 s** — on a clip with **zero
 
 ### Two ⛔ causes that are new, and the footage ask gains two clauses
 
-- **Rows 2, 10 and 14 — a one-piece black wetsuit removes the hip landmark AND the knee in the same garment.** Four
+- **Rows 2, 10 and 14 — a one-piece black wetsuit removes the hip landmark AND the knee in the same garment.** ⚠️ **CORRECTED by clip 19 — the second half is WRONG. A one-piece removes the WAIST and LEAVES the LEG**: it is form-fitting, so thigh, knee and shin read as three segments (10.280 and 11.600 on clip 19). **The clothing clause splits in two, and NO garment in nineteen clips satisfies both halves.** Four
   leg-chain attempts at 1.45×; **the thigh/shin gate was not even computable.** **Eighth consecutive rung refusal,
   seventh distinct cause.**
 - **Row 5 cannot be touched because THERE IS NO TURN IN THE CLIP — zero overhead arms in 14.0 s.** Every earlier miss
   was a turn without an overhead arm; **this is a clip without a turn.** Tally stays **16 of 28.**
 - **Row 18 — head ≈40 px inside a CAP BRIM'S SHADOW** at 4.2×, a new cause after clip 15's backlighting.
-- **The footage ask gains: boardshorts and a short or sleeveless top, NOT a steamer** (a one-piece kills both depth
+- **The footage ask gains: the waist must be a visible TONAL BREAK** ⚠️ (**superseding "boardshorts and a short or sleeveless top, not a steamer"** — clip 18 refused on a *black top over black boardshorts*, which satisfies the old clause and fails the real requirement; and a one-piece kills the waist but **not** the leg) (the old wording said a one-piece kills both depth
   landmarks at once, and it is what most surfers wear in cold water) **and, for row 18, a lit face AND a bare head.**
 
 ### Rows that moved, and one that came back
