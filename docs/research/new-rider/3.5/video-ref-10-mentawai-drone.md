@@ -116,7 +116,7 @@ Video 9's sharpest finding was that **either** channel can carry a whole posture
 
 > ### ⚠️ 0.8a — My 0.26 s bottom turn is **not the same quantity** as the literature's 0.96 s. Do not set them side by side.
 >
-> **Forsyth et al. 2024** — **0.96 ± 0.04 s, 99° turned, 3.8 m radius, 1.41 g**, from **n = 6 riders and 835 turns**, the only properly powered population in this project's evidence base — measures *a bottom turn*. **My 0.26 s measures something narrower: first rail spray to the moment the board stops swinging and starts climbing.** It excludes the **0.16 s of arm and weight set-up before the rail bites** (§0.2) and it excludes the exit entirely.
+> **Forsyth et al. 2024** — **0.96 ± 0.04 s, 99° turned, 3.8 m radius, 1.41 g**, from **n = 6 riders and 835 turns OF MIXED TYPES** — and **only the duration column carries weight**: the radius and lateral-g values are **derived estimates, not measurements**, and the ± is a **summary of a group mean, not a range for individual surfers**. The claim that this is "the only properly powered population in this project's evidence base" is **WITHDRAWN**. **The discipline is symmetric: the video reads in this series are populations of one to eight instances, one or two riders and one clip each, so there is NO well-powered four-number turn target from either source** — measures *a bottom turn*. **My 0.26 s measures something narrower: first rail spray to the moment the board stops swinging and starts climbing.** It excludes the **0.16 s of arm and weight set-up before the rail bites** (§0.2) and it excludes the exit entirely.
 >
 > **Measured on a window closer to Forsyth's, the same manoeuvre is 0.87 s** — first arm movement at 30.08 to the top of the climb at 30.95.
 
@@ -124,11 +124,11 @@ Video 9's sharpest finding was that **either** channel can carry a whole posture
 - **The arithmetic band of 0.96 ± 0.04 s is 0.92–1.00 s, and 0.87 is BELOW it.** The original sentence said "inside" and was simply wrong.
 - **And the ± is a summary of a GROUP MEAN, not a range for individual surfers**, so "inside the interval" would not have been the right test even had the arithmetic worked. **Forsyth's own population is 6 riders and 835 turns OF MIXED TYPES, and its radius and lateral-g values are derived estimates rather than measurements** — so only the duration column carries weight at all.
 - **What survives:** the 0.87 s and the 0.26 s are **two honestly-labelled windows of the same manoeuvre** — 0.26 s is first rail spray → board stops swinging; 0.87 s adds the 0.16 s of arm and weight set-up and the exit. **Both are useful WHEN LABELLED, and neither sets an animation duration.** The 0.26 s must never be set against Forsyth, because it is a sub-window of a different quantity.
-- **§0.8's real-time conclusion is untouched**, because the figures that exclude 2× and 4× — the pump half-cycle and the squat-to-stand — are **whole-cycle quantities with no window ambiguity.**
+- **§0.8's real-time conclusion is untouched**, because the figures that exclude 2× and 4× — the pump half-cycle (five at ~0.5 s) — is a **whole-cycle quantity with no window ambiguity.** (An earlier draft paired it with a "squat-to-stand"; **that is video 9's measurement, not this clip's**, and is withdrawn.)
 >
 > **So this clip is not evidence that these turns run four times faster than the published population.** It is evidence that *"a bottom turn"* has at least two defensible start and end points, and that **0.26 s and 0.96 s can describe the same turn.** Anyone quoting a duration from this document — or setting one beside a game figure — must say **which window** they mean. This project has had twenty-eight real numbers turn out to be in the wrong frame, and a turn duration with an unstated window is the next one.
 >
-> **This does not weaken §0.8's conclusion**, because the two measurements that exclude 2× and 4× — the **pump half-cycle** and rider B's **squat-to-stand** — are whole-cycle quantities with no such ambiguity.
+> **This does not weaken §0.8's conclusion**, because the two measurements that exclude 2× and 4× — the **pump half-cycle** (five of them at ~0.5 s) — are whole-cycle quantities with no such ambiguity. **⚠️ A correction: an earlier draft also credited "rider B's squat-to-stand" here. That is VIDEO 9's measurement, not this clip's, and it is withdrawn — the pump half-cycle is what does the work in this document.**
 
 ---
 
