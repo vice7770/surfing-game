@@ -3356,3 +3356,36 @@ The probe built against **this branch's `src` and against the merge base `1a29a6
 6. **Four rulers built, two discarded.** ⚠️ **The discarded board finder had GOOD ANGLES (3–8°) and an ASPECT WRONG BY A FACTOR OF TWO** (24.4 where the hand reads ≥10), returning nothing on 1 of 5 frames — **it would have corrupted the one gate the series now depends on.** Three screenshots discarded on stamp mismatches, nothing quoted.
 
 ⛔ **Clip 18's 1.583 s fastest chaining is NOT beaten** — the shortest confident gap here is ~6.5 s, over ≥4 resolvable direction changes in 13.9 s. **Second clip running with no take-off.**
+
+---
+
+## 2026-11-18 — ⭐ THE OWNER RODE `?bodyBank=hip` AND SENT VIDEO. IT DID NOT SAVE THE RIDE.
+
+**His address:** `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&bodyBank=hip` — **PR #421's switch ON.**
+
+**Read by extracting frames with AVFoundation via `swift` (no `ffmpeg` on this machine; `AVAssetImageGenerator` with zero tolerance works and is now the method for any local file the owner sends).** 45 frames at 0.25 s plus 48 at 0.0334 s across the fall, cropped and upscaled with `sips`.
+
+### What the ride actually was
+
+| t | what |
+| --- | --- |
+| 0.0–6.6 | **paddling**, prone, HUD *"Hold RT to paddle into a wave"* |
+| ~6.99 | HUD *"Getting up…"*, rider crouched on the board |
+| **~7.3** | **standing, upright, arms out, riding a green face with spray off both rails** |
+| 7.89–8.19 | **a real ride** — body stacked over the board, spray off both rails, the board angling across |
+| **8.39** | **the board has rotated well off the body's line; the body is more upright than the board** |
+| **8.59** | **the board is sliding out to the side and the body is upright behind it** |
+| ~8.7 | gone |
+| 8.99 | HUD *"Wiped out — hold A to pull the leash and climb back on, or Y to paddle out"* |
+
+> **He stood for roughly 1.3–1.5 s and lost it — exactly the "stands 1 second" he reported, WITH the new switch on.**
+
+**The visual signature matches PR #419's diagnosis: the board goes out from under him while the body stays upright behind it.** And **it matches what clip 19's real surfer does NOT do** — the real rider answers the same event by **throwing both arms up and out and going taller**, staying up ~0.4 s. **Nothing like that is visible here.**
+
+### ⚠️ What this evidence can and cannot support
+
+**It is a PHONE VIDEO OF A LAPTOP SCREEN playing back a QuickTime screen recording** (*"Screen Recording 2026-11-18 at 18.18.25"*, with QuickTime's scrub bar across the bottom). **The rider is roughly 40 px tall. No angle, no rate and no roll figure may be taken from it, and none is.** Everything above is **qualitative**.
+
+**The single most valuable thing the owner could send next is the ORIGINAL screen recording** rather than a phone video of it. At that resolution the **board's roll and the body's bank could be measured directly from his own ride** — the exact two quantities PR #421 measured on the bench (`d(body bank)/d(deck bank) = 0.8748`, lag 0.100 s) — **which would close the loop between the bench and the thing he actually plays.** It has been asked for.
+
+**Also worth noting and not over-read: this IS a working ride.** He paddles, catches it, pops up and rides a green face with spray off both rails for over a second. **The failure is the end of a ride, not the absence of one.**
