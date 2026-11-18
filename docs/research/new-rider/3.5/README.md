@@ -2016,3 +2016,31 @@ it. It needs the owner's ride, or a bench where a rail change's own rail answer 
   runs `BoardBody` at `STANDING_SUBSTEPS` 32, so the real `h` is **dt/32 ≈ 0.52 ms** and the signed carriage's largest
   possible move in one of those is **≈ 0.003 m**. **The old latch moved 0.44 m in that same 0.52 ms** — the sign was
   the one quantity in the channel with no filter on it at all.
+
+### 10.7 Seatbelts on the fix
+
+| check | result |
+| --- | --- |
+| `./node_modules/.bin/tsc -b` | clean |
+| `src/physics`, `--maxWorkers=1` | **60 files, 654 passed, 21 expected fail** (§7's 651 + the 3 added) |
+| `src/scene/rig` + `src/game`, `--maxWorkers=1` | **70 files, 742 passed** — §7's figure exactly |
+| `src/physics/armCarriage.test.ts` + `armCarry.test.ts` | **16 of 16** (13 unchanged + 3 added) |
+| the same 3 added tests on the **pre-fix** files, restored from `HEAD` | **3 of 3 fail** — they are regression tests, not decoration |
+| `src/wave/SurfZoneRunner.test.ts`, by hand | **started and left running** — see the note below |
+
+**The default path is untouched, structurally and by measurement.** Both of the module's call sites are gated on
+`this.armCarry`, which is `undefined` by default, so the default rider never enters the channel at all; and
+`armCarry.test.ts`'s first test still compares the seven part masses, the board's full pose and the rider's own state
+**every frame of 3 s — 180 frames × 42 columns = 7 560 values a run** with the switch on and off, **0 differences**.
+Nothing outside the `if (this.armCarry && this.phase === 'standing')` branch changed.
+
+**The Canyon B byte check was not re-run and does not apply here**, and the reason is structural rather than a
+promise: the change is confined to `armCarriage.ts` and to one line inside that opt-in branch of
+`renderPoint`, which is **drawing**. No solver, grid, wave or force path is reachable from it, and §6's 7 560 values a
+run are the measurement of that on the rider itself.
+
+**⚠️ `src/wave/SurfZoneRunner.test.ts` was started by hand and had not finished inside this round's window.** It is
+outside the merge suite, another session was running a full suite on the same machine throughout, and it had run for
+**~50 minutes** when this was written. It is **not** a gate on a drawing-only change behind an opt-in switch — it
+enables no `armCarry` — but it is recorded as **unfinished rather than passed**, because an unfinished run is not a
+green one.
