@@ -440,15 +440,19 @@ const ANKLE_RANGE_WIDE = 2;
  */
 const HIP_CAPTURE_GAIN = 0;
 /**
- * **The hip's gain with `bodyBank: 'hip'`** (step 3.5i), in **body weights per metre** of capture point past
- * HIP_SHARE of the feet's half-width. It is not a tuning constant: `HIP_CAPTURE_GAIN`'s units are N·m per m, and
- * `m g × d` is **the rotor torque whose own angular momentum rate relieves the demanded centre of pressure by
- * exactly `d`** — the third term of the identity in `AttachedRiderOptions.bodyBank`, read at one body weight. So at
- * unit weight the hip asks for precisely the throw that holds the demand where its trigger fired, no more, and it
- * saturates SWING_TORQUE at `200 / 716 = 0.279 m` past the trigger. Step 3.2x's own ladder swept 35–2 000 N·m/m by
- * hand; this is the value the derivation names, and the probe's `HIPGAIN` arm can still set any other.
+ * **And step 3.5i measured it once more, at the value its units derive, and once more did not keep it.**
+ * `HIP_CAPTURE_GAIN`'s unit is N·m per metre, and `m g × d` — **716 N·m/m** at 73 kg — is the rotor torque whose own
+ * angular momentum rate relieves the demanded centre of pressure by exactly `d` (the identity in
+ * `AttachedRiderOptions.bodyBank`), so it is the one value that is derived rather than swept. **With the contact's
+ * own missing term in place beside it** — which is what 3.2x could not have had — it still costs: on 90 Canyon
+ * riders turning on the owner's address, the contact term **alone** gives `tip` in 66 of 90 and a median ride of
+ * **1.083 s**, and the same term **with** this drive at 716 N·m/m gives `tip` in 76 of 90 and **0.917 s**. The drive
+ * alone, with no contact term, gives `tip` in **90 of 90** and 1.158 s. So the ordering is
+ * **term < term + drive < drive alone**, and 3.2x's *"the more the hip throws, the sooner he falls"* survives the
+ * correction that was supposed to pay for it — step 3.2z names the reason: `reachAcross` credits the fall test on the
+ * hip range **remaining**, so a rider who spends the range to move his weight is credited with nothing left to catch
+ * it. **Left at 0 for the third time, with the third measurement.**
  */
-const HIP_ROLL_WEIGHTS = 1;
 /**
  * **The ankle rest's slew bound**, rad/s (step 3.2x, `HumanBalance.lagRest`): the most the commanded rest can travel
  * per second.
@@ -1602,32 +1606,42 @@ export interface AttachedRiderOptions {
    * missing**, so the model's rider pays for his own hip strategy at the sole and can never profit from it. That is
    * why step 3.2x's hip drive, measured on its own, *"falls sooner on 36 of 60 rides"*.
    *
-   * ## What the switch does — two halves of one mechanism, and neither works alone
+   * ## What the switch does — ONE term, and it drives nothing
    *
-   * 1. **The drive.** `hipCapture`, the gain on `HumanBalance.sensedCaptureHip` — the existing, documented trigger,
-   *    the capture point past HIP_SHARE of the feet's half-width across, sensed BALANCE_DELAY late — is given the one
-   *    value its own units derive: **`m g` N·m per metre**, the torque whose angular momentum rate holds the demanded
-   *    centre of pressure exactly where the trigger fired. **No new signal, no new code path, no new force**: the
-   *    rotor is `swing`, its torque is bounded by SWING_TORQUE, its travel by the stance's own `hipRange`, and its
-   *    couple is already booked on the board (`rhs[3..5]`), in row 7 and in the work ledger. An explicit
-   *    `balance.hipCapture` still wins, so either half can be run alone.
-   * 2. **The contact.** `project`'s free centre of pressure gains the missing `(dH/dt)_roll / N` term, as the rotor's
-   *    own angular impulse about the roll axis resolved into the board's frame, and the tangential force that
-   *    realises a clamped centre of pressure gains the same term, so the unclamped case stays an identity.
+   * `project`'s free centre of pressure gains the missing `(dH/dt)_roll / N`, as the `swing` rotor's own angular
+   * impulse about the roll axis resolved into the board's frame; the tangential force that realises a *clamped*
+   * centre of pressure gains the same term, so the unclamped case stays an identity. **That is the whole switch.**
+   *
+   * ⭐ **And it needs no drive, because the rotor was never torque-idle.** Step 3.5d's *"the swing carries 0.1–0.4 %
+   * of the traffic"* is about the **rest command** the hip takes over from the ankle, not about its torque:
+   * `humanSwingStep` adds the rotor's own return and damping term **outside** its ±SWING_TORQUE clamp, so on the
+   * SHIPPED rider `swingTorque` already reaches a per-rider median peak of **165 N·m and a maximum of 303 N·m**, and
+   * `project` was throwing every newton-metre of it away. Measured on 90 Canyon riders turning on the owner's own
+   * address: the term alone fires in **3 061 of 6 425 live frames with the hip gain at zero**.
+   *
+   * **This was built with a hip drive beside it and the measurement removed the drive** — see HIP_CAPTURE_GAIN's own
+   * note for the three-way ordering. The gain is still reachable through `balance.hipCapture` for the probes.
    *
    * **It adds no force and no moment.** Every newton still arrives through the ankle's spring, the leg's spring, the
    * hip's own bounded torque and the water; what changes is the **bound** the contact is held to, from one that
    * assumes the body has no angular momentum to the one a body with a trunk actually obeys.
    *
    * **What it is not.** It is not `uprightVelocity` and not #215: nothing prescribes the body's bank, nothing is
-   * realised by whatever force it takes, and the rotor can be driven to its stop and then give nothing at all. It is
-   * not option 2 of `board-slips-away.md` either — the support's own ±0.130 m is untouched, and this term is exactly
-   * zero in every frame in which the trunk is not being turned.
+   * realised by whatever force it takes, and no torque, gain, damper or brake is added anywhere. It is not option 2
+   * of `board-slips-away.md` either — the support's own ±0.130 m is untouched, and the term is exactly zero in every
+   * frame in which the trunk is not being turned.
    *
-   * **Its honest cost, stated before it is measured:** the rotor's reaction rolls the board the other way (the couple
-   * at `rhs[3..5]` already ships), so a body that banks into the turn drives the rail down harder. **The roll is
-   * expected to get worse, not better.** And the roll axis's second-order component about the board's own along axis
-   * (`sin(pitch)·sin(roll)`) is deliberately **not** corrected, so `freeZ` is left exactly as it ships: one change.
+   * **Its measured costs, and one prediction of mine that it refuted.** I predicted the board's roll would get
+   * *worse*, since a body that banks into the turn must drive the rail down. **It got better** — per-rider median
+   * roll peak 65.7° → 52.4° and median roll rate 55.1 → 45.2 °/s on the 90-rider Canyon bench — because a contact
+   * that stays feasible lets the ankle's own counter-roll reach the board at all, where before the solve went apart.
+   * What really costs: the friction cone binds in **28 of 90 riders against 6 of 90**, two riders are released as
+   * `foot slip` where none was, and the median ride is **1.083 s against 1.333 s**. The relief is metres wide in a
+   * light-footed substep, which is correct (a hip strategy on unweighted feet buys nothing) and is handled by the
+   * clamp and the cone, not by a gate.
+   *
+   * The roll axis's second-order component about the board's own along axis (`sin(pitch)·sin(roll)`) is deliberately
+   * **not** corrected, so `freeZ` is left exactly as it ships: one change.
    */
   bodyBank?: 'hip';
   /**
@@ -2653,11 +2667,12 @@ export class AttachedRider {
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
     this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
     this.railCap = ((options.balance?.railCap ?? SCHEDULE_RAIL_CAP) * Math.PI) / 180;
-    // Step 3.5i: `bodyBank: 'hip'` is the derived gain AND the contact's missing term; an explicit `balance.hipCapture`
-    // still wins, so the drive and the contact term can be run apart (the probe's own A/B/C).
+    // Step 3.5i: `bodyBank: 'hip'` is the contact's missing term and NOTHING ELSE. It was built with a derived hip
+    // drive beside it (`m g` N·m per metre of trigger) and **the measurement took the drive away**: on 90 Canyon
+    // riders turning, the term alone took `tip` from 90 of 90 to 66 of 90 and the drive on top of it put the ride at
+    // 0.917 s against the term's own 1.083 s. The gain stays reachable through `balance.hipCapture` for the probes.
     this.banksBody = options.bodyBank === 'hip';
-    this.hipCapture = options.balance?.hipCapture
-      ?? (this.banksBody ? HIP_ROLL_WEIGHTS * this.mass * WATER.gravity : HIP_CAPTURE_GAIN);
+    this.hipCapture = options.balance?.hipCapture ?? HIP_CAPTURE_GAIN;
     this.ankleRestRate = options.balance?.ankleRestRate ?? ANKLE_REST_RATE;
     this.anklePlumb = options.balance?.anklePlumb ?? ANKLE_PLUMB;
     this.windowed = this.capsLegs || this.newRider;
