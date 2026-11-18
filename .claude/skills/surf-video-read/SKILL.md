@@ -151,6 +151,17 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 
 **The test, per frame:** measure the **projected shoulder-to-waistband distance ÷ head length in the same frame.** Standard proportions (acromion ≈0.82 of stature, boardshorts waistband ≈0.60) put an in-plane trunk at **≈1.6–1.8 head-lengths**. Clip 13 measured **0.39, 1.03, 1.18, 1.34, 1.59, 1.63** across six attempts: **two clean, one marginal, three refused — and both clean readings were frames where the trunk was visibly vertical. No visibly-folded frame passed.**
 
+> ⚠️ **THE 1.6–1.8 BAND IS NOT A CONSTANT AND DOES NOT TRANSFER BETWEEN CLIPS. Video 14 refuted it the next day.**
+> That rider's two **visibly vertical** trunks read **2.03 and 2.11** — because she wears a **bikini bottom, which
+> sits lower than a boardshorts waistband** (≈0.56 of stature against ≈0.60), moving the expectation to **≈2.0**.
+> **Run the test WITHIN a clip, against that clip's own most-vertical frame**, and treat 1.6–1.8 as nothing more
+> than the worked example that produced the method. **A cross-clip constant here is a frame error of exactly the
+> kind the gate exists to catch** — the waistband is a garment, not a landmark.
+>
+> **The method survives intact and is the point:** a projected trunk is admissible only when the shoulder-to-hip
+> segment is lying in the image plane, and **you establish the in-plane value from the subject in front of you.**
+
+
 **☠️ AND THE SECOND HALF, WHICH IS THE ONE THAT BITES.** It is tempting to console yourself that foreshortening only **shrinks** an angle, so every published fold is "safe as a lower bound." **That is true for a single angle from vertical, under a level camera, at fixed yaw. It is NOT true for a SPAN, because a span is the difference of two projected angles.** **A fixed lean swivelled from facing the lens to side-on changes its apparent angle from near 0° to its true value with zero anatomical flexion**, and the reverse swivel manufactures the opposite.
 
 > **CONSEQUENCE, to be stated in any read that quotes a trunk range: after thirteen clips there is NO gated measurement of trunk angular travel anywhere in the series, and the published spans (V8 59°, V9 65°, V11 60°, V12 80°) are not even lower bounds wherever yaw moved between the two frames — and V12's pair is 2.4 s apart inside a turn.**
