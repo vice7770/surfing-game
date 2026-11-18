@@ -47,6 +47,47 @@ They are first for a reason worth stating: they are the only rows that are **shi
 measurable without a longer ride**. The rows that need the rider to survive longer (7, 8, 16) are not first,
 because nothing can be learned from them yet.
 
+### STATUS 2026-11-18: ROWS 1 AND 2 ARE BUILT, AND ROW 3 IS ANSWERED YES
+
+**PR #411, branch `claude/trunk-mass-3-5h`, opt-in behind `?trunk=mass`, open and not merged.** The rotor's own
+parts — torso, head, both arms, i.e. what `HIP_PITCH_INERTIA` models — now turn about the **physical pelvis** by
+`StandingBody.hip.angle` on local `+x`, and **local `+x` is `across`**: `orientation` is `bodyFrame` when upright
+(`AttachedRider.ts:5113`) and `across` is `X` turned by `bodyFrame` (`:5278`), **so the fold's axis is the one
+`StandingBody.couple` already pairs its couple on, in every stance and at every bank, with no frame correction.**
+Verified here by reading both lines, because a fold about any other axis would be an unpaired couple.
+
+| | default | `?trunk=mass` |
+|---|---|---|
+| trunk travel while the **leg spring's compression** holds within 2 mm | **0.00°** | **0.05–4.49°**, > 0 on 18 of 18 |
+| trunk travel while the **drawn pelvis** holds within 2 mm | **0.00°** | **0.05–5.35°**, > 0 on 18 of 18 |
+| **row 3 — opposite-sign frames** | **no moving frames at all** | **754 of 1 734 moving frames, 43.5 %** |
+| centre of mass moved by the fold | **0.0000 m** | up to **0.1067 m** |
+
+**Row 3 was the acceptance test and it passes: it was impossible, and it is now possible.** 60 paired arms, one
+`FaceWater` bench (Canyon-matched 1.4 m / 16° / 5.7 m/s), 6 576 default and 6 484 switched live frames,
+`RIDER=new FELT=deck BODY=two`. **No footage figure appears in the code, the probe or the test** — row 2's target
+column has no number to build to and the round did not invent one.
+
+**Three things the round itself says against it, and they matter more than the table:**
+
+1. ⭐ **The rotor is INERT on 42 of 60 arms.** Its drive is the ankle's excess past 0.8 of the feet's reach, and on
+   a gentle entry that is zero. **Making the fold possible and making it appear are different questions, and only
+   the first is done.**
+2. ⚠️ **The visual cost: the drawn trunk is 17.34° from vertical with the switch off and 6.18° with it on, at zero
+   physics fold.** The rider **stands straighter in plain trim.** That is the honest trade.
+3. ⭐ **A new one-owner coupling, found by the skinned-pose test and pinned rather than fixed:** `HumanoidRig`'s
+   `this.up` is **both** the trunk's direction **and** the axis the drawn hips are lifted along (`standingLift`).
+   Folded, those stop being one vector and **the drawn hips travel ~55 mm per radian.** It is **not** caused by
+   standing the rig's own `backForMass` down (0.0499 m with the switch off, within 3 mm) — **it arrives with row 1
+   itself.** What the lift axis should be is a rig question for the owner's eye.
+
+**Falls: 60 of 60 on both arms**, time-to-fall unchanged on 46 arms, shorter on 10, longer on 4, upper middle
+0.000 s — no direction. **Ruling F rejects that as a metric anyway.** **One bench**, and `FaceWater` writes
+`breaking: 0, voidFraction: 0` with no foam. **No drag or work claim is made**, because `waterForces` samples at the
+folded position but computes only `v + ω × offset` — no relative hinge motion, no local-centre recentre term.
+
+**Nothing was added to make the fold behave** — no torque, no drive, no constant. **It did not need any.**
+
 ### Rows by kind of change
 
 | kind | count | rows |
