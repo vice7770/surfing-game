@@ -3303,3 +3303,56 @@ The probe built against **this branch's `src` and against the merge base `1a29a6
 **90 of 90 still fall and the ride is 0.25 s shorter.** On the analytic face the term buys much less (`tip` 85.5 % → 81.7 % of frames) and **the cone cost is worst there (2/72 → 37/72).** The **stick-zero arm was not re-run.** **No body lean was added — the bench says the body already leans.**
 
 **Staged plan:** stage 2, the same term on `freeZ` for the pitch rotor (**three lines**); **stage 3, the lag — and the honest reading is that it may not be reducible** (the free body's own period is **~2.05 s against a 0.68 s roll**, and the ankle spring is a settled dead end), **with the one reachable lever being `HUMAN_BANK_FORWARD`, already in the code at 0.1 — a feed-forward on the player's own steering command, not a motor. That is the next thing to measure and it has not been.** Stage 4: 3.2z's double count.
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ VIDEO 19 (PR #422): THE FIRST WIPEOUT IN NINETEEN CLIPS, AND ITS MECHANISM IS THE OWNER'S COMPLAINT
+
+*"where the head goes, the body follows"*, `@hunterjoness` — **13.921 s, 1080×1920, 60 fps (59.94), read in full, one continuous shot.** 441 insertions, 0 deletions. **The third clip in a row from this poster, and a different rider from 17 and 18.**
+
+### The fall, frame by frame — this is the footage the track has been missing
+
+> From **12.63** the board's nose pitches up out of the whitewater, **passes his shoulder, then his head** (in-image board axis ≈**52° at 12.870**, nose above the crown), and **by 12.99 it is gone.**
+>
+> ⭐ **He answers it with BOTH ARMS THROWN UP AND OUT, GOING TALLER NOT LOWER.**
+>
+> ⭐ **And he stays upright about 0.4 s AFTER the board is past vertical**, before being thrown at ~13.15 and landing by 13.40.
+
+**Two things there are directly comparable against the game and neither has ever been measured on either side:** **a real rider answers a board rotating out from under him by RISING with the arms up and out** — not by crouching — **and there is a ~0.4 s window between the board going and the rider going.** **One instance each. A second clip makes them findings; a counterexample is worth as much.**
+
+⚠️ **And the clip's own hard limit, stated: his feet are invisible in foam from 12.20 onward — the entire fall. The one clip that finally shows a board leaving a rider cannot show whether a foot left first.**
+
+### ⭐⭐ ROW 5's METRIC IS RETIRED, AND TWO CLIPS RETIRED IT BY CONTRADICTING EACH OTHER
+
+**Clip 18's hands cleared the crown because THE HEAD DROPPED (arms level). Clip 19's cleared it because THE ARMS ROSE WHILE THE HEAD WENT UP** (crown source y 669 → 640 → 596 across 9.502–9.604). **Two clips, two opposite causes, one test ⇒ "a hand above the crown" distinguishes nothing.**
+
+**The shoulder line does, and it has a number: a hand passes the shoulders at 9.528 ± 0.026 and the crown at 9.63 ± 0.03 — 0.10 ± 0.04 s apart — with BOTH hands crossing the shoulders and ONLY ONE ever crossing the crown.** **Every "hand above the head" reading in the series needs re-basing, and PR #407's `ARM_OVER_*` constants were set from them.**
+
+### ⭐ The aspect gate generalises to something the series did not know
+
+**A board standing at 63° IN THE IMAGE still gates at ≥6.0**, because **the gate measures BEARING TO THE LENS and image-plane rotation does not change it.** Rows 10 and 14 refused on **five** frames here (4.4, 6.0, 6.9, 10.2, ≥10 against the 2.2 limit), **no knee examined.**
+
+> **NO MANOEUVRE OPENS THE WINDOW FROM A SHORE-SIDE LENS. The admissible shot is a property of the CAMERA, not of the surfing** — level with the rider, along the board's axis, from the nose or the tail. **Nothing in nineteen clips is that shot.**
+
+### Row 3, and the blockers are now proven to be the instrument
+
+**No transition classified** (one window recorded and classified same-sign up, which is not evidence). **Series unchanged at 47 resolved, seven clips, no opposite sign.** ⭐ **And the three blockers clip 18 named — no checkable elevation, no waist landmark, no fixed scale — are reproduced here on a different rider, break and garment. They are properties of the camera and the clothing, not of any one clip.**
+
+### The feet, and one of my claims corrected
+
+**No foot slide, lift or re-placement in ~160 frames. Nineteen clips, nothing has ever moved.** **Front ÷ rear distance from the nose = 0.595 ± 0.05** at one 1:1 gridded frame — **inside clip 18's 0.55–0.60, on a third rider.** ⛔ **Board-length fraction refused** (tail never clear), so **row 17 stays at two reproduced absolute clips (V7, V17).** Clip 18's deck-logo ruler could not be reused — the logo was legible with both ends visible in only one frame.
+
+⚠️ **And it corrected something I wrote:** `engine-target.md` says a one-piece wetsuit *"removes the hip landmark AND the knee in the same garment."* **Wrong. It removes the WAIST and LEAVES the LEG** — form-fitting, so thigh, knee and shin read as three segments at 10.280 and 11.600. **The clothing clause splits in two, and no single garment in nineteen clips satisfies both halves.** Corrected above.
+
+**⚠️ And the sharpest observation in the report: the owner titled this clip about the head, and the footage cannot measure the head.** Seven distinct causes now. **Row 18 needs a different KIND of clip, not another clip.**
+
+### ☠️ METHOD: THREE NEW TRAPS, AND LAST CLIP'S CURE IS RETIRED
+
+1. ☠️ **`+(t0 + i/60).toFixed(4)` puts THREE OF TEN asks in the same frame at 59.94 fps**, with `currentTime` reaching exactly what was asked. **Unhashed, that publishes three frozen micro-windows that do not exist. Step by 0.0170.**
+2. ☠️ **THE SCALE IS NOT STABLE WITHIN A SESSION.** It flipped **1.000 ↔ 0.934 repeatedly with the viewport pinned at 800×640 and nothing opened or closed.** **So a separate ruler frame is no longer sufficient: every measurement frame must carry its own source-coordinate grid and self-calibrate.** All readings here were converted off a grid in the same image.
+3. ⛔ **Clip 18's `setInterval` overlay repaint DID NOT PREVENT THE STALE COMPOSITE** — it ran all session and two frames still came back stale (the stamps caught both). ✅ **What worked: a `browser_batch` whose FIRST item is a throwaway `scale: 0.15` screenshot** — **8 of 9**, and two throwaways worked 3 of 3 where one failed.
+4. ✅ **A `javascript_tool` timeout with the last seek completed and the token set is a `document.hidden` throttle, not a runaway.** **Check the token before paying for a reload** — none was needed.
+5. ✅ **The 260 ms + two-decode seek recipe passes a THIRD 60 fps source** (6/6 same-time, 0/39 distinct-time, 0 unstable).
+6. **Four rulers built, two discarded.** ⚠️ **The discarded board finder had GOOD ANGLES (3–8°) and an ASPECT WRONG BY A FACTOR OF TWO** (24.4 where the hand reads ≥10), returning nothing on 1 of 5 frames — **it would have corrupted the one gate the series now depends on.** Three screenshots discarded on stamp mismatches, nothing quoted.
+
+⛔ **Clip 18's 1.583 s fastest chaining is NOT beaten** — the shortest confident gap here is ~6.5 s, over ≥4 resolvable direction changes in 13.9 s. **Second clip running with no take-off.**
