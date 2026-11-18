@@ -114,6 +114,16 @@ Video 9's sharpest finding was that **either** channel can carry a whole posture
 - **The durations settle it.** The pump half-cycle is **~0.5 s**; the bottom turn runs entry → board-round **30.24 → 30.50 = 0.26 s**; the climb **30.50 → 30.95 = 0.45 s**; the top turn **30.95 → 31.12 = 0.17 s**; the whole chain **0.88 s**. At 2× those become a 0.25 s pump half-cycle and a 0.44 s complete bottom-turn-climb-top-turn, which is not human. At 4× it is absurd.
 - **Best reading: at or near real time**, the same conclusion as videos 8 and 9 by the same route, now on a third independent clip. A mild slowdown (≤ ~1.3×) cannot be excluded.
 
+> ### ⚠️ 0.8a — My 0.26 s bottom turn is **not the same quantity** as the literature's 0.96 s. Do not set them side by side.
+>
+> **Forsyth et al. 2024** — **0.96 ± 0.04 s, 99° turned, 3.8 m radius, 1.41 g**, from **n = 6 riders and 835 turns**, the only properly powered population in this project's evidence base — measures *a bottom turn*. **My 0.26 s measures something narrower: first rail spray to the moment the board stops swinging and starts climbing.** It excludes the **0.16 s of arm and weight set-up before the rail bites** (§0.2) and it excludes the exit entirely.
+>
+> **Measured on a window closer to Forsyth's, the same manoeuvre is 0.87 s** — first arm movement at 30.08 to the top of the climb at 30.95 — **which sits inside their interval.**
+>
+> **So this clip is not evidence that these turns run four times faster than the published population.** It is evidence that *"a bottom turn"* has at least two defensible start and end points, and that **0.26 s and 0.96 s can describe the same turn.** Anyone quoting a duration from this document — or setting one beside a game figure — must say **which window** they mean. This project has had twenty-eight real numbers turn out to be in the wrong frame, and a turn duration with an unstated window is the next one.
+>
+> **This does not weaken §0.8's conclusion**, because the two measurements that exclude 2× and 4× — the **pump half-cycle** and rider B's **squat-to-stand** — are whole-cycle quantities with no such ambiguity.
+
 ---
 
 ## 1. Method and limits (read before any number)
@@ -180,7 +190,7 @@ Landmarks in source pixels, ±3. **No rung is named, for the reason in §0.3.**
 **T1 — the trim passage (27.0 → 30.2, 3.2 s): five fold/unfold half-cycles at ~0.5 s, and zero direction changes.**
 Down at 27.0, up at 27.5, down at 28.0, up at 28.4, down at 29.1, up at 29.5. Through all of it the board runs flat and fast and the heading does not change. At the one point in the cycle where both knees were readable (**30.00**, near the top of a cycle) the legs read **99 % and 100 %** — long. **Video 8 measured ~0.6 s per half-cycle, video 9 ~0.55 s, this clip ~0.5 s. Three riders, three oceans, the same number.** It remains the most reproducible figure the series has.
 
-**T2 — the bottom turn (30.24 → 30.50, 0.26 s), and the arm is beat zero.**
+**T2 — the bottom turn (30.24 → 30.50 = 0.26 s on a rail-spray-to-board-round window, or 0.87 s counted from the first arm movement — read §0.8a before quoting either), and the arm is beat zero.**
 
 | beat | window | duration | what happens |
 |---|---|---|---|
@@ -272,7 +282,7 @@ The **Canyon** column answers one question: *on what the owner actually rides �
 | 9 | **One leg at 96 % while the other reads 100 % in the same frame** (29.50) | — | **Not at all** | **No.** One leg spring for both legs — one rest length, one stiffness, one row in the board's solve. A second spring is a force change and the owner's ruling |
 | 10 | **Both arms spread wide and level arriving AS the body finishes extending, not before** (5 windows) | — | **Not at all** | **No.** Arm spread is capped by `stanceRoom(depth).arms` and triggered by the knees — it cannot arrive on its own schedule |
 | 11 | **Both hands carried low and narrow against the body while the legs are at their longest** (30.00) | — | **Not at all** | **No.** The arms' only physics effect is inertia; where they are reaches nothing |
-| 12 | **A 0.17 s top turn at the lip, and a 0.26 s bottom turn** | snap / bottom turn | **Partly** | **Doubtful.** The owner's 2026-11-08 note stands: snaps and carves need **60–80°** lips and the solver holds **~15–20°**, so there is no lip at Canyon to hit at this rate |
+| 12 | **A 0.17 s top turn at the lip, and a 0.26 s bottom turn** (window-dependent — §0.8a) | snap / bottom turn | **Partly** | **Doubtful.** The owner's 2026-11-08 note stands: snaps and carves need **60–80°** lips and the solver holds **~15–20°**, so there is no lip at Canyon to hit at this rate |
 | 13 | **Riding out of whitewater still on the feet, twice** (31.5–33.0, 35.5) | wipeout / recovery | **Partly** | A wipeout exists; "swallowed and still riding" does not |
 | 14 | **Both hands low and forward near the deck, 6 windows across two riders** | hand drag | **Partly** | The `hand` input is **on/off** and **the game chooses which hand** |
 | 15 | Drop-in / take-off, tube ride, air, snap | — | **Not readable in this window.** The only take-off is rider B's at ≈43 and he is ~30 px | — |
