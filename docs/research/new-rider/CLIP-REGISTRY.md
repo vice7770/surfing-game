@@ -42,6 +42,7 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | 18 | `2Z_wZFjKAOU` | https://www.youtube.com/shorts/2Z_wZFjKAOU?t=2 | queued (**starts at 2 s**) |
 | 19 | `V8SCdpuYnKM` | https://www.youtube.com/shorts/V8SCdpuYnKM | queued |
 | 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | queued |
+| 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | queued |
 
 **Dispatch rule: the owner's standing instruction is ONE VIDEO AT A TIME**, so the queue is dispatched in order as
 each read reports. **Every brief is written blind** — an independent reviewer reads several of the same clips, and
