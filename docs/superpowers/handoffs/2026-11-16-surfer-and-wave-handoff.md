@@ -3443,3 +3443,49 @@ A rider loses his stance at **≈4.97**, ends **chest-down over his own board wi
 ### ⏸️ CLIP 21 IS HELD, NOT DISPATCHED
 
 **The binding constraint is now identified and it is structural: the board's bearing to the lens.** **No clip from a shore-side camera can satisfy it, and twenty clips have proved the point.** **The owner's decision**, surfaced rather than quietly continued.
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ STOP ATTACKING THE LAG (PR #424). THE LEVER WAS DEAD CODE, AND #421's IDENTIFICATION OF THE LAG IS REFUTED.
+
+**Measurement only — nothing under `src/` or `server/`, no deletions against the merge base.**
+
+### 1. `HUMAN_BANK_FORWARD` is a real feed-forward term AND DEAD CODE ON THE OWNER'S ADDRESS
+
+```
+:2526  this.bankForward = options.humanGains?.forward ?? HUMAN_BANK_FORWARD;
+:2527  this.predictive  = this.newRider && options.humanGains === undefined;
+:3600  private humanBank(...) { if (this.predictive) { this.predictiveBank(...); return; } ...
+:3609    const wanted = this.bankForward * this.bankReference - ...   ← the ONLY use
+```
+
+**On `?rider=new` with no `humanGains`, `predictive` is true, `humanBank` returns early, and `:3609` never runs.** `grep -rn humanGains src server` finds **`AttachedRider.ts` and nothing else**; **no URL switch sets it** (its own comment: *"for the probes' sweeps only"*). **The shipped rider's feed-forward is the predictor's `ref.u` from `steadyTurn`, not a scalar at 0.1.** And **passing `humanGains` to sweep the constant replaces the whole controller**, so a "sweep" of it is not one lever.
+
+**Proved, not asserted:** five values (0 / 0.05 / 0.4 / 1 / 2) × 72 riders = **1 050 840 column-values, 0 differences, 72/72 runs identical each**; and **20× on his own spot, 90 riders, 285 898 values, 0 differences, 90/90.** **Positive control — the delay constant down the same path — gives 87 944 differences and 10/72 identical**, so the instrument works. **No switch built. A null, per the brief.**
+
+**And where the term IS live (the 3.2 reflex law), raising it is HARMFUL:** `g0.1 → g2` multiplies the deck's roll rate **×8.6** (5.39 → 46.36 °/s), the mismatch **×6.5**, pinned **12.2 → 39.5 %**, ride **1.000 → 0.300 s.** **A bigger anticipation is a bigger demand on the contact.** ⭐ **That is the FOURTH measurement of the same shape** — after `HIP_CAPTURE_GAIN` was left at 0 three times — **on a different joint.**
+
+### 2. ⭐ IS THE LAG REDUCIBLE? MOSTLY NO — AND #421's IDENTIFICATION WAS A COINCIDENCE
+
+**At a ONE-FRAME delay the follow gain still reaches 1.000 at 0.1016 s** — the very 0.100 s #421 matched to `BALANCE_DELAY` *"to the millisecond"*. **Over a twelvefold sweep (0.0167 → 0.200 s) the lag stays 0.081–0.120 s on the sea and 0.052–0.078 s on the face, and is not monotone.**
+
+**τ = 53.1 + 0.131·delay (sea), 51.9 + 0.233·delay (face) → 53 of 72 ms and 52 of 81 ms survive at ZERO delay. 64–74 % of the lag is not the sense.**
+
+**What is left is structural, from the code's own constants at the measured pendulum length** (`legLength` median 0.694 m, m = 73.00 kg): k − mgL = 315.9, I = 33.4, **T = 2.042 s** (reproducing #421's 2.05), ζ = 0.39 → **a step in the commanded rest delivers 4.3 % at 0.100 s and 50.1 % at 0.400 s**, against **a deck that banks 20° in 0.68 s.** On the ride the **command→joint gain peaks at 0.672 at 0.083–0.100 s and never reaches 1.** **And the command cannot anticipate the roll: corr(command rate, deck roll rate) = 0.138 at best over every lag in 0–0.5 s**, against the same instrument's control of 0.462; **command rate peaks at 80 °/s against the deck's 502 °/s.**
+
+> **RECOMMENDATION: STOP ATTACKING THE LAG.** Reachable is **~19 ms of 72 (sea) and ~29 of 81 (face)**, behind a sourced constant (90–100 ms, Nashner 1977). **The rest is the ankle spring plus body inertia, both settled dead ends. THE REACHABLE QUANTITY IS THE ROLL RATE.**
+
+⚠️ **One counter-note for the record, and it is not the same thing: a shorter delay DOES ride longer** — **1.067 s at 0.20 down to 1.617 s at one frame, monotone.** **The loop is delay-limited for SURVIVAL even though the body-deck lag is not the delay.**
+
+### 3. Two further refutations of #421, one of which may reframe the whole diagnosis
+
+- **Per frame, the rate law carries nothing.** `|mismatch| = B|rate|` gives B = 54.0 ms with **R² = −0.053** — worse than the mean. `|mismatch| = A|deck bank|` gives A = 0.169 °/° with R² = 0.144. **#421's band table reproduces (38.8–87.0 ms) because those are band MEDIANS; the per-frame law is the ANGLE, not the rate.**
+- ⭐⭐ **A nonzero body-versus-deck angle is what a coordinated turn is SUPPOSED to have.** The schedule builds `tan(lean) = pull·tan(rail)` with pull 0.76–0.88. In the water's frame on his spot: at 20–40° of rail the body sits **27.28–28.54°** where the design wants **24.3°**; at 40°+ it sits **49.62–55.12°** where the design wants **48.6°** — **within 12 % and 8 % of the design's own steady turn.** **So `bank − roll` is the ankle's WORKING ANGLE, not pure error** — and **`ANKLE_REST_RANGE` (14.32°) already exceeds the support's 10.9°.** **Flagged by the round as needing its own round, and explicitly NOT claimed to overturn the fall diagnosis.** It is the most interesting loose thread on the table.
+
+### 4. Instrument
+
+**Reproduces #421's shipped column on EIGHT quantities** (follow slope 0.8782 vs 0.8748; median mismatch 2.951° vs 2.950; gain 1.000 at 0.105 s; `tip` 90/90; ride 1.367 vs 1.333; roll peak 66.84 vs 65.65; rate 49.2/210.5 vs 55.1/194.7; mismatch-per-rate 38.8–87.0 vs 40.0–79.9). **Two do not** — first `tip` frame 24 vs 46, pinned 22.1 % vs 52.0 % — **placement: its trials land on a 0.27–2.77° face.**
+
+**`SINK=0.06` everywhere, and measured against flush for the first time: frame 1 reads 0.0611 m / 678.6 N / 0 of 72 dry, against 0.00024 m / 604.7 N / 30 of 72 dry — and 68 of 72 outcomes differ.** ⭐ **The plant estimator's synthetic positive control caught a real bug of its own** (a Gauss pivot dividing in place) **that had produced coefficients of 10⁴⁴** — **and the clean plant could NOT be recovered from a ride (R² 0.17–0.40), which is why its conclusion rests on arithmetic rather than a fit.** Probe inert: `INERT=1` → 72/72 identical. Plain medians throughout.
+
+⚠️ **This branch is off `main`, so every arm is the SHIPPED rider** — #421 is unmerged, so its baseline had nothing offered against it. **But #421's own switched arm had the same follow gain (0.8718 vs 0.8748), so that term moves the CONTACT BOUND, not this loop's timing.** The two results are about different things and neither replaces the other.
