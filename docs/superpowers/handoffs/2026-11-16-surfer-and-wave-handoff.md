@@ -1728,3 +1728,69 @@ It flagged that `body-channels.md` calls the trunk rotor absent *"on what the ow
 ### Doubts carried, not smoothed
 
 **No depth-matching eval is proposed at all** (leg-chain saturation and the 30-point ruler disagreement). **Clips 1–4's metre figures named tainted.** The down-transition's **three forms** mean an eval scores **separability, never one form**. The bottom turn's **1.00 s against 0.35–0.40 s clash is recorded, not averaged.** `engine-target.md` **defers the agent design to this document by name**, and §9 reconciles the two and states their one disagreement openly.
+
+## ⭐⭐ VIDEO REFERENCE 10 (merged `06470a95`, PR #402) — **THE RIDE IS THE TRANSIT**, and one channel moves while the other three are frozen
+
+`docs/research/new-rider/3.5/video-ref-10-mentawai-drone.md`. **"Mentawai Islands | November 2026"**, 280 s total, read **15–55 s only** on the owner's scope. **1080p is this upload's ceiling — it publishes no 1440p/2160p, so video 9's quality ladder is per-video.** A true **25 fps** (measured by seeking on a 0.01 s grid and hashing — the picture changes at exactly 0.04 s). Rider ~140–190 px. `tab-1`, the only tab, closed at the end. **The owner chose this clip because its waves are like Canyon's.**
+
+### WHAT THE MOVEMENT IS
+
+**Almost never still, almost never upright.** He cycles between a **long-legged trim with the trunk folded 30–50°** and a **deep fold with his head near the deck and both hands at the rail** — **about half a second each way, over and over** — and changes the board's direction every **1.2–1.9 s**.
+
+> ***"The ride IS the transit; the postures are just its endpoints."***
+
+### ⭐ WHICH CHANNEL CARRIES EACH CHANGE — and two forms the game cannot express
+
+- **Through trim:** trunk and legs move **together, same direction** (could not be separated within ±15°).
+- **Into the bottom turn (30.00 → 30.24): THE ARMS MOVE ALONE** — 0.12–0.16 s in which the arms go from tucked-low to wide-and-head-high **while the legs stay long, the trunk does not move and the board stays flat. One channel moving with the other three frozen.**
+- **Through the top turn (30.76 → 31.20): THE BODY IS FROZEN WHILE THE BOARD DOES EVERYTHING** — legs down, trunk laid forward, both arms out and low, **unchanged for 0.44 s while the board climbs, hits the lip and reverses.**
+
+### OPPOSITE DIRECTIONS — it abstains, and says why
+
+**It did NOT catch one, and judges that this camera cannot show one:** the drone **orbits**, so trunk angle carries **±15°** (worse than video 9's ±10°) and **video 9's 35° un-fold would sit inside the error bar.** **An honest abstention rather than a weak confirmation.**
+
+**But it reproduced video 9's other half to the tenth: the body's fold still held 0.4–0.5 s AFTER the board had come round.** Two clips now.
+
+### TURN RATE — about twice video 9's, and the pump cadence lands a third time
+
+**9 unambiguous direction changes (up to 14 counting likely ones) in rider A's ~17 s ride → one every 1.2–1.9 s.** The busiest stretch, 30.24–35.5, has **6 in 5.3 s — one every 0.9 s.** A complete **bottom turn → climb → top turn in 0.88 s** (0.26 / 0.45 / 0.17) — against video 8's **1.00 s** and the literature's **0.96 ± 0.04 s for a bottom turn alone.**
+
+And against that, **a 3.2 s trim passage with ZERO direction changes and ~5 fold/unfold half-cycles at ~0.5 s** — **the third clip in a row on the pump cadence: 0.6, 0.55, 0.5.** **That is now the most reproduced figure in the series by a distance.**
+
+### WHICH MANOEUVRES TAKE THE BIG ARM — the pattern is narrowing
+
+**The bottom turn did; the top turn 0.5 s later did not.** On the stream's own 0.04 s grid: rear arm out **30.12**, head height **30.16**, **first rail spray 30.24 → a 0.12 s lead**, held through the turn. Then 30.76–31.20: **both arms out and low, nothing raised at all.**
+
+**With video 9's roundhouse-cutback exception, the arm now looks like it belongs to the turn at the BOTTOM** — two clips, two different kinds of turn that go without it.
+
+**⚠️ An important abstention: this clip CANNOT test "above the head."** The rear hand tops out level with the middle of the head, and **a drone looking down is exactly the geometry that hides a raised hand.** **The order and the lead time are confirmed; the height is not.**
+
+### ⚠️ A DRONE DOES NOT FIX THE DEPTH PROBLEM — IT SWAPS IT, AND IT BREAKS THE REPLACEMENT RULER
+
+Video 9 asked for footage *"from the water or down the line"*. **This is down the line, from above, and the leg chain was readable on only 2 of 7 frames attempted** — both of them frames where he is **visibly extended**, because **boardshorts cover the knee exactly when the thigh goes horizontal, and spray and foam cover the ankle.** **So it neither confirms nor refutes the saturation claim; it reproduces the same failure for a different reason.**
+
+**And worse, new: the vertical ruler is corrupted outright here.** Apparent stature read **4.96 head-lengths at a 45° fold and 4.96 nearly upright, 0.4 s apart** — **identical across a posture change anyone can see** — **because a raised camera turns a forward fold into a sideways translation rather than a vertical shrink.** **It names no rung for any frame and says nothing in its document may be quoted as a depth.**
+
+> **This bounds video 9's own claim that hip ÷ head-length is the figure to defend: SAFE FOR A LEVEL LENS, UNSAFE FOR A RAISED ONE.**
+>
+> **⭐ THE FOOTAGE ASK, CORRECTED — this replaces video 9's: WATER-LEVEL, SIDE-ON, AND A RIDER WHOSE KNEES ARE NOT INSIDE HIS BOARDSHORTS.**
+
+### WHAT THE DRONE GAVE THAT NO EARLIER CLIP COULD
+
+- **The feet on the deck from directly above — 0 steps in 12 frames** through turns, climb and whitewater. **The first time the series can SAY it rather than infer it.**
+- **The fore-aft axis MEASURED:** on all three frames with placeable landmarks, **the hip sits at or beside the rear foot while the head sits forward of it**, feet planted. **Fifth clip to report it, first to measure it.**
+
+### WHAT THE OWNER'S CANYON RIDER COULD NOT ATTEMPT — 7 of 15 rows
+
+The arm leading by 0.12 s and held (**no arm position exists; the one scalar shares the knees' trigger and is three times slower, so the orderable pair runs backwards**); the body's fold lagging the board by 0.4 s (**the drawn trunk is affine in drawn leg depth — no clock of its own**); **the trim pump, which fails twice** — the game's pump is leg depth not trunk fold, **and the stick is inert below 4 m/s, so there is no pumping authority where it is needed**; chaining turns every 0.9–1.9 s; **the 0.17 s top turn — the solver holds ~15–20° where a snap needs 60–80°, and there is no lip at Canyon to hit** (a **wave-side** limit, not only a rider one); two legs at different extensions (96 % / 100 % in one frame, one spring); hips-aft-while-shoulders-forward (`TRIM_SHIFT` moves pelvis, torso, head and both arms **together**).
+
+**The one row to be pleased about: the feet.** Fixed deck positions, nothing moves them while upright — **and checked from directly above for the first time, that is exactly right.**
+
+### METHOD — four findings, now in the skill
+
+- **☠️☠️ `javascript_tool` has a ~45 s ceiling AND A TIMED-OUT SCRIPT KEEPS RUNNING.** A 164-seek loop timed out and then spent **two minutes seeking the video underneath the measurement calls** — one frame returned `mediaTime = 30` while the canvas stamped `currentTime = 53.85`. **The stamp caught both bad frames and they were discarded; the `DUP!` flag on the re-take proved which had actually been t = 30.** **Rule: chunk loops under ~40 s, and discard any frame whose stamp disagrees with its seek's returned mediaTime.**
+- **Measure the stream's own frame grid** (seek at 0.01 s and hash). **25 fps here, 60 in video 8, 30 in video 9 — do not assume.**
+- **Canvas→screenshot scale is 0.784 at a 1280×1000 viewport**, not 0.625; the whole 1020×760 canvas is visible.
+- **Fixed-size source crops centred on the finder make the auto-crop size trap structurally impossible.** A **red-clothing** detector found rider A in ~60 of 66 frames; a **dark-island** detector **failed** on rider B's wetsuit, **because the unbroken wave face is darker than the wetsuit** — he was placed by hand in 10 of 24 sampled seconds, **so nothing about rider B is a count.**
+
+**Unresolved and stated:** whether there is a hard cut between rider A (ends ≈35.8) and rider B (≈44–55). A 16×9 luminance-signature detector over 35.0–44.6 found no discontinuity above the drone's own motion — **consistent with videos 8 and 9 finding such detectors useless on surf footage.**
