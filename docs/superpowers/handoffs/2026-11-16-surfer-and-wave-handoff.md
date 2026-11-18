@@ -3777,3 +3777,33 @@ git fetch && git checkout claude/ride-all-three && npm run dev
 **`?askCap=4.5` is already on `main`.** Step 3.5f measured that **below `PLANING_DROP = 3` m/s the ask cap is EXACTLY 0** — **100 % of 541 live frames of a slow Canyon rider** — so the stick asks for no lean at all down there, and `?askCap=4.5` removes that gate. **He has never ridden it.**
 
 ⚠️ **It is NOT a diagnosis** — Codex's correction stands: *"a moved or unmoved fall with askCap cannot diagnose the cause alone"*, and separating suppression from support loss needs the full paired set (stick, cap/planing, achieved bank, loaded foot contact, local rail, travelled course, wave-relative progress). **But as a RIDE it is free, and "can I turn at all" is exactly the question it bears on.**
+
+### ⭐⭐⭐ HE CLARIFIED, AND IT IS A MUCH BETTER SIGNAL: THE DRIFT IS GONE, THE TURN WORKS, AND IT IS TOO SHALLOW
+
+> *"to clarify, the stability is better as there is not drift like before. The hands seems to stabilize, but the turn now is doable not as sharp as i wanted. all ends up in falling"*
+
+**Four separate statements, and three of them are new:**
+
+| he said | what it maps to |
+| --- | --- |
+| **"not drift like before"** | ⭐ **a NAMED, concrete improvement, not the hedged "might be a bit better".** **And nobody has measured "drift" — it is not a column anyone has defined.** |
+| **"the turn now is DOABLE"** | ⭐⭐ **he could not turn before, and now he can.** His previous report was *"the surfer cant still turn"* |
+| **"not as sharp as i wanted"** | ⭐⭐ **THIS ANSWERS THE QUESTION HE DID NOT ANSWER EARLIER.** The measured trade is **roll peak 65.65° → 51.76°**, and **he feels it and does not like it.** **Recorded as answered now, where it was "not reported" before** |
+| **"the hands seems to stabilize"** | ⚠️ **they CANNOT be.** `?armCarry=on` is **bit-identical in the physics across 3 041 500 values.** |
+| **"all ends up in falling"** | unchanged |
+
+### ⚠️ The hands cannot stabilise anything, and that is a finding rather than a mistake of his
+
+**`?armCarry=on` is proven inert — 3 041 500 values across four pairings, zero differences.** So either he is attributing `?bodyBank=hip`'s effect to the arms, **or a purely cosmetic change made the rider FEEL more stable.** **If it is the second, that is worth more than most of today's physics**: it would mean a drawing-only channel bought perceived stability for nothing. **Told to him plainly rather than left to stand.**
+
+### ⭐ The shallower turn is the mechanism, not a side-effect — which is why this is not a simple tuning job
+
+PR #421's own chain: **`tip` makes the contact infeasible → the pair is SOLVED APART → and apart, the ankle's torque, the rotor's torque and the pitch hip ALL VANISH.** The shipped rider **loses his own joints in 52 % of frames**; with the switch, 32 %. **So the roll falls from 65.7° to 51.8° BECAUSE the rider now keeps his joints and his ankle's counter-roll (3.5d: 45–56 % of the deck's roll acceleration) reaches the board.**
+
+> **The rider is resisting the roll because he is alive to resist it. Sharpness and the fix are coupled through the same mechanism, and that is exactly what makes this interesting rather than a constant to turn up.**
+
+### What he has now asked for, in one line
+
+> **Keep the drift gone, keep the turn, and make it sharp again — then find out whether the fall comes back with the sharpness.**
+
+**Step 1 of that is not a build: NOBODY HAS DEFINED "DRIFT".** He named it, it is the one thing that improved, and **no column in any bench measures it.** **It cannot be protected if it cannot be identified.**
