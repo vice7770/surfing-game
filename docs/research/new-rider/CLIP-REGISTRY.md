@@ -41,8 +41,8 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | 17 | `nyABF8GNwrU` | https://www.youtube.com/shorts/nyABF8GNwrU | **read — PR #417, not merged.** Row 17's first reproduced *absolute* foot position; **no foot slid in the whole clip** |
 | 18 | `2Z_wZFjKAOU` | https://www.youtube.com/shorts/2Z_wZFjKAOU?t=2 | **read — PR #420, not merged.** ⛔ **No take-off in it** — the `?t=2` marker lands on the first turn. Fastest chaining measured (1.583 s) |
 | 19 | `V8SCdpuYnKM` | https://www.youtube.com/shorts/V8SCdpuYnKM | **read — PR #422, not merged.** ⭐ **The first clip in nineteen that ENDS IN A WIPEOUT**, and its mechanism is the owner's own complaint |
-| 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | **reading now** — brief leads with any fall or take-off |
-| 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | queued |
+| 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | **read — PR #423, not merged.** ⭐ **The first RECOVERY from a lost stance in twenty clips** |
+| 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | ⏸️ **HELD, not dispatched.** Clip 20 proved the binding constraint is **the board's bearing to the lens**, which no new clip from a shore-side camera can fix. **Awaiting the owner's decision on whether to continue the queue.** |
 
 **Dispatch rule: the owner's standing instruction is ONE VIDEO AT A TIME**, so the queue is dispatched in order as
 each read reports. **Every brief is written blind** — an independent reviewer reads several of the same clips, and

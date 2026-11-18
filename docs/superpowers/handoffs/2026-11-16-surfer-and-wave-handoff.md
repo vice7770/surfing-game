@@ -3389,3 +3389,57 @@ The probe built against **this branch's `src` and against the merge base `1a29a6
 **The single most valuable thing the owner could send next is the ORIGINAL screen recording** rather than a phone video of it. At that resolution the **board's roll and the body's bank could be measured directly from his own ride** — the exact two quantities PR #421 measured on the bench (`d(body bank)/d(deck bank) = 0.8748`, lag 0.100 s) — **which would close the loop between the bench and the thing he actually plays.** It has been asked for.
 
 **Also worth noting and not over-read: this IS a working ride.** He paddles, catches it, pops up and rides a green face with spray off both rails for over a second. **The failure is the end of a ride, not the absence of one.**
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ VIDEO 20 (PR #423): THE FOOTAGE ASK WAS GRANTED AND CHANGED NOTHING. THE CONSTRAINT IS THE CAMERA.
+
+Rip Curl's *"We'd be stoked with that."* — **10.781 s, 29.97 fps, hd1080**, read in full. 419 lines, 0 deletions. Fourth poster, different rider and break.
+
+### ⭐⭐ THE RESULT THAT SHOULD DECIDE WHETHER THE SERIES CONTINUES
+
+**Clips 18 and 19 named three blockers for row 3 — uncheckable lens elevation, no waist landmark, no fixed scale. This clip REMOVES ALL THREE** (a checkable horizon, a bare torso over boardshorts giving a waistband at y 1200 ± 6, per-frame source grids) — **and row 3 is still unresolvable.**
+
+**It is also the FIRST GARMENT IN TWENTY CLIPS to satisfy BOTH halves of the clothing clause** (a visible waistband **and** a bare knee, shin and ankle) — **and the trunk angle is still unpublishable.**
+
+> **The footage ask was granted and it changed nothing. The real blocker is THE BOARD'S BEARING TO THE LENS, which no previous read named and which no clip from a shore-side camera can fix.**
+
+**And for the first time the two causes of refusal are separated:** a **checkable horizon** puts the crown **530 px below eye level in a 1920 px frame** — a small depression, so **the lens is nearly level and the board's bearing alone does the refusing.** The **aspect gate refused the leg chain on four frames (9.0, 7.5, ≥6.4, ≥7.1 against 2.2), from the board alone, one frame each.**
+
+### ⭐ The first recovery from a lost stance in twenty clips
+
+A rider loses his stance at **≈4.97**, ends **chest-down over his own board with his HIPS ABOVE HIS SHOULDERS at 5.4186**, gets his hands off the deck by **5.70 ± 0.05**, and is **standing and riding again at 5.9022** — then surfs another **4.5 s including a barrel.**
+
+| | |
+| --- | --- |
+| hands-off → tall | **0.20 ± 0.06 s** |
+| lowest → tall | **0.48 ± 0.04 s** |
+| **lost → tall** | **0.93 ± 0.06 s** |
+
+**27 consecutive native frames plus three measured gridded frames.** **The nearest thing the series has to a pop-up, and the only recovery it has ever seen.**
+
+### ⭐⭐ And it refutes the hypothesis I put in its brief
+
+**Clip 19's rider threw both arms UP AND OUT and went taller. I asked for a second instance.** **This rider does the opposite: across five measured 1:1/1.4× gridded frames spanning the whole loss and recovery, NEITHER HAND EVER REACHES HIS OWN SHOULDER LINE** — −125, −110, −111, −165/−185, −87/−122 px — **and the hands go FURTHER DOWN as the loss develops. He answers with both hands AT THE DECK, not with his arms.**
+
+**Bounded honestly by the reader: this board never passes vertical and never clearly leaves him**, so it refutes *"a rider answers a lost stance with his arms"* and **not clip 19's own frames.** **One instance each side, no third.**
+
+> **The emerging shape, and it is worth more than either instance: the answer depends on whether the board is still under you. Board still there ⇒ hands to the deck. Board gone past vertical ⇒ arms up and tall.**
+
+### ☠️ TWO METHOD FINDINGS, EACH OF WHICH COST A FINDING
+
+1. ☠️ **A 0.33–0.45× survey strip MANUFACTURED the brief's headline.** At low magnification, 4.752 / 4.835 / 4.919 look exactly like *"both arms thrown up and out"*; **at 1.0–1.4× the same frames measure 110–185 px BELOW the shoulders.** **"Strips lie about angles" now extends to LIMB POSITION.**
+2. ⛔ **A RETRACTION BEFORE PUBLICATION, and it nearly cost the series its biggest claim.** A 1.5× crop of a **164×129** source window showed what looked exactly like **a foot lifting off the deck on six consecutive native frames** — **row 17's first lift was written.** A 1.4× crop of **529×401 px, wide enough to contain the board**, shows **both feet planted.** **Retracted. Row 17 stands at twenty clips and zero.**
+   > **Rule bought: every contact judgement needs a frame containing BOTH the limb AND the whole object. Magnification without context lies as readily as a strip.**
+
+### The rest
+
+**⛔ No take-off, third clip running.** **0 resolvable direction changes in 10.781 s** — V7's zero reproduced on a second rider and break. **Row 17: front ÷ rear from the nose = 0.596 ± 0.05 — a FOURTH rider inside 0.55–0.60**, matching clip 19's 0.595 to three decimals; ⚠️ **but the absolute fraction is ≤0.44, mildly BELOW the twice-reproduced 0.47–0.49, and is reported as a tension rather than a refutation.** **New and scale-free: stance width ÷ crown-to-deck = 0.36 ± 0.04, narrowing ≈21 % as he loses balance.** **Row 6: a second "zero pumping" clip** (no cycle in 4.5 s of trim). **Row 15: thirteenth clip and its most extreme instance — hands literally AT the deck for 0.65 s and ≈1.2 s, 17 % of the ride.** **Row 18: eighth distinct cause** (back to the lens plus a light cap removing the hairline).
+
+### Method
+
+`document.hidden` was true most of the session: **every seek cost ≈1.5 s and `setTimeout` was clamped to ≥1 s.** Cures that worked: an **unclamped `MessageChannel` delay**, and a **background-job-and-poll runner that cannot hit the 45 s ceiling.** ⛔ **Clip 19's throwaway-`scale:0.15` cure failed 3 of ~16** — a **second `browser_batch`** fixed all three, and the footer stamp caught all three. ☠️ **The 260 ms + two-decode seek recipe returned one stably-wrong frame in ≈25 on its first 30 fps source — its first failure after three 60p passes.**
+
+### ⏸️ CLIP 21 IS HELD, NOT DISPATCHED
+
+**The binding constraint is now identified and it is structural: the board's bearing to the lens.** **No clip from a shore-side camera can satisfy it, and twenty clips have proved the point.** **The owner's decision**, surfaced rather than quietly continued.
