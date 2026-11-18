@@ -2470,3 +2470,15 @@ The handoff has carried an **unattributed** item: *some session reported that th
 ### Video 12's document is now marked
 
 `video-ref-12-maldives-montage.md` carries a **banner after its title** and a **§CORRECTIONS section**: the 80° span withdrawn with all three reasons, the contested t = 23.5 frame, the intermediate reversal between the two headline frames, and **the knock-on nobody had noticed — if the 23.5 frame has a hand beside the head, then this clip's "carriage does not track depth" loses its first half, and what remains (high hand at the straightest legs, low hands at the deepest crouch) is CONSISTENT with arm height tracking depth.** Row 4's refutation survives on V6–V9 and V11, but **V12 is struck from that evidence until the frame is re-read**, and may become a dissent.
+
+### A verified bug in the arm branch (PR #407), and why the cheap fix is insufficient
+
+Codex found it on `bc5cf144`; **verified here by reading before acting.** In `stepArmCarriage`, `ask` is `Math.abs(steer)` and `reachAsked = ramp(ask, ARM_REACH_FROM = 0.25, ARM_REACH_FULL)` with `state.reach` decaying over `ARM_HOLD_TIME` — **but `const side = ask > 0 ? Math.sign(steer) : 0` adopts the sign of ANY nonzero stick in one substep.** The magnitude is thresholded and filtered; **the side is neither.**
+
+**The failing input is exactly what the owner will produce while looking at the arms:** hold a full steer, release, nudge the other way in **0.06–0.24** — nonzero so the side flips, below the threshold so nothing pulls the reach in. **A still-extended lead hand crosses the board in one substep**, the raw target moving about **2 × 0.22 m**. Drawing only; no force implicated. Downstream IK softens it and a hand contact may mask it, **but the target jumps.**
+
+**The cheap fix does not work, and the arithmetic is recorded so nobody proposes it again.** Gating the side latch on `reachAsked > 0` only **narrows the band**: hold +full, release, push **−0.3** with `reach` still 0.6 and the side still adopts instantly — the hand jumps `2 × 0.22 × 0.6 ≈ 0.26 m`. **Any reversal above the threshold with a residual reach reproduces it, scaled.** **The magnitude-plus-latched-sign representation is the defect.**
+
+**Fix in flight on `claude/arm-channel` itself** (so #407 updates, no fork), on a **continuous signed reach** that sweeps the hand through centre — which the footage supports anyway. **Two risks named rather than assumed:** the `ARM_LEAD_TIME`/`ARM_HOLD_TIME` asymmetry **is** the arm-lead mechanism and must stay asymmetric about distance from zero; and **`ARM_SIDE_DROP`'s hold may conflict** — a naive signed filter would drift the hand to centre during the very hold that is supposed to keep the rail. If they conflict, **keep the lead and say so.**
+
+**Budget at the time of dispatch, since the one-agent rule came from a credit squeeze that no longer binds:** Weekly · all models **30 %** with 6 d 3 h to reset, 5-hour **23 %**. Two surfer-track agents running deliberately.
