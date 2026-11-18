@@ -2606,7 +2606,10 @@ The review the owner relayed still opens with *"For Canyon, the owner's target i
 | 15 | `https://www.youtube.com/shorts/3yxY-F_AEds` | **reading now.** Brief leads with **row 6** — in trim with no direction change, which channel cycles? |
 | 16 | `https://www.youtube.com/shorts/NQ6dkvD2gHU` | **queued**, dispatched when 15 reports. ⚠️ **ITS BRIEF MUST BE WRITTEN BLIND** — an independent read of this clip already exists in this handoff and **must not be quoted into the brief.** Ask it for a cadence and for the board's roll and heading beside any pumping; do not name a period |
 
-Clips 1–14 are read. **Row 6 is the hottest row in the table** after video 14 contradicted both halves of it, so every brief from here leads with it until two clips agree.
+| 17 | `https://www.youtube.com/shorts/nyABF8GNwrU` | **reading now.** Brief leads with **the feet and legs under acceleration**, on the owner's live complaint |
+| 18 | `https://www.youtube.com/shorts/2Z_wZFjKAOU?t=2` | **queued** (starts at 2 s), dispatched when 17 reports |
+
+Clips 1–16 are read. **Row 6 is the hottest row in the table** after video 14 contradicted both halves of it, so every brief from here leads with it until two clips agree.
 
 ---
 
@@ -2923,3 +2926,34 @@ The reader says the 0.50/0.42 split is *"what the engine's single leg spring can
 ### Method, and a standard worth copying
 
 **Three of four automated body rulers were built, tested and DISCARDED, with nothing quoted from them:** a board-taper nose detector refuted by eye on its own frames; a shoulder finder that **locked onto a second person's head in the water**; and a flood-filled silhouette that **leaked into dark water and disagreed with the hand by 40 px** at 12.75–13.08 while agreeing within 5 px over 7.5–11.0. **Only the validated window is quoted, against six hand measurements at exactly 1:1.** Also: **the `<video>` element count went 1 → 2 when the viewport was resized**, so the `videoWidth > 0` check belongs in **every** call, not once at the start.
+
+---
+
+## 2026-11-18 — ⭐ THE OWNER PLAYED AND REPORTED A MECHANISM: THE BOARD LEAVES HIS FEET AS SPEED RISES
+
+**His words, which are the specification:**
+
+> *"Im playing the new code, the surfer cannot keep himself on the board. He falls when the speed increases, the board sleeps away from his feet and he falls. Looks quite realistic, but unplayable"*
+
+**"sleeps away" is "slips away". And he has since confirmed: *"i played main"*.** `main` is at `1a29a6c7` and **has not moved all day**, so **nothing from today's branches is involved** — this is **pre-existing shipped behaviour**.
+
+### Why this report is not the problem the last weeks have been solving
+
+- **The trigger is RISING speed.** Earlier owner evidence had falls coming **high on the face as the wave caught a rider slowed BELOW the wave's speed** (#93, #96). **This is the other end of the speed range** and may be a different failure entirely.
+- **The board leaves his FEET.** He is not describing a body toppling over a planted foot. **The entire balance track — ankle, roll, lean, bank authority, the two-body rider — is about the body's attitude over a contact that HOLDS.** **This is the contact itself.**
+- **"Looks quite realistic, but unplayable"** — he is **not** saying the physics is wrong. He is saying **it is right and he cannot play it.** So any options table must include **options that keep the realism**, not only ones that remove the effect.
+
+### ⚠️ AND THE BIGGEST QUESTION THE ROUND NOW LEADS WITH
+
+**`?rider=new` is opt-in.** So *"plain main"* may mean he was riding **the SHIPPED rider, not the new one** — in which case **weeks of balance work are aimed at a code path he is not playing.** **The diagnosis round is testing both arms and leading with which reproduces:**
+
+- **(a) plain `main`, no query string** — the shipped rider;
+- **(b) `main` + `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two`** — the new rider on his usual address.
+
+**If (a) only: the complaint is about code none of the recent work touches, and that is the most important possible result.** If both: the mechanism is shared. If (b) only: "main" meant main plus his usual switches.
+
+### The one piece of prior work that matches his description
+
+**The board study (merged #285)** found the standing rider's contact **MAKES ENERGY on steep water: 4–23 kW, with 17–58 g throws above roughly 26° upward or 30–38° downward slope**, the tube's wall steeper still. **That is a contact failure at speed and it is the closest thing in the repo to what he just described.** Its recommended first remedy was **A-lite, `?legPower=cap`** — and **`legPower` could not be found in `src/`, so it may never have been built.** The round is checking.
+
+**Also flagged to the round: speed and the water's slope under the board rise together on a real wave, and his words name only speed.** They must be separated before a mechanism is assigned, and **no single signal may be used as the discriminator** — Codex's paired set is required (stick, cap/planing, achieved bank, loaded foot contact, local rail, travelled course, wave-relative progress).
