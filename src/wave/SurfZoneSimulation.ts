@@ -400,6 +400,17 @@ export interface SurfZoneConfig {
    */
   armCarry?: 'on' | 'rest';
   /**
+   * Step 3.5h: **the trunk's fold moves the body's mass, and the drawn trunk stops being a function of leg depth**
+   * (rows 1 and 2 of `docs/research/new-rider/3.5/engine-target.md`; `RideSessionOptions.trunk`,
+   * `AttachedRiderOptions.trunk`, `RIG_SWITCHES.trunk`). The new surfer's hip rotor turns the mass model's own
+   * torso, head and arms about the physical pelvis, on the axis `StandingBody.couple` already pairs its torque on;
+   * and standing, the rig draws that one trunk instead of interpolating a second one from leg depth. **Geometry: the
+   * torque was already paired and already booked, and no force, drive or constant is added.** The new surfer
+   * (`?rider=new`) only. Every spot. The `?trunk=mass` dev switch, opt-in, to ride, and pinned off in the online
+   * rooms.
+   */
+  trunk?: 'mass';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is

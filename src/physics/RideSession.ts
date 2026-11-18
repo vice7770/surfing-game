@@ -178,6 +178,8 @@ export interface RideSessionOptions {
   deepen?: 'on';
   /** Step 3.5g: the arm carriage channel — the drawn standing hands get a height, a spread and a left/right of their own, answering the stick and never leg depth (`AttachedRiderOptions.armCarry`): 'on' the whole channel, 'rest' the rest carriage only (the `?armCarry=on|rest` dev switch). Drawing only; by default the shipped one-scalar spread. */
   armCarry?: 'on' | 'rest';
+  /** Step 3.5h: the hip rotor folds the mass model's trunk and the rig draws that one trunk (`AttachedRiderOptions.trunk`): 'mass' (the `?trunk=mass` dev switch, with `?rider=new`); by default the mass model never folds. */
+  trunk?: 'mass';
   /**
    * Step 3.5a: the minimum carved radius the COMMANDED lean is bounded by, m (`AttachedRiderOptions.askCap`): '1.5',
    * '2', '4', '4.5' or '9' — the `?askCap` dev switch — so the bound on both reference lines is `atan(v²/(g R_min))` at
@@ -330,6 +332,7 @@ export class RideSession {
       ...(options.stanceDeep ? { stanceDeep: options.stanceDeep } : {}),
       ...(options.deepen ? { deepen: options.deepen } : {}),
       ...(options.armCarry ? { armCarry: options.armCarry } : {}),
+      ...(options.trunk ? { trunk: options.trunk } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
