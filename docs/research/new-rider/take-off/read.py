@@ -1,6 +1,12 @@
 """Read `bench.ts`'s JSONL: the arm table, the fall-against-the-stand distribution, and the first second.
 
     python3 -I docs/research/new-rider/take-off/read.py <out.jsonl> [--frames <arm> <script> <wave>]
+                                                                   [--diff <armA> <armB>]
+
+`--diff` aligns two arms frame by frame on the same (script, wave, frame) — the same sea, the same wave, the same
+stick — and counts the values that differ, as `merge-bench.ts` did: a switch that moves nothing moves 0 of N. It also
+gives the first frame at which anything differs in each run, so "inert until the fall" and "different from the first
+step" are different answers instead of the same word.
 
 Medians are PLAIN (the mean of the two middle elements at even length), as the bench's own are. Every count carries
 its population. `pinned` is `limitTime.tip > 0` (the published quantity); `pinNow` is `limit == 'tip'`, one substep of
@@ -19,8 +25,126 @@ def median(values):
     return s[m] if len(s) % 2 else (s[m - 1] + s[m]) / 2
 
 
+def diff(path, arm_a, arm_b):
+    """Values that differ between two arms on the same (script, wave, frame)."""
+    rows = {}
+    for line in open(path, encoding="utf-8"):
+        row = json.loads(line)
+        if row.get("arm") in (arm_a, arm_b) and "frame" in row and not row.get("summary"):
+            rows.setdefault((row["script"], row["wave"], row["frame"]), {})[row["arm"]] = row
+    pairs = [(k, p[arm_a], p[arm_b]) for k, p in rows.items() if arm_a in p and arm_b in p]
+    total = 0
+    moved = 0
+    per_key = defaultdict(int)
+    first = {}
+    for (script, wave, frame), a, b in sorted(pairs):
+        for key in sorted(set(a) | set(b)):
+            if key in ("arm",):
+                continue
+            x, y = a.get(key), b.get(key)
+            if isinstance(x, (int, float)) or isinstance(y, (int, float)) or isinstance(x, str) or x is None:
+                total += 1
+                if x != y:
+                    moved += 1
+                    per_key[key] += 1
+                    run = (script, wave)
+                    if run not in first or frame < first[run]:
+                        first[run] = frame
+    print(f"\n{arm_a} vs {arm_b}: {len(pairs)} aligned frames over {len(set((s, w) for (s, w, f) in rows))} runs; "
+          f"{moved} of {total} values differ")
+    print("  columns that moved most: " + ", ".join(f"{k} ({n})" for k, n in sorted(per_key.items(), key=lambda kv: -kv[1])[:14]))
+    print(f"  first differing frame per run: {sorted(first.items())[:8]}{' …' if len(first) > 8 else ''}")
+    return moved, total
+
+
+PAIRED = ["speed", "steer", "leanPlaning", "leanCap", "leanAsk", "bankA", "bankRaw", "roll", "load", "legLoad",
+          "legExt", "front", "inContact", "margin", "limit", "tTip", "wetted", "ahead", "faceFrac", "slope", "drift",
+          "foot5", "foot6", "trunkFold", "copNm"]
+
+
+def paired(path):
+    """At the stand and at the fall, every signal the brief asks to be paired, per arm. No single-signal reads."""
+    stands = defaultdict(list)
+    first = defaultdict(list)
+    for line in open(path, encoding="utf-8"):
+        row = json.loads(line)
+        if row.get("summary"):
+            stands[row["arm"]].append(row)
+            continue
+        if row.get("tStand") == 0:
+            stands[("@stand", row["arm"])].append(row)
+        if row.get("tStand") is not None and 0 <= row["tStand"] <= 1 and row.get("attached") == 1:
+            first[row["arm"]].append(row)
+    print("\nthe first second after the stand, frame by frame (population = frames):")
+    for arm, rows in sorted(first.items()):
+        on = sum(1 for r in rows if r.get("leanPlaning") == 1)
+        ask = sum(1 for r in rows if (r.get("leanAsk") or 0) != 0)
+        fold = sum(1 for r in rows if (r.get("trunkFold") or 0) != 0)
+        print(f"  {arm:8s} [{len(rows)} frames] planing in {on} ({100 * on / len(rows):.1f} %), a non-zero lean ask in "
+              f"{ask}, a non-zero trunk fold in {fold}; " + "  ".join(
+                  f"{name} {median([r.get(name) for r in rows if isinstance(r.get(name), (int, float))]):.3f}"
+                  for name in ["speed", "leanCap", "load", "legLoad", "legExt", "roll", "wetted", "faceFrac"]))
+    print("\nat the stand (the frame 'Getting up…' clears), medians per arm; population in brackets:")
+    for key in sorted(k for k in stands if isinstance(k, tuple)):
+        rows = stands[key]
+        print(f"  {key[1]:8s} [{len(rows)}] " + "  ".join(
+            f"{name} {median([r.get(name) for r in rows if isinstance(r.get(name), (int, float))]):.3f}"
+            for name in ["speed", "leanPlaning", "load", "legLoad", "legExt", "roll", "bankA", "wetted", "ahead", "faceFrac", "slope"]))
+    print("\nat the fall (the last frame still attached), medians per arm over the runs that stood and then fell:")
+    for arm in sorted(k for k in stands if isinstance(k, str)):
+        rows = [r["atFall"] for r in stands[arm] if r.get("atFall") and r.get("stood") and (r.get("fellAfterStand") or -1) >= 0]
+        if not rows:
+            print(f"  {arm:8s} [0]")
+            continue
+        limits = defaultdict(int)
+        for r in rows:
+            limits[r.get("limit")] += 1
+        print(f"  {arm:8s} [{len(rows)}] " + "  ".join(
+            f"{name} {median([r.get(name) for r in rows if isinstance(r.get(name), (int, float))]):.3f}"
+            for name in ["speed", "steer", "leanPlaning", "leanCap", "leanAsk", "load", "legLoad", "roll", "bankA",
+                         "front", "inContact", "margin", "tTip", "wetted", "ahead", "faceFrac", "slope", "drift",
+                         "foot5", "foot6"]) + f"  limit {dict(limits)}")
+
+
+def control(path_a, path_b):
+    """`PROBE=on` against `PROBE=off`: the run summaries must agree value for value, or the probe is not a probe."""
+    def load(path):
+        out = {}
+        for line in open(path, encoding="utf-8"):
+            row = json.loads(line)
+            if row.get("summary"):
+                out[(row["arm"], row["script"], row["wave"])] = row
+        return out
+    a, b = load(path_a), load(path_b)
+    keys = sorted(set(a) & set(b))
+    total = 0
+    bad = []
+    for key in keys:
+        for name in sorted(set(a[key]) | set(b[key])):
+            if name == "atFall":  # built by the probe itself; null when the probe is off, by construction
+                continue
+            total += 1
+            if a[key].get(name) != b[key].get(name):
+                bad.append((key, name, a[key].get(name), b[key].get(name)))
+    print(f"PROBE=on vs PROBE=off: {len(keys)} runs aligned ({len(a)} and {len(b)} summaries), "
+          f"{total} values compared, {len(bad)} differ")
+    for row in bad[:10]:
+        print("   ", row)
+
+
 def main():
     path = sys.argv[1]
+    if "--control" in sys.argv:
+        at = sys.argv.index("--control")
+        control(path, sys.argv[at + 1])
+        return
+    if "--paired" in sys.argv:
+        paired(path)
+        return
+    if "--diff" in sys.argv:
+        at = sys.argv.index("--diff")
+        diff(path, sys.argv[at + 1], sys.argv[at + 2])
+        return
     control = None
     done = None
     summaries = []

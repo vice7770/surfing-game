@@ -46,9 +46,17 @@
  *  4. **`AttachedRider.separate` never clears `phase` or `upright`**, so every rider column freezes after separation.
  *     A run stops at its first `attached === 0`; the frame of the fall is kept and nothing past it is.
  *
- * Env: `ADDRESS`, `ARMS` (`ships,trunk,bank,all3,all3cap,arm,cap`), `SCRIPTS` (`hold,turnL,turnR`), `SIZE`, `SEED`,
- * `PERIODS`, `STAND_HOLD`, `TRIAL`, `LOG` (`all|window|none`), `PLACE` (`1`: also run the flush placement for the
- * first-second comparison), `SINKS`, `OUT`.
+ * Env: `ADDRESS`, `ARMS` (`ships,trunk,bank,all3,all3cap,arm,cap`), `SCRIPTS`, `SIZE`, `SEED`, `PERIODS`,
+ * `STAND_HOLD`, `TRIAL`, `SPRINT`, `EARLY`, `LIFT_AHEAD`, `LIFT_FRACTION`, `TURN_AT`, `TURN_FOR`,
+ * `LOG` (`all|window|none`), `PROBE` (`off`: the inertness control), `PLACE` (`1`: also run the flush placement for
+ * the first-second comparison), `SINKS`, `ENTRIES`, `SIDE`, `OUT`.
+ *
+ * A script's name says **when it pops** and **what it does standing**: the prefix `cue` (the HUD's own cue), `lift`
+ * (the crest about to pass under a sprinting rider) or `early` (2 s before the crest arrives); the suffix `L` or `R`
+ * takes a bottom turn TURN_AT s after the stand, and anything else holds. Default: `cue,lift,liftL,liftR,early,
+ * earlyL,earlyR`. **A name with no known prefix pops on the `lift` rule**, so `hold`/`turnL`/`turnR` are `lift`
+ * scripts; seed 1's published run was made with an earlier build in which those three names popped at the **cue**,
+ * which is what `cue,cueL,cueR` does here.
  *
  * `docs/` is outside `tsconfig.json`'s `include` and `vitest.config.ts`'s globs, so this file is neither type-checked
  * nor run by the suites — as `3.5/bank.ts`, `3.5/trunk.ts` and `3.5/merge-bench.ts` beside it. Rider options are passed
@@ -83,7 +91,7 @@ const ARM_SUFFIX: Record<string, string> = {
   cap: '&askCap=4.5',
 };
 const ARMS = (process.env.ARMS ?? 'ships,trunk,bank,all3,all3cap').split(',').filter(Boolean);
-const SCRIPTS = (process.env.SCRIPTS ?? 'hold,turnL,turnR').split(',').filter(Boolean);
+const SCRIPTS = (process.env.SCRIPTS ?? 'cue,lift,liftL,liftR,early,earlyL,earlyR').split(',').filter(Boolean);
 const SIZE = (process.env.SIZE ?? 'medium') as SwellSize;
 const SEED = Number(process.env.SEED ?? 1);
 const PERIODS = Number(process.env.PERIODS ?? 12);
@@ -99,6 +107,14 @@ const SPRINT = Number(process.env.SPRINT ?? 2);
 const TURN_AT = Number(process.env.TURN_AT ?? 0.3);
 const TURN_FOR = Number(process.env.TURN_FOR ?? 0.9);
 const LOG = (process.env.LOG ?? 'window') as 'all' | 'window' | 'none';
+/**
+ * `PROBE=off`: the per-frame row is not built at all, which also skips the probe's own two reads — the drawn feet
+ * (`renderPoint` twice, taken into the board's frame) and the second `sampleAt` under the board (`slopeUnder`). The
+ * drive, the outcomes and the first-second columns are computed without it, so **a `PROBE=off` run and a `PROBE=on`
+ * run must agree value for value**; that is this bench's inertness proof, and the number of values compared is its
+ * size. A difference means the probe is not a probe.
+ */
+const PROBE_ON = process.env.PROBE !== 'off';
 const OUT = process.env.OUT;
 const PLACE = process.env.PLACE === '1';
 const SINKS = (process.env.SINKS ?? '0.06,0').split(',').map(Number);
@@ -208,8 +224,27 @@ if (seaDiffs.length > 0) {
 // ---------------------------------------------------------------------------------------------------------------
 // The riders.
 // ---------------------------------------------------------------------------------------------------------------
-interface Script { name: string; turn: 0 | 1 | -1 }
-const scriptOf = (name: string): Script => ({ name, turn: name === 'turnL' ? 1 : name === 'turnR' ? -1 : 0 });
+/**
+ * A script is **when it pops** and **what it does once up**.
+ *
+ * `pop: 'early'` presses EARLY s before the crest reaches the rider, so the wave meets a standing rider.
+ * `pop: 'cue'` presses at the game's own cue — the HUD's: `rider.popUpCue || inTakeOffWindow(frame)`. `pop: 'lift'`
+ * also presses when the crest is about to pass under a sprinting rider with no cue (`catch-probe`'s `lift`: within
+ * LIFT_AHEAD m, higher than LIFT_FRACTION up the face), **which is what a player does** — the key is his, not the
+ * HUD's. That distinction is not cosmetic here: `inTakeOffWindow` wants the board shoreward at 0.8 of the crest's
+ * speed, and a paddler at this spot does not get there (see the README's Part 3).
+ */
+interface Script { name: string; pop: 'cue' | 'lift' | 'early'; turn: 0 | 1 | -1 }
+/** `lift`: the crest within this many m of a sprinting rider, high on the face, and no cue yet (`catch-probe`'s). */
+const LIFT_AHEAD = Number(process.env.LIFT_AHEAD ?? 1.5);
+const LIFT_FRACTION = Number(process.env.LIFT_FRACTION ?? 0.6);
+/** `early`: the key pressed this many s before the crest reaches the rider, so the 1.20 s pop-up finishes as it does. */
+const EARLY = Number(process.env.EARLY ?? 2);
+const scriptOf = (name: string): Script => ({
+  name,
+  pop: name.startsWith('cue') ? 'cue' : name.startsWith('early') ? 'early' : 'lift',
+  turn: name.endsWith('L') ? 1 : name.endsWith('R') ? -1 : 0,
+});
 
 interface Rider {
   arm: string;
@@ -219,6 +254,7 @@ interface Rider {
   sprinting: boolean;
   seenBehind: boolean;
   cueAt?: number;
+  popBy?: 'cue' | 'lift' | 'early';
   popAt?: number;
   standAt?: number;
   fellAt?: number;
@@ -238,7 +274,7 @@ interface Rider {
   liveFrames: number;
   done: boolean;
   /** The first second after the stand, frame by frame: what the owner's window is made of. */
-  firstSecond: { load: number[]; legLoad: number[]; wetted: number[]; roll: number[]; stretch: number[]; bank: number[]; contactOff: number; pinned: number; pinNow: number; n: number };
+  firstSecond: { load: number[]; legLoad: number[]; wetted: number[]; roll: number[]; stretch: number[]; bank: number[]; planing: number[]; cap: number[]; contactOff: number; pinned: number; pinNow: number; n: number };
   lastFoot: [number, number, number, number, number, number] | null;
   /** The last frame on which the rider was still attached: the fall is read off this, never off the frozen columns. */
   lastLive?: Record<string, unknown>;
@@ -260,7 +296,7 @@ function makeRider(arm: string, script: Script): Rider {
   return {
     arm, script, session, gauge: new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) }),
     sprinting: false, seenBehind: false, face: 0, riding: 0, frames: 0, liveFrames: 0, done: false,
-    firstSecond: { load: [], legLoad: [], wetted: [], roll: [], stretch: [], bank: [], contactOff: 0, pinned: 0, pinNow: 0, n: 0 },
+    firstSecond: { load: [], legLoad: [], wetted: [], roll: [], stretch: [], bank: [], planing: [], cap: [], contactOff: 0, pinned: 0, pinNow: 0, n: 0 },
     lastFoot: null,
   };
 }
@@ -292,12 +328,19 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
   const cue = prone && (session.rider.popUpCue || inTakeOffWindow(frame));
   if (cue && rider.cueAt === undefined) rider.cueAt = t;
   let pop = false;
+  let lifted = false;
   if (prone && rider.popAt === undefined && rider.seenBehind) {
     if (!rider.sprinting && toCrest <= SPRINT) rider.sprinting = true;
     if (cue) pop = true;
+    lifted = rider.sprinting && frame.valid && frame.aheadOfCrest < LIFT_AHEAD && frame.aheadOfCrest > 0 && frame.faceFraction > LIFT_FRACTION;
+    if (script.pop === 'lift' && lifted) pop = true;
+    // `early`: up before the wave arrives, so the wave meets a rider already standing. A player may do this, and it is
+    // the only script here that stands on water the wave has not reached yet.
+    if (script.pop === 'early' && rider.sprinting && toCrest <= EARLY) pop = true;
   }
   if (pop) {
     rider.popAt = t;
+    rider.popBy = cue ? 'cue' : script.pop;
     rider.popSlope = slopeUnder(rider);
     rider.popFace = frame.faceHeight;
     rider.popFraction = frame.faceFraction;
@@ -328,18 +371,6 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
   const roll = Math.atan2(boardUp.dot(sideV), boardUp.y) * DEG;
   const lt = peekO(r, 'limitTime');
   const limit = peekS(r, 'limit') ?? null;
-  // Deck-relative foot velocity: each foot's drawn world point taken into the board's own frame and differenced.
-  const foot: number[] = [];
-  for (const index of [5, 6]) {
-    r.renderPoint(index, board, footWorld);
-    board.toLocal(footWorld, footLocal);
-    foot.push(footLocal.x, footLocal.y, footLocal.z);
-  }
-  const footRate: (number | null)[] = rider.lastFoot === null ? [null, null] : [0, 1].map((k) => {
-    const last = rider.lastFoot!;
-    return Math.hypot(foot[k * 3] - last[k * 3], foot[k * 3 + 1] - last[k * 3 + 1], foot[k * 3 + 2] - last[k * 3 + 2]) / STEP;
-  });
-  rider.lastFoot = foot as [number, number, number, number, number, number];
   const speed = Math.hypot(board.velocity.x, board.velocity.z);
   const course = Math.atan2(board.velocity.x, board.velocity.z) * DEG;
   const heading = Math.atan2(fwd.x, fwd.z) * DEG;
@@ -353,11 +384,26 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
     f.roll.push(Math.abs(roll));
     f.stretch.push(r.leg.extension);
     f.bank.push(Math.abs(r.bank.angle) * DEG);
+    f.planing.push(r.leanProbe?.planing ?? Number.NaN);
+    f.cap.push(r.leanProbe?.cap ?? Number.NaN);
     if (!r.inContact) f.contactOff += 1;
     if ((lt?.tip ?? 0) > 0) f.pinned += 1;
     if (limit === 'tip') f.pinNow += 1;
   }
 
+  if (PROBE_ON) {
+  // Deck-relative foot velocity: each foot's drawn world point taken into the board's own frame and differenced.
+  const foot: number[] = [];
+  for (const index of [5, 6]) {
+    r.renderPoint(index, board, footWorld);
+    board.toLocal(footWorld, footLocal);
+    foot.push(footLocal.x, footLocal.y, footLocal.z);
+  }
+  const footRate: (number | null)[] = rider.lastFoot === null ? [null, null] : [0, 1].map((k) => {
+    const last = rider.lastFoot!;
+    return Math.hypot(foot[k * 3] - last[k * 3], foot[k * 3 + 1] - last[k * 3 + 1], foot[k * 3 + 2] - last[k * 3 + 2]) / STEP;
+  });
+  rider.lastFoot = foot as [number, number, number, number, number, number];
   const row: Record<string, unknown> = {
       arm: rider.arm, script: script.name, wave: trial.index, frame: rider.frames, t,
       tCrest: trial.arrival === undefined || rider.arrival === undefined ? null : t - rider.arrival,
@@ -367,6 +413,7 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
       feasible: r.contact.feasible ? 1 : 0, sep: session.separation ?? null,
       // --- the stick the script holds
       steer: input.steer, compress: input.compress ?? 0, paddle: input.paddle ? 1 : 0, sprint: input.sprint ? 1 : 0, popUp: pop ? 1 : 0,
+      cueNow: cue ? 1 : 0, liftNow: lifted ? 1 : 0,
       // --- the board
       px: v(board.position.x), py: v(board.position.y), pz: v(board.position.z),
       vx: v(board.velocity.x), vy: v(board.velocity.y), vz: v(board.velocity.z), speed: v(speed),
@@ -393,15 +440,16 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
       foot5: footRate[0], foot6: footRate[1],
       f5x: v(foot[0]), f5y: v(foot[1]), f5z: v(foot[2]), f6x: v(foot[3]), f6y: v(foot[4]), f6z: v(foot[5]),
       // --- `?trunk=mass`'s own channel
-      trunkFold: soft(r, 'trunkFold'), hipAngle: v(peekO(r, 'standingBody')?.hip?.angle ?? Number.NaN),
+      trunkFold: soft(r, 'trunkFold'), hipAngle: v((r as unknown as { standingBody?: { hip: { angle: number } } }).standingBody?.hip.angle),
       // --- `?bodyBank=hip`'s own channel
       relief: soft(r, 'copRelief'), copNm: soft(r, 'copMoment'),
   };
-  const fine = rider.popAt !== undefined && t >= rider.popAt - 0.5;
-  if (LOG !== 'none' && (LOG === 'all' || fine || rider.frames % 10 === 0)) emit(row);
-  // `AttachedRider.separate` never clears `phase` or `upright`, so every rider column freezes at separation: the fall
-  // is read off the last frame on which the rider was still attached, and nothing past it is kept.
-  if (attached) rider.lastLive = row;
+    const fine = rider.popAt !== undefined && t >= rider.popAt - 0.5;
+    if (LOG !== 'none' && (LOG === 'all' || fine || rider.frames % 10 === 0)) emit(row);
+    // `AttachedRider.separate` never clears `phase` or `upright`, so every rider column freezes at separation: the
+    // fall is read off the last frame on which the rider was still attached, and nothing past it is kept.
+    if (attached) rider.lastLive = row;
+  }
 
   if (!attached && rider.fellAt === undefined) {
     rider.fellAt = t;
@@ -472,7 +520,7 @@ for (const trial of trials) {
     emit({
       summary: true, arm: rider.arm, script: rider.script.name, wave: trial.index,
       frames: rider.frames, liveFrames: rider.liveFrames,
-      cue: v(rider.cueAt), pop: v(rider.popAt), stand: v(rider.standAt), fell: v(rider.fellAt), cause: rider.cause ?? null,
+      cue: v(rider.cueAt), popBy: rider.popBy ?? null, pop: v(rider.popAt), stand: v(rider.standAt), fell: v(rider.fellAt), cause: rider.cause ?? null,
       // The owner's own question: how long after the stand does he go?
       fellAfterStand: rider.fellAt !== undefined && rider.standAt !== undefined ? rider.fellAt - rider.standAt : null,
       fellAfterPop: rider.fellAt !== undefined && rider.popAt !== undefined ? rider.fellAt - rider.popAt : null,
@@ -491,6 +539,7 @@ for (const trial of trials) {
       fsRollMed: v(median(f.roll)), fsRollPeak: v(peakOf(f.roll)),
       fsStretchMed: v(median(f.stretch)), fsBankPeak: v(peakOf(f.bank)),
       fsContactOff: f.contactOff, fsPinned: f.pinned, fsPinNow: f.pinNow,
+      fsPlaningMed: v(median(f.planing)), fsPlaningFirst: v(f.planing[0]), fsCapMed: v(median(f.cap)),
       // The last frame the rider was still on the board: every paired signal at the fall, in one place.
       atFall: rider.fellAt === undefined ? null : rider.lastLive ?? null,
     });
@@ -509,7 +558,7 @@ if (PLACE) {
   const SIDE = Number(process.env.SIDE ?? -45);
   const ENTRIES = (process.env.ENTRIES ?? '2,4,6,8,10,12').split(',').map(Number);
   const scratch = createWaterSample();
-  interface Placed { arm: string; sink: number; entry: number; board: BoardBody; rider: AttachedRider; frame: number; done: boolean; fellAt: number | null; cause: string; load: number[]; legLoad: number[]; wetted: number[]; roll: number[]; dryFirst: number }
+  interface Placed { arm: string; sink: number; entry: number; board: BoardBody; rider: AttachedRider; frame: number; done: boolean; fellAt: number | null; cause: string; load: number[]; legLoad: number[]; wetted: number[]; roll: number[]; planing: number[]; cap: number[]; dryFirst: number }
   const placed: Placed[] = [];
   const makePlaced = (arm: string, sink: number, entry: number): Placed | null => {
     const sy = water.surfaceAt(focus.x, focus.z - 0.75);
@@ -532,7 +581,7 @@ if (PLACE) {
     const rd = new AttachedRider(board.shape, { phase: 'standing', ...riderOptions(armConfig.get(arm)!) } as ConstructorParameters<typeof AttachedRider>[1]);
     board.attach(rd);
     rd.steer = 0;
-    return { arm, sink, entry, board, rider: rd, frame: 0, done: false, fellAt: null, cause: '', load: [], legLoad: [], wetted: [], roll: [], dryFirst: 0 };
+    return { arm, sink, entry, board, rider: rd, frame: 0, done: false, fellAt: null, cause: '', load: [], legLoad: [], wetted: [], roll: [], planing: [], cap: [], dryFirst: 0 };
   };
   for (const arm of ARMS) for (const sink of SINKS) for (const entry of ENTRIES) {
     const made = makePlaced(arm, sink, entry);
@@ -553,6 +602,8 @@ if (PLACE) {
       e.load.push(r.contact.load);
       e.legLoad.push((peek(r, 'legLoad') ?? Number.NaN) / (r.mass * 9.81));
       e.wetted.push(e.board.wettedArea);
+      e.planing.push(r.leanProbe?.planing ?? Number.NaN);
+      e.cap.push(r.leanProbe?.cap ?? Number.NaN);
       if (e.frame === 1 && e.board.wettedArea === 0) e.dryFirst = 1;
       if (!r.attached) {
         e.done = true;
@@ -569,6 +620,7 @@ if (PLACE) {
       fsLegLoadMin: v(e.legLoad.length ? Math.min(...e.legLoad) : Number.NaN),
       fsWetMed: v(median(e.wetted)), fsWetMin: v(e.wetted.length ? Math.min(...e.wetted) : Number.NaN),
       fsRollMed: v(median(e.roll)), fsRollPeak: v(peakOf(e.roll)),
+      fsPlaningMed: v(median(e.planing)), fsPlaningFirst: v(e.planing[0]), fsCapMed: v(median(e.cap)),
     });
   }
   emit({ placedDone: true, runs: placed.length, sinks: SINKS, seconds: (Date.now() - wall) / 1000 });
