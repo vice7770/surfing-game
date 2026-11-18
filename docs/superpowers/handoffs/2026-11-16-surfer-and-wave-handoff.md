@@ -2020,3 +2020,54 @@ The round named **`?askCap=4.5`** as *"the planing gate removed, `TURN_RADIUS = 
 ### Known gaps, stated
 
 On the f73 face with `?mountAgree=deck` **the probe's own counterfactual `design()` throws `singular` four runs in**, so §5's single-channel read is **s16 only, 6 pairs**; whether the degeneracy is in the ride or only in the probe was not chased. **Untested: the stick moved DURING a run** (every arm holds its stick), and a **bigger or two-train Canyon sea** than seed 1's medium swell.
+
+## ⭐ VIDEO REFERENCE 11 (merged `7081e34f`, PR #406) — **THE FIRST SINGLE CONTINUOUS RIDE**, the fastest turn rate in the series, and the "above the head" abstention settled
+
+`docs/research/new-rider/3.5/video-ref-11-one-ride-60fps.md`. **One rider, one wave, one camera, NO CUT — 0 → 11.78 s, 707 frames, 60 fps.** `tabId` **`tab-2`**. **1080p ceiling** (the third clip in a row with a different ceiling). Rider 440–520 px.
+
+**⭐ And it called itself a montage TWICE from 0.3–0.5 s thumbnails and was wrong both times**, then refuted itself with **four independent checks** — frame-to-frame luma at 60 fps peaking at only 2× the median, a horizon row drifting smoothly throughout, a continuous boardshorts centroid, and whole-frame verification of the four windows it doubted. **A second person paddles in the background at 2.40–2.76 and never rides.** **This is the series' best piece of self-correction: both of the skill's cut detectors are blind when every shot would share the same rider, board, beach and light.**
+
+### WHAT THE MOVEMENT IS
+
+**He rides folded and he never stops turning.** Across 10.4 s his **trunk sits at 40–50° from vertical nearly the whole time, over legs flexed nearly the whole time**, and he **reverses the board NINE times — one every 1.2–1.5 s, the fastest rate in the series.** **He is upright exactly once:** climbing the face at 7.86–7.92, trunk **15–20°**, legs long, arms wide. **Everything else is an arrangement of fold.**
+
+**Rate across the series, and the spread is itself the finding:** V7 **0 in 13 s** → V9 **one per 2.3 s** → V10 **one per 1.2–1.9 s** → **V11 one per 1.2–1.5 s.**
+
+### THE CHANNELS
+
+- **Trunk fold ~15° → 75°, about 60° of travel — the THIRD clip to reproduce ≥60°** (V8 17→76, V9 5→70). Hand-measured, ±5–8°, 27 samples.
+- **Arm carriage: five carriages, the commonest being BOTH HANDS LOW OVER THE DECK (4 windows)** — **a fourth clip for that row** — **and it occurs at both a moderate fold and the clip's deepest open-face fold, so carriage does not track depth.** Confirmed yet again.
+- **Hips aft / shoulders forward on 7 frames**, and **0 steps in ~4.1 s** of legible feet.
+- **Leg depth: NO RUNG NAMED.** See below.
+
+### ⭐ THE BIG ARM — "ABOVE THE HEAD" IS SETTLED, and it is manoeuvre-specific
+
+**2 of 2 climbing turns took it; 0 of 2 trim windows did.** Turn 1 at 1/60 s: rear arm above the shoulder **7.433**, **above the HEAD 7.467**, board still flat **7.500**, rail banks **7.533–7.567** → **lead +0.07 to +0.12 s**, the rise takes 0.17–0.22 s, held ≥0.17 s. Turn 2: **+0.13 to +0.20 s**.
+
+> **Video 10 abstained on "above the head" because a drone looking down hides a raised hand. This clip settles it: IT DOES GO ABOVE THE HEAD.** And the arm-lead figure is now **three clips**, not two.
+
+### ⚠️ OPPOSITE-DIRECTION CHANNELS — LOOKED FOR AND NOT FOUND
+
+**Across seven resolved transitions, every one was same-sign or one-channel-alone.** **So V9's opposite-sign passage stays SINGLE and is now once-NOT-reproduced** — that matters, because it is the acceptance test for engine-target rows 1–3.
+
+**But "one channel while the others are frozen" is reproduced THREE TIMES here:** **trunk alone 0.36 s** (6.61→6.97), **legs alone 0.10 s** (8.70→8.80), and **arms alone ~0.10 s** with legs bent, trunk folded and the board flat — **which is clip 10's finding reproduced on a different rider.**
+
+### ⚠️ THE FOOTAGE ASK NEEDS A THIRD CLAUSE, and this clip earned it the hard way
+
+**It delivered two thirds of the ask — bare legs, knees never inside the boardshorts, near side-on — and the leg chain STILL REFUSED on all 8 frames, at five magnifications (1.9×–3.0×) with a silhouette outline.** New cause: **at 1080p the rider is 440–520 px, his thigh ~110 px, and the two legs overlap in projection.**
+
+> **Three refusals, three distinct causes: projection saturation (V7–V9), raised lens + boardshorts (V10), resolution + limb overlap (V11).** **THE ASK IS NOW: water-level, side-on, knees not inside the boardshorts, AND THE RIDER AT ≥900 SOURCE PIXELS.**
+
+**And the backup ruler failed a second time, on a different camera: apparent stature read 7.6 head-lengths at t = 0.500 and 7.5 at t = 7.000** — two postures anyone can see differ — **on a long lens panning from above the rider's head, not a drone.** **So head-lengths are unsafe on ANY lens above the rider.** Check the horizon's row against the rider's.
+
+### ⚠️ A DISAGREEMENT ON THE SERIES' MOST REPRODUCED FIGURE — recorded, NOT averaged in
+
+**Its trim fold half-cycle reads ~0.36 s against V8/V9's 0.55–0.60 s**, which this handoff has been calling *"the most reproduced figure the series has."* **The round marked its own measurement WEAK — one rider, one 0.9 s window, 6 samples at 0.18 s — and refused to average it in. And the clip's OTHER trim window shows no cycle at all.** **So the pump cadence now has a dissenting measurement and must be quoted as 0.5–0.6 s across three clips with one weak dissent at 0.36 s, not as a settled number.**
+
+**Also declined deliberately:** the deepest leg tuck is at the **top** of the manoeuvre, over the lip, and **it refused to add that to the turn-load row's population** — *"an airborne tuck, not a turn's load beat."*
+
+### METHOD — six findings, all now in the skill
+
+**`computer zoom` buys NO resolution** (its own result says *"cropped from a screenshot, not magnified"*) — five magnifications bought nothing. **A runaway `javascript_tool` loop is killed cleanly by RELOADING THE PAGE.** **`requestVideoFrameCallback` NEVER FIRES WHILE THE PANE IS HIDDEN**, so the seek that cured stale frames at 1440p needs the pane shown — it fell back to poll-based seeking. **Both cut detectors are blind on same-rider footage; only a whole-frame sheet at ≤0.1 s settles a cut.** **An automated 60 Hz trunk tracer was built, validated, FOUND READING 9° WHERE THE HAND READ 39–43°, and discarded** — recorded so no later round rebuilds it. **Slow motion: 2× and 4× excluded, but by duration comparison only** — **weaker than clip 10's whole-cycle exclusion**, because no ballistic quantity was available.
+
+**Eleventh consecutive clip with nothing for head and gaze.** That row has now failed eleven times and should stop being asked of video.
