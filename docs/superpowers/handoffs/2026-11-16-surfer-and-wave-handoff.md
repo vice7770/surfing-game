@@ -3825,3 +3825,57 @@ PR #421's own chain: **`tip` makes the contact infeasible → the pair is SOLVED
 2. **THEN ask him about the turn.**
 
 **Nothing about turn quality should be put to him until a ride lasts long enough to have one.** **And `?askCap=4.5` doing nothing for him is a real result on its own**: for the gameplay he actually tests — *start the ride and turn* — **the low-speed ask gate is not what is stopping him.**
+
+---
+
+## 2026-11-18 — VIDEO 21 (PR #428): THE SECOND RECOVERY, AND IT KILLS THE ARMS RULE
+
+*"Margo #surfing Vesper"* — **37.561 s, the longest clip in the series by 2.5×**, a montage of ~10 rides by one grey-bearded surfer, read in full. **30.000 fps exactly, not 29.97** (identical boundary phase at t = 5 and t = 30, where 29.97 would have drifted 0.025 s) — **a sixth rate for the skill's list.**
+
+### ⭐ The second recovery — the first recovery figure with a population of two
+
+Fold begins **22.6833** → **horizontal and head-down over his own board, the board alongside and above him, 23.1500** → fully engulfed 23.28–23.45 → **standing and riding again 23.8834.** **42 consecutive native frames, all distinct hashes, one unbroken take.**
+
+| | clip 20 | **clip 21** |
+| --- | --- | --- |
+| fold → standing | 0.93 s | **1.200 s** |
+| lowest attitude → standing | 0.48 s | **0.733 s** |
+
+⚠️ **Whether his feet ever left the deck is undecidable** — he is inside his own whitewater for 23.28–23.45.
+
+### ⭐⭐ AND IT REFUTES THE RULE CLIPS 19 AND 20 WERE ABOUT TO ESTABLISH
+
+**I had it as: board still under you ⇒ hands to the deck; board gone past vertical ⇒ arms up and tall.** **Dead.** Six measured gridded frames, **one rider, one session**, upper hand against the near shoulder line:
+
+| t | | |
+| --- | --- | --- |
+| **1.7167** | **+204 px** | ⭐ **a routine off-the-lip with nothing going wrong — the highest arm in the whole clip** |
+| 4.9167 | +17…+37 | level, a carve |
+| **23.75** | **+74** | **the recovery — and the OTHER hand is −230** |
+| 29.45 / 30.52 | −273 / −41 | |
+
+1. **"Board still there ⇒ hands down" is false** — the board is under him in all 13 native frames 23.55–23.98 and one hand is above the shoulder line anyway.
+2. **Clip 19's "arms up and out" had no same-rider control. This clip IS that control, and it breaks the inference: arms up is a TURN signature.**
+3. ⭐ **The two hands disagree WITHIN ONE FRAME — 230 px at 23.75, 273 px at 30.52.** **"The series has been asking a binary question of a two-armed animal."** **And the game's single `HumanBalance.arms` scalar cannot express that at all** — a concrete engine gap, found from footage.
+
+### ⭐⭐ TAKE-OFF: NONE, FOURTH CLIP RUNNING — AND THE CONCLUSION IS NOW ABOUT THE CORPUS
+
+**~200 sampled frames covering all 37.561 s** (0.5 s, 0.25–0.35 s, 0.1–0.15 s and native 1/30 s sheets, **including the opening second at 0.1 s**). **The rider is standing in every water frame.** **~10 ride-starts in ONE clip and ZERO pop-ups — highlight edits cut the paddling.**
+
+> ⭐ **ASKING FOR MORE CLIPS OF THIS KIND WILL NOT PRODUCE A TAKE-OFF. The ask has to change to RAW, UNEDITED footage.** **This is the single most actionable thing to tell the owner about the video queue.**
+
+### The feet, and a fifth rider
+
+**front ÷ rear from the nose = 0.58 (0.55–0.61)** at t = 30.5167, measured at 0.86× and 1.2× on frames holding **the nose, the front sole and the rear ankle together** — a **fifth rider** on **a board class unlike any measured before (a long red single-fin)**, and **inside the 0.55–0.60 band.** **Zero slides, lifts or re-placements — twenty-one clips.** Board-length fraction refused: the tail is in whitewater everywhere.
+
+### Rows moved, and one that gains a count
+
+**Row 16 goes from V6's SINGLE to a count of 3** — **three foam encounters ridden out standing, all answered the same way: trunk folded hard forward, both hands down, feet unmoved.** **Row 4** strengthened and sharpened (the +204 → −273 px spread, and left/right disagreeing within a frame). **Row 17** strengthened. **Row 15** fourth clip. **Row 5** touched but not measured — the turn's peak is marked by the arm, agreeing with V8 T3 on a second rider, **but no lead time: the board is in spray when the rail is set.**
+
+**⛔ Rows 2, 3, 6, 9, 10, 11, 12, 13, 14, 18, 19 cannot be touched** — **no horizon in any frame examined**, so apparent stature is unlicensed *everywhere* rather than just in the key passage; the board is never end-on (aspect ≥3.9 and ≈9.8 against a gate of 2.2); **the lens zooms by a factor of 0.56 in 0.3 s (measured), so no cross-frame height is comparable**; full wetsuit, no waistband; full grey beard, no chin or hairline. **Rows 7 and 8 cannot be touched because a chaining rate across a montage is the EDITOR's rate.**
+
+### ☠️ Three method findings
+
+1. ⚠️ **The board-aspect gate has an unstated precondition: IT NEEDS THE WHOLE BOARD**, and this clip never shows one, so both its figures are **lower bounds**. It still refuses by a wide margin here, **but a clip near 2.2 would be undecidable. First time hit.**
+2. ⚠️ **One finding withdrawn before publication:** a raised bare limb at 22.9500 is **undecidable between a hand and a foot** on a barefoot wetsuited rider. **"A limb's identity can fail at a magnification where its position is already safe — a limb reading needs the joint chain back to the trunk in the same frame."**
+3. ✅ **A new stale-composite cure that worked 6 of 6 where clip 20's "second batch" FAILED:** `style.transform='translateZ(0)'` + a *changing* `opacity` + double `requestAnimationFrame` + a **400 ms unclamped nap.** **The footer stamp caught all five failures** (2 wholly stale, 3 half-drawn). ☠️ **And the tab's renderer process DIED TWICE** after long seek jobs — distinct from the `document.hidden` throttle (the token is not even readable); the fix is a plain `navigate` to the same URL and reinstalling the toolkit, ~5 round trips each. ☠️ **The viewport emulation reset mid-session and one measurement screenshot came back 800×1205 at 1.6× — only the per-frame source grid saved it.**
