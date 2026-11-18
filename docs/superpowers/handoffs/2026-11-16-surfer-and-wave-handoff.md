@@ -3169,3 +3169,52 @@ Crossed on `FaceWater` with the wave's height and celerity held. **Boundary, as 
 4. Its own proposed predictor `demand` was **refuted** (64.3 % agreement over 32 100 frames) and **kept, labelled, so nobody builds on it.**
 
 **Instrument:** negative control (a mis-chosen first attempt documented rather than dropped), positive control (**`coneTan` sits at exactly 0.900 = `FOOT_FRICTION`**), two independent cone reads, `NaN` guarded explicitly, **probe inert over 81 575 values / 3 263 frames / 25 columns, 0 differences.** Canyon seatbelt: object-prepended wrapper, grid read off the solver **400 × 451 = 180 400**, spin-up 115.6 s. `vitest src/physics --maxWorkers=1`: **58 files, 638 passed, 21 expected fail.** **Every median a plain median — `qt(0.5)` used nowhere.**
+
+---
+
+## 2026-11-18 — VIDEO 18 (PR #420): IT HAD THE SERIES' FIRST OPPOSITE-SIGN INSTANCE AND REFUSED TO PUBLISH IT
+
+**5.821 s at 60 fps, the shortest read, and the densest: TWO resolvable direction changes 1.583 s apart** — a cutback (roll reversal 2.575 ± 0.03) and an off-the-lip (board through vertical 4.158 ± 0.009) — **still riding when the clip stops.** 414 insertions, 0 deletions. One continuous shot, 117-sample top-third detector.
+
+### ⭐ The discipline is the story: a candidate declined
+
+**1.750 → 2.100: apparent stature 6.88 → 5.53 head-lengths (−17 %) WHILE THE TRUNK VISIBLY UN-FOLDS**, with the camera's scale pinned to 3.5 % by the head length (57 → 59 px). **That is the series' first opposite-sign instance in 47 resolved transitions across seven clips — and it was recorded and deliberately EXCLUDED**, for three reasons the ruler calibration itself names:
+
+1. **the horizon is lost in haze**, so the lens elevation can be neither held nor checked — **two hand attempts disagreed by 365 source rows**, and an automatic detector **locked onto the wave crest** and was discarded;
+2. **the yaw moves inside the window**;
+3. **the trunk channel is eye-only.**
+
+**Row 3's tally is therefore UNCHANGED at 47 resolved, no opposite-sign.** **That is the standard this track has been trying to reach all year, applied against the reader's own headline.**
+
+### ⭐ Row 5's criterion is mechanically unsafe and must change
+
+**In the window where the hands ARE above the crown, the arms are held LEVEL and it is the HEAD that has dropped.** **So the series' own test is aimed at the wrong channel: it should be the SHOULDER LINE, not the crown.** Every "hand above the head" reading in the series is now suspect in the same way.
+
+**And "an overhead arm is conditional on a direction change" is necessary but NOT sufficient:** this clip has **two** direction changes and **one** overhead arm.
+
+**Plus the row-5 ambiguity is now REPRODUCED on a different rider to within 0.04 s:** a lead of **+0.33 s over the board's redirect** but **0.00 s over the rail being set** became **+0.29 / 0.00**. **So "the arm leads the rail" really is two different events, and it is not a one-clip artefact.** **This is a constraint on PR #407.**
+
+### The feet — eighteen clips, still nothing moves
+
+**No slide, lift or re-placement in ~90 frames** (24 at 0.25 s, 11 at 0.1 s, 12 at 0.08 s, **30 at the native 1/60 s**, 8 at 1/6 s), **including six native frames (4.117–4.200) with the board rotating past vertical, deck to the camera, and both bare feet plainly on it.** The knees fold; the contact is never re-made.
+
+⛔ **But row 17 does NOT get its third absolute clip** — the tail is inside spray or whitewater in every frame checked, so the board-length fraction is **refused.** **0.47–0.49 stands reproduced twice (V7, V17), not three times.** **Method contribution: the printed DECK LOGO is a board-fixed ruler that works where the tail does not** — front foot at **2.82 ± 0.11 logo-lengths from the nose (7 %)** over 0.35 s through a climb into a cutback.
+
+⛔ **And the brief's primary ask had no footage: there is no take-off in this clip.** The rider is already standing at t = 0.000. **The owner's own `?t=2` marker lands on the start of the first turn, not a take-off.**
+
+### The new aspect gate's first use — and a clean negative
+
+**Rows 10 and 14 refused by the BOARD-ASPECT gate: ≥8.6 at t = 2.100 and ≥5.5 at 2.300 against a limit of 2.2** — **computed from the board alone, no body landmark touched, one frame each.** **Far cheaper than the 3–5-frame thigh/shin attempts it replaces.** ⭐ **And the negative worth keeping: a cutback's pivot does NOT open an admissible window — it ROLLS the board, which drives the projected width to a minimum and the aspect to its maximum.**
+
+### Causes, and the clothing clause rewritten again
+
+**Row 2 ⛔ no pelvis landmark: a black top over black boardshorts** — a **third** garment cause after V15's loose shirt and V16's one-piece, **and the commonest one in warm water.** **The ask's clothing clause should read "the waist must be a visible TONAL BREAK"**, not "boardshorts and a short top". **Row 18 ⛔ a new cause: the face is finally lit and legible (57–59 px, three-quarters to the lens) and the board's nose is never sharp in the same frame** — eighteen clips and the two have never co-occurred. **Row 6: a 5.8 s ride with two full-rail turns contains ZERO pumping.** **Row 16: compressed from ≥4.117, ≥0.33 s before contact at ~4.45 — consistent with clips 14 and 15 but not a third instance**, because contact is inside his own spray.
+
+### ☠️ THREE METHOD REFUTATIONS, AND TWO ARE OF THE SKILL ITSELF
+
+1. ☠️ **"Scale is exactly 1.000 at 800×640, six sessions running" IS CONDITIONAL AND BROKE.** It was 1.000 with the preview pane alone, **0.753 once the tasks pane opened beside it**, and 1.000 again after closing it. **Anyone trusting the constant across that gap publishes every length 33 % small.**
+2. ☠️ **EVERY RECORDED CURE FOR THE STALE COMPOSITE FAILED.** A second screenshot failed **four** separate times (twice in a row each); a 2.6 s wait failed; a CSS transform/opacity toggle failed. **What worked: a `setInterval` repainting a small rectangle of the overlay every ~120 ms**, keeping the layer dirty so every later screenshot is current. **And a video seek only works to times the decoder has not already cached, so a fixed nudge sequence works once and never again.** Four screenshots were discarded on stamp mismatches with nothing quoted from them.
+3. ☠️ **A survey sheet can lie about ASPECT too** — `drawImage` scales x and y by different factors whenever a tile's aspect differs from the crop's. Nothing published was affected, but it is silent.
+4. ⚠️ **And it refutes the calibration's own rescue in practice: apparent stature's precondition is a fixed AND CHECKABLE lens elevation, which needs a horizon.** **The rescue is conditional on a landmark nobody has been checking for.**
+
+**Confirmed:** the 260 ms + two-decode recipe passes **a second 60 fps source** (6 of 6, 0 of 39); carriage A on an **eleventh** clip; **zero foot steps on an eighteenth.** Three automatic rulers built and **all three discarded**, nothing quoted.

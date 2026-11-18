@@ -39,8 +39,8 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | # | ID | URL | state |
 | --- | --- | --- | --- |
 | 17 | `nyABF8GNwrU` | https://www.youtube.com/shorts/nyABF8GNwrU | **read — PR #417, not merged.** Row 17's first reproduced *absolute* foot position; **no foot slid in the whole clip** |
-| 18 | `2Z_wZFjKAOU` | https://www.youtube.com/shorts/2Z_wZFjKAOU?t=2 | **reading now** (starts at 2 s) — brief leads with the take-off and the feet |
-| 19 | `V8SCdpuYnKM` | https://www.youtube.com/shorts/V8SCdpuYnKM | queued |
+| 18 | `2Z_wZFjKAOU` | https://www.youtube.com/shorts/2Z_wZFjKAOU?t=2 | **read — PR #420, not merged.** ⛔ **No take-off in it** — the `?t=2` marker lands on the first turn. Fastest chaining measured (1.583 s) |
+| 19 | `V8SCdpuYnKM` | https://www.youtube.com/shorts/V8SCdpuYnKM | **reading now** |
 | 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | queued |
 | 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | queued |
 
