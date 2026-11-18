@@ -2512,3 +2512,54 @@ Codex found it on `bc5cf144`; **verified here by reading before acting.** In `st
 **The alternative — running the retraction on `ARM_LEAD_TIME` too, sweeping in ~0.24 s, which sits inside V11's measured 0.17–0.22 s rise — is NOT RULED OUT and NOT ADOPTED.** The builder kept the conservative rule because it changes nothing that already existed and nothing measured asks for the other. **It tried to measure whether the arm still *leads* the rail through a reversal and the bench failed outright:** towed at 6, 8, 10 m/s on `PlaneWater`, +1 for 1.2 s then −1 — the board's roll never returns inside the live window at 6 m/s, and **the rider separates at 0.50 s (8 m/s) and 0.25 s (10 m/s), so "rail answered" is `NaN` in 3 of 3 arms.** Recorded in the module, the commit and README §10.5. **This one goes to the owner's eye, not to another probe.**
 
 **Housekeeping:** the fresh worktree arrived with **no `node_modules` at all** (not a stale symlink) — worth knowing for the next one. Two agent worktrees are left on disk (`.claude/worktrees/agent-a792386b9ee0b868c` and the clip-13 reader's `scratchpad/wt13`); at roughly **1.1 GB each** they want the owner's word before removal, per the standing cleanup rule.
+
+---
+
+## 2026-11-18, video 14 (PR #412) — ROW 6 REVERSES TOWARD THE GAME, AND THE TRUNK GATE LOSES ITS NUMBER
+
+*"Erin Brooks On Her Last Wave"*, 18.781 s, **25 fps measured twice**, 1080p hard ceiling, one continuous shot, the rider visible in **every frame** of a ~16.6 s ride. Out-of-order staleness probe run and passed (45 pairs). **PR #412, 382 insertions, 0 deletions, open, not merged.**
+
+### ⭐ THE RESULT: ROW 6 IS CONTESTED ON BOTH AXES, AND THE GAME MAY HAVE BEEN RIGHT
+
+**This rider pumps with her LEGS** — four half-cycles in 0.88 s, **≈0.22 s each**, in trim with **no direction change** — **while the trunk stays folded 40–60° and completes no cycle at all.** That is **the opposite channel and 2.5× the rate** of row 6's target (*"pumping in trim is trunk fold, not leg depth"*, 0.55–0.60 s).
+
+**And the reason it is a contest rather than a refutation is sharper still:** V8's and V9's *"the legs are not doing the work"* half was **read off a ⚠️ SAT leg chain** — i.e. **it was never measured.** So either row 6's trunk figure is a range, or its leg half has no evidence behind it. **The reader declined to choose, correctly.**
+
+> **This is the one row in the table where the game is closer to the footage than the series claimed. The game's pump IS leg depth.**
+
+### ⚠️ THE TRUNK GATE SURVIVES AS A METHOD AND LOSES ITS NUMBER
+
+Last night's gate — projected shoulder→waistband ÷ head length near **1.6–1.8** — **does not transfer between clips.** Both of this clip's visibly-vertical trunks read **2.03 and 2.11**. Cause: **this rider wears a bikini bottom, which sits lower than a boardshorts waistband** (0.56 against 0.60 of stature moves the expectation to ≈2.0). **So the gate must be run WITHIN a clip, against that clip's own most-vertical frame — never against a cross-clip constant.** The finding holds; the constant was a frame error of its own.
+
+**Bonus, and the cleanest saturation demonstration the series has produced:** the leg chain reads **95.9 % on a deep side-on crouch (t = 11.350)** and **99.9 % on visibly straight legs (t = 16.600)** — **same clip, same rider, same method, 5 s apart.** Four points across a posture anyone can see.
+
+### ROW 3: ANOTHER ZERO — AND A TENSION WITH PR #411 THAT MUST NOT BE MISREAD
+
+**8 resolved transitions, 0 opposite-sign.** Series: **26 transitions, four riders, four clips, not one instance.**
+
+**PR #411 reports 754 of 1 734 moving frames (43.5 %) opposite-sign with `?trunk=mass` on.** **These are different populations and 43.5 % is NOT a match to anything** — the footage figure counts *resolved transitions in real clips*, the engine figure counts *moving frames on one synthetic `FaceWater` bench where the rotor fires*. **Row 3 is an acceptance test for a capability, and the table already says to strike any reading of it as a frequency.** Say it again here because it is exactly the number a later round would quote as realism: **the engine now does at 43.5 % a thing the footage has never shown once.** That is evidence the channel exists, and **nothing about whether it should fire that often.**
+
+### ROW 5: 13 of 21 across six clips — AND CLIP 13's SEPARATOR DOES NOT HOLD
+
+Two leads: **+0.16 s** (t = 6.60, **inside the broken lip**) and **+0.14 s ± 0.06** (t = 12.98, at the lip on the open face), each held ≥0.20 s. **Twice in six resolved direction changes, both at the TOP of the wave, with all four misses at the bottom.**
+
+**Clip 13's separator was open face versus slab. This clip has a lead INSIDE the foam and a miss ON the open face.** Its separator is **top of the wave versus bottom.** **Two clips, two incompatible separators: the condition is unknown.** So the note against PR #407 is narrowed — **a built lead must only be required to be *conditional*, not conditional on any particular thing.** #407 conditions it on the player's stick, which remains defensible precisely because no wave-side condition has reproduced.
+
+### The rest of the rows
+
+- **Row 4 — the seventh refutation of "tall ⇒ arms spread", in its strongest form yet:** the clip's **straightest legs carry its narrowest, lowest arms** (hands by the hips, trunk vertical), **held ≈1.4 s, the clip's longest carriage.** 5 carriages, **4 at one leg state.**
+- **Row 16 — second brace, and the first resolved at the native grid:** the body is **already folded and compressed 0.36 s BEFORE the foam impact and stays frozen on both channels through it.** **Anticipation, not reaction** — which is a different thing to build than a hit response.
+- **Row 8 —** 8 direction changes in 16.6 s, **one per ~2.1 s**, the fast end beside V9.
+- **Row 15 —** seventh clip, 6 windows at ≤0.25 s.
+- **Row 11 —** fourth up-transition, and the **first with no resolvable lead either way** (0.12 s).
+- **Row 18 — the first frames with the board's nose AND the head's orientation legible together** (head along the board's heading, 5 of 5 at 0.25 s). **Still no angle:** head 20–31 px against clip 13's 73–102, no facial feature at 5.5×. **The §6 footage ask is unchanged.**
+- **Cannot touch, stated:** row 2 (no angle published at all), **row 10 (four legs, four refusals: 0.71 / 0.85 / 1.19 / 1.41 — stays at V8's one clip, two frames)**, row 14 (sixth refusal), row 17 (the board is white, unmarked and in foam, so "no steps" is an impression, not a count).
+
+### Method, for the skill
+
+- **25 fps is not rare — 2 of 14 clips.** A 1/30 step here **manufactures a motionless rider**: measured twice, the frame changes exactly every 0.040 s, **0 duplicates at 1/25 against 2 at 1/30.**
+- **A tracker's failure is not the subject's absence.** The reader **withdrew two of its own readings** — four "obscured" windows and one "board only" — after checking full frames; she is visible in all of them. **Three crops had locked onto other surfers and were refused.** This is the same failure as clip 13's foreground paddlers, caught earlier this time.
+- **The 2.2–2.5 s composited-canvas wait belongs INSIDE the drawing function**, not between tool calls — sheets returned with the last 2–5 tiles blank until it moved.
+- **Fifth clip, fifth quality ceiling** (flat 1080, nothing above). Canvas→screenshot scale **1.0 at 800×640** reproduced a third time.
+
+**The owner's video queue is now empty.**
