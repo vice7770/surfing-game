@@ -11,7 +11,7 @@ import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
-import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
+import { ARMS_TIME, HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
 import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, railPull, stanceAt, type CaptureOmega, type DesignWeights } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
@@ -1229,6 +1229,16 @@ const REACH_ALONG = 0.3;
  */
 const REACH_DIP = 0.03;
 
+/**
+ * **Step 3.5j, the save window (`saveHands`): the arm's own travel speed to the deck, m/s.** `ARM_LENGTH` over the
+ * balance's own `ARMS_TIME` — the two constants the engine already keeps for an arm's length and an arm's time — so
+ * a full arm's reach is planted in 0.15 s and a 0.6 m one in 0.13 s. **Nothing here is fitted to footage:** clip 20's
+ * rider has his hands down about 0.10 s after his stance goes (≈4.95 → ≈5.05, one instance), which is a *comparison*
+ * for the result and not an input to it. The derivation is deliberately conservative: the hand starts its travel at
+ * the SHOULDER rather than where it is actually carried, so the plant is slower than a real arm's.
+ */
+const SAVE_ARM_SPEED = ARM_LENGTH / ARMS_TIME;
+
 export interface AttachedRiderOptions {
   mass?: number;
   stance?: StanceName;
@@ -1476,6 +1486,84 @@ export interface AttachedRiderOptions {
    * bounds a *force or a command* and not a reading, and moving them would make this two changes.
    */
   bankClamp?: 'off';
+  /**
+   * **Step 3.5j — THE SAVE WINDOW: a palm on the deck when the stance goes** (`?saveHands=deck`, the owner's own ask,
+   * *"go build the save window"*). `'miss'` is its control.
+   *
+   * ## What the footage shows, and what it is here for
+   *
+   * Clip 20 (`3.5/video-ref-20-the-re-stand.md`), **the only recovery in twenty clips and a population of ONE**, read
+   * on 27 consecutive native frames: the stance goes at ≈4.97 s, the rider is chest-down over his own board with his
+   * **hips above his shoulders** at 5.4186, his **hands leave the deck at 5.70 ± 0.05** and he is **standing and
+   * riding again at 5.9022** — **lost → tall 0.93 ± 0.06 s** — then surfs 4.5 s more, through a barrel. In five
+   * gridded frames spanning the whole loss **neither hand ever reaches his own shoulder line** (−87 to −185 px): he
+   * answers a lost stance with **both hands AT THE DECK**, not with the arms up that clip 19's rider used when his
+   * board had already gone past vertical. **One instance on each side and no third.** ⚠️ **Those times are what the
+   * result is COMPARED against. Not one of them appears in this code, and none may.**
+   *
+   * ## Why a palm on the deck acts on the diagnosed mechanism rather than dodging it
+   *
+   * `3.5/board-slips-away.md` (PR #419) measured the fall: *"the line from the centre of mass to the deck leaves the
+   * 0.260 m foot support, the centre of pressure pins at the support edge (`limit = 'tip'`, 90 of 90 riders), and
+   * from there the contact can no longer put force where the body needs it."* **A hand on the deck extends the
+   * support polygon** — forward and to the side, where the line is escaping — so it acts on that mechanism directly,
+   * and it is what the footage shows a real rider doing.
+   *
+   * ## ☠️ What this is NOT
+   *
+   * **There is no clock that stands the rider up, and no force of any kind is added.** `uprightVelocity` was a
+   * kinematic prescription and step 3.2y retired its entire benchmark (the old rider's "0 of 12 falls" was that
+   * prescription holding it plumb; drive off it falls 12 of 12); PR #215 was rejected for inventing a moment with no
+   * limb behind it. And four measurements now say a bigger demand on the contact SHORTENS a ride (`HIP_CAPTURE_GAIN`
+   * left at 0 three times; the ankle's feed-forward multiplied the roll rate ×8.6 and cut the ride from 1.000 s to
+   * 0.300 s). **So this switch adds no torque, no drive, no damper and no constant of its own.** It does exactly two
+   * things, both geometry on a contact that already exists:
+   *
+   * 1. **`project`:** while a palm is actually on the deck, the box the contact impulse's line of action may meet the
+   *    deck inside grows to that palm's own patch edge — **and only as far as the palm's own strength allows at this
+   *    substep's load** (`HAND_FORCE_LIMIT`, the engine's own hand cap, in a statics decomposition: with the feet's
+   *    resultant at their own outer edge, the palm must carry `N·(cop − edge)/(palm − edge)`, so the reachable
+   *    extension is `span × min(1, cap/N)`). **Every newton still arrives through the one contact pair the engine
+   *    already has** — `project` returns the impulse on the rider and `pushBoard` applies its exact negative to the
+   *    board along the same line, so the palm's moment on the board is carried in full and nothing is discarded
+   *    (`saveHands.test.ts` checks that identity).
+   * 2. **`captureStep`:** the same distance is credited to the capture point as reach it can still catch past the
+   *    feet — the parameter that already carries the hip rotor's own angular impulse the same way. Without it the
+   *    window could not exist: measured on the shipped rider, **68 of 90 falls on the owner's own spot are the
+   *    capture test (`human.fallen`) and 22 of 90 the contact's posture exit**, so the contact's box alone would
+   *    leave three falls in four untouched.
+   *
+   * **The palm has to be able to get there.** It lands at the nearest point of the DECK under the shoulder
+   * (`HAND_TORSO` at `HAND_TORSO_ANGLE` from the hips, `standingHand`'s own construction, on the body's own axes),
+   * its patch kept on the deck, and it is down only if that point is within `ARM_LENGTH` of the shoulder — measured
+   * on the shipped rider, reachable in **0 of 2 481 tall frames, 59.7 % of crouch and 1.0 % of compress**. **The
+   * REACH is from the shoulder (an arm cannot touch what is further than `ARM_LENGTH` away) and the TRAVEL is from
+   * where the hand is CARRIED** — `standingHand`'s own carriage, `ARM_LENGTH` down and out at `ARM_ANGLE` — at
+   * `SAVE_ARM_SPEED`; ⚠️ this switch's **first build used the shoulder for both, which is wrong rather than
+   * conservative — and the correction is a measured NULL: the travel moves from a median 0.638 m to 0.641 m, 0.137 s
+   * either way, because the carried hand hangs out on the escaping side and has to come back in** (`save-window.md`
+   * §4.6 has the whole bench both ways). It lifts the moment the demand comes
+   * back inside the feet. **Nothing holds it down for a set time, so the window's length is the solve's answer and
+   * not a setting.**
+   *
+   * ⚠️ **It is a DRY DECK contact and adds nothing to the hand-water force.** Engine-target row 19 (the discarded
+   * hand-water moment, PR #418) is about `applyWater`'s external hydrodynamic force; a dry palm carries deck load
+   * with **zero** water reaction. The two have different normals, frames and denominators and must never be summed.
+   * This switch does not touch `waveSide`, `standingHand` or `REACH_DIP`.
+   *
+   * ⚠️ **And the geometry has a hard ceiling, measured before anything was built.** The deck is **0.464 m** wide and
+   * the feet already stand **0.260 m** apart, so a palm's patch edge reaches at most **0.232 m** from the stringer:
+   * the across support can grow by **0.102 m** and no more — which is #419's own option 2 (*"±0.23 m buys 18.8°"*),
+   * now with a limb behind it and a strength bound. Along the board there is far more room (up to **0.788 m**).
+   * **Against that, the demand on the owner's spot escapes ACROSS on 983 frames of 1 075 and along on 249**, by a
+   * median 0.089 m. So the across half is the half that matters and the deck is the narrow direction.
+   *
+   * `'miss'` is the **clear-deck control**: the trigger, the travel, the geometry and every read-out run, and the
+   * deck is treated as absent, so nothing is extended. It must be **bit-identical to the default** — which is this
+   * switch's own default-unchanged proof — and `deck − miss` is the deck contact alone. Neither arm asserts that the
+   * rider should get back up.
+   */
+  saveHands?: 'deck' | 'miss';
   /**
    * **The lean asked for capped at what the speed can hold, on the switch's own minimum radius** (`askCap`, step 3.5a,
    * the owner's ruling of 2026-11-17: *"Yes — cap the ask"*): `'1.5' | '2' | '4' | '4.5' | '9'`, R_min in metres, so the
@@ -2154,6 +2242,44 @@ export class AttachedRider {
    */
   private readonly bankMax: number;
   /**
+   * **Step 3.5j, the save window (`saveHands`).** `saves` is the switch on at all — the reach, its geometry and every
+   * read-out below run — and `savesDeck` is the deck actually being there. `'miss'` sets the first and not the
+   * second, so it is the clear-deck control and must be bit-identical to the default.
+   */
+  private readonly saves: boolean;
+  private readonly savesDeck: boolean;
+  /** Which side across the deck the palm goes down on (board +x, 0 none), and which end along it reaches past. */
+  private saveSide = 0;
+  private saveAlong = 0;
+  /** The palm's distance still to travel to the deck, m; NaN while the arm is carried. `saveDown` is 1 on the deck. */
+  private saveGap = Number.NaN;
+  saveDown = 0;
+  /** How far past the feet's own support edge the palm's PATCH EDGE is, m: geometry alone, before any strength bound. */
+  saveSpanX = 0;
+  saveSpanZ = 0;
+  /** The extension the palm's own strength allows at this substep's load, m — what `project` and `captureStep` use. */
+  saveExtendX = 0;
+  saveExtendZ = 0;
+  /**
+   * **The palm's own normal load this substep, N — a LOWER bound**, and the dry-deck quantity to quote. With the
+   * feet's resultant at their own outer edge (the distribution that asks least of the palm), the palm must carry
+   * `N·(cop − edge)/(palmEdge − edge)` for the resultant to sit where it does. ⚠️ **Not the hand-water force**
+   * (`handLoad`): different force, frame and denominator.
+   */
+  savePress = 0;
+  /**
+   * **The mechanism's own test, read-only: 1 on a substep where the demand was outside the FEET's own box and inside
+   * the palm's extended one** — i.e. where the palm is the reason `limit` is not `'tip'`. Written only where the
+   * extension is non-zero and read by nothing in the game, so it cannot change a ride.
+   */
+  saveCleared = 0;
+  /** How long the palm has been on the deck, s — the window, measured and never imposed. */
+  saveTime = 0;
+  private readonly savePalm = new Vector3();
+  private readonly saveShoulder = new Vector3();
+  private readonly saveCarried = new Vector3();
+  private readonly saveLocal = new Vector3();
+  /**
    * Step 3.5a (`askCap`): the minimum carved radius the commanded lean is bounded by, m — `TURN_RADIUS` as it ships.
    * `askUngated` is true only with the switch on, and is what lets the bound apply off the plane as well.
    */
@@ -2509,6 +2635,9 @@ export class AttachedRider {
     this.ankleRange = options.ankleRange === 'load' || options.ankleRange === 'wide' ? options.ankleRange : undefined;
     // Step 3.4i: `Math.PI` is no bound — `frame`'s own `atan2` reading cannot exceed it — so the branch is one value.
     this.bankMax = options.bankClamp === 'off' ? Math.PI : MAX_BANK;
+    // Step 3.5j: both are false unless the switch is set, and `'miss'` sets only the first (the clear-deck control).
+    this.saves = options.saveHands === 'deck' || options.saveHands === 'miss';
+    this.savesDeck = options.saveHands === 'deck';
     // Step 3.5a: the five values are matched as strings and never parsed (`Number(null) === 0`), and with the switch
     // unset `askRadius` is TURN_RADIUS and `askUngated` false, so `prepareBank`'s expression is the shipped one.
     this.askRadius = options.askCap === '1.5' ? 1.5 : options.askCap === '2' ? 2
@@ -3025,6 +3154,9 @@ export class AttachedRider {
         const z = this.parts[1 * 3 + 2];
         return board.toWorld(this.localScratch.set((side === 0 ? 1 : -1) * this.halfWidth(z), deckHeight(this.shape, z), z), out);
       }
+      // Step 3.5j, the save window: the palm on the deck is drawn where the physics put it, so the hand the rider
+      // saves himself with is the hand he can see. Nothing is drawn off the switch (`saveDown` stays 0).
+      if (this.saveDown === 1 && (index === 3) === (this.saveSide > 0)) return board.toWorld(this.localScratch.copy(this.savePalm), out);
       // The hand in the face, or arms held out from the shoulders.
       if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
@@ -3401,6 +3533,9 @@ export class AttachedRider {
       this.flexStep(h);
     }
     this.frame(board);
+    // Step 3.5j, the save window (`saveHands`): where the palm is, and whether it is on the deck. Nothing runs off
+    // the switch — the method returns on its first line — so the default rider is untouched.
+    if (this.saves) this.saveStep(h, board);
     // The solve carries the centre of mass rigidly with the board (a symmetric coupling). Carried at
     // the stance point while pushing through the centre of mass instead, the coupled system turned
     // singular as a carve changed its geometry, and the solve blew up. Standing, it is carried where
@@ -4346,6 +4481,78 @@ export class AttachedRider {
     this.handYaw = this.waterMoment.y - moment;
   }
 
+  /**
+   * **Step 3.5j, the save window (`saveHands`): where the palm goes when the stance goes, and whether it gets there.**
+   *
+   * The trigger is **the mechanism's own condition and no new threshold**: the contact's free line of action — the
+   * raw demand `desiredCop`, the quantity whose leaving the support is what sets `limit = 'tip'` — is outside the
+   * feet. The side is the side it is escaping toward. The palm goes to the nearest point of the **deck** under the
+   * shoulder, its own patch kept on the deck, and it is down only when it has travelled there — **from where the
+   * hand is carried, not from the shoulder** — and the point is within `ARM_LENGTH` of the shoulder. It lifts the
+   * moment the demand comes back inside.
+   *
+   * **No force, torque or drive is computed here.** The only outputs are a place, a distance and two spans; what the
+   * palm is allowed to hold is `project`'s business and is bounded there by the palm's own strength.
+   */
+  private saveStep(h: number, board: BoardBody): void {
+    if (!this.upright || this.phase !== 'standing' || !this.inContact) {
+      this.saveSide = 0;
+      this.saveAlong = 0;
+      this.saveGap = Number.NaN;
+      this.saveDown = 0;
+      this.saveSpanX = 0;
+      this.saveSpanZ = 0;
+      this.saveTime = 0;
+      return;
+    }
+    const support = this.support;
+    const want = this.desiredCop;
+    const outX = Math.max(support.xMin - want.x, want.x - support.xMax);
+    const outZ = Math.max(support.zMin - want.z, want.z - support.zMax);
+    const asking = outX > 0 || outZ > 0;
+    const midX = (support.xMin + support.xMax) / 2;
+    // The side the demand is escaping toward; while it is inside, the side the palm is already on.
+    this.saveSide = asking ? Math.sign(want.x - midX) || 1 : this.saveSide;
+    this.saveAlong = asking ? Math.sign(want.z - (support.zMin + support.zMax) / 2) || 1 : this.saveAlong;
+    // The shoulder: out from the hips along the bent upper body, `standingHand`'s own construction, on the body's own
+    // axes (the body is banked, so the board's flattened side is the wrong axis for a shoulder).
+    this.partPosition(0, this.saveShoulder)
+      .addScaledVector(this.up, HAND_TORSO * Math.cos(HAND_TORSO_ANGLE))
+      .addScaledVector(this.across, this.saveSide * HAND_TORSO * Math.sin(HAND_TORSO_ANGLE));
+    board.toLocal(this.saveShoulder, this.saveLocal);
+    // The nearest point of the deck, with the palm's own patch kept on it.
+    const half = this.shape.length / 2 - HAND_RADIUS;
+    const pz = Math.min(half, Math.max(-half, this.saveLocal.z));
+    const wide = Math.max(0, this.halfWidth(pz) - HAND_RADIUS);
+    const px = Math.min(wide, Math.max(-wide, this.saveLocal.x));
+    this.savePalm.set(px, deckHeight(this.shape, pz) + HAND_RADIUS, pz);
+    // **Two distances, and they are different quantities.** The ARM's bound is from the SHOULDER — an arm cannot
+    // reach a point further than `ARM_LENGTH` away, whatever it does. The TRAVEL is from where the hand is actually
+    // carried: `standingHand`'s own carriage, `ARM_LENGTH` from the shoulder down and out at `ARM_ANGLE`. ⚠️ The
+    // first build of this switch used the shoulder for both and so made the arm cover a median 0.66 m instead of
+    // the hand's own 0.21 m, which is **wrong rather than conservative** and is what made the palm land a median
+    // 0.683 m too late (`save-window.md` §4.6 measures both).
+    const reachable = this.saveLocal.distanceTo(this.savePalm) <= ARM_LENGTH;
+    this.saveCarried.copy(this.saveShoulder)
+      .addScaledVector(this.up, -ARM_LENGTH * Math.cos(ARM_ANGLE))
+      .addScaledVector(this.across, this.saveSide * ARM_LENGTH * Math.sin(ARM_ANGLE));
+    board.toLocal(this.saveCarried, this.saveLocal);
+    const needed = this.saveLocal.distanceTo(this.savePalm);
+    // The arm's travel, at SAVE_ARM_SPEED from where the hand is carried.
+    const gap = Number.isFinite(this.saveGap) ? this.saveGap : needed;
+    this.saveGap = asking && reachable
+      ? Math.max(0, gap - SAVE_ARM_SPEED * h) : Math.min(needed, gap + SAVE_ARM_SPEED * h);
+    const down = reachable && this.saveGap <= 0;
+    this.saveDown = down ? 1 : 0;
+    this.saveTime = down ? this.saveTime + h : 0;
+    // The support the palm's PATCH EDGE reaches past the feet's own, m. Across it is bounded by the deck's width —
+    // at most halfWidth(z) from the stringer, 0.232 m on this board against the feet's 0.130 — and along by its length.
+    this.saveSpanX = down
+      ? Math.max(0, this.saveSide > 0 ? px + HAND_RADIUS - support.xMax : support.xMin - (px - HAND_RADIUS)) : 0;
+    this.saveSpanZ = down
+      ? Math.max(0, this.saveAlong > 0 ? pz + HAND_RADIUS - support.zMax : support.zMin - (pz - HAND_RADIUS)) : 0;
+  }
+
   /** The hand in the face bends the body toward it; the hand reaching in a turn follows the lean and bends none. */
   private get handBend(): number {
     return this.hand ? this.handSide : 0;
@@ -5207,7 +5414,13 @@ export class AttachedRider {
     // 1/ω₀ is artificially short exactly where the felt gravity is least trustworthy (`3.2/README.md` Part 9 §3).
     const across = rotorImpulse(this.human.swingInertia, SWING_TORQUE, room.hipRange - Math.abs(this.swing.angle)) / (this.mass * height * omega);
     const along = rotorImpulse(HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, room.hipRange - Math.abs(this.standingBody.hip.angle)) / (this.mass * height * omega);
-    this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, across, along, load, h);
+    // Step 3.5j, the save window: the palm on the deck is credited to the same parameter that already carries the hip
+    // rotor's angular impulse — what the room left can still catch past the feet's edge, m. It is the SAME distance
+    // `project` gave the contact this substep, so one palm is counted once. Off the switch both are 0 and the call is
+    // the shipped one; the guards keep even the addition from running.
+    const reachAcross = this.saveExtendX > 0 ? across + this.saveExtendX : across;
+    const reachAlong = this.saveExtendZ > 0 ? along + this.saveExtendZ : along;
+    this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, reachAcross, reachAlong, load, h);
   }
 
   /** The limit that bound the contact most in the recent past. */
@@ -5345,6 +5558,12 @@ export class AttachedRider {
     const q = board.orientation;
     const j = this.scratch.copy(impulse).applyQuaternion(this.spin.copy(q).invert());
     const height = local.y - deckHeight(this.shape, local.z);
+    // Step 3.5j: cleared on every path, so what `captureStep` reads this substep is this substep's own (and 0 off
+    // the switch, where `saveSpanX`/`saveSpanZ` are 0 and nothing below runs).
+    this.saveExtendX = 0;
+    this.saveExtendZ = 0;
+    this.savePress = 0;
+    this.saveCleared = 0;
     if (!this.upright) return this.projectHold(j, h, local, out.set(0, 0, 0), q);
     if (!(j.y > 0) || !(height > 0)) {
       this.frictionUsed = 0;
@@ -5368,9 +5587,47 @@ export class AttachedRider {
       this.desiredCop.x = freeX;
       this.desiredCop.z = freeZ;
     }
-    const copX = Math.min(support.xMax, Math.max(support.xMin, freeX));
-    const copZ = Math.min(support.zMax, Math.max(support.zMin, freeZ));
+    /**
+     * **Step 3.5j, the save window: a palm on the deck extends the box the line of action may meet it inside.**
+     *
+     * The extension is the palm's own span past the feet's edge (`saveStep`, geometry) **times what the palm's own
+     * strength allows at this substep's load**: with the feet's resultant at their own outer edge — the distribution
+     * that asks the least of the palm — a resultant `d` past that edge needs `N·d/span` at the palm, so the furthest
+     * it can sit is `span × min(1, cap/N)` with `cap = HAND_FORCE_LIMIT × m g × h`, the engine's own hand cap.
+     *
+     * **Nothing is added to the impulse.** The box is wider, so `tx`/`tz` below — the tangential the one existing
+     * contact pair exchanges — may reach further; `pushBoard` still applies the exact negative along the same line.
+     * Off the switch, and whenever the palm is not down, both spans are 0 and the two `min`/`max` lines below are the
+     * shipped ones, value for value.
+     */
+    let loX = support.xMin;
+    let hiX = support.xMax;
+    let loZ = support.zMin;
+    let hiZ = support.zMax;
+    if (this.savesDeck && this.saveDown === 1 && (this.saveSpanX > 0 || this.saveSpanZ > 0)) {
+      const palmShare = Math.min(1, (HAND_FORCE_LIMIT * this.mass * WATER.gravity * h) / Math.max(1e-12, normal));
+      this.saveExtendX = this.saveSpanX * palmShare;
+      this.saveExtendZ = this.saveSpanZ * palmShare;
+      if (this.saveSide > 0) hiX += this.saveExtendX;
+      else loX -= this.saveExtendX;
+      if (this.saveAlong > 0) hiZ += this.saveExtendZ;
+      else loZ -= this.saveExtendZ;
+    }
+    const copX = Math.min(hiX, Math.max(loX, freeX));
+    const copZ = Math.min(hiZ, Math.max(loZ, freeZ));
     if (limit === 'none' && (copX !== freeX || copZ !== freeZ)) limit = 'tip';
+    if (this.saveExtendX > 0 || this.saveExtendZ > 0) {
+      // The palm's own load, N, a LOWER bound on it: how far past the feet's edge the resultant sits, as a share of
+      // the palm's span. Read-out only — nothing downstream uses it.
+      const pastX = this.saveSpanX > 0
+        ? Math.max(0, this.saveSide > 0 ? copX - support.xMax : support.xMin - copX) / this.saveSpanX : 0;
+      const pastZ = this.saveSpanZ > 0
+        ? Math.max(0, this.saveAlong > 0 ? copZ - support.zMax : support.zMin - copZ) / this.saveSpanZ : 0;
+      this.savePress = (normal * Math.max(pastX, pastZ)) / h;
+      // The mechanism's own test: the demand outside the feet's own box, and the extended one holding it.
+      const outside = freeX > support.xMax || freeX < support.xMin || freeZ > support.zMax || freeZ < support.zMin;
+      this.saveCleared = outside && copX === freeX && copZ === freeZ ? 1 : 0;
+    }
     let tx = ((local.x - copX) * normal) / height;
     let tz = ((local.z - copZ) * normal) / height;
     const friction = FOOT_FRICTION * normal;

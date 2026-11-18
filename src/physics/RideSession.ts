@@ -172,6 +172,8 @@ export interface RideSessionOptions {
   ankleRange?: 'load' | 'wide';
   /** Step 3.4i: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (`AttachedRiderOptions.bankClamp`): 'off' (the `?bankClamp=off` dev switch); by default MAX_BANK, as it always was. */
   bankClamp?: 'off';
+  /** Step 3.5j: THE SAVE WINDOW — a palm on the dry deck when the stance goes (`AttachedRiderOptions.saveHands`): 'deck' (the `?saveHands=deck` dev switch), 'miss' its clear-deck control; by default no palm and the support exactly as it ships. */
+  saveHands?: 'deck' | 'miss';
   /** Step 3.5b, shipped by default since 3.5c (the owner's ruling D, "keep the row"): the stance ladder's fourth rung, the tube tuck's 0.45 m, read by the balance's plant and its gain schedule (`AttachedRiderOptions.stanceDeep`). 'off' (the `?stanceDeep=off` dev switch) is the old three-row ladder and `stanceAt`'s 0.30 m clamp. */
   stanceDeep?: 'on' | 'off';
   /** Step 3.5b: the deepen button — full manual crouch reaches the tuck's 0.45 m anywhere and Compress does not fade it (`AttachedRiderOptions.deepen`): 'on' (the `?deepen=on` dev switch); by default the tuck under a tube's curl only, as it always was. */
@@ -324,6 +326,7 @@ export class RideSession {
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.bankClamp ? { bankClamp: options.bankClamp } : {}),
+      ...(options.saveHands ? { saveHands: options.saveHands } : {}),
       ...(options.askCap ? { askCap: options.askCap } : {}),
       ...(options.stanceDeep ? { stanceDeep: options.stanceDeep } : {}),
       ...(options.deepen ? { deepen: options.deepen } : {}),

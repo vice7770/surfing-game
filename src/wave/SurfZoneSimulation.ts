@@ -344,6 +344,14 @@ export interface SurfZoneConfig {
    */
   bankClamp?: 'off';
   /**
+   * **Step 3.5j: THE SAVE WINDOW — a palm on the dry deck when the stance goes** (`AttachedRiderOptions.saveHands`,
+   * which carries the footage, the derivation and the measured ceiling). A loaded palm extends the support polygon the
+   * contact may press inside, and nothing else: no force, no torque, no drive and no clock. `'miss'` is the clear-deck
+   * control and must be bit-identical to the default. The new surfer (`?rider=new`) standing only; every spot. The
+   * `?saveHands=deck|miss` dev switch.
+   */
+  saveHands?: 'deck' | 'miss';
+  /**
    * '1.5' | '2' | '4' | '4.5': **the minimum carved radius the rider's COMMANDED lean is bounded by, m** (step 3.5a,
    * the owner's ruling of 2026-11-17 *"cap the ask"*; `RideSessionOptions.askCap`, `AttachedRiderOptions.askCap`), so
    * the bound on both the balance's own reference and the steer's request is `θ_max = atan(v² / (g R_min))` — 4.9° at

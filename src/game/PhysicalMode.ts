@@ -563,6 +563,10 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...ankleRangeSwitch(),
     // `?bankClamp=off`: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (step 3.4i; step 3.4h read `bankFall` at 70.00 exactly in 21 of 24 runs, so the fall classifier's 45 degree threshold sat on a truncated column), opt-in, to ride.
     ...bankClampSwitch(),
+    // `?saveHands=deck`: THE SAVE WINDOW (step 3.5j, the owner's own ask) — a palm on the dry deck when the stance goes
+    // extends the support polygon the one existing contact pair may press inside, bounded by the palm's own strength.
+    // No force, no torque, no clock. `?saveHands=miss` is its clear-deck control. Opt-in, to ride.
+    ...saveHandsSwitch(),
     // `?askCap=1.5|2|4|4.5|9`: the lean the rider ASKS for — the balance's own reference and the steer's request alike —
     // bounded by atan(v²/(g R_min)) at every speed on this minimum carved radius in metres, in place of the shipped
     // 4.5 m with no ask at all off the plane (step 3.5a, the owner's ruling of 2026-11-17), opt-in, to ride.
@@ -1169,6 +1173,33 @@ export function ankleRangeSwitch(search?: string): { ankleRange?: 'load' | 'wide
  */
 export function bankClampSwitch(search?: string): { bankClamp?: 'off' } {
   return devParam('bankClamp', search)?.trim().toLowerCase() === 'off' ? { bankClamp: 'off' } : {};
+}
+
+/**
+ * The `?saveHands=deck|miss` dev switch (`SurfZoneConfig.saveHands`, step 3.5j, the owner's own ask — *"go build the
+ * save window"*): opt-in, **a palm on the dry deck when the stance goes.**
+ *
+ * The gap it answers: a real surfer who loses his stance gets back up using his hands on the deck — clip 20, the only
+ * recovery in twenty clips, **lost → tall 0.93 ± 0.06 s, a population of one** — and the game has no such window at
+ * all, only riding and wiped out. `3.5/board-slips-away.md` measured why the stance goes: the line from the centre of
+ * mass to the deck leaves the 0.260 m foot support and the centre of pressure pins at its edge (`limit = 'tip'`, 90 of
+ * 90 riders on this address). **A hand on the deck extends that support**, which is the mechanism itself and not a way
+ * round it.
+ *
+ * **It adds no force, no torque, no drive and no clock.** While a palm is actually on the deck — it has to reach it
+ * from the shoulder within `ARM_LENGTH`, which on the shipped rider happens in 0 of 2 481 tall frames and 59.7 % of
+ * crouch — the box the one existing contact pair's line of action may meet the deck inside grows to that palm's patch
+ * edge, limited by the palm's own strength at the substep's load, and the same distance is credited to the capture
+ * point's reach. Nothing stands the rider up: the window's length and whether he recovers are the solve's answer.
+ *
+ * ⚠️ **Measured ceiling, stated before it was built:** the deck is 0.464 m wide and the feet stand 0.260 m apart, so
+ * the across support can grow by **0.102 m at most**, while along the board there is up to 0.788 m — and the demand on
+ * this spot escapes **across** on 983 frames of 1 075. `'miss'` runs the whole reach with the deck treated as absent
+ * (bit-identical to the default) so that `deck − miss` is the deck contact alone. Nothing on the default rider.
+ */
+export function saveHandsSwitch(search?: string): { saveHands?: 'deck' | 'miss' } {
+  const value = devParam('saveHands', search)?.trim().toLowerCase();
+  return value === 'deck' || value === 'miss' ? { saveHands: value } : {};
 }
 
 /**

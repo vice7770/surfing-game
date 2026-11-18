@@ -9,7 +9,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, saveHandsSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1313,6 +1313,35 @@ describe('PhysicalMode', () => {
   // The `?askCap=1.5|2|4|4.5|9` dev switch (step 3.5a): opt-in, the minimum carved radius the rider's COMMANDED lean is
   // bounded by, m, so the bound is atan(v²/(g R_min)) at every speed in place of the shipped 4.5 m with no ask at all
   // off the plane; anything else, and an online room, the cap as it ships.
+  // The `?saveHands=deck|miss` dev switch (step 3.5j, the owner's own ask): opt-in, a palm on the dry deck when the
+  // stance goes extends the support polygon the one existing contact pair may press inside, bounded by the palm's own
+  // strength. `'miss'` is the clear-deck control and is bit-identical to the default. Anything else, and an online
+  // room, the support exactly as it ships.
+  it('puts a palm on the deck with `?saveHands=deck|miss` (an opt-in dev switch), and leaves the support alone otherwise', () => {
+    expect(saveHandsSwitch('?saveHands=deck')).toEqual({ saveHands: 'deck' });
+    expect(saveHandsSwitch('?saveHands=DECK')).toEqual({ saveHands: 'deck' });
+    expect(saveHandsSwitch('?saveHands=%20miss%20')).toEqual({ saveHands: 'miss' });
+    for (const search of ['', '?saveHands', '?saveHands=', '?saveHands=on', '?saveHands=hand', '?bankClamp=off']) {
+      expect(saveHandsSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?saveHands=deck' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).saveHands, spot).toBe('deck');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bsaveHands: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { saveHands: undefined }).saveHands).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).saveHands).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('bounds the commanded lean on `?askCap=1.5|2|4|4.5|9`\'s own minimum radius (an opt-in dev switch), and on the shipped 4.5 m turn otherwise', () => {
     expect(askCapSwitch('?askCap=1.5')).toEqual({ askCap: '1.5' });
     expect(askCapSwitch('?askCap=2')).toEqual({ askCap: '2' });

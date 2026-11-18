@@ -1633,3 +1633,32 @@ in a turn, working harder because the water at the foam is steeper, moving and s
    7–56 %, and nothing in this round moves that: on foamed ticks the ankle is 34–44 % and `swing` is not in any
    cell's four largest. Whether the balance may spend its correction through the shoulders instead is still the
    owner's call, and it is still the one change this track has measured a reason for.
+
+---
+
+# Step 3.5j — **the save window: the palm goes down, it carries the whole hand cap, and the stance is already 0.33 m gone**
+
+**Its own file, `save-window.md`** (probe `save.ts`, switch `?saveHands=deck`, control `?saveHands=miss`, tests
+`src/physics/saveHands.test.ts`). The owner asked for it in so many words — *"go build the save window"* — and it is
+built, opt-in, with the default proven unchanged over **428 422 values and 90 of 90 run outcomes.**
+
+**The headline is a refutation of its own brief, and it is one number.** The palm does reach the dry deck and it does
+load — **median 73.1 N and a maximum of 286.45 N against the engine's own 286.5 N hand cap, 107× the compress water
+reach's 2.66 N** — and it does hold the contact's clamp open, on **14 of 176 palm-down frames in 8 of 16 runs.**
+**But `tip` still binds in 90 of 90 runs, 52.0 % → 52.1 % of frames, and 90 of 90 riders still fall.** Because:
+
+1. **a palm's patch edge cannot pass the rail**, so the across support can grow by **0.102 m** and no more
+   (measured ceiling 0.10194 m) — while **the demand is a median 0.327 m outside the feet by the time the palm
+   lands**, about twice the board's own half-width, and past what the palm covers on 159 of 176 palm-down frames;
+   and
+2. **the rider cannot bend, so he can barely reach his own deck**: the shoulder sits a median **0.829 m** above it
+   against an `ARM_LENGTH` of **0.700 m**, so the deck is reachable on **0 of 2 481 tall frames and 59.7 % of
+   crouch**, and all 22 windows in 90 rides were crouch windows.
+
+**So the mechanism is right and the surface is wrong.** The two things it points at: **the hand in the WATER** (where
+0.33 m is reachable), which means **`waveSide`'s early return from PR #418 is now on the critical path** and brings
+engine-target row 19's force-class ruling with it; and **the trunk fold** (`?trunk=mass`, PR #411), without which the
+hand lives in a crouch. **Row 19 itself is a NULL here: the hand-water force is bit-identical on both arms — 522
+frames, median 6.97415 N, max 63.4862 N, the same digits — because a dry palm has no water reaction.** Windows: 22,
+median 0.093 s, longest 0.441 s, **2 of 22 ending with the demand back inside the feet and the rider still riding.**
+Rides: 9 of 90 longer, 3 shorter, 78 identical, 90 of 90 still falling, causes unchanged.
