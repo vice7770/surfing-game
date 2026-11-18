@@ -292,9 +292,18 @@ bore changed into each camera's frustum — a read, not a build.
 - The most alarming-looking of the six is `uniformSnapshot`'s **"match main's bytes at the Canyon"**, which is exactly
   the kind of test whose failure reads as a regression. It is not: it timed out at its own 180 s, and its own comment
   already records the history — "about 20 s alone, it timed out at 60 s under other agents' load (2026-10-29, 10-31)".
-- The three spin-up hashes: `c2-step5c-runs/`, started under the same load. **They had not finished when this round
-  handed back**; the job is detached and its output is `…/scratchpad/s5c/byte.txt`. The argument above stands on its
-  own either way: nothing in the default game's import graph changed.
+- **The three spin-up hashes: all three match main, byte for byte** (`scripts/m1-cpu-bench.ts`, medium, 3 600 steps,
+  fresh spin-ups; `c2-step5c-runs/canyon-byte-check.txt`):
+
+  | spot | snapshots | state |
+  | --- | --- | --- |
+  | Canyon B (`?canyonWaves=true`) | `a367d938f15fa934` | `9e5831f80e38abd9` |
+  | the default Canyon | `ea3d57a4d49f4b48` | `a1a2555739210f96` |
+  | the 2 m pool with `wave` unset | `0545d279d79bafe7`, lip jets **278**, library key false | — |
+
+  Every one is main's own, and the same as steps 3b, 4, 5a and 5b. The spin-ups took 415 s and 194 s rather than the
+  usual ~110 s, which is the Basilisk load, not the branch. **So all seatbelts pass**, which is what the construction
+  argument above predicted: nothing in the default game's import graph changed.
 
 ---
 
