@@ -45,6 +45,7 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | **reading now.** The hold is lifted: **the owner kept queueing clips rather than answering, which is the answer.** Briefs are narrowed to what twenty clips proved is obtainable — **EVENTS (take-offs, falls, recoveries, the feet), not angles**, since the binding constraint is the board's bearing to the lens and no shore-side camera can fix it |
 | 22 | `YybXum0o4YI` | https://www.youtube.com/shorts/YybXum0o4YI | **queued** |
 | 23 | `4cd6S0rD9pE` | https://www.youtube.com/shorts/4cd6S0rD9pE | **queued** |
+| 24 | `jPOoZnxF3Sw` | https://www.youtube.com/shorts/jPOoZnxF3Sw | **queued** |
 
 **Dispatch rule: the owner's standing instruction is ONE VIDEO AT A TIME**, so the queue is dispatched in order as
 each read reports. **Every brief is written blind** — an independent reviewer reads several of the same clips, and
