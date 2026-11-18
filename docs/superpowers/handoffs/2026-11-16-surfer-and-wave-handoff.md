@@ -3359,7 +3359,13 @@ The probe built against **this branch's `src` and against the merge base `1a29a6
 
 ---
 
-## 2026-11-18 — ⭐ THE OWNER RODE `?bodyBank=hip` AND SENT VIDEO. IT DID NOT SAVE THE RIDE.
+## 2026-11-18 — ⚠️ **RETITLED AND CORRECTED:** THE OWNER REQUESTED `?bodyBank=hip`, AND THE BUILD ALMOST CERTAINLY DID NOT CONTAIN IT
+
+> ⚠️ **CORRECTION, 2026-11-18, raised by Codex and VERIFIED HERE BY READING. The original title of this section was "The owner rode `?bodyBank=hip` and it did not save the ride". That is a conclusion about a feature that was probably not running.**
+>
+> **`bodyBank` is parsed 0 times in `src/game/PhysicalMode.ts` on `origin/main`, 0 times in this checkout's working tree, and 6 times only on `claude/body-banks` (PR #421, unmerged).** **So unless the owner checked out that branch and rebuilt, `&bodyBank=hip` was an inert query parameter** — and he had told me earlier, in his own words, ***"i played main"***.
+>
+> **Status: the switch was REQUESTED; the effective build is UNKNOWN.** **His fall remains entirely valid evidence — about the SHIPPED rider, not about PR #421.** **Everything below describes a real ride and says nothing about whether #421 helps.** One question to the owner settles it and has been asked.
 
 **His address:** `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&bodyBank=hip` — **PR #421's switch ON.**
 
@@ -3489,3 +3495,30 @@ A rider loses his stance at **≈4.97**, ends **chest-down over his own board wi
 **`SINK=0.06` everywhere, and measured against flush for the first time: frame 1 reads 0.0611 m / 678.6 N / 0 of 72 dry, against 0.00024 m / 604.7 N / 30 of 72 dry — and 68 of 72 outcomes differ.** ⭐ **The plant estimator's synthetic positive control caught a real bug of its own** (a Gauss pivot dividing in place) **that had produced coefficients of 10⁴⁴** — **and the clean plant could NOT be recovered from a ride (R² 0.17–0.40), which is why its conclusion rests on arithmetic rather than a fit.** Probe inert: `INERT=1` → 72/72 identical. Plain medians throughout.
 
 ⚠️ **This branch is off `main`, so every arm is the SHIPPED rider** — #421 is unmerged, so its baseline had nothing offered against it. **But #421's own switched arm had the same follow gain (0.8718 vs 0.8748), so that term moves the CONTACT BOUND, not this loop's timing.** The two results are about different things and neither replaces the other.
+
+---
+
+## 2026-11-18 — ⚠️ THE PROPOSED THROUGH-CLIMB READOUT HAS NO DELIVERY PATH, AND I VERIFIED THAT TOO
+
+Codex's second finding, **confirmed here by reading both files:**
+
+```ts
+// src/ui/App.ts, finishRide
+const { report: _, timeScale: __, ...summary } = result;        // ← report destructured OUT
+const records = this.logbook.add({ ...summary, spot, conditions, … });
+…
+if (!showsEndCard(result)) return;
+
+// src/ui/RideEndCard.ts
+export function showsEndCard(_result: RideResult): boolean { return false; }
+```
+
+**`report` is removed before `Logbook.add` ever sees it, and `showsEndCard` returns `false` unconditionally — by the owner's own instruction of 2026-10-31** (*"the popup to start a new wave or change beach is still there; remove it"*).
+
+> **So a worker-only field, or anything added to the end card, would NEVER REACH HIM.** The readout I proposed earlier — *"a quantitative through-climb readout in the existing ride report"* — **had no delivery path, and I proposed it without checking one existed.**
+
+**Codex's recommendation, adopted as the design when that round runs: an optional saved field in the existing `Logbook`, carrying honest early-fall / unknown results**, and — when internal telemetry exists — **distinguishing the effective input and the foot support from the aim or the failure label.**
+
+**⚠️ And a measurement pitfall for any climb readout, reported by Codex and NOT yet verified here:** `waveFrame.ts` **selects the highest local crest anew**, so **it can restart its speed estimate on a crest switch while `valid` stays true.** **A fixed board simply overtaken by a crest must not be credited with an active climb.** Recorded as reported; whoever builds the readout verifies it first.
+
+**No builder has taken the readout.** The only round running is the **save window** (`claude/save-window`), which the owner asked for in so many words.
