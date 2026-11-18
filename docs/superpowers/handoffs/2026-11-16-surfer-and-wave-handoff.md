@@ -2957,3 +2957,37 @@ The reader says the 0.50/0.42 split is *"what the engine's single leg spring can
 **The board study (merged #285)** found the standing rider's contact **MAKES ENERGY on steep water: 4–23 kW, with 17–58 g throws above roughly 26° upward or 30–38° downward slope**, the tube's wall steeper still. **That is a contact failure at speed and it is the closest thing in the repo to what he just described.** Its recommended first remedy was **A-lite, `?legPower=cap`** — and **`legPower` could not be found in `src/`, so it may never have been built.** The round is checking.
 
 **Also flagged to the round: speed and the water's slope under the board rise together on a real wave, and his words name only speed.** They must be separated before a mechanism is assigned, and **no single signal may be used as the discriminator** — Codex's paired set is required (stick, cap/planing, achieved bank, loaded foot contact, local rail, travelled course, wave-relative progress).
+
+---
+
+## 2026-11-18 — ⭐⭐ THE OWNER'S ACTUAL ADDRESS, AND IT HAS TWO SWITCHES NO BENCH IN THIS PROJECT HAS EVER USED
+
+**His words, in full:**
+
+```
+?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on
+```
+
+**`rider=new` IS on** — my alarm that he might be riding the shipped rider was unfounded and is withdrawn. **And `?physical` is NOT a physics gate:** `src/main.ts:89` is `const startRide = devFlag('physical') || demoMode !== null`, so it only starts the ride immediately. **Its absence from his address is harmless.**
+
+### ⚠️ BUT `stanceReach=keep` AND `deepen=on` ARE NEW TO EVERY BENCH, AND BOTH ACT ON THE LEGS
+
+| switch | what it does | source |
+| --- | --- | --- |
+| **`?stanceReach=keep`** | *"a deep crouch keeps the riding stance's hip range and free arms, so Compress keeps its catching reach as well as its lower centre of mass"* — **it changes the HIP RANGE in a deep crouch** | step 3.3h, **the owner's own ruling** |
+| **`?deepen=on`** | *"full manual crouch reaches the tube tuck's 0.45 m anywhere and Compress does not fade it away, so the crouch key dips whatever stance is held"* — **it more than doubles the crouch key's reach** | step 3.5b, a ruling |
+
+**Every probe this session ran `RIDER=new FELT=deck BODY=two` and nothing else.** So:
+
+1. ⚠️ **PR #413's pump figures have the wrong denominator for him.** It measured the excursion as a **share of the 0.195 m pumping-crouch rung.** **With `deepen=on` the crouch key reaches 0.45 m** — more than twice as far — **so "40 % of the rung" is not a statement about his game**, and the numerator may differ too.
+2. ⚠️ **`stanceReach=keep` alters `stanceRoom(depth)`**, which is **exactly** the quantity #413 identified as its second mechanism (knee travel narrowing from **0.30 m at tall to 0.15 m at the pumping crouch**, `humanBalance.ts:159–160`) **and** the **moving limit** a reviewer flagged behind the hip clamp. **Both of those analyses were done with the narrowing in place; he rides with it off.**
+3. **PR #411's trunk bench is on the same incomplete address.**
+4. **The 0.27 s halving point and the 0.016 m noise floor are on the wrong address too**, though they are still facts about *a* configuration.
+
+**The live fall-diagnosis round has been corrected mid-run** and is now running four arms — his full address, then without `deepen=on`, then without `stanceReach=keep`, then neither — **and will report which switch, if any, the effect needs.** Given his complaint is that **the board leaves his feet**, and both switches change **how far and how freely the legs travel**, this is a live candidate rather than a technicality: **a leg that can reach 0.45 m anywhere, with a hip range that no longer narrows, is a different contact problem from the one our benches produce.**
+
+### THE CANONICAL ADDRESS, written down once so this stops recurring
+
+> **The owner's ride address is `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on`.** **Every brief must use it, and every figure quoted to him must say whether it was measured on it.** `?physical` may be added for convenience; it only skips the menu.
+
+**This is my recorded error #24 recurring** — *"before quoting any figure to the owner, check it was measured on the rider AND ADDRESS they actually ride"* — and it recurred because **the address was never written down in one place.** It is now. **Caught this time before it cost a round, by asking him instead of assuming.**
