@@ -2864,3 +2864,29 @@ Codex's blind read of the same clip found *bend for the turn → extend on the c
 **The round lists six refutations, four of them its own:** the brief's arithmetic (mine), its one-trace reading of the knee drop, **its own `hold0` control**, **its own 0.10 s amplitude row**, **its own description of the bench**, and row 6's classification on the rate half.
 
 > **Unchanged answer: the game's leg-depth channel achieves a 0.217 s half-cycle on a 0.22 s command — the median of 401 half-cycles over 69 of 72 runs — carrying 0.078 m of the 0.195 m rung (40 %); the excursion falls below half the rung at a command half-cycle of 0.26–0.28 s. The governor is the follower at `LEG_FREQUENCY = 12` rad/s, not the acceleration or speed limits. Nothing tuned, no switch added, nothing under `src/`.**
+
+---
+
+## 2026-11-18 — GOAL-LEVEL REVIEW: NOTHING IN FLIGHT ADVANCES THE OBJECTIVE, AND THE OBJECTIVE HAS NO METRIC
+
+The owner asked (via Codex) for the days of surfer work to be weighed against the big goal. **Full answer in `3.5/consult-codex-2026-11-18.md`.** The three load-bearing conclusions:
+
+1. **None of the open branches advances the board-path outcome.** #407 is drawing-only; #413 is measurement-only; #411 is the only one that *can* touch the path (it moves body mass, which changes the gravity lever and the inertia) **and its rotor is inert on 42 of 60 arms.** **The last several days are a PRECONDITION — the rider falls, and you cannot carry speed through a climb you fall out of — but not a contribution.** Codex's standard, adopted: *"a turned nose, a free trunk or a longer held carve is insufficient evidence for a transferable surfing skill."* **#411's own acceptance test is a free trunk, which is exactly the insufficient kind.**
+2. **The owner's own evidence corroborates the priority and challenges its tractability.** Corroborating: his falls come **high on the face as the wave catches a rider slowed below the wave's speed** (#93, #96) — the objective's failure mode exactly. Challenging: **"hold the climb" already failed five ways with no switch shipped** (#221), and **Canyon B's peel at ~12.5 m/s outruns a rider.**
+3. ⭐ **THE OBJECTIVE IS UNMEASURABLE TODAY.** `rideAnalysis.ts` tracks heading-rate windows and **planar speed over ground** — which is neither water-relative speed nor the along-face component a climb consumes. **So nobody could tell success from failure if it shipped. The next round should build the metric, not the skill:** water-relative speed resolved along the face over a detected climb window. **Read-only, needs no ruling.** Not dispatched while three rounds are out; it is next.
+
+### The phase distinction, recorded for the next rider/board builder (none is running)
+
+**Suppression of lean at low speed is NOT the same failure as ankle or support loss after lean has actually been requested, and a brief that conflates them will produce another null.** Signatures differ and the engine exposes both:
+
+- **suppression:** `ask` pinned at `θ_max = atan(v²/(g·R))` with `TURN_RADIUS = 4.5` (`AttachedRider.prepareBank`, `:3434–3448`), and **below `PLANING_DROP = 3` m/s the cap is exactly 0** — 100 % of 541 live frames of a slow Canyon rider. **If `ask` is 0 there is nothing to lose.**
+- **support loss:** a large `ask` with `achieved` falling away, ankle at range or torque saturated.
+- **discriminator: does `ask` ever exceed `achieved` at all?**
+- **The decisive A/B ships today: `?askCap=4.5` is on `main` and removes the gate.** Same trough entry with and without it — **fall unmoved ⇒ support loss; fall moved ⇒ suppression was binding.**
+- **And 3–4 m/s has never been measured.** `PLANING_SPEED = 4` / `PLANING_DROP = 3` is a **latch** (`:3495`), so the band is history-dependent, and the 0-of-67 767 flat-control result sat entirely inside the always-off region below 3. *"Positioning at low speed, then trying to turn"* lives exactly in the unmeasured band.
+
+### Provenance of the objective, resolved
+
+Codex states the owner **explicitly selected** *"one bottom turn with speed carried into the climb"* in its chat, then clarified that he plays and we advise. **That explains the sentence this handoff has carried unattributed since 2026-11-16.** It is now **the working reference for ADVICE only.** **Nothing is built against it** — a peer relaying the owner's words is not the owner's words, and an objective is closer to an authorisation than to a restriction. **One sentence from the owner settles it.**
+
+**Also taken from Codex: a historic synthetic 3.2L trace preserved water-relative speed at stick-up and then fell sideways in the climb** — so **speed preservation and survival are separate outcomes**, and a round can win the first while losing the second.
