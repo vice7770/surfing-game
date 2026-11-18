@@ -88,6 +88,57 @@ folded position but computes only `v + ω × offset` — no relative hinge motio
 
 **Nothing was added to make the fold behave** — no torque, no drive, no constant. **It did not need any.**
 
+### STATUS 2026-11-18: ROW 6's RATE HALF IS SETTLED, AND ITS CLASSIFICATION IS WRONG
+
+**PR #413, `claude/pump-rate`, measurement only — no constant tuned, no switch added, nothing under `src/` touched.**
+**864 runs, 12 arms, 91 562 live ticks, 0 frozen**, `rider:'new' feltFrame:'deck' riderBody:'two'`, `steer = 0`
+throughout (trim, no direction change), on `FaceWater`'s Canyon-**fit** face (1.4 m / 16° / 5.7 m/s; `breaking: 0`,
+`voidFraction: 0`, **no foam**). Half-cycles taken from a **2 mm zigzag on the signal**, never from the input's
+toggles. Medians are `qt(v, 0.5)`, the upper middle.
+
+| asked half-cycle | achieved | rest excursion | **share of the 0.195 m rung** |
+|---|---|---|---|
+| 0.10 s | 0.100 s | 0.016 m | 0.08 |
+| 0.15 s | 0.150 s | 0.038 m | 0.20 |
+| **0.22 s (the footage)** | **0.217 s** | **0.078 m** | **0.40** |
+| 0.28 s | 0.267 s | 0.100 m | **0.51** |
+| 0.45 s | 0.433 s | 0.160 m | 0.82 |
+| 0.60 s | 0.600 s | 0.182 m | 0.93 |
+| key never pressed | **0 half-cycles in 0 of 72 runs** | none | – |
+
+> **The channel reaches the footage's rhythm and not its depth.** It completes a half-cycle at **0.217 s** — within
+> 0.003 s of video 14's 0.22 s, over **401 half-cycles in 69 of 72 runs** — while carrying **40 % of the rung.**
+> **The excursion falls below half the rung at a half-cycle of 0.27 s, and 0.27 s is row 6's number.**
+
+**The governor is the critically damped follower at `LEG_FREQUENCY = 12` rad/s**, whose step response needs
+**0.567 s** to come within 5 mm of the rung (50 % at 0.183 s, 90 % at 0.400 s, 95 % at 0.483 s). **Any half-period
+under about 0.6 s is amplitude-limited.** An isolated replica of `prepareLeg`'s own lines reproduces **82–96 % of
+the in-game excursion at all seven periods**, so the attribution is clean: **the follower governs and the game's
+coupling costs 4–18 %.**
+
+**So row 6's kind is wrong for the rate half.** The leg-depth pump is **not inexpressible at the footage's beat** —
+it is present, timed to within 0.003 s, and **short on depth by a measured factor of 2.5.** That is a
+**quantitative shortfall with a number**, not an expressibility limit. **Nothing here touches row 6's trunk half:
+`hip.angle` was not read.**
+
+**⚠️ AND THE COMPARISON CANNOT BE CLOSED, FOR THE REASON ROW 6 ALREADY CARRIES.** Whether 0.078 m is what video
+14's rider does **is unknown**, because the footage's leg figures come off a **saturated** leg chain (99–100 % on
+every readable frame). **The series has no measured depth for any pump, in any clip.** So **"40 % of the rung" is a
+fact about the game and not a verdict against the footage** — only the *rate* was ever comparable. Closing it needs
+a non-saturating depth excursion measured **from footage**, and no round has one.
+
+**A second mechanism, real but not the one at 0.22 s:** at **0.30 s and longer** the chain's own asked-for excursion
+falls to 0.166 m, because `stanceRoom`'s knee travel is **0.30 m at tall but only 0.15 m at the pumping crouch**
+(`humanBalance.ts:159–160`), narrowing the square wave's ends to 0.045 m at saturated `knees`. **At 0.22 s the
+asked-for excursion is 0.194 m over 525 half-cycles — essentially the whole rung** — so the knee drop moves the
+pump's **mean depth**, not its **excursion**, in the band that matters.
+
+**What to do about the follower is deliberately not proposed and is the owner's.** My own read, offered with low
+confidence because I have been wrong on exactly this kind of call twice today: `LEG_FREQUENCY` looks like a
+**capability constant** — how fast a leg can change its commanded length — rather than an invented force, since
+every newton still arrives through the leg spring. **But there is no reason to touch it yet: the game pumps at the
+right rhythm with an amplitude nobody has shown to be wrong.**
+
 ### Rows by kind of change
 
 | kind | count | rows |

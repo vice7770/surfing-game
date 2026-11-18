@@ -2607,3 +2607,30 @@ The review the owner relayed still opens with *"For Canyon, the owner's target i
 | 16 | `https://www.youtube.com/shorts/NQ6dkvD2gHU` | **queued**, dispatched when 15 reports |
 
 Clips 1–14 are read. **Row 6 is the hottest row in the table** after video 14 contradicted both halves of it, so every brief from here leads with it until two clips agree.
+
+---
+
+## 2026-11-18 — ROW 6's RATE HALF SETTLED (PR #413), AND MY ARITHMETIC WAS WRONG IN THE HALF I WAS SURE OF
+
+**The answer: the game's leg pump reaches the footage's rhythm and not its depth.** Achieved half-cycle **0.217 s** against video 14's 0.22 s — **401 half-cycles over 69 of 72 runs** — carrying **0.078 m of the 0.195 m rung, 40 %.** **The excursion falls below half the rung at 0.27 s, and that is row 6's number.** Governor: the critically damped follower at `LEG_FREQUENCY = 12` rad/s, needing **0.567 s** to come within 5 mm of the rung. **864 runs, 91 562 live ticks, 0 frozen.** Full table in `engine-target.md`'s new status block.
+
+### My arithmetic, graded by the round that replaced it
+
+| what I said | the verdict |
+| --- | --- |
+| *"√(2·0.195/6) ≈ 0.255 s for the down-stroke"* | **wrong twice.** It **omits the deceleration** — a bang-bang traverse that *ends at rest* needs `2√(d/a)` = **0.36 s** — and the acceleration limit **is not the governor anyway**: measured peak rest rate **0.791 m/s** against `CROUCH_SPEED`'s 1.5 (the speed cap never binds), and the acceleration clamp binds on **3.9 %** of ticks |
+| *"4.75/ω ≈ 0.40 s to settle"* | **formula right, and it IS the governor** — but 4.80/ω is the **90 %** point, not 95 %. Measured: 50 % at 0.183 s, 90 % at 0.400 s, 95 % at 0.483 s, within 5 mm at 0.567 s |
+| *"which one governs a pump is exactly what I cannot work out on paper"* | **the right instinct, and the answer is the settle.** Any half-period under ~0.6 s is amplitude-limited |
+| *"half-cycles ≈0.21 s, essentially the footage's 0.22 s"* | **the right timing conclusion for the wrong reason — AND IT DOES NOT CARRY THE AMPLITUDE.** Timing and amplitude are separate answers and my arithmetic conflated them |
+
+**Every constant I quoted checked out. Only the arithmetic on them did not.** And the shape of the error is the file's own: **I reported a timing match to the owner in a way that implied the pump matched.** It does not — it is 2.5× short on depth. **Corrected to them.**
+
+### The round caught its own version of the same error, before publishing
+
+Its first reading, **off a single tick trace**, blamed the balance's knee drop: released, `human.knees` went 0 → 0.63 in 0.15 s and refilled the target, and **in the key-never-pressed arm the leg walks itself to 0.30 m with `knees` ending at 0.98 in 72 of 72 runs.** Pooled over 864 runs **that is wrong at 0.22 s** — the chain's own asked-for excursion there is **0.194 m over 525 half-cycles.** The knee drop is a **real second mechanism at 0.30 s and longer** (`stanceRoom`'s knee travel is 0.30 m at tall but only 0.15 m at the pumping crouch, `humanBalance.ts:159–160`), **just not the one in the band that matters.** *"One trace is not a number"*, caught by the agent rather than by me.
+
+### The gap that cannot be closed from here
+
+**Nobody knows whether 0.078 m is what video 14's rider does**, because **the footage's leg figures come off a saturated chain (99–100 % on every readable frame).** **The series has no measured pump depth in any clip.** So **40 % of the rung is a fact about the game, not a verdict against the footage** — only the rate was ever comparable. **No change is warranted yet**: the game pumps at the right rhythm with an amplitude nobody has shown to be wrong.
+
+**A metric that cannot fail was checked for, as instructed:** a flattened channel would record no turning point at all and report `none` in every arm — **which is exactly what the two no-pump arms do** (key never pressed: 0 half-cycles in 0 of 72; key held: 4 half-cycles in 4 of 72 at 0.005 m) **and exactly what the pumped arms do not.** The isolated follower at a 1.50 s half-cycle reaches **1.00 of the rung** as a positive control.
