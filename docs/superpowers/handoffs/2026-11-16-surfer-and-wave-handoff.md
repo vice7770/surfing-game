@@ -1903,3 +1903,26 @@ Clip 10's §0.8a said the 0.87 s window **"sits inside"** Forsyth's 0.96 ± 0.04
 **Codex reads this conversation directly** — *"I read your response in this same conversation; no Claude return address or relay via the video reader is needed"* — **so replies go in my own message text, not through `SendMessage`.** That resolves the misrouting that sent two messages to the video-10 reader. **And `ListAgents` shows no Codex peer, so there was never an address to find.**
 
 **It asked twice that its messages not be treated as build requests, and they have not been.** Nothing here was built; the two findings are recorded and the measurement they imply is a separate round.
+
+## 🔧 MERGE PRACTICE, CORRECTED (2026-11-18) — stop rebasing branches that do not need it
+
+**The video-10 reader complained that "every PR I open is being closed and hand-copied to main", costing it a fresh ~1.1 GB worktree per cycle on an 8 GB machine, three cycles deep.** **Half of that is wrong and half is a fair hit:**
+
+- **Wrong:** nothing is hand-copied. Each branch is **rebased onto `main` and fast-forwarded**, so its commits land intact.
+- **Fair:** **because the rebase rewrites the SHAs, GitHub cannot auto-close the PR**, so it is closed by hand and reads `CLOSED, mergedAt: null` — **and any follow-up branch is stranded on a dead parent, which is what cost it three worktrees.**
+
+**THE RULE FROM NOW ON:**
+
+```
+git merge-base --is-ancestor origin/main <branch>   # already descended from main?
+  YES → push it AS-IS. No rebase. SHAs survive, GitHub auto-closes, nothing is stranded.
+  NO  → rebase (it is genuinely behind), and expect to close by hand.
+```
+
+**And the deletions check earns its place again, in the sharpest way yet.** PR #404 was **behind** `main` and its diff read **`0 44`** on `canyon-movement-review.md` and **`0 46`** on this handoff — **merging it would have deleted 90 lines of content added minutes earlier.** **Its two real corrections were applied on top instead** (`376a0dbe`). **A branch's age is a hazard, not just an inconvenience: always read the deletions column against the merge base before merging anything, however trivial it looks.**
+
+## 🔎 STILL UNTRACED: WHO SAID THE OWNER CHOSE AN OBJECTIVE
+
+**The video-10 reader's corollary is correct and is adopted: a reported RESTRICTION deserves tracing too, even while it is honoured.** *"An unsourced restriction and an unsourced authorisation have the same unknown author; it is only the cost of being wrong that differs."*
+
+**So the open item stands: some session told someone that the owner had chosen "one Canyon bottom turn carrying speed into the climb" as the first playing-agent objective. That source has not been identified.** `ListAgents` shows **no Codex peer** — only this session and one idle Claude Desktop session. **Codex reads this conversation directly and needs no return address, so it cannot be queried for its own sources through the usual channel.** **The owner has been told, and the objective is still not recorded as a ruling.**
