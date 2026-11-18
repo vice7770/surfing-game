@@ -1816,3 +1816,44 @@ A peer session (**Codex**, coordinating movement work at the owner's request) re
 **I have been quoting "Forsyth et al. 2024's 0.96 ± 0.04 s / 99° / 3.8 m / 1.41 g on n = 6 riders and 835 turns" as a measured bottom-turn population. It is not one.** The duration figure is the defensible part; **the radius and the lateral g are derived, and the 835 is a mixed-type total.** **Stop quoting the four together as one measured population**, and in particular **do not use the turn-flow figure as a bottom-turn speed target** — different quantity.
 
 **This matters beyond tidiness:** the agent scope recommended that very row as *"the only properly powered population anywhere in the evidence base"*, and **it is better powered than the video reads but not the clean four-number measurement I presented.** The videos' own numbers remain population-1-to-8 — **so the honest position is that there is no well-powered four-number turn target yet, from either source.**
+
+## ⚠️⚠️ THREE CORRECTIONS, AND ONE OF THEM IS A PROVENANCE PROBLEM WORTH MORE THAN THE OTHER TWO (2026-11-18)
+
+### 1. I MISROUTED TWO MESSAGES — and the "Codex" claims have NO CONFIRMED ORIGIN
+
+The two "From Codex" messages arrived **without an addressable `from=`**, so I guessed an address and replied to **`aaf7193536cb1fb32` — which is the VIDEO-10 READER subagent I had dispatched myself.** It replied, correctly and firmly, that it:
+
+- **made no suggestion about torso/head inclination**;
+- **asked for nothing about dispatch order**;
+- **has never reported that the owner chose an objective, and HAS NEVER SPOKEN TO THE OWNER AT ALL.**
+
+> **So the claims I acted on — that the owner chose "one Canyon bottom turn carrying speed into the climb" as the first objective, and the later scope clarification deferring the playing agent — came from a session I cannot identify, and the agent I thanked for them had nothing to do with them.**
+
+**What this does and does not change:**
+- **The DEFERRAL stays honoured**, on the asymmetry already recorded: **a restriction costs time if wrongly reported; an authorisation does unauthorised work.** It also restores the owner's own long-standing rule. **But it now rests on a message of unverified origin, and the owner has been told so and asked to confirm.**
+- **The OBJECTIVE is not recorded as a ruling and nothing is built against it** — which was already the position, and is now plainly the right one.
+- **The lesson, as the video-10 reader put it: an unattributed appeal to the owner's authority is a provenance problem, not a routine one.** **Before acting on a peer's report of the owner's words, establish which session is speaking.** `ListAgents` gives addresses; a message without one is not a known peer.
+
+### 2. ⚠️ "THE STICK IS INERT BELOW 4 m/s" IS MY OWN ROUNDING ERROR — IT IS 3, AND THE 4 IS A DIFFERENT THING
+
+The video-10 reader flagged that **3 and 4 are not the same threshold** and could not adjudicate. **The caller read the code and settled it:**
+
+| | |
+| --- | --- |
+| **`PLANING_DROP = 3`** (`AttachedRider.ts:343`) | **below 3 m/s the ask cap is exactly 0** — this is the *mechanism* |
+| **the 0-mismatch measurement** | taken over **1–3 m/s** — 67 767 column-values, stick hard over against never touched |
+| **`PLANT_SPEEDS`' floor = 4 m/s** | a **completely different thing** — the balance controller's derivative table, where `labAt` clamps |
+
+> **So the honest statement is: the stick is MEASURED inert at 1–3 m/s, and the mechanism is `PLANING_DROP = 3`. The 4 m/s belongs to the plant table, not to the stick.** I merged two real thresholds into one sentence and told the owner "below 4 m/s" repeatedly. **The twenty-seventh number in the wrong frame.**
+
+### 3. THE VIDEO-10 WINDOW CORRECTION (merged `2dc6bdf3`, PR #403) — and the Forsyth citation earned it
+
+Its own document reported a **0.26 s bottom turn** while `ride-report.md` prints **Forsyth's 0.96 ± 0.04 s** beside game numbers. **They are not the same quantity:** the 0.26 s is **first rail spray → board stops swinging**, excluding **0.16 s of arm and weight set-up and the whole exit.** **On a window closer to Forsyth's — first arm movement 30.08 to the top of the climb 30.95 — the same manoeuvre is 0.87 s, inside their interval.**
+
+**So the apparent "real surfers turn three times faster than the literature" reading was a WINDOW artefact, not a speed difference.** The **0.88 s complete sequence** reported to the owner was the right figure all along; **the 0.26 s is a sub-window of it and must not be set against Forsyth.** §0.8's real-time conclusion is unchanged, because the figures that exclude 2× and 4× — **the pump half-cycle and the squat-to-stand — are whole-cycle quantities with no window ambiguity.**
+
+**One factual point where the reader was mistaken, stated for the record:** it said PR #402 was closed and *"someone else copied the content across"*. **The content did land on `main` as `06470a95` by a verified fast-forward** (`video-ref-10-mentawai-drone.md` is on `main`); the PR reads CLOSED with `mergedAt: null` **only because the rebase changed the SHAs GitHub was tracking**, which is how every PR in this track has landed today. **Nothing was stranded except its follow-up branch, which #403 fixed.**
+
+### And two things it confirmed independently, which is worth more than agreement usually is
+
+**`hip.angle` never moving `this.parts`** — its whole Canyon column rests on that — and **the sub-planing dead zone.** It also sharpened the trunk trap into the right acceptance test: **the quantity to test is a LAG AGAINST THE BOARD, not an angle** — the body's fold is still held **0.4–0.5 s after the board has finished turning** (board reverses ≈31.12, body still laid forward at 31.20, still folded at 31.50), **video 9's number to the tenth** — *"a metric read off `hip.angle` could move through that entire window while nothing in `parts` changes."*
