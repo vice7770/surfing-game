@@ -3807,3 +3807,21 @@ PR #421's own chain: **`tip` makes the contact infeasible → the pair is SOLVED
 > **Keep the drift gone, keep the turn, and make it sharp again — then find out whether the fall comes back with the sharpness.**
 
 **Step 1 of that is not a build: NOBODY HAS DEFINED "DRIFT".** He named it, it is the one thing that improved, and **no column in any bench measures it.** **It cannot be protected if it cannot be identified.**
+
+### ⭐ AND HE ANSWERED THE TWO QUESTIONS — THE SECOND ANSWER IS THE IMPORTANT ONE
+
+> **"does the drift stay gone? i think so"**
+> **"does the turn get sharper? maybe. not sure because the surfer falls"**
+
+**The drift fix holds, with lower confidence than his first report** — *"i think so"* against the earlier *"there is not drift like before"*. **Recorded at the weaker strength.**
+
+> ⭐⭐ **BUT THE SECOND ANSWER IS A VERDICT ON THE QUESTION, NOT ON THE TURN: HE CANNOT JUDGE THE TURN BECAUSE HE DOES NOT SURVIVE LONG ENOUGH TO FEEL IT.**
+
+**That invalidates a whole class of question I have been putting to him all day.** *"Is the shallower turn acceptable?"*, *"does it feel dead?"*, *"is the sharpness worth the stability?"* — **every one of them assumes a ride long enough to have a feel.** **He has about one second.**
+
+**So the ordering is settled, and he settled it rather than me:**
+
+1. **Survive the take-off.** The new bench round is on exactly this, and it exists because he found that `?trunk=mass` — **measured inert to every decimal on a placement bench** — **wrecks his ride immediately on a real pop-up.**
+2. **THEN ask him about the turn.**
+
+**Nothing about turn quality should be put to him until a ride lasts long enough to have one.** **And `?askCap=4.5` doing nothing for him is a real result on its own**: for the gameplay he actually tests — *start the ride and turn* — **the low-speed ask gate is not what is stopping him.**
