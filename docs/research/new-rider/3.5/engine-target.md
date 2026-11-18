@@ -321,6 +321,83 @@ unchanged across **1.17 s containing a full depth excursion** (clip 15's best wa
 **Row 9 —** fifth clip for head-forward, eleventh for shoulders-forward. **Row 17 — the first measurable foot
 position since V7:** 0.62 / 0.63 of board length, 2.75 s apart, **±6 %** (the tail is in spray).
 
+### STATUS 2026-11-18: ⭐⭐ THE RULERS ARE CALIBRATED (PR #416) — AND THE SHOT WE HAVE BEEN ASKING FOR IS THE WRONG SHOT
+
+**4 files, +2 041, −0 against the merge base.** Method: the game's **own four committed surfer GLBs** plus the
+rig-test stand-in, posed through `HumanoidRig` over **29 depths (21.5–100.5° of true front-knee flexion)**, truth read
+in 3D by the game's **own `StanceGauge`**, the same joints projected through a pinhole camera at **20 / 40 / 90 px**
+head scales, **rounded to whole pixels**, plus **240 seeded draws of ±1 / ±3 px of landmark error.** No renderer, no
+`src/` change, no export, no constant touched. **12 s, byte-for-byte reproducible.**
+
+#### The span claim, with its number — and it does NOT retire everything
+
+| lens | apparent angle a ZERO-FLEXION swivel manufactures |
+| --- | --- |
+| level, ±30° of yaw | **27.8–46.9°** |
+| level, ±90° of yaw | **32.7–53.9°** |
+| **raised 45°** | **49.3–124.1°** |
+
+5 subjects × 2 poses, true tilts 33.2–55.3°, 90 px head, no landmark error. **So every published trunk span sits
+inside what a swivel alone can make, and on a raised lens none of them bounds anything.**
+
+**But the round refutes its own brief here, in the footage's favour: at a LEVEL lens the manufactured ceiling is
+53.9°, which is below V9's 65° and V12's 80°.** So **a level-lens 65° implies ≥11° of true travel** — **V9's 65°
+survives degraded rather than dying** (and that subtraction is optimistic, since the manufactured range grows with
+the lean).
+
+#### ⭐ THE LEG CHAIN'S REAL AXIS IS NOT THE ONE ANYONE GUESSED
+
+**It is not "side-on versus down the line". It is ONE bearing — the direction the knees point**, 24–29° off the toes'
+rail on these bodies. **There it reads 100.0 % at every knee angle from 24° to 99° of flexion: a range of 0.0 points.
+A ruler that cannot fail.** Along the board's axis it lands within **−0.6 to +2.6 points** of the 3D truth.
+
+**Over 2 755 readings it over-reads by up to +36.0 and UNDER-reads by at most 1.5** — so **the skill's "the leg chain
+is an upper bound" is confirmed, to 1.5 points.** In-plane the inverse **`flexion = 2·arccos(chain)`** is exact to
+**0.14 points over 145 poses.** **Resolution at ±3 px: 6.8° of flexion down the line and 16.8° side-on at a 90 px
+head; 15.2 / 37.7 at 40 px; 30.2 / 73.2 at 20 px — at 20 px it resolves nothing.**
+
+#### Per ruler
+
+| ruler | verdict |
+| --- | --- |
+| **leg chain** | **usable when the board is nearly end-on** (projected length ÷ width ≤ 0.7). **Refuse within 45° of where the knees point** |
+| **thigh/shin 1.0–1.1 gate** | ⛔ **wrong before any projection — these bodies are 0.89–1.03.** At 99° flexion it **false-rejects the three bearings where the chain works** (−90, −80, +90); at 76° it false-accepts 3 of 6. **It is a bearing meter, not a gate** |
+| **replacement gate: BOARD ASPECT** | ✅ projected length ÷ width, and it **needs no body landmark at all**: ≈0.1 ⇒ within 2.6 points, ≤0.7 ⇒ 5.3, ≤1.4 ⇒ 9.6. Refuse ≥2.2. Gives \|bearing\| but **not its sign**, and the signs differ by up to 30 points |
+| **trunk gate (shoulder→waistband ÷ head)** | ⛔ **never usable as a gate.** In-plane it is **2.08–2.24** on the hip line — **the published 1.6–1.8 contains no subject** — and it reads **1.95–2.24 at EVERY bearing** on a near-vertical trunk while the angle error runs 0–23.6°. **One gate value of 1.80 covers a 55° range of true angles; 2.00 covers 70°** |
+| **projected trunk angle** | ≤2.8° at \|bearing\| ≈ 90°, **level lens, board end-on, PER FRAME ONLY.** Refuse any raised lens: it over-reads 1.3° at 10°, **16.6° at 30°, 120.3° at 45°** |
+| **hip over deck ÷ head** | stance-width confound **−0.40 to +0.11 head-lengths at fixed true flexion** — **and the true 3D hip moves too, so it is geometry, not projection.** Fold-invariant to 0.08 with the head upright at ≤20° elevation; **+0.51 to +0.84 if the head goes with the chest** |
+| **apparent stature** | ✅ **RESCUED OUTRIGHT.** It responds to a pure 45° fold by **1.06–4.69 head-lengths at every elevation 0–60° — it never dies at a FIXED lens.** What kills it is **the elevation CHANGING between frames: 50–67° cancels a 45° fold** |
+
+> ⭐⭐ **ONE LENS SERVES BOTH THE LEG AND THE TRUNK: LEVEL WITH THE RIDER, LOOKING ALONG THE BOARD'S AXIS, FROM THE
+> NOSE OR THE TAIL. NOTHING IN SIXTEEN CLIPS IS THAT SHOT** — and **the ask this series has made three times
+> ("water-level, SIDE-ON, emphatically not from behind") is ACTIVELY WRONG: side-on costs 17.5–18.9 points of chain
+> error and 8.9–11.8° of trunk error.**
+
+#### Invalidated, and rescued
+
+**Invalidated:** every published trunk span and rate **on a raised lens** — V8 59°, V9 65°, V11 60°, V12 80°, V12's
+120 °/s and 20 °/s, V13's ≥78 °/s; **clip 13's trunk gate in both halves** (band *and* method — it is blind where it
+matters, so clip 14's "keep the method, lose the number" does not save it); **the series' own footage ask**; and
+**clip 12's stated mechanism for its down-the-line refusals** — from the tail the chain is *accurate*, and what
+refused those frames was the thigh/shin gate, whose 0.31 / 0.58 ratios map to bearings of ~20–30°, i.e. the dead
+quadrant.
+
+**Rescued:** **clip 14's "impossible" 2.03 and 2.11** — the game's own rider reads **2.03 at bearing 0** and 2.08–2.24
+in-plane, so **the band was wrong, not the readings**, and its bikini-bottom diagnosis is confirmed to two decimals;
+**its 3.6 is a TIPPED HEAD, not a landmark error** (the probe's grid reaches 3.80). **Clip 12's hip-above-deck**
+within stated bounds, with its 3.83→3.22 fall **understated** if anything. **Apparent stature, outright.** **The leg
+chain's upper-bound property.** And **every chain reading the thigh/shin gate refused on an end-on board is
+revisitable** — V10's 96–100 % and V14's 95.9–99.9 % become **0–33° of flexion** if admissible.
+
+#### What this round says against itself, named rather than estimated
+
+**The law transfers, the constant does not:** the dead bearing is *where the knees point*, but the specific 24–29° is
+the game rig's own knee pole. **Board roll and pitch were NOT swept — and a real bottom turn rolls 20–40°**, which
+rotates the body against the image's vertical. **No camera roll, Regular stance only**, the pure fold does not
+translate the pelvis as the rig's own `hinge` does, and **the rig's standing pose already carries 39–42° of knee
+flexion, so the 0–20° band is untested.** **Motion blur, rolling shutter and the occlusion that actually defeated
+most of the sixteen reads are not in this model at all.**
+
 ### Rows by kind of change
 
 | kind | count | rows |
