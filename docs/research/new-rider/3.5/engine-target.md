@@ -250,6 +250,77 @@ this.**
   head below the axis, **reported as a projection mixing yaw with pitch, not a yaw.** **The footage ask gains a
   clause: nose legible AND head ≥60 px AND the face LIT, not backlit.**
 
+### STATUS 2026-11-18: ⭐ THE SERIES HAS A REAL PUMP CADENCE AT LAST — 0.92 s, AND IT IS ASYMMETRIC
+
+**Video 16 (PR #415) is the mirror of clip 15: ZERO direction changes in 14.0 s of continuous standing riding**, the
+nose down the line in **45 of 45 frames checked by eye** and the board's bottom never visible, inside one unbroken
+24.0 s shot. **With nothing but trim to look at, it measured the thing fifteen clips could not.**
+
+| | value | how |
+| --- | --- | --- |
+| **full period** | **0.92 s** | **four independent measurements** — two max→max and two min→min, **all 0.92** |
+| **down half-cycle** | **0.50 s** (×2) | each extreme located individually; one re-checked at the native 1/24 s grid to within 0.06 s |
+| **up half-cycle** | **0.42 s** (×3) | — |
+| excursion | 20–28 % | **of the reader's own scale — NOT comparable to the game's "share of the 0.195 m rung"** |
+| window | 7.5–11.0 s | one rider, one shot |
+
+> ⭐ **AND IT IS ASYMMETRIC: the rise beats the sink, 3 of 3.** The reader states *"which the engine's single leg
+> spring cannot produce."* **That claim is plausible and UNVERIFIED, and the arithmetic cuts both ways:** the game's
+> rate limits *are* asymmetric (`CROUCH_ACCELERATION = 6` down against `EXTEND_ACCELERATION = 15` up, `:1052–1055`),
+> **but PR #413 found the governor is the critically damped follower at `LEG_FREQUENCY = 12` rad/s, with the
+> acceleration clamp binding on only 3.9 % of ticks** — and a symmetric follower gives symmetric strokes.
+> **Nobody has split the game's own half-cycles into down and up.** That is a cheap, decisive follow-up and it is
+> recorded as open rather than guessed.
+
+**Against row 6's target (0.55–0.60 s, in the TRUNK): the period is FASTER and the channel is the legs — the third
+clip in a row on that side of it.** Row 6's rate half now has a real footage figure for the first time; **its depth
+half still has none, because no clip in sixteen has yielded a calibrated pump depth.**
+
+**Do not compare the 20–28 % excursion to the game's 40 % of rung.** The denominators are different and nobody has
+reconciled them. **That comparison is exactly the frame error this document has made five times.**
+
+### Row 3: decoupling is NOT universal, and the row's two observables are not independent
+
+**7 resolved transitions: 3 same-sign up, 3 same-sign down, 1 frozen, 0 DECOUPLED, 0 opposite-sign.** So **clip 15's
+four-in-one-ride is not reproduced on the one clip that is nothing but trim.** Series: **43 resolved transitions, six
+clips, no opposite sign.**
+
+> **So an acceptance test built on decoupling must read "the engine CAN decouple", not "the engine decouples at rate
+> X".** PR #411 satisfies that reading; it does not satisfy a frequency reading, and none is available.
+
+⭐ **And a methodological correction to the row itself, from the reader: row 3's two observables are not
+independent — folding the trunk lowers the head by itself, so SAME-SIGN transitions are nearly free.** **The series
+should stop counting same-sign transitions as evidence.** Re-counted on that basis, **this clip contributes one
+frozen window and nothing else**, and clip 15 contributes **its four decoupled plus two frozen.**
+
+### ⚠️ The brief's own trim test is refuted, and this clip is the counter-example
+
+The strict criterion I set — *a flat board on a constant heading* — gives a **different answer from the eye** here.
+The board's in-image long axis **oscillates −16° to +19° WITH the ~0.9 s pump period**, so the longest window steady
+to ±3° is **~0.25 s, shorter than clip 15's 0.56 s** — on a clip with **zero direction changes in 14 s.**
+
+> **A flat-board, constant-heading test cannot tell a pump from a turn.** The board's angle oscillating *in phase
+> with the pump* is what pumping **is**. **Both readings are reported, and the strict criterion must not be used
+> alone again.**
+
+### Two ⛔ causes that are new, and the footage ask gains two clauses
+
+- **Rows 2, 10 and 14 — a one-piece black wetsuit removes the hip landmark AND the knee in the same garment.** Four
+  leg-chain attempts at 1.45×; **the thigh/shin gate was not even computable.** **Eighth consecutive rung refusal,
+  seventh distinct cause.**
+- **Row 5 cannot be touched because THERE IS NO TURN IN THE CLIP — zero overhead arms in 14.0 s.** Every earlier miss
+  was a turn without an overhead arm; **this is a clip without a turn.** Tally stays **16 of 28.**
+- **Row 18 — head ≈40 px inside a CAP BRIM'S SHADOW** at 4.2×, a new cause after clip 15's backlighting.
+- **The footage ask gains: boardshorts and a short or sleeveless top, NOT a steamer** (a one-piece kills both depth
+  landmarks at once, and it is what most surfers wear in cold water) **and, for row 18, a lit face AND a bare head.**
+
+### Rows that moved, and one that came back
+
+**Row 8 —** the "zero" end extends past V7's 13 s to **14.0 s**, now on two clips. **Row 4 —** carriage A held
+unchanged across **1.17 s containing a full depth excursion** (clip 15's best was 0.56 s). **Row 15 —** ninth clip.
+**Row 9 —** fifth clip for head-forward, eleventh for shoulders-forward. **Row 17 — the first measurable foot
+position since V7:** 0.62 / 0.63 of board length, 2.75 s apart, **±6 %** (the tail is in spray).
+
 ### Rows by kind of change
 
 | kind | count | rows |

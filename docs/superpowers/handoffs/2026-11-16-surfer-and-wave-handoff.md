@@ -2890,3 +2890,36 @@ The owner asked (via Codex) for the days of surfer work to be weighed against th
 Codex states the owner **explicitly selected** *"one bottom turn with speed carried into the climb"* in its chat, then clarified that he plays and we advise. **That explains the sentence this handoff has carried unattributed since 2026-11-16.** It is now **the working reference for ADVICE only.** **Nothing is built against it** — a peer relaying the owner's words is not the owner's words, and an objective is closer to an authorisation than to a restriction. **One sentence from the owner settles it.**
 
 **Also taken from Codex: a historic synthetic 3.2L trace preserved water-relative speed at stick-up and then fell sideways in the climb** — so **speed preservation and survival are separate outcomes**, and a round can win the first while losing the second.
+
+---
+
+## 2026-11-18 — VIDEO 16 (PR #415): A REAL PUMP CADENCE AT LAST, AND THE TWO BLIND READS CONVERGE
+
+**Zero direction changes in 14.0 s of continuous standing riding**, nose down the line in **45 of 45 frames**, the board's bottom never visible, inside one unbroken 24.0 s shot. 422 lines, 0 deletions. **Full detail in `engine-target.md`'s new status block.**
+
+**The measurement sixteen clips could not produce: 0.92 s full period, four independent ways — two max→max and two min→min, all 0.92 — with half-cycles of 0.50 s down and 0.42 s up, each extreme located individually and one re-checked at the native 1/24 s grid to within 0.06 s.** ⭐ **And asymmetric: the rise beats the sink, 3 of 3.**
+
+### The two blind reads of this clip agree, and ours resolves the other's own caveat
+
+Codex sampled highs at **7.92 / 9.18 / 10.09 / 11.29** and reported *"roughly 0.9–1.3 s apart, sampled postures rather than exact peaks"* — gaps of **1.26, 0.91, 1.20.** **Ours measures 0.92 s consistently from individually located extremes.** Those are compatible: **at a 0.92 s period, a sample 1.26 s from the previous one has skipped part of a cycle** — which is precisely the caveat Codex attached to its own figures. **Two blind reads, one flagging its sampling and the other resolving it.**
+
+**They also agree the board moves**, and ours gives the number: **the in-image long axis oscillates −16° to +19° in phase with the pump.** Codex's *"the board rolls and changes angle on the face… a zero-steer fixed-orientation benchmark is a narrower case"* is now quantified.
+
+### What it refutes, including my own brief and its own first headline
+
+1. ⚠️ **My strict trim test is refuted and this clip is the counter-example.** On a clip with **zero direction changes in 14 s**, the longest window steady to ±3° of heading is **~0.25 s — shorter than clip 15's 0.56 s.** **A flat-board, constant-heading test cannot tell a pump from a turn**, because the board's angle oscillating in phase with the pump *is* pumping. **Both readings reported; the strict criterion must not be used alone again.**
+2. **Decoupling is not universal: 0 of 7 here against 4 of 4 in clip 15** — on the one clip that is nothing but trim. **So an acceptance test must read "the engine CAN decouple", not a rate.** PR #411 satisfies that; no frequency claim is available.
+3. ⭐ **Row 3's two observables are not independent.** **Folding the trunk lowers the head by itself, so same-sign transitions are nearly free** and **should stop being counted as evidence.** Re-counted: this clip gives **one frozen window and nothing else**; clip 15 gives **four decoupled plus two frozen.**
+4. **It withdrew its own first headline before publishing.** A 0.70× survey sheet read 12.667→13.000 as *"body rises, trunk unchanged"* — a decoupled window. **At 1:1 the same frames measure 237 / 240 / 235 px: flat to 2 %.** **Strips lie about heights, not only angles** — the recorded rule covered angles only.
+5. ⚠️ **THE SUBJECT CHANGES WITHOUT A CUT.** From ~17.5 s the camera follows **a different surfer inside the same continuous shot.** **A cut detector returning "one shot" does not license reading the whole shot as one rider.** The top-third detector added one clip ago would have passed this.
+6. **24 fps — a fourth rate** (60 / 30 / 25 / 24), and **24-versus-25 needed a nine-frame span to settle**; a four-frame sample cannot.
+
+### On the asymmetry claim, which is the round's biggest and is NOT settled
+
+The reader says the 0.50/0.42 split is *"what the engine's single leg spring cannot produce."* **Plausible, unverified, and the arithmetic cuts both ways:** the game's rate limits **are** asymmetric (`CROUCH_ACCELERATION = 6` down against `EXTEND_ACCELERATION = 15` up), **but PR #413 found the governor is the critically damped follower at `LEG_FREQUENCY = 12` rad/s with the acceleration clamp binding on only 3.9 % of ticks** — and a symmetric follower gives symmetric strokes. **Nobody has split the game's own half-cycles into down and up.** **Recorded open. It is a cheap, decisive follow-up and must not be guessed.**
+
+**And a frame warning, because this is where the next error would go: do NOT compare this clip's 20–28 % excursion to the game's 40 % of its rung.** The denominators are different and unreconciled. **That is the exact shape this track has got wrong five times.**
+
+### Method, and a standard worth copying
+
+**Three of four automated body rulers were built, tested and DISCARDED, with nothing quoted from them:** a board-taper nose detector refuted by eye on its own frames; a shoulder finder that **locked onto a second person's head in the water**; and a flood-filled silhouette that **leaked into dark water and disagreed with the hand by 40 px** at 12.75–13.08 while agreeing within 5 px over 7.5–11.0. **Only the validated window is quoted, against six hand measurements at exactly 1:1.** Also: **the `<video>` element count went 1 → 2 when the viewport was resized**, so the `videoWidth > 0` check belongs in **every** call, not once at the start.
