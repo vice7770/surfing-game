@@ -3522,3 +3522,19 @@ export function showsEndCard(_result: RideResult): boolean { return false; }
 **⚠️ And a measurement pitfall for any climb readout, reported by Codex and NOT yet verified here:** `waveFrame.ts` **selects the highest local crest anew**, so **it can restart its speed estimate on a crest switch while `valid` stays true.** **A fixed board simply overtaken by a crest must not be credited with an active climb.** Recorded as reported; whoever builds the readout verifies it first.
 
 **No builder has taken the readout.** The only round running is the **save window** (`claude/save-window`), which the owner asked for in so many words.
+
+### ☠️ A READOUT FAULT IN #421's EXPOSED CENTRE OF PRESSURE — confirmed by algebra from the source
+
+Codex, at `3c6b8721`, `AttachedRider.project`:
+
+```
+:5501  const freeX = moment === 0 ? … : local.x - (height * j.x + moment) / j.y;      // moment IN
+:5515  let tx      = moment === 0 ? … : ((local.x - copX) * normal - moment) / height; // moment IN
+:5535  const cx    = local.x - (height * tx) / normal;                                 // moment NOT restored
+```
+
+**Substituting `:5515` into `:5535` gives `cx = copX + moment/normal` exactly.** Codex's executed example: `local.x = 0.19`, `height = 0.60`, `normal = 0.75`, `j.x = 0`, `moment = 0.0375`, feet ±0.13 → **free demand 0.14 m, support-limited 0.13 m, reported 0.18 m**, with a **zero-moment control agreeing.** **A five-centimetre readout difference in a constructed example; not measured on the owner's ride.**
+
+**What survives:** `limit = 'tip'` is set at `:5512` from `copX !== freeX`, **upstream of the exposed reconstruction**, so **the published `tip` counts (90/90 shipped, 66/90 switched) are NOT invalidated.** #421's sign check reads as unaffected too — it used `freeX` and `copRelief = −moment/j.y` rather than the exposed column — **but that is a reading of its method, not a verification of its numbers, and #421's author should confirm it.**
+
+**Relayed to the save-window builder mid-run, because my own brief had told it to test "does the CoP unpin when a hand loads" — an unsafe test as written, replaced with `tip`.** It is told **not** to fix the column in its branch (that is #421's, and a silent fix would make the two PRs disagree), and **to keep four meanings separate: raw demand, clipped support, post-friction effective line, actual load.**
