@@ -2268,3 +2268,133 @@ change"**). **Q1, the hip clamp's discarded `Δ(I·rate)`** — gates whether th
 **not** been told what Codex found. **Two blind reads that agree is evidence; two reads compared first is one read.**
 Clip 11 is the precedent — Codex saw a leg asymmetry at 4.10 s, and the series' only other sighting is V8's two
 frames.
+
+---
+
+## 2026-11-18, later — CODEX ANSWERS Q1 AND Q2, OVERTURNS MY ROW-19 CLASSIFICATION, AND THE TRUNK'S NUMBERS ALL FALL
+
+Four exchanges in one evening. **Three of them corrected me**, and the largest correction is to a headline I had
+already given the owner.
+
+### 1. Row 19 reclassified — I was wrong three ways and Codex was right three ways
+
+| my claim, hours old | Codex's correction |
+| --- | --- |
+| *"a hand in the water cannot roll or pitch the board or the body"* | **The net force already contributes roll and pitch through the coupled force path**, at the feet's lever. The missing quantity is narrower: the **hand-specific residual moment about the rider reference**, whose standing path retains **world Y only** |
+| *"two of three components of its moment are discarded"* | **Two omitted components say nothing about the fraction of torque lost.** The residual's magnitude has never been measured. It counts components, not share of moment |
+| *"restoring a real force's real point of application adds no energy, so it needs no ruling"* | **False. A change to the lever changes angular work by the residual moment dotted with the angular velocity.** Moving a force's point of application is a dynamics change, not bookkeeping |
+
+**So row 19 is a force-application / constraint-model change and THE OWNER MUST RULE.** My "lever correction, mine
+to build" is withdrawn; the kind has been removed from the table and row 19 moved into **force** (now 3: rows 9, 10,
+19). Codex's conditions if it is ever built: **preserve the force and its reaction exactly once**, and check
+**sign, reference origin, body DOFs and rotational work on every path.** Codex adds explicitly that its advice
+**gives no authority to enable it** — correctly, since a peer cannot authorise anything.
+
+**What still stands, and it is the useful part:** the hand's own roll and pitch moment about the board is computed
+at `:4504` and discarded at `:4357`/`:4735`, so **a hand in the water cannot roll or pitch the board at its own
+lever** — a layback leans on the feet, not on the hand. And `58396bff`'s scope (*"drag a hand in the face to
+stall"*) still reads as an omission rather than a decision.
+
+### 2. Q1 — ANSWERED
+
+> *"The paired angular impulse at a hard stop is the constraint reaction. Finite braking alone cannot guarantee
+> closure, especially at a moving limit. If inertia changes, separate momentum due to the stop from momentum due to
+> the inertia change."*
+
+So of the two options put to Codex, **it is the first**: pair the clamp's own `Δ(I·rate)` as a constraint reaction.
+**Making `braking` sufficient cannot work** — and note the limit here *is* moving, because the hip's range is
+`stanceRoom(depth)` and depth changes under it. The third sentence is a trap nobody had named: **`HIP_PITCH_INERTIA`
+is not constant across a depth change, so the momentum bookkeeping must separate the stop's impulse from the
+inertia change's.** A constraint reaction is force-class, so this is **the owner's** too.
+
+### 3. Q2 — ANSWERED, and rows 1 and 2 are UNBLOCKED
+
+> *"Use the physical pelvis point (part 0) and the rotor torque axis `this.across` in the same frame as `couple()`,
+> with an explicit neutral offset and sign. Drive visual and physical trunks from that one state. Decide which
+> coordinate is constrained (feet and solved COM) and solve one compatible pelvis translation; stacking
+> `backForMass` on top can move the pelvis twice. Check regular and goofy and the board frame under bank."*
+
+**Builder dispatched** on exactly that, in its own worktree, behind an opt-in switch with the default to be proven
+unchanged. Codex's two rig additions are in the brief: **share the pelvis pivot and a single mass-position
+correction**, and **keep the hand target free to change at similar leg heights** (V13 found 3 distinct carriages at
+one leg state).
+
+### 4. THE BIG ONE: ROW 2 HAS NO USABLE NUMBER, AND MY HEADLINE TO THE OWNER IS WITHDRAWN
+
+I told the owner video 12 *"measured row 2 directly — 80° of trunk while the hips barely moved."* **Three
+independent findings have since taken that apart, and all three arrived within the hour.**
+
+1. **The trunk angle has an admissibility gate of its own** — the exact analogue of the leg chain's — and V13 is the
+   first read in thirteen to test for it. Projected shoulder→waistband ÷ head length must sit near **1.6–1.8** for
+   the trunk to lie in the image plane. **Six attempts: two clean (and both were *vertical* trunks), one marginal,
+   three refused. No visibly-folded frame has ever passed it.**
+2. **The companion ruler has a confound.** Hip-above-deck ÷ head length moves with **stance width** — the feet
+   moving apart lowers the hip with **no knee change at all**. V12's ×0.84 was never checked for equal foot
+   spacing. Codex adds that **the ± 0.17 contains 1, so it permits a modest hip drop just as much as no change.**
+3. **And the decisive one: a span is not a lower bound.** Foreshortening can only shrink a **single** angle from
+   vertical under a level camera **with fixed yaw**. *"Differences of two projected angles are not automatically
+   lower bounds on true angular travel when yaw changes. A fixed lean swivelled from facing the lens to side-on
+   changes its apparent angle with zero change in anatomical flexion."* **V12's two frames sit 2.4 s apart inside a
+   turn.** V13's own consolation — *"foreshortening only shrinks an angle, so all four spans are safe as lower
+   bounds"* — is refuted by its other half.
+
+> **After thirteen clips there is no gated measurement of trunk angular travel anywhere in the series.** Not 80°,
+> not 60°, not a rate. **Any 80-degree image-plane change is a reference for visual range, not a prescribed rotor
+> angle.**
+
+**The builder was corrected twice in flight** and told not to tune to any footage angle. **Rows 1 and 2 are
+unaffected in their justification**, because that justification is structural and needs no camera:
+`HumanoidRig.ts:1383–1385` interpolates the drawn trunk from leg depth, so **folding at a fixed leg depth is
+impossible at any value.** The acceptance test is row 3's capability question, not a magnitude.
+
+**This is my recurring error for the record, and it is the same one:** one clip, two frames, promoted to a headline,
+then handed to a builder as an acceptance number. The rule stays *say the population with the number* — and now
+also **say the gate with the angle.**
+
+### 5. Video 13 (PR #410, not merged) — and its headline is refuted too
+
+The clip is one unbroken 17.7 s shot at Kandui. The reader published **"one posture held 8.75 s continuously
+visible."** Codex re-read it at **2160×3840** — about 3.6× the reader's 594 px canvas — and found:
+
+- **2.31–2.66 s** hips near knee height, thighs approaching level, one arm trailing; **3.14 s** both legs lengthen
+  and both arms project forward with the upper hand above the head; **3.45–3.70 s** the rider bends again. **One
+  clear compress–extend–compress episode while setting the line**, with the board heading changing through it.
+- **The rider is hidden at 4.68 s and 8.99 s, and only his legs are visible at 11.32 s** — so a *continuous* hold is
+  **unverifiable**, never mind measurable.
+- A quiet supported tube trim **does** exist: 7.15, 8.08, 12.67, 13.44, with small adjustments, and a **distinct
+  late release at 13.72–14.07**.
+
+**Row 12's duration and row 15's both-hands-low count must be corrected before either is quoted.** The reader has
+been resumed to fix its own document and PR.
+
+**What survives from V13, and it is a lot:**
+- **Row 3 is three-times-not-reproduced: 18 resolved transitions, three riders, not one instance** of the two
+  channels moving in opposite directions. Keep it as rows 1–2's acceptance test; **strike any reading of it as a
+  frequency.** The footage does not ask for this to happen often — it asks that the engine not make it impossible.
+- **Row 5 takes its first miss: the arm lead is absent in 3 of 3 direction changes.** The tally goes 10 of 11 across
+  four clips → **10 of 14 across five.** Caveat kept: every direction change in this clip is inside a fast hollow
+  barrel section — no open-face snap in 17.7 s.
+- **Row 6: 0 pump half-cycles in 1.70 s of trim.** The 0.55–0.60 s cadence now stands on 2 clips, 1 weak dissent and
+  **3 clips of "no cycle present."**
+- **Row 10 NOT MEASURED, and said so** — one knee admissible (thigh/shin 1.10), the other refused (2.66). Row 10
+  stays at V8's one clip, two frames, **on footage that finally met the §6 geometry ask.**
+- **Row 18:** the face is resolvable at 77–102 px, gaze down the line and below horizontal. Still no head-yaw
+  figure, because **no frame has both the face and the board's nose legible** — that is the next footage ask.
+
+### 6. ☠️ A STALE-FRAME FAILURE THAT DEFEATS BOTH EXISTING DEFENCES
+
+With the pane **hidden**, decode froze while `document.hidden` reported `false`, `readyState` was 4, every seek
+resolved, `currentTime` returned exactly what was asked, **and the canvas stamp was correct while the picture was
+seconds old.** It produced two tidy 1.4 s runs of identical frames that read as editorial freeze-frames and **would
+have been published as data.** Caught only by an **out-of-order probe: 45 pairs, all zero, including frames 7 s
+apart.** Second new cause: **a YouTube Short carries two `<video>` elements after a reload**, and
+`document.querySelector('video')` returns the empty one. Fix: show the pane, reload, select by `videoWidth > 0`.
+
+Also: the binding cap on magnification is the **594 px canvas, not the viewport**, so a 700 px rider caps at 0.814×
+however it is drawn — **paired comparison frames cost nothing in scale.**
+
+### 7. Process note
+
+A subagent switched the shared checkout to its own branch mid-commit, moving it off the branch this session was
+committing on. **No work was lost** (the row-19 commits were already pushed and `main` was untouched), but from now
+on **every agent that touches git gets a worktree.**
