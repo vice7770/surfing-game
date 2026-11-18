@@ -3682,3 +3682,58 @@ Codex, reviewing `f4d0a09a`. **Relayed to the builder with an instruction to CHA
 - **The detached body starts at the outgoing pose:** `surfer.start(rider.handoffState(this.handoff))` (`:479`, `:516`), seeded from *"the rider's own body, its parts where they were."*
 
 > **So `separate`'s frozen `phase`/`upright` CANNOT produce an upright rider under the "Wiped out" prompt. Production never reads it after the rider lets go. It matters only to probes calling the class directly — which is exactly what this handoff's note about it is for.** **And the same reading clears PR #425's own drawn palm: its `saveDown === 1` branch can never be reached after separation.**
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ `claude/ride-all-three` (PR #426): ALL THREE SWITCHES ON ONE BRANCH, AND THE COMBINATION IS NOT WORSE
+
+**The owner's line:**
+
+```
+git fetch && git checkout claude/ride-all-three && npm run dev
+?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&armCarry=on&trunk=mass&bodyBank=hip
+```
+
+**90 Canyon riders on his own address and spot**, seatbelt read off the solver and printed (**400 × 451 = 180 400**, object wrapper, spin-up 63.6 s, `search` echoed), **`SINK=0.06`**, every run cut at its first `attached == 0` with the kept count in every row, **plain medians.**
+
+| arm | `tip` of 90 | first `tip` frame | ride s | roll peak ° | pinned % | cone | slips |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **ships** | **90** | 46.0 | **1.3333** | **65.65** | **51.96** | 6 | 0 |
+| `armCarry` | 90 | 46.0 | 1.3333 | 65.65 | 51.96 | 6 | 0 |
+| `trunk` | 90 | 46.0 | 1.3333 | 65.65 | 51.57 | 6 | 0 |
+| `bodyBank` | **66** | 38.5 | **1.0833** | 52.43 | 32.25 | 28 | 2 |
+| trunk + bank | 66 | 38.5 | 1.0833 | **51.76** | **31.14** | 28 | 3 |
+| **all three** | **66** | 38.5 | **1.0833** | **51.76** | **31.14** | 28 | **3** |
+
+**All three together equal or beat `?bodyBank=hip` alone on every quantity named** — same `tip` and frame, same ride, **lower** roll peak and **lower** pinned share. **Cost: one more `foot slip` (3 vs 2) and 106 fewer live frames.** **The bench reproduced both of #421's published rows to the decimal before anything new was read off it.**
+
+### Three findings beyond the table
+
+1. ⭐ **`?armCarry=on` adds NOTHING to the physics in any combination — measured, not asserted.** Each of four arm pairings is **bit-identical** to its no-arm partner once the drawn hand points and carriage read-outs are set aside: **3 041 500 values, zero differences.** **It is exactly the drawing-only channel it was built as.**
+2. ⭐⭐ **`?trunk=mass` FIRES HARD AND STILL DOES NOT MOVE THE FALL.** The fold is non-zero in **1 399 of 7 149 live frames (19.6 %), peaking at 0.748 rad = 42.9°** — **not dead code** — and it moves **342 757 of 865 859 values** against `ships`, diverging from frame 208. **Yet `tip`, the median first-tip frame, the median ride and the roll peak are unchanged to every decimal printed.** **On this bench the trunk's mass fold rewrites the ride in detail without changing whether or when he falls.**
+3. **One real interaction**, in #421's own read-out: worst-case CoP relief falls from **10.50 m (bank alone) to 2.24 m (all three)** — a factor of **4.7** — while `copMoment`'s peak is unchanged at **271.30 N·m**, and the firing rate barely moves (47.6 % → 47.3 %). **#421's own published 3 061 of 6 425 reproduced to the frame on the combined branch.**
+
+### The proofs
+
+| | values | differing |
+| --- | --- | --- |
+| each switch alone vs its source branch (4 comparisons) | **791 597** | **0** |
+| default vs `main` | **201 571** | **0** |
+| the 6 read-out columns `main` lacks | 10 392 | **0 non-zero** |
+
+**Suites:** `tsc -b` clean · `src/physics` **657 passed / 21 expected fail** · `src/scene/rig` **263** · `src/game` **485** · **`SurfZoneRunner.test.ts` by hand 43/43.**
+
+**The instrument can fail, as required:** two **one-part-in-10⁹** perturbations both caught — `ARM_SPREAD` 0.7 → 0.7000000007 moved **9 465 values**, `FOOT_FRICTION` 0.9 → 0.9000000009 moved **53 948**. Both reverted, repo verified clean.
+
+### The conflicts were resolved MECHANICALLY, not by eye
+
+**15 blocks across SEVEN files** (the brief said six — `src/game/PhysicalMode.test.ts` conflicts too). Re-written in **`diff3` to expose the base**, then: **base-empty blocks → ours-then-theirs verbatim (8 of 15)**; **single-line blocks → `difflib` insertions from the base, REQUIRED TO BE PURE INSERTIONS OR ABORT (7 of 15).** **Verified both ways afterwards: the trunk merge gained exactly its 131 added lines, body-banks exactly its 1 273, and `AttachedRider.ts` and `PhysicalMode.ts` are pure insertions in both directions — not one line removed.** **No conflict required a judgement call about behaviour.**
+
+### ☠️ TWO TRAPS, AND THE SECOND PRODUCES A CLEAN-LOOKING LIE
+
+1. ☠️ **"CoP-pinned 52.0 %" is NOT the share of frames with `limit === 'tip'` — that reads 16.50 %.** **52.0 % is the share with `limitTime.tip > 0`, the step's decaying memory.** **Anyone re-measuring "pinned" off `limit` would publish a third of the figure and conclude the bench was broken.**
+2. ☠️ **In zsh, `SECONDS=<x> node bench.mjs` goes through zsh's own special INTEGER variable.** **`4` survives as `"4"`, but `0.5` arrives as `"0"`, every run ends at frame 1, AND THE BENCH STILL PRINTS A TIDY SUMMARY WITH NO ERROR.** **Use `env SECONDS=…`.** **Published 4-second benches are unaffected — but any sub-second horizon passed that way has silently never run.**
+
+**And a correction to me: `AttachedRider.separate` is at `:5428–5433` on the combined branch, not `:5227–5232`** — the merge shifted it ~201 lines. **I have been quoting the `main` number in briefs all session; it must be quoted with its branch.**
+
+**#421's read-out fault was carried across UNFIXED as instructed**, and confirmed harmless: the `tip` counts come off `limit`, set from `copX`/`freeX` **before** that line, and **nothing outside `AttachedRider` and its tests reads `centreOfPressure` at all.**
