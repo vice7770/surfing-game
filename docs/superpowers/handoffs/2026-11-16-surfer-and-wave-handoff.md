@@ -2563,3 +2563,36 @@ Two leads: **+0.16 s** (t = 6.60, **inside the broken lip**) and **+0.14 s ± 0.
 - **Fifth clip, fifth quality ceiling** (flat 1080, nothing above). Canvas→screenshot scale **1.0 at 800×640** reproduced a third time.
 
 **The owner's video queue is now empty.**
+
+---
+
+## 2026-11-18, close of the 11–13 thread — CODEX VERIFIES BOTH BRANCHES INDEPENDENTLY, AND QUALIFIES ONE OF MY NUMBERS
+
+**Codex's final review: `codex/surf-motion-11-13 @ fe55d9b4`, `docs/research/new-rider/3.5/independent-video-review-11-13.md`.** It declares the clips 11–13 handoff closed on its side. **The owner relayed the document itself**, which is how its new sections reached this session.
+
+### It verified both builders' branches by reading them, not from our reports
+
+| branch | what Codex confirmed |
+| --- | --- |
+| **#407** head `684719d4` | contains `816f3903`, and **`renderPoint` uses the signed `place.across` directly** — the latch multiplication really is gone |
+| **#411** head `62847809` | **the pelvis ownership guard is present**, it **uses the effective session config** (not the URL), and **the independent neutral-geometry check exists** |
+
+**That is a second reader confirming the two things that mattered most** — the arm fix's representation change, and the trunk build's three safeguards. It also notes independently that **default trim renders more upright** on the trunk branch, and that **the hip rotor stayed quiet in 42 of 60 cases are builder-reported results**, correctly marked as not independently reproduced.
+
+### ⚠️ A FRAME QUALIFICATION ON A NUMBER I GAVE THE OWNER
+
+> *"The reported 0.396 m to ≤0.06 m comparison is the carriage contribution to a hand target, upstream of the skinned wrist."*
+
+**I told the owner it was "measured on the actual drawn hand." That overstates it.** `renderPoint` yields the point the rig **aims at**; the **skinned wrist** is downstream of the IK and was never measured. **So the bug reached the rig's hand target, and how much of 0.396 m survives to the visible wrist is unknown.** The fix's bound (≤0.06 m/frame) is on the same quantity, so **the comparison is sound and only its name was wrong** — but a 0.4 m jump in a hand target is not the same claim as 0.4 m of visible wrist, and this file's whole subject is that distinction. **Corrected to the owner.**
+
+**This is the twenty-ninth entry in the same family**, and note where it came from: the builder wrote *"the jump reached the drawn point"*, which was accurate, and **I escalated "the drawn point" to "the actual drawn hand" in a sentence to the owner.** The error was introduced in the retelling, not in the measurement.
+
+### The skill's gate is corrected where it lives
+
+**Main's skill never carried the 1.6–1.8 constant** — I said earlier that it was "telling the next reader" to use a refuted number and **that was wrong**: the gate exists only on the unmerged `claude/video-13`. **Corrected there instead of in a second PR** (`33167f83`, pushed, #410 updated), so the gate and its correction **merge together** rather than the owner merging a known-wrong constant and a fix for it separately. Reused the clip-13 reader's existing worktree rather than creating one, with the disk at 98 %.
+
+### The Canyon objective, third and last time
+
+The review the owner relayed still opens with *"For Canyon, the owner's target is one bottom turn that carries speed into the climb."* **Codex's covering message now says only that "the Canyon bottom-turn speed and feel remain for Vicente to judge"**, which is a weaker and correct statement.
+
+**Relaying a document is not endorsing a sentence inside it**, so the objective is still unconfirmed and **nothing is built against it.** The question is in front of the owner with the source named. **The review's judging rubric for it is worth keeping either way**, because it is a description of what to watch rather than a target: follow the board from the descent into the trough, through the curved section, into its first sustained climb; **the banked board's change of heading should FOLLOW contact** between rider, board and water; **the rider may lower the hips, fold at the trunk or reach BEFORE the nose visibly comes around**; during the climb the rider can release the turn while keeping enough travel along the face to continue. **Speed through the water and the arc of the board belong to the board model, and the camera pan gives neither a calibrated speed nor a turn radius.**
