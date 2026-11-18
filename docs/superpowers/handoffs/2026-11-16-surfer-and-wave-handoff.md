@@ -3745,3 +3745,35 @@ git fetch && git checkout claude/ride-all-three && npm run dev
 **Both traps are at the top of the files**, and a third in `compare.py` — *a zero means nothing unless the instrument can see a difference*, with the two one-part-in-10⁹ perturbations named as the thing to repeat, **and a warning that `SKIPCOLS` is both the honest way to compare across commits and the easy way to exclude the column that moved**, which is why it is echoed on every run. **That last one is a good instinct nobody asked for.**
 
 **And it checked rather than assumed, on all four counts:** `git diff 6f844999 efa6e15b -- src` is **empty**, so the merge and every number stand; **the committed copy is provably the same bench** — the eight import prefixes had to change for the new location, so it was re-bundled at the new path, re-run and compared against the file that produced the published row: **211 963 values, zero differences**; `docs/` is outside `tsconfig`'s `include` and `vitest`'s globs **by construction**, with `tsc -b` re-run clean afterwards; and both Python scripts were **smoke-run from their committed paths** and reproduce the published rows. **The PR body never claimed the bench was off the branch, so nothing in it went stale and it was left alone.**
+
+---
+
+## 2026-11-18 — ⭐⭐⭐ THE OWNER RODE ALL THREE SWITCHES TOGETHER. VERDICT: BARELY FELT, CORE COMPLAINT UNCHANGED, ARMS A WIN.
+
+**His address, confirmed, on `claude/ride-all-three`:** `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&armCarry=on&trunk=mass&bodyBank=hip`
+
+**His words:**
+
+> *"the stability might be a bit better but the surfer cant still turn and falls. also the surfer moves his arms as he turn looking a bit more real."*
+
+| what was measured | what he felt |
+| --- | --- |
+| `tip` **90/90 → 66/90**, pinned 52.0 % → 31.1 %, roll peak 65.7° → 51.8° | **"might be a bit better"** — hedged, barely perceptible |
+| `?trunk=mass` fires in 19.6 % of frames to 42.9° and moves 342 757 values | **not mentioned at all** — consistent with its measured null on the fall |
+| `?armCarry=on` is **bit-identical in the physics** across 3 041 500 values | ⭐ **"moves his arms as he turn looking a bit more real"** — **the one unambiguous win** |
+
+### Three things this settles
+
+1. ⭐⭐ **A 27 % cut in tipping is NOT FELT.** 66 of 90 still fall, so **every ride still ends the same way** — and a failure that happens on every ride does not become noticeable by happening slightly less. **To be felt it has to move from "every ride" to "most rides survive". That is a far larger change than anything built today, and it reframes what "progress" has to mean here.**
+2. ⭐ **The cosmetic channel is the win, and it was the cheapest thing built.** `?armCarry=on` is **proven inert in the physics** and he noticed it unprompted. **Worth remembering when choosing what to build next.**
+3. ⚠️ **He names TWO complaints and they must not be pooled: "cant still turn" AND "falls".** The whole fall track has treated them as one event. **A rider who cannot initiate a turn and a rider who falls out of one are different failures**, and today's diagnosis (`tip`, the CoM leaving a 0.260 m support) is a story about **falling out of a turn he has already begun.**
+
+### ⚠️ And the shallower turn: NOT reported
+
+**He was asked directly whether 52° instead of 66° felt dead, and did not mention it.** **That is "not reported", not "approved"** — recorded as unanswered rather than taken as consent.
+
+### The next thing for him costs nothing and has never been tried
+
+**`?askCap=4.5` is already on `main`.** Step 3.5f measured that **below `PLANING_DROP = 3` m/s the ask cap is EXACTLY 0** — **100 % of 541 live frames of a slow Canyon rider** — so the stick asks for no lean at all down there, and `?askCap=4.5` removes that gate. **He has never ridden it.**
+
+⚠️ **It is NOT a diagnosis** — Codex's correction stands: *"a moved or unmoved fall with askCap cannot diagnose the cause alone"*, and separating suppression from support loss needs the full paired set (stick, cap/planing, achieved bank, loaded foot contact, local rail, travelled course, wave-relative progress). **But as a RIDE it is free, and "can I turn at all" is exactly the question it bears on.**
