@@ -344,6 +344,17 @@ export interface SurfZoneConfig {
    */
   bankClamp?: 'off';
   /**
+   * 'hip': **THE BODY BANKS WITH THE DECK** (step 3.5i, the spec's step 3.1; `RideSessionOptions.bodyBank`,
+   * `AttachedRiderOptions.bodyBank`). Turning, `3.5/board-slips-away.md` measured the deck banking past 20 degrees at
+   * 0.683 s while the body does not bank with it, on a foot support 0.260 m across in every stance — so the two may
+   * differ by only 10.9 degrees before the centre of pressure pins at the support's edge (`limit = 'tip'`, 90 of 90
+   * riders). Two halves of one mechanism: the hips drive the `swing` rotor on the capture point's own trigger at the
+   * gain its units derive, and `project`'s bound gains the rotor's own angular momentum rate — the term the
+   * centre-of-pressure identity has and the code left out. The new surfer (`?rider=new`) only; no force is invented,
+   * no hull law is touched. Every spot. The `?bodyBank=hip` dev switch, opt-in, to ride, pinned off in online rooms.
+   */
+  bodyBank?: 'hip';
+  /**
    * '1.5' | '2' | '4' | '4.5': **the minimum carved radius the rider's COMMANDED lean is bounded by, m** (step 3.5a,
    * the owner's ruling of 2026-11-17 *"cap the ask"*; `RideSessionOptions.askCap`, `AttachedRiderOptions.askCap`), so
    * the bound on both the balance's own reference and the steer's request is `θ_max = atan(v² / (g R_min))` — 4.9° at

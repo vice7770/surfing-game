@@ -563,6 +563,10 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...ankleRangeSwitch(),
     // `?bankClamp=off`: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (step 3.4i; step 3.4h read `bankFall` at 70.00 exactly in 21 of 24 runs, so the fall classifier's 45 degree threshold sat on a truncated column), opt-in, to ride.
     ...bankClampSwitch(),
+    // `?bodyBank=hip`: THE BODY BANKS WITH THE DECK (step 3.5i, the spec's step 3.1) — the hips throw the trunk against the
+    // rider's own mass on the capture point's own trigger, and the contact's bound gains the rotor's angular momentum rate,
+    // the term the centre-of-pressure identity has and `project` left out. Opt-in, to ride.
+    ...bodyBankSwitch(),
     // `?askCap=1.5|2|4|4.5|9`: the lean the rider ASKS for — the balance's own reference and the steer's request alike —
     // bounded by atan(v²/(g R_min)) at every speed on this minimum carved radius in metres, in place of the shipped
     // 4.5 m with no ask at all off the plane (step 3.5a, the owner's ruling of 2026-11-17), opt-in, to ride.
@@ -1169,6 +1173,25 @@ export function ankleRangeSwitch(search?: string): { ankleRange?: 'load' | 'wide
  */
 export function bankClampSwitch(search?: string): { bankClamp?: 'off' } {
   return devParam('bankClamp', search)?.trim().toLowerCase() === 'off' ? { bankClamp: 'off' } : {};
+}
+
+/**
+ * The `?bodyBank=hip` dev switch (`SurfZoneConfig.bodyBank`, step 3.5i, the spec's step 3.1): opt-in, **the body
+ * banks with the deck**. `3.5/board-slips-away.md` measured the mechanism — turning, the deck banks past 20° at
+ * 0.683 s, the body does not bank with it, the foot support is 0.260 m across in every stance, so the body's lean and
+ * the deck's bank may differ by only **10.9°** before the centre of pressure pins at the support's edge
+ * (`limit = 'tip'`, 90 of 90 riders), and from there the contact can no longer put force where the body needs it.
+ *
+ * Two halves of one mechanism, both on this one switch: the **hips** drive the `swing` rotor on the capture point's
+ * own trigger at the gain its units derive (`m g` N·m per metre), and the **contact's bound** gains the term the
+ * centre-of-pressure identity has and `project` leaves out — a body whose trunk is being thrown does not have its
+ * ground reaction pass through its centre of mass. Nothing is prescribed and no force is invented: the rotor's torque
+ * is bounded by SWING_TORQUE, its travel by the stance's own hip range, and its couple was already booked on the
+ * board. `AttachedRiderOptions.bodyBank` has the derivation. Nothing on the default rider, no hull law, no new force.
+ * Anything else, the contact's bound exactly as it ships.
+ */
+export function bodyBankSwitch(search?: string): { bodyBank?: 'hip' } {
+  return devParam('bodyBank', search)?.trim().toLowerCase() === 'hip' ? { bodyBank: 'hip' } : {};
 }
 
 /**
