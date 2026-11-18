@@ -2660,3 +2660,45 @@ Codex read clip 14 at 1080×1920 in its own tab. **It reproduces the finding's d
 **Codex's instruction, adopted:** *"compare achieved game stroke in metres only when a calibrated reference exists"*, and **keep leg depth and trunk angle separately observable** in every brief. **Relayed to video 15's reader while it was running**, told not to try to confirm or beat 0.22 s, and instead to establish for itself whether the clip contains a genuinely trim stretch — no roll, no heading change — before asking which channel cycles in it. **A clip with no such stretch is a legitimate answer.**
 
 **Codex is sending clips 15 and 16 separately.** Ours are reading in parallel and blind, which is the arrangement that has produced every correction in this thread.
+
+---
+
+## 2026-11-18 — INDEPENDENT CLIP-15 READ ARRIVES EARLY, AND IT MAY MEAN ROW 6 IS THE WRONG QUESTION
+
+Codex read clip 15 (**Mikey February, 1080×1440**) and sent its observations **"for the reader after its independent pass"**. **They are deliberately NOT being forwarded to our clip-15 reader until it reports** — the blind-read arrangement has produced every correction in this thread, and Codex asked for exactly that order. Held here.
+
+**What it saw — two clear examples of a low trough entry releasing into a climbing board:**
+
+| t | what |
+| --- | --- |
+| 7.02 | both hands lower |
+| 7.25–7.46 | **the chest reaches nearly level**, one hand nears the water, the other trails |
+| 8.10 | **the legs lengthen and both arms open with the nose up** |
+| 10.68–11.14 | the low reach recurs |
+| 11.50 | the body extends into the climb |
+| 11.79 | the high arm and the board rise |
+| 12.20 | **the board is nose-down and the knees have tucked again** |
+| 13.19 | another low folded reach, preceding a wider turn |
+| 14.04–14.89 | **upright chest, low hips, opposed hands** |
+
+### ⭐ THE INTERPRETIVE POINT, AND IT IS BIGGER THAN THE TIMESTAMPS
+
+> *"This clip distinguishes **bending for the turn, extending on the climb and re-compressing on redirection**; counting these phases as **periodic straight-trim pump strokes would overstate the evidence.** Let each transition be available **without cycling every trim**."*
+
+**Two independent clips now point the same way.** Clip 14's "pump" turned out to sit inside a passage where **the board was rolling and turning from oblique to nearly end-on**; clip 15's depth changes are **phase-locked to the turn** — down to load it, up through the climb, down again on the redirect. **Neither is a periodic pump in trim.**
+
+**So the hypothesis worth putting to the owner is that row 6 asks the wrong question.** Row 6 is *"pumping in trim is trunk fold, not leg depth"*, and **both halves may be answering a pattern the footage does not contain.** **Stated as a hypothesis, not a conclusion:** fifteen clips, and **the one window anybody called a periodic trim pump has now been shown to be a turning passage.** The build implication is Codex's own sentence — **make each transition reachable; do not make the engine cycle.**
+
+### THE CONNECTION CODEX DID NOT MAKE: THIS IS ROW 13
+
+**`engine-target.md` row 13 is already *"A low that the turn CONSUMES, rather than one the turn CAUSES"***, measured as *"the sign of the leg-depth change through a turn's load beat — compressing into the arc, or extending through it"*, and classified **"expressible either way today" / unknown, with no clip behind it.**
+
+**Clip 15 is evidence for row 13, and it is the first.** *Bend for the turn → extend on the climb → re-compress on the redirect* is precisely that sign question answered: **the low is spent loading the turn and the body extends through the climb.** **So row 13 moves from "unknown, no evidence" to "one clip, phases named, no calibrated depth"** — and it is **already classified expressible either way**, which means **nothing needs building to allow it; what is needed is for the transitions not to be slaved to a cycle.**
+
+### Row 19's first footage sighting, still not a measurement
+
+> *"The low hand at 14.89 disturbs the surface; **contact is plausible and its load unknown**."*
+
+**Fifteen clips have said contact is unmeasurable; this is the first to call it plausible.** It stays **unmeasured** — and row 19's own gap is that **the hand's residual roll/pitch moment is discarded**, so even a measured contact would have nowhere to act. **No speed gain, pressure split or calibrated depth is claimed**, and none is adopted.
+
+**Where these land, as Codex asked:** this section of the handoff; the row 13 note above; and **delivery to our clip-15 reader deferred until after its independent pass.**
