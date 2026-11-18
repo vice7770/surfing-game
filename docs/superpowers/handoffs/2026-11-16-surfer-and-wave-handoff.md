@@ -2071,3 +2071,68 @@ On the f73 face with `?mountAgree=deck` **the probe's own counterfactual `design
 **`computer zoom` buys NO resolution** (its own result says *"cropped from a screenshot, not magnified"*) — five magnifications bought nothing. **A runaway `javascript_tool` loop is killed cleanly by RELOADING THE PAGE.** **`requestVideoFrameCallback` NEVER FIRES WHILE THE PANE IS HIDDEN**, so the seek that cured stale frames at 1440p needs the pane shown — it fell back to poll-based seeking. **Both cut detectors are blind on same-rider footage; only a whole-frame sheet at ≤0.1 s settles a cut.** **An automated 60 Hz trunk tracer was built, validated, FOUND READING 9° WHERE THE HAND READ 39–43°, and discarded** — recorded so no later round rebuilds it. **Slow motion: 2× and 4× excluded, but by duration comparison only** — **weaker than clip 10's whole-cycle exclusion**, because no ballistic quantity was available.
 
 **Eleventh consecutive clip with nothing for head and gaze.** That row has now failed eleven times and should stop being asked of video.
+
+## ⭐⭐⭐ STEP 3.5g (PR #407, **NOT MERGED — the classifier refused, the fourth time, so it is the OWNER'S**) — **THE ARM CARRIAGE CHANNEL. THE FIRST GEOMETRY ROW SHIPPED, AND THE FIRST THING THE OWNER WILL SEE.**
+
+Branch `claude/arm-channel`, **descended from `main` — pushable with NO rebase, so it will auto-close.** **11 files, 1 115 insertions, 4 deletions** — all four the usual switch-list lines (the import list, `main.ts`'s comment and `undefined`-pins, `SurfZoneRunner`'s passthrough), **caller verified.** It renamed itself from 3.5f to **3.5g** because another session took 3.5f mid-build.
+
+### THE SWITCH
+
+**`?armCarry=on`** — the whole channel. **`?armCarry=rest`** — the rest carriage only, whatever the stick says (row 15 alone, for an A/B). Conventions followed, **and `armCarry: undefined` is pinned in `main.ts`'s online overrides with a test that reads `main.ts` — which matters more than usual here, because the drawn hands are ON THE WIRE (`RIDER_SNAPSHOT.points`).**
+
+### IT BUILT THREE ROWS AND HANDED BACK TWO — the discipline is the point
+
+| row | built | why |
+| --- | --- | --- |
+| **4** arm carriage as its own channel | **yes** | the drawn hand is placed from the **arm** and **trunk** parts; the pivot decision moves neither |
+| **5** the arm **leads** then **holds** | **yes** | independent once row 4 exists |
+| **15** both hands low over the deck | **yes, to the WAIST** | **hands at the *deck* is a trunk fold** (V8's most-crouched frame: hands at the deck, leg chain 95 %) — that is **row 2, gated.** Stops at **0.60 m**, below the pelvis's 0.78 m |
+| **6** pumping is trunk fold not leg depth | **NO** | its own row says *"downstream of rows 1–2"* — the channel it must run in **is** the gated drawn trunk |
+| **11** the down-transition is not one thing | **NO** | its own row says *"a constraint on rows 1–3, not separate work"*; two of its three forms are trunk forms |
+
+> **Building 6 or 11 without the trunk would have produced a leg-depth pump and a single down-transition — exactly what those rows exist to say is wrong. The gate held.**
+
+### WHAT THE OWNER WILL SEE — every figure off the DRAWN points, never a commanded value
+
+Read off `AttachedRider.renderPoint` (what the rig solves `drawnHand` from and what goes on the wire), **never off `armCarriage.reach`:**
+
+- **Stick straight:** both drawn hands drop **>0.25 m** and draw **in** along the board, on the stringer inside the rails to 1e−9, **legs untouched** (leg height and both drawn feet identical to the plain rider's **to the last bit**).
+- **Stick over:** the **rear** hand ends **>0.5 m above** the lead; the lead goes **out across** toward the inside rail, the rear the **other** way. **Mirrored by the stick's sign to 2 dp, swapped by stance.**
+- **Stick hard over:** the rear hand goes **above the head** — **1.55 m against the head's placed 1.38 m.** **A half stick keeps the pairing and does NOT raise it.**
+- **Four distinct drawn carriages at ONE leg height** (sticks 0 / 0.45 / 0.8 / 1), against the footage's ≥4.
+- **The lead, on 24 arms** (3 tow speeds × 2 stances × 4 sticks, flat water): hand at a fifth of its carriage in **1–2 frames**, board's first degree of roll at **6** → **+0.0667 to +0.0833 s, `qt(0.5)` +0.0833, positive 24 of 24, 18 of 24 inside the footage's 0.07–0.30 s band.** ⚠️ **One frame of resolution, threshold-dependent, flat water not a wave — the sign is solid, the magnitude is one frame wide.**
+- **The hold:** 0.2 s after the stick returns the carriage is still **>60 %** loaded, falling by 0.5 s.
+- **Snap composes rather than fights:** `HumanoidRig.snapHands` copies the snapshot point then lerps toward the water, **so the carriage sets where Snap's lerp starts.**
+
+### DEFAULT BYTE-IDENTITY — measured, as a test
+
+**The seven part masses, the board's full pose and the rider's own state, every frame of 3 s — 180 frames × 42 columns = 7 560 values a run — stick hard over, BOTH switch values against the default: 0 differences.** Reference arms exact: **`f73-l` 18 of 18, 0.617–2.533 s, `qt(0.5)` 1.450 s** and **`s16-l` 18 of 18, `qt(0.5)` 1.033 s**. **Canyon B byte check `a367d938f15fa934` / `9e5831f80e38abd9` — the published reference exactly**, 3 600 steps, **fresh spin-up (47.2 s)**, wrapper an **object** prepended so `devTools.ts:9` did not silently bench the default, grid read **400 × 451 = 180400**. Suites: `tsc -b` clean, `src/physics` **60 files / 651 passed / 21 expected fail**, `src/scene/rig` + `src/game` **70 / 742**, `SurfZoneRunner.test.ts` **43 of 43** by hand. **And `armCarriage.ts` contains no solve, ledger, mass or force code — the caller grepped it; the only matches are comments saying so.**
+
+### ⚠️ TWO SEATBELT FACTS EVERY FUTURE ROUND NEEDS
+
+1. **`f73-g` IS BROKEN ON `main`, AND IT IS PRE-EXISTING — established with a control.** Its documented spelling (`FACE=1.4,7.32,5.7`, default relative entries) throws **`Error: singular` out of `inverse()` identically on an UNMODIFIED `main` checkout at the same line.** The other obvious reading gives **24 of 24 at `qt(0.5)` 1.450 s — not 4.650 s** — so **its invocation is not recoverable from the docs and nothing rests on it.** **The third reference arm is unavailable to every round until its spelling is recovered.**
+2. **⚠️ `qt(v, 0.5)` IS THE UPPER MIDDLE ELEMENT, NOT A MEDIAN.** **`f73-l`'s plain median is 1.3665 s; its `qt(0.5)` is the published 1.450 s.** **So every "median" in this track that came from `qt(0.5)` is an upper-middle quantile.** The trap was already in the handoff's trap list; **this is the first time it has been shown to change a published headline figure.**
+
+### ⚠️ TWO PREMISES OF MY OWN BRIEF IT REFUTED
+
+**(a) Row 5 is NOT "re-ordering two existing constants, no new constant".** `MOTOR_LAG` (0.05 s) and `ARMS_TIME` (0.15 s) are the clock of **`HumanBalance.arms`, which is an INERTIA** — re-ordering them moves `swingInertia` (6→10 kg·m²), `riderYawInertia` (+0.85) and `TWIST_BODY_ARMS`, i.e. **physics, inside an otherwise drawing-only switch.** **It left both exactly as they are** and gave the carriage **two NEW drawing-only constants** instead. **`engine-target.md` row 5's "no new constant" does not survive and should be corrected rather than quoted.**
+
+**(b) Gating the carriage on the balance alarm was refuted ON THE BENCH BEFORE IT SHIPPED.** Its first build faded the carriage with the margin so a near-fall would read as it ships. Measured (default rider, `PlaneWater` 6 m/s, frames 31–180, 150 frames a cell, 1 run a cell, 3 cells): **`balanceMargin` median 0.948 / 0.444 / 0.537 at sticks 0 / 0.45 / 1, lowest 0.901 / 0.003 / 0.038.** **This rider's margin sits near a half through a turn, so a margin-gated carriage would have been 7–13 % present in a median turn frame — invisible in exactly the turns it is for, and the first ride would have looked like nothing was built.** Dropped. *(Small population, quoted as the reason for a design choice, not as a figure about surfing.)*
+
+### VIDEO 11 LANDED MID-BUILD AND CONFIRMS EVERY DESIGN CHOICE
+
+It rebased, read `video-ref-11-one-ride-60fps.md`, and folded it in. **The strongest confirmation: it had built `over` to answer the TOP of the stick's throw only, off V10's bottom-turn-yes/top-turn-no and V9's roundhouse — and V11's independent "2 of 2 climbing turns take it, 0 of 2 trim windows do" survives it as a count. Designed before that read landed.** Also: **"above the head" settled** (V10 abstained because a drone hides a raised hand; V11's lens is side-on) — **that is exactly the `over` carriage**; the lead's reproduction is now **three clips, four riders**, so **`engine-target.md` §4.6's "two clips" should be corrected**; row 15's population → **4 clips**; carriage's depth-independence → **4 clips refuting it.**
+
+**⚠️ And one shape it names that the channel CANNOT draw, recorded so no round claims it:** **V11's carriage B — lead arm forward-down at chest height with the rear arm back and LOW (3 windows).** Its pairing takes the rear arm **up** and back (V5/V6/V7). **It needs no force and is not built.** Also **V11's carriage C pairs the overhead rear arm with the lead arm down-FORWARD where this draws it down-ACROSS** (V5/V6/V7's *"at the rail, board or knee"*) — **two clips point slightly different ways and it says so rather than smoothing it.**
+
+### NOTHING WAS STOPPED FOR NEEDING A FORCE
+
+**Exactly one expression changes — the standing hand branch of `renderPoint`.** `partPosition`, the seven point masses, the CoM, `bodyInertiaAt`, `riderYawInertia` and `HumanBalance.arms` are **untouched.** No clock, timer, fatigue or stamina; no self-release; nothing on the game's initiative (Ruling E). **The halves that DO need a force are named in the target and were not approached:** row 4's *"the owner's if the arms are to move the board by more than their inertia"*, row 15's *"the owner's if the hands are to do more than their existing drag"*.
+
+### ⭐ THE OWNER'S SHOT LIST, on `?canyonWaves=true`
+
+Base: `?physical&canyonWaves=true&rider=new&feltFrame=deck&riderBody=two`
+1. **`&armCarry=rest`**, stick straight — **both hands low and drawn in, legs exactly where they were.**
+2. **`&armCarry=on`**, stick straight, then **hard over each way** — **lead hand down toward the inside rail, rear arm up and back, rear hand ABOVE THE HEAD at full stick, and still up for a moment after the stick comes back.**
+3. **The same with a HALF stick** — the pairing arrives, **the overhead arm does not.**
+4. **No switch**, as the control.
