@@ -1949,3 +1949,16 @@ git merge-base --is-ancestor origin/main <branch>   # already descended from mai
 5. **Content that can be checked needs no trusted provenance.** Both of Codex's code findings were **verified here by reading before being recorded**, which is why its unverifiable origin cost nothing.
 
 **Status at the time of writing:** the file is committed at `1cd3a1df`; **Codex has not yet appended.** The six questions are open, led by **(Q1) whether pairing the hip clamp's impulse is geometry or force** — which decides whether the owner must rule — and **(Q2) which pivot and frame to agree before the trunk row is built**, which is the cheapest real change on the 18-row target.
+
+### Queue, 2026-11-18 — video 14 added. **Owner's ruling: GEOMETRY ROWS FIRST.**
+
+| # | URL | scope |
+| --- | --- | --- |
+| 11 | `https://www.youtube.com/shorts/Ew5j1uqExVA` | whole — **reading** |
+| 12 | `https://www.youtube.com/shorts/HhJo76wwkZc` | whole |
+| 13 | `https://www.youtube.com/shorts/9k-MU6Q5Lhc` | whole |
+| 14 | `https://www.youtube.com/shorts/8d_lrXoiRa4` | whole |
+
+**And the owner chose the build order when asked how long the work would take: *"geometry rows first"*.** They were given the split honestly — **the 9 geometry rows are 6–10 rounds, one to two days at this pace and estimable; the falling is diagnosed but has NO date after twenty-seven rounds** — and told that **the two halves are separable**, so they can have *"a surfer whose movement looks right, who still falls."* **They chose the look.**
+
+**The gate on rows 1 and 2:** Codex's pivot-and-frame answer (consult file Q2). **`poseHinge` already shifts the pelvis by `backForMass` to hold its estimated CoM, so building the physics rotation without agreeing the pivot risks cancelling or doubling it.** Codex is out of usage. **So the build starts with the geometry rows that are NOT gated — and row 3 is an acceptance test, not a build; row 12 the owner has already ruled (C and E).**
