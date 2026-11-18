@@ -167,6 +167,8 @@ interface Run {
   nPress: number;
   nCanReach: number;
   nCleared: number;
+  nPhantom: number;
+  nWrongSide: number;
   /** Windows: a palm-down run of frames, and what it ended as. */
   windows: number[];
   windowOn: number;
@@ -316,6 +318,10 @@ function stepRun(e: Run): void {
     const engSpanZ = rider.saveSpanZ;
     const window = rider.saveTime;
     const cleared = rider.saveCleared;
+    const feasible = rider.saveFeasible;
+    const phantom = rider.savePhantom;
+    const wrongSide = rider.saveWrongSide;
+    const beyondSigned = rider.saveBeyondSigned;
     const gap = peek(rider, 'saveGap');
     const handF = Math.hypot(rider.handLoad[0], rider.handLoad[1]);
 
@@ -342,6 +348,7 @@ function stepRun(e: Run): void {
       canReach: canReach ? 1 : 0, travelNeeded: r(travelNeeded, 4), palmX: r(px, 4), palmZ: r(pz, 4), spanX: r(spanX, 5), spanZ: r(spanZ, 5),
       down: r(down, 0), gap: r(gap, 5), extX: r(extX, 5), extZ: r(extZ, 5),
       engSpanX: r(engSpanX, 5), engSpanZ: r(engSpanZ, 5), window: r(window, 4), clearedNow: r(cleared, 0),
+      feasible: r(feasible, 0), phantom: r(phantom, 0), wrongSide: r(wrongSide, 0), beyondSigned: r(beyondSigned, 0),
       // ⚠️ The DRY-DECK palm load and the HAND-WATER force, separately: different forces, frames and denominators.
       press: r(press, 3), handF: r(handF, 4),
       inContact: rider.inContact ? 1 : 0,
@@ -372,6 +379,8 @@ function stepRun(e: Run): void {
     }
     if (Number.isFinite(press) && press !== 0) e.nPress += 1;
     if (Number.isFinite(cleared) && cleared > 0) e.nCleared += 1;
+    if (Number.isFinite(phantom) && phantom > 0) e.nPhantom += 1;
+    if (Number.isFinite(wrongSide) && wrongSide > 0) e.nWrongSide += 1;
 
     mark(e, 'tipBind', lt.tip > 0);
     mark(e, 'coneBind', lt.slip > 0);
@@ -382,6 +391,8 @@ function stepRun(e: Run): void {
     mark(e, 'palmDown', Number.isFinite(down) && down > 0);
     mark(e, 'pressed', Number.isFinite(press) && press !== 0);
     mark(e, 'clearedTip', Number.isFinite(cleared) && cleared > 0);
+    mark(e, 'phantom', Number.isFinite(phantom) && phantom > 0);
+    mark(e, 'wrongSide', Number.isFinite(wrongSide) && wrongSide > 0);
     mark(e, 'beyond', st.beyond);
     mark(e, 'fallen', rider.human.fallen);
     mark(e, 'roll20', Math.abs(roll) > 20);
@@ -411,7 +422,7 @@ function makeRun(cell: Record<string, unknown>, made: { board: BoardBody; rider:
     cell, board: made.board, rider: made.rider, water,
     frame: 0, done: false, fellAt: null, cause: '', first: {}, kept: 0,
     outXs: [], outZs: [], spanXs: [], spanZs: [], gaps: [], presses: [], handFs: [], loads: [],
-    nTip: 0, nTipX: 0, nTipZ: 0, nDown: 0, nPress: 0, nCanReach: 0, nCleared: 0,
+    nTip: 0, nTipX: 0, nTipZ: 0, nDown: 0, nPress: 0, nCanReach: 0, nCleared: 0, nPhantom: 0, nWrongSide: 0,
     windows: [], windowOn: 0, windowsCleared: 0, exit: {}, prev: null,
   };
 }
@@ -557,7 +568,7 @@ if (MODE !== 'cmp') {
       pressMed: r(median(e.presses.filter((v) => v !== 0)), 3), pressPeak: r(peakAbs(e.presses), 3),
       handFMed: r(median(e.handFs.filter((v) => v !== 0)), 4), handFPeak: r(peakAbs(e.handFs), 4),
       loadMed: r(median(e.loads), 4),
-      nTip: e.nTip, nTipX: e.nTipX, nTipZ: e.nTipZ, nDown: e.nDown, nPress: e.nPress, nCanReach: e.nCanReach, nCleared: e.nCleared,
+      nTip: e.nTip, nTipX: e.nTipX, nTipZ: e.nTipZ, nDown: e.nDown, nPress: e.nPress, nCanReach: e.nCanReach, nCleared: e.nCleared, nPhantom: e.nPhantom, nWrongSide: e.nWrongSide,
       windows: e.windows.length + (e.windowOn > 0 ? 1 : 0), windowFrames: e.nDown,
       windowMed: r(median(e.windows), 2), windowPeak: e.windows.length ? Math.max(...e.windows) : null,
       cleared: e.windowsCleared,

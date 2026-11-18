@@ -1644,7 +1644,10 @@ built, opt-in, with the default proven unchanged over **428 422 values and 90 of
 
 **The headline is a refutation of its own brief, and it is one number.** The palm does reach the dry deck and it does
 load — **median 73.1 N and a maximum of 286.45 N against the engine's own 286.5 N hand cap, 107× the compress water
-reach's 2.66 N** — and it does hold the contact's clamp open, on **14 of 176 palm-down frames in 8 of 16 runs.**
+reach's 2.66 N** — and it does hold the contact's clamp open, on **10 of 176 palm-down frames in 5 of 16 runs**
+(a published 14 in 8, recounted in §4.7 against a FEASIBLE foot-plus-palm region after the reviewer found the
+admissible region was an independent rectangle with phantom corners and the capture credit was unsigned — **both
+faults hold, both only ever flattered the feature, and neither touches the verdict**).
 **But `tip` still binds in 90 of 90 runs, 52.0 % → 52.1 % of frames, and 90 of 90 riders still fall.** Because:
 
 1. **a palm's patch edge cannot pass the rail**, so the across support can grow by **0.102 m** and no more
@@ -1660,5 +1663,6 @@ reach's 2.66 N** — and it does hold the contact's clamp open, on **14 of 176 p
 engine-target row 19's force-class ruling with it; and **the trunk fold** (`?trunk=mass`, PR #411), without which the
 hand lives in a crouch. **Row 19 itself is a NULL here: the hand-water force is bit-identical on both arms — 522
 frames, median 6.97415 N, max 63.4862 N, the same digits — because a dry palm has no water reaction.** Windows: 22,
-median 0.093 s, longest 0.441 s, **2 of 22 ending with the demand back inside the feet and the rider still riding.**
+median 0.093 s, longest 0.441 s, **2 of 22 ending with the demand back inside the feet and the rider still riding —
+and 1 of those 2 leaned on a phantom corner.**
 Rides: 9 of 90 longer, 3 shorter, 78 identical, 90 of 90 still falling, causes unchanged.

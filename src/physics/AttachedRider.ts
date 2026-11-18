@@ -2273,6 +2273,33 @@ export class AttachedRider {
    * extension is non-zero and read by nothing in the game, so it cannot change a ride.
    */
   saveCleared = 0;
+  /**
+   * **Step 3.5j, the reviewer's two support-geometry faults, measured read-only (`saveHolds`).** `project` expands the
+   * box's x and z **independently**, so its admissible region is a rectangle where the truth is the **weighted
+   * convex region of the feet plus that one palm** — `{(1−λ)f + λp : f ∈ feet, p ∈ palm, λ ∈ [0, share]}` — and the
+   * rectangle's corners can be infeasible: at full x-extension the load share is pinned, so z is pinned with it.
+   *
+   * - `saveFeasible` — 1 when this substep's free demand lies inside that convex region. **Signed by construction**,
+   *   since the palm's own patch is what enters it.
+   * - `savePhantom` — 1 when `saveCleared` is 1 **and** the demand is NOT feasible: the clamp was held open by a
+   *   point no distribution of feet and palm could have produced. **`saveCleared − savePhantom` is the honest count.**
+   *
+   * Both are written only where the extension is non-zero and **read by nothing in the game**, so the ride they
+   * describe is the ride that ran (proved: the switched arm re-run with these fields matches it value for value).
+   */
+  saveFeasible = 0;
+  savePhantom = 0;
+  /**
+   * **The capture credit's own fault, also read-only.** `HumanBalance.capture` takes `reachAcross` / `reachAlong` as
+   * **unsigned** scalars and `pastX` is `|across| − halfAcross`, so a palm on +x is credited against an escape to
+   * −x — *"the right hand cannot supply leftward support"*. A rotor may throw either way; a palm may not.
+   *
+   * - `saveWrongSide` — 1 when an extension was credited while the capture point escaped the other way.
+   * - `saveBeyondSigned` — the fall test's own `beyond`, recomputed with the credit **matched to the palm's side**.
+   *   Compare against `human.state.beyond` to see whether the unsigned credit saved a rider it should not have.
+   */
+  saveWrongSide = 0;
+  saveBeyondSigned = 0;
   /** How long the palm has been on the deck, s — the window, measured and never imposed. */
   saveTime = 0;
   private readonly savePalm = new Vector3();
@@ -5420,7 +5447,67 @@ export class AttachedRider {
     // the shipped one; the guards keep even the addition from running.
     const reachAcross = this.saveExtendX > 0 ? across + this.saveExtendX : across;
     const reachAlong = this.saveExtendZ > 0 ? along + this.saveExtendZ : along;
-    this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, reachAcross, reachAlong, load, h);
+    const halfAcross = (support.xMax - support.xMin) / 2;
+    const toe = support.zMax - midZ;
+    const heel = midZ - support.zMin;
+    this.human.capture(offset, velocity, felt, halfAcross, toe, heel, reachAcross, reachAlong, load, h);
+    // Step 3.5j, read-only: the same fall test with the palm's credit MATCHED TO ITS OWN SIDE. `capture`'s reaches are
+    // unsigned and `pastX` is `|across| − halfAcross`, so the call above credits a +x palm against a −x escape; a
+    // rotor may throw either way, a palm may not. Nothing here is read by the game.
+    if (this.saveExtendX > 0 || this.saveExtendZ > 0) {
+      const s = this.human.state;
+      const sideX = s.across > 0 ? 1 : s.across < 0 ? -1 : 0;
+      const sideZ = s.along > 0 ? 1 : s.along < 0 ? -1 : 0;
+      const okX = this.saveExtendX > 0 && sideX === this.saveSide ? this.saveExtendX : 0;
+      const okZ = this.saveExtendZ > 0 && sideZ === this.saveAlong ? this.saveExtendZ : 0;
+      const pastX = Math.max(0, Math.abs(s.across) - halfAcross);
+      const pastZ = Math.max(0, s.along - toe, -s.along - heel);
+      this.saveWrongSide = (this.saveExtendX > 0 && okX === 0) || (this.saveExtendZ > 0 && okZ === 0) ? 1 : 0;
+      this.saveBeyondSigned = pastX > across + okX || pastZ > along + okZ ? 1 : 0;
+    } else {
+      this.saveWrongSide = 0;
+      this.saveBeyondSigned = this.human.state.beyond ? 1 : 0;
+    }
+  }
+
+  /**
+   * **Step 3.5j, read-only: can a resultant at `(x, z)` on the deck be produced by THESE feet and THIS palm at all?**
+   *
+   * A pushing-only contact at the feet and a pushing-only palm give, between them, exactly the resultants
+   * `(1 − λ)·f + λ·p` with `f` in the feet's support, `p` in the palm's own patch and `λ` the palm's share of the
+   * normal load, `0 ≤ λ ≤ share`. **That region is convex and it is NOT the independent rectangle `project` clamps
+   * into:** at full x-extension the share is pinned at its maximum and `p` at its own edge, so `z` is pinned with
+   * them, and the rectangle's far corners are resultants no distribution could make. It is also **signed** — the
+   * palm's actual patch enters, so a palm on +x can never support an escape to −x.
+   *
+   * Each coordinate's bound is linear in λ (`q ≥ f_lo + λ(p_lo − f_lo)` and `q ≤ f_hi + λ(p_hi − f_hi)`), so the
+   * feasible λ is the intersection of four half-lines with `[0, share]`: non-empty ⇔ the point is reachable. Exact,
+   * allocation-free, and **nothing in the game reads the answer.**
+   */
+  private saveHolds(x: number, z: number, support: SupportRegion, share: number): boolean {
+    let lo = 0;
+    let hi = share;
+    for (let axis = 0; axis < 2; axis += 1) {
+      const q = axis === 0 ? x : z;
+      const fLo = axis === 0 ? support.xMin : support.zMin;
+      const fHi = axis === 0 ? support.xMax : support.zMax;
+      const centre = axis === 0 ? this.savePalm.x : this.savePalm.z;
+      const pLo = centre - HAND_RADIUS;
+      const pHi = centre + HAND_RADIUS;
+      // The lower bound: q ≥ f_lo + λ (p_lo − f_lo).
+      let a = q - fLo;
+      let b = pLo - fLo;
+      if (b > 0) hi = Math.min(hi, a / b);
+      else if (b < 0) lo = Math.max(lo, a / b);
+      else if (a < 0) return false;
+      // The upper bound: q ≤ f_hi + λ (p_hi − f_hi).
+      a = q - fHi;
+      b = pHi - fHi;
+      if (b > 0) lo = Math.max(lo, a / b);
+      else if (b < 0) hi = Math.min(hi, a / b);
+      else if (a > 0) return false;
+    }
+    return lo <= hi;
   }
 
   /** The limit that bound the contact most in the recent past. */
@@ -5604,8 +5691,10 @@ export class AttachedRider {
     let hiX = support.xMax;
     let loZ = support.zMin;
     let hiZ = support.zMax;
+    // The palm's share of the normal load, 0 off the switch — hoisted so the read-only recount below can use it.
+    let palmShare = 0;
     if (this.savesDeck && this.saveDown === 1 && (this.saveSpanX > 0 || this.saveSpanZ > 0)) {
-      const palmShare = Math.min(1, (HAND_FORCE_LIMIT * this.mass * WATER.gravity * h) / Math.max(1e-12, normal));
+      palmShare = Math.min(1, (HAND_FORCE_LIMIT * this.mass * WATER.gravity * h) / Math.max(1e-12, normal));
       this.saveExtendX = this.saveSpanX * palmShare;
       this.saveExtendZ = this.saveSpanZ * palmShare;
       if (this.saveSide > 0) hiX += this.saveExtendX;
@@ -5627,6 +5716,9 @@ export class AttachedRider {
       // The mechanism's own test: the demand outside the feet's own box, and the extended one holding it.
       const outside = freeX > support.xMax || freeX < support.xMin || freeZ > support.zMax || freeZ < support.zMin;
       this.saveCleared = outside && copX === freeX && copZ === freeZ ? 1 : 0;
+      // The reviewer's recount, read-only: is that demand reachable by ANY distribution of these feet and this palm?
+      this.saveFeasible = this.saveHolds(freeX, freeZ, support, palmShare) ? 1 : 0;
+      this.savePhantom = this.saveCleared === 1 && this.saveFeasible === 0 ? 1 : 0;
     }
     let tx = ((local.x - copX) * normal) / height;
     let tz = ((local.z - copZ) * normal) / height;

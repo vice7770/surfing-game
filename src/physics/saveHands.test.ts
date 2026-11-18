@@ -176,6 +176,53 @@ describe('the save window: a palm on the deck extends the support (opt-in)', () 
     expect(past).toBeGreaterThan(0);
   });
 
+  it('⭐ knows which resultants the feet and ONE palm can actually make: the reviewer\'s two cases, both reproduced', () => {
+    /**
+     * **The read-only recount's own positive control** (`saveHolds`). `project` expands the admissible box's x and z
+     * **independently**, so its region is a rectangle where the truth is the weighted convex region
+     * `{(1 − λ)f + λp : f ∈ feet, p ∈ palm, 0 ≤ λ ≤ share}`. Two faults follow, both named by the reviewer and both
+     * reproduced here on the engine's own arithmetic:
+     *
+     * 1. **PHANTOM CORNERS.** Feet x ±0.13, z ±0.35, palm centred (0.20, 0.45), share 0.5. `project`'s independent
+     *    rectangle reaches x 0.205 and z 0.44 and so admits **(0.18, −0.35)**. It is impossible: x = 0.18 needs
+     *    λ ≥ 1/3, and the least z any feasible λ can make at that x is **−0.11**.
+     * 2. **UNSIGNED SUPPORT.** A palm on +x cannot hold a resultant to −x past the feet, however hard it presses.
+     *
+     * ⚠️ **The reviewer's own worked case used a palm patch 0.03 m wide and the engine's is `HAND_RADIUS` = 0.08**,
+     * so its boundary number (0.035) is not this engine's (−0.11). **The fault reproduces either way**, and the
+     * first version of this test asserted the reviewer's number against the engine's patch and failed — recorded
+     * because it is the same frame error this track has made repeatedly.
+     */
+    const board = new BoardBody();
+    const rider = new AttachedRider(board.shape, { phase: 'standing', rider: 'new', saveHands: 'deck' });
+    const r = rider as unknown as {
+      savePalm: Vector3;
+      saveHolds: (x: number, z: number, s: { xMin: number; xMax: number; zMin: number; zMax: number }, share: number) => boolean;
+    };
+    const feet = { xMin: -0.13, xMax: 0.13, zMin: -0.35, zMax: 0.35 };
+    // The palm's patch is `HAND_RADIUS` about its centre: x [0.12, 0.28], z [0.37, 0.53].
+    r.savePalm.set(0.2, 0, 0.45);
+    expect(HAND_RADIUS).toBe(0.08);
+
+    // Inside the feet: always reachable, palm or no palm.
+    expect(r.saveHolds(0, 0, feet, 0.5)).toBe(true);
+    expect(r.saveHolds(0.13, -0.35, feet, 0)).toBe(true);
+    // ⭐ Fault 2's own corner: the independent rectangle admits it (x ≤ 0.205, z ≥ −0.35), the feasible region does not.
+    expect(r.saveHolds(0.18, -0.35, feet, 0.5)).toBe(false);
+    // And the boundary, on the engine's own patch: at x = 0.18 the least reachable z is −0.11.
+    expect(r.saveHolds(0.18, -0.1105, feet, 0.5)).toBe(false);
+    expect(r.saveHolds(0.18, -0.1095, feet, 0.5)).toBe(true);
+    // ⭐ Fault 1: a palm on +x supports nothing past the feet on −x, at any share.
+    expect(r.saveHolds(-0.18, 0, feet, 0.5)).toBe(false);
+    expect(r.saveHolds(-0.18, 0, feet, 1)).toBe(false);
+    expect(r.saveHolds(0.18, 0.2, feet, 0.5)).toBe(true);
+    // With the whole load available the palm's own patch edge is reachable, and nothing beyond it.
+    expect(r.saveHolds(0.28, 0.45, feet, 1)).toBe(true);
+    expect(r.saveHolds(0.2801, 0.45, feet, 1)).toBe(false);
+    // A zero share is the feet alone: the palm buys nothing at all.
+    expect(r.saveHolds(0.14, 0, feet, 0)).toBe(false);
+  });
+
   it('is reached by the two option values and nothing else', () => {
     const board = new BoardBody();
     const made = (saveHands?: unknown) => new AttachedRider(board.shape, { phase: 'standing', rider: 'new', ...(saveHands === undefined ? {} : { saveHands }) } as ConstructorParameters<typeof AttachedRider>[1]);

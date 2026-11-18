@@ -2,8 +2,8 @@
 
 > **Built, opt-in, proven byte-identical off (`?saveHands=deck`), and it does not save him.** The palm reaches the dry
 > deck, loads to **286.45 N of a 286.5 N cap — 107× the published water-reach median of 2.66 N** — and the support it
-> adds is used in full. It **does** hold the contact's clamp open: `saveCleared`, the engine's own per-substep test,
-> fires on **14 of 176 palm-down frames in 8 of 16 runs.** **But `tip` still binds in 90 of 90 runs, 52.0 % → 52.1 %
+> adds is used in full. It **does** hold the contact's clamp open — on **10 of 176 palm-down frames in 5 of 16 runs**,
+> after the reviewer's two support-geometry faults are counted out (§4.7 took that from a published 14 in 8). **But `tip` still binds in 90 of 90 runs, 52.0 % → 52.1 %
 > of frames, and 90 of 90 riders still fall.** The reason is one number: **when the palm lands the demand is a median
 > 0.327 m outside the feet, and the whole deck can offer 0.102 m.** Rides: **9 of 90 longer (+0.017 to +0.117 s), 3
 > shorter, 78 identical**, median delta 0.000 s, causes unchanged.
@@ -17,8 +17,8 @@ What this document mostly reports is why it is the right mechanism on the wrong 
 
 | asked | answer |
 |---|---|
-| **Does `tip` clear when a hand loads?** | ⚠️ **Sometimes, and not nearly enough.** The palm holds the clamp open — the demand outside the FEET's box and inside the palm's — on **14 of 176 palm-down frames (8.0 %), in 8 of 16 runs that put a palm down.** But over the bench **`tip` binds in 90 of 90 runs either way**, on **3 745 of 7 208 (52.0 %)** frames shipped against **3 770 of 7 233 (52.1 %)** switched. ⚠️ Read off the **`tip` flag and `limitTime`**, never off the exposed centre-of-pressure column (§6.1) |
-| **How long is the window, and how often does a rider recover?** | **22 windows in 16 of 90 runs**, median **0.093 s** and longest **0.441 s**, **176 frames of 7 233 (2.4 %) — 2.93 s of palm-down time over 90 rides.** **Recoveries: 2 of 22** windows ended with the demand back inside the feet and the rider still riding. **90 of 90 still fall.** Against clip 20's **0.93 ± 0.06 s lost → tall with 0.65 s of hands-on**: ⚠️ **one instance, no third, and a different event** (§7) |
+| **Does `tip` clear when a hand loads?** | ⚠️ **Sometimes, and not nearly enough — and the count is 10, not 14, after §4.7's recount.** The palm holds the clamp open — the demand outside the FEET's box and inside the palm's — on **14 of 176 palm-down frames, of which 4 were PHANTOM corners of an independent-rectangle region: 10 of 176 (5.7 %) in 5 of 16 runs survive a feasible foot-plus-palm region.** But over the bench **`tip` binds in 90 of 90 runs either way**, on **3 745 of 7 208 (52.0 %)** frames shipped against **3 770 of 7 233 (52.1 %)** switched. ⚠️ Read off the **`tip` flag and `limitTime`**, never off the exposed centre-of-pressure column (§6.1) |
+| **How long is the window, and how often does a rider recover?** | **22 windows in 16 of 90 runs**, median **0.093 s** and longest **0.441 s**, **176 frames of 7 233 (2.4 %) — 2.93 s of palm-down time over 90 rides.** **Recoveries: 2 of 22** windows ended with the demand back inside the feet and the rider still riding — ⚠️ **and 1 of those 2 is in a run whose only clamp-holding substep was a phantom corner** (§4.7). **90 of 90 still fall.** Against clip 20's **0.93 ± 0.06 s lost → tall with 0.65 s of hands-on**: ⚠️ **one instance, no third, and a different event** (§7) |
 | **What force does the hand carry?** | **Median 73.08 N over the 111 palm-down frames that carry anything, and the maximum is 286.45 N against a cap of 286.5 N** — the bound is reached on 11 frames, and it is **structural, not lucky**: `press ≤ HAND_FORCE_LIMIT × m g` follows from the extension's own definition (§4.3). Against the compress water reach's **2.66 N** median (PR #418): **27× at the median, 107× at the peak** |
 | **The discarded residual moment with loaded hands (row 19)** | ⭐ **A null, and it closes the question rather than opening it: the hand-water force is BIT-IDENTICAL on both arms — 522 frames, median 6.97415 N, max 63.4862 N, the same digits.** A dry palm carries deck load with **zero** water reaction, so **engine-target row 19 stays exactly where PR #418 left it: shelved.** And the dry palm's own moment about the body — median **8.4 N·m**, max **102.2 N·m** on an approximate 0.377 m lever — **is not discarded at all**: it travels inside the one contact pair (§4.4) |
 | **The default-unchanged proof** | ⭐ **428 422 values over 84 shared columns and 7 298 matched rows, 0 differences**, and **90 of 90 run outcomes identical** in `(fellAt, cause, frames)` — the `miss` arm against the shipped rider. Every one of the 7 677 differences in the full 494 284-value comparison is in a column the switch itself writes and no physics reads (§6.2) |
@@ -134,6 +134,8 @@ Named before anything was run, and two of them fired:
 | ☠️ **the board's width read unhalved** | a span 2× too wide | ⚠️ **IT FIRED TOO.** `shape.curves.width` is the **full** width (0.464 m), and the probe's first build used it as a half-beam, reading a 0.254 m across span where the deck allows 0.102 m. **Caught by the arithmetic not matching the brief's own prediction**, fixed, and every figure here is from the re-run |
 | **the probe is inert** | a read-out that changes a ride | **20 shared columns, 109 470 values, 0 differences** between `PROBE=on` and `PROBE=off`, and **90 of 90 outcomes identical** |
 | **the identity test cannot be re-derived after the step** | a confident wrong "pairing is broken" | ⚠️ A first version of the unit test checked the impulse's collinearity with the centre of pressure **on the post-step position** and missed by **1.6 %** — `finish` advances `position` after the solve. The test now checks the **bound the identity implies** instead, which is observable from outside (§4.4) |
+| ⭐ **the admissible region is not the feasible one** | a positive count inflated by resultants no contact could make | ⚠️ **IT FIRED, on the reviewer's reading.** The independent rectangle has **phantom corners** and the capture credit is **unsigned**; `saveHolds` measures both read-only, and the recount takes `saveCleared` from **14 frames in 8 runs to 10 in 5** (§4.7). The recount's own instrument is proved inert over **495 894 values, 0 differences** |
+| **the recount's own frame error** | a published number read on a sleeping test | ⚠️ `capture` returns before reading the reach whenever `load < CAPTURE_LOAD`, and palm-down frames carry a median 0.048 — **76.1 % of them are frozen.** The signed-credit comparison is therefore **published only on the 42 live frames** and refused on the 134 frozen ones |
 | **the escape is only across** | a feature aimed at the wrong axis | measured, and it **is** mostly across: **983 frames only-across, 157 only-along, 92 both** (§4.1). The switch extends both anyway, and the along half is where the room is |
 
 ---
@@ -262,6 +264,78 @@ no free parameter. **It was made after the first build's numbers, so here is the
 > substep's palm arrives. **Which is itself the finding to carry: 90 of 90 falls and 90 of 90 `tip` runs on both
 > sides, so the verdict does not rest on the travel model at all.**
 
+### 4.7 ⭐ The reviewer's two support-geometry faults — both hold, and the recount costs 4 of the 14
+
+**Challenged first, on the code, as asked. Both hold.** Neither touches the verdict, and both could only ever make
+the feature look better than it is — **which is exactly why they land on the round's only positive numbers.**
+
+#### Fault 1 — the palm's credit to the capture point is UNSIGNED
+
+`captureStep` adds `saveExtendX` / `saveExtendZ` to `reachAcross` / `reachAlong`, and `HumanBalance.capture` reduces
+the capture point to **`pastX = max(0, |across| − halfAcross)`** before testing `pastX > reachAcross`. **So the
+reach is applied to whichever side the capture point is on.** The reviewer's case reproduces exactly: feet ±0.13 m,
+a right-only +0.08 m extension, no spare rotor reach, capture point at −0.18 m → `pastX = 0.05 ≤ 0.08` and the
+leftward escape is called recoverable. **A right hand cannot supply leftward support.** ✅ **The fault is real.**
+(The rotor's own `across` is unsigned too, and *that* is defensible — a rotor throws either way. A palm does not.)
+
+#### Fault 2 — independent x and z bounds leave PHANTOM CORNERS
+
+`project` expands the box's x and z **independently**, so its admissible region is a rectangle where the truth is
+the weighted convex region `{(1 − λ)f + λp : f ∈ feet, p ∈ palm, 0 ≤ λ ≤ share}`. At full x-extension the share is
+pinned at its maximum and the palm at its own edge, **so z is pinned with them** and the rectangle's far corners are
+resultants no distribution of feet and palm could produce. ✅ **Reproduced on the engine's own arithmetic** in
+`saveHands.test.ts`: feet x ±0.13, z ±0.35, palm centred (0.20, 0.45), share 0.5 → the rectangle reaches x 0.205 and
+z 0.44 and admits **(0.18, −0.35)**, while the least z any feasible λ can make at x = 0.18 is **−0.11**.
+
+> ⚠️ **One correction to the reviewer's worked case, not to its conclusion: its palm patch is 0.03 m wide and the
+> engine's is `HAND_RADIUS` = 0.08 m**, so its boundary figure (0.035) is not this engine's (−0.11). **The first
+> version of my own test asserted the reviewer's number against the engine's patch and failed** — the same frame
+> error this track has made repeatedly, recorded rather than smoothed. **The fault reproduces either way.**
+
+#### The recount, exact and at substep resolution
+
+`AttachedRider.saveHolds` tests membership of the **feasible** region directly: each coordinate's bound is linear in
+λ, so the feasible λ is the intersection of four half-lines with `[0, share]`. **Signed by construction** — the
+palm's own patch enters — so one test answers both faults. It is **read-only**, and the switched arm re-run with it
+is the same ride value for value: **495 894 values over 103 shared columns, 7 323 rows, 0 differences**, 90 of 90
+outcomes identical.
+
+| | published | **recounted against a feasible foot-plus-palm region** |
+|---|---|---|
+| `saveCleared` frames (the clamp held open) | **14 of 176** | ⭐ **10 of 176 (5.7 %)** — **4 were phantom corners (28.6 %)** |
+| runs with any such frame | **8 of 16** | ⭐ **5 of 16** — three runs drop to none |
+| the demand feasible at all, over palm-down frames | — | **17 of 176 (9.7 %)**; on the other 159 it is outside even the feasible region, which is §4.1's 0.327 m against 0.102 m again |
+| returns to the feet | **2 of 22 windows** | **2** — ⚠️ but **1 of them is in a run whose single clamp-holding substep was phantom** (trial 3, entry 3; the other, trial 1 entry 8, had 4 cleared and 0 phantom) |
+
+#### ⭐ And fault 1 turns out to move nothing measurable — because the capture test is mostly asleep here
+
+`HumanBalance.capture` sets `frozen = load < CAPTURE_LOAD` and **returns before it reads `reachAcross` at all.**
+`CAPTURE_LOAD` is 0.2 body weights and **palm-down frames carry a median capture load of 0.048**, because the palm
+goes down exactly when the feet go light. **So on 134 of 176 palm-down frames (76.1 %) the extension has no effect
+whatsoever.**
+
+| on the **42** palm-down frames where the capture test is LIVE | |
+|---|---|
+| extension credited on a side the palm is not on | **6 of 42** |
+| the signed fall test says `beyond` where the shipped one does not | **1 of 42** |
+| … and `weightPast` too, which `fallen` also requires | **0 of 42** |
+
+> **So the unsigned credit never changed `human.fallen` on a frame where the test was awake.** ⛔ **The 51 flips and
+> 12 `weightPast` frames on the FROZEN frames are refused, not published:** on a frozen substep `s.across` is stale
+> from the last live one while the extensions are current, so comparing them is the "substep against a step" trap
+> this track has already paid for once.
+
+#### What was and was not changed
+
+**The geometry was NOT fixed** — only measured. The reasons, stated so the owner can overrule them: both faults make
+the feature **more** generous, the verdict (`tip` 90 of 90, 90 of 90 falls, 0.327 m against 0.102 m) is untouched by
+either, a behaviour fix means **projecting** onto the convex region rather than testing membership of it, and it
+would invalidate the default-unchanged proof and every number above on a machine that is taking ten minutes a bench
+pass tonight. **The fix's exact shape is known and is stage-plan item 0:** clamp onto the λ-feasible region in
+`project`, and pass the capture credit **side-matched** (which `capture`'s unsigned `pastX` cannot express today, so
+it needs either a signed parameter or the gate `saveExtendX` applied only when the capture point escapes the palm's
+way).
+
 ---
 
 ## 5. ⛔ What this does NOT do, stated plainly
@@ -352,6 +426,11 @@ events.**
 
 **Nothing below is built, and the owner rules.**
 
+0. ⚠️ **FIRST, THE SUPPORT GEOMETRY ITSELF (§4.7).** Clamp onto the λ-feasible foot-plus-palm region in `project`
+   instead of the independent rectangle, and credit the capture point **side-matched** instead of unsigned. Both
+   faults are measured, both make the feature more generous than the truth, and the read-only test that finds them
+   (`saveHolds`) is already in the tree. **It costs a bench pass and a restated default proof, and it is the one
+   change that should land before anyone reads the positive counts again.**
 1. ⭐ **THE HAND IN THE WATER, not on the deck — and fixing the path PR #418 found broken.** §4.1's 0.327 m at the
    landing frame is 0.457 m from the stringer, outside the board, and **water is there.** A loaded hand on the water
    extends no support polygon, but it carries a real force at a real lever — which is why **`waveSide`'s early return
@@ -372,6 +451,25 @@ events.**
    already models exactly that for the prone contact. **That is a new force on the standing rider and is the
    owner's.**
 6. **A third rider state.** Clip 20's 0.95 s chest-down passage has no representation in the engine at all.
+
+## 8a. ⚠️ A rendering claim that does not follow, read off the production path
+
+A frame showing the rider **upright with the "Wiped out" prompt already up** was attributed to
+`AttachedRider.separate`'s failure to clear `phase` / `upright`. **That does not follow, and this round read the
+path while working next to it:**
+
+- **`RideSession.renderPoint` (`:418–419`) stops routing to the attached rider the instant `attached` goes false** —
+  `this.rider.attached && !this.ducking ? this.rider.renderPoint(...) : this.surfer.getPartPosition(...)` — and
+  **`RideSession.phase` (`:361`) returns `'fallen'` on the same flag.** So production never reads
+  `AttachedRider.phase` or its `renderPoint` once the rider has let go; the frozen fields matter **only to probes
+  that keep calling the class directly**, which is what the handoff note about them is for.
+- **The detached body starts at the outgoing pose**: `surfer.start(rider.handoffState(this.handoff))` (`:479`,
+  `:516`), seeded from *"the rider's own body, its parts where they were"* — which is a sufficient and benign
+  explanation for one upright-looking frame under the prompt.
+
+**So the frozen `phase` / `upright` is not the rendering bug**, and this round's own drawn palm is safe for the same
+reason: the `saveDown === 1` branch in `AttachedRider.renderPoint` can never be reached after separation, because
+`RideSession` has already switched to the detached surfer.
 
 ## 9. Files
 
