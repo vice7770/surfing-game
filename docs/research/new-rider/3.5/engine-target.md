@@ -98,13 +98,13 @@ toggles. Medians are `qt(v, 0.5)`, the upper middle.
 
 | asked half-cycle | achieved | rest excursion | **share of the 0.195 m rung** |
 |---|---|---|---|
-| 0.10 s | 0.100 s | 0.016 m | 0.08 |
+| 0.10 s | 0.100 s | 0.016 m | ⚠️ **0.08 — WITHDRAWN as an amplitude reading**, see below |
 | 0.15 s | 0.150 s | 0.038 m | 0.20 |
 | **0.22 s (the footage)** | **0.217 s** | **0.078 m** | **0.40** |
 | 0.28 s | 0.267 s | 0.100 m | **0.51** |
 | 0.45 s | 0.433 s | 0.160 m | 0.82 |
 | 0.60 s | 0.600 s | 0.182 m | 0.93 |
-| key never pressed | **0 half-cycles in 0 of 72 runs** | none | – |
+| **key never pressed (the control)** | **0.650 s** | **0.016 m** | **20 half-cycles in 16 of 72 runs — NOT a zero** |
 
 > **The channel completes a half-cycle at 0.217 s** — over **401 half-cycles in 69 of 72 runs** — **while carrying
 > 40 % of the rung.** **The excursion falls below half the rung at a half-cycle of 0.27 s, and 0.27 s is row 6's
@@ -118,6 +118,29 @@ toggles. Medians are `qt(v, 0.5)`, the upper middle.
 > turning through that passage — "from oblique to nearly end-on" — so "in trim with no direction change" may not
 > describe the window at all.** Row 6 is specifically about pumping **in trim**. **The game figure is sound; it is
 > the footage side of the comparison that has no reliable number — neither rate nor depth.**
+
+**⚠️ CORRECTED 2026-11-18 (PR #413 at `9ab365b1`): the control was never a zero, and fixing it cost the round a row.**
+The published `hold0` zero was an artefact — `firstPress` stayed `NaN` with the key never pressed and `x.t >= NaN`
+emptied the filter. **Corrected, the control gives 20 half-cycles in 16 of 72 runs at a median 0.016 m** — the
+balance's own knee drop wanders measurably **with the crouch key never touched.** Consequences, all stated by the
+round rather than found later:
+
+- **The 0.10 s arm is WITHDRAWN as an amplitude measurement.** Its median excursion is **0.016 m — identical to the
+  control's.** At that command period the channel's depth is **indistinguishable from no input at all.** Its *timing*
+  is still a reading (841 half-cycles in 63 of 72 runs at a median 0.100 s against 20 in 16 of 72 at 0.650 s); its
+  *excursion* is not.
+- **Every other arm clears the floor** as multiples of 0.016 m: 0.15 → **2.4×**, **0.22 → 4.9×**, 0.30 → **7.0×**,
+  0.60 → **11.4×**.
+- **And the round volunteered the overlap:** the control's own tail reaches **0.125 m on one run of 72**, which
+  overlaps the 0.22 arm's 0.078 m median. **The medians and counts separate them; a single run does not.**
+- **`hold1` was never broken** (a held key gives a finite `firstPress`) and **now carries the negative control's
+  weight: 4 half-cycles in 4 of 72 runs at 0.005 m, 2.6 % of the rung.**
+- **The positive arms are byte-identical** — 0.217 s, 0.078 m, the 0.40 share and the halving point are exactly as
+  first measured. **The fix changed the control, not the result.**
+- **The detector self-test now characterises both directions:** silent at and below the 2 mm threshold, **firing from
+  3 mm**, and recovering amplitude and period at every amplitude tested — but **under-recovering ~5 % at large
+  amplitude** (0.186 m from a known 0.195 m, 1/60 s sampling of a turning point), so **the halving point is quoted
+  bracketed at 0.26–0.28 s** with 0.27 s the midpoint. A tightening of the stated precision, not a changed number.
 
 **The governor is the critically damped follower at `LEG_FREQUENCY = 12` rad/s**, whose step response needs
 **0.567 s** to come within 5 mm of the rung (50 % at 0.183 s, 90 % at 0.400 s, 95 % at 0.483 s). **Any half-period

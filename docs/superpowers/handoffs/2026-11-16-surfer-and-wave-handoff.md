@@ -2831,3 +2831,36 @@ Codex's blind read of the same clip found *bend for the turn → extend on the c
 - **Cut detection: difference only the TOP THIRD of the frame.** Whole-frame gave one 5× nominee against a **1.4× noise floor**; top-third sits at **0.1–0.7 within a shot** and produced a **40× step** at the single real cut (4.08–4.10), cleanly separating three fast pans from cuts.
 - **25 fps is now 3 of 15 clips** (2 duplicates in 9 steps at 1/30 here, 0 at 1/25). **A Short's stream need not be 9:16** — 3:4 buys more rider pixels at the same width.
 - **Automated colour segmentation of a backlit rider returns garbage** — the "hair" mask covered the whole wave face. **Built, run, discarded, nothing quoted from it.** That last clause is the part worth imitating.
+
+---
+
+## 2026-11-18 — THE PUMP CONTROL, FIXED AND PUSHED (#413 at `9ab365b1`): IT WAS NEVER A ZERO, AND IT COST THE ROUND A ROW
+
+**Verified: `claude/pump-rate` = `ff750da4` + `9ab365b1`, 2 files, +846, 0 deletions against the merge base, and `watchFrom = Number.isFinite(firstPress) ? firstPress : START` is on the branch.** PR body rewritten so #413 no longer advertises the broken control.
+
+| | half-cycles | runs | rest excursion (med) | achieved half-cycle (med) |
+| --- | --- | --- | --- | --- |
+| `hold0` **as published** | **0** *(artefact)* | 0/72 | – | – |
+| **`hold0` corrected** | **20** | **16/72** | **0.016 m** | **0.650 s** |
+
+**The balance's own knee drop wanders measurably with the crouch key never touched** (`got` 0.004 m over 84 half-cycles, `drawn` 0.015 m over 76, `target` 0.020 m over 48).
+
+### What it cost, reported by the round rather than found later
+
+- ⚠️ **The 0.10 s arm is WITHDRAWN as an amplitude reading.** Its median excursion is **0.016 m — identical to the corrected control's.** **At that command period the channel's depth is indistinguishable from no input at all.** Its *timing* survives (841 half-cycles in 63 of 72 at 0.100 s against 20 in 16 of 72 at 0.650 s); its *excursion* does not.
+- **Every other arm clears the floor**: 0.15 → 2.4×, **0.22 → 4.9×**, 0.30 → 7.0×, 0.60 → 11.4× the control's 0.016 m.
+- **And it volunteered the overlap nobody asked for:** the control's tail reaches **0.125 m on one run of 72**, overlapping the 0.22 arm's 0.078 m median. **"The medians and counts separate them; a single run does not."** That sentence is the standard this track has been trying to reach all year.
+- **`hold1` was never broken** and now carries the negative control: **4 half-cycles in 4 of 72 runs at 0.005 m, 2.6 % of the rung.**
+- **The positive arms are byte-identical.** 0.217 s, 0.078 m, the 0.40 share, the follower's 0.567 s step response, the 82–96 % in-game ÷ follower ratios: unchanged. **The fix changed the control, not the result.**
+- **The detector is now characterised in both directions:** silent at and below the 2 mm threshold, **firing from 3 mm**, recovering amplitude and period at every amplitude — and **under-recovering ~5 % at large amplitude** (0.186 m from a known 0.195 m, from 1/60 s sampling of a turning point). **So the halving point is now quoted as a bracket, 0.26–0.28 s**, with 0.27 s the midpoint. **A tightening of precision, not a changed number.**
+
+### Two things it did without being asked, both worth imitating
+
+1. **It kept the withdrawn footage column and relabelled it ⚠️ *withdrawn comparison*** — *"removing it would hide why these periods were chosen."* **Deleting a dead number also deletes the record of what the round was aiming at.**
+2. **It wrote the `steer = 0` correction into the write-up without attributing it**, *"since the write-up is where it belongs, not a ledger of who said what."* §3.1 now states that `steer = 0` **locks the player's steering input only**, that **the board yaws, rolls and pitches freely under the water's forces and does**, that **the probe records neither trajectory nor exit speed**, and therefore that **it is not a fixed-orientation benchmark and no real clip's board path can be compared against this bench at all.**
+
+**The write-up's §2 and §8 now say up front that row 6 has no reliable footage target — neither rate nor depth — that the headline is a fact about the game and not a verdict against any rider, and that 0.22 s is a probed command period throughout, never a footage target.**
+
+**The round lists six refutations, four of them its own:** the brief's arithmetic (mine), its one-trace reading of the knee drop, **its own `hold0` control**, **its own 0.10 s amplitude row**, **its own description of the bench**, and row 6's classification on the rate half.
+
+> **Unchanged answer: the game's leg-depth channel achieves a 0.217 s half-cycle on a 0.22 s command — the median of 401 half-cycles over 69 of 72 runs — carrying 0.078 m of the 0.195 m rung (40 %); the excursion falls below half the rung at a command half-cycle of 0.26–0.28 s. The governor is the follower at `LEG_FREQUENCY = 12` rad/s, not the acceleration or speed limits. Nothing tuned, no switch added, nothing under `src/`.**
