@@ -3577,7 +3577,9 @@ Codex, at `3c6b8721`, `AttachedRider.project`:
 
 **Arms out, upright, on the deck, on a green face — with the wipeout prompt up.** He is gone by 8.482.
 
-> **There is a visible lag between the game declaring the wipeout and the drawn rider reflecting it, and there is a known code cause: `AttachedRider.separate` (`:5227–5232`) sets `attached`, `climbing`, `inContact` and `separation` and NEVER clears `phase` or `upright`.**
+> **There is a visible lag between the game declaring the wipeout and the drawn rider reflecting it.**
+>
+> ⚠️ **MY ATTRIBUTION OF IT WAS WRONG AND IS WITHDRAWN.** I blamed `AttachedRider.separate` (`:5227–5232`) for never clearing `phase`/`upright`. **Codex challenged it and the code agrees with Codex: `RideSession.ts:358` is `return this.rider.attached ? this.rider.phase : 'fallen';` and `:352` switches the drawn point to the detached surfer once `attached` goes false — so the PRODUCTION path never reads the stale field.** **The staleness is real and remains a PROBE hazard** (probes read `rider.phase` directly, and it corrupted one round to 64–93 % frozen frames) — **but it is not the player-visible bug I claimed.** Codex's explanation is the better one: **the snapshot drawing lags the HUD, and the detached rider starts at the outgoing pose.** **The symptom is real; the cause is not yet established, and Codex's independent visual read is underway.**
 
 **That defect has been treated all session as a PROBE hazard** — "every rider column freezes after separation", which corrupted one earlier round's figures to 64–93 % frozen frames. **This is the first evidence it is also visible to the player.** **It is a bug the owner can see, not only one that spoils measurements**, and it should be raised with him as such.
 
@@ -3636,3 +3638,12 @@ The palm's reach is from the shoulder, its travel from where the hand is carried
 **The full `vitest run` was started and ABANDONED at ~25 minutes** — the machine was thrashing, the worker getting ~13 % of a CPU with swap near full. **Targeted suites all pass** (`saveHands` 6, `PhysicalMode` 109, `RideSession`, `AttachedRider`, `humanBalance`, `riderPosture`, `projection`, `projectionLean`, `riderBounds`, `SurfZoneRunner`, `deepCrouch`, three ledgers), typecheck clean. **The full suite has NOT been run on this branch.** **Deletions: 8 lines, every one a replaced line; nothing removed.**
 
 **His address:** `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&saveHands=deck` — **and the palm only appears in a crouch, which is the second finding and not a bug.**
+
+### ⚠️ TWO SUPPORT-GEOMETRY FAULTS IN THE SAVE BRANCH — they inflate exactly its positive numbers
+
+Codex, reviewing `f4d0a09a`. **Relayed to the builder with an instruction to CHALLENGE them first**, then requalify.
+
+1. **The palm extension is UNSIGNED, so a right hand is credited with LEFTWARD support.** `captureStep` (`:5417–5423`) adds unsigned palm extensions to `reachAcross`/`reachAlong`, and `HumanBalance.capture:486–500` applies them **to either side.** Worked case: feet ±0.13 m, a **right-only +0.08 m** extension, zero spare rotor reach, capture point at **−0.18 m** — **the code treats the leftward escape as within reach, and the right hand cannot supply it.**
+2. **Independent x/z bounds leave PHANTOM CORNERS for a single palm.** `project:5603–5629` expands x and z independently, so the admissible region is a **rectangle** where it should be the **weighted convex region of the feet plus that one palm.** Worked case: feet x ±0.13, z ±0.35; palm patch x = [0.17, 0.23], z = [0.42, 0.48], palm capped at half the normal. **At x = 0.18 the maximum foot and palm x require 50 % of the load at the palm, so the resultant z must be ≥ 0.035 — yet the rectangle admits (0.18, −0.35), impossible even with that generous patch.**
+
+> **Both faults can only make the feature look BETTER than it is, and both land on the round's only positive numbers — the 14 cleared frames and the 2 returns to the feet.** **The verdict is untouched:** 90 of 90 still fall, `tip` binds 90/90 either way, and **the demand is a median 0.327 m outside the feet against a 0.102 m ceiling.** **Incidence across the 90 runs is unknown.**
