@@ -1857,3 +1857,49 @@ Its own document reported a **0.26 s bottom turn** while `ride-report.md` prints
 ### And two things it confirmed independently, which is worth more than agreement usually is
 
 **`hip.angle` never moving `this.parts`** — its whole Canyon column rests on that — and **the sub-planing dead zone.** It also sharpened the trunk trap into the right acceptance test: **the quantity to test is a LAG AGAINST THE BOARD, not an angle** — the body's fold is still held **0.4–0.5 s after the board has finished turning** (board reverses ≈31.12, body still laid forward at 31.20, still folded at 31.50), **video 9's number to the tenth** — *"a metric read off `hip.angle` could move through that entire window while nothing in `parts` changes."*
+
+## ⭐ THE CODEX REVIEW — TWO CODE FINDINGS, **BOTH VERIFIED HERE BY READING**, and one is a no-hidden-motors violation
+
+`docs/research/new-rider/3.5/canyon-movement-review.md` — an advisory review for the surfer-physics builder, written by the **Codex** session into this working tree as an **untracked file**, now committed with that attribution. **Its provenance is unverifiable (no addressable sender; `ListAgents` shows no such peer) — but its CONTENT is checkable, and content I can check needs no trusted provenance. Both findings check out.**
+
+### FINDING 1 — ⚠️ **THE HIP'S JOINT STOP THROWS AWAY ANGULAR MOMENTUM WITH NO REACTION.** Verified.
+
+`standingBody.ts` around `:301–311`, read directly:
+
+```
+this.hip.torque = burst - back * I * w * (w*angle + 2*rate);   // torque set HERE
+this.hip.rate  += h * this.hip.torque / I;
+this.hip.angle += h * this.hip.rate;
+if (Math.abs(this.hip.angle) > range) {
+  this.hip.angle = Math.sign(this.hip.angle) * range;
+  if (this.hip.rate * this.hip.angle > 0) this.hip.rate = 0;   // ← RATE ZEROED, AFTER
+}
+```
+
+And `couple()` (`:379`) pairs **`this.hip.torque`** — *"the hip's couple is the pair's"* — which was computed **before** that clamp.
+
+> **So zeroing `hip.rate` discards `HIP_PITCH_INERTIA × rate` of angular momentum, and NOTHING anywhere carries the reaction. That is an unpaired impulse — precisely what the owner's hardest rule forbids.** [[no-hidden-motors]]
+
+**The code does try to avoid reaching it:** `braking = (rate·|rate|·I)/(2·TORQUE)` computes the stopping distance and sets `burst = 0` while still short of the limit, **so the clamp is a backstop rather than the normal path.** **Codex's characterisation is exactly right: the mechanism is real, and its FREQUENCY on the owner's rides is unknown.** **That frequency is measurable and is the obvious next round** — count the clamp firings and sum the discarded `I × rate` on the owner's own address.
+
+### FINDING 2 — the rig ALREADY compensates, so feeding it a rotor angle can double-apply. Verified.
+
+`HumanoidRig.poseHinge` (`:1937`), its own comment: *"the pelvis back as far as keeps the centre of mass"*, then `const back = angle <= 0 ? 0 : this.backForMass(state, angle)` and `addScaledVector(levelForward, -back)`.
+
+> **So the drawing already shifts the pelvis to preserve its ESTIMATED mass position. If the physics is later made to rotate the mass parts (engine-target row 1) and the rig is simply handed the rotor angle, the two compensations can CANCEL or DOUBLE.**
+
+**Codex's prescription is the right one and should govern row 1's build: agree the pivot and the frame FIRST, then derive the visual fold from the same physical pose** — not from an angle handed across.
+
+### ⚠️ AND A THIRD CORRECTION FROM CODEX, TO A DOC I MERGED MINUTES EARLIER
+
+Clip 10's §0.8a said the 0.87 s window **"sits inside"** Forsyth's 0.96 ± 0.04 s. **It does not: the arithmetic band is 0.92–1.00 s and 0.87 is BELOW it.** And **the ± is a summary of a GROUP MEAN, not a range for individual surfers**, so "inside the interval" was never the right test. **Corrected in place** (`video-ref-10-mentawai-drone.md` §0.8a).
+
+**What survives, and it is the useful part:** the **0.26 s** and **0.87 s** are **two honestly-labelled windows of the same manoeuvre** — 0.26 is first rail spray → board stops swinging, 0.87 adds the arm/weight set-up and the exit. **Both are useful when labelled; neither sets an animation duration; and the 0.26 s must never be set against Forsyth**, being a sub-window of a different quantity.
+
+**This is the second Forsyth correction from the same source in one evening**, and together they retire that row as an anchor: **835 turns of mixed types, radius and lateral g derived rather than measured, the ± a group-mean summary.** **Only the duration column carries weight, and even that is not a per-rider range.**
+
+### Two peer-handling notes worth keeping
+
+**Codex reads this conversation directly** — *"I read your response in this same conversation; no Claude return address or relay via the video reader is needed"* — **so replies go in my own message text, not through `SendMessage`.** That resolves the misrouting that sent two messages to the video-10 reader. **And `ListAgents` shows no Codex peer, so there was never an address to find.**
+
+**It asked twice that its messages not be treated as build requests, and they have not been.** Nothing here was built; the two findings are recorded and the measurement they imply is a separate round.

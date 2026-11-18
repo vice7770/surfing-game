@@ -118,7 +118,13 @@ Video 9's sharpest finding was that **either** channel can carry a whole posture
 >
 > **Forsyth et al. 2024** — **0.96 ± 0.04 s, 99° turned, 3.8 m radius, 1.41 g**, from **n = 6 riders and 835 turns**, the only properly powered population in this project's evidence base — measures *a bottom turn*. **My 0.26 s measures something narrower: first rail spray to the moment the board stops swinging and starts climbing.** It excludes the **0.16 s of arm and weight set-up before the rail bites** (§0.2) and it excludes the exit entirely.
 >
-> **Measured on a window closer to Forsyth's, the same manoeuvre is 0.87 s** — first arm movement at 30.08 to the top of the climb at 30.95 — **which sits inside their interval.**
+> **Measured on a window closer to Forsyth's, the same manoeuvre is 0.87 s** — first arm movement at 30.08 to the top of the climb at 30.95.
+
+**⚠️ CORRECTION (2026-11-18, raised by the Codex review and checked here): it does NOT sit inside their interval, and the interval is not what it was taken for.**
+- **The arithmetic band of 0.96 ± 0.04 s is 0.92–1.00 s, and 0.87 is BELOW it.** The original sentence said "inside" and was simply wrong.
+- **And the ± is a summary of a GROUP MEAN, not a range for individual surfers**, so "inside the interval" would not have been the right test even had the arithmetic worked. **Forsyth's own population is 6 riders and 835 turns OF MIXED TYPES, and its radius and lateral-g values are derived estimates rather than measurements** — so only the duration column carries weight at all.
+- **What survives:** the 0.87 s and the 0.26 s are **two honestly-labelled windows of the same manoeuvre** — 0.26 s is first rail spray → board stops swinging; 0.87 s adds the 0.16 s of arm and weight set-up and the exit. **Both are useful WHEN LABELLED, and neither sets an animation duration.** The 0.26 s must never be set against Forsyth, because it is a sub-window of a different quantity.
+- **§0.8's real-time conclusion is untouched**, because the figures that exclude 2× and 4× — the pump half-cycle and the squat-to-stand — are **whole-cycle quantities with no window ambiguity.**
 >
 > **So this clip is not evidence that these turns run four times faster than the published population.** It is evidence that *"a bottom turn"* has at least two defensible start and end points, and that **0.26 s and 0.96 s can describe the same turn.** Anyone quoting a duration from this document — or setting one beside a game figure — must say **which window** they mean. This project has had twenty-eight real numbers turn out to be in the wrong frame, and a turn duration with an unstated window is the next one.
 >
