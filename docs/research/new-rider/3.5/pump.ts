@@ -43,12 +43,25 @@
  *
  * **Beware a metric that cannot fail.** If the channel were broken — flattened to nothing — the excursions would be
  * under 2 mm, **no turning point would be recorded at all, and the arm would report zero half-cycles**. So the
- * metric can fail, and two arms are run to prove it does:
- * - **`hold0`** — the crouch key never pressed. A broken-but-noisy detector reads cycles here; a sound one reads
- *   none (or a tiny residue from the balance's own knee drop, which is reported as `knees` so it can be read).
- * - **`hold1`** — the crouch key held down for the whole run. Same: no pumping input, so no cycles.
- * - and **`1.50`** — a half-period far longer than any limit in the chain, the positive control: if the channel is
- *   sound it reaches the full 0.195 m here. If even this is flat, the fault is not rate.
+ * metric can fail. Three controls and a self-test are run to prove it:
+ * - **`hold1`** — the crouch key held DOWN for the whole run. A finite press, so the observation window is honest,
+ *   and no pumping input, so a sound detector reads at most the balance's own residue. **This is the load-bearing
+ *   negative control.**
+ * - **`hold0`** — the crouch key never pressed. **This arm was broken in ff750da4**: the half-cycle window started
+ *   at `firstPress`, which on a never-pressed arm is `NaN`, and `t >= NaN` is false for every turning point, so the
+ *   arm's "0 half-cycles" was **guaranteed by the filter and measured nothing**. It now observes from `START`
+ *   (`watchFrom`), so the detector is free to fire on it and whatever it reports is a reading.
+ * - **`1.50`** on the isolated follower — a half-period far longer than any limit in the chain, the **positive
+ *   control**: if the channel is sound it reaches the full 0.195 m. If even this is flat, the fault is not rate.
+ * - **the detector's self-test** — synthetic triangles of known amplitude at a known 0.22 s half-period, straddling
+ *   the 2 mm threshold, so the detector is shown to **speak when the signal moves** and not merely to stay silent
+ *   when nothing does. A silent control is worth nothing without it.
+ *
+ * **What `steer = 0` does and does not hold.** It locks **the player's steering input** for the whole run, so there
+ * is no commanded direction change — the footage's own condition. It does **not** lock the board's orientation: the
+ * board is free to yaw, roll and pitch under the water's forces, and it does. **This probe records neither
+ * trajectory nor exit speed**, so it is not a fixed-orientation benchmark and nothing here can be compared against
+ * a real clip's board path. That comparison would need trajectory and exit speed, which are not measured.
  *
  * ## The bench
  *
@@ -289,7 +302,14 @@ function oneRun(arm: string, extra: number, phase: number, side: number, ahead: 
   const firstExc = firstTurn ? firstTurn.v - base : Number.NaN;
   const firstTime = firstTurn ? firstTurn.t - firstPress : Number.NaN;
   const kneesAtFirst = firstTurn ? kneesS[ts.findIndex((x) => x >= firstTurn.t)] : Number.NaN;
-  const after = (t: Turn[]) => t.filter((x) => x.t >= firstPress);
+  // **The observation start.** On an actuated arm this is the first key press, which is what the first stroke must be
+  // measured from. On `hold0` the key is NEVER pressed, so `firstPress` stays NaN — and `x.t >= NaN` is false for
+  // every turning point, which would make `after()` return an EMPTY array and `hold0`'s "0 half-cycles" a guaranteed
+  // zero rather than a measurement. (That bug shipped in ff750da4 and is the error this probe's own
+  // "beware a metric that cannot fail" section warns about; nobody interrogates a zero.) So a no-press arm observes
+  // from `START`, which is finite, and the detector is free to fire on it.
+  const watchFrom = Number.isFinite(firstPress) ? firstPress : START;
+  const after = (t: Turn[]) => t.filter((x) => x.t >= watchFrom);
   const zr = halves(after(restTurns));
   const zg = halves(after(zigzag(ts, gotS, DEAD)));
   const zd = halves(after(zigzag(ts, drawnS, DEAD)));
@@ -396,6 +416,39 @@ if (!TICKS) {
   for (const arm of HALVES) {
     const at = (k: number) => of(arm).map((x) => (x.excByCycle as (number | null)[])[k]).filter((x): x is number => x !== null && x !== undefined);
     console.log(`| ${arm} | ${[0, 1, 2, 3, 4, 5].map((k) => (at(k).length ? `${f(median(at(k)))} (${at(k).length})` : '–')).join(' | ')} |`);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------
+  // THE DETECTOR'S OWN SELF-TEST. A silent control proves nothing unless the detector is shown to SPEAK when the
+  // signal moves. So the zigzag is fed synthetic triangle waves of KNOWN amplitude at a KNOWN 0.22 s half-period,
+  // straddling its own 2 mm threshold, and asked to recover both. If it cannot recover a 0.195 m oscillation, every
+  // `none` above is worthless; if it fires on a flat line, every number above is noise.
+  console.log('\n### The detector\'s self-test - synthetic triangles of known amplitude at a known 0.22 s half-period');
+  console.log(`\nThe zigzag's threshold is ${f(DEAD, 4)} m. A triangle of amplitude A has a half-cycle excursion of A.`);
+  console.log('\n| synthetic amplitude, m | half-cycles found | **excursion recovered, m** | error, m | **achieved half-cycle, s** | verdict |');
+  console.log('|---|---|---|---|---|---|');
+  for (const amp of [0, 0.0005, 0.001, 0.002, 0.003, 0.005, 0.01, 0.05, 0.078, 0.195]) {
+    const halfT = 0.22;
+    const t3: number[] = [];
+    const s3: number[] = [];
+    for (let i = 0; i < Math.round(9 / STEP); i += 1) {
+      const t = (i + 1) * STEP;
+      // A triangle: up over `halfT`, down over `halfT`, peak-to-trough `amp`.
+      const u = (t % (2 * halfT)) / halfT;
+      s3.push(amp * (u < 1 ? u : 2 - u));
+      t3.push(t);
+    }
+    const z = halves(zigzag(t3, s3, DEAD));
+    const e = median(z.excursion);
+    // Below the threshold the detector MUST be silent; at or above it, it must recover the amplitude and the period.
+    const want = amp > DEAD;
+    const got = z.excursion.length > 0;
+    const verdict = want === got
+      ? (got ? (Math.abs(e - amp) <= Math.max(0.002, 0.1 * amp) ? '**fires, recovers it**' : 'fires, amplitude off')
+        : '**silent, as it must be**')
+      : '**WRONG**';
+    console.log(`| ${f(amp, 4)} | ${z.excursion.length} | ${z.excursion.length ? f(e) : '-'} `
+      + `| ${z.excursion.length ? f(Math.abs(e - amp)) : '-'} | ${z.period.length ? span(z.period) : '-'} | ${verdict} |`);
   }
 
   // ------------------------------------------------------------------------------------------------------------
