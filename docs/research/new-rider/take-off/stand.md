@@ -63,11 +63,13 @@ feels** — these are bot rides with the stick at zero; only the owner's own rid
    the window actually followed, **it does hold 3.02 s**: the artefact was in the evidence, not in the outcome. The
    other unrefused stand, wave 10, fell at **0.70 s** — the study's own median — and **holds 3 s only if the press is
    moved 250 ms later** (Part 5.3).
-7. **A ride can last. This is not a null.** **15 of 75 stands carried their full 3 s window, on 5 waves of 23**,
-   across two seas and five pop timings. ⚠️ **And one of my own headline tests did not replicate**: on seed 1 seven
-   columns separate held from fell with no overlap at all, and **on seed 2 not one does**, so that test was a fact
-   about 34 stands. What survives pooling is necessity, above — and the ride's requirement stated honestly is **a hull
-   on the plane at the stand**, which the take-off delivers on about one wave in five at Canyon B, Medium (Part 6).
+7. **A ride can last at least 3 s. This is not a null.** **15 of 75 stands carried their full 3 s window, on 5 waves
+   of 23**, ⚠️ and **3 s is `STAND_HOLD`, an arbitrary horizon — the longer-window run was started and stopped for the
+   machine (Part 8), so nothing beyond 3 s has been measured.** The population is two seas and five pop timings.
+   ⚠️ **And one of my own headline tests did not replicate**: on seed 1 seven columns separate held from fell with no
+   overlap at all, and **on seed 2 not one does**, so that test was a fact about 34 stands. What survives pooling is
+   what the survivors shared, above — and the requirement stated honestly is **a hull on the plane at the stand**,
+   which the take-off delivers on about one wave in five at Canyon B, Medium (Part 6).
 
 ---
 
@@ -371,7 +373,9 @@ and `wantOwn`, and both are **`steer × railRange` plus the hand**, which is **0
 `bankReference` and `leanAsked` stay 0 either way, and the schedule's rail, `|leanAsked|`, stays 0 too. **With the
 stick at zero, `?askCap=4.5` must therefore be bit-identical to the shipped address — fall times, stands, everything.**
 If it is not, Part 4.1 is wrong. (And this is consistent with #429's finding that `askCap` produced its earliest fall:
-its arms that turned had `steer = ±1`, where the cap does bind.) Part 6.2 is that test.
+its arms that turned had `steer = ±1`, where the cap does bind.) ⚠️ **This round did not run that test** — the run was
+started and stopped for the machine (Part 8) — so it is left **pre-registered rather than answered**, and the Appendix
+carries the one command that settles it.
 
 ### 4.2 Three more decompositions a single scalar was hiding
 
@@ -981,6 +985,13 @@ observed is not thereby false.
   `balance` 26 and `lost board` 4 — and three riders lost the board **during** the pop-up and never stood at all, two
   of them on delayed presses (Part 6). `'balance'` is also not a single mechanism: for this rider it is `human.fallen`
   **or** the sway/posture backstops in the same `endStep` chain, and this round did not separate them.
+* ⚠️ **Two runs were started and stopped, and neither is reported anywhere above.** (a) **The pre-registered
+  `?askCap=4.5` test of Part 4.1** — `ARMS=ships,cap`, one command in the Appendix — and (b) **a longer window**:
+  `STAND_HOLD=8` instead of 3, which would say whether the 15 rides that carry 3 s carry eight. Both were killed
+  part-way because a second heavy process on this machine belonged to another session and my own worker had dropped to
+  68 % of a core; neither produced a summary, and no number in this document comes from them. **So "a ride can last"
+  means 3 s here and nothing longer has been measured** — the 3 s figure is `STAND_HOLD`, an arbitrary horizon, not a
+  property of the ride.
 * **I did not measure the drawing.** #429's Part 8 hypothesis about `?trunk=mass` deleting the rig's trunk fold is
   still a source reading needing one drawn frame.
 
@@ -1020,9 +1031,11 @@ observed is not thereby false.
     env SEED=2 PERIODS=4 SCRIPTS=cue,lift PROBE=off LOG=none OUT=<s>/ctrl-off.jsonl node stand.mjs
     python3 -I docs/research/new-rider/take-off/stand.py <s>/ctrl-on.jsonl --control <s>/ctrl-off.jsonl
 
-    # Part 6.2's long window, and the `?askCap=4.5` arm beside the shipped one
-    env SEED=2 PERIODS=12 ARMS=ships,cap SCRIPTS=cue LOG=none STAND_HOLD=8 OUT=<s>/long2.jsonl node stand.mjs
+    # ⚠️ NOT RUN (Part 8): the long window and the pre-registered `?askCap=4.5` test of Part 4.1, in one run.
+    # The `--arms` comparison must come out at 0 values differing, or Part 4.1 is wrong.
+    env SEED=2 PERIODS=12 ARMS=ships,cap SCRIPTS=cue LOG=window STAND_HOLD=8 OUT=<s>/long2.jsonl node stand.mjs
     python3 -I docs/research/new-rider/take-off/stand.py <s>/long2.jsonl --arms ships cap
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/long2.jsonl            # does a 3 s ride carry eight?
 
 ☠️ Every invocation uses `env`: in zsh `SECONDS=…` passes through the shell's special **integer** variable and arrives
 as `"0"`. This file has no `SECONDS`; its horizons are `STAND_HOLD` and `PERIODS`.
