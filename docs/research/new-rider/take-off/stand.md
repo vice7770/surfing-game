@@ -906,8 +906,11 @@ observed is not thereby false.
   signal when bench and owner disagree. (It does not touch this round's own numbers: every script here holds the stick
   at zero and sends no `compress` at all.)
 * **The mirror is not the game's own call, only a bracket around it.** `standRefusal` runs per substep inside
-  `prepare`, so the probe's verdict is read one frame early or one frame late; agreement is 30 of 34 at the stand and
-  33 of 34 at the last landing frame, and the four disagreements are all within a few hundredths of `SINK_RATE`.
+  `prepare`, so the probe's verdict is read one frame early or one frame late. Agreement at the stand frame:
+  **30 of 34** on seed 1 and **40 of 41** on seed 2 (**70 of 75**); at the last landing frame, 33 of 34 and 40 of 41.
+  Every one of the five disagreements is the `sinking` boundary crossing inside the frame, with `into` within a few
+  hundredths of `SINK_RATE`. **The unconditioned per-test numbers that Parts 3 and 5.4 rest on do not depend on the
+  verdict at all**, so the bracket costs them nothing.
 * **`sinking`'s relation to planing is an association, not an identity** — 47.9 % against 18.8 % on seed 1, 41.8 %
   against 16.6 % on seed 2. The claim that the verdict *reads planing lift* rests on three things: the formula is
   `V sin α` by inspection; `asin(into/V)` reads **+2.60°** and **+1.37°** on planing frames, which are trim angles; and
