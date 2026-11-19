@@ -392,7 +392,6 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
   }
   const sinceStand = rider.standAt === undefined ? -1 : t - rider.standAt;
   const input = { paddle: prone && !pop && rider.popAt === undefined, sprint: prone && rider.sprinting && !pop, popUp: pop, steer: 0 };
-  const wasLanding = session.phase === 'landing';
   session.step(STEP, water, input);
   rider.frames += 1;
   const attached = session.rider.attached;
@@ -519,7 +518,6 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
     rider.prePress.push(row);
     if (rider.prePress.length > 30) rider.prePress.shift();
   }
-  void wasLanding;
 
   if (sinceStand >= 0 && sinceStand <= 1 && attached) {
     const f = rider.firstSecond;
