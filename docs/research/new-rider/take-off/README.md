@@ -168,6 +168,24 @@ at ≈ 8.99 s, i.e. **1.00 s** (reported, not measured here — the videos were 
 The shipped address, through its own take-off, gives a **median of 0.750 s and 12 of 15 inside his one second** — with
 no new switches on at all.
 
+**Wave by wave, the stand's own conditions decide whether it is carried** (the shipped address; the six waves that lit
+the cue; the stand frame, and the `hold` script's outcome):
+
+| wave | speed, m/s | planing | load, bw | front share | margin | wetted, m² | ahead, m | up the face | face under the board | the stand's refusal | fell after the stand |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 6 | 6.13 | **1** | 0.83 | 0.43 | 0.912 | **0.263** | 2.15 | **0.79** | **16.9°** | **none** | **never** (rode the 3 s out) |
+| 10 | 6.02 | **1** | 0.92 | 0.48 | 0.836 | **0.263** | 1.83 | 0.84 | 15.9° | **none** | 0.70 s |
+| 7 | 5.36 | 0 | 1.07 | 0.67 | 0.879 | 0.389 | 1.06 | 0.95 | 9.2° | feet under water | 1.73 s |
+| 8 | 5.18 | 0 | 1.05 | 0.66 | 0.898 | 0.375 | 1.18 | 0.94 | 10.3° | feet under water | 0.75 s |
+| 11 | 5.59 | 0 | 1.02 | 0.68 | 0.579 | 0.566 | 1.33 | 0.95 | 7.9° | feet under water | 0.68 s |
+| 12 | 3.92 | 0 | 1.06 | 0.70 | 0.724 | 0.469 | 0.54 | 0.99 | 3.4° | feet under water | 0.63 s |
+
+The two stands that are **not** refused are the two that are **planing**, **lower on the face** (0.79–0.84 against
+0.94–0.99), on a **steeper** one (15.9–16.9° against 3.4–10.3°), with **half the wetted hull** (0.263 m² against
+0.375–0.566) and the weight **off** the front foot (0.43–0.48 against 0.66–0.70). One of those two rode the window
+out; it is the only ride in the study that did. **The refused four all stand high on a flattening crest on a buried
+board, and all four are gone inside 1.73 s.**
+
 **And the stand itself is already not carried.** `AttachedRider.standRefusal` ran at the `'landing'` → `'standing'`
 transition and returned **`'feet under water'` in 12 of the 18 stands** (and nothing in the other 6): at the moment
 the rider stands, a foot's deck point is more than `FEET_DEPTH` under the surface. The game records the refusal and
