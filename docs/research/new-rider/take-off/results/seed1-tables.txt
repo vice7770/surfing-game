@@ -1,0 +1,71 @@
+address ?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on  grid 400x451 = 180400 cells  spun up in 57 s  start (-122.0, -134.0), 9 m out  Hs 1.40 m  Tp 11.0 s
+  ships     {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'deepen': 'on', 'riderBody': 'two'}
+  trunk     {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'deepen': 'on', 'trunk': 'mass', 'riderBody': 'two'}
+  bank      {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'bodyBank': 'hip', 'deepen': 'on', 'riderBody': 'two'}
+  all3      {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'bodyBank': 'hip', 'deepen': 'on', 'armCarry': 'on', 'trunk': 'mass', 'riderBody': 'two'}
+  all3cap   {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'bodyBank': 'hip', 'askCap': '4.5', 'deepen': 'on', 'armCarry': 'on', 'trunk': 'mass', 'riderBody': 'two'}
+  sea differences between arms: none
+12 waves, 180 runs, 1183 s wall
+
+arm/script       runs  popped  stood  fell  fell<1s  |  fell after the stand, s (median of those that fell after standing)  stand after pop  first second: load  legLoad  wetted  roll peak  pinned%
+all3/hold       12      6      6     5       5  |             0.683 (5 of 6)    1.200        0.9   0.982   0.356      9.8    80.1
+all3/turnL      12      6      6     5       5  |             0.633 (5 of 6)    1.200        1.0   0.980   0.356      8.7    83.2
+all3/turnR      12      6      6     5       5  |             0.700 (5 of 6)    1.200        0.9   0.980   0.356      9.3    88.5
+all3cap/hold       12      6      6     5       5  |             0.683 (5 of 6)    1.200        0.9   0.982   0.356      9.8    80.1
+all3cap/turnL      12      6      6     5       5  |             0.583 (5 of 6)    1.200        1.0   0.952   0.362      7.1    81.4
+all3cap/turnR      12      6      6     5       5  |             0.733 (5 of 6)    1.200        0.9   0.954   0.362     10.2    88.1
+bank/hold       12      6      6     5       5  |             0.683 (5 of 6)    1.200        0.9   0.982   0.356      9.8    80.1
+bank/turnL      12      6      6     5       5  |             0.633 (5 of 6)    1.200        1.0   0.980   0.356      8.7    83.2
+bank/turnR      12      6      6     5       5  |             0.700 (5 of 6)    1.200        0.9   0.980   0.356      9.3    88.5
+ships/hold       12      6      6     5       4  |             0.700 (5 of 6)    1.200        0.9   0.990   0.355     21.9    88.7
+ships/turnL      12      6      6     5       4  |             0.767 (5 of 6)    1.200        0.8   0.979   0.356     33.7    90.3
+ships/turnR      12      6      6     5       4  |             0.767 (5 of 6)    1.200        0.7   0.979   0.356     33.7    90.3
+trunk/hold       12      6      6     5       4  |             0.700 (5 of 6)    1.200        0.9   0.990   0.355     21.9    88.7
+trunk/turnL      12      6      6     5       4  |             0.767 (5 of 6)    1.200        0.8   0.979   0.356     33.7    90.3
+trunk/turnR      12      6      6     5       4  |             0.767 (5 of 6)    1.200        0.7   0.979   0.356     33.7    90.3
+
+causes, over the runs that fell (population per arm/script above):
+  all3/hold: {'balance / <=1 s after the stand': 5}
+  all3/turnL: {'balance / <=1 s after the stand': 5}
+  all3/turnR: {'balance / <=1 s after the stand': 5}
+  all3cap/hold: {'balance / <=1 s after the stand': 5}
+  all3cap/turnL: {'balance / <=1 s after the stand': 5}
+  all3cap/turnR: {'balance / <=1 s after the stand': 5}
+  bank/hold: {'balance / <=1 s after the stand': 5}
+  bank/turnL: {'balance / <=1 s after the stand': 5}
+  bank/turnR: {'balance / <=1 s after the stand': 5}
+  ships/hold: {'balance / >1 s': 1, 'balance / <=1 s after the stand': 4}
+  ships/turnL: {'balance / >1 s': 1, 'balance / <=1 s after the stand': 4}
+  ships/turnR: {'balance / >1 s': 1, 'balance / <=1 s after the stand': 4}
+  trunk/hold: {'balance / >1 s': 1, 'balance / <=1 s after the stand': 4}
+  trunk/turnL: {'balance / >1 s': 1, 'balance / <=1 s after the stand': 4}
+  trunk/turnR: {'balance / >1 s': 1, 'balance / <=1 s after the stand': 4}
+
+the stand itself, over the runs that stood:
+  all3/hold: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  all3/turnL: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  all3/turnR: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  all3cap/hold: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  all3cap/turnL: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  all3cap/turnR: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  bank/hold: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  bank/turnL: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  bank/turnR: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  ships/hold: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  ships/turnL: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  ships/turnR: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  trunk/hold: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  trunk/turnL: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+  trunk/turnR: pop 7.61 s after placing, stand 1.200 s after the pop, landing peak 1.35 body weights, front share 0.72, face under the board 14 deg, 0.83 up, refusals 4 of 6
+
+the flush placement on the same sea (first second, 1 s of frames each):
+  all3      SINK=0       6 runs: dry at frame 1 in 0, fell within 1 s 0, load      0.9  legLoad  0.913  wetted  0.399  roll peak    2.5
+  all3      SINK=0.06    6 runs: dry at frame 1 in 0, fell within 1 s 1, load      0.9  legLoad  0.926  wetted  0.420  roll peak    3.3
+  all3cap   SINK=0       6 runs: dry at frame 1 in 0, fell within 1 s 0, load      0.9  legLoad  0.913  wetted  0.399  roll peak    2.5
+  all3cap   SINK=0.06    6 runs: dry at frame 1 in 0, fell within 1 s 1, load      0.9  legLoad  0.926  wetted  0.420  roll peak    3.3
+  bank      SINK=0       6 runs: dry at frame 1 in 0, fell within 1 s 0, load      0.9  legLoad  0.913  wetted  0.399  roll peak    2.5
+  bank      SINK=0.06    6 runs: dry at frame 1 in 0, fell within 1 s 1, load      0.9  legLoad  0.924  wetted  0.420  roll peak    3.3
+  ships     SINK=0       6 runs: dry at frame 1 in 0, fell within 1 s 1, load      0.9  legLoad  0.913  wetted  0.399  roll peak    2.5
+  ships     SINK=0.06    6 runs: dry at frame 1 in 0, fell within 1 s 2, load      0.9  legLoad  0.924  wetted  0.420  roll peak    3.3
+  trunk     SINK=0       6 runs: dry at frame 1 in 0, fell within 1 s 1, load      0.9  legLoad  0.913  wetted  0.399  roll peak    2.5
+  trunk     SINK=0.06    6 runs: dry at frame 1 in 0, fell within 1 s 2, load      0.9  legLoad  0.926  wetted  0.420  roll peak    3.3
