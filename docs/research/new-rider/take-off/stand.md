@@ -1017,8 +1017,9 @@ observed is not thereby false.
     env SEED=2 PERIODS=4 SCRIPTS=cue,lift PROBE=off LOG=none OUT=<s>/ctrl-off.jsonl node stand.mjs
     python3 -I docs/research/new-rider/take-off/stand.py <s>/ctrl-on.jsonl --control <s>/ctrl-off.jsonl
 
-    # Part 6's long window, and the `?askCap=4.5` arm beside the shipped one
+    # Part 6.2's long window, and the `?askCap=4.5` arm beside the shipped one
     env SEED=2 PERIODS=12 ARMS=ships,cap SCRIPTS=cue LOG=none STAND_HOLD=8 OUT=<s>/long2.jsonl node stand.mjs
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/long2.jsonl --arms ships cap
 
 ☠️ Every invocation uses `env`: in zsh `SECONDS=…` passes through the shell's special **integer** variable and arrives
 as `"0"`. This file has no `SECONDS`; its horizons are `STAND_HOLD` and `PERIODS`.
