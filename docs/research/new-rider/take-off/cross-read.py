@@ -22,6 +22,10 @@ from collections import defaultdict
 # The columns both builds emit with the same meaning. `frames`/`liveFrames` are excluded: TRIAL moved.
 SHARED = ['cue', 'popBy', 'pop', 'stand', 'fell', 'cause', 'fellAfterStand', 'standAfterPop', 'stood', 'popped',
           'face', 'popOutcome', 'popRefusal']
+# ⚠️ `face` is a RUNNING MAXIMUM over the rider's whole life (`rider.face = max(rider.face, frame.faceHeight)`), so a
+# rider that never pops and is therefore retired by `TRIAL` keeps raising it for every extra second TRIAL gives.
+# It is reported apart rather than excluded, because a difference in it on a rider that DID stand would be news.
+TRIAL_DEPENDENT = {'face'}
 
 
 def load(path, arm='ships'):
@@ -54,6 +58,7 @@ def main():
     compared = diff = 0
     late = []
     notes = defaultdict(list)
+    trial_notes = []
     for k in shared_runs:
         a, b = mine[k], theirs[k]
         # A stand #429 censored at TRIAL = 16 s is followed here, so its fall columns cannot agree by construction.
@@ -62,6 +67,11 @@ def main():
             if key not in a or key not in b:
                 continue
             if censored_there and key in ('fell', 'fellAfterStand', 'cause'):
+                continue
+            if key in TRIAL_DEPENDENT and not close(a.get(key), b.get(key)):
+                stood = a.get('stood') == 1
+                trial_notes.append(f'{k}: {key} {a.get(key)} vs {b.get(key)}'
+                                   f'{"  ⚠️ ON A RIDER THAT STOOD — not explained by TRIAL" if stood else " (never stood; TRIAL)"}')
                 continue
             compared += 1
             if not close(a.get(key), b.get(key)):
@@ -74,6 +84,9 @@ def main():
         print(f'   {key}: {len(vals)} differ — {vals[:6]}')
     if not notes:
         print('   (a difference here would mean the two builds are not the same rider on the same sea)')
+    print(f'# {len(trial_notes)} differences in TRIAL-dependent running maxima, reported apart:')
+    for t in trial_notes:
+        print(f'   {t}')
     print(f'# {len(late)} stands were CENSORED at TRIAL = 16 s in #429 and are followed here:')
     for k, stand, fell, after, cause in late:
         print(f'   {k}: stood at {stand} s → fell at {fell} s, {after} s after the stand, cause {cause}')

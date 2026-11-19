@@ -410,7 +410,7 @@ def demand(p):
         print(f"   AT THE STAND ({len(at)} stands): outX median {f(med([num(r, 'outX') for r in at]), 5)} m, "
               f"outZ median {f(med([num(r, 'outZ') for r in at]), 5)} m; "
               f"outside at all on {sum(1 for r in at if num(r, 'outX') > 0 or num(r, 'outZ') > 0)} of {len(at)}")
-    esc_x, esc_z, firsts, peaks = [], [], [], []
+    esc_x, esc_z, firsts, peaks, esc_loaded = [], [], [], [], []
     nx = nz = n = 0
     for rows in p.stand_rows.values():
         seen_first = False
@@ -423,6 +423,11 @@ def demand(p):
             if ox > 0:
                 nx += 1
                 esc_x.append(ox)
+                # ⚠️ `freeX = local.x − height·j.x/j.y` DIVERGES as the normal impulse vanishes, so `outX`'s tail is
+                # a near-zero-load tail, not a bigger lean. The load-matched figure is the comparable one, and
+                # #425's own palm-down population was loaded by construction.
+                if num(r, 'load') >= 0.5:
+                    esc_loaded.append(ox)
             if oz > 0:
                 nz += 1
                 esc_z.append(oz)
@@ -437,6 +442,9 @@ def demand(p):
           f'ALONG on {nz} of {n} ({100 * nz / n if n else 0:.1f} %)')
     print(f'      the excursion across, over escaping frames: median {f(med(esc_x), 5)} m, '
           f'peak {f(max(esc_x) if esc_x else float("nan"), 5)} m')
+    print(f'      … restricted to escaping frames the feet actually CARRY (load >= 0.5 bw): '
+          f'{len(esc_loaded)} of {len(esc_x)}, median {f(med(esc_loaded), 5)} m — the load-matched figure, '
+          f'since `freeX` diverges as the normal impulse vanishes')
     print(f'      the excursion along, over escaping frames: median {f(med(esc_z), 5)} m')
     print(f'      on the FIRST escaping frame of a run: median {f(med(firsts), 5)} m ({len(firsts)} runs)')
     print(f'      per-run peak excursion across: median {f(med(peaks), 5)} m')
