@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { Quaternion, Scene, Vector3 } from 'three';
 import { WaterSurface } from '../scene/WaterSurface';
+import { RIG_SWITCHES } from '../scene/rig/stanceBlend';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
@@ -2396,6 +2397,39 @@ describe('PhysicalMode', () => {
     expect(await third).toBe(false);
     expect(mode.config?.spot).toBe('point');
   });
+
+  // The reviewer's catch on PR #431's study branch: `RIG_SWITCHES` is a module-level global that every rig on the
+  // page reads each frame, and the drawn-trunk flag used to be written where the config is computed - after the GPU
+  // await and BEFORE the supersession guard. A start abandoned while asking for the tier could therefore reach in and
+  // change the trunk of the ride already running, and then return false without putting it back.
+  it('never lets a superseded start change the live ride\'s drawn trunk (`RIG_SWITCHES.trunk`)', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    RIG_SWITCHES.trunk = undefined;
+    // The ride that is running draws the rig's own hinge.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    expect(RIG_SWITCHES.trunk).toBeUndefined();
+    // A start that asks for the physics trunk, suspended inside the GPU await (the Reef raises stage 1 to 2, which is
+    // what makes `compute` 'auto' and the tier worth asking for).
+    let release = (): void => {};
+    const gpuTier = (): Promise<boolean> => new Promise<boolean>((resolve) => { release = () => resolve(false); });
+    const never = (): SurfZoneHost => { throw new Error('a superseded start must not build a surf zone'); };
+    const stuck = mode.start(
+      { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', stage: 1, compute: 'cpu' }, 5, water,
+      { ...quick, trunk: 'mass', rider: 'new' }, never, gpuTier,
+    );
+    // Superseded, and only then let go of the tier.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    release();
+    expect(await stuck).toBe(false);
+    // The abandoned start never reached the page's drawing.
+    expect(RIG_SWITCHES.trunk).toBeUndefined();
+    // And the switch still works on a start that IS accepted.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, { ...quick, trunk: 'mass', rider: 'new' })).toBe(true);
+    expect(RIG_SWITCHES.trunk).toBe('mass');
+    RIG_SWITCHES.trunk = undefined;
+    mode.stop();
+  }, 60_000);
 
   it('describes the running sea, solver cost and next set in the Wave Lab readout', async () => {
     const mode = new PhysicalMode(new Scene());

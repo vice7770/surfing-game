@@ -1871,15 +1871,6 @@ export class PhysicalMode {
     const compute = stage !== settings.stage ? 'auto' : settings.compute;
     const tier = stage === 2 && compute === 'auto' && gpuTier !== undefined && await gpuTier();
     const config = surfZoneConfigFor(settings, seed, tier, overrides);
-    // `?trunk=mass` with `?rider=new` (step 3.5h): standing, the drawn trunk is the physics' folded one and the rig
-    // adds no fold of its own (`RIG_SWITCHES.trunk`). **Read off the config that is actually in force, not off the
-    // address**, because an online room's `overrides` clear `rider` and `trunk` for the physics (`main.ts`): taken
-    // from the URL, joining a room from `?rider=new&trunk=mass` would stand the drawn hinge down on riders whose
-    // physics has no fold at all — which is the very drawn-against-physical disagreement this switch exists to
-    // remove. Every rider in a zone runs the zone's own config, the local one and the remote ones alike, so one flag
-    // off `config` is one flag per rider. Without the new surfer there is no hip rotor to read, so the drawing keeps
-    // its own hinge.
-    RIG_SWITCHES.trunk = config.trunk === 'mass' && config.rider === 'new' ? 'mass' : undefined;
     // Superseded while asking for the GPU: never build it, and never drop the newer start's spin-up.
     if (start !== this.starts) return false;
     // A swept spot's contact needs the barrel files in the surf zone (Part B, PR 4).
@@ -1905,6 +1896,20 @@ export class PhysicalMode {
     host.setParticleLevel(this.particleLevel);
     host.setSprayEnabled(this.sprayShown);
     this.config = config;
+    // `?trunk=mass` with `?rider=new` (step 3.5h): standing, the drawn trunk is the physics' folded one and the rig
+    // adds no fold of its own (`RIG_SWITCHES.trunk`). **Read off the config that is actually in force, not off the
+    // address**, because an online room's `overrides` clear `rider` and `trunk` for the physics (`main.ts`): taken
+    // from the URL, joining a room from `?rider=new&trunk=mass` would stand the drawn hinge down on riders whose
+    // physics has no fold at all — which is the very drawn-against-physical disagreement this switch exists to
+    // remove. Every rider in a zone runs the zone's own config, the local one and the remote ones alike, so one flag
+    // off `config` is one flag per rider. Without the new surfer there is no hip rotor to read, so the drawing keeps
+    // its own hinge.
+    // **And it is set HERE, beside `this.config`, not where the config is computed.** `RIG_SWITCHES` is a
+    // module-level global read every frame by every rig on the page, so writing it before the supersession guards
+    // let a start that is abandoned while awaiting the GPU tier reach in and change the drawn trunk of the ride
+    // already running — the reviewer's catch. A superseded start must leave the live ride's drawing alone, and the
+    // config is only "actually in force" once the host it belongs to has been accepted.
+    RIG_SWITCHES.trunk = config.trunk === 'mass' && config.rider === 'new' ? 'mass' : undefined;
     this.storm = swell.storm;
     this.practice = settings.source === 'practice';
     const { init } = host;
