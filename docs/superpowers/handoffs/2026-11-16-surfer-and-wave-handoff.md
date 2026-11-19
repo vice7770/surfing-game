@@ -4651,3 +4651,68 @@ PR #444 on `claude/ride-everything`, opt-in, default byte-identical. Canyon B Me
 
 ### 5. Not measured, and the owner sees one of them first
 **Seed 1 and every Compress arm** (Compress is measured protective and has rescued a wave) · ⚠️ **the DRAWING: `swung`'s 0.35 share stands down so the drawn lateral lean goes 0.35ψ → 1.0ψ with the fold reaching 68.75°, and nobody opened a browser** · `?trunk=mass` + `?swing=mass` together (the folds do not commute) · `src/wave` was still running at hand-back, its whole diff there being one forwarding line and one typed field.
+
+---
+
+## ⚖️⚖️ THE `[S needed]` ON THE ACROSS-SPEED IS **CLOSED — TWICE** (2026-11-19, literature agent, branch `claude/across-speed-lit`)
+
+⛔ **STOP COMMISSIONING THIS. Do not send a fourth round after it.**
+
+Part 23 §7 of `docs/research/new-rider/3.2/README.md` ends with a marker — *"the fall test's velocity term against a
+human's own … nobody has checked whether a standing person catching themselves crosses their own feet slower or
+faster than that **[S needed]**"* — and the conditional *"if slower, the test is mis-scaled and the plant is
+survivable."*
+
+> ⭐ **It was answered on 2026-11-15 by step 3.2z, which is `3.2/README.md` **Part 24**, merged and on `main`.
+> It was answered again independently on 2026-11-19 in `docs/research/new-rider/3.5/across-speed-literature.md`.
+> BOTH REACH THE SAME VERDICT: ⛔ **THE FALL TEST IS NOT MIS-SCALED.** The conditional does not fire.**
+
+**Why it kept getting re-commissioned:** the `[S needed]` string in Part 23 §7 is never struck through, and
+**PR #445's `3.5/swing-demand.md` §6 re-raised it as open** in good faith, not having found Part 24 seven hundred
+lines further down the same file. **Three rounds on one marker.** ⚠️ **Before commissioning any `[S needed]` in the
+3.2 README, grep the later Parts of that same file first** — it is 7 500 lines and its own closures are inside it.
+
+### What the two rounds establish, for anyone about to design on this
+
+* **1.21 m/s is OUTSIDE a human's**, by every sourced route. ⭐ **The check that needs no paper:** at the measured CoM
+  height of **0.711 m**, 1.21 m/s across the feet **is the whole body rotating over them at 97 °/s** — against
+  **0.1 °/s** in quiet standing and **6.2 °/s** in walking, the fastest Hof publishes. **Topple rate, not sway rate.**
+* ⭐ **The test's allowance is already MORE generous than the literature's, not less.** `reachAcross` is
+  **0.175–0.396 m**; the best model of the same counter-rotation mechanism (Inkol 2018, evaluated against 10
+  subjects) puts its whole benefit at **3.5–5.5 cm**. **The game credits 3.2–11.3× what a human gets.**
+* ⭐ **The pendulum length is wrong in the LENIENT direction.** `humanBalance.ts:469` sets `ℓ` = the CoM's height
+  above the feet. Hof 2005 §2.2 — **the paper the file itself cites** — says `ℓ` is an *equivalent* length,
+  **1.20–1.24 × trochanteric height** fore-aft, i.e. **≈1.16–1.20 × the CoM height**. So `1/ω₀` is **7.6–9.4 %
+  short** and the velocity term is **under**-counted. **Correcting it makes the rider fall sooner.**
+* **The coefficient question and the pendulum question are ONE question.** `0.22–0.32 m per m/s` **is** `1/ω₀` in
+  seconds (m ÷ m·s⁻¹ = s). A human's is **0.338–0.365 s**. Right order, 10–30 % low.
+* **"More than one contact across" stays refuted, and now with a number instead of an abstract.** Hof's own Table 1
+  (read from the primary this round) has subjects on **one foot on tiptoe** standing 30 s with a mean margin of
+  **−9.3 (14) mm** — the extrapolated CoM about a centimetre **outside** the base. **Width is not the lever.**
+
+### ⛔ Three defensible corrections exist and ALL THREE MAKE HIM FALL SOONER — so nothing is proposed
+
+The pendulum length, the counter-rotation credit, and the reach's provenance. **No tuning and no constant change is
+recommended by either round.** They are the owner's to rule on and nobody else's.
+
+### ⭐ Where the two rounds point instead — and the literature now agrees with the game's own columns
+
+**The human answer to a velocity term larger than the base is to MOVE THE BASE** (Hof's walking data; Hof 2010's
+stepping result). **Our rider cannot step, and the board it stands on can move but is never aimed** — `HumanBalance`
+writes an ankle rest, a hip rotor and the knees, and `predictiveBalance.ts` says in words that the rider *"does not
+pretend to steer it."* **So the next measurement is still the board's own across authority** — what lateral
+acceleration a steer produces on this hull at 5–9 m/s, against the **0.42–1.41 m/s²** the body's drift asks for
+(Part 24 §6). **Neither round measured it and neither claims the board can deliver it.**
+
+⚠️ **Still first in line, and untouched: Part 24 §6's own discrepancy** — 3.2y's **−384 N/rad** of hull side force at
+7.5 m/s implies 1.8–5.6 m/s² at the rolls these runs reach, against a measured **net** base drift of 0.00–0.38 m/s².
+**Two of the project's own measurements disagree. No paper resolves that; it is a probe's job.**
+
+### 🔧 And a tool note worth more than it looks
+
+**Part 24 §7 recorded a dead end that is not real:** *"this machine has no `pdftoppm` and the hosted PDF uses subset
+fonts that defeat a raw stream extraction"*, and it delegated Hof's Table 1 to another agent as a result. ⭐ **A
+throwaway venv with `pypdf` AND `fonttools` extracts it cleanly — `fonttools` is the whole trick, since without it
+`pypdf` cannot decode Elsevier's CFF Type-1 subset fonts and emits warnings instead of text.** Recipe in
+`across-speed-literature.md` §9. **`braceworks.ca`, `atrium.lib.uoguelph.ca` and PMC served full text; JEB,
+`lirias.kuleuven.be` and `cris.maastrichtuniversity.nl` refused (403/504).**
