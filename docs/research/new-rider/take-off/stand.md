@@ -432,10 +432,17 @@ against the oncoming water. So `into ≈ V sin α`, and with `SINK_RATE = 0.3 m/
 | 8 m/s | 2.15° |
 
 Planing trim on a board is a few degrees, so **above about 4 m/s the test is tripped by ordinary planing** — and 4 m/s
-is `PLANING_SPEED` itself. The measurement agrees and shows why it is a partial overlap rather than an identity: over
-the 2 123 standing frames, `into > 0.3` holds in **47.9 % of planing frames** (median `into` **+0.280 m/s** — just
-under the threshold, which is where a 3–4° trim at 4–5 m/s puts it) against **18.8 % of non-planing frames** (median
-**+0.194 m/s**).
+is `PLANING_SPEED` itself.
+
+**And `into` on a planing board measures exactly that trim.** Inverting it frame by frame — `asin(into / V)`, over the
+796 live planing frames — gives a median of **+2.60°** (quartiles +0.23° and +5.50°) at a median speed through the
+water of **6.21 m/s**; and `6.21 × sin(2.60°) = 0.282 m/s`, which is the measured median `into` of **+0.280 m/s** to
+the last digit. **That is not a board descending 0.28 m/s into the sea for seconds on end; it is a hull riding at
+two and a half degrees of trim.** On the 1 317 non-planing frames the implied angle is larger (**+5.48°**) but the
+speed is only **1.89 m/s**, so `into` stays near **+0.194 m/s** and the test rarely fires.
+
+That is why the overlap is partial rather than total: `into > 0.3` holds in **47.9 % of planing frames** against
+**18.8 % of non-planing ones**.
 
 **So `sinking` cannot distinguish a board going under from a board riding on its own lift**, it fires more than twice
 as often on the latter, and the stands it refuses are disproportionately the good ones.

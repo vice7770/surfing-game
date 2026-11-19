@@ -21,9 +21,11 @@
     {'grip': 313, 'margin': 800, 'knee': 1010}
 
 ## 4. `sinking` (into > SINK_RATE 0.3) against planing — the test cannot tell a planing
-      angle of attack from a board going under, because both are motion into the water relative to the flow
-   planing=1: into > 0.3 in   381 of   796 = 47.9%   (median into +0.280 m/s)
-   planing=0: into > 0.3 in   250 of  1327 = 18.8%   (median into +0.194 m/s)
+      angle of attack from a board going under, because both are motion into the water relative to the flow.
+      `into` = -(v_rel . n) = V sin(alpha), so asin(into/V) is the hull's TRIM against the oncoming water.
+   planing=1: into > 0.3 in   381 of   796 = 47.9%   median into +0.280 m/s   median V 6.21 m/s   median asin(into/V) +2.60 deg  (n 796)
+   planing=0: into > 0.3 in   250 of  1327 = 18.8%   median into +0.194 m/s   median V 1.88 m/s   median asin(into/V) +5.48 deg  (n 1317)
+   ⭐ A planing hull trims a few degrees. If asin(into/V) reads as trim, `into` is lift, not a descent.
 
 ## 5. the CoP-pinned share, both readings (a factor of ~3 apart — say which)
    `limitTime.tip > 0` (the published quantity): 2071 of 2123 = 97.6%

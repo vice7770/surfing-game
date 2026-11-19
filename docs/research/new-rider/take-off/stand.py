@@ -13,6 +13,7 @@ length), and every count carries its population.
 with: a stale file in a scratchpad is otherwise indistinguishable from a fresh one.
 """
 import json
+import math
 import sys
 from collections import Counter
 
@@ -216,13 +217,20 @@ def channels(rows):
     print('   ', dict(Counter(r['bLimit'] for r in fr)))
     print()
     print('## 4. `sinking` (into > SINK_RATE 0.3) against planing — the test cannot tell a planing')
-    print('      angle of attack from a board going under, because both are motion into the water relative to the flow')
+    print('      angle of attack from a board going under, because both are motion into the water relative to the flow.')
+    print('      `into` = -(v_rel . n) = V sin(alpha), so asin(into/V) is the hull\'s TRIM against the oncoming water.')
     for plan in (1, 0):
         sub = [r for r in fr if r.get('planing') == plan and r.get('into') is not None]
         if sub:
             over = sum(1 for r in sub if r['into'] > 0.3)
+            speeds = [r['latchSpeed'] for r in sub if r.get('latchSpeed')]
+            trims = [math.degrees(math.asin(max(-1.0, min(1.0, r['into'] / r['latchSpeed']))))
+                     for r in sub if r.get('latchSpeed') and r['latchSpeed'] > 0.5]
             print(f'   planing={plan}: into > 0.3 in {over:5d} of {len(sub):5d} = {over / len(sub):.1%}'
-                  f'   (median into {med([r["into"] for r in sub]):+.3f} m/s)')
+                  f'   median into {med([r["into"] for r in sub]):+.3f} m/s'
+                  f'   median V {med(speeds):.2f} m/s'
+                  f'   median asin(into/V) {med(trims):+.2f} deg  (n {len(trims)})')
+    print('   ⭐ A planing hull trims a few degrees. If asin(into/V) reads as trim, `into` is lift, not a descent.')
     print()
     print('## 5. the CoP-pinned share, both readings (a factor of ~3 apart — say which)')
     tip = sum(1 for r in fr if (r.get('tTip') or 0) > 0)
