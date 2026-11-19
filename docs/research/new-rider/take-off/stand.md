@@ -755,6 +755,13 @@ own closing sentence (*"The rider has one authority left, the sole, and that is 
 a discriminator on one sea, and it points at water pushing the feet across a buried deck. On seed 2 the grip overlaps
 (held 0.727–0.865, fell 0.000–0.894), so this is a lead, not a result.
 
+⭐ **One row in that table runs the other way on both seas, and it is the knees.** `knees left, min` is **lower** for
+the rides that last — 0.399 against 0.527 on seed 1, 0.372 against 0.531 on seed 2 — so **the surviving rides are the
+ones working their legs hardest**, and `balanceLimits.limit` is `'knee'` more often than anything else (seed 1
+1 010 of 2 123 frames, seed 2 2 372 of 3 744). That is what a hull on the plane does: it carries the rider's weight
+dynamically, and the load goes through the legs. **The fallers' knees are idle because their board is not holding them
+up.** (`knee` cannot end a ride — only the capture point can — so this is a load reading, not a failure mode.)
+
 **Read as one event, this is a drop-in** — with the caveat that only the hydrodynamic half of it separates cleanly.
 At the median, the ride that lasts stands lower on a steeper face and further ahead of the crest, **making twice the
 speed through the water, on half the wetted hull, with the deck clear of the water and the load off the front foot**;
