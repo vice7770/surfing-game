@@ -2,6 +2,12 @@
 
     python3 -I docs/research/new-rider/take-off/read.py <out.jsonl> [--frames <arm> <script> <wave>]
                                                                    [--diff <armA> <armB>]
+                                                                   [--paired] [--control <other.jsonl>]
+
+With no flag: the control line, the arm table (runs, popped, stood, fell, fell within 1 s, the fall against the
+stand), the causes, the stand itself and the flush placement. `--paired` gives the first second frame by frame and
+every signal at the stand and at the fall, per arm. `--frames` prints one run. `--control` compares a `PROBE=on` run
+with a `PROBE=off` one, value for value.
 
 `--diff` aligns two arms frame by frame on the same (script, wave, frame) — the same sea, the same wave, the same
 stick — and counts the values that differ, as `merge-bench.ts` did: a switch that moves nothing moves 0 of N. It also
@@ -145,7 +151,7 @@ def main():
         at = sys.argv.index("--diff")
         diff(path, sys.argv[at + 1], sys.argv[at + 2])
         return
-    control = None
+    head = None
     done = None
     summaries = []
     placements = []
@@ -158,7 +164,7 @@ def main():
         for line in handle:
             row = json.loads(line)
             if row.get("control"):
-                control = row
+                head = row
             elif row.get("done"):
                 done = row
             elif row.get("summary"):
@@ -170,13 +176,13 @@ def main():
             elif want and (row.get("arm"), row.get("script"), row.get("wave")) == want:
                 frames.append(row)
 
-    if control:
-        print(f"address {control['address']}  grid {control['grid']} = {control['cells']} cells  "
-              f"spun up in {control['spunUp']:.0f} s  start ({control['startX']:.1f}, {control['startZ']:.1f}), "
-              f"{control['lineupOut']} m out  Hs {control['significantHeight']:.2f} m  Tp {control['peakPeriod']:.1f} s")
-        for arm, switches in control["switches"].items():
+    if head:
+        print(f"address {head['address']}  grid {head['grid']} = {head['cells']} cells  "
+              f"spun up in {head['spunUp']:.0f} s  start ({head['startX']:.1f}, {head['startZ']:.1f}), "
+              f"{head['lineupOut']} m out  Hs {head['significantHeight']:.2f} m  Tp {head['peakPeriod']:.1f} s")
+        for arm, switches in head["switches"].items():
             print(f"  {arm:9s} {switches}")
-        print(f"  sea differences between arms: {control['seaDiffs'] or 'none'}")
+        print(f"  sea differences between arms: {head['seaDiffs'] or 'none'}")
     if done:
         print(f"{done['waves']} waves, {done['runs']} runs, {done['seconds']:.0f} s wall\n")
 

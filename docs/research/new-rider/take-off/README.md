@@ -91,7 +91,8 @@ sprint 2 s before the crest, as `catch-probe`'s `good` script does.
 `inTakeOffWindow` wants the board shoreward at **0.8 of the crest's speed** while it sits 1.1–2.2 face heights ahead
 of the crest. **The cue lit on 6 of the 12 waves** — waves 6, 7, 8, 10, 11 and 12, whose faces at the start were
 **1.28–2.06 m** — and on **none** of the other six, whose faces were **0.81–1.20 m**. On one of those misses, traced
-frame by frame, the geometric half of the window was satisfied for 0.8 s (1.2–2.3 m ahead, 0.92–0.97 up the face) and
+frame by frame, the geometric half of the window was satisfied for about 0.7 s (1.2–2.2 m ahead of a 1.06 m crest,
+which wants 1.17–2.33 m, at 0.92–0.97 up the face) and
 the speed half never was: the paddler topped out at **3.7 m/s shoreward against a crest at 5.3–5.5 m/s**, needing 4.3,
 and the crest passed under him.
 
@@ -116,6 +117,12 @@ take-off** is the first second after *"Getting up…"* clears on that same water
 | wetted hull | 0.35–0.52 m² | 0.363 m² |
 | roll peak in the second | 0.7–25° at every entry ≥ 4; **57–63° at 2 m/s** | **28.9°** (median of the per-run peaks) |
 | falls inside the second | **2 of 12 per arm** — and both are the 2 m/s entries | **12 of 15** (Part 5) |
+
+**The brief asked for the load and the wetness, and they are the part that agrees.** The take-off's first second
+carries **0.86 body weights** at the feet against the placement's 1.0, and **0.363 m²** of wetted hull against
+0.35–0.52 — within the placement's own spread, and about two thirds of a 1.778 × 0.464 m planform either way. So
+`SINK = 0.06` did its job: the flush placement's old complaint (a dry hull and an unloaded leg at frame 1) is **not**
+what separates the two benches. What separates them is the latch and the cap.
 
 **The mount seeds the planing latch from the magnitude of the board's world velocity** — `AttachedRider`'s mount:
 `if (this.upright && this.phase === 'standing' && board.velocity.length() > PLANING_SPEED) { planing = true; banked =
@@ -150,6 +157,11 @@ wall.** Of the 12 waves, **6 lit the game's own cue** and every rider that poppe
 **Every separation is `'balance'`.** Nobody slips a foot, nobody loses the board, nothing hits the reef, and
 `inContact` is true in **698 of 698** first-second frames on the shipped address: the feet never leave the deck.
 
+**Nor does an input save it.** `hold` leaves the stick at zero; `turnL` and `turnR` put Compress and a **full** steer
+in 0.3 s after the stand, either way. Shipped, the medians are 0.700 s (`hold`), 0.767 s (`turnL`) and 0.767 s
+(`turnR`) — the turn neither rescues the ride nor ends it sooner, so the fall is not something the stick does or fails
+to do.
+
 **This is the owner's own report, and it is the shipped behaviour.** His words across three reports are *"stands 1
 second"*; one video gives *"Getting up…"* clearing at ≈ 7.99 s and the wipeout prompt at ≈ 8.99 s, i.e. **1.00 s**.
 The shipped address, through its own take-off, gives a **median of 0.750 s and 12 of 15 inside his one second** — with
@@ -177,15 +189,17 @@ frame by frame. The diff counts below are over **every column the three switches
 | `all3` vs `all3cap` (`+ ?askCap=4.5`) | 8 721 of 384 160, `leanCap` first (441 frames) | frame 477–577: once standing |
 
 **`?trunk=mass` is bit-for-bit inert on a real take-off.** Not "it moves values but not the outcome" — it moves
-**nothing**. The reason is in the rider's own columns: `StandingBody.hip.angle` reads **0 in all 2 701 logged frames,
-including all 394 standing frames**, and `trunkFold` reads **0 in every first-second frame of every arm**. The hip
+**nothing**. The reason is in the rider's own columns: on the `trunk` arm, `StandingBody.hip.angle` reads **0 in all
+4 147 logged frames, including all 787 standing frames**, and so does `trunkFold` — 0 in 4 147 of 4 147. The hip
 rotor answers excess ankle demand, and through a take-off there is no such demand to answer, because (Part 4) the
 rider is off the plane and the lean he may ask for is zero. **A fold that never fires cannot move the mass it folds.**
 
-**On a placement the same switch is live.** On the flush placement — the same bench, same sea, same second — `trunk`
-differs from `ships` in **26 of 216** summary values (`place.jsonl`: at the 12 m/s entry it even moves the fall frame,
-30 → 32), and PR #426's own placement bench put it at **342 757 of 865 859 values, the fold firing in 19.6 % of live
-frames and peaking at 42.9°**. So the switch is not broken and #426 is not wrong: **the two benches are measuring two
+**On a placement the same switch is live — and that is this measurement's positive control.** A "0 of 406 406" is
+worthless unless the same bench, with the same arm wiring, can be shown to see the switch when it acts. It can: on the
+flush placement — same bench, same sea, same second — `trunk` differs from `ships` in **26 of 216** summary values
+(`results/placement-first-second.txt`: at the 12 m/s entry it even moves the fall frame, 30 → 32), and PR #426's own
+placement bench put it at **342 757 of 865 859 values, the fold firing in 19.6 % of live frames and peaking at 42.9°**.
+So the switch is not broken, the bench's wiring is not dead, and #426 is not wrong: **the two benches are measuring two
 different riders.**
 
 **`?bodyBank=hip` is the arm that acts**, and `all3` is `bank` exactly (0 of 388 472): on a take-off, `armCarry`
@@ -238,10 +252,18 @@ centre of pressure it wants leaves the support box — on a rider who, at that m
 all** (cap 0, ask 0, off the plane) and whose board has its deck at the feet **under water** (the stand's own refusal
 in 12 of 18). The rider has one authority left, the sole, and that is the one that saturates (`tip`).
 
-`?bodyBank=hip` changes which way it goes rather than whether: with the trunk's angular-momentum rate in the contact's
-bound, the roll stays small (9.3° against 28.9°) and the board **slides** instead — the travelled course leaves the
-heading by **−43.8°** against the shipped **−18.2°**, speed is kept (5.5 m/s against 3.6), and the CoP is pinned in
-15 of 15 falls.
+**And he never gets down the face.** He stands **0.943 up the face, 1.26 m ahead of the crest, on a 9.8° slope**, and
+he falls **0.968–0.978 up it, 0.43–0.86 m ahead of the crest, on a 2.7–7.6° slope**. The drop-in never happens: the
+whole measured ride is spent **on the crest**, which is also why the board does not sustain 4 m/s **through the water**
+(the latch's own test) and why the lean cap stays at zero in 12 of 18 stands. Any work on this first second that
+assumes the rider is on a face is assuming something the take-off does not deliver here.
+
+`?bodyBank=hip` changes which way it goes rather than whether, **and it fails in the same order**
+(`results/trace-bank-hold-wave8.txt`): the margin goes 0.898 → 0.766 → 0.611 → 0.400 by 0.47 s with the roll still
+−2.5°, the leg peaks at 888 N, `tip` arrives at 0.60 s, and it is gone at 0.633 s. What differs is the end: with the
+trunk's angular-momentum rate in the contact's bound, the roll stays small (9.3° against 28.9°) and the board
+**slides** instead — the travelled course leaves the heading by **−43.8°** against the shipped **−18.2°**, speed is
+kept (5.5 m/s against 3.6), and the CoP is pinned in 15 of 15 falls.
 
 ## 8. The one thing `?trunk=mass` does change, and this bench cannot see it
 
@@ -253,9 +275,10 @@ The drawing half is **not conditional on the rotor**. `HumanoidRig.hinge` on `cl
     this.physicsTrunk = RIG_SWITCHES.trunk === 'mass' && state.phase === 'standing';
     if (this.physicsTrunk) wanted = 0;
 
-— and `poseHinge`'s mass-position correction (`backForMass`) is stood down with it. So **whenever the rider is
-standing, `?trunk=mass` deletes the rig's own trunk fold** and hands the trunk to a physical rotor which, on a
-take-off, is at zero. The fold it deletes is the stance sheet's own: `hinge.tall` **16–44°** and `hinge.deep`
+— and `poseHinge`'s mass-position correction (`backForMass`) is stood down with it. `PhysicalMode` turns it on for
+exactly the owner's address: `RIG_SWITCHES.trunk = config.trunk === 'mass' && config.rider === 'new' ? 'mass' :
+undefined`. So **whenever the rider is standing, `?trunk=mass` deletes the rig's own trunk fold** and hands the trunk
+to a physical rotor which, on a take-off, is at zero. The fold it deletes is the stance sheet's own: `hinge.tall` **16–44°** and `hinge.deep`
 **30–56°** by stage (`stagePoses.ts`), plus `leanIn`. A rider who used to fold 16–50° over his toes now **stands bolt
 upright**, and then falls at 0.75 s exactly as he always did.
 
@@ -283,7 +306,9 @@ second after the stand is where his ride ends.
 ## 10. The controls
 
 **The address arrived.** The `control` line is printed off the solver before anything is measured: grid
-**400 × 451 = 180 400** (Canyon B's own seatbelt), and the five arms parsed as
+**400 × 451 = 180 400** (Canyon B's own seatbelt), **spun up in 57 s** to a sea time of 22 s, the start at
+(−122.0, −134.0) — 9 m out, Canyon B's own `rideLineupOffset` — on an Hs 1.40 m, Tp 11.0 s sea, and the five arms
+parsed as
 `{canyonBed: b, rider: new, feltFrame: deck, stanceReach: keep, deepen: on, riderBody: two}` plus, per arm,
 `trunk: mass` / `bodyBank: hip` / `armCarry: on` / `askCap: '4.5'` exactly as the suffix says. **Sea differences
 between arms: none.** The bench exits non-zero if either check fails, so a bare-string `globalThis.location` cannot
@@ -294,3 +319,74 @@ popped at the cue by default; the file in this PR says so with named pop rules (
 `PROBE` switch and three new columns. Re-run at seed 1 on the overlapping waves, the two builds agree:
 **0 of 2 016 values differ** over 48 runs (3 arms × 2 scripts × 8 waves), on every column both builds emit; the only
 differences are the four columns the old build did not have (`popBy`, `fsCapMed`, `fsPlaningFirst`, `fsPlaningMed`).
+
+**The probe is inert, over 2 538 values.** `PROBE=off` reruns the drive with the per-frame row never built, which also
+removes the only two reads the probe makes of its own accord — the drawn feet (`renderPoint`, twice, taken into the
+board's frame) and a second `sampleAt` under the board (`slopeUnder`) — while the outcomes and the first-second
+columns are computed exactly as before (`LOG` only gates the write, so it cannot matter). At seed 1, 8 periods,
+3 arms × 2 scripts: **54 runs aligned, 2 538 summary values compared, 0 differ.** A broken result here would have
+been a changed fall frame or a changed first-second median, and there is none.
+
+**Live frames, counted.** Seed 1 stepped **113 222** rider frames in all, of which **113 147 (99.93 %)** were live
+(`attached === 1`); the 75 that were not are the one frame per fallen run on which the separation is seen, and each
+run stops there. **20 162** frames were emitted (the whole window from 0.5 s before the pop, every 10th frame while
+paddling), **3 437** of them at or after a stand. No frozen frame enters any median: the `atFall` row is the last
+attached frame, and the first-second columns count only frames with `attached === 1`.
+
+**The pinning trap reproduces.** `pinned` here is `limitTime.tip > 0` (the published quantity, the step's decaying
+memory) and `pinNow` is `limit === 'tip'` (one substep of 32, the last one kept). On the shipped address they read
+**89.8 %** and **26.8 %** of the same 698 frames — a factor of **3.35**, which is the "about a third" the earlier
+round warned about, measured again on a different bench. Anyone re-deriving a pinned share off `limit` would publish a
+third of the real figure.
+
+**Every median here is a PLAIN median** — the mean of the two middle values at even length — in the bench and in
+`read.py` alike. Counts carry their population; no number in this document is a mean of medians.
+
+## 11. What this makes conditional
+
+**Every number this track has published is a statement about a placed rider, and a placed rider is not the rider the
+owner plays.** The difference is not a nuance of initial conditions; it is the regime:
+
+* the mount seeds `planing` from the magnitude of the board's **world** velocity, so a placement at 4 m/s or more is
+  **on the plane from frame 1** (measured: every entry ≥ 4 m/s, both `SINK`s, all five arms);
+* a pop-up mounts **prone** and reaches standing with `planing` false, and the latch's own test is **horizontal speed
+  relative to the water under the board** — which, on a face whose water runs with the wave, stays under 4 m/s. The
+  take-off stands are planing in **6 of 18**, and the first second is planing in **18 % of 716 frames**;
+* shipped, the lean a rider may ask for is **0 off the plane**. So the placement benches measure a rider who may lean
+  **17–69°** and the take-off a rider who may lean **nothing**, and `leanAsk` is non-zero in **48 of 716** frames.
+
+So: `tip` 90/90, the 10.9° stance, the 0.1 s lag and the 0.327 m demand are **statements about a bench**, not about
+his game, until each is re-measured through a stand. They are not thereby wrong — the placement is a legitimate,
+repeatable laboratory, and its own finding for `?trunk=mass` (the switch moves values, the fall does not move) is
+reproduced on the placement side of this very bench — but the
+inference *"this switch does nothing to his ride"* does not follow from them, and neither does *"this switch is what
+ruins his ride"*. Both were drawn from the wrong second.
+
+**What the owner's report turns out to be, measured:**
+
+1. **"Falls immediately after starting the ride" is the shipped game at his spot.** Median **0.750 s** after the
+   prompt clears, 12 of 15 inside one second, `'balance'` every time, with **no new switches on**.
+2. **`?trunk=mass` does not cause it and cannot**: 0 of 406 406 values, and the hip rotor it folds is 0 in every
+   measured frame.
+3. **What he rides as "all three" is `?bodyBank=hip` alone** (0 of 388 472 between them), and that one does move the
+   fall — **earlier**, 0.750 → 0.683 s, 15 of 15 inside a second.
+4. **`?askCap=4.5` is the opposite of "nothing" here**: off the plane it is the only arm that gives the rider a lean
+   to ask for, and it produced the earliest fall measured (0.42 s).
+5. The most likely source of the *word* "balance" in his report is **the drawing** (Part 8): standing,
+   `?trunk=mass` deletes the rig's own 16–50° trunk fold unconditionally and hands the trunk to a rotor that is at
+   zero.
+
+## 12. What would refute this, and what I did not measure
+
+* **The fall is the take-off's, or the spot's?** Everything here is Canyon B, Medium, where 6 of 12 waves lit the cue. A size, a seed or a spot where the catch puts the rider on the plane would make a different
+  rider stand up, and the whole of Part 4 would then be about Canyon B at Medium rather than about placements.
+* **The owner's own ride is not this ride.** His stick is not zero, he is not on a 3 s clock, and his pop timing is
+  his own. The three pop rules here bracket it (0.40 s, 0.575 s, 0.750 s medians) but none of them *is* him.
+* **The bench's riders do not push the water** (Part 2). A single rider whose reaction reaches the solver is the one
+  fidelity gap left in the drive, and the cheap way to close it is a state save at the placement
+  (`encodeSurfZoneState`, as `catch-probe --state` does) and one rider per restored sea.
+* **The drawing claim in Part 8 is a source reading, not a measurement.** It needs one standing frame drawn with and
+  without the switch.
+* **`?trunk=mass`'s inertness is conditional on the rotor being idle.** On a longer ride, on the plane, with a real
+  ankle demand, it will fire — PR #426 measured it firing in 19.6 % of placed frames. Nothing here says the switch is
+  harmless on a ride that gets going; it says the switch is absent from the first second after a stand.
