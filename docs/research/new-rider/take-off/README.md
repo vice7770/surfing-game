@@ -589,15 +589,38 @@ memory `limitTime.tip > 0` that Part 7 used (`bench.ts:398–399`). Over the sev
 | `fsPinned` (ever pinned) | 60, 60, 59 | 56, 32, 55 | 60 |
 | first-second roll peak | 1.7°, 2.3°, 1.0° | 24.0°, 22.6°, 4.5° | 1.6° |
 
-**`fsPinNow > 0` in 3 of 3 stands lost inside the first second and in 0 of 4 that are not — 7 of 7 on that question**,
-while `fsPinned` is 32–60 everywhere and says nothing. Wave 6 is the honest exception to read next: pin-free, roll-free,
-and gone at 2.3 s — whatever ends that one is not in the first second at all.
+`fsPinNow > 0` in 3 of 3 stands lost inside the first second and in 0 of 4 that are not — 7 of 7 — while
+`fsPinned` is 32–60 everywhere and says nothing.
 
-And the one difference between the carried stand whose **turn** fails and the two whose turns hold, on n = 3: wave 1
-carries the **wettest hull of the three** (`fsWetMed` **0.350 m²** against 0.254 and 0.263; `fsWetMin` 0.263 against
-0.088 and 0.197) off the **steepest** pop (18.7° against 18.1° and 16.8°) from the **highest** point on the face
-(`popFraction` 0.750 against 0.722 and 0.698). **Three waves cannot choose between those three; they are the next
-thing to vary, not a result.**
+> ⚠️ **DEMOTED, by the reviewer, within the hour.** That tally is **seed 2 neutral only**, and it **fails on seed 1,
+> which I had in hand and did not test it against.** Seed 1 wave 7 neutral samples **14 tips inside its first second
+> and stays up until 1.733 s** (its two compressed turns sample 18 and fall at 1.25 s). Nor is the pin merely the
+> fall's own frame — it genuinely precedes it (seed 2 neutral first tips at +0.450/+0.283/+0.817 s against falls at
+> +0.950/+0.550/+0.933; wave 1's two turns first tip at +0.533 against falls at +0.717/+1.000; neither turn on waves
+> 2 or 11 tips inside the first 0.72 s; and wave 6's first tip is at **+2.100 s**, which is why it reads pin-free in
+> the first second and is gone at 2.300 s). **So the pin locates a constraint. It does not advance a phase and it
+> does not predict a fall on its own, and nothing should be gated on it.**
+
+### 13.3b ⚠️ And the difference between those three stands is **not** identifiable from the saved data
+
+The paragraph that stood here ranked wave 1 as the **wettest**, off the **steepest** pop, from the **highest** point
+on the face. **It is withdrawn, on two counts, both the reviewer's.**
+
+* **The wetness figures were first-second medians — a window that already contains the turn.** They cannot be read as
+  a property of the stand the turn was asked of.
+* **The steepness and height figures were taken at the POP, which is 1.2 s before the stand and 1.5 s before the
+  steer.** That is the wrong moment, and at the right one the ranking disappears: the reviewer's stand-frame reading
+  gives waves 1 / 2 / 11 a wetted area of **0.253 / 0.074 / 0.196 m²**, a face fraction of **0.674 / 0.710 / 0.675**
+  and a local slope of **17.31 / 18.64 / 19.32°**. **So waves 1 and 11 start level on the face to 0.001 and end
+  opposite, and wave 1 is the LEAST steep of the three, not the steepest.** (Those three columns are not fields in
+  `seed*-summaries.jsonl`; they are the reviewer's own reading at the stand frame, and this document has not
+  reproduced them. The structural point — that my ranking came from `popSlope` and `popFraction`, at the pop — is
+  verified here.)
+
+**The honest statement is therefore: wave 1's asked-for turn fails 10 of 10 and waves 2 and 11's hold 10 of 10, and
+the saved summaries cannot say which physical factor is responsible.** Wetted area still covaries with the
+conditions, so it is not excluded — it is unresolved. **The measurement that would settle it is a trace through the
+wave-1 `cue`/`cueL` pair with the three headrooms read separately**, not another ride.
 
 ### 13.4 What this changes
 
@@ -608,6 +631,8 @@ thing to vary, not a result.**
 * **"The rider cannot hold a turn" is now false as stated.** He holds a full steer **and** Compress, both ways, through a 25° roll,
   10 of 10, on two of the three stands that live long enough to be asked. The work is **which stand can afford the
   turn**, not teaching the body to turn.
+* **Nothing may be gated on the CoP pin.** It marks which constraint is binding; it is not a fall predictor
+  (13.3).
 * **The next build has a target that needs no new ride**: the first divergence between wave 1's `cue` and its `cueL`,
   both on disk, same stand, opposite outcome. The reviewer's read of that pair: identical at +0.20 s (roll +1.679°,
   `rawMargin` 0.966, load 1.292 bw in all three), and by **+0.60 s** the row that was asked nothing is `limit` **none** with
@@ -615,6 +640,10 @@ thing to vary, not a result.**
   −3.285°. **The margin reaches zero inside 0.3 s of the turn being asked for.**
 * **`rawMargin` still cannot name which constraint went** (it is a filtered minimum of three headrooms). Reading the
   three separately through that pair is the measurement that would.
+* **And the shipped median survives the recount.** The reviewer re-derived it independently: **15 recorded falls
+  pooled over three scripts on five seed-1 waves, median 0.750 s, 12 of 15 inside a second, plus 3 censored starts.**
+  It is a **bench** figure consistent with the owner describing *about a second* — it is not a measurement of his own
+  ride.
 
 *Found by the Codex reviewer, which opened the committed summaries rather than the write-up, caught its own first
 suggestion (a wave-6 comparison) and withdrew it in the next message. Re-verified here against `bench.ts` and both
