@@ -15,8 +15,10 @@ wetted hull* — which of those four is the cause?
    is uninformative: across both seas, `'feet under water'` held **0 of 29** — it really is a death sentence — while
    `'sinking'` held **8 of 18**, which is every ride in this study that lasted bar one. A gate on the flag would refuse
    exactly the good ones, and the reason is mechanical: `into > SINK_RATE` is motion into the water relative to the
-   flow, which is what a **planing** hull does by construction (fires in 47.9 % of planing frames against 18.8 % of
-   the rest). Part 5.
+   flow, which is what a **planing** hull does by construction. Measured: `asin(into/V)` is **+2.60° at 6.21 m/s** on
+   planing frames — a trim angle — and integrated over wave 10's surviving ride the test claims **1.13 m of descent**
+   while the board's draft moves **0.040 m** and stays above the water throughout. **`sinking` is reading planing
+   lift.** Part 5.
 3. **The feet are under water because a 25.75 L board cannot float a 73 kg rider, and the pop-up is what hands it the
    whole job.** Fully submerged, the board displaces **26.4 kg of a 75.5 kg** system — **65 % unsupported, a 49.2 kg
    deficit** that only planing lift or the rider's own body in the water can find (`boardReference.referenceFlotation`,
@@ -443,6 +445,20 @@ speed is only **1.89 m/s**, so `into` stays near **+0.194 m/s** and the test rar
 
 That is why the overlap is partial rather than total: `into > 0.3` holds in **47.9 % of planing frames** against
 **18.8 % of non-planing ones**.
+
+**And the clincher: integrate it.** If `into` were the descent rate the test's name claims, its integral over a ride
+*is* the sinking. Over the four seed-1 rides that carried the window:
+
+| run | standing frames | `sinking` frames | the board's own draft, first → last (min/max) | ∫`into` dt | over-read |
+| --- | --- | --- | --- | --- | --- |
+| wave 10 `cued250` | 181 (3.00 s) | **129** | **−0.055 → −0.015 m** (−0.077 / +0.024) | **+1.126 m** | **27.9×** |
+| wave 10 `cued500` | 181 (3.00 s) | 108 | −0.073 → −0.030 m (−0.086 / +0.036) | +0.958 m | 22.0× |
+| wave 6 `cue` | 182 (3.02 s) | 45 | −0.064 → −0.020 m (−0.081 / −0.019) | +0.513 m | 11.5× |
+| wave 6 `lift` | 182 (3.02 s) | 45 | −0.064 → −0.020 m (−0.081 / −0.019) | +0.513 m | 11.5× |
+
+**The test says the board descended 1.13 m; the board moved 0.040 m, and never left a 0.10 m band — on the negative
+side of it, the deck above the water, the whole time.** `standRefusal`'s `sinking` verdict is not reporting a board
+going under. It is reporting a hull on the plane.
 
 **So `sinking` cannot distinguish a board going under from a board riding on its own lift**, it fires more than twice
 as often on the latter, and the stands it refuses are disproportionately the good ones.

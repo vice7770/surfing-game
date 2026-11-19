@@ -232,7 +232,27 @@ def channels(rows):
                   f'   median asin(into/V) {med(trims):+.2f} deg  (n {len(trims)})')
     print('   ⭐ A planing hull trims a few degrees. If asin(into/V) reads as trim, `into` is lift, not a descent.')
     print()
-    print('## 5. the CoP-pinned share, both readings (a factor of ~3 apart — say which)')
+    print()
+    print('## 5. ⭐ the clincher: integrate `into` over a ride and compare it with the board\'s own immersion')
+    print('      If `into` were the descent rate the test\'s name claims, its integral IS the sinking. It is not.')
+    runs = {}
+    for r in fr:
+        runs.setdefault((r['wave'], r['script'], r['arm']), []).append(r)
+    print('   wave script   arm     frames    s   `sinking` frames | draft first -> last   min/max        | integral of `into`  over-read')
+    for key, rs in sorted(runs.items(), key=lambda kv: -len(kv[1]))[:8]:
+        rs.sort(key=lambda r: r['frame'])
+        d = [r['draft'] for r in rs if r.get('draft') is not None]
+        it = [r['into'] for r in rs if r.get('into') is not None]
+        if not d or not it or len(rs) < 30:
+            continue
+        span = rs[-1]['tStand'] - rs[0]['tStand']
+        integral = sum(it) * span / max(1, len(it))
+        change = d[-1] - d[0]
+        over = abs(integral / change) if abs(change) > 1e-9 else float('inf')
+        print(f"   {key[0]:4d} {key[1]:8s} {key[2]:6s} {len(rs):6d} {span:5.2f} {sum(1 for x in it if x > 0.3):14d} |"
+              f" {d[0]:+.3f} -> {d[-1]:+.3f}   {min(d):+.3f}/{max(d):+.3f} | {integral:+14.3f} m {over:9.1f}x")
+    print()
+    print('## 6. the CoP-pinned share, both readings (a factor of ~3 apart — say which)')
     tip = sum(1 for r in fr if (r.get('tTip') or 0) > 0)
     now = sum(1 for r in fr if r.get('limit') == 'tip')
     print(f"   `limitTime.tip > 0` (the published quantity): {tip} of {len(fr)} = {tip / max(1, len(fr)):.1%}")
