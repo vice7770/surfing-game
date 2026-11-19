@@ -5,6 +5,10 @@ rider stands anyway, and he is gone in a median 0.750 s. What does the refusal c
 And the starred one: two stands were **not** refused, and they were *planing, lower on a steeper face, on half the
 wetted hull* — which of those four is the cause?
 
+**Measurement and diagnosis only. Nothing in the game was changed, no constant tuned, no switch added**, and every
+option in Part 7 is written with its cost for the owner to rule on. ⛔ **No number here is evidence about how the game
+feels** — these are bot rides with the stick at zero; only the owner's own rides are evidence of feel.
+
 **The answer, in seven lines.** Population for everything below: **one spot (Canyon B, Medium), two seas, 23 waves,
 115 runs, 75 stands followed their full 3 s window with none truncated, the stick at zero throughout** — plus a
 15-entry flush-placement sweep. Every median is a **plain** median and every count carries its population.
