@@ -29,6 +29,14 @@
  *     are different numbers and only the first latches.
  *  6. **The board's draft at the feet**: the water's surface over each foot's deck point, which is the refusal's own
  *     quantity, and over the board's own position.
+ *  7. ☠️ **`heldFull`, `truncated` and `observedAfterStand`, and a fix to the trial clock that makes them mean
+ *     something.** `bench.ts:512` retires a trial at `TRIAL` s **whatever its riders are doing**, so seed 1's wave 6
+ *     — which stands at 16.0167 s — was stepped for ONE frame, fell on none of them, and read as the one ride in
+ *     #429's study that carried its window. Here a trial is retired only when every rider is done, or when the clock
+ *     is past `TRIAL` **and no rider is still inside its own stand window**; and `truncated` flags any rider that
+ *     neither fell nor was followed the full `STAND_HOLD` regardless. **A survivor count without `truncated` beside it
+ *     is not a count.** (Re-run this way, wave 6 really does hold 3.02 s: the artefact was in the evidence, not the
+ *     outcome.)
  *
  * ## Scripts
  *
