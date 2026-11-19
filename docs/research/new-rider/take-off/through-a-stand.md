@@ -13,6 +13,28 @@ PR #429 found why every bench on this track disagrees with the owner, and marked
 This round re-measures all four **through the game's own take-off**, and re-measures them **on the placement too, with
 the same instrument**, so that each comparison is one bench read twice rather than two papers compared.
 
+**The answer, in six lines** (Canyon B, Medium; **39 stands over two seas** and **90 placed riders**; the owner's
+address, no new switches):
+
+1. ⭐⭐ **The brief's premise is a fact about one sea.** On seed 2 the take-off is planing for **80.6 %** of the first
+   second — **more than the placement's 74.8 %** — and the lean cap is a median **0.53 rad**, not zero. The regime is
+   set **wave by wave** by the board's speed through the water against `PLANING_SPEED = 4`.
+2. ⭐ **And on seed 1 the published 18.0 % should read 34.5 %**: `TRIAL = 16` censored wave 6, which is the planing one.
+3. ☠️ **The published pinned share is a LATCH, proved by measurement** — it returns to zero on **0 of 6 717** following
+   frames — and on a take-off it flips **before the stand**, in `landing`, on 36 of 39. 52.0 % and 89.8 % cannot be
+   quoted again in that form.
+4. ⭐ **`tip`'s mechanism survives and its universality does not.** The **lateral** headroom is the one that goes at
+   **29 of 31** take-off falls (two escape *along* instead, and are reported) — but **10 of 39 stands never pin, and
+   all 10 carry the first second.**
+5. ⭐ **10.9° and 0.327 m both survive.** The tolerance is **11.1–11.3°** through a stand against 10.650° placed, and
+   the per-run peak demand is **0.315–0.318 m** against 0.327 m placed, on two independent seas.
+6. ⭐ **0.87 survives; 0.1 s does not.** The follow gain is **0.78–0.87** through a stand and **does hold off the
+   plane, 13 % weaker** — but the 0.100 s crossing appears only on the placement, and it tracks the **stick**, not the
+   plane.
+
+**Every number here passes a positive control that reproduces the papers it is read against**, and the one control
+that failed named its own failure mode (§9).
+
 ---
 
 ## 1. What was measured, and where each quantity comes from
@@ -38,6 +60,17 @@ the same instrument**, so that each comparison is one bench read twice rather th
 Both run the owner's address — `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on` —
 **through the game's own switch parsing** (`surfZoneConfigFor` → `switchedConfigFor` off `globalThis.location.search`),
 on `claude/the-record`, whose `src/` is `main`'s. No switch is needed for any of the four numbers, so none is on.
+
+**The three populations, with their sizes**, since every figure below carries one of them:
+
+| population | runs | stands | standing frames kept | first-second frames | observed falls |
+| --- | --- | --- | --- | --- | --- |
+| **take-off, seed 1** (12 waves, 6 lit the cue) | 36 | **18** | 1 216 | 896 | 17 |
+| **take-off, seed 2** (11 waves, 7 lit the cue) | 33 | **21** | 2 049 | 1 106 | 14 |
+| **the placement**, seed 1, stick hard over | 90 | **90** | 7 118 | 4 952 | 90 |
+
+`STAND_HOLD = 3` s, `TRIAL = 20` s, `PLACED_FOR = 4` s. **0 of 39 take-off stands are censored** and the first second
+is available in 39 of 39.
 
 ---
 
@@ -485,14 +518,23 @@ edges across), `along` (only past a foot toward the support's end) and the **gri
 | the capture test's own three at the stand | knee 64, grip 26 | **knee 18 of 18** | knee 18, margin 3 |
 | **at the fall**: across / along / grip | **−0.7113** / 1.0000 / 0.6337 | **−0.0945** / 1.0000 / 0.7161 | **−8.4636** / 1.0000 / 0.6522 |
 | which is lowest at the fall | **across 70**, along 16, grip 4 | **across 17 of 17** | **across 12**, along 2 |
+| the lowest one is **negative** at the fall | — | 11 of 17 | 11 of 14 |
 | the capture test's own three (`balanceLimits`), at the fall | margin 79, grip 11 | **margin 17 of 17** | **margin 14 of 14** |
 
-> **It is `across`, and `along` is not involved at all.** At the fall the lateral headroom is **negative** — the demand
-> is outside the support edge, which is the same event as `tip` — in **17 of 17** seed-1 falls, **12 of 14** seed-2
-> falls and 70 of 90 placed falls, while `along` sits at exactly **1.0000** in all three populations at both frames.
-> The grip falls with it but stays positive (0.63–0.72), so **the feet never run out of friction.** And `human.fallen`
-> — the capture point alone, the test that actually ends a free-body ride — is what binds: `margin` in **31 of 31**
-> take-off falls.
+> **It is `across`, on 29 of the 31 take-off falls — and the two exceptions are real and go the other way.** The
+> lateral headroom is the lowest of the three at **17 of 17** seed-1 falls and **12 of 14** seed-2 falls, and it is
+> **negative** — the demand outside the support edge, which is the same event as `tip` — at **11 of 17** and **11 of
+> 14**. `along` sits at exactly **1.0000** at 17 of 17 seed-1 falls and 11 of 14 seed-2 falls, **but on two seed-2
+> falls the demand escapes ALONG instead**, with headrooms of **−10.22 and −16.45** against a positive or
+> less-negative `across`. **So "the deck is narrow for a roll and wide for a pitch" is right 29 times in 31 and wrong
+> twice, and the two exceptions are on disk.** The grip falls with the rest but stays positive (0.63–0.72) at every
+> fall in every population, so **the feet never run out of friction.**
+>
+> **And on the falls where neither headroom is negative, the static demand is not what ends the ride.** `human.fallen`
+> — the capture point, which carries the body's own velocity (`across = px + vx/ω`) and is the test that actually ends
+> a free-body ride — binds at **31 of 31** take-off falls, with the capture point a median **0.409 m** (seed 1) and
+> **0.610 m** (seed 2) past the feet. **The capture point leaves the feet before the static demand does**, which is
+> why 6 of 17 seed-1 falls happen with `across` still positive.
 
 **At the stand the lowest of the three is the GRIP**, on all three populations (12 of 18, 18 of 21, 57 of 90), with
 `across` at 0.92–0.99. So the stand does not begin near its lateral limit; it begins with about 10–18 % of its
@@ -542,7 +584,7 @@ holding half its friction.** That is the measurement Part 13.4 asked for.
 
 | number | the **placed** figure (measured here) | the **through-a-stand** figure | does the conclusion survive? |
 | --- | --- | --- | --- |
-| **`tip` 90 of 90** (#419) | **90 of 90** by `limitTime.tip > 0`; **88 of 90** by `limit === 'tip'`; pinned share 37.9 % of the first second | **18 of 18** and **21 of 21** by the published test; **17 of 18** and **14 of 21** by `limit === 'tip'`; first `tip` a median **0.433–0.508 s** into the first second; instantaneous share **15.0–21.3 %** | ⚠️ **PARTLY.** The *mechanism* survives everywhere — the demand leaves the support and `across` goes negative at **31 of 31** take-off falls. The *number* is a **latch**, not a share: it returns to zero on **0 of 6 717** following frames across all three populations, and on a take-off it flips **before the stand**, in `landing`, on 36 of 39. **"Pinned 52.0 %/89.8 %" must not be quoted again in that form.** And "every ride pins" is false: **10 of 39 stands never pin and all 10 carry the first second.** |
+| **`tip` 90 of 90** (#419) | **90 of 90** by `limitTime.tip > 0`; **88 of 90** by `limit === 'tip'`; pinned share 37.9 % of the first second | **18 of 18** and **21 of 21** by the published test; **17 of 18** and **14 of 21** by `limit === 'tip'`; first `tip` a median **0.433–0.508 s** into the first second; instantaneous share **15.0–21.3 %** | ⚠️ **PARTLY.** The *mechanism* survives — the lateral headroom is the one that goes at **29 of 31** take-off falls (§8), and the capture point is past the feet at **31 of 31**. The *number* is a **latch**, not a share: it returns to zero on **0 of 6 717** following frames across all three populations, and on a take-off it flips **before the stand**, in `landing`, on 36 of 39. **"Pinned 52.0 %/89.8 %" must not be quoted again in that form.** And "every ride pins" is false: **10 of 39 stands never pin and all 10 carry the first second.** |
 | **the stance tolerates 10.9°** (#419) | **10.650°** through the first second (CoM 0.69134 m above the deck, support ±0.130 m); 8.703° at the stand itself | **11.252°** (seed 1) and **11.123°** (seed 2); CoM 0.653 m and 0.661 m; support ±0.130 m, **the only value in every run of all three populations** | ⭐ **YES for the number** — it reproduces within 0.6° on two independent seas, and `riderPosture.ts:96` does fix it for every standing pose. ⚠️ **NO for the inference.** The **measured** mismatch is **3.113°** and **1.072°** — a third to a seventh of the tolerance — past it on 15.2 % and 6.5 % of frames. The stance is narrow and the body is not filling it. **New and placement-invisible:** the pop-up walks the tolerance from **42.6° → 15.3° → 11.3°** in its own 1.20 s. |
 | **the body follows at 0.87, 0.1 s late** (#421) | **0.8764** at lag 0 (#421: 0.8748); crosses 1 at **0.0983 s** (#421: 0.100 s); mismatch **2.918°** (#421: 2.950°); same-way **0.976** (#421: 0.976) | **0.7823** and **0.8668** at lag 0; **off the plane 0.7499 and 0.7548**, on it **0.8435 and 0.8915**; crossing **0.169–0.238 s** where it exists and **none at all on the plane** | ⭐ **THE GAIN SURVIVES** — the most durable of the four, unmoved by restricting to the frames that carry the leverage, and it **does hold off the plane, 13 % weaker**, which is the brief's own question answered. ⚠️ **THE LAG DOES NOT.** 0.100 s reproduces only on the placement; it is a property of the **hard-over stick** (deck roll 12–16° against the take-off's 1.4–5.0°), not of the plane — the placement crosses off the plane too. |
 | **the demand is 0.327 m outside the feet** (#425) | escaping on **8.2 %** of first-second frames, median excursion **0.07404 m** (#425: 14.9 % over whole rides, 0.0891 m); first escaping frame **0.00191 m** (#425: 0.0071 m) | escaping on **21.3 %** and **14.7 %**; **per-run peak 0.31827 m and 0.31453 m** — #425's 0.327 m, on two independent seas; first escaping frame **0.012–0.016 m**; at the fall **up to 1.10027 m** | ⭐ **SURVIVES, AND STRENGTHENS.** The blip an arm could be on time for is **0.012–0.016 m** and the escape that matters is **3.1× the palm's 0.10194 m ceiling**, up to **10.8×** at the fall. **And the demand is inside the feet at every one of the 39 stands**, so there is nothing for a hand to answer at the moment the rider stands. |
