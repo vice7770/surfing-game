@@ -21,7 +21,8 @@ describe('endCardModel', () => {
   // P9: the worker's reading of the ride, and a score when the player asks for one.
   it('lists the turns and the time in the pocket, notes slow motion, and scores only when asked', () => {
     const turn = (kind: Maneuver['kind'], speedIn: number, speedOut: number): Maneuver => ({
-      kind, start: 2, end: 3, yaw: 1.7, peakYawRate: 1.9, speedIn, speedOut, radius: 3.8, lateralG: 1.4, roll: 0.7, faceFraction: 0.3, pocket: true,
+      kind, start: 2, end: 3, yaw: 1.7, peakYawRate: 1.9, speedIn, speedOut, radius: 3.8, lateralG: 1.4, pathYaw: 1.7,
+      throughWater: speedIn, roll: 0.7, faceFraction: 0.3, pocket: true,
     });
     const report: RideReport = {
       duration: 12.4, distance: 42, topSpeed: 8.2, meanSpeed: 3.4, pocketTime: 3.24, curlTime: 6, end: 'kicked out', timeScale: 1,

@@ -34,7 +34,9 @@ function value(m: Maneuver): number {
  * accomplished surfers scores 'good'; to recalibrate against judged heats.
  */
 export function scoreRide(report: RideReport): WaveScore {
-  const { maneuvers } = report;
+  // An `'unjudged'` run scores nothing (2026-11-19): it is a measured turn the analyzer refused to name, so it earns
+  // no manoeuvre value, adds no variety, and is no link in a combination. It is dropped before anything is counted.
+  const maneuvers = report.maneuvers.filter((m) => m.kind !== 'unjudged');
   const values = maneuvers.map(value).sort((a, b) => b - a);
   const kinds = new Set(maneuvers.map((m) => (m.kind === 'snap' ? 'top turn' : m.kind)));
   let linked = 0;

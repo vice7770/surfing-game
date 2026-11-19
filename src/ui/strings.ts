@@ -248,6 +248,7 @@ export const EN = {
   'maneuver.topTurn': 'Top turn',
   'maneuver.snap': 'Snap',
   'maneuver.cutback': 'Cutback',
+  'maneuver.unjudged': 'Unjudged turn',
   'end.replay': 'Replay ({key})',
   'end.newWave': 'New wave',
   'end.changeSpot': 'Change spot',

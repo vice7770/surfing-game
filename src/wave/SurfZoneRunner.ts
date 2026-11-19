@@ -1006,9 +1006,15 @@ export class SurfZoneRunner {
     if (!session || !analyzer || !wave) return;
     const here = this.water.sampleAt(position.x, position.y, position.z, this.rideSample);
     const left = this.axis.set(1, 0, 0).applyQuaternion(session.board.orientation);
+    // The two speed columns the analyzer needs, and they are not the same number: `speed` over the ground, and the
+    // board's speed through the water along its heading, `boardVelocity·forward − waterFlow·forward`. The heading is
+    // the board's forward projected flat (`RideSession.heading`), so its horizontal unit is (sin, cos).
+    const forwardX = Math.sin(session.heading);
+    const forwardZ = Math.cos(session.heading);
+    const throughWater = (velocity.x - here.flowX) * forwardX + (velocity.z - here.flowZ) * forwardZ;
     analyzer.push({
       t: this.simulation.seaTime, x: position.x, z: position.z, heading: session.heading,
-      speed: Math.hypot(velocity.x, velocity.z), roll: Math.asin(Math.max(-1, Math.min(1, left.y))),
+      speed: Math.hypot(velocity.x, velocity.z), throughWater, roll: Math.asin(Math.max(-1, Math.min(1, left.y))),
       load: session.rider.contact.load, phase: session.phase, wave, depth: here.stillDepth, breakingHere: here.breaking,
     });
     const report = analyzer.report();
