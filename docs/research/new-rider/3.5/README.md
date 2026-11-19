@@ -14,6 +14,19 @@ on the real Canyon sea it holds 8.1–10.2 % of a planing ride and 0.0 % of a cr
 never occupied in 24 riders — while **100 %** of a crawling Canyon ride is below `PLANING_DROP` with the ask cap at
 exactly 0.
 
+**Step 3.5i — the automatic twist actuator's work on the torso, and WHY — is in its own file, `twist-work.md`**
+(probe `twist-work.ts`, output `results/35i/`). Its headline: the reviewers' **≈ +10 J** of active twist work on the
+neutral `cue` wave 1 **reproduces to 0.01 J** on an independent instrument (+10.493 / +10.370 / +10.247 J against
+their +10.49 / +10.36 / +10.25), and the cause is **none of the three things it was expected to be** — not the
+`MOTOR_LAG` filter (the raw command's work is already +9.377 J), not an unstable gain (the designed loop's spectral
+radius is **0.961–0.985** at all 17 schedule knots and it takes **0.21–0.26 J out** of a pure torso twist), and not a
+pump in phase with a cycle (wave 1's twist rate is positive on **38 of 38** intervals — a one-way wind-up, not an
+oscillation). ⭐ **The twist torque is the balance's BOARD-level actuator and the torso is its reaction mass**: the
+designed loop, with no water at all, puts **+2.886 J into the joint** when answering the upper body's own yaw rate at
+5.0 m/s and **−0.173 J** at 8.5 — and **`ref.x[θ_t]` is 0.000° at every bank ask**, so the design asks the torso to
+stay square through a whole turn while commanding up to 354 N·m. **No weight tried removes the pump**, so the file
+proposes nothing.
+
 ---
 
 # Part 1 — step 3.5d: **the ankle rolls the board, and the 56–84° is the coast afterwards**
