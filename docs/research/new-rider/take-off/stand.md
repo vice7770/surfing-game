@@ -444,9 +444,9 @@ Read down the table:
 * **On this sea the refusal is anti-predictive** (on seed 1 it is not — see Part 5.3, where the split by verdict
   reconciles the two). 7 of 15 refused stands held; **0 of 3** unrefused stands did, and those
   three fell at 0.73–1.17 s, sooner than the median refused stand.
-* ⭐ **So gating the stand on the refusal — which `design.md` §4 plans — would have refused every ride on this sea that
-  lasted.** That is the strongest practical finding in this document, and it is an argument against a change the
-  project has already written down as settled.
+* ⭐ **So gating the stand on the refusal flag — which `design.md` §4 plans — would have refused every ride on this sea
+  that lasted.** Part 5.4 costs that out over both seas and splits it by verdict, which is where the practical finding
+  of this document is: the flag is the wrong test and its own feet test is not.
 * The ordering that *does* track the outcome is the **lean cap**, which is `atan(v²/(g·R))` gated by the planing latch
   and therefore a reading of **speed through the water**: cap ≥ 0.75 held **6 of 6**, cap 0.36–0.63 held **1 of 9**,
   cap 0 held **0 of 6**.
