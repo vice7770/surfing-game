@@ -13,8 +13,16 @@
  *     ./node_modules/.bin/rolldown docs/research/new-rider/take-off/bench.ts -o <s>/raw.mjs --format esm --platform node
  *     printf "globalThis.location = { search: '' };\n" > <s>/bench.mjs   # an OBJECT, never a string
  *     cat <s>/raw.mjs >> <s>/bench.mjs
- *     cd <s> && env PERIODS=12 SEED=1 OUT=<s>/out.jsonl node --max-old-space-size=3200 bench.mjs
- *     python3 -I docs/research/new-rider/take-off/read.py <s>/out.jsonl
+ *     # seed 1 exactly as published (the five arms, the three cue scripts, and the placement comparison):
+ *     cd <s> && env ARMS=ships,trunk,bank,all3,all3cap SCRIPTS=cue,cueL,cueR SEED=1 PERIODS=12 PLACE=1 \
+ *       OUT=<s>/out.jsonl node --max-old-space-size=3200 bench.mjs
+ *     python3 -I docs/research/new-rider/take-off/read.py <s>/out.jsonl            # the tables
+ *     python3 -I docs/research/new-rider/take-off/read.py <s>/out.jsonl --paired   # the first second, and both frames
+ *     python3 -I docs/research/new-rider/take-off/read.py <s>/out.jsonl --diff ships trunk
+ *     # the inertness control: the same run twice, with and without the probe's own reads
+ *     env ARMS=ships,trunk,bank SCRIPTS=cue,cueL SEED=1 PERIODS=8 PROBE=on  OUT=<s>/on.jsonl  node bench.mjs
+ *     env ARMS=ships,trunk,bank SCRIPTS=cue,cueL SEED=1 PERIODS=8 PROBE=off OUT=<s>/off.jsonl node bench.mjs
+ *     python3 -I docs/research/new-rider/take-off/read.py <s>/on.jsonl --control <s>/off.jsonl
  *
  * ## What it does
  *
