@@ -24,6 +24,30 @@ describe('Logbook', () => {
     expect(odd.recent[0].online).toBeUndefined();
   });
 
+  /** The Logbook's fall readout: the stored fall is optional, and a part-written one is dropped, never part-read. */
+  it('stores what let go, keeps rides that have none, and drops a fall that is not whole', () => {
+    const fall = { limit: 'margin' as const, across: true, speed: 7.4, steer: -0.8 };
+    const storage = memory();
+    const log = new Logbook(storage);
+    log.add(ride({ fall }));
+    log.add(ride());
+    const reloaded = new Logbook(storage);
+    expect(reloaded.recent[1].fall).toEqual(fall);
+    // A ride logged before the readout shipped has no fall at all, and still loads.
+    expect('fall' in reloaded.recent[0]).toBe(false);
+    for (const broken of [
+      { ...fall, limit: 'weight' },
+      { ...fall, speed: 'fast' },
+      { ...fall, steer: null },
+      { ...fall, across: 'yes' },
+      { limit: 'margin' },
+    ]) {
+      const odd = new Logbook(memory({ [LOGBOOK_KEY]: JSON.stringify({ recent: [{ ...ride(), fall: broken }], bests: {} }) }));
+      expect(odd.recent).toHaveLength(1);
+      expect(odd.recent[0].fall, JSON.stringify(broken)).toBeUndefined();
+    }
+  });
+
   it('keeps the newest rides, up to its size', () => {
     const log = new Logbook(memory());
     for (let i = 0; i < LOGBOOK_SIZE + 5; i += 1) log.add(ride({ seed: i }));

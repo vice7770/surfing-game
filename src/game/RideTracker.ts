@@ -1,7 +1,7 @@
 import type { RiderSeparation } from '../physics/AttachedRider';
 import type { RideEnd, RideReport } from './rideAnalysis';
 import type { StringKey } from '../ui/strings';
-import type { RIDER_PHASES } from '../wave/SurfZoneRunner';
+import type { BrokenLimit, RIDER_PHASES } from '../wave/SurfZoneRunner';
 
 /** How a physical ride ended: knocked off, carried out of the surf zone, or restarted by the player. */
 export type RideOutcome = 'wipeout' | 'complete' | 'ended';
@@ -17,6 +17,13 @@ export interface RideResult {
   seconds: number;
   /** The worker's reading of the ride (P9): its turns, pocket time and end, when it ended the ride. */
   report?: RideReport;
+  /**
+   * **What let go, when the ride ended in a separation** (the Logbook's fall readout): the physics' own record of
+   * the fall (`SurfZoneStatus.ride.broke`), taken at the separation. Absent when the ride ended with the rider still
+   * on the board (a retry mid-flight, or a ride that was ridden out), and absent on a wipeout whose frames carried no
+   * `broke` — the readout must say so rather than show a zero.
+   */
+  fall?: BrokenLimit;
   /** The slow motion the ride was played at, when below 1. */
   timeScale?: number;
 }
@@ -32,6 +39,8 @@ export interface RideFrame {
   z: number;
   /** The worker's latest finished ride (P9); its id counts up. */
   report?: RideReport & { id: number };
+  /** What let go at the latest fall (`SurfZoneStatus.ride.broke`), held by the runner until the rider is back up. */
+  broke?: BrokenLimit;
   /** The page's slow motion, 0.4–1. */
   timeScale?: number;
 }
@@ -76,6 +85,12 @@ export class RideTracker {
   /** The latest worker report seen, and whether the rider must leave the stance before a new ride begins. */
   private seenReport?: number;
   private waitForLeave = false;
+  /**
+   * What let go, from the last frame of this ride that carried it. The runner latches it at the separation and holds
+   * it until the rider is back on the board, so a worker report that lands a few frames after the fall still finds
+   * it. Cleared when a ride begins, so one ride never shows the previous ride's fall.
+   */
+  private broke?: BrokenLimit;
 
   /** The player asked to paddle out again: the next restart ends the ride by choice. */
   noteRetry(): void {
@@ -88,6 +103,7 @@ export class RideTracker {
     this.resets = undefined;
     this.seenReport = undefined;
     this.waitForLeave = false;
+    this.broke = undefined;
   }
 
   /** Feed one frame; returns the ride's summary on the frame it ends, if it lasted long enough. */
@@ -103,6 +119,7 @@ export class RideTracker {
       return undefined;
     }
     this.slowest = Math.min(this.slowest, frame.timeScale ?? 1);
+    if (frame.broke) this.broke = frame.broke;
     if (report) {
       this.waitForLeave = RIDING.has(frame.phase);
       const reason = report.end === 'fell' ? FALL_REASONS[frame.separation ?? 'balance'] : WORKER_REASONS[report.end];
@@ -126,6 +143,7 @@ export class RideTracker {
 
   private begin(frame: RideFrame): void {
     this.riding = true;
+    this.broke = frame.broke;
     this.distance = 0;
     this.topSpeed = frame.speed;
     this.startTime = frame.seaTime;
@@ -141,11 +159,15 @@ export class RideTracker {
     this.retryNoted = false;
     const seconds = report ? report.duration : this.lastTime - this.startTime;
     if (seconds < MIN_RIDE_SECONDS) return undefined;
+    // Only a wipeout carries a fall: a ride that ended with the rider still up has nothing that let go, and the
+    // runner's latch would otherwise hand it the fall that ended the ride before.
+    const fall = outcome === 'wipeout' ? this.broke : undefined;
     return {
       outcome, reason, seconds,
       distance: report ? report.distance : this.distance,
       topSpeed: report ? report.topSpeed : this.topSpeed,
       ...(report ? { report } : {}),
+      ...(fall ? { fall: { ...fall } } : {}),
       ...(this.slowest < 1 ? { timeScale: this.slowest } : {}),
     };
   }

@@ -205,6 +205,23 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
     | (session.ducking ? SWIM_BITS.ducking : 0);
 }
 
+/**
+ * **What let go at a fall** (step 3.2v, and the Logbook's fall readout): the balance limit that bound at the
+ * separation, whether the weight left the feet across the board, the speed over ground there, m/s, and the steer
+ * the ride was asking for on the last step the rider was on the board, −1 (right) to 1 (left).
+ *
+ * `limit: 'posture'` is the default (old) rider and a prone one: there the reserve is **one filtered minimum** of the
+ * feet's lateral and longitudinal headroom and their grip (`AttachedRider.rawMargin`, low-passed into
+ * `balanceMargin`), and the three are never kept apart — so on that rider this says only that the minimum ran out,
+ * never which of the three. 'margin' | 'grip' | 'knee' come from `?rider=new`, where they are separate numbers.
+ */
+export interface BrokenLimit {
+  limit: 'margin' | 'grip' | 'knee' | 'posture';
+  across: boolean;
+  speed: number;
+  steer: number;
+}
+
 /** The Wave Lab readout's values, as plain data that can cross the worker boundary. */
 export interface SurfZoneStatus {
   seaTime: number;
@@ -269,11 +286,12 @@ export interface SurfZoneStatus {
     /**
      * **Which of the reserve's three limits is nearest, and the three themselves** (step 3.2v,
      * `AttachedRider.balanceLimits`): `balance` above is their minimum, and until now which one it was never left the
-     * physics. `broke` is the limit at the moment of the latest fall and the speed over ground there, m/s, kept until
-     * the next ride starts — so the owner's own ride says what let go rather than only how close it came.
+     * physics. `broke` is the limit at the moment of the latest fall, the speed over ground there, m/s, and the steer
+     * the ride was asking for on the last step the rider was on the board, kept until the next ride starts — so the
+     * owner's own ride says what let go rather than only how close it came.
      */
     balanceLimit?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number };
-    broke?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; across: boolean; speed: number };
+    broke?: BrokenLimit;
     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
     bank?: number;
     /** Optional dev guidance. This is a geometry observation, not a completed ride. */
@@ -420,8 +438,14 @@ export class SurfZoneRunner {
    * frame the rider separates — after that the capture state is whatever it was left at — and held until the rider is
    * back on the board, which is what lets the HUD name the fall the owner just had.
    */
-  private broke?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; across: boolean; speed: number };
+  private broke?: BrokenLimit;
   private wasAttached = false;
+  /**
+   * The steer asked for on the last step that began with the rider on the board, −1 (right) to 1 (left): what the
+   * ride handed the physics, so the pocket reflex's steer counts as asked for too. A batch applies one input to every
+   * one of its steps (`afterWater`), so this is the input of the step the rider fell on, not a later one.
+   */
+  private lastSteer = 0;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
   private readonly point = new Vector3();
@@ -775,6 +799,9 @@ export class SurfZoneRunner {
       }
       const start = performance.now();
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
+      // The steer of the last step on the board, for `broke` below: read before the step, so a step that ends in a
+      // fall is the one recorded.
+      if (session.rider.attached) this.lastSteer = ridden.steer;
       // The bodies push only the water's discharge (and tally their reactions): its surface heights, bed, lenses and
       // tubes hold through the step, so its render-node heights are found once each (the M1 CPU study, 2026-10-19).
       this.water.withSurfaceNodeCache(() => session.step(SURF_ZONE_STEP, this.water, ridden));
@@ -1144,6 +1171,7 @@ export class SurfZoneRunner {
           limit: limits.limit,
           across: limits.across,
           speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
+          steer: this.lastSteer,
         };
       } else if (attached && !this.wasAttached) {
         this.broke = undefined;

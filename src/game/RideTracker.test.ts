@@ -114,6 +114,49 @@ describe('RideTracker', () => {
   });
 });
 
+/**
+ * **What let go, carried into the ride's summary** (the Logbook's fall readout). The runner latches it at the
+ * separation (`SurfZoneStatus.ride.broke`) and holds it until the rider is back on the board; the tracker keeps the
+ * latest one it saw during the ride and gives it only to a wipeout.
+ */
+describe('the fall on the ride it ended', () => {
+  const broke = { limit: 'posture' as const, across: false, speed: 7.4, steer: -1 };
+
+  it('carries what let go at the separation into the summary', () => {
+    const tracker = new RideTracker();
+    const riding = frames('standing', 2, 5, start);
+    const fallen = { ...riding.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const, broke };
+    const [ride] = feed(tracker, [...riding, fallen]);
+    expect(ride.fall).toEqual(broke);
+    // A copy: the runner's latch keeps mutating, the logged ride must not.
+    expect(ride.fall).not.toBe(broke);
+  });
+
+  it('gives no fall to a ride that ended with the rider still up', () => {
+    const tracker = new RideTracker();
+    // The latch is still showing the previous ride's fall while this one is ridden; a retry is not a fall.
+    const riding = frames('standing', 2, 5, start).map((frame) => ({ ...frame, broke }));
+    tracker.noteRetry();
+    const [ended] = feed(tracker, [...riding, { ...riding.at(-1)!, phase: 'prone' as const, resets: 1 }]);
+    expect(ended).toMatchObject({ outcome: 'ended', reason: 'ride.reason.retry' });
+    expect(ended.fall).toBeUndefined();
+  });
+
+  it('never hands one ride the fall that ended the ride before', () => {
+    const tracker = new RideTracker();
+    const first = frames('standing', 2, 5, start);
+    const firstFall = { ...first.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const, broke };
+    // Back on the board, the runner clears its latch, so the second ride's frames carry none.
+    const back = frames('prone', 1, 2, firstFall).map((frame) => ({ ...frame, broke: undefined }));
+    const second = frames('standing', 2, 5, back.at(-1)!);
+    const secondFall = { ...second.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const };
+    const rides = feed(tracker, [...first, firstFall, ...back, ...second, secondFall]);
+    expect(rides).toHaveLength(2);
+    expect(rides[0].fall).toEqual(broke);
+    expect(rides[1].fall).toBeUndefined();
+  });
+});
+
 describe('hitting the reef (Teahupo\'o Reef, Part C)', () => {
   it('ends a ride that struck the reef "Hit the reef"', () => {
     expect(FALL_REASONS.reef).toBe('ride.reason.reef');
