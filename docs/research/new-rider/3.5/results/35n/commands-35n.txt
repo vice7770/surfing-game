@@ -1,0 +1,13 @@
+Step 3.5n commands, in order. Every exit code read from the command, never through a pipe.
+
+# 1. the data: PR #454 (branch claude/across-velocity) saved runs, copied out of git, nothing re-run
+for f in A-control.jsonl B-rigs.jsonl C-owner.jsonl; do
+  git show claude/across-velocity:docs/research/new-rider/3.5/results/35m/$f > <dir>/$f
+done
+
+# 2. the reader
+python3 -I docs/research/new-rider/3.5/pxpin.py <dir> > docs/research/new-rider/3.5/results/35n/35n-out.txt
+  -> exit 0
+
+# 3. src untouched
+git diff -- src/        -> empty
