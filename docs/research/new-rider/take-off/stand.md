@@ -1022,3 +1022,8 @@ observed is not thereby false.
 
 ☠️ Every invocation uses `env`: in zsh `SECONDS=…` passes through the shell's special **integer** variable and arrives
 as `"0"`. This file has no `SECONDS`; its horizons are `STAND_HOLD` and `PERIODS`.
+
+**One bundle produced every run in this document** — the trial-clock fix and all the added columns were in it before
+the first run. Two edits were made to `stand.ts` *after* the runs and are in the committed file: the header's item 7
+(comment only) and the removal of one variable that was declared, `void`-ed and never read. **Neither can change a
+value**, and both are visible by inspection; nothing else in the probe moved.
