@@ -240,8 +240,8 @@ Both seas, 23 waves, five pop timings, **75 stands**, the worst of the two feet,
   a prone rider perfectly well.**
 * **Where the paddle leaves him is a minor term, and it is the player's own timing, not the game's.** The 0.5 s of
   paddling before the press reads +0.050 to +0.071 m, and the 24 stands already over the threshold at the press are
-  almost all the `early` script's — a press **before** the wave has taken the board, which buries it. Those rows run
-  **+0.598 to +0.992 m** deep at the stand against the cued rows' +0.113 to +0.396.
+  almost all the `early` script's — a press **before** the wave has taken the board, which buries it. Those 21 stands
+  run **+0.274 to +0.992 m** deep at the stand against the cued rows' +0.113 to +0.396.
 * ⭐ **The pop-up's own 1.2 s is it.** The count over the threshold goes **24 → 37 → 45 of 75** across the push and the
   landing — it **nearly doubles** — and on seed 1 the depth itself quadruples, +0.071 → +0.164 → **+0.288 m**. Nothing
   else in the sequence moves it that far. (Seed 2's growth is smaller, +0.020 → +0.070 m, because more of its waves
@@ -253,9 +253,19 @@ and its wetted hull 0.398 → **0.263 m²**, and the feet end **dry** (−0.000 
 12's draft goes +0.030 → **+0.133 m** with the wetted hull rising 0.456 → 0.469 m², and wave 8 `early`'s +0.124 →
 **+0.574 m** on 0.621 m² of hull.
 
-**The `sinking` test behaves the same way across the sequence** — over `SINK_RATE` in **15 of 34** at the press, **16
-of 34** at the landing boundary, and only **5 of 34** at the stand — so the board's descent into the surface is
-driven by the press itself, and mostly over by the time the rider is up.
+**The `sinking` test does NOT behave the same way across the sequence, and the difference between the two seas is
+itself the evidence for Part 5.3.** Over `SINK_RATE`:
+
+| instant | seed 1 | seed 2 |
+| --- | --- | --- |
+| at the press | 15 of 34 (median +0.218 m/s) | 23 of 41 (median **+0.356**) |
+| at the push → landing boundary | 16 of 34 (+0.281) | 24 of 41 (**+0.387**) |
+| **at the stand** | **5 of 34** (+0.202) | **22 of 41** (**+0.326**) |
+
+On seed 1 it **falls away** by the stand — the press drives the board into the surface and it is mostly over by the
+time the rider is up. On seed 2 it **stays high**, because seed 2's waves put far more boards on the plane and
+`into` is then reading the hull's trim rather than any descent (Part 5.3). **Same test, two different things, on two
+seas of the same spot.**
 
 ## 4. ⭐ Which of the survivors' four properties is the cause: speed, and the latch is not it
 
