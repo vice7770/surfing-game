@@ -364,6 +364,14 @@ the rider's control authority**. It runs through the board: at speed the hull ta
 its wetted area, and lifts the deck clear of the water. **The lever is the board's speed through the water; everything
 else on the brief's list is that speed reported by another instrument.**
 
+**And this makes a prediction that can falsify it in one run.** `?askCap=4.5` sets `askUngated`, which removes the
+planing gate from the cap — so with it on, an off-plane rider has a non-zero `leanCap`. But the cap bounds `wantRef`
+and `wantOwn`, and both are **`steer × railRange` plus the hand**, which is **0** with the stick at zero. So
+`bankReference` and `leanAsked` stay 0 either way, and the schedule's rail, `|leanAsked|`, stays 0 too. **With the
+stick at zero, `?askCap=4.5` must therefore be bit-identical to the shipped address — fall times, stands, everything.**
+If it is not, Part 4.1 is wrong. (And this is consistent with #429's finding that `askCap` produced its earliest fall:
+its arms that turned had `steer = ±1`, where the cap does bind.) Part 6.2 is that test.
+
 ### 4.2 Three more decompositions a single scalar was hiding
 
 * ⭐ **The fall is predominantly across, and not only across.** Past the feet **ACROSS** in **983 of 2 123** standing
