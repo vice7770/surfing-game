@@ -3937,3 +3937,52 @@ At the stand, **identical across all arms**: 5.48 m/s over ground, **not planing
 **Controls:** `PROBE=off` vs `on` — 54 runs, 2 538 values, **0 differ**; cross-build 48 runs, 2 016 values, **0 differ**; **113 147 of 113 222 frames live (99.93 %)**; the fall read off `atFall`, the last attached frame, **because `separate` never clears `phase`/`upright`**; `--diff` now **shouts when nothing aligns so "0 of 0" cannot pass as inertness.** **It refuted its own seed-1 wording with seed 2 and recorded it rather than quietly fixing it.**
 
 ⚠️ **Disclosed: it ran up to three bench processes at once against my "parallelism is zero"**, reading that as being about memory (0.16 GB RSS each, swap did not grow). **A reasonable reading, and disclosing it is the right call** — but the instruction was about the machine thrashing, and it should be stated as memory next time.
+
+---
+
+## 2026-11-19 — VIDEO 22 (PR #430): THE RECOVERY CLOCK CANNOT TELL A SAVE FROM A TRICK, AND "RAW FOOTAGE" WAS THE WRONG ASK
+
+*"beng beng fun"*, Rifles — **ONE unbroken shot of ONE ride, the first in twenty-two**, and at **12.62 s of legible ride the longest the series has.** Proved three ways (126 background alignments, plain median r 0.9899, nothing below 0.90; 188 rider-blob steps; 116 tiles plus 14 gridded 1:1 frames). **60.000 fps exactly, not 59.94 — a seventh rate.**
+
+### ⭐⭐ THE REFUTATION: A DELIBERATE LAYBACK RECOVERS FASTER THAN EITHER "SAVE"
+
+**A layback snap at 11.1 → 11.8**, both endpoints gridded at the native 1/60: standing at 11.0500 (both hands −31 / −73 px below the shoulder line) → **11.3500 lowest, the board thrown to NEAR-VERTICAL (190 × 40 px projected) with his feet on it, body reclined onto the foam, one hand +58 above the shoulder line** → **standing again 11.7833.**
+
+| | lowest → standing | onset → standing |
+| --- | --- | --- |
+| **clip 22 (deliberate)** | **0.433 s** | **0.667 s** |
+| clip 20 | 0.48 s | 0.93 s |
+| clip 21 | 0.733 s | 1.200 s |
+
+> ⭐⭐ **The DELIBERATE one is the FASTEST. So "time from lowest attitude back to standing" DOES NOT SEPARATE A SAVE FROM A MANOEUVRE, and no engine state, metric or eval may be built on that duration as if it could.** **I reported those two recovery figures to the owner as a save window's target. They are not one.**
+
+⚠️ **And whether his back or trailing hand took weight is undecidable — he is inside his own spray. Row 19 unresolved at twenty-two clips.**
+
+### ⛔ "RAW FOOTAGE" WAS THE WRONG ASK — I told the owner that an hour ago
+
+**This clip IS raw** — one unbroken take, no cuts anywhere — **and still has no take-off, because it was TRIMMED to begin after he stood.** At **t = 0.0000**, the very first gridded frame, he is already standing in a forward-folded crouch.
+
+> **The ask must become "footage that STARTS BEFORE THE RIDER IS ON HIS FEET", not "raw footage". A single unbroken take is not sufficient.** **Corrected to the owner.**
+
+### ⚠️⚠️ AND A CAUTION ON THE SERIES' MOST REPRODUCED NUMBER
+
+Two attempts here: **0.54 (0.43–0.67)** and **0.76 (0.70–0.82)**. **They do not overlap, the series' 0.55–0.60 band sits between them, and the second implies an anatomically impossible stance** — so a landmark is wrong. **No ratio published.**
+
+> **The ratio is defined FROM THE NOSE — and four independent routes split TWO–TWO on which way the rider was even travelling.** **No read in the series has ever stated how it identified the nose.** **Recommendation adopted: every future read publishes TWO frames and shows they agree. This is the first read to try, and they did not.**
+
+⚠️ **And: no foot slide was SEEN, but at 12–18 px per foot this clip CANNOT RESOLVE ONE — so it is not evidence for row 17's "already correct".** **Some of the twenty-two clips behind "zero foot slides" may have been equally unable to see one.**
+
+### What it adds
+
+- ⭐ **Row 16 goes 3 → 7** (four more forward braces, two held over a second, all *trunk folded hard forward, both hands down, feet unmoved, ridden out standing*) **and gets its FIRST COUNTEREXAMPLE 0.2 s after the longest one** — the same rider meets the same foam and **leans BACK.** **"The brace is what a surfer does DRIVING THROUGH whitewater, not what he does MEETING it; the trigger separating them is intent, not contact."**
+- ⭐ **Clip 21's "arms up is a TURN signature" reproduces on a SIXTH rider, in a clip with NO fall to confound it:** a hand above the shoulder line in **4 of 8** measured frames, **all four turns.** **The two hands disagree in 5 of 5 readable frames** (7–27 % of stature here, 43–63 % in clip 21) — **never zero, on two independent riders.**
+- ⭐ **A new kind of number: the trunk's DUTY CYCLE over a whole ride.** 65 tiles at 0.1833 s: **45 % pronounced forward fold, 21 % upright, 18 % intermediate, 11 % reclined — and all seven reclined tiles sit inside the two turns.**
+- ⭐⭐ **And the remainder is the real finding: ~8 of 12.6 s is spent crouched or folded DRIVING THROUGH BROKEN WATER — neither trim nor a manoeuvre, and THE ENGINE HAS NO NAME FOR IT.**
+- ⛔ **No whole board anywhere, second clip running** — a property of beach shots, not a clip-21 one-off. No horizon in the entire clip. **Head/gaze refused for a TENTH distinct cause: plain resolution**, the face clear and unobstructed at 45 px.
+
+### ☠️ Method, and the first one is the worst of the series
+
+1. ☠️☠️ **A seek into the last ~0.06 s NEVER DECODES** — it returns an earlier frame with `currentTime` correct and `seeked` fired. **And its own nudge-based stale guard PLANTED that frame and passed it as fresh**, because it only compared against the previous ask — **"a second layback" had already been drafted.** ⭐ **"Compare every frame's hash against EVERY hash seen in the session — a nudge-based guard is a stale-frame generator."**
+2. ⛔ **A cross-correlation pan tracker DISCARDED: a coconut grove aliases it**, and **its own self-check aliased identically and CERTIFIED it** at three epochs before failing at three more. **"Measure the backdrop's spatial period first; a consistent aliaser is still an aliaser."**
+3. ⭐ **A NEW `document.hidden` split that reverses the series' working assumption: `drawImage` KEPT DECODING NEW FRAMES CORRECTLY while the screenshot compositor froze and `requestAnimationFrame` stopped.** **"Numeric analysis stays sound; only the picture lies."** **All three failures of clip 21's composite cure happened in this state — un-hide the pane rather than repaint harder**, and **`show_pane` reported success without clearing `document.hidden`.**
+4. ☠️ **The Browser pane CLOSED ITSELF mid-read** — a third distinct way to lose the tab. ☠️ **The screenshot size changed FOUR times**, the same viewport gave three sizes, and **at small sizes the canvas is CLIPPED, NOT SCALED.** ⛔ **`setPlaybackQualityRange` killed the stream on this Short** (readyState 0); a plain reload restored 1080×1920 without it.

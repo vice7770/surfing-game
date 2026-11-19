@@ -43,8 +43,8 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | 19 | `V8SCdpuYnKM` | https://www.youtube.com/shorts/V8SCdpuYnKM | **read — PR #422, not merged.** ⭐ **The first clip in nineteen that ENDS IN A WIPEOUT**, and its mechanism is the owner's own complaint |
 | 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | **read — PR #423, not merged.** ⭐ **The first RECOVERY from a lost stance in twenty clips** |
 | 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | **read — PR #428, not merged.** ⭐ **The second recovery**, and it **refutes** the arms rule clips 19+20 suggested |
-| 22 | `YybXum0o4YI` | https://www.youtube.com/shorts/YybXum0o4YI | **reading now** |
-| 23 | `4cd6S0rD9pE` | https://www.youtube.com/shorts/4cd6S0rD9pE | **queued** |
+| 22 | `YybXum0o4YI` | https://www.youtube.com/shorts/YybXum0o4YI | **read — PR #430, not merged.** ⭐ One unbroken ride, and a **deliberate layback snap recovers FASTER than either involuntary save** |
+| 23 | `4cd6S0rD9pE` | https://www.youtube.com/shorts/4cd6S0rD9pE | **reading now** |
 | 24 | `jPOoZnxF3Sw` | https://www.youtube.com/shorts/jPOoZnxF3Sw | **queued** |
 | 25 | `wHMEeY29v9I` | https://www.youtube.com/shorts/wHMEeY29v9I | **queued** |
 
