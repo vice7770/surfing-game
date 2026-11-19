@@ -163,7 +163,8 @@ in 0.3 s after the stand, either way. Shipped, the medians are 0.700 s (`hold`),
 to do.
 
 **This is the owner's own report, and it is the shipped behaviour.** His words across three reports are *"stands 1
-second"*; one video gives *"Getting up…"* clearing at ≈ 7.99 s and the wipeout prompt at ≈ 8.99 s, i.e. **1.00 s**.
+second"*, and the video timings handed to this round are *"Getting up…"* clearing at ≈ 7.99 s with the wipeout prompt
+at ≈ 8.99 s, i.e. **1.00 s** (reported, not measured here — the videos were read by an earlier round).
 The shipped address, through its own take-off, gives a **median of 0.750 s and 12 of 15 inside his one second** — with
 no new switches on at all.
 
