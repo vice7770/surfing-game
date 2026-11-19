@@ -171,17 +171,21 @@ wall.** Of the 12 waves, **6 lit the game's own cue** and every rider that poppe
 | `all3cap` (all three + `?askCap=4.5`) | 18 | 18 | 15 | **0.683** | **0.42**–0.98 | **15 of 15** | 9.8° | 83.3 % (13.2 %) |
 
 **The population, said plainly.** The 15 falls per arm are **5 waves × 3 scripts**, not 15 independent draws: the
-three scripts ride the same wave with the same paddling and diverge only after the stand, and the sixth cue wave
-(wave 6) never fell. So the independent unit here is the **wave**, and there are six of them on this sea; the medians
-are over runs, as the earlier placement tables' were, and the wave identities are in `results/seed1-summaries.jsonl`.
+three scripts ride the same wave with the same paddling and diverge only after the stand. The sixth cue wave (wave 6)
+has no fall recorded — ⚠️ **not because it was carried, but because it was cut off on its standing frame** (Part 13).
+So the independent unit here is the **wave**, and there are **five observed** on this sea plus one censored; the
+medians are over the 15 observed falls per arm, and the wave identities are in `results/seed1-summaries.jsonl`.
 
 **Every separation is `'balance'`.** Nobody slips a foot, nobody loses the board, nothing hits the reef, and
 `inContact` is true in **698 of 698** first-second frames on the shipped address: the feet never leave the deck.
 
-**Nor does an input save it.** The first script leaves the stick at zero; the other two put Compress and a **full**
-steer in 0.3 s after the stand, either way. Shipped, the medians are 0.700 s (no stick), 0.767 s (turning one way) and
-0.767 s (the other) — the turn neither rescues the ride nor ends it sooner, so the fall is not something the stick does or fails
-to do.
+**Nor does an input save it — on this sea.** The first script leaves the stick at zero; the other two put Compress
+and a **full** steer in 0.3 s after the stand, either way. Shipped, the medians are 0.700 s (no stick), 0.767 s
+(turning one way) and 0.767 s (the other) — the turn neither rescues the ride nor ends it sooner.
+
+> ⚠️ **This is a null on a sea where every observed stand dies anyway, and it does not generalise.** On seed 2,
+> where three stands *are* carried, **asking for a turn** is the entire difference on one of them and **harmless**
+> on the other two. (The ask is a steer **and** a Compress together, so it is the sequence, not the steer.) Part 13.
 
 **This is the owner's own report, and it is the shipped behaviour.** His words across three reports are *"stands 1
 second"*, and the video timings handed to this round are *"Getting up…"* clearing at ≈ 7.99 s with the wipeout prompt
@@ -194,7 +198,7 @@ the cue; the stand frame, and the no-stick script's outcome):
 
 | wave | speed, m/s | planing | load, bw | front share | margin | wetted, m² | ahead, m | up the face | face under the board | the stand's refusal | fell after the stand |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 6 | 6.13 | **1** | 0.83 | 0.43 | 0.912 | **0.263** | 2.15 | **0.79** | **16.9°** | **none** | **never** (rode the 3 s out) |
+| 6 | 6.13 | **1** | 0.83 | 0.43 | 0.912 | **0.263** | 2.15 | **0.79** | **16.9°** | **none** | ⚠️ **never observed** — see Part 13 |
 | 10 | 6.02 | **1** | 0.92 | 0.48 | 0.836 | **0.263** | 1.83 | 0.84 | 15.9° | **none** | 0.70 s |
 | 7 | 5.36 | 0 | 1.07 | 0.67 | 0.879 | 0.389 | 1.06 | 0.95 | 9.2° | feet under water | 1.73 s |
 | 8 | 5.18 | 0 | 1.05 | 0.66 | 0.898 | 0.375 | 1.18 | 0.94 | 10.3° | feet under water | 0.75 s |
@@ -203,10 +207,15 @@ the cue; the stand frame, and the no-stick script's outcome):
 
 The two stands that are **not** refused are the two that are **planing**, **lower on the face** (0.79–0.84 against
 0.94–0.99), on a **steeper** one (15.9–16.9° against 3.4–10.3°), with **half the wetted hull** (0.263 m² against
-0.375–0.566) and the weight **off** the front foot (0.43–0.48 against 0.66–0.70). One of those two — wave 6 — is the
-**only wave in the study whose stand survived the window**, and it survived on all five arms (15 of 15 runs).
-**The refused four all stand high on a flattening crest on a buried board, and every one of them is gone inside
-1.73 s.**
+0.375–0.566) and the weight **off** the front foot (0.43–0.48 against 0.66–0.70).
+
+> ⚠️ **CORRECTED — Part 13.** The sentence that stood here, *"one of those two — wave 6 — is the only wave in the
+> study whose stand survived the window"*, **is wrong, and it was the whole of this part's inference.** Wave 6's stand
+> comes at **16.0167 s** and the trial is cut at **16 s** (`bench.ts:109`, `:512`), so the rider is retired **on his
+> standing frame**: `fsN = 0`, one frame of ride. He was never observed. The other unrefused wave — **wave 10 — fell
+> at 0.70 s**, which is the median. So this signature predicts the **absence of the refusal** and nothing about
+> survival, and **seed 1 has zero observed survivors**: five observed waves, not six. The four refused waves are
+> still all gone inside 1.73 s — but so is the unrefused one, and **sooner**.
 
 **And the stand itself is already not carried.** `AttachedRider.standRefusal` ran at the `'landing'` → `'standing'`
 transition and returned **`'feet under water'` in 12 of the 18 stands** (and nothing in the other 6): at the moment
@@ -394,15 +403,22 @@ per arm** (`results/seed2-*`). What carries over:
 
 | arm | stood | fell | median after the stand | within 1 s | roll peak in the first second | pinned | the stand's refusal |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `ships` | 21 | 14 | **0.8333 s** | 11 of 14 | 18.8° | 100.0 % | 18 of 21 |
-| `trunk` | 21 | 14 | **0.8333 s** — the same 14 values | 11 of 14 | 18.8° | 100.0 % | 18 of 21 |
-| `bank` | 21 | 14 | **0.6333 s** | 13 of 14 | 4.9° | 100.0 % | 18 of 21 |
-| `all3` | 21 | 14 | **0.6333 s** — the same 14 values as `bank` | 13 of 14 | 4.9° | 100.0 % | 18 of 21 |
-| `all3cap` | 21 | 14 | 0.6333 s (one value apart from `bank`) | 13 of 14 | 4.8° | 100.0 % | 18 of 21 |
+| `ships` | 21 | 14 | **0.8333 s** | 11 of 14 | 18.8° | 100.0 % | **`sinking` 15, `feet under water` 3**, clear 3 |
+| `trunk` | 21 | 14 | **0.8333 s** — the same 14 values | 11 of 14 | 18.8° | 100.0 % | **15 / 3**, clear 3 |
+| `bank` | 21 | 14 | **0.6333 s** | 13 of 14 | 4.9° | 100.0 % | **15 / 3**, clear 3 |
+| `all3` | 21 | 14 | **0.6333 s** — the same 14 values as `bank` | 13 of 14 | 4.9° | 100.0 % | **15 / 3**, clear 3 |
+| `all3cap` | 21 | 14 | 0.6333 s (one value apart from `bank`) | 13 of 14 | 4.8° | 100.0 % | **15 / 3**, clear 3 |
 
 The fall is still immediate (the shipped median moves with the sea, 0.750 → 0.8333 s), `?bodyBank=hip` still brings it
-**sooner** and still cuts the roll (18.8° → 4.9°), the stand is still refused as `feet under water` in **18 of 21**,
-and the CoP is pinned in **100 %** of first-second frames.
+**sooner** and still cuts the roll (18.8° → 4.9°), the stand is still **flagged** in 18 of 21, and the CoP is pinned
+in **100 %** of first-second frames by the `limitTime` reading.
+
+> ⚠️ **CORRECTED: the 18 of 21 is not 18 feet under water.** Seed 2's refusals are **`sinking` 15, `feet under
+> water` 3, clear 3** — and `standRefusal` returns **`sinking` before it samples a single foot**
+> (`AttachedRider.ts:2787–2789`, water-relative descent into the surface, then the foot loop at `:2790`). So those
+> 15 establish **neither wet nor dry feet**. Seed 1 really is **12 `feet under water` of 18** (6 clear, no
+> `sinking`), so the two seas refuse the stand for **different reasons**, and the two categories must stay apart when
+> the next physical change is chosen. **All 7 stands that carry the full window are `sinking` ones.**
 
 **What does *not* carry over is "`?trunk=mass` moves nothing".** On this sea the hip rotor wakes: non-zero in
 **1 388 of 5 267 `trunk`-arm frames — 67.7 % of its standing frames — peaking at 5.5°** (against 0 of 4 147 on seed 1,
@@ -487,3 +503,119 @@ ruins his ride"*. Both were drawn from the wrong second.
   the falls unchanged. On a longer ride, on the plane, it will fire harder — PR #426 measured 42.9°. Nothing here says
   the switch is harmless on a ride that gets going; it says it does not move the fall in the first second after a
   stand, on either sea measured.
+
+---
+
+## 13. ⚠️ The censored wave, and what seed 2 says instead: **turning is survivable, and on one wave it is the whole fall**
+
+The reviewer re-opened `results/seed1-summaries.jsonl` before trusting Part 5 and found that **its one survivor is an
+artefact of the harness**. Everything below is re-measured from the committed files; no ride was run.
+
+### 13.1 Wave 6 was cut off on its standing frame
+
+`STAND_HOLD = 3` s is the window a standing rider is followed for (`bench.ts:107`), but the trial that carries him is
+retired at `TRIAL = 16` s whatever is left of that window:
+
+```ts
+// bench.ts:512
+if (t - trial.placed >= TRIAL || trial.riders.every((rider) => rider.done)) active.splice(k, 1);
+```
+
+Seed 1's wave 6 stands at **16.0167 s**. Its 15 rows (5 arms × 3 scripts) are **identical**: `frames` 962,
+`stand` 16.0167, `fell` null, `fsN` **0**. Zero first-second frames, one frame of post-stand life, **no cause**.
+**It is not a survivor; it is a non-observation**, and the whole of Part 5's closing inference rested on it.
+
+And the field that made it look like a ride is the wrong field. **`riding` is not a survival clock:**
+
+```ts
+// bench.ts:373 — only ticks while ahead of the crest AND at 60 % of crest speed
+if (session.phase === 'standing' && frame.valid && frame.aheadOfCrest >= 0 && frame.speedShoreward >= 0.6 * frame.crestSpeed) rider.riding += STEP;
+```
+
+Wave 6's `riding` is **0.0167 s** — one frame — exactly as its `fsN = 0` says. Seed 2's wave 8 shows the same field
+the other way: `riding` 0.0167 while the rider lives **0.55 s** past the stand and is seen in 32 first-second frames.
+**Post-stand exposure must be read as `fell − stand`, and a no-fall row must be checked against `16 − stand` before
+it is called a survivor.**
+
+**Seed 1, re-counted per arm: 18 stands = 15 observed falls + 3 censored starts. Zero fully observed 3 s rides.**
+The median of the observed falls is unchanged at **0.700 s** (75 falls pooled, range 0.4167–1.7333), and the shipped
+arm's own median stays **0.750 s**. **Every fall number in Parts 5–11 survives. Every survival number does not.**
+
+### 13.2 Seed 2 has three real survivors — and they turn the round over
+
+Seed 2 (11 waves, 7 lit the cue, 165 runs) has **35 no-fall rows with the full window available**, on three waves.
+Pooling the five arms, by wave and by script (`cue` = stick at zero; `cueL`/`cueR` = Compress + a **full** steer from
+0.3 s after the stand, for 0.9 s — **both carry `compress: 1` as well**, `bench.ts:360–366`):
+
+| wave | `cue` (nothing asked) | `cueL` (full steer + Compress) | `cueR` (full steer + Compress) |
+| --- | --- | --- | --- |
+| 1 | **5 of 5 rode the 3 s out** | **0 of 5** — fell 0.683–0.717 s | **0 of 5** — fell 0.767–1.000 s |
+| 2 | **5 of 5** | **5 of 5** | **5 of 5** |
+| 11 | **5 of 5** | **5 of 5** | **5 of 5** |
+| 5 | 0 of 5 — 0.583–0.95 s | 0 of 5 — 0.55–0.733 s | 0 of 5 — 0.567–1.167 s |
+| 6 | 0 of 5 — **2.300 s** | 0 of 5 — 0.667–1.183 s | 0 of 5 — 0.867–0.967 s |
+| 8 | 0 of 5 — 0.417–0.55 s | 0 of 5 — 0.400–0.533 s | 0 of 5 — 0.383–0.533 s |
+| 10 | 0 of 5 — 0.933 s | 0 of 5 — 0.667–0.700 s | 0 of 5 — 0.600–0.700 s |
+
+**Two findings, and they pull in opposite directions.**
+
+1. ⭐ **On wave 1 the asked-for turn is the entire fall.** Same wave, same stand (8.1333 s to the frame), same
+   `sinking` refusal, same paddling, five arms: **the rider left alone rides the window out 5 times out of 5, and
+   asking for a turn takes him down 10 times out of 10.** This is the first same-wave, same-start, opposite-input
+   pair on the track, and it is already on disk.
+   ⚠️ **But it is the whole input sequence, not the steer.** `bench.ts:360–366` sends `steer: ±1` **and**
+   `compress: 1` together on every turn script, and neutral sends neither — so this pair cannot separate the steer,
+   the Compress, or their interaction. **`cueL` against `cueR` is the clean contrast: direction at equal
+   compression.** Anyone building off wave 1 must split the two inputs first.
+2. ⭐ **But turning is survivable.** On waves 2 and 11 the **same ask, both ways, holds 10 of 10** — rolling
+   to a **22.9°/20.4°** and a **25.4°/18.1°** peak and coming back. **So "the rider cannot turn" is not a property of
+   the physics.** What fails is a turn *on some carried stands and not others*, and the population that says so is
+   **three carried stands on one sea**, 15 runs each.
+
+### 13.3 Two things the first second rules out, and one it points at
+
+**Roll magnitude does not decide the fall.** Wave 1 `cueL` falls with a first-second roll peak of **11.4°**; wave 11
+`cueL` holds through **25.4°**. More than twice the roll, and it is the small one that goes.
+
+**Nor does leaving the deck, or the load.** `fsContactOff` is **0** in all seven seed-2 stands; `fsLoadMed` sits in
+0.89–1.03 bw across carried and lost alike.
+
+**The one column that separates them is the instantaneous CoP pin** — `limit === 'tip'` *now*, not the decaying
+memory `limitTime.tip > 0` that Part 7 used (`bench.ts:398–399`). Over the seven seed-2 stands, nothing asked:
+
+| | waves 1, 2, 11 (carried) | waves 5, 8, 10 (lost inside 1 s) | wave 6 (lost at 2.3 s) |
+| --- | --- | --- | --- |
+| `fsPinNow` (frames pinned *now*) | **0, 0, 0** | **18, 9, 7** | 0 |
+| `fsPinned` (ever pinned) | 60, 60, 59 | 56, 32, 55 | 60 |
+| first-second roll peak | 1.7°, 2.3°, 1.0° | 24.0°, 22.6°, 4.5° | 1.6° |
+
+**`fsPinNow > 0` in 3 of 3 stands lost inside the first second and in 0 of 4 that are not — 7 of 7 on that question**,
+while `fsPinned` is 32–60 everywhere and says nothing. Wave 6 is the honest exception to read next: pin-free, roll-free,
+and gone at 2.3 s — whatever ends that one is not in the first second at all.
+
+And the one difference between the carried stand whose **turn** fails and the two whose turns hold, on n = 3: wave 1
+carries the **wettest hull of the three** (`fsWetMed` **0.350 m²** against 0.254 and 0.263; `fsWetMin` 0.263 against
+0.088 and 0.197) off the **steepest** pop (18.7° against 18.1° and 16.8°) from the **highest** point on the face
+(`popFraction` 0.750 against 0.722 and 0.698). **Three waves cannot choose between those three; they are the next
+thing to vary, not a result.**
+
+### 13.4 What this changes
+
+* **The two seas do not refuse the stand for the same reason** (seed 1: 12 `feet under water` of 18; seed 2:
+  15 `sinking`, 3 `feet under water`, 3 clear, and all 7 carried stands `sinking`). A fix aimed at wet feet and a fix
+  aimed at a board descending into the surface are different fixes.
+* **The owner's report is still the shipped game** — 0.750 s, 12 of 15 inside his second, on seed 1. Untouched.
+* **"The rider cannot hold a turn" is now false as stated.** He holds a full steer **and** Compress, both ways, through a 25° roll,
+  10 of 10, on two of the three stands that live long enough to be asked. The work is **which stand can afford the
+  turn**, not teaching the body to turn.
+* **The next build has a target that needs no new ride**: the first divergence between wave 1's `cue` and its `cueL`,
+  both on disk, same stand, opposite outcome. The reviewer's read of that pair: identical at +0.20 s (roll +1.679°,
+  `rawMargin` 0.966, load 1.292 bw in all three), and by **+0.60 s** the row that was asked nothing is `limit` **none** with
+  `rawMargin` **0.943** and roll −0.103°, while both steered rows are **`tip`, `rawMargin` zero**, at +8.031° and
+  −3.285°. **The margin reaches zero inside 0.3 s of the turn being asked for.**
+* **`rawMargin` still cannot name which constraint went** (it is a filtered minimum of three headrooms). Reading the
+  three separately through that pair is the measurement that would.
+
+*Found by the Codex reviewer, which opened the committed summaries rather than the write-up, caught its own first
+suggestion (a wave-6 comparison) and withdrew it in the next message. Re-verified here against `bench.ts` and both
+`seed*-summaries.jsonl` before anything was changed.*
