@@ -36,8 +36,8 @@ feels** — these are bot rides with the stick at zero; only the owner's own rid
    it fires on **21 stands whose feet are dry**, including **12 of the 15 rides that lasted**. Mechanically,
    `into > SINK_RATE` is `V sin α` against the free surface — **what a planing hull does by construction**. Measured:
    `asin(into/V)` is **+2.60° at 6.21 m/s** on planing frames, a trim angle; and integrated over a surviving ride the
-   test claims **1.13 m of descent** while the board's draft moves **0.040 m** in all and stays inside a band 0.10 m
-   wide — a **27.9×** over-read, and **217.7×** on seed 2's wave 1. **`sinking` is reading planing lift.**
+   test claims **1.13 m of descent** while the board's draft moves **0.040 m** end to end — a **27.9×** over-read, and
+   **217.7×** on seed 2's wave 1. **`sinking` is reading planing lift.**
 3. ⭐⭐ **The feet test, measured without the short-circuit, is the one condition every ride that lasted met.** Of **45
    stands with the feet under water, 0 lasted**; of **30 with the feet clear, 15 did**. The same holds for the two
    conditions it travels with: **0 of 47 non-planing stands lasted** and **0 of 56 below 4.400 m/s** through the water.
@@ -570,9 +570,9 @@ That is why the overlap is partial rather than total: `into > 0.3` holds in **47
 | **2, wave 1 `cue` / `lift`** | 182 (3.02 s) | 89 | **−0.051 → −0.046 m** (−0.070 / +0.051) | **+1.041 m** | **217.7×** |
 | 2, wave 2 `cue` / `lift` | 182 (3.02 s) | 44 | −0.057 → −0.024 m (−0.079 / −0.015) | +0.442 m | 13.5× |
 
-**The test says the board descended 1.13 m; the board moved 0.040 m in all, and stayed inside a band 0.10 m wide the
-whole time, mostly with its reference above the local surface.** `standRefusal`'s `sinking` verdict is not reporting a
-board going under. It is reporting a hull on the plane.
+**The test says the board descended 1.13 m. End to end the board's draft moved 0.005–0.044 m, and its whole range
+across three seconds is at most 0.12 m, mostly with its reference above the local surface.** `standRefusal`'s
+`sinking` verdict is not reporting a board going under. It is reporting a hull on the plane.
 
 **So `sinking` cannot distinguish a board going under from a board riding on its own lift**, it fires more than twice
 as often on the latter, and the stands it refuses are disproportionately the good ones.
