@@ -749,17 +749,28 @@ the rider's body does changes it, which is why every attempt on this track to fi
 
 **Nothing here was changed.** These are what the measurements imply, each with what it would cost.
 
-1. ⭐ **Do not turn `standRefusal` into a gate** (`design.md` §4's *"That goes"*). **Cost: none** — it is a decision not
-   to build something. **What it buys:** the gate would have refused **8 of the 9 rides in this study that lasted**,
-   because they are `sinking` stands and `sinking` is partly a detector of planing (47.9 % of planing frames against
-   18.8 % of the rest). If a gate is wanted anyway, `feet under water` is the only one of the four verdicts that is
-   actually predictive (**0 held of 29**).
-2. **If the `sinking` test is kept, it cannot stay as written.** `into > SINK_RATE` is `V sin α` against the free
-   surface, so at `PLANING_SPEED` itself a **4.3°** trim trips it and at 6 m/s a **2.9°** one does — ordinary planing
-   trim. A test meant to catch a board going under is reading the lift that holds it up. **Cost:** today the test is
-   report-only, so changing it changes **no behaviour at all** — it would reach only the HUD string and any future
-   gate. **No new force, no hidden motor; it is a measurement being corrected, not a rule being added.**
-3. **The lever is the board's speed through the water at the stand — about 4.4 m/s on this sea — and the take-off's
+1. ⭐⭐ **If `standRefusal` becomes the gate `design.md` §4 plans, gate it on the FEET, never on the flag.** Measured
+   over 75 stands: the flag refuses **66 of 75** and destroys **12 of the 15** rides that lasted; the `'sinking'`
+   verdict refuses 26 and destroys the same 12; **the feet refuse 45 and destroy 0.** **Cost of gating on the feet:**
+   the player would press and **not get up on 45 of 75 take-offs (60 %)** at Canyon B, Medium — he would trade a
+   0.4–0.9 s stand-and-fall for not standing at all. **Whether that is better is a game-feel judgement and the
+   owner's alone.** What the measurement settles is that it costs **none** of the rides that work, and that the flag as
+   written costs 80 % of them.
+2. ⭐ **The `sinking` test is wrong as written, and fixing it changes no behaviour today.** `into > SINK_RATE` is
+   `V sin α` against the free surface, so at `PLANING_SPEED` itself a **4.30°** trim trips it and at 6 m/s a **2.87°**
+   one does — ordinary planing trim. Measured: `asin(into/V)` is **+2.60°** at 6.21 m/s (seed 1) and **+1.37°** at
+   6.69 m/s (seed 2) on planing frames, and integrating `into` over a surviving ride claims **1.13 m** of descent
+   against the board's actual **0.040 m**, a **27.9×** over-read (and **217.7×** on seed 2's wave 1). **A test meant to
+   catch a board going under is reading the lift that holds it up.** **Cost:** today the test is report-only, so a fix
+   reaches only the HUD string and any future gate. **No new force, no hidden motor; a measurement corrected, not a
+   rule added.** A candidate with a physical basis, for the owner to rule on: subtract the hull's own trim — test the
+   board's descent against the water **it is not itself lifting**, or simply put the feet test first and let the
+   sinking test report rather than return.
+3. ⚠️ **`standRefusal`'s test order hides data even with no gate.** Five of the 26 `sinking` stands have feet
+   **0.84–0.99 m** under, so the dev-tools readout tells the owner *"board sinking, not planing yet"* about a board
+   whose real problem is that his feet are a metre under the surface. **Cost of reordering: nothing at all** — the
+   function's return value has one consumer, a string.
+4. **The lever is the board's speed through the water at the stand — about 4.4 m/s on both seas — and the take-off's
    only handles on it are the press's timing and the catch.** **Cost, and it is the reason this is not a one-line
    fix:** the delay sweep changed the outcome on **one wave of five** (wave 10), did nothing orderly on three, and cost
    the rider the board on the fifth; and the cue's speed half (`speedShoreward ≥ 0.8 × crestSpeed`) is what makes the
@@ -768,10 +779,10 @@ the rider's body does changes it, which is why every attempt on this track to fi
    rather than move the press down the face, because the two halves do not come true together. **Any change here is a
    change to when the HUD says "POP UP NOW" — it adds no force.** The honest reading is that the catch, not the cue,
    is where the speed would have to come from.
-4. ⚠️ **Do not look for this in the rider's lean authority.** `leanWant` is **0 in all 2 123 standing frames**, so the
-   planing gate on the cap binds nothing; and `?askCap=4.5`, which ungates it, produced **the earliest fall in #429's
-   whole study (0.42 s)**. This route is measured and it does not work.
-5. **The one lever that attacks the 49 kg deficit directly is the board's volume, and it is expensive.**
+5. ⚠️ **Do not look for this in the rider's lean authority.** `leanWant` is **0 in all 5 867 live standing frames
+   across the two seas**, so the planing gate on the cap binds nothing; and `?askCap=4.5`, which ungates it, produced
+   **the earliest fall in #429's whole study (0.42 s)**. This route is measured and it does not work.
+6. **The one lever that attacks the 49 kg deficit directly is the board's volume, and it is expensive.**
    `REFERENCE_BOARD` is a **25.75 L** performance shortboard under a **73 kg** rider — a board a competent surfer sinks
    standing still, which is why standing off the plane puts the feet 0.288 m under. **Cost:** the volume is a sourced
    measurement (Connellan et al. 2026, Table 1), and the shape it drives carries the inertia, the added mass, the
@@ -781,9 +792,26 @@ the rider's body does changes it, which is why every attempt on this track to fi
 
 ## 8. What would refute this, and what I did not measure
 
-* **The held population is 4 runs on 2 waves (seed 1) and 7 on 3 waves (seed 2).** The independent unit is the wave,
-  and there are 5 of them. Every median for the held group is a median over a handful of runs on a handful of waves,
-  and it is labelled as such everywhere above. A third sea could move the 4 m/s boundary.
+### ⚠️ Two of this round's own findings were refuted by its second sea, and they lead
+
+* **"Seven columns separate held from fell with no overlap."** True of seed 1's 34 stands. On seed 2's 41, **not one
+  column separates** — every one overlaps, speed through the water included. **Reporting seed 1's table as a
+  discriminator would have been this project's standing error.** What survives pooling is necessity (Part 5.4), which
+  is a weaker and true claim.
+* **"The fall is sideways and only sideways."** True of seed 1 (the capture point goes past the feet along the board in
+  **2 of 2 123** frames, peak 0.003 m). On seed 2 it is **132 of 3 744**, peak **0.488 m**. Across still dominates,
+  but the longitudinal channel is live and a pearl does happen.
+
+**And one of the corrections handed to this round needs correcting back.** Seed 1's wave 6 was called a harness
+artefact. The *evidence* was: `fsN = 0`, one frame stepped, the trial retired beneath it. The *outcome* was not — with
+the window actually followed it holds **3.02 s**, on both scripts that reach it. A claim reported without being
+observed is not thereby false.
+
+### What else would refute this
+
+* **The held population is 15 runs on 5 waves.** The independent unit is the wave. Every median for the held group is
+  over a handful of runs on a handful of waves, and it is labelled as such everywhere above. A third sea could move the
+  4.4 m/s boundary, and seed 2 already shows fallers up to **4.879 m/s** above it.
 * **One spot, one size.** All of this is Canyon B at Medium. A spot or a size where the catch hands the board 5–6 m/s
   through the water would make most stands look like the survivors here, and then the whole of Part 6 is about
   Canyon B at Medium rather than about take-offs.
@@ -796,9 +824,15 @@ the rider's body does changes it, which is why every attempt on this track to fi
 * **The mirror is not the game's own call, only a bracket around it.** `standRefusal` runs per substep inside
   `prepare`, so the probe's verdict is read one frame early or one frame late; agreement is 30 of 34 at the stand and
   33 of 34 at the last landing frame, and the four disagreements are all within a few hundredths of `SINK_RATE`.
-* **`sinking`'s relation to planing is an association, not an identity** — 47.9 % against 18.8 %. The claim that it
-  "detects planing" is an inference from the formula plus that association; a direct test would compute the hull's
-  angle of attack and compare.
+* **`sinking`'s relation to planing is an association, not an identity** — 47.9 % against 18.8 % on seed 1, 41.8 %
+  against 16.6 % on seed 2. The claim that the verdict *reads planing lift* rests on three things: the formula is
+  `V sin α` by inspection; `asin(into/V)` reads **+2.60°** and **+1.37°** on planing frames, which are trim angles; and
+  the integral over-reads the board's actual immersion by **11–218×**. A direct refutation would be a hull whose trim
+  the solver reports independently, disagreeing with `asin(into/V)`.
+* **The gate costings assume a gate that lies the rider back down and changes nothing else.** `design.md` §4 also adds
+  `popUpReport.outcome = 'fell'`, and a refused pop-up that leaves the rider prone in front of a breaking wave is a
+  different situation from one that stands him up — I measured neither. **The "destroys 0 of 15" figure is about which
+  stands a gate would prevent, not about what the player's ride then becomes.**
 * **Not every fall is the capture point.** Causes on seed 1: `balance` 27, `lost board` 2, `foot slip` 1. And `beyond`
   (the capture point past the feet beyond the rotor's reach) is reached and **survived** repeatedly — on wave 10 `cue`
   at 0.367 s, recovered by 0.467 s, and the rider lasted to 0.700 s. It is the conjunction with `weightPast` that ends
