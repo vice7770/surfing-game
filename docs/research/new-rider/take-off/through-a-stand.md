@@ -365,7 +365,7 @@ pooled over live frames, the crossing linearly interpolated between the bracketi
 
 **Four quantities, three independent builds, agreement to 0.2 % and 2 ms.** The reader is #421's.
 
-### 6.2 Through a stand: the GAIN survives and the LAG does not exist
+### 6.2 Through a stand: the GAIN survives and the 0.100 s does not reproduce
 
 | | lag-0 slope | the crossing of 1 | the peak | frames | \|deck roll\| median / max |
 | --- | --- | --- | --- | --- | --- |
@@ -518,6 +518,8 @@ planing stands that run away. **The claim rests on the peak and on the fall of t
 
 ## 8. Which constraint goes first — the measurement `rawMargin` could not make
 
+*(⭐ A parallel round on this branch reached the same answer independently and from a different instrument; see §13.)*
+
 Part 13.4 of #429's README left this open: *"`rawMargin` still cannot name which constraint went (it is a filtered
 minimum of three headrooms). Reading the three separately through that pair is the measurement that would."* Here they
 are, read separately, with the engine's own scalar as their control.
@@ -657,7 +659,7 @@ that the reason is the **wave**, so the fix is to report the regime per wave —
 
 ---
 
-## 12b. ⭐ What a parallel round on this branch got to first, and where the two agree
+## 13. ⭐ What a parallel round on this branch got to first, and where the two agree
 
 `docs/research/new-rider/take-off/stand.md` — a **different** probe, also descended from #429's `bench.ts`, aimed at
 the stand's refusal rather than at the four numbers — landed on `claude/the-record` while this round was running.
@@ -681,7 +683,7 @@ round's measurement that `ask` is 0 on every stick-zero frame. **Still unanswere
 
 ---
 
-## 13. The files
+## 14. The files
 
 | file | what it is |
 | --- | --- |
