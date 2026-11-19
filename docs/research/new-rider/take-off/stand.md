@@ -531,9 +531,10 @@ board going under. It is reporting a hull on the plane.
 **So `sinking` cannot distinguish a board going under from a board riding on its own lift**, it fires more than twice
 as often on the latter, and the stands it refuses are disproportionately the good ones.
 
-**Which settles the design question.** `design.md` §4 plans to turn the refusal into a gate that lies the rider back
-down. On this evidence that gate would refuse **8 of the 9 rides in this study that lasted** (every `sinking` one), and
-it would be refusing them for a test that is partly a detector of the very thing those rides have.
+**Which settles the design question, and Part 5.4 costs it out.** `design.md` §4 plans to turn the refusal into a gate
+that lies the rider back down. On this evidence a gate on the flag would refuse **12 of the 15 rides in this study that
+lasted** — every `sinking` one — and it would be refusing them for a test that is partly a detector of the very thing
+those rides have.
 
 ### 5.4 ⭐⭐ Both seas pooled: what is necessary, what is sufficient, and what the gate would cost
 
