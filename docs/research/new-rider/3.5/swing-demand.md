@@ -249,12 +249,17 @@ the board (`comLX`) and the balance's own independent `CaptureState.offsetAcross
 | wave 2 `cueL` | `foldA` | `postA` | `comX` (posture) | ⭐ `comLX` (CoM on the board) | ⭐ `capOffset` (the balance's own) | `across` |
 | --- | --- | --- | --- | --- | --- | --- |
 | swing, t+2.700 | 34.24° | — | — | +0.1650 | +0.16500 | +0.167 |
-| swing, t+2.900 | 66.41° | — | — | −0.0045 | +0.00349* | +0.634 |
+| swing, t+2.900 | 66.41° | — | — | −0.0045 | −0.00451 | +0.634 |
 | **swing, t+3.000** | **68.755°** (the stop) | — | — | ⭐ **+0.0095** | ⭐ **+0.00946** | +0.554 |
+| **swing, t+3.100** | **68.755°** | — | — | ⭐ **+0.0035** | ⭐ **+0.00349** | +0.449 |
 | **swing, t+3.167** (last) | **68.755°** | **−11.06° pk** | **−0.14625 settled** | ⭐ **−0.0351** | ⭐ **−0.03507** | +0.230 |
 | **ships, t+3.683** (last) | **0.000°** | 0.000° | **0.00000** | ⭐ **−0.1181** | ⭐ **−0.11809** | −0.701 |
 
-\* the 3.100 frame; the table interleaves the two readers' sample grids and both are in the committed run.
+⭐ **The two columns are independent reads** — mine is `board.toLocal(rider.position).x`, computed on the probe's side
+from the rider's world position and the board's orientation; the engine's is `CaptureState.offsetAcross`, written
+inside `HumanBalance.capture` off the balance's own geometry. **Measured, they are identical at the emitted six
+decimals on 2 215 of the 2 216 loaded standing frames**; the single exception is one frame of wave 5 `cueL` on the
+`ships` arm, differing by 0.0094 m. **So the headline quantity is not one reader's arithmetic.**
 
 ⭐ **At the rotor's full 1.2 rad stop — the frames PR #444 calls a settled 1.12-sole-width weight shift — the body's
 centre of mass sits 0.0095, 0.0035 and 0.0351 m across the board: 0.07×, 0.03× and 0.27× of the sole half-width.

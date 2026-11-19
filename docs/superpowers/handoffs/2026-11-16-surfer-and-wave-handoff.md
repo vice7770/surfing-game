@@ -4670,8 +4670,10 @@ substep-versus-frame-boundary error on `local.x` bounded at **0.000008–0.00038
 **`−0.14625 m` is `localCenter.x − base.x`, the POSTURE's internal lateral offset.** The body's **centre of mass
 across the board** — `board.toLocal(position).x`, which IS `project`'s own `local.x`, the quantity `across` and the
 sole's moment are built from — reads **`+0.00540 m` on the same frames, 0.04× the 0.130 m sole half-width.** The
-balance's own independent report agrees to five decimals: `CaptureState.offsetAcross` at the rotor's 68.755° stop is
-**+0.00946 / +0.00349 / −0.03507 m (0.07× / 0.03× / 0.27×)**.
+balance's own independent report, `CaptureState.offsetAcross`, reads **+0.00946 / +0.00349 / −0.03507 m
+(0.07× / 0.03× / 0.27×)** at the rotor's 68.755° stop — and **the two instruments are identical at six decimals on
+2 215 of the 2 216 loaded standing frames** (one frame of wave 5 `cueL` differs by 0.0094 m), so the headline
+quantity is not one reader's arithmetic.
 
 > ⭐ **And on that very cell the SHIPPED arm's settled figure is −0.12944 m — 1.00× the sole.** Wave 2 `cueR`: ships
 > **+0.10788** (0.83×) against swing **−0.03800** (0.29×). **Measured on the board, the switch REMOVED lateral weight
