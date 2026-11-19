@@ -4707,3 +4707,50 @@ He rode it: ⭐ ***"the stability is now better, the surfer can now surf with wo
 * **A pipe swallows an exit code** — `vitest | tail && push` pushes on a failing suite.
 * **Two figures were passed on as delivered when they were only REQUESTED** (354 N·m before a 100 N·m clamp; +2.886 J against 2.1–2.3 J through the lag). **Say "requested" or "delivered" with every force and joule.**
 * **Three switches have turned out not to reach the physics** (`?bodyBank=hip` parsed 0 times, `?physical` gating nothing, `swing` dropped in a forwarding hop). ⭐ **A fixture test proves the mechanism, never the switch — measure through the real session path too.**
+
+---
+
+# 2026-11-19 — CLOSING STATE, UPDATE 2. Three rounds landed after the first closing entry; two of them correct it.
+
+## A. ⛔ The flat-water minimal reproduction is DEAD as a target (PR #454, step 3.5m, `3.5/README.md` Part 3)
+
+144 runs, `src/` diff empty, eight identity controls at **0.000000000000**, and 33q's 24 rows reproduced fall-for-fall **including its survivor**.
+
+* ⭐⭐ **Neither route (a) nor (b): the zero-stick cells have NO across channel at all.** At the separating substep on **24 of 24** — relative across velocity, `speedAcross`, `pointAcross`, `feltAcross`, deck roll, roll rate, delivered `|Fx|` and the rig's injected across velocity are **exactly zero to the last bit of a double**. `RIG=tow` and `RIG=along` come out **identical row for row**. ⛔ **So "velocity not position" cannot be studied there** — it is a statement about a channel that is zero.
+* ⭐⭐ **What fires is the ALONG channel: he slides off the TAIL.** `human.fallen` 23 of 23; `pastX` **0**, `pastZ` **0.227–0.755 m** against `reachAlong` 0.000–0.572; `s.along` −0.602 to −1.130 m, toward the tail.
+* ⭐⭐ **And the rig does it.** The tow injects **40.6–218.6 m/s of along velocity cumulatively — 53–106 m/s², 5.4–10.8 g** — onto the **2.54 kg** board, which must drag a **73 kg** body through the feet. **The body lagging the board's centre is 91–122 % of the whole relative along velocity.** With `RIG=none` he still leaves **12 of 12** but **1.8–4.5× later and by a different mechanism** (75–90° of roll as the pair stops, off on `postureError`, the capture test never firing in 11 of 12). ⭐ **Every fall time 33q published on the zero-stick population is inflated by its own rig. There is no rig on flat still water in which this rider stands.**
+* ⚠️ **Where the across channel IS live (100 steered falls), BOTH routes pay and my candidate is refuted.** Exact three-term identity, controlled to 0.000000000000: `cLevel` median **0.970**, `cUp` (**pure route b**) **0.065**, `cAlong` 0.012. ⛔ **`−φ̇ · height` spans 0.056–24.632 — a 440× spread is not a tracking quantity.** And ⭐ **the body and the deck MOVE APART**: the body's motion shares the relative velocity's sign in **73 of 100**, the deck's opposes it in **80 of 100**.
+* ⚠️ **The tow amplifies across velocity speed-dependently — 3.16× at 5 m/s, 1.87× at 7, 1.00× at 9. Only the 9 m/s cells are readable.**
+* ⚠️⚠️ **A CORRECTION TO MY OWN PUBLISHED HEADLINE.** Over **142 falls**: **`weightPast`, a POSITION-only condition, flips last in 87**; `beyond` in 38; both in 17. On the 100 steered falls `|px|` is at or past the 0.13 m half-width in **67**, median **0.1301 m**. ⛔ **"The position term never trips" is FALSE as a general statement about the test.** Scoped: not carried to the live-wave population, whose headline rests on a Canyon B take-off bench.
+* ⭐ **The owner's configuration is HARSHER, not gentler**: 33q's lone survivor **falls at 1.650 s on his address — 0 of 24 survive his arm against 1 of 24 the probe's**, one steered cell **3.5× earlier**, and peak across velocity at 5 m/s **6.94 m/s** against 3.99. **Every number measured without his four switches understates his problem.**
+* ⭐ **THE OPEN THREAD, and a round is on it: why `|px|` pins at 0.1301 m against a 0.130 m half-width in 67 of 100.** Clamp, the stale-while-light freeze (`CAPTURE_LOAD` 0.2 bw, frozen share to **0.3267** of a run), or physics — **and if it is the first two, the correction above is itself suspect.**
+
+## B. The torso-stop fix is BUILT and the fall does not move (PR #455, `?twistStop=model`)
+
+A **fifth axis on the gain schedule**, knots `[20, 60, 180, 540, 2020]`, both ends physical; the stiffness carried is the **secant**, which is forced not chosen (the game's torque past the stop is affine, `twistRows` can only carry `stiffness · θ_t`; the secant reproduces it to **2.3e−13 N·m** over 0–90°).
+
+* ⭐⭐⭐ **54 of 54 real-Canyon runs enter the mismatch region.** Not a corner of the state space — every run.
+* **The error in FORCE, not ratio**: at the ride's 51.10° the shipped model is wrong by **43.726 N·m = 43.7 % of the hips' whole 100 N·m authority** (the torque ratio there is **3.451×**; the 100× is a stiffness ratio). One control step mispredicts the upper body's yaw rate by **20.2 °/s**, corrected **2.6× less**.
+* ⛔ **THE FALL DOES NOT MOVE.** Canyon 54 of 54 fall, all within 2.2 s; same frame in 11 of 18 cells, max shift 0.17 s. **That was the predicted answer.**
+* ⚠️ **Two arms, because my brief contradicted itself and the builder STOPPED rather than choosing.** `model` rebuilds Φ/Γ/L and the reference and **leaves the gain row shipped** — the only arm that is purely a change of belief. `design` re-solves the law and **the LQR wants the twist handle 21× harder** (`k[1][θ_t]` 42.418 → 888.505 N·m/rad), makes the fall **sooner in 10 of 18**, and drives the lean to its **±70° clamp** — *"a capsize, not a committed turn."* ⭐ **`model` is recommended; `design` is built, measured and not recommended.** `on` is deliberately not a value.
+* **Neither arm changes what is ASKED of the torso** (`ref θ_t` 0.00° over 48 asks), and **re-solving the gain row does not quiet the neutral wind-up** (of 7 cells reaching the stop, `design` has a larger peak in 6).
+* **Default byte-identity PROVED**: 1 235 trace lines, md5 identical both sides, **0 diff**. **Switch verified three ways** including on the real Canyon solver (54 of 54 past the stop, 0 non-zero off the switch), after three switches this week failed to reach the physics.
+* ⛔ **Stated gap: the analyzer's own bottom-turn columns — where the 42° / 40° / 0.296→0.995 m target lives — are NOT measured**, because a placed rider is not a turn the analyzer named. **An autopilot riding a named bottom turn is the first thing a next round should build.**
+* ⚠️ **The full 402-file vitest run was still going at hand-off; nothing merges until it is green.**
+
+## C. Clip 29 (`tqEm0RSmz6I`, the owner's own find) — the richest read in the series
+
+**Second take-off in 29 clips**, read blind and compared against an independent read afterwards (the seal held).
+
+* ⭐⭐ **The hands STAY PLANTED while the chest rises — 0.167 media s, five consecutive native frames.** *"The shipped push is one phase."* **A structural observation that needs no clock.**
+* ⭐⭐ **A GENUINE LOSS, and the answer is the opposite of the question every build asked: the board is the FIRST THING TO LEAVE.** It passes under and away; bare legs with nothing beneath them. **Then one arm sweeps a full arc for 0.60 s while the other stays in, knees tucked, head up — he NEVER REACHES FOR THE BOARD.** ⚠️ A failed inverted air in a **wave pool**, not a rail-engaged turn.
+* ⭐ **Gaze, third independent witness: 50 of 50 head up and along travel, 0 of 50 at the board or feet — and the head LEADS**, already down the line while the chest is flat on the deck. **The game has no gaze channel at all.** Arms: matched-low **5 of 16** (all trimming/recovering), asymmetric **9 of 16** (all inside a turn).
+* ⛔ **The slow-motion factor is REFUSED** because the rider inverts, so landmarks trace a **cycloid about the CoM, not a parabola**. ⚠️ **This undercuts clip 28's `k = 0.55`** — its premise is shown failing here. Not refuted (28's rider did not invert) but **it stays n = 1, and no real-second comparison with `PUSH_TIME` + `LANDING_TIME` is made anywhere.**
+* ⛔ **The sideways speed failed a FOURTH time for a FOURTH reason — the board's ends.** 28: wrong board attitude. 27: black wetsuit. **29: both right, and on every deck-on frame ONE END of the board is occluded**, so the axis is good to only ±10° (±70 px over the lever arm — the size of the signal) and **the board's length is never measurable, so there is no metric scale at all.** ⚠️ **And per the peer's correction it would not have given the quantity the code uses anyway** (CoM, relative to the board at the feet, projected off the felt vertical — which footage cannot supply).
+* ☠️ **A NEW trap that defeats both existing guards: the Shorts feed AUTO-ADVANCED to a different video mid-read.** **A picture hash passes it; so does a timestamp — both correct for the wrong video.** ⛔ **Put the video id in the guard** (`getVideoData().video_id !== ID` throws), use the watch page, set loop immediately.
+* ⚠️ Two honesty notes of its own: no whole-file cut scan (so **no claim of an unbroken ride**), and **it is a WAVE POOL** — body findings stand, not evidence about ocean waves.
+* ⚠️ **The two reads DISAGREE on the first visible foot: ~1.25 s against 0.6900 media s.** Unresolved; every pop-up duration hangs off it.
+
+## D. Where this leaves it
+
+**Eight attempts, zero movement on the fall.** What exists instead is a map of where it is not, three of my own claims withdrawn, and **one number that does not add up** (§A's last bullet), which a round is settling now. ⛔ **Nothing should be built before that reports and before the owner rules.**
