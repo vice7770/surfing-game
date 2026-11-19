@@ -36,8 +36,8 @@ feels** — these are bot rides with the stick at zero; only the owner's own rid
    it fires on **21 stands whose feet are dry**, including **12 of the 15 rides that lasted**. Mechanically,
    `into > SINK_RATE` is `V sin α` against the free surface — **what a planing hull does by construction**. Measured:
    `asin(into/V)` is **+2.60° at 6.21 m/s** on planing frames, a trim angle; and integrated over a surviving ride the
-   test claims **1.13 m of descent** while the board's draft moves **0.040 m** and never leaves the dry side of a
-   0.10 m band. **`sinking` is reading planing lift.**
+   test claims **1.13 m of descent** while the board's draft moves **0.040 m** in all and stays inside a band 0.10 m
+   wide — a **27.9×** over-read, and **217.7×** on seed 2's wave 1. **`sinking` is reading planing lift.**
 3. ⭐⭐ **The feet test, measured without the short-circuit, is the one condition every ride that lasted met.** Of **45
    stands with the feet under water, 0 lasted**; of **30 with the feet clear, 15 did**. The same holds for the two
    conditions it travels with: **0 of 47 non-planing stands lasted** and **0 of 56 below 4.400 m/s** through the water.
