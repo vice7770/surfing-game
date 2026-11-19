@@ -415,12 +415,30 @@ around between 0.50 s and 1.65 s and never produce a ride.)
 | `sinking` | **8** | **18** | my seed 1 (1 of 3) + #429's seed 2 (7 of 15) |
 | not refused | 3 | 8 | my seed 1 (3 of 5) + #429's seed 2 (0 of 3) |
 
-⭐ **`feet under water` is a death sentence and `sinking` is not.** And there is a mechanical reason the two differ,
-visible in the frames: `into > SINK_RATE` is motion **into the water relative to the flow**, which is also exactly what
-a planing surface at a positive angle of attack does. Measured over the 2 123 standing frames, `into > 0.3` holds in
-**47.9 % of planing frames** (median `into` **+0.280 m/s**) against **18.8 % of non-planing frames** (median
-**+0.194 m/s**). **The `sinking` test fires more than twice as often when the board is planing** — so it cannot
-distinguish a board going under from a board riding on its own lift, and the stands it refuses include the good ones.
+⭐ **`feet under water` is a death sentence and `sinking` is not.** And the reason the two differ is mechanical, and it
+can be put as arithmetic rather than as a correlation.
+
+`standRefusal`'s sinking test is `into > SINK_RATE`, where `into` is `−(v_rel · n̂)` — the board's velocity **relative
+to the local flow**, along the inward normal of the free surface. That is not a quantity peculiar to a board going
+under: **it is the defining kinematics of a planing surface**, whose whole lift is `∝ ρ V² sin α` for a trim angle α
+against the oncoming water. So `into ≈ V sin α`, and with `SINK_RATE = 0.3 m/s` the trim that trips it is:
+
+| speed through the water | trim angle that reaches `into = 0.3` |
+| --- | --- |
+| 3 m/s | 5.74° |
+| 4 m/s | **4.30°** |
+| 5 m/s | **3.44°** |
+| 6 m/s | **2.87°** |
+| 8 m/s | 2.15° |
+
+Planing trim on a board is a few degrees, so **above about 4 m/s the test is tripped by ordinary planing** — and 4 m/s
+is `PLANING_SPEED` itself. The measurement agrees and shows why it is a partial overlap rather than an identity: over
+the 2 123 standing frames, `into > 0.3` holds in **47.9 % of planing frames** (median `into` **+0.280 m/s** — just
+under the threshold, which is where a 3–4° trim at 4–5 m/s puts it) against **18.8 % of non-planing frames** (median
+**+0.194 m/s**).
+
+**So `sinking` cannot distinguish a board going under from a board riding on its own lift**, it fires more than twice
+as often on the latter, and the stands it refuses are disproportionately the good ones.
 
 **Which settles the design question.** `design.md` §4 plans to turn the refusal into a gate that lies the rider back
 down. On this evidence that gate would refuse **8 of the 9 rides in this study that lasted** (every `sinking` one), and
@@ -498,10 +516,11 @@ the rider's body does changes it, which is why every attempt on this track to fi
    because they are `sinking` stands and `sinking` is partly a detector of planing (47.9 % of planing frames against
    18.8 % of the rest). If a gate is wanted anyway, `feet under water` is the only one of the four verdicts that is
    actually predictive (**0 held of 29**).
-2. **If the `sinking` test is kept, it cannot stay as written.** `into > SINK_RATE` is motion into the water relative
-   to the flow, which a planing hull does by construction. **Cost:** today the test is report-only, so changing it
-   changes no behaviour at all; it would matter only to the HUD string and to any future gate. **No new force, no
-   hidden motor.**
+2. **If the `sinking` test is kept, it cannot stay as written.** `into > SINK_RATE` is `V sin α` against the free
+   surface, so at `PLANING_SPEED` itself a **4.3°** trim trips it and at 6 m/s a **2.9°** one does — ordinary planing
+   trim. A test meant to catch a board going under is reading the lift that holds it up. **Cost:** today the test is
+   report-only, so changing it changes **no behaviour at all** — it would reach only the HUD string and any future
+   gate. **No new force, no hidden motor; it is a measurement being corrected, not a rule being added.**
 3. **The lever is the board's speed through the water at the stand, and the take-off's handle on it is the press's
    timing.** Wave 10 shows +250 ms buying a ride. **Cost:** the cue's speed half (`speedShoreward ≥ 0.8 × crestSpeed`)
    is what makes the press late and high, and its geometric half has **no upper bound on face fraction** (`>= 0.5`,
