@@ -45,7 +45,15 @@ export interface RideFrame {
   timeScale?: number;
 }
 
-/** Shorter than this on the feet is a failed pop-up, not a ride. */
+/**
+ * Shorter than this on the feet is a failed pop-up, not a ride — **except a fall** (the owner's ruling of
+ * 2026-11-19). He wants every fall he stood up for in the Logbook, however short, because the shortest stands are
+ * exactly the ones he cannot explain; he does not want the fifty-entry list filling with aborted pop-ups.
+ *
+ * "Stood up for" is the outcome itself, not a second test: a ride only ever **begins** on a `standing` frame
+ * (`update`), so there is no path to a `wipeout` that did not stand. A pop-up that goes push → landing → fallen
+ * without ever reading `standing` never starts a ride and so is never logged, short or not.
+ */
 export const MIN_RIDE_SECONDS = 1;
 
 const RIDING = new Set<RideFrame['phase']>(['standing', 'recover']);
@@ -137,7 +145,13 @@ export class RideTracker {
       this.lastZ = frame.z;
       return undefined;
     }
-    if (frame.phase === 'fallen') return this.finish('wipeout', FALL_REASONS[frame.separation ?? 'balance']);
+    if (frame.phase === 'fallen') {
+      // The stand ends at the separation, not at the last frame that was still standing: with falls of a fraction of
+      // a second now logged, a stand of a single frame would otherwise measure exactly 0 and read as a zero where a
+      // number was measured. It adds at most one frame to a wipeout's time.
+      this.lastTime = frame.seaTime;
+      return this.finish('wipeout', FALL_REASONS[frame.separation ?? 'balance']);
+    }
     return this.finish('ended', 'ride.reason.retry');
   }
 
@@ -158,7 +172,7 @@ export class RideTracker {
     this.riding = false;
     this.retryNoted = false;
     const seconds = report ? report.duration : this.lastTime - this.startTime;
-    if (seconds < MIN_RIDE_SECONDS) return undefined;
+    if (seconds < MIN_RIDE_SECONDS && outcome !== 'wipeout') return undefined;
     // Only a wipeout carries a fall: a ride that ended with the rider still up has nothing that let go, and the
     // runner's latch would otherwise hand it the fall that ended the ride before.
     const fall = outcome === 'wipeout' ? this.broke : undefined;

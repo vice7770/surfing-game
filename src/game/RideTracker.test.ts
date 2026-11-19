@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RideReport } from './rideAnalysis';
-import { FALL_REASONS, RideTracker, type RideFrame } from './RideTracker';
+import { FALL_REASONS, MIN_RIDE_SECONDS, RideTracker, type RideFrame } from './RideTracker';
 
 const STEP = 1 / 60;
 
@@ -100,10 +100,55 @@ describe('RideTracker', () => {
     expect(ended).toMatchObject({ outcome: 'ended', reason: 'ride.reason.retry' });
   });
 
-  it('does not count a pop-up that fails at once', () => {
-    const tracker = new RideTracker();
-    const riding = frames('standing', 0.5, 3, start);
-    expect(feed(tracker, [...riding, { ...riding.at(-1)!, phase: 'fallen', separation: 'balance' }])).toEqual([]);
+  /**
+   * The owner's ruling of 2026-11-19: a fall he **stood up for** is logged however short it was, because the
+   * shortest stands are the ones he cannot explain; a pop-up that never stood is not, so the fifty-entry list does
+   * not fill with aborted ones.
+   */
+  describe('a stand shorter than a ride', () => {
+    const broke = { limit: 'posture' as const, across: false, speed: 4.1, steer: 0.6 };
+
+    it('logs a fall of a fraction of a second, with what let go', () => {
+      const tracker = new RideTracker();
+      const riding = frames('standing', 0.4, 3, start);
+      const [ride] = feed(tracker, [...riding, { ...riding.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const, broke }]);
+      expect(ride).toMatchObject({ outcome: 'wipeout', reason: 'ride.reason.balance' });
+      expect(ride.seconds).toBeGreaterThan(0);
+      expect(ride.seconds).toBeLessThan(MIN_RIDE_SECONDS);
+      // The worker publishes no reading for a ride this short, and the fall does not depend on one.
+      expect(ride.report).toBeUndefined();
+      expect(ride.fall).toEqual(broke);
+    });
+
+    it('logs a stand of a single step that falls', () => {
+      const tracker = new RideTracker();
+      const stood = { ...start, phase: 'standing' as const, seaTime: start.seaTime + STEP };
+      const fallen = { ...stood, phase: 'fallen' as const, separation: 'balance' as const, seaTime: stood.seaTime + STEP, broke };
+      const [ride] = feed(tracker, [stood, fallen]);
+      expect(ride.outcome).toBe('wipeout');
+      // Measured to the separation, so a single-frame stand is a small number and not a bare zero.
+      expect(ride.seconds).toBeCloseTo(STEP, 6);
+    });
+
+    it('does not log a short ride the rider was still standing at the end of', () => {
+      const outOfWave = new RideTracker();
+      const riding = frames('standing', 0.5, 3, start);
+      expect(feed(outOfWave, [...riding, { ...riding.at(-1)!, phase: 'prone' as const, resets: 1 }])).toEqual([]);
+
+      const restarted = new RideTracker();
+      feed(restarted, riding);
+      restarted.noteRetry();
+      expect(feed(restarted, [{ ...riding.at(-1)!, phase: 'prone' as const, resets: 1 }])).toEqual([]);
+    });
+
+    // A pop-up that never reads `standing` never begins a ride, so `wipeout` cannot be reached without a stand and
+    // the outcome is the stand test. This is what makes the one-word gate above correct.
+    it('never begins a ride without a stand, so a failed pop-up is not a short wipeout', () => {
+      const tracker = new RideTracker();
+      const push = frames('push', 0.4, 3, start);
+      const landing = frames('landing', 0.3, 3, push.at(-1)!);
+      expect(feed(tracker, [...push, ...landing, { ...landing.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const, broke }])).toEqual([]);
+    });
   });
 
   it('reports a finished ride once', () => {

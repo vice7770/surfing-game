@@ -82,6 +82,30 @@ describe('endingLine', () => {
     expect(endingLine(ride({ outcome: 'complete', reason: 'ride.reason.kickedOut' }))).toBe('Kicked out');
   });
 
+  /**
+   * The owner's ruling of 2026-11-19 makes a fall of a fraction of a second the shortest ride in the Logbook, and
+   * the worker publishes no reading for one, so **no detailed report is now the common case**. Nothing on this line
+   * comes from that report — the cause, the stand, the limit and the steer are all read live at the separation — so
+   * a short entry says as much as a long one.
+   */
+  it('reads a fall of a fraction of a second in full, with no detailed report behind it', () => {
+    const short = ride({ seconds: 0.42, distance: 1.3, topSpeed: 4.1, fall: { limit: 'posture', across: false, speed: 4.1, steer: 0.6 } });
+    expect(short.report).toBeUndefined();
+    expect(endingLine(short))
+      .toBe('Lost balance · stood 0.4 s · balance reserve ran out — which of weight, grip and knees is not recorded · turn asked 60 % left');
+    // The same ride once the worker has read it: the line does not change.
+    expect(endingLine({ ...short, report: { duration: 0.42, distance: 1.3, topSpeed: 4.1, meanSpeed: 3.1, pocketTime: 0, curlTime: 0, maneuvers: [], end: 'fell', timeScale: 1 } }))
+      .toBe(endingLine(short));
+  });
+
+  // No column of a short entry may round a measured number down to a bare zero.
+  it('never shows a short ride as zero', () => {
+    const model = logbookModel(log([ride({ seconds: 1 / 60, distance: 0.2, topSpeed: 1.4 })]), 'metric', now);
+    expect(model.recent[0].detail).toContain('<1 m');
+    expect(model.recent[0].detail).toContain('<0.1 s');
+    expect(model.recent[0].ending).toContain('stood <0.1 s');
+  });
+
   it('reads a stick barely off centre as what it is, not as a round zero', () => {
     expect(endingLine(ride({ fall: { ...fall, steer: 0.004 } }))).toContain('turn asked <1 % left');
   });
