@@ -4344,3 +4344,53 @@ Same wave, same stand to the frame, **identical through +0.30 s**, then one is a
 ⛔ **But the turn script sends `steer: ±1` AND `compress: 1` together, and Compress is exactly the half that would pull the legs in and unload the board.** This trace **cannot** say which half drops him. `TURN_STEER` and `TURN_COMPRESS` were added to the probe (both defaulting to 1, so every run taken reproduces) and the three arms — steer only, Compress only, both — are running.
 
 **Why this matters beyond the bench:** the owner plays on a **Steam Controller**, where Compress is pinned to full by a digital ramp (verified: `tritonProtocol.ts:48/:98`, `Controls.ts:152/:162/:188/:200`). **If Compress is the half that unloads the board, the input bug and the fall are the same story.** That is a hypothesis with one wave behind it, not a finding.
+
+---
+
+## 2026-11-19 (night) — ⚠️ **TWO OF MY CORRECTIONS WERE THEMSELVES WRONG, AND `sinking` TURNS OUT TO BE READING TRIM**
+
+The stand-refusal round delivered on `claude/the-record` (merge **1474c885**, 20 files, `main` untouched, `git diff` over `src` empty). **Two seas, 23 waves, 115 runs, 75 stands each followed its full 3 s window with 0 truncated.** It corrected me twice.
+
+### 1. ⚠️ I OVER-CORRECTED WAVE 6. It IS a survivor.
+
+This morning I struck *"wave 6 rode the 3 s out"* because its stand came at 16.0167 s against a 16 s trial cutoff — `fsN = 0`, one frame, never observed — and I then wrote **"seed 1 has zero observed survivors."** The strike on the EVIDENCE was right. **The conclusion was not: re-run with the window actually followed, seed 1's wave 6 holds 3.02 s.**
+
+> ⭐ **The artefact was in the evidence, not in the outcome.** The honest statement is: *#429 reported a survivor it had not observed, and when it is observed it survives.* **Wave 10 still fell at 0.70 s** and holds only with a 250 ms later press. **And the window itself is arbitrary — 3 s is `STAND_HOLD`, not a game-feel threshold; nothing longer has been measured.**
+
+**The error shape to keep:** having found the evidence invalid, I announced the opposite outcome instead of announcing that the outcome was unknown. **An invalid measurement does not license the negation of its claim.**
+
+### 2. ⚠️ "HE IS NOT PITCHING, HE IS GOING SIDEWAYS" overstates, and my own table said so
+
+I reported *"`along` is 1.0000 at both ends"* and told the owner he is not pitching. **My own output's next line reads `which of the three is LOWEST at the fall: {'across': 12, 'along': 2}`** — so `along` WAS the binding constraint on **2 of 14 falls**, and I quoted the median over it. The round's second sea found the same thing independently: *"the fall is sideways only"* held on seed 1 (2 of 2 123 frames along) and **fails on seed 2 — 132 of 3 744 frames, peak 0.488 m. A pearl does happen.**
+
+> **Corrected: the fall is PREDOMINANTLY lateral — `across` is lowest on 12 of 14 — and a minority of falls are longitudinal.** The wave-1 pair's `along` of exactly 1.0000 in all three scripts stands as a statement about that pair, not about the rider. The dead band is real ([[one-trace-is-not-a-number]]); what was wrong was reading "rarely challenged" as "never".
+
+### 3. ⭐⭐ `sinking` IS READING PLANING LIFT. A 27.9× OVER-READ.
+
+`standRefusal`'s `into > SINK_RATE` is **`V sin α` against the free surface — the defining kinematics of a planing hull.** Measured, `asin(into/V)` is **+2.60° at 6.21 m/s** (seed 1) and **+1.37° at 6.69 m/s** (seed 2) on planing frames: **those are trim angles.** The arithmetic closes — 6.21·sin(2.60°) = 0.282 against a measured median `into` of 0.280.
+
+> ⭐ **Integrated over a surviving 3 s ride the test claims 1.13 m of descent while the board's draft moves 0.040 m end to end — a 27.9× over-read (217.7× on seed 2's wave 1). At `PLANING_SPEED` itself a 4.30° trim trips it.** So the readout tells the owner *"board sinking, not planing yet"* about a board that is planing, **and because `sinking` returns at `:2789` before a foot is sampled at `:2790` it also HIDES wet feet on 5 stands whose feet were 0.84–0.99 m under.** Fixing it changes **no behaviour today** — the value has no branch.
+
+**And `standRefusal` has no consumer that branches**: written at `AttachedRider.ts:2737`, copied at `SurfZoneRunner.ts:1183`, rendered as a dev string at `PhysicalMode.ts:293/364`. `stand − press` is **{1.2}, one distinct value over all 75 stands, 29 refused and 5 unrefused alike.** ⚠️ **But `design.md` §4 plans to make it a gate, and costed over 75 stands the flag is the worst of four candidates: it refuses 66 of 75 and destroys 12 of the 15 rides that lasted. Gating on the FEET destroys 0.**
+
+### 4. ⭐⭐ THE PHYSICAL ROOT, AND IT IS IN THE CATCH
+
+**`referenceFlotation()`: a 25.75 L board floats 26.4 kg of a 75.54 kg system — 65.1 % unsupported, a 49.15 kg deficit.** Verified at source (`boardReference.ts:21/23`, `REFERENCE_RIDER.mass` 73 + board 2.54); **the repo's own test is titled *"cannot float its rider at rest, so standing needs planing lift"***. So it is designed, not broken.
+
+**The pop-up's own 1.2 s is what puts the feet under**: it takes the body out of the water, removes its buoyancy, and hands the board the whole 75.5 kg. Where the board has speed, planing lift answers and the board **rises**; where it has not, it sinks. Worst foot past `FEET_DEPTH`: paddling 25 of 75, **at the cue 2 of 48** (0 of 28 on seed 2), at the press 24, at push→landing 37, **at the stand 45**. ⭐ **So where the cue puts him is decisively NOT it** (deck under the feet +0.011 / −0.015 m at the cue).
+
+> ⭐⭐ **And the quantity is set by the CATCH, not the cue: the paddle tops out at 3.7 m/s against crests at 5.3–5.5 m/s.** Survivors had planing (0 of 47 non-planing lasted), speed ≥ 4.400 m/s (0 of 56 below) and dry feet (0 of 45 wet) — at 54 %, 79 % and 50 %, so **none is sufficient**, and the four properties are one fact: **a hull carrying its load dynamically.** Face position, slope, distance ahead of the crest and landing peak **separate nothing, on either sea.**
+
+**Every take-off handle was measured and none works:** the press-timing sweep changed the outcome on **3 of 12 waves — once better, twice worse**; `early` stands 21 of 23 and holds **0** (median fall 0.467 s, board buried 0.274–0.992 m).
+
+### 5. Three more hits on #429, and a caveat on the round's own §3
+
+* **#429's "the balance margin collapses" reads the wrong quantity.** `balanceMargin` is the smoothed `rawMargin` and **is not the new rider's fall test**: in #429's own wave-8 trace it had **risen back to 0.234** at the separating frame, and elsewhere it bounces 0.891 → 0.000 → 0.788 → 0.199, **touching zero twice without a fall.**
+* **#429's placement comparison is a 1 s artefact** — followed 3 s, **all 15 placements fall** (0.950–2.933 s). **Speed buys time, not survival.**
+* **The fall test's conjunction is never visible on a live frame**: `beyond && weightPast` both-true on **0 of 2 123** and **0 of 3 744** frames — it is reached inside a substep. ⛔ **Anyone probing "what fails first" off the conjunction measures nothing.** (My own reading used `across`/`along`/`grip` and `limit`, not the conjunction.)
+* **CoP-pinned, a third independent measurement**: `limitTime.tip > 0` at **97.6 % / 100.0 %** against `limit === 'tip'` at **21.3 % / 11.0 %** — factors of **4.6 and 9.1**, beside my 100.0 / 15.0 and ratio 6.66. Same phenomenon, three populations.
+* ⚠️ **CAVEAT ON ITS §3, and it is the bench/owner gap again.** It reports the planing latch **causally inert** because the lean cap's request `leanWant` is **0 in all 2 123 + 3 744 standing frames** — *with the stick at zero*. **My own steer runs have a non-zero ask and a cap of 0.30–0.95.** So the latch is inert **in that round's population and not in the owner's gameplay**, and the inertness must not be carried over to a ride with input.
+
+### 6. And I starved its machine
+
+Two of its runs — the pre-registered `?askCap=4.5` bit-identity test and a `STAND_HOLD=8` window — **were killed because another session's heavy process dropped its worker to 68 % of a core.** **That was almost certainly my three concurrent benches.** No number comes from them, and the commands are in its appendix. **Lesson: this project's benches are single-machine and 20 minutes each; two rounds cannot run heavy at once.**
