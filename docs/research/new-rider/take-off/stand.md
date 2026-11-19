@@ -73,7 +73,22 @@ one consumer outside the write itself and the test suite:
 (The other files that match `refusal` — `App.ts`, `MultiplayerScreen.ts`, `OnlineController.ts` — are the multiplayer
 room's own unrelated `Refusal`.)
 
-**So "the stand is refused" is not a statement about the physics of that ride.** The code says so in its own comment:
+**And it is measured as well as read.** The brief's question was whether the stand *does not happen, happens late, or
+happens anyway in a worse state*. Over seed 1's **34 stands**, 29 of them refused and 5 not:
+
+| | |
+| --- | --- |
+| distinct values of `stand − press` | **{1.2}** — one value, over all 34 |
+| the same, over the **29 refused** stands | **{1.2}** |
+| the same, over the **5 unrefused** stands | **{1.2}** |
+| distinct values of `popUpReport.duration` | **{1.201042}** |
+| distinct values of `popUpReport.outcome` | **{'stood'}** — 34 of 34 |
+
+**The stand happens, it happens on time, and it happens in the state the physics left it in.** `PUSH_TIME` 0.72 +
+`LANDING_TIME` 0.48 = 1.20 s, whatever the refusal says. **The refusal costs nothing, in any of the three senses the
+question allowed.**
+
+The code says so in its own comment:
 *"The rider stands whatever the board can carry (the playtest: laid back down on its own, it seemed a fault); a stand
 without support is noted, and the physics decides what follows."* The 12-of-18 figure has no causal path to the fall;
 it can only be a **correlate**, and Part 5 measures whether it is even that.
