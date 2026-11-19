@@ -423,9 +423,10 @@ one wave, one sea, identical paddling, the press moved by a quarter and a half s
 | `cued500` | 7.52 s | 8.72 s | **4.56 m/s** | 0.442 | 0.78 | 18.0° | 0.206 m² | dry | **held 3.00 s** |
 
 **A quarter of a second of delay turned a 0.70 s ride into a 3 s one**, and it did so by standing the rider a little
-lower on a slightly steeper face with 0.16 m/s more speed through the water. The boundary is that sharp. (On the waves
-where no stand reaches 4 m/s at all — 7, 8, 11, 12, with latch speeds of 2.1–3.7 — the same delays move the fall
-around between 0.50 s and 1.65 s and never produce a ride.)
+lower on a slightly steeper face with 0.16 m/s more speed through the water. The boundary is that sharp — and ⚠️ **the
+latch is on both sides of it**: `cue` is already planing at 4.26 m/s and falls. Part 6 has the whole delay sweep, which
+shows this is **not** a general fix: it changed the outcome on this wave alone, did nothing orderly on three others,
+and cost the rider the board during the pop-up on a fifth.
 
 **Across the two seas, the refusal's two categories mean opposite things:**
 
@@ -535,9 +536,29 @@ generalisation was drawn from a population that happened to contain no such ride
 **What it costs, and why this is narrow.** The take-off's only handles on that speed are *when* the press happens and
 *how fast the paddle got the board going*, and the cue sits on the late edge of a narrow window:
 
-* **press later** (wave 10, +250 ms): speed through the water 4.26 → 4.42 m/s, and a 0.70 s ride becomes a 3 s one.
-  But on a wave that cannot reach 4 m/s at all (waves 7, 8, 11, 12, at 2.1–3.7 m/s) the same delay buys nothing —
-  it moves the fall between 0.50 s and 1.65 s and never produces a ride;
+* ⭐ **press later — but it is not a fix, it is a way of reaching the speed where the speed is there to reach.** The
+  whole delay sweep, every wave on seed 1 that pressed at all (`results/stand-seed1-popdelay.txt`; `V` is the speed
+  through the water at the stand):
+
+  | wave | `cue` | `cued250` | `cued500` |
+  | --- | --- | --- | --- |
+  | 6 | V 4.42 → **HELD** | ☠️ no press (see below) | ☠️ no press |
+  | 7 | V 3.51 → fell 1.733 | V 3.45 → fell 1.000 | V 3.33 → fell 1.233 |
+  | 8 | V 3.52 → fell 0.750 | V 3.66 → fell 1.650 | V 3.64 → fell 0.950 |
+  | **10** | **V 4.26 → fell 0.700** | **V 4.42 → HELD** | **V 4.56 → HELD** |
+  | 11 | V 3.72 → fell 0.683 | ⚠️ **lost the board during the pop-up** | ⚠️ **lost the board** |
+  | 12 | V 2.37 → fell 0.633 | V 2.22 → fell 1.100 | V 2.12 → fell 0.500 |
+
+  **It helped on one wave of the five where it could be measured, did nothing coherent on three, and cost the rider
+  the board on one.** On waves 7, 8 and 12 the delay moves `V` by ±0.15 m/s and the fall wanders between 0.50 s and
+  1.65 s with no order to it. Wave 10 is the only wave where the delay carries `V` across about **4.4 m/s**, and it is
+  the only wave where the outcome changes. ⚠️ **And note that the latch is not the boundary**: wave 10 `cue` is already
+  **planing** at V = 4.26 and falls; the three stands that hold are at **4.42–4.56**. `PLANING_SPEED` is 4. So what
+  separates them is the **continuous speed**, not the latch — which is Part 4.1 again from the take-off's side;
+  ☠️ **two of this probe's own limitations are visible in that table and are not visible in a summary**: wave 6's
+  delayed presses would have landed after `TRIAL − 1` s, so the rider was retired as "never popped" and **wave 6 has
+  no delay measurement at all**; and wave 11's delayed presses put the rider somewhere that **cost him the board
+  during the 1.2 s**, which reads as "no stand" rather than as a fall;
 * **press earlier** is measured and it is much worse. The `early` rule (2 s before the crest arrives) stands the rider
   on a board buried **0.598–0.992 m** at the feet over **0.579–0.621 m²** of hull, and every one of those 11 stands
   fell, in **0.350–1.767 s**, median 0.400 s. #429 found the same thing on the waves the cue ignores;
@@ -562,12 +583,15 @@ the rider's body does changes it, which is why every attempt on this track to fi
    trim. A test meant to catch a board going under is reading the lift that holds it up. **Cost:** today the test is
    report-only, so changing it changes **no behaviour at all** — it would reach only the HUD string and any future
    gate. **No new force, no hidden motor; it is a measurement being corrected, not a rule being added.**
-3. **The lever is the board's speed through the water at the stand, and the take-off's handle on it is the press's
-   timing.** Wave 10 shows +250 ms buying a ride. **Cost:** the cue's speed half (`speedShoreward ≥ 0.8 × crestSpeed`)
-   is what makes the press late and high, and its geometric half has **no upper bound on face fraction** (`>= 0.5`,
-   no ceiling) so it will light at 0.875 up the face, where nothing survives. Capping the face fraction would mostly
-   stop the cue lighting rather than move it down the face, because the two halves do not come true together. **Any
-   change here is a change to when the HUD says "POP UP NOW" — it adds no force.**
+3. **The lever is the board's speed through the water at the stand — about 4.4 m/s on this sea — and the take-off's
+   only handles on it are the press's timing and the catch.** **Cost, and it is the reason this is not a one-line
+   fix:** the delay sweep changed the outcome on **one wave of five** (wave 10), did nothing orderly on three, and cost
+   the rider the board on the fifth; and the cue's speed half (`speedShoreward ≥ 0.8 × crestSpeed`) is what makes the
+   press late and high, while its geometric half has **no upper bound on face fraction** (`>= 0.5`, no ceiling), so it
+   will light at 0.875 up the face where nothing survives. Capping the face fraction would mostly stop the cue lighting
+   rather than move the press down the face, because the two halves do not come true together. **Any change here is a
+   change to when the HUD says "POP UP NOW" — it adds no force.** The honest reading is that the catch, not the cue,
+   is where the speed would have to come from.
 4. ⚠️ **Do not look for this in the rider's lean authority.** `leanWant` is **0 in all 2 123 standing frames**, so the
    planing gate on the cap binds nothing; and `?askCap=4.5`, which ungates it, produced **the earliest fall in #429's
    whole study (0.42 s)**. This route is measured and it does not work.

@@ -274,6 +274,54 @@ def place(rows):
               f"{fmt(r['wetMed'],3):>7s} {fmt(r['depthMed'],3):>8s} {fmt(r['rollPeak'],1):>6s}")
 
 
+def delay(rows):
+    """⭐ The pop-delay lever, wave by wave: the same wave, the same water, the same paddling, the press moved.
+
+    ☠️ Two limitations of this probe, printed because they are invisible in the table: a delayed press that would fall
+    after `TRIAL - 1` s never happens (the rider is retired as "never popped"), and a delayed press can put the rider
+    somewhere that costs him the board during the 1.2 s, which reads as `no stand`, not as a fall.
+    """
+    sums = [r for r in rows if r.get('summary')]
+    scripts = [s for s in dict.fromkeys(r['script'] for r in sums) if s.startswith('cue')]
+    print(f'## the press moved past the cue: {", ".join(scripts)}')
+    print('   (V is the board\'s speed THROUGH the water at the stand, which is what `planingStep` tests against 4 m/s)')
+    print()
+    print('  wave | ' + ' | '.join(f'{s:^27s}' for s in scripts))
+    for w in sorted({r['wave'] for r in sums}):
+        cells = []
+        for s in scripts:
+            m = [r for r in sums if r['wave'] == w and r['script'] == s]
+            if not m:
+                cells.append(f'{"(no run)":27s}')
+                continue
+            r = m[0]
+            if not r['stood']:
+                out = 'no stand' if r['popped'] else 'no press'
+                if r['popped'] and r['cause']:
+                    out = f"lost it: {r['cause']}"
+            elif r['heldFull']:
+                out = 'HELD'
+            elif r['truncated']:
+                out = 'TRUNCATED'
+            else:
+                out = f"fell {r['fellAfterStand']:.3f}"
+            a = r.get('atStand') or {}
+            cells.append(f"pop {fmt(r['pop'], 2):>5s} V {fmt(a.get('latchSpeed'), 2):>5s} {out:13s}")
+        print(f'  w{w:3d} | ' + ' | '.join(cells))
+    print()
+    print('## riders that popped and never stood (they lost the board or slipped during the 1.2 s)')
+    for r in sorted(sums, key=lambda r: (r['wave'], r['script'])):
+        if r['stood'] == 0 and r['popped'] == 1:
+            print(f"   w{r['wave']:2d} {r['script']:8s} pressed {fmt(r['pop'], 2)} s, outcome {r['popOutcome']}, "
+                  f"fell {fmt(r['fell'], 2)} s, cause {r['cause']}")
+    print()
+    print('## ☠️ delayed presses that never happened: the rule fired but the press would land past TRIAL - 1 s')
+    for r in sorted(sums, key=lambda r: (r['wave'], r['script'])):
+        if r['popped'] == 0 and r['rule'] is not None:
+            print(f"   w{r['wave']:2d} {r['script']:8s} rule at {fmt(r['rule'], 2)} s, delay {r['delay']:.2f} s, "
+                  f"never pressed — this wave has NO delay measurement")
+
+
 def standtrace(rows, wave, scripts, every=4):
     """The standing frames of one wave under several pop timings, side by side: the lever test on one wave."""
     for script in scripts:
@@ -350,6 +398,8 @@ if __name__ == '__main__':
         channels(rows)
     elif args[0] == '--standtrace':
         standtrace(rows, int(args[1]), args[2].split(','))
+    elif args[0] == '--delay':
+        delay(rows)
     elif args[0] == '--trace':
         trace(rows, int(args[1]), args[2])
     elif args[0] == '--control':
