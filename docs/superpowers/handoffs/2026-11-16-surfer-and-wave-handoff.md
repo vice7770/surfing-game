@@ -3986,3 +3986,38 @@ Two attempts here: **0.54 (0.43–0.67)** and **0.76 (0.70–0.82)**. **They do 
 2. ⛔ **A cross-correlation pan tracker DISCARDED: a coconut grove aliases it**, and **its own self-check aliased identically and CERTIFIED it** at three epochs before failing at three more. **"Measure the backdrop's spatial period first; a consistent aliaser is still an aliaser."**
 3. ⭐ **A NEW `document.hidden` split that reverses the series' working assumption: `drawImage` KEPT DECODING NEW FRAMES CORRECTLY while the screenshot compositor froze and `requestAnimationFrame` stopped.** **"Numeric analysis stays sound; only the picture lies."** **All three failures of clip 21's composite cure happened in this state — un-hide the pane rather than repaint harder**, and **`show_pane` reported success without clearing `document.hidden`.**
 4. ☠️ **The Browser pane CLOSED ITSELF mid-read** — a third distinct way to lose the tab. ☠️ **The screenshot size changed FOUR times**, the same viewport gave three sizes, and **at small sizes the canvas is CLIPPED, NOT SCALED.** ⛔ **`setPlaybackQualityRange` killed the stream on this Short** (readyState 0); a plain reload restored 1080×1920 without it.
+
+---
+
+## 2026-11-19 — ⭐⭐⭐ WHAT `?trunk=mass` ACTUALLY DOES TO THE DRAWN RIDER (PR #431): IT WELDS HIS TRUNK TO THE BOARD
+
+**Measured from the POSED BONES' world matrices** (`mixamorigHips/Spine/Neck/Left+RightShoulder`) and the board quaternion — **never from `wanted`, `hingeAngle` or `physicsTrunk`**, so the switch's own variables cannot confirm it by construction. Live on his address, four take-offs per arm, plus an exactly-matched headless sweep of 22 standing poses where the switch is the only variable.
+
+| arm | frames | spine→neck | shoulders→hips |
+|---|---|---|---|
+| **without `&trunk=mass`** | 7 | **+39.8°** | **+41.6°** |
+| **with** | 14 | **−0.4°** | **+2.5°** |
+
+**The populations do not overlap anywhere** — a ~40° gap against a 24° (off) / 9° (on) within-arm spread. **The matched sweep agrees: trim +16.2 → +1.0, drop +37.5 → +1.7, tube-frontside +48.8 → −3.0, kick-out +16.0 → +1.4.** Live: `physicsTrunk` **false 3/3** without and **true 24/24** with; `hingeAngle` **32.1° → 36.7° rising** without, **31.1° → 0.91°** with.
+
+### ⚠️ One correction to my word, and one finding that beats my hypothesis
+
+**"DELETE" overstates it.** `wanted = 0` does not remove the fold outright — **`hingeAngle` is followed and rate-limited, so the landing's fold WALKS OUT over ~0.4–0.6 s of standing**, exactly as the code comment at `:1405` promises. Same end state, different first frames.
+
+> ⭐⭐ **AND THE BIGGER FINDING REFUTES MY STORY: it does not make him stand upright. IT WELDS THE DRAWN TRUNK TO THE BODY'S OWN AXIS, WHICH IS THE BOARD'S.** The signature is unmistakable — with the switch on, **top-turn-frontside and top-turn-backside land on −36.0° and +37.0°, near MIRROR IMAGES**, because the trunk is no longer folding over the toes at all, just standing **normal to a rolled deck.**
+
+**So there are two wrong riders in one switch:**
+
+1. **Flat board** (trim, drop, pumping, tube tuck): the 16–49° fold vanishes and **he stands bolt upright.** My hypothesis, confirmed.
+2. ⭐ **ROLLED board — every frontside turn: he does NOT straighten, he falls BACK ONTO HIS HEELS by 30–36°** (snap-frontside −8.4 → −30.1, cutback-frontside −7.8 → −34.1), where without the switch he was within 8–14° of plumb. **`trim-backside` crosses plumb entirely, +4.6 → −12.4.** **Nobody had looked for this, and it is the uglier of the two — and it explains "messes up the balance completely" far better than "stands upright" does.**
+
+### Honest limits, stated by the round
+
+- ⚠️ **The screenshot pair could not be taken.** At the default camera the rider is **~25 px tall** and the stand lasts well under a second of sim; the round-trip missed the standing window every attempt. It fell back to the drawn points as the brief directed. **Nobody has yet seen these two riders side by side in a picture — the owner's eye remains the open check.**
+- **The live arms are two populations, not paired frames** (same spot, address and scripted input, but a different sea clock and different speeds). **The matched sweep carries the weight.** Live samples are small: 7 off, 14 on, and the `physicsTrunk false` reading is only 3 frames.
+
+### Two things that cut against the brief
+
+- ⚠️ **This says NOTHING NEW about why he falls.** Standing windows were short in **both** arms (2–8 frames per take-off), consistent with #429. **If "falls immediately" is a separate complaint from "balance messed up", this does not explain it** — and his sentence contained both.
+- ⭐ **Why every bench was blind is now explicit: `renderPoint` and `AttachedRider.parts` are UPSTREAM of the rig — they are the hinge's INPUT, not its output. Any bench reading them cannot see this.** That is the structural reason #426 and #429 both measured "no change" while the owner saw a different rider.
+- ⚠️ **And a correction to a recorded memory: with the browser pane hidden the game advances 0.00 s of sim in 2 s of wall time — it does not run at all**, rather than running at ~1.5 fps. **Fronted, it still ran ~22× slower than real time.**
