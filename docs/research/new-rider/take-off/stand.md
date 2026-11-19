@@ -12,8 +12,9 @@ wetted hull* — which of those four is the cause?
 1. **The refusal costs nothing.** `standRefusal`'s return value has exactly **one** consumer in the whole source tree
    — a string in the dev-tools readout. The stand happens on the next line whatever it says, and no force, no
    threshold and no phase anywhere reads it. It is a label, not a gate (Part 1).
-2. **⭐⭐ `design.md` §4 plans to turn it into a gate (*"That goes"*). On the flag as written that would be a
-   disaster, and on its feet test alone it would be free.** Over **75 stands on two seas** (Part 5.4):
+2. **⭐⭐ `design.md` §4 plans to turn it into a gate (*"That goes"*). Costed over 75 stands on two seas, the flag as
+   written is the worst of the four candidates and its feet test the least costly** — ⛔ **a costing, not a proposal,
+   and not a licence for a speed or wet-feet veto on standing** (Part 5.4):
 
    | gate on … | refuses | destroys, of the 15 rides that lasted |
    | --- | --- | --- |
@@ -28,10 +29,11 @@ wetted hull* — which of those four is the cause?
    `asin(into/V)` is **+2.60° at 6.21 m/s** on planing frames, a trim angle; and integrated over a surviving ride the
    test claims **1.13 m of descent** while the board's draft moves **0.040 m** and never leaves the dry side of a
    0.10 m band. **`sinking` is reading planing lift.**
-3. ⭐⭐ **The feet test, measured without the short-circuit, is the one perfect predictor in this study.** Of **45
-   stands with the feet under water, 0 lasted**; of **30 with the feet clear, 15 did**. It is **necessary and not
-   sufficient**, and so are the two conditions it travels with: **0 of 47 non-planing stands lasted**, and **0 of 56
-   stands below 4.400 m/s through the water** (Part 5.4).
+3. ⭐⭐ **The feet test, measured without the short-circuit, is the one condition every ride that lasted met.** Of **45
+   stands with the feet under water, 0 lasted**; of **30 with the feet clear, 15 did**. The same holds for the two
+   conditions it travels with: **0 of 47 non-planing stands lasted** and **0 of 56 below 4.400 m/s** through the water.
+   ⛔ **None of the three is sufficient and none is a gate**: on one wave the stands at 4.64 and 4.83 m/s held and the
+   **fastest, at 4.88, fell** (Part 5.4).
 4. **The feet are under water because a 25.75 L board cannot float a 73 kg rider, and the pop-up is what hands it the
    whole job.** Fully submerged, the board displaces **26.4 kg of a 75.5 kg** system — **65 % unsupported, a 49.2 kg
    deficit** that only planing lift or the rider's own body in the water can find (`boardReference.referenceFlotation`,
@@ -553,12 +555,19 @@ carried the full window, 60 fell, 0 truncated.** The 15 came from **5 distinct w
 | planing **and** the feet wet | — | 0 of 0: **a planing stand always has dry feet** |
 | not planing **and** the feet dry | 0 / 2 | both are seed 2 wave 5 at V = 3.734, depth **+0.097 m** — 3 mm inside `FEET_DEPTH` |
 
-**Three necessary conditions, none sufficient, and they are the same condition three times.** Nothing that lasted
-stood off the plane, below 4.400 m/s through the water, or with a foot's deck more than `FEET_DEPTH` under the
-surface; and the one stand pair that is dry without planing sits **3 mm** inside the threshold at **3.73 m/s**. For
-this board and this rider, **`FEET_DEPTH = 0.1 m` and `PLANING_SPEED = 4 m/s` are describing the same transition** —
-the deck comes clear of the water exactly when the hull begins to carry its load dynamically. That is not a
-coincidence; it is the 49 kg deficit of Part 3 being paid.
+**Three conditions that every ride that lasted met, none of them sufficient, and they are the same condition three
+times.** Nothing that lasted stood off the plane, below 4.400 m/s through the water, or with a foot's deck more than
+`FEET_DEPTH` under the surface; and the one stand pair that is dry without planing sits **3 mm** inside the threshold
+at **3.73 m/s**. For this board and this rider, **`FEET_DEPTH = 0.1 m` and `PLANING_SPEED = 4 m/s` describe the same
+transition** — the deck comes clear of the water exactly when the hull begins to carry its load dynamically. That is
+not a coincidence; it is the 49 kg deficit of Part 3 being paid.
+
+⛔ **Read 4.400 m/s as the MINIMUM OF THE OBSERVED SURVIVORS, not as a threshold, and do not turn it into a gate.**
+It is a descriptive bound on 15 runs, and within the survivors' own range **more speed is not better**: on seed 2 wave
+1, the same wave and the same paddling, the stands at **4.64 and 4.83 m/s held the full window and the one at 4.88 m/s
+— the fastest of the three — fell at 0.817 s.** Seed 2 wave 6 holds **4.35–4.79 m/s** and falls at 1.9–2.3 s. **Entry
+speed and wet feet are diagnostic context for why a stand is in trouble; neither is a condition the game should test
+before letting a player stand up.**
 
 **And now the game's own verdict against the measured feet:**
 
@@ -748,11 +757,25 @@ generalisation was drawn from a population that happened to contain no such ride
   delayed presses would have landed after `TRIAL − 1` s, so the rider was retired as "never popped" and **wave 6 has
   no delay measurement at all**; and wave 11's delayed presses put the rider somewhere that **cost him the board
   during the 1.2 s**, which reads as "no stand" rather than as a fall;
-* **press earlier** is measured and it is much worse. The `early` rule (2 s before the crest arrives) stands the rider
-  on a board buried **0.598–0.992 m** at the feet over **0.579–0.621 m²** of hull, and every one of those 11 stands
-  fell, in **0.350–1.767 s**, median 0.400 s. #429 found the same thing on the waves the cue ignores;
-* **the `lift` rule is not a third option at this spot.** On every wave where the cue lights, `lift`'s numbers are
-  identical to `cue`'s to every decimal, because the cue fires first.
+* ⭐ **press earlier** is measured and it is the clearest negative result in the round. **Every pop rule, both seas,
+  23 waves each:**
+
+  | pop rule | runs | pressed | stood | **held 3 s** | fell | median fall | the feet at the stand |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | `cue` — the game's own | 23 | 13 | 13 | **4** | 9 | **0.750 s** | +0.113 … +0.396 |
+  | `cued250` — 250 ms late | 23 | 12 | 11 | **4** | 7 | 1.000 s | — |
+  | `cued500` — 500 ms late | 23 | 12 | 11 | **3** | 8 | 0.850 s | — |
+  | `lift` — a player's own feel | 23 | 20 | 19 | **4** | 15 | 0.683 s | — |
+  | ⭐ **`early` — 2 s before the crest** | 23 | **22** | **21** | **0** | **21** | **0.467 s** | ⭐ **+0.274 … +0.992 m** |
+
+  **`early` stands 21 times out of 23 and never once gives a ride.** Its stands are on a board buried **0.274 to
+  0.992 m** at the feet over **0.579–0.621 m²** of hull. Standing earlier does not buy a better platform; it buys a
+  wetter one — #429's own words, now on the waves the cue *does* light as well as the ones it ignores.
+  **And `cue`'s own median fall of 0.750 s is #429's figure to the digit**, over a wider population: the drive
+  reproduces.
+* **The `lift` rule is not a third option at this spot.** On every wave where the cue lights, `lift`'s numbers are
+  identical to `cue`'s to every decimal, because the cue fires first; its extra value is that it catches the waves the
+  cue ignores (20 presses against 13), and it holds the same 4.
 
 So the honest answer to the brief's fourth question: **a longer ride is reachable — 15 of 75 stands on 5 of 23 waves —
 the requirement is a hull on the plane at the stand, and the take-off meets it on about one wave in five at Canyon B,
@@ -765,13 +788,15 @@ the catch**, which is why every attempt on this track to find the fix in the rid
 
 **Nothing here was changed.** These are what the measurements imply, each with what it would cost.
 
-1. ⭐⭐ **If `standRefusal` becomes the gate `design.md` §4 plans, gate it on the FEET, never on the flag.** Measured
-   over 75 stands: the flag refuses **66 of 75** and destroys **12 of the 15** rides that lasted; the `'sinking'`
-   verdict refuses 26 and destroys the same 12; **the feet refuse 45 and destroy 0.** **Cost of gating on the feet:**
-   the player would press and **not get up on 45 of 75 take-offs (60 %)** at Canyon B, Medium — he would trade a
-   0.4–0.9 s stand-and-fall for not standing at all. **Whether that is better is a game-feel judgement and the
-   owner's alone.** What the measurement settles is that it costs **none** of the rides that work, and that the flag as
-   written costs 80 % of them.
+1. ⭐⭐ **A costing of the gate `design.md` §4 already plans — NOT a proposal to build one, and explicitly not a speed
+   or wet-feet veto on standing.** ⛔ **Nothing here licenses a pop veto.** These counts say which stands each
+   candidate test would have refused on two seas with the stick at zero; they are diagnostic context, not a threshold:
+   the flag refuses **66 of 75** stands and would have destroyed **12 of the 15** rides that lasted; the `'sinking'`
+   verdict refuses 26 and destroys the same 12; the `'feet under water'` verdict refuses 40 and destroys **0**; the
+   feet measured refuse 45 and destroy **0**. **If a gate is built at all, the flag as written is the worst of the four
+   and the feet the least costly** — and even the feet would mean the player pressing and **not getting up on 45 of 75
+   take-offs (60 %)** at Canyon B, Medium, trading a 0.4–0.9 s stand-and-fall for not standing. **Whether any of that
+   is better is a game-feel judgement and the owner's alone, on his own rides.**
 2. ⭐ **The `sinking` test is wrong as written, and fixing it changes no behaviour today.** `into > SINK_RATE` is
    `V sin α` against the free surface, so at `PLANING_SPEED` itself a **4.30°** trim trips it and at 6 m/s a **2.87°**
    one does — ordinary planing trim. Measured: `asin(into/V)` is **+2.60°** at 6.21 m/s (seed 1) and **+1.37°** at
@@ -786,11 +811,13 @@ the catch**, which is why every attempt on this track to find the fix in the rid
    **0.84–0.99 m** under, so the dev-tools readout tells the owner *"board sinking, not planing yet"* about a board
    whose real problem is that his feet are a metre under the surface. **Cost of reordering: nothing at all** — the
    function's return value has one consumer, a string.
-4. **The lever is the board's speed through the water at the stand — necessary at about 4.4 m/s on both seas — and the
+4. **The quantity that decides it is the board's speed through the water at the stand — every ride that lasted had at
+   least 4.400 m/s of it, though more is not better and ⛔ it is not a condition to test for — and the
    take-off's handle on it is the CATCH, not the cue.** ⚠️ **Cost, and it is why this is not a one-line fix:** the
    press-timing sweep **is not a lever** — over the 12 waves where it could be measured it changed the outcome on
    three, **once for the better and twice for the worse**, one of those while gaining speed. Pressing **earlier** is
-   measured and much worse (a board buried 0.60–0.99 m at the feet, every one of those stands dead inside 1.77 s).
+   measured and it is the round's clearest negative: the `early` rule stands **21 of 23** riders and **holds 0**, on a
+   board buried **0.274–0.992 m** at the feet, median fall **0.467 s**.
    The cue's speed half (`speedShoreward ≥ 0.8 × crestSpeed`) is what makes the press late and high, while its
    geometric half has **no upper bound on face fraction** (`>= 0.5`, no ceiling) so it will light at 0.875 up the face;
    but the two halves do not come true together, so capping the face fraction would mostly stop the cue lighting rather
@@ -840,6 +867,19 @@ observed is not thereby false.
   change the entry sweep, which is a placed rider with the steer at zero too.
 * **The bench's riders do not push the water** (`addReaction` is a no-op), inherited from `catch-probe` through #429.
   A single rider whose reaction reaches the solver is the one fidelity gap left in the drive.
+* ⚠️ **And the bench bypasses `Controls` entirely** — `stand.ts` builds a `RideInput` object and hands it straight to
+  `RideSession.step`, as every bench on this track does. **So a second reason bench and owner can disagree, beside the
+  planing latch of #429 Part 4, is the input layer.** Read at source for this round (a finding handed to me, verified
+  here): on a Steam Controller a trigger past **`TRIGGER_PRESS = 0.12`** (`tritonProtocol.ts:48`) becomes a **digital**
+  button (`:98`, `buttons: values.map(… index === 6 || index === 7 ? value > TRIGGER_PRESS : value > 0)`);
+  `Controls.ts:152` folds the pad's digital buttons into `has()`, `:162` sets `compressKeys = 1` from it, `:188` ramps
+  that over `RAMP_TIME`, and `:200` takes `Math.max(padCompressValue, ramp)`. **So a steady 25 % pull reports 0.25 on
+  the first frame and 1.00 twelve frames later, whatever the player's finger is doing.** `steer` (`:197`) and `trim`
+  (`:198`) use a conditional and are **not** affected; `crouch`, `compress`, `snap` and `duckDive` (`:199`–`:202`)
+  are. **Every number on this track was taken with a clean input.** ⚠️ **Which device the owner used in his filmed
+  rides is not known, so nothing here asserts that this touched them** — it is a reason not to trust a single input
+  signal when bench and owner disagree. (It does not touch this round's own numbers: every script here holds the stick
+  at zero and sends no `compress` at all.)
 * **The mirror is not the game's own call, only a bracket around it.** `standRefusal` runs per substep inside
   `prepare`, so the probe's verdict is read one frame early or one frame late; agreement is 30 of 34 at the stand and
   33 of 34 at the last landing frame, and the four disagreements are all within a few hundredths of `SINK_RATE`.
