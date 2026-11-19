@@ -219,6 +219,25 @@ The project's own file had said the same thing in another register: `project`'s 
 (`AttachedRider.ts:5569–5578`) — *"it asserts dH/dt = 0 … true of a point mass and false of a body with a trunk, and
 it is why a hip strategy costs this rider sole pressure instead of buying it."*
 
+## 3c. ⚠️ THE DRAWING, WHICH IS WHAT THE OWNER SEES FIRST — put a number on it before he rides
+
+`swung` stands down with the switch on, so the drawn lateral trunk lean goes from **0.35 ψ to 1.0 ψ**. Measured off
+`riderPose`'s own standing posture, with the rotor at its 1.2 rad range (**68.75°**, which §2.3 shows it reaches), and
+the board's half-width at the stance measured at **0.2134 m**:
+
+| part | drawn before (0.35 ψ = 24.06°) | drawn after (1.0 ψ = 68.75°) |
+| --- | --- | --- |
+| head, across the pelvis | −0.245 m (**1.15×** the rail) | ⚠️ **−0.559 m (2.6× the rail)** |
+| head, above the pelvis | 0.548 m (from 0.600) | ⚠️ **0.217 m** |
+| torso, across | −0.110 m (inboard) | −0.252 m (**1.18×** the rail) |
+| torso, above | 0.247 m (from 0.270) | 0.098 m |
+
+⚠️ **At the extreme the drawn rider's head is half a metre out past the rail and has dropped to barely above hip
+height — a body lying almost flat across the board.** It is the honest picture (the drawing now shows the physics, and
+that disagreement is what this project has spent the day unpicking), and it may well read as a real bottom-turn
+posture. **But it is the change most likely to look wrong, it was NOT checked in a browser in this round, and the
+owner will see it before he feels anything.** Tell him before he rides it.
+
 ## 4. The question this leaves, which nobody has asked
 
 > ⭐⭐ **What makes the hip swing EARLY?** The hip's lateral authority is handed over by the **overflow of the ankle's
