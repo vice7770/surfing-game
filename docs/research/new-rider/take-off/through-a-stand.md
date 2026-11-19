@@ -575,7 +575,8 @@ holding half its friction.** That is the measurement Part 13.4 asked for.
 | **cross-build against the published population** | this round's `src` (`main`'s) not being #429's rider | **seed 1: 423 shared summary values over 36 aligned runs, 0 differ. Seed 2: 426 over 33, 0 differ** — against #429's own committed `seed*-summaries.jsonl`, taken on `claude/ride-all-three`. The only 3 differences anywhere are the `face` column on a seed-2 rider that never stood: a running maximum over a life `TRIAL` lengthens, reported apart |
 | **determinism across processes** | a bench that does not repeat | **5 093 summary values over 33 runs, 0 differ** between two separate processes running the same bundle at the same seed |
 | **the positive control for the instrument** | a reader that cannot see what it claims to measure | the placement reproduces **#419's causes (balance 89, lost board 1, foot slip 0)**, **#419's `tip` 90 of 90**, **#421's 0.8748 → 0.8764**, **#421's 0.100 s → 0.0983 s**, **#421's 2.950° → 2.918°**, **#421's 0.976 → 0.976**, and **#425's 7 208 frames → 7 208 rows** |
-| **the probe is inert** | the probe's own reads changing the drive | `PROBE=off` removes the two `renderPoint` reads and the one `sampleAt`, and builds no row, while every measured column is computed identically — see `results/probe-inertness.txt` |
+| **the probe is inert** | the probe's own reads changing the drive | `PROBE=off` removes the two `renderPoint` reads and the one `sampleAt`, and builds no row: **0 rows emitted against the on arm's 1 708.** It still measures the window — 35 numeric values a block, `rawOk` 61 of 61 — and **10 runs aligned, 641 summary values compared, 0 differ.** ⚠️ 641 is a smaller population than #429's 2 538 because this control was run at 4 periods; it is the honest count |
+| **the inertness control is not vacuous** | a control comparing nulls to nulls | the `PROBE=off` arm's own window columns are printed above: `n` 61, load 0.9465 bw, roll peak 1.6793°, CoM 0.77206 m, tolerance 9.5579°. It measured the same thing without the probe's reads |
 | **the zsh integer trap** | `SECONDS=0.5` arriving as `"0"`, every run ending at frame 1 under a tidy summary | the probe has no `SECONDS`; every invocation uses `env` |
 
 ---
@@ -634,3 +635,37 @@ that the reason is the **wave**, so the fix is to report the regime per wave —
   script that sends neither). `cueL` against `cueR` is the only clean contrast in this data.
 * **No `?askCap` arm was run.** #429 found it is the one switch that gives an off-plane rider a lean to ask for; on a
   sea that is already planing for 80 % of the window it should do much less, and that is an untested prediction.
+
+---
+
+## 13. The files
+
+| file | what it is |
+| --- | --- |
+| `stand.ts` | the probe. `MODE=takeoff` is #429's drive carried over; `MODE=placed` is `3.5/bank.ts`'s `MODE=sea` rig carried over. One row schema for both. Run as its header says |
+| `stand-read.py` | the reader: the four comparisons, the latch test, the three headrooms, `--pair <wave>` for one wave's scripts side by side, `--control` for the inertness pair |
+| `cross-read.py` | this build's take-off summaries against **#429's own committed ones**, value by value, with its earlier script names aliased |
+| `results/takeoff-seed1.txt`, `results/takeoff-seed2.txt` | the two take-off populations in full, seed 2 with the wave-1 trace |
+| `results/placed-seed1.txt` | the placement — **the positive control**, and the source of every "placed figure" above |
+| `results/probe-inertness.txt` | `PROBE=on` against `PROBE=off` |
+| `results/cross-build.txt` | both cross-build checks: 423 and 426 shared values, 0 differ |
+| `results/sr-*-summaries.jsonl` | every run's summary line, which is what every median above is computed from |
+| `results/sr-*-control.jsonl` | each run's control line: the grid off the solver, the parsed switches, the spin-up |
+
+The per-frame rows (5–9 MB a run) are **not** committed; every figure in this document is reproducible from the
+summaries plus the probe, and the per-frame traces are reproducible by re-running the header's own invocations.
+
+### Reproducing it
+
+    ./node_modules/.bin/rolldown docs/research/new-rider/take-off/stand.ts -o <s>/raw.mjs --format esm --platform node
+    printf "globalThis.location = { search: '' };\n" > <s>/stand.mjs   # an OBJECT, never a string
+    cat <s>/raw.mjs >> <s>/stand.mjs
+    cd <s> && env MODE=takeoff SEED=1 PERIODS=12 ARMS=ships SCRIPTS=cue,cueL,cueR OUT=<s>/t1.jsonl node --max-old-space-size=3200 stand.mjs
+    cd <s> && env MODE=takeoff SEED=2 PERIODS=12 ARMS=ships SCRIPTS=cue,cueL,cueR OUT=<s>/t2.jsonl node --max-old-space-size=3200 stand.mjs
+    cd <s> && env MODE=placed  SEED=1            ARMS=ships OUT=<s>/p1.jsonl node --max-old-space-size=3200 stand.mjs
+    cd <s> && env MODE=takeoff SEED=2 PERIODS=4 ARMS=ships SCRIPTS=cue,cueL PROBE=off OUT=<s>/off.jsonl node stand.mjs
+    python3 -I docs/research/new-rider/take-off/stand-read.py <s>/t2.jsonl --labels takeoff-seed2 --pair 1
+    python3 -I docs/research/new-rider/take-off/cross-read.py <s>/t1.jsonl <429's seed1-summaries.jsonl>
+
+Wall: 1 202 s (seed 2), 2 263 s (seed 1), 217 s (the placement), under CPU contention from another session's job on the
+same machine. Spin-up alone is 56–96 s of that each.
