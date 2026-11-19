@@ -8202,11 +8202,17 @@ round deliberately takes the other corner, where the hold settles, so that the t
 2. **On `eLevel` the hull's side force is confirmed, and the captive condition understates it by a factor of 1.8.**
    At 5 m/s, settled, payload at the deck, over 5–42° of roll: **715–971 N per unit sin(roll) with the yaw free**
    against **412–585 N per unit sine with the yaw and the sideslip held** — and at 5.2° of roll, **743 against
-   415 N/rad**, where `PLANT_SPEEDS`' own 5 m/s row reads **−361** [M, R]. So 3.2y's −384 and the table's −429.7 are
-   both the **captive** number, Part 25's free-running **547 N per unit sin(rail)** on the face sits between the two
-   conditions, and the hull's free-running law is close to the deck-normal bar (the pair's 741 N) that the
-   bank-gain consultation sets. **Nobody had measured the two conditions on one harness; the gap is the hold, not
-   the hull.**
+   415 N/rad**, where `PLANT_SPEEDS`' own 5 m/s row reads **−361** [M, R]. **So 3.2y's −384 and the table's −429.7
+   are both the *captive* number.**
+
+   **The datum matters here and it has bitten this track once already.** Part 25's headline **547 N per unit sine**
+   is regressed on **sin(rail)**, and the 2026-11-15 consultation's correction is that the force's *direction* is
+   set by the deck's **roll** while only its magnitude is set by the rail — so the comparable published figure is
+   the **sin(roll)** slope, **709 N per unit sine (557–935 over seven cells, R² 0.650–0.904)**, measured on a live
+   steered turn at **98.1 %** of what a force locked to the measured deck normal would give. **This round's
+   free-running 715–971 N per unit sin(roll) brackets that 709, and the captive 412–585 does not reach it** — and
+   the deck-normal bar for the pair is 741 N. **Three routes on the free condition agree and the captive one is
+   low by about 1.8×. Nobody had measured the two conditions on one harness; the gap is the hold, not the hull.**
 3. ⭐ **And the whole in-deck-plane across column, in the captive condition, is manufactured by the hold.** On
    `xDeck` at the same four rolls and the same speed: **−29 to −228 N held, a near-constant −322 to −344 N per unit
    sin(roll), with a residual felt tilt of 2.2–14.4°** — against **+0.5 to −6.5 N free, scattering about zero, with
