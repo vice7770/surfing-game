@@ -1,0 +1,59 @@
+address ?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on  grid 400x451 = 180400 cells  spun up in 44 s  start (-122.0, -134.0), 9 m out  Hs 1.40 m  Tp 11.0 s
+  ships     {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'deepen': 'on', 'riderBody': 'two'}
+  trunk     {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'deepen': 'on', 'trunk': 'mass', 'riderBody': 'two'}
+  bank      {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'bodyBank': 'hip', 'deepen': 'on', 'riderBody': 'two'}
+  all3      {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'bodyBank': 'hip', 'deepen': 'on', 'armCarry': 'on', 'trunk': 'mass', 'riderBody': 'two'}
+  all3cap   {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'bodyBank': 'hip', 'askCap': '4.5', 'deepen': 'on', 'armCarry': 'on', 'trunk': 'mass', 'riderBody': 'two'}
+  sea differences between arms: none
+11 waves, 165 runs, 1043 s wall
+
+arm/script       runs  popped  stood  fell  fell<1s  |  fell after the stand, s (median of those that fell after standing)  stand after pop  first second: load  legLoad  wetted  roll peak  pinned%
+all3/cue        11      7      7     4       3  |             0.758 (4 of 7)    1.200        1.0   0.959   0.331      2.3   100.0
+all3/cueL       11      7      7     5       5  |             0.667 (5 of 7)    1.200        0.9   0.940   0.331      4.9   100.0
+all3/cueR       11      7      7     5       5  |             0.600 (5 of 7)    1.200        0.9   0.942   0.331     10.6   100.0
+all3cap/cue        11      7      7     4       3  |             0.758 (4 of 7)    1.200        1.0   0.959   0.331      2.3   100.0
+all3cap/cueL       11      7      7     5       5  |             0.667 (5 of 7)    1.200        0.9   0.940   0.331      4.8   100.0
+all3cap/cueR       11      7      7     5       5  |             0.600 (5 of 7)    1.200        0.9   0.942   0.331     10.6   100.0
+bank/cue        11      7      7     4       3  |             0.758 (4 of 7)    1.200        1.0   0.959   0.331      2.3   100.0
+bank/cueL       11      7      7     5       5  |             0.667 (5 of 7)    1.200        0.9   0.940   0.331      4.9   100.0
+bank/cueR       11      7      7     5       5  |             0.600 (5 of 7)    1.200        0.9   0.942   0.331     10.6   100.0
+ships/cue        11      7      7     4       3  |             0.942 (4 of 7)    1.200        1.0   0.959   0.331      2.3   100.0
+ships/cueL       11      7      7     5       4  |             0.717 (5 of 7)    1.200        0.9   0.941   0.330     18.8   100.0
+ships/cueR       11      7      7     5       4  |             0.967 (5 of 7)    1.200        0.9   0.942   0.320     19.1   100.0
+trunk/cue        11      7      7     4       3  |             0.942 (4 of 7)    1.200        1.0   0.959   0.331      2.3   100.0
+trunk/cueL       11      7      7     5       4  |             0.717 (5 of 7)    1.200        0.9   0.941   0.330     18.8   100.0
+trunk/cueR       11      7      7     5       4  |             0.967 (5 of 7)    1.200        0.9   0.942   0.320     19.1   100.0
+
+causes, over the runs that fell (population per arm/script above):
+  all3/cue: {'balance / <=1 s after the stand': 3, 'balance / >1 s': 1}
+  all3/cueL: {'balance / <=1 s after the stand': 5}
+  all3/cueR: {'balance / <=1 s after the stand': 5}
+  all3cap/cue: {'balance / <=1 s after the stand': 3, 'balance / >1 s': 1}
+  all3cap/cueL: {'balance / <=1 s after the stand': 5}
+  all3cap/cueR: {'balance / <=1 s after the stand': 5}
+  bank/cue: {'balance / <=1 s after the stand': 3, 'balance / >1 s': 1}
+  bank/cueL: {'balance / <=1 s after the stand': 5}
+  bank/cueR: {'balance / <=1 s after the stand': 5}
+  ships/cue: {'balance / <=1 s after the stand': 3, 'balance / >1 s': 1}
+  ships/cueL: {'balance / <=1 s after the stand': 4, 'balance / >1 s': 1}
+  ships/cueR: {'balance / <=1 s after the stand': 4, 'balance / >1 s': 1}
+  trunk/cue: {'balance / <=1 s after the stand': 3, 'balance / >1 s': 1}
+  trunk/cueL: {'balance / <=1 s after the stand': 4, 'balance / >1 s': 1}
+  trunk/cueR: {'balance / <=1 s after the stand': 4, 'balance / >1 s': 1}
+
+the stand itself, over the runs that stood:
+  all3/cue: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  all3/cueL: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  all3/cueR: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  all3cap/cue: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  all3cap/cueL: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  all3cap/cueR: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  bank/cue: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  bank/cueL: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  bank/cueR: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  ships/cue: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  ships/cueL: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  ships/cueR: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  trunk/cue: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  trunk/cueL: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7
+  trunk/cueR: pop 6.93 s after placing, stand 1.200 s after the pop, landing peak 1.40 body weights, front share 0.71, face under the board 17 deg, 0.77 up, refusals 6 of 7

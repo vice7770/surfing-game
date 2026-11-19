@@ -1,0 +1,30 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s1.jsonl
+# grid 400x451 = 180400 cells · seed 1 · medium · 12 periods · arms ships · scripts cue,cued250,cued500,lift,early · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 55 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 12 waves, 60 runs, 1079 s wall
+
+## the press moved past the cue: cue, cued250, cued500
+   (V is the board's speed THROUGH the water at the stand, which is what `planingStep` tests against 4 m/s)
+
+  wave |             cue             |           cued250           |           cued500          
+  w  1 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  2 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  3 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  4 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  5 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  6 | pop 14.82 V  4.42 HELD          | pop     - V     - no press      | pop     - V     - no press     
+  w  7 | pop  8.02 V  3.51 fell 1.733    | pop  8.28 V  3.45 fell 1.000    | pop  8.53 V  3.33 fell 1.233   
+  w  8 | pop  7.20 V  3.52 fell 0.750    | pop  7.47 V  3.66 fell 1.650    | pop  7.72 V  3.64 fell 0.950   
+  w  9 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w 10 | pop  7.02 V  4.26 fell 0.700    | pop  7.27 V  4.42 HELD          | pop  7.52 V  4.56 HELD         
+  w 11 | pop  6.73 V  3.72 fell 0.683    | pop  6.98 V     - lost it: lost board | pop  7.23 V     - lost it: lost board
+  w 12 | pop  8.40 V  2.37 fell 0.633    | pop  8.65 V  2.22 fell 1.100    | pop  8.90 V  2.12 fell 0.500   
+
+## riders that popped and never stood (they lost the board or slipped during the 1.2 s)
+   w 6 early    pressed 12.15 s, outcome rising, fell 13.13 s, cause balance
+   w11 cued250  pressed 6.98 s, outcome rising, fell 7.52 s, cause lost board
+   w11 cued500  pressed 7.23 s, outcome rising, fell 7.87 s, cause lost board
+
+## ☠️ delayed presses that never happened: the rule fired but the press would land past TRIAL - 1 s
+   w 6 cued250  rule at 14.82 s, delay 0.25 s, never pressed — this wave has NO delay measurement
+   w 6 cued500  rule at 14.82 s, delay 0.50 s, never pressed — this wave has NO delay measurement

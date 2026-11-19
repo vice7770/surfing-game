@@ -1,0 +1,58 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s1.jsonl
+# grid 400x451 = 180400 cells · seed 1 · medium · 12 periods · arms ships · scripts cue,cued250,cued500,lift,early · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 55 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 12 waves, 60 runs, 1079 s wall
+
+## 34 stands of 60 runs (37 popped)
+
+wave script   arm    pop   stand  refusal(game)     mirror            strain   into rearD frntD wet?  sink? ldPk ldFr | planing latch  cap  faceF slope ahead  wet   load front draft | after  held trunc obs
+   1 early    ships    6.52   7.72  feet under water  feet under water  0.0001  0.179 0.799 0.456    1     0 0.90 0.61 |       0  1.13 0.000  0.54  10.4  3.47 0.616  0.85  0.62 0.534 |  0.350    0     0  0.33
+   1 lift     ships    9.03  10.23  feet under water  feet under water  0.0004  0.133 0.334 0.143    1     0 1.12 0.71 |       0  1.81 0.000  0.99  -2.5 -0.56 0.550  1.02  0.74 0.203 |  0.800    0     0  0.78
+   2 early    ships    5.85   7.05  feet under water  feet under water  0.0002  0.208 0.598 0.300    1     0 0.97 0.65 |       0  1.35 0.000  0.83   5.4  3.01 0.579  0.95  0.66 0.372 |  0.633    0     0  0.62
+   2 lift     ships    8.18   9.38  feet under water  feet under water  0.0156  0.166 0.412 0.220    1     0 1.30 0.74 |       0  1.73 0.000  0.96  -3.0 -1.66 0.588  1.30  0.74 0.276 |  0.350    0     0  0.33
+   3 early    ships    5.83   7.03  feet under water  feet under water  0.0157  0.207 0.741 0.422    1     0 1.04 0.72 |       0  1.37 0.000  0.31   8.2 39.61 0.611  1.04  0.72 0.495 |  0.400    0     0  0.38
+   5 early    ships    4.67   5.87  feet under water  feet under water  0.0157  0.260 0.686 0.378    1     0 1.07 0.68 |       0  1.35 0.000  0.39   5.9  6.32 0.601  1.07  0.68 0.450 |  0.500    0     0  0.48
+   5 lift     ships    8.10   9.30  feet under water  feet under water  0.0156  0.137 0.400 0.213    1     0 1.16 0.73 |       0  1.61 0.000  0.93  -3.5 -1.82 0.586  1.16  0.73 0.270 |  0.483    0     0  0.47
+   6 cue      ships   14.82  16.02  None              sinking           0.0036  0.355 -0.000 -0.115    0     1 1.41 0.71 |       1  4.42 0.417  0.79  16.9  2.15 0.263  0.83  0.43 -0.064 |  NEVER    1     0  3.02
+   6 lift     ships   14.82  16.02  None              sinking           0.0036  0.355 -0.000 -0.115    0     1 1.41 0.71 |       1  4.42 0.417  0.79  16.9  2.15 0.263  0.83  0.43 -0.064 |  NEVER    1     0  3.02
+   7 cue      ships    8.02   9.22  feet under water  feet under water  0.0006  0.173 0.122 -0.044    1     0 1.37 0.77 |       0  3.51 0.000  0.95   9.2  1.06 0.389  1.07  0.67 0.015 |  1.733    0     0  1.72
+   7 cued250  ships    8.28   9.48  feet under water  feet under water  0.0022  0.222 0.141 -0.033    1     0 1.37 0.77 |       0  3.45 0.000  0.96   8.0  0.94 0.399  1.08  0.70 0.026 |  1.000    0     0  0.98
+   7 cued500  ships    8.53   9.73  feet under water  feet under water  0.0015  0.213 0.144 -0.021    1     0 2.11 0.77 |       0  3.33 0.000  0.98   6.8  0.79 0.399  1.07  0.69 0.037 |  1.233    0     0  1.22
+   7 early    ships    5.58   6.78  sinking           feet under water  0.0131  0.279 0.839 0.480    1     0 0.90 0.77 |       0  1.22 0.000  0.51  13.4  4.05 0.621  0.90  0.77 0.559 |  0.400    0     0  0.38
+   7 lift     ships    8.02   9.22  feet under water  feet under water  0.0006  0.173 0.122 -0.044    1     0 1.37 0.77 |       0  3.51 0.000  0.95   9.2  1.06 0.389  1.07  0.67 0.015 |  1.733    0     0  1.72
+   8 cue      ships    7.20   8.40  feet under water  feet under water  0.0006  0.170 0.127 -0.049    1     0 1.34 0.77 |       0  3.52 0.000  0.94  10.3  1.18 0.375  1.05  0.66 0.011 |  0.750    0     0  0.73
+   8 cued250  ships    7.47   8.67  feet under water  feet under water  0.0004  0.199 0.113 -0.051    1     0 1.35 0.72 |       0  3.66 0.000  0.94  10.0  1.14 0.374  1.07  0.66 0.007 |  1.650    0     0  1.63
+   8 cued500  ships    7.72   8.92  feet under water  feet under water  0.0009  0.168 0.116 -0.054    1     0 1.33 0.71 |       0  3.64 0.000  0.94  10.6  1.15 0.354  1.06  0.65 0.007 |  0.950    0     0  0.93
+   8 early    ships    4.73   5.93  feet under water  feet under water  0.0040  0.252 0.845 0.495    1     0 0.89 0.61 |       0  1.13 0.000  0.47  13.7  4.16 0.621  0.85  0.69 0.574 |  0.367    0     0  0.35
+   8 lift     ships    7.20   8.40  feet under water  feet under water  0.0006  0.170 0.127 -0.049    1     0 1.34 0.77 |       0  3.52 0.000  0.94  10.3  1.18 0.375  1.05  0.66 0.011 |  0.750    0     0  0.73
+   9 early    ships   12.03  13.23  feet under water  feet under water  0.0101  0.167 0.529 0.279    1     0 1.01 0.67 |       0  1.48 0.000  0.92   3.7  2.31 0.597  1.01  0.67 0.345 |  0.367    0     0  0.35
+   9 lift     ships   14.07  15.27  feet under water  feet under water  0.0152  0.138 0.415 0.223    1     0 1.12 0.74 |       0  1.72 0.000  0.97  -2.6 -1.51 0.592  1.12  0.74 0.280 |  0.400    0     0  0.38
+  10 cue      ships    7.02   8.22  None              none              0.0003  0.274 0.030 -0.105    0     0 1.33 0.73 |       1  4.26 0.390  0.84  15.9  1.83 0.263  0.92  0.48 -0.051 |  0.700    0     0  0.68
+  10 cued250  ships    7.27   8.47  sinking           sinking           0.0033  0.413 0.018 -0.109    0     1 1.60 0.77 |       1  4.42 0.416  0.82  16.3  1.99 0.263  0.84  0.48 -0.055 |  NEVER    1     0  3.00
+  10 cued500  ships    7.52   8.72  None              sinking           0.0010  0.490 -0.025 -0.121    0     1 1.42 0.70 |       1  4.56 0.442  0.78  18.0  2.11 0.206  0.75  0.34 -0.073 |  NEVER    1     0  3.00
+  10 early    ships    4.63   5.83  feet under water  feet under water  0.0157  0.260 0.827 0.465    1     0 0.92 0.72 |       0  1.20 0.000  0.48  13.8  4.39 0.607  0.92  0.72 0.545 |  0.467    0     0  0.45
+  10 lift     ships    7.02   8.22  None              none              0.0003  0.274 0.030 -0.105    0     0 1.33 0.73 |       1  4.26 0.390  0.84  15.9  1.83 0.263  0.92  0.48 -0.051 |  0.700    0     0  0.68
+  11 cue      ships    6.73   7.93  feet under water  feet under water  0.0123  0.205 0.396 0.215    1     0 2.16 0.70 |       0  3.72 0.000  0.95   7.9  1.33 0.566  1.02  0.68 0.275 |  0.683    0     0  0.67
+  11 early    ships    4.13   5.33  sinking           sinking           0.0001  0.379 0.992 0.617    1     1 1.05 0.62 |       0  0.68 0.000  0.35  17.5  4.92 0.621  0.78  0.53 0.699 |  1.767    0     0  1.75
+  11 lift     ships    6.73   7.93  feet under water  feet under water  0.0123  0.205 0.396 0.215    1     0 2.16 0.70 |       0  3.72 0.000  0.95   7.9  1.33 0.566  1.02  0.68 0.275 |  0.683    0     0  0.67
+  12 cue      ships    8.40   9.60  feet under water  feet under water  0.0006  0.177 0.271 0.071    1     0 1.19 0.71 |       0  2.37 0.000  0.99   3.4  0.54 0.469  1.06  0.70 0.133 |  0.633    0     0  0.62
+  12 cued250  ships    8.65   9.85  feet under water  feet under water  0.0002  0.184 0.281 0.083    1     0 1.17 0.72 |       0  2.22 0.000  1.00   1.8  0.32 0.500  1.04  0.71 0.144 |  1.100    0     0  1.08
+  12 cued500  ships    8.90  10.10  feet under water  feet under water  0.0006  0.178 0.295 0.094    1     0 1.16 0.71 |       0  2.12 0.000  1.00   0.5  0.09 0.517  1.05  0.73 0.155 |  0.500    0     0  0.48
+  12 early    ships    5.90   7.10  feet under water  feet under water  0.0002  0.148 0.734 0.384    1     0 0.89 0.62 |       0  1.23 0.000  0.66  10.7  3.42 0.601  0.89  0.62 0.464 |  0.567    0     0  0.55
+  12 lift     ships    8.40   9.60  feet under water  feet under water  0.0006  0.177 0.271 0.071    1     0 1.19 0.71 |       0  2.37 0.000  0.99   3.4  0.54 0.469  1.06  0.70 0.133 |  0.633    0     0  0.62
+
+## the refusal, counted (the game's own verdict, which returns on the FIRST test that fires)
+   {'feet under water': 26, 'None': 5, 'sinking': 3}
+## the same stands, each test counted SEPARATELY (unconditioned by the short-circuit)
+   strained 0 · sinking 5 · feet under water 28 · clear of all three 2 of 34
+## the mirror against the game, stand for stand (the positive control: these must agree)
+   30 of 34 agree at the stand frame; 33 at the last landing frame
+   disagree w6 cue: game=None mirror@stand=sinking mirror@landing=none
+   disagree w6 lift: game=None mirror@stand=sinking mirror@landing=none
+   disagree w7 early: game=sinking mirror@stand=feet under water mirror@landing=feet under water
+   disagree w10 cued500: game=None mirror@stand=sinking mirror@landing=none
+
+## held the whole window vs fell
+   held 4 · fell 30 · truncated (NEITHER — not observed long enough) 0
+   fell after the stand: median 0.6583 s, range 0.350-1.767, within 1 s 24 of 30
+   causes: {'foot slip': 1, 'balance': 27, 'lost board': 2}
