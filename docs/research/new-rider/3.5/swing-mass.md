@@ -194,6 +194,31 @@ design, and it decides against it as a fall fix.
    ([[one-trace-is-not-a-number]]). Wave 1 `cueL`/`cueR` being bit-equal across arms is the strongest single line here
    and it needs no statistics.
 
+## 3b. ⛔ And the design that was briefed — "a commanded rest angle with a spring and a damper about it" — would have made the hip WEAKER
+
+Worth recording, because it is derivable from the shipped law and it was the round's original instruction.
+
+`humanSwingStep`'s drive is `burst = clamp(−SWING_SERIES·overflow, ±SWING_TORQUE)` — a torque that **does not depend on
+the rotor's angle at all**. So **the shipped burst already *is* "a spring about a rest of `overflow`", evaluated at
+ψ = 0 and never re-evaluated.** Adding the rotor's actual angle to it — which is what a rest with a spring about it
+means — gives `−SWING_SERIES·(overflow − ψ)`:
+
+| overflow | shipped drive, at every angle | a rest-spring at ψ = 0 | at ψ = overflow/2 | at ψ = overflow | its equilibrium |
+| --- | --- | --- | --- | --- | --- |
+| 0.100 rad | −43.0 N·m | −43.0 | −21.5 | **0** | 5.73° |
+| 0.300 rad | −129.0 N·m | −129.0 | −64.5 | **0** | 17.19° |
+| 0.465 rad | −200.0 N·m (clipped) | −200.0 | −100.0 | **0** | **26.64°** |
+| 0.600 rad | −200.0 N·m (clipped) | −200.0 | −129.0 | **0** | 26.65° |
+
+⛔ **Strictly less torque at every angle on the way out, and an equilibrium at 26.6° where the shipped constant-torque
+drive runs on to the 68.75° range.** And a rotor at its rest holds **zero** torque by definition, so it gives no steady
+lateral moment either. ⭐ **The measurement above settles it from the other side: 68.75° of fold and 1.12 sole-widths of
+settled weight shift were already not enough. A design that caps the fold at 26.6° could not have done better.**
+
+The project's own file had said the same thing in another register: `project`'s step-3.5i note
+(`AttachedRider.ts:5569–5578`) — *"it asserts dH/dt = 0 … true of a point mass and false of a body with a trunk, and
+it is why a hip strategy costs this rider sole pressure instead of buying it."*
+
 ## 4. The question this leaves, which nobody has asked
 
 > ⭐⭐ **What makes the hip swing EARLY?** The hip's lateral authority is handed over by the **overflow of the ankle's
