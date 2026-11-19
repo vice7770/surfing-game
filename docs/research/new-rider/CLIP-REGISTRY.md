@@ -50,6 +50,7 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | **26** | `uMfa7xmy53o` | https://www.youtube.com/shorts/uMfa7xmy53o | — | ⏳ **BEING READ 2026-11-19** — submitted as `?feature=share` |
 | **27** | `OhZwR1dW_RQ` | https://www.youtube.com/shorts/OhZwR1dW_RQ | — | ⏳ **QUEUED 2026-11-19** — `?feature=share`; waits behind 26 (one video at a time) |
 | **28** | `g3fe9BRoeaI` | https://www.youtube.com/shorts/g3fe9BRoeaI | — | ⭐⭐ **PRIORITY — the owner bypassed the queue for it.** He says it has **a take-off filmed before the feet are on the board**, a readable **sideways body speed relative to the board**, **filmed from the FRONT**, **long and unbroken with one rider**, and **slow motion** — five of the six things the series has been asking for. Read NEXT, ahead of 27. |
+| **29** | `tqEm0RSmz6I` | https://www.youtube.com/shorts/tqEm0RSmz6I | — | ⏳ **BEING READ 2026-11-19.** The owner points at the **first 5 s** for **a take-off AND the sideways setup**. ⭐ Second clip that may carry a take-off, and the first submitted with the side-on geometry named. |
 
 **Dispatch rule: the owner's standing instruction is ONE VIDEO AT A TIME**, so the queue is dispatched in order as
 each read reports. **Every brief is written blind** — an independent reviewer reads several of the same clips, and
