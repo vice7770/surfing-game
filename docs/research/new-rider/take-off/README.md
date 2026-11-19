@@ -187,9 +187,10 @@ the cue; the stand frame, and the `hold` script's outcome):
 
 The two stands that are **not** refused are the two that are **planing**, **lower on the face** (0.79–0.84 against
 0.94–0.99), on a **steeper** one (15.9–16.9° against 3.4–10.3°), with **half the wetted hull** (0.263 m² against
-0.375–0.566) and the weight **off** the front foot (0.43–0.48 against 0.66–0.70). One of those two rode the window
-out; it is the only ride in the study that did. **The refused four all stand high on a flattening crest on a buried
-board, and all four are gone inside 1.73 s.**
+0.375–0.566) and the weight **off** the front foot (0.43–0.48 against 0.66–0.70). One of those two — wave 6 — is the
+**only wave in the study whose stand survived the window**, and it survived on all five arms (15 of 15 runs).
+**The refused four all stand high on a flattening crest on a buried board, and every one of them is gone inside
+1.73 s.**
 
 **And the stand itself is already not carried.** `AttachedRider.standRefusal` ran at the `'landing'` → `'standing'`
 transition and returned **`'feet under water'` in 12 of the 18 stands** (and nothing in the other 6): at the moment
