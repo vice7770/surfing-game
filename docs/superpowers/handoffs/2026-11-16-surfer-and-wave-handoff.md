@@ -4150,3 +4150,31 @@ Three attempts, three refusals by the stance-span gate: **0.57 L, 0.18–0.22 L,
 **Method:** true **60.000 fps** (second in the series); **546 native asks, 545 distinct hashes, zero stale**, the one adjacent duplicate being the end-of-file non-decode (**fourth clip**); **cleared of a duplication ramp** (second clip); one unbroken shot proved by 545 consecutive block correlations, median r 0.9994, min 0.994 — ⭐ **with a PUBLISHED NEGATIVE CONTROL (known-different pairs 0.27–0.81), the cheap fix for clip 22's self-certifying aliased tracker.** ⚠️ **It called the clip a montage twice from coarse sheets before the 1/30 s sheet refuted it.** Three rulers built, one discarded with nothing quoted.
 
 **THE OWNER'S VIDEO QUEUE IS NOW EMPTY — twenty-five clips read, zero take-offs.**
+
+---
+
+## 2026-11-19 — FOUR CORRECTIONS FROM CODEX, AND TWO LAND ON MY OWN WORDING
+
+### 1. ⚠️ "The front foot slides 0.666 → 0.52" is WRONG — it is a LOAD FRACTION
+
+**That column is the share of load carried by the front foot, not a position. Nothing slid** — and **#429's own evidence agrees: deck-relative foot speed is 0.000.** **My wording in the "what fails first" entry is withdrawn, and the correction is relayed to both running rounds.** **The landing peak's "0.722 on the front foot" is the same kind of quantity and must be read as a load share too.**
+
+### 2. ⚠️ `rawMargin` CANNOT identify the first failing constraint
+
+**It is a MINIMUM of lateral, longitudinal and grip headroom, then filtered.** **So "the margin collapses 0.870 → 0.469 while the roll is still 2–4°" does not say WHICH constraint went first** — a falling minimum before a large roll is consistent with any of the three. **#429's "what fails first" is weaker than it reads, and anyone wanting the first failing constraint must read the three headrooms separately.** Relayed. ⭐ **And the reviewer's framing, adopted: keep the actual turn and climb PENDING — the owner cannot judge a turn while he falls in under a second.**
+
+### 3. ⚠️ #431 does NOT prove a "weld" — that word is mine and it overstates
+
+**What the matched rig study establishes is the LOSS OF THE TOESWARD TRUNK FOLD in several poses.** **Its measured signed angle is relative to WORLD VERTICAL ALONG LEVELLED TOES — it does not measure trunk-versus-board-normal alignment and does not prove a rigid weld.** ⭐ **And the mechanism is a two-axis one that nobody has separated: the PHYSICS fold runs toward the NOSE, while the removed RENDER hinge supplied a TOESWARD component.** **Both axes must be compared in the same pose history before anything is coupled or tuned.**
+
+> **So the honest statement to the owner is "it loses his forward fold, and in a turn the measured angle goes 30–36° the other way" — NOT "it welds his trunk to the board".** **The mirror-image top-turn figures that suggested a weld are consistent with it but do not establish it.**
+
+### 4. The owner's phone videos establish less than I said
+
+Codex read both independently. **A:** wipeout HUD absent 6.667, present through a mixed/blurred frame at 6.700, **board and torso diverging 6.767**, body beside a near-edge-on board by 6.934. **B:** no HUD at 7.948; **visible at 7.982 and 8.015 with the rider STILL BENT OVER THE BOARD**, then **progressively pitching 8.048–8.115, nearly horizontal by 8.182.**
+
+> ⚠️ **"The rider is still drawn STANDING while the wipeout prompt is up, for half a second" is not established.** **B shows him bent over the board and progressively pitching — he is already going.** **And the footage is on a phone/playback clock, so it establishes neither a frozen stand nor the underlying cause.** **I had already withdrawn the `separate` attribution; the SYMPTOM is now weaker than I described too.**
+
+### 5. And an independent recount of #425 that confirms its headline
+
+Codex **independently recovered all 14 clamp clears: 4 geometrically infeasible, 10 feasible** — **matching the builder's 14 → 10 exactly.** Scope corrections beside it: **`saveFeasible` is retained when `project` skips the extended-contact path, so 5 of the 17 claimed-feasible palm-down rows are FLIGHT rows with no extension or impulse**; **12 of 154 positive-extension rows tested feasible**; **all 10 honest clear rows stand**; **of 6 awake wrong-side credits, 3 have `capPast = 0` and are not escapes**; and **the only `beyond` flip (trial 3, 8 m/s crouch, frame 86 at 1.4333 s) has `weightPast = 0`.** **So the builder's "the unsigned credit never changed `human.fallen` on an awake test" survives an independent check, with the denominator corrected from 6 to 3.**
