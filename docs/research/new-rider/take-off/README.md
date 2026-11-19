@@ -49,7 +49,7 @@ the 0.327 m demand — is a measurement of a rider that was **put** on the water
 | The sea | One Canyon B sea, CPU, worker step 1/60 s, seatbelt **read off the solver** | Every arm rides the same water, wave for wave |
 | The start | `RideSession.place({ phase: 'prone', speed: 0 })` at `focus.x + rideLineupAlong`, `focus.z − rideLineupOffset` | Exactly `SurfZoneRunner.launchRide` |
 | The catch | Paddle in; sprint when the crest is 2 s away; **pop at the game's own cue** (`rider.popUpCue \|\| inTakeOffWindow(frame)`) | The HUD's cue, not a bench's rule |
-| The ride | `hold` (stand and ride), `turnL`, `turnR` (Compress + full steer from 0.3 s after the stand, for 0.9 s) | A stand alone, and a stand that is then asked to turn |
+| The ride | `cue` (pop at the cue, then stand and ride with the stick at zero), `cueL`, `cueR` (the same, plus Compress and a **full** steer from 0.3 s after the stand, for 0.9 s) | A stand alone, and a stand that is then asked to turn either way |
 | The clock | Every time is **against the stand**: `fellAfterStand = fell − stand` | The owner's window is the first second after *"Getting up…"* clears |
 
 **The riders read the water and never push it** (`addReaction` is a no-op), which is how they share one sea; in the game
@@ -162,9 +162,9 @@ are over runs, as the earlier placement tables' were, and the wave identities ar
 **Every separation is `'balance'`.** Nobody slips a foot, nobody loses the board, nothing hits the reef, and
 `inContact` is true in **698 of 698** first-second frames on the shipped address: the feet never leave the deck.
 
-**Nor does an input save it.** `hold` leaves the stick at zero; `turnL` and `turnR` put Compress and a **full** steer
-in 0.3 s after the stand, either way. Shipped, the medians are 0.700 s (`hold`), 0.767 s (`turnL`) and 0.767 s
-(`turnR`) — the turn neither rescues the ride nor ends it sooner, so the fall is not something the stick does or fails
+**Nor does an input save it.** The first script leaves the stick at zero; the other two put Compress and a **full**
+steer in 0.3 s after the stand, either way. Shipped, the medians are 0.700 s (no stick), 0.767 s (turning one way) and
+0.767 s (the other) — the turn neither rescues the ride nor ends it sooner, so the fall is not something the stick does or fails
 to do.
 
 **This is the owner's own report, and it is the shipped behaviour.** His words across three reports are *"stands 1
@@ -174,7 +174,7 @@ The shipped address, through its own take-off, gives a **median of 0.750 s and 1
 no new switches on at all.
 
 **Wave by wave, the stand's own conditions decide whether it is carried** (the shipped address; the six waves that lit
-the cue; the stand frame, and the `hold` script's outcome):
+the cue; the stand frame, and the no-stick script's outcome):
 
 | wave | speed, m/s | planing | load, bw | front share | margin | wetted, m² | ahead, m | up the face | face under the board | the stand's refusal | fell after the stand |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -265,7 +265,7 @@ while the feet stay put on the deck however the board moves.
 `limit` at the fall is `'tip'` in **15 of 15** runs for `bank`, `all3` and `all3cap`, and `'tip'` in 9, `'none'` in 5
 and `'flight'` in 1 for `ships` and `trunk`.
 
-**The order, read off one run frame by frame** (`results/trace-ships-hold-wave8.txt`, the shipped address, stick at
+**The order, read off one run frame by frame** (`results/trace-ships-hold-wave8.txt` — the file names carry the script's old name, `hold`; the shipped address, stick at
 zero throughout):
 
 | t after the stand | what has happened |
