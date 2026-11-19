@@ -1633,3 +1633,362 @@ in a turn, working harder because the water at the foam is steeper, moving and s
    7–56 %, and nothing in this round moves that: on foamed ticks the ankle is 34–44 % and `swing` is not in any
    cell's four largest. Whether the balance may spend its correction through the shoulders instead is still the
    owner's call, and it is still the one change this track has measured a reason for.
+
+---
+
+# Part 3 — step 3.5m: **the flat-water minimal reproduction has NO across velocity in it at all, the fall is along the board, and the tow is injecting 5–11 g**
+
+Written 2026-11-19 by the solver-bench agent (Opus 5) on branch `claude/across-velocity`, cut from `claude/the-record`
+at **a060c452**. ⛔ **Measurement only: `git diff -- src/` is empty.** One new probe
+(`docs/research/new-rider/3.5/acrossvel.ts`), **144 measured runs** over six arm × rig combinations (2 arms × 3 rigs ×
+2 stances × 3 entry speeds × 4 stick settings), plus a **24-run inertness control** and a **24-run substep trace** of
+cells already in the matrix — 192 runs executed, 64 s of wall time in all (7 + 17 + 22 + 6 + 12). **No switch, gain, constant, tuning or ruling is
+proposed.**
+
+Tags as in 3.2–3.4: **[M]** measured by the probe here; **[R]** read in the code; **[A]** arithmetic on measured
+numbers, labelled as such.
+
+## 0. The brief, and the six sentences the round is for
+
+The brief was: on flat still water a standing rider under a constant tow falls in 23 of 24 runs
+(`3.3/aim.ts`, `3.3/results/33q/C3-steer.jsonl`, `3.3/README.md` Part 40 §4 check 4), the six zero-stick runs all
+fall, and the committed settle ladder reads `Fe` 0.0 N, `Fx` 0.0 N, `axFeet` 0.000 m/s² at every rung to the fall.
+**Where does the capture test's across VELOCITY come from with no across force** — **(a)** generated inside the rider,
+or **(b)** purely kinematic, the board rolling under him so the relative velocity at the feet is lever arm × roll
+rate? *"These imply completely different builds, which is why nothing is being built until you answer."*
+
+1. ⛔⛔ **Neither. On the zero-stick population there is no across velocity, and no across anything.** At the
+   separating substep, on **24 of 24** zero-stick runs across both arms and both speed-holding rigs, the relative
+   across velocity at the feet is **0**, `speedAcross` is **0**, `pointAcross` is **0**, the felt vertical's across
+   component is **0**, the deck's roll is **0°**, its roll rate is **0 rad/s**, peak delivered `|Fx|` is **0.000 N**
+   and the rig's injected across velocity is **0 m/s** — not small, **exactly zero, to the last bit of a double** [M].
+   The hull is symmetric, `Flat` is symmetric, nothing asks for an across anything, and the across channel never
+   leaves zero. ⭐ **The question the round was commissioned on does not have a referent in the population it was
+   commissioned on.**
+2. ⭐⭐ **The fall is in the ALONG channel — he goes off the back, not off the rail.** On the same 24 runs
+   `pastX` (the capture point past the feet **across**) is **0** and `pastZ` (past them **fore or aft**) is
+   **0.227–0.755 m** against a reach of **0–0.572 m** [M]. `halfAcross` is 0.13 m and `alongFront`/`alongBack` are
+   0.375 m each [M].
+3. ⭐⭐ **And what carries the along channel is the rig.** 33q's tow is a per-substep velocity constraint on
+   `board.velocity` alone and nothing is applied to the rider body [R]. Measured, it injects
+   **40.6–218.6 m/s of along-heading velocity cumulatively** over runs lasting 0.70–2.73 s — a mean injected
+   along-heading acceleration of **53.1–106.4 m/s², which is 5.4–10.8 g** [M]. It is put on the **2.54 kg** board,
+   which then has to drag a **73 kg** body through the feet. It cannot: at the last live substep the board's own
+   along-heading speed sits **within 0.03 m/s of the tow** (4.97–9.00 m/s against tows of 5/7/9) while the rider's is
+   **2.67–8.36 m/s**, and **the body lagging the board's centre is 91–122 % of the whole relative along velocity**
+   while the board's own rotation lever at the feet is **−0.24 to +0.09 m/s** [M]. The centre of mass slides back off
+   the tail of the feet and the test fires.
+4. ⚠️ **But the fall is not only the rig.** With the tow removed entirely the zero-stick rider still leaves the board
+   **12 of 12** — at **2.07–3.75 s** instead of 0.75–1.68 s, **1.8–4.5× later** cell by cell [M]. ⛔ **And it leaves by a different
+   mechanism: in 11 of 12 the capture test never fires at all** (`human.fallen` false, `beyond` false). The board
+   capsizes to **75.3–90.0° of roll**, the pair decelerates to a standstill (board 0.081–0.331 m/s, rider −0.101 to
+   +0.006 m/s) and the rider goes on the posture backstop, `postureError` **0.2501–0.2671 m** against
+   `RECOVERABLE_ERROR` **0.25** [M, R]. **There is no rig on flat still water in which this rider stands, and the two
+   rigs fail two different ways. Neither is the owner's lateral fall.**
+5. ⭐ **Where the across channel IS live — the steered cells — route (a) and route (b) both pay and neither is the
+   answer.** On the **100** steered falls where the capture test fired, the exact three-term decomposition of the
+   quantity the test reads gives **`cLevel` (genuine world-horizontal across motion) a median 0.970** of
+   `|relAcrossDeck|`, **`cUp` (a vertical relative velocity read sideways by the rolled deck — route (b) in its pure
+   form) a median 0.065**, and `cAlong` **0.012** [M]. Within `cLevel`, the **body's** own across motion over ground
+   carries a median **0.611** and the **deck point's** a median **0.445** — they exceed 1 because **they oppose**: the
+   body's motion has the same sign as the relative velocity in **73 of 100** and the deck point's opposes it in
+   **80 of 100** [M]. ⛔ **And the brief's own arithmetic is refuted: `−φ̇ · height` is a median 0.775 of the measured
+   relative across velocity but ranges 0.056–24.6 over the same 100 runs — it does not track it, at any speed** [M].
+6. ⭐⭐ **The tow is amplifying the across velocity too, by about three at 5 m/s and not at all at 9.** Against an
+   along-heading-only hold that injects **exactly zero** across velocity by construction, peak `|relAcrossDeck|` with
+   33q's tow is a factor of **3.16 (median, 1.84–4.47)** larger at 5 m/s, **1.87 (0.91–2.34)** at 7 m/s and
+   **1.00 (0.83–2.60)** at 9 m/s, over 12 cells a speed; the injected across velocity runs **+8.7 to +23.0 m/s**
+   cumulatively at 5 m/s and **−3.2 to +2.0 m/s** at 9 [M].
+
+## 1. The instrument, and why it is an identity rather than a model
+
+The fall test is `HumanBalance.fallen` = `state.beyond && state.weightPast`, and the capture point under it is
+`s.across = px + vx / omega` [R, `humanBalance.ts:454–483`], with
+
+- `px = offset.x − height · nx`, **m, board +x** — a position, and
+- `vx = velocity.x − (velocity · n̂) · nx`, **m/s, board +x** — a speed, built from
+  `velocity = (rider CoM world velocity − board.velocityAt(feet))` **rotated into the deck frame**
+  [R, `AttachedRider.ts` `captureStep`].
+
+`{eLevel, ŷ, fLevel}` is an orthonormal **world** basis — `fLevel` the world-horizontal heading, `eLevel` the
+world-horizontal axis across it (`rollspring.ts`'s `side`), `ŷ` the world vertical. So for `w = v_rider −
+board.velocityAt(feet)`, **world frame, m/s**, the across component the test reads is **exactly**
+
+    relAcrossDeck = w · xDeck = (w·eLevel)(xDeck·eLevel) + (w·ŷ)(xDeck·ŷ) + (w·fLevel)(xDeck·fLevel)
+                              =       cLevel             +      cUp        +       cAlong
+
+with `xDeck` the deck's own across axis (`trimbank.ts`'s `acrossAxis`, the axis `speedAcross` lives on). This is an
+algebraic identity and the probe prints all three terms and their sum beside the measurement, so it is checked row by
+row rather than asserted. `cUp` is the pure route-(b) term: `xDeck·ŷ ≈ sin(roll)`, so it is **zero at zero roll and
+needs no across motion of anything**. `cLevel` is genuine horizontal across motion and is split again into
+`riderLevelAcross − feetLevelAcross`, which is whose it is.
+
+**Everything is read, nothing is reconstructed.** `support` is a public field, `human.state` a public readonly, and
+one declared cast — the pattern `3.5/forward.ts:116` already uses — reads `captureFeet` (world, m), `captureOffset`
+(deck, m), `captureVelocity` (deck, m/s) and `captureFelt` (deck, m/s²), **gets only**. So `n̂` is the engine's own and
+`nz` is never re-derived from `tiltAcross` with a root choice, and the relative velocity the decomposition is taken of
+is provably the vector the test reads rather than a look-alike.
+
+⚠️ **Resolution: substeps, not frames.** The handoff's 2026-11-19 closing state records that `beyond && weightPast` is
+both-true on **0 of 2 123 and 0 of 3 744 live frames** — it is reached inside a substep. `rider.finish` (and
+`captureStep` in it) is the **last statement of `BoardBody.substep`** [R, `BoardBody.ts:1685`], so the probe wraps
+`board.substep` as `3.3/aim.ts` and `rollspring.ts` do and reads after each one. At `SUBSTEPS=64` a substep is
+**1/3840 s**.
+
+⚠️ **And one trap inside that, which cost a measurement before it was caught.** `board.step` runs **all** of the
+frame's substeps; once the rider separates, `rider.finish` stops being called but the board keeps solving to the end
+of the frame. So the separating substep is the **first** row that reads detached, not the last row of the run. Taken
+the wrong way round, the engine's `captureVelocity` drifts against a live read by the board's remaining travel —
+**measured at 0.0052 m/s on tall/5/0.25**, small enough to publish and wrong. The probe pins the first detached
+substep.
+
+## 2. The seatbelts, every one of them exactly zero
+
+`results/35m/35m-tables.txt` §0, over all 144 measured runs.
+
+| control | peak over 144 runs |
+| --- | --- |
+| `feetMiss`: the probe's own feet point against the engine's `captureFeet`, m | **0.000000000** |
+| `offsetMiss`: the probe's `offset.x` against the engine's `offsetAcross`, m | **0.000000000** |
+| `vxMiss`: the test's `vx` redone on the engine's own inputs against its `speedAcross`, m/s | **0.000000000** |
+| `relMiss`: the probe's relative velocity against the engine's `captureVelocity.x`, m/s | **0.000000000000** |
+| the across identity, \|`cLevel+cUp+cAlong − relAcrossDeck`\|, m/s | **0.000000000000** |
+| the along identity, \|`dLevel+dUp+dAlong − relAlongDeck`\|, m/s | **0.000000000000** |
+| `relMiss` **at the separating substep**, m/s | **0.000000000000** |
+| the across identity **at the separating substep**, m/s | **0.000000000000** |
+
+⚠️ **The two controls that compare against `CaptureState`'s published columns are taken on UNFROZEN substeps only, and
+that is not a convenience.** `capture` returns its held state before touching anything when the feet are light
+(`CAPTURE_LOAD` 0.2 body weights [R, `humanBalance.ts:114`]), so while frozen the published `offsetAcross`,
+`speedAcross` and `across` are **stale**. The live inputs (`captureOffset`, `captureVelocity`, `captureFelt`) are
+built before that call and are current every substep. **The frozen share reaches 0.3267 of a run's live substeps**
+[M] — and the first draft of this round read a 0.289 m `offsetMiss` off exactly that and would have published it as a
+frame error. The number that matters is reported with the window it is valid in.
+
+- ✅ **INERTNESS: `INERT=1` against `INERT=0` on the same 24 cells, 0 fall-time mismatches of 24** [M]. Every read the
+  probe makes inside the substep — the feet point, the relative velocity, the capture columns, the force sum, the
+  second water sample — is skipped under `INERT=1`, and the outcomes are identical. **The reads do not change the
+  solve.**
+- ✅ **THE POSITIVE CONTROL: 24 of 24 of 33q's `C3-steer` rows reproduce**, fall for fall, at the precision 33q printed
+  them to, including **the one survivor** (Compress, 7 m/s, quarter stick) [M]. `results/35m/35m-tables.txt` §1 is the
+  row-by-row comparison. Separation cause is `'balance'` on all 23 falls and `human.fallen` is true on all 23, so the
+  branch that fires is `free && this.human.fallen` [R, `AttachedRider.ts:5141`] — **it is the capture test, not the
+  sway test and not the posture backstop.**
+- `npx tsc --noEmit -p .`: **exit 0**, read from `tsc`'s own exit status on its own line, never through a pipe.
+- **`git diff -- src/` is empty** and `git diff --name-only HEAD -- src/` returns 0 files.
+
+## 3. The zero-stick population: the across channel is identically zero
+
+Six cells (Tall and Compress × 5, 7, 9 m/s), two arms, two speed-holding rigs — 24 runs. At the separating substep,
+**every one of them**:
+
+| quantity (unit, frame, axis) | value |
+| --- | --- |
+| `captureVelocity.x` — the relative velocity the test is handed, m/s, deck frame, board +x | **0** |
+| `speedAcross` = `vx`, m/s, deck frame, board +x | **0** |
+| `pointAcross` = `px`, m, deck frame, board +x | **0** |
+| `feltAcross` = `nx`, unit, deck frame | **0** |
+| the deck's roll from the world's level about the heading, ° | **0** |
+| the Euler roll rate `φ̇` about the board's long axis, rad/s | **0** |
+| peak \|`Fx`\| — the water's **delivered** net force on `xDeck`, N, world frame | **0.000** |
+| the rig's cumulative injected across velocity on `eLevel`, m/s | **0** |
+
+⭐ **`RIG=tow` and `RIG=along` are identical row for row on these cells**, in every column and to the last digit of the
+fall time [M] — which they must be, because with the across velocity at zero the two rigs are the same operation.
+**That is the cleanest possible demonstration that 33q's tow injects no across velocity here**: not a small residual,
+the same arithmetic.
+
+**So there is nothing for routes (a) and (b) to explain.** ⛔ And the headline *"what ends it is a velocity, not a
+position"* cannot be studied on this cell at all — it is a statement about the across channel, and this cell's across
+channel is zero.
+
+## 4. What the fall actually is, and the 5–11 g in the rig
+
+At the separating substep, on the 24 zero-stick runs under the two speed-holding rigs: `pastX` **0**,
+`pastZ` **0.227–0.755 m**, `reachAlong` **0.000–0.572 m**, `s.along` **−0.602 to −1.130 m** — **negative, i.e. toward the
+tail** [M]. Its two halves: the position term `pz` **−0.375 to −0.710 m** and the velocity term `vz/ω` **−0.215 to
+−0.755 m**. **Both matter and I will not call either the cause.**
+
+What the along relative velocity is made of, at the last live substep, **m/s, world-horizontal along the heading**:
+
+| arm/rig | cell | relAlong | rider | feet | board centre | lever at the feet | body lags the centre | tow injected along, cumulative |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| probe/tow | Tall 5 | −1.051 | 3.704 | 4.755 | **4.972** | −0.217 | **−1.268** | **59.1** |
+| probe/tow | Tall 7 | −0.990 | 6.103 | 7.093 | **7.000** | +0.093 | **−0.897** | **53.0** |
+| probe/tow | Tall 9 | −0.684 | 8.305 | 8.989 | **8.993** | −0.004 | **−0.688** | **43.4** |
+| probe/tow | Compress 5 | −2.332 | 2.693 | 5.026 | **4.986** | +0.040 | **−2.293** | **70.0** |
+| probe/tow | Compress 7 | −2.871 | 4.129 | 6.999 | **7.014** | −0.014 | **−2.885** | **120.7** |
+| probe/tow | Compress 9 | −0.678 | 8.364 | 9.042 | **9.000** | +0.042 | **−0.636** | **115.9** |
+
+⭐ **The board's centre sits within 0.03 m/s of the tow and the body is 0.64–3.04 m/s behind it**, and the
+board's own rotation lever at the feet accounts for **−0.22 to +0.09 m/s** of that. Over all 48 tow-rig runs the
+injected along velocity is **40.6–218.6 m/s cumulative (median 59.1)** — **53.1–106.4 m/s², 5.4–10.8 g, median
+72.1 m/s²** — at **0.042–0.089 m/s per substep** at 1/3840 s [M, A: the acceleration is the cumulative injection over
+the run's own length].
+
+⭐ **And the number the constraint is cancelling is not a tow's.** It is the reaction of a 73 kg body being dragged by
+a 2.54 kg board through a foot contact, re-imposed on the board alone every 1/3840 s with no bound. **A real tow pulls
+the system; this one pulls 3.3 % of it and leaves the rest behind.** On 4 of the 6 probe-arm cells the along position
+term reaches **−0.3750 to −0.3754 m** against `alongBack` **0.375 m** — the centre of mass crosses the back of the
+feet and `weightPast` flips.
+
+## 5. Removing the tow does not give a control — it gives a second artefact
+
+`RIG=none`, no speed hold at all, the board placed at the same entry speed and left to coast.
+
+- **Zero-stick: 12 of 12 still leave the board**, at **2.07–3.75 s** against 0.75–1.68 s with the tow — **1.8–4.5×
+  later** cell by cell (Tall 9 m/s is the largest at 4.53×, Compress 7 m/s the smallest at 1.75×) [M]. ⭐ **So the flat-water fall is not purely a rig artefact; but every fall time 33q's C3 cell published is
+  inflated by its own rig by that factor on this population.**
+- ⛔ **It is a different failure.** `human.fallen` is **false in 11 of 12** and `beyond` is false with it: the capture
+  test never fires. The deck reaches **75.3–90.0° of roll**, the pair has decelerated to a standstill (board
+  **0.081–0.331 m/s**, rider **−0.101 to +0.006 m/s**) and the rider goes on `postureError > RECOVERABLE_ERROR` with
+  `postureError` **0.2501–0.2671 m** against **0.25** [M, R]. **A capsized stationary board throwing its rider off the
+  posture backstop is not the owner's fall either.**
+- On the steered cells it is sometimes **earlier** than the tow (Tall 5, quarter stick: **0.650 s** against 0.800)
+  [M], which is consistent with the lean ceiling `atan(speedThrough²/(g·4.5))` falling as the board loses speed —
+  already measured on 267 of 267 frames by the take-off round, not re-measured here.
+
+> ⭐⭐ **There is no rig on flat still water in which this rider stands.** 168 runs, two arms, three rigs, 142 falls,
+> and the two speed conditions fail by two different mechanisms. **That is the honest state of the "minimal
+> reproduction": it reproduces a fall, and it is not the fall the track is trying to fix.**
+
+## 6. The steered cells: both routes pay, and the brief's arithmetic is refuted
+
+100 steered falls where the capture test fired, at the separating substep, as shares of `|relAcrossDeck|`:
+
+| term | what it is | median | range |
+| --- | --- | --- | --- |
+| `cLevel` | genuine world-horizontal across motion | **0.970** | 0.000–3.162 |
+| `cUp` | a **vertical** relative velocity read sideways by the rolled deck — **pure route (b)** | **0.065** | 0.000–7.719 |
+| `cAlong` | an along-heading relative velocity leaked by the deck's attitude | **0.012** | 0.000–3.556 |
+| `leverFeet` | `(ω × (feet − board centre)) · xDeck`: the rotation's own lever at the feet | **0.189** | 0.001–3.960 |
+| `leverHeight` | **`−φ̇ · height`: the brief's requested arithmetic** | **0.775** | **0.056–24.632** |
+| `riderLevelAcross` | the **body's** own across motion over ground | **0.611** | 0.003–12.639 |
+| `feetLevelAcross` | the **deck point's** across motion under it | **0.445** | 0.002–8.757 |
+
+- ⭐ **The body and the deck move apart.** The body's across motion has the **same** sign as the relative velocity in
+  **73 of 100** and the deck point's **opposes** it in **80 of 100** [M], which is why the two shares sum past 1.
+  **Route (a) at about 0.61 and route (b) at about 0.44, on the same runs. Neither alone is the answer and the
+  question as posed — one or the other — has no answer on this population either.**
+- ⛔ **`−φ̇ · height` is refuted as an explanation.** Its median share is 0.775, which on its own would look like a
+  near-answer; its **range over the same 100 runs is 0.056 to 24.632**, a spread of 440×. **It does not track the
+  measurement.** Reported as the brief asked — both series, not a ratio — in `results/35m/35m-tables.txt` §6.
+- The pure roll-leak term `cUp` is a **6.5 % median** contributor. **Route (b) in the form the brief described it —
+  a roll needing no across force — is a minority term wherever the across channel is live at all.**
+
+### 6.1 Does the rig inject it? At 5 m/s, most of it
+
+`RIG=along` holds the speed the same way but only along the heading, so it adds **exactly zero** across velocity by
+construction. Peak `|relAcrossDeck|`, tow against along, 12 cells a speed:
+
+| tow | tow / along, median | range | the tow's injected across velocity, cumulative |
+| --- | --- | --- | --- |
+| **5 m/s** | **3.16** | 1.84–4.47 | **+8.7 to +23.0 m/s** |
+| 7 m/s | **1.87** | 0.91–2.34 | −6.8 to +8.4 m/s |
+| 9 m/s | **1.00** | 0.83–2.60 | −3.2 to +2.0 m/s |
+
+⭐ **At 5 m/s the constraint is responsible for roughly a factor of three of the across velocity the capture test
+reads**, and at 9 m/s for none of it. That is the shape the geometric amplifier predicts: the scale factor
+`tow/|v_horizontal|` departs from 1 most where drag is largest against the speed held, which is the 5 m/s cells.
+⚠️ **So every across-velocity magnitude quoted from a 5 m/s towed cell on this water is about three times the
+rider's own**, and the 9 m/s cells are the ones that may be read.
+
+## 7. ⚠️ A correction the data forces, with its scope stated
+
+The closing state's *"what ends it is a velocity, not a position — the position term never trips while the across-speed
+term reaches 6.1 sole-widths"* does not hold on this water. Over **142 falls**, pinning the separating substep:
+
+| which half of `beyond && weightPast` flips last | runs | of which zero-stick |
+| --- | --- | --- |
+| **`weightPast` — a POSITION-only condition** | **87** | 16 |
+| `beyond` — a condition on position **plus** velocity | 38 | 6 |
+| both in the same substep | 17 | 14 |
+
+And on the 100 steered falls the across position term `|px|` is **at or past the feet's half-width (0.13 m) in 67**,
+median **0.1301 m**, while the velocity term `|vx/ω|` is median **0.3635 m** [M]. Which condition inside `weightPast`
+fires: across (`|px| ≥ 0.13`) **63**, along (`|pz| ≥ 0.375`) **63**, both **9**, neither **7** [M].
+
+> ⭐ **So the velocity term is the larger of the two distances — about 2.8× — and the position-only condition is
+> nonetheless the last of the two to close, in 87 of 142 falls.** Those are not in conflict: `beyond` is reached early
+> on the capture point (position + velocity/ω) and then waits for the centre of mass itself to cross the support.
+> ⛔ **I will NOT carry this to the live-wave population the headline came from.** That headline rests on a take-off
+> bench on Canyon B seed 2; this is flat still water under two unphysical speed conditions, and §5 says why neither is
+> a ride. **What is established is narrower and still worth having: the claim that the position term never trips is
+> false as a general statement about the test, and whoever re-reads it on the wave should read `weightPast` separately
+> rather than inferring it from the capture point.**
+
+## 8. The owner's address is not the probe's, and the survivor does not survive it
+
+33q built `{ phase: 'standing', rider: 'new' }` — **four of the owner's five switches off**. `ARM=owner` carries the
+full address copied from `3.5/forward.ts:142`: `feltFrame: 'deck'`, `riderBody: 'two'`, `stanceReach: 'keep'`,
+`deepen: 'on'`.
+
+- ⭐ **33q's single survivor falls on his address.** Compress, 7 m/s, quarter stick stands the whole 4 s run on the
+  probe's config and **falls at 1.650 s** on the owner's: **0 of 24 survive the owner's arm against 1 of 24 the
+  probe's** [M]. ⚠️ **Part 40 §4 check 4 already warned that the survivor must not be read as a steer standing him
+  up**; this is a second, independent reason — it is also configuration-dependent.
+- Zero-stick fall times: probe **0.750–1.617 s**, owner **0.800–1.683 s**. The largest single move is Tall 9 m/s,
+  **0.7500 → 0.9333 s (+24 %)** [M].
+- The steered cells move much more: Compress 9 m/s quarter stick **2.7333 → 0.7833 s** (3.5× earlier), Compress 7 m/s
+  full stick **1.2667 → 0.8833 s**, Tall 5 m/s full stick **0.8000 → 1.0167 s** [M].
+- And the across velocity is **larger** on his address at 5 m/s: peak `|relAcrossDeck|` reaches **6.94 m/s** against
+  the probe arm's **3.99 m/s** on the same cell [M].
+
+> **The probe's config is not a proxy for his, on either channel.** Part 34 said the same thing about the felt
+> vertical's frame alone (0.77–1.95 s against 1.10–2.07 s, different populations); this adds that the **outcome** can
+> flip, not just the distribution.
+
+## 9. What I will not claim
+
+- ⛔ **I will not claim the rider can stand on flat still water, and I will not claim he cannot for a physical
+  reason.** He leaves the board in 142 of 144 runs here, but §5 shows the two speed conditions are an unbounded
+  constraint on 3.3 % of the system and a board that stops, respectively. **The flat-water bench as it exists cannot
+  separate the balance from its rig**, and building one that can is a new instrument, not a reading.
+- ⛔ **I will not carry the steered cells' decomposition to the owner's wave.** One water, one hull, two stances,
+  three entry speeds, 100 falls. The live-wave lateral fall may or may not share this mechanism and nothing here
+  tests it.
+- ⚠️ **I will not put a number on "how much of the owner's across velocity is the rider's own".** §6.1 measures the
+  rig's share **on this bench at these speeds**; the owner's game has no tow.
+- ⛔ **Nothing here touches `BoardBody`'s yaw residual**, which its own source documents as double-counting.
+- ⚠️ **`1.21 m/s` is not used anywhere in this round and is not a threshold in code** — it is a 636-fall mixed-gain
+  median from a research document. No quantity here is compared against it.
+- ⛔ **I will not claim the position term's saturation is understood.** `|px|` sits at **0.1301 m** against a 0.13 m
+  half-width in 67 of 100 steered falls. That it pins almost exactly at the support's edge is measured and
+  unexplained; it is the one thing in this round I would want looked at before anything is built on the across
+  position term.
+- **No tuning, no gain, no constant, no switch and no ruling is proposed.**
+
+## 10. What this leaves, in order
+
+1. ⭐⭐ **The question in the brief should not be answered on flat water, because flat water has no across channel
+   with the stick at zero.** If the across velocity's origin is still the thing to find, the population has to be one
+   where it exists: the steered cells here (where the rig pays about three of it at 5 m/s and none at 9), or the live
+   wave. **The 9 m/s steered cells are the only rows on this bench whose across velocity is not substantially the
+   rig's.**
+2. **A flat-water bench that is a ride** would hold the **pair's** speed, not the board's — a thrust on the system, or
+   an along-heading hold applied to board and rider together. It is a few lines in a probe and no source change, and
+   it would turn §5's "two artefacts" into one control. **Nothing in this round needed it; the next round on this
+   water does.**
+3. **Read `weightPast` separately from the capture point** on whatever population comes next (§7). It is a
+   position-only condition and it is the last to close in 87 of 142 falls here.
+4. **`|px|` pinning at the support's half-width** (§9) is unexplained and sits directly under the across position
+   term.
+
+## 11. For the owner, in plain words
+
+Nothing in the game changed and there is nothing for you to ride or rule on.
+
+I was asked to chase down one clean clue: on completely flat, still water — no wave at all — the surfer falls over
+anyway, and we wanted to know what shoves him sideways when nothing is pushing sideways. **The answer is that nothing
+shoves him sideways. He is not falling sideways on that test at all — he is sliding off the back of the board.** And
+the reason he slides off the back is the test rig: to keep the board moving we were effectively bolting a rocket to
+the board and nothing to the surfer, at between **five and eleven times the force of gravity**. The board kept its speed, the man
+did not, and he was left behind.
+
+Take the rocket off and he lasts about two to four and a half times longer — so it is not *only* the rig — but then the board slows
+to a stop and tips over onto its side, which is not a ride either. **So that particular flat-water test cannot tell us
+anything about your falls, and the day that was about to be spent on it is better spent elsewhere.** The falls you
+actually see, on a real wave while turning, are untouched by this and still stand.
+
+One more thing worth knowing: the one run in that old test that *didn't* fall, falls as soon as it is run with your
+own settings. So that "survivor" was never yours.

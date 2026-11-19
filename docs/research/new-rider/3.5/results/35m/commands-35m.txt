@@ -1,0 +1,44 @@
+# Step 3.5m — the commands, run from the repository root with node_modules beside it.
+# Every exit code below was read from the command's own exit status on its own line, never through a pipe.
+
+npx tsc --noEmit -p .                                  # exit 0
+git diff -- src/                                       # empty
+git diff --name-only HEAD -- src/ | wc -l              # 0
+
+npx rolldown docs/research/new-rider/3.5/acrossvel.ts -o <scratch>/acrossvel.mjs --format esm --platform node
+
+# A — the positive control: 33q's own C3-steer cell, which must reproduce (24 runs)
+ARM=probe RIG=tow   STANCES=tall,compress TOWS=5,7,9 STEERS=0,0.25,0.5,1 SUBSTEPS=64 SECONDS=4 \
+  OUT=<scratch>/A-control.jsonl node <scratch>/acrossvel.mjs
+
+# B — the two other speed-holding rigs on the probe's own config (48 runs)
+#     RIG=along holds the speed ALONG THE HEADING ONLY and injects exactly zero across velocity.
+#     RIG=none  removes the hold entirely.
+ARM=probe RIG=along,none STANCES=tall,compress TOWS=5,7,9 STEERS=0,0.25,0.5,1 SUBSTEPS=64 SECONDS=4 \
+  OUT=<scratch>/B-rigs.jsonl node <scratch>/acrossvel.mjs
+
+# C — the OWNER's full address (feltFrame=deck, riderBody=two, stanceReach=keep, deepen=on), all three rigs (72 runs)
+ARM=owner RIG=tow,along,none STANCES=tall,compress TOWS=5,7,9 STEERS=0,0.25,0.5,1 SUBSTEPS=64 SECONDS=4 \
+  OUT=<scratch>/C-owner.jsonl node <scratch>/acrossvel.mjs
+
+# D — the inertness control: every read inside the substep skipped (24 runs). 0 fall-time mismatches against A.
+INERT=1 ARM=probe RIG=tow STANCES=tall,compress TOWS=5,7,9 STEERS=0,0.25,0.5,1 SUBSTEPS=64 SECONDS=4 \
+  OUT=<scratch>/D-inert.jsonl node <scratch>/acrossvel.mjs
+
+# E — the per-substep trace of the zero-stick cells (24 runs; cells already in A/B/C)
+ARM=probe,owner RIG=tow,none STANCES=tall,compress TOWS=5,7,9 STEERS=0 SUBSTEPS=64 SECONDS=4 EVERY=32 KEEP=200 \
+  TRACE=<scratch>/trace-zero.jsonl OUT=<scratch>/E-trace.jsonl node <scratch>/acrossvel.mjs
+
+# The tables in 35m-tables.txt, with 33q's own committed rows piped in as the positive control's reference:
+git show origin/claude/across-aim:docs/research/new-rider/3.3/results/33q/C3-steer.jsonl \
+  | python3 -I docs/research/new-rider/3.5/results/35m/read.py > 35m-tables.txt
+
+# Files here:
+#   A-control.jsonl / B-rigs.jsonl / C-owner.jsonl   the 144 measured run rows
+#   D-inert.jsonl                                    the inertness control's 24 rows
+#   E-trace.jsonl.gz                                 the trace arm's run rows
+#   trace-zero-probe-tow.jsonl.gz                    the per-substep trace, probe arm + tow rig, zero stick
+#                                                    (1 922 of 10 294 rows kept; the other arms' traces are not shipped)
+#   A-control-stdout.txt                             arm A's own printed tables
+#   35m-tables.txt                                   every table quoted in README Part 3
+#   read.py                                          the reader that produces 35m-tables.txt
