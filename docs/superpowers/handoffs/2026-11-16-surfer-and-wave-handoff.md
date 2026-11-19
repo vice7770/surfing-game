@@ -4394,3 +4394,41 @@ I reported *"`along` is 1.0000 at both ends"* and told the owner he is not pitch
 ### 6. And I starved its machine
 
 Two of its runs — the pre-registered `?askCap=4.5` bit-identity test and a `STAND_HOLD=8` window — **were killed because another session's heavy process dropped its worker to 68 % of a core.** **That was almost certainly my three concurrent benches.** No number comes from them, and the commands are in its appendix. **Lesson: this project's benches are single-machine and 20 minutes each; two rounds cannot run heavy at once.**
+
+---
+
+## 2026-11-19 (night) — ⭐⭐ **THE 2×2 CLOSES IT: THE STEER IS NECESSARY AND SUFFICIENT, AND THE UNLOAD HYPOTHESIS IS DEAD**
+
+`TURN_STEER` and `TURN_COMPRESS` split the ask. Seed 2, wave 1, same stand to the frame, the `cue` arm **bit-identical across all three runs** at every timestamp (the sea does not drift under the comparison), and the three headrooms reproduce `rawMargin` in **1 142 of 1 142** and **1 286 of 1 286** window frames.
+
+| what is asked | wave-1 outcome | `across` through the turn window | roll when it breaks | load at the break |
+| --- | --- | --- | --- | --- |
+| **nothing** | **rides 3.02 s out** | 0.81–0.99, `limit` `none` in all 182 frames | reaches **16.7°**, fine | never below 0.468 |
+| **Compress only** | falls at **1.600 s** (both runs, range 1.600–1.600, **0 of 2 inside a second**) | **0.92–0.995, `limit` `none`, `outX` 0.0000** | — | **drops to 0.560** |
+| **steer only** | falls at **0.683 / 0.700 s** | **0.9418 → −0.0408 in ONE frame** | **4.7° / 9.7°** | 0.733 / 0.578 |
+| both | falls at 0.717 / 1.000 s | −0.1233 / −0.0073 at +0.60 | 8.0° / −3.3° | 0.650 |
+
+### 1. ⭐⭐ The steer is necessary and sufficient. Compress is neither.
+
+**Steer alone destroys the lateral support at the same time as the full ask** (0.683/0.700 against 0.717/1.000), so **Compress is not necessary**. **Compress alone leaves `across` at 0.92–0.995 with `limit` `none` and `outX` 0.0000 right through the window**, so **it is not sufficient** — its own fall at **1.600 s** comes *after* the input stops (the window ends at `TURN_AT` 0.3 + `TURN_FOR` 0.9 = 1.2 s).
+
+> ⭐ **And Compress is mildly PROTECTIVE in combination**: with it the two turns last 0.717 and 1.000 s; without it, 0.683 and 0.700. That is consistent with the earlier measurement that Compress cut sudden falls to 2 of 24.
+
+### 2. ⛔ MY UNLOAD HYPOTHESIS IS DEAD, and the split killed it cleanly
+
+This afternoon I floated that the board's unloading (load 1.280 → 0.650 → 0.359 bw) was the mechanism, and that Compress pulling the legs in was the likely cause. **Both halves are refuted by the arm that isolates them:**
+
+* **Compress DOES unload the board — load 0.560 at +0.60 s — and the lateral headroom stays at 0.9604.** So **unloading is not sufficient.**
+* **The steer collapses `across` at a HIGHER load (0.733) than Compress achieves without collapsing it (0.560).** So **the unload is not what collapses it.**
+
+> **The mechanism is the steer's own lateral demand, not a loss of normal load.** The unload is a co-symptom.
+
+### 3. And roll is finished as a candidate, on a third independent reading
+
+**The steer-only arm breaks at 4.7° of roll** while the surviving arm reaches **16.7°** and is fine — a factor of **3.5** the wrong way for any roll-threshold story.
+
+### 4. What this means for the build, and what it does NOT mean
+
+* ⭐ **The thing to fix is what a full steer asks of the lateral contact in its first frame.** It is a cliff, not an erosion: `across` goes 0.9418 → −0.0408 between two consecutive 0.1 s samples, and `grip` only follows afterwards.
+* ⛔ **The Steam Controller Compress bug is NOT the cause of the owner's falls**, and if anything his pinned-to-full Compress was propping him up. **The fix is still right** (he cannot modulate an input that measurably helps him), but it must not be sold as a fix for the fall.
+* ⚠️ **Population: one wave, two runs per arm, one sea.** The structure is what carries this — a 2×2 with a bit-identical control arm — not the n. **The same split on the two waves whose turns HOLD (2 and 11) is the test that would break it**, and it needs no new instrument.
