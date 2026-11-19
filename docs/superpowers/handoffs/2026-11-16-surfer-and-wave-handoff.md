@@ -4651,3 +4651,112 @@ PR #444 on `claude/ride-everything`, opt-in, default byte-identical. Canyon B Me
 
 ### 5. Not measured, and the owner sees one of them first
 **Seed 1 and every Compress arm** (Compress is measured protective and has rescued a wave) · ⚠️ **the DRAWING: `swung`'s 0.35 share stands down so the drawn lateral lean goes 0.35ψ → 1.0ψ with the fold reaching 68.75°, and nobody opened a browser** · `?trunk=mass` + `?swing=mass` together (the folds do not commute) · `src/wave` was still running at hand-back, its whole diff there being one forwarding line and one typed field.
+
+---
+
+## 2026-11-19 (night) — ⛔⭐ **STEP 33q: THE ROUND I WAS COMMISSIONED TO RUN HAD ALREADY BEEN RUN FOUR DAYS AGO, IN THE NEXT FILE ALONG**
+
+The bench commission was: *"two of this project's own measurements disagree, and nobody has resolved it"* — 3.2y's
+hull side force of **−384 N/rad** against Part 24's net base drift of **0.00–0.38 m/s²** — with *"no paper resolves
+it, and no round has"* and *"either answer closes a line of work."*
+
+> ⛔ **The round exists. It is `3.3/README.md` Part 25, step 33a, written 2026-11-15 on `claude/rider-new-33a`,
+> 168 runs.** Its own brief was the same question in nearly the same words, it names the Part 24 §6 discrepancy
+> explicitly as the thing it is resolving, and it reproduces all twelve of Part 24's published columns to the digit
+> before answering. **Part 24 is the LAST part of `3.2/README.md`, so its "what follows" was taken up in the next
+> directory** — and the commission (and I, for the first hour) read only 3.2.
+>
+> ⚠️ **This is the trap the commission itself warned me about, one directory along from where it told me to look.**
+> The standing instruction is *"grep the later PARTS of 3.2/README.md"*. It needs widening: **when a part is the last
+> in its file, its open question lives in the NEXT file.** Three rounds were once spent on one marker Part 24 had
+> already closed; this is the fourth, and it is mine.
+
+### 1. ⭐⭐ Part 25's answer, which stands, and which I verified at the one load-bearing line
+
+**There was never a discrepancy, because the 0.00–0.38 is not an acceleration.** `trimbank.ts:545` is
+`baseMeanAccel = |feetAcross| / t` — the base's across **velocity at the fall** over the **time to the fall**, taken
+in the board's **rotating** frame with the felt-vertical component removed. **I read that line myself rather than
+take it on trust, and it says what Part 25 says it says.** Its units are m/s² only because a velocity was divided by
+a time. A force over a mass was never comparable with it.
+
+**And −384 N/rad was right all along.** It is newtons per radian of roll on the **world-horizontal axis across the
+heading** — not inferred: `roll-plant/plant.probe.ts:60` computes `PLANT_SPEEDS`' `Y` as `F.dot(levelLeft)` with
+`levelLeft = left.setY(0).normalize()`.
+
+**So both numbers are right and the commission's either/or has no answer, because its premise is false.**
+
+### 2. ⛔ AND THE VERDICT IT ASKED FOR IS ALREADY ON RECORD: AIMING THE BOARD IS NOT A VIABLE AUTHORITY
+
+Part 25's three reasons, on 168 runs, none of which is magnitude:
+
+* **Magnitude is not the problem.** The board already carries **1.58–3.47 m/s²** of lateral acceleration with the
+  **stick at zero**, against a deficit of **0.23–1.45 m/s²**. It is already aimed.
+* **Time is.** The steer's own increment is **−0.06 to +0.18 m/s² at 0.1 s** and reaches **−1.62 m/s² only at
+  0.5 s**, against the capsize's **τ = 0.245 s**. And sticks 0.25, 0.5 and 1 are **identical to the digit for the
+  first 0.3 s**, because `leanPace = LEAN_IN_RATE = 1.4 rad/s` bounds them: **a bigger stick buys nothing early.**
+* **The lever is shared.** Steering on this plant **is** leaning, leaning is the roll, and the roll is what 3.2w,
+  3.2x and 3.2y already spent. Every degree of roll taken to make side force leaves residual tilt, and
+  `g · sin(that)` is the forcing. **Demand and supply are the same lever.**
+
+⭐ **So the line of work that closes is "aim the board under the falling body". It is closed, and it was closed on
+2026-11-15.** The fault is upstream, and Part 24 §3 already names it: `g · sin(7.4–15.9°)` of a felt tilt that never
+closes, on a rider whose stick is at zero and whose balance has no way to move it.
+
+### 3. ⭐ What step 33q adds that is genuinely new — one finding, about our instruments, not about the board
+
+Full write-up as **`3.3/README.md` Part 40**; probe `3.3/aim.ts`, results `3.3/results/33q/`, 75 runs. Flat still
+water, towed, the roll held about the board's long axis with the Euler roll rate zeroed — 3.2y's own harness — with
+one switch added: **`YAW=0` holds the yaw rate and the sideslip too (the captive condition `PLANT_SPEEDS` was
+measured in), `YAW=free` does not.** Every water force resolved on **both** axes at the same instant.
+
+⭐⭐ **THE CAPTIVE HOLD MANUFACTURES THE WHOLE IN-DECK-PLANE ACROSS COLUMN, AND HALVES THE SIDE FORCE.** At 5 m/s,
+settled (the only speed that settles — see the caveat below), payload at the deck, over 5–42° of roll:
+
+| | on `eLevel` (world-horizontal, across the heading) | on `xDeck` (the deck's own across axis, the fall test's) |
+| --- | --- | --- |
+| **yaw free** | 68 → 651 N, **715–971 N per unit sin(roll)** | **+0.5 to −6.5 N**, tilt **0.04–0.43°** |
+| **yaw + slip held at 0** | 38 → 409 N, **412–585 N per unit sine** | **−29 to −228 N** (−322 to −344 N per unit sine), tilt **2.2–14.4°** |
+
+* ⭐ **It is the same force. Freeing the yaw removes 98 % of its in-plane part** and **nearly doubles** its
+  horizontal part (743 against 415 N/rad at 5.2° of roll, where `PLANT_SPEEDS`' 5 m/s row reads −361).
+* ⭐ **Per source, the mechanism is visible**: `buoyancy` makes **−9.5 to −88.1 N** in the plane of the deck in
+  **both** conditions (pointed at the water-surface normal — the consultation's own diagnosis, `hullForces.ts:264`),
+  and with the yaw free the **fins pay it back almost exactly** (+9.2, +12.4, +32.9, +90.5 against −9.5, −19.5,
+  −41.0, −88.1) through **1.6–6.6° of sideslip**. Held, the fins cannot develop that sideslip and **add to the error
+  instead** (−18.1 → −130.7 N). **This confirms Part 30 §4b's "the fins are not the pusher; they are the only
+  resister" on a second, independent water.**
+* ⚠️ **Why it matters, and the only reason it matters:** `PLANT_SPEEDS` is a **fully captive** table and it is part
+  of what the balance's own internal model is built on (`predictiveBalance.ts`). On the side-force row that table is
+  about **half** what a freely turning board makes, and its in-plane column is **a hold artefact**. That is a note
+  for whoever picks up Part 38's "the internal model is wrong by four to twenty times the motion it is predicting" —
+  **not a change, not a ruling, and nothing the owner would feel.** (`RAIL_PLANT` already settles with its yaw and
+  sideslip free, so this applies to `PLANT_SPEEDS` and to the 0° row `railCorrection` adds onto.)
+
+### 4. ⚠️ The caveats, including a check that failed
+
+* ⚠️ **Only the 5 m/s cells settle. Ruling 29t therefore forbids quoting 6–9 m/s as settled, and Part 40 does not.**
+  Those cells ring by a factor of two inside one hold (7 m/s, 20° of roll: `Fe` reads 284, 509, 254, 485, 306,
+  449 N over the ladder). What they have instead is **reproducibility**: a 4 s window after a 35 s settle in a 40 s
+  hold reproduces the 2 s window after an 8 s settle in a 12 s hold to **≤ 2.6 % on `Fe`, ≤ 2.5 % on `Fx`** on all
+  four cells. **So the speed range the commission asked for is Part 25's, not this probe's.**
+* ⛔ **A failed check, recorded as one.** `FINS=none` was meant to isolate the fin cancellation. It isolates nothing:
+  a finless board will not hold the condition (sideslip to −143°, the 41° hold reaching 65° of roll) and the **rail
+  faces** take the fins' place. **Nothing rests on it.**
+* ⚠️ **The statistic trap, nearly walked into.** My in-plane residual is a **secant ratio** `|tilt|/roll` at settled
+  holds; Part 25's 0.17–0.37 is a **pooled least-squares slope with a fitted intercept** over thousands of frames.
+  The consultation's own warning covers exactly this and they are **not** chained. Matched properly against
+  Part 26's *"the force's share"* column (**0.111–0.345 °/°**, shipped-hull cells), this cell's slope is
+  **0.070 °/° at 5 m/s and 0.135 at 7** — at or just below the bottom of the face's band, on **three points a fit**.
+* ⚠️ **New, small, and not my question:** `RIDER=new` on **flat still water** with a tow and the stick held from the
+  first frame **falls in 23 of 24 runs at 0.70–2.73 s** — he capsizes with no wave under him at all. Consistent
+  with Part 34; the one survivor is a population of one and establishes nothing.
+* **No source file changed.** `git diff -- src/` empty. `npx tsc --noEmit -p .` **exit 0**, read from its own exit
+  status, not through a pipe.
+
+### 5. What the next commission should take from this
+
+1. ⛔ **Do not re-open "can the board be aimed". It is answered.** Part 25 §1.3–1.6 is the citation.
+2. ⚠️ **Widen the grep rule**: a part that is last in its file has its follow-up in the next file. `3.2` ends at
+   Part 24; `3.3` runs to Part 40; `3.5` has its own numbering. **Check all three before commissioning a round.**
+3. **The live lead is upstream of the board**, where Part 24 §3 and Part 38 both already point: the felt tilt that
+   never closes, and the body's shape in the model rather than any number in it.

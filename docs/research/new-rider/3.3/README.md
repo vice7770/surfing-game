@@ -8122,3 +8122,245 @@ Canyon, `?canyonWaves=true`, your test spot, and `?rider=new&feltFrame=deck` as 
      rather than at any number in it.**
    **My recommendation this time is the third, and I am saying so having just had my own last recommendation
    refuted by my own measurement.** Your call.
+
+---
+
+# Part 40 — step 33q: the round Part 24 §6 asked for had already been run; and the captive hold manufactures the in-plane column
+
+Written 2026-11-19 by the build agent (Opus 5, effort high) on branch `claude/across-aim`, cut from
+`claude/the-record` at **904803a2**.
+
+Tags as before: [M] measured by a probe here; [R] read in the code; [S] from a source; [I] my inference.
+
+**The round was commissioned to resolve, as a first-class open question, the discrepancy `3.2/README.md` Part 24 §6
+hands over** — 3.2y's hull side force of **−384 N/rad** against Part 24's own net base drift of
+**0.00–0.38 m/s²** — on the brief's statement that *"no paper resolves it, and no round has."*
+
+> ⛔ **That statement is false, and it is the error this round's first hour should be remembered for. The round
+> already exists: it is Part 25 above** (step 33a, written 2026-11-15 on `claude/rider-new-33a`, cut from Part 24's
+> own merge, **168 runs**). Its brief was the same question in nearly the same words — *"whether the board can
+> deliver it, before anyone builds a controller"* — it names the Part 24 §6 discrepancy explicitly as the thing it
+> is resolving, and it reproduces every one of Part 24's twelve published columns to the digit before answering.
+> **Part 24 is the last part of `3.2/README.md`, so its "what follows" was taken up in the NEXT file, which the
+> commission did not read.** This is the trap that file warns about in its own words, one directory along.
+
+So this round's result is **not** the answer to its own question. It is **(1)** a confirmation of Part 25's answer
+from a harness Part 25 did not use, **(2)** one check on Part 25's load-bearing claim read in the code rather than
+taken on trust, and **(3)** two numbers nobody has published, one of which is a lead for this file's own open
+thread. **No change to the game and no change to any source file.** 75 runs, one probe, `3.3/aim.ts`.
+
+## 0. The datums, stated once, because this is a round about a datum
+
+Three quantities were being compared and no two of them are the same kind of thing.
+
+- **`PLANT_SPEEDS`' `Y` row and 3.2y's −384 N/rad** are a force in **newtons per radian of the deck's roll**, on the
+  **world-horizontal axis across the heading**, with the roll, the sideslip **and the yaw rate all held**. That is
+  not inferred: `roll-plant/plant.probe.ts:60` computes it as `F.dot(levelLeft)` with
+  `levelLeft = left.clone().setY(0).normalize()` [R]. This part calls that axis **`eLevel`** and that condition
+  **captive**. It is the axis a **turn** is measured on.
+- **Part 24's "net base drift", 0.00–0.38 m/s²**, is `trimbank.ts:545` [R]:
+  > `baseMeanAccel: r(Math.abs((split?.feetAcross ?? NaN) / (split?.t ?? NaN)), 2)`
+  — the base's across **velocity at the fall** divided by the **time to the fall**, where `feetAcross` is taken in
+  the board's **rotating** frame with the component along the **felt vertical removed**. **Part 25 §1.1's reading is
+  correct and I verified it in the file: it is not an acceleration in any frame.** Its units are m/s² only because a
+  velocity was divided by a time; it is the chord slope of a signal whose frame rolls to 63° at up to 98 °/s and
+  whose projection axis rotates with the very acceleration it is supposed to register. **A force over a mass was
+  never comparable with it.**
+- **The deck's own across axis** — the board's local **+x**, `trimbank.ts`'s `acrossAxis`, the axis
+  `CaptureState.speedAcross`, the capture point and the fall test live on. This part calls it **`xDeck`**. It is the
+  axis a **topple** is measured on. `eLevel` and `xDeck` are **the roll angle apart**, which is why a force along
+  the deck normal is `sin(roll)` of itself on the first and exactly zero on the second.
+
+Every force below is **delivered**, not requested: `BoardBody.forces`' ten water entries, a mean over the step in
+newtons in the world frame, read back **after** the solve and then projected. Nothing here asks for a force. Speeds
+are reported as both **over-ground** and **through-water along-heading**, the second being the one the model's own
+lean ceiling is built on (`AttachedRider.ts:3524`) [R].
+
+## 1. The method, and the one thing it adds to 3.2y's
+
+The harness is **`3.2/rollspring.ts`'s flat-water captive cell**, copied into `3.3/aim.ts`: still water at y = 0,
+the board placed level, `TOW` holding the centre's horizontal speed each substep, the roll held about the board's
+own long axis through the composite centre of mass with the Euler roll rate zeroed, ramped over `HOLD_RAMP` and read
+in a window after `SETTLE`. `PAYLOAD_Y` places the rigid 73 kg payload. The hold is wrapped round `board.substep`
+**in the probe**; no source file is touched and there is no switch to ship.
+
+**What it adds is one switch and one pair of columns.** `YAW=0` additionally holds the Euler yaw rate at zero and
+the path's angle at the heading — the captive condition `PLANT_SPEEDS` was measured in. `YAW=free` (the default)
+leaves both free, which is what the board does under a rider. And every force is resolved on **`eLevel` and `xDeck`
+at the same instant**, so the axis question is a measurement off one run and not an argument.
+
+**Why flat water and not the face.** Ruling 29t, and 3.2y's own reason: on the `FaceWater` this hold leaves its
+condition inside a second. Part 25 already has the face, free-running, with the live rider and a steer ladder; this
+round deliberately takes the other corner, where the hold settles, so that the two can disagree if they want to.
+
+## 2. The four sentences the round is for
+
+1. **Both numbers are right, there is no discrepancy, and Part 25 said so four days ago.** §0 is the whole of it:
+   one is a captive world-horizontal side force, the other is a velocity over an elapsed time. **Part 25 §1.1–1.2 is
+   the primary source and this part adds only that I read `trimbank.ts:545` myself and it says what Part 25 says it
+   says** [R].
+2. **On `eLevel` the hull's side force is confirmed, and the captive condition understates it by a factor of 1.8.**
+   At 5 m/s, settled, payload at the deck, over 5–42° of roll: **715–971 N per unit sin(roll) with the yaw free**
+   against **412–585 N per unit sine with the yaw and the sideslip held** — and at 5.2° of roll, **743 against
+   415 N/rad**, where `PLANT_SPEEDS`' own 5 m/s row reads **−361** [M, R]. So 3.2y's −384 and the table's −429.7 are
+   both the **captive** number, Part 25's free-running **547 N per unit sin(rail)** on the face sits between the two
+   conditions, and the hull's free-running law is close to the deck-normal bar (the pair's 741 N) that the
+   bank-gain consultation sets. **Nobody had measured the two conditions on one harness; the gap is the hold, not
+   the hull.**
+3. ⭐ **And the whole in-deck-plane across column, in the captive condition, is manufactured by the hold.** On
+   `xDeck` at the same four rolls and the same speed: **−29 to −228 N held, a near-constant −322 to −344 N per unit
+   sin(roll), with a residual felt tilt of 2.2–14.4°** — against **+0.5 to −6.5 N free, scattering about zero, with
+   a residual tilt of 0.04–0.43°** [M]. **The force is the same force; freeing the yaw removes 98 % of its in-plane
+   part.** Per source, the mechanism is visible and it is the one the 2026-11-15 consultation and Part 30 §4b
+   already name: `buoyancy` makes **−9.5 to −88.1 N** in the plane of the deck in **both** conditions, being pointed
+   at the water-surface normal, and with the yaw free the **fins pay it back almost exactly** (+9.2, +12.4, +32.9,
+   +90.5 N against buoyancy's −9.5, −19.5, −41.0, −88.1) through **1.6–6.6° of sideslip**; with the yaw held, the
+   fins cannot develop that sideslip and **add to the error instead** (−18.1, −36.3, −80.0, −130.7 N) [M].
+   **Part 30 §4b's "the fins are not the pusher; they are the only resister" is confirmed on a second, independent
+   water.**
+4. ⭐ **And the in-plane residual the hull makes on still water lands at the BOTTOM of the band the face cell
+   measures — a lead for this file's own thread, not a rescue for steering.** With the payload at the **rider's own
+   height** (0.915 m, `roll-plant`'s `RIDER_POINT` — the configuration closest to the real rider), free and settled
+   on flat water, the residual in-plane tilt `atan(Fx/Fn)` is **0.455–2.649°** over 5–21° of roll at 5 and 7 m/s
+   [M].
+
+   **The statistic has to be matched before that is compared with anything, and this is where this round could most
+   easily have gone wrong.** Part 25 §1.6's `1 − gain` = 0.17–0.37 is a **pooled least-squares slope with a fitted
+   intercept** over 768–2317 frames; what §3's table gives directly is a **secant ratio** `|tilt| / roll` at each
+   settled hold (0.086, 0.079, 0.074 at 5 m/s; 0.093, 0.108, 0.125 at 7). **The 2026-11-15 consultation's own
+   warning applies — *"a pooled slope with a fitted intercept and a per-frame ratio are different statistics"* — so
+   they are not chained here.** Fitted the same way, as a least-squares slope of `|tilt|` on roll **through three
+   rolls a speed**, this cell gives **0.070 °/° at 5 m/s (intercept +0.090°)** and **0.135 °/° at 7 m/s (intercept
+   −0.242°)** [M; three points a fit, and that thinness is this number's main weakness].
+
+   The like-for-like column on the face is **not** Part 25's total gain but **Part 26's own *"the force's share"***
+   — the real in-plane force's degrees of tilt per degree of roll, pooled the same way — which reads
+   **0.111–0.345 °/°** over the eight shipped-hull cells (the 0.478 row is the `hull:'rail'` positive control, which
+   ships off). **So the hull's still-water in-plane residual, 0.070–0.135, sits at or just below the bottom of the
+   face's 0.111–0.345**, and the rest of that band is the face, the unsteadiness, and — separately, and already
+   measured — the **world-frame filter's +0.064 to +0.136 °/°** (Part 27 §2). **It changes nothing about
+   steering**, because both candidate fixes are already built (`?feltFrame=deck`, `?buoyFrame=hull`), both ship
+   off, and both were measured leaving 12 of 12 falls.
+
+## 3. The tables
+
+`results/33q/A-axes-33q.txt` in full. 5 m/s, payload at the deck, settled; positive rolls shown, the negatives are
+antisymmetric to the digit (§4 check 1). `Fe` is on `eLevel`, `Fx` on `xDeck`, `Fn` on the deck normal, all N.
+
+| roll | | `Fe` | `Fx` | `Fn` | `Fe` per unit sine | `Fx` per unit sine | tilt `atan(Fx/Fn)` | `Fx`/75.54 kg |
+|---|---|---|---|---|---|---|---|---|
+| 5.24° | **yaw free** | 68.0 | **+0.5** | 774.4 | 744 | +5.5 | **+0.04°** | +0.007 m/s² |
+| 10.48° | free | 130.1 | −5.8 | 782.2 | 715 | −31.9 | −0.43° | −0.077 |
+| 21.96° | free | 294.0 | **−2.3** | 826.2 | 786 | −6.2 | −0.16° | −0.030 |
+| 42.07° | free | 650.9 | −6.5 | 999.6 | 971 | −9.7 | −0.37° | −0.086 |
+| 5.25° | **yaw held at 0** | 38.0 | **−29.4** | 772.0 | 415 | −321.9 | −2.18° | −0.389 |
+| 10.49° | held | 75.1 | −60.1 | 772.9 | 412 | −329.9 | −4.44° | −0.796 |
+| 22.11° | held | 158.9 | **−129.6** | 781.1 | 422 | −344.3 | −9.42° | −1.716 |
+| 44.43° | held | 409.4 | −227.5 | 885.7 | 585 | −324.9 | −14.40° | −3.012 |
+
+And the payload-height control, free and settled (`results/33q/B-payload-33q.txt`), which is the row to lead with
+because it is the mass distribution the rider actually has:
+
+| tow | roll | `Fe`, N | `Fx`, N | tilt `atan(Fx/Fn)` | secant \|tilt\|/roll, °/° | `buoyancy` on `xDeck`, N | `fins` on `xDeck`, N |
+|---|---|---|---|---|---|---|---|
+| 5 m/s | 5.27° | 61.5 | −6.2 | −0.455° | 0.086 | −8.9 | +3.2 |
+| 5 | 10.54° | 124.9 | −11.3 | −0.828° | 0.079 | −17.8 | +6.3 |
+| 5 | 22.03° | 274.2 | −23.5 | −1.624° | 0.074 | −36.4 | +14.0 |
+| 7 | 5.06° | 59.8 | −6.2 | −0.470° | 0.093 | −8.6 | +3.3 |
+| 7 | 10.12° | 118.2 | −14.5 | −1.089° | 0.108 | −16.6 | +8.3 |
+| 7 | 21.26° | 250.0 | −36.7 | −2.649° | 0.125 | −33.3 | +17.7 |
+
+**So the board's across authority at the rolls these rides reach, with its unit, frame and axis, is two numbers:**
+**61–651 N on the world-horizontal axis across the heading (0.81–8.62 m/s² on the pair's 75.54 kg), and −6 to
+−37 N in the plane of the deck (−0.08 to −0.49 m/s²)** — the second being the only one the fall test's axis can
+see, and the first being what pays for the turn and carries the body with it.
+
+## 4. The checks, including one that failed
+
+`results/33q/C-checks-33q.txt` in full.
+
+1. **Antisymmetry, exact.** The hull is symmetric, so `Fe(−φ) = −Fe(φ)` and `Fx(−φ) = −Fx(φ)` must hold. They do,
+   **to the printed digit on all eight rolls in both yaw conditions** [M]. The instrument has no across bias.
+2. ⚠️ **Only the 5 m/s cells settle. The 6–9 m/s cells ring and ruling 29t forbids quoting them as settled, so they
+   are not quoted in §2 or §3.** Their ladders swing by a factor of two within one hold (at 7 m/s and 20° of roll,
+   `Fe` reads 284, 509, 254, 485, 306, 449 N over the ladder). What they do have is a **reproducibility** seatbelt
+   rather than a settling one: a 4 s window after a 35 s settle in a **40 s** hold reproduces the 2 s window after
+   an 8 s settle in a **12 s** hold to **≤ 2.6 % on `Fe` and ≤ 2.5 % on `Fx`** on all four cells [M]. That is the
+   basis on which the matrix's shape is described and nothing more; **the speed range the brief asked for is
+   Part 25's, not this probe's.**
+3. ⛔ **A failed check, recorded as one.** `FINS=none` was meant to isolate §2.3's cancellation by removing the
+   reference thruster. **It does not isolate anything**: a finless board will not hold the condition — the sideslip
+   runs to −18, −39, −143 and −133°, and the 41° hold reaches 65° of roll — and the **rail faces** take the fins'
+   place in the in-plane column (+11.3 to +87.5 N). **The check establishes nothing and §2.3 does not rest on it**;
+   §2.3 rests on the per-source split in the two yaw conditions, and on Part 30 §4b having found the same thing on
+   the face by another route.
+4. ⚠️ **The live-rider cell has a population of two and is quoted as one.** `RIDER=new` on flat still water with a
+   tow and the stick held from the first frame **falls in 23 of the 24 runs, at 0.70–2.73 s** — he capsizes with no
+   wave under him at all, which is Part 34's result seen from a different water. The twenty-fourth (Compress, 7 m/s,
+   quarter stick) does not fall. **Only those 2 of 24 reach the window**, both at a quarter stick: 7.1–7.4° of roll,
+   `Fe` **90.4 / 101.1 N** and `Fx` **−2.0 / +29.0 N** [M]. It is consistent with §3's rigid-payload rows at the
+   same rolls and it is **two runs**, so nothing is built on it. ⚠️ **And the one survivor must not be read as a
+   steer standing him up**: it is one run, the quarter-stick cell is the one Part 25 §2 already found best on the
+   face, and a population of one establishes nothing.
+5. **The two routes to the same quantity agree.** The pair's own horizontal across acceleration from differencing
+   the centre's world velocity **vector** and projecting after, against `Fe` over the pair's mass: these are the
+   same number by construction on still water and the probe prints both; and `aeHead = Δ(v·eLevel)/Δt` — which is
+   what `rollspring.ts`'s `sideForce` column computes — reads **0.00** in every settled free cell, because in a
+   turn `d(v·e)/dt = a·e − ψ̇(v·f)` and the two terms cancel. **That is why a side force must not be read off that
+   column once the yaw is free**, and it is why 3.2y's check 3 was right to take it captive.
+
+## 5. What I will not claim
+
+- **I will not claim this round resolved the discrepancy.** Part 25 did, on 2026-11-15, with 168 runs on the face
+  and the live rider. This is a second water agreeing with it.
+- **I will not claim a number at 6, 7, 8 or 9 m/s from this probe.** Those cells ring (check 2). Every quoted
+  stiffness and force is 5 m/s, or 5 and 7 m/s in the payload control.
+- ⚠️ **I will not call anything here a "bank gain", and I will not put my number against Part 25's 0.17–0.37.**
+  §2.4 says why: that is a pooled slope with a fitted intercept over thousands of frames and mine is a secant ratio
+  at three settled holds a speed. The matched comparison is against Part 26's *"the force's share"* column and it is
+  the only one made. **And the retirement of the bank gain as a headline instrument (the consultation's second
+  ruling: it conflates a force, a filter and a hull unload) is respected — `Fx` in newtons is the column this round
+  leads with, and the tilt is carried beside it un-lagged.**
+- **I will not claim the hull's still-water in-plane residual is zero.** With the payload at the deck it is within
+  the measurement of zero (0.5 to −6.5 N over 5–42° of roll); with the payload at the rider's height — the
+  configuration that counts — it is **−6 to −37 N** and plainly not zero. The deck-payload rows are a sensitivity,
+  not the headline, and the matrix's unsettled 6–9 m/s rows move both the size and the **sign** of that residual,
+  which is a further reason not to generalise either row to "the hull's law".
+- **I will not claim the fin cancellation is correct physics.** It is two terms of our own cancelling: `buoyancy`
+  mis-pointed at the water-surface normal (the consultation's reading, and `hullForces.ts:264` is the line) and the
+  fin set answering it through extra sideslip. The **net** on still water is right; the route is not, and a board
+  that is stalled, captive, or short of sideslip loses the cancellation and not the error.
+- **I will not claim anything about `BoardBody`'s yaw residual.** It double-counts and cannot close; nothing here
+  touches it.
+- **One water, one hull, one payload mass, two payload heights, one stance in the rigid cells.** The face is not
+  re-run here and is not meant to be.
+
+## 6. Seatbelts
+
+- **No source file changed at all.** `git diff -- src/` is empty. Everything shipped is under
+  `docs/research/new-rider/3.3/`. The yaw hold and the roll hold are wrapped round `board.substep` inside
+  `aim.ts`, as `rollspring.ts`'s and `roll-plant/plant.ts`'s are, so there is no switch to ship off and nothing to
+  leave on by mistake.
+- **No tuning is proposed and no ruling is asked for.** §2.4 names a lead and leaves it; the two switches it points
+  at are already built and already measured.
+- `npx tsc --noEmit -p .`: **exit 0**, read from `tsc`'s own exit status on its own line, never through a pipe.
+
+## 7. For the owner, in plain words
+
+Nothing in the game changed and there is nothing for you to ride or rule on.
+
+I was asked to settle an argument between two of our own measurements — whether the board can shove its own feet
+sideways hard enough to get back under you when you are going over. **The argument had already been settled four
+days ago in the next file along, and I spent the first hour of this round finding that out.** That is my mistake to
+own, and the answer stands: **the board is not the problem.** It already pushes sideways about as hard as a real
+board does, and it is already pushing the way it needs to. What it cannot do is push *in time* — about a quarter of
+a second passes before a flick of the stick does anything, which is about how long the whole fall takes — and, worse,
+the only way it has of pushing sideways is to lean, and leaning is the very thing that is dropping you. **So
+"point the board under him" is closed as an idea.**
+
+The one new thing I found is about how we *measure* the board, not how it behaves. Our reference table of the
+water's forces is taken with the board clamped so it cannot turn. **Clamped, the board appears to make a big
+sideways shove across its own deck — and let it turn freely and that shove vanishes almost completely.** It was
+never real; it was the clamp. It also means the clamped table reads the board's genuine sideways force at about
+*half* its true size. That matters only to the maths inside the surfer's balance, which is partly built on that
+table, and it is a note for whoever picks up that thread — not a change, and not something you would feel.
