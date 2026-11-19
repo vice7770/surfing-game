@@ -371,6 +371,15 @@ popped at the cue by default; the file in this PR says so with named pop rules (
 **0 of 2 016 values differ** over 48 runs (3 arms × 2 scripts × 8 waves), on every column both builds emit; the only
 differences are the four columns the old build did not have (`popBy`, `fsCapMed`, `fsPlaningFirst`, `fsPlaningMed`).
 
+**A second sea says the same thing.** Seed 2, run with the file in this PR (`SCRIPTS=cue,cueL,cueR`, 12 periods), was
+read off its live rows at the point this document was written — **its first 9 waves, of which 5 lit the cue: 15 stands
+and 8 falls per arm**, the run still stepping. The pattern repeats exactly: `ships` and `trunk` fall at a median
+**0.984 s** after the stand with **identical value lists** (0.717, 0.733, 0.95, 0.967, 1.0, 1.167, 1.183, 2.3 s), 5 of
+8 inside one second; `bank`, `all3` and `all3cap` fall at a median **0.675 s**, 7 of 8 inside one second. A different
+sea moves the shipped median (0.750 → 0.984 s) and leaves **both switch findings standing**: `trunk` inert, `bodyBank`
+earlier. The full seed-2 tables are not in this PR — the run finished after it was written — and anyone re-running it
+should expect the medians, not the individual values, to carry over.
+
 **The probe is inert, over 2 538 values.** `PROBE=off` reruns the drive with the per-frame row never built, which also
 removes the only two reads the probe makes of its own accord — the drawn feet (`renderPoint`, twice, taken into the
 board's frame) and a second `sampleAt` under the board (`slopeUnder`) — while the outcomes and the first-second
