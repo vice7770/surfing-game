@@ -749,8 +749,9 @@ and 2 s early:
    that are planing (wave 10 `cue`, V = 4.264) and no holder below 4.420; pooled over both seas, **0 of 47 non-planing
    stands lasted and 15 of 28 planing ones did**. **Necessity is not causation**: the latch's own consequence is nil
    (`leanWant = 0` in all 5 867 standing frames across the two seas), and the entry sweep moves the fall one frame
-   across the threshold. What is necessary is the **regime the latch labels** — a hull carrying its load dynamically —
-   not the latch.
+   across the threshold. What every surviving ride had is the **regime the latch labels** — a hull carrying its load
+   dynamically — not the latch. ⛔ **And "necessary" here describes 75 observed stands, not a rule to enforce**: see
+   Part 5.4's counterexample, where the fastest of three stands on one wave is the one that fell.
 2. **The hull columns are one fact said five ways.** Speed through the water is the cause; the wetted area halves, the
    draft goes negative (the board's own reference rises above the local surface), the deck at the feet comes clear, and
    the load moves off the front foot because a planing board sits tail-down. **And the columns the brief's framing
