@@ -593,11 +593,26 @@ transition** — the deck comes clear of the water exactly when the hull begins 
 not a coincidence; it is the 49 kg deficit of Part 3 being paid.
 
 ⛔ **Read 4.400 m/s as the MINIMUM OF THE OBSERVED SURVIVORS, not as a threshold, and do not turn it into a gate.**
-It is a descriptive bound on 15 runs, and within the survivors' own range **more speed is not better**: on seed 2 wave
-1, the same wave and the same paddling, the stands at **4.64 and 4.83 m/s held the full window and the one at 4.88 m/s
-— the fastest of the three — fell at 0.817 s.** Seed 2 wave 6 holds **4.35–4.79 m/s** and falls at 1.9–2.3 s. **Entry
-speed and wet feet are diagnostic context for why a stand is in trouble; neither is a condition the game should test
-before letting a player stand up.**
+It is a descriptive bound on 15 runs, and within the survivors' own range **more speed is not better.** The
+counterexample is seed 2 wave 1 — the same wave, the same paddling, the press moved:
+
+| run | speed through the water | up the face | ahead of the crest | wetted hull | draft | outcome |
+| --- | --- | --- | --- | --- | --- | --- |
+| `cue` | 4.64 m/s | 0.67 | 3.10 m | 0.253 m² | −0.051 m | **held 3.02 s** |
+| `cued250` | 4.83 m/s | 0.62 | 3.52 m | 0.268 m² | −0.049 m | **held 3.02 s** |
+| ⚠️ `cued500` | **4.88 m/s** (the fastest) | **0.58** | **3.92 m** | **0.313 m²** | **−0.036 m** | ⚠️ **fell 0.817 s** |
+
+**The fastest of the three is the one that fell**, and the rest of its row says why the speed did not help: it stood
+**furthest down the face and furthest ahead of the crest, on MORE wetted hull and a less lifted board** than either of
+the two that held. (One run; stated as an observation.) Seed 2 wave 6 makes the same point differently — it holds
+**4.35–4.79 m/s** on all three timings and falls on all three, at 1.9–2.3 s.
+
+⚠️ **And `planing` is a latch with hysteresis, not a speed reading**: seed 2 wave 5 `cued250` is `planing = 1` at
+**3.93 m/s** through the water, below `PLANING_SPEED`, because the latch only drops at `PLANING_DROP`. One more reason
+not to read it as a condition.
+
+**Entry speed and wet feet are diagnostic context for why a stand is in trouble; neither is a condition the game
+should test before letting a player stand up.**
 
 **And now the game's own verdict against the measured feet:**
 
