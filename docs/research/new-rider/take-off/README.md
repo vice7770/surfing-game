@@ -304,6 +304,11 @@ A player who presses the key on his own feel, on a wave the cue never sanctioned
 0.35–0.80 s — and every one of those stands is refused for the same reason. Whatever the owner's timing is, the first
 second after the stand is where his ride ends.
 
+**And those stands are on a far more buried board**, which is what the refusal says: in the first second after the
+stand, `early` carries **0.4 body weights** at the feet (`lift` 0.6–0.7) over **0.557–0.601 m²** of wetted hull —
+against the cue stands' 0.86 bw over 0.363 m² — with a roll peak of **43–44°** and the CoP pinned in **100 %** of the
+frames (`results/pop-rules-tables.txt`). Standing earlier does not buy a better platform; it buys a wetter one.
+
 ## 10. The controls
 
 **The address arrived.** The `control` line is printed off the solver before anything is measured: grid
