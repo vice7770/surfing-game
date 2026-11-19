@@ -2,12 +2,18 @@
 """Tables for `stand.ts`'s output. Every median here is a PLAIN median (the mean of the two middle values at even
 length), and every count carries its population.
 
-    python3 -I docs/research/new-rider/take-off/stand.py <out.jsonl>                 # the stands, one row each
-    python3 -I docs/research/new-rider/take-off/stand.py <out.jsonl> --refusal       # the refusal through the sequence
-    python3 -I docs/research/new-rider/take-off/stand.py <out.jsonl> --held          # held vs fell, property by property
-    python3 -I docs/research/new-rider/take-off/stand.py <out.jsonl> --trace <wave> <script>
-    python3 -I docs/research/new-rider/take-off/stand.py <out.jsonl> --place
-    python3 -I docs/research/new-rider/take-off/stand.py <on.jsonl> --control <off.jsonl>
+    python3 -I … stand.py <out.jsonl>                      # the stands, one row each, with the refusal's four tests
+    python3 -I … stand.py <out.jsonl> --refusal            # the feet's depth through paddle → cue → press → stand
+    python3 -I … stand.py <out.jsonl> --held               # held vs fell, with the no-overlap separation test
+    python3 -I … stand.py <out.jsonl> --channels           # the lean cap, the fall test's two channels, the hull's trim
+    python3 -I … stand.py <out.jsonl> --delay              # the pop-delay lever, wave by wave
+    python3 -I … stand.py <out.jsonl> --standtrace <wave> <script>[,<script>…]
+    python3 -I … stand.py <out.jsonl> --trace <wave> <script>
+    python3 -I … stand.py <out.jsonl> --place              # the flush-placement entry sweep
+    python3 -I … stand.py <out.jsonl> --arms <a> <b>       # two arms of ONE run, aligned on (script, wave)
+    python3 -I … stand.py <on.jsonl> --control <off.jsonl> # the probe's own inertness
+
+    python3 -I … combine.py <a.jsonl> <b.jsonl> […]        # pool several seas (see that file)
 
 ☠️ A file is only read after its own `control` line is printed, with the grid, the seed and the scripts it was made
 with: a stale file in a scratchpad is otherwise indistinguishable from a fresh one.
