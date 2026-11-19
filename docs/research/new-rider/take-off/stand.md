@@ -858,15 +858,26 @@ observed is not thereby false.
       OUT=<s>/s1.jsonl node --max-old-space-size=3600 stand.mjs
     env SEED=2 PERIODS=12 SCRIPTS=cue,cued250,cued500,lift,early LOG=window STAND_HOLD=3 \
       OUT=<s>/s2.jsonl node --max-old-space-size=3600 stand.mjs
-    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl              # the stands
-    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --refusal    # the sequence
-    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --held       # held vs fell
-    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --trace 8 cue
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl              # the stands, one row each
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --refusal    # the feet through the sequence
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --held       # held vs fell, and the separation test
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --channels   # the lean cap, the two channels, the trim
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --delay      # the pop-delay lever, wave by wave
+    python3 -I docs/research/new-rider/take-off/stand.py <s>/s1.jsonl --standtrace 10 cue,cued250,cued500
+
+    # ⭐ Parts 5.4 and 6: necessity, the feet without the short-circuit, and what a gate would cost
+    python3 -I docs/research/new-rider/take-off/combine.py <s>/s1.jsonl <s>/s2.jsonl
+
+    # Part 5.1-5.2: PR #429's own files, re-counted (they are on `claude/take-off-bench`)
+    python3 -I docs/research/new-rider/take-off/recount429.py <seed1-summaries.jsonl> <seed2-summaries.jsonl>
 
     # the probe's own inertness
-    env SEED=1 PERIODS=8 SCRIPTS=cue,lift PROBE=on  LOG=none OUT=<s>/ctrl-on.jsonl  node stand.mjs
-    env SEED=1 PERIODS=8 SCRIPTS=cue,lift PROBE=off LOG=none OUT=<s>/ctrl-off.jsonl node stand.mjs
+    env SEED=2 PERIODS=4 SCRIPTS=cue,lift PROBE=on  LOG=none OUT=<s>/ctrl-on.jsonl  node stand.mjs
+    env SEED=2 PERIODS=4 SCRIPTS=cue,lift PROBE=off LOG=none OUT=<s>/ctrl-off.jsonl node stand.mjs
     python3 -I docs/research/new-rider/take-off/stand.py <s>/ctrl-on.jsonl --control <s>/ctrl-off.jsonl
+
+    # Part 6's long window, and the `?askCap=4.5` arm beside the shipped one
+    env SEED=2 PERIODS=12 ARMS=ships,cap SCRIPTS=cue LOG=none STAND_HOLD=8 OUT=<s>/long2.jsonl node stand.mjs
 
 ☠️ Every invocation uses `env`: in zsh `SECONDS=…` passes through the shell's special **integer** variable and arrives
 as `"0"`. This file has no `SECONDS`; its horizons are `STAND_HOLD` and `PERIODS`.
