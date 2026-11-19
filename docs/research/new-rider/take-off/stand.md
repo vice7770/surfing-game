@@ -601,28 +601,30 @@ picture on a narrower population.)
 **15 rides of 75 stands carried their window, on 5 waves of 23.** So the take-off can deliver a ride; it delivers one
 on about one wave in five, and what it delivers is decided at the stand.
 
-**Held against fell, seed 1, plain medians** (`results/stand-seed1-held.txt`; held 4 — two independent waves — against
-fell 30):
+**Held against fell, plain medians, both seas side by side** (`results/stand-seed1-held.txt`,
+`stand-seed2-held.txt`; seed 1 is 4 held on 2 waves against 30 fell, seed 2 is 11 held on 3 waves against 30 fell).
+**Every row keeps its direction on both seas** — which is the part that replicates:
 
-| at the stand | held | fell |
-| --- | --- | --- |
-| **speed through the water, m/s** (the latch's own test) | **4.422** | **2.169** |
-| planing | 1 | 0 |
-| wetted hull, m² | **0.263** | **0.558** |
-| up the face | **0.789** | **0.937** |
-| face slope under the board | **16.9°** | **8.1°** |
-| ahead of the crest, m | **2.13** | **1.18** |
-| **the feet's depth, m** | **−0.000** | **+0.365** |
-| the descent into the surface, m/s | **0.384** | 0.182 |
-| the front foot's **load share** | 0.432 | 0.681 |
-| load at the feet, bw | 0.833 | 1.043 |
-| landing peak, bw | 1.415 | 1.183 |
-| capture margin, min over the first second | 0.542 | **0.000** |
-| grip left, min | 0.876 | 0.414 |
-| knees left, min | 0.399 | 0.527 |
-| **past the feet ACROSS, peak, m** | **0.000** | **0.394** |
-| **past the feet ALONG, peak, m** | **0.000** | **0.000** |
-| roll peak in the first second | 5.1° | 27.8° |
+| at the stand | seed 1 held | seed 1 fell | seed 2 held | seed 2 fell |
+| --- | --- | --- | --- | --- |
+| **speed through the water, m/s** (the latch's own test) | **4.422** | **2.169** | **4.635** | **2.330** |
+| planing | 1 | 0 | 1 | 0 |
+| wetted hull, m² | **0.263** | **0.558** | **0.079** | **0.517** |
+| **the feet's depth, m** | **−0.000** | **+0.365** | **−0.060** | **+0.272** |
+| the board's draft, m | **−0.064** | **+0.237** | **−0.051** | **+0.148** |
+| the front foot's **load share** | 0.432 | 0.681 | 0.338 | 0.612 |
+| the descent into the surface, m/s | 0.384 | 0.182 | 0.756 | 0.249 |
+| up the face | 0.789 | 0.937 | 0.674 | 0.747 |
+| face slope under the board | 16.9° | 8.1° | 18.4° | 12.2° |
+| ahead of the crest, m | 2.13 | 1.18 | 2.96 | 2.56 |
+| load at the feet, bw | 0.833 | 1.043 | 0.787 | 0.952 |
+| landing peak, bw | 1.415 | 1.183 | 1.453 | 1.211 |
+| capture margin, min over the first second | 0.542 | **0.000** | 0.516 | **0.000** |
+| grip left, min | 0.876 | 0.414 | 0.799 | 0.443 |
+| knees left, min | 0.399 | 0.527 | 0.372 | 0.531 |
+| past the feet ACROSS, peak, m | 0.000 | 0.394 | 0.000 | 0.299 |
+| past the feet ALONG, peak, m | 0.000 | 0.000 | 0.000 | 0.000 |
+| roll peak in the first second | 5.1° | 27.8° | 1.7° | 23.8° |
 
 ### 6.1 ⚠️ A test of my own that did NOT replicate, and must lead
 
