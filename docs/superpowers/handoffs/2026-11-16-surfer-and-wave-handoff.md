@@ -4246,3 +4246,101 @@ The board's identity is unresolved: **at least two boards in play at 4.3–5.57 
 2. **The target that needs no ride**: the first divergence between wave 1's `cue` and its `cueL`, same stand, opposite outcome, both on disk. The reviewer's read of that pair — identical at +0.20 s (roll +1.679°, `rawMargin` 0.966, load 1.292 bw in all three), and by **+0.60 s** the unasked row is `limit` none at `rawMargin` **0.943** while both asked rows are **`tip` at `rawMargin` ZERO**, +8.031° and −3.285°. **The margin reaches zero inside 0.3 s of the turn being asked for.**
 3. **Read the three headrooms separately through that pair**, because `rawMargin` cannot say which went.
 4. **Do not gate anything on the CoP pin**, and **keep `sinking` and `feet under water` apart** when choosing the next physical change.
+
+---
+
+## 2026-11-19 (evening) — ⭐⭐ **THE HEADROOMS, SEPARATED: THREE HEADLINES DIE, ONE SURVIVES, AND THE FALL IS LATERAL**
+
+The take-off probe `docs/research/new-rider/take-off/stand.ts` (branch `stand-recheck`) re-measured the track's four published numbers **through a real pop-up**, with the three headrooms behind `rawMargin` emitted **separately** and `TRIAL` raised 16 → 20 so nothing is censored. **Population: Canyon B, Medium, seed 2, the owner's own address, `ships` arm, 3 scripts × 11 waves = 33 runs, 1 205 s wall; 21 stands, 14 observed falls, 7 no-fall rows with the full window and ZERO censored; first second available in 21 of 21.**
+
+> ✅ **CONTROL PASSED: the three headrooms reproduce the engine's own `rawMargin` in 3 155 of 3 155 window frames.** The separation is faithful, not a reconstruction.
+
+Falls: median **0.8333 s**, range 0.5333–2.3000, within a second in **11 of 14**, cause `'balance'` **14 of 14**. Refusals **`sinking` 15, clear 3, `feet under water` 3** — the 15/3/3 split confirmed a third time.
+
+### 1. ⛔⛔ THE PUBLISHED "CoP PINNED 89.8 % / 100 %" IS A LATCH TRIPPED BY THE POP-UP
+
+| quantity | fired on | first at | first-second share |
+| --- | --- | --- | --- |
+| `limit === 'tip'` (**instantaneous**) | **14 of 21** stands | median **0.5083 s** after the stand | **166 of 1 106 = 15.0 %** |
+| `limitTime.tip > 0` (**what was published**) | 21 of 21 | median **0.0000 s** | 1 106 = **100.0 %** |
+
+**Two independent proofs that the published quantity is not a measurement of the ride:**
+
+* **It is a LATCH.** It goes positive in 21 runs and, over the **2 028 standing frames that follow, returns to zero on ZERO of them.** A share that can never fall is not a share.
+* **It flips BEFORE the stand on 21 of 21 stands, in phase `landing`.** So the first second's "100 % pinned" is **a memory of the pop-up**, not of standing. The memory/now ratio is **6.66**.
+
+⭐ **And the instantaneous reading has no masking at all: of the 166 first-second frames whose demand is geometrically outside the support box, 166 report `limit === 'tip'` and 0 report something else.** So `limit === 'tip'` IS the geometry, exactly, and it fires **halfway through the first second**, not at its start.
+
+⚠️ **The LEAD, labelled as one:** `pinNow == 0` in **8 of 10** stands that carried the first second and `> 0` in **11 of 11** that did not. That is weaker than this morning's refuted "7 of 7" and it is **not** a result — the reviewer already broke the same claim on seed 1 (wave 7 neutral: 14 tips inside its first second, up until 1.733 s). **Nothing may be gated on the pin.**
+
+### 2. ⭐ THE TOLERANCE SURVIVES — AND THE POP-UP IS WHERE IT COLLAPSES
+
+#419's **10.9°** is confirmed through a real stand: **10.362°** standing median. And the phase table shows the mechanism, measured rather than inferred:
+
+| phase | frames | support half-width | CoM above the deck | tolerance |
+| --- | --- | --- | --- | --- |
+| prone | 1 764 | 0.18 m | **0.124 m** | **55.460°** |
+| push | 903 | 0.23 m | 0.260 m | 41.495° |
+| landing | 609 | 0.13 m | 0.478 m | 15.209° |
+| **standing** | 2 049 | **0.13 m** | **0.711 m** | **10.362°** |
+
+**Standing up costs 45° of tolerance**, because the CoM rises from 0.124 m to 0.711 m above the deck while the support narrows 0.18 → 0.13 m. At the stand itself: load **0.805 bw**, front **share of load** 0.3431 (a load share, not a position), roll −0.784°, mismatch 0.809°.
+
+⛔ **But "the CoM line leaves the support on every ride" is WRONG.** Through the first second the |mismatch| median is **1.072°** against an **11.123°** tolerance, it passes the tolerance on **72 of 1 109 frames**, and it passes **at all** on only **8 of 21 stands**.
+
+### 3. ⛔ #421'S 0.1 s LAG DOES NOT EXIST THROUGH A STAND
+
+| population | frames | gain at lag 0 | where it peaks | crossing of 1.0 |
+| --- | --- | --- | --- | --- |
+| every standing frame | 2 049 | **0.8668** | **lag 0** | **none** |
+| on the plane at both ends | 1 834 | **0.8915** | **lag 0** | **none** |
+| deck past 2° | 901 | 0.8676 | lag 0 | none |
+| deck past 5° | 543 | 0.8715 | lag 0 | none |
+| off the plane at both ends | 215 | 0.7548 | lag 24 (5.88 — noise) | 0.1844 s |
+
+**The follow gain is HIGHEST at zero lag in every population that matters and never reaches 1.** #421's *"the body follows the deck at 0.8748, 0.1 s late"* — and the missing term built to cancel that lag — rest on a crossing that is not there. The only population that crosses is the 215 off-plane frames, whose slope runs to 5.88 by lag 24.
+
+What IS real is a rate-proportional mismatch, and #424's finding holds: the per-frame law `|mismatch| = B|rate|` gives **B = 50.9 ms with R² = 0.303** over 2 028 frames. Band medians: **78.3 ms** (0–20 °/s), 56.6, 46.9, **38.4 ms** (100–200 °/s). ⭐ **And the body banks the SAME WAY as the deck in 796 of 901 frames past 2° (0.883)** — it is not fighting the board.
+
+### 4. ⭐ THE DEMAND IS FINE AT THE STAND AND ABSURD AT THE FALL
+
+* **At the stand: outside the feet on 0 of 21.** `outX` and `outZ` medians both **0.00000 m**. Nothing is wrong when he stands up.
+* **Through the first second**: outside **across** on 163 of 1 109 (**14.7 %**), **along** on 8 of 1 109 (**0.7 %**). Excursion across median **0.124 m**, and **restricted to escaping frames the feet actually carry (load ≥ 0.5 bw), 127 of 163, median 0.080 m** — the load-matched figure, since `freeX` diverges as the normal impulse vanishes.
+* **At the fall (14 last-attached frames): `outX` median 1.100 m**, peak 1.967, outside at all on **12 of 14**, with the capture point **0.610 m** past the feet.
+
+⭐ **For scale: the board's half-width is 0.232 m and #425's palm could add 0.102 m.** So **a hand on the water covers the median first-second escape (0.080 m) and is nowhere near the fall's 1.100 m.** The hand is a save for small escapes, not for this.
+
+### 5. ⭐⭐ WHICH CONSTRAINT GOES — AND IT IS NOT THE ONE THE STAND BEGINS ON
+
+| | across | along | grip | min = `rawMargin` | which is lowest |
+| --- | --- | --- | --- | --- | --- |
+| **at the stand** (21) | 0.9693 | **1.0000** | **0.8991** | 0.8940 (filtered 0.9191) | **`grip` 18, `across` 3** |
+| **at the fall** (14) | **−8.4636** | **1.0000** | 0.6522 | 0.0000 (filtered 0.1152) | **`across` 12, `along` 2** |
+
+⭐ **The ride begins GRIP-limited and dies ACROSS. `along` is 1.0000 at both ends.** `balanceLimits` tells the same story in its own terms: bound by `knee` 18 of 21 at the stand, by `margin` **14 of 14** at the fall.
+
+### 6. ⭐⭐ THE WAVE-1 PAIR: THE LATERAL HEADROOM DOES NOT ERODE, IT FALLS OFF A CLIFF
+
+Same wave, same stand to the frame, **identical through +0.30 s**, then one is asked to turn:
+
+| t+s | `cue` across / limit | `cueL` across / limit | `cueR` across / limit |
+| --- | --- | --- | --- |
+| 0.00 | 0.9161 none | 0.9161 none | 0.9161 none |
+| 0.30 | 0.9416 none | 0.9416 none | 0.9416 none |
+| 0.50 | 0.9724 none | 0.9371 none | 0.9907 none |
+| **0.60** | 0.9428 **none** | **−0.1233 `tip`** | **−0.0073 `tip`** |
+| 0.70 | 0.9900 none | **−0.3750 `tip`** → **gone** | −0.6803 `tip` |
+| 3.00 | 0.9247 none → **rode it out** | — | gone at 0.9833 |
+
+* ⭐ **`along` is 1.0000 in EVERY frame of all three runs.** Longitudinal support is never involved.
+* ⭐ **`grip` FOLLOWS `across` down** (0.93 → 0.73 → 0.49 on `cueL`); it does not lead.
+* ⭐ **`limit` is `none` for all 182 frames of the surviving run**, whose `outX` is **0.0000 the whole way** — the demand never leaves the feet.
+* ⛔ **ROLL IS NOT THE MECHANISM. `cueL` breaks at 8.031° of roll while `cue` reaches 16.687° and is fine.** And `cue`'s worst `across` is **0.3698** at t+2.10 — it goes that low and recovers. The turn takes it **negative in one frame**.
+
+### 7. ⚠️ A LEAD I CANNOT FINISH, AND IT POINTS AT THE INPUT
+
+**At the frame `across` goes negative, the board is UNLOADING**: `cueL`'s load runs **1.280 (t+0.30) → 0.650 (t+0.60) → 0.359 (t+0.70)** body weights, while the surviving run never drops below 0.468. **You cannot make a lateral force against water you are not pressing into.**
+
+⛔ **But the turn script sends `steer: ±1` AND `compress: 1` together, and Compress is exactly the half that would pull the legs in and unload the board.** This trace **cannot** say which half drops him. `TURN_STEER` and `TURN_COMPRESS` were added to the probe (both defaulting to 1, so every run taken reproduces) and the three arms — steer only, Compress only, both — are running.
+
+**Why this matters beyond the bench:** the owner plays on a **Steam Controller**, where Compress is pinned to full by a digital ramp (verified: `tritonProtocol.ts:48/:98`, `Controls.ts:152/:162/:188/:200`). **If Compress is the half that unloads the board, the input bug and the fall are the same story.** That is a hypothesis with one wave behind it, not a finding.
