@@ -4,8 +4,10 @@
 ## 75 stands over 22 (seed, wave) pairs: 15 carried the full window, 60 fell, 0 excluded as truncated
    the rides that lasted came from 5 distinct waves
 
-## ⭐ necessity and sufficiency, pooled. A condition on the left that holds for every ride that lasted is
-   NECESSARY; one that is also mostly followed by a ride that lasts is SUFFICIENT. These are not the same.
+## ⭐ what every ride that lasted had, pooled. A condition on the left that holds for ALL of them is one
+   they all shared; a condition MOSTLY followed by a ride that lasts would additionally be predictive.
+   ⛔ These are descriptions of an observed sample, NOT thresholds and not conditions to gate standing on:
+   within the survivors' own range more speed is not better (see stand.md Part 5.4's counterexample).
 
                                              held / stands   share
   planing at the stand                        15 /  28     54%

@@ -54,8 +54,10 @@ def main(paths):
         print(f"   the rides that lasted came from {len({(r['seed'], r['wave']) for r in held})} distinct waves")
     cut = min(V(r) for r in held) if held else float('nan')
     print()
-    print('## ⭐ necessity and sufficiency, pooled. A condition on the left that holds for every ride that lasted is')
-    print('   NECESSARY; one that is also mostly followed by a ride that lasts is SUFFICIENT. These are not the same.')
+    print('## ⭐ what every ride that lasted had, pooled. A condition on the left that holds for ALL of them is one')
+    print('   they all shared; a condition MOSTLY followed by a ride that lasts would additionally be predictive.')
+    print('   ⛔ These are descriptions of an observed sample, NOT thresholds and not conditions to gate standing on:')
+    print('   within the survivors\' own range more speed is not better (see stand.md Part 5.4\'s counterexample).')
     print()
     print('                                             held / stands   share')
     tests = (
