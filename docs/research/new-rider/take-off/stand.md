@@ -162,13 +162,14 @@ beside it.**
 * **A mirror that is not the game's test.** The positive control is the game's own verdict: the mirror must return
   `popUpReport.refusal`. ⚠️ `standRefusal` runs inside `prepare`, which runs **per substep** (16 of them), so the
   game's reading falls strictly between the probe's last landing frame and its first standing frame; both bracketing
-  verdicts are reported and agreement is counted on both. **Measured on seed 1: 30 of 34 at the stand frame, 33 of 34
-  at the last landing frame**, and **all four disagreements are the `sinking` boundary crossing inside the frame**:
-  waves 6 `cue`/`lift` and 10 `cued500` read `into` = 0.355, 0.355 and 0.490 at the stand (over `SINK_RATE`) and
-  `none` a frame earlier, and wave 7 `early` reads 0.279 (just under) with the feet 0.839 m down, so the mirror calls
+  verdicts are reported and agreement is counted on both. **Measured: 30 of 34 at the stand frame on seed 1 and 40 of
+  41 on seed 2 — 70 of 75 — and 33 of 34 and 40 of 41 at the last landing frame.** **All five disagreements are the
+  `sinking` boundary crossing inside the frame**: seed 1's waves 6 `cue`/`lift` and 10 `cued500` read `into` = 0.355,
+  0.355 and 0.490 at the stand (over `SINK_RATE`) and `none` a frame earlier; seed 1's wave 7 `early` and seed 2's
+  wave 6 `early` read 0.279 and 0.292 (just under) with the feet 0.839 and 0.848 m down, so the mirror calls
   `feet under water` where the game, one substep earlier, called `sinking`. **A sub-frame timing difference on a fast
-  crossing, not a wrong test** — and note that the fourth case is itself the short-circuit the coordinator flagged:
-  the game's `sinking` verdict on that stand hid feet that were **0.839 m** under.
+  crossing, not a wrong test** — and note that those last two cases are themselves the short-circuit of Part 5.4: the
+  game's `sinking` verdict on those stands hid feet nearly a metre under.
 * **A median that is not a median.** Every median in this document and in `stand.py` is a **PLAIN** median — the mean
   of the two middle values at even length. No number here is a mean of medians, and every count carries its
   population: the independent unit on the take-off is the **wave**, and it is named wherever it matters.
@@ -917,7 +918,7 @@ the catch**, which is why every attempt on this track to find the fix in the rid
   **2 of 2 123** frames, peak 0.003 m). On seed 2 it is **132 of 3 744**, peak **0.488 m**. Across still dominates,
   but the longitudinal channel is live and a pearl does happen.
 
-**And one of the corrections handed to this round needs correcting back.** Seed 1's wave 6 was called a harness
+**And one correction this round was given needs correcting back.** Seed 1's wave 6 was called a harness
 artefact. The *evidence* was: `fsN = 0`, one frame stepped, the trial retired beneath it. The *outcome* was not — with
 the window actually followed it holds **3.02 s**, on both scripts that reach it. A claim reported without being
 observed is not thereby false.
@@ -938,8 +939,8 @@ observed is not thereby false.
   A single rider whose reaction reaches the solver is the one fidelity gap left in the drive.
 * ⚠️ **And the bench bypasses `Controls` entirely** — `stand.ts` builds a `RideInput` object and hands it straight to
   `RideSession.step`, as every bench on this track does. **So a second reason bench and owner can disagree, beside the
-  planing latch of #429 Part 4, is the input layer.** Read at source for this round (a finding handed to me, verified
-  here): on a Steam Controller a trigger past **`TRIGGER_PRESS = 0.12`** (`tritonProtocol.ts:48`) becomes a **digital**
+  planing latch of #429 Part 4, is the input layer.** Read at source and verified for this round: on a Steam
+  Controller a trigger past **`TRIGGER_PRESS = 0.12`** (`tritonProtocol.ts:48`) becomes a **digital**
   button (`:98`, `buttons: values.map(… index === 6 || index === 7 ? value > TRIGGER_PRESS : value > 0)`);
   `Controls.ts:152` folds the pad's digital buttons into `has()`, `:162` sets `compressKeys = 1` from it, `:188` ramps
   that over `RAMP_TIME`, and `:200` takes `Math.max(padCompressValue, ramp)`. **So a steady 25 % pull reports 0.25 on
