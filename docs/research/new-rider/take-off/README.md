@@ -224,6 +224,13 @@ own list: the stick, the cap and the planing state, the achieved bank, the loade
 board's roll), the travelled course against the heading (`drift`), the wave-relative progress, the leg's load and
 stretch, and the deck-relative foot speed.
 
+Definitions, so no sign is guessed: **roll** is `atan2(up · s, up.y)` in degrees, where `up` is the board's own up and
+`s` the horizontal right-hand normal to its heading, so it is the board's rotation about its own nose-to-tail line;
+**drift** is the travelled course minus the heading, both as compass angles from +z, so a non-zero drift is the board
+going somewhere other than where it points; **leg stretch** is `leg.extension`, negative when the leg is shorter than
+its rest; **foot speed** is each drawn foot's world point taken into the board's frame and differenced, so it is zero
+while the feet stay put on the deck however the board moves.
+
 | frame | speed | stick | planing | `leanCap` | `leanAsk` | load, bw | legLoad, N | leg stretch, m | front share | roll | bank | margin | `tTip` | wetted, m² | ahead, m | up the face | face under the board | drift | foot speed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | **the stand** (all arms, 18 each — they are identical until the standing contact runs) | 5.48 | 0 | **0** (on in **6 of 18**) | **0.000** | **0.000** | 1.03 | 720 | **+0.006** | 0.666 | 2.5° | 0.001 | 0.858 | 0 | 0.382 | 1.26 | 0.943 | 9.8° | ≈0 | **0** |
