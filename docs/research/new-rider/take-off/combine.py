@@ -98,6 +98,29 @@ def main(paths):
               f"(> SINK_RATE, so it returned first), rear foot {r['standRearDepth']:+.3f} m, "
               f"front {r['standFrontDepth']:+.3f} m, lasted {r['heldFull']}")
     print()
+    print("## ⭐ the fall test's two terms, per sea. `human.fallen` is `beyond && weightPast`, and the conjunction is")
+    print('   reached INSIDE a substep, so at frame granularity it shows only on the frame AFTER the separation — which')
+    print('   is a frozen frame and excluded. A probe that looks for the conjunction on live frames finds nothing.')
+    for path in paths:
+        rs = [json.loads(line) for line in open(path)]
+        control = next((r for r in rs if r.get('control')), None)
+        fr = [r for r in rs if r.get('frame') and r.get('phase') == 'standing' and r.get('attached') == 1]
+        if not fr:
+            print(f"   {path}: no per-frame rows (LOG=none) — rerun with LOG=window for this section")
+            continue
+        sums = {(r['arm'], r['script'], r['wave']): r for r in rs if r.get('summary')}
+        runs = {}
+        for r in fr:
+            runs.setdefault((r['arm'], r['script'], r['wave']), []).append(r)
+        reached = [k for k, v in runs.items() if any(x['capBeyond'] == 1 for x in v)]
+        heldof = sum(1 for k in reached if sums.get(k, {}).get('heldFull') == 1)
+        b = sum(1 for r in fr if r['capBeyond'] == 1)
+        w = sum(1 for r in fr if r['capWeightPast'] == 1)
+        both = sum(1 for r in fr if r['capBeyond'] == 1 and r['capWeightPast'] == 1)
+        print(f"   seed {control['seed']}: of {len(fr)} live standing frames, `beyond` on {b}, `weightPast` on {w}, "
+              f"BOTH on {both}")
+        print(f"      stands that reached `beyond` at least once: {len(reached)}; of those, {heldof} carried the window")
+    print()
     print('## what a gate would have cost, had each test been the gate (the stand refused, the rider laid back down)')
     for name, pred in (("the flag as written (any verdict)", lambda r: r['popRefusal'] is not None),
                        ("`feet under water` as the verdict", lambda r: r['popRefusal'] == 'feet under water'),

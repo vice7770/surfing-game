@@ -33,6 +33,14 @@
       seed 2 w 6 early    into 0.292 m/s (> SINK_RATE, so it returned first), rear foot +0.848 m, front +0.488 m, lasted 0
       seed 2 w10 early    into 0.326 m/s (> SINK_RATE, so it returned first), rear foot +0.883 m, front +0.507 m, lasted 0
 
+## ⭐ the fall test's two terms, per sea. `human.fallen` is `beyond && weightPast`, and the conjunction is
+   reached INSIDE a substep, so at frame granularity it shows only on the frame AFTER the separation — which
+   is a frozen frame and excluded. A probe that looks for the conjunction on live frames finds nothing.
+   seed 1: of 2123 live standing frames, `beyond` on 208, `weightPast` on 60, BOTH on 0
+      stands that reached `beyond` at least once: 20; of those, 0 carried the window
+   seed 2: of 3744 live standing frames, `beyond` on 113, `weightPast` on 252, BOTH on 0
+      stands that reached `beyond` at least once: 16; of those, 0 carried the window
+
 ## what a gate would have cost, had each test been the gate (the stand refused, the rider laid back down)
   the flag as written (any verdict)        refuses  66 of 75 stands, and would destroy 12 of the 15 rides that lasted
   `feet under water` as the verdict        refuses  40 of 75 stands, and would destroy  0 of the 15 rides that lasted
