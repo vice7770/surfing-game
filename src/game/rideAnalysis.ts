@@ -48,9 +48,10 @@ export type UnjudgedReason =
   /** The board did not gain height in the CARRY_TIME after it let go. */
   | 'no carry'
   /**
-   * The carry was never measured over its window: the ride ended inside it, or the wave went unreadable
-   * (`WaveFrame.valid === false`) for part of it, so there is no height to compare against. Missing coverage is not
-   * a climb and is not a flattening either: it is nothing.
+   * **The carry was never measured.** Three ways, all the same failure: the ride ended inside the window, the wave
+   * went unreadable (`WaveFrame.valid === false`) for part of it, or the sample the turn let go on read no wave, so
+   * there is no height to measure *against*. Missing data is not a climb and is not a flattening either: it is
+   * nothing, and a zero from the gauge is not a height of 0 m.
    */
   | 'carry unseen'
   /** The climb was higher than the saved speed through the water could pay for, v² / 2g. */
@@ -232,9 +233,14 @@ interface Turn {
    * At the turn's last sample: where the board was on the face (a fraction of it), **the face's own crest-to-trough
    * height, m** — not the board's — and the speed through the water. Their product is the board's height above the
    * trough, m, which is what a carry is measured in.
+   *
+   * `releaseValid` is **that same sample's `WaveFrame.valid`**, and it has to travel with them: the gauge zeroes
+   * `faceFraction` and `faceHeight` on a frame where it finds no wave, so without it a single unreadable frame at
+   * the release hands the carry a baseline of 0 m and any constant height reads as a full climb.
    */
   releaseFace: number;
   releaseFaceHeight: number;
+  releaseValid: boolean;
   releaseThroughWater: number;
   wave: Pick<WaveFrame, 'valid' | 'directionX' | 'directionZ' | 'faceFraction' | 'crestBreaking'>;
 }
@@ -248,7 +254,11 @@ interface Carrying {
   maneuver: Maneuver;
   /** Simulated time the turn let go. */
   releaseT: number;
-  /** The board's height above the trough where it let go, m, and the speed through the water it let go with, m/s. */
+  /**
+   * The board's height above the trough where it let go, m, and the speed through the water it let go with, m/s.
+   * There is only a `Carrying` at all when the release sample read a wave (`closeTurn`), so this is a measured
+   * height and never the gauge's zero.
+   */
   heightAtRelease: number;
   throughWater: number;
   /** The highest the board has been since it let go, m above the trough: the climb that had to be paid for. */
@@ -301,10 +311,11 @@ interface Previous {
  *  2. **The board kept gaining height for CARRY_TIME after it let go** — a bottom turn that does not carry up the
  *     face is not a bottom turn. This is a **sign** test on the mean height, with no magnitude bar: it rejects a run
  *     that flattened or dropped, and passes any climb at all. **How much of the face a bottom turn must climb is a
- *     number the owner has to set**, and until he does this gate says only that it climbed. Two things that are not
- *     a climb are not let through as one: a window the wave went unreadable through is `'carry unseen'`, not a
- *     carry, and a rise under CARRY_RISE — a nanometre, the analyzer's own floor on a measured length — is the sum's
- *     own roundoff.
+ *     number the owner has to set**, and until he does this gate says only that it climbed. Three things that are not
+ *     a climb are not let through as one: a window the wave went unreadable through is `'carry unseen'`, not a carry;
+ *     so is a **release sample that read no wave**, because the gauge's zeroed `faceFraction` and `faceHeight` are
+ *     not a baseline of 0 m, and a board standing still measured a +0.375 m climb off them; and a rise under
+ *     CARRY_RISE — a nanometre, the analyzer's own floor on a measured length — is the sum's own roundoff.
  *  3. **The saved speed through the water could pay for that climb** — the height actually reached, in metres,
  *     against v² / 2g, with v the board's speed through the water along its heading (`RideSample.throughWater`),
  *     never the ground speed. No free constant: it is the kinetic height, and g.
@@ -421,7 +432,8 @@ export class RideAnalyzer {
       start: previous.t, end: previous.t, sign: Math.sign(rate), startHeading: previous.heading, yaw: 0,
       speedIn: previous.speed, speedOut: previous.speed, alongIn: previous.along, alongOut: previous.along,
       pathYaw: 0, pathLength: 0, startCourse: previous.course, roll: Math.abs(previous.roll), peak: 0,
-      releaseFace: wave.faceFraction, releaseFaceHeight: wave.faceHeight, releaseThroughWater: sample.throughWater,
+      releaseFace: wave.faceFraction, releaseFaceHeight: wave.faceHeight, releaseValid: wave.valid,
+      releaseThroughWater: sample.throughWater,
       wave: { ...wave },
     };
     const turn = this.turn;
@@ -438,6 +450,8 @@ export class RideAnalyzer {
     turn.alongOut = wave.speedAlongCrest;
     turn.releaseFace = wave.faceFraction;
     turn.releaseFaceHeight = wave.faceHeight;
+    // The three above are a reading of one sample, and this says whether that sample read anything: they move together.
+    turn.releaseValid = wave.valid;
     turn.releaseThroughWater = sample.throughWater;
     turn.roll = Math.max(turn.roll, Math.abs(sample.roll));
     if (Math.abs(rate) > turn.peak) {
@@ -464,11 +478,16 @@ export class RideAnalyzer {
       // A bottom turn is only named once its carry has been watched. A second turn closing before the first's window
       // has run leaves that one unjudged: `watchCarry` is the only thing that ever sees a carry through.
       this.settleCarry(false);
-      const fault = pathFault(turn, duration, travel);
+      // Condition 1, and then the baseline condition 2 would be measured against. A release sample that read no wave
+      // has no height on the face, and the gauge's zeros are not a height of 0 m: a board that never moved reads a
+      // climb of its whole height off them. An absent baseline is the same failure as an absent window, so it is the
+      // same reason.
+      const fault: UnjudgedReason | undefined =
+        pathFault(turn, duration, travel) ?? (turn.releaseValid ? undefined : 'carry unseen');
       if (fault) this.maneuvers.push({ ...measured, kind: 'unjudged', unjudged: fault });
       else {
         // Where it let go, in metres above the trough ahead of the crest: the fraction of the face against the face's
-        // own height at that same sample.
+        // own height at that same sample, both read on a sample that carried a wave.
         const heightAtRelease = turn.releaseFace * turn.releaseFaceHeight;
         this.carrying = {
           maneuver: measured, releaseT: turn.end, heightAtRelease, throughWater: turn.releaseThroughWater,

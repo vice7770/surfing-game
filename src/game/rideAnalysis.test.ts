@@ -213,6 +213,31 @@ describe('RideAnalyzer', () => {
       expect(report.maneuvers[0].carry).toBeLessThan(1e-9);
     });
 
+    /**
+     * **An unreadable baseline is not a zero.** The climb is measured against the height the turn let go at, and that
+     * height was read off the turn's last sample whether or not the sample carried a wave. One unreadable frame at
+     * the release — the gauge's own zeros for `faceHeight` and `faceFraction` — put the baseline at 0 m, so the 18
+     * valid samples that followed, all at an unchanged 0.375 m above the trough, read as a **+0.375 m** climb and
+     * scored a `bottom turn`. A board that never moved.
+     *
+     * Coverage cannot catch this one: every sample of the window is valid, and it is the baseline that is missing.
+     * `'carry unseen'` already means "this window was not a measurement", and a measurement with no baseline is the
+     * same failure.
+     */
+    it('does not measure a climb from an unreadable baseline: one invalid frame at the release', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      // The turn runs 0.5–1.5 s at a constant rate, so its peak — the sample that names it — is its first; only the
+      // last sample, the one it lets go on, carries no wave.
+      const release = (t: number) => Math.abs(t - 1.5) < 1e-6;
+      const report = analyze(trace(2, (t) => ({
+        heading: heading(t), speed: 7.3,
+        wave: release(t) ? { valid: false, faceHeight: 0, faceFraction: 0 } : { faceHeight: 1.5, faceFraction: 0.25 },
+      })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['carry unseen']);
+      // Nothing is reported as climbed: the window had no height to be measured against.
+      expect(report.maneuvers[0].carry).toBeUndefined();
+    });
+
     it('leaves a run unjudged when the ride ended before the carry could be seen', () => {
       // The turn ends at 1.5 s and the ride at 1.6 s: 0.1 s of carry, less than the 0.3 s watched.
       const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
