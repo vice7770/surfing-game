@@ -405,7 +405,7 @@ Read down the table:
   and therefore a reading of **speed through the water**: cap ≥ 0.75 held **6 of 6**, cap 0.36–0.63 held **1 of 9**,
   cap 0 held **0 of 6**.
 
-### 5.2 ⭐⭐ And one column separates them better than any of the four: where on the face the press happened
+### 5.2 A column that looks decisive on #429's population and is not: where on the face the press happened
 
 The same two files, both seas, every stand, sorted by `popFraction` — **how far up the face the rider was at the
 frame he pressed.** The independent unit is the **wave** (13 of them across the two seas); the three stands per wave
@@ -481,16 +481,10 @@ latch is on both sides of it**: `cue` is already planing at 4.26 m/s and falls. 
 shows this is **not** a general fix: it changed the outcome on this wave alone, did nothing orderly on three others,
 and cost the rider the board during the pop-up on a fifth.
 
-**Across the two seas, the refusal's two categories mean opposite things:**
-
-| verdict | held | of | where |
-| --- | --- | --- | --- |
-| `feet under water` | **0** | **29** | my seed 1 (0 of 26) + #429's seed 2 (0 of 3) |
-| `sinking` | **8** | **18** | my seed 1 (1 of 3) + #429's seed 2 (7 of 15) |
-| not refused | 3 | 8 | my seed 1 (3 of 5) + #429's seed 2 (0 of 3) |
-
-⭐ **`feet under water` is a death sentence and `sinking` is not.** And the reason the two differ is mechanical, and it
-can be put as arithmetic rather than as a correlation.
+**The refusal's two categories mean opposite things** — Part 5.4 has the pooled counts over my own two seas
+(`feet under water` **0 held of 40**, `sinking` **12 held of 26**). ⭐ **`feet under water` is a death sentence and
+`sinking` is not.** And the reason the two differ is mechanical, and it can be put as arithmetic rather than as a
+correlation.
 
 `standRefusal`'s sinking test is `into > SINK_RATE`, where `into` is `−(v_rel · n̂)` — the board's velocity **relative
 to the local flow**, along the inward normal of the free surface. That is not a quantity peculiar to a board going
@@ -516,21 +510,23 @@ two and a half degrees of trim.** On the 1 317 non-planing frames the implied an
 speed is only **1.89 m/s**, so `into` stays near **+0.194 m/s** and the test rarely fires.
 
 That is why the overlap is partial rather than total: `into > 0.3` holds in **47.9 % of planing frames** against
-**18.8 % of non-planing ones**.
+**18.8 % of non-planing ones** on seed 1, and **41.8 %** against **16.6 %** on seed 2, where the implied trim is
+**+1.37°** at **6.69 m/s** planing against **+5.29°** at **1.13 m/s** off it. Both seas, same reading.
 
 **And the clincher: integrate it.** If `into` were the descent rate the test's name claims, its integral over a ride
 *is* the sinking. Over the four seed-1 rides that carried the window:
 
-| run | standing frames | `sinking` frames | the board's own draft, first → last (min/max) | ∫`into` dt | over-read |
+| sea, run | standing frames | `sinking` frames | the board's own draft, first → last (min/max) | ∫`into` dt | over-read |
 | --- | --- | --- | --- | --- | --- |
-| wave 10 `cued250` | 181 (3.00 s) | **129** | **−0.055 → −0.015 m** (−0.077 / +0.024) | **+1.126 m** | **27.9×** |
-| wave 10 `cued500` | 181 (3.00 s) | 108 | −0.073 → −0.030 m (−0.086 / +0.036) | +0.958 m | 22.0× |
-| wave 6 `cue` | 182 (3.02 s) | 45 | −0.064 → −0.020 m (−0.081 / −0.019) | +0.513 m | 11.5× |
-| wave 6 `lift` | 182 (3.02 s) | 45 | −0.064 → −0.020 m (−0.081 / −0.019) | +0.513 m | 11.5× |
+| 1, wave 10 `cued250` | 181 (3.00 s) | **129** | **−0.055 → −0.015 m** (−0.077 / +0.024) | **+1.126 m** | **27.9×** |
+| 1, wave 10 `cued500` | 181 (3.00 s) | 108 | −0.073 → −0.030 m (−0.086 / +0.036) | +0.958 m | 22.0× |
+| 1, wave 6 `cue` / `lift` | 182 (3.02 s) | 45 | −0.064 → −0.020 m (−0.081 / −0.019) | +0.513 m | 11.5× |
+| **2, wave 1 `cue` / `lift`** | 182 (3.02 s) | 89 | **−0.051 → −0.046 m** (−0.070 / +0.051) | **+1.041 m** | **217.7×** |
+| 2, wave 2 `cue` / `lift` | 182 (3.02 s) | 44 | −0.057 → −0.024 m (−0.079 / −0.015) | +0.442 m | 13.5× |
 
-**The test says the board descended 1.13 m; the board moved 0.040 m, and never left a 0.10 m band — on the negative
-side of it, the deck above the water, the whole time.** `standRefusal`'s `sinking` verdict is not reporting a board
-going under. It is reporting a hull on the plane.
+**The test says the board descended 1.13 m; the board moved 0.040 m in all, and stayed inside a band 0.10 m wide the
+whole time, mostly with its reference above the local surface.** `standRefusal`'s `sinking` verdict is not reporting a
+board going under. It is reporting a hull on the plane.
 
 **So `sinking` cannot distinguish a board going under from a board riding on its own lift**, it fires more than twice
 as often on the latter, and the stands it refuses are disproportionately the good ones.
