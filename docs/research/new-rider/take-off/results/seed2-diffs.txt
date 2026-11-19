@@ -1,0 +1,16 @@
+
+ships vs trunk: 5267 aligned frames over 33 runs; 71009 of 526700 values differ
+  columns that moved most: trunkFold (1387), weight (1365), margin (1364), fy (1360), legForce (1359), wz (1359), legRate (1358), course (1357), copZ (1354), vy (1354), vx (1353), capture (1351), wy (1351), f6x (1350)
+  first differing frame per run: [(('cue', 2), 516), (('cue', 6), 474), (('cue', 8), 584), (('cue', 11), 490), (('cueL', 2), 516), (('cueL', 6), 474), (('cueL', 8), 584), (('cueL', 11), 490)] …
+
+ships vs bank: 5113 aligned frames over 33 runs; 9824 of 511300 values differ
+  columns that moved most: copNm (688), relief (688), margin (687), rawMargin (500), copX (220), fx (126), bankA (125), bankRaw (125), capture (125), course (125), drift (125), f5x (125), foot5 (125), fy (125)
+  first differing frame per run: [(('cue', 1), 579), (('cue', 5), 540), (('cue', 8), 585), (('cue', 10), 496), (('cueL', 1), 521), (('cueL', 2), 602), (('cueL', 5), 540), (('cueL', 6), 501)] …
+
+bank vs all3: 5113 aligned frames over 33 runs; 68953 of 511300 values differ
+  columns that moved most: trunkFold (1326), margin (1305), copX (1304), weight (1304), wz (1302), fy (1300), legForce (1300), legRate (1297), course (1296), copZ (1293), vx (1292), capture (1290), drift (1290), f6x (1289)
+  first differing frame per run: [(('cue', 2), 516), (('cue', 6), 474), (('cue', 8), 584), (('cue', 11), 490), (('cueL', 2), 516), (('cueL', 6), 474), (('cueL', 8), 584), (('cueL', 11), 490)] …
+
+all3 vs all3cap: 5112 aligned frames over 33 runs; 2701 of 511200 values differ
+  columns that moved most: leanCap (182), bankA (42), bankR (42), bankRaw (42), capture (42), copNm (42), copX (42), copZ (42), course (42), drift (42), f5x (42), f5y (42), f5z (42), f6x (42)
+  first differing frame per run: [(('cue', 5), 524), (('cue', 8), 578), (('cue', 10), 489), (('cueL', 5), 524), (('cueL', 8), 578), (('cueR', 5), 524), (('cueR', 8), 578)]

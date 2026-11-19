@@ -1,0 +1,16 @@
+
+ships vs trunk: 4147 aligned frames over 36 runs; 0 of 406406 values differ
+  columns that moved most: 
+  first differing frame per run: []
+
+ships vs bank: 3953 aligned frames over 36 runs; 15314 of 387394 values differ
+  columns that moved most: copNm (416), margin (416), relief (416), rawMargin (356), copX (261), bankA (239), bankRaw (239), capture (239), course (239), drift (239), f5x (239), f5y (239), f5z (239), f6x (239)
+  first differing frame per run: [(('hold', 7), 571), (('hold', 8), 521), (('hold', 10), 510), (('hold', 11), 484), (('hold', 12), 584), (('turnL', 7), 571), (('turnL', 8), 521), (('turnL', 10), 510)] …
+
+bank vs all3: 3964 aligned frames over 36 runs; 0 of 388472 values differ
+  columns that moved most: 
+  first differing frame per run: []
+
+all3 vs all3cap: 3920 aligned frames over 36 runs; 8721 of 384160 values differ
+  columns that moved most: leanCap (441), bankA (136), bankR (136), bankRaw (136), capture (136), copNm (136), copX (136), copZ (136), course (136), drift (136), f5x (136), f5y (136), f5z (136), f6x (136)
+  first differing frame per run: [(('hold', 7), 554), (('hold', 8), 505), (('hold', 11), 477), (('hold', 12), 577), (('turnL', 7), 554), (('turnL', 8), 505), (('turnL', 11), 477), (('turnL', 12), 577)] …
