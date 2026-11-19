@@ -10,9 +10,13 @@ wetted hull* — which of those four is the cause?
 1. **The refusal costs nothing.** `standRefusal`'s return value has exactly **one** consumer in the whole source tree
    — a string in the dev-tools readout. The stand happens on the next line whatever it says, and no force, no
    threshold and no phase anywhere reads it. It is a label, not a gate (Part 1).
-2. **⭐ And it must not become one.** The project's own design says it should (`design.md`: *"`standRefusal` today only
-   reports… That goes"*). On the evidence here, gating the stand on it would have **refused every ride that lasted**:
-   on seed 2, all 7 of the stands that carried a full 3 s were refused stands (Part 5).
+2. **⭐ And it must not become one as it stands.** The project's own design says it should (`design.md` §4:
+   *"`standRefusal` today only reports… That goes"*). **Its two live verdicts point opposite ways**, so the single flag
+   is uninformative: across both seas, `'feet under water'` held **0 of 29** — it really is a death sentence — while
+   `'sinking'` held **8 of 18**, which is every ride in this study that lasted bar one. A gate on the flag would refuse
+   exactly the good ones, and the reason is mechanical: `into > SINK_RATE` is motion into the water relative to the
+   flow, which is what a **planing** hull does by construction (fires in 47.9 % of planing frames against 18.8 % of
+   the rest). Part 5.
 3. **The feet are under water because a 25.75 L board cannot float a 73 kg rider, and the pop-up is what hands it the
    whole job.** Fully submerged, the board displaces **26.4 kg of a 75.5 kg** system — **65 % unsupported, a 49.2 kg
    deficit** that only planing lift or the rider's own body in the water can find (`boardReference.referenceFlotation`,
@@ -25,15 +29,17 @@ wetted hull* — which of those four is the cause?
    the fall time rises smoothly and monotonically with entry speed, 0.950 s at 2 m/s to 2.933 s at 8 m/s, **with no
    step anywhere at the threshold**. Wetted hull is a consequence of the same speed; the steeper face is where the
    speed comes from (Part 4).
-5. **The refusal does not predict the fall in either direction** — and the brief's two survivors do not survive. One
-   of them (seed 1, wave 6) was a **harness artefact**: it stood at 16.0167 s on a trial the bench retired at 16 s, so
-   it was observed for one frame. The other fell at 0.70 s, the study's median. On seed 1, **no stand survived at all**
-   (Part 5).
-6. **A ride can last, and what it needs is measurable at the stand.** On seed 2, 7 of 21 stands carried the full
-   window, and every one of them was planing, with a lean cap of 0.54–0.78 rad; every non-planing stand on that sea
-   fell inside 1.17 s. So the answer to *"is a longer ride reachable from the take-off's side"* is **not a null**: it is
-   reachable on the waves that give the board speed through the water, and the take-off's job is to put the rider on
-   one (Part 6).
+5. **The brief's two survivors need correcting in both directions.** Seed 1's wave 6 was **reported without being
+   observed** — it stood at 16.0167 s on a trial the bench retired at 16 s, one frame stepped, `fsN = 0`. Re-run with
+   the window actually followed, **it does hold 3.02 s**: the artefact was in the evidence, not in the outcome. The
+   other unrefused stand, wave 10, fell at **0.70 s** — the study's own median — and **holds 3 s only if the press is
+   moved 250 ms later**, which is the clearest lever test in this round (Part 5.3).
+6. **A ride can last, and what it needs is measurable at the stand. This is not a null.** **9 rides of 55 stands
+   carried their full 3 s window, on 5 waves of 23**, across the two seas — 4 of 34 on seed 1 (waves 6 and 10) and
+   7 of 21 on seed 2 (waves 1, 2, 11). Every one of the nine is planing; the single quantity that separates them is
+   **speed through the water at the stand: 4.422 m/s held against 2.169 m/s fell** (seed 1 medians, 4 held on 2 waves
+   against 30 fell). Read together the five properties are one event — **a drop-in** — and the rides that die are the
+   ones spent high on a flattening crest on a buried board (Part 6).
 
 ---
 
@@ -279,7 +285,7 @@ else on the brief's list is that speed reported by another instrument.**
 * **The pinning trap reproduces**, with a bigger factor than before: `limitTime.tip > 0` is **97.6 %** of those 2 123
   frames and `limit === 'tip'` is **21.3 %** — a factor of **4.6**. Say which you mean.
 
-## 5. ⭐ The refusal against the fall: it predicts nothing, in either direction
+## 5. ⭐ The refusal against the fall: one flag over two opposite conditions
 
 ### 5.1 #429's own data, re-counted off its own files
 
@@ -323,7 +329,8 @@ Read down the table:
 
 * **Planing is necessary and not sufficient.** All 6 non-planing stands fell, inside **0.53–1.17 s**. Of the 15 planing
   stands, **7 held and 8 fell**.
-* **The refusal is anti-predictive here.** 7 of 15 refused stands held; **0 of 3** unrefused stands did, and those
+* **On this sea the refusal is anti-predictive** (on seed 1 it is not — see Part 5.3, where the split by verdict
+  reconciles the two). 7 of 15 refused stands held; **0 of 3** unrefused stands did, and those
   three fell at 0.73–1.17 s, sooner than the median refused stand.
 * ⭐ **So gating the stand on the refusal — which `design.md` §4 plans — would have refused every ride on this sea that
   lasted.** That is the strongest practical finding in this document, and it is an argument against a change the
