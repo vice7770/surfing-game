@@ -122,6 +122,16 @@ const SPRINT = Number(process.env.SPRINT ?? 2);
 /** The bottom turn's delay after the stand and its length, s (`catch-probe`'s `turnL`/`turnR`). */
 const TURN_AT = Number(process.env.TURN_AT ?? 0.3);
 const TURN_FOR = Number(process.env.TURN_FOR ?? 0.9);
+/**
+ * ⭐ **The two halves of "asking for a turn", separable at last.** `bench.ts` and this file's first run both sent
+ * `steer: ±1` AND `compress: 1` together on every turn script, while the neutral script sent neither — so the
+ * reviewer was right that neutral-versus-turn could isolate NOTHING. These two knobs scale each half independently,
+ * and both default to 1, so every run already taken is reproduced exactly.
+ *   `TURN_STEER=0 TURN_COMPRESS=1` — the Compress alone.
+ *   `TURN_STEER=1 TURN_COMPRESS=0` — the steer alone.
+ */
+const TURN_STEER = Number(process.env.TURN_STEER ?? 1);
+const TURN_COMPRESS = Number(process.env.TURN_COMPRESS ?? 1);
 const LOG = (process.env.LOG ?? 'window') as 'all' | 'window' | 'none';
 /**
  * `PROBE=off`: the per-frame row is not built at all, which also removes the only reads the probe makes of its own
@@ -559,8 +569,8 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
     paddle: prone && !pop && rider.popAt === undefined,
     sprint: prone && rider.sprinting && !pop,
     popUp: pop,
-    steer: turning ? script.turn : 0,
-    ...(turning ? { compress: 1 } : {}),
+    steer: turning ? script.turn * TURN_STEER : 0,
+    ...(turning && TURN_COMPRESS > 0 ? { compress: TURN_COMPRESS } : {}),
   };
   session.step(STEP, water, input);
   rider.frames += 1;
