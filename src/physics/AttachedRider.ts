@@ -1771,6 +1771,28 @@ export interface AttachedRiderOptions {
    * rooms, and meant to be ridden with `?rider=new`.
    */
   plantFloor?: '4.5' | '5' | '6';
+  /**
+   * **The twist joint's end stop, carried by the plant the balance is designed on** (step 3.5j, `?twistStop=model|design`;
+   * off by default, meant to be ridden with `?rider=new`).
+   *
+   * The disagreement it closes is this file's own, and it is arithmetic: `coupleYaw` puts `TWIST_STOP` = 2000 N·m/rad
+   * on the joint past `TWIST_BODY_RANGE` = 0.87 rad (49.85°) [R, `:4806-4816`], while the only twist stiffness the
+   * balance's internal plant has is `TWIST_STIFFNESS` = 20 and it has no stop [R, `predictiveBalance.plantAt`]. The
+   * `cue` ride of step 3.5h reached **51.10°**, so **the ride enters the region where the two disagree 100x**
+   * (`docs/research/new-rider/3.5/twist-work.md` §5.2, which registered it without claiming it as a cause — and this
+   * flag does not claim it either).
+   *
+   * Set, the angle is read off the joint each control tick and the stiffness the body actually has there — the secant,
+   * `TWIST_STIFFNESS + TWIST_STOP (|θ_t| − TWIST_BODY_RANGE)/|θ_t|`, which reproduces the game's own joint torque
+   * exactly at that angle — is handed to `PredictiveController.tick`, whose gain schedule gains it as a fifth axis
+   * (`DesignWeights.twistStop` has the form and why the secant and not the tangent).
+   *
+   * ⛔ **Nothing is actuated, scaled or clamped.** The stop was already there and already pushing; the rider's
+   * commanded twist torque is bounded by `TWIST_BODY_TORQUE` and the feet's grip exactly as before. What changes is
+   * the model the command is computed against — and below 49.85° of twist it changes nothing at all, because the
+   * axis's first knot **is** `TWIST_STIFFNESS`.
+   */
+  twistStop?: 'model' | 'design';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2357,6 +2379,18 @@ export class AttachedRider {
   /** The legs' passive twist, N·m/rad and N·m·s/rad (TWIST_STIFFNESS, TWIST_DAMPING unless a probe braces or relaxes it). */
   private readonly twistStiffness: number;
   private readonly twistDamping: number;
+  /**
+   * Step 3.5j (`?twistStop=model|design`): whether the balance's internal plant is told about the twist joint's end stop. Off,
+   * every control tick reads the shipped design and `predictor.schedTwistK` stays at `TWIST_STIFFNESS`.
+   */
+  private readonly stopInModel: boolean;
+  /**
+   * **Read-only, for probes (step 3.5j): the twist stiffness handed to the controller this control tick, N·m/rad, or
+   * 0 on a tick that handed it nothing.** 0 on every tick of the default rider and on every tick of the switch below
+   * the stop, so a probe that reads it non-zero off the switch has found a bug and not a number. It is the body's own
+   * side of the handover; `predictor.schedTwistK` is the schedule's, and the two must agree wherever this is non-zero.
+   */
+  twistModelK = 0;
   /** How far onto its rail the balance's schedule is trusted, rad (SCHEDULE_RAIL_CAP). */
   private readonly railCap: number;
   /** Step 3.2x: the hip's gain on its trigger, N·m/m, and the ankle rest's slew bound, rad/s. */
@@ -2727,9 +2761,16 @@ export class AttachedRider {
     // `PredictiveController` an undefined `weights` exactly as it always did — and both read sites now default that
     // to the fourth rung (`DEFAULT_WEIGHTS.stanceDeep`, `blend`'s `?? true`).
     const ladderWeights: { stanceDeep: boolean } | undefined = options.stanceDeep === 'off' ? { stanceDeep: false } : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...options.balance?.weights }
+    // Step 3.5j: `twistStop` reaches the same weights route, so an explicit `twistStop` in `balance.weights` wins and
+    // the design cache's key carries it. Matched as the string `'on'` and never parsed, as 3.5b's and 3.4m's are.
+    // `this.stopInModel` below is the SAME condition, so the flag cannot reach the schedule's axis without reaching
+    // the stiffness that is read at the joint, or the other way about.
+    const jointWeights: { twistStop: 'model' | 'design' } | undefined = options.twistStop === 'model' || options.twistStop === 'design'
+      ? { twistStop: options.twistStop } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || jointWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...jointWeights, ...options.balance?.weights }
       : undefined;
+    this.stopInModel = options.twistStop === 'model' || options.twistStop === 'design';
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.rateSense = options.balance?.rateSense ?? 'canal';
@@ -3919,7 +3960,16 @@ export class AttachedRider {
       let rail = Math.abs(this.leanAsked);
       for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
       rail = Math.min(this.railCap, rail);
-      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt);
+      // Step 3.5j (`?twistStop=model|design`): the stiffness the joint ACTUALLY has at the angle it is at, N·m/rad, read off
+      // `tb.angle` — the same `over` and the same `TWIST_STOP` that `coupleYaw` applies two methods down, so the
+      // model and the body cannot disagree about where the stop is or how hard it pushes. The SECANT, because the
+      // internal plant's twist row is `stiffness · θ_t` with no constant term and the secant is the only stiffness
+      // that reproduces the joint's affine torque exactly at this angle (`DesignWeights.twistStop`). `undefined` with
+      // the switch off and `undefined` below the stop, where it would be `TWIST_STIFFNESS` and change nothing.
+      const stopOver = Math.abs(tb.angle) - TWIST_BODY_RANGE;
+      const twistK = this.stopInModel && stopOver > 0 ? TWIST_STIFFNESS + (TWIST_STOP * stopOver) / Math.abs(tb.angle) : undefined;
+      this.twistModelK = twistK ?? 0;
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, twistK);
       this.schedRail = rail;
       this.schedTilt = faceTilt;
       this.heldAnkleRaw = -this.predictor.raw[0];

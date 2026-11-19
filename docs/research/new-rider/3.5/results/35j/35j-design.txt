@@ -1,0 +1,225 @@
+################ Step 3.5j — the twist joint's end stop in the balance's own plant (`?twistStop=on`)
+
+§0 THE STATE INDICES, MEASURED. The plant's own columns, never the docstring.
+
+  a[θ_t][ω_u] = 1.000000   a[θ_t][r] = -1.000000   (must be +1 and −1: θ̇_t = ω_u − r)
+  a[ω_u][τ_a] = -0.694444   −1 / upper inertia = -0.694444   (the torque column, and the upper body takes −τ)
+  a[ω_u][θ_t] = -13.888889   −stiffness / inertia = -13.888889   (the twist SPRING, the entry this round corrects)
+  plant's twist stiffness = 20.000 N·m/rad, upper inertia = 1.440 kg·m²
+
+§1 THE DISAGREEMENT, IN N·m. The game's joint against the three models a linear plant could carry.
+    `game` is `coupleYaw`'s own spring; `shipped` is 20 θ; `secant` is what the flag hands the schedule;
+    `tangent` is 2020 θ − 1740 sign(θ), which the plant has nowhere to put (no constant term).
+
+     deg        rad       game    shipped    err N·m      err x  of 100 N·m   secant k
+   30.00     0.5236     10.472     10.472      0.000      1.000      0.000     20.000
+   45.00     0.7854     15.708     15.708      0.000      1.000      0.000     20.000
+   49.85     0.8700     17.494     17.401      0.093      1.005      0.001     20.107
+   50.00     0.8727     22.783     17.453      5.329      1.305      0.053     26.107
+   51.10     0.8919     61.564     17.837     43.726      3.451      0.437     69.028
+   52.00     0.9076     93.294     18.151     75.142      5.140      0.751    102.795
+   55.00     0.9599    199.061     19.199    179.862     10.368      1.799    207.370
+   60.00     1.0472    375.339     20.944    354.395     17.921      3.544    358.422
+   70.00     1.2217    727.896     24.435    703.461     29.790      7.035    595.791
+
+  CONTROL, the secant reproduces the game's torque exactly: worst |secant·θ − game| over 0–90° in 0.01° steps
+           = 2.27e-13 N·m.   (It is constructed to; a non-zero here is a bug.)
+  CONTROL, at the stop itself (0.87 rad, 49.850°) game = 17.400 N·m and
+           shipped = 17.400 N·m — the two models AGREE there, so the axis's
+           first knot is the shipped design and nothing below the stop can move.
+
+  ⭐ AT THE RIDE'S OWN PEAK, 51.10°: the model is wrong by 43.726 N·m,
+     which is 43.7 % of the whole authority the hips have (TWIST_BODY_TORQUE = 100 N·m).
+     The 100x of the headline is the STIFFNESS ratio (2020/20); the TORQUE ratio at 51.10° is 3.45x,
+     and both are printed because they are different numbers and only one of them is a force.
+
+§2 THE ONE-STEP PREDICTION ERROR — the quantity the flag changes. One control step (1/60 s) from a state whose
+    only non-zero entry is the twist, under a zero command, on the TRUE joint; against each model's own Φ.
+    Errors are |model − truth| in the model's own units.
+
+     deg        model    d θ_t rad  d ω_u rad/s    d r rad/s      d θ rad
+   45.00      shipped        0.000        0.000        0.000        0.000
+            scheduled        0.000        0.000        0.000        0.000
+   51.10      shipped        0.006        0.353        0.246        0.000
+            scheduled        0.001        0.136        0.095        0.000
+   55.00      shipped        0.024        1.512        1.053        0.000
+            scheduled        0.004        0.484        0.338        0.000
+   60.00      shipped        0.048        2.998        2.087        0.001
+            scheduled        0.008        0.903        0.630        0.000
+
+  CONTROL, a state INSIDE the range (45°): both rows above must be equal and at the integrator's own floor —
+  they are, which is what says the two models differ only where the stop is.
+  ⚠️ These are ONE step. The loop predicts over PREDICT_DELAY = 0.1 s, six of them, and over six steps the
+  error compounds; that is not computed here because the six-step prediction also carries the commands sent.
+
+§3 THE DESIGNS AT THE AXIS'S KNOTS. `k[1][θ_t]`, N·m/rad of its own angle, and the closed-loop spectral radius.
+
+  k[1][θ_t] by speed and knot (knots N·m/rad):
+    m/s          20          60         180         540        2020
+    4.0      57.186     153.496     395.986     726.602     835.972
+    4.5      52.547     147.961     405.632     822.905     998.504
+    5.0      42.418     125.952     351.248     698.929     888.505
+    5.5      19.234      78.751     243.380     468.882     723.369
+    6.0      26.363      87.487     215.806     376.620     632.695
+    6.5      25.875      80.377     183.325     326.596     573.589
+    7.0      24.513      74.398     164.700     299.847     534.168
+    7.5      25.784      74.629     159.952     286.934     498.910
+    8.0      22.384      66.329     141.963     261.295     461.380
+    8.5      21.141      64.293     138.097     251.812     439.373
+    9.0      20.585      62.573     134.798     248.275     434.407
+    9.5      18.323      56.919     121.541     223.971     387.032
+   10.0      18.526      57.760     122.960     222.617     380.232
+   10.5      18.385      56.425     119.862     219.652     375.556
+   11.0      16.568      52.261     110.737     202.805     342.780
+   11.5      16.537      52.802     112.668     204.499     343.199
+   12.0      16.016      50.705     107.966     198.197     331.206
+
+  spectral radius of the WHOLE designed loop (`closedLoop`: the law, its filter and its delay line; all < 1):
+    m/s          20          60         180         540        2020
+    4.0       0.982       0.982       0.982       0.982       0.982
+    4.5       0.975       0.974       0.974       0.974       0.982
+    5.0       0.982       0.977       0.977       0.977       0.982
+    5.5       0.985       0.979       0.978       0.978       0.982
+    6.0       0.980       0.977       0.977       0.977       0.982
+    6.5       0.976       0.975       0.975       0.975       0.982
+    7.0       0.974       0.974       0.974       0.974       0.982
+    7.5       0.975       0.975       0.975       0.975       0.982
+    8.0       0.973       0.973       0.973       0.973       0.982
+    8.5       0.974       0.974       0.974       0.974       0.982
+    9.0       0.971       0.971       0.971       0.971       0.982
+    9.5       0.970       0.970       0.970       0.970       0.982
+   10.0       0.971       0.971       0.971       0.972       0.982
+   10.5       0.968       0.968       0.968       0.968       0.982
+   11.0       0.967       0.967       0.967       0.967       0.982
+   11.5       0.967       0.967       0.967       0.968       0.982
+   12.0       0.963       0.964       0.964       0.965       0.982
+
+  CONTROL, every knot is a design: the largest radius over 17 x 5 is 0.9850 — all below 1.
+  CONTROL, the first knot IS the shipped design: Φ and K compared entry by entry at all 17 speeds —
+           BIT-IDENTICAL on every entry.
+
+§4 THE CLOSED LOOP ON THE TRUE JOINT. 3.5i §4.3's own pumping release — the upper body's own yaw rate, the
+    torso starting square — integrated with the game's stop in the truth, under each law. `work` is DELIVERED:
+    Σ (commanded τ, lagged by the plant's own τ_a state) · Δθ_t over the run, J, about the board's up axis.
+
+  POSITIVE CONTROL — the stop switched OFF in the truth, the shipped law, release 1 rad/s, NO command bound
+  (3.5i §4.3 had none either, which is why the control is run that way and the table below is not):
+  3.5i §4.3 published peak −37.57° and a REQUESTED +2.886 J at 5.0 m/s; the brief prices the same release at
+  2.1–2.3 J DELIVERED through the lag, and delivered is what this instrument books.
+    m/s     |peak| °       work J     at 2 s °
+    4.5       24.587        0.809        2.530
+    5.0       37.574        2.228       14.359
+    8.5       11.147       -0.218       -0.254
+  ⭐ 5.0 m/s: |peak| 37.574° against the published 37.57° (0.01 % apart) and
+  2.228 J DELIVERED, inside the brief's own 2.1–2.3 J delivered band. The SIGN of the peak is
+  opposite because this file works in the MODEL's frame, whose θ_t is −tb.angle (3.5i §2.3), and a work is a
+  frame-free scalar.
+  ⚠️ RK4 on the continuous plant here against §4.3's Φ/Γ stepping: two instruments, not one.
+
+  THE TRUE JOINT (stop ON in the truth), both laws, by release and speed:
+  Both commands BOUNDED as the body bounds them (twist 100 N·m, ankle 0.25 rad); `clip` is the twist ticks
+  the bound bit on, of 120.
+    m/s    release          law       peak °       work J        end °   ticks>R    clip   axis k max
+    4.5       1.00      shipped       24.587        0.809        2.530         0       0         20.0
+                         design       24.587        0.809        2.530         0       0         20.0
+    4.5       1.40      shipped       34.422        1.585        3.542         0       0         20.0
+                         design       34.422        1.585        3.542         0       0         20.0
+    4.5       1.80      shipped       44.257        2.621        4.554         0       0         20.0
+                         design       44.257        2.621        4.554         0       0         20.0
+    4.5       2.50      shipped       86.530      438.180       86.530       102      34         20.0
+                         design      -84.989      419.533      -83.665        89      93        847.0
+    5.0       1.00      shipped       37.574        2.228       14.359         0       0         20.0
+                         design       37.574        2.228       14.359         0       0         20.0
+    5.0       1.40      shipped       50.423        4.402       20.026        25       0         20.0
+                         design       71.210       83.943      -57.998        70      49        620.0
+    5.0       1.80      shipped       54.085       15.766       53.378        96       0         20.0
+                         design       76.810      104.946      -60.119        84      77        722.1
+    5.0       2.50      shipped       71.389       55.229       59.903       103      14         20.0
+                         design       82.450      221.990      -68.884        90      96        810.8
+    5.5       1.00      shipped       36.614        2.662       23.589         0       0         20.0
+                         design       36.614        2.662       23.589         0       0         20.0
+    5.5       1.40      shipped       50.194        5.111       32.056        19       0         20.0
+                         design       51.530        5.004       24.568        28       0         85.3
+    5.5       1.80      shipped       52.740       11.711       23.832        65       0         20.0
+                         design       62.737       31.651       40.670        41      12        430.9
+    5.5       2.50      shipped       58.081       63.286      -21.281        74       0         20.0
+                         design       80.301       34.173      -40.904        74      62        778.5
+    8.5       1.00      shipped       11.147       -0.218       -0.254         0       0         20.0
+                         design       11.147       -0.218       -0.254         0       0         20.0
+    8.5       1.40      shipped       15.606       -0.427       -0.356         0       0         20.0
+                         design       15.606       -0.427       -0.356         0       0         20.0
+    8.5       1.80      shipped       20.065       -0.706       -0.458         0       0         20.0
+                         design       20.065       -0.706       -0.458         0       0         20.0
+    8.5       2.50      shipped       27.868       -1.361       -0.636         0       0         20.0
+                         design       27.868       -1.361       -0.636         0       0         20.0
+
+  ⛔ THE READ, counted rather than eyeballed: of 16 cells, 7 reach the stop and 9 do not —
+  and the 9 that do not are BIT-IDENTICAL between the two arms. Of the 7 that do, `design` ends with a
+  LARGER |peak twist| in 6 and puts MORE work into the joint in 4. ⛔ **So re-solving the gain row on the
+  corrected plant does NOT quiet this release; on this instrument it mostly makes it worse.** The mechanism is
+  visible in the `clip` column: the stiffer design wants 200–800 N·m of twist, the hips have 100, and a law
+  whose command saturates for most of a second is no longer the law that was designed.
+
+  CONTROL, a release that never reaches the stop must give the two laws the SAME run:
+    4.5 m/s, release 0.5 rad/s: peaks 12.294 vs 12.294°, work 0.202 vs 0.202 J, ticks past the range 0 / 0 — IDENTICAL.
+    5.0 m/s, release 0.5 rad/s: peaks 18.787 vs 18.787°, work 0.557 vs 0.557 J, ticks past the range 0 / 0 — IDENTICAL.
+
+  ⭐ WHY `?twistStop=model` IS ABSENT FROM THIS TABLE, and it is a property of the section, not an omission:
+  this release is driven by `u = −K x` on the TRUE state — no estimator, no delay, no reference (3.5i §4.3's
+  own method). `model` leaves K alone, so on an instrument whose only channel is K it is the shipped arm by
+  CONSTRUCTION. Verified rather than asserted, entry by entry at every knot and speed:
+    85 cells (17 speeds x 5 knots): NOT identical, worst |Δ| = 1.14e-13.
+  So `model` acts ONLY through the prediction, the filter and the reference — which is §2 and §5, not here.
+
+§5 THE STEER REGIME — BECAUSE THE CHANNEL IS SHARED. The twist command an ordinary BANK ask issues with zero
+    twist requested (3.5i §5.1). ⭐ Through the SHIPPED `PredictiveController.tick` itself, not a rewrite of it:
+    the first tick, every sense zero, so x̂ = 0 and the bias 0, and `raw[1]` is read off the controller. That is
+    §5.1's own recipe, and reading `raw` means the figure is REQUESTED — before MOTOR_LAG, before the 100 N·m
+    bound and before the feet's grip, exactly as §5.1's 354 N·m row was.
+
+  POSITIVE CONTROL — the shipped controller, against 3.5i §5.1's published N·m per degree:
+      m/s    rail °     bank °    ref θ_t °       raw N·m     N·m / deg     §5.1 said
+     5.00     0.000     1.3369        0.000        10.665         7.977         7.977
+     5.00     0.000    20.0000        0.000       163.252         8.163         8.163
+     5.00     0.000    40.0000        0.000       354.247         8.856         8.856
+     6.70     0.192     1.3369        0.000         4.588         3.432         3.432
+     6.70     0.192    40.0000        0.000       124.841         3.121         3.121
+     8.00     0.000     1.3369        0.000         4.698         3.514         3.514
+  ⚠️ `|raw|` is printed because `AttachedRider` hands `tick` the bank as `−leanAsked` [R, `:3922`], so the
+  sign here is the opposite of §5.1's table; the MAGNITUDE and the per-degree slope are the comparison.
+
+  THE SAME ASKS WITH THE TORSO ALREADY PAST THE STOP, all three arms. `at °` is the twist the axis is read at.
+      m/s    rail °     bank °     at °         arm       axis k       raw N·m     N·m / deg   vs shipped
+     5.00     0.000     1.3369     51.1       model         69.0        10.665         7.977       1.000x
+     5.00     0.000     1.3369     51.1      design         69.0        10.705         8.008       1.004x
+     5.00     0.000     1.3369     55.0       model        207.4        10.665         7.977       1.000x
+     5.00     0.000     1.3369     55.0      design        207.4        10.983         8.215       1.030x
+     5.00     0.000     1.3369     60.0       model        358.4        10.665         7.977       1.000x
+     5.00     0.000     1.3369     60.0      design        358.4        10.968         8.204       1.028x
+     5.00     0.000    20.0000     51.1       model         69.0       163.252         8.163       1.000x
+     5.00     0.000    20.0000     51.1      design         69.0       164.081         8.204       1.005x
+     5.00     0.000    20.0000     55.0       model        207.4       163.252         8.163       1.000x
+     5.00     0.000    20.0000     55.0      design        207.4       169.144         8.457       1.036x
+     5.00     0.000    20.0000     60.0       model        358.4       163.252         8.163       1.000x
+     5.00     0.000    20.0000     60.0      design        358.4       169.374         8.469       1.038x
+     6.70     0.192     1.3369     51.1       model         69.0         4.588         3.432       1.000x
+     6.70     0.192     1.3369     51.1      design         69.0         4.483         3.353       0.977x
+     6.70     0.192     1.3369     55.0       model        207.4         4.588         3.432       1.000x
+     6.70     0.192     1.3369     55.0      design        207.4         3.619         2.707       0.789x
+     6.70     0.192     1.3369     60.0       model        358.4         4.588         3.432       1.000x
+     6.70     0.192     1.3369     60.0      design        358.4         2.862         2.141       0.624x
+     6.70     0.192    40.0000     51.1       model         69.0       124.841         3.121       1.000x
+     6.70     0.192    40.0000     51.1      design         69.0       122.864         3.072       0.984x
+     6.70     0.192    40.0000     55.0       model        207.4       124.841         3.121       1.000x
+     6.70     0.192    40.0000     55.0      design        207.4        99.906         2.498       0.800x
+     6.70     0.192    40.0000     60.0       model        358.4       124.842         3.121       1.000x
+     6.70     0.192    40.0000     60.0      design        358.4        79.245         1.981       0.635x
+
+  CONTROL, the reference still asks the torso to stay SQUARE: `ref θ_t` over every row above —
+    largest |ref θ_t| over 48 asks = 0.00e+0°. 3.5i §5.1 measured 0.000° at every bank ask
+    and this flag does NOT change that: the design still asks the torso to stay square through the turn. What
+    changes is what the loop believes the torso will DO when it pushes it.
+
+  CONTROL, with the switch set but the torso INSIDE the range, the steer must be the shipped steer:
+    largest |Δ| in either command over 4 asks x 2 arms x 4 sub-stop angles = 0.00e+0  — BIT-IDENTICAL.
+

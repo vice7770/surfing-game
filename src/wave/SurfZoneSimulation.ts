@@ -487,6 +487,17 @@ export interface SurfZoneConfig {
    */
   plantFloor?: '4.5' | '5' | '6';
   /**
+   * 'on': the balance's internal plant carries the twist joint's own **end stop** (step 3.5j;
+   * `RideSessionOptions.twistStop`, `AttachedRiderOptions.twistStop`, `DesignWeights.twistStop`). The game's joint is
+   * 20 N·m/rad with 2000 more past 0.87 rad (49.85°); the model carries the 20 and no stop, and the measured ride
+   * reached 51.10° — so in that region the loop plans against a torso 100x softer than the one it drives. Set, the
+   * gain schedule gains a fifth axis, the stiffness read at the joint's own angle, and the design is rebuilt on it.
+   * It changes the **plant**, not the control law and not an actuator: no torque is added, scaled or clamped. The new
+   * surfer (`?rider=new`) only; nothing at all below 49.85° of twist. Every spot. The `?twistStop=model|design` dev switch,
+   * opt-in, to ride; online rooms run the default.
+   */
+  twistStop?: 'model' | 'design';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.
