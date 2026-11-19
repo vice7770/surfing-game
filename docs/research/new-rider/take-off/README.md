@@ -14,8 +14,10 @@ This round built the bench that does his sequence — paddle → catch → pop u
 
 1. **The immediate fall is the shipped game.** A median **0.750 s** after *"Getting up…"* clears, 12 of 15 inside the
    owner's own one second, `'balance'` every time — **with no new switches on at all**.
-2. **`?trunk=mass` cannot be the cause**: against shipped it differs in **0 of 406 406 values**, because the hip rotor
-   it folds reads **0 in every frame** of a take-off. On a placement the same switch is live, which is the control.
+2. **`?trunk=mass` does not move the fall.** On seed 1 it differs from shipped in **0 of 406 406 values** — the hip
+   rotor it folds never left zero in 4 147 frames. On seed 2 the rotor *does* fire (1 388 of 5 267 frames, peaking at
+   **5.5°**) and the arm moves **71 009 of 526 700 values** — **with the fall times identical, run for run** (14 falls
+   each, median 0.8333 s both). Either way it is not what makes him fall.
 3. **What he rides as "all three" is `?bodyBank=hip` alone** (`bank` vs `all3`: 0 of 388 472) — and that one makes the
    fall **sooner** (0.683 s, 15 of 15 inside a second) while cutting the roll peak from 28.9° to 9.3°.
 4. **`?askCap=4.5` is invisible on a placement and not on a take-off**, because a placement is on the plane from
@@ -220,6 +222,8 @@ Each arm is the same sea, the same wave, the same paddling, the same press — s
 frame by frame. The diff counts below are over **every column the three switches can move**, aligned on
 `(script, wave, frame)`.
 
+Seed 1 (seed 2's counts are in Part 10 and differ; the first column is this sea's):
+
 | pair | values that differ | first frame that differs |
 | --- | --- | --- |
 | `ships` vs `trunk` (`?trunk=mass`) | **0 of 406 406** over 4 147 aligned frames in 36 runs | — (none) |
@@ -227,11 +231,24 @@ frame by frame. The diff counts below are over **every column the three switches
 | `bank` vs `all3` (`+ ?armCarry=on + ?trunk=mass`) | **0 of 388 472** | — (none) |
 | `all3` vs `all3cap` (`+ ?askCap=4.5`) | 8 721 of 384 160, `leanCap` first (441 frames) | frame 477–577: once standing |
 
-**`?trunk=mass` is bit-for-bit inert on a real take-off.** Not "it moves values but not the outcome" — it moves
-**nothing**. The reason is in the rider's own columns: on the `trunk` arm, `StandingBody.hip.angle` reads **0 in all
-4 147 logged frames, including all 787 standing frames**, and so does `trunkFold` — 0 in 4 147 of 4 147. The hip
-rotor answers excess ankle demand, and through a take-off there is no such demand to answer, because (Part 4) the
-rider is off the plane and the lean he may ask for is zero. **A fold that never fires cannot move the mass it folds.**
+**`?trunk=mass` is bit-for-bit inert on this sea — and that is a fact about the sea, not a law.** On seed 1 it moves
+**nothing**, and the reason is in the rider's own columns: on the `trunk` arm, `StandingBody.hip.angle` reads **0 in
+all 4 147 logged frames, including all 787 standing frames**, and so does `trunkFold`. The hip rotor answers excess
+ankle demand, and on these six waves there was none to answer, because (Part 4) the rider is off the plane and the
+lean he may ask for is zero. **A fold that never fires cannot move the mass it folds.**
+
+**On a second sea the rotor does fire, the switch does move the state — and the fall still does not move.** Seed 2
+(Part 10): `StandingBody.hip.angle` is non-zero in **1 388 of 5 267 frames** on the `trunk` arm — **67.7 % of its
+standing frames**, from 0.1 s after the stand on — **peaking at 5.5° (0.096 rad)**, against the **42.9°** PR #426
+measured on its placed riders, so the fold a take-off asks for is about an eighth of a placement's. With the rotor
+awake the arm differs from shipped in **71 009 of 526 700 values**, `trunkFold` first — and **the fall times are
+identical, run for run** (14 falls each, median **0.8333 s** both). `bank` versus `all3` is the same story on this
+sea: 68 953 of 511 300 values, identical falls.
+
+**So the honest statement is the narrow one.** `?trunk=mass` is inert while the hip rotor is idle (all of seed 1,
+a third of seed 2's standing frames), and when the rotor wakes it moves the state without moving the outcome — which
+is **PR #426's own finding, now reproduced through a real take-off**. What it never does, on either sea, is make the
+rider fall sooner.
 
 **On a placement the same switch is live — and that is this measurement's positive control.** A "0 of 406 406" is
 worthless unless the same bench, with the same arm wiring, can be shown to see the switch when it acts. It can: on the
@@ -371,14 +388,30 @@ popped at the cue by default; the file in this PR says so with named pop rules (
 **0 of 2 016 values differ** over 48 runs (3 arms × 2 scripts × 8 waves), on every column both builds emit; the only
 differences are the four columns the old build did not have (`popBy`, `fsCapMed`, `fsPlaningFirst`, `fsPlaningMed`).
 
-**A second sea says the same thing.** Seed 2, run with the file in this PR (`SCRIPTS=cue,cueL,cueR`, 12 periods), was
-read off its live rows at the point this document was written — **its first 9 waves, of which 5 lit the cue: 15 stands
-and 8 falls per arm**, the run still stepping. The pattern repeats exactly: `ships` and `trunk` fall at a median
-**0.984 s** after the stand with **identical value lists** (0.717, 0.733, 0.95, 0.967, 1.0, 1.167, 1.183, 2.3 s), 5 of
-8 inside one second; `bank`, `all3` and `all3cap` fall at a median **0.675 s**, 7 of 8 inside one second. A different
-sea moves the shipped median (0.750 → 0.984 s) and leaves **both switch findings standing**: `trunk` inert, `bodyBank`
-earlier. The full seed-2 tables are not in this PR — the run finished after it was written — and anyone re-running it
-should expect the medians, not the individual values, to carry over.
+**A second sea keeps both findings and breaks one of this document's first words.** Seed 2, run with the file in this
+PR (`SCRIPTS=cue,cueL,cueR`, 12 periods, 1 043 s): **11 waves, 7 of them lit the cue, 165 runs; 21 stands and 14 falls
+per arm** (`results/seed2-*`). What carries over:
+
+| arm | stood | fell | median after the stand | within 1 s | roll peak in the first second | pinned | the stand's refusal |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `ships` | 21 | 14 | **0.8333 s** | 11 of 14 | 18.8° | 100.0 % | 18 of 21 |
+| `trunk` | 21 | 14 | **0.8333 s** — the same 14 values | 11 of 14 | 18.8° | 100.0 % | 18 of 21 |
+| `bank` | 21 | 14 | **0.6333 s** | 13 of 14 | 4.9° | 100.0 % | 18 of 21 |
+| `all3` | 21 | 14 | **0.6333 s** — the same 14 values as `bank` | 13 of 14 | 4.9° | 100.0 % | 18 of 21 |
+| `all3cap` | 21 | 14 | 0.6333 s (one value apart from `bank`) | 13 of 14 | 4.8° | 100.0 % | 18 of 21 |
+
+The fall is still immediate (the shipped median moves with the sea, 0.750 → 0.8333 s), `?bodyBank=hip` still brings it
+**sooner** and still cuts the roll (18.8° → 4.9°), the stand is still refused as `feet under water` in **18 of 21**,
+and the CoP is pinned in **100 %** of first-second frames.
+
+**What does *not* carry over is "`?trunk=mass` moves nothing".** On this sea the hip rotor wakes: non-zero in
+**1 388 of 5 267 `trunk`-arm frames — 67.7 % of its standing frames — peaking at 5.5°** (against 0 of 4 147 on seed 1,
+and against the **42.9°** PR #426 measured on placed riders). With the rotor awake the arm differs from shipped in
+**71 009 of 526 700 values**, and `bank` from `all3` in **68 953 of 511 300** — **while the fall times stay identical,
+run for run.** Seed 1's *0 of 406 406* was a fact about six waves on which the rotor happened never to fire; reading
+it as a property of the switch would have been exactly the error this project keeps warning itself about. **The claim
+that survives both seas is the narrow one: `?trunk=mass` moves the state and not the fall** — which is PR #426's own
+finding, reproduced through a real take-off.
 
 **The probe is inert, over 2 538 values.** `PROBE=off` reruns the drive with the per-frame row never built, which also
 removes the only two reads the probe makes of its own accord — the drawn feet (`renderPoint`, twice, taken into the
@@ -426,10 +459,12 @@ ruins his ride"*. Both were drawn from the wrong second.
 
 1. **"Falls immediately after starting the ride" is the shipped game at his spot.** Median **0.750 s** after the
    prompt clears, 12 of 15 inside one second, `'balance'` every time, with **no new switches on**.
-2. **`?trunk=mass` does not cause it and cannot**: 0 of 406 406 values, and the hip rotor it folds is 0 in every
-   measured frame.
-3. **What he rides as "all three" is `?bodyBank=hip` alone** (0 of 388 472 between them), and that one does move the
-   fall — **earlier**, 0.750 → 0.683 s, 15 of 15 inside a second.
+2. **`?trunk=mass` does not cause it**: 0 of 406 406 values on seed 1 (the rotor idle in all 4 147 frames), and on
+   seed 2, where the rotor wakes in 67.7 % of standing frames and the arm moves 71 009 of 526 700 values, **the fall
+   times are identical, run for run**. It moves the state, never the outcome.
+3. **What he rides as "all three" is `?bodyBank=hip` as far as the fall is concerned** (0 of 388 472 between them on
+   seed 1; on seed 2 they differ in state and fall identically), and that one does move the fall — **earlier**,
+   0.750 → 0.683 s, 15 of 15 inside a second.
 4. **`?askCap=4.5` is the opposite of "nothing" here**: off the plane it is the only arm that gives the rider a lean
    to ask for, and it produced the earliest fall measured (0.42 s).
 5. The most likely source of the *word* "balance" in his report is **the drawing** (Part 8): standing,
@@ -447,6 +482,8 @@ ruins his ride"*. Both were drawn from the wrong second.
   (`encodeSurfZoneState`, as `catch-probe --state` does) and one rider per restored sea.
 * **The drawing claim in Part 8 is a source reading, not a measurement.** It needs one standing frame drawn with and
   without the switch.
-* **`?trunk=mass`'s inertness is conditional on the rotor being idle.** On a longer ride, on the plane, with a real
-  ankle demand, it will fire — PR #426 measured it firing in 19.6 % of placed frames. Nothing here says the switch is
-  harmless on a ride that gets going; it says the switch is absent from the first second after a stand.
+* **`?trunk=mass`'s inertness is conditional on the rotor being idle, and seed 2 showed that condition breaking.**
+  The rotor woke on the second sea (1 388 of 5 267 frames, 5.5° peak) and the arm moved 71 009 of 526 700 values with
+  the falls unchanged. On a longer ride, on the plane, it will fire harder — PR #426 measured 42.9°. Nothing here says
+  the switch is harmless on a ride that gets going; it says it does not move the fall in the first second after a
+  stand, on either sea measured.
