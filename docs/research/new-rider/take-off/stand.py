@@ -158,6 +158,8 @@ def held(rows):
             ('wetted hull at the stand, m2', lambda r: (r.get('atStand') or {}).get('wetted')),
             ('up the face at the stand', lambda r: (r.get('atStand') or {}).get('faceFrac')),
             ('face slope under the board, deg', lambda r: (r.get('atStand') or {}).get('slope')),
+            ('up the face at the PRESS', lambda r: (r.get('atPop') or {}).get('faceFrac')),
+            ('the board draft at the stand, m', lambda r: (r.get('atStand') or {}).get('draft')),
             ('ahead of the crest, m', lambda r: (r.get('atStand') or {}).get('ahead')),
             ('front foot\'s LOAD SHARE', lambda r: (r.get('atStand') or {}).get('front')),
             ('load at the feet, bw', lambda r: (r.get('atStand') or {}).get('load')),
@@ -179,6 +181,18 @@ def held(rows):
         a = med([get(r) for r in groups[0][1]])
         b = med([get(r) for r in groups[1][1]])
         print(f'{name:48s} {a:10.3f} {b:10.3f}')
+    print()
+    print()
+    print('## ⭐ which columns separate held from fell with NO OVERLAP — the test that matters, because a median')
+    print('     difference over 4 runs is not a discriminator and a non-overlapping range over the whole population is')
+    for name, get in cols:
+        h = [get(r) for r in groups[0][1] if isinstance(get(r), (int, float))]
+        f = [get(r) for r in groups[1][1] if isinstance(get(r), (int, float))]
+        if not h or not f:
+            continue
+        verdict = ('SEPARATES (held above)' if min(h) > max(f)
+                   else 'SEPARATES (held below)' if max(h) < min(f) else 'overlaps')
+        print(f'   {name:48s} held {min(h):8.3f}..{max(h):8.3f}  fell {min(f):8.3f}..{max(f):8.3f}  {verdict}')
     print()
     print('## the refusal against the outcome: a 2x2, because a gate that predicts nothing is not a gate')
     for label, pick in (('refused (any verdict)', lambda r: r['popRefusal'] is not None),

@@ -14,6 +14,8 @@ planing share of the first second                     1.000      0.000
 wetted hull at the stand, m2                          0.263      0.558
 up the face at the stand                              0.789      0.937
 face slope under the board, deg                      16.863      8.100
+up the face at the PRESS                              0.781      0.839
+the board draft at the stand, m                      -0.064      0.237
 ahead of the crest, m                                 2.132      1.184
 front foot's LOAD SHARE                               0.432      0.681
 load at the feet, bw                                  0.833      1.043
@@ -26,6 +28,31 @@ knees left, min                                       0.399      0.527
 past the feet ACROSS, peak, m                         0.000      0.394
 past the feet ALONG, peak, m                          0.000      0.000
 roll peak in the first second, deg                    5.118     27.782
+
+
+## ⭐ which columns separate held from fell with NO OVERLAP — the test that matters, because a median
+     difference over 4 runs is not a discriminator and a non-overlapping range over the whole population is
+   planing at the stand                             held    1.000..   1.000  fell    0.000..   1.000  overlaps
+   speed through the water, m/s (the latch's own)   held    4.420..   4.565  fell    0.683..   4.264  SEPARATES (held above)
+   lean cap at the stand, rad                       held    0.416..   0.442  fell    0.000..   0.390  SEPARATES (held above)
+   planing share of the first second                held    1.000..   1.000  fell    0.000..   1.000  overlaps
+   wetted hull at the stand, m2                     held    0.206..   0.263  fell    0.263..   0.621  SEPARATES (held below)
+   up the face at the stand                         held    0.779..   0.816  fell    0.308..   1.000  overlaps
+   face slope under the board, deg                  held   16.349..  17.968  fell   -3.500..  17.534  overlaps
+   up the face at the PRESS                         held    0.755..   0.824  fell    0.000..   0.974  overlaps
+   the board draft at the stand, m                  held   -0.073..  -0.055  fell   -0.051..   0.699  SEPARATES (held below)
+   ahead of the crest, m                            held    1.987..   2.153  fell   -1.815..  39.610  overlaps
+   front foot's LOAD SHARE                          held    0.343..   0.475  fell    0.484..   0.767  SEPARATES (held below)
+   load at the feet, bw                             held    0.753..   0.844  fell    0.777..   1.305  overlaps
+   landing peak, bw                                 held    1.415..   1.602  fell    0.886..   2.165  overlaps
+   the feet's depth, m                              held   -0.025..   0.018  fell    0.030..   0.992  SEPARATES (held below)
+   the descent into the surface, m/s                held    0.355..   0.490  fell    0.133..   0.379  overlaps
+   capture margin, min over the first second        held    0.204..   0.576  fell    0.000..   0.320  overlaps
+   grip left, min                                   held    0.718..   0.900  fell    0.000..   0.556  SEPARATES (held above)
+   knees left, min                                  held    0.373..   0.408  fell    0.397..   0.894  overlaps
+   past the feet ACROSS, peak, m                    held    0.000..   0.307  fell    0.133..   0.824  overlaps
+   past the feet ALONG, peak, m                     held    0.000..   0.000  fell    0.000..   0.003  overlaps
+   roll peak in the first second, deg               held    2.005..   8.520  fell   15.475..  74.713  SEPARATES (held below)
 
 ## the refusal against the outcome: a 2x2, because a gate that predicts nothing is not a gate
    refused (any verdict)         1 held of 29  (median fall 0.633 s)

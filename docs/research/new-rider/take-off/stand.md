@@ -38,10 +38,13 @@ wetted hull* — which of those four is the cause?
    moved 250 ms later**, which is the clearest lever test in this round (Part 5.3).
 6. **A ride can last, and what it needs is measurable at the stand. This is not a null.** **9 rides of 55 stands
    carried their full 3 s window, on 5 waves of 23**, across the two seas — 4 of 34 on seed 1 (waves 6 and 10) and
-   7 of 21 on seed 2 (waves 1, 2, 11). Every one of the nine is planing; the single quantity that separates them is
-   **speed through the water at the stand: 4.422 m/s held against 2.169 m/s fell** (seed 1 medians, 4 held on 2 waves
-   against 30 fell). Read together the five properties are one event — **a drop-in** — and the rides that die are the
-   ones spent high on a flattening crest on a buried board (Part 6).
+   7 of 21 on seed 2 (waves 1, 2, 11). Every one of the nine is planing, and over seed 1's 34 stands **five columns
+   separate held from fell with no overlap at all**: **speed through the water (4.420–4.565 held against 0.683–4.264
+   fell)**, the wetted hull, the board's draft, the feet's depth, the front foot's **load share** — and the **grip
+   left** (0.718–0.900 against 0.000–0.556). ⚠️ **`planing` itself does not separate them, and neither does where on
+   the face, how steep it is, how far ahead of the crest, how hard the landing was, or the capture margin.** So the
+   ride needs **a hull on the plane**, and the lower, steeper part of the face is one place it can get there — not the
+   thing itself (Part 6).
 
 ---
 
@@ -383,8 +386,15 @@ are the same paddling diverging only after the stand.
 
 **Pressed at or below 0.750 up the face: 6 held of 6** (plus wave 1's two stick runs, which fell — the only runs in
 the table where the stick mattered). **Pressed at 0.755 or above: 1 held of 33**, and that one is wave 1 again at
-exactly 0.750. Ten waves, thirty stands, above the threshold: **none held.** No other column in this study — not
-planing, not the wetted hull, not the slope, not the landing peak — separates the two groups without overlap.
+exactly 0.750. Ten waves, thirty stands, above the threshold: **none held.**
+
+⚠️ **But this column does not survive a wider population, and Part 5.3 breaks it.** Every stand in the table above was
+popped at the game's own cue. Add presses that fire *earlier* — the `early` rule, 2 s before the crest arrives — and
+the ordering collapses: those stands are **0.31–0.66** up the face, far below the threshold, and every one of them
+falls, in 0.350–1.767 s, on a board buried 0.60–0.99 m at the feet. So **where on the face the press happens is not
+the quantity**; it is a proxy that works inside the cue's own narrow range because, inside that range, pressing lower
+means pressing on a board that is making speed. Part 6 gives the columns that do separate the two groups over the
+whole population, and they are all hydrodynamic.
 
 **And the cue has no upper bound on it.** `inTakeOffWindow` (`takeOffCue.ts`) asks `frame.faceFraction >= HIGH_ON_FACE`
 with **HIGH_ON_FACE = 0.5 and no ceiling**; the only upper bound in the window is on `aheadOfCrest`. So the game's own
@@ -521,11 +531,57 @@ fell 30):
 | **past the feet ALONG, peak, m** | **0.000** | **0.000** |
 | roll peak in the first second | 5.1° | 27.8° |
 
-**Read as one event, this is a drop-in.** The ride that lasts stands **lower on a steeper face, further ahead of the
-crest, descending into the surface twice as fast, making twice the speed through the water, on half the wetted hull,
-with the deck clear of the water and the weight off the front foot.** The ride that dies stands high on a flattening
-crest on a buried board. Those are not two lists of properties; they are a rider who got down the face and a rider who
-did not.
+### 6.1 ⭐⭐ Which columns actually separate the two groups, with no overlap at all
+
+Over the same 34 stands — and this is the test that matters, because it is run over a population that contains presses
+at the cue, 250 ms late, 500 ms late, on the `lift` rule and 2 s early:
+
+| column | held (4) | fell (30) | separates? |
+| --- | --- | --- | --- |
+| **speed through the water at the stand, m/s** | **4.420 … 4.565** | 0.683 … **4.264** | ⭐ **yes** |
+| the lean cap, rad | 0.416 … 0.442 | 0.000 … 0.390 | yes — but it is `atan(V²/gR)`, the same column |
+| **wetted hull at the stand, m²** | **0.206 … 0.263** | **0.263** … 0.621 | ⭐ **yes** |
+| **the board's draft at the stand, m** | **−0.073 … −0.055** | **−0.051** … +0.699 | ⭐ **yes** |
+| **the feet's depth at the stand, m** | **−0.025 … +0.018** | **+0.030** … +0.992 | ⭐ **yes** |
+| **the front foot's LOAD SHARE** | **0.343 … 0.475** | **0.484** … 0.767 | ⭐ **yes** |
+| **grip left, minimum over the first second** | **0.718 … 0.900** | 0.000 … **0.556** | ⭐ **yes** |
+| roll peak in the first second, ° | 2.0 … 8.5 | 15.5 … 74.7 | yes — but it is a consequence |
+| ⚠️ **`planing` itself** | 1 … 1 | **0 … 1** | ⚠️ **NO** |
+| up the face at the stand | 0.779 … 0.816 | 0.308 … 1.000 | no |
+| up the face at the press | 0.755 … 0.824 | 0.000 … 0.974 | no |
+| face slope under the board, ° | 16.35 … 17.97 | −3.50 … 17.53 | no |
+| ahead of the crest, m | 1.99 … 2.15 | −1.82 … 39.61 | no |
+| load at the feet, bw | 0.753 … 0.844 | 0.777 … 1.305 | no |
+| landing peak, bw | 1.415 … 1.602 | 0.886 … 2.165 | no |
+| the descent into the surface, m/s | 0.355 … 0.490 | 0.133 … 0.379 | no |
+| **the capture margin, min over the first second** | 0.204 … 0.576 | 0.000 … 0.320 | **no** |
+| knees left, min | 0.373 … 0.408 | 0.397 … 0.894 | no |
+| past the feet ACROSS, peak, m | 0.000 … 0.307 | 0.133 … 0.824 | no |
+
+**Three things to take from that table.**
+
+1. ⭐⭐ **`planing` does not separate the two groups and the speed behind it does.** There are fallers that are planing
+   (wave 10 `cue`, V = 4.264) and no holder below 4.420. **This is the same conclusion as the entry sweep and the
+   `leanWant = 0` count, now from a third direction, and it is as direct a refutation of "planing is the cause" as this
+   bench can produce.**
+2. **The columns that separate are one fact said five ways: the hull is carrying its load dynamically.** Speed through
+   the water is the cause; the wetted area halves, the draft goes negative (the board's own reference rises above the
+   local surface), the deck at the feet comes clear, and the load moves off the front foot because a planing board sits
+   tail-down.
+3. ⚠️ **The reserve that separates is the GRIP, and the capture margin — the only one of the three that can end a ride
+   — does not.** Every faller runs its sole's friction down to **0.000–0.556** left; no holder goes below **0.718**.
+   That is #429's own closing sentence (*"The rider has one authority left, the sole, and that is the one that
+   saturates"*) confirmed as a discriminator, and it points at the water pushing the feet across a buried deck rather
+   than at anything the balance does.
+   **And the columns the brief's framing leaned on — where on the face, how steep, how far ahead of the crest, how hard
+   the landing — separate nothing.**
+
+**Read as one event, this is a drop-in** — with the caveat that only the hydrodynamic half of it separates cleanly.
+At the median, the ride that lasts stands lower on a steeper face and further ahead of the crest, **making twice the
+speed through the water, on half the wetted hull, with the deck clear of the water and the load off the front foot**;
+the ride that dies stands high on a flattening crest on a buried board. But the face terms **overlap** run for run and
+the hull terms do not, so the honest statement is the narrow one: **what the ride needs is a hull on the plane, and
+the lower, steeper part of the face is one of the places it can get there — not the thing itself.**
 
 **⚠️ And "he never gets down the face" is a statement about the falling runs only.** #429 concluded *"the drop-in never
 happens: the whole measured ride is spent on the crest."* On the 4 seed-1 rides that lasted the drop-in does happen —
