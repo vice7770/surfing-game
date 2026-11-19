@@ -378,15 +378,57 @@ def trace(rows, wave, script):
               f"{fmt(r['roll'],1):>5s}")
 
 
+# Columns BOTH a PROBE=on and a PROBE=off run produce: the drive's own outcomes. Used by `--control`, where the
+# probe-only columns are null by construction on one side and a comparison over them would be meaningless.
+CONTROL_KEYS = ['popped', 'stood', 'pop', 'stand', 'fell', 'cause', 'fellAfterStand', 'popOutcome', 'popRefusal',
+                'popDuration', 'landingPeak', 'landingFront', 'riding', 'face', 'frames', 'liveFrames', 'cue', 'rule',
+                'popBy', 'standAfterPop', 'heldFull', 'truncated', 'observedAfterStand']
+# Everything a summary carries, for comparing two ARMS of the same run, where both sides have the probe on.
+OUTCOME_KEYS = CONTROL_KEYS + ['standStrain', 'standInto', 'standRearDepth', 'standFrontDepth', 'standFeetWet',
+                               'standSinking', 'fsN', 'fsLoadMed', 'fsWetMed', 'fsRollPeak', 'fsPlaningShare',
+                               'fsCapMed', 'fsLatchMed', 'fsCapMarginMin', 'fsGripMin', 'fsKneeMin', 'fsPastXPeak',
+                               'fsPastZPeak', 'beyondAfterStand', 'weightPastAfterStand']
+
+
+def arms(rows, a, b):
+    """⭐ Two arms in ONE file, aligned on (script, wave): the same sea, the same paddling, one switch apart.
+
+    This is the test for a switch whose only reach is a bound on a request that is zero: it must be IDENTICAL.
+    """
+    left = {(r['script'], r['wave']): r for r in rows if r.get('summary') and r['arm'] == a}
+    right = {(r['script'], r['wave']): r for r in rows if r.get('summary') and r['arm'] == b}
+    shared = sorted(set(left) & set(right))
+    print(f'## `{a}` against `{b}`: {len(shared)} runs aligned on (script, wave), '
+          f'{len(shared) * len(OUTCOME_KEYS)} values compared')
+    diffs = [(k, key, left[k].get(key), right[k].get(key))
+             for k in shared for key in OUTCOME_KEYS if left[k].get(key) != right[k].get(key)]
+    print(f'   values that differ: **{len(diffs)}**')
+    for d in diffs[:30]:
+        print('   ', d)
+    print()
+    print('   also, the per-frame lean columns, if the file carries frames:')
+    for arm in (a, b):
+        fr = [r for r in rows if r.get('frame') and r.get('arm') == arm and r.get('phase') == 'standing'
+              and r.get('attached') == 1]
+        if not fr:
+            print(f'     {arm}: no per-frame rows (LOG=none)')
+            continue
+        for key in ('leanCap', 'leanWant', 'leanAsk'):
+            xs = [r[key] for r in fr if r.get(key) is not None]
+            print(f'     {arm:6s} {key:9s} non-zero in {sum(1 for x in xs if abs(x) > 1e-12):5d} of {len(xs):5d}, '
+                  f'max |x| {max((abs(x) for x in xs), default=0):.4f}')
+    print()
+    print('   A broken result here is a difference in any outcome value: it would mean the cap reaches the ride even')
+    print('   with the request at zero, and Part 4.1 of stand.md would be wrong.')
+
+
 def control_against(rows, other_path):
     """The probe's own inertness: PROBE=off builds no row, so it makes none of the probe's reads."""
     other, c2, d2 = load(other_path)
     banner(c2, d2, other_path)
     if c2 is not None and c2.get('probe') == 'on':
         print('!! the comparison file was ALSO made with PROBE=on: this is not an inertness control')
-    keys = ['popped', 'stood', 'pop', 'stand', 'fell', 'cause', 'fellAfterStand', 'popOutcome', 'popRefusal',
-            'popDuration', 'landingPeak', 'landingFront', 'riding', 'face', 'frames', 'liveFrames', 'cue', 'rule',
-            'popBy', 'standAfterPop', 'heldFull', 'truncated', 'observedAfterStand']
+    keys = CONTROL_KEYS
     a = {(r['arm'], r['script'], r['wave']): r for r in rows if r.get('summary')}
     b = {(r['arm'], r['script'], r['wave']): r for r in other if r.get('summary')}
     shared = sorted(set(a) & set(b))
@@ -416,6 +458,8 @@ if __name__ == '__main__':
         standtrace(rows, int(args[1]), args[2].split(','))
     elif args[0] == '--delay':
         delay(rows)
+    elif args[0] == '--arms':
+        arms(rows, args[1], args[2])
     elif args[0] == '--trace':
         trace(rows, int(args[1]), args[2])
     elif args[0] == '--control':
