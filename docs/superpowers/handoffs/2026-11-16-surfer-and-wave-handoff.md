@@ -4065,3 +4065,43 @@ Fifteen clips said *"no horizon, so apparent stature is unlicensed"*, quietly im
 **Row 15** sixth clip — ⭐ **and the low carriage splits into two INCOMPATIBLE shapes: hands 10 px apart reaching past the nose, against 56 px apart on opposite sides. One scalar expresses neither.** ⛔ **No duty cycle published — "my sampling is not uniform, so a percentage would be a fact about the sampling"** (clip 22 published one; this is the better discipline). **1.2 s of the ride is occluded behind the wave, not a cut** (correlation never below 0.73). **Clip 22's end-of-file non-decode reproduced.**
 
 **Method:** ✅ **the session-wide hash guard run at scale — ~1 073 frames, zero stale**, every match adjacent and a real duplicate picture. ⭐ **The two-`<video>` trap fired on the first install (`duration = null`) — it is the DEFAULT on a Short, not a rarity.** ☠️ **Screenshot size changed FIVE times and `resize_window` did not pin it**; at 386 the canvas is **clipped, not scaled.** ⛔ **An automatic horizon detector was built, validated and DISCARDED** — correct at two epochs, **locked onto the wave's white lip on 6 of 8 frames**; nothing automatic is quoted.
+
+---
+
+## 2026-11-19 — VIDEO 24 (PR #433): THE COUNTEREXAMPLE CLIP 19 ASKED FOR, AND THE LAST EXCUSE FOR ROW 17 IS GONE
+
+### ⭐⭐ Clip 19's mechanism is too broad
+
+**At t = 8.7708 the board's nose sits ~71 source px ABOVE the rider's crown — the exact picture clip 19 called the wipeout mechanism — AND HE RIDES AWAY**, still surfing 4 s later, **because the board stops 28° SHORT OF VERTICAL and he folds DOWN over it instead of going taller.**
+
+> **"Nose above the head" does not predict the fall. "Past vertical and LEAVING HIM" does.** Clip 19's reading was a conjunction reported as one thing.
+
+### ⭐ And the first event discriminator that is not a duration
+
+Clip 22 settled that **time cannot tell a save from a trick.** This clip offers the replacement: **the same laid-out attitude appears TWICE in one 12.8 s ride, five seconds apart, at two depths.** **Repetition within one wave.** (Its ~1.9 s laid-out passage is recorded **only to show the figure was not used**. The uploader's "Roundhouse" is reported as a caption, not a measurement; whether his feet stayed on the deck is undecidable, the deck facing away throughout.)
+
+### ⭐⭐ THE LAST EXCUSE FOR ROW 17 IS GONE
+
+Three attempts, three refusals by the stance-span gate: **0.57 L, 0.18–0.22 L, 0.13–0.21 L.** Two contributions:
+
+1. **The gate is TWO-SIDED** — the 0.57 L failure diagnoses a **truncated board**, which clip 23 did not describe.
+2. ⭐⭐ **The narrow reading is on a MAXIMALLY BROADSIDE board (aspect ≥12.5), so FORESHORTENING CANNOT EXPLAIN IT.** The fault is the landmark: **8–10 px per foot on a 130–180 px rider.**
+
+> **A third independent caution on 0.55–0.60, and the FIRST that rules out projection.** **So "projection" is no longer available as the excuse for row 17 — more clips of this kind will not fix it. Only a clip with the rider several hundred px tall will.**
+
+### Five more refutations, two of them of my own instructions
+
+3. ⭐⭐ **"Publish no percentage from non-uniform sampling" is NECESSARY BUT NOT SUFFICIENT.** It sampled **uniformly at 0.25 s** and **still had to discard its census**, because the **tile-level classifier read "upright" where a gridded frame measured 43°.** **That is a direct caution on clip 22's 45 / 21 / 18 / 11 % duty cycle, which had no gridded cross-check recorded.**
+4. ⭐ **A horizon is NOT required to convict depth.** **Open sea at the frame's top, shore at its bottom and no sky at all is a sufficient sign of a raised, down-tilted lens — and it is available on far more clips than a horizon.**
+5. ⭐ **The skill's screenshot-scale rule is BACKWARDS.** The scale is **screenshot width ÷ viewport width**, so **a SMALL viewport is a 1.90× MAGNIFIER** (420×758 viewport → 800×1443 screenshot → 1.91 px per source px).
+6. ⚠️ **"Measure both hands, never the arm" is right and often impossible** — **3 of 5 arm frames yielded only ONE identifiable hand.** At this rider size a read that measures "the arm" reports **whichever one was visible.**
+7. ⚠️ **Clip 23's "the head stays up in every deep fold" disagrees here** — **the head is bowed in all three deep folds, and all three are in broken water.** Sign only, no angle.
+
+### ☠️ Method, including the first real cure for a trap that has bitten five readers
+
+- ⭐⭐ **A WORKING CURE FOR THE SCREENSHOT-SIZE TRAP, 12 of 12: a ±1 px `resize_window` as the FIRST item of the `browser_batch`, screenshot LAST.** **The first control the series has for it.**
+- ⭐⭐ **The first clip positively CLEARED of a duplication ramp** by clip 23's test — true **24.000 fps** at three epochs (23.976 excluded at all three), **307 native asks, 307 unique hashes, zero duplicates.** **And the obvious second test — adjacent-frame MAD as a motion proxy — was built and DISCARDED**, saturated by water texture (adjacent 14.5 against a 0.25 s baseline of 23.8, only 1.6×), **so it cannot bound a blend-based ramp.**
+- ☠️ **A CLAMPED FIXED-SIZE CROP MASQUERADES AS A STATIONARY RIDER** — nine samples printed the same crop origin and **"he stopped moving" was nearly written up.** ⭐ **Print the FINDER's position, never the CROP's.**
+- ✅ Session-wide hash guard at scale: **720 asks, 308 distinct pictures, zero stale.** One unbroken shot proved by 9×16 block correlation (306 pairs, median r 0.9989, min 0.9978). **Two-`<video>` trap fired on install, fourth clip running; end-of-file non-decode reproduced, third clip.**
+
+**Other rows:** **≈4.5 of 12.77 s driving folded through broken water — the engine's unnamed state, THIRD clip, and this one opens AND closes in it.** Trunk 5°–61° over 5 gridded frames, **plain median 43°, with the MOST UPRIGHT moment being trim at speed.** "Arms up is a turn signature" on a **seventh** rider with a clean negative control. ⭐ **Second garment in 24 clips to satisfy both halves of the clothing clause — and rows 2, 3, 10 and 14 refuse anyway. Clip 20's headline reproduced on a second rider and break.**
