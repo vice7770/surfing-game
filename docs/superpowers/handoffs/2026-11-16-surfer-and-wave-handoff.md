@@ -4178,3 +4178,71 @@ Codex read both independently. **A:** wipeout HUD absent 6.667, present through 
 ### 5. And an independent recount of #425 that confirms its headline
 
 Codex **independently recovered all 14 clamp clears: 4 geometrically infeasible, 10 feasible** — **matching the builder's 14 → 10 exactly.** Scope corrections beside it: **`saveFeasible` is retained when `project` skips the extended-contact path, so 5 of the 17 claimed-feasible palm-down rows are FLIGHT rows with no extension or impulse**; **12 of 154 positive-extension rows tested feasible**; **all 10 honest clear rows stand**; **of 6 awake wrong-side credits, 3 have `capPast = 0` and are not escapes**; and **the only `beyond` flip (trial 3, 8 m/s crouch, frame 86 at 1.4333 s) has `weightPast = 0`.** **So the builder's "the unsigned credit never changed `human.fallen` on an awake test" survives an independent check, with the denominator corrected from 6 to 3.**
+
+---
+
+## 2026-11-19 (later) — ⭐ **TURNING IS SURVIVABLE, AND THE ROUND'S OWN SURVIVOR WAS A HARNESS ARTEFACT**
+
+Nine corrections arrived from the reviewer in one morning. **Two land on my wording, two killed claims I had published an hour earlier, one found a real bug, and one turned the round over.** Nothing here needed a new ride; it is all in files already committed. Full exchange in `3.5/consult-codex-2026-11-18.md`.
+
+### 1. ⚠️ #429 HAS NO SURVIVORS ON SEED 1 — wave 6 was cut off on its standing frame
+
+`STAND_HOLD = 3` s is the window a standing rider is followed for (`take-off/bench.ts:107`), but the trial is retired at `TRIAL = 16` s whatever is left of it (`:512`). **Seed 1's wave 6 stands at 16.0167 s**, so all 15 of its rows read `frames` 962, `fell` null, **`fsN` 0** — one frame of post-stand life, no cause. **It is a non-observation, and Part 5's closing inference rested entirely on it.**
+
+> **Per arm, seed 1 is 18 stands = 15 observed falls + 3 CENSORED STARTS, with zero fully observed 3 s rides.** Five observed waves, not six.
+
+**And the field that made it look like a ride is the wrong field.** `riding` only ticks while the rider is ahead of the crest **and** at 60 % of crest speed (`:373`) — seed 2's wave 8 reads `riding` 0.0167 while living **0.55 s** over 32 first-second frames. ⛔ **Post-stand exposure is `fell − stand`, and a no-fall row must be checked against `16 − stand` before anyone calls it a survivor.**
+
+**What survives: every fall number in Parts 5–11, including the 0.750 s median and 12 of 15 inside a second** — the reviewer re-derived those independently. **What does not: every survival number.**
+
+### 2. ⭐⭐ Seed 2 has three real survivors, and they refute "he cannot turn"
+
+35 no-fall rows with the full window available, on three waves. Five arms pooled (`cue` = nothing asked; `cueL`/`cueR` = a full steer **and** Compress from +0.3 s, for 0.9 s):
+
+| wave | `cue` | `cueL` | `cueR` |
+| --- | --- | --- | --- |
+| **1** | **5 of 5 carried** | **0 of 5** (0.683–0.717 s) | **0 of 5** (0.767–1.000 s) |
+| **2** | **5 of 5** | **5 of 5** | **5 of 5** |
+| **11** | **5 of 5** | **5 of 5** | **5 of 5** |
+
+> ⭐ **On wave 1 the asked-for turn is the entire fall**: same wave, same stand to the frame, same refusal — left alone he rides the window out 5 of 5, asked to turn he is gone 10 of 10.
+> ⭐ **But on waves 2 and 11 the same ask HOLDS 10 of 10**, rolling to **22.9/20.4°** and **25.4/18.1°** peaks and coming back. **So "the rider cannot hold a turn" is FALSE AS STATED.** The question is **which stand can afford the turn**, not whether the body can turn. Population: **three carried stands on one sea**, 15 runs each.
+> ⚠️ **And it is the whole input sequence, not the steer** — `bench.ts:360–366` sends `steer` and `compress: 1` together while neutral sends neither. **`cueL` vs `cueR` is the only clean contrast.**
+
+**Two eliminations straight from the file:** **roll magnitude does not decide the fall** (wave 1 `cueL` falls at an 11.4° peak; wave 11 `cueL` holds through 25.4), and **neither does leaving the deck or the load** (`fsContactOff` **0** in all seven stands; `fsLoadMed` 0.89–1.03 bw either way).
+
+### 3. ⚠️ Two claims I published this morning, dead by lunchtime. Both are mine.
+
+* **The CoP pin, demoted.** My *"`fsPinNow > 0` in 3 of 3 lost and 0 of 4 kept — 7 of 7"* was **seed 2 neutral only**, and **seed 1, which I had in hand and never tested it against, breaks it at once**: wave 7 neutral samples **14 tips inside its first second and stays up until 1.733 s**. The pin does genuinely precede the fall rather than being its own frame (+0.450/+0.283/+0.817 against falls at +0.950/+0.550/+0.933; wave 6's first tip is at **+2.100 s**, which is why it reads pin-free in a window ending at 1.0). ⛔ **It locates a binding constraint. It never advances a phase and never predicts a fall on its own. Nothing is gated on it.**
+* **The wetness/steepness/height ranking, withdrawn — a frame error.** My steepness and height came from **`popSlope` and `popFraction`, at the POP**, which is **1.2 s before the stand and 1.5 s before the steer**; my wetness came from **first-second medians, a window that already contains the turn**. At the stand itself the reviewer reads waves 1/2/11 at **0.253/0.074/0.196 m²**, face fraction **0.674/0.710/0.675**, slope **17.31/18.64/19.32°** — so **waves 1 and 11 start level on the face to 0.001 and end opposite, and wave 1 is the LEAST steep of the three**. (Those three are not fields in the summaries and are recorded as the reviewer's reading, unreproduced here; the structural point is verified.) ⛔ **The saved summaries cannot identify which physical factor made wave 1's turn fail.**
+
+### 4. ⚠️ The two seas do not refuse the stand for the same reason
+
+Counted per arm: **seed 2 = `sinking` 15, `feet under water` 3, clear 3**; **seed 1 = `feet under water` 12 of 18**, 6 clear, **zero `sinking`**. The published *"18 of 21 feet under water"* conflated any flagged stand with that one category and is corrected. **And `standRefusal` returns `sinking` at `AttachedRider.ts:2789` BEFORE the foot loop at `:2790`**, so those 15 establish **neither wet nor dry feet**.
+
+> ⭐ **All seven carried stands are `sinking` ones**, and on seed 1 the two stands that are **not** refused are not the ones that live (wave 6 censored, wave 10 gone at 0.70 s — the median). **On the evidence now the refusal does not predict the fall in either direction.** What it is actually detecting is an open question.
+
+### 5. ⭐ A real bug: a superseded start could change the live ride's drawn trunk — FIXED on #426
+
+`RIG_SWITCHES` is module-level (`stanceBlend.ts:21`), read every frame by every rig on the page. `PhysicalMode.ts:1882` wrote the drawn-trunk flag **after `await gpuTier()` and immediately before `if (start !== this.starts) return false;`** — so **a start abandoned while asking for the GPU tier reached in, set the trunk of the ride already running, and returned false without putting it back.** Its own comment argued for reading *"the config that is actually in force"*, which is what it was not doing.
+
+**Moved beside `this.config = config`, after the host is accepted.** The regression test suspends a `?trunk=mass&rider=new` start inside the tier await, supersedes it, then releases — **against the old ordering it fails with `expected 'mass' to be undefined`; against the fix it passes**, and it still checks that an accepted start sets the flag. **111 of 111 in `PhysicalMode.test.ts`.** No evidence it reached the owner's filmed rides (it needs two starts overlapping across the await), but **#426 is the branch he is playing**, so it is fixed there.
+
+### 6. ⚠️ Clip 25's headline is struck — no separation is established
+
+The board's identity is unresolved: **at least two boards in play at 4.3–5.57 s**, a board under the standing rider at 6.634 **hidden by foam**, the loose board **entering from lower-left at 7.084–7.267**, and a **leash at 7.3008 with no continuous attachment back to him**. **And the document had already written the decisive version against itself** — *"at 6.6508 the bottom of the frame is uniform foam, so 'hidden' and 'gone' look identical."* **You cannot demonstrate a board's ABSENCE inside whitewater.**
+
+⛔ **Struck: that this is his board leaving, the ≥ 0.95 s separated bound, and the general refutation of the arms rule.** Renamed category: *"no board visible under a standing rider"*. **Both halves of the wipeout rule are untested again** (clip 21 killed the first half independently). ⭐ **The no-rule design advice stands on clips 18, 19, 20, 21, 22 and 24**, where low arms, high arms and a nearly horizontal torso all appear on **continued** lines. **Clip 23's final exit is obscured: outcome unknown.**
+
+### 7. And three corrections carried from the morning, for the record
+
+* **"The front foot slides 0.666 → 0.52" is a LOAD SHARE, not a position** — deck-relative foot speed is **0.000** in the same data. My wording, withdrawn. The landing peak's "0.722 on the front foot" is the same kind of quantity.
+* **`rawMargin` cannot identify the first failing constraint** — it is a filtered **minimum** of lateral, longitudinal and grip headroom. Reading the three separately through the wave-1 `cue`/`cueL` pair is the measurement that would, and it needs no ride.
+* **#431 does not prove a "weld"** — that word is mine, and it went to the owner. What is established is the **loss of the toesward fold**, measured against world vertical along levelled toes. **The mechanism is two-axis and unseparated: the physics fold runs toward the NOSE while the removed render hinge supplied a TOESWARD component.**
+
+### What the next build should take from this
+
+1. ⭐ **Stop trying to teach the body to turn.** It holds a full steer and Compress, both ways, through a 25° roll, 10 of 10, on two of the three stands that live long enough to be asked.
+2. **The target that needs no ride**: the first divergence between wave 1's `cue` and its `cueL`, same stand, opposite outcome, both on disk. The reviewer's read of that pair — identical at +0.20 s (roll +1.679°, `rawMargin` 0.966, load 1.292 bw in all three), and by **+0.60 s** the unasked row is `limit` none at `rawMargin` **0.943** while both asked rows are **`tip` at `rawMargin` ZERO**, +8.031° and −3.285°. **The margin reaches zero inside 0.3 s of the turn being asked for.**
+3. **Read the three headrooms separately through that pair**, because `rawMargin` cannot say which went.
+4. **Do not gate anything on the CoP pin**, and **keep `sinking` and `feet under water` apart** when choosing the next physical change.
