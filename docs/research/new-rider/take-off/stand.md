@@ -5,46 +5,58 @@ rider stands anyway, and he is gone in a median 0.750 s. What does the refusal c
 And the starred one: two stands were **not** refused, and they were *planing, lower on a steeper face, on half the
 wetted hull* — which of those four is the cause?
 
-**The answer, in six lines.**
+**The answer, in seven lines.** Population for everything below: **one spot (Canyon B, Medium), two seas, 23 waves,
+115 runs, 75 stands followed their full 3 s window with none truncated, the stick at zero throughout** — plus a
+15-entry flush-placement sweep. Every median is a **plain** median and every count carries its population.
 
 1. **The refusal costs nothing.** `standRefusal`'s return value has exactly **one** consumer in the whole source tree
    — a string in the dev-tools readout. The stand happens on the next line whatever it says, and no force, no
    threshold and no phase anywhere reads it. It is a label, not a gate (Part 1).
-2. **⭐ And it must not become one as it stands.** The project's own design says it should (`design.md` §4:
-   *"`standRefusal` today only reports… That goes"*). **Its two live verdicts point opposite ways**, so the single flag
-   is uninformative: across both seas, `'feet under water'` held **0 of 29** — it really is a death sentence — while
-   `'sinking'` held **8 of 18**, which is every ride in this study that lasted bar one. A gate on the flag would refuse
-   exactly the good ones, and the reason is mechanical: `into > SINK_RATE` is motion into the water relative to the
-   flow, which is what a **planing** hull does by construction. Measured: `asin(into/V)` is **+2.60° at 6.21 m/s** on
-   planing frames — a trim angle — and integrated over wave 10's surviving ride the test claims **1.13 m of descent**
-   while the board's draft moves **0.040 m** and stays above the water throughout. **`sinking` is reading planing
-   lift.** Part 5.
-3. **The feet are under water because a 25.75 L board cannot float a 73 kg rider, and the pop-up is what hands it the
+2. **⭐⭐ `design.md` §4 plans to turn it into a gate (*"That goes"*). On the flag as written that would be a
+   disaster, and on its feet test alone it would be free.** Over **75 stands on two seas** (Part 5.4):
+
+   | gate on … | refuses | destroys, of the 15 rides that lasted |
+   | --- | --- | --- |
+   | the flag as written (any verdict) | 66 of 75 | **12** |
+   | the `'sinking'` verdict | 26 of 75 | **12** |
+   | the `'feet under water'` verdict | 40 of 75 | **0** |
+   | ⭐ **the feet, measured** (test order aside) | 45 of 75 | **0** |
+
+   The reason is the **order of the tests**: `sinking` returns at `:2789` before the feet are sampled at `:2790`, and
+   it fires on **21 stands whose feet are dry**, including **12 of the 15 rides that lasted**. Mechanically,
+   `into > SINK_RATE` is `V sin α` against the free surface — **what a planing hull does by construction**. Measured:
+   `asin(into/V)` is **+2.60° at 6.21 m/s** on planing frames, a trim angle; and integrated over a surviving ride the
+   test claims **1.13 m of descent** while the board's draft moves **0.040 m** and never leaves the dry side of a
+   0.10 m band. **`sinking` is reading planing lift.**
+3. ⭐⭐ **The feet test, measured without the short-circuit, is the one perfect predictor in this study.** Of **45
+   stands with the feet under water, 0 lasted**; of **30 with the feet clear, 15 did**. It is **necessary and not
+   sufficient**, and so are the two conditions it travels with: **0 of 47 non-planing stands lasted**, and **0 of 56
+   stands below 4.400 m/s through the water** (Part 5.4).
+4. **The feet are under water because a 25.75 L board cannot float a 73 kg rider, and the pop-up is what hands it the
    whole job.** Fully submerged, the board displaces **26.4 kg of a 75.5 kg** system — **65 % unsupported, a 49.2 kg
    deficit** that only planing lift or the rider's own body in the water can find (`boardReference.referenceFlotation`,
-   already in the repo). Prone, the body is in the water and the contact carries 0.16–0.69 bw; standing, the body is
-   out of it and the board carries everything. Measured through the sequence, the feet go under **during the pop-up's
-   own 1.2 s**, not at the cue and not while paddling (Part 3).
-4. **⭐ Of the survivors' four properties, the lever is speed through the water — and `planing` is its marker, not its
-   cause.** A near-threshold entry sweep across the planing latch moves the fall by **one frame** (3.80 m/s → 1.167 s,
-   3.90 m/s → 1.183 s) while the latch's own consequence, the lean cap, goes **0 → 0.324 rad**. Over the whole sweep
-   the fall time rises smoothly and monotonically with entry speed, 0.950 s at 2 m/s to 2.933 s at 8 m/s, **with no
-   step anywhere at the threshold**. Wetted hull is a consequence of the same speed; the steeper face is where the
-   speed comes from (Part 4).
-5. **The brief's two survivors need correcting in both directions.** Seed 1's wave 6 was **reported without being
+   already in the repo, with a test that says so in one line). Prone, the body is in the water and the contact carries
+   0.16–0.69 bw; standing, the body is out of it and the board carries everything. Measured through the sequence, the
+   worst foot's deck point goes **+0.071 m** while paddling, **+0.011 m at the cue** (over `FEET_DEPTH` in 2 of 20),
+   **+0.071 m at the press**, **+0.164 m at the push → landing boundary** and **+0.288 m at the stand** (over in 28 of
+   34). **The feet go under during the pop-up's own 1.2 s** — not at the cue, not while paddling (Part 3).
+5. **⭐ Of the survivors' four properties, the lever is speed through the water, and the planing latch is causally
+   inert.** The latch's one consequence is the cap on the lean the rider may ask for — and **`leanWant`, the request
+   that cap bounds, is 0 in all 2 123 (seed 1) and 3 744 (seed 2) live standing frames**, because the stick is at zero.
+   A near-threshold entry sweep agrees: across the latch the cap goes **0 → 0.324 rad** and the fall moves **one frame**
+   (1.167 → 1.183 s), while over the whole sweep the fall time rises smoothly with entry speed, **0.950 s at 2 m/s to
+   2.933 s at 8 m/s, with no step at the threshold**. The wetted hull and the feet's depth are consequences of the same
+   speed; the steeper, lower face is where the speed comes from (Part 4).
+6. **The brief's two survivors need correcting in both directions.** Seed 1's wave 6 was **reported without being
    observed** — it stood at 16.0167 s on a trial the bench retired at 16 s, one frame stepped, `fsN = 0`. Re-run with
    the window actually followed, **it does hold 3.02 s**: the artefact was in the evidence, not in the outcome. The
    other unrefused stand, wave 10, fell at **0.70 s** — the study's own median — and **holds 3 s only if the press is
-   moved 250 ms later**, which is the clearest lever test in this round (Part 5.3).
-6. **A ride can last, and what it needs is measurable at the stand. This is not a null.** **9 rides of 55 stands
-   carried their full 3 s window, on 5 waves of 23**, across the two seas — 4 of 34 on seed 1 (waves 6 and 10) and
-   7 of 21 on seed 2 (waves 1, 2, 11). Every one of the nine is planing, and over seed 1's 34 stands **five columns
-   separate held from fell with no overlap at all**: **speed through the water (4.420–4.565 held against 0.683–4.264
-   fell)**, the wetted hull, the board's draft, the feet's depth, the front foot's **load share** — and the **grip
-   left** (0.718–0.900 against 0.000–0.556). ⚠️ **`planing` itself does not separate them, and neither does where on
-   the face, how steep it is, how far ahead of the crest, how hard the landing was, or the capture margin.** So the
-   ride needs **a hull on the plane**, and the lower, steeper part of the face is one place it can get there — not the
-   thing itself (Part 6).
+   moved 250 ms later** (Part 5.3).
+7. **A ride can last. This is not a null.** **15 of 75 stands carried their full 3 s window, on 5 waves of 23**,
+   across two seas and five pop timings. ⚠️ **And one of my own headline tests did not replicate**: on seed 1 seven
+   columns separate held from fell with no overlap at all, and **on seed 2 not one does**, so that test was a fact
+   about 34 stands. What survives pooling is necessity, above — and the ride's requirement stated honestly is **a hull
+   on the plane at the stand**, which the take-off delivers on about one wave in five at Canyon B, Medium (Part 6).
 
 ---
 
@@ -139,7 +151,16 @@ beside it.**
 * **A mirror that is not the game's test.** The positive control is the game's own verdict: the mirror must return
   `popUpReport.refusal`. ⚠️ `standRefusal` runs inside `prepare`, which runs **per substep** (16 of them), so the
   game's reading falls strictly between the probe's last landing frame and its first standing frame; both bracketing
-  verdicts are reported and agreement is counted on both.
+  verdicts are reported and agreement is counted on both. **Measured on seed 1: 30 of 34 at the stand frame, 33 of 34
+  at the last landing frame**, and **all four disagreements are the `sinking` boundary crossing inside the frame**:
+  waves 6 `cue`/`lift` and 10 `cued500` read `into` = 0.355, 0.355 and 0.490 at the stand (over `SINK_RATE`) and
+  `none` a frame earlier, and wave 7 `early` reads 0.279 (just under) with the feet 0.839 m down, so the mirror calls
+  `feet under water` where the game, one substep earlier, called `sinking`. **A sub-frame timing difference on a fast
+  crossing, not a wrong test** — and note that the fourth case is itself the short-circuit the coordinator flagged:
+  the game's `sinking` verdict on that stand hid feet that were **0.839 m** under.
+* **A median that is not a median.** Every median in this document and in `stand.py` is a **PLAIN** median — the mean
+  of the two middle values at even length. No number here is a mean of medians, and every count carries its
+  population: the independent unit on the take-off is the **wave**, and it is named wherever it matters.
 * **A depth that cannot read dry.** If the feet's depth were only ever positive the column would be useless. The entry
   sweep's 8 m/s placement reads **0.077 m**, under `FEET_DEPTH` — the column can and does read clear.
 * **A probe that changes what it measures.** `PROBE=off` builds no per-frame row, which removes every read this probe
@@ -191,28 +212,31 @@ is not a fault; it is the physics the repo chose, and `standRefusal`'s `feet und
 
 ### 3.2 Measured through the sequence, the depth is made during the pop-up
 
-Seed 1, 12 waves, five pop timings, **34 stands**, the worst of the two feet, plain medians
-(`results/stand-seed1-sequence.txt`). `FEET_DEPTH` is 0.1 m:
+Both seas, 23 waves, five pop timings, **75 stands**, the worst of the two feet, plain medians
+(`results/stand-seed1-sequence.txt`, `stand-seed2-sequence.txt`). `FEET_DEPTH` is 0.1 m:
 
-| instant | the feet's depth, m | over FEET_DEPTH |
-| --- | --- | --- |
-| paddling, the 0.5 s before the press | **+0.071** | 14 of 34 |
-| **at the cue** | **+0.011** | **2 of 20** |
-| at the press | **+0.071** | 13 of 34 |
-| at the push → landing boundary | **+0.164** | 20 of 34 |
-| **at the stand** | **+0.288** | **28 of 34** |
+| instant | depth, seed 1 (34 stands) | over | depth, seed 2 (41 stands) | over | **over, pooled** |
+| --- | --- | --- | --- | --- | --- |
+| paddling, the 0.5 s before the press | +0.071 | 14 of 34 | +0.050 | 11 of 41 | 25 of 75 |
+| **at the cue** | **+0.011** | **2 of 20** | **−0.015** | **0 of 28** | ⭐ **2 of 48** |
+| at the press | +0.071 | 13 of 34 | +0.020 | 11 of 41 | 24 of 75 |
+| at the push → landing boundary | +0.164 | 20 of 34 | +0.071 | 17 of 41 | 37 of 75 |
+| **at the stand** | **+0.288** | **28 of 34** | **+0.070** | **17 of 41** | ⭐ **45 of 75** |
 
 **So the three candidates separate cleanly.**
 
-* **Where the cue puts him is not it.** At the frame the cue lights, the deck under the feet is **+0.011 m** below the
-  surface — flush — and only **2 of 20** cued riders are already over the threshold. The cue fires on a board that is
-  carrying a prone rider perfectly well.
-* **Where the paddle leaves him is a minor term, and it is the player's own timing.** The 0.5 s of paddling before the
-  press reads **+0.071 m**, and the 13–14 stands that are already over the threshold there are almost all the `early`
-  script's — a press **before** the wave has taken the board, which buries it (the `early` rows run **+0.598 to
-  +0.992 m** deep at the stand, against the cue rows' +0.113 to +0.396).
-* ⭐ **The pop-up's own 1.2 s is it.** The depth **quadruples** across it, +0.071 → +0.164 → **+0.288 m**, and the count
-  over the threshold goes **13 → 20 → 28 of 34**. Nothing else in the sequence moves it that far.
+* ⭐ **Where the cue puts him is NOT it, decisively.** At the frame the cue lights, the deck under the feet is
+  **+0.011 m** (seed 1) and **−0.015 m** (seed 2) relative to the surface — flush or dry — and over the threshold in
+  **2 of 48** cued riders across the two seas, with **0 of 28** on seed 2. **The cue fires on a board that is carrying
+  a prone rider perfectly well.**
+* **Where the paddle leaves him is a minor term, and it is the player's own timing, not the game's.** The 0.5 s of
+  paddling before the press reads +0.050 to +0.071 m, and the 24 stands already over the threshold at the press are
+  almost all the `early` script's — a press **before** the wave has taken the board, which buries it. Those rows run
+  **+0.598 to +0.992 m** deep at the stand against the cued rows' +0.113 to +0.396.
+* ⭐ **The pop-up's own 1.2 s is it.** The count over the threshold goes **24 → 37 → 45 of 75** across the push and the
+  landing — it **nearly doubles** — and on seed 1 the depth itself quadruples, +0.071 → +0.164 → **+0.288 m**. Nothing
+  else in the sequence moves it that far. (Seed 2's growth is smaller, +0.020 → +0.070 m, because more of its waves
+  hand the board enough speed to plane, which is the other half of the mechanism.)
 
 And the mechanism is visible in the draft and the wetted hull on the same rows. Where the board has speed through the
 water, the pop-up's load is answered by planing lift and **the board rises**: wave 6's draft goes +0.001 → **−0.064 m**
@@ -307,12 +331,16 @@ else on the brief's list is that speed reported by another instrument.**
 
 ### 4.2 Three more decompositions a single scalar was hiding
 
-* ⭐ **The fall is sideways, and only sideways.** Past the feet **ACROSS** in **983 of 2 123** standing frames, peak
-  **0.824 m**; **ALONG** in **2 of 2 123**, peak **0.003 m**. No rider in this study goes over the nose or the tail.
+* ⭐ **The fall is predominantly across, and not only across.** Past the feet **ACROSS** in **983 of 2 123** standing
+  frames (seed 1), peak **0.824 m**, and **780 of 3 744** on seed 2, peak **0.904 m**; **ALONG** in **2 of 2 123**
+  (peak 0.003 m) on seed 1 but **132 of 3 744** (peak **0.488 m**) on seed 2. ⚠️ So "sideways only" is seed 1's;
+  pooled, the longitudinal channel does engage, and a pearl does happen. Either way the across channel dominates by
+  about 6:1 in frames and by two to three hundred times in peak on seed 1.
 * ⭐ **The reserve that binds is usually not the one that can kill.** `balanceLimits.limit` over the same frames:
-  **knee 1 010, margin 800, grip 313**. Only `margin` — the capture point — can end a ride (`endStep` tests
-  `human.fallen` and nothing else of the three), so the balance meter reads the **knees' strength** about half the time
-  while the thing that ends the ride is the capture point.
+  seed 1 **knee 1 010, margin 800, grip 313**; seed 2 **knee 2 372, margin 1 047, grip 325** — the same ordering twice.
+  Only `margin` — the capture point — can end a ride (`endStep` tests `human.fallen` and nothing else of the three), so
+  the balance meter reads the **knees' strength** about half the time while the thing that ends the ride is the capture
+  point.
 * ⚠️ **`rawMargin` is not a trend and it is not the fall test.** On wave 10 `cue` it reads, frame to frame,
   0.891, 0.840, 0.777, 0.938, 0.559, 0.302, 0.562, 0.859, 0.538, 0.112, **0.000**, **0.000**, 0.107, 0.788, 0.454 and
   then **0.199 at the fall** — it touches zero twice without a fall and is nowhere near zero when the rider goes. And
@@ -511,17 +539,71 @@ as often on the latter, and the stands it refuses are disproportionately the goo
 down. On this evidence that gate would refuse **8 of the 9 rides in this study that lasted** (every `sinking` one), and
 it would be refusing them for a test that is partly a detector of the very thing those rides have.
 
+### 5.4 ⭐⭐ Both seas pooled: what is necessary, what is sufficient, and what the gate would cost
+
+`combine.py`, over both runs (`results/stand-both-seas.txt`): **75 stands over 22 (seed, wave) pairs, 15 of which
+carried the full window, 60 fell, 0 truncated.** The 15 came from **5 distinct waves.**
+
+| at the stand | held / stands | share |
+| --- | --- | --- |
+| planing | 15 / 28 | 54 % |
+| **NOT planing** | **0 / 47** | **0 %** |
+| speed through the water ≥ 4.400 m/s | 15 / 19 | **79 %** |
+| **speed through the water < 4.400 m/s** | **0 / 56** | **0 %** |
+| the feet dry | 15 / 30 | 50 % |
+| ⭐ **the feet WET** | **0 / 45** | **0 %** |
+| planing **and** the feet dry | 15 / 28 | 54 % |
+| planing **and** the feet wet | — | 0 of 0: **a planing stand always has dry feet** |
+| not planing **and** the feet dry | 0 / 2 | both are seed 2 wave 5 at V = 3.734, depth **+0.097 m** — 3 mm inside `FEET_DEPTH` |
+
+**Three necessary conditions, none sufficient, and they are the same condition three times.** Nothing that lasted
+stood off the plane, below 4.400 m/s through the water, or with a foot's deck more than `FEET_DEPTH` under the
+surface; and the one stand pair that is dry without planing sits **3 mm** inside the threshold at **3.73 m/s**. For
+this board and this rider, **`FEET_DEPTH = 0.1 m` and `PLANING_SPEED = 4 m/s` are describing the same transition** —
+the deck comes clear of the water exactly when the hull begins to carry its load dynamically. That is not a
+coincidence; it is the 49 kg deficit of Part 3 being paid.
+
+**And now the game's own verdict against the measured feet:**
+
+| the game's verdict | held / stands | of those, feet actually **wet** | feet actually **dry** |
+| --- | --- | --- | --- |
+| `'feet under water'` | 0 / 40 | **40** | 0 |
+| `'sinking'` | **12 / 26** | **5** (0 of them lasted) | **21** |
+| not refused | 3 / 9 | 0 | 9 |
+
+⚠️ **Five stands are reported as `sinking` while their feet are 0.84–0.99 m under** — all five are `early` presses, all
+five have `into` of 0.279–0.379 m/s so the sinking test returned first, and none lasted. **The game's own
+`feet under water` count under-reports wet feet by five.** And the other 21 `sinking` stands have **dry** feet and
+contain **12 of the 15 rides that lasted**.
+
+### ⭐⭐ What a gate would cost, had each test been the gate
+
+| gate on … | refuses | destroys, of the 15 rides that lasted |
+| --- | --- | --- |
+| the flag as written (any verdict) | **66 of 75** | **12** |
+| the `'sinking'` verdict | 26 of 75 | **12** |
+| the `'feet under water'` verdict | 40 of 75 | **0** |
+| ⭐ **the feet, measured** (the test order set aside) | 45 of 75 | **0** |
+
+**So `design.md` §4's plan is right in substance and wrong as written.** A gate on the flag would refuse 66 of 75
+stands and take **80 % of the rides that lasted** with it. A gate on the **feet** would refuse 45 of 75 and take
+**none**. The difference is entirely the order of the four tests inside `standRefusal`.
+
 ## 6. ⭐ Is a longer ride reachable from the take-off's side? Yes, and here is what it costs
 
 **It is not a null.** Counting only stands that were actually followed their full window:
 
 | sea | stands | **held the full 3 s** | waves that produced them | truncated |
 | --- | --- | --- | --- | --- |
-| seed 1 (this round, 5 pop timings) | 34 | **4** | 2 of 12 (waves 6, 10) | 0 |
-| seed 2 (#429's own files, 3 scripts) | 21 | **7** | 3 of 11 (waves 1, 2, 11) | 0 |
+| seed 1, 12 waves, 5 pop timings | 34 | **4** | 2 of 12 (waves 6, 10) | 0 |
+| seed 2, 11 waves, 5 pop timings | 41 | **11** | 3 of 11 (waves 1, 2, 11) | 0 |
+| **pooled** | **75** | **15** | **5 of 23** | **0** |
 
-**9 rides of 55 stands carried their window, on 5 waves of 23.** So the take-off can deliver a ride; it delivers one
-rarely, and what it delivers is decided at the stand by one quantity.
+(#429's own seed-2 files, with three scripts instead of five, give 7 held of 21 on the same three waves — the same
+picture on a narrower population.)
+
+**15 rides of 75 stands carried their window, on 5 waves of 23.** So the take-off can deliver a ride; it delivers one
+on about one wave in five, and what it delivers is decided at the stand.
 
 **Held against fell, seed 1, plain medians** (`results/stand-seed1-held.txt`; held 4 — two independent waves — against
 fell 30):
@@ -546,10 +628,30 @@ fell 30):
 | **past the feet ALONG, peak, m** | **0.000** | **0.000** |
 | roll peak in the first second | 5.1° | 27.8° |
 
-### 6.1 ⭐⭐ Which columns actually separate the two groups, with no overlap at all
+### 6.1 ⚠️ A test of my own that did NOT replicate, and must lead
 
-Over the same 34 stands — and this is the test that matters, because it is run over a population that contains presses
-at the cue, 250 ms late, 500 ms late, on the `lift` rule and 2 s early:
+On **seed 1's** 34 stands, seven columns separate held from fell with **no overlap at all**. On **seed 2's 41 stands,
+not one column does** — every single one overlaps, including speed through the water (held 4.400–6.523 against fell
+0.907–4.879), the wetted hull, the draft, the feet's depth, the load share, the grip and the roll peak. **So the
+no-overlap table below is a fact about 34 stands on one sea, not a property of the take-off**, and reporting it as a
+discriminator would have been exactly the error this project keeps warning itself about.
+
+**What survives pooling is necessity, not separation** (Part 5.4): nothing that lasted stood off the plane, under
+4.400 m/s, or with wet feet — on either sea — while plenty of stands meeting those conditions still fell. The medians
+also keep their direction on both seas (seed 2: V 4.635 held against 2.330 fell, wetted 0.079 against 0.517, draft
+−0.051 against +0.148, the feet −0.060 against +0.272, the front foot's load share 0.338 against 0.612, grip left
+0.799 against 0.443, roll peak 1.7° against 23.8°). It is the **clean boundary** that is seed 1's alone.
+
+⚠️ **A second seed-1-only finding, for the same reason.** On seed 1 the capture point goes past the feet **along** the
+board in **2 of 2 123** standing frames, peak **0.003 m** — which made "the fall is sideways and only sideways" look
+like a law. On **seed 2 it goes past along in 132 of 3 744 frames, peak 0.488 m.** The longitudinal channel is live on
+that sea (across still dominates: 780 frames, peak 0.904 m). **So the fall is predominantly across and not only
+across**, and a pearl does occur.
+
+With that said, here is seed 1's table, labelled as what it is:
+
+Over seed 1's 34 stands, a population that contains presses at the cue, 250 ms late, 500 ms late, on the `lift` rule
+and 2 s early:
 
 | column | held (4) | fell (30) | separates? |
 | --- | --- | --- | --- |
@@ -573,23 +675,26 @@ at the cue, 250 ms late, 500 ms late, on the `lift` rule and 2 s early:
 | knees left, min | 0.373 … 0.408 | 0.397 … 0.894 | no |
 | past the feet ACROSS, peak, m | 0.000 … 0.307 | 0.133 … 0.824 | no |
 
-**Three things to take from that table.**
+**Two things to take from that table, both of which DO survive pooling.**
 
-1. ⭐⭐ **`planing` does not separate the two groups and the speed behind it does.** There are fallers that are planing
-   (wave 10 `cue`, V = 4.264) and no holder below 4.420. **This is the same conclusion as the entry sweep and the
-   `leanWant = 0` count, now from a third direction, and it is as direct a refutation of "planing is the cause" as this
-   bench can produce.**
-2. **The columns that separate are one fact said five ways: the hull is carrying its load dynamically.** Speed through
-   the water is the cause; the wetted area halves, the draft goes negative (the board's own reference rises above the
-   local surface), the deck at the feet comes clear, and the load moves off the front foot because a planing board sits
-   tail-down.
-3. ⚠️ **The reserve that separates is the GRIP, and the capture margin — the only one of the three that can end a ride
-   — does not.** Every faller runs its sole's friction down to **0.000–0.556** left; no holder goes below **0.718**.
-   That is #429's own closing sentence (*"The rider has one authority left, the sole, and that is the one that
-   saturates"*) confirmed as a discriminator, and it points at the water pushing the feet across a buried deck rather
-   than at anything the balance does.
-   **And the columns the brief's framing leaned on — where on the face, how steep, how far ahead of the crest, how hard
-   the landing — separate nothing.**
+1. ⭐⭐ **`planing` is necessary and not sufficient, and so is the speed behind it.** Within seed 1 there are fallers
+   that are planing (wave 10 `cue`, V = 4.264) and no holder below 4.420; pooled over both seas, **0 of 47 non-planing
+   stands lasted and 15 of 28 planing ones did**. **Necessity is not causation**: the latch's own consequence is nil
+   (`leanWant = 0` in all 5 867 standing frames across the two seas), and the entry sweep moves the fall one frame
+   across the threshold. What is necessary is the **regime the latch labels** — a hull carrying its load dynamically —
+   not the latch.
+2. **The hull columns are one fact said five ways.** Speed through the water is the cause; the wetted area halves, the
+   draft goes negative (the board's own reference rises above the local surface), the deck at the feet comes clear, and
+   the load moves off the front foot because a planing board sits tail-down. **And the columns the brief's framing
+   leaned on — where on the face, how steep, how far ahead of the crest, how hard the landing — separate nothing, on
+   either sea.**
+
+⚠️ **One of seed 1's separations is interesting enough to name even though it does not replicate.** Its **grip** —
+the sole's friction left — runs down to **0.000–0.556** in every faller and never below **0.718** in a holder, while
+the **capture margin**, the only one of the three reserves that can end a ride, does **not** separate. That is #429's
+own closing sentence (*"The rider has one authority left, the sole, and that is the one that saturates"*) showing up as
+a discriminator on one sea, and it points at water pushing the feet across a buried deck. On seed 2 the grip overlaps
+(held 0.727–0.865, fell 0.000–0.894), so this is a lead, not a result.
 
 **Read as one event, this is a drop-in** — with the caveat that only the hydrodynamic half of it separates cleanly.
 At the median, the ride that lasts stands lower on a steeper face and further ahead of the crest, **making twice the
