@@ -50,9 +50,12 @@ export interface RideFrame {
  * 2026-11-19). He wants every fall he stood up for in the Logbook, however short, because the shortest stands are
  * exactly the ones he cannot explain; he does not want the fifty-entry list filling with aborted pop-ups.
  *
- * "Stood up for" is the outcome itself, not a second test: a ride only ever **begins** on a `standing` frame
- * (`update`), so there is no path to a `wipeout` that did not stand. A pop-up that goes push → landing → fallen
- * without ever reading `standing` never starts a ride and so is never logged, short or not.
+ * "Stood up for" is the outcome itself, not a second test. There are two ways to reach a `wipeout`, and a stand is
+ * behind both: a ride **begins** only on a `standing` frame (`update`), and a worker report of `end: 'fell'` is
+ * published only for a ride the analyzer started, which it does only on a `standing` sample
+ * (`RideAnalyzer.push`) — the same test, taken on the worker's full-rate samples rather than the page's drawn
+ * frames. A pop-up that goes push → landing → fallen without ever standing starts neither, and so is never logged,
+ * short or not.
  */
 export const MIN_RIDE_SECONDS = 1;
 
@@ -94,6 +97,12 @@ export class RideTracker {
   private seenReport?: number;
   private waitForLeave = false;
   /**
+   * Whether a wipeout has already been logged for the rider's current time off the board. The worker's report can
+   * land a few frames after the page saw the fall itself, so without this the same fall would be logged twice: once
+   * from the `fallen` frame, and again from the report that follows it onto another `fallen` frame.
+   */
+  private fallLogged = false;
+  /**
    * What let go, from the last frame of this ride that carried it. The runner latches it at the separation and holds
    * it until the rider is back on the board, so a worker report that lands a few frames after the fall still finds
    * it. Cleared when a ride begins, so one ride never shows the previous ride's fall.
@@ -111,6 +120,7 @@ export class RideTracker {
     this.resets = undefined;
     this.seenReport = undefined;
     this.waitForLeave = false;
+    this.fallLogged = false;
     this.broke = undefined;
   }
 
@@ -123,6 +133,15 @@ export class RideTracker {
     if (!this.riding) {
       if (restarted) this.retryNoted = false;
       if (!RIDING.has(frame.phase)) this.waitForLeave = false;
+      if (frame.phase !== 'fallen') this.fallLogged = false;
+      // A stand the page's frames stepped over. The worker advances the sea in batches and the page reads one
+      // snapshot a drawn frame, so a stand that began and fell inside one batch is never seen standing here: it
+      // arrives only as the worker's report, on a frame that already reads `fallen`. Logging it is the owner's
+      // ruling of 2026-11-19 — every fall he stood up for, however short, and his falls come within a second — and
+      // it does not weaken the ruling's other half: a failed pop-up produces **no report at all**, because the
+      // analyzer starts a ride only on a `standing` sample. The report is that same stand test, taken on the
+      // worker's own full-rate samples instead of the page's.
+      if (report && report.end === 'fell' && frame.phase === 'fallen' && !this.fallLogged) return this.logUnseenFall(frame, report);
       if (frame.phase === 'standing' && !this.waitForLeave) this.begin(frame);
       return undefined;
     }
@@ -155,6 +174,18 @@ export class RideTracker {
     return this.finish('ended', 'ride.reason.retry');
   }
 
+  /**
+   * Log a fall from the worker's report alone, for a stand no frame of the page's ever read. Its measures are the
+   * report's, as they are for any ride the worker ended; what let go and the slow motion are this frame's, so a
+   * stale latch from the ride before cannot be handed to it.
+   */
+  private logUnseenFall(frame: RideFrame, report: RideReport & { id: number }): RideResult | undefined {
+    this.broke = frame.broke;
+    this.slowest = frame.timeScale ?? 1;
+    const { id: _, ...reading } = report;
+    return this.finish('wipeout', FALL_REASONS[frame.separation ?? 'balance'], reading);
+  }
+
   private begin(frame: RideFrame): void {
     this.riding = true;
     this.broke = frame.broke;
@@ -173,6 +204,9 @@ export class RideTracker {
     this.retryNoted = false;
     const seconds = report ? report.duration : this.lastTime - this.startTime;
     if (seconds < MIN_RIDE_SECONDS && outcome !== 'wipeout') return undefined;
+    // A fall is logged once for the rider's time off the board, whichever saw it first: the page's own `fallen`
+    // frame, or the worker's report landing after it.
+    if (outcome === 'wipeout') this.fallLogged = true;
     // Only a wipeout carries a fall: a ride that ended with the rider still up has nothing that let go, and the
     // runner's latch would otherwise hand it the fall that ended the ride before.
     const fall = outcome === 'wipeout' ? this.broke : undefined;

@@ -141,6 +141,45 @@ describe('RideTracker', () => {
       expect(feed(restarted, [{ ...riding.at(-1)!, phase: 'prone' as const, resets: 1 }])).toEqual([]);
     });
 
+    /**
+     * **A stand the page's frames stepped over.** The worker advances the sea in batches and the page reads one
+     * snapshot per drawn frame, so a stand that began and fell inside one batch reaches the page only as the
+     * worker's report — on a frame that already reads `fallen`. The report **is** the stand test: the analyzer
+     * starts a ride only on a `standing` sample, so a failed pop-up produces no report at all.
+     *
+     * Reproduced on the merged code as `landing` then `fallen` carrying a new report of `end: 'fell'` and
+     * `duration: 1/60`: both calls returned `undefined`, and the owner's shortest wipeout — the fall he most wants
+     * explained — was never logged.
+     */
+    it('logs a fall the page’s frames stepped over, from the worker’s report', () => {
+      const tracker = new RideTracker();
+      const landing = { ...start, phase: 'landing' as const, seaTime: start.seaTime + STEP };
+      const report = {
+        id: 7, duration: STEP, distance: 0.07, topSpeed: 4.1, meanSpeed: 4.1, pocketTime: 0, curlTime: 0,
+        maneuvers: [], end: 'fell' as const, timeScale: 1,
+      };
+      const fallen = { ...landing, phase: 'fallen' as const, separation: 'balance' as const, seaTime: landing.seaTime + STEP, broke, report };
+      const results = feed(tracker, [landing, fallen]);
+      expect(results).toHaveLength(1);
+      expect(results[0]).toMatchObject({ outcome: 'wipeout', reason: 'ride.reason.balance', seconds: STEP, distance: 0.07, topSpeed: 4.1 });
+      expect(results[0].fall).toEqual(broke);
+      expect(results[0].report?.end).toBe('fell');
+    });
+
+    // The worker's report can land a few frames after the page saw the fall itself, so the fall the page already
+    // logged must not be logged a second time when its report arrives.
+    it('does not log the same fall twice when its report lands after it', () => {
+      const tracker = new RideTracker();
+      const riding = frames('standing', 0.4, 3, start);
+      const fallen = { ...riding.at(-1)!, phase: 'fallen' as const, separation: 'balance' as const, seaTime: riding.at(-1)!.seaTime + STEP, broke };
+      const report = {
+        id: 7, duration: 0.4, distance: 1.2, topSpeed: 3, meanSpeed: 3, pocketTime: 0, curlTime: 0,
+        maneuvers: [], end: 'fell' as const, timeScale: 1,
+      };
+      const late = { ...fallen, seaTime: fallen.seaTime + STEP, report };
+      expect(feed(tracker, [...riding, fallen, late, { ...late, seaTime: late.seaTime + STEP }])).toHaveLength(1);
+    });
+
     // A pop-up that never reads `standing` never begins a ride, so `wipeout` cannot be reached without a stand and
     // the outcome is the stand test. This is what makes the one-word gate above correct.
     it('never begins a ride without a stand, so a failed pop-up is not a short wipeout', () => {
