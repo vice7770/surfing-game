@@ -56,6 +56,11 @@ def diff(path, arm_a, arm_b):
                     run = (script, wave)
                     if run not in first or frame < first[run]:
                         first[run] = frame
+    if not pairs:
+        # "0 of 0 values differ" reads exactly like an inertness result and is not one. Say so loudly.
+        print(f"\n{arm_a} vs {arm_b}: NO ALIGNED FRAMES — one of these arms is not in this file, or the runs do not "
+              f"share a (script, wave, frame). This is not an inertness result.")
+        return 0, 0
     print(f"\n{arm_a} vs {arm_b}: {len(pairs)} aligned frames over {len(set((s, w) for (s, w, f) in rows))} runs; "
           f"{moved} of {total} values differ")
     print("  columns that moved most: " + ", ".join(f"{k} ({n})" for k, n in sorted(per_key.items(), key=lambda kv: -kv[1])[:14]))
