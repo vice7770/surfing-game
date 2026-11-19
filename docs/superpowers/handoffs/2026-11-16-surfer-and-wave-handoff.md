@@ -4532,3 +4532,28 @@ He rode `claude/ride-everything` and reported: *"the board starts going left and
 
 * **The crouch rail-grab is liked and is to become PLAYER-TRIGGERED** — *"in the future this behavior should be player triggered because of snap and other tricks."* That is PR #220's rail grab, currently parked. Recorded as a requirement, not built.
 * **The Compress fix is imperceptible to him, and that is CORRECT**: a buried trigger is identical before and after by construction; the fix only shows on a part-pull. Told to him plainly rather than oversold.
+
+---
+
+## 2026-11-19 (late, +20 min) — ⚠️ **THE WOBBLE CANNOT EXPLAIN THE TURN FAILURES. IT HAPPENS A SECOND AFTER THEM.**
+
+The reviewer checked the timing of the entry above before anyone built on it. **Re-measured in the same file and confirmed to the frame:**
+
+| | |
+| --- | --- |
+| the window in which the steer arms **died** (+0.317 → +0.717 s) | neutral wave 1's deck roll spans **−0.958° to +0.091° — 1.05° peak-to-peak.** Flat. |
+| first \|roll\| > 5° | **t+1.700** |
+| extrema | **−7.35° at t+1.783**, **+16.96° at t+3.017** |
+
+> ⛔ **The steer arms fell at +0.700 and +0.717. The wobble does not begin until +1.700 — a full second LATER.** So *"the wave that weaves is the wave whose turn fails"* is a **cross-wave correlation and not a mechanism in time**, and I presented it as the discriminator I had been looking for. **It cannot be: at the moment the turns died, that wave was flat to one degree.**
+
+**What survives, and it is worth keeping:** wave 1 wobbles and waves 2 and 11 do not, and wave 1's turn fails while theirs hold. ⭐ **And the wobble is a real defect that matters to the owner on its own** — it is exactly what he described riding `claude/ride-everything`, uncommanded, with nothing asked of the rider. **A smaller early motion, or a common cause upstream of both, remain open.**
+
+### Two further corrections to my own numbers
+
+* ⚠️ **"3.6 swaps a second" is not a frequency, and I then called it "nearly 4 Hz".** 11 zero crossings over 3.02 s is 3.65 crossings/s, and **a full back-and-forth takes two crossings — so it is 1.82 Hz.** Half what I told the owner. **Count cycles, not crossings, before labelling a frequency.**
+* ⚠️ **The pad's old behaviour: a steady 25 % RT first reached 1.00 on frame 12, not frame 4.** Frame 4 is where the ramp **overtook** the analog value (0.333 > 0.25); saturation is frame 12. Both numbers are right about different things and must not be collapsed: **overtake ≠ saturation.**
+
+### And before anyone tunes stability on this
+
+The reviewer's condition, accepted: **compare measured cross-face tilt, deck-relative roll and the board-versus-rider response** before touching stability. The roll figures above are **world-frame deck roll**; a wobble in the world frame on a tilting face is not the same quantity as a wobble relative to the water's own surface, and today has already produced one 57× unit error and one over-ground/through-water column error in this same file.
