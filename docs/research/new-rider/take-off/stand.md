@@ -254,7 +254,7 @@ and its wetted hull 0.398 → **0.263 m²**, and the feet end **dry** (−0.000 
 of 34** at the landing boundary, and only **5 of 34** at the stand — so the board's descent into the surface is
 driven by the press itself, and mostly over by the time the rider is up.
 
-## 4. ⭐ Which of the survivors' four properties is the cause: the near-threshold entry sweep
+## 4. ⭐ Which of the survivors' four properties is the cause: speed, and the latch is not it
 
 The brief's four properties — **planing, lower on the face, a steeper face, half the wetted hull** — are not four
 independent facts. Read off the source they are one quantity seen four ways:
@@ -314,7 +314,7 @@ four as a state — it is the speed each of them reports.
   rider goes down **sideways off the board's narrow way**, never over the nose or the tail. This is the decomposition
   the filtered `rawMargin` could not give.
 
-### 4.1 ⭐⭐ And the latch cannot be the cause, because its cap bounds a request that is zero
+### 4.1 ⭐⭐ The latch cannot be the cause, because its cap bounds a request that is zero
 
 The take-off runs settle it from the other side. Over **2 123 live standing frames** on seed 1
 (`results/stand-seed1-channels.txt`):
@@ -542,7 +542,7 @@ that lies the rider back down. On this evidence a gate on the flag would refuse 
 lasted** — every `sinking` one — and it would be refusing them for a test that is partly a detector of the very thing
 those rides have.
 
-### 5.4 ⭐⭐ Both seas pooled: what is necessary, what is sufficient, and what the gate would cost
+### 5.4 ⭐⭐ Both seas pooled: what every ride that lasted had, what none of it guarantees, and what a gate would cost
 
 `combine.py`, over both runs (`results/stand-both-seas.txt`): **75 stands over 22 (seed, wave) pairs, 15 of which
 carried the full window, 60 fell, 0 truncated.** The 15 came from **5 distinct waves.**
