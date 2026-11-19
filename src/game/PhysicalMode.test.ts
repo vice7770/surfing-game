@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { Quaternion, Scene, Vector3 } from 'three';
 import { WaterSurface } from '../scene/WaterSurface';
+import { RIG_SWITCHES } from '../scene/rig/stanceBlend';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
@@ -9,7 +10,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, bodyBankSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, armCarrySwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1310,6 +1311,34 @@ describe('PhysicalMode', () => {
     }
   });
 
+  // The `?bodyBank=hip` dev switch (step 3.5i): opt-in, `project`'s free centre of pressure gains the trunk rotor's
+  // own angular momentum rate, the third term of the centre-of-pressure identity. `tip` goes from 90 of 90 Canyon
+  // riders to 66 of 90; anything else, and an online room, the contact's bound exactly as it ships.
+  it('counts the trunk rotor\'s moment in the contact\'s bound with `?bodyBank=hip` (an opt-in dev switch), and leaves it out otherwise', () => {
+    expect(bodyBankSwitch('?bodyBank=hip')).toEqual({ bodyBank: 'hip' });
+    expect(bodyBankSwitch('?bodyBank=HIP')).toEqual({ bodyBank: 'hip' });
+    expect(bodyBankSwitch('?bodyBank=%20hip%20')).toEqual({ bodyBank: 'hip' });
+    for (const search of ['', '?bodyBank', '?bodyBank=', '?bodyBank=on', '?bodyBank=lean', '?bankClamp=off']) {
+      expect(bodyBankSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?bodyBank=hip' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).bodyBank, spot).toBe('hip');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bbodyBank: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { bodyBank: undefined }).bodyBank).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).bodyBank).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The `?askCap=1.5|2|4|4.5|9` dev switch (step 3.5a): opt-in, the minimum carved radius the rider's COMMANDED lean is
   // bounded by, m, so the bound is atan(v²/(g R_min)) at every speed in place of the shipped 4.5 m with no ask at all
   // off the plane; anything else, and an online room, the cap as it ships.
@@ -1400,6 +1429,41 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { deepen: undefined }).deepen).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).deepen).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?armCarry=on|rest` dev switch (step 3.5g; `engine-target.md` rows 4, 5 and 15, on the owner's "geometry rows
+  // first" of 2026-11-18): opt-in, the arm carriage channel — the drawn standing hands get a HEIGHT, a SPREAD and a
+  // LEFT/RIGHT of their own, answering the player's own stick and NEVER leg depth (V7 found four carriages inside the
+  // Tall band with the narrowest and lowest arms at its deepest leg position, so both depth links are refuted).
+  // `rest` is the rest carriage alone. Drawing only: no part mass moves and no force is added. Anything else, and an
+  // online room, the shipped one-scalar spread.
+  it('carries `?armCarry=on` and `=rest` (an opt-in dev switch), and ignores anything else', () => {
+    expect(armCarrySwitch('?armCarry=on')).toEqual({ armCarry: 'on' });
+    expect(armCarrySwitch('?armCarry=ON')).toEqual({ armCarry: 'on' });
+    expect(armCarrySwitch('?armCarry=rest')).toEqual({ armCarry: 'rest' });
+    expect(armCarrySwitch('?armCarry=REST')).toEqual({ armCarry: 'rest' });
+    for (const search of ['', '?armCarry', '?armCarry=', '?armCarry=off', '?armCarry=over', '?armCarry=1', '?snapArms=old']) {
+      expect(armCarrySwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      for (const [search, want] of [['?armCarry=on', 'on'], ['?armCarry=rest', 'rest']] as const) {
+        vi.stubGlobal('location', { search });
+        for (const spot of ['point', 'pool', 'canyon'] as const) {
+          expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).armCarry, `${spot} ${search}`).toBe(want);
+        }
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      // The drawn hands ARE on the wire (`RIDER_SNAPSHOT.points`), so an unpinned switch would reach other players.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\barmCarry: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { armCarry: undefined }).armCarry).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).armCarry).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }
@@ -2333,6 +2397,39 @@ describe('PhysicalMode', () => {
     expect(await third).toBe(false);
     expect(mode.config?.spot).toBe('point');
   });
+
+  // The reviewer's catch on PR #431's study branch: `RIG_SWITCHES` is a module-level global that every rig on the
+  // page reads each frame, and the drawn-trunk flag used to be written where the config is computed - after the GPU
+  // await and BEFORE the supersession guard. A start abandoned while asking for the tier could therefore reach in and
+  // change the trunk of the ride already running, and then return false without putting it back.
+  it('never lets a superseded start change the live ride\'s drawn trunk (`RIG_SWITCHES.trunk`)', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    RIG_SWITCHES.trunk = undefined;
+    // The ride that is running draws the rig's own hinge.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    expect(RIG_SWITCHES.trunk).toBeUndefined();
+    // A start that asks for the physics trunk, suspended inside the GPU await (the Reef raises stage 1 to 2, which is
+    // what makes `compute` 'auto' and the tier worth asking for).
+    let release = (): void => {};
+    const gpuTier = (): Promise<boolean> => new Promise<boolean>((resolve) => { release = () => resolve(false); });
+    const never = (): SurfZoneHost => { throw new Error('a superseded start must not build a surf zone'); };
+    const stuck = mode.start(
+      { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', stage: 1, compute: 'cpu' }, 5, water,
+      { ...quick, trunk: 'mass', rider: 'new' }, never, gpuTier,
+    );
+    // Superseded, and only then let go of the tier.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    release();
+    expect(await stuck).toBe(false);
+    // The abandoned start never reached the page's drawing.
+    expect(RIG_SWITCHES.trunk).toBeUndefined();
+    // And the switch still works on a start that IS accepted.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, { ...quick, trunk: 'mass', rider: 'new' })).toBe(true);
+    expect(RIG_SWITCHES.trunk).toBe('mass');
+    RIG_SWITCHES.trunk = undefined;
+    mode.stop();
+  }, 60_000);
 
   it('describes the running sea, solver cost and next set in the Wave Lab readout', async () => {
     const mode = new PhysicalMode(new Scene());

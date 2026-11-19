@@ -21,10 +21,23 @@ export function formatHeight(metres: number, units: Units): string {
   return units === 'metric' ? `${metres.toFixed(1)} m` : `${(metres * FEET_PER_METRE).toFixed(1)} ft`;
 }
 
+/**
+ * A distance in m or ft, whole. A real distance that would round to zero reads `<1` instead: the Logbook now logs
+ * falls of a fraction of a second (the owner's ruling of 2026-11-19), and `0 m` under a ride that did travel reads
+ * as missing data rather than as a short one. A true zero still reads `0`.
+ */
 export function formatDistance(metres: number, units: Units): string {
-  return units === 'metric' ? `${Math.round(metres)} m` : `${Math.round(metres * FEET_PER_METRE)} ft`;
+  const unit = units === 'metric' ? 'm' : 'ft';
+  const value = units === 'metric' ? metres : metres * FEET_PER_METRE;
+  if (value > 0 && value < 0.5) return `<1 ${unit}`;
+  return `${Math.round(value)} ${unit}`;
 }
 
+/**
+ * A time in seconds, to a tenth. A positive time shorter than that reads `<0.1 s`: a stand that lasted one physics
+ * step is now logged, and `0.0 s` would stand a zero in for a number that was measured.
+ */
 export function formatDuration(seconds: number): string {
+  if (seconds > 0 && seconds < 0.05) return '<0.1 s';
   return `${seconds.toFixed(1)} s`;
 }
