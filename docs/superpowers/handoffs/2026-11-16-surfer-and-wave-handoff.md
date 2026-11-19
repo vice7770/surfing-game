@@ -4651,3 +4651,144 @@ PR #444 on `claude/ride-everything`, opt-in, default byte-identical. Canyon B Me
 
 ### 5. Not measured, and the owner sees one of them first
 **Seed 1 and every Compress arm** (Compress is measured protective and has rescued a wave) · ⚠️ **the DRAWING: `swung`'s 0.35 share stands down so the drawn lateral lean goes 0.35ψ → 1.0ψ with the fold reaching 68.75°, and nobody opened a browser** · `?trunk=mass` + `?swing=mass` together (the folds do not commute) · `src/wave` was still running at hand-back, its whole diff there being one forwarding line and one typed field.
+
+---
+
+## 2026-11-19 (late night, +1 h) — ⛔⛔ **STEP 3.5k: THE QUESTION THAT GATED EVERYTHING IS BUILT ON THE WRONG QUANTITY, AND THE ALLOCATION BUILD WAS ALREADY REFUTED ON 636 FALLS**
+
+Measurement only on `claude/the-record`. `git diff -- src/` **empty** — not even a getter. The probe is
+`take-off/four-numbers.ts` with peek-only columns; the run reproduces PR #444's committed exits and settled `comX` on
+all 9 cells **to the digit**. Population: Canyon B Medium **seed 2**, the owner's address, steer only, `STAND_HOLD=4`,
+`PERIODS=4`, `ARMS=ships,swing`, 9 wave×script cells, **2 216 loaded standing frames**. Controls: `seaDiffs` empty ·
+`bodyBank` absent from BOTH arms (so `project`'s moment term is 0) · the three headrooms reproduce the engine's own
+`rawMargin` **2 216 of 2 216** · 22 added columns inert over **5 272 shared rows, zero differences** · the
+substep-versus-frame-boundary error on `local.x` bounded at **0.000008–0.00038 m**. Full write-up
+`docs/research/new-rider/3.5/swing-demand.md`.
+
+### 1. ⛔⛔ THE PREMISE: there was no delivered lateral weight shift, and the 0.5 s is not in the turn
+
+**`−0.14625 m` is `localCenter.x − base.x`, the POSTURE's internal lateral offset.** The body's **centre of mass
+across the board** — `board.toLocal(position).x`, which IS `project`'s own `local.x`, the quantity `across` and the
+sole's moment are built from — reads **`+0.00540 m` on the same frames, 0.04× the 0.130 m sole half-width.** The
+balance's own independent report, `CaptureState.offsetAcross`, reads **+0.00946 / +0.00349 / −0.03507 m
+(0.07× / 0.03× / 0.27×)** at the rotor's 68.755° stop — and **the two instruments are identical at six decimals on
+2 215 of the 2 216 loaded standing frames** (one frame of wave 5 `cueL` differs by 0.0094 m), so the headline
+quantity is not one reader's arithmetic.
+
+> ⭐ **And on that very cell the SHIPPED arm's settled figure is −0.12944 m — 1.00× the sole.** Wave 2 `cueR`: ships
+> **+0.10788** (0.83×) against swing **−0.03800** (0.29×). **Measured on the board, the switch REMOVED lateral weight
+> on both headline cells — and the arm holding a full sole-width is the one that rode 0.5 s LONGER.**
+
+⛔ **And the exits that moved are not in the turn.** Every emitted column compared frame by frame: wave 2 `cueL` first
+differs **anywhere** at **t+1.43333 s** and `cueR` at **t+1.51667 s**, against a steer that centres at **+1.200 s** —
+**+0.233 s and +0.317 s after it.** `foldA` is **0.00° through t+1.400**. Waves 3 and 4 are bit-identical on all three
+scripts; wave 2 `cue` is bit-identical on 357 frames. ⚠️ Wave 5 diverges at **t+0.267 s, before the steer**.
+
+⚠️ **Two cells, one run each, late falls at 2.600–3.700 s in a 4 s window, against seven siblings that move by
+≤ 0.067 s.** [[one-trace-is-not-a-number]]. **The answer above does not need the direction, and I would not publish it.**
+
+### 2. ⛔ THE LEAD I WAS HANDED IS REFUTED IN ITS OWN TERMS — the demand is the impulse ratio, and the CoM is PROTECTIVE
+
+`freeX = local.x − height·(j.x/j.y)`, so `across = 1 − |comOff − dLever|/0.130`. Through the whole steer window on
+wave 2 `cueL`, **`comOff` stays +0.0025…+0.0290 m while `dLever` reaches −0.0943 m**; at the near-closure frame
+(t+0.800, `across` 0.051) the split of the 0.1233 m demand is **23 % CoM / 77 % impulse ratio, and the two have
+OPPOSITE signs so they ADD.**
+
+| counterfactual, over all 18 arm×cells | frames outside the sole |
+| --- | --- |
+| **hold the CoM term at zero** | ⛔ **MORE on 14, the same on 4, fewer on NONE** |
+| hold the force's lateral run at zero | ⭐ **fewer on 15, the same on 2, more on 1** |
+
+Wave 2 `cueL` by median: `across` **0.742 → 0.702** (ships) and **0.597 → 0.593** (swing) with the CoM zeroed;
+**0.742 → 0.844** and **0.597 → 0.862** with the lateral run zeroed.
+
+⭐ **And the force DOES follow the lean**: `d(dLever)/d(comOff)` through the origin **1.172 / 1.037** (R² 0.43/0.38),
+and in the fall test's own shipped decomposition `d(capDemand)/d(capOffset)` **0.862 / 0.903** (R² 0.53/0.54).
+
+### 3. ⭐ THE WATER PAYS HANDSOMELY FOR A BANK AND CANNOT PAY FOR AN OFFSET — and the 2026-11-15 row reproduces
+
+**World-horizontal across the heading: `fwH`/sin(roll) = 719–977 N per unit sine (R² 0.60–0.79)** on the four steered
+cells with real roll, peaking at **994.5 N at 42.35° and 2.077 bw** — and `994.5/sin(42.35°) = 1 477 N` against that
+load's own **1 487 N, 99.3 %**. ⭐ **That independently reproduces the consult-log's 709 N (557–935 over seven cells)
+on a live steered turn with the fins and rails in the ledger.** It also **balances the rider's own contact reaction to
+0.1–2.4 % of the normal**, so it is the deck normal projected — **which contributes exactly ZERO to `j.x`.**
+
+**The in-deck-plane across force — the only kind that can hold an offset without spending sole — by source, N, median
+on wave 2 `cueL`:** ⭐ **pressure −0.8, buoyancy −37.7, radiation −16.7, fins +11.9, rails −0.2.** ⭐⭐ **A third
+independent confirmation of the advisor's 2026-11-15 diagnosis:** the planing `pressure` term, the largest force on
+the board, makes **under 1 N across the plane of its own bottom.** Against it, holding 0.146 m at the measured 0.711 m
+CoM height **requests 147 N**, and #437's sole buys `0.130 × 716 / 0.711 ≈ 131 N`.
+
+### 4. ⭐⭐ AND THE FALL TEST SAYS HE IS UNDER-LEANING BY 0.78 SOLE-WIDTHS, ALL THROUGH THE TURN
+
+`CaptureState`'s own shipped pair, read by nothing in `src`: `pointAcross = offsetAcross − height·feltAcross`, the
+second being *"the across offset the body would have to hold for `pointAcross` to be zero: the demand"*.
+
+| wave 2 `cueL`, t+0.900 | achieved `capOffset` | earned `capDemand` | `capPoint` | felt tilt |
+| --- | --- | --- | --- | --- |
+| both arms (identical here) | **+0.0163 m** | **−0.0851 m** | ⭐ **+0.1014 m** | **−6.12°** |
+
+> ⛔ **The felt vertical tilts 6.1° to the INSIDE and earns 0.085 m of lean; the body holds 0.016 m the OTHER way.**
+> **0.1014 m = 0.78 of the sole half-width, and all of it is lean he does not take.** At the rotor's stop the gap is
+> 0.0411 → 0.1183 m with `capDemand` **2.4×, 5.4× and 18.4×** `capOffset`. **The problem is not a weight shift he
+> cannot afford. It is one he never makes — and `?swing=mass` at 68.755° does not make it either.**
+
+**And what ends both rides is a VELOCITY.** `|capPoint|` peaks at **0.11344 / 0.11826 m against a 0.130 m
+half-width**, and **`weightPast` is false on 222 of 222 and 191 of 191 frames**, while the across-speed term reaches
+**0.787 / 0.478 m — 6.1 and 3.7 sole-widths** — at `1/ω₀` of **0.249–0.308 s**, which reproduces step 3.2x's
+**0.22–0.32 m per m/s**. ⚠️ **This sizes the terms, it does not name the trip**: the conjunction fires inside a
+substep and these are frame-boundary rows.
+
+### 5. ⛔⛔ THE VERDICT: DO NOT BUILD THE ALLOCATION CHANGE. It is `HIP_CAPTURE_GAIN`, and my brief's reason for dismissing that sweep is wrong on its own source
+
+**None of this is mine — it is `3.2/README.md` Parts 22 and 23 and `AttachedRider.ts:421–441`.**
+
+* **`HIP_CAPTURE_GAIN` IS the early hip demand**: it drives the rotor from `CaptureState.hipPast` (the capture point
+  past 0.8 × 0.130 m) instead of from the ankle's overflow. That is "ask the hip with the steer, not after the ankle
+  saturates", in the quantity `humanBalance.ts`'s own header names.
+* **It opens early and delivers**: *"fires in every run of every gain: **35–179 N·m and 0.7–68.8° of swing** at 2 000,
+  112–264 N·m at 8 000"*, rail peak **13.8–34.4° → 5.9–24.4°**, opening at **0.22–1.02 s** of runs that fall at
+  0.77–1.70 s. Its own verdict: ⭐ ***"It is not late. It is not enough."***
+* **Paired run for run, 60 runs a gain over FIVE face slopes, it brings the fall FORWARD**: sooner **36 of 60** at
+  2 000 N·m/m, **32 of 60** at 1 000, 18 of 60 at 500; **12 of 12 fall at every gain 500 → 8 000.** The one flattering
+  cell (16°) has neighbours at 1/2/9, 1/0/11, 1/1/10, 6/0/6 — *"a fit, not a finding"*.
+* ⛔ **"The hip was never ASKED" is step 3.2w's finding, the round BEFORE** (0–8 N·m, 0.3°). 3.2x asked it and it
+  delivered. **My brief attributed 3.2w's diagnosis to 3.2x's sweep.**
+* ⛔ **And the dead band is not the rule**: *"the shipped hip already delivers **15–270 N·m and 1.8–68.8°** at 4, 8, 12
+  and 20° of face slope through the old ankle-overflow path, **opening 0.08–1.87 s in — and falls 48 of 48 anyway**.
+  3.2w's 'the hip never moves' is true of the 16° cell and of no other cell measured."* **Wave 1's 0.07 s is one
+  cell**, and §1 above shows the same: on wave 5 the switch is live from t+0.267 s, before the steer.
+* **Part 23 §7, the line that generalises:** *"Three roll authorities are now measured — the ankle's command, the
+  hip's capture-point trigger (**636 falls**) and a kinematic counter-roll of the whole body — and all three lower the
+  roll and none of them moves the fall. The common term is: the capture point counts across-speed at 0.22–0.32 m per
+  m/s, and every authority must move the weight to use it. **So the next measurement is not a fourth authority.**"*
+
+⛔ **No tuning proposed.** What the project's own files already name as open, for the owner's ruling: **(a)** source a
+human's own across-speed at the feet's edge against the model's measured median **1.21 m/s** — Part 23 marks it
+`[S needed]` and says *"if slower, the test is mis-scaled and the plant is survivable"*, a reading job, not a build;
+**(b)** *"more than one contact across"* — the two-body rider and the parked hand, not a limb gain.
+
+### 6. Corrections, mine and others'
+
+1. ⚠️ **PR #444's *"wave 1 `cueL`/`cueR` bit-equal across arms"* is EXIT-equal, not bit-equal** — 8 of 156 and 7 of
+   157 shared emitted frames differ, first at t+0.583/+0.617 s, by up to **14.6 N / 27.1 N** of normal contact force.
+   The inertness conclusion stands; the word does not.
+2. ⚠️ **PR #444's headline quantity is the posture's offset, not the lean over the rail** (§1). The round's own
+   §2.3 title — *"where the capability IS delivered"* — is not established by the number under it.
+3. ⚠️ **My brief's `HIP_CAPTURE_GAIN` attribution is wrong** (§5), and the memory's do-not-retry line *"the hip
+   rotor's gain swept 500→8000, 12 of 12"* understates it: the sweep is **636 falls over five face slopes with a
+   paired control**, and its result is *sooner*, not merely *not better*.
+4. ⚠️ **I nearly published "17 of 18 cells" for the counterfactual off medians.** It is **10 of 18 by median** and
+   **14/15 of 18 by frames-outside**; the eight dissenting cells are near-flat (0.03–0.67° of median roll) where both
+   terms are under 0.005 m. **Frames-outside is the statistic with the dynamic range and it is unanimous in sign.**
+5. ☠️ **Two harness traps, both re-hit here.** A bare `&`-backgrounded `node` from a tool shell was **killed at 8
+   minutes with an empty log and no `done` line** — use the harness's own background runner. And
+   `grep '"kind": "done"'` **never matches**: `JSON.stringify` emits no space after the colon, so a finished run reads
+   as an unfinished one. I diagnosed a completed run as killed on exactly that.
+
+### 7. Not measured
+
+**Seed 1 and every Compress arm** (Compress is measured protective and has rescued a wave) · **which fall test fired**
+on either arm (frame-boundary rows cannot see a substep conjunction) · the two arms' last 0.2 s are at **different
+roll states** (+25…+55° against −46…−68°), so §1's cross-arm settled pair is not matched-time — the frame table is ·
+**the DRAWING**, still unopened in a browser, with `swung`'s 0.35 share stood down and the fold reaching 68.755°.
