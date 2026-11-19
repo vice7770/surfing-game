@@ -130,6 +130,24 @@ beside it.**
 * **A metric that cannot fail.** `fellAfterStand` does not exist for a rider that never stands and `heldFull` does not
   exist for one that was not followed; every table carries `stood`, `popped`, `heldFull` and `truncated`.
 
+### The frames kept, counted
+
+⚠️ `AttachedRider.separate` clears `attached`, `climbing` and `inContact` and **never clears `phase` or `upright`**, so
+every rider column freezes at the separation. Seed 1, the whole run:
+
+| | |
+| --- | --- |
+| runs | 60 (12 waves × 5 pop timings) |
+| rider frames stepped | **36 512** |
+| **live** (`attached === 1`) | **36 479 = 99.9096 %** |
+| not live | **33** — **exactly one per fallen run**, and 33 runs fell: each run stops at its first `attached === 0` |
+| rows emitted | 7 883, of which **2 153** at or after a stand and **33** with `attached === 0` |
+| summaries whose `atFall` row is a frozen frame | **0** (it is by construction the last frame with `attached === 1`) |
+| **stands whose window was truncated** | **0** |
+
+So no frozen frame enters any median here, and every at-the-fall value in this document is read off the last attached
+frame. (37 riders popped, 34 stood, 33 fell — 30 of them after a stand and 3 during the pop-up.)
+
 ## 3. ⭐ Why the feet are under water: the pop-up takes the body out of the water, and the board cannot carry it
 
 ### 3.1 The arithmetic, which the repo already states
