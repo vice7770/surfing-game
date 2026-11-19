@@ -1,4 +1,24 @@
-# Video reference 25 (Hunter Jones, `@hunterjoness`, Malibu storm surf): **a board leaves a standing rider and he answers with NOTHING — no arms up, no crouch — which is the control clip 20 could not provide; and the foot gate refuses on the HIGH side with the feet clearly resolved**
+# Video reference 25 (Hunter Jones, `@hunterjoness`, Malibu storm surf): **a rider stands in heavy whitewater with no board under him and answers with NOTHING — no arms up, no crouch; and the foot gate refuses on the HIGH side with the feet clearly resolved**
+
+> ⚠️ **DOWNGRADED THE DAY AFTER PUBLICATION — read this before anything below.** This document was titled *"a board
+> leaves a standing rider"* and said in §2 that *"this rider's board demonstrably leaves him"*. **That is withdrawn.**
+> An independent read at full resolution establishes that **the board's identity is unresolved**: in the multi-rider
+> wide sheets at **4.3–5.57 s at least two boards are in play**; at **6.634** a board is under the standing rider but
+> **foam hides it**; the loose board **enters from lower-left at 7.084–7.267**; and the **7.3008 crop shows a leash
+> but no continuous attachment back to that rider.** On a wave with three or four riders on it, a loose board
+> entering frame is not shown to be his.
+>
+> **And the deeper objection is one this document had already written against itself**: its own ⛔ note says
+> *"at 6.6508 the bottom of the frame is uniform foam, so 'hidden' and 'gone' look identical."* **You cannot
+> demonstrate the ABSENCE of a board inside whitewater**, so no separation is established at all, by identity or by
+> absence. **Three claims are struck: that this is his board leaving, the ≥ 0.95 s separated bound, and the general
+> refutation of the arms rule.** They would need the board tracked continuously through the 6.634 → 7.084 gap, or the
+> leash followed to an ankle — the measurement neither reader could make.
+>
+> **What survives is the body, which never depended on the board**: through 40 consecutive native frames of heavy
+> broken water his trunk stays folded at ≈30–32° and his one readable hand stays at or below the shoulder line.
+> **And the no-rule design advice does not rest on this clip** — it rests on clips **18, 19, 20, 21, 22 and 24**,
+> where low arms and high arms and a nearly horizontal torso all appear on **continued** lines.
 
 Source: **https://www.youtube.com/shorts/wHMEeY29v9I**, title *"COME ON BOYS"*, on-page description *"MALIBU GOES OFF: Hurricane Marie 2.0 (storm surf)"*, channel **`@hunterjoness`** (`getVideoData().author` = "Hunter Jones"). Length **9.121 s**, read in full. The **twenty-fifth** reference the owner has sent; registered as #25 in `CLIP-REGISTRY.md`.
 
@@ -45,9 +65,17 @@ Clip 19 recorded the series' only wipeout and its mechanism: the board pitches u
 
 > ⭐⭐ **THE FINDING: he does not go taller, and he does not throw his arms up.** Over the **40 native frames spanning 0.667 s across the separation**, his trunk stays folded at **≈30–32°** from vertical (two gridded measurements, 31.9° at 6.6008 and 29.8° at 6.9008, ±8°) and **the one identifiable hand stays at or below the shoulder line in every readable frame** — **−43 px (6.6008), −33 px (6.9008), +8 px (7.3008)**, i.e. 11 %, 10 % and ~2 % of that frame's crown-to-sole. **His attitude on the board at 6.6175 and his attitude standing in the soup at 7.2675 are, to the eye, the same attitude.**
 >
-> ⭐ **So "the board goes and the rider rises with his arms up" is refuted as a general answer, on a rider the series has not seen before.** Clip 20 refuted it on a rider whose board never left him and said so; **this rider's board demonstrably leaves him and he still does not do it.**
+> ⚠️ **STRUCK (see the head of this document).** This paragraph read: *"So 'the board goes and the rider rises with
+> his arms up' is refuted as a general answer… this rider's board demonstrably leaves him and he still does not do
+> it."* **Neither the board's identity nor its absence is established, so this clip does not test the rule.** What the
+> 40 frames do establish is narrower and still worth having: **a rider driving through heavy broken water keeps a
+> folded trunk and low arms for 0.667 s continuously.** The rule's second half — *board gone ⇒ arms up and tall* —
+> goes back to **untested**, where clip 20 left it.
 >
-> ⚠️ **Bounded honestly, and the bound matters.** **This board never passes vertical.** It does not pitch, it does not rotate out from under him; it simply stops being under his feet inside a mass of whitewater and reappears 0.43 s later drifting away. **So clip 19's full conjunction — PAST VERTICAL *and* LEAVING HIM — is still untested, and this clip does not touch it.** What it kills is the weaker reading *"board gone ⇒ arms up"*, which is the one the series was carrying.
+> ⚠️ **Bounded honestly, and the bound turned out to swallow the finding.** **No board here is seen to pass
+> vertical.** A board under his feet stops being visible inside a mass of whitewater, and a loose board is in frame
+> 0.43 s later. **Clip 19's full conjunction — PAST VERTICAL *and* LEAVING HIM — is untested, and so now is the
+> weaker reading *"board gone ⇒ arms up"*, because this clip does not establish that any board went.**
 >
 > ⛔ **The exact frame of separation is not decidable.** The board is visible under his feet at 6.6175 and 6.6342 and is not visible from 6.6508; but at 6.6508 the bottom of the frame is uniform foam, so *"hidden"* and *"gone"* look identical. **I publish a window — the board left him between 6.634 and 7.084 — and no instant.**
 
@@ -336,15 +364,15 @@ Read on four uniform survey sheets (24 at 0.38 s, 32 at 0.285 s, 30 at 0.20 s, 2
 
 | row | moves? | how |
 |---|---|---|
-| **the wipeout answer** (clips 19 / 20 / 21) | ⭐⭐ **THE CONTROL CLIP 20 COULD NOT RUN, AND IT KILLS THE SURVIVING HALF** | Clip 19: board gone ⇒ **arms up and out, taller**. Clip 20 could not test it (*"this board never passes vertical and never clearly leaves him"*). **Here the board demonstrably leaves a standing rider and he answers with NOTHING** — trunk 30–32° before and after, the one readable hand **−11 %, −10 %, +2 %** of crown-to-sole and never above the shoulder line, across **40 consecutive native frames**. ⚠️ **The board does not pass vertical, so clip 19's full conjunction is untested; what dies is the weaker "board gone ⇒ arms up"** |
-| **the event categories** (clips 20–24) | ⭐ **A SIXTH SHAPE: "the board leaves him and he stays standing"** | Not a recovery, not a trick, not clip 23's "swallowed". He is **separated but upright for ≥0.95 s**, then engulfed, **outcome not shown**. ⛔ **No duration published as if it discriminated** — clip 22's refutation respected in full. ⛔ **Clip 24's repetition discriminator cannot be tested**: a separation has nothing to repeat |
+| **the wipeout answer** (clips 19 / 20 / 21) | ⛔ **NO TEST — the control this clip claimed to be is withdrawn** | Clip 19: board gone ⇒ **arms up and out, taller**. Clip 20 could not test it. **This clip cannot either**: the board's identity is unresolved and its absence cannot be shown inside foam (see the head). What stands is the body alone — trunk 30–32° throughout, the one readable hand **−11 %, −10 %, +2 %** of crown-to-sole and never above the shoulder line, across **40 consecutive native frames of heavy broken water**. **Both halves of the rule are now untested; clip 21 killed the first half independently** |
+| **the event categories** (clips 20–24) | ⚠️ **A SIXTH SHAPE, RENAMED: "no board visible under a standing rider"** | Not a recovery, not a trick, not clip 23's "swallowed". ⛔ **The ≥ 0.95 s separated bound is WITHDRAWN** — it presupposed a separation that is not established. He is **upright in broken water with no board visible under him**, then engulfed, **outcome not shown**. ⛔ **No duration published as if it discriminated** — clip 22's refutation respected in full |
 | **17 — the feet** | ⭐⭐ **THE GATE REFUSES HIGH WITH THE NUMERATOR PROVEN SOUND — the complement of clip 24** | Stance span **200 / 184 / 198 / 181 src px** across four crops at two times, **plain median 191, ±5 %**, on 40–65 px feet. Board **≥457 and ≥302 px** ⇒ **≤0.44 L and ≤0.66 L**, both refused **high**. **Clip 24 isolated the fault to the landmark; this isolates it to the board. Both failure modes are now demonstrated separately.** Fourth caution on 0.55–0.60 |
 | **17 — front ÷ rear from the nose** | ⭐⭐ **PUBLISHED, ON TWO AGREEING FRAMES, WITH THE NOSE'S IDENTIFICATION STATED** | **0.509 (t=0.0175) and 0.517 (t=2.1008), 2.08 s apart, plain mean 0.513 ± 0.04.** ⭐ **The argument that licenses it: the high-side gate failure is about the DENOMINATOR, and this ratio never uses a board length.** Nose found two agreeing ways (taper, direction of travel). Internal check **stance ÷ (nose→rear) = 0.47** against clip 17's predicted 0.46. ⚠️ **It lands BELOW the 0.55–0.60 band — a tension, beside clip 20's, not a confirmation** |
 | **17 — zero steps** | ⭐ **REAL EVIDENCE, FIRST SINCE CLIP 20** | **No slide, lift or re-placement in ~115 frames**, and unlike clip 22 **this clip CAN resolve a foot** (40–65 px). ⛔ Applies only to 0.02–6.63; after that nobody is on a board |
 | **depth (14) / the lens** | ⭐⭐ **CONVICTED BY MEASUREMENT, AND THE HIGHEST LENS YET** | A real horizon at **source y = 993 ± 8**, full-width and straight, puts the lens at **≈1.9 rider-heights above the water** on two frames — against clip 23's 1.45. ⭐ **Third clip to convict with a horizon rather than be blocked by its absence.** ⚠️ **And it narrows clip 24's new sign: no sky is SUFFICIENT for a raised lens, not necessary — sky licenses nothing** |
 | **the trunk channel** (1, 2, 6, adjacent) | ⚠️ **ORDERING, AND IT RUNS AGAINST CLIP 24** | Four gridded frames, **30° to 50°, plain median 38°**. **The two broken-water frames are the most UPRIGHT; the two open-face-at-speed frames are the most folded** — the reverse of clip 24. ⚠️ **Confounded across three riders and not claimed as a refutation**; it says clip 24's within-rider ordering must not be generalised yet |
 | **4 — arm carriage** | ⭐ **AN EIGHTH RIDER, AND THE HAND-COUNT CAUTION GETS WORSE** | Zero direction changes, zero hands above the shoulder line — a clean negative control for "arms up is a turn signature". ⚠️⚠️ **ZERO of five frames gave a second identifiable hand** (clip 24 got 2 of 5 on riders half the size): **the blocker is a black wetsuit, not resolution** |
-| **the engine's unnamed state** | ⭐ **FOURTH CLIP RUNNING, AND IT EXTENDS PAST THE BOARD** | Rider C drives folded through broken water **~5.9 → 6.63 s**; rider A opens the clip driving with whitewater on his inside rail. ⭐ **And the new wrinkle: he keeps the same posture for ≥0.95 s AFTER the board is gone.** The state is about the water, not the board. ⛔ **No duty cycle published** (§2.5) |
+| **the engine's unnamed state** | ⭐ **FOURTH CLIP RUNNING** | Rider C drives folded through broken water **~5.9 → 6.63 s**; rider A opens the clip driving with whitewater on his inside rail. ⚠️ **The wrinkle is downgraded**: he keeps the same posture through **0.667 s of heavy broken water**, which is a statement about the water. **"After the board is gone" is struck** — no separation is established. ⛔ **No duty cycle published** (§2.5) |
 | **18 — head and gaze** | ⚠️ **BREAKS THE 23-vs-24 TIE, TOWARD 23** | Head up and turned down the line through the entire broken-water passage. ⛔ **Sign only, no angle** — eleventh distinct cause of refusal |
 | **the clothing clause** | ⛔ **HALF SATISFIED, AND IT CHANGES NOTHING** | A short-leg wetsuit gives knee, shin, ankle and bare foot; a one-piece torso removes the waist. **Clip 19's "it removes the WAIST and LEAVES the LEG" reproduced exactly.** Rows 2/3/10/14 refuse on camera grounds regardless |
 | **the aspect gate** | ⭐ **THE CHEAPEST POSSIBLE CONFIRMATION OF CLIP 19** | **≥11.4 against 2.2**, from the board alone. A clip with **no manoeuvre at all** gives the same answer as clips 18, 19 and 24: the admissible shot is a property of the camera |
