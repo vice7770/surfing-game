@@ -4613,3 +4613,41 @@ On wave 1, roll recomputed **relative to the water** spans **23.53°** against *
 ### 7. And four more defects in the merged readout, found by the same review
 
 Three **carry false positives** in the just-merged classifier — **missing coverage** (1 valid sample of 18, carry +0.03), **floating roundoff** (18 constant samples at 0.27 earning it on **+5.55e-17**), and ⭐ **a shrinking denominator** (constant 0.375 m above the trough while the wave falls 1.50 → 1.23 m, so the FRACTION rises while the board never climbs) — plus **`RideTracker.ts:125` consuming a report id before the `!riding` return at `:126`, which drops exactly the sub-second stands the owner ruled must be logged.** All four are being fixed with failing tests first, and **the owner's "any climb counts" ruling is NOT to be raised while fixing them.**
+
+---
+
+## 2026-11-19 (late night) — ⛔⭐ **STEP 3.5j `?swing=mass`: THE HIP'S WEIGHT WAS DELIVERED IN FULL AND THE RIDE GOT SHORTER. Refuted by presence, not absence.**
+
+PR #444 on `claude/ride-everything`, opt-in, default byte-identical. Canyon B Medium **seed 2**, the owner's address through the game's own switch parsing, **steer only**, `STAND_HOLD=4`, 9 wave×script cells, 2 220 standing frames. Controls: `seaDiffs` empty · `ships` arm `foldA` **0 on all 1 143** frames with `|comX| ≤ 0.00077 m` · the committed falls and the 4.53° of trunk travel reproduced **to the digit**.
+
+### 1. ⛔ The headline
+
+**Wave 1: the hip is at 0.00° for the first 0.6 s of a ride that ends at 0.700 s**, reaching **−4.53° / +3.13°** in the same 0.1 s band it falls in — **1.24 cm of leverage against a 0.130 m sole (9.5 %)**. **Both arms fall at 0.700 / 0.717 s, identical to two decimals.**
+
+> ⭐⭐ **And it is stronger than "absent". Where the hip DOES reach its range the capability arrives in full and the exit gets WORSE:** wave 2 `cueL` holds a **settled** lateral CoM of **−0.14625 m = 1.12× the sole half-width** through the last 0.2 s — **exactly the sustained weight shift the owner's ruling named** — and falls **3.700 → 3.183 s**; `cueR` at 0.97× of the sole goes **3.133 → 2.600 s**. **0 of 9 survive in either arm.**
+
+**Not a gentler turn either:** the bank peak **rises on 5 of 9 cells, by up to 28°** (wave 2 `cueR` 40.36 → **69.00°**, deck roll 38.90 → 78.66°). ⚠️ **But it costs the climb on the one cell that had one** — wave 2 `cueL` 0.711 → **0.916** of the face shipped against 0.711 → **0.660** with the switch, while keeping far more speed (1.30 → **3.49** m/s).
+
+### 2. ⭐⭐ THE TIMING'S CAUSE, LOCATED: a dead band, not a gain
+
+`humanSwingStep` is driven by `−SWING_SERIES·(wanted − clamp(lean, ±HIP_SHARE·ANKLE_REST_RANGE))`. **With `HIP_SHARE` 0.8 and `ANKLE_REST_RANGE` 0.25 rad the hip is asked for NOTHING until the ankle's command passes 0.2 rad = 11.46°** — on wave 1 about **0.07 s before the fall** — against a rotor needing **0.145–0.187 s** to reach 20°.
+
+> ⭐ **The window from the steer to the fall is 0.400 s — wide enough, if the demand arrived with the STEER instead of with the ankle's saturation.** And this is why the `HIP_CAPTURE_GAIN` sweep **500 → 8 000 fell 12 of 12 at every value: the hip was never weak, it was never ASKED.**
+
+**The new question: what makes the hip swing EARLY — a control-ALLOCATION question** (how one lean demand splits between two joints whose torques are both already paired). No new instrument needed; its own switch and A/B. ⛔ **Not by prescribing the motion.**
+
+### 3. ⚠️ SIX CORRECTIONS TO MY BRIEF — four of which I had told the owner
+
+1. ⛔ **The design I briefed would have made the hip WEAKER.** `burst = clamp(−SWING_SERIES·overflow, ±200)` is **angle-independent**, so **the shipped burst already IS a spring about a rest of `overflow`, evaluated at ψ = 0 and never re-evaluated.** Adding the angle gives `−SWING_SERIES·(overflow − ψ)`: **−200 → −100 → 0 N·m** with an equilibrium at **26.6°** where the shipped drive runs to the **68.75°** range. **Strictly less torque at every angle** — and the measurement closes it from the other side: 68.75° and 1.12 sole-widths were **already not enough**.
+2. ⚠️ **`across ≈ 1 − |τ_ankle + τ_swing|/soleBound()` is NOT what `project` computes.** Shipped `freeX = local.x − height·j.x/j.y`, **no torque term** (`:5591`); the rotor's moment enters only under `?bodyBank=hip`, **which the owner's address does not carry.**
+3. ⚠️ **"The CoM reaches only 0.173 m over 24 runs" was the wrong quantity** — the shipped rider's lateral posture offset is **0.000 m by construction** (`|comX| ≤ 0.00077 m` over 1 143 frames with the rotor demonstrably turning).
+4. ⚠️ **Two thresholds merged:** the hip's dead band is `HIP_SHARE × ANKLE_REST_RANGE` = **11.46°**; the **ankle's own clamp** is `ANKLE_REST_RANGE` = **14.32°**.
+5. ⚠️ **"Waves 2 and 11 HOLD" is a 3 s statement.** At `STAND_HOLD=4`, wave 2 `cueL` falls at **3.700 s** and `cueR` at **3.133 s**. The file's own warning about `STAND_HOLD` applies to my own sentence.
+6. ⚠️ **"The hip is already the authority at the fall"** — **it is the only thing still moving**, which is not authority. 1.24 cm.
+
+### 4. ⭐ THE QUESTION THAT NOW GATES EVERYTHING
+
+**Why did a delivered, settled lateral weight shift of 1.12 sole-widths make the exit WORSE?** Until that is answered, the allocation question is not worth building: **if a lateral weight shift is harmful, the hip's timing does not matter.** A lead worth checking rather than assuming — `freeX` is `local.x − height·j.x/j.y`, so **moving the mass laterally moves `local.x` and pushes the required centre of pressure straight out**, while a real surfer's lean is held by the water's lateral force on a banked rail. ⚠️ **Do not treat that as the answer; it is the first thing to test.**
+
+### 5. Not measured, and the owner sees one of them first
+**Seed 1 and every Compress arm** (Compress is measured protective and has rescued a wave) · ⚠️ **the DRAWING: `swung`'s 0.35 share stands down so the drawn lateral lean goes 0.35ψ → 1.0ψ with the fold reaching 68.75°, and nobody opened a browser** · `?trunk=mass` + `?swing=mass` together (the folds do not commute) · `src/wave` was still running at hand-back, its whole diff there being one forwarding line and one typed field.
