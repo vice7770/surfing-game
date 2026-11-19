@@ -377,8 +377,11 @@ else on the brief's list is that speed reported by another instrument.**
   0.234** by the frame the rider separated. The reviewer's warning is confirmed from the data as well as the source:
   **a filtered minimum of three headrooms cannot name the first failing constraint, and here it does not even track
   the fall.**
-* **The pinning trap reproduces**, with a bigger factor than before: `limitTime.tip > 0` is **97.6 %** of those 2 123
-  frames and `limit === 'tip'` is **21.3 %** — a factor of **4.6**. Say which you mean.
+* **The pinning trap reproduces, with a much bigger factor than the one warned about.** `limitTime.tip > 0` (the
+  published quantity, the step's decaying memory) against `limit === 'tip'` (one substep of 16): **97.6 % against
+  21.3 %** over seed 1's 2 123 standing frames, a factor of **4.6**, and **100.0 % against 11.0 %** over seed 2's
+  3 744, a factor of **9.1**. The earlier round's warning was "about a third"; on a take-off it is a quarter to a
+  ninth. **Say which you mean.**
 
 ## 5. ⭐ The refusal against the fall: one flag over two opposite conditions
 
