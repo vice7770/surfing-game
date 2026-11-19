@@ -4432,3 +4432,36 @@ This afternoon I floated that the board's unloading (load 1.280 → 0.650 → 0.
 * ⭐ **The thing to fix is what a full steer asks of the lateral contact in its first frame.** It is a cliff, not an erosion: `across` goes 0.9418 → −0.0408 between two consecutive 0.1 s samples, and `grip` only follows afterwards.
 * ⛔ **The Steam Controller Compress bug is NOT the cause of the owner's falls**, and if anything his pinned-to-full Compress was propping him up. **The fix is still right** (he cannot modulate an input that measurably helps him), but it must not be sold as a fix for the fall.
 * ⚠️ **Population: one wave, two runs per arm, one sea.** The structure is what carries this — a 2×2 with a bit-identical control arm — not the n. **The same split on the two waves whose turns HOLD (2 and 11) is the test that would break it**, and it needs no new instrument.
+
+---
+
+## 2026-11-19 (night) — ⭐ **`?askCap=4.5` IS INERT WITH THE STICK AT ZERO *AND* WITH A FULL STEER. The owner's report is confirmed.**
+
+Two runs on the committed `four-numbers.ts` probe (seed 2, 4 periods, the owner's address, `ARMS=ships,cap`).
+
+### 1. ✅ The pre-registered test passes, and precisely
+
+**Stick at zero (`SCRIPTS=cue`): 83 520 values compared over 928 paired frames, 80 differ — and all 80 are in the two columns that ARE the lean cap** (`cap`, `capDeg`: 40 frames where shipped reads 0 and the arm reads up to **19.052°**). **Every other column is bit-identical**, and `leanAsk` is **0 in every frame of both arms**. A bound on a request of zero does nothing. The switch is parsed (419 distinct cap values against 380), so this is inertness, not a dead flag.
+
+### 2. ⭐ And it stays inert WITH a full steer — which is the owner's actual gameplay
+
+`TURN_COMPRESS=0`, `SCRIPTS=cue,cueL,cueR`, 9 wave×script cells:
+
+| | ships | `askCap=4.5` |
+| --- | --- | --- |
+| wave 1 `cue` / `cueL` / `cueR` | SURVIVED / **0.7000** / **0.7167** | SURVIVED / **0.7000** / **0.7167** — identical |
+| wave 2 all three | SURVIVED ×3 | SURVIVED ×3 |
+| wave 5 `cue` / `cueL` | 0.9500 / 0.7667 | 0.9500 / 0.7667 |
+| wave 5 `cueR` | 1.1500 | ⚠️ **0.7833 — WORSE** |
+
+> **8 of 9 cells identical; the one that moved got worse.** That **confirms the owner's own report** — *"bodyBank=hip&askCap=4.5 does nothing it seems… for the gameplay im testing which is start the ride and turn"* — and it agrees with #429, whose `all3cap` arm produced the earliest fall measured (0.42 s).
+
+### 3. ⭐ And the reason: the switch does not touch the cap that is biting
+
+**The crossing where `|ask|` passes `cap` is at `t+0.600` in BOTH directions and BOTH arms**, and the cap while asking runs **18.34–41.42°, identical in both arms to two decimals.**
+
+⚠️ **And the formula I was handed for the cap does not match it.** `min(MAX_BANK, atan(v²/gR))` at `R = TURN_RADIUS = 4.5 m` and the measured 7.04–8.85 m/s predicts **48.28–60.57°** against a measured 18.34–41.42°, over-predicting by ~1.5×. **So the binding term here is neither `askCap` nor that radius expression, and I have not identified it.** That is the open question this run creates.
+
+### 4. ⚠️ And I nearly published a wrong claim from my own analysis
+
+My first crossing detector tested `ask/cap >= 1` **unsigned**, so for `cueR` — which steers the other way and carries a NEGATIVE ask — it reported `peak ask 0.00°` and **"crossing NEVER"**. With `|ask|` it crosses at `t+0.600` like the other direction. **Same error family as the rest of this file: a one-signed test on a two-signed quantity, caught only because the "never" looked wrong beside a fall.** Related to the `Math.sign(0) || 1` and `x >= NaN` entries.
