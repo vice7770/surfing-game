@@ -4105,3 +4105,48 @@ Three attempts, three refusals by the stance-span gate: **0.57 L, 0.18–0.22 L,
 - ✅ Session-wide hash guard at scale: **720 asks, 308 distinct pictures, zero stale.** One unbroken shot proved by 9×16 block correlation (306 pairs, median r 0.9989, min 0.9978). **Two-`<video>` trap fired on install, fourth clip running; end-of-file non-decode reproduced, third clip.**
 
 **Other rows:** **≈4.5 of 12.77 s driving folded through broken water — the engine's unnamed state, THIRD clip, and this one opens AND closes in it.** Trunk 5°–61° over 5 gridded frames, **plain median 43°, with the MOST UPRIGHT moment being trim at speed.** "Arms up is a turn signature" on a **seventh** rider with a clean negative control. ⭐ **Second garment in 24 clips to satisfy both halves of the clothing clause — and rows 2, 3, 10 and 14 refuse anyway. Clip 20's headline reproduced on a second rider and break.**
+
+---
+
+## 2026-11-19 — VIDEO 25 (PR #434), THE LAST IN THE QUEUE: THE ARMS RULE IS NOW COMPLETELY DEAD
+
+### ⭐⭐ The control clip 20 could not run
+
+**A board leaves a standing rider between 6.634 and 7.084 s and HIS BODY DOES NOTHING** — trunk **30–32° before and after**, the one readable hand at **−11 %, −10 %, +2 %** of crown-to-sole and **never above the shoulder line**, across **40 consecutive native 1/60 frames.**
+
+> **"Board gone ⇒ arms up and tall" is dead. Both halves of clip 19's rule have now been refuted — the "hands down" half by clip 21, this half by clip 25.** ⚠️ **The board never passes vertical here, so clip 19's full conjunction (past vertical AND leaving) stays untested, and the round says so.**
+
+### ⭐ And a SIXTH event shape the category list does not contain
+
+**"The board leaves him and he keeps standing."** Not a recovery, not a trick, not "swallowed". **Upright ≥0.95 s after separation**, then engulfed at ~7.6, file ends on whitewater — **outcome not shown.** ⛔ **And clip 24's repetition discriminator could not be tested: a separation has nothing to repeat.**
+
+### ⛔ No take-off — and the last hope the queue was carrying is closed
+
+**Twenty-five clips, zero**, now for a **fifth** cause. ⭐ **And this is a crowded Malibu wave with three to four surfers riding it at once — so three or four take-offs happened seconds before t = 0, and NOT ONE IS IN THE FILE.** 24 tiles at 0.0667 s over the busiest passage: **every person already upright.**
+
+> **A crowded wave is not a substitute for footage that starts earlier.**
+
+### ⭐⭐ THE FEET: the first read to meet clip 22's requirement — and it lands BELOW the band
+
+**front ÷ rear from the nose = 0.509 and 0.517, two frames 2.08 s apart**, the nose identified **two agreeing ways** (taper; direction of travel), with an internal check of **stance ÷ (nose→rear) = 0.47 against clip 17's predicted 0.46.** **It sits below the published 0.55–0.60 — a tension beside clip 20's ≤0.44.**
+
+⭐⭐ **And the stance-span gate refuses on the HIGH side with the numerator PROVEN SOUND:** stance **200 / 184 / 198 / 181 src px** across four independent crops at two times (plain median 191, ±5 %) on **40–65 px feet**, rider 330–395 px; board ≥457 / ≥302 px ⇒ **≤0.44 L and ≤0.66 L.**
+
+> **Clip 24 isolated the fault to the LANDMARK. This isolates it to the BOARD'S TAIL. Both failure modes are now demonstrated separately with the other side controlled — and "the gate refused" has been reported as ONE finding when it is TWO.** ⭐ **A high-side failure does not disqualify front ÷ rear at all, because that ratio never uses a board length.** **Fourth caution on 0.55–0.60.**
+
+### ⚠️⚠️ A CORPUS WARNING THAT APPLIES TO THE WHOLE SERIES
+
+**Naming rider, film and channel as clip 23 asked reveals that FOUR of the last NINE clips come from ONE poster (`@hunterjoness`), and at least two from one swell.**
+
+> **Several standing refusals — lens elevation, board bearing, no horizon — are properties of a CAMERA. A corpus concentrated in one filmer cannot tell a property of surfing from a property of his tripod.**
+
+### Four more refutations
+
+- ☠️ **Clip 24's screenshot cure FAILED here.** "±1 px resize as the FIRST batch item, 12 of 12" **does not survive a 15 s job between the resize and the shot.** ⭐ **The invariant is ADJACENCY: a PAIR of ±1 px resizes IMMEDIATELY before the screenshot worked 5 of 5.** **Nothing was lost, because the per-frame printed source grid is the rule that actually holds.**
+- ⭐ **Sky licenses nothing.** A large sky, a clean full-width horizon at source y 993 ± 8, **and the highest lens measured yet — ~1.9 rider-heights against clip 23's 1.45.** **Clip 24's no-sky sign is SUFFICIENT, not necessary, and the converse is wrong by two rider-heights.**
+- ⚠️ **"3 of 5 frames give one hand" was optimistic — here it is 5 of 5**, on riders **twice** clip 24's size. **The blocker is a black wetsuit against dark water, not pixels.**
+- ⚠️ **The trunk ordering runs AGAINST clip 24**: broken-water frames are the **most upright** (30–32°) and open-face-at-speed the **most folded** (44–50°). **Reported as confounded across three riders rather than as a refutation — so clip 24's within-rider ordering must not be generalised yet.**
+
+**Method:** true **60.000 fps** (second in the series); **546 native asks, 545 distinct hashes, zero stale**, the one adjacent duplicate being the end-of-file non-decode (**fourth clip**); **cleared of a duplication ramp** (second clip); one unbroken shot proved by 545 consecutive block correlations, median r 0.9994, min 0.994 — ⭐ **with a PUBLISHED NEGATIVE CONTROL (known-different pairs 0.27–0.81), the cheap fix for clip 22's self-certifying aliased tracker.** ⚠️ **It called the clip a montage twice from coarse sheets before the 1/30 s sheet refuted it.** Three rulers built, one discarded with nothing quoted.
+
+**THE OWNER'S VIDEO QUEUE IS NOW EMPTY — twenty-five clips read, zero take-offs.**
