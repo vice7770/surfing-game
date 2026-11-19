@@ -579,6 +579,8 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...armCarrySwitch(),
     // `?trunk=mass`: the new surfer's hip rotor folds the mass model's trunk, head and arms about the pelvis, and the drawn trunk stops being a function of leg depth (step 3.5h, rows 1-2 of the engine target), opt-in, to ride.
     ...trunkSwitch(),
+    // `?swing=mass`: the same parts, the same pelvis, ACROSS — the new surfer's swing rotor's angle moves the body's mass sideways instead of only the drawing, so the hip has the sustained lateral weight shift the owner's "ability to stand" names (step 3.5j), opt-in, to ride.
+    ...swingSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
@@ -1327,6 +1329,43 @@ export function armCarrySwitch(search?: string): { armCarry?: 'on' | 'rest' } {
  */
 export function trunkSwitch(search?: string): { trunk?: 'mass' } {
   return devParam('trunk', search)?.trim().toLowerCase() === 'mass' ? { trunk: 'mass' } : {};
+}
+
+/**
+ * The `?swing=mass` dev switch (`SurfZoneConfig.swing`, step 3.5j): opt-in, **the lateral swing moves the body's
+ * mass**, which is `?trunk=mass` on the other axis.
+ *
+ * **The owner's ruling it answers, 2026-11-19:** *"The turn should not be limited, the turn is good, the fall is a
+ * result of the inbuilt balance that lack the ability to stand."* So nothing here touches the turn — not the ask, not
+ * `LEAN_IN_RATE`, not the lean cap, not the ankle's demand, reach, rest, spring or damper. **No command law changes at
+ * all**, which is also why the ankle's large command reversals (the way a successful turn recovers) cannot be blunted
+ * by it. What changes is a **capability**: the hip gets a lateral weight shift it did not have.
+ *
+ * **The gap it closes, verified at the line.** The swing rotor's angle moved the **drawing** (`AttachedRider.swung`,
+ * at `SWING_DRAWN_CHEST` = 0.35 of it) and exerted a **torque** whose reaction is already paired and booked
+ * (`rhs[7] -= h·swingTorque/length`, `rhs[3..5] -= h·swingTorque·rollAxis`). **Nothing displaced any mass sideways:**
+ * `localCenter` is `postureCenter(this.parts, ...)` taken after the parts receive only `balance + lean + armsGive` and
+ * after `foldTrunk()`, which is the **nose-ward** fold. So the shipped rotor pushed the body one way with no mass
+ * going the other — a torque with half its pair's geometry missing.
+ *
+ * **What it buys, and it is a sustained quantity, not a transient.** The rotor carries 38 of the 73 kg at
+ * `Σ m·Δy = 11.459 kg·m` above the pelvis, so `localCenter.x` moves `−0.15698·sin ψ` m — **0.0785 m at 30°, 0.1463 m
+ * at the 1.2 rad hip range**, against a sole half-width of 0.130 m. `AttachedRider.frame()` subtracts the posture's own
+ * `atan2(cx, hypot(cy, cz))` from the lean line to get the **leg's** bank, so that offset is credited as up to
+ * **11.6°** of lean the leg never has to supply, taken at the **0.711 m** standing centre-of-mass height the take-off
+ * probe measured — **13.5°** once the fold's own 0.100 m drop in that height is counted. Beside the **10.4°** the sole
+ * itself allows, that roughly **doubles** the lean available before the demand leaves the sole, and it lasts exactly as
+ * long as the hip angle is held, because it is geometry. ⚠️ **Arithmetic about the geometry, not a prediction that the
+ * turn survives**: the rotor still has to reach the angle, and its demand still arrives only on the ankle's overflow.
+ *
+ * Both halves of one state, as `?trunk=mass` did: the physics folds the parts, and `swung` stands its 0.35 share down
+ * so the drawn trunk is the physics' own and is drawn at the **full** angle rather than 35 % of it.
+ *
+ * The new surfer (`?rider=new`) standing free only — there is no swing rotor's mass anywhere else, so without it the
+ * switch is ignored. Off by default.
+ */
+export function swingSwitch(search?: string): { swing?: 'mass' } {
+  return devParam('swing', search)?.trim().toLowerCase() === 'mass' ? { swing: 'mass' } : {};
 }
 
 /**

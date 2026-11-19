@@ -182,6 +182,8 @@ export interface RideSessionOptions {
   armCarry?: 'on' | 'rest';
   /** Step 3.5h: the hip rotor folds the mass model's trunk and the rig draws that one trunk (`AttachedRiderOptions.trunk`): 'mass' (the `?trunk=mass` dev switch, with `?rider=new`); by default the mass model never folds. */
   trunk?: 'mass';
+  /** Step 3.5j: the swing rotor folds the mass model's trunk ACROSS, so the hip's own weight shift is real and the rig draws that one trunk (`AttachedRiderOptions.swing`): 'mass' (the `?swing=mass` dev switch, with `?rider=new`); by default the mass model never swings. */
+  swing?: 'mass';
   /**
    * Step 3.5a: the minimum carved radius the COMMANDED lean is bounded by, m (`AttachedRiderOptions.askCap`): '1.5',
    * '2', '4', '4.5' or '9' — the `?askCap` dev switch — so the bound on both reference lines is `atan(v²/(g R_min))` at
@@ -336,6 +338,7 @@ export class RideSession {
       ...(options.deepen ? { deepen: options.deepen } : {}),
       ...(options.armCarry ? { armCarry: options.armCarry } : {}),
       ...(options.trunk ? { trunk: options.trunk } : {}),
+      ...(options.swing ? { swing: options.swing } : {}),
       ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
       ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
