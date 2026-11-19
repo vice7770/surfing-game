@@ -4557,3 +4557,95 @@ The reviewer checked the timing of the entry above before anyone built on it. **
 ### And before anyone tunes stability on this
 
 The reviewer's condition, accepted: **compare measured cross-face tilt, deck-relative roll and the board-versus-rider response** before touching stability. The roll figures above are **world-frame deck roll**; a wobble in the world frame on a tilting face is not the same quantity as a wobble relative to the water's own surface, and today has already produced one 57× unit error and one over-ground/through-water column error in this same file.
+
+---
+
+## 2026-11-19 (night) — ⛔⭐⭐ **THE STALE SENSE IS REFUTED. THE GAINS ARE RE-WEIGHTED BY A 46° TORSO NOBODY ASKED FOR, AND THE ENERGY COMES IN THROUGH THE ANKLE.**
+
+Step 3.5h, on `claude/stale-design`. **Four `cue` waves (1, 2, 6, 11), seed 2, zero steer and zero asked lean — the ask measures `0.0000°` on all 682 control ticks.** Full write-up in `docs/research/new-rider/3.5/weave.md`. ⭐ **`git diff -- src/` is EMPTY**: two ledgers that already ship were switched on, the controller's tick arguments were recorded by a wrapper on the probe's side, and nothing else.
+
+**Reproduction, against the independent earlier `w211.jsonl` run (3 scripts, a rider on every crest, no wrapper, no ledgers): roll peak-to-peak 24.30 / 3.49 / 2.89 / 1.79° and wave 6's fall at 2.300 s — all four identical to the digit.** That is the inertness control for the ledgers, the wrapper and the four-wave selection at once.
+
+### 1. ⛔ The stale-sense / present-design mismatch does NOT produce the command
+
+Matched-observation replay: the same saved tick inputs through every arm, **two bit-identical positive controls** (the real `tick` reproducing the recorded `u0`/`u1`/`raw0` at `0.0e+0`, and this round's rewrite of `tick` equalling it at `0.0e+0`).
+
+| largest ONE-TICK jump in the ankle command, ° | wave 1 | 2 | 6 | 11 |
+| --- | --- | --- | --- | --- |
+| **`ships`** | **15.595** | 1.940 | 4.751 | 1.393 |
+| **`estThen`** — the 0.1 s-old sense propagated by the design in force when it was TAKEN | ⛔ **16.396** | ⛔ 1.958 | 4.613 | ⛔ 1.513 |
+| **`frozTbl`** — both design tables frozen for the whole ride | ⛔ **15.219** | 1.221 | 4.735 | 0.976 |
+| ⭐ **`gain@med` / `gain@hi`** — the GAIN ROW alone frozen | ⭐ **3.141 / 3.392** | 2.408 / 2.075 | 3.398 / 2.955 | 2.179 / 1.819 |
+
+⛔ **`estThen` is LARGER than `ships` on 3 of 4 waves.** Freezing both tables changes nothing. **So no version of the delay chain's schedule, re-timed or removed, produced that command.** ⭐ And the gain arms differ from `ships` in `k` **alone** — measured: the ask is zero, so the reference is not all zeros on **0 of 682** ticks.
+
+⭐⭐ **The reviewer's independent exact decomposition of the same spike agrees on the block**: of the +15.595°, **+14.228° is changing feedback COEFFICIENTS and only +1.374° changing state — 91 % gains — of which +14.217° is the SPEED axis.** **The suspect file was right; the mechanism I handed the bench was the wrong shape, and that was my framing to correct.**
+
+### 2. ⭐⭐⭐ THE DISCRIMINATOR IS THE TORSO, AND IT IS UNCOMMANDED
+
+Inside that +14.228°, the coefficients on **upper-body yaw rate** give **+5.717°** and on **torso twist** **+4.586°**. Read off the controller's own recorded sense vector (`sense[3] = −tb.angle`, `sense[2] = −upper`):
+
+| `cue` wave | torso twist, peak | at the spike tick | upper-body yaw rate, peak | twist REQUESTED |
+| --- | --- | --- | --- | --- |
+| **1** | ⭐ **51.10°** | ⭐ **46.07° at t+1.5333** | ⭐ **218.33 °/s** | **0.0000°** |
+| 2 | 10.86° | 0.09° | 20.99 | **0.0000°** |
+| **6** | **11.16°** | 0.05° | 68.39 | **0.0000°** |
+| 11 | 5.91° | 0.04° | 34.42 | **0.0000°** |
+
+⭐⭐ **Wave 1 winds its torso to 51° with nothing asked of it; the three that settle never pass 11.2°.** ⭐ **This is what answers wave 6**: its schedule crosses nearly the same speed and jitters it **2.1× harder** (1.285 m/s per tick against 0.627), its torso sits at **4.5°**, and its command moves 3.3× less. **The speed change was never the discriminator — the state those coefficients multiply is.** Reproduced two ways: the reviewer's 46.1° and this round's **46.07°**.
+
+> ⭐⭐⭐ **The narrow engine question for the next round: why is the torso winding to 46° at neutral, and why does the 5.0–5.5 m/s row re-weight that yaw state into an ankle reversal?** ⚠️ **This isolates the COMMAND; it is not a cure for the ride** (the replay is open-loop on saved senses throughout).
+
+### 3. ⭐⭐ WHICH FORCES ADD ENERGY TO THE ROLL — and it is not the water
+
+`BoardBody.roll` (step 3.3h), signed, booked on every substep, + lifting the +x rail. **The parts close to the board's own angular impulse at ≤ 3.6e−07 J**, and the sign of every group survives taking the roll rate at the step's start, middle and end.
+
+**On the heeling half-cycle (|roll| rising — where anything driving the weave must push). Watts, mean:**
+
+| `cue` wave | hull | water | foils | ⭐ **rider (residual)** |
+| --- | --- | --- | --- | --- |
+| **1** | **−4.7233** | **−0.4503** | +0.3013 | ⭐ **+4.8525** |
+| 2 | −0.0263 | −0.0164 | −0.0023 | **+0.0450** |
+| 6 | −0.2229 | −0.1345 | −0.0228 | **+0.3797** |
+| 11 | −0.0613 | −0.0214 | −0.0094 | **+0.0921** |
+
+⭐⭐ **On all four waves the hull, the water and the foils OPPOSE the roll on that half-cycle and the rider's coupling is the only source** (13–108× the largest non-rider positive). **Over the whole ride the waves differ in whether the rider gives it back**: wave 1 nets **+23.88 J**, and **wave 2 nets −0.036 J — it damps — and it is the wave that settles to 0.63°.**
+
+⚠️ **CORRECTION TO MY OWN FIRST SUMMARY, from the reviewer: "every water term is negative on every wave" is WRONG.** Over the whole ride **wave 1's foils read +0.1564 J and wave 2's hull +0.0774 J**. The honest description is a **net roll-channel transfer with a residual**; the unanimity belongs to the heeling half-cycle alone.
+
+### 4. ⭐⭐ The channel is the ANKLE, on two independent partitions
+
+The bank ledger's partition of the standing solve's right-hand side is exact (`split`, `closure`, `residual` all **0.00e+00** on all four waves). Joules, on the heading's own roll axis:
+
+| `cue` wave | ⭐ **ankle** | pressure | added mass | roll ledger's `rider`, independently |
+| --- | --- | --- | --- | --- |
+| **1** | ⭐ **+23.7405** | −13.7106 | −8.5441 | ⭐ **+23.8799 — 0.6 % apart** |
+| 2 | **−0.1157** | −0.1884 | −0.0292 | −0.0356 |
+| 6 | **+0.5533** | −0.3424 | −0.4787 | +0.6641 |
+| 11 | **+0.1320** | −0.1175 | −0.0838 | +0.1690 |
+
+**And inside the ankle, split linearly over `setAnkle`'s own three terms** (closure 1.3e−04): on wave 1 **the commanded rest pumps +75.54 J** while **the ankle's own damper removes −63.33 J** and its spring adds +11.54. **The same structure on every wave — the springs pump, the damper absorbs — and on wave 2 the damper wins.** ⚠️ Wave 1's net is a difference of two large opposing numbers; the **net** is corroborated to 0.6 %, the **term magnitudes** are not and moved 18 % when the axis was corrected.
+
+### 5. ⚠️ A BUG OF MINE, CAUGHT BY THE REVIEWER, AND WHAT IT DID AND DID NOT TOUCH
+
+My reader printed a column called `axisDeg` and described it as the separation between the two ledgers' axes. **It was `max|rollEng|` and was not one — the label was wrong.** It never entered any arithmetic, **but a better caption is not the fix**: the reader now computes the ankle's work **twice**, once on the board's +z rate and once on the dk axis's **own** signed rate `d(rollEng)/dt`. **Same sign on all four waves, and within 0.9 % on the wave that carries the finding** (+23.7405 against +23.5314 J). The tables above are the heading-axis ones.
+
+### 6. ⛔ What died on this table, and what stays open
+
+| offered as a discriminator | what it reads (waves 1/2/6/11) | verdict |
+| --- | --- | --- |
+| **course reversals** | **11.0 / 10.5 / 10.0 / 9.5** | ⛔ **none at all.** The owner's *"left and right"* is roll AMPLITUDE, not more reversals |
+| the weave's **frequency** | 1.82 / **3.48** / 2.63 / 2.67 Hz | ⛔ **wave 1 is the SLOWEST** |
+| **wetted area** doubling | span 0.275 / 0.355 / 0.457 / 0.248 m² | ⛔ **wave 1's is the smallest of the three that matter** |
+| through-water speed, and its span | median 5.56 / **7.92** / 5.46 / **7.95**; span 4.33 / 4.28 / **4.93** / 4.85 m/s | ⛔ the flat waves are faster and jump more |
+| the **face's own tilt** | span 2.09 / **2.70** / 0.98 / 0.50° | ⛔ **wave 2's face tilts MORE and stays flat** |
+
+⭐ **And the reviewer's frame precondition is CLOSED in wave 1's favour: its deck rolls 23.53° against the WATER's own surface while the face tilts 2.09°.** The weave is not a world-frame artefact and nothing downstream needs to hedge the frame.
+
+**Still open, and stated as open:** ⛔ **what INITIATES the roll.** The energy says the water is not driving it at the moment measured and the ankle is feeding it — **but a positive return through the feet is consistent with an initial water disturbance**, so this is **amplification, not generation**, and the trigger is unidentified. Also open: the within-step covariance, the yaw axis entirely (the shipped yaw ledger's residual double-counts `waterT` and its own source says it cannot close, so **nothing on that axis is attributed here**), and **the second half of the acceptance condition** — nothing in this round is measured with a steer, so **nothing here says a deliberate rail input would still turn the board.**
+
+⚠️ **And the weave still does not explain the turn failures**: wave 1 weaves 24.30° and **survives** its 3 s window, while wave 6 settles inside 2.89° and **falls at 2.300 s**. A settled roll is not a ride, and the earlier timing result stands — the steer arms died at +0.700/+0.717 s and the wobble does not begin until +1.700.
+
+**Acceptance condition, first half, scored** (roll peak-to-peak in the last 0.5 s): wave 1 **14.10° — FAILS**; waves 2, 6, 11 **0.63 / 1.32 / 0.26° — pass**.
+
+⛔ **No tuning, no gain change, no damper.** `git diff -- src/` is empty.
