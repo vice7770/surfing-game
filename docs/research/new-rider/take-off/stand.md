@@ -174,7 +174,10 @@ beside it.**
   sweep's 8 m/s placement reads **0.077 m**, under `FEET_DEPTH` — the column can and does read clear.
 * **A probe that changes what it measures.** `PROBE=off` builds no per-frame row, which removes every read this probe
   makes of its own accord — the mirror's three `sampleAt` calls, the two foot transforms, the slope read. A `PROBE=on`
-  and a `PROBE=off` run must agree value for value on every outcome column.
+  and a `PROBE=off` run must agree value for value on every outcome column. **Measured** (seed 2, 4 periods, two pop
+  rules, `results/stand-probe-inertness.txt`): **5 waves, 10 runs aligned, 230 outcome values compared, 0 differ** —
+  and that population contains **6 stands of which 4 held the full window**, so it covers both outcomes the document
+  counts, not only falls. The probe's own reads cost **16 % of wall time** (611 s against 525 s) and **no value**.
 * **A metric that cannot fail.** `fellAfterStand` does not exist for a rider that never stands and `heldFull` does not
   exist for one that was not followed; every table carries `stood`, `popped`, `heldFull` and `truncated`.
 

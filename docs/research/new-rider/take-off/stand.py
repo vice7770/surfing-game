@@ -380,8 +380,10 @@ def trace(rows, wave, script):
 
 def control_against(rows, other_path):
     """The probe's own inertness: PROBE=off builds no row, so it makes none of the probe's reads."""
-    other, c2, _ = load(other_path)
-    banner(other, None, other_path)
+    other, c2, d2 = load(other_path)
+    banner(c2, d2, other_path)
+    if c2 is not None and c2.get('probe') == 'on':
+        print('!! the comparison file was ALSO made with PROBE=on: this is not an inertness control')
     keys = ['popped', 'stood', 'pop', 'stand', 'fell', 'cause', 'fellAfterStand', 'popOutcome', 'popRefusal',
             'popDuration', 'landingPeak', 'landingFront', 'riding', 'face', 'frames', 'liveFrames', 'cue', 'rule',
             'popBy', 'standAfterPop', 'heldFull', 'truncated', 'observedAfterStand']

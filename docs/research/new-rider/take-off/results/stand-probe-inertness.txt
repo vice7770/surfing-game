@@ -1,0 +1,12 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/ctrl-on.jsonl
+# grid 400x451 = 180400 cells · seed 2 · medium · 4 periods · arms ships · scripts cue,lift · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 76 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 5 waves, 10 runs, 611 s wall
+
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/ctrl-off.jsonl
+# grid 400x451 = 180400 cells · seed 2 · medium · 4 periods · arms ships · scripts cue,lift · probe off · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 73 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 5 waves, 10 runs, 525 s wall
+
+## 10 runs aligned, 230 values compared, 0 differ
+   A broken result here is a changed fall time or a changed refusal: the probe would be changing what it measures.
