@@ -598,7 +598,7 @@ holding half its friction.** That is the measurement Part 13.4 asked for.
 | **the probe is inert** | the probe's own reads changing the drive | `PROBE=off` removes the two `renderPoint` reads and the one `sampleAt`, and builds no row: **0 rows emitted against the on arm's 1 708.** It still measures the window — 35 numeric values a block, `rawOk` 61 of 61 — and **10 runs aligned, 641 summary values compared, 0 differ.** ⚠️ 641 is a smaller population than #429's 2 538 because this control was run at 4 periods; it is the honest count |
 | **the inertness control is not vacuous** | a control comparing nulls to nulls | the `PROBE=off` arm's own window columns are printed above: `n` 61, load 0.9465 bw, roll peak 1.6793°, CoM 0.77206 m, tolerance 9.5579°. It measured the same thing without the probe's reads |
 | **the zsh integer trap** | `SECONDS=0.5` arriving as `"0"`, every run ending at frame 1 under a tidy summary | the probe has no `SECONDS`; every invocation uses `env` |
-| **the committed probe reproducing the committed results** | the probe file changing after the runs were taken | ⚠️ **it did change**: a sibling commit (`c0e32007`) added `TURN_STEER`/`TURN_COMPRESS` **after** these bundles were built. Both default to 1, so the change is a no-op at the defaults — **proved twice**, not asserted: the rebuilt bundle differs from the one that produced these results in **exactly those two expressions and nothing else**, and re-running the 4-period config from the committed file gives **10 runs, 641 summary values, 0 differ** |
+| **the committed probe reproducing the committed results** | the probe file changing after the runs were taken | ⚠️ **it did change**: a sibling commit (`c0e32007`) added `TURN_STEER`/`TURN_COMPRESS` **after** these bundles were built. Both default to 1, so the change is a no-op at the defaults — **proved twice**, not asserted: the rebuilt bundle differs from the one that produced these results in **exactly those two expressions and nothing else**, and re-running the 4-period config from the committed file gives **10 runs aligned, 1 380 summary values compared, 0 differ** (`results/four-numbers-rebuild-check.txt`) |
 
 ---
 
@@ -670,13 +670,13 @@ that the reason is the **wave**, so the fix is to report the regime per wave —
 
 `docs/research/new-rider/take-off/stand.md` — a **different** probe, also descended from #429's `bench.ts`, aimed at
 the stand's refusal rather than at the four numbers — landed on `claude/the-record` while this round was running.
-It reaches three of this document's findings independently, and that matters more than which came first:
+It reaches four of this document's findings independently, and that matters more than which came first:
 
 | finding | `stand.md` | **this round** | agree? |
 | --- | --- | --- | --- |
 | the published pinned share is not a share | *"the pinning trap reproduces, with a much bigger factor"*: 97.6 % against 21.3 % (seed 1), 100.0 % against 11.0 % (seed 2) | 91.7 % against 21.3 % and 100.0 % against 15.0 %, on first-second windows rather than whole stands | ⭐ **yes, and two different ways.** This round adds the *proof that it is a latch* (0 of 6 717 returns to zero) and that **it flips before the stand, in `landing`, on 36 of 39** |
 | the fall is lateral, and not only lateral | past the feet across in 983 of 2 123 (seed 1) and 780 of 3 744 (seed 2); **along in 2 of 2 123 but 132 of 3 744** | the lateral headroom is the lowest at 29 of 31 falls; **two seed-2 falls escape along instead** (−10.22, −16.45) | ⭐ **yes**, on two instruments and two definitions |
-| `rawMargin` cannot name the failing constraint | confirmed from the data as well as the source: it touches zero twice without a fall on wave 10 | confirmed from the source (`:5393` min of three, `:5050` low-passed) and by recomputing the three separately, checked against it on 17 337 of 17 341 frames | ⭐ **yes** |
+| `rawMargin` cannot name the failing constraint | confirmed from the data as well as the source: it touches zero twice without a fall on wave 10 | confirmed from the source (`:5393` min of three, `:5050` low-passed) and by recomputing the three separately, checked against it on **17 333 of 17 337** frames (2 112 + 3 155 + 12 066 of 2 112 + 3 155 + 12 070) | ⭐ **yes** |
 | the lean cap bounds a request that is zero | §4.1, on 2 123 seed-1 frames | reproduced on both seas: `ask` non-zero in **0 of 452** and **0 of 829** stick-zero frames | ⭐ **yes** — and it **narrows this round's own headline** (§3) |
 
 **Where they differ in emphasis, not in fact:** `stand.md` concludes *"the lever is the board's speed through the water;
@@ -702,6 +702,7 @@ round's measurement that `ask` is 0 on every stick-zero frame. **Still unanswere
 | `results/four-numbers-probe-inertness.txt` | `PROBE=on` against `PROBE=off` |
 | `results/four-numbers-cross-build.txt` | both cross-build checks: 423 and 426 shared values, 0 differ |
 | `results/four-numbers-*-summaries.jsonl` | every run's summary line, which is what every median above is computed from |
+| `results/four-numbers-rebuild-check.txt` | the committed probe re-run and compared to the bundle that produced these results: 1 380 values, 0 differ |
 | `results/four-numbers-*-control.jsonl` | each run's control line: the grid off the solver, the parsed switches, the spin-up |
 
 The per-frame rows (5–9 MB a run) are **not** committed; every figure in this document is reproducible from the
