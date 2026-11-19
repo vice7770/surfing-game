@@ -182,6 +182,96 @@ four as a state — it is the speed each of them reports.
   rider goes down **sideways off the board's narrow way**, never over the nose or the tail. This is the decomposition
   the filtered `rawMargin` could not give.
 
+## 5. ⭐ The refusal against the fall: it predicts nothing, in either direction
+
+### 5.1 #429's own data, re-counted off its own files
+
+`results/seed1-summaries.jsonl` and `results/seed2-summaries.jsonl` on `claude/take-off-bench`, the `ships` arm alone
+(the owner's address with no extra switches), every stand listed:
+
+| | seed 1 | seed 2 |
+| --- | --- | --- |
+| stands | 18 of 36 runs | 21 of 33 |
+| `'feet under water'` | **12** | **3** |
+| `'sinking'` | **0** | **15** |
+| not refused | 6 | 3 |
+| fell inside the 3 s window | 15 | 14 |
+| **carried the full 3 s window** | **0 observed** (3 unobserved) | **7** |
+
+**The two seas refuse for different reasons**, so a fix aimed at wet feet and a fix aimed at a board descending into
+the surface are different fixes. ⚠️ **And a `sinking` verdict says nothing at all about the feet**: `standRefusal`
+returns at `:2789`, before the loop at `:2790` samples a single foot. Those 15 seed-2 stands establish neither wet nor
+dry feet. (Part 3 measures both unconditionally and settles it.)
+
+**Seed 1 has no survivors.** Its three apparently-unfallen stands are all **wave 6**, which stood at 16.0167 s on a
+trial the bench retired at 16 s: `fsN = 0`, `riding = 0.017`, **one frame stepped**. The other unrefused wave, wave 10,
+fell at **0.70 s** — the study's own median. So *"the two stands it does NOT refuse are the only two that stand
+planing, lower, on a steeper face, on half the wetted hull"* describes two **unrefused** stands, and **neither of them
+survives**. The brief's starred premise does not hold.
+
+**Seed 2's real survivors are all refused stands.** Every one of the 7 that carried 3 s is a `'sinking'` stand:
+
+| wave | script | refusal | planing | lean cap (median, rad) | wetted, m² | up the face at the press | face, m | outcome |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | cue | `sinking` | **1** | 0.539 | 0.350 | 0.750 | 1.894 | **held 3 s** |
+| 2 | cue / cueL / cueR | `sinking` | **1** | 0.752 / 0.782 / 0.783 | 0.254–0.257 | 0.722 | 1.669 | **held 3 s** (all three) |
+| 11 | cue / cueL / cueR | `sinking` | **1** | 0.750 / 0.781 / 0.781 | 0.255–0.263 | 0.698 | 1.605 | **held 3 s** (all three) |
+| 6 | cue / cueL / cueR | `sinking` | 1 | 0.609–0.632 | 0.262–0.273 | 0.782 | 1.799 | fell 0.97–2.30 s |
+| 10 | cue / cueL / cueR | `sinking` | 1 | 0.363–0.399 | 0.331–0.349 | 0.779 | 1.939 | fell 0.70–0.93 s |
+| 1 | cueL / cueR | `sinking` | 1 | 0.526–0.538 | 0.330–0.331 | 0.750 | 1.894 | fell 0.72–1.00 s |
+| 5 | cue / cueL / cueR | **none** | **0** | **0.000** | 0.320–0.331 | 0.774 | 1.412 | fell 0.73–1.17 s |
+| 8 | cue / cueL / cueR | `feet under water` | **0** | **0.000** | **0.506–0.507** | 0.875 | 1.131 | fell 0.53–0.55 s |
+
+Read down the table:
+
+* **Planing is necessary and not sufficient.** All 6 non-planing stands fell, inside **0.53–1.17 s**. Of the 15 planing
+  stands, **7 held and 8 fell**.
+* **The refusal is anti-predictive here.** 7 of 15 refused stands held; **0 of 3** unrefused stands did, and those
+  three fell at 0.73–1.17 s, sooner than the median refused stand.
+* ⭐ **So gating the stand on the refusal — which `design.md` §4 plans — would have refused every ride on this sea that
+  lasted.** That is the strongest practical finding in this document, and it is an argument against a change the
+  project has already written down as settled.
+* The ordering that *does* track the outcome is the **lean cap**, which is `atan(v²/(g·R))` gated by the planing latch
+  and therefore a reading of **speed through the water**: cap ≥ 0.75 held **6 of 6**, cap 0.36–0.63 held **1 of 9**,
+  cap 0 held **0 of 6**.
+
+### 5.2 ⭐⭐ And one column separates them better than any of the four: where on the face the press happened
+
+The same two files, both seas, every stand, sorted by `popFraction` — **how far up the face the rider was at the
+frame he pressed.** The independent unit is the **wave** (13 of them across the two seas); the three stands per wave
+are the same paddling diverging only after the stand.
+
+| seed | wave | up the face at the press | stands | **held 3 s** | fell | unobserved |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2 | 11 | **0.698** | 3 | **3** | 0 | 0 |
+| 2 | 2 | **0.722** | 3 | **3** | 0 | 0 |
+| 2 | 1 | **0.750** | 3 | **1** | 2 | 0 |
+| 1 | 6 | 0.755 | 3 | 0 | 0 | **3** |
+| 1 | 10 | 0.772 | 3 | 0 | 3 | 0 |
+| 2 | 5 | 0.774 | 3 | 0 | 3 | 0 |
+| 2 | 10 | 0.779 | 3 | 0 | 3 | 0 |
+| 2 | 6 | 0.782 | 3 | 0 | 3 | 0 |
+| 1 | 8 | 0.824 | 3 | 0 | 3 | 0 |
+| 1 | 11 | 0.839 | 3 | 0 | 3 | 0 |
+| 1 | 7 | 0.841 | 3 | 0 | 3 | 0 |
+| 1 | 12 | 0.854 | 3 | 0 | 3 | 0 |
+| 2 | 8 | 0.875 | 3 | 0 | 3 | 0 |
+
+**Pressed at or below 0.750 up the face: 6 held of 6** (plus wave 1's two stick runs, which fell — the only runs in
+the table where the stick mattered). **Pressed at 0.755 or above: 1 held of 33**, and that one is wave 1 again at
+exactly 0.750. Ten waves, thirty stands, above the threshold: **none held.** No other column in this study — not
+planing, not the wetted hull, not the slope, not the landing peak — separates the two groups without overlap.
+
+**And the cue has no upper bound on it.** `inTakeOffWindow` (`takeOffCue.ts`) asks `frame.faceFraction >= HIGH_ON_FACE`
+with **HIGH_ON_FACE = 0.5 and no ceiling**; the only upper bound in the window is on `aheadOfCrest`. So the game's own
+cue is content to light at **0.875** up the face, and on this evidence a press there is a ride of 0.53 s.
+
+⚠️ **Read the mechanism before reading it as a fix.** The cue's two halves do not become true together: its geometric
+half is satisfied early and its **speed** half (`speedShoreward ≥ 0.8 × crestSpeed`) only once the wave has taken the
+board, by which time the rider has been carried high. Capping the cue's face fraction would therefore not move the
+press down the face — it would mostly stop the cue lighting at all. Part 6 measures what a press **lower** on the face
+actually produces, using the rules that fire there.
+
 ## Appendix: how every number here was made
 
     ./node_modules/.bin/rolldown docs/research/new-rider/take-off/stand.ts -o <s>/raw.mjs --format esm --platform node

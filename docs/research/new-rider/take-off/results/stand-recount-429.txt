@@ -1,0 +1,57 @@
+== seed 1: the `ships` arm, 36 runs, 18 stands
+   the game's verdict: {'None': 6, 'feet under water': 12}
+   fell 15 · carried the window 0 · NEVER OBSERVED (fsN == 0) 3
+
+   wave script  fsN  refusal            outcome      planing1 capMed  wetMed  popFrac  popFace landPk
+      6 hold      0  None               UNOBSERVED          -      -       -    0.755    1.651  1.415
+      6 turnL     0  None               UNOBSERVED          -      -       -    0.755    1.651  1.415
+      6 turnR     0  None               UNOBSERVED          -      -       -    0.755    1.651  1.415
+      7 hold     60  feet under water   fell 1.733 s        -      -   0.355    0.841    1.662  1.370
+      7 turnL    60  feet under water   fell 1.250 s        -      -   0.356    0.841    1.662  1.370
+      7 turnR    60  feet under water   fell 1.250 s        -      -   0.356    0.841    1.662  1.370
+      8 hold     44  feet under water   fell 0.750 s        -      -   0.338    0.824    1.516  1.338
+      8 turnL    45  feet under water   fell 0.767 s        -      -   0.336    0.824    1.516  1.338
+      8 turnR    45  feet under water   fell 0.767 s        -      -   0.336    0.824    1.516  1.338
+     10 hold     41  None               fell 0.700 s        -      -   0.284    0.772    1.547  1.331
+     10 turnL    41  None               fell 0.700 s        -      -   0.300    0.772    1.547  1.331
+     10 turnR    41  None               fell 0.700 s        -      -   0.284    0.772    1.547  1.331
+     11 hold     40  feet under water   fell 0.683 s        -      -   0.531    0.839    1.819  2.165
+     11 turnL    51  feet under water   fell 0.867 s        -      -   0.517    0.839    1.819  2.165
+     11 turnR    51  feet under water   fell 0.867 s        -      -   0.517    0.839    1.819  2.165
+     12 hold     37  feet under water   fell 0.633 s        -      -   0.461    0.854    1.202  1.195
+     12 turnL    41  feet under water   fell 0.700 s        -      -   0.461    0.854    1.202  1.195
+     12 turnR    41  feet under water   fell 0.700 s        -      -   0.461    0.854    1.202  1.195
+
+== seed 2: the `ships` arm, 33 runs, 21 stands
+   the game's verdict: {'sinking': 15, 'None': 3, 'feet under water': 3}
+   fell 14 · carried the window 7 · NEVER OBSERVED (fsN == 0) 0
+
+   wave script  fsN  refusal            outcome      planing1 capMed  wetMed  popFrac  popFace landPk
+      1 cue      60  sinking            HELD 3 s            1  0.539   0.350    0.750    1.894  1.336
+      2 cue      60  sinking            HELD 3 s            1  0.752   0.254    0.722    1.669  1.401
+      2 cueL     60  sinking            HELD 3 s            1  0.782   0.256    0.722    1.669  1.401
+      2 cueR     60  sinking            HELD 3 s            1  0.783   0.257    0.722    1.669  1.401
+     11 cue      59  sinking            HELD 3 s            1  0.750   0.263    0.698    1.605  1.453
+     11 cueL     59  sinking            HELD 3 s            1  0.781   0.257    0.698    1.605  1.453
+     11 cueR     59  sinking            HELD 3 s            1  0.781   0.255    0.698    1.605  1.453
+      1 cueL     42  sinking            fell 0.717 s        1  0.538   0.330    0.750    1.894  1.336
+      1 cueR     59  sinking            fell 1.000 s        1  0.526   0.331    0.750    1.894  1.336
+      5 cue      56  None               fell 0.950 s        0  0.000   0.331    0.774    1.412  1.345
+      5 cueL     43  None               fell 0.733 s        0  0.000   0.331    0.774    1.412  1.345
+      5 cueR     60  None               fell 1.167 s        0  0.000   0.320    0.774    1.412  1.345
+      6 cue      60  sinking            fell 2.300 s        1  0.609   0.273    0.782    1.799  1.559
+      6 cueL     60  sinking            fell 1.183 s        1  0.632   0.262    0.782    1.799  1.559
+      6 cueR     57  sinking            fell 0.967 s        1  0.619   0.263    0.782    1.799  1.559
+      8 cue      32  feet under water   fell 0.550 s        0  0.000   0.506    0.875    1.131  1.196
+      8 cueL     31  feet under water   fell 0.533 s        0  0.000   0.507    0.875    1.131  1.196
+      8 cueR     31  feet under water   fell 0.533 s        0  0.000   0.507    0.875    1.131  1.196
+     10 cue      55  sinking            fell 0.933 s        1  0.363   0.349    0.779    1.939  1.411
+     10 cueL     41  sinking            fell 0.700 s        1  0.399   0.331    0.779    1.939  1.411
+     10 cueR     41  sinking            fell 0.700 s        1  0.399   0.331    0.779    1.939  1.411
+
+   what the stands that carried the window have in common:
+     planing at the stand         held 1.000-1.000   fell 0.000-1.000
+     lean cap, median             held 0.539-0.783   fell 0.000-0.632
+     wetted hull, median m2       held 0.254-0.350   fell 0.262-0.507
+     up the face at the press     held 0.698-0.750   fell 0.750-0.875
+
