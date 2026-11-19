@@ -1,5 +1,8 @@
 # The stand itself: what the refusal costs, why the feet are under water, and what a ride needs to last
 
+*The previous round is `README.md` and `bench.ts` beside this file; this one's probe is `stand.ts`, its reader
+`stand.py`, its pooling `combine.py`, and its re-count of #429's own files `recount429.py`.*
+
 **The round's question**, from PR #429's bench: `standRefusal` returns `'feet under water'` in 12 of 18 stands, the
 rider stands anyway, and he is gone in a median 0.750 s. What does the refusal cost? Why are the feet under water?
 And the starred one: two stands were **not** refused, and they were *planing, lower on a steeper face, on half the
