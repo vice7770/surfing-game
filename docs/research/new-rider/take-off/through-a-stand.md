@@ -1,7 +1,7 @@
 # The four headline numbers, re-measured through a stand
 
 **Measurement only.** Nothing under `src/`. No behaviour, no constant, no switch. One probe
-(`stand.ts`), one reader (`stand-read.py`), two populations measured by the same instrument on the same build.
+(`four-numbers.ts`), one reader (`four-numbers-read.py`), two populations measured by the same instrument on the same build.
 
 PR #429 found why every bench on this track disagrees with the owner, and marked four published numbers conditional:
 
@@ -113,8 +113,8 @@ zero by construction, a third compared a substep against a step, and a fourth wa
 11. **The zsh integer trap.** `SECONDS=0.5 node` arrives as `"0"` through zsh's special variable. This probe has no
     `SECONDS` (its horizons are `STAND_HOLD`, `PERIODS`, `PLACED_FOR`, `TRIAL`) and every invocation uses `env`.
 
-**Every median here is a PLAIN median** — the mean of the two middle values at even length — in `stand.ts` and
-`stand-read.py` alike. Every share carries the count it is a share of.
+**Every median here is a PLAIN median** — the mean of the two middle values at even length — in `four-numbers.ts` and
+`four-numbers-read.py` alike. Every share carries the count it is a share of.
 
 ---
 
@@ -133,8 +133,23 @@ that inverts.**
 | *#429's own figures, same sea* | — | *6 of 18; **18.0 %** of 716; 0.000; 48 of 716* | — |
 
 **On seed 2 the take-off is on the plane for MORE of its first second than the placement is** — 80.6 % against 74.8 % —
-and the rider may ask for a lean of a median 0.53 rad (30.6°) against the placement's 0.62 rad (35.5°). The regime gap
-#429 measured is real on seed 1 and **absent on seed 2.**
+and the lean the rider **may** ask for is a median 0.53 rad (30.6°) against the placement's 0.62 rad (35.5°). The
+regime gap #429 measured is real on seed 1 and **absent on seed 2.**
+
+> ⚠️⚠️ **And a parallel round on this branch has already narrowed what that buys, correctly.** `stand.md` §4.1 found
+> that the cap bounds `wantRef`/`wantOwn`, which are `steer × railRange` plus the hand — **so with the stick at zero
+> the request is zero whatever the cap is**, and the latch has no consequence for the rider's lean. **That reproduces
+> exactly on both of this round's seas**, independently measured: on the `cue` script, `leanProbe.ask` is non-zero in
+> **0 of 452** seed-1 and **0 of 829** seed-2 standing frames, while `leanProbe.cap` is non-zero in **224** and **739**
+> of those same frames. With the stick over it does bind — `ask` non-zero in 141 of 403, 109 of 361, 359 of 595 and
+> 389 of 625 on the four turn-script populations.
+>
+> **So the two rounds correct two different links in #429's chain, and both are needed.** #429 argued *off the plane →
+> cap 0 → the lean a rider may ask for is exactly 0*. This round shows the **regime** premise is a fact about one sea;
+> the parallel round shows the **consequence** does not follow even where the premise holds, because a stick-zero
+> rider asks for nothing regardless. What the regime still governs is the **board** — its speed through the water, its
+> wetted area, and whether the deck is clear — which is `stand.md`'s own conclusion, and this round's §4.3 and §7
+> agree with it from the fall's side.
 
 ### ⚠️ And on seed 1 it was overstated, by its own censoring
 
@@ -578,6 +593,7 @@ holding half its friction.** That is the measurement Part 13.4 asked for.
 | **the probe is inert** | the probe's own reads changing the drive | `PROBE=off` removes the two `renderPoint` reads and the one `sampleAt`, and builds no row: **0 rows emitted against the on arm's 1 708.** It still measures the window — 35 numeric values a block, `rawOk` 61 of 61 — and **10 runs aligned, 641 summary values compared, 0 differ.** ⚠️ 641 is a smaller population than #429's 2 538 because this control was run at 4 periods; it is the honest count |
 | **the inertness control is not vacuous** | a control comparing nulls to nulls | the `PROBE=off` arm's own window columns are printed above: `n` 61, load 0.9465 bw, roll peak 1.6793°, CoM 0.77206 m, tolerance 9.5579°. It measured the same thing without the probe's reads |
 | **the zsh integer trap** | `SECONDS=0.5` arriving as `"0"`, every run ending at frame 1 under a tidy summary | the probe has no `SECONDS`; every invocation uses `env` |
+| **the committed probe reproducing the committed results** | the probe file changing after the runs were taken | ⚠️ **it did change**: a sibling commit (`c0e32007`) added `TURN_STEER`/`TURN_COMPRESS` **after** these bundles were built. Both default to 1, so the change is a no-op at the defaults — **proved twice**, not asserted: the rebuilt bundle differs from the one that produced these results in **exactly those two expressions and nothing else**, and re-running the 4-period config from the committed file gives **10 runs, 641 summary values, 0 differ** |
 
 ---
 
@@ -632,9 +648,36 @@ that the reason is the **wave**, so the fix is to report the regime per wave —
   and the climb stay pending** — he cannot judge a turn while he falls in under a second, and nothing here is offered
   as a verdict on turning.
 * **The turn scripts confound the steer with Compress** (`steer: ±1` and `compress: 1` together, against a neutral
-  script that sends neither). `cueL` against `cueR` is the only clean contrast in this data.
+  script that sends neither). `cueL` against `cueR` is the only clean contrast in **this** data. ⭐ **The probe can now
+  separate them** — a sibling change on this branch (`c0e32007`) added `TURN_STEER` and `TURN_COMPRESS`, both
+  defaulting to 1 — but **no run in this document uses them**, so the confound stands over every figure here and the
+  separation is the next round's, not this one's.
 * **No `?askCap` arm was run.** #429 found it is the one switch that gives an off-plane rider a lean to ask for; on a
   sea that is already planing for 80 % of the window it should do much less, and that is an untested prediction.
+
+---
+
+## 12b. ⭐ What a parallel round on this branch got to first, and where the two agree
+
+`docs/research/new-rider/take-off/stand.md` — a **different** probe, also descended from #429's `bench.ts`, aimed at
+the stand's refusal rather than at the four numbers — landed on `claude/the-record` while this round was running.
+It reaches three of this document's findings independently, and that matters more than which came first:
+
+| finding | `stand.md` | **this round** | agree? |
+| --- | --- | --- | --- |
+| the published pinned share is not a share | *"the pinning trap reproduces, with a much bigger factor"*: 97.6 % against 21.3 % (seed 1), 100.0 % against 11.0 % (seed 2) | 91.7 % against 21.3 % and 100.0 % against 15.0 %, on first-second windows rather than whole stands | ⭐ **yes, and two different ways.** This round adds the *proof that it is a latch* (0 of 6 717 returns to zero) and that **it flips before the stand, in `landing`, on 36 of 39** |
+| the fall is lateral, and not only lateral | past the feet across in 983 of 2 123 (seed 1) and 780 of 3 744 (seed 2); **along in 2 of 2 123 but 132 of 3 744** | the lateral headroom is the lowest at 29 of 31 falls; **two seed-2 falls escape along instead** (−10.22, −16.45) | ⭐ **yes**, on two instruments and two definitions |
+| `rawMargin` cannot name the failing constraint | confirmed from the data as well as the source: it touches zero twice without a fall on wave 10 | confirmed from the source (`:5393` min of three, `:5050` low-passed) and by recomputing the three separately, checked against it on 17 337 of 17 341 frames | ⭐ **yes** |
+| the lean cap bounds a request that is zero | §4.1, on 2 123 seed-1 frames | reproduced on both seas: `ask` non-zero in **0 of 452** and **0 of 829** stick-zero frames | ⭐ **yes** — and it **narrows this round's own headline** (§3) |
+
+**Where they differ in emphasis, not in fact:** `stand.md` concludes *"the lever is the board's speed through the water;
+everything else on the brief's list is that speed reported by another instrument"* — and this round's §3 measures
+exactly that speed at the stand (**4.19–4.64 m/s on five of seven seed-2 cue waves against 2.36 and 3.73 on the other
+two**) and finds it is what sets the regime wave by wave. **The two documents are the same mechanism from two sides.**
+
+⚠️ **One thing `stand.md` pre-registered and did not run, which this round did not run either:** `?askCap=4.5` with
+the stick at zero must be bit-identical to the shipped address. It follows from §4.1's own arithmetic and from this
+round's measurement that `ask` is 0 on every stick-zero frame. **Still unanswered, and cheap.**
 
 ---
 
@@ -642,30 +685,30 @@ that the reason is the **wave**, so the fix is to report the regime per wave —
 
 | file | what it is |
 | --- | --- |
-| `stand.ts` | the probe. `MODE=takeoff` is #429's drive carried over; `MODE=placed` is `3.5/bank.ts`'s `MODE=sea` rig carried over. One row schema for both. Run as its header says |
-| `stand-read.py` | the reader: the four comparisons, the latch test, the three headrooms, `--pair <wave>` for one wave's scripts side by side, `--control` for the inertness pair |
-| `cross-read.py` | this build's take-off summaries against **#429's own committed ones**, value by value, with its earlier script names aliased |
-| `results/takeoff-seed1.txt`, `results/takeoff-seed2.txt` | the two take-off populations in full, seed 2 with the wave-1 trace |
-| `results/placed-seed1.txt` | the placement — **the positive control**, and the source of every "placed figure" above |
-| `results/probe-inertness.txt` | `PROBE=on` against `PROBE=off` |
-| `results/cross-build.txt` | both cross-build checks: 423 and 426 shared values, 0 differ |
-| `results/sr-*-summaries.jsonl` | every run's summary line, which is what every median above is computed from |
-| `results/sr-*-control.jsonl` | each run's control line: the grid off the solver, the parsed switches, the spin-up |
+| `four-numbers.ts` | the probe. `MODE=takeoff` is #429's drive carried over; `MODE=placed` is `3.5/bank.ts`'s `MODE=sea` rig carried over. One row schema for both. Run as its header says |
+| `four-numbers-read.py` | the reader: the four comparisons, the latch test, the three headrooms, `--pair <wave>` for one wave's scripts side by side, `--control` for the inertness pair |
+| `four-numbers-cross.py` | this build's take-off summaries against **#429's own committed ones**, value by value, with its earlier script names aliased |
+| `results/four-numbers-takeoff-seed1.txt`, `results/four-numbers-takeoff-seed2.txt` | the two take-off populations in full, seed 2 with the wave-1 trace |
+| `results/four-numbers-placed-seed1.txt` | the placement — **the positive control**, and the source of every "placed figure" above |
+| `results/four-numbers-probe-inertness.txt` | `PROBE=on` against `PROBE=off` |
+| `results/four-numbers-cross-build.txt` | both cross-build checks: 423 and 426 shared values, 0 differ |
+| `results/four-numbers-*-summaries.jsonl` | every run's summary line, which is what every median above is computed from |
+| `results/four-numbers-*-control.jsonl` | each run's control line: the grid off the solver, the parsed switches, the spin-up |
 
 The per-frame rows (5–9 MB a run) are **not** committed; every figure in this document is reproducible from the
 summaries plus the probe, and the per-frame traces are reproducible by re-running the header's own invocations.
 
 ### Reproducing it
 
-    ./node_modules/.bin/rolldown docs/research/new-rider/take-off/stand.ts -o <s>/raw.mjs --format esm --platform node
-    printf "globalThis.location = { search: '' };\n" > <s>/stand.mjs   # an OBJECT, never a string
-    cat <s>/raw.mjs >> <s>/stand.mjs
-    cd <s> && env MODE=takeoff SEED=1 PERIODS=12 ARMS=ships SCRIPTS=cue,cueL,cueR OUT=<s>/t1.jsonl node --max-old-space-size=3200 stand.mjs
-    cd <s> && env MODE=takeoff SEED=2 PERIODS=12 ARMS=ships SCRIPTS=cue,cueL,cueR OUT=<s>/t2.jsonl node --max-old-space-size=3200 stand.mjs
-    cd <s> && env MODE=placed  SEED=1            ARMS=ships OUT=<s>/p1.jsonl node --max-old-space-size=3200 stand.mjs
-    cd <s> && env MODE=takeoff SEED=2 PERIODS=4 ARMS=ships SCRIPTS=cue,cueL PROBE=off OUT=<s>/off.jsonl node stand.mjs
-    python3 -I docs/research/new-rider/take-off/stand-read.py <s>/t2.jsonl --labels takeoff-seed2 --pair 1
-    python3 -I docs/research/new-rider/take-off/cross-read.py <s>/t1.jsonl <429's seed1-summaries.jsonl>
+    ./node_modules/.bin/rolldown docs/research/new-rider/take-off/four-numbers.ts -o <s>/raw.mjs --format esm --platform node
+    printf "globalThis.location = { search: '' };\n" > <s>/four-numbers.mjs   # an OBJECT, never a string
+    cat <s>/raw.mjs >> <s>/four-numbers.mjs
+    cd <s> && env MODE=takeoff SEED=1 PERIODS=12 ARMS=ships SCRIPTS=cue,cueL,cueR OUT=<s>/t1.jsonl node --max-old-space-size=3200 four-numbers.mjs
+    cd <s> && env MODE=takeoff SEED=2 PERIODS=12 ARMS=ships SCRIPTS=cue,cueL,cueR OUT=<s>/t2.jsonl node --max-old-space-size=3200 four-numbers.mjs
+    cd <s> && env MODE=placed  SEED=1            ARMS=ships OUT=<s>/p1.jsonl node --max-old-space-size=3200 four-numbers.mjs
+    cd <s> && env MODE=takeoff SEED=2 PERIODS=4 ARMS=ships SCRIPTS=cue,cueL PROBE=off OUT=<s>/off.jsonl node four-numbers.mjs
+    python3 -I docs/research/new-rider/take-off/four-numbers-read.py <s>/t2.jsonl --labels takeoff-seed2 --pair 1
+    python3 -I docs/research/new-rider/take-off/four-numbers-cross.py <s>/t1.jsonl <429's seed1-summaries.jsonl>
 
 Wall: 1 202 s (seed 2), 2 263 s (seed 1), 217 s (the placement), under CPU contention from another session's job on the
 same machine. Spin-up alone is 56–96 s of that each.

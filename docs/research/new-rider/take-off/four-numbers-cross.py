@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Compares `stand.ts`'s take-off summaries against **#429's own committed ones**, value by value.
+"""Compares `four-numbers.ts`'s take-off summaries against **#429's own committed ones**, value by value.
 
-    python3 -I docs/research/new-rider/take-off/cross-read.py <mine.jsonl> <429-summaries.jsonl>
+    python3 -I docs/research/new-rider/take-off/four-numbers-cross.py <mine.jsonl> <429-summaries.jsonl>
 
 **Why this exists.** #429's numbers were produced on `claude/ride-all-three` (which carries `?trunk=mass`,
 `?bodyBank=hip` and `?armCarry=on`); this round runs on `claude/the-record`, whose `src/` is `main`'s. The shipped

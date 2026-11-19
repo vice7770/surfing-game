@@ -27,12 +27,12 @@
  * ⭐ **MEASUREMENT ONLY.** Nothing under `src/`. No behaviour, no constant, no switch. Every read of a private field
  * goes through one accessor that only gets.
  *
- *     ./node_modules/.bin/rolldown docs/research/new-rider/take-off/stand.ts -o <s>/raw.mjs --format esm --platform node
- *     printf "globalThis.location = { search: '' };\n" > <s>/stand.mjs   # an OBJECT, never a string
- *     cat <s>/raw.mjs >> <s>/stand.mjs
- *     cd <s> && env MODE=takeoff SEED=1 PERIODS=12 OUT=<s>/t1.jsonl node --max-old-space-size=3200 stand.mjs
- *     cd <s> && env MODE=placed  SEED=1            OUT=<s>/p1.jsonl node --max-old-space-size=3200 stand.mjs
- *     python3 -I docs/research/new-rider/take-off/stand-read.py <s>/t1.jsonl --label takeoff
+ *     ./node_modules/.bin/rolldown docs/research/new-rider/take-off/four-numbers.ts -o <s>/raw.mjs --format esm --platform node
+ *     printf "globalThis.location = { search: '' };\n" > <s>/four-numbers.mjs   # an OBJECT, never a string
+ *     cat <s>/raw.mjs >> <s>/four-numbers.mjs
+ *     cd <s> && env MODE=takeoff SEED=1 PERIODS=12 OUT=<s>/t1.jsonl node --max-old-space-size=3200 four-numbers.mjs
+ *     cd <s> && env MODE=placed  SEED=1            OUT=<s>/p1.jsonl node --max-old-space-size=3200 four-numbers.mjs
+ *     python3 -I docs/research/new-rider/take-off/four-numbers-read.py <s>/t1.jsonl --label takeoff
  *
  * ## ☠️ The traps this file is built around
  *

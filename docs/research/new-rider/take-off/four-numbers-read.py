@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Reads `stand.ts`'s dumps and prints the four comparisons, each with its population and its frame.
+"""Reads `four-numbers.ts`'s dumps and prints the four comparisons, each with its population and its frame.
 
-    python3 -I docs/research/new-rider/take-off/stand-read.py <out.jsonl> [more.jsonl ...] [--labels a,b]
-    python3 -I docs/research/new-rider/take-off/stand-read.py a.jsonl --control b.jsonl   # the probe's inertness
+    python3 -I docs/research/new-rider/take-off/four-numbers-read.py <out.jsonl> [more.jsonl ...] [--labels a,b]
+    python3 -I docs/research/new-rider/take-off/four-numbers-read.py a.jsonl --control b.jsonl   # the probe's inertness
 
 ⚠️ **Every median here is a PLAIN median** — the mean of the two middle values at even length — in this file and in
-`stand.ts` alike. No `qt(0.5)`, no mean of medians. Every share carries the count it is a share of, so an empty
+`four-numbers.ts` alike. No `qt(0.5)`, no mean of medians. Every share carries the count it is a share of, so an empty
 filter prints as `0 of 0` and never as a clean-looking 0.00.
 
 ☠️ **The three pin readings are kept apart and named on every line**: `pinNow` is `limit === 'tip'`, ONE substep of
@@ -72,7 +72,7 @@ class Pop:
         self.control, rows, self.summaries, self.done = load(path)
         self.mode = self.summaries[0].get('mode') if self.summaries else '?'
         # Standing, attached frames, kept per run and in order. A run's rows stop at its first `attached == 0`
-        # because `stand.ts` stops emitting there; the guard is belt and braces.
+        # because `four-numbers.ts` stops emitting there; the guard is belt and braces.
         self.stand_rows = defaultdict(list)
         self.all_rows = defaultdict(list)
         for r in rows:
