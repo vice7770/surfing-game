@@ -947,10 +947,22 @@ observed is not thereby false.
   `popUpReport.outcome = 'fell'`, and a refused pop-up that leaves the rider prone in front of a breaking wave is a
   different situation from one that stands him up — I measured neither. **The "destroys 0 of 15" figure is about which
   stands a gate would prevent, not about what the player's ride then becomes.**
-* **Not every fall is the capture point.** Causes on seed 1: `balance` 27, `lost board` 2, `foot slip` 1. And `beyond`
-  (the capture point past the feet beyond the rotor's reach) is reached and **survived** repeatedly — on wave 10 `cue`
-  at 0.367 s, recovered by 0.467 s, and the rider lasted to 0.700 s. It is the conjunction with `weightPast` that ends
-  a ride, so "the demanded centre of pressure leaves the support box" is necessary and not sufficient.
+* ⭐ **The fall test's conjunction is never visible on a live frame, and that is worth knowing before anyone probes
+  it.** `human.fallen` is `beyond && weightPast`, and over **2 123 + 3 744 live standing frames the two are never both
+  true on the same frame** (seed 1: `beyond` on 208 frames, `weightPast` on 60, **both on 0**; seed 2: 113, 252,
+  **both 0**). The conjunction is reached and acted on **inside a substep**, so at frame granularity it only ever shows
+  on the frame after the separation — which is a frozen frame, and excluded. **Anyone measuring "what fails first" off
+  the conjunction will measure nothing.** The two terms separately are the readable signal, and they tell different
+  stories on the two seas: seed 1's failures are mostly the capture point going beyond the rotor's reach (208 against
+  60 frames), seed 2's are mostly the centre of mass itself passing the feet (252 against 113).
+* **And `beyond` on its own is survivable frame to frame but not survivable as a ride.** On seed 1 wave 10 `cue` it is
+  reached at 0.367 s, recovered by 0.467 s, and the rider lasts to 0.700 s. But of the **36 stands across both seas
+  that reached `beyond` even once, 0 carried the full window.** So "the demanded centre of pressure leaves the support
+  box" is not a fall by itself, and is not a reprieve either.
+* **Not every fall is the capture point.** Causes on seed 1: `balance` 27, `lost board` 2, `foot slip` 1; on seed 2,
+  `balance` 26 and `lost board` 4 — and three riders lost the board **during** the pop-up and never stood at all, two
+  of them on delayed presses (Part 6). `'balance'` is also not a single mechanism: for this rider it is `human.fallen`
+  **or** the sway/posture backstops in the same `endStep` chain, and this round did not separate them.
 * **I did not measure the drawing.** #429's Part 8 hypothesis about `?trunk=mass` deleting the rig's trunk fold is
   still a source reading needing one drawn frame.
 
