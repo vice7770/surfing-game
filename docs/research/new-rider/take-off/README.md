@@ -10,6 +10,20 @@ moving water already in a riding stance, and the owner **paddles, is caught, and
 This round built the bench that does his sequence — paddle → catch → pop up → stand → turn — and measured the fall
 **against the stand**.
 
+**The answer, in five lines** (Canyon B, Medium, seed 1: 12 waves, 6 of them lit the game's own cue, 180 runs):
+
+1. **The immediate fall is the shipped game.** A median **0.750 s** after *"Getting up…"* clears, 12 of 15 inside the
+   owner's own one second, `'balance'` every time — **with no new switches on at all**.
+2. **`?trunk=mass` cannot be the cause**: against shipped it differs in **0 of 406 406 values**, because the hip rotor
+   it folds reads **0 in every frame** of a take-off. On a placement the same switch is live, which is the control.
+3. **What he rides as "all three" is `?bodyBank=hip` alone** (`bank` vs `all3`: 0 of 388 472) — and that one makes the
+   fall **sooner** (0.683 s, 15 of 15 inside a second) while cutting the roll peak from 28.9° to 9.3°.
+4. **`?askCap=4.5` is invisible on a placement and not on a take-off**, because a placement is on the plane from
+   frame 1 and a take-off is not: it is the only arm that gives an off-plane rider a lean to ask for.
+5. **The regime, not the initial condition, is what separates the benches.** Load and wetness agree; the **planing
+   latch** and the **lean cap** do not. So `tip` 90/90, the 10.9° stance, the 0.1 s lag and the 0.327 m demand are
+   statements about a bench until they are re-measured through a stand.
+
 ---
 
 ## 1. Can a faithful pop-up be driven headlessly at all?
