@@ -574,6 +574,12 @@ export class HumanoidRig {
   private readonly hipsTurned = new Follower(RIG_DETAIL.cascade.hipsFollow);
   /** Standing, how far the trunk hinges forward at the hips this solve, rad (step 3), and at which clock. */
   private hingeAngle = 0;
+  /**
+   * Step 3.5h (`RIG_SWITCHES.trunk`): standing, the physics owns the trunk and the pelvis. Set in `hinge()` and read
+   * in `poseHinge`, where it stands `backForMass` down, so the pelvis has exactly **one** owner from the first
+   * standing frame - including while the rate limiter is still walking the landing's own carried-in hinge out to 0.
+   */
+  private physicsTrunk = false;
   private hingeClock = Number.NaN;
   /** Standing, the arms' share of the turn this solve, 0 to 1 (`armRate`), and at which clock. */
   private armTurn = 0;
@@ -1383,6 +1389,32 @@ export class HumanoidRig {
     const tall = this.tallFollower.follow(this.pose.hinge.tall, state.clock);
     const deep = this.deepFollower.follow(this.pose.hinge.deep, state.clock);
     let wanted = ((tall + (deep - tall) * depth) * Math.PI) / 180;
+    /**
+     * **One trunk state, read by both** (`trunk: 'mass'`, step 3.5h; rows 1 and 2 of 3.5/engine-target.md).
+     *
+     * The defect this answers is narrower than "the drawn trunk is a function of leg depth", and the narrower
+     * statement is the true one: the line above is affine in `this.blend.depth` **within one stage**, but the stage
+     * itself changes, `tallFollower`/`deepFollower` move `tall` and `deep` as the stages swing, and `leanIn` bends
+     * the result - so the drawn trunk *can* move at a fixed depth today. **What it has never had is a channel of its
+     * own that is coupled to the body's mass.** Every input above is a drawn quantity, and none of them moves
+     * `AttachedRider.parts`, so a convincing crouch sits over mass that never folded. With the switch the physics'
+     * hip rotor folds the trunk, moves the mass with it, and arrives here already in `state.points`' pelvis, torso
+     * and head - read into `up` (§1) and `chestUp` (§3) before this runs. So standing, the rig adds nothing of its
+     * own, and `physicsTrunk` also stands `poseHinge`'s `backForMass` down: **one fold, one pelvis, one correction,
+     * and the physics owns all three.**
+     *
+     * **The landing's own hinge is left alone** - there is no rotor there (`AttachedRider.freeBody` wants
+     * `phase === 'standing'`), so the drawing's fold is the only trunk the landing has and its own compensation is
+     * honest. Coming out of it, `wanted` drops to 0 while `hingeAngle` still carries the landing's fold, and the
+     * follower and the rate limiter below walk it out smoothly rather than snapping it.
+     *
+     * **No timing claim is needed for the guarantee, and none is made.** `physicsTrunk` holds for every standing
+     * frame, carried-in angle or not, so **exactly one owner applies the pelvis translation** - and two compensations
+     * that cannot both be applied cannot stack, however long any blend takes. (A rate bound here would be a floor on
+     * the walk-out, not a ceiling: `hingeRate` is a maximum rate, and the follower slows as it nears 0.)
+     */
+    this.physicsTrunk = RIG_SWITCHES.trunk === 'mass' && state.phase === 'standing';
+    if (this.physicsTrunk) wanted = 0;
     // In a turn the trunk leans with the body's line rather than folding over the toes (`turnTrunk`), by the turn's weight;
     // not in the tube's crouch, folded under the lip with a hand on the rail.
     this.leanIn = RIG_SWITCHES.turnTrunk === 'lean' && state.phase === 'standing' ? state.standingBlend * this.stages.weights.turn * (1 - this.stages.weights.tube) : 0;
@@ -1906,6 +1938,7 @@ export class HumanoidRig {
     this.water.reset();
     this.hingeClock = Number.NaN;
     this.hingeAngle = 0;
+    this.physicsTrunk = false;
     this.armClock = Number.NaN;
     this.alarmClock = Number.NaN;
     this.reachClock = Number.NaN;
@@ -1940,7 +1973,10 @@ export class HumanoidRig {
     this.up.copy(unhinged.up).applyAxisAngle(left, angle);
     this.hipsForward.copy(unhinged.hipsForward).applyAxisAngle(left, angle);
     this.facing.copy(unhinged.facing).applyAxisAngle(left, angle);
-    const back = angle <= 0 ? 0 : this.backForMass(state, angle);
+    // Step 3.5h: with the physics owning the trunk, it owns the mass-position correction too - `partPosition`
+    // subtracts the physics' own `localCenter`, so the drawn pelvis already moves back as the trunk folds. A second
+    // shift here would move it twice, and `physicsTrunk` holds whatever angle is still being walked out.
+    const back = angle <= 0 || this.physicsTrunk ? 0 : this.backForMass(state, angle);
     this.placeHips(this.hipsAt.copy(unhinged.hips).addScaledVector(levelForward, -back));
   }
 
