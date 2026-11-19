@@ -184,20 +184,24 @@ beside it.**
 ### The frames kept, counted
 
 ⚠️ `AttachedRider.separate` clears `attached`, `climbing` and `inContact` and **never clears `phase` or `upright`**, so
-every rider column freezes at the separation. Seed 1, the whole run:
+every rider column freezes at the separation. Both runs, in full:
 
-| | |
-| --- | --- |
-| runs | 60 (12 waves × 5 pop timings) |
-| rider frames stepped | **36 512** |
-| **live** (`attached === 1`) | **36 479 = 99.9096 %** |
-| not live | **33** — **exactly one per fallen run**, and 33 runs fell: each run stops at its first `attached === 0` |
-| rows emitted | 7 883, of which **2 153** at or after a stand and **33** with `attached === 0` |
-| summaries whose `atFall` row is a frozen frame | **0** (it is by construction the last frame with `attached === 1`) |
-| **stands whose window was truncated** | **0** |
+| | seed 1 | seed 2 |
+| --- | --- | --- |
+| runs | 60 (12 waves × 5 pop timings) | 55 (11 × 5) |
+| rider frames stepped | **36 512** | **32 797** |
+| **live** (`attached === 1`) | **36 479 = 99.9096 %** | **32 766 = 99.9055 %** |
+| not live | **33** | **31** |
+| runs that fell | **33** | **31** |
+| rows emitted | 7 883 (2 153 at or after a stand) | 9 373 |
+| rows emitted with `attached === 0` | 33 | 31 |
+| summaries whose `atFall` row is a frozen frame | **0** | **0** |
+| **stands whose window was truncated** | **0** | **0** |
 
-So no frozen frame enters any median here, and every at-the-fall value in this document is read off the last attached
-frame. (37 riders popped, 34 stood, 33 fell — 30 of them after a stand and 3 during the pop-up.)
+**The dead frames are exactly one per fallen run on both seas** — each run stops at its first `attached === 0` — so no
+frozen frame enters any median here, and every at-the-fall value in this document is read off the last attached frame.
+(Seed 1: 37 riders popped, 34 stood, 33 fell, 30 of them after a stand and 3 during the pop-up. Seed 2: 42 popped,
+41 stood, 31 fell, 30 after a stand.)
 
 ## 3. ⭐ Why the feet are under water: the pop-up takes the body out of the water, and the board cannot carry it
 
