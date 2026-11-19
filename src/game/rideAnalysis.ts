@@ -47,7 +47,11 @@ export type UnjudgedReason =
   | 'path turned the other way'
   /** The board did not gain height in the CARRY_TIME after it let go. */
   | 'no carry'
-  /** The ride ended before the carry could be watched. */
+  /**
+   * The carry was never measured over its window: the ride ended inside it, or the wave went unreadable
+   * (`WaveFrame.valid === false`) for part of it, so there is no height to compare against. Missing coverage is not
+   * a climb and is not a flattening either: it is nothing.
+   */
   | 'carry unseen'
   /** The climb was higher than the saved speed through the water could pay for, v² / 2g. */
   | 'speed cannot carry';
@@ -75,9 +79,15 @@ export interface Maneuver {
   /** m/s, the speed through the water along the heading when the turn let go (`RideSample.throughWater`, not the ground speed). */
   throughWater: number;
   /**
-   * The height gained on the face over the CARRY_TIME after the turn let go: its **mean** height there against the
-   * height it let go at, so for a steady climb it is about half the height finally reached. Negative when it dropped.
-   * Absent when the carry was never watched.
+   * The height gained over the CARRY_TIME after the turn let go, **in metres above the trough ahead of the crest —
+   * never a fraction of the face**: the window's **mean** height there against the height it let go at, so for a
+   * steady climb it is about half the height finally reached. Negative when it dropped. Absent when the carry was
+   * never watched.
+   *
+   * Metres, because `faceFraction` is a height **divided by a face height that moves**: a board held still under a
+   * flattening wave climbs that fraction while climbing nothing at all (0.375 m over a face falling 1.50 → 1.23 m
+   * reads 0.250 → 0.305 of the face). Each sample's fraction is taken against its **own** face height, so the
+   * denominator cancels and what is left is the rise.
    */
   carry?: number;
   /** Set only on an `'unjudged'` run: the condition it failed. */
@@ -118,6 +128,23 @@ const HIGH_ON_FACE = 0.5;
  * turn: no new bar. A candidate whose ride ends inside this window is left unjudged, never named on a guess.
  */
 const CARRY_TIME = TURN_TIME;
+/**
+ * **The least mean rise, m, that the analyzer will read as a climb.** This is not a bar on how much a bottom turn
+ * must climb — the owner's ruling is that any climb counts, and HIGH_ON_FACE was offered to him and declined. It is
+ * the floor below which the number is not a measurement of anything:
+ *
+ *  - The carry is a mean of the ~20 steps of a CARRY_TIME window, each a face fraction times a face height, so its
+ *    own floating-point error is of order `20 x 2^-52 x 1 m`, under 1e-14 m. A board held at a constant 0.27 of a
+ *    1.5 m face measured +5.6e-17 of a face on a bare `> 0`, and was named a bottom turn on it. 1e-9 m is five
+ *    orders of magnitude clear of that.
+ *  - Nothing physical lives at 1e-9 m either. The face is read from a water surface sampled every 0.5 m
+ *    (`waveFrame`'s SPACING) on a wave of metres, so a nanometre of rise is seven orders of magnitude below the
+ *    centimetre a surfer could feel, and far below anything the solver resolves.
+ *
+ * 1e-9 m is also the length the analyzer already uses as the least distance it will believe a board has moved
+ * (`track` and `remember`, `moved > 1e-9`), in the same unit: metres.
+ */
+const CARRY_RISE = 1e-9;
 /** A snap peaks at least this fast, rad/s, and lasts no longer, s. */
 const SNAP_RATE = 3;
 const SNAP_TIME = 0.8;
@@ -201,30 +228,44 @@ interface Turn {
   startCourse?: number;
   roll: number;
   peak: number;
-  /** At the turn's last sample: the height on the face, the face's height in metres, and the speed through the water. */
+  /**
+   * At the turn's last sample: where the board was on the face (a fraction of it), **the face's own crest-to-trough
+   * height, m** — not the board's — and the speed through the water. Their product is the board's height above the
+   * trough, m, which is what a carry is measured in.
+   */
   releaseFace: number;
-  releaseHeight: number;
+  releaseFaceHeight: number;
   releaseThroughWater: number;
   wave: Pick<WaveFrame, 'valid' | 'directionX' | 'directionZ' | 'faceFraction' | 'crestBreaking'>;
 }
 
-/** A bottom-turn candidate whose carry up the face is still being watched. */
+/**
+ * A bottom-turn candidate whose carry up the face is still being watched. **Every height here is metres above the
+ * trough ahead of the crest** — the wave's own frame, not world y and not a fraction of the face — because the face
+ * height that fraction divides by moves under the board (see `Maneuver.carry`).
+ */
 interface Carrying {
   maneuver: Maneuver;
-  /** Simulated time the turn let go, and the readings there. */
+  /** Simulated time the turn let go. */
   releaseT: number;
-  releaseFace: number;
-  faceHeight: number;
+  /** The board's height above the trough where it let go, m, and the speed through the water it let go with, m/s. */
+  heightAtRelease: number;
   throughWater: number;
-  /** The highest the board has been on the face since it let go: the climb that had to be paid for. */
-  topFace: number;
+  /** The highest the board has been since it let go, m above the trough: the climb that had to be paid for. */
+  topHeight: number;
   /**
-   * The face fraction integrated over the time since it let go, and that time: their ratio is the mean height, which
-   * is what decides *whether* it climbed. The peak would not do: it only ever rises, so a flicker above the release
-   * height makes any run — even one sliding back down the face — look as though it carried.
+   * The height integrated over the time the face was **read**, m·s, and that time, s: their ratio is the mean height,
+   * which is what decides *whether* it climbed. The peak would not do: it only ever rises, so a flicker above the
+   * release height makes any run — even one sliding back down the face — look as though it carried.
    */
-  faceSeconds: number;
+  heightSeconds: number;
   seconds: number;
+  /**
+   * The whole time watched since it let go, s, readable or not. More than `seconds` when any sample carried no wave,
+   * and then the window is not a measurement: the two sum the same steps in the same order, so they are the same
+   * number whenever the face was read throughout.
+   */
+  watched: number;
 }
 
 /** The previous sample: what the next one is measured against. */
@@ -258,12 +299,23 @@ interface Previous {
  *  1. **The travelled path bent into the same face as the nose** — `pathYaw`, not `yaw`, averaging at least TURN_RATE
  *     over the run (the same bar the heading must pass) and toward the crest by the same test.
  *  2. **The board kept gaining height for CARRY_TIME after it let go** — a bottom turn that does not carry up the
- *     face is not a bottom turn. This is a **sign** test on the mean face fraction, with no magnitude bar: it rejects
- *     a run that flattened or dropped, and passes any climb at all. **How much of the face a bottom turn must climb
- *     is a number the owner has to set**, and until he does this gate says only that it climbed.
+ *     face is not a bottom turn. This is a **sign** test on the mean height, with no magnitude bar: it rejects a run
+ *     that flattened or dropped, and passes any climb at all. **How much of the face a bottom turn must climb is a
+ *     number the owner has to set**, and until he does this gate says only that it climbed. Two things that are not
+ *     a climb are not let through as one: a window the wave went unreadable through is `'carry unseen'`, not a
+ *     carry, and a rise under CARRY_RISE — a nanometre, the analyzer's own floor on a measured length — is the sum's
+ *     own roundoff.
  *  3. **The saved speed through the water could pay for that climb** — the height actually reached, in metres,
  *     against v² / 2g, with v the board's speed through the water along its heading (`RideSample.throughWater`),
  *     never the ground speed. No free constant: it is the kinetic height, and g.
+ *
+ * **Both the climb and the carry are metres above the trough ahead of the crest, never fractions of the face** (the
+ * reviewer's third control of 2026-11-19). `faceFraction` divides by a face height that moves, so a board sitting
+ * still at 0.375 m while the wave flattened from 1.50 m to 1.23 m rose 0.250 → 0.305 of the face and scored a bottom
+ * turn on it; condition 3 charged its speed for the same phantom 0.08 m. Each sample's fraction is now multiplied by
+ * that same sample's own face height, so the moving denominator cancels. What is left is still the height above a
+ * **trough the wave reports** — a datum that shifts if the trough itself rises or falls, which is the limit of what
+ * `WaveFrame` can say about the board's own motion.
  *
  * Anything that fails, or whose carry the ride ended before, is `'unjudged'` with the reason: never guessed into
  * another name. **The turns off the top — top turn, snap and cutback — are deliberately untouched**, because the same
@@ -369,7 +421,7 @@ export class RideAnalyzer {
       start: previous.t, end: previous.t, sign: Math.sign(rate), startHeading: previous.heading, yaw: 0,
       speedIn: previous.speed, speedOut: previous.speed, alongIn: previous.along, alongOut: previous.along,
       pathYaw: 0, pathLength: 0, startCourse: previous.course, roll: Math.abs(previous.roll), peak: 0,
-      releaseFace: wave.faceFraction, releaseHeight: wave.faceHeight, releaseThroughWater: sample.throughWater,
+      releaseFace: wave.faceFraction, releaseFaceHeight: wave.faceHeight, releaseThroughWater: sample.throughWater,
       wave: { ...wave },
     };
     const turn = this.turn;
@@ -385,7 +437,7 @@ export class RideAnalyzer {
     turn.speedOut = sample.speed;
     turn.alongOut = wave.speedAlongCrest;
     turn.releaseFace = wave.faceFraction;
-    turn.releaseHeight = wave.faceHeight;
+    turn.releaseFaceHeight = wave.faceHeight;
     turn.releaseThroughWater = sample.throughWater;
     turn.roll = Math.max(turn.roll, Math.abs(sample.roll));
     if (Math.abs(rate) > turn.peak) {
@@ -415,10 +467,12 @@ export class RideAnalyzer {
       const fault = pathFault(turn, duration, travel);
       if (fault) this.maneuvers.push({ ...measured, kind: 'unjudged', unjudged: fault });
       else {
+        // Where it let go, in metres above the trough ahead of the crest: the fraction of the face against the face's
+        // own height at that same sample.
+        const heightAtRelease = turn.releaseFace * turn.releaseFaceHeight;
         this.carrying = {
-          maneuver: measured, releaseT: turn.end, releaseFace: turn.releaseFace,
-          faceHeight: turn.releaseHeight, throughWater: turn.releaseThroughWater, topFace: turn.releaseFace,
-          faceSeconds: 0, seconds: 0,
+          maneuver: measured, releaseT: turn.end, heightAtRelease, throughWater: turn.releaseThroughWater,
+          topHeight: heightAtRelease, heightSeconds: 0, seconds: 0, watched: 0,
         };
       }
       return;
@@ -450,37 +504,48 @@ export class RideAnalyzer {
   private watchCarry(sample: RideSample, dt: number): void {
     const carrying = this.carrying;
     if (!carrying) return;
+    carrying.watched += dt;
     if (sample.wave.valid) {
-      carrying.topFace = Math.max(carrying.topFace, sample.wave.faceFraction);
-      carrying.faceSeconds += sample.wave.faceFraction * dt;
+      // Metres above the trough ahead of the crest: this sample's fraction of the face against **this sample's own**
+      // face height, so a face that grows or shrinks under a board that is not moving cannot read as a climb.
+      const height = sample.wave.faceFraction * sample.wave.faceHeight;
+      carrying.topHeight = Math.max(carrying.topHeight, height);
+      carrying.heightSeconds += height * dt;
       carrying.seconds += dt;
     }
     if (sample.t >= carrying.releaseT + CARRY_TIME - 1e-9) this.settleCarry();
   }
 
   /**
-   * Judge the bottom turn whose carry was being watched. `seen` is false when the ride ended inside the window: the
-   * carry was never watched, so the run is left unjudged rather than named on what little there was.
+   * Judge the bottom turn whose carry was being watched. Both heights and the carry are **metres above the trough
+   * ahead of the crest**.
    *
-   * Two readings of the same window, each used for what it means. **Whether it climbed** is the mean height against
-   * the height it let go at — the mean, because the peak only ever rises, so one flicker above the release height
-   * would pass a run that slid back down the face. **What the climb cost** is the peak, the height it actually
-   * reached, which is the conservative number to ask the speed to pay for.
+   * The window has to be a measurement before it can be judged. `seen` is false when the ride ended inside it, and
+   * `seconds < watched` says the wave went unreadable for part of it: either way there is no mean height, and the
+   * run is left `'carry unseen'` rather than named on what little there was. A mean taken over the one sample of
+   * eighteen that carried a wave is not a carry; it is a coincidence.
+   *
+   * Then two readings of the same window, each used for what it means. **Whether it climbed** is the mean height
+   * against the height it let go at — the mean, because the peak only ever rises, so one flicker above the release
+   * height would pass a run that slid back down the face. **What the climb cost** is the peak, the height it
+   * actually reached, which is the conservative number to ask the speed to pay for.
    */
   private settleCarry(seen = true): void {
     const carrying = this.carrying;
     if (!carrying) return;
     this.carrying = undefined;
-    const { maneuver, throughWater, releaseFace, seconds } = carrying;
-    if (!seen || !(seconds > 0)) {
+    const { maneuver, throughWater, heightAtRelease, seconds, watched } = carrying;
+    if (!seen || !(seconds > 0) || seconds < watched) {
       this.maneuvers.push({ ...maneuver, kind: 'unjudged', unjudged: 'carry unseen' });
       return;
     }
-    const carry = carrying.faceSeconds / seconds - releaseFace;
-    // The climb reached, in metres, against the kinetic height the speed through the water holds: v² / 2g.
-    const climb = (carrying.topFace - releaseFace) * carrying.faceHeight;
+    const carry = carrying.heightSeconds / seconds - heightAtRelease;
+    // The climb reached, in metres, against the kinetic height the speed through the water holds: v² / 2g. Both the
+    // peak and the release height are metres above the trough, each taken with its own sample's face height: a face
+    // that shrank under the board used to charge the speed for a climb that never happened.
+    const climb = carrying.topHeight - heightAtRelease;
     const paid = throughWater > 0 && climb <= (throughWater * throughWater) / (2 * GRAVITY);
-    const fault: UnjudgedReason | undefined = !(carry > 0) ? 'no carry' : !paid ? 'speed cannot carry' : undefined;
+    const fault: UnjudgedReason | undefined = !(carry > CARRY_RISE) ? 'no carry' : !paid ? 'speed cannot carry' : undefined;
     this.maneuvers.push({ ...maneuver, carry, ...(fault ? { kind: 'unjudged' as const, unjudged: fault } : { kind: 'bottom turn' as const }) });
   }
 
