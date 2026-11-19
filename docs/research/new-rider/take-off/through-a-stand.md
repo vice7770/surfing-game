@@ -18,7 +18,10 @@ address, no new switches):
 
 1. ⭐⭐ **The brief's premise is a fact about one sea.** On seed 2 the take-off is planing for **80.6 %** of the first
    second — **more than the placement's 74.8 %** — and the lean cap is a median **0.53 rad**, not zero. The regime is
-   set **wave by wave** by the board's speed through the water against `PLANING_SPEED = 4`.
+   set **wave by wave** by the board's speed through the water against `PLANING_SPEED = 4`. ⚠️ **And a parallel round
+   on this branch narrows what the cap buys**: with the stick at zero the request it bounds is zero anyway
+   (`ask` non-zero in **0 of 452** and **0 of 829** frames, measured here too), so the regime reaches the **board**,
+   not the rider's lean (§3, §13).
 2. ⭐ **And on seed 1 the published 18.0 % should read 34.5 %**: `TRIAL = 16` censored wave 6, which is the planing one.
 3. ☠️ **The published pinned share is a LATCH, proved by measurement** — it returns to zero on **0 of 6 717** following
    frames — and on a take-off it flips **before the stand**, in `landing`, on 36 of 39. 52.0 % and 89.8 % cannot be
@@ -619,6 +622,10 @@ holding half its friction.** That is the measurement Part 13.4 asked for.
    74.8 %** — with a median lean cap of 0.53 rad. The regime is set **wave by wave** by the board's speed through the
    water at the stand against `PLANING_SPEED = 4`, which seed 2's cue waves clear on **five of seven** by
    0.19–0.64 m/s and seed 1's on two of six.
+   ⚠️ **Narrowed by the parallel round, correctly (§13):** the cap bounds a request that is **zero with the stick at
+   zero**, measured here as `ask` non-zero in **0 of 452** and **0 of 829** stick-zero frames. So the regime claim is
+   wrong about the **sea** and #429's consequence claim was wrong about the **rider**; what the regime governs is the
+   **board**.
 2. ⭐ **And on seed 1 the published figure was depressed by its own harness.** `TRIAL = 16` censored wave 6 — the
    planing wave — so 18.0 % of 716 frames should read **34.5 % of 896**. Nearly double.
 3. ⭐ **"A placement is on the plane from frame 1" is not a property of placements either.** The mount tests the same
