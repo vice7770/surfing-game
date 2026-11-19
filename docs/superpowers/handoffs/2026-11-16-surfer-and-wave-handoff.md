@@ -3879,3 +3879,61 @@ Fold begins **22.6833** → **horizontal and head-down over his own board, the b
 1. ⚠️ **The board-aspect gate has an unstated precondition: IT NEEDS THE WHOLE BOARD**, and this clip never shows one, so both its figures are **lower bounds**. It still refuses by a wide margin here, **but a clip near 2.2 would be undecidable. First time hit.**
 2. ⚠️ **One finding withdrawn before publication:** a raised bare limb at 22.9500 is **undecidable between a hand and a foot** on a barefoot wetsuited rider. **"A limb's identity can fail at a magnification where its position is already safe — a limb reading needs the joint chain back to the trunk in the same frame."**
 3. ✅ **A new stale-composite cure that worked 6 of 6 where clip 20's "second batch" FAILED:** `style.transform='translateZ(0)'` + a *changing* `opacity` + double `requestAnimationFrame` + a **400 ms unclamped nap.** **The footer stamp caught all five failures** (2 wholly stale, 3 half-drawn). ☠️ **And the tab's renderer process DIED TWICE** after long seek jobs — distinct from the `document.hidden` throttle (the token is not even readable); the fix is a plain `navigate` to the same URL and reinstalling the toolkit, ~5 round trips each. ☠️ **The viewport emulation reset mid-session and one measurement screenshot came back 800×1205 at 1.6× — only the per-frame source grid saved it.**
+
+---
+
+## 2026-11-19 — ⭐⭐⭐ THE TAKE-OFF BENCH (PR #429): HIS "STANDS 1 SECOND" IS THE SHIPPED GAME, AND THE TRACK'S HEADLINE NUMBERS ARE ABOUT A BENCH
+
+**2 437 additions, 0 deletions, all under `docs/research/new-rider/take-off/`. No `src/` change, no switch, no constant.**
+
+### 1. A faithful pop-up CAN be driven — and my brief's claim needed a scope correction
+
+The pop-up is a phase machine (`popUp()` → `'push'` 0.72 s → `'landing'` 0.48 s → `'standing'`), driven by one input bit through `RideSession.step`, and **the HUD's "Getting up…" is exactly push+landing — so the prompt clearing IS the frame `'standing'` begins, which makes the owner's video timings and these numbers the same quantity.**
+
+⚠️ **And `docs/research/canyon-catch-2026-10-29/catch-probe.ts` has paddled, caught and popped up since 29 October.** **So "a real pop-up is not benched here at all" is wrong as I wrote it. What is true: of the 22 rider probes under `docs/research/new-rider/` (3.2–3.5), NOT ONE calls `popUp()` and NOT ONE places a rider prone.** The surfer track has never benched a take-off; the repo has.
+
+### 2. ⭐⭐ HIS "STANDS 1 SECOND" IS THE SHIPPED GAME, WITH NO SWITCHES ON
+
+**Stand − pop = 1.200 s in 90 of 90 stands.** Then, **fall after the stand**, two seeds:
+
+| arm | seed 1 median | within 1 s | seed 2 | roll peak (s1/s2) |
+|---|---|---|---|---|
+| **ships** | **0.750 s** | 12 of 15 | **0.8333 s** | 28.9° / 18.8° |
+| `trunk` | **identical to ships** | 12 of 15 | **identical** | 28.9° / 18.8° |
+| **`bank`** | **0.683 s** | **15 of 15** | **0.6333 s** | **9.3° / 4.9°** |
+| `all3` | **identical to `bank`** | 15 of 15 | identical | 9.3° / 4.9° |
+| `all3cap` | 0.683, **min 0.42** | 15 of 15 | 0.6333 | 9.8° / 4.8° |
+
+> ⭐⭐ **`?bodyBank=hip` MAKES THE IMMEDIATE FALL EARLIER — 0.683 s against 0.750 — and takes "within 1 s" from 12 of 15 to 15 of 15, while cutting the roll from 28.9° to 9.3°.** **What he rides as "all three" IS `?bodyBank=hip` as far as the fall goes** (0 of 388 472 values differ). **The switch that killed his drift costs him the first second.**
+
+### 3. `?trunk=mass` does NOT reproduce "falls immediately" — but there is one thing this bench cannot see
+
+Seed 1: **0 of 406 406 values differ** (the hip rotor reads 0 in all 4 147 frames). **Seed 2 refuted that as a property of the switch** — the rotor wakes, **non-zero in 67.7 % of standing frames, peaking at 5.5°**, moving **71 009 of 526 700 values** — **and the fall times are identical run for run.** A positive control confirms the wiring is live. **So #426's finding reproduces through a real take-off: it moves the state, not the fall.**
+
+> ⭐ **BUT: `HumanoidRig.hinge` sets `wanted = 0` on every standing frame with the switch on, and stands `backForMass` down — so `?trunk=mass` DELETES THE RIG'S OWN 16–50° DRAWN TRUNK FOLD and hands the trunk to a rotor at 0–5.5°.** **Source reading, not a measurement — and it is the only hypothesis that fits the owner's words AND every number here.** **Testable with one drawn standing frame.** A round is going out to do exactly that.
+
+### 4. `?askCap=4.5` is the opposite of "nothing", and it makes things worse
+
+**Shipped, the lean a rider may ask for is 0 OFF THE PLANE.** A placement at ≥4 m/s is **on the plane from frame 1**, so askCap moves 2 of 216 placement values — **but a take-off is off the plane for ~82 % of the first second**, and askCap raises the median cap **0.000 → 0.238 rad** and **gave the earliest fall measured, 0.42 s.**
+
+### 5. What fails first — and it is none of the suspects
+
+At the stand, **identical across all arms**: 5.48 m/s over ground, **not planing** (on in 6 of 18), **cap 0.000, ask 0.000**, load 1.03 bw, roll 2.5°, margin 0.858, **1.26 m ahead of the crest, 0.943 up a 9.8° face**, deck-relative foot speed **0**. Then load rises to 1.22, the front foot slides 0.666 → 0.52, **the margin collapses 0.870 → 0.469 WHILE THE ROLL IS STILL 2–4°**, `limit` becomes `'tip'` at 0.50 s, roll runs to −26.9°, gone at 0.75 s.
+
+> **"Not the roll (a consequence), not the stick (zero), not the feet (planted, foot speed 0.000), not grip. It is the BALANCE'S OWN DEMAND leaving the support box, on a rider who may ask for no lean at all and whose deck at the feet is under water."**
+
+**And the stand is already refused before it starts:** `standRefusal` returns **`'feet under water'` in 12 of 18 stands (seed 1) and 18 of 21 (seed 2)**, landing peak 1.354 bw with 0.722 on the front foot. **The two stands it does NOT refuse are the only two that stand planing, lower (0.79–0.84) on a steeper face (15.9–16.9°), on half the wetted hull — and one of those is the only wave in the study whose stand survived the window, on all five arms.** **He never gets down the face:** stands 0.943 up, falls 0.968–0.978 up, slope 9.8° → 2.7°.
+
+### 6. ⭐⭐⭐ AND THE TRACK'S HEADLINE NUMBERS ARE ABOUT A BENCH
+
+**The flush placement's known defect is NOT what separates the benches** — load (0.86 vs 1.0 bw) and wetness agree, so **`SINK=0.06` did its job.** **What separates them is the REGIME:**
+
+> **The mount seeds `planing` from |world velocity| > 4, so every placement at ≥4 m/s is ON THE PLANE FROM FRAME 1 with a 17–69° lean cap — while a pop-up mounts prone and the latch's test is speed THROUGH THE WATER, which a caught board does not sustain.**
+>
+> **So `tip` 90/90, the 10.9° stance, the 0.1 s lag and the 0.327 m demand are statements about a bench, not about his game, until re-measured through a stand.**
+
+**CoP pinned in 89.8 % of the first second** (and `limit === 'tip'` in 26.8 % — **the factor 3.35 reproduced**), 100 % on seed 2. **The cue is a set-wave cue at his spot:** it lit on the 6 waves whose faces were 1.28–2.06 m and **on none of the six at 0.81–1.20 m**, where the window opens but the paddler tops out at **3.7 m/s against a crest at 5.3–5.5** (4.3 needed).
+
+**Controls:** `PROBE=off` vs `on` — 54 runs, 2 538 values, **0 differ**; cross-build 48 runs, 2 016 values, **0 differ**; **113 147 of 113 222 frames live (99.93 %)**; the fall read off `atFall`, the last attached frame, **because `separate` never clears `phase`/`upright`**; `--diff` now **shouts when nothing aligns so "0 of 0" cannot pass as inertness.** **It refuted its own seed-1 wording with seed 2 and recorded it rather than quietly fixing it.**
+
+⚠️ **Disclosed: it ran up to three bench processes at once against my "parallelism is zero"**, reading that as being about memory (0.16 GB RSS each, swap did not grow). **A reasonable reading, and disclosing it is the right call** — but the instruction was about the machine thrashing, and it should be stated as memory next time.
