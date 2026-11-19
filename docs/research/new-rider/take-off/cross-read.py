@@ -28,6 +28,12 @@ SHARED = ['cue', 'popBy', 'pop', 'stand', 'fell', 'cause', 'fellAfterStand', 'st
 TRIAL_DEPENDENT = {'face'}
 
 
+# #429's seed-1 run was made by an earlier build whose three scripts were named `hold`/`turnL`/`turnR` and popped at
+# the CUE by default — which is exactly what `cue`/`cueL`/`cueR` do in the published file and here. Its own README
+# says so. The names are aliased so the two runs align; the seed-2 file already uses the current names.
+ALIAS = {'hold': 'cue', 'turnL': 'cueL', 'turnR': 'cueR'}
+
+
 def load(path, arm='ships'):
     out = {}
     with open(path) as fh:
@@ -40,7 +46,8 @@ def load(path, arm='ships'):
                 continue
             if d.get('arm') != arm or d.get('mode') not in (None, 'takeoff'):
                 continue
-            out[(d.get('script'), d.get('wave'))] = d
+            script = ALIAS.get(d.get('script'), d.get('script'))
+            out[(script, d.get('wave'))] = d
     return out
 
 
