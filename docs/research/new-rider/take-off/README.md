@@ -154,6 +154,11 @@ wall.** Of the 12 waves, **6 lit the game's own cue** and every rider that poppe
 | `all3` (all three) | 18 | 18 | 15 | **0.683** | 0.58–0.75 | **15 of 15** | 9.3° | 84.0 % (12.6 %) |
 | `all3cap` (all three + `?askCap=4.5`) | 18 | 18 | 15 | **0.683** | **0.42**–0.98 | **15 of 15** | 9.8° | 83.3 % (13.2 %) |
 
+**The population, said plainly.** The 15 falls per arm are **5 waves × 3 scripts**, not 15 independent draws: the
+three scripts ride the same wave with the same paddling and diverge only after the stand, and the sixth cue wave
+(wave 6) never fell. So the independent unit here is the **wave**, and there are six of them on this sea; the medians
+are over runs, as the earlier placement tables' were, and the wave identities are in `results/seed1-summaries.jsonl`.
+
 **Every separation is `'balance'`.** Nobody slips a foot, nobody loses the board, nothing hits the reef, and
 `inContact` is true in **698 of 698** first-second frames on the shipped address: the feet never leave the deck.
 
