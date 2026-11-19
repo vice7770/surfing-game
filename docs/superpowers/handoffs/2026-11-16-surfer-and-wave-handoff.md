@@ -4651,3 +4651,59 @@ PR #444 on `claude/ride-everything`, opt-in, default byte-identical. Canyon B Me
 
 ### 5. Not measured, and the owner sees one of them first
 **Seed 1 and every Compress arm** (Compress is measured protective and has rescued a wave) · ⚠️ **the DRAWING: `swung`'s 0.35 share stands down so the drawn lateral lean goes 0.35ψ → 1.0ψ with the fold reaching 68.75°, and nobody opened a browser** · `?trunk=mass` + `?swing=mass` together (the folds do not commute) · `src/wave` was still running at hand-back, its whole diff there being one forwarding line and one typed field.
+
+---
+
+# 2026-11-19 — CLOSING STATE. Read this entry alone if you are picking the surfer track up cold.
+
+**Weekly usage 83 % at the time of writing.** Everything below is measured and pushed; the detail is in the entries above and the PRs named.
+
+## 1. What the owner can ride, and what he said about it
+
+**`claude/ride-everything`** — one branch, five changes, `tsc -b` exit 0 and **643 of 643 tests exit 0** verified from the commands: the three body switches (#426), **his pad's analog Compress AND crouch** (#436 — both were on/off switches on analog triggers), **the Logbook saying what ended the ride including sub-second falls** (#435, #441, #442), and **the turn classifier fixed** (#439, seven ways it could lie, closed). `?swing=mass` is on #444, measured not to help.
+
+He rode it: ⭐ ***"the stability is now better, the surfer can now surf with wobble straight. But when the sharp turn happens he falls. I was able to turn not that sharply and was able to remain standing, but sharply the surfer falls."***
+
+**His ruling, verbatim, and it binds every future round:** ⭐⭐ ***"The turn should not be limited, the turn is good, the fall is a result of the inbuilt balance that lack the ability to stand."***
+
+## 2. ⛔ WHAT IS CLOSED. Do not re-open any of these.
+
+| line of work | why it is closed |
+| --- | --- |
+| **a fourth limb authority** | ankle, hip, whole-body counter-roll and a real lateral mass shift all lower the roll and **none moves the fall**. `3.2/README.md` Part 23 §7: *"the next measurement is not a fourth authority."* |
+| **aiming the board under the body** | `3.3/README.md` **Part 25** (168 runs, 2026-11-15): the board **already carries 1.58–3.47 m/s² with the stick at zero** against a 0.23–1.45 deficit — **magnitude is not the problem, TIME is** (the steer adds ~nothing in 0.1 s and reaches full only at 0.5 s, against a capsize τ of **0.245 s**; sticks 0.25/0.5/1.0 are identical for the first 0.3 s because `LEAN_IN_RATE` bounds them) — **and steering IS leaning, so demand and supply are the same lever.** |
+| **the fall test being mis-scaled** | **it is 3–11× KINDER than the literature.** 1.21 m/s at the measured CoM height is the body toppling at **97 °/s** against a walking human's 6.2. All three defensible corrections make the rider fall **sooner**. |
+| **a hip "rest to hold"** | the shipped burst **already is** a spring about that rest; re-introducing the angle caps it at 26.6° where the drive runs to 68.75°, **and 68.75° with a full sole-width already failed.** |
+| **an early-hip allocation change** | already built as `HIP_CAPTURE_GAIN`: it opens at 0.22–1.02 s of rides that fall at 0.77–1.70 s and delivers 35–264 N·m. Its own words: ***"It is not late. It is not enough."*** Raising it made the fall **sooner in 36 of 60** paired runs. |
+| `?askCap` · `?ankleLimit=feet` · `?ankleRange=wide` · `?buoyFrame=hull` · the rotor gain 500→8 000 | inert · worse · innocent · 12 of 12 in all 36 cells · 12 of 12 at every value |
+
+## 3. ⭐ WHAT IS MEASURED AND STANDS
+
+* **A turn WORKS and costs 70 % of the speed** — banks 42°, swings the course 40°, climbs 0.296 → 0.995 m above the trough while the unasked rider **descends to 0.031 m**. **How much speed a turn should cost is the owner's judgement, not a derivable number.**
+* **The lean ceiling is `atan(speedThrough²/(g·4.5))` on the through-water along-heading speed** (267 of 267 frames). It falls as the turn eats speed — **and falls just as far on the no-steer arm, which never dies.** The ask climbs at a fixed 1.4 rad/s, blind to it.
+* **The fall is lateral** (`across` lowest on 29 of 31), **roll is not the mechanism** (breaks at 8° where a survivor reaches 16.7°), and **what ends it is a VELOCITY, not a position** — the position term never trips while the across-speed term reaches 6.1 sole-widths.
+* ⭐ **The rider UNDER-leans by 0.78 sole-widths all through the turn.**
+* ⛔ **The weave and the falling are SEPARATE faults** (one wave weaves 24.3° and survives 3 s; another settles to 1.32° and falls at 2.300 s). The weave is **the controller bracing on the torso to steer the board** — 91 % gain change, one-way wind-up, a slow-speed effect at 4.7 m/s and absent at 8.3.
+* **The hip's lateral lean is a PICTURE**: 20° of swing moves the head 7.31 cm and the mass **0 m**. The controller's reference wants the torso **square to the board at every bank ask**, and its torso spring is **100× softer** than the stop the ride enters at 51°.
+* **The water pays ~99 % correctly for a BANK and contributes exactly ZERO to the lateral impulse.**
+* ⭐ **And the rider falls on FLAT STILL WATER with a tow and no wave at all — 23 of 24 runs, 0.70–2.73 s.** Whatever is wrong is not the wave.
+
+## 4. ⚠️ WHERE IT POINTS, with the honest caveat
+
+**The literature's answer to a velocity term larger than the base is to MOVE THE BASE — a human steps. The rider cannot step and the board cannot be aimed in time.** So the remaining direction is **upstream: what gives the body that sideways speed in the first place**, where Part 24 §3 and Part 38 both already point. ⚠️ **No round has been commissioned on it, and nothing should be built before the owner rules.**
+
+## 5. The footage, after four reads in one day
+
+**28 clips, ONE take-off** — clip 28 (Medina, `g3fe9BRoeaI`), which the owner found and pulled ahead of the queue himself. ⛔ **But my headline from it is WITHDRAWN**: I called the game's pop-up a flat 1.20 s ramp against a loaded-lift-pause-swing. **`minimumJerk(s) = s³(10 − 15s + 6s²)` at `AttachedRider.ts:1874` has zero rate at BOTH ends and is applied per phase at `:5721`, so the game already has a stationary point between push and landing**; an image-space pause cannot diagnose easing; the boundaries are game events against first-visible-foot; and **k ≈ 0.55 came from an aerial near 10 s while the take-off is at ~3 s**, so the real seconds assume an unchanged edit speed.
+
+**What survives as evidence**: **early gaze (head down the line at ~2.00–2.33 media s), chest rise, a visible forward foot, asymmetric arm opening** — and from clip 26, **extension into the climb, renewed flexion while the board still climbs, and an exchange between the two legs**, as **pose timing only, not foot loading and not a spring prescription.**
+
+⭐ **The shot still wanted: the board FLAT-ON to the camera while the body moves across it.** Clip 28's own lesson is that **it is the board's attitude to the lens that defeats the sideways-speed measurement, not the camera's position** — and that number (the game uses **1.21 m/s**) has **never been measured on any board rider, in any sport, in the literature.**
+
+## 6. Process scars from this day, all of them mine
+
+* **Four rounds were spent on questions the repository had already closed.** The rule, now widened twice: **grep the later Parts of a file before commissioning anything from it — AND when a Part is the LAST in its file, its follow-up is in the NEXT file** (`3.2` ends at Part 24; its sequel is `3.3` Part 25).
+* **`git push origin <branch>` pushes the LOCAL BRANCH OF THAT NAME, not HEAD.** A registration reported success and landed on an unrelated branch. **Always `HEAD:refs/heads/<branch>` when working across worktrees.**
+* **A pipe swallows an exit code** — `vitest | tail && push` pushes on a failing suite.
+* **Two figures were passed on as delivered when they were only REQUESTED** (354 N·m before a 100 N·m clamp; +2.886 J against 2.1–2.3 J through the lag). **Say "requested" or "delivered" with every force and joule.**
+* **Three switches have turned out not to reach the physics** (`?bodyBank=hip` parsed 0 times, `?physical` gating nothing, `swing` dropped in a forwarding hop). ⭐ **A fixture test proves the mechanism, never the switch — measure through the real session path too.**
