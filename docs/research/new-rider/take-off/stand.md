@@ -703,8 +703,9 @@ not one column does** — every single one overlaps, including speed through the
 no-overlap table below is a fact about 34 stands on one sea, not a property of the take-off**, and reporting it as a
 discriminator would have been exactly the error this project keeps warning itself about.
 
-**What survives pooling is necessity, not separation** (Part 5.4): nothing that lasted stood off the plane, under
-4.400 m/s, or with wet feet — on either sea — while plenty of stands meeting those conditions still fell. The medians
+**What survives pooling is what the survivors had in common, not a boundary between the two groups** (Part 5.4):
+nothing that lasted stood off the plane, under 4.400 m/s, or with wet feet — on either sea — while plenty of stands
+meeting all three still fell, so none of the three divides them. The medians
 also keep their direction on both seas (seed 2: V 4.635 held against 2.330 fell, wetted 0.079 against 0.517, draft
 −0.051 against +0.148, the feet −0.060 against +0.272, the front foot's load share 0.338 against 0.612, grip left
 0.799 against 0.443, roll peak 1.7° against 23.8°). It is the **clean boundary** that is seed 1's alone.
