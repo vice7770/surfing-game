@@ -1,0 +1,55 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s1.jsonl
+# grid 400x451 = 180400 cells · seed 1 · medium · 12 periods · arms ships · scripts cue,cued250,cued500,lift,early · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 55 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 12 waves, 60 runs, 1079 s wall
+
+## ⭐ the feet's own depth through the sequence, m below the surface at the deck point under each foot
+   (FEET_DEPTH is 0.1 m; the worst of the two feet is what `standRefusal` tests)
+
+wave script   paddle(-0.5s)  at the cue   at the press  at landing    at the stand   | draft: paddle -> stand | wetted: paddle -> stand | verdict
+   1 early            0.206            -         0.214        0.481          0.799  |  0.129 ->  0.534 |  0.561 ->  0.616 | feet under water
+   1 lift             0.109            -         0.087        0.192          0.334  |  0.039 ->  0.203 |  0.435 ->  0.550 | feet under water
+   2 early            0.192            -         0.199        0.379          0.598  |  0.116 ->  0.372 |  0.541 ->  0.579 | feet under water
+   2 lift             0.099            -         0.098        0.241          0.412  |  0.051 ->  0.276 |  0.486 ->  0.588 | feet under water
+   3 early            0.200            -         0.212        0.445          0.741  |  0.129 ->  0.495 |  0.560 ->  0.611 | feet under water
+   5 early            0.195            -         0.200        0.406          0.686  |  0.120 ->  0.450 |  0.546 ->  0.601 | feet under water
+   5 lift             0.098            -         0.099        0.228          0.400  |  0.051 ->  0.270 |  0.481 ->  0.586 | feet under water
+   6 cue              0.055       -0.003        -0.003        0.052         -0.000  |  0.001 -> -0.064 |  0.398 ->  0.263 | None
+   6 lift             0.055       -0.003        -0.003        0.052         -0.000  |  0.001 -> -0.064 |  0.398 ->  0.263 | None
+   7 cue              0.036        0.009         0.009        0.085          0.122  | -0.010 ->  0.015 |  0.382 ->  0.389 | feet under water
+   7 cued250          0.013        0.009         0.026        0.094          0.141  | -0.014 ->  0.026 |  0.373 ->  0.399 | feet under water
+   7 cued500          0.026        0.009         0.034        0.097          0.144  | -0.014 ->  0.037 |  0.361 ->  0.399 | feet under water
+   7 early            0.198            -         0.213        0.478          0.839  |  0.127 ->  0.559 |  0.558 ->  0.621 | sinking
+   7 lift             0.036        0.009         0.009        0.085          0.122  | -0.010 ->  0.015 |  0.382 ->  0.389 | feet under water
+   8 cue              0.046        0.012         0.012        0.098          0.127  | -0.004 ->  0.011 |  0.384 ->  0.375 | feet under water
+   8 cued250          0.022        0.012         0.036        0.085          0.113  | -0.004 ->  0.007 |  0.399 ->  0.374 | feet under water
+   8 cued500          0.036        0.012         0.039        0.098          0.116  | -0.007 ->  0.007 |  0.382 ->  0.354 | feet under water
+   8 early            0.199            -         0.206        0.491          0.845  |  0.124 ->  0.574 |  0.554 ->  0.621 | feet under water
+   8 lift             0.046        0.012         0.012        0.098          0.127  | -0.004 ->  0.011 |  0.384 ->  0.375 | feet under water
+   9 early            0.203            -         0.197        0.342          0.529  |  0.120 ->  0.345 |  0.536 ->  0.597 | feet under water
+   9 lift             0.116            -         0.116        0.243          0.415  |  0.058 ->  0.280 |  0.479 ->  0.592 | feet under water
+  10 cue              0.020        0.009         0.009        0.056          0.030  | -0.005 -> -0.051 |  0.395 ->  0.263 | None
+  10 cued250          0.013        0.009         0.023        0.053          0.018  | -0.012 -> -0.055 |  0.379 ->  0.263 | sinking
+  10 cued500          0.020        0.009         0.022        0.027         -0.025  | -0.014 -> -0.073 |  0.367 ->  0.206 | None
+  10 early            0.205            -         0.222        0.496          0.827  |  0.130 ->  0.545 |  0.557 ->  0.607 | feet under water
+  10 lift             0.020        0.009         0.009        0.056          0.030  | -0.005 -> -0.051 |  0.395 ->  0.263 | None
+  11 cue              0.121        0.107         0.107        0.297          0.396  |  0.009 ->  0.275 |  0.377 ->  0.566 | feet under water
+  11 early            0.186            -         0.188        0.486          0.992  |  0.118 ->  0.699 |  0.556 ->  0.621 | sinking
+  11 lift             0.121        0.107         0.107        0.297          0.396  |  0.009 ->  0.275 |  0.377 ->  0.566 | feet under water
+  12 cue              0.071        0.071         0.071        0.158          0.271  |  0.030 ->  0.133 |  0.456 ->  0.469 | feet under water
+  12 cued250          0.071        0.071         0.069        0.162          0.281  |  0.028 ->  0.144 |  0.445 ->  0.500 | feet under water
+  12 cued500          0.071        0.071         0.071        0.166          0.295  |  0.025 ->  0.155 |  0.433 ->  0.517 | feet under water
+  12 early            0.228            -         0.242        0.476          0.734  |  0.138 ->  0.464 |  0.556 ->  0.601 | feet under water
+  12 lift             0.071        0.071         0.071        0.158          0.271  |  0.030 ->  0.133 |  0.456 ->  0.469 | feet under water
+
+## medians over the stands at each instant (worst foot)
+   paddling, the 0.5 s before the press   median +0.071 m  (n 34, over FEET_DEPTH in 14)
+   at the cue                             median +0.011 m  (n 20, over FEET_DEPTH in 2)
+   at the press                           median +0.071 m  (n 34, over FEET_DEPTH in 13)
+   at push -> landing                     median +0.164 m  (n 34, over FEET_DEPTH in 20)
+   at the stand                           median +0.288 m  (n 34, over FEET_DEPTH in 28)
+
+## and the `sinking` test at the same instants (SINK_RATE 0.3 m/s)
+   at the press                           median +0.218 m/s (n 34, over SINK_RATE in 15)
+   at push -> landing                     median +0.281 m/s (n 34, over SINK_RATE in 16)
+   at the stand                           median +0.202 m/s (n 34, over SINK_RATE in 5)

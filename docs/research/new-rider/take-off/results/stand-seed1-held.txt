@@ -1,0 +1,34 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s1.jsonl
+# grid 400x451 = 180400 cells · seed 1 · medium · 12 periods · arms ships · scripts cue,cued250,cued500,lift,early · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 55 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 12 waves, 60 runs, 1079 s wall
+
+## held vs fell, median of each (plain medians; truncated runs excluded from BOTH)
+   populations: held 4, fell 30, excluded as truncated 0
+
+                                                       held       fell
+planing at the stand                                  1.000      0.000
+speed through the water, m/s (the latch's own)        4.422      2.169
+lean cap at the stand, rad                            0.417      0.000
+planing share of the first second                     1.000      0.000
+wetted hull at the stand, m2                          0.263      0.558
+up the face at the stand                              0.789      0.937
+face slope under the board, deg                      16.863      8.100
+ahead of the crest, m                                 2.132      1.184
+front foot's LOAD SHARE                               0.432      0.681
+load at the feet, bw                                  0.833      1.043
+landing peak, bw                                      1.415      1.183
+the feet's depth, m                                  -0.000      0.365
+the descent into the surface, m/s                     0.384      0.182
+capture margin, min over the first second             0.542      0.000
+grip left, min                                        0.876      0.414
+knees left, min                                       0.399      0.527
+past the feet ACROSS, peak, m                         0.000      0.394
+past the feet ALONG, peak, m                          0.000      0.000
+roll peak in the first second, deg                    5.118     27.782
+
+## the refusal against the outcome: a 2x2, because a gate that predicts nothing is not a gate
+   refused (any verdict)         1 held of 29  (median fall 0.633 s)
+   refused `sinking`             1 held of  3  (median fall 1.083 s)
+   refused `feet under water`    0 held of 26  (median fall 0.633 s)
+   not refused                   3 held of  5  (median fall 0.700 s)

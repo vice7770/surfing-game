@@ -190,6 +190,47 @@ def held(rows):
               + (f"  (median fall {med([r['fellAfterStand'] for r in sub if r['fellAfterStand'] is not None]):.3f} s)" if len(sub) - h else ''))
 
 
+def channels(rows):
+    """⭐ The four things a filtered minimum cannot tell you, counted over every live standing frame."""
+    fr = [r for r in rows if r.get('frame') and r.get('phase') == 'standing' and r.get('attached') == 1]
+    print(f'## {len(fr)} live standing frames (attached == 1)')
+    print()
+    print('## 1. the planing latch and its ONE consequence, the lean cap')
+    for key, note in (('leanHeld', "the formula's own value, atan(v2/(g R)) — live whatever the plane"),
+                      ('leanCap', 'that value AFTER the planing gate: `most = askUngated || planing ? held : 0`'),
+                      ('leanWant', 'the REQUEST the cap bounds: steer x railRange + the hand'),
+                      ('leanAsk', 'the reference the predictor is actually given, after the cap')):
+        xs = [r[key] for r in fr if r.get(key) is not None]
+        nz = sum(1 for x in xs if abs(x) > 1e-12)
+        print(f'   {key:9s} non-zero in {nz:5d} of {len(xs):5d}, max |x| {max((abs(x) for x in xs), default=0):.4f}   — {note}')
+    print('   ⭐ If `leanWant` is 0 throughout, the cap bounds nothing and the planing latch has NO consequence')
+    print('      for this rider: the correlation between planing and survival cannot run through the rider at all.')
+    print()
+    print('## 2. which channel of the fall test is ever engaged (`human.fallen` = beyond && weightPast)')
+    px = [r['pastX'] for r in fr if r.get('pastX') is not None]
+    pz = [r['pastZ'] for r in fr if r.get('pastZ') is not None]
+    print(f'   past the feet ACROSS in {sum(1 for x in px if x > 0):5d} of {len(px)} frames, peak {max(px, default=0):.3f} m')
+    print(f'   past the feet ALONG  in {sum(1 for x in pz if x > 0):5d} of {len(pz)} frames, peak {max(pz, default=0):.3f} m')
+    print()
+    print('## 3. which of the three reserves is LEAST, frame by frame (only `margin` can end a ride)')
+    print('   ', dict(Counter(r['bLimit'] for r in fr)))
+    print()
+    print('## 4. `sinking` (into > SINK_RATE 0.3) against planing — the test cannot tell a planing')
+    print('      angle of attack from a board going under, because both are motion into the water relative to the flow')
+    for plan in (1, 0):
+        sub = [r for r in fr if r.get('planing') == plan and r.get('into') is not None]
+        if sub:
+            over = sum(1 for r in sub if r['into'] > 0.3)
+            print(f'   planing={plan}: into > 0.3 in {over:5d} of {len(sub):5d} = {over / len(sub):.1%}'
+                  f'   (median into {med([r["into"] for r in sub]):+.3f} m/s)')
+    print()
+    print('## 5. the CoP-pinned share, both readings (a factor of ~3 apart — say which)')
+    tip = sum(1 for r in fr if (r.get('tTip') or 0) > 0)
+    now = sum(1 for r in fr if r.get('limit') == 'tip')
+    print(f"   `limitTime.tip > 0` (the published quantity): {tip} of {len(fr)} = {tip / max(1, len(fr)):.1%}")
+    print(f"   `limit === 'tip'` (one substep of 16):         {now} of {len(fr)} = {now / max(1, len(fr)):.1%}")
+
+
 def place(rows):
     ps = [r for r in rows if r.get('placement')]
     print(f'## {len(ps)} flush placements, {rows[-1].get("holdS", "?")} s each — the near-threshold entry sweep')
@@ -203,6 +244,28 @@ def place(rows):
               f"{('NEVER' if r['fellAtS'] is None else fmt(r['fellAtS'],3)):>7s} {str(r['cause']):9s} "
               f"{fmt(r['capMarginMin'],3):>9s} {fmt(r['pastXPeak'],4):>7s} {fmt(r['pastZPeak'],4):>7s} "
               f"{fmt(r['wetMed'],3):>7s} {fmt(r['depthMed'],3):>8s} {fmt(r['rollPeak'],1):>6s}")
+
+
+def standtrace(rows, wave, scripts, every=4):
+    """The standing frames of one wave under several pop timings, side by side: the lever test on one wave."""
+    for script in scripts:
+        fr = [r for r in rows if r.get('frame') and r.get('wave') == wave and r.get('script') == script
+              and r.get('tStand') is not None and r['tStand'] >= -1e-9]
+        fr.sort(key=lambda r: r['frame'])
+        keep = [r for i, r in enumerate(fr) if i % every == 0 or r['attached'] == 0 or r['capBeyond'] == 1]
+        print(f'## wave {wave}, script {script}: {len(fr)} standing frames, {len(keep)} shown '
+              f'(every {every}th, plus any frame beyond the feet, plus the fall)')
+        print(' tStand phase    att refuse            rearD frntD draft   wet  | plan  latch    cap    ask |  load  front |'
+              ' capAcr  pastX  pastZ  reach byd wpast  hMarg | bLimit bMarg bGrip bKnee | balMarg rawMarg   roll')
+        for r in keep:
+            def f(k, n=3):
+                return '   -  ' if r.get(k) is None else f'{r[k]:6.{n}f}'
+            print(f"{r['tStand']:7.3f} {r['phase']:8s} {r['attached']}  {r['refuse']:17s} {f('rearDepth')} {f('frontDepth')}"
+                  f" {f('draft')} {f('wetted')} | {r['planing']:4.0f} {f('latchSpeed', 2)} {f('leanCap')} {f('leanAsk')} |"
+                  f" {f('load', 2)} {f('front', 2)} | {f('capAcross')} {f('pastX')} {f('pastZ')} {f('capReach')}"
+                  f" {r['capBeyond']:3d} {r['capWeightPast']:5d} {f('capMargin', 2)} | {r['bLimit']:6s} {f('bMargin', 2)}"
+                  f" {f('bGrip', 2)} {f('bKnee', 2)} | {f('margin')} {f('rawMargin')} {f('roll', 1)}")
+        print()
 
 
 def trace(rows, wave, script):
@@ -255,6 +318,10 @@ if __name__ == '__main__':
         held(rows)
     elif args[0] == '--place':
         place(rows)
+    elif args[0] == '--channels':
+        channels(rows)
+    elif args[0] == '--standtrace':
+        standtrace(rows, int(args[1]), args[2].split(','))
     elif args[0] == '--trace':
         trace(rows, int(args[1]), args[2])
     elif args[0] == '--control':

@@ -1,0 +1,30 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s1.jsonl
+# grid 400x451 = 180400 cells · seed 1 · medium · 12 periods · arms ships · scripts cue,cued250,cued500,lift,early · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 55 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 12 waves, 60 runs, 1079 s wall
+
+## 2123 live standing frames (attached == 1)
+
+## 1. the planing latch and its ONE consequence, the lean cap
+   leanHeld  non-zero in  2123 of  2123, max |x| 1.0042   — the formula's own value, atan(v2/(g R)) — live whatever the plane
+   leanCap   non-zero in   796 of  2123, max |x| 1.0042   — that value AFTER the planing gate: `most = askUngated || planing ? held : 0`
+   leanWant  non-zero in     0 of  2123, max |x| 0.0000   — the REQUEST the cap bounds: steer x railRange + the hand
+   leanAsk   non-zero in     0 of  2123, max |x| 0.0000   — the reference the predictor is actually given, after the cap
+   ⭐ If `leanWant` is 0 throughout, the cap bounds nothing and the planing latch has NO consequence
+      for this rider: the correlation between planing and survival cannot run through the rider at all.
+
+## 2. which channel of the fall test is ever engaged (`human.fallen` = beyond && weightPast)
+   past the feet ACROSS in   983 of 2123 frames, peak 0.824 m
+   past the feet ALONG  in     2 of 2123 frames, peak 0.003 m
+
+## 3. which of the three reserves is LEAST, frame by frame (only `margin` can end a ride)
+    {'grip': 313, 'margin': 800, 'knee': 1010}
+
+## 4. `sinking` (into > SINK_RATE 0.3) against planing — the test cannot tell a planing
+      angle of attack from a board going under, because both are motion into the water relative to the flow
+   planing=1: into > 0.3 in   381 of   796 = 47.9%   (median into +0.280 m/s)
+   planing=0: into > 0.3 in   250 of  1327 = 18.8%   (median into +0.194 m/s)
+
+## 5. the CoP-pinned share, both readings (a factor of ~3 apart — say which)
+   `limitTime.tip > 0` (the published quantity): 2071 of 2123 = 97.6%
+   `limit === 'tip'` (one substep of 16):         453 of 2123 = 21.3%
