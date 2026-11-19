@@ -296,6 +296,11 @@ Canyon B sea, seed 1, `SINK = 0.06`, followed **3 s** each (`results/stand-entry
 | 6.00 | 1 | 0.658 | 2.000 | 0.365 | 0.0000 | 0.452 | 0.181 |
 | 8.00 | 1 | 0.931 | **2.933** | 0.722 | 0.0356 | 0.380 | **0.077** |
 
+(The latch turns on between entry 3.80 and 3.90 rather than at 4.00 because **the mount seeds it from the magnitude of
+the board's whole velocity vector** while `planingStep` tests the **horizontal** speed through the water: at entry 3.90
+the measured through-water speed is **3.855 m/s** and the latch is on anyway. That mismatch is #429's Part 4 finding
+and it is reproduced here.)
+
 **The latch is worth one frame.** Across the threshold — 3.80 against 3.90 m/s, a 2.6 % change in entry — the lean cap
 goes from **0 to 0.324 rad (18.6°)**, which is the whole of what the latch does, and the fall moves from **1.167 s to
 1.183 s**: **one frame of 60.** Over the sweep as a whole the fall time rises **smoothly and monotonically** with
@@ -313,9 +318,11 @@ four as a state — it is the speed each of them reports.
   the `PLACE` block ran `Math.round(1 / STEP)` frames. Followed 3 s, the flush placement is not a stable laboratory
   either; it is the same fall, later. **Speed buys time and does not prevent the fall.**
 * ⭐ **The channel that fails is ACROSS, in 14 of 15.** `pastZ` (the capture point past the feet toward nose or tail) is
-  **exactly 0.0000** in every run but the 8 m/s one, while `pastX` reaches **0.34–0.72 m** past the feet's edge. The
-  rider goes down **sideways off the board's narrow way**, never over the nose or the tail. This is the decomposition
-  the filtered `rawMargin` could not give.
+  **exactly 0.0000** in every run but the 8 m/s one (0.0356 m there), while `pastX` reaches **0.34–0.72 m** past the
+  feet's edge. The rider goes down **sideways off the board's narrow way**, essentially never over the nose or the
+  tail. This is the decomposition the filtered `rawMargin` could not give. ⚠️ On a take-off the along channel is less
+  silent than this — seed 2 reaches 0.488 m past the feet along the board (Part 6.1) — so "across" is a strong
+  tendency and not a law.
 
 ### 4.1 ⭐⭐ The latch cannot be the cause, because its cap bounds a request that is zero
 
