@@ -217,7 +217,10 @@ stop in the truth, **both commands bounded as the body bounds them** (twist 100 
 | m/s | release rad/s | law | \|peak\| ° | work J | ticks past 0.87 rad | twist command clipped |
 | --- | --- | --- | --- | --- | --- | --- |
 | 4.5 | 1.00–1.80 | both | identical | identical | 0 | 0 |
+| 4.5 | 2.50 | shipped | 86.530 | +438.180 | 102 | 34 |
+| 4.5 | 2.50 | design | **84.989** | **+419.533** | 89 | 93 |
 | 5.0 | 1.00 | both | 37.574 | +2.228 | 0 | 0 |
+| 5.5 | 1.00 | both | 36.614 | +2.662 | 0 | 0 |
 | ⭐ **5.0** | **1.40** | shipped | **50.423** | **+4.402** | 25 | **0** |
 | ⭐ **5.0** | **1.40** | design | ⛔ **71.210** | ⛔ **+83.943** | 70 | ⛔ **49** |
 | 5.0 | 1.80 | shipped | 54.085 | +15.766 | 96 | 0 |
@@ -226,7 +229,14 @@ stop in the truth, **both commands bounded as the body bounds them** (twist 100 
 | 5.0 | 2.50 | design | 82.450 | +221.990 | 90 | 96 |
 | 5.5 | 1.40 | shipped | 50.194 | +5.111 | 19 | 0 |
 | 5.5 | 1.40 | design | 51.530 | +5.004 | 28 | 0 |
+| 5.5 | 1.80 | shipped | 52.740 | +11.711 | 65 | 0 |
+| 5.5 | 1.80 | design | 62.737 | +31.651 | 41 | 12 |
+| 5.5 | 2.50 | shipped | 58.081 | +63.286 | 74 | 0 |
+| 5.5 | 2.50 | design | 80.301 | **+34.173** | 74 | 62 |
 | 8.5 | 1.00–2.50 | both | identical | identical | 0 | 0 |
+
+**All sixteen cells are in `results/35j/35j-design.txt` §4**; this is the whole set of stop-reaching rows, so the two
+cells where `design` comes out ahead on one column (4.5 / 2.50 on both, 5.5 / 2.50 on the work) are in it too.
 
 > ⛔ **Counted rather than eyeballed: of 16 cells, 7 reach the stop and 9 do not. The 9 that do not are BIT-IDENTICAL
 > between the arms.** Of the 7 that do, `design` ends with a **larger \|peak twist\| in 6** and puts **more work into
