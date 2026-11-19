@@ -563,10 +563,6 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...ankleRangeSwitch(),
     // `?bankClamp=off`: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (step 3.4i; step 3.4h read `bankFall` at 70.00 exactly in 21 of 24 runs, so the fall classifier's 45 degree threshold sat on a truncated column), opt-in, to ride.
     ...bankClampSwitch(),
-    // `?bodyBank=hip`: the contact's bound gains the trunk rotor's own angular momentum rate (step 3.5i, the spec's step 3.1) —
-    // the term the centre-of-pressure identity has and `project` left out, so a body whose trunk is being thrown stops paying
-    // for its own hip strategy at the sole. `tip` 90 of 90 -> 66 of 90 on his spot. Opt-in, to ride.
-    ...bodyBankSwitch(),
     // `?askCap=1.5|2|4|4.5|9`: the lean the rider ASKS for — the balance's own reference and the steer's request alike —
     // bounded by atan(v²/(g R_min)) at every speed on this minimum carved radius in metres, in place of the shipped
     // 4.5 m with no ask at all off the plane (step 3.5a, the owner's ruling of 2026-11-17), opt-in, to ride.
@@ -575,10 +571,6 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...stanceDeepSwitch(),
     // `?deepen=on`: the deepen button — full manual crouch reaches the tube tuck's 0.45 m anywhere and Compress does not fade it away, so the crouch key dips whatever stance is held (step 3.5b, ruling C; on the owner's input only, no clock and no stamina), opt-in, to ride.
     ...deepenSwitch(),
-    // `?armCarry=on|rest`: the arm carriage channel — the drawn standing hands get a height, a spread and a left/right of their own, answering the player's own stick and never leg depth (both depth links are refuted by the footage): both hands low and in at rest, the lead hand down at the rail with the rear arm up and back at a turn's load, the rear arm overhead on a hard ask only, fast up and slow back; `rest` is the rest carriage alone (step 3.5g, rows 4, 5 and 15 of `engine-target.md`; drawing only, no force, no clock), opt-in, to ride.
-    ...armCarrySwitch(),
-    // `?trunk=mass`: the new surfer's hip rotor folds the mass model's trunk, head and arms about the pelvis, and the drawn trunk stops being a function of leg depth (step 3.5h, rows 1-2 of the engine target), opt-in, to ride.
-    ...trunkSwitch(),
     // `?buoyFrame=hull`: the water's hydrostatic support points along the hull's own normal where the deck is dry and the board planes, as Savitsky's method resolves it, instead of along the water's surface normal (step 3.3d), opt-in, to ride.
     ...buoyFrameSwitch(),
     // `?waterHeel=tilt`: the balance's internal model reads the water's derivatives at the board's heel against the WATER,
@@ -1180,27 +1172,6 @@ export function bankClampSwitch(search?: string): { bankClamp?: 'off' } {
 }
 
 /**
- * The `?bodyBank=hip` dev switch (`SurfZoneConfig.bodyBank`, step 3.5i, the spec's step 3.1): opt-in, **the body
- * banks with the deck**. `3.5/board-slips-away.md` measured the mechanism — turning, the deck banks past 20° at
- * 0.683 s, the body does not bank with it, the foot support is 0.260 m across in every stance, so the body's lean and
- * the deck's bank may differ by only **10.9°** before the centre of pressure pins at the support's edge
- * (`limit = 'tip'`, 90 of 90 riders), and from there the contact can no longer put force where the body needs it.
- *
- * **One term and no drive at all:** `project`'s free centre of pressure gains the `(dH/dt)_roll / N` that the
- * centre-of-pressure identity has and the code left out — a body whose trunk is being thrown does not have its
- * ground reaction pass through its centre of mass. It needs no drive because the `swing` rotor was never torque-idle:
- * on the shipped rider its torque already reaches a per-rider median peak of 165 N·m, and every newton-metre of it
- * was being discarded. Measured on 90 Canyon riders turning on the owner's address, it takes `tip` from **90 of 90
- * to 66 of 90** and the share of frames in which the centre of pressure is pinned from **52.0 % to 32.3 %**; it
- * costs the friction cone (bound in 28 of 90 riders against 6) and 0.25 s of median ride. A hip drive was built
- * beside it and the measurement removed it. `AttachedRiderOptions.bodyBank` has the derivation and the arms.
- * Nothing on the default rider, no hull law, no new force. Anything else, the contact's bound exactly as it ships.
- */
-export function bodyBankSwitch(search?: string): { bodyBank?: 'hip' } {
-  return devParam('bodyBank', search)?.trim().toLowerCase() === 'hip' ? { bodyBank: 'hip' } : {};
-}
-
-/**
  * The `?askCap=1.5|2|4|4.5|9` dev switch (`SurfZoneConfig.askCap`, step 3.5a, the owner's ruling of 2026-11-17 —
  * *"Yes — cap the ask"*): opt-in, **the lean the rider asks for bounded by what its speed can hold**, on this minimum
  * carved radius in metres. The bound is `θ_max = atan(v² / (g R_min))` and it applies to **both** reference lines
@@ -1271,62 +1242,6 @@ export function stanceDeepSwitch(search?: string): { stanceDeep?: 'on' | 'off' }
  */
 export function deepenSwitch(search?: string): { deepen?: 'on' } {
   return devParam('deepen', search)?.trim().toLowerCase() === 'on' ? { deepen: 'on' } : {};
-}
-
-/**
- * The `?armCarry=on|rest` dev switch (`SurfZoneConfig.armCarry`, step 3.5g; `engine-target.md` rows 4, 5 and 15, built
- * on the owner's **"geometry rows first"** of 2026-11-18): opt-in, **the arm carriage channel**.
- *
- * The game's only arm quantity is `HumanBalance.arms`, **one scalar 0–1** that physics reads as an **inertia**, and
- * the drawn hand is that scalar's `ARM_SPREAD + ARM_ALARM × (1 − balanceMargin)` applied to **both** hands along the
- * board — **no height, no spread and no left/right**, so there is exactly one arm pose per stage and depth. The
- * footage refutes the depth link outright (V7 found **four carriages inside the Tall band** with the narrowest and
- * lowest arms at its **deepest** leg position; V8 found two Tall-band segments with arms wide in one and hanging
- * below the waist in the other), so this channel reads the **player's own stick** and never leg depth.
- *
- * - `'on'` — the whole channel. **rest**: both hands low and drawn in, inside the rails (the single most common arm
- *   position in two of the three sharpest clips — V8 5 windows, V9 6 windows, V7 9 frames). **reach**: the pairing —
- *   lead hand down at the rail, board or knee with the rear arm up and back (V5 3 of 3 turns, V6, V7). **over**: the
- *   rear arm above the head, on the **top** of the stick's throw only, because the overhead arm belongs to some turns
- *   and not others (V10's bottom turn took it and a top turn 0.5 s later did not; V9's roundhouse went without it).
- *   The carriage rises fast and returns slowly, so the hand can arrive **before** the rail bites (the footage's lead
- *   is **+0.07 to +0.30 s**, 2 clips, 3 riders) and **stay** after the ask drops (V9's overhead window ~0.7 s,
- *   SINGLE). The balance alarm still wins, so a near fall reads as it does today.
- * - `'rest'` — the rest carriage only, whatever the stick says: row 15 on its own, for an A/B against `'on'`.
- *
- * **Drawing only.** It touches one expression — the standing hand branch of `AttachedRider.renderPoint`, which is the
- * **drawn** point. The seven point masses, `partPosition`, the CoM, `bodyInertiaAt`, `riderYawInertia` and
- * `HumanBalance.arms` (the arms' only physical path) are all untouched, so **no force is added and no existing force
- * changes**. No clock, timer, fatigue or stamina. Anything else, and an online room, the shipped one-scalar spread.
- */
-export function armCarrySwitch(search?: string): { armCarry?: 'on' | 'rest' } {
-  const v = devParam('armCarry', search)?.trim().toLowerCase();
-  return v === 'on' || v === 'rest' ? { armCarry: v } : {};
-}
-
-/**
- * The `?trunk=mass` dev switch (`SurfZoneConfig.trunk`, step 3.5h; rows 1 and 2 of
- * `docs/research/new-rider/3.5/engine-target.md`): opt-in, **the trunk's fold moves the body's mass, and the drawn
- * trunk stops being a function of leg depth.**
- *
- * Two halves of one state, and that is the point of doing them together:
- * - **physics** (`AttachedRiderOptions.trunk`): the hip rotor's own parts — the torso, the head and both arms — turn
- *   about the physical pelvis by `StandingBody.hip.angle`, about the same axis `couple()` already pairs the rotor's
- *   torque on. The rotor's torque was already paired and its power already booked; its angle was simply never read
- *   by `this.parts`, so the centre of mass, the inertia, the per-part water forces and the drawn body were all
- *   computed from an **unfolded** trunk while the trunk folded. **Geometry: no force, no drive, no constant.**
- * - **drawing** (`RIG_SWITCHES.trunk`): standing, the rig adds no fold of its own, because the physics' pelvis, torso
- *   and head now carry one. `HumanoidRig.ts:1383–1385` interpolated the drawn trunk from the drawn leg depth and from
- *   nothing else, so **folding at a fixed leg depth was impossible at any value** — that structural defect, not any
- *   footage angle, is the reason for this change. **No footage figure licenses a target for the range** (after
- *   thirteen clips the series has no gated measurement of trunk angular travel), so the range is reported as a fact
- *   about the engine and the owner rides the feel.
- *
- * The new surfer (`?rider=new`) only — there is no hip rotor anywhere else, so without it the switch is ignored on
- * both sides. Off by default and pinned off for online rooms.
- */
-export function trunkSwitch(search?: string): { trunk?: 'mass' } {
-  return devParam('trunk', search)?.trim().toLowerCase() === 'mass' ? { trunk: 'mass' } : {};
 }
 
 /**
@@ -1896,20 +1811,6 @@ export class PhysicalMode {
     host.setParticleLevel(this.particleLevel);
     host.setSprayEnabled(this.sprayShown);
     this.config = config;
-    // `?trunk=mass` with `?rider=new` (step 3.5h): standing, the drawn trunk is the physics' folded one and the rig
-    // adds no fold of its own (`RIG_SWITCHES.trunk`). **Read off the config that is actually in force, not off the
-    // address**, because an online room's `overrides` clear `rider` and `trunk` for the physics (`main.ts`): taken
-    // from the URL, joining a room from `?rider=new&trunk=mass` would stand the drawn hinge down on riders whose
-    // physics has no fold at all — which is the very drawn-against-physical disagreement this switch exists to
-    // remove. Every rider in a zone runs the zone's own config, the local one and the remote ones alike, so one flag
-    // off `config` is one flag per rider. Without the new surfer there is no hip rotor to read, so the drawing keeps
-    // its own hinge.
-    // **And it is set HERE, beside `this.config`, not where the config is computed.** `RIG_SWITCHES` is a
-    // module-level global read every frame by every rig on the page, so writing it before the supersession guards
-    // let a start that is abandoned while awaiting the GPU tier reach in and change the drawn trunk of the ride
-    // already running — the reviewer's catch. A superseded start must leave the live ride's drawing alone, and the
-    // config is only "actually in force" once the host it belongs to has been accepted.
-    RIG_SWITCHES.trunk = config.trunk === 'mass' && config.rider === 'new' ? 'mass' : undefined;
     this.storm = swell.storm;
     this.practice = settings.source === 'practice';
     const { init } = host;

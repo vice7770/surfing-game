@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DEFAULT_BINDINGS, rebind, type Bindings, type PadState } from './Bindings';
+import { DEFAULT_BINDINGS, type PadState } from './Bindings';
 import { CROUCH_SHARE } from '../physics/AttachedRider';
 import { Controls, stanceHandoverSwitch } from './Controls';
 import type { StickSettings } from './Sticks';
-import { decodeState, tritonPad } from './steam/tritonProtocol';
 
 const pad = (buttons: number[] = [], x = 0): PadState => ({
   buttons: Array.from({ length: 17 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
@@ -367,132 +366,6 @@ describe('the ride request (P9)', () => {
     setPads([analog({ 7: 0.04 })]);
     controls.poll();
     expect(controls.rideRequest(1 / 60, true).compress).toBe(0);
-  });
-
-  /**
-   * analog-stance (2026-11-19): on the owner's Steam Controller a trigger past TRIGGER_PRESS also reads as a plain
-   * button press (`tritonProtocol`), that press was folded in with the keyboard, and the key's RAMP_TIME ramp then ran
-   * up behind the trigger and won over its travel: a steady quarter-pull asked 0.25 on the first frame, 0.5 by the
-   * sixth and a full stance by the twelfth, then held on for 0.2 s after the trigger was let go. Every stance on the
-   * pad now asks by its travel, as the sticks already did. Synthesised state reports, not a pad: no controller is
-   * attached here, so the reports are built and decoded, which is where the digital press is made.
-   */
-  describe('the pad asks for a stance by its travel (analog-stance)', () => {
-    const steamPad = ({ rt = 0, lt = 0, bits = 0 } = {}): PadState => {
-      const data = new DataView(new ArrayBuffer(20));
-      data.setUint32(1, bits, true);
-      data.setInt16(5, Math.round(lt * 32767), true);
-      data.setInt16(7, Math.round(rt * 32767), true);
-      const state = decodeState(0x42, data);
-      if (!state) throw new Error('not a state report');
-      return tritonPad(state, 'steam:0');
-    };
-    /** RB's bit, for a plain button rebound to a stance. */
-    const RB = 0x200;
-    const bound = (bindings: Bindings) => {
-      let pads: PadState[] = [];
-      const controls = new Controls(() => bindings, { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() }, { target: new EventTarget(), pads: () => pads });
-      return { controls, setPads: (next: PadState[]) => { pads = next; } };
-    };
-    /** `frames` frames of the pad as it stands, returning each frame's request. */
-    const ride = (controls: Controls, frames: number, standing = true) => {
-      const out: ReturnType<Controls['rideRequest']>[] = [];
-      for (let i = 0; i < frames; i += 1) {
-        controls.poll();
-        out.push(controls.rideRequest(1 / 60, standing));
-      }
-      return out;
-    };
-
-    it('holds a quarter-pulled trigger at a quarter of Compress, for as long as it is held', () => {
-      const { controls, setPads } = bound(DEFAULT_BINDINGS);
-      setPads([steamPad({ rt: 0.25 })]);
-      const asked = ride(controls, 30).map((request) => request.compress ?? 0);
-      for (const [frame, value] of asked.entries()) expect(value, `frame ${frame}`).toBeCloseTo(0.25, 3);
-    });
-
-    it('tracks the trigger up and down the ladder', () => {
-      const { controls, setPads } = bound(DEFAULT_BINDINGS);
-      for (const travel of [0.2, 0.5, 0.9, 0.35]) {
-        setPads([steamPad({ rt: travel })]);
-        expect(ride(controls, 15).at(-1)!.compress, `${travel}`).toBeCloseTo(travel, 3);
-      }
-    });
-
-    it('lets Compress go the frame the trigger is released, with no 0.2 s tail', () => {
-      const { controls, setPads } = bound(DEFAULT_BINDINGS);
-      setPads([steamPad({ rt: 0.9 })]);
-      ride(controls, 30);
-      setPads([steamPad({ rt: 0 })]);
-      expect(ride(controls, 1)[0].compress).toBe(0);
-    });
-
-    it('crouches by LT’s travel, and lets the crouch go at once', () => {
-      const { controls, setPads } = bound(DEFAULT_BINDINGS);
-      setPads([steamPad({ lt: 0.3 })]);
-      for (const request of ride(controls, 30)) expect(request.crouch).toBeCloseTo(0.3, 3);
-      setPads([steamPad({ lt: 0 })]);
-      expect(ride(controls, 1)[0].crouch).toBe(0);
-    });
-
-    // The paddle is RT too (it compresses standing), and the owner is still holding it as the rider lands.
-    it('does not compress from the trigger held through the pop-up, however far it is pulled', () => {
-      const { controls, setPads } = bound(DEFAULT_BINDINGS);
-      setPads([steamPad({ rt: 0.6 })]);
-      expect(ride(controls, 1, false)[0]).toMatchObject({ paddle: true, compress: 0 });
-      for (const request of ride(controls, 30)) expect(request.compress).toBe(0);
-      // Let it go standing and pull it again: a press made standing compresses, by its travel.
-      setPads([steamPad({ rt: 0 })]);
-      ride(controls, 1);
-      setPads([steamPad({ rt: 0.3 })]);
-      expect(ride(controls, 1)[0].compress).toBeCloseTo(0.3, 3);
-    });
-
-    // Rebinding, both ways: Snap onto RT swaps Compress onto RB (`rebind`, the two being live in the same context).
-    it('keeps a trigger rebound to a plain action analog, and a button rebound to Compress at full', () => {
-      const bindings = rebind(DEFAULT_BINDINGS, 'gamepad', 'snap', 0, 7);
-      expect(bindings.gamepad).toMatchObject({ snap: [7], compress: [5] });
-      const { controls, setPads } = bound(bindings);
-      setPads([steamPad({ rt: 0.3 })]);
-      for (const request of ride(controls, 30)) expect(request.snap).toBeCloseTo(0.3, 3);
-      setPads([steamPad({ bits: RB })]);
-      // A plain button asks for the whole stance on its first frame, and for none on the frame it is let go.
-      expect(ride(controls, 1)[0].compress).toBe(1);
-      setPads([steamPad({})]);
-      expect(ride(controls, 1)[0].compress).toBe(0);
-    });
-
-    // A second slot: Compress on RT and on A (`rebind` moves the pop-up off A). Only the first was read before.
-    it('reads every button bound to a stance, not only the first slot', () => {
-      const bindings = rebind(DEFAULT_BINDINGS, 'gamepad', 'compress', 1, 0);
-      expect(bindings.gamepad.compress).toEqual([7, 0]);
-      const { controls, setPads } = bound(bindings);
-      setPads([steamPad({ bits: 0x1 })]);
-      expect(ride(controls, 1)[0].compress).toBe(1);
-      setPads([steamPad({})]);
-      expect(ride(controls, 1)[0].compress).toBe(0);
-    });
-
-    // Requirement: the keyboard and touch ramps are deliberate (spec P9) and must not be flattened with the pad's.
-    it('still ramps Compress in and out on the keyboard, over RAMP_TIME', () => {
-      const { controls, key } = setup();
-      key('keydown', 'Space');
-      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(0.5, 9);
-      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(1, 9);
-      key('keyup', 'Space');
-      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(0.5, 9);
-      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(0, 9);
-    });
-
-    // A trigger resting a few hundredths in is at rest on every stance, not only Compress and Snap.
-    it('ignores a trigger resting just off its stop, and lets the key’s ramp through underneath it', () => {
-      const { controls, setPads, key } = setup();
-      setPads([steamPad({ rt: 0.04, lt: 0.04 })]);
-      controls.poll();
-      expect(controls.rideRequest(1 / 60, true)).toMatchObject({ compress: 0, crouch: 0 });
-      key('keydown', 'ShiftLeft');
-      expect(controls.rideRequest(0.1, true).crouch).toBeCloseTo(0.5, 9);
-    });
   });
 
   it('trims with the left stick when the player chooses it (C1)', () => {

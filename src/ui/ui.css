@@ -175,8 +175,6 @@
 .log-recent { display: grid; gap: .4em; margin: 0; padding: 0; list-style: none; }
 .log-recent li { display: flex; flex-direction: column; gap: .15em; padding: .6em .8em; border-radius: 10px; background: rgba(255, 253, 243, .5); }
 .log-recent small { color: var(--muted); font: .72em var(--mono); letter-spacing: .04em; }
-/* What ended the ride (the Logbook's fall readout): in the ink, wrapping on a narrow screen. */
-.log-ending { color: var(--ink); text-wrap: pretty; }
 .log-empty { margin: 0; color: var(--muted); }
 
 /* Settings. */

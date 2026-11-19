@@ -72,18 +72,6 @@ describe('lesson goals', () => {
       expect(run(turn, 1, climb()).passed).toBe(true);
     });
 
-    // 2026-11-19: the lesson needs the ride analysis to NAME a bottom turn. A run it measured and refused to name
-    // passes nothing, however well the player rode the sequence — the sequence alone was never the test.
-    it('does not pass on a run the ride analysis left unjudged', () => {
-      const turn = goal('bottomTurn');
-      run(turn, 1, drop());
-      run(turn, 0.5, bottom());
-      const unjudged = (t: number) => ({ wave: wave(0.25 + 0.4 * t), input: input({ steer: 1 }), live: { kind: 'unjudged' as const, start: 1 } });
-      expect(run(turn, 1, unjudged)).toMatchObject({ passed: false, count: { done: 3, of: 3 } });
-      // The same ride, once a turn is named, passes: nothing but the verdict was missing.
-      expect(run(turn, 1, climb()).passed).toBe(true);
-    });
-
     // Review Focus 5.
     it('does not pass compressing before crouching', () => {
       const turn = goal('bottomTurn');

@@ -30,14 +30,8 @@ export const RIG_SWITCHES: RigSwitches = {};
  * `?turnBody=on` sets all three (`turnBodySwitches`).
  * - `twistHips: 'whole'` (set with `?rider=new`, the new surfer's step 3.2e): the hips turn against the board by the whole
  *   twist, as the chest does: the physics' twist is the pelvis, trunk, arms and head turning as one on the legs.
- * - `trunk: 'mass'` (set by `?trunk=mass` **with** `?rider=new`, step 3.5h): standing, the rig adds **no fold of its
- *   own**. The physics' hip rotor folds the trunk and moves its mass with it (`AttachedRiderOptions.trunk`), and the
- *   pelvis, torso and head of `state.points` already carry that fold into `up` and `chestUp` - so the drawn trunk is
- *   the physical trunk, one angle read by both, and `poseHinge`'s `backForMass` never fires, which leaves exactly one
- *   mass-position correction and one owner of it. Without `?rider=new` there is no rotor to read, so the switch is
- *   not set and the drawing is unchanged.
  */
-export interface RigSwitches { snapArms?: 'old'; turnTrunk?: 'lean'; turnLead?: 'on'; cutbackHand?: 'back'; twistHips?: 'whole'; trunk?: 'mass' }
+export interface RigSwitches { snapArms?: 'old'; turnTrunk?: 'lean'; turnLead?: 'on'; cutbackHand?: 'back'; twistHips?: 'whole' }
 
 /** The turning body's switches from a page's address (`RIG_SWITCHES`); `enabled` false (the dev tools off), none. */
 export function turnBodySwitches(search: string, enabled = true): Pick<RigSwitches, 'turnTrunk' | 'turnLead' | 'cutbackHand'> {

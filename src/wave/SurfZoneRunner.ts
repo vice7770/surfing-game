@@ -205,23 +205,6 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
     | (session.ducking ? SWIM_BITS.ducking : 0);
 }
 
-/**
- * **What let go at a fall** (step 3.2v, and the Logbook's fall readout): the balance limit that bound at the
- * separation, whether the weight left the feet across the board, the speed over ground there, m/s, and the steer
- * the ride was asking for on the last step the rider was on the board, −1 (right) to 1 (left).
- *
- * `limit: 'posture'` is the default (old) rider and a prone one: there the reserve is **one filtered minimum** of the
- * feet's lateral and longitudinal headroom and their grip (`AttachedRider.rawMargin`, low-passed into
- * `balanceMargin`), and the three are never kept apart — so on that rider this says only that the minimum ran out,
- * never which of the three. 'margin' | 'grip' | 'knee' come from `?rider=new`, where they are separate numbers.
- */
-export interface BrokenLimit {
-  limit: 'margin' | 'grip' | 'knee' | 'posture';
-  across: boolean;
-  speed: number;
-  steer: number;
-}
-
 /** The Wave Lab readout's values, as plain data that can cross the worker boundary. */
 export interface SurfZoneStatus {
   seaTime: number;
@@ -286,12 +269,11 @@ export interface SurfZoneStatus {
     /**
      * **Which of the reserve's three limits is nearest, and the three themselves** (step 3.2v,
      * `AttachedRider.balanceLimits`): `balance` above is their minimum, and until now which one it was never left the
-     * physics. `broke` is the limit at the moment of the latest fall, the speed over ground there, m/s, and the steer
-     * the ride was asking for on the last step the rider was on the board, kept until the next ride starts — so the
-     * owner's own ride says what let go rather than only how close it came.
+     * physics. `broke` is the limit at the moment of the latest fall and the speed over ground there, m/s, kept until
+     * the next ride starts — so the owner's own ride says what let go rather than only how close it came.
      */
     balanceLimit?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number };
-    broke?: BrokenLimit;
+    broke?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; across: boolean; speed: number };
     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
     bank?: number;
     /** Optional dev guidance. This is a geometry observation, not a completed ride. */
@@ -438,14 +420,8 @@ export class SurfZoneRunner {
    * frame the rider separates — after that the capture state is whatever it was left at — and held until the rider is
    * back on the board, which is what lets the HUD name the fall the owner just had.
    */
-  private broke?: BrokenLimit;
+  private broke?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; across: boolean; speed: number };
   private wasAttached = false;
-  /**
-   * The steer asked for on the last step that began with the rider on the board, −1 (right) to 1 (left): what the
-   * ride handed the physics, so the pocket reflex's steer counts as asked for too. A batch applies one input to every
-   * one of its steps (`afterWater`), so this is the input of the step the rider fell on, not a later one.
-   */
-  private lastSteer = 0;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
   private readonly point = new Vector3();
@@ -557,7 +533,7 @@ export class SurfZoneRunner {
         ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
         ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
         ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
-        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}), ...(config.legDrive ? { legDrive: config.legDrive } : {}), ...(config.hull ? { hull: config.hull } : {}), ...(config.railSuction ? { railSuction: config.railSuction } : {}), ...(config.compressPull ? { compressPull: config.compressPull } : {}), ...(config.carveFlex ? { carveFlex: config.carveFlex } : {}), ...(config.snapLegs ? { snapLegs: config.snapLegs } : {}), ...(config.snapCross ? { snapCross: config.snapCross } : {}), ...(config.legPower ? { legPower: config.legPower } : {}), ...(config.rider ? { rider: config.rider } : {}), ...(config.feltFrame ? { feltFrame: config.feltFrame } : {}), ...(config.kneeRoom ? { kneeRoom: config.kneeRoom } : {}), ...(config.stanceReach ? { stanceReach: config.stanceReach } : {}), ...(config.ankleLimit ? { ankleLimit: config.ankleLimit } : {}), ...(config.ankleRange ? { ankleRange: config.ankleRange } : {}), ...(config.bankClamp ? { bankClamp: config.bankClamp } : {}), ...(config.bodyBank ? { bodyBank: config.bodyBank } : {}), ...(config.askCap ? { askCap: config.askCap } : {}), ...(config.stanceDeep ? { stanceDeep: config.stanceDeep } : {}), ...(config.deepen ? { deepen: config.deepen } : {}), ...(config.armCarry ? { armCarry: config.armCarry } : {}), ...(config.trunk ? { trunk: config.trunk } : {}), ...(config.buoyFrame ? { buoyFrame: config.buoyFrame } : {}), ...(config.waterHeel ? { waterHeel: config.waterHeel } : {}), ...(config.mountAgree ? { mountAgree: config.mountAgree } : {}), ...(config.riderBody ? { riderBody: config.riderBody } : {}), ...(config.riderCost ? { riderCost: config.riderCost } : {}), ...(config.plantFloor ? { plantFloor: config.plantFloor } : {}), ...(config.deckHollow ? { deckHollow: config.deckHollow } : {}),
+        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}), ...(config.legDrive ? { legDrive: config.legDrive } : {}), ...(config.hull ? { hull: config.hull } : {}), ...(config.railSuction ? { railSuction: config.railSuction } : {}), ...(config.compressPull ? { compressPull: config.compressPull } : {}), ...(config.carveFlex ? { carveFlex: config.carveFlex } : {}), ...(config.snapLegs ? { snapLegs: config.snapLegs } : {}), ...(config.snapCross ? { snapCross: config.snapCross } : {}), ...(config.legPower ? { legPower: config.legPower } : {}), ...(config.rider ? { rider: config.rider } : {}), ...(config.feltFrame ? { feltFrame: config.feltFrame } : {}), ...(config.kneeRoom ? { kneeRoom: config.kneeRoom } : {}), ...(config.stanceReach ? { stanceReach: config.stanceReach } : {}), ...(config.ankleLimit ? { ankleLimit: config.ankleLimit } : {}), ...(config.ankleRange ? { ankleRange: config.ankleRange } : {}), ...(config.bankClamp ? { bankClamp: config.bankClamp } : {}), ...(config.askCap ? { askCap: config.askCap } : {}), ...(config.stanceDeep ? { stanceDeep: config.stanceDeep } : {}), ...(config.deepen ? { deepen: config.deepen } : {}), ...(config.buoyFrame ? { buoyFrame: config.buoyFrame } : {}), ...(config.waterHeel ? { waterHeel: config.waterHeel } : {}), ...(config.mountAgree ? { mountAgree: config.mountAgree } : {}), ...(config.riderBody ? { riderBody: config.riderBody } : {}), ...(config.riderCost ? { riderCost: config.riderCost } : {}), ...(config.plantFloor ? { plantFloor: config.plantFloor } : {}), ...(config.deckHollow ? { deckHollow: config.deckHollow } : {}),
         ...(config.snapUpturn ? { snapUpturn: config.snapUpturn } : {}),
       });
       this.board = this.session.board;
@@ -799,9 +775,6 @@ export class SurfZoneRunner {
       }
       const start = performance.now();
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
-      // The steer of the last step on the board, for `broke` below: read before the step, so a step that ends in a
-      // fall is the one recorded.
-      if (session.rider.attached) this.lastSteer = ridden.steer;
       // The bodies push only the water's discharge (and tally their reactions): its surface heights, bed, lenses and
       // tubes hold through the step, so its render-node heights are found once each (the M1 CPU study, 2026-10-19).
       this.water.withSurfaceNodeCache(() => session.step(SURF_ZONE_STEP, this.water, ridden));
@@ -1006,15 +979,9 @@ export class SurfZoneRunner {
     if (!session || !analyzer || !wave) return;
     const here = this.water.sampleAt(position.x, position.y, position.z, this.rideSample);
     const left = this.axis.set(1, 0, 0).applyQuaternion(session.board.orientation);
-    // The two speed columns the analyzer needs, and they are not the same number: `speed` over the ground, and the
-    // board's speed through the water along its heading, `boardVelocity·forward − waterFlow·forward`. The heading is
-    // the board's forward projected flat (`RideSession.heading`), so its horizontal unit is (sin, cos).
-    const forwardX = Math.sin(session.heading);
-    const forwardZ = Math.cos(session.heading);
-    const throughWater = (velocity.x - here.flowX) * forwardX + (velocity.z - here.flowZ) * forwardZ;
     analyzer.push({
       t: this.simulation.seaTime, x: position.x, z: position.z, heading: session.heading,
-      speed: Math.hypot(velocity.x, velocity.z), throughWater, roll: Math.asin(Math.max(-1, Math.min(1, left.y))),
+      speed: Math.hypot(velocity.x, velocity.z), roll: Math.asin(Math.max(-1, Math.min(1, left.y))),
       load: session.rider.contact.load, phase: session.phase, wave, depth: here.stillDepth, breakingHere: here.breaking,
     });
     const report = analyzer.report();
@@ -1177,7 +1144,6 @@ export class SurfZoneRunner {
           limit: limits.limit,
           across: limits.across,
           speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
-          steer: this.lastSteer,
         };
       } else if (attached && !this.wasAttached) {
         this.broke = undefined;

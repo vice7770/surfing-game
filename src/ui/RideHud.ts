@@ -83,15 +83,10 @@ export function edgeNotice(holds: number, seen: number): { seen: number; text?: 
 /**
  * The callout for the ride's latest manoeuvre (P9): its name, the first time it is
  * seen (`key` names the one shown last); nothing between rides, which forgets it.
- *
- * An `'unjudged'` run is **not** called out (2026-11-19): the analyzer measured a turn and refused to name it, so
- * there is nothing to shout at the player mid-ride. It is still taken as the latest run, so the key moves on and the
- * manoeuvre after it is called out as its own. The end card and the readout still list it.
  */
 export function maneuverCallout(live: Maneuver | undefined, shown: string): { key: string; text?: string } {
   if (!live) return { key: '' };
   const key = `${live.kind}@${live.start.toFixed(2)}`;
-  if (live.kind === 'unjudged') return { key };
   return key === shown ? { key } : { key, text: t(MANEUVER_LABELS[live.kind]).toUpperCase() };
 }
 

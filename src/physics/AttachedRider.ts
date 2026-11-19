@@ -3,7 +3,6 @@ import type { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { LIP_CONTACT, LIP_QUERY_MARGIN, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import type { BoardShape } from './boardShape';
-import { armCarriagePlace, createArmCarriage, resetArmCarriage, stepArmCarriage, type ArmPlace } from './armCarriage';
 import { bankLedger } from './bankLedger';
 import { WATER } from './hullForces';
 import { RIDER_LEG } from './legSpring';
@@ -440,20 +439,6 @@ const ANKLE_RANGE_WIDE = 2;
  * and the signal and this switch are the apparatus the plant's own round needs; it is not a gain to be tuned.
  */
 const HIP_CAPTURE_GAIN = 0;
-/**
- * **And step 3.5i measured it once more, at the value its units derive, and once more did not keep it.**
- * `HIP_CAPTURE_GAIN`'s unit is N·m per metre, and `m g × d` — **716 N·m/m** at 73 kg — is the rotor torque whose own
- * angular momentum rate relieves the demanded centre of pressure by exactly `d` (the identity in
- * `AttachedRiderOptions.bodyBank`), so it is the one value that is derived rather than swept. **With the contact's
- * own missing term in place beside it** — which is what 3.2x could not have had — it still costs: on 90 Canyon
- * riders turning on the owner's address, the contact term **alone** gives `tip` in 66 of 90 and a median ride of
- * **1.083 s**, and the same term **with** this drive at 716 N·m/m gives `tip` in 76 of 90 and **0.917 s**. The drive
- * alone, with no contact term, gives `tip` in **90 of 90** and 1.158 s. So the ordering is
- * **term < term + drive < drive alone**, and 3.2x's *"the more the hip throws, the sooner he falls"* survives the
- * correction that was supposed to pay for it — step 3.2z names the reason: `reachAcross` credits the fall test on the
- * hip range **remaining**, so a rider who spends the range to move his weight is credited with nothing left to catch
- * it. **Left at 0 for the third time, with the third measurement.**
- */
 /**
  * **The ankle rest's slew bound**, rad/s (step 3.2x, `HumanBalance.lagRest`): the most the commanded rest can travel
  * per second.
@@ -1549,48 +1534,6 @@ export interface AttachedRiderOptions {
    * new quantity. Anything else, the tuck under a curl only, as it ships.
    */
   deepen?: 'on';
-  /**
-   * **The arm carriage channel** (step 3.5g, `engine-target.md` rows 4, 5 and 15; the owner's "geometry rows first"
-   * of 2026-11-18). The drawn standing hands get a **height, a spread and a left/right of their own**, answering the
-   * player's own stick and **never leg depth** — four carriages reachable at any one leg position, with the lead hand
-   * down at the rail and the rear arm up and back at a turn's load, the rear arm overhead only on a hard ask, and
-   * both hands low and drawn in at rest (the single most common arm position in two of the three sharpest clips).
-   *
-   * - `'on'` — the whole channel: the rest carriage, the pairing, the overhead arm, and the carriage's own fast rise
-   *   and slow return (so the hand can arrive **before** the rail bites and **stay** after the ask drops).
-   * - `'rest'` — the rest carriage only, whatever the stick says: row 15 on its own, for an A/B against `'on'`.
-   *
-   * **Drawing only.** It moves no part mass, adds no force and changes no existing force: `partPosition`, the seven
-   * point masses, the CoM, `bodyInertiaAt`, `riderYawInertia` and `HumanBalance.arms` (the arms' only physical path,
-   * which is an inertia) are all untouched. It touches exactly one expression — the standing hand branch of
-   * `renderPoint`, which is the **drawn** point. No clock, no timer, no fatigue, no stamina and no self-release.
-   *
-   * Opt-in, off by default and pinned off for online rooms. Anything else, the shipped one-scalar spread.
-   */
-  armCarry?: 'on' | 'rest';
-  /**
-   * **The trunk's fold moves the body's mass** (step 3.5h, rows 1 and 2 of `docs/research/new-rider/3.5/engine-target.md`),
-   * opt-in: 'mass' turns the hip rotor's own parts - the torso, the head and both arms, which is what
-   * `HIP_PITCH_INERTIA`'s 8 kg.m2 is a model of - about the **physical pelvis** (part 0) by
-   * `StandingBody.hip.angle`, about the board frame's x, which is the very axis `StandingBody.couple` already pairs
-   * the rotor's torque on (`this.across`). So the centre of mass, the inertia tensor, the per-part water forces and
-   * the drawn body all read the trunk where the rotor has put it.
-   *
-   * **Geometry, not force.** No torque, no drive, no constant and no new quantity: the rotor's torque was already
-   * paired (`standingBody.ts:379-384`) and its power already booked (`:5076-5078`), and until now its angle was read
-   * in three places that never touched `this.parts`, so the mass model computed every one of those quantities from an
-   * **unfolded** trunk while the trunk folded. `postureRate` is deliberately left alone: the fold's own centre-of-mass
-   * motion must arrive through the pair, never as a kinematic drive.
-   *
-   * **One pivot, one owner of the translation.** The pelvis and both legs stay where the balance put them, so the
-   * posture's translation keeps its single owner and the fold has exactly one pivot. The drawn body's own
-   * compensation (`HumanoidRig.poseHinge`'s `backForMass`) is stood down by the matching rig switch, so the pelvis is
-   * never moved twice.
-   *
-   * The new surfer (`?rider=new`) standing free only - there is no hip rotor anywhere else. Off by default and pinned
-   * off for online rooms (the `?trunk=mass` dev switch, to ride).
-   */
-  trunk?: 'mass';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -1615,78 +1558,6 @@ export interface AttachedRiderOptions {
     /** Step 3.2x: the share of the deck's own roll the ankle's rest carries, 0–1 (ANKLE_PLUMB, 0, by default: measured and not kept). */
     anklePlumb?: number;
   };
-  /**
-   * **THE BODY BANKS WITH THE DECK** (`bodyBank: 'hip'`, step 3.5i; the spec's step 3.1 body lean). Opt-in, off by
-   * default (the `?bodyBank=hip` dev switch), pinned off in the online rooms.
-   *
-   * ## The mechanism it is aimed at, measured, not argued
-   *
-   * `3.5/board-slips-away.md`: turning on the owner's own spot the deck banks past 20° at 0.683 s, **the body does
-   * not bank with it**, the foot support is 0.260 m across in every stance (`riderPosture.ts:96`, one object for all
-   * standing poses) and the centre of mass sits a median 0.676 m over the deck — so **the body's lean and the deck's
-   * bank may differ by only 10.9° before `project` clamps the centre of pressure at the support's edge
-   * (`limit = 'tip'`, 90 of 90 riders turning)**, after which the contact can no longer put force where the body
-   * needs it. The mismatch that clamps is exactly the **ankle's own angle**, `bank.angle − roll`.
-   *
-   * ## Why the ankle cannot be the answer, and why the trunk rotor can
-   *
-   * The ankle's torque reaches the body as an across push of `τ/L` through row 7, and the contact must supply it:
-   * `project` constrains the contact force to **a line through the body's centre of mass**, so every newton across
-   * is paid for by a centre-of-pressure shift of `height/load` metres. At 0.676 m and one body weight the whole
-   * support buys `0.13 × 716 / 0.676 ≈ 138 N` — less than the `g·tan 20° × 73 = 261 N` a 20° bank needs. **That is
-   * the identity behind "the ankle's correction IS the roll" (3.5d: 45–56 % of the deck's roll acceleration), and
-   * nine rounds of moving its gain, range, bound and datum changed nothing.**
-   *
-   * **The trunk rotor is the one channel that is not bounded that way, and it is bounded that way today only because
-   * of a term `project` leaves out.** A body whose trunk is being accelerated has angular momentum of its own, and
-   * the ground reaction of such a body does **not** pass through its centre of mass:
-   *
-   *     p_x = com_x − height · F_x / N − (dH/dt)_roll / N
-   *
-   * — the moment balance about the centre of mass (the centre-of-pressure identity behind Hof, Gazendam and Sinke
-   * 2005's own capture point, and behind Vukobratović and Borovac 2004's zero-moment point; Herr and Popović 2008
-   * measure that walkers regulate exactly this `H`). `project`'s `freeX` is the first two terms and **the third is
-   * missing**, so the model's rider pays for his own hip strategy at the sole and can never profit from it. That is
-   * why step 3.2x's hip drive, measured on its own, *"falls sooner on 36 of 60 rides"*.
-   *
-   * ## What the switch does — ONE term, and it drives nothing
-   *
-   * `project`'s free centre of pressure gains the missing `(dH/dt)_roll / N`, as the `swing` rotor's own angular
-   * impulse about the roll axis resolved into the board's frame; the tangential force that realises a *clamped*
-   * centre of pressure gains the same term, so the unclamped case stays an identity. **That is the whole switch.**
-   *
-   * ⭐ **And it needs no drive, because the rotor was never torque-idle.** Step 3.5d's *"the swing carries 0.1–0.4 %
-   * of the traffic"* is about the **rest command** the hip takes over from the ankle, not about its torque:
-   * `humanSwingStep` adds the rotor's own return and damping term **outside** its ±SWING_TORQUE clamp, so on the
-   * SHIPPED rider `swingTorque` already reaches a per-rider median peak of **165 N·m and a maximum of 303 N·m**, and
-   * `project` was throwing every newton-metre of it away. Measured on 90 Canyon riders turning on the owner's own
-   * address: the term alone fires in **3 061 of 6 425 live frames with the hip gain at zero**.
-   *
-   * **This was built with a hip drive beside it and the measurement removed the drive** — see HIP_CAPTURE_GAIN's own
-   * note for the three-way ordering. The gain is still reachable through `balance.hipCapture` for the probes.
-   *
-   * **It adds no force and no moment.** Every newton still arrives through the ankle's spring, the leg's spring, the
-   * hip's own bounded torque and the water; what changes is the **bound** the contact is held to, from one that
-   * assumes the body has no angular momentum to the one a body with a trunk actually obeys.
-   *
-   * **What it is not.** It is not `uprightVelocity` and not #215: nothing prescribes the body's bank, nothing is
-   * realised by whatever force it takes, and no torque, gain, damper or brake is added anywhere. It is not option 2
-   * of `board-slips-away.md` either — the support's own ±0.130 m is untouched, and the term is exactly zero in every
-   * frame in which the trunk is not being turned.
-   *
-   * **Its measured costs, and one prediction of mine that it refuted.** I predicted the board's roll would get
-   * *worse*, since a body that banks into the turn must drive the rail down. **It got better** — per-rider median
-   * roll peak 65.7° → 52.4° and median roll rate 55.1 → 45.2 °/s on the 90-rider Canyon bench — because a contact
-   * that stays feasible lets the ankle's own counter-roll reach the board at all, where before the solve went apart.
-   * What really costs: the friction cone binds in **28 of 90 riders against 6 of 90**, two riders are released as
-   * `foot slip` where none was, and the median ride is **1.083 s against 1.333 s**. The relief is metres wide in a
-   * light-footed substep, which is correct (a hip strategy on unweighted feet buys nothing) and is handled by the
-   * clamp and the cone, not by a gate.
-   *
-   * The roll axis's second-order component about the board's own along axis (`sin(pitch)·sin(roll)`) is deliberately
-   * **not** corrected, so `freeZ` is left exactly as it ships: one change.
-   */
-  bodyBank?: 'hip';
   /**
    * **The water's own heel datum for the balance's internal model** (step 3.3p, `?waterHeel=tilt`): `'tilt'` reads
    * the twelve captive derivatives' three heel coefficients at the board's heel **against the water** and hands the
@@ -2271,23 +2142,6 @@ export class AttachedRider {
   private readonly stanceDeepRow: boolean;
   /** Step 3.5b: full manual crouch reaches the tube tuck's depth anywhere, not only under a curl (`deepen: 'on'`). */
   private readonly deepens: boolean;
-  /**
-   * Step 3.5g: the arm carriage channel (`armCarry`), **drawing only**. `'rest'` holds the rest carriage whatever the
-   * stick says. `carriage` is its state — how far into the pairing and **over which rail, in one signed number**, how
-   * far overhead, and the rail as a derived sign — advanced per substep beside `balanceMargin` and read only by
-   * `renderPoint`'s hand branch.
-   */
-  private readonly armCarry: 'on' | 'rest' | undefined;
-  private readonly carriage = createArmCarriage();
-  private readonly armPlace: ArmPlace = { out: 0, lift: 0, across: 0 };
-  private readonly armUp = new Vector3();
-  private readonly armAcross = new Vector3();
-  /** Step 3.5g: the arm carriage's own state, for the probes and the tests to read without naming a private. All zeros off the switch. */
-  get armCarriage(): { readonly reach: number; readonly over: number; readonly inside: number } {
-    return this.carriage;
-  }
-  /** Step 3.5h: the hip rotor's angle turns the mass model's own trunk, head and arms about the pelvis (`trunk: 'mass'`). */
-  private readonly trunkMass: boolean;
   /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
   private readonly stanceReach: 'keep' | undefined;
   /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
@@ -2363,24 +2217,6 @@ export class AttachedRider {
   private readonly hipCapture: number;
   private readonly ankleRestRate: number;
   private readonly anklePlumb: number;
-  /** Step 3.5i (`bodyBank: 'hip'`): whether the trunk rotor's own angular momentum rate is counted in the contact's bound. */
-  private readonly banksBody: boolean;
-  /**
-   * Step 3.5i, **a read-out and nothing else**: how far the trunk rotor's own angular impulse about the roll axis
-   * moved the demanded centre of pressure this substep, m (board +x; signed). **0 in every substep off the switch,
-   * and 0 on the switch whenever the rotor's torque is 0**, so a probe that reads it non-zero on the default rider
-   * has found a bug and not a number.
-   */
-  copRelief = 0;
-  /**
-   * Step 3.5i, **the same read-out in torque units, N·m** — the rotor's own moment about the board's roll axis as
-   * `project` used it this substep. It is the term's own hard bound and the one a control can check without knowing
-   * the substep's normal: **`|copMoment| ≤ SWING_TORQUE` always**, because it is `swingTorque` resolved onto an axis.
-   * `copRelief` is the same quantity divided by the substep's normal impulse, so it is **large when the feet are
-   * light** — correctly, since a hip strategy on unweighted feet buys nothing — and the clamp and the friction cone,
-   * not this number, are what the solve then acts on.
-   */
-  copMoment = 0;
   /**
    * Step 3.2q's lean hold stood here and is **gone** (step 3.2t). It capped the lean the rider asks for at the lean his
    * felt vertical would carry, which closed a loop — lean → rail → turn → felt vertical → lean — through `pairFelt`'s
@@ -2401,13 +2237,6 @@ export class AttachedRider {
   private readonly windowed: boolean;
   /** The new surfer standing: the body's pitch on the board (`StandingBody`), and its forward axis (world). */
   readonly standingBody = new StandingBody();
-  /**
-   * Step 3.5h: the trunk fold the **mass model** carries this substep, rad about `this.across` at the pelvis, forward
-   * (nose) +. It is `standingBody.hip.angle` where `trunk: 'mass'` folded the parts and **0 otherwise**, so the gap
-   * between this and `hip.angle` is row 1's own metric - the trunk the physics draws its mass from against the trunk
-   * the rotor is actually at - and its target is zero.
-   */
-  trunkFold = 0;
   private readonly forward = new Vector3(0, 0, 1);
   /** The new surfer: the body's own push through the feet, low-passed over SPECIFIC_FORCE_TIME, N (world): the pitch reference's slow trim. */
   private readonly bodyPush = new Vector3(0, 1, 0);
@@ -2579,8 +2408,6 @@ export class AttachedRider {
   private readonly swingPivot = new Vector3();
   private readonly across = new Vector3();
   private readonly rollAxis = new Vector3();
-  /** Step 3.5i: the roll axis resolved into the board's own frame, inside `project` (its own, so no scratch is shared). */
-  private readonly rollLocal = new Vector3();
   /**
    * The body's speed across the leg relative to the feet, m/s, and after the
    * latest solve; the leg's length, m; the bank asked for, eased in, rad; the
@@ -2692,8 +2519,6 @@ export class AttachedRider {
     // three-row ladder and its 0.30 m clamp. Matched as a string and never parsed — `Number(null) === 0`.
     this.stanceDeepRow = options.stanceDeep !== 'off';
     this.deepens = options.deepen === 'on';
-    this.armCarry = options.armCarry === 'on' || options.armCarry === 'rest' ? options.armCarry : undefined;
-    this.trunkMass = options.trunk === 'mass';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -2736,11 +2561,6 @@ export class AttachedRider {
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
     this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
     this.railCap = ((options.balance?.railCap ?? SCHEDULE_RAIL_CAP) * Math.PI) / 180;
-    // Step 3.5i: `bodyBank: 'hip'` is the contact's missing term and NOTHING ELSE. It was built with a derived hip
-    // drive beside it (`m g` N·m per metre of trigger) and **the measurement took the drive away**: on 90 Canyon
-    // riders turning, the term alone took `tip` from 90 of 90 to 66 of 90 and the drive on top of it put the ride at
-    // 0.917 s against the term's own 1.083 s. The gain stays reachable through `balance.hipCapture` for the probes.
-    this.banksBody = options.bodyBank === 'hip';
     this.hipCapture = options.balance?.hipCapture ?? HIP_CAPTURE_GAIN;
     this.ankleRestRate = options.balance?.ankleRestRate ?? ANKLE_REST_RATE;
     this.anklePlumb = options.balance?.anklePlumb ?? ANKLE_PLUMB;
@@ -3089,8 +2909,6 @@ export class AttachedRider {
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
-    // Step 3.5g: a new mount starts with the arms at rest and no rail chosen (drawing only).
-    resetArmCarriage(this.carriage);
     this.contact.weight = Number.NaN;
     this.standingLine = undefined;
     this.standingHold = 0;
@@ -3211,22 +3029,6 @@ export class AttachedRider {
       if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
       const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
-      // Step 3.5g (`armCarry`, rows 4, 5 and 15): the arm carriage's own height, spread and across, **added on top of
-      // the shipped alarm spread, which is left exactly as it is** - the balance alarm does not gate the carriage, and
-      // `armCarriage.ts` has the measurement that decided that (this rider's margin sits near a half through a turn,
-      // so a margin-gated carriage would have been 7-13 % present in a median turn frame). **Drawing only**: the arm
-      // PART has not moved, so the CoM, the inertias and every force are exactly what they were.
-      if (this.armCarry && this.phase === 'standing') {
-        const lead = (index === 3) === (this.stance === 'regular');
-        const place = armCarriagePlace(this.carriage, lead, this.armPlace);
-        out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread + place.out - ARM_SPREAD));
-        out.addScaledVector(this.armUp.set(0, 1, 0).applyQuaternion(board.orientation), place.lift);
-        // `place.across` is already SIGNED in the board's own frame (the carriage's reach carries the rail in its
-        // sign), so it is added as it stands. It used to be a magnitude times a latched ±1 rail, which teleported the
-        // lead hand 0.44 m across the board in one substep when the stick changed sign with the reach still out.
-        out.addScaledVector(this.armAcross.set(1, 0, 0).applyQuaternion(board.orientation), place.across);
-        return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
-      }
       out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
       return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
     }
@@ -5246,9 +5048,6 @@ export class AttachedRider {
       this.contact.feasible = false;
     }
     this.balanceMargin = this.upright ? this.balanceMargin + (this.rawMargin - this.balanceMargin) * (1 - Math.exp(-h / MARGIN_TIME)) : 1;
-    // Step 3.5g: the arm carriage follows the player's own stick (`armCarry`), fast up and slow back. **Drawing only**:
-    // nothing below this line reads `carriage`, no part mass moves and no force is added. Off the switch it does not run.
-    if (this.armCarry) stepArmCarriage(this.carriage, h, this.steer, this.phase === 'standing' && this.attached, this.armCarry === 'rest');
     const felt = this.contact;
     if (this.agile) {
       // The legs' split moves the feet's shares past the line of force's.
@@ -5554,9 +5353,6 @@ export class AttachedRider {
       this.rawMargin = 0;
       this.limit = 'flight';
       this.loaded = false;
-      // Step 3.5i: a read-out only, cleared here so it can never be read stale through a flight substep.
-      this.copRelief = 0;
-      this.copMoment = 0;
       return out.set(0, 0, 0);
     }
     // The new surfer standing: the knees' strength (`kneeStrength`) at the leg's length now, in MAX_LOAD's place.
@@ -5565,33 +5361,8 @@ export class AttachedRider {
     let limit: ContactLimit = j.y > cap ? 'impact' : 'none';
     // Centre of pressure where the line of action meets the deck, kept inside the support.
     const support = this.support;
-    /**
-     * **Step 3.5i (`bodyBank: 'hip'`): the trunk rotor's own angular impulse, which the line below leaves out.**
-     *
-     * The moment balance about the body's own centre of mass, resolved about the board's local **−z** (the roll axis
-     * the `swing` rotor turns on), is `(p_x − com_x)·N + height·F_x = −(dH/dt)_roll`, so
-     *
-     *     p_x = com_x − height·F_x/N − (dH/dt)_roll / N
-     *
-     * and `freeX` below is the first two terms: it asserts `dH/dt = 0`, i.e. that the contact force must pass through
-     * the centre of mass. That is true of a point mass and false of a body with a trunk, and it is why a hip strategy
-     * costs this rider sole pressure instead of buying it (see `AttachedRiderOptions.bodyBank`).
-     *
-     * `swingTorque` is the rotor's torque this substep, and `d(H_rotor · rollAxis)/dt = +swingTorque` — the drawn
-     * swing turns about `+z` of the body frame while `rollAxis` is `−z` of the heading, and `humanSwingStep` writes
-     * `swing.rate -= h·swingTorque/I`, so the two signs compose to `+`. `rollAxis` is resolved into the board's own
-     * frame (`this.spin` holds `q⁻¹` from the line above) and its `−z` component taken, so the term is exact at any
-     * roll and pitch rather than assuming the heading's axis is the board's.
-     *
-     * **Zero is the shipped expression, verbatim**, so with the switch off — or with the rotor's torque at 0 — not one
-     * extra floating-point operation runs and the arithmetic cannot differ.
-     */
-    const moment = this.banksBody && this.swingTorque !== 0
-      ? -h * this.swingTorque * this.rollLocal.copy(this.rollAxis).applyQuaternion(this.spin).z : 0;
-    const freeX = moment === 0 ? local.x - (height * j.x) / j.y : local.x - (height * j.x + moment) / j.y;
+    const freeX = local.x - (height * j.x) / j.y;
     const freeZ = local.z - (height * j.z) / j.y;
-    this.copRelief = moment === 0 ? 0 : -moment / j.y;
-    this.copMoment = moment === 0 ? 0 : -moment / h;
     this.loaded = j.y > BALANCE_LOAD * this.mass * WATER.gravity * h;
     if (this.loaded) {
       this.desiredCop.x = freeX;
@@ -5600,9 +5371,7 @@ export class AttachedRider {
     const copX = Math.min(support.xMax, Math.max(support.xMin, freeX));
     const copZ = Math.min(support.zMax, Math.max(support.zMin, freeZ));
     if (limit === 'none' && (copX !== freeX || copZ !== freeZ)) limit = 'tip';
-    // Step 3.5i: the same term inverted, so the tangential that realises a clamped centre of pressure carries the
-    // rotor's moment too. Unclamped (`copX === freeX`) this returns `j.x` exactly, as it does off the switch.
-    let tx = moment === 0 ? ((local.x - copX) * normal) / height : ((local.x - copX) * normal - moment) / height;
+    let tx = ((local.x - copX) * normal) / height;
     let tz = ((local.z - copZ) * normal) / height;
     const friction = FOOT_FRICTION * normal;
     const tangential = Math.hypot(tx, tz);
@@ -5747,53 +5516,8 @@ export class AttachedRider {
       this.parts[i * 3] += this.balance.x + this.lean.x + this.armsGive;
       this.parts[i * 3 + 2] += this.balance.z + this.lean.z;
     }
-    this.foldTrunk();
     const center = postureCenter(this.parts, this.partMasses);
     this.localCenter.set(center.x, center.y, center.z);
-  }
-
-  /**
-   * **The trunk's fold in the mass model** (`trunk: 'mass'`, step 3.5h; rows 1 and 2 of
-   * `docs/research/new-rider/3.5/engine-target.md`). The hip rotor's own parts - the torso, the head and both arms,
-   * which is what `HIP_PITCH_INERTIA` is a model of - turn about the **physical pelvis** (part 0) by
-   * `StandingBody.hip.angle`, in `this.parts`' own board-local frame.
-   *
-   * **The axis and the sign, stated rather than inferred.** `this.parts` are board-local and the whole posture is
-   * carried into the world by `bodyFrame` (`frame()`, and `partPosition`), whose x axis **is** `this.across` - the
-   * axis `StandingBody.couple` already puts the rotor's couple on (`rhs[3..5] -= h * hip.torque * across`). So a
-   * right-handed rotation about local **+x** here is a rotation about `across` in the world, in every stance and at
-   * every bank, with no frame correction: the bank is in `bodyFrame`, not in `parts`. Right-handed about +x takes +y
-   * to +z, and +z is the heading, so a **positive** `hip.angle` pitches the trunk toward the **nose** - which is the
-   * sense `hip.angle` is written in (`pitchOf` is `atan2(local.z, local.y)`, forward +) and the sense that pairs: the
-   * same positive torque subtracts from `rhs[8]`, pushing the rest of the body **aft** along `forward`.
-   *
-   * Standing, every part of the posture sits on the stringer (x = 0, `riderPosture.regularPlaces`) and the goofy
-   * mirror only swaps parts across it, so **regular and goofy fold identically** and the pivot is the same point.
-   *
-   * **No force and no drive.** The torque was already paired and already booked; this only states where the mass it
-   * carries is. `postureRate` is left at 0 on purpose - the fold's own centre-of-mass motion arrives through the pair,
-   * and feeding it to `this.drive` would be a hidden kinematic motor.
-   */
-  private foldTrunk(): void {
-    this.trunkFold = 0;
-    if (!this.trunkMass || !this.freeBody) return;
-    const angle = this.standingBody.hip.angle;
-    // Nothing asked, or a rotor that has gone non-finite: the posture stays as the balance left it. The finiteness
-    // test is not decoration - a NaN here would turn every rotor part into NaN and take the whole body with it.
-    if (!Number.isFinite(angle) || angle === 0) return;
-    this.trunkFold = angle;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    const pivotY = this.parts[1];
-    const pivotZ = this.parts[2];
-    for (let i = 1; i < RIDER_PARTS.length; i += 1) {
-      // The rotor is the trunk, the head and the arms: the legs stand on the deck and the pelvis is the pivot.
-      if (!this.shifts(i)) continue;
-      const y = this.parts[i * 3 + 1] - pivotY;
-      const z = this.parts[i * 3 + 2] - pivotZ;
-      this.parts[i * 3 + 1] = pivotY + y * cos - z * sin;
-      this.parts[i * 3 + 2] = pivotZ + y * sin + z * cos;
-    }
   }
 
   /**

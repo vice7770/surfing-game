@@ -13,8 +13,7 @@ describe('showsBalanceMeter', () => {
 });
 
 const turn = (kind: Maneuver['kind'], start: number): Maneuver => ({
-  kind, start, end: start + 1, yaw: 1.7, peakYawRate: 1.9, speedIn: 7, speedOut: 6.4, radius: 3.8, lateralG: 1.4,
-  pathYaw: 1.7, throughWater: 7, roll: 0.7, faceFraction: 0.3, pocket: false,
+  kind, start, end: start + 1, yaw: 1.7, peakYawRate: 1.9, speedIn: 7, speedOut: 6.4, radius: 3.8, lateralG: 1.4, roll: 0.7, faceFraction: 0.3, pocket: false,
 });
 
 describe('maneuverCallout', () => {
@@ -27,14 +26,6 @@ describe('maneuverCallout', () => {
 
   it('forgets the last one between rides, so the next ride’s first turn is called', () => {
     expect(maneuverCallout(undefined, 'bottom turn@2.00')).toEqual({ key: '' });
-  });
-
-  // 2026-11-19: a run the analyzer refused to name is not shouted at the player, but the key still moves on, so the
-  // manoeuvre after it is called out as its own.
-  it('says nothing for an unjudged run, and calls the manoeuvre after it', () => {
-    const quiet = maneuverCallout(turn('unjudged', 2), '');
-    expect(quiet).toEqual({ key: 'unjudged@2.00' });
-    expect(maneuverCallout(turn('bottom turn', 3.5), quiet.key).text).toBe('BOTTOM TURN');
   });
 });
 

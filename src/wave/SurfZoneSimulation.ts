@@ -344,19 +344,6 @@ export interface SurfZoneConfig {
    */
   bankClamp?: 'off';
   /**
-   * 'hip': **THE BODY BANKS WITH THE DECK** (step 3.5i, the spec's step 3.1; `RideSessionOptions.bodyBank`,
-   * `AttachedRiderOptions.bodyBank`). Turning, `3.5/board-slips-away.md` measured the deck banking past 20 degrees at
-   * 0.683 s while the body does not bank with it, on a foot support 0.260 m across in every stance — so the two may
-   * differ by only 10.9 degrees before the centre of pressure pins at the support's edge (`limit = 'tip'`, 90 of 90
-   * riders). ONE term and no drive: `project`'s bound gains the rotor's own angular momentum rate, which the
-   * centre-of-pressure identity has and the code left out, so a body whose trunk is being thrown stops paying for its
-   * own hip strategy at the sole. `tip` goes from 90 of 90 to 66 of 90 on his spot and the pinned share from 52.0 to
-   * 32.3 per cent; the friction cone binds in 28 of 90 riders against 6. The new surfer (`?rider=new`) only; no force
-   * is invented, no hull law is touched. Every spot. The `?bodyBank=hip` dev switch, opt-in, to ride, pinned off in
-   * the online rooms.
-   */
-  bodyBank?: 'hip';
-  /**
    * '1.5' | '2' | '4' | '4.5': **the minimum carved radius the rider's COMMANDED lean is bounded by, m** (step 3.5a,
    * the owner's ruling of 2026-11-17 *"cap the ask"*; `RideSessionOptions.askCap`, `AttachedRiderOptions.askCap`), so
    * the bound on both the balance's own reference and the steer's request is `θ_max = atan(v² / (g R_min))` — 4.9° at
@@ -398,31 +385,6 @@ export interface SurfZoneConfig {
    * spot. The `?deepen=on` dev switch, opt-in, to ride, and pinned off in the online rooms.
    */
   deepen?: 'on';
-  /**
-   * Step 3.5g: **the arm carriage channel** (`engine-target.md` rows 4, 5 and 15; the owner's "geometry rows first" of
-   * 2026-11-18). The drawn standing hands get a **height, a spread and a left/right of their own**, answering the
-   * player's own stick and **never leg depth** (both *"tall ⇒ arms spread"* and *"deep ⇒ arms spread"* are refuted by
-   * the footage): both hands low and drawn in at rest, the lead hand down at the rail with the rear arm up and back at
-   * a turn's load, and the rear arm overhead only on a hard ask. Fast up and slow back, so the hand can arrive before
-   * the rail bites and stay after the ask drops.
-   *
-   * `'on'` is the whole channel; `'rest'` holds the rest carriage whatever the stick says (row 15 on its own, for the
-   * A/B). **Drawing only: no part mass moves, no force is added and no existing force changes.** No clock, no timer,
-   * no fatigue and no stamina. Every spot. The `?armCarry=on|rest` dev switch, opt-in, to ride, and pinned off in the
-   * online rooms (the drawn hands are on the wire).
-   */
-  armCarry?: 'on' | 'rest';
-  /**
-   * Step 3.5h: **the trunk's fold moves the body's mass, and the drawn trunk stops being a function of leg depth**
-   * (rows 1 and 2 of `docs/research/new-rider/3.5/engine-target.md`; `RideSessionOptions.trunk`,
-   * `AttachedRiderOptions.trunk`, `RIG_SWITCHES.trunk`). The new surfer's hip rotor turns the mass model's own
-   * torso, head and arms about the physical pelvis, on the axis `StandingBody.couple` already pairs its torque on;
-   * and standing, the rig draws that one trunk instead of interpolating a second one from leg depth. **Geometry: the
-   * torque was already paired and already booked, and no force, drive or constant is added.** The new surfer
-   * (`?rider=new`) only. Every spot. The `?trunk=mass` dev switch, opt-in, to ride, and pinned off in the online
-   * rooms.
-   */
-  trunk?: 'mass';
   /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the

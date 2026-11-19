@@ -19,9 +19,6 @@ export interface EndCardModel {
 const TITLES: Record<RideResult['outcome'], StringKey> = { wipeout: 'end.wipeout', complete: 'end.complete', ended: 'end.ended' };
 export const MANEUVER_LABELS: Record<ManeuverKind, StringKey> = {
   'bottom turn': 'maneuver.bottomTurn', 'top turn': 'maneuver.topTurn', snap: 'maneuver.snap', cutback: 'maneuver.cutback',
-  // A turn the analyzer measured and refused to name (2026-11-19). The card still lists it, so a run the player felt
-  // is never missing from the readout; it is simply not called a manoeuvre.
-  unjudged: 'maneuver.unjudged',
 };
 
 /**

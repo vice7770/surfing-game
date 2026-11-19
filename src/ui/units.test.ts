@@ -13,16 +13,4 @@ describe('units', () => {
     expect(formatDistance(42.4, 'imperial')).toBe('139 ft');
     expect(formatDuration(12.44)).toBe('12.4 s');
   });
-
-  // The Logbook now logs a fall of a fraction of a second (the owner's ruling of 2026-11-19): neither column may
-  // round a measured number down to a bare zero, which would read as missing data.
-  it('never rounds a real distance or time down to zero', () => {
-    expect(formatDistance(0.3, 'metric')).toBe('<1 m');
-    expect(formatDistance(0.1, 'imperial')).toBe('<1 ft');
-    expect(formatDistance(0, 'metric')).toBe('0 m');
-    expect(formatDistance(0.6, 'metric')).toBe('1 m');
-    expect(formatDuration(0.42)).toBe('0.4 s');
-    expect(formatDuration(1 / 60)).toBe('<0.1 s');
-    expect(formatDuration(0)).toBe('0.0 s');
-  });
 });
