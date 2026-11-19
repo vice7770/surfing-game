@@ -362,6 +362,25 @@ describe('SurfZoneRunner with a rider', () => {
     expect(runner.session!.rider.stance).toBe('regular');
   });
 
+  /**
+   * The Logbook's fall readout: `broke` already carried the limit that let go and the speed there; it now also
+   * carries **the steer the ride was asking for on the last step the rider was on the board**, because a turn asked
+   * for is sometimes the whole fall. A batch applies one input to all of its steps, so this is the falling step's own
+   * input; once the rider is off, later steps must not overwrite it.
+   */
+  it('latches the steer being asked for with the limit that let go', () => {
+    const runner = new SurfZoneRunner(calm, { rider: true });
+    runner.advance(2, { ...idle, steer: -1 });
+    expect(runner.status().ride!.broke).toBeUndefined();
+    runner.session!.separate();
+    const broke = runner.status().ride!.broke!;
+    expect(broke.steer).toBe(-1);
+    expect(typeof broke.limit).toBe('string');
+    // Off the board the latch holds, whatever the stick does next.
+    runner.advance(2, { ...idle, steer: 1 });
+    expect(runner.status().ride!.broke!.steer).toBe(-1);
+  });
+
   it('lies a rider prone on the board in the lineup, and snapshots its render points and phase', () => {
     const runner = new SurfZoneRunner(calm, { rider: true });
     runner.advance(60, idle);

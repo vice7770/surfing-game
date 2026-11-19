@@ -608,6 +608,8 @@ class SurfGame {
     return {
       phase: ride.phase, speed: ride.speed, resets: ride.resets, separation: ride.separation, seaTime: status.seaTime, x: board[0], z: board[2],
       report: ride.report, timeScale: this.timeScale,
+      // What let go at the fall (the Logbook's fall readout): the runner's latch, so the ride tracker can log it.
+      broke: ride.broke,
     };
   }
 
