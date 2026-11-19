@@ -44,8 +44,8 @@ is read** — the whole point is to catch a duplicate before a round is spent on
 | 20 | `G1qplJLdOJM` | https://www.youtube.com/shorts/G1qplJLdOJM | **read — PR #423, not merged.** ⭐ **The first RECOVERY from a lost stance in twenty clips** |
 | 21 | `JyuQD2apZHQ` | https://www.youtube.com/shorts/JyuQD2apZHQ | **read — PR #428, not merged.** ⭐ **The second recovery**, and it **refutes** the arms rule clips 19+20 suggested |
 | 22 | `YybXum0o4YI` | https://www.youtube.com/shorts/YybXum0o4YI | **read — PR #430, not merged.** ⭐ One unbroken ride, and a **deliberate layback snap recovers FASTER than either involuntary save** |
-| 23 | `4cd6S0rD9pE` | https://www.youtube.com/shorts/4cd6S0rD9pE | **reading now** |
-| 24 | `jPOoZnxF3Sw` | https://www.youtube.com/shorts/jPOoZnxF3Sw | **queued** |
+| 23 | `4cd6S0rD9pE` | https://www.youtube.com/shorts/4cd6S0rD9pE | **read — PR #432, not merged.** ⚠️ **SAME RIDER AND FILM AS CLIP 15, re-uploaded by a second channel (@cisurfboards)** — an ID grep cannot catch that. Three content tests say a **different ride**. **Registry rows should carry rider + film + channel, not just the ID** |
+| 24 | `jPOoZnxF3Sw` | https://www.youtube.com/shorts/jPOoZnxF3Sw | **reading now** |
 | 25 | `wHMEeY29v9I` | https://www.youtube.com/shorts/wHMEeY29v9I | **queued** |
 
 **Dispatch rule: the owner's standing instruction is ONE VIDEO AT A TIME**, so the queue is dispatched in order as

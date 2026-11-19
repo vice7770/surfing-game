@@ -4021,3 +4021,47 @@ Two attempts here: **0.54 (0.43–0.67)** and **0.76 (0.70–0.82)**. **They do 
 - ⚠️ **This says NOTHING NEW about why he falls.** Standing windows were short in **both** arms (2–8 frames per take-off), consistent with #429. **If "falls immediately" is a separate complaint from "balance messed up", this does not explain it** — and his sentence contained both.
 - ⭐ **Why every bench was blind is now explicit: `renderPoint` and `AttachedRider.parts` are UPSTREAM of the rig — they are the hinge's INPUT, not its output. Any bench reading them cannot see this.** That is the structural reason #426 and #429 both measured "no change" while the owner saw a different rider.
 - ⚠️ **And a correction to a recorded memory: with the browser pane hidden the game advances 0.00 s of sim in 2 s of wall time — it does not run at all**, rather than running at ~1.5 fps. **Fronted, it still ran ~22× slower than real time.**
+
+---
+
+## 2026-11-19 — VIDEO 23 (PR #432): A THIRD EVENT CATEGORY, AND A SECOND INDEPENDENT HIT ON THE FOOT RATIO
+
+⛔ **No take-off. Twenty-three clips, zero** — and a **THIRD distinct cause**: not a highlight edit (clip 21), not a raw take trimmed late (clip 22), but **a single continuous take whose wave was already underway when the file begins.** **Three causes, one remedy, unchanged: footage that starts before the rider is on his feet.**
+
+### ⭐ A third event category: "swallowed, outcome not shown"
+
+A section breaks onto him and **he meets it STANDING UPRIGHT** — **not clip 22's forward brace and not its layback.** At the native 1/25: 16.60–16.76 upright, trunk **~14° from vertical**, **both hands below the shoulder line**, head up; 16.80 foam to the chest; 16.84–17.00 head only; **17.04 → 18.84 no rider anywhere** (redness 0 on 19 consecutive samples). **Nothing shows him separating and nothing shows him riding out. No duration published, and nothing added to the 0.433 / 0.48 / 0.733 set.** **Row 16 now needs THREE postures, and the trigger is still intent.**
+
+### ⭐⭐ Two of my claims refuted
+
+1. **"No whole board — that is a property of beach shots" is WRONG.** This **is** a beach shot with a long lens, and **t = 5.0000 holds the entire board, both ends clear, fins legible.** **A two-clip sampling accident.** ⭐ **The gate refuses anyway — aspect 8.3 as a MEASUREMENT rather than a lower bound**, the excess over a board's true ~3.8 being ~60° of rail roll.
+2. **The left/right hand spread is a property of the MOMENT, not the rider.** I recorded 7–27 % on one rider and 43–63 % on another as if rider-specific. **One rider, one ride, five frames: 4.3 %, 24 %, 54 %, 77 % of crown-to-sole — wider than both bands and straddling them.** **"The two hands never agree" reproduces; the magnitude does not band by rider.**
+
+### ⭐⭐ AND A SECOND INDEPENDENT HIT ON THE FOOT RATIO
+
+⭐ **A new admissibility gate that needs no nose: a stance spans ≈0.25–0.35 of the board's projected length.** Its own four attempts came out **0.09 L and 0.12 L** ⇒ **it was resolving one foot and a shin, not two feet.** ⚠️ **Applied backwards, clip 22's two published attempts imply ≈0.17 L and ≈0.19 L — BELOW THE GATE.**
+
+> **The 0.55–0.60 band must be re-derived under this gate before it is quoted again.** **That is now two independent cautions on the series' most-reproduced number** — clip 22's non-overlapping pair and an unstated nose identification, and now a stance-span gate that both of clip 22's attempts fail.
+
+⭐ **And the first fin-based nose identification in the series** (three fins in a cluster at t = 5.0000), **which assumes nothing about the direction of travel** — the exact gap clip 22 exposed.
+
+### ⭐⭐ Slow motion is MEASURABLE, and nobody has been checking
+
+**473 native asks, 462 unique, 11 adjacent duplicates that are PIXEL-IDENTICAL (MAD = 0.0000, neighbours 10–25), exactly periodic in two windows and absent elsewhere.** The container is a **true 25.000 fps at three epochs**, while the **unique-picture rate is 12.5 fps over 8.00–8.40 and 18.75 fps over 16.04–16.76.**
+
+> ⚠️ **The clip's one event sits inside a ramp — so its 0.16 s board-to-chest is 0.12 s of REAL time.** **No earlier read has checked for a speed ramp, and several published durations.**
+> ⭐ **And it is the same measurement as the session-wide stale guard: a reader who only asks "is this frame stale" throws away the clip's rate structure.**
+
+### ⭐ A horizon CONVICTS depth; it does not license it
+
+Fifteen clips said *"no horizon, so apparent stature is unlicensed"*, quietly implying a horizon would help. **This clip has a clean sea horizon and it puts the lens ~1.45 rider-heights above the water** (horizon ~140 px above a 314 px rider's crown). **Depth still refused — now BY MEASUREMENT.** And the clip **demonstrates the mechanism: 7.3 head-lengths at a ~53° trunk fold, impossible in front of a level lens.**
+
+### ⚠️ A hole in the registry
+
+**This is the SAME RIDER AND THE SAME FILM as clip 15** (`3yxY-F_AEds`, *SHORTYHEAD*), **re-uploaded by a second channel (@cisurfboards)** — **an ID `grep` cannot catch a re-upload.** Three content tests say it is a **different ride** (bright yellow board with three fins both sides against clip 15's dark board with a VANS bottom; this clip's last 1.9 s has no rider at all; clip 15 has a cut at 4.08 and this has none), **with the board-colour test resting on another reader's word for a backlit board — stated as the weakest link.** **Registry rows should carry rider + film + channel, not just the ID.**
+
+### Other
+
+**Row 15** sixth clip — ⭐ **and the low carriage splits into two INCOMPATIBLE shapes: hands 10 px apart reaching past the nose, against 56 px apart on opposite sides. One scalar expresses neither.** ⛔ **No duty cycle published — "my sampling is not uniform, so a percentage would be a fact about the sampling"** (clip 22 published one; this is the better discipline). **1.2 s of the ride is occluded behind the wave, not a cut** (correlation never below 0.73). **Clip 22's end-of-file non-decode reproduced.**
+
+**Method:** ✅ **the session-wide hash guard run at scale — ~1 073 frames, zero stale**, every match adjacent and a real duplicate picture. ⭐ **The two-`<video>` trap fired on the first install (`duration = null`) — it is the DEFAULT on a Short, not a rarity.** ☠️ **Screenshot size changed FIVE times and `resize_window` did not pin it**; at 386 the canvas is **clipped, not scaled.** ⛔ **An automatic horizon detector was built, validated and DISCARDED** — correct at two epochs, **locked onto the wave's white lip on 6 of 8 frames**; nothing automatic is quoted.
