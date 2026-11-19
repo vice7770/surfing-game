@@ -4465,3 +4465,70 @@ Two runs on the committed `four-numbers.ts` probe (seed 2, 4 periods, the owner'
 ### 4. ⚠️ And I nearly published a wrong claim from my own analysis
 
 My first crossing detector tested `ask/cap >= 1` **unsigned**, so for `cueR` — which steers the other way and carries a NEGATIVE ask — it reported `peak ask 0.00°` and **"crossing NEVER"**. With `|ask|` it crosses at `t+0.600` like the other direction. **Same error family as the rest of this file: a one-signed test on a two-signed quantity, caught only because the "never" looked wrong beside a fall.** Related to the `Math.sign(0) || 1` and `x >= NaN` entries.
+
+---
+
+## 2026-11-19 (late) — ⭐⭐⭐ **A TURN THAT WORKS, AT LAST — AND IT COSTS 70 % OF THE SPEED. The loop is now closed end to end.**
+
+Seed 2, steer only (`TURN_COMPRESS=0`), all 7 cue waves, 3 scripts. **The first positive example in this entire series**, found by the reviewer in my own `w211.jsonl` before I had read it.
+
+### 1. ⭐⭐ Wave 2, left turn: he banks 42°, changes course 40°, and CLIMBS
+
+| t+s | face fraction, **left turn** | face fraction, **neutral** | course° | roll° | speed through water |
+| --- | --- | --- | --- | --- | --- |
+| 1.22 | 0.231 | 0.233 | 13.8 | 36.35 | **8.83 m/s** |
+| 1.50 | 0.183 | 0.175 | 45.7 | **42.52** | 7.64 |
+| 2.00 | **0.293** | 0.110 | **54.0** | 11.83 | **4.29** |
+| 2.50 | **0.493** | 0.062 | 53.7 | 0.67 | 4.83 |
+| 3.00 | **0.690** | 0.021 | 35.6 | 4.29 | **2.61** |
+
+⭐ **The rider drops to the bottom (0.183), banks to 42°, turns 40° of course and climbs back to 0.690 of the face — and survives the window.** The neutral control on the same wave **descends** the whole time, 0.233 → 0.021: it slides to the bottom and stays there. **So the turn is not only survivable, it is the thing that gets him back up the wave.** Horizontal through-water magnitudes reconstructed with the saved flow agree (8.85 / 4.29 / 4.84 / 2.64), **so the speed loss is real and not a heading projection.**
+
+> ⚠️ **But it costs 8.83 → 2.61 m/s — 70 % of his speed.** The energy change alone cannot say whether that is excessive drag, and it cannot judge feel. **It is the number to put in front of the owner, because it is what he will feel as "doable, not as sharp as I wanted".**
+
+### 2. ⭐⭐ AND THE LOOP CLOSES, because the cap is built on that same speed
+
+Today's cap finding: the lean ceiling is **`atan(speedThrough² / (g · 4.5))`**, on the **through-water along-heading** speed, reproduced on 267 of 267 frames. So:
+
+> **The turn eats the speed → the speed loss lowers the ceiling → the fixed-rate 1.4 rad/s ask crosses the lowered ceiling → the demand leaves the sole.** Every link is measured, and it is **self-reinforcing**. That is why a turn that starts fine dies 0.3 s later, and why the no-steer arm's ceiling falls just as far without ever dying — its ask is zero.
+
+### 3. ⚠️ AND COMPRESS IS NOT "MILDLY PROTECTIVE" — IT RESCUES A WAVE
+
+Steer-only against the earlier steer-plus-Compress runs:
+
+| wave | `cue` | `cueL` | `cueR` | with Compress as well |
+| --- | --- | --- | --- | --- |
+| 1 | SURVIVED | 0.7000 | 0.7167 | 0.7167 / 1.0000 |
+| **2** | SURVIVED | **SURVIVED** | **SURVIVED** | SURVIVED ×3 |
+| **11** | SURVIVED | ⚠️ **2.7000** | ⚠️ **2.5167** | **SURVIVED ×3** |
+
+⭐ **Wave 11 FALLS on a steer alone and HOLDS when Compress comes with it.** So the earlier "Compress is neither necessary nor sufficient, and mildly protective" **understates it: on one of three carried stands Compress is the difference between a completed window and a fall.**
+
+> ⚠️ **And that is the input the owner's Steam Controller was pinning to full — which was HELPING him.** The fix (PR #436) gives him the ability to feather it; nothing says feathering is better, and this table says a full Compress saves a wave. **Do not sell the pad fix as a fall fix, and do not assume less Compress is better.**
+
+### 4. What this gives the next round, in the SAME input condition
+
+* **A positive control**: wave 2 `cueL` — a turn with a climbing exit.
+* **A late-fall control**: wave 11 `cueL`/`cueR` at 2.70 / 2.52 s — far outside the first second every earlier round measured.
+* ⚠️ **A zero hip reading leaves coupled deck dynamics in play**: isolating the ankle would take a further separation, which nothing here has done.
+
+### 5. ⭐ And the owner's own report, turned into a number
+
+He rode `claude/ride-everything` and reported: *"the board starts going left and right and the surfer cannot stabilize it and falls. Like a skate board going down the lane"*, and *"there should not really be a difficulty keeping the board stable."*
+
+**Measured, with nothing asked of the rider:**
+
+| wave | board roll, peak-to-peak per 0.5 s | side swaps | body bank | its turn |
+| --- | --- | --- | --- | --- |
+| **1** | 2.7 → 2.0 → 2.9 → **14.0 → 13.3 → 13.9°** | **3.6 /s** | ±2°, then climbs to **+11°** | **fails** |
+| 2 | 1.5 → 1.1 → 1.4 → 1.0 → 0.6 → **0.7°** | 1.0 /s | — | holds |
+| 11 | 1.8 → 0.4 → 0.2 → 0.1 → 0.2 → **0.3°** | 1.3 /s | **±0.3°** and settled | holds |
+
+⭐ **The wobble is real, and it discriminates perfectly on these three waves: the one that weaves is the one whose turn fails.** Coincident but **not** established as its cause: wave 1's **wetted hull doubles**, 0.253 → 0.527 m², as the wobble sets in, while wave 11's stays 0.20–0.44.
+
+⛔ **And I caught a 57× unit error in my own first read of this**: the probe's `bank` column is already `rider.bank.angle * DEG`, and I multiplied by `DEG` again — which turned +11° into +636° and would have been published as a runaway body spin. **Same family as every other unit and frame slip in this file.**
+
+### 6. The owner's two other rulings from that ride
+
+* **The crouch rail-grab is liked and is to become PLAYER-TRIGGERED** — *"in the future this behavior should be player triggered because of snap and other tricks."* That is PR #220's rail grab, currently parked. Recorded as a requirement, not built.
+* **The Compress fix is imperceptible to him, and that is CORRECT**: a buried trigger is identical before and after by construction; the fix only shows on a part-pull. Told to him plainly rather than oversold.
