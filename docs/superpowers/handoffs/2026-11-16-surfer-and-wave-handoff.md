@@ -4613,3 +4613,62 @@ On wave 1, roll recomputed **relative to the water** spans **23.53°** against *
 ### 7. And four more defects in the merged readout, found by the same review
 
 Three **carry false positives** in the just-merged classifier — **missing coverage** (1 valid sample of 18, carry +0.03), **floating roundoff** (18 constant samples at 0.27 earning it on **+5.55e-17**), and ⭐ **a shrinking denominator** (constant 0.375 m above the trough while the wave falls 1.50 → 1.23 m, so the FRACTION rises while the board never climbs) — plus **`RideTracker.ts:125` consuming a report id before the `!riding` return at `:126`, which drops exactly the sub-second stands the owner ruled must be logged.** All four are being fixed with failing tests first, and **the owner's "any climb counts" ruling is NOT to be raised while fixing them.**
+
+---
+
+## 2026-11-19 (night) — ⭐⭐⭐ **THE TORSO WIND-UP IS THE TWIST ACTUATOR'S REACTION MASS. The ≈ +10 J reproduces; the lag, the gain sign and "a pump" are all refuted; and "free torso rotation on a deliberate turn" does not exist in the reference.**
+
+**Step 3.5i, `docs/research/new-rider/3.5/twist-work.md`** (probe `twist-work.ts`, output `results/35i/`). `git diff claude/the-record -- src/` is **empty**: no constant, switch, pose or force moved, and no getter was needed.
+
+### 1. ⭐⭐ The reviewers' number reproduces, on a second instrument, to 0.01 J
+
+Positive control first: **the shipped `PredictiveController.tick` on the saved `cue` arguments reproduces the recorded `u0`, `u1`, `raw0`, `raw1` with a maximum difference of 0.0e+0 on all four waves**, and **`raw1` is clipped on 0 of 684 ticks** — so nothing below is a saturation artefact.
+
+| window | wave 1 raw | +raw | lag@beg / mean / end | +lag | **reviewer** |
+| --- | --- | --- | --- | --- | --- |
+| **+1.000 → +1.533 s** | **+9.377 J** | 29/32 | +10.126 / **+10.020** / +9.914 | **32/32** | ≈ +10.0, 32 of 32 |
+| **+0.900 → +1.533 s** | +9.626 J | 35/38 | **+10.493 / +10.370 / +10.247** | 38/38 | **+10.49 / +10.36 / +10.25** |
+
+The reversal tick reproduces to the digit as well: at **+1.5333 s** the command is **−45.846 N·m** against a lagged **+17.534 N·m** entering that interval. Wave 6: raw **−0.086 J**, lagged +0.043.
+
+### 2. ⛔ Three candidate causes die
+
+* **The `MOTOR_LAG` filter.** The raw command's work is **already +9.377 J** before any filtering, and on wave 6 the raw work is **negative** while the filter lifts it to ≈ 0. *(The coordinator's own lead, countered by the coordinator; reproduced here.)*
+* ⛔ **"A pump in phase with the twist rate."** **Wave 1's relative twist rate is positive on 38 of 38 intervals**, 23.3 → 124.0 °/s, the angle climbing 4.68° → 46.07° with **no reversal**. **There is no cycle to be in phase with** — it is a **one-way wind-up** with the command on the winding side for 35 of 38. Wave 6's joint *does* oscillate and there the same actuator nets ≈ 0.
+* ⛔ **An unstable gain — and this was my own first headline.** `k[1][θ_t]` is positive at all 17 schedule knots (+57.19 at 4.0 m/s to +16.02 at 12.0) and exceeds the passive `TWIST_STIFFNESS` of 20 N·m/rad from 4.0 to 7.5 m/s — **but the designed loop's spectral radius is 0.961–0.985 at every knot and released from a pure 10° twist it REMOVES 0.21–0.26 J.** The own-angle overshoot is **0.445–0.573° on a 10° release**, 4.5–5.7 % of whatever it is released from. **Not a divergence, and the word must not be used.** *(An earlier draft put that overshoot at 1.6–1.9°, which was §4.3's 28.65° release misread onto the 10° table.)*
+
+### 3. ⭐⭐⭐ What it IS: the twist torque is the BOARD's actuator and the torso is its reaction mass
+
+The command's route to the board is the reaction through the planted feet, so **every joule it pushes into the board passes through the torso joint**. Three instruments, no ride needed for two of them:
+
+* **The plant.** Per N·m per frame the command moves the **board's** yaw rate 0.00118 rad/s against the upper body's own 0.00170 — **69 %** — and the gain row's largest entries are the **slip** and the **bank**, never the joint (`k[1][θ_t]` is 16–57 against −993 to −49 on β and −602 to −267 on θ).
+* ⭐⭐ **The designed loop, no water at all, released from each costed state in turn at 5.0 m/s:** upper-body yaw rate → torso to **37.57°**, **+2.886 J INTO the joint**; board yaw rate → **+0.109 J**; bank → **+0.063 J**; roll rate → **+0.031 J**; **a pure torso twist → −2.001 J.** **It pumps the joint when answering something that is not a twist and damps it when answering a twist.**
+* ⭐ **And the speed carries the sign:** that pumping release is **+1.080 J at 4.5 m/s, +2.886 at 5.0, −0.173 at 8.5.**
+
+### 4. ⭐⭐ Why wave 1 and not wave 6 — a two-way substitution, same shape as the ankle finding
+
+Gain row **frozen one speed at a time** on each wave's own saved state, reference, bias and motion (⛔ open-loop; it changes the command and nothing else): **wave 1's own motion goes +16.387 J at the table's slowest knot (4.0 m/s), +2.910 at 5.0, −22.115 at 5.5 and −0.67…−1.62 at 8.5–10.0; and wave 6's own state and motion FLIP from −0.086 J to +0.858 J when handed the slow-knot row.** Wave 1's median scheduling speed in the window is **4.718 m/s**; wave 6's 5.740; waves 2 and 11 run at 8.239 and 8.406. ⚠️ The column is **not monotone** and is not a threshold.
+
+### 5. ⛔⛔ THE SECOND HALF, and my answer to it was wrong TWICE
+
+* ⛔ **Version 1** read a **direct 20° twist ask** and called the channel a tracking law. **In ordinary play nothing asks for twist**: `Controls.ts:147` leaves `rotate` undefined, `RideSession.ts:449` defaults it to NaN, `twistStep` asks zero absent Snap, and `steadyTurn` **assigns** `x[6] = twist` outright — so the reference echoing the ask is plumbing. **Withdrawn.**
+* ⛔ **Version 2** printed `ref.u[1]` (≈ 0 for a bank ask) and was about to call the actuator **idle** in a turn. **Also wrong, and worse.**
+* ⭐⭐ **The truth: the bank and the twist share ONE active torque channel.** `raw[1] = ref.u[1] − b1 − Σ k[1][j](x̂[j] − ref.x[j])`, and a bank ask puts a non-zero **reference STATE** in, so the gain row issues real twist torque with the twist ask at zero. **Measured: ±1.3369° of bank ask → ±4.588 N·m at 6.7 m/s / rail 0.192°, 3.432 N·m per degree** — the reviewer's independent figure, re-derived to the digit — **and 7.977 N·m per degree at 5.0 m/s / rail 0, 2.3× steeper.**
+* ⭐⭐⭐ **And `ref.x[θ_t]` is 0.000° at EVERY bank ask on every operating point: the design asks the torso to stay SQUARE to the board through the whole turn while commanding up to 354 N·m.** **"Retain free torso rotation on a deliberate turn" cannot be satisfied because it does not exist in the reference** — the torso is reaction mass in the turn exactly as at neutral. ⚠️ **The hips' 100 N·m bound bites there**: the channel's demand passes it at about **12.5° of bank ask at 5.0 m/s** and **31° at 6.7**, where the neutral trace clipped on 0 of 684 ticks.
+
+### 6. ⛔ No weight removes it, so nothing is proposed
+
+Tightening the torso's own cost 3.3× leaves the pumping release at **75 %**; tightening the upper body's rate cost 5× — the **loosest weight in the whole cost**, `q = 1` against 2500 on the slip — leaves it at **90 %**, and **both make `k[1][θ_t]` LARGER.** **The pump is not in the cost.** Any lever is in the plant or in the actuator's authority, it must be judged in **both** regimes, and it is the owner's ruling. ⛔ **And nothing here is a case for suppressing command reversals as a class** — on the saved wave-2 steer arms both *successful* direction changes contain a large opposite ankle reversal after the stick centred, so a blanket veto would conflate turn **recovery** with the wobble.
+
+### 7. Registered in passing, and not claimed as a cause
+
+The game's twist joint adds `TWIST_STOP` = **2000 N·m/rad** past 0.87 rad (49.85°); **the controller's design carries only `TWIST_STIFFNESS` = 20 and no stop at all**, so past 49.85° the balance predicts a joint **100× softer** than the one it meets — and the ride peaked at **51.10°**. ⛔ **The stop is crossed at +1.683 s, ~0.14 s AFTER the +1.533 s ankle reversal, so it is not the trigger.** The **rebound** happens inside the mismatch and nothing has looked there.
+
+### 8. What is still open, said plainly
+
+1. ⛔ **What initiates the disturbance.** Untouched.
+2. ⛔ **The estimator.** The releases hand the law the **true** state, so the pump does not **need** a bad estimate — but whether `x̂` makes it worse is not measured.
+3. ⛔ **The twist channel's BENEFIT in a real turn.** The applied twist torque was never recorded on the steered arms. **The channel is now known to be live there, which makes it a specific thing to measure rather than an unknown.**
+4. ⚠️ **Only wave 1's sign is robust.** Wave 6's narrow window and wave 2's wide window **both change sign** across the three lag-sampling variants; wave 1's +10.02 moves by ±0.11 and never changes sign. The settling waves' claim is that their work is **small**, not that it is negative. *(An earlier draft wrote "no sign moves on any wave" — true of 3.5h's roll partition, **false** of this one.)*
+5. ⚠️ **The clock.** Every window here is **seconds after the STAND** on a zero-command script. **There is no steer release in it**, and it is neither the steer-release clock (+1.2167 s on the wave-2 arms) nor the Logbook's fast-nose end (+1.633 / +1.617 s).
+6. ⛔ **The joules are on the board's UP axis and must not be added to 3.5h's roll partition.** The reaction's work on the board's yaw is unmeasured and nothing is attributed to the shipped yaw ledger's residual.
