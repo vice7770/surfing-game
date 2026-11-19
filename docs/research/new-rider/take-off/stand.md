@@ -815,9 +815,9 @@ the catch**, which is why every attempt on this track to find the fix in the rid
    **0.84–0.99 m** under, so the dev-tools readout tells the owner *"board sinking, not planing yet"* about a board
    whose real problem is that his feet are a metre under the surface. **Cost of reordering: nothing at all** — the
    function's return value has one consumer, a string.
-4. **The quantity that decides it is the board's speed through the water at the stand — every ride that lasted had at
-   least 4.400 m/s of it, though more is not better and ⛔ it is not a condition to test for — and the
-   take-off's handle on it is the CATCH, not the cue.** ⚠️ **Cost, and it is why this is not a one-line fix:** the
+4. **The quantity that every ride that lasted had is the board's speed through the water at the stand — at least
+   4.400 m/s of it, though within the survivors' own range more is not better and ⛔ it is not a condition to test for
+   — and the take-off's handle on it is the CATCH, not the cue.** ⚠️ **Cost, and it is why this is not a one-line fix:** the
    press-timing sweep **is not a lever** — over the 12 waves where it could be measured it changed the outcome on
    three, **once for the better and twice for the worse**, one of those while gaining speed. Pressing **earlier** is
    measured and it is the round's clearest negative: the `early` rule stands **21 of 23** riders and **holds 0**, on a
@@ -837,8 +837,9 @@ the catch**, which is why every attempt on this track to find the fix in the rid
    standing still, which is why standing off the plane puts the feet 0.288 m under. **Cost:** the volume is a sourced
    measurement (Connellan et al. 2026, Table 1), and the shape it drives carries the inertia, the added mass, the
    planing scales and the whole P4e calibration, so changing it is a re-calibration and a change to a cited reference,
-   not a tweak. **It is listed because it is the only thing measured here that would make a stand off the plane
-   survivable; it is not a recommendation.**
+   not a tweak. **It is listed because it is the only thing in this round that bears directly on the 49 kg deficit
+   rather than on its symptoms. It is not a recommendation, and this round did not test it** — whether a bigger board
+   actually lengthens a ride is a measurement nobody has made.
 
 ## 8. What would refute this, and what I did not measure
 
