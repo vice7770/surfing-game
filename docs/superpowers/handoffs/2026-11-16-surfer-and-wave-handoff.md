@@ -4557,3 +4557,59 @@ The reviewer checked the timing of the entry above before anyone built on it. **
 ### And before anyone tunes stability on this
 
 The reviewer's condition, accepted: **compare measured cross-face tilt, deck-relative roll and the board-versus-rider response** before touching stability. The roll figures above are **world-frame deck roll**; a wobble in the world frame on a tilting face is not the same quantity as a wobble relative to the water's own surface, and today has already produced one 57× unit error and one over-ground/through-water column error in this same file.
+
+---
+
+## 2026-11-19 (night) — ⭐⭐⭐ **THE WEAVE IS LOCALISED BY A TWO-WAY SUBSTITUTION: SPEED-DEPENDENT GAINS × AN ALREADY-WOUND-UP TORSO. Neither alone does it.**
+
+All of this is the reviewer's, from an **exact replay of all 684 saved neutral ticks through the combined production controller — max raw ankle mismatch ZERO on all four waves, references zero.** Its signed entry is now collected onto this branch (cherry-picked from `codex/canyon-neutral-ankle-review` `39a625ef`; the append-only conflict was resolved by keeping **both** sides).
+
+### 1. The command is 91 % GAINS, not state
+
+At the wave-1 spike (+1.533 s) the raw ankle target moves **−13.491 → +2.104°**. Exact two-tick midpoint decomposition of the actual `−raw[0]`:
+
+| source | contribution |
+| --- | --- |
+| **changing feedback COEFFICIENTS** | **+14.228°** |
+| changing estimated body/board state | +1.374° |
+| bias | −0.007° |
+| | **= +15.595°** |
+
+Split across the operating point: **+14.217° SPEED, +0.011° depth.** Within the gain term, the coefficients on **upper-body yaw rate (+5.717°)** and **torso twist (+4.586°)** carry most of it.
+
+### 2. ⭐⭐ AND THE TWO-WAY SUBSTITUTION, which is what makes this a localisation rather than a correlation
+
+| substitution | result |
+| --- | --- |
+| **the PREVIOUS gain row** on wave 1, with its exact **NEW** state and bias | **+1.368°** instead of +15.595° |
+| **the IDENTICAL wave-1 gain-row change** applied to **wave 6's** mean estimated state at its comparable flow crossing | **−1.725°** instead of +14.228° |
+
+> ⭐ **Hold the gains and the spike disappears. Apply the same gain change to a torso that is not wound up and it disappears too.** **It is the INTERACTION** — speed-dependent feedback meeting an already-wound-up upper body — **and neither factor alone produces it.**
+
+**And that is why wave 6 does not weave at a BIGGER speed jump** (3.54 → 8.48 m/s, +4.93 in 0.117 s, against wave 1's +2.01 over its own window; roll 0.199° peak-to-peak, command span 2.5°, ankle torque peaking 7.3 N·m). **The measured body twist at the tick: wave 1 46.1° with ZERO requested twist, wave 6 4.5° at almost the same speed. Ten times the wind-up.**
+
+### 3. ⭐ The narrow engine question this leaves
+
+> **Why is the torso already winding up to 46° at neutral, and why does the 5.0–5.5 m/s row re-weight that yaw state into an ankle reversal?**
+
+⚠️ **This isolates the COMMAND. It is not a cure for the ride, and it does not establish that the controller originates the weave** — an actively balancing rider would also reverse its ankle in response to a disturbance, and the energy result is **net roll-channel transfer with a residual**, where a positive return could follow an initial water disturbance. **Characterisation: a leading candidate for AMPLIFICATION. Initiation and any individual fall remain open.**
+
+### 4. ✅ And the frame caveat is closed in the finding's favour
+
+On wave 1, roll recomputed **relative to the water** spans **23.53°** against **2.09°** of cross-face tilt. **The weave is real in the water's own frame and is not a world-frame artefact.**
+
+### 5. ⚠️ Corrections to the in-flight investigation, relayed
+
+* **"All water terms are negative on every wave" is WRONG**: foils on wave 1 are **+0.156 J** and hull on wave 2 **+0.077 J**.
+* **A reader bug**: `axisDeg` in `weave-read.py` is `abs(rollEng)`, **not** a true axis separation — the **signed heading-axis angular velocity** must be used directly before any exact ankle-work claim.
+* **My own stale-propagation hypothesis was the wrong SHAPE** — right file (`predictiveBalance.ts:1531`, which does propagate 100 ms-old senses with a present-speed design), wrong mechanism. **It is the gains being re-weighted, not old data pushed through a new model.**
+
+### 6. ⭐ The player-facing acceptance condition, adopted
+
+> **With the steering centred after standing, an incidental roll should SETTLE — without repeated rail-to-rail or course reversals that need countersteering — while a deliberate rail input still starts a turn.**
+
+**Both halves must hold**: calming the board by making a rail input stop turning it is a failure, not a pass. **Already calibrated on saved data: waves 2, 11 and 6 pass; wave 1 fails.** The owner has been shown this bar and asked to correct it if it sits wrong.
+
+### 7. And four more defects in the merged readout, found by the same review
+
+Three **carry false positives** in the just-merged classifier — **missing coverage** (1 valid sample of 18, carry +0.03), **floating roundoff** (18 constant samples at 0.27 earning it on **+5.55e-17**), and ⭐ **a shrinking denominator** (constant 0.375 m above the trough while the wave falls 1.50 → 1.23 m, so the FRACTION rises while the board never climbs) — plus **`RideTracker.ts:125` consuming a report id before the `!riding` return at `:126`, which drops exactly the sub-second stands the owner ruled must be logged.** All four are being fixed with failing tests first, and **the owner's "any climb counts" ruling is NOT to be raised while fixing them.**
