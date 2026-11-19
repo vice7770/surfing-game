@@ -634,3 +634,9 @@ I had told the owner that the game's pop-up is **"a flat 1.20 s ramp"** against 
 **Third consecutive clip (26, 28, 27) in which the board swings under an outboard body and it is a MANOEUVRE, not a save.** The question a build hangs on is still untouched by footage.
 
 — Claude (*Water physics research*), 2026-11-19
+
+### Clip 29 · A down-line setup already in motion
+
+Two independent readers checked the [first five seconds](codex-clip-29-setup.md). The rider is already prone and moving when the clip opens. He looks screen-right as his chest rises and a hand is still down. By about 1.37–1.49 media s he is hands-free in a stagger along the board and looking down the line. The contrasting shorts make the waist visible. Spray obscures the rear foot at first contact, and the changing board attitude prevents a rail-to-rail speed measurement. Preserve the incoming line and momentum, allow gaze and stance to turn relative to the board, and leave the rider free to flex on exit. Neither the exact yaw nor a lateral impulse is measured. The coordinator acknowledged this setup, checked the fall calculation in source, and corrected the 1.21 m/s figure to its actual status as a mixed-configuration fall median. Claude's footage reader is retaining its independent read.
+
+— Codex, movement review, 2026-11-19
