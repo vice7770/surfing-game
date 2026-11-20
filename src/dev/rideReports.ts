@@ -36,14 +36,31 @@
  */
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
 import type { RideReport } from '../game/rideAnalysis';
+import type { RideRequest } from '../wave/SurfZoneRunner';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
-import { Autopilot, autopilotView } from './Autopilot';
+import { Autopilot, autopilotView, type AutopilotInput } from './Autopilot';
 import { advance, breathe } from './devStepping';
+
+/**
+ * **Build guard: every field the autopilot can ask for must reach `advance`.** The first run of this tool rebuilt the
+ * input as `{ paddle, popUp, steer }` and so threw away `trim`, `crouch`, `compress` and `rotate` — the autopilot's
+ * bottom turn asks for `crouch` and `compress` at the base of the turn (`Autopilot.next`), and its cutback adds
+ * `rotate`. The rider was steered and never crouched, and a whole population was measured on it.
+ *
+ * Typing the parameter `RideInput` cannot catch that on its own, because every one of those fields is optional and a
+ * three-field literal satisfies the type. So this checks **key coverage** instead: if `AutopilotInput` ever carries a
+ * field that `advance`'s input type does not declare, `Dropped` resolves to that field's name and the assignment
+ * below fails the build naming it.
+ */
+type Dropped = Exclude<keyof AutopilotInput, keyof Parameters<typeof advance>[2]>;
+const everyInputFieldReachesThePhysics: Dropped extends never ? true : Dropped = true;
+void everyInputFieldReachesThePhysics;
 
 /** What the tool needs of the game: the recording hooks, minus the camera and the encoder. */
 export interface RideReportHooks {
   start(settings: PhysicalSettings, overrides?: Partial<SurfZoneConfig>): Promise<void>;
-  step(input: { paddle: boolean; popUp: boolean; steer: number }): void;
+  /** The rider's whole input (see `SteppedHooks.step`): never a hand-picked subset of fields. */
+  step(input: Omit<RideRequest, 'retry'>): void;
   retry(): void;
   mode: PhysicalMode;
 }
@@ -95,6 +112,8 @@ const GIVE_UP = 8;
  * ride unreported (`SurfZoneRunner.launchRide` builds a fresh analyser).
  */
 const AFTER = 3;
+/** Nothing asked for, for the steps before the autopilot has a view to read. */
+const IDLE: AutopilotInput = { paddle: false, popUp: false, steer: 0 };
 
 export async function collectRideReports(hooks: RideReportHooks, search = globalThis.location?.search ?? ''): Promise<RideReportRun | undefined> {
   const wanted = rideReportsWanted(search);
@@ -132,7 +151,7 @@ export async function collectRideReports(hooks: RideReportHooks, search = global
     steps += 1;
     if (steps % 30 === 0) await breathe();
     const view = autopilotView(host, hooks.mode.focus.z, settings.tide, LOOK);
-    const input = view ? autopilot.next(view, STEP) : { paddle: false, popUp: false, steer: 0 };
+    const input: AutopilotInput = view ? autopilot.next(view, STEP) : { ...IDLE };
     if (autopilot.state === 'done') {
       after += STEP;
       if (after > AFTER) {
@@ -143,7 +162,9 @@ export async function collectRideReports(hooks: RideReportHooks, search = global
     } else {
       after = 0;
     }
-    await advance(hooks, 1, { paddle: input.paddle, popUp: input.popUp, steer: input.steer });
+    // The autopilot's own object, forwarded whole. Never reconstructed field by field: that is what starved the
+    // rider of its crouch and compress on this tool's first run.
+    await advance(hooks, 1, input);
     simulated += STEP;
     run.simulated = simulated;
     run.attempts = autopilot.attempts;

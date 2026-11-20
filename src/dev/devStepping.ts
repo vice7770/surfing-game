@@ -4,6 +4,7 @@
  * (`&compute=gpu`).
  */
 import type { PhysicalMode } from '../game/PhysicalMode';
+import type { RideRequest } from '../wave/SurfZoneRunner';
 import { MAX_QUEUED_STEPS } from '../game/WorkerSurfZone';
 
 /**
@@ -21,7 +22,16 @@ export const breathe = () => new Promise<void>((resolve) => {
 });
 
 export interface SteppedHooks {
-  step(input: { paddle: boolean; popUp: boolean; steer: number }): void;
+  /**
+   * **The rider's whole input, not a chosen few fields.** It is everything `PhysicalMode.advance` already accepts, so
+   * nothing an autopilot can ask for has nowhere to go: the standing phases fill in far more than the stick — a bottom
+   * turn asks for `crouch` and `compress` as well as `steer` (`Autopilot.next`), a cutback adds `rotate`, and
+   * `style=tube` sets `tubeGuide`. Naming a subset here is how a caller comes to rebuild the input field by field and
+   * silently drop the rest, which is exactly what `rideReports` did, measuring a steer-only rider. Every one of those
+   * fields is optional, so the type alone cannot catch a short literal; what it does is make the whole input the thing
+   * being passed, so forwarding the autopilot's own object is the natural way to call this.
+   */
+  step(input: Omit<RideRequest, 'retry'>): void;
   mode: PhysicalMode;
 }
 

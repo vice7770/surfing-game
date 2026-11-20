@@ -44,7 +44,7 @@ import { setGlitterForGraphics } from './scene/water/glitter';
 import { DISPLAY_EXPOSURE, setWaterLight, waterLightOn, waterLightState } from './scene/water/waterLight';
 import { setFoamStreaksForGraphics } from './scene/water/foamFreshness';
 import type { RideView } from './scene/SpectatorCamera';
-import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
+import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type RideRequest, type SurfZoneStatus } from './wave/SurfZoneRunner';
 import { rideLineupOffset, type SurfZoneConfig } from './wave/SurfZoneSimulation';
 import type { RideFrame } from './game/RideTracker';
 import type { SoundFrame } from './audio/soundMapping';
@@ -345,7 +345,10 @@ class SurfGame {
         await this.startPhysical(this.seed, settings, { ...scene, ...(overrides ? { overrides } : {}) });
         getElement<HTMLElement>('#loading').classList.add('is-hidden');
       },
-      step: (input: { paddle: boolean; popUp: boolean; steer: number }) => this.physicalMode.advance(1, input),
+      // The rider's whole input, not three named fields: `PhysicalMode.advance` already takes it all,
+      // and a narrower hook here is what invites a dev tool to rebuild the input and drop the crouch and compress an
+      // autopilot's bottom turn asks for.
+      step: (input: Omit<RideRequest, 'retry'>) => this.physicalMode.advance(1, input),
       retry: () => this.physicalMode.retry(),
       render: (seconds: number, camera?: PerspectiveCamera) => this.physicalRender(seconds, camera),
       resize: (width: number, height: number) => {

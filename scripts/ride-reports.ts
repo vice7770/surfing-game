@@ -24,7 +24,7 @@
  * faster for the same shipped feed. This harness is for a GPU-less machine, a single seed, or a check in CI.
  */
 import { writeFileSync } from 'node:fs';
-import { Autopilot, autopilotView } from '../src/dev/Autopilot';
+import { Autopilot, autopilotView, type AutopilotInput } from '../src/dev/Autopilot';
 import { DEFAULT_PHYSICAL_SETTINGS, surfZoneConfigFor, type PhysicalSettings } from '../src/game/PhysicalMode';
 import type { RideReport } from '../src/game/rideAnalysis';
 import { LocalSurfZone } from '../src/game/SurfZoneHost';
@@ -93,7 +93,7 @@ for (let seed = firstSeed; seed < firstSeed + seeds && rides.length < wanted; se
   const share = Math.ceil((wanted - rides.length) / (firstSeed + seeds - seed));
   while (simulated < limit && rides.length - began < share && rides.length < wanted) {
     const view = autopilotView(host, focusZ, settings.tide, LOOK);
-    const input = view ? autopilot.next(view, STEP) : { paddle: false, popUp: false, steer: 0 };
+    const input: AutopilotInput = view ? autopilot.next(view, STEP) : { paddle: false, popUp: false, steer: 0 };
     let retry = false;
     if (autopilot.state === 'done') {
       after += STEP;
@@ -105,7 +105,9 @@ for (let seed = firstSeed; seed < firstSeed + seeds && rides.length < wanted; se
     } else {
       after = 0;
     }
-    host.advance(1, { paddle: input.paddle, popUp: input.popUp, steer: input.steer, retry });
+    // The autopilot's own input forwarded whole, with only `retry` added. Picking fields out of it by name is how
+    // this tool's first run starved the rider of the `crouch` and `compress` its bottom turn asks for.
+    host.advance(1, { ...input, retry });
     simulated += STEP;
     steppedAll += 1;
     const report = host.snapshot.status.ride?.report;
