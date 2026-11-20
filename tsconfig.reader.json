@@ -1,0 +1,13 @@
+// The project's `tsconfig.json` has `include: ["src"]`, so the research readers under
+// `docs/research/` are never type-checked by `tsc -b`. This config adds one of them to the
+// same settings, so a reader can be held to the same strictness as the code it imports:
+//
+//   ./node_modules/.bin/tsc -p tsconfig.reader.json --noEmit
+//
+// Add further readers to `include` as they are written. It must live beside `tsconfig.json`
+// in the checkout: `typeRoots` resolves relative to this file, so a copy in a temp directory
+// loses `@types/node` and reports hundreds of false `Cannot find name 'process'` errors.
+{
+  "extends": "./tsconfig.json",
+  "include": ["src", "docs/research/new-rider/3.5/twistclip.ts"]
+}

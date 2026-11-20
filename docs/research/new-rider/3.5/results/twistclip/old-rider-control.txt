@@ -1,0 +1,103 @@
+SEATBELT arm=old seed=1 size=medium grid=400x451 cells=180400 spunUp=67.44s focus=(-112, -125) twistHips=(unset) shippedTwistMost=45
+
+POPULATION arm=old  runs=72  recorded frames=11442  standing frames=11442  fell=38 of 72  wall=118.7s
+  placement: canyon bed B, focus −0.75 m, side -45°, entries 4/6/8/10 m/s, sticks 0/0.5/1, stances tall/crouch/compress, trials 2, 3s a run
+  clamp: RIG_DETAIL.cascade.twistMost = 45° (shipped) vs 100000° (lifted, instrument only)
+
+THE PHYSICS TWIST the rig is handed (|state.twist|, the snapshot's `drawnTwist`)
+  |twist|, deg                       n= 11442  median 0.00°  range 0.00 … 0.00°  (q1 0.00, q3 0.00)
+  frames past the clamp (|twist| > 45°): 0 of 11442
+
+THE DRAWN CHEST off the board's nose, through the real rig and the stance gauge
+  shipped, deg                       n= 11442  median -62.49°  range -177.45 … 176.94°  (q1 -84.54, q3 -59.05)
+  clamp lifted, deg                  n= 11442  median -62.49°  range -177.45 … 176.94°  (q1 -84.54, q3 -59.05)
+  |lifted − shipped| (the clipping)  n= 11442  median 0.00°  range 0.00 … 0.00°  (q1 0.00, q3 0.00)
+  frames clipped by more than 0.5°: 0 of 11442 (0%)
+
+WHICH TERM GOES OVER THE CLAMP (the chest's turn before it is clamped, °)
+  |blend · twist| alone              n= 11442  median 0.00°  range 0.00 … 0.00°  (q1 0.00, q3 0.00)
+  |blend · 0.3 · yawRate| alone      n= 11442  median 7.04°  range 0.00 … 38.89°  (q1 0.90, q3 16.78)
+  |the sum| (what is clamped)        n= 11442  median 7.04°  range 0.00 … 38.89°  (q1 0.90, q3 16.78)
+  of the 0 clipped frames, the PHYSICS TWIST alone is already past 45°: 0 — on the rest the clamp is bounding the anticipation it was written for
+  standingBlend                      n= 11442  median 1.000  range 0.000 … 1.000  (q1 1.000, q3 1.000)
+  |yawRate|, rad/s                   n= 11442  median 0.41  range 0.00 … 2.26  (q1 0.06, q3 0.98)
+
+THE SIDE EFFECTS: the hips and the head in the same frames
+  |lifted − shipped| hips, deg       n= 11442  median 0.00°  range 0.00 … 0.00°  (q1 0.00, q3 0.00)
+  |lifted − shipped| head, deg       n= 11442  median 0.00°  range 0.00 … 0.00°  (q1 0.00, q3 0.00)
+
+RUNS
+  run   1  trial 1  entry 4 m/s  tall     stick 0  frames  150  fellAt 2.517
+  run   2  trial 1  entry 4 m/s  tall     stick 0.5  frames  127  fellAt 2.133
+  run   3  trial 1  entry 4 m/s  tall     stick 1  frames  127  fellAt 2.133
+  run   4  trial 1  entry 4 m/s  crouch   stick 0  frames  138  fellAt 2.317
+  run   5  trial 1  entry 4 m/s  crouch   stick 0.5  frames  146  fellAt 2.45
+  run   6  trial 1  entry 4 m/s  crouch   stick 1  frames  146  fellAt 2.45
+  run   7  trial 1  entry 4 m/s  compress stick 0  frames  149  fellAt 2.5
+  run   8  trial 1  entry 4 m/s  compress stick 0.5  frames  128  fellAt 2.15
+  run   9  trial 1  entry 4 m/s  compress stick 1  frames  128  fellAt 2.15
+  run  10  trial 1  entry 6 m/s  tall     stick 0  frames  180  fellAt stood
+  run  11  trial 1  entry 6 m/s  tall     stick 0.5  frames  180  fellAt stood
+  run  12  trial 1  entry 6 m/s  tall     stick 1  frames  141  fellAt 2.367
+  run  13  trial 1  entry 6 m/s  crouch   stick 0  frames  180  fellAt stood
+  run  14  trial 1  entry 6 m/s  crouch   stick 0.5  frames  180  fellAt stood
+  run  15  trial 1  entry 6 m/s  crouch   stick 1  frames  151  fellAt 2.533
+  run  16  trial 1  entry 6 m/s  compress stick 0  frames  178  fellAt 2.983
+  run  17  trial 1  entry 6 m/s  compress stick 0.5  frames  180  fellAt stood
+  run  18  trial 1  entry 6 m/s  compress stick 1  frames  141  fellAt 2.367
+  run  19  trial 1  entry 8 m/s  tall     stick 0  frames  180  fellAt stood
+  run  20  trial 1  entry 8 m/s  tall     stick 0.5  frames  180  fellAt stood
+  run  21  trial 1  entry 8 m/s  tall     stick 1  frames  133  fellAt 2.233
+  run  22  trial 1  entry 8 m/s  crouch   stick 0  frames  180  fellAt stood
+  run  23  trial 1  entry 8 m/s  crouch   stick 0.5  frames  180  fellAt stood
+  run  24  trial 1  entry 8 m/s  crouch   stick 1  frames  144  fellAt 2.417
+  run  25  trial 1  entry 8 m/s  compress stick 0  frames  180  fellAt stood
+  run  26  trial 1  entry 8 m/s  compress stick 0.5  frames  180  fellAt stood
+  run  27  trial 1  entry 8 m/s  compress stick 1  frames  180  fellAt stood
+  run  28  trial 1  entry 10 m/s  tall     stick 0  frames  180  fellAt stood
+  run  29  trial 1  entry 10 m/s  tall     stick 0.5  frames  180  fellAt stood
+  run  30  trial 1  entry 10 m/s  tall     stick 1  frames  146  fellAt 2.45
+  run  31  trial 1  entry 10 m/s  crouch   stick 0  frames  180  fellAt stood
+  run  32  trial 1  entry 10 m/s  crouch   stick 0.5  frames  161  fellAt 2.7
+  run  33  trial 1  entry 10 m/s  crouch   stick 1  frames  160  fellAt 2.683
+  run  34  trial 1  entry 10 m/s  compress stick 0  frames  180  fellAt stood
+  run  35  trial 1  entry 10 m/s  compress stick 0.5  frames  180  fellAt stood
+  run  36  trial 1  entry 10 m/s  compress stick 1  frames  180  fellAt stood
+  run  37  trial 2  entry 4 m/s  tall     stick 0  frames  117  fellAt 1.967
+  run  38  trial 2  entry 4 m/s  tall     stick 0.5  frames  141  fellAt 2.367
+  run  39  trial 2  entry 4 m/s  tall     stick 1  frames  141  fellAt 2.367
+  run  40  trial 2  entry 4 m/s  crouch   stick 0  frames   93  fellAt 1.567
+  run  41  trial 2  entry 4 m/s  crouch   stick 0.5  frames  135  fellAt 2.267
+  run  42  trial 2  entry 4 m/s  crouch   stick 1  frames  135  fellAt 2.267
+  run  43  trial 2  entry 4 m/s  compress stick 0  frames   93  fellAt 1.567
+  run  44  trial 2  entry 4 m/s  compress stick 0.5  frames  140  fellAt 2.35
+  run  45  trial 2  entry 4 m/s  compress stick 1  frames  140  fellAt 2.35
+  run  46  trial 2  entry 6 m/s  tall     stick 0  frames  180  fellAt stood
+  run  47  trial 2  entry 6 m/s  tall     stick 0.5  frames  151  fellAt 2.533
+  run  48  trial 2  entry 6 m/s  tall     stick 1  frames  142  fellAt 2.383
+  run  49  trial 2  entry 6 m/s  crouch   stick 0  frames  159  fellAt 2.667
+  run  50  trial 2  entry 6 m/s  crouch   stick 0.5  frames  156  fellAt 2.617
+  run  51  trial 2  entry 6 m/s  crouch   stick 1  frames  131  fellAt 2.2
+  run  52  trial 2  entry 6 m/s  compress stick 0  frames  157  fellAt 2.633
+  run  53  trial 2  entry 6 m/s  compress stick 0.5  frames  180  fellAt stood
+  run  54  trial 2  entry 6 m/s  compress stick 1  frames  123  fellAt 2.067
+  run  55  trial 2  entry 8 m/s  tall     stick 0  frames  180  fellAt stood
+  run  56  trial 2  entry 8 m/s  tall     stick 0.5  frames  180  fellAt stood
+  run  57  trial 2  entry 8 m/s  tall     stick 1  frames  120  fellAt 2.017
+  run  58  trial 2  entry 8 m/s  crouch   stick 0  frames  180  fellAt stood
+  run  59  trial 2  entry 8 m/s  crouch   stick 0.5  frames  180  fellAt stood
+  run  60  trial 2  entry 8 m/s  crouch   stick 1  frames  143  fellAt 2.4
+  run  61  trial 2  entry 8 m/s  compress stick 0  frames  180  fellAt stood
+  run  62  trial 2  entry 8 m/s  compress stick 0.5  frames  180  fellAt stood
+  run  63  trial 2  entry 8 m/s  compress stick 1  frames  180  fellAt stood
+  run  64  trial 2  entry 10 m/s  tall     stick 0  frames  180  fellAt stood
+  run  65  trial 2  entry 10 m/s  tall     stick 0.5  frames  180  fellAt stood
+  run  66  trial 2  entry 10 m/s  tall     stick 1  frames  145  fellAt 2.433
+  run  67  trial 2  entry 10 m/s  crouch   stick 0  frames  180  fellAt stood
+  run  68  trial 2  entry 10 m/s  crouch   stick 0.5  frames  180  fellAt stood
+  run  69  trial 2  entry 10 m/s  crouch   stick 1  frames  166  fellAt 2.783
+  run  70  trial 2  entry 10 m/s  compress stick 0  frames  180  fellAt stood
+  run  71  trial 2  entry 10 m/s  compress stick 0.5  frames  180  fellAt stood
+  run  72  trial 2  entry 10 m/s  compress stick 1  frames  180  fellAt stood
+
+DONE arm=old runs=72 standingFrames=11442 clippedFrames=0
