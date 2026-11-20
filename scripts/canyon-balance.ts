@@ -1,10 +1,13 @@
 /** Matched paddle-ins for the Canyon sharp-turn work order. Run as a Node bundle with rolldown. */
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { deflateSync } from 'node:zlib';
 import { Vector3 } from 'three';
 import { surfZoneConfigFor } from '../src/game/PhysicalMode';
 import { physicalSettingsFor } from '../src/game/SurfConditions';
 import { PhysicalSurfWater } from '../src/physics/PhysicalSurfWater';
 import { RideSession } from '../src/physics/RideSession';
-import type { SurfWater } from '../src/physics/SurfWater';
+import { createWaterSample, type SurfWater } from '../src/physics/SurfWater';
+import { encodeSurfZoneState } from '../src/wave/surfZoneState';
 import { deckHeight } from '../src/physics/riderPosture';
 import { inTakeOffWindow } from '../src/physics/takeOffCue';
 import { WaveFrameGauge } from '../src/physics/waveFrame';
@@ -15,7 +18,11 @@ const degrees = 180 / Math.PI;
 const seed = Number(process.argv[2] ?? 2);
 const candidate = process.argv[3];
 const exercise = process.argv[4] ?? 'simultaneous';
-if (exercise !== 'simultaneous' && exercise !== 'rail-first') throw new Error('Use simultaneous or rail-first.');
+const observationSeconds = Number(process.argv[5] ?? 3);
+if (!Number.isFinite(observationSeconds) || observationSeconds <= 0) throw new Error('Standing observation time must be positive.');
+const saveStart = exercise === 'standing-start';
+if (!saveStart && exercise !== 'simultaneous' && exercise !== 'rail-first') throw new Error('Use simultaneous, rail-first or standing-start.');
+if (saveStart && (seed !== 2 || candidate !== 'turnBalance=planing')) throw new Error('The standing checkpoint uses seed 2 with turnBalance=planing.');
 if (!Number.isSafeInteger(seed) || !candidate) throw new Error('Pass a sea seed and the candidate rider query parameters.');
 const base = '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on';
 const settings = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
@@ -53,6 +60,33 @@ const conditions: readonly Input[] = exercise === 'rail-first' ? [
   ['neutral', 0, 0], ['left', 1, 0], ['right', -1, 0],
   ['compress', 0, 1], ['left+compress', 1, 1], ['right+compress', -1, 1],
 ];
+
+let checkpointSaved = false;
+let approachSea: ReturnType<SurfZoneSimulation['exportState']> | undefined;
+const approachPlacement = { x, z, heading: 0, speed: 0, phase: 'prone' } as const;
+const approachInputs: { steps: number; paddle: boolean; sprint: boolean; popUp: boolean }[] = [];
+function recordApproachInput(paddle: boolean, sprint: boolean, popUp: boolean): void {
+  const previous = approachInputs.at(-1);
+  if (previous && !popUp && previous.paddle === paddle && previous.sprint === sprint && !previous.popUp) previous.steps++;
+  else approachInputs.push({ steps: 1, paddle, sprint, popUp });
+}
+
+/** Store the standing paddle-in's water and player placement, using the same format as Surf School. */
+function saveStandingStart(session: RideSession): void {
+  const { board, heading } = session;
+  const { x, z } = board.position;
+  const sample = water.sampleAt(x, water.surfaceAt(x, z) - 0.05, z, createWaterSample());
+  const speed = (board.velocity.x - sample.flowX) * Math.sin(heading) + (board.velocity.z - sample.flowZ) * Math.cos(heading);
+  const placement = { x, z, heading, speed, phase: 'standing' };
+  if (!approachSea) throw new Error('Missing water before the first paddle stroke.');
+  const metadata = { config: variant, placement, solverTime: sea.solver.time, approachPlacement, approachInputs, approachSolverTime: approachSea.solverTime };
+  const folder = 'public/debug/canyon';
+  mkdirSync(folder, { recursive: true });
+  writeFileSync(folder + '/approach.sea', deflateSync(encodeSurfZoneState(approachSea)));
+  writeFileSync(folder + '/standing.json', JSON.stringify(metadata, null, 2) + '\n');
+  checkpointSaved = true;
+  console.log(`Recorded the first standing Canyon frame at solver time ${sea.solver.time.toFixed(3)} s.`);
+}
 
 class Trial {
   readonly session: RideSession;
@@ -95,11 +129,18 @@ class Trial {
     const since = this.stood === undefined ? -1 : time - this.stood;
     const pulse = session.phase === 'standing' && since >= 0.3 && since < 0.3 + 0.9;
     const pressCompress = pulse && (exercise === 'simultaneous' || since >= 0.60);
+    const paddle = prone && !this.pop;
+    const sprint = prone && this.sprinting && !popUp;
+    if (saveStart) recordApproachInput(paddle, sprint, popUp);
     session.step(step, water, {
-      paddle: prone && !this.pop, sprint: prone && this.sprinting && !popUp, popUp,
+      paddle, sprint, popUp,
       steer: pulse ? this.input[1] : 0, compress: pressCompress ? this.input[2] : 0,
     });
     if (this.stood === undefined && session.phase === 'standing') {
+      if (saveStart) {
+        saveStandingStart(session);
+        return true;
+      }
       this.stood = time;
       this.lastCourse = Math.atan2(board.velocity.x, board.velocity.z);
     }
@@ -132,9 +173,9 @@ class Trial {
       }
     }
     const elapsed = this.stood === undefined ? null : time - this.stood;
-    if (rider.attached && !(elapsed !== null && elapsed >= 3) && time < 20) return false;
+    if (rider.attached && (elapsed === null ? time < 20 : elapsed < observationSeconds)) return false;
     console.log(JSON.stringify({
-      seed, wave: this.wave, arm: this.arm, exercise, input: this.input[0],
+      seed, wave: this.wave, arm: this.arm, exercise, observationSeconds, input: this.input[0],
       outcome: elapsed === null ? 'never stood' : rider.attached ? 'attached at cutoff' : session.separation,
       standingSeconds: elapsed, peakBodyBankDeg: this.peakBank, peakCourseChangeDeg: this.peakCourse,
       courseAtReleaseDeg: this.courseAtRelease ?? null, postReleaseClimbM: this.lowestFaceSinceRelease === undefined ? null : this.climb,
@@ -151,7 +192,15 @@ const history: number[] = [];
 const end = sea.solver.time + 12 * control.peakPeriod;
 let waves = 0;
 let previousTrigger = -Infinity;
-while ((waves < 2 && sea.solver.time < end) || trials.length) {
+while (!checkpointSaved && ((waves < 2 && sea.solver.time < end) || trials.length)) {
+  // A peak is detected one step after its crest. Preserve the preceding sea so the live worker
+  // can advance normally, then place the board and apply the first recorded stroke on the same tick.
+  if (saveStart && !waves && history.length >= 2) {
+    const last = history[history.length - 1];
+    if (last > history[history.length - 2] && last - Math.min(...history) >= 0.3 * control.significantHeight) {
+      approachSea = sea.exportState();
+    }
+  }
   sea.step(step);
   const now = sea.solver.time;
   if (waves < 2 && now < end) {
@@ -162,8 +211,12 @@ while ((waves < 2 && sea.solver.time < end) || trials.length) {
       && history[n - 2] - Math.min(...history) >= 0.3 * control.significantHeight && now - previousTrigger > 0.4 * control.peakPeriod) {
       previousTrigger = now;
       waves++;
-      for (const input of conditions) {
-        trials.push(new Trial(waves, 'control', input, control, now), new Trial(waves, 'candidate', input, variant, now));
+      if (saveStart) {
+        if (waves === 1) trials.push(new Trial(waves, 'candidate', conditions[0], variant, now));
+      } else {
+        for (const input of conditions) {
+          trials.push(new Trial(waves, 'control', input, control, now), new Trial(waves, 'candidate', input, variant, now));
+        }
       }
     }
   }
@@ -171,4 +224,5 @@ while ((waves < 2 && sea.solver.time < end) || trials.length) {
     if (trials[i].advance(now - trials[i].start)) trials.splice(i, 1);
   }
 }
-if (waves !== 2) throw new Error('The sea did not supply both comparison waves.');
+if (saveStart && !checkpointSaved) throw new Error('The rider never stood on the checkpoint wave.');
+if (!saveStart && waves !== 2) throw new Error('The sea did not supply both comparison waves.');
