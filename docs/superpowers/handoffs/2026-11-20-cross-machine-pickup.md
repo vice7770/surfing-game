@@ -121,6 +121,47 @@ lateral swing never enters it.
 **The water pays for a bank and not for the fall.** ~99% of a bank is paid by the water;
 **zero** of the lateral impulse is.
 
+⭐⭐ **Found on the night of 2026-11-20, and the best lead open — the twist range leaves out
+the spine, and the end stop escapes the bound the active torque obeys.** Both are read off
+committed code and committed results; neither has been ridden.
+
+The sourcing comment at `AttachedRider.ts:561-573` says in its own words that
+`TWIST_BODY_RANGE = 0.87` rad (**49.85°**) is *"the hips about 30° and the bent knees about
+20°"* (Simoneau 1998, Lorenz 2015), that `TWIST_STIFFNESS = 20` N·m/rad is *"the trunk's
+axial stiffness"* (Kosmopoulos 2012), and that `TWIST_STOP = 2000` is **"an end stop, not
+sourced"**. The DOF it limits carries **pelvis, trunk, arms and head** as one rigid body, so
+**the thoracolumbar spine's own axial rotation is in the stiffness source but not in the
+range.**
+
+Recomputed from #455's committed Canyon table (`3.5/results/35j/35j-ride-canyon.txt` on
+`claude/twist-stop`), **54 rows** — three arms × three stances × three steers × two trials:
+
+* **0 of 54 rows have zero ticks past the stop.** Peak twist **50.26° / 53.64° / 56.76°**
+  (min / median / max) against the 49.85° range; **median 11.3%** of each ride's ticks past it,
+  up to 53.8%.
+* The stop's **requested** peak torque (`2000 × over`, before `TWIST_STOP_DAMPING = 50`):
+  **14.5 / 132.4 / 241.4 N·m**.
+
+And the two torques on that one DOF obey different rules, though both cross the **same foot
+contact** that the file's own comment (`:549`) says bounds it:
+
+| | bound | lag | peak |
+| --- | --- | --- | --- |
+| active twist (`:3914-3922`, `:3940`) | `min(TWIST_BODY_TORQUE = 100, FOOT_FRICTION × legLoad × TWIST_GRIP_SPAN)` | `MOTOR_LAG` | ≤ 100 N·m |
+| **the end stop** (`:4816`) | ⛔ **none** | ⛔ **none** | **241.4 N·m** |
+
+⭐ **The stop's requested peak exceeds the active bound in 32 of the 54 rows.** The narrow
+claim — and the only one to rely on — is that **a torque the soles could not transmit reaches
+the board through those soles, while the active torque through them is bounded by them.** A
+stiff joint stop is legitimate passive physics and is **not** a hidden motor; the defect is
+the missing bound. ⭐ Note which way a fix cuts: bounding the stop by grip lets the twist
+**slip** rather than brace, so it relieves a disturbance instead of adding an authority.
+
+⚠️ **What none of this establishes:** whether it moves the fall. #455's own table has every
+arm falling in **0.98–2.17 s**. Three things are open — whether `legLoad` is one leg or both,
+whether the literature supports 30° + 20° as a braced surfing stance's whole rotation, and
+whether any of it survives a ride. All three are with the Codex peer in the consult log.
+
 **And the wave is not the cause.** On **flat still water with a tow and no wave at all**,
 the rider falls **23 of 24 runs** — and there he slides off the **tail**, with no across
 channel in the fall at all (PR #454). Note the probe's own artefact: the tow is a velocity
@@ -211,6 +252,10 @@ data, and collapsing it early would have destroyed it.
   machine it took seven. `vitest.config.ts` sets no `poolOptions`. `--reporter=basic` is
   invalid in vitest 5; **`tap-flat` survives a kill**. A killed run's log is neither pass nor
   fail (exit 144).
+- ⚠️ **`pgrep -f vitest | wc -l` counts wrappers, not workers.** It read **5** while the suite
+  was crawling on **one** worker (two `zsh -c`, an `npm exec`, the `.bin/vitest` launcher, and
+  a single busy `node`), and the single-worker trap above was read as healthy twice as a
+  result. Count the `node` lines with real CPU: `ps -o pid,pcpu,etime,command -p $(pgrep -f vitest ...)`.
 - ☠️ **`grep '"kind":"done"'` never matches** — `JSON.stringify` emits no space after a colon.
 - ⚠️ **Three switches never reached the physics.** `?bodyBank=hip` parsed **0 times**;
   `?physical` gates nothing (`src/main.ts:89` — it only starts a ride immediately); a `swing` option was dropped in a
