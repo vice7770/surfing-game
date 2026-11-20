@@ -179,12 +179,62 @@ constraint on the board alone and injects **5.4–10.8 g** onto a 2.54 kg board
 
 ## 5. The job named next, and why it is first
 
-**Build an autopilot that rides a bottom turn the analyser names.**
+⛔ **DONE on the night of 2026-11-20, and the premise I wrote here was wrong.** Branch
+`claude/analyser-names-bottom-turn` (`bb8f5131`, pushed, no PR). What I had written — that an
+autopilot ride never reaches the analyser — **conflated two different objects.**
 
-The analyser's bottom-turn columns are where the 42° / 40° / 0.296→0.995 m target lives,
-and they are **unmeasured**: a rider *placed* on a face is not a turn the classifier names.
-Until a scripted ride trips the real classifier, every bottom-turn number in this document
-comes from a probe and not from the game's own reading of a ride.
+`RideTracker` is not the classifier; **`RideAnalyzer` is, and it lives inside the runner**:
+imported at `src/wave/SurfZoneRunner.ts:6`, held at `:492`, built at `:798`/`:919`/`:1024`,
+and fed through `measureRide()` (`:939`) → `analyze()` (`:1004`) **on every physics step of a
+session**, published on `status().ride.report` (`:1222`). I verified this myself after the
+report. The two lines I cited (`main.ts:323`, `:1362`) are correct but govern the **App**
+path — so the Logbook, `RideResult` and the fall readout never see a recorder ride, while the
+manoeuvre naming always did. The report was simply never read out.
+
+⭐ **So the analyser was measured, not wired.** Canyon B, GPU sea, three seas (seeds 1–3),
+three real browser sessions, via a new `?rideReports=N` + `?seed=N` (off by default, verified
+in-session by printing the sea the host actually built, not the URL):
+
+> **151 autopilot attempts → 20 analysed rides → 13 measured → 3 named a bottom turn.**
+> Ride duration n=20: **median 1.94 s**, range 0.00–8.40. Ends: fell ×18, kicked out ×2.
+> Names over 13: top turn ×7, **bottom turn ×3**, unjudged ×3.
+
+The analyser's own bottom-turn columns, **n = 3** — three is a population, not a distribution
+to tune from, and nothing here should move a constant:
+
+| the analyser's column | median | range |
+| --- | --- | --- |
+| `roll` (peak board roll) | 49.3° | 40.5–54.1° |
+| `pathYaw` (course change) | 22.2° | 14.0–51.2° |
+| `turn.yaw` (nose) | 39.3° | 30.0–49.9° |
+| `carry` (**mean** rise over a 0.3 s window) | **0.050 m** | 0.041–0.050 |
+| speed spent (ground) | 7.1 % | 4.5–23.4 % |
+| turn duration | **0.47 s** | 0.38–0.58 |
+
+⭐⭐ **Three results that matter more than the columns:**
+
+1. **The named bottom turns are short and cheap** — 0.47 s, 0.05 m of mean rise, 7% of ground
+   speed — while the target describes a turn **three times longer**. ⛔ **The blocker is the
+   ride, not the classifier**: median ride 1.94 s, 18 of 20 ending in a fall. The rider does
+   not stay up long enough to make the probe's turn.
+2. ⛔ **The analyser has no rider-bank column at all.** `Maneuver.roll` is the **board's** roll
+   — `RideSample.roll` is documented "The board's roll, rad" (`rideAnalysis.ts:23`). The
+   rider's own bank exists live on `status.ride.bank` and is never stored. **So no
+   bottom-turn number the game records today is a rider bank**, including the 49.3° above.
+3. ⛔ **A placed rider is never analysed at all** — not a failed condition, no ride.
+   `RideAnalyzer.push` starts one only on a `standing` sample preceded by a non-standing one,
+   and `SurfZoneRunner.advance` rebuilds the analyser on `request.place`, so the transition
+   can never arrive. Every measured ride costs a paddle and a catch, and the Canyon catch is
+   the bottleneck: **151 attempts for 20 rides.**
+
+⚠️ **And the target numbers themselves do not hold together.** The builder could not source
+**"42° bank"** to the probe trace the other three come from (Canyon seed 2 wave 2,
+`capterms/w211.jsonl`: course +13.81→+54.06° = 40.25°, surface 0.296→0.995 m, through-water
+7.64→2.61 m/s = 66% spent). The nearest 42 on that line is the **right arm's course**,
+−42.13°, which is a course and not a bank. **So "42° / 40° / 0.296→0.995 m / 70%" is
+probably not one trace's four columns.** Treat the bank figure as unsourced until someone
+finds it. And `carry` (mean, 0.3 s) against the probe's peak rise over 1.5 s are **not the
+same quantity and cannot be differenced.**
 
 The classifier's rules, as ruled: **a bottom turn must climb** (any climb at all); snap and
 top turn are ungated; there is no player progression. `src/game/rideAnalysis.ts` decided the
@@ -259,6 +309,16 @@ data, and collapsing it early would have destroyed it.
   machine it took seven. `vitest.config.ts` sets no `poolOptions`. `--reporter=basic` is
   invalid in vitest 5; **`tap-flat` survives a kill**. A killed run's log is neither pass nor
   fail (exit 144).
+- ⛔ **`src/wave/SurfZoneRunner.test.ts` is NOT outside the merge suite — I had this wrong.**
+  `npm test` is a bare `vitest run`, `vitest.config.ts` includes `src/**/*.test.ts`, and
+  `git log -p --all` shows neither it nor `SurfZoneSimulation.test.ts` was ever excluded there.
+  ⭐ **That is why a full run does not finish on a busy box:** `SurfZoneSimulation.test.ts`
+  declares ~644 minutes of timeout budget across 29 tests, **one test allowed 240 minutes
+  alone**, and it is *inside* the suite. A long silence from a full run is a long test inside
+  its budget, not a hang. Run it on a quiet machine or not at all.
+- ☠️ **A background wrapper can report exit 0 while vitest is still running inside it.** The
+  builder hit this and called it a false green; it caught it only by inspecting `ps` with a
+  0-byte log. Confirm a suite finished by its own summary line, never by the wrapper's status.
 - ⚠️ **`pgrep -f vitest | wc -l` counts wrappers, not workers.** It read **5** while the suite
   was crawling on **one** worker (two `zsh -c`, an `npm exec`, the `.bin/vitest` launcher, and
   a single busy `node`), and the single-worker trap above was read as healthy twice as a
