@@ -409,7 +409,22 @@ it, so that practice earned its keep here.
   machine it took seven. `vitest.config.ts` sets no `poolOptions`. `--reporter=basic` is
   invalid in vitest 5; **`tap-flat` survives a kill**. A killed run's log is neither pass nor
   fail (exit 144).
-- ⛔ **`src/wave/SurfZoneRunner.test.ts` is NOT outside the merge suite — I had this wrong.**
+- ⚠️ **"The merge suite passed" is AMBIGUOUS in this project — always ask which command was run.**
+  Two different gates have both been called the merge suite, and they disagree:
+  **(a)** a bare `npm test` = `vitest run`, whose config includes `src/**/*.test.ts` and has
+  **never** excluded any physics file — so it runs `SurfZoneRunner.test.ts` *and*
+  `SurfZoneSimulation.test.ts`, which is why it does not finish on a loaded box (see below);
+  **(b)** the command **18 documents** under `docs/` actually record before merging, and that
+  PR #204's description calls "Main suite":
+  `npx vitest run src --maxWorkers=3 --exclude "**/SurfZoneSimulation.test.ts" --exclude "**/SurfZoneRunner.test.ts"`.
+  ⛔ **That flag, not the config, is how four tests stayed red from 2026-10-11 until #204 with
+  no merge noticing.** So (a) is slow but complete; (b) is fast and leaves two physics files
+  unchecked. ⭐ **A gate that lives in a pasted command rather than in a config is not a gate
+  anyone can audit** — if you want one that is, it belongs in `package.json`.
+  ⚠️ I got this wrong twice in one night: first asserting (b)'s exclusion as if it were the
+  config, then "correcting" myself by denying the exclusion existed at all. A peer session
+  working on #204 reconciled it and I verified the 18 documents before recording this.
+- ⛔ **`src/wave/SurfZoneRunner.test.ts` is not excluded by the CONFIG — see the ambiguity above.**
   `npm test` is a bare `vitest run`, `vitest.config.ts` includes `src/**/*.test.ts`, and
   `git log -p --all` shows neither it nor `SurfZoneSimulation.test.ts` was ever excluded there.
   ⭐ **That is why a full run does not finish on a busy box:** `SurfZoneSimulation.test.ts`
