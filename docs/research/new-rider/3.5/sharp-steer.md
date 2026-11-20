@@ -9,9 +9,8 @@ surfer-track builder (Claude, Opus 5.5) for the coordinator's review. **Nothing 
 
 **The balance's own internal model causes the fall, at the bottom of its speed table.** The steer only asks it a
 question it answers wrongly. On Canyon seed 2 wave 1 the board's speed through the water falls through 4.5 m/s between
-+0.55 and +0.60 s. That is the moment
-the steer's lean ask reaches its cap of about 21°. Below 4.5 m/s the gain schedule (`PredictiveController.blend`) blends
-in the plant table's lowest row, `PLANT_SPEEDS['4']`. Step 3.4m recorded that row as a board at 46.4° of trim that is
++0.55 and +0.60 s. That is the moment the steer's lean ask reaches its cap of about 21°. Below 4.5 m/s the gain
+schedule (`PredictiveController.blend`) blends in the plant table's lowest row, `PLANT_SPEEDS['4']`. Step 3.4m recorded that row as a board at 46.4° of trim that is
 not planing; the game's own board at those speeds rides at 16–17°. On that blend the **reference** goes wrong. The
 reference is the steady turn the controller solves for the lean asked (`tick` → `steadyTurn`). At a 21° lean it is
 singular near 4.3 m/s (450° of sideslip) and asks for **35° of sideslip** below it. The 4.5 m/s design asks for 5°. The
@@ -223,8 +222,10 @@ steer-only neutrals of seeds 1–3.
 
 Read the tables separately:
 
-- **The sharp-steer collapse** is the owner's Group B. It is rescued every time, and the turn still happens. On wave 1
-  with the floor, the left turn banks to 15.5° and its heading turns +22.5° between +0.6 and +1.5 s. The right turn
+- **The sharp-steer collapse** is the owner's Group B. Every one falls later, and 8 of 10 outlast the turn window
+  (+1.5 s). The other two gain 0.47–1.03 s and still fall inside it: the two slow ones, seed 3 wave 9 R and seed 4
+  wave 6 L, at about 2.5 m/s. The turn still happens. On wave 1 with the floor, the left turn banks to 15.5° and its
+  heading turns +22.5° between +0.6 and +1.5 s. The right turn
   banks to −14.8° and turns −22.4° by +1.6 s. The lean ask law is untouched; the cap still binds at the same speeds.
 - **The slow take-off falls** ("neutral falls too", mostly off the plane under 3 m/s) are Group A and lead B. The floor
   moves them both ways (42 later, 32 sooner, median +0.017 s) and is not their fix. Neither does it help or harm the
@@ -237,8 +238,8 @@ Read the tables separately:
 - **Over every standing controller tick** (steer only, seeds 1–9, standing, 0.25–1.3 s), take the ticks below 4.5 m/s
   with a lean of 10° or more. The shipped reference asks for more than 15° of sideslip on 411 of 440 (93%). The floor's
   asks for it on 0 of 525. The command overflows the ankle range on 378 of 440 shipped (86%) and 142 of 525 floored
-  (27%). At 4.5 m/s and above the two arms match: phantom 0–0.3%, overflow 4–10%. Without lean but below 4.5 m/s the
-  shipped command still overflows on 67% of ticks against 29% floored. That is the bottom row's gains. It is part of the
+  (27%). At 4.5 m/s and above the two arms match: phantom 0–0.3%, overflow 4–10%. Below 4.5 m/s with less than 10° of lean,
+  the shipped command still overflows on 67% of ticks against 29% floored. That is the bottom row's gains. It is part of the
   slow take-off and is not fixed by the floor.
 
 **The wave-2 survivor's turn** is seed 2 wave 2 left, steer alone. The shipped arm reproduces the peer's row table
