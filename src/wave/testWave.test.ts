@@ -67,10 +67,9 @@ describe('the test wave', () => {
         runner.advance(1, request);
         const { board } = runner.session!;
         boards.push(board.position.x, board.position.y, board.position.z, board.velocity.x, board.velocity.y, board.velocity.z);
-        if (step === 0) {
-          placed = runner.status().ride;
-          gap = board.position.x - whiteEdge(runner, board.position.z, board.position.x);
-        }
+        if (step === 0) placed = runner.status().ride;
+        // The young break's felt white grows behind its onsets: read where it stands after the first second.
+        if (step === Math.round(1 / SURF_ZONE_STEP) - 1) gap = board.position.x - whiteEdge(runner, board.position.z, board.position.x);
       }
       return { boards, sea: runner.simulation.exportState(), placed: placed!, gap };
     };
@@ -89,9 +88,10 @@ describe('the test wave', () => {
     expect(placed.wave.faceFraction).toBeLessThan(0.75);
     expect(placed.wave.aheadOfCrest).toBeGreaterThan(0);
     expect(placed.wave.crestBreaking).toBeLessThan(0.1);
-    // About 10 m ahead of the white along the arm (+x, the way it peels).
+    // About 10 m ahead of the white along the arm (+x, the way it peels) a second on, still standing.
     expect(first.gap).toBeGreaterThan(7);
-    expect(first.gap).toBeLessThan(14);
+    expect(first.gap).toBeLessThan(16);
+    expect(one.status().ride?.phase).toBe('standing');
     // The foam is drawn only: the water the board feels carries no lens and no plume air, where the white is too.
     const felt = PhysicalSurfWater.forSimulation(one.simulation);
     const sample = createWaterSample();
