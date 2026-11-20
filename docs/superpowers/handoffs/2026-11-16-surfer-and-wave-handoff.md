@@ -4754,3 +4754,41 @@ A **fifth axis on the gain schedule**, knots `[20, 60, 180, 540, 2020]`, both en
 ## D. Where this leaves it
 
 **Eight attempts, zero movement on the fall.** What exists instead is a map of where it is not, three of my own claims withdrawn, and **one number that does not add up** (§A's last bullet), which a round is settling now. ⛔ **Nothing should be built before that reports and before the owner rules.**
+
+---
+
+## 2026-11-20 — ⭐ THE PIN IS EXPLAINED, THE CORRECTION SURVIVES WITH ITS DENOMINATOR FIXED, AND TWO CAUTIONS OUTLAST BOTH (PR #456)
+
+Read entirely out of #454's own saved runs — **nothing re-run**, `git diff -- src/` empty, all four of #454's positive controls reproduced exactly.
+
+### 1. ⭐⭐ The pin is a FIRST-CROSSING ARTEFACT of the stopping rule — not a clamp, not the freeze
+
+`px = offset.x − height·nx` (`humanBalance.ts:472`). **`halfAcross`'s four uses in `capture()` are all downstream** — forming `pastX`, scaled by `HIP_SHARE`, compared against `|px|`, a divisor in the margin — and **not one writes back into `px`, `s.pointAcross` or `s.across`.** No clamp, projection or reconstruction against the support box exists in the file; the only two clamps in the chain (`height ≥ 0.2`, `|g| ≥ 0.5`) **never bind** (min height 0.2048 m, min felt 1.827 m/s²).
+
+⭐ **And `px` does exceed the box: 0.2591 m = 1.99 × halfAcross over the 100 steered falls, and 0.7193 m = 5.53 × over all 142.**
+
+> ⭐⭐ **The discriminating check: the run ENDS on the substep `weightPast` flips, and `|px|` is read AT that substep. In 46 of 46 pinning falls it was at or inside 0.130 m ONE SUBSTEP EARLIER (1/3840 s) — median 0.1299 → 0.1301 m, a step of +0.0003 m, which is exactly `h·|ṗx|` at the measured ≈1.15 m/s.** **A threshold sampled at its own crossing can only read the threshold plus one substep's travel.**
+>
+> ⭐ **Independent control — the same pin at a DIFFERENT edge:** the along-only falls whose `weightPast` flipped last (n = 32) have **`|pz|` within 0.0010 m past 0.375 m in 30 of 32**, median **0.3752**. **Two thresholds, two different numbers, one pin → it belongs to the stopping rule, not to `halfAcross`.**
+
+**Not the freeze** (my named suspect): zero frozen substeps **at** the separation in all three bands, and the frozen share is **least** where the pin is (median 0.0000 for the pinned 46, against 0.0055 and 0.0448 elsewhere). The freeze trap is real — where the published column and a live read differ by > 0.0005 m, the state was frozen in **11 of 11** — **it just is not under this pin.** **Real excess, not rounding**: the test is a strict `>`, and in 46 of 46 the along leg was false, so `|px| > 0.130 m` strictly held; the excess is **≤ 0.0005 m, ≤ 0.4 %** of the half-width.
+
+⭐ **And the shape I warned about EXISTS but is a different quantity.** `freeX` (`AttachedRider.ts:5364`) **is** clamped to the support box at `:5371`, and the exposed `contact.centreOfPressure` **is** reconstructed from the friction-limited force at `:5394–5396` — the exact trap that burned this project before. ⛔ **None of it touches `px`**, which comes from `offset` (`:5160`, rider CoM minus the feet's middle) and the **pair's** momentum-derived low-passed felt vertical (`:5166`, `:5188–5196`) — both **delivered**, neither through the clamp or the friction cap. **And the clamp runs the other way: once the free CoP leaves the box the feet cannot make the restoring moment, so `px` runs AWAY past the edge** — which is what the 1.99× and 5.53× readings are.
+
+### 2. ⚠️ THE CORRECTION SURVIVES, WITH ITS DENOMINATOR FIXED — quote 82 of 125
+
+**17 of the 142 falls never separated by the capture test at all** (5 `lost board` on `MAX_FLIGHT`, 12 on a posture/sway backstop; `humanFallen` false). **For those, "which half flipped last" reads a test that did not end the run, so it means nothing.**
+
+> **Over the 125 the test DID end: `weightPast` last 82, `beyond` last 38, both 5.** Same conclusion, **slightly wider** margin. ⭐ **So the correct form is "82 of 125", or "87 of 142, of which 17 separated for another reason". Nothing is withdrawn.**
+
+**The owner's configuration pins identically** — 21 of 21 at or inside the edge one substep earlier, same +0.0003 m median step — **even though his arm is harsher on the outcome.** And incidentally it settles #454's 106-rows-against-100-in-the-text: **the 100 is correctly scoped** to the steered falls that actually fired the capture test. Not a miscount.
+
+### 3. ⛔⛔ TWO CAUTIONS THAT OUTLAST THE ANSWER — these bind every future round
+
+* ⛔ **NEVER read `|px|` at the separating substep as a MAGNITUDE.** Conditioned on the crossing, its distribution there **is** the threshold plus `h·|ṗx|` **by construction** — for either leg, at whatever the edge is. **A round that wants the position term's size must read it over the run or at a fixed time.**
+* ⛔ **"Which half flips last" is a 0.26 MILLISECOND statement about the test's arithmetic.** It does refute *"the position term never trips"* — **but it is NOT by itself a claim about which physical quantity drove the fall**, because both conditions approach their thresholds together. ⚠️ **I must not let it become one**, and #454's scope limit (flat still water, two unphysical speed conditions, the across channel readable only at 9 m/s) **is not widened by any of this.**
+
+⭐ **The usable conclusion: the across position term MAY be built on. It is the unclamped centre-of-mass projection along the felt vertical** — a delivered physical quantity, not bookkeeping.
+
+### 4. Housekeeping
+`npm test` **is** `vitest run` over all 402 files — there is no smaller defined merge check in `package.json`, and `vitest.config.ts` includes `src/**`, `server/**` and `scripts/**` while excluding only `docs/**`. The torso-stop branch's full run was at **60 minutes of CPU at 81 % over 61 elapsed** — progressing, not hung, and single-worker on solver-heavy files. ⛔ **Nothing merges until it is green.**
