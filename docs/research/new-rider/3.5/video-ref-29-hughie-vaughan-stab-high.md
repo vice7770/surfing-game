@@ -1,5 +1,42 @@
 # Video reference 29 (Hughie Vaughan, `@DHDSurfTV`, *"Nexus Swallow Tail — Stab High China"*): **the SECOND take-off in twenty-nine clips, and the first clip whose RIDER'S WAIST is visible — and the sideways speed still does not come out, for a FOURTH distinct reason which is neither the camera nor the suit but the BOARD'S OWN ENDS**
 
+---
+
+# ⛔ CORRECTION 2026-11-20 — THE 0.6900 "FOOT" IS A HAND. The first-foot timing in this document is STRUCK.
+
+**Raised by the Codex movement review, verified independently against these same 1080×1920 captures, and accepted.**
+
+At media **0.6900** (hash `45ce2500`), the deck contact at src ≈ (710–754, 1171–1203) — which §2.3 and the
+table below call *"a bare FOOT unambiguously on the deck"* — **traces up through a wrist band and a long dark
+sleeve to the shoulder.** It is a **hand**. The neighbouring verified grid at **0.59–0.757** shows **both arms
+extending and both hands down**, which is consistent and which this read did not reconcile.
+
+**What replaces it:** a bare nose-side leg/foot becomes clear at about **1.2–1.3**, and the staggered feet by
+about **1.4**.
+
+### What this strikes
+
+| struck | was | now |
+| --- | --- | --- |
+| the 0.6900 first-foot row (§ timeline) | "a bare FOOT unambiguously on the deck" | **a hand** |
+| chest off the deck → foot on the deck | 0.300 s | ⛔ **void** — built on 0.6900 |
+| first prone frame → foot on the deck | 0.667 s | ⛔ **void** — built on 0.6900 |
+| "0.6900 – 0.79 **Standing**, crouched" | standing from 0.6900 | ⛔ **void** — he is still on his hands |
+| §2.3's "THEREFORE" | "a foot demonstrably on the deck at 0.6900" | ⛔ **withdrawn** |
+
+⚠️ **This read's own §2.3 called the 0.5566–0.6900 transit "NOT RESOLVED" and then resolved it as a foot
+anyway.** That was the error: the unresolved flag was the correct finding and the table overrode it.
+
+⭐ **This also settles the disagreement between the two independent clip-29 reads in favour of the other one**
+(first foot ≈ 1.25 s), and it **invalidates 0.69 as a setup target** for the take-off builder.
+
+⚠️ **Provenance of this correction, stated honestly:** I accepted it on Codex's traced limb (wrist band,
+sleeve, shoulder) plus the agreement of the second independent read — **I did not re-read the pixels myself.**
+Anyone rebuilding the take-off timing should re-read the 0.59–1.45 window directly.
+
+---
+
+
 > ⭐⭐ **THE FIRST PAGE, IN THE ORDER THE BRIEF ASKED FOR IT.**
 >
 > 1. ⭐ **IS THE RIDER'S WAIST VISIBLE? YES.** He wears a **dark long-sleeve top with a clean hem over light pink
@@ -203,8 +240,8 @@ frames.
 | **0.3900** | ⭐ **BOTH HANDS UNAMBIGUOUSLY PLANTED ON THE BOARD**, elbows out and bent, **chest well off the deck**, trunk arched. Image-left hand at src ≈ (642–667, 1152–1168); image-right **bare** hand at src ≈ (798–829, 1149–1180) on the far rail. Head up, turned toward the direction of travel. | **clear, 1:1** |
 | 0.3900 – 0.5566 | ⭐ **The hands STAY on the deck while the trunk rises** — five consecutive native frames (0.3900, 0.4566, 0.4900, 0.5233, 0.5566) in which both hands are resolvable on the white deck and the chest climbs. At **0.5566** the left hand is at src ≈ (620–642, 1150–1171) and the right at ≈ (729–753, 1156–1171). | **clear, 1:1** |
 | **0.5566 – 0.6900** | ⛔ **THE TRANSIT. NOT RESOLVED. See §2.3.** | ⛔ |
-| **0.6900** | ⭐ **A bare FOOT unambiguously on the deck** at src ≈ (710–754, 1171–1203), with the lower leg running up into the body. The view is from behind and **only ONE foot is resolvable**; the other is behind the body and spray. | **clear** |
-| 0.6900 – 0.79 | **Standing**, crouched, trunk folded forward over the board, arms coming out and away from the deck. | clear |
+| **0.6900** | ⛔ **STRUCK — SEE THE CORRECTION AT THE TOP: THIS IS A HAND.** ~~A bare FOOT unambiguously on the deck~~ at src ≈ (710–754, 1171–1203), with the lower leg running up into the body. The view is from behind and **only ONE foot is resolvable**; the other is behind the body and spray. | **clear** |
+| 0.6900 – 0.79 | ⛔ **STRUCK — still on his hands.** ~~Standing~~, crouched, trunk folded forward over the board, arms coming out and away from the deck. | clear |
 | 1.2 – 1.5 | **Upright and trimming**, arms spread, board planing across the face. | clear |
 
 ### 2.3 ⛔ What spray hid — stated as a bound, not as an order
