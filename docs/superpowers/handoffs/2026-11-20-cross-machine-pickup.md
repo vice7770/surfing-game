@@ -124,11 +124,44 @@ wave 1, exact matched rows (the peer is preserving them):
 | --- | --- |
 | **neutral** (no command) | ⭐ **stays up to 3.01667 s** |
 | **steer alone** | ⛔ **+0.700 / +0.71667 s** |
-| rotation alone | +1.600 s |
-| steer and rotation | +0.71667 / +1.000 s |
+| **Compress alone (R2)** | +1.600 s |
+| **steer + Compress (R2)** | +0.71667 / +1.000 s |
+
+⚠️ **Row labels corrected 2026-11-20:** the second input is **Compress (R2)**, not rotation
+— the split launcher and bundles set `compress`. Verified: `Bindings.ts:79` binds
+`compress: [7]`, gamepad button 7, the right trigger. ⭐ **That makes this table far more
+relevant to the owner, because Compress is a trigger he actually rides with** — and
+**Compress alone halves his survival, 3.02 s → 1.60 s**, while steer+Compress is
+indistinguishable from steer alone.
 
 On **wave 2** every variant stays through 3.01667 s. Both sharp inputs lose balance while
 **still planing at 3.8–3.9 m/s**, with the matched neutral rider standing at comparable speed.
+
+⭐⭐ **The requested pressure leaves the support BEFORE the fall — and that alone does not
+explain it.** Wave 1, first out-of-support **requested** pressure line:
+
+| arm | t | requested pressure | support edge | CoM | projected capture velocity |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| cueL | **+0.600 s** | **+0.13531 m** | +0.130 | −0.006983 m | **+0.00313 m/s** |
+| cueR | **+0.650 s** | **−0.13966 m** | −0.130 | +0.008277 m | — |
+
+First capture beyond **+0.66667 / +0.700**; separation **+0.700 / +0.71667**. ⛔ **So the demand
+goes outside the sole about 0.1 s before capture, while the CoM is still essentially centred
+(−7 mm) and the capture velocity is 3 mm/s.** Negative headroom is therefore **necessary and
+not sufficient** — the peer's words, and I agree: a demand outside the support with a centred
+CoM and no velocity is not yet a fall.
+
+⭐ **The discriminating comparison, as advised:** take the **earlier demand and achieved
+rider/board bank** against (a) the neutral rider and (b) **the same-direction wave 2
+survivor** — the one arm that gets the same command on the same sea and stays up. That
+isolates what the survivor does differently, which negative headroom cannot.
+Leads: `3.5/swing-demand.ts` and `3.5/results/35k/35k-s2-steer-only-ships-vs-swing.jsonl.gz`
+on `claude/swing-demand` (`be7e76cf`).
+
+⚠️ **And for the centred-stick weave, kept strictly separate:** the committed **35h/35i
+matched-onset replay** is the sample, and **the torso stop was first reached AFTER the ankle
+target reversal.** ⭐ That ordering matters to my own twist work — it makes the torso stop
+**downstream** of the ankle reversal, so it cannot be the initiator of the weave.
 
 ⭐ **Same water, same speed, still planing — the neutral rider survives 4× longer than the
 steered one.** That is the cleanest pair anyone has on what the owner actually reported, and
