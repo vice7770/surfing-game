@@ -358,18 +358,23 @@ carries no `TWIST_STOP_DAMPING` term, so **the live end-stop damper is omitted.*
 the source. Its spectral table screens the design only. ⛔ **Do not treat #455's 2.6× as a
 measured improvement.**
 
-**3. ⭐⭐ And raising the model's torso stiffness is UNSTABLE, which kills my opening framing.**
-On the shipped-gain model mode, closed-loop eigenvalue magnitudes at 4.5 m/s, tall, zero rail:
+**3. Raising the stiffness destabilises the FIXED-gain arm only — and I overstated this at
+first.** Closed-loop max \|eigenvalue\| at 4.5 m/s, tall, zero rail:
 
 | k (N·m/rad) | 20 (shipped) | 60 | 180 |
 | --- | ---: | ---: | ---: |
-| max \|eigenvalue\| | **0.974694** | **1.010032** | **1.033677** |
+| `model` arm (**fixed** gains) | 0.974694 | ⛔ **1.010032** | ⛔ **1.033677** |
+| `design` arm (**recomputed** gains) | 0.974694 | ✅ 0.973740 | ✅ 0.973747 |
 
-⭐ **The shipped 20 sits just inside stability and 60 is already outside it.** So "the
-controller plans against a trunk 100× softer than the one it drives" — the framing I opened
-this whole thread with — **cannot be fixed by raising k toward 2000**: the frozen linear system
-goes unstable an order of magnitude below it. A frozen-linear warning, separate from wave
-outcomes, but decisive against that direction.
+⚠️ **I first wrote this as "raising the stiffness is unstable, which kills the direction".
+That was wrong** — it is unstable only if the gains are left alone. **Recompute the gains and
+all three stiffnesses are stable.** So the honest statement is narrower and more useful:
+"the controller plans against a trunk 100× softer than the one it drives" cannot be answered
+by raising k **with the shipped fixed gains**, because the frozen linear system goes unstable
+an order of magnitude below 2000 — but the `design` route is not excluded on stability
+grounds. ⛔ **It is excluded on measured outcome instead:** the recomputed-gain arm fell
+**sooner in ten** of the matched starts, and all 54 runs fell. A frozen-linear figure is not
+a wave outcome either way.
 
 ⚠️ **Scope — two arms were NOT run and they are the interesting ones.** The null covers a
 rider touching **neither the rotation stick nor Snap**. At full `rotate` the ask is
@@ -556,6 +561,29 @@ covers the median first-second escape (**0.080 m**) and does **not** cover the f
 30 open and asked, fairly, "you have 24 PR open, what am I supposed to play then".
 
 ---
+
+## 5b. ⭐ The signed two-machine comparison — read this before choosing a direction
+
+The owner asked **which overnight branch got closer to balance.** The peer answered it in a
+signed entry with reproduction conditions, per-arm stability figures, the saved Canyon control
+and links into both machines:
+
+> **`origin/codex/overnight-movement-audit` → `6f7b341e`**, and on `claude/the-record` at
+> `docs/research/new-rider/3.5/consult-codex-2026-11-18.md` **line 1208**.
+> Matched Canyon evidence: the same file, lines **1166-1206**, with
+> `3.5/results/overnight-canyon-review/seed2-controls.jsonl.gz` (**2 570 matched standing
+> rows**, original launch commands, source and bundle hashes and line numbers embedded).
+
+⭐ **Its answer, in one line: none of the three branches demonstrated a fix, and they
+establish different things.** The separate machine's commit is a trim-pressure regression test
+plus media on October's Batch E, **already an ancestor of the playable branch**, measuring
+requested pressure on a **flat-water glide** and a fixed 15° plane — **neither measures
+recovery on Canyon**, and its pelvis trial reproduced a 6 cm visual shift but **failed four rig
+checks and was withheld**. `claude/twist-stop` put the torso stop in the predictor: of 18
+matched starts the model arm fell on the **same frame in 11**, sooner in 4, later in 3, and
+**all 54 runs fell**. `claude/twist-grip` cut peak whole-joint torque 203.52 → 153.38 N·m and
+**both arms fell in all 108 matched starts with a median change of zero** — it establishes a
+torque reduction, not a balance benefit.
 
 ## 6. Coordination
 
