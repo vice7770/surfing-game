@@ -122,7 +122,7 @@ wave 1, exact matched rows (the peer is preserving them):
 
 | input | falls at |
 | --- | --- |
-| **neutral** (no command) | ⭐ **stays up to 3.01667 s** |
+| **neutral** (no command) | ⚠️ **RIGHT-CENSORED at 3.01667 s — the run ENDED, it did not fall** |
 | **steer alone** | ⛔ **+0.700 / +0.71667 s** |
 | **Compress alone (R2)** | +1.600 s |
 | **steer + Compress (R2)** | +0.71667 / +1.000 s |
@@ -130,9 +130,12 @@ wave 1, exact matched rows (the peer is preserving them):
 ⚠️ **Row labels corrected 2026-11-20:** the second input is **Compress (R2)**, not rotation
 — the split launcher and bundles set `compress`. Verified: `Bindings.ts:79` binds
 `compress: [7]`, gamepad button 7, the right trigger. ⭐ **That makes this table far more
-relevant to the owner, because Compress is a trigger he actually rides with** — and
-**Compress alone halves his survival, 3.02 s → 1.60 s**, while steer+Compress is
-indistinguishable from steer alone.
+relevant to the owner, because Compress is a trigger he actually rides with.**
+
+⛔ **But do NOT say "Compress halves his survival" — I did, and it is wrong twice over.**
+**(a)** The neutral arm is **right-censored at +3.01667 s**: the run ended there, the rider did
+not fall. So 3.017 is a **floor**, not a fall time, and no ratio can be taken against it.
+**(b)** Worse, **it is not even the same failure** — see the axis distinction below.
 
 On **wave 2** every variant stays through 3.01667 s. Both sharp inputs lose balance while
 **still planing at 3.8–3.9 m/s**, with the matched neutral rider standing at comparable speed.
@@ -157,6 +160,45 @@ survivor** — the one arm that gets the same command on the same sea and stays 
 isolates what the survivor does differently, which negative headroom cannot.
 Leads: `3.5/swing-demand.ts` and `3.5/results/35k/35k-s2-steer-only-ships-vs-swing.jsonl.gz`
 on `claude/swing-demand` (`be7e76cf`).
+
+⭐⭐ **THE R2-ONLY FALL IS A DIFFERENT FAILURE — fore/aft, and after the pulse has ended.**
+In the isolated seed-2 wave-1 R2-only arm: **the pulse has ended by +1.217**, capture first
+goes beyond reach at **+1.550**, and it detaches at **+1.600 while still planing**. On that
+final sample `capAcross = +0.03934 m` and `capPoint = +0.01775 m` — ⭐ **both well inside the
+support of ±0.130 m.**
+
+I verified the consequence in code. `humanBalance.ts:495` is
+`beyond = pastX > reachAcross || pastZ > reachAlong` and `:497` is
+`weightPast = |px| > halfAcross || pz > alongFront || -pz > alongBack`, with
+`fallen = beyond && weightPast` (`:512`). With the across terms inside the support,
+⛔ **only the fore/aft terms can have supplied EITHER predicate — so both of them were
+fore/aft.** Nose-or-tail direction was not recorded.
+
+⭐ **So there are TWO distinct failures in this thread and they must stop being pooled:**
+
+| | when | axis | state |
+| --- | --- | --- | --- |
+| **sharp steering held** | +0.700 — fast | **lateral** collapse | command still held |
+| **R2 / Compress alone** | +1.600 | ⛔ **fore/aft** | **pulse already over** at +1.217 |
+
+A fore/aft detachment 0.4 s **after** the input stopped is not the lateral collapse the owner
+reported, and a fix for one is not a fix for the other.
+
+⚠️ **And my Point-control claim is NOT attributable.** I wrote that whole input killed the
+long rides at the Point (0 measured in 8 rides / 71 attempts against 2 in 8 / 42). The peer's
+audit: **changed controls, unmatched rides and missing full rider options** mean the pooled
+difference **cannot** be attributed to Compress or to any specific path mechanism. ⛔ So
+"two independent measurements agree" was my overreach — withdraw it. The arms are not matched.
+
+⚠️ **Also corrected: the analyser counts are manoeuvre SEGMENTS, not rides.** 13 → 17 segments
+on **10 → 13 distinct rides**, and **both** newly named turns come from **seed 1 alone**.
+
+⭐ **Portable data now exists for this**, which is rare here:
+`codex/overnight-movement-audit` (`cbe28848`) carries
+`results/overnight-canyon-review/seed2-controls.jsonl.gz` — **2 570 matched standing rows**
+with the original launch commands, source and bundle hashes, and original line numbers
+embedded. Matched rows, with provenance, is exactly what every pooled claim in this document
+has lacked.
 
 ⚠️ **And for the centred-stick weave, kept strictly separate:** the committed **35h/35i
 matched-onset replay** is the sample, and **the torso stop was first reached AFTER the ankle
