@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5ef">
+  <title>Canyon movement review · Breakline</title>
+  <link rel="stylesheet" href="/src/dev/canyonMovementReview.css">
+</head>
+<body>
+  <header class="mast">
+    <div><span class="brand">Breakline</span><h1>Canyon movement review</h1></div>
+    <a class="live-link" href="/?canyonDebug=standing">Ride from standing <span aria-hidden="true">↗</span></a>
+  </header>
+  <main>
+    <section class="playback" aria-label="Recorded rider comparison">
+      <video id="replay" playsinline muted preload="auto" aria-label="Left and right bottom turns from the first standing frame" src="/debug/canyon/canyon-turn-replay.mp4"></video>
+      <div class="transport">
+        <div class="transport-row">
+          <button id="play" type="button" disabled>Play</button><button id="restart" type="button" disabled>Restart</button>
+          <output id="time" aria-label="Time after standing">0.00 / 3.00 s</output>
+          <label class="rate">Speed <select id="speed" aria-label="Playback speed"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option></select></label>
+        </div>
+        <label class="sr-only" for="scrub">Replay frame</label><input type="range" id="scrub" min="0" max="89" step="1" value="0" disabled>
+      </div>
+      <nav aria-label="Jump to a movement phase" id="phases">
+        <button data-frame="0" type="button" disabled>Stand</button>
+        <button data-frame="10" type="button" disabled>Load the rail</button>
+        <button data-frame="37" type="button" disabled>Release</button>
+        <button data-frame="72" type="button" disabled>Check the exit</button>
+      </nav>
+      <p class="keys"><kbd>Space</kbd> play or pause <span>·</span> <kbd>←</kbd> <kbd>→</kbd> step one frame</p>
+    </section>
+    <aside aria-label="Current frame analysis">
+      <div class="analysis-head"><h2 id="phase-name">Stand</h2><span id="frame-number">Frame 1 / 90</span></div>
+      <div class="expectation"><h3>Expected movement</h3><p id="expected">Settle over planted feet after the pop-up.</p></div>
+      <h3 class="observed">Observed on the wave</h3>
+      <table aria-label="Measured movement for left and right turns">
+        <thead><tr><th scope="col">Measurement</th><th scope="col">Left turn</th><th scope="col">Right turn</th></tr></thead>
+        <tbody id="metrics"></tbody>
+      </table>
+      <p id="outcome"></p>
+    </aside>
+  </main>
+  <footer>Seed 2 · Wave 1 · Regular stance · The replay follows a captured paddle-in from its first standing frame. Ride from standing opens the interactive Canyon session. Knee angles reach 180° when straight. Pelvis height is measured normal to the deck.</footer>
+  <p role="status" id="status">Loading the recording and measurements…</p>
+  <script type="module" src="/src/dev/canyonMovementReview.ts"></script>
+</body>
+</html>

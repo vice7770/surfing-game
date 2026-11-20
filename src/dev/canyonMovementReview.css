@@ -1,0 +1,50 @@
+:root { color-scheme: light; font: 16px/1.45 'DM Sans', 'Avenir Next', Avenir, system-ui, sans-serif; color: #173735; background: #f6f5ef; }
+* { box-sizing: border-box; }
+body { max-width: 1570px; margin: 0 auto; padding: clamp(16px, 3.3vw, 54px); }
+.mast { display: flex; justify-content: space-between; align-items: center; gap: 20px; border-bottom: 1px solid #c9d3cc; padding-bottom: 20px; margin-bottom: 22px; }
+.brand { font-weight: 750; color: #466963; font-size: .82rem; letter-spacing: .035em; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: clamp(1.65rem, 3.8vw, 3rem); line-height: 1.07; margin-top: 4px; letter-spacing: -.049em; }
+h2 { font-size: 1.55rem; letter-spacing: -.035em; }
+h3 { font-size: .83rem; letter-spacing: .01em; }
+.live-link, button, select { font: inherit; }
+.live-link { border: 1px solid #557a72; color: #153e38; padding: 9px 14px; text-decoration: none; border-radius: 5px; white-space: nowrap; }
+main { display: grid; grid-template-columns: minmax(0, 1.67fr) minmax(310px, 1fr); gap: clamp(22px, 3.2vw, 52px); align-items: start; }
+video { display: block; width: 100%; aspect-ratio: 980 / 546; background: #e0e8e2; border: 1px solid #cad4cc; border-radius: 5px; }
+button, select { cursor: pointer; border: 1px solid #9dafa6; border-radius: 5px; background: transparent; color: #234943; padding: 5px 10px; }
+button:disabled { opacity: .5; cursor: default; }
+button:not(:disabled):hover, a:hover, select:hover { background: #e4ebe3; }
+:focus-visible { outline: 3px solid #147c71; outline-offset: 3px; }
+.transport { margin-top: 14px; }
+.transport-row, .analysis-head { display: flex; align-items: center; gap: 9px; }
+#play { min-width: 66px; background: #234f47; color: #fff; border-color: #234f47; }
+#play:not(:disabled):hover { background: #186355; }
+#time, #frame-number, td { font-variant-numeric: tabular-nums; }
+#time { color: #385750; font-size: .87rem; }
+.rate { margin-left: auto; font-size: .84rem; white-space: nowrap; }
+#speed { padding: 4px; }
+#scrub { display: block; width: 100%; accent-color: #276458; cursor: pointer; margin: 10px 0 12px; }
+#phases { display: flex; flex-wrap: wrap; gap: 6px; }
+#phases button { font-size: .83rem; }
+#phases button[aria-current="step"] { color: #fff; background: #305c51; border-color: #305c51; }
+.keys, footer { color: #526660; font-size: .8rem; }
+.keys { margin: 12px 0 0; }
+.keys span { padding: 0 4px; }
+kbd { font-family: inherit; font-weight: 650; }
+aside { border-top: 2px solid #4e7065; }
+.analysis-head { justify-content: space-between; padding: 9px 0; }
+#frame-number { color: #526660; font-size: .8rem; }
+.expectation { padding: 12px 14px; background: #e4ede3; border-left: 3px solid #397465; }
+.expectation p, #outcome { font-size: .93rem; margin-top: 4px; }
+.observed { margin: 16px 0 6px; }
+table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+th, td { text-align: right; padding: 5px 4px; border-bottom: 1px solid #d4dcd4; }
+th:first-child { text-align: left; padding-left: 0; }
+thead th { color: #48645c; font-size: .77rem; }
+tbody th { font-weight: 500; }
+#outcome { margin-top: 12px; }
+footer { margin: 24px 0 0; padding-top: 12px; border-top: 1px solid #c9d3cc; }
+#status { margin-top: 8px; font-size: .9rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 850px) { main { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .mast { align-items: flex-start; flex-direction: column; gap: 12px; } .live-link { padding: 6px 10px; } .transport-row { gap: 5px; } button { padding: 5px 7px; } .rate { font-size: .76rem; } }

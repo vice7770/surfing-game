@@ -28,6 +28,7 @@ export default defineConfig(({ command }) => {
   return {
     define: { __BUILD_ID__: JSON.stringify(build) },
     plugins: [buildManifest(build)],
+    build: { rolldownOptions: { input: { game: 'index.html', canyonDebug: 'canyon-debug.html' } } },
     // `npm run dev` beside `npm run server:dev`: the page's rooms go to the room server.
     server: { proxy: { '/ws': { target: 'ws://localhost:8787', ws: true } } },
   };
