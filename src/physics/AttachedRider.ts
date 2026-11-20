@@ -2232,8 +2232,8 @@ export class AttachedRider {
   private tallFrom = false;
   /** The leg was last brought down by Compress (not the crouch alone): letting it go is the projection. */
   private fromCompress = false;
-  /** Still rising from the player's Compress, including steps when the balance reflex asks to keep some knee bend. */
-  private releasingCompress = false;
+  /** Compress level the legs are returning from, until they reach the shallower demand or another stance takes over. */
+  private compressReleaseFrom = 0;
   /** The carve's flexing legs; only with `carveFlex: 'on'`. */
   private readonly carveFlexes: boolean;
   /** The leg was last brought down by the carve's flex: the load easing, it rises at the projection's catch. */
@@ -3089,7 +3089,7 @@ export class AttachedRider {
     this.tallReached = false;
     this.tallFrom = false;
     this.fromCompress = false;
-    this.releasingCompress = false;
+    this.compressReleaseFrom = 0;
     this.fromFlex = false;
     this.snapDriveSide = 0;
     this.snapDriven = 0;
@@ -4402,8 +4402,8 @@ export class AttachedRider {
     if (compress > 0 || snap > 0) this.fromCompress = true;
     else if (asked < 0) this.fromCompress = false;
     if (this.loadedCompressRelease) {
-      if (compress > 0 && this.freeBody) this.releasingCompress = true;
-      else if (!this.freeBody || held > 0 || flexing || this.leg.rest >= asked) this.releasingCompress = false;
+      if (!this.freeBody || snap > 0 || crouch > compress || flexing) this.compressReleaseFrom = 0;
+      else if (compress >= this.compressReleaseFrom || this.leg.rest >= asked) this.compressReleaseFrom = compress;
     }
     if (asked < 0 || !this.fromCompress || this.phase !== 'standing' || !this.planing) {
       this.tall = 0;
@@ -4425,9 +4425,10 @@ export class AttachedRider {
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).
-    const catching = !down && ((this.catches && this.fromCompress) || this.releasingCompress || this.fromFlex);
+    const releasingCompress = compress < this.compressReleaseFrom;
+    const catching = !down && ((this.catches && this.fromCompress) || releasingCompress || this.fromFlex);
     let caught = catching ? projectionCatch(this.mass, this.legStiffness) : Infinity;
-    if (catching && this.releasingCompress && compress === 0) {
+    if (catching && releasingCompress) {
       // A shared extension must keep both soles loaded. With half the spring stiffness at each foot,
       // the lighter sole's sag relative to its level-stance sag is twice its fraction of body weight.
       const front = this.contact.frontShare;

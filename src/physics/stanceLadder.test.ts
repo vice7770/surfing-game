@@ -150,9 +150,9 @@ describe('the projection rising tall (the phase-5 physics plan\'s item 2.2)', ()
 
   it('keeps the spring catch on release when the balance reflex still holds some knee bend', () => {
     const release = 0.8;
-    const releaseSpeed = (compressRelease?: 'load') => {
+    const releaseSpeed = (compressRelease?: 'load', trigger = 0) => {
       const { rest, at } = letGo(7, release, (rider, time) => {
-        rider.compress = time < release ? 1 : 0;
+        rider.compress = time < release ? 1 : trigger;
         // The Canyon take-off still has about 5% automatic knee drop on the tick the player lets go.
         if (Math.abs(time - release) < STEP / 2) rider.human.knees = 0.05;
       }, { rider: 'new', compressRelease });
@@ -164,6 +164,8 @@ describe('the projection rising tall (the phase-5 physics plan\'s item 2.2)', ()
     const supported = releaseSpeed('load');
     expect(supported).toBeGreaterThan(0);
     expect(supported).toBeLessThanOrEqual(levelCatch * 1.01);
+    // Easing the analogue trigger also raises both legs and draws on the lighter sole's support.
+    expect(releaseSpeed('load', 0.25)).toBeLessThan(releaseSpeed(undefined, 0.25));
   });
 
   it('keeps the feet loaded letting Compress and the steer go out of a compressed turn at 9–11 m/s, where at full pace they went light', () => {
