@@ -27,6 +27,7 @@ import { writeFileSync } from 'node:fs';
 import { Autopilot, autopilotView, type AutopilotInput } from '../src/dev/Autopilot';
 import { DEFAULT_PHYSICAL_SETTINGS, surfZoneConfigFor, type PhysicalSettings } from '../src/game/PhysicalMode';
 import type { RideReport } from '../src/game/rideAnalysis';
+import { rideRequestFor } from '../src/dev/rideReports';
 import { LocalSurfZone } from '../src/game/SurfZoneHost';
 import type { SpotName } from '../src/wave/Bathymetry';
 
@@ -105,9 +106,10 @@ for (let seed = firstSeed; seed < firstSeed + seeds && rides.length < wanted; se
     } else {
       after = 0;
     }
-    // The autopilot's own input forwarded whole, with only `retry` added. Picking fields out of it by name is how
-    // this tool's first run starved the rider of the `crouch` and `compress` its bottom turn asks for.
-    host.advance(1, { ...input, retry });
+    // The autopilot's own input forwarded whole, with only `retry` added, through the one shared builder both
+    // collection sites use. Picking fields out of it by name is how this tool's first run starved the rider of the
+    // `crouch` and `compress` its bottom turn asks for.
+    host.advance(1, rideRequestFor(input, retry));
     simulated += STEP;
     steppedAll += 1;
     const report = host.snapshot.status.ride?.report;

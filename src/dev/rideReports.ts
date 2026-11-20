@@ -102,6 +102,16 @@ export function rideReportsWanted(search: string): number | undefined {
   return Number.isInteger(asked) && asked > 0 ? asked : 20;
 }
 
+/**
+ * **One step's request for the runner: the autopilot's whole input, with only `retry` added.** The headless twin
+ * (`scripts/ride-reports.ts`) drives `host.advance` rather than `advance`, so it needs to build a `RideRequest`; this
+ * is the one place that happens, and `rideReports.test.ts` asserts it preserves every key of a loaded input. The
+ * point is that neither collection site ever names the input's fields — that is the defect this tool shipped once.
+ */
+export function rideRequestFor(input: AutopilotInput, retry: boolean): RideRequest {
+  return { ...input, retry };
+}
+
 const STEP = 1 / 60;
 /** A crest this far behind the board starts a paddle, m, as in the film recorder. */
 const LOOK = 16;

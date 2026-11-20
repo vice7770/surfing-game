@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_PHYSICAL_SETTINGS, surfZoneConfigFor, type PhysicalSettings } from '../game/PhysicalMode';
 import { LocalSurfZone } from '../game/SurfZoneHost';
 import type { RideRequest } from '../wave/SurfZoneRunner';
-import type { AutopilotInput } from './Autopilot';
+import { Autopilot, type AutopilotInput } from './Autopilot';
 import { advance, type SteppedHooks } from './devStepping';
-import { rideReportsWanted } from './rideReports';
+import { collectRideReports, rideRequestFor, rideReportsWanted, type RideReportHooks } from './rideReports';
 
 /**
  * The switch only. **A passing test here is not evidence the switch reached a session**: three switches in this
@@ -101,5 +101,57 @@ describe("the autopilot's whole input reaches the physics", () => {
     const apart = Math.abs(steerOnly.x - whole.x) + Math.abs(steerOnly.z - whole.z)
       + Math.abs(steerOnly.vx - whole.vx) + Math.abs(steerOnly.vz - whole.vz);
     expect(apart).toBeGreaterThan(1e-6);
+  });
+});
+
+/**
+ * **The guard at the place the bug actually was.** The tests above drive `advance`, which proves `advance` forwards
+ * its argument — and that was never in doubt. The defect was one level up: `collectRideReports` rebuilt a
+ * `{ paddle, popUp, steer }` object *before* calling `advance`, so a future edit that reintroduced a hand-written
+ * literal at the collector would sail through an `advance`-level test. Raised by the project's peer reviewer.
+ *
+ * So this drives **the collector itself** and the headless twin's own request builder, and reads the values back off
+ * the rider the host actually built.
+ */
+describe('both collection sites forward the whole input', () => {
+  const LOADED: AutopilotInput = {
+    paddle: false, popUp: false, steer: 0.8, trim: -0.6, crouch: 0.55, compress: 1, rotate: -0.4,
+  };
+
+  it('the browser collector hands the autopilot\'s crouch, Compress, trim and rotate to the session', async () => {
+    const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'point', source: 'practice', compute: 'cpu' };
+    const host = new LocalSurfZone(surfZoneConfigFor(settings, 1, false), { rider: true });
+    const { focus } = host.init;
+    host.advance(1, {
+      paddle: false, popUp: false, steer: 0, retry: false,
+      place: { x: focus.x, z: focus.z + 2, heading: Math.PI / 2, speed: 6, phase: 'standing', followSurface: true },
+    });
+    // The pilot is stubbed, not the forwarding: whatever it asks for is what the collector must deliver intact.
+    const pilot = vi.spyOn(Autopilot.prototype, 'next').mockReturnValue({ ...LOADED });
+    try {
+      const hooks: RideReportHooks = {
+        start: () => Promise.resolve(),
+        step: (input) => host.advance(1, { ...input, retry: false }),
+        retry: () => {},
+        mode: { host, focus: { x: focus.x, z: focus.z } } as unknown as RideReportHooks['mode'],
+      };
+      // A tenth of a second of sea time: enough steps to carry the input, no ride needed.
+      await collectRideReports(hooks, '?rideReports=1&spot=point&maxMinutes=0.002');
+      expect(pilot).toHaveBeenCalled();
+      const { rider } = host.runner.session!;
+      expect(rider.trim).toBeCloseTo(LOADED.trim!, 6);
+      expect(rider.crouch).toBeCloseTo(LOADED.crouch!, 6);
+      expect(rider.compress).toBeCloseTo(LOADED.compress!, 6);
+      expect(rider.rotate).toBeCloseTo(LOADED.rotate!, 6);
+    } finally {
+      pilot.mockRestore();
+    }
+  });
+
+  it('the headless twin builds a request that keeps every field the pilot asked for', () => {
+    const request = rideRequestFor(LOADED, true);
+    // Key-set equality, so a future rewrite into a named-field literal fails here rather than silently dropping.
+    expect(Object.keys(request).sort()).toEqual([...Object.keys(LOADED), 'retry'].sort());
+    expect(request).toMatchObject({ ...LOADED, retry: true });
   });
 });
