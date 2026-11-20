@@ -33,6 +33,7 @@ import { SurfZoneSimulation, rideLineupAlong, rideLineupOffset, sweptBarrelOn, t
 import type { RiderBounds } from '../physics/riderBounds';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
+import { foamFelt } from './testWave';
 
 export { surfZoneSea } from './SurfZoneSimulation';
 
@@ -807,7 +808,8 @@ export class SurfZoneRunner {
       this.water.withSurfaceNodeCache(() => session.step(SURF_ZONE_STEP, this.water, ridden));
       // At a swept spot the lip strikes through the contact; its parcels' strips are off, so they would strike from
       // where nothing is drawn (the advisor's ruling 4).
-      if (!this.contactQueries) session.strike(this.simulation.lip);
+      // The test wave's foam is drawn only (`foamFelt`): its lip's parcels do not strike the rider either.
+      if (!this.contactQueries && foamFelt(this.config)) session.strike(this.simulation.lip);
       if (session.surfer.active) this.knock = Math.max(this.knock, session.surfer.lastContacts.board.length());
       // The rider stays in the simulated window (the owner, 2026-10-09): past the bounds it is slowed and drawn back.
       this.noteEdge(session.holdInside(this.bounds, SURF_ZONE_STEP));

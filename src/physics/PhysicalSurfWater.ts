@@ -4,6 +4,7 @@ import { waveNumber } from '../wave/dispersion';
 import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
 import type { LensPoint, RollerLens } from '../wave/SpillingRoller';
 import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
+import { foamFelt } from '../wave/testWave';
 import type { SurfWater, WaterSample } from './SurfWater';
 
 /** Seawater density, kg/m³: turns a body's impulse into depth-integrated flow. */
@@ -112,6 +113,12 @@ function catmullRomSlopes(t: number): [number, number, number, number] {
 export interface PhysicalSurfWaterOptions {
   /** Peak period, s: sets k for the vertical profile at each local depth. */
   peakPeriod: number;
+  /**
+   * false: broken water carries no push of its own (the test wave's foam drawn only, `foamFelt`): without a roller its
+   * old push on a bore's top (P11) stays off too. `forSimulation` then also leaves out the roller's lenses and the plume's
+   * air, so no sample carries the foam's density, flow, height or froth. Absent: as before.
+   */
+  feltFoam?: false;
   /** Breaking strength per cell, if the water breaks. */
   breaking?: ArrayLike<number>;
   /** Render node spacing, m: body contact interpolates the same nodes as the renderer. */
@@ -536,8 +543,11 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
         ...(simulation.config.froth ? { froth: simulation.config.froth } : {}),
       });
     }
+    // The test wave's foam is drawn only (`foamFelt`, `?testWave` without `?testFoam=on`): no lens, no plume air, no push.
+    const felt = foamFelt(simulation.config);
     return new PhysicalSurfWater(simulation.solver, {
       peakPeriod: simulation.config.peakPeriod, breaking: simulation.feltBreaking, nodeSpacing,
+      ...(felt ? {} : { feltFoam: false as const }),
       ...(swept ? { swept } : { carve: (x: number, z: number, surface: number) => lip.carve(x, z, surface) }),
       ...(swept && simulation.tubeFace?.union ? { sweptUnion: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow ? { sweptWall: true } : {}),
@@ -548,9 +558,9 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.buoy ? { sweptBuoy: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam ? { sweptSeam: true } : {}),
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam && simulation.tubeFace.stream ? { sweptStream: true } : {}),
-      aeration: simulation.aeration, materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
+      ...(felt ? { aeration: simulation.aeration } : {}), materialAt: simulation.spot.materialAt ? (x, z) => simulation.spot.materialAt!(x, z) : undefined,
       ...(swept && simulation.tubeFace?.union && simulation.tubeFace.wallFlow && simulation.tubeFace.seam && simulation.tubeFace.dug ? { sweptDug: true } : {}),
-      ...(roller ? { roller } : {}),
+      ...(roller && felt ? { roller } : {}),
       ...(simulation.config.surfaceMotion ? { surfaceMotion: simulation.config.surfaceMotion } : {}),
       ...(simulation.config.plainHeight ? { plainHeight: simulation.config.plainHeight } : {}),
       ...(simulation.config.froth ? { froth: simulation.config.froth } : {}),
@@ -683,7 +693,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
       const current = Math.hypot(u, w);
       const thickness = ROLLER_SHARE * Math.max(0, out.surfaceY - solver.restLevel);
       // With a roller (S3), its lenses carry the broken water in place of the P11 push.
-      if (!roller && current > MIN_ROLLER_FLOW && thickness > 0 && w > ROLLER_SHOREWARD * current) {
+      if (!roller && this.options.feltFoam !== false && current > MIN_ROLLER_FLOW && thickness > 0 && w > ROLLER_SHOREWARD * current) {
         const share = Math.max(0, 1 - Math.max(0, out.surfaceY - y) / thickness);
         const carried = out.breaking * Math.sqrt(GRAVITY * depth);
         horizontal = 1 + Math.max(0, carried / current - 1) * share;

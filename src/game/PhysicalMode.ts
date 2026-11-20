@@ -45,6 +45,7 @@ import type { SprayLook } from '../wave/SprayCloud';
 import { particleBudget, type ParticleLevel } from '../wave/particleBudget';
 import { RIDE_VIEWS, type RideView, type SpectatorView } from '../scene/SpectatorCamera';
 import { SEA_COMPONENTS, alongShoreOf, solverStage, surfZoneSea, sweptBarrelOn, sweptCrashOn, tankDepth, tankLayout, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import type { TestWaveMode } from '../wave/testWave';
 import { SweptBarrel } from '../scene/barrel/SweptBarrel';
 import { LibraryZone } from '../scene/library/LibraryZone';
 import { loadWaveCaseBytes } from '../wave/library/libraryCases';
@@ -1586,6 +1587,18 @@ export function canyonBedSwitch(search?: string): { canyonBed?: 'old' | 'b' | 'h
   if (waves === 'true' || waves === 'b') return { canyonBed: 'b' };
   if (waves === 'a' || waves === 'old') return { canyonBed: 'old' };
   return devParam('canyonRamp', search)?.trim().toLowerCase() === 'half' ? { canyonBed: 'half' } : {};
+}
+
+/**
+ * The `?testWave=ride|catch` dev switch (`SurfZoneConfig.testWave`, the owner's request of 2026-11-20): every Surf session
+ * is the test wave, the Canyon B Medium wave as one regular train (`TEST_WAVE`, src/game/testWave.ts), whatever the menu
+ * says; 'ride' starts the rider standing on its face ahead of the white, 'catch' lying at the take-off. With it,
+ * `?testFoam=on` (`SurfZoneConfig.testFoam`) lets the foam push the board and the rider again. Nothing otherwise.
+ */
+export function testWaveSwitch(search?: string): { testWave?: TestWaveMode; testFoam?: 'on' } {
+  const mode = devParam('testWave', search)?.trim().toLowerCase();
+  if (mode !== 'ride' && mode !== 'catch') return {};
+  return { testWave: mode, ...(devParam('testFoam', search)?.trim().toLowerCase() === 'on' ? { testFoam: 'on' as const } : {}) };
 }
 
 /**

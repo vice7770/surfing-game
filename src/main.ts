@@ -26,7 +26,10 @@ import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Se
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, snapFanSwitch, startOutSwitch, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, snapFanSwitch, startOutSwitch, swellFor, testWaveSwitch, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { TestWaveRun, testWaveOverrides } from './game/testWave';
+import { TEST_WAVE, foamFelt } from './wave/testWave';
+import { surfZoneSea } from './wave/SurfZoneSimulation';
 import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
 import type { OnlineController } from './net/OnlineController';
 import { ONLINE_QUEUE } from './net/OnlinePacer';
@@ -79,6 +82,8 @@ import './ui/ui.css';
 
 /** `?demo`: a Surf ride the dev autopilot rides (`?demo=line` holds a line; otherwise S-turns). */
 const demoMode = devParam('demo');
+/** `?testWave=ride|catch` (and `?testFoam=on`): every Surf session is the test wave, restarted on the same wave (src/game/testWave.ts). */
+const testWave = testWaveSwitch();
 /** The water's colour seen from below: the underwater fog and background. */
 const UNDERWATER = '#367e83';
 /** The light before any scene sets its own: the menu's. */
@@ -176,6 +181,8 @@ class SurfGame {
   private schoolFreePractice = false;
   private schoolSlow = false;
   private schoolSeaTime = Number.NaN;
+  /** The test wave's session (`?testWave`): its recorded sea and restart clock, while one runs. */
+  private testWaveRun?: TestWaveRun;
   readonly school: SchoolHost;
   /** `?demo`'s autopilot, and how long it has been done with its ride, s. */
   private readonly demoPilot = demoMode === null ? undefined : new Autopilot({ style: demoMode === 'tube' ? 'tube' : demoMode === 'line' ? 'line' : 'turns' });
@@ -412,11 +419,15 @@ class SurfGame {
     this.applyWaterLook(resolved.waterLook);
   }
 
-  /** R: paddle out again from the lineup while the waves carry on. */
+  /** R: paddle out again from the lineup while the waves carry on; on the test wave (`?testWave`), the same wave again at once. */
   quickRetry = (): void => {
     // Online, R counts down to a free spot in the lineup (spec N1).
     if (this.online) {
       this.online.play.respawn();
+      return;
+    }
+    if (this.testWaveRun) {
+      this.restartTestWave(this.testWaveRun);
       return;
     }
     this.physicalMode.retry();
@@ -446,6 +457,8 @@ class SurfGame {
     this.waveLab.active = options.lab === true;
     if (!options.school) this.leaveSchool();
     this.schoolActive = options.school === true;
+    // Any new scene ends a test wave session; `startTestWave` begins the next one.
+    this.testWaveRun = undefined;
     this.seed = seed;
     this.physicalSettings = { ...settings };
     this.water.mesh.visible = true;
@@ -475,12 +488,71 @@ class SurfGame {
   /** A Surf session (plan P8): the physical surf zone with the player's rider, in the chosen conditions and camera. */
   async startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean> {
     this.leaveOnline();
+    if (testWave.testWave) return this.startTestWave(testWave.testWave, conditions, camera);
     // The Wave Pool rides as practice at every size (the movement-flow spec).
     this.surfSwell = ridesAsPractice(spot, conditions.swell) ? 'practice' : conditions.swell;
     this.physicalMode.idleView = 'overview';
     this.physicalMode.defaultView = camera;
     const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
     return this.startPhysical(seed, physicalSettingsFor(spot, conditions, water), { sun: TIMES[conditions.time], rider: true });
+  }
+
+  /**
+   * The test wave (`?testWave`, src/game/testWave.ts): the Canyon B Medium wave as one regular train whatever the menu
+   * chose (its light aside), its sea recorded on this page's own compute path as the session opens, and the rider placed
+   * for the mode. Behind the loading card, so nothing steps between the start, the recording and the placement.
+   */
+  private async startTestWave(mode: NonNullable<typeof testWave.testWave>, conditions: SurfConditions, camera: RideView | 'overview'): Promise<boolean> {
+    this.surfSwell = 'medium';
+    this.physicalMode.idleView = 'overview';
+    this.physicalMode.defaultView = camera;
+    const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
+    const settings = { ...physicalSettingsFor('canyon', { ...conditions, swell: 'medium', tide: 'mid', wind: 'calm' }, water), tide: 0, windSpeed: 0 };
+    const overrides = testWaveOverrides(mode, testWave.testFoam);
+    if (!(await this.startPhysical(TEST_WAVE.seed, settings, { sun: TIMES[conditions.time], rider: true, overrides }))) return false;
+    const host = this.physicalMode.host;
+    if (!host) return false;
+    const { bytes, deflated } = await host.exportState();
+    const sea = await decompress(bytes, deflated);
+    const run = new TestWaveRun(mode, sea, host.snapshot.status.seaTime);
+    this.testWaveRun = run;
+    // The first run starts from the recorded sea as every restart does (a restore starts the plume's turbulence afresh).
+    host.restore(run.seaCopy());
+    this.placeRider(run.placement);
+    if (DEV_TOOLS) (globalThis as { breaklineTestWave?: () => unknown }).breaklineTestWave = () => this.testWaveReport();
+    return true;
+  }
+
+  /** The same test wave again: the recorded sea, the rider placed for it. */
+  private restartTestWave(run: TestWaveRun): void {
+    const host = this.physicalMode.host;
+    if (!host) return;
+    host.restore(run.seaCopy());
+    this.placeRider(run.placement);
+    run.restarted();
+  }
+
+  /** Dev tools: what the host built for the test wave, read back from it (not the address), and where the rider is now. */
+  private testWaveReport(): unknown {
+    const host = this.physicalMode.host;
+    const run = this.testWaveRun;
+    if (!host || !run) return undefined;
+    const { config } = host;
+    const sea = surfZoneSea(config);
+    const { board, status } = host.snapshot;
+    return {
+      mode: run.mode, restarts: run.restarts, inPage, seaTime: status.seaTime, recordedBytes: run.sea.length,
+      config: {
+        spot: config.spot, canyonBed: config.canyonBed, seed: config.seed, testWave: config.testWave, testFoam: config.testFoam,
+        height: config.significantHeight, period: config.peakPeriod, direction: config.directionDegrees, componentCount: config.componentCount,
+        tide: config.tide, windSpeed: config.windSpeed, startSeaTime: config.startSeaTime, compute: config.compute, stage: config.stage,
+        rider: config.rider, feltFrame: config.feltFrame, riderBody: config.riderBody, stanceReach: config.stanceReach, deepen: config.deepen,
+      },
+      sea: sea.components.map((c) => ({ amplitude: c.amplitude, period: (2 * Math.PI) / c.omega, direction: c.direction, phase: c.phase })),
+      foamFelt: foamFelt(config),
+      placement: run.placement,
+      board: [board[0], board[1], board[2]], ride: status.ride ? { phase: status.ride.phase, speed: status.ride.speed, cue: status.ride.cue } : undefined,
+    };
   }
 
   /** The physical ride's status, while a rider is on the water. */
@@ -521,7 +593,7 @@ class SurfGame {
     if (controller.closed) return false;
     // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
     // The room's sea is the same on every client and handed between them: always the Canyon's default layout, whatever
-    // `?canyonBed`, `?canyonWaves`, `?canyonRamp`, `?canyonJoin`, `?canyonAgeJoin`, `?poolAgeJoin`, `?poolFloor`, `?poolSize`, `?canyonReefSeq` or `?canyonBeachLook` say (its
+    // `?testWave` (and `?testFoam`), `?canyonBed`, `?canyonWaves`, `?canyonRamp`, `?canyonJoin`, `?canyonAgeJoin`, `?poolAgeJoin`, `?poolFloor`, `?poolSize`, `?canyonReefSeq` or `?canyonBeachLook` say (its
     // old layouts, its halved ramp, breaking, onsets and beach look are solo dev switches), and
     // every spot's onset whatever `?onset` says, every rider's stroke whatever `?stroke` says, the surface the bodies
     // sample moving through their step whatever `?surfaceMotion` says, its heights' reads whatever `?plainHeight` says, the Barrel's contact rows whatever `?contactRows` says, the GPU's uploads whatever `?deviceWater`, `?launchWater` or `?devicePlunge` say, the Barrel's water on the GPU whatever `?barrelGpu` says, the swim back to the board whatever `?swim` says,
@@ -534,7 +606,7 @@ class SurfGame {
     // barrel and its crash: what a rider hits must match on every client), and the sea's own wave whatever `?wave` says.
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
-      canyonBed: 'reef', canyonJoin: undefined, canyonStart: undefined, canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, poolFloor: undefined, poolSize: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
+      testWave: undefined, testFoam: undefined, canyonBed: 'reef', canyonJoin: undefined, canyonStart: undefined, canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, poolFloor: undefined, poolSize: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
       sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined, tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined, tubeContact: undefined, tubeCap: undefined, tubeMerge: undefined, tubeGuard: undefined, tubeTrack: undefined, tubeInertia: undefined, tubeRetire: undefined, tubeBuoy: undefined, tubeDrop: undefined, formClock: undefined, tubeSeam: undefined, seamTau: undefined, seamBand: undefined, wallBody: undefined, crestLine: undefined, anchorLine: undefined, loftMesh: undefined, wallFoot: undefined, afterTube: undefined, wave: undefined, waterLight: undefined, stroke: undefined, surfaceMotion: undefined, plainHeight: undefined, contactRows: undefined, deviceWater: undefined, launchWater: undefined, devicePlunge: undefined, barrelGpu: undefined, swim: undefined, froth: undefined, extension: undefined, snap: undefined, snapQuick: undefined, snapPivot: undefined, snapRecentre: undefined, snapUpturn: undefined, snapDepth: undefined, snapStamp: undefined, agile: undefined, legDrive: undefined, hull: undefined, railSuction: undefined, compressPull: undefined, carveFlex: undefined, snapLegs: undefined, snapCross: undefined, legPower: undefined, rider: undefined, feltFrame: undefined, kneeRoom: undefined, stanceReach: undefined, ankleLimit: undefined, ankleRange: undefined, bankClamp: undefined, bodyBank: undefined, askCap: undefined, stanceDeep: undefined, deepen: undefined, armCarry: undefined, trunk: undefined, buoyFrame: undefined, waterHeel: undefined, mountAgree: undefined, riderBody: undefined, riderCost: undefined, plantFloor: undefined, deckHollow: undefined, snapFan: undefined, boardSpray: undefined, spraySheet: undefined, lipVeil: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
@@ -774,6 +846,10 @@ class SurfGame {
       : showsPocketReflex(this.pocketReflex, this.surfSwell);
     this.physicalMode.advance(steps, { ...request, ...this.boardAxes(request), pocketReflex });
     if (request.popUp) controls.consumeGetUp();
+    // The test wave starts again 2 s after a fall or its end (`TestWaveRun`).
+    const run = this.testWaveRun;
+    const status = this.physicalMode.host?.snapshot.status;
+    if (run && status && run.frame(status)) this.restartTestWave(run);
     this.physicalRender(simElapsed);
   }
 

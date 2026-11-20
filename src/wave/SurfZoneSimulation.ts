@@ -14,6 +14,7 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
+import { testWaveSea, type TestWaveMode } from './testWave';
 import {
   POOL, POOL_BARREL, POOL_REF, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefLine, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
   poolStraightAt, poolStraightDirection, poolStraightFrame, poolStraightPlatformZ, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolReefSwitch, type PoolSizeSwitch, type PoolWaves,
@@ -605,6 +606,15 @@ export interface SurfZoneConfig {
    * default.
    */
   canyonBed?: CanyonBed;
+  /**
+   * The test wave (`?testWave=ride|catch`, the owner's request of 2026-11-20; `TEST_WAVE`): the sea is one regular train of
+   * `significantHeight` m waves (the regular wave's height at the Canyon's 5 m swell depth, not an Hs), period
+   * `peakPeriod`, from `directionDegrees`, so every wave is the same one (`testWaveSea`); the host pins the rest (spot,
+   * layout, seed). Off by default; online rooms always run without it.
+   */
+  testWave?: TestWaveMode;
+  /** With `testWave`: 'on' (`?testFoam=on`) lets the foam push the board and the rider again (`foamFelt`); else it is drawn only. */
+  testFoam?: 'on';
   /**
    * The Wave Pool's kind of wave (the Surf screen's Waves row, the pool-barrel decisions of 2026-10-31): 'training', the
    * default, its A-frame for faces of 1.0–1.5 m (`POOL`); 'barrel', the same machine onto a floor that plunges a tube: the
@@ -1307,6 +1317,11 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     return poolSea(edgeHeight(config, tank.edgeDepth), depth, madsenSorensenWaveNumber, direction, poolPeriodOf(config));
   }
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && solverStage(config.spot, config.stage) === 2;
+  const waveNumberAt = deeper || STAGE_2_ONLY.includes(config.spot) ? madsenSorensenWaveNumber : shallowWaterWaveNumber;
+  // The test wave (`?testWave`): one regular train, its height given where the Canyon's swells are and shoaled to the edge.
+  if (config.testWave) {
+    return testWaveSea(edgeHeight(config, tank.edgeDepth), config.peakPeriod, (config.directionDegrees * Math.PI) / 180, tank.edgeDepth + config.tide, waveNumberAt);
+  }
   return SeaState.fromSpectrum({
     significantHeight: edgeHeight(config, tank.edgeDepth),
     peakPeriod: config.peakPeriod,
@@ -1315,7 +1330,7 @@ export function surfZoneSea(config: SurfZoneConfig): SeaState {
     componentCount: config.componentCount ?? SEA_COMPONENTS,
     depth: tank.edgeDepth + config.tide,
     bandwidth: config.bandwidth,
-  }, config.seed, deeper || STAGE_2_ONLY.includes(config.spot) ? madsenSorensenWaveNumber : shallowWaterWaveNumber);
+  }, config.seed, waveNumberAt);
 }
 
 /**
