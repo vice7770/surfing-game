@@ -171,6 +171,12 @@ data, and collapsing it early would have destroyed it.
 - ☠️ **`git push origin <branch>` pushes the local branch of that name, not `HEAD`.** A push
   reported success and landed on the wrong branch. Always
   `git push origin HEAD:refs/heads/<branch>`, especially across worktrees.
+- ☠️ **In zsh, an unquoted `$SHA:refs/heads/...` refspec is silently mangled.** `:r` is a
+  zsh parameter modifier, so `git push origin $C:refs/heads/x` becomes `$Cefs/heads/x` and
+  the push fails with "src refspec does not match any". Quote it: `"${C}:refs/heads/x"`.
+  This bit the very commit that wrote this list, and because the command ended in `| tail`
+  the failure **reported exit 0** — the two traps compose into a push that looks like a
+  success and is not. Verify a push with `git ls-remote`, not with its own output.
 - ☠️ **A pipe swallows the exit code.** `vitest | tail && git push` pushes on a *failing*
   suite. Read the exit code from the command itself.
 - ☠️ **vitest sizes its worker pool from the CPU visible at startup and keeps it.** A suite
