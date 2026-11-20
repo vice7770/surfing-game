@@ -235,8 +235,56 @@ chest is flat on the deck" might be an artefact of a clamped chest. The lying he
 rooted in the **board frame** (`:1114-1122`, from `boardUp`/`boardForward`) and the cascade
 never touches that phase. The gaze question stands on its own terms, as before.
 
-⚠️ **Whether the drawn chest clips during a ride is now simply unmeasured** — it needs the
-final `chest` after both followers, on a real ride, as a population. Nothing here rests on it.
+✅ **MEASURED 2026-11-20 — and the smaller version of the claim survives.** Branch
+`claude/draw-the-twist` (`f40c4a5a`, pushed, **0 files changed under `src/`**, no switch
+built). The method replays the **same recorded frames** through two real rigs differing in
+exactly one constant — shipped 45 against a lifted 100 000 — and takes the difference of
+their **final drawn chests**, after the key-pose sum and both followers. No subtraction of
+45° from a physical peak anywhere.
+
+| arm | n | result |
+| --- | --- | --- |
+| **old rider**, no rotation stick, no Snap | 11 442 standing frames, 72 runs | ⭐ **a clean null: 0.00° on every frame**, chest, hips and head. Its rotor rests at 0 off the stick (`AttachedRider.ts:4022`), and the anticipation term peaked at 38.89° against the 45° clamp |
+| **new rider, the owner's address**, Canyon bed B | 7 956 standing frames, 72 runs | clipped > 0.5° on 1 297 (16.3%), median 2.94°, peak 18.88° |
+| … **excluding capsizes** (\|board roll\| ≤ 45° and unclamped turn ≤ 60°) | 7 062 | ⭐ **825 frames (11.7%)**, clipped by **median 2.36°, range 0.51–16.15°** (q1 1.26, q3 5.23) |
+
+⭐ **So the final drawn chest tracks the physics exactly on 88.3% of ordinary riding frames
+and falls short on 11.7% by a median 2.36°** — not "every frame, 5–12° short", which is what
+I had claimed. And on **509 of those 825 (61.7%)** the term going over is **the solver's own
+twist**, not the anticipation lead the constant was written to bound.
+
+⭐⭐ **The history says it is not a mesh limit.** `twistMost` exists in three places, all in
+`HumanoidRig.ts`, and **no comment, commit message or doc anywhere ties it to mesh
+deformation.** It was born `864bb7f0` (2026-09-27) as `twistMost: 35`, capping
+`twistGain · yawRate` — **the anticipation lead alone**, with `state.twist` not in the
+expression. `7e3b83a8` added the pad's twist *into the same capped expression*. `bac168c9`
+raised it to 45, where it **coincides exactly with the physics' `TWIST_RANGE = 45°`** — which
+is why the old rider is a clean null. Step 3.2e then replaced that hard physical 45° with
+`TWIST_BODY_RANGE = 49.85°` plus a **soft** stop and copies `tb.angle` out **unclamped**
+(`AttachedRider.ts:5208`). **The drawing's 45 was never revisited.**
+
+⚠️ **Scope — two arms were NOT run and they are the interesting ones.** The null covers a
+rider touching **neither the rotation stick nor Snap**. At full `rotate` the ask is
+`TWIST_RANGE = 45°` exactly, and `snapAim()` winds to the same 45° — at either, **the drawn
+clamp sits exactly on the physical range and any same-sign yaw rate puts the sum over.** The
+reader takes `SNAP=` and `ROTATE=`; nobody has run them.
+
+⚠️ **And the head absorbs the surplus today.** Lifting the clamp also moves the hips
+(0–7.27°) and the **head** (0–19.53°), because `HumanoidRig.ts:2555` holds the look within
+`neckTurn` 90° of *where the chest is turning to*. So a fix changes the gaze as a side
+effect. ⭐ Note too that `stanceTurns.test.ts:146-152` asserts the drawn chest at **70–110°**
+frontside **and `headYaw > chestTwist`** — the shipped test already encodes the head leading
+the chest, which is worth weighing against any footage argument about gaze.
+
+**Proposed and NOT built:** clamp the anticipation term only and let `state.twist` through —
+what `864bb7f0` wrote the constant for. Two arguments against doing it blind: `tb.angle` has
+only a soft stop, so the drawing would gain no hard bound (58.23° was this population's peak,
+not a guarantee); and the head moves with it.
+
+⛔ **My own recommendation: do not build this yet.** A **median 2.36°** on 11.7% of frames is
+very likely invisible, and nobody has rendered it — the builder deliberately stopped before
+making pictures, since that was work toward a switch it had been told not to ship. **Whether
+2.36° can be seen at all is the owner's eye and no measurement here answers it.**
 
 ✅ **All three sub-questions are now ANSWERED — 2026-11-20, sourced by the peer with links in
 the consult log.**
@@ -432,6 +480,12 @@ it, so that practice earned its keep here.
   machine it took seven. `vitest.config.ts` sets no `poolOptions`. `--reporter=basic` is
   invalid in vitest 5; **`tap-flat` survives a kill**. A killed run's log is neither pass nor
   fail (exit 144).
+- ⚠️ **Cite the BRANCH with every path you give an agent.** I pointed a builder at
+  `docs/research/new-rider/3.5/results/35j/35j-ride-canyon.txt` without naming the branch; it
+  exists only on **`claude/twist-stop`**, not on `claude/ride-everything` where the builder was
+  working, so it correctly reported the file "does not exist anywhere in the repo" and could not
+  check numbers I had asked it to build on. ⛔ **Branches here diverge by hundreds of files** —
+  a bare path is not a citation.
 - ⚠️ **"The merge suite passed" is AMBIGUOUS in this project — always ask which command was run.**
   Two different gates have both been called the merge suite, and they disagree:
   **(a)** a bare `npm test` = `vitest run`, whose config includes `src/**/*.test.ts` and has
