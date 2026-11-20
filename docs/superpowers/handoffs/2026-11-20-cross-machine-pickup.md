@@ -165,15 +165,26 @@ unbounded, a body weight threw the board from under every rider in 0.2 s."* `:48
 sixth path and the only unbounded one — so this is a clamp that was never added, not a
 decision taken on purpose.
 
-⭐⭐ **A separate finding against the SHIPPED rider, not against any switch: the rig cannot
-draw the torso as far as the physics twists it.** `RIG_DETAIL.cascade.twistMost = 45`
-(`src/scene/rig/HumanoidRig.ts:315`, applied at `:994`) clamps the **drawn** chest and hips
-at **45°** — but `TWIST_BODY_RANGE` alone is **49.85°** and the measured ride reaches
-**50–56.76°**. So **the drawn torso is saturated during ordinary riding in the shipped
-game**, and extra twist shows only in the head's look (`:2555`, limited to `neckTurn` 90°
-from the chest's aim). The physics and the drawing disagree about the rider's own body by
-5–12° before any switch is touched. ⚠️ This is a candidate explanation for a *look*
-complaint, not for the fall, and nobody has ridden it.
+⛔ **WITHDRAWN 2026-11-20.** I claimed here that the rig cannot draw the torso as far as the
+physics twists it, because `RIG_DETAIL.cascade.twistMost = 45` clamps the drawn chest and hips
+while the physics reaches 50–56.76°. The peer reviewer corrected me and the correction is
+right. Void in two ways:
+
+1. **The 45° bounds an OFFSET, not the final chest.** At `HumanoidRig.ts:990-1003` `chest`
+   begins as `this.pose.chest` and the clamped `chestTurn` is **added** to it —
+   `chest += chestTurn`, likewise the hips. The final drawn chest is `pose.chest + clamped
+   turn` and **is not bounded at 45°.**
+2. **The block is standing-only** — inside `if (state.phase === 'standing')`, with
+   `lying = prone | push | recover` handled separately at `:881`. It says nothing about the
+   **prone take-off**, which I had also applied it to.
+
+⛔ **The reinterpretation built on it is void too:** that our rider's "head leads while the
+chest is flat on the deck" might be an artefact of a clamped chest. The lying head's look is
+rooted in the **board frame** (`:1114-1122`, from `boardUp`/`boardForward`) and the cascade
+never touches that phase. The gaze question stands on its own terms, as before.
+
+⚠️ **Whether the drawn chest clips during a ride is now simply unmeasured** — it needs the
+final `chest` after both followers, on a real ride, as a population. Nothing here rests on it.
 
 ⚠️ **What none of this establishes:** whether it moves the fall. #455's own table has every
 arm falling in **0.98–2.17 s**. Three things are open — whether `legLoad` is one leg or both,
@@ -296,9 +307,22 @@ the three; pushing a branch preserves the work without growing the PR count. **C
 unpushed Codex branches before you trust a branch listing.**
 
 **Preserve independent reads.** When two agents read the same footage, let the second one
-record its observations before it sees the first. The two reads of clip 29 currently
-**disagree** on the first visible foot (~1.25 s vs 0.6900 media s) — that disagreement is
-data, and collapsing it early would have destroyed it.
+record its observations before it sees the first.
+
+✅ **The clip-29 disagreement is SETTLED 2026-11-20, against my own read.** The two reads
+split on the first visible foot — ~1.25 s against 0.6900 media s. **0.6900 was wrong: that
+deck contact is a hand**, traced up through a wrist band and a long dark sleeve to the
+shoulder, with the verified grid at 0.59–0.757 showing both arms extending and both hands
+down. First bare leg/foot ≈**1.2–1.3**, staggered feet ≈**1.4**. ⛔ **So 0.69 is invalid as a
+take-off setup target**, and the timings built on it — 0.300 s chest-off-to-foot-on and
+0.667 s prone-to-foot-on — are void. Struck in
+`3.5/video-ref-29-hughie-vaughan-stab-high.md` on `claude/video-ref-29` (PR #453).
+
+⭐ **The lesson is sharper than the correction:** my read's own §2.3 called that transit
+**"NOT RESOLVED"** and its timeline table then resolved it as a foot anyway. **The unresolved
+flag was the correct finding and the table overrode it.** Nothing downstream may quietly
+resolve what a read marked unresolved — and keeping the two reads independent is what caught
+it, so that practice earned its keep here.
 
 ---
 
