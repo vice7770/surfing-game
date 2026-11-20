@@ -102,6 +102,8 @@ export interface RideSessionOptions {
   compressRelease?: 'load';
   /** Base hip recruitment on the angle the ankle can attain. */
   hipRecruit?: 'ankle';
+  /** Match the rider’s low-speed balance model to the planing hull during an active turn or compression. */
+  turnBalance?: 'planing';
   /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31; `docs/research/duck-dive-2026-10-31/two-body-plan.md`): by
    * default the board meets the water as a submerged plate under water (`BoardBodyOptions.submerged`), and the ducking
@@ -319,6 +321,7 @@ export class RideSession {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
       ...(options.compressRelease ? { compressRelease: options.compressRelease } : {}),
       ...(options.hipRecruit ? { hipRecruit: options.hipRecruit } : {}),
+      ...(options.turnBalance ? { turnBalance: options.turnBalance } : {}),
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),

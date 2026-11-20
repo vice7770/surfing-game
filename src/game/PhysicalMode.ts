@@ -521,6 +521,7 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...extensionSwitch(),
     ...compressReleaseSwitch(),
     ...hipRecruitSwitch(),
+    ...(devParam('turnBalance')?.trim().toLowerCase() === 'planing' ? { turnBalance: 'planing' as const } : {}),
     // `?snap=off`: the riders' Snap input ignored, as before the snap stance, for A/Bs.
     ...snapSwitch(),
     // `?snapQuick=old`: the riders' Snap set up at the balance's calm pace, as before snap-quick, for A/Bs.

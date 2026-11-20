@@ -342,6 +342,8 @@ const MAX_LEAN = 0.2;
  */
 const PLANING_SPEED = 4;
 const PLANING_DROP = 3;
+// Midpoint between the measured 4.0 and 4.5 m/s calibration trims, expressed as nose dot water normal.
+const PLANING_TRIM_BOUNDARY = Math.sin((46.4 + 25.9) * Math.PI / 360);
 /** Off the plane, the body stands back up on its ankles first, and is carried upright once within this bank, rad, and bank rate, rad/s. */
 const UPRIGHT_BANK = (2 * Math.PI) / 180;
 const UPRIGHT_RATE = 0.2;
@@ -1244,6 +1246,13 @@ const REACH_ALONG = 0.3;
  */
 const REACH_DIP = 0.03;
 
+interface PlaningTurnBalance {
+  weights: DesignWeights;
+  baseFloor?: number;
+  pressed: boolean;
+  active: boolean;
+}
+
 export interface AttachedRiderOptions {
   mass?: number;
   stance?: StanceName;
@@ -1262,6 +1271,8 @@ export interface AttachedRiderOptions {
   compressRelease?: 'load';
   /** Recruit the hip from the rest angle the predictive controller can send to the ankle. */
   hipRecruit?: 'ankle';
+  /** Match the rider’s low-speed balance model to the planing hull during an active turn or compression. */
+  turnBalance?: 'planing';
   /**
    * Snap taken at full effort (snap-quick, 2026-11-05; SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME): by default the shoulders
    * and the weight go as fast as the body can take them while Snap is held; 'old' at the balance's calm pace, as before
@@ -2369,6 +2380,7 @@ export class AttachedRider {
   /** Step 3.2x: the hip's gain on its trigger, N·m/m, and the ankle rest's slew bound, rad/s. */
   private readonly hipCapture: number;
   private readonly recruitFromAnkle: boolean;
+  private readonly turnBalance?: PlaningTurnBalance;
   private readonly ankleRestRate: number;
   private readonly anklePlumb: number;
   /** Step 3.5i (`bodyBank: 'hip'`): whether the trunk rotor's own angular momentum rate is counted in the contact's bound. */
@@ -2736,9 +2748,13 @@ export class AttachedRider {
     // `PredictiveController` an undefined `weights` exactly as it always did — and both read sites now default that
     // to the fourth rung (`DEFAULT_WEIGHTS.stanceDeep`, `blend`'s `?? true`).
     const ladderWeights: { stanceDeep: boolean } | undefined = options.stanceDeep === 'off' ? { stanceDeep: false } : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights
+    const matchPlaning = this.predictive && options.turnBalance === 'planing';
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || matchPlaning
       ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...options.balance?.weights }
       : undefined;
+    if (matchPlaning && weights) {
+      this.turnBalance = { weights, baseFloor: weights.plantFloor, pressed: false, active: false };
+    }
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.rateSense = options.balance?.rateSense ?? 'canal';
@@ -3768,7 +3784,7 @@ export class AttachedRider {
     this.leanProbe.held = held;
     this.leanProbe.radius = radius;
     if (this.freeBody) {
-      this.humanBank(h, roll, rail, rollRate);
+      this.humanBank(h, roll, rail, rollRate, board);
       return;
     }
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
@@ -3805,9 +3821,9 @@ export class AttachedRider {
    * The old's "lagging" rule (the feet never counter-steer into a lean the body lags; the swing throws it) is kept in
    * form; with no gain on the bank's angle it never acts.
    */
-  private humanBank(h: number, roll: number, rail: number, rollRate: number): void {
+  private humanBank(h: number, roll: number, rail: number, rollRate: number, board: BoardBody): void {
     if (this.predictive) {
-      this.predictiveBank(h, roll, rail, rollRate);
+      this.predictiveBank(h, roll, rail, rollRate, board);
       return;
     }
     const human = this.human;
@@ -3863,7 +3879,7 @@ export class AttachedRider {
    *   and damper implicit in the solve. The hip across takes what the command asks past HIP_SHARE of the reach.
    * - The twist's torque through the motor lag (`twistBody.active`), within the hips' strength and the feet's grip.
    */
-  private predictiveBank(h: number, roll: number, rail: number, rollRate: number): void {
+  private predictiveBank(h: number, roll: number, rail: number, rollRate: number, board: BoardBody): void {
     const human = this.human;
     const relative = this.bankSpeed / this.legLength;
     human.sense(h, this.bank.angle);
@@ -3930,6 +3946,7 @@ export class AttachedRider {
       let rail = Math.abs(this.leanAsked);
       for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
       rail = Math.min(this.railCap, rail);
+      if (this.turnBalance) this.selectTurnBalance(this.turnBalance, board, speed);
       const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt);
       this.schedRail = rail;
       this.schedTilt = faceTilt;
@@ -3947,11 +3964,32 @@ export class AttachedRider {
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
     // Outside its range the ankle can no longer act on the regulator's raw demand. Recruit the hip
     // from the attainable rest angle so that discarded command cannot drive a second joint.
-    const hipRequest = this.recruitFromAnkle ? lean : wanted;
+    const hipRequest = this.recruitFromAnkle || this.turnBalance?.active ? lean : wanted;
     this.humanSwingStep(h, -SWING_SERIES * (hipRequest - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
     this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
     this.setAnkle(HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative, this.bank.angle - roll);
     tb.active += (this.heldTwist - tb.active) * (1 - Math.exp(-h / MOTOR_LAG));
+  }
+
+  /** Choose the measured hull regime on the same control tick as the predictor, keeping its sensing history. */
+  private selectTurnBalance(mode: PlaningTurnBalance, board: BoardBody, speed: number): void {
+    const pressed = Math.abs(this.steer) > STEER_DEADBAND || this.compressAsked > 0;
+    let active = mode.active;
+    if (pressed && !mode.pressed) active = false;
+    if (pressed && this.planing && speed >= PLANING_DROP && speed < 4.5) {
+      const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
+      // The 4.0 and 4.5 m/s lab rows trim at 46.4° and 25.9° to the water. Select the closer planing row.
+      const nearerPlaningTrim = Math.abs(forward.dot(this.waterUp)) < PLANING_TRIM_BOUNDARY;
+      if (nearerPlaningTrim) active = true;
+    }
+    // Keep the selected model through the exit until the rider is upright, supported and back near standing height.
+    if (!pressed && Math.abs(this.bank.angle) < UPRIGHT_BANK && this.human.state.margin > 0.5 && Math.abs(this.leg.rest) < 0.05) {
+      active = false;
+    }
+    if (mode.active && !active && !this.loadedCompressRelease) this.compressReleaseFrom = 0;
+    mode.active = active;
+    mode.pressed = pressed;
+    mode.weights.plantFloor = active ? Math.max(4.5, mode.baseFloor ?? 0) : mode.baseFloor;
   }
 
   /** The new surfer's leg depth below the riding stance, m, as the posture holds it (the yaw inertia's split and the balance's schedule). */
@@ -4222,6 +4260,11 @@ export class AttachedRider {
 
   /** The new surfer's balance by prediction (step 3.2e): nothing sensed, nothing sent, the clock to tick at once. */
   private resetBalance(): void {
+    if (this.turnBalance) {
+      this.turnBalance.active = false;
+      this.turnBalance.pressed = false;
+      this.turnBalance.weights.plantFloor = this.turnBalance.baseFloor;
+    }
     this.predictor.reset();
     this.controlDue = 0;
     this.heldAnkleRaw = 0;
@@ -4408,7 +4451,7 @@ export class AttachedRider {
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
     if (compress > 0 || snap > 0) this.fromCompress = true;
     else if (asked < 0) this.fromCompress = false;
-    if (this.loadedCompressRelease) {
+    if (this.loadedCompressRelease || (this.catches && this.turnBalance?.active)) {
       if (!this.freeBody || snap > 0 || crouch > compress || flexing) this.compressReleaseFrom = 0;
       else if (compress >= this.compressReleaseFrom || this.leg.rest >= asked) this.compressReleaseFrom = compress;
     }

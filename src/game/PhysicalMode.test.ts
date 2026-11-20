@@ -6,6 +6,8 @@ import { RIG_SWITCHES } from '../scene/rig/stanceBlend';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
+import { PlaneWater } from '../physics/PlaneWater';
+import { SurfZoneRunner } from '../wave/SurfZoneRunner';
 import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
@@ -1813,6 +1815,34 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { extension: undefined }).extension).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).extension).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('selects the planing balance in a worker-built rider under a slow manual turn and clears it on remount', () => {
+    const water = new PlaneWater();
+    const canyon = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const address = '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on';
+    const exercise = (query: string) => {
+      vi.stubGlobal('location', { search: address + query });
+      const config = surfZoneConfigFor(canyon, 2, false);
+      const host = SurfZoneRunner.forWorker(config, { rider: true }, 'warm');
+      const session = host.session!;
+      const sample = (speed: number, steer: number) => {
+        session.place({ x: 0, z: 0, heading: 0, speed, phase: 'standing' }, water);
+        for (let frame = 0; frame < 12; frame++) session.step(1 / 60, water, { steer, paddle: false, popUp: false });
+        return session.rider.bank.angle;
+      };
+      return { neutral: sample(4.4, 0), tailFirst: sample(-6, 1), slowTurn: sample(4.4, 1), fastRemount: sample(8, 1) };
+    };
+    try {
+      const stock = exercise('');
+      const selected = exercise('&turnBalance=planing');
+      expect(selected.neutral).toBe(stock.neutral);
+      expect(selected.tailFirst).toBe(stock.tailFirst);
+      expect(Math.abs(selected.slowTurn - stock.slowTurn)).toBeGreaterThan(1e-5);
+      expect(selected.fastRemount).toBe(stock.fastRemount);
     } finally {
       vi.unstubAllGlobals();
     }
