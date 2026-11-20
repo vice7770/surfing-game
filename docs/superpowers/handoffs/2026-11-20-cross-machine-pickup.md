@@ -68,6 +68,7 @@ them. Read the citation before you commission anything in this space.
 | Early hip allocation | `HIP_CAPTURE_GAIN` delivered 35–264 N·m: "not late, not enough". Raising the gain made the fall **sooner in 36 of 60** | 3.2x |
 | `?askCap`, `?ankleLimit=feet`, `?ankleRange=wide`, `?buoyFrame=hull` | Inert / worse / innocent / 12 of 12 falls across 36 cells | 3.5 sweeps |
 | Rotor gain 500 → 8000 | 12 of 12 falls, sooner in 36 of 60 | 3.5 |
+| `?waterHeel=tilt\|predict\|ref` — the balance's water datum | **On the owner's own cell, 18 runs each: off 1.033 s, `predict` 0.967, `ref` 0.483, `both` 0.433, and 18 of 18 fell in every arm.** Each half gives 2.5–2.8× **on the glide** (4.033 / 3.683 against 1.450) and the pair cancels there — but the glide is not his water, and on his the ordering reverses | 3.4 README §7 reading 1, §8 |
 | `?swing=mass` (a weight for the hip to shift) | The hip gets a mass and, on the turn that fails, **never shifts it** | PR #444 |
 
 **A rule that cost four rounds:** a Part that is **last in its file** has its follow-up in
@@ -99,10 +100,19 @@ the **position** term flips last in 82; the across-**speed** term reaches 6.1 so
 on the torso: 91% gains, one-way wind-up, slow-speed at 4.7 m/s, 1.82 Hz. The turns die at
 +0.700/+0.717 s; the weave does not start until +1.700 s.
 
-**The controller fights its own actuator.** Its reference wants the torso **square to the
-board at every bank ask**, and its torso spring is **100× softer** than the stop the ride
-actually enters at 51°. (`src/physics/predictiveBalance.ts:1531` builds the design from the
-*current* speed, then propagates lagged senses through it.)
+**The controller plans against a trunk 100× softer than the one it drives, and the ride is
+always in that regime.** `TWIST_STIFFNESS = 20` N·m/rad (`predictiveBalance.ts:587`, sourced
+to Kosmopoulos et al. 2012) against `TWIST_STOP = 2000` (`AttachedRider.ts:578`) past
+`TWIST_BODY_RANGE = 0.87` rad = 49.85° — **exactly 100×** — and #455's Canyon table reaches
+**50–56° with ticks past the stop in every single run**, at steer 0 as well as ±1. Its
+formula check matches the code to the digit. (`predictiveBalance.ts:1531` builds the design
+from the *current* speed, then propagates lagged senses through it.)
+
+⚠️ **A correction to an earlier draft of this document:** I wrote that the controller's
+reference "wants the torso square to the board at every bank ask". **That is wrong.**
+`predictiveBalance.ts:1300` and `:1444`: the reference **is** the plant's own steady turn for
+the lean asked and the twist asked. It is not a square-torso reference, and no conclusion
+should rest on that sentence.
 
 **The hip's lateral lean is drawing, not mass.** 7.31 cm of pose, **0 m** of centre of
 mass. `localCenter = postureCenter(parts, partMasses)` at `AttachedRider.ts:5751` — the
@@ -281,7 +291,8 @@ bug — the owner has ruled on that. The balance cannot stand up to its own lean
 climbs at a fixed rate while the lean ceiling falls with the speed the turn is spending, the
 thing that ends the ride is a lateral **velocity**, the hip's lean is 7.31 cm of drawing and
 0 m of mass, and the rider falls on flat water with no wave at all. Four limb authorities
-have each been measured and each failed to move the fall.
+have each been measured and each failed to move the fall — and so have the two corrections
+to the controller's own internal model, on his cell, 18 runs each.
 
 So the next real step is not another actuator. It is to make the game's own analyser name a
 bottom turn, so the target numbers stop coming from a probe — and then to ask the owner
