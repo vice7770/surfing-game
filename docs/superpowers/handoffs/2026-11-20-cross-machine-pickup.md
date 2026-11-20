@@ -83,7 +83,17 @@ before you declare a question open.
 ⭐⭐ **The turn works — and "it costs 70% of the speed" was THREE DIFFERENT WINDOWS read as
 one.** Corrected 2026-11-20 from the recovered `capterms/w211.jsonl` (seed 2, wave 2,
 `ships/cueL`, the owner's full six-flag URL, scripted full steer plus a Compress pulse),
-row-by-row, all one arm. Times from standing; water speed along board heading:
+row-by-row, all one arm. Times from standing; water speed along board heading.
+
+⛔ **INPUT LABEL CORRECTED 2026-11-20 — this is FULL STEER ALONE, Compress at ZERO.** An
+earlier draft of this table called it "full steer plus a Compress pulse". The saved launcher
+passed `TURN_STEER=1 TURN_COMPRESS=0`, and the probe's own gate is
+`...(turning && TURN_COMPRESS > 0 ? { compress: TURN_COMPRESS } : {})`
+(`take-off/four-numbers.ts:585`), so **at zero the compress key is omitted entirely** — the
+file's own comment at `:133` names that arm *"the steer alone"*. I verified the gate in the
+committed source; the peer verified the launcher and three corroborating split files.
+⭐ **So every figure below — the 42.83° bank included — is a steer-alone figure, and nothing
+here says what the player's Compress does.**
 
 | row | s | event | course ° | body bank ° | through-water m/s | height m | planing |
 | ---: | ---: | --- | ---: | ---: | ---: | ---: | --- |
@@ -107,11 +117,24 @@ course. **Three different windows.** So "a turn costs 70% of the speed" conflate
 with the exit from planing that follows it — the turn itself gains heading-projected speed.
 ⚠️ Anyone quoting a speed cost must state the window.
 
-⭐⭐ **And wave 1 of the same capture gives a discriminator worth more than any of the above:
-both scripted sharp inputs lose balance at about +0.70 s while still planing at 3.8–3.9 m/s,
-with the matched neutral rider still standing at comparable speed.** Same water, same speed,
-same plane — one input stands and the other does not. That is the cleanest pair anyone has
-on the owner's own complaint, and nobody has worked it.
+⭐⭐ **And wave 1 of the same sea is the owner's complaint in one table.** Canyon seed 2,
+wave 1, exact matched rows (the peer is preserving them):
+
+| input | falls at |
+| --- | --- |
+| **neutral** (no command) | ⭐ **stays up to 3.01667 s** |
+| **steer alone** | ⛔ **+0.700 / +0.71667 s** |
+| rotation alone | +1.600 s |
+| steer and rotation | +0.71667 / +1.000 s |
+
+On **wave 2** every variant stays through 3.01667 s. Both sharp inputs lose balance while
+**still planing at 3.8–3.9 m/s**, with the matched neutral rider standing at comparable speed.
+
+⭐ **Same water, same speed, still planing — the neutral rider survives 4× longer than the
+steered one.** That is the cleanest pair anyone has on what the owner actually reported, and
+**nobody has worked it.** The peer's recommended attack, which I endorse: trace **the loss of
+lateral support under the intact sharp command**, kept strictly separate from the
+centred-stick weave. Those two have been confused before and they are different faults.
 
 **The lean ceiling closes as the turn pays for itself.** The cap is
 `atan(speedThrough² / (g · R))` with `R = TURN_RADIUS = 4.5`
