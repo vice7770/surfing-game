@@ -97,6 +97,11 @@ const particleBenchRequested = devFlag('particleBench');
 const boardSprayStripRequested = devFlag('boardSprayStrip');
 /** `?inpage&duckDiveStrip`: a dev tool films a timed duck-dive at the Canyon or on a still sea (src/dev/duckDiveStrip.ts). */
 const duckDiveStripRequested = devFlag('duckDiveStrip');
+/**
+ * `?rideReports=N`: a dev tool rides an autopilot and collects the **game's own analyser's** readings of those rides
+ * (src/dev/rideReports.ts). Nothing is filmed and the page's clock stays off, as for the tools above.
+ */
+const rideReportsRequested = devFlag('rideReports');
 /** `?waterSheet&compute=gpu` (or `auto`, and the same on `?record`): the sea steps in the worker, on the GPU as the game's does, even beside `inpage`. */
 const devToolOnDevice = (waterSheetRequested || recordRequested) && ['gpu', 'auto'].includes(devParam('compute') ?? '');
 /**
@@ -163,7 +168,12 @@ class SurfGame {
   /** The WebGPU tier's FFT wind sea for the water's shading (plan P6). */
   private readonly fftChop = new FftChop();
   private readonly causticAhead = new Vector3();
-  private seed = 1;
+  /**
+   * The sea's seed. `?seed=N` (dev) rides another one, so the dev tools below can gather a population over several
+   * seas instead of repeating one: every page otherwise builds seed 1, and parallel runs of the same tool would
+   * measure the same waves N times over. Off by default, and the menus set their own seeds as before.
+   */
+  private seed = Number(devParam('seed')) || 1;
   private accumulator = 0;
   private previousFrame = 0;
   /** The Wave Lab (spec L1): its camera, clock and reading of the waves, and the input that flies it. */
@@ -320,7 +330,7 @@ class SurfGame {
     window.addEventListener('resize', () => this.resize());
     // The app shows the loading card whenever a scene builds.
     getElement<HTMLElement>('#loading').classList.add('is-hidden');
-    if (!recordRequested && !waterSheetRequested && !particleBenchRequested && !boardSprayStripRequested && !duckDiveStripRequested) requestAnimationFrame(this.frame);
+    if (!recordRequested && !waterSheetRequested && !particleBenchRequested && !boardSprayStripRequested && !duckDiveStripRequested && !rideReportsRequested) requestAnimationFrame(this.frame);
   }
 
   /**
@@ -1326,6 +1336,7 @@ if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterShee
 if (particleBenchRequested) void import('./dev/particleBench').then(({ runParticleBench }) => runParticleBench(game.recording));
 if (boardSprayStripRequested) void import('./dev/boardSprayStrip').then(({ boardSprayStrip }) => boardSprayStrip(game.recording));
 if (duckDiveStripRequested) void import('./dev/duckDiveStrip').then(({ duckDiveStrip }) => duckDiveStrip(game.recording));
+if (rideReportsRequested) void import('./dev/rideReports').then(({ collectRideReports }) => collectRideReports(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 /** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
@@ -1359,5 +1370,5 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
 }, { stick: () => settings.value.controls, ...stanceHandoverSwitch() });
-const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested || duckDiveStripRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
+const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested || duckDiveStripRequested || rideReportsRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);
