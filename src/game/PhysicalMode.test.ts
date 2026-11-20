@@ -1818,6 +1818,20 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('enables ankle-based hip recruitment only when requested', () => {
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?hipRecruit=ankle' });
+      expect(surfZoneConfigFor(canyon, 2, false).hipRecruit).toBe('ankle');
+      expect(surfZoneConfigFor(canyon, 2, false, { hipRecruit: undefined }).hipRecruit).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(canyon, 2, false).hipRecruit).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('sets the load-supported Compress release only when the address requests it', () => {
     const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
     const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' });

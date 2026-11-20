@@ -1260,6 +1260,8 @@ export interface AttachedRiderOptions {
   extension?: 'old';
   /** The new rider releases Compress at the pace supported by both feet on the deck. */
   compressRelease?: 'load';
+  /** Recruit the hip from the rest angle the predictive controller can send to the ankle. */
+  hipRecruit?: 'ankle';
   /**
    * Snap taken at full effort (snap-quick, 2026-11-05; SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME): by default the shoulders
    * and the weight go as fast as the body can take them while Snap is held; 'old' at the balance's calm pace, as before
@@ -2366,6 +2368,7 @@ export class AttachedRider {
   private readonly railCap: number;
   /** Step 3.2x: the hip's gain on its trigger, N·m/m, and the ankle rest's slew bound, rad/s. */
   private readonly hipCapture: number;
+  private readonly recruitFromAnkle: boolean;
   private readonly ankleRestRate: number;
   private readonly anklePlumb: number;
   /** Step 3.5i (`bodyBank: 'hip'`): whether the trunk rotor's own angular momentum rate is counted in the contact's bound. */
@@ -2748,6 +2751,7 @@ export class AttachedRider {
     // 0.917 s against the term's own 1.083 s. The gain stays reachable through `balance.hipCapture` for the probes.
     this.banksBody = options.bodyBank === 'hip';
     this.hipCapture = options.balance?.hipCapture ?? HIP_CAPTURE_GAIN;
+    this.recruitFromAnkle = options.hipRecruit === 'ankle';
     this.ankleRestRate = options.balance?.ankleRestRate ?? ANKLE_REST_RATE;
     this.anklePlumb = options.balance?.anklePlumb ?? ANKLE_PLUMB;
     this.windowed = this.capsLegs || this.newRider;
@@ -3941,7 +3945,10 @@ export class AttachedRider {
     this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
     // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
     const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
-    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
+    // Outside its range the ankle can no longer act on the regulator's raw demand. Recruit the hip
+    // from the attainable rest angle so that discarded command cannot drive a second joint.
+    const hipRequest = this.recruitFromAnkle ? lean : wanted;
+    this.humanSwingStep(h, -SWING_SERIES * (hipRequest - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
     this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
     this.setAnkle(HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative, this.bank.angle - roll);
     tb.active += (this.heldTwist - tb.active) * (1 - Math.exp(-h / MOTOR_LAG));

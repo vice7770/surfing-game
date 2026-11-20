@@ -520,6 +520,7 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?extension=old`: the legs extending at their full pace letting Compress go, as before compress-exit, for A/Bs.
     ...extensionSwitch(),
     ...compressReleaseSwitch(),
+    ...hipRecruitSwitch(),
     // `?snap=off`: the riders' Snap input ignored, as before the snap stance, for A/Bs.
     ...snapSwitch(),
     // `?snapQuick=old`: the riders' Snap set up at the balance's calm pace, as before snap-quick, for A/Bs.
@@ -964,6 +965,11 @@ export function extensionSwitch(search?: string): { extension?: 'old' } {
 /** Opt in to the new rider's two-foot load limit while rising out of Compress. */
 export function compressReleaseSwitch(search?: string): { compressRelease?: 'load' } {
   return devParam('compressRelease', search)?.trim().toLowerCase() === 'load' ? { compressRelease: 'load' } : {};
+}
+
+/** The predictive rider can recruit the hip from the ankle's attainable rest angle. */
+export function hipRecruitSwitch(search?: string): { hipRecruit?: 'ankle' } {
+  return devParam('hipRecruit', search)?.trim().toLowerCase() === 'ankle' ? { hipRecruit: 'ankle' } : {};
 }
 
 /**

@@ -100,6 +100,8 @@ export interface RideSessionOptions {
   extension?: 'old';
   /** Use the new rider's load at each sole to pace the return from Compress. */
   compressRelease?: 'load';
+  /** Base hip recruitment on the angle the ankle can attain. */
+  hipRecruit?: 'ankle';
   /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31; `docs/research/duck-dive-2026-10-31/two-body-plan.md`): by
    * default the board meets the water as a submerged plate under water (`BoardBodyOptions.submerged`), and the ducking
@@ -316,6 +318,7 @@ export class RideSession {
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
       ...(options.compressRelease ? { compressRelease: options.compressRelease } : {}),
+      ...(options.hipRecruit ? { hipRecruit: options.hipRecruit } : {}),
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),

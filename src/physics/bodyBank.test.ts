@@ -20,12 +20,12 @@ const STEP = 1 / 60;
  */
 
 /** A new-rider pair standing on flat water at `speed` down +z, stepped `seconds` with the stick hard over. */
-function carve(seconds: number, bodyBank?: 'hip', speed = 8): { torques: number[]; moments: number[]; reliefs: number[]; rider: AttachedRider } {
+function carve(seconds: number, bodyBank?: 'hip', speed = 8, hipRecruit?: 'ankle'): { torques: number[]; moments: number[]; reliefs: number[]; rider: AttachedRider } {
   const board = new BoardBody();
   board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, speed));
   const rider = new AttachedRider(board.shape, {
     phase: 'standing', rider: 'new', feltFrame: 'deck', riderBody: 'two', stanceReach: 'keep', deepen: 'on',
-    ...(bodyBank ? { bodyBank } : {}),
+    ...(bodyBank ? { bodyBank } : {}), hipRecruit,
   });
   board.attach(rider);
   const water = new PlaneWater();
@@ -54,6 +54,14 @@ describe('the body banks with the deck: the trunk rotor\'s moment in the contact
     // And every newton-metre of it is discarded by the bound.
     for (const m of moments) expect(m).toBe(0);
     for (const r of reliefs) expect(r).toBe(0);
+  });
+
+  it('still recruits the hip under a hard steer without driving it from unreachable ankle angles', () => {
+    const raw = carve(2).torques;
+    const bounded = carve(2, undefined, 8, 'ankle').torques;
+    const peak = (values: number[]) => Math.max(...values.map(Math.abs));
+    expect(peak(bounded)).toBeGreaterThan(1);
+    expect(peak(bounded)).toBeLessThan(peak(raw));
   });
 
   it('counts it with `bodyBank: \'hip\'`, within the rotor\'s own torque and never beyond it', () => {
