@@ -338,6 +338,39 @@ is why the old rider is a clean null. Step 3.2e then replaced that hard physical
 `TWIST_BODY_RANGE = 49.85°` plus a **soft** stop and copies `tb.angle` out **unclamped**
 (`AttachedRider.ts:5208`). **The drawing's 45 was never revisited.**
 
+⛔ **THREE CORRECTIONS TO THE TWIST WORK, 2026-11-20, all from the peer and all verified by
+me in the source. Read these before quoting any torque figure above.**
+
+**1. The "delivered" column was PRE-SOLVE intent, not delivered torque.** On
+`claude/twist-grip` the ledger is written **before** `alpha`, `beta` and the implicit solve:
+`ledger.got = slipping ? bound : |ask|`, and only then `const alpha = h * (stiffness * h + damping)`.
+The solved torque is `tb.spring + alpha·θ̇_new/h`, which differs. The peer's worked case: an
+isolated sticking step at `h = 1/960`, θ = 0.95, board rate −0.15, budget **160.5**, **logs
+160 and actually delivers 161.03 N·m.** ⚠️ **So "requested 245.69 → delivered 172.50" is
+requested → *intended*.** The clamp's direction and the fall-time null are unaffected — those
+are survival comparisons, not torque ones — but the torque column needs a post-solve readout
+before it is quoted again. ⛔ **I was caught by my own rule**, the one I state in every brief.
+
+**2. #455's 2.6× improvement needs remeasurement.** At `3e131d96`, `twist-stop.ts:223-227`
+adds the stop's excess **through the active torque column** (`d[i] += a[i][I_TAU] * extra`),
+so a **passive** joint stop is routed through the **active muscle lag** state — and the block
+carries no `TWIST_STOP_DAMPING` term, so **the live end-stop damper is omitted.** Verified in
+the source. Its spectral table screens the design only. ⛔ **Do not treat #455's 2.6× as a
+measured improvement.**
+
+**3. ⭐⭐ And raising the model's torso stiffness is UNSTABLE, which kills my opening framing.**
+On the shipped-gain model mode, closed-loop eigenvalue magnitudes at 4.5 m/s, tall, zero rail:
+
+| k (N·m/rad) | 20 (shipped) | 60 | 180 |
+| --- | ---: | ---: | ---: |
+| max \|eigenvalue\| | **0.974694** | **1.010032** | **1.033677** |
+
+⭐ **The shipped 20 sits just inside stability and 60 is already outside it.** So "the
+controller plans against a trunk 100× softer than the one it drives" — the framing I opened
+this whole thread with — **cannot be fixed by raising k toward 2000**: the frozen linear system
+goes unstable an order of magnitude below it. A frozen-linear warning, separate from wave
+outcomes, but decisive against that direction.
+
 ⚠️ **Scope — two arms were NOT run and they are the interesting ones.** The null covers a
 rider touching **neither the rotation stick nor Snap**. At full `rotate` the ask is
 `TWIST_RANGE = 45°` exactly, and `snapAim()` winds to the same 45° — at either, **the drawn
