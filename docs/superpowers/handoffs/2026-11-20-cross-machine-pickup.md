@@ -290,6 +290,25 @@ What *is* portable is only what is committed under `docs/research/` on
 consult log. If you need a number that is not in those files, **re-measure it** — do not
 quote it from this document as if you had verified it.
 
+⛔ **And some numbers in §4 of THIS document cannot be checked on your machine — I audited
+them and these are the ones that failed.** They came from runs whose data went to the
+scratchpaths above, and I could not locate them in any file under `docs/`:
+
+| claim in §4 | status |
+| --- | --- |
+| the weave's **91% gains, one-way wind-up, 1.82 Hz** at 4.7 m/s | ⛔ in no committed file; "weave" appears nowhere in the docs (the owner's word is "wobble") |
+| the position term flips last in **82 of 125** | ⛔ in no committed file |
+| the across-speed term reaches **6.1 sole-widths** | ⛔ in no committed file |
+| the rider under-leans by **0.78 sole-widths** | ⛔ `0.78` matches only `carve-lab.md` and the size sources, not this claim |
+| the hip's **7.31 cm** of drawing | ⛔ `7.31` matches only unrelated Canyon-catch and board-in-water runs |
+
+⭐ **So treat every §4 number as a lead, not a measurement, unless it carries a file
+citation.** The ones that DO carry citations and that I re-derived myself tonight are the
+twist block (from `3.5/results/35j/35j-ride-canyon.txt` on `claude/twist-stop`), the
+`?waterHeel` table (3.4 README §7–§8), the shipped constants, and every row of the closed
+table in §3. **Re-measure the rest before you build on it.** I would rather hand you five
+honest gaps than five numbers you cannot trace.
+
 Two further local-only items: a full 402-file vitest run on `claude/twist-stop` was in
 flight when this was written (see §9), and the clip-29 frame grabs are screenshots that were
 never committed.
