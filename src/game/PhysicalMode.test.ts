@@ -1818,6 +1818,20 @@ describe('PhysicalMode', () => {
     }
   });
 
+  it('sets the load-supported Compress release only when the address requests it', () => {
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?compressRelease=load' });
+      expect(surfZoneConfigFor(canyon, 2, false).compressRelease).toBe('load');
+      expect(surfZoneConfigFor(canyon, 2, false, { compressRelease: undefined }).compressRelease).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(canyon, 2, false).compressRelease).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The `?snap=off` dev switch (the snap stance, 2026-11-03): every spot's rider ignores Snap's input, carried in the
   // config to the worker; an online room's config fixes the default.
   it('ignores Snap with `?snap=off` (a dev switch), and keeps it otherwise', () => {

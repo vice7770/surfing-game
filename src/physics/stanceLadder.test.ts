@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { AttachedRider, CROUCH_DEPTH, CROUCH_SHARE, EXTENSION_TALL, MANUAL_CROUCH_DEPTH, type AttachedRiderOptions } from './AttachedRider';
 import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
+import { KNEE_STIFFNESS } from './standingBody';
 import { BoardBody } from './BoardBody';
 import { PlaneWater } from './PlaneWater';
 import type { SurfWater } from './SurfWater';
@@ -145,6 +146,24 @@ describe('the projection rising tall (the phase-5 physics plan\'s item 2.2)', ()
     const softest = WATER.gravity * Math.sqrt(REFERENCE_RIDER.mass / 22_000);
     expect(fastest({})).toBeLessThanOrEqual(1.01 * softest);
     expect(fastest({ extension: 'old' })).toBeGreaterThan(2 * softest);
+  });
+
+  it('keeps the spring catch on release when the balance reflex still holds some knee bend', () => {
+    const release = 0.8;
+    const releaseSpeed = (compressRelease?: 'load') => {
+      const { rest, at } = letGo(7, release, (rider, time) => {
+        rider.compress = time < release ? 1 : 0;
+        // The Canyon take-off still has about 5% automatic knee drop on the tick the player lets go.
+        if (Math.abs(time - release) < STEP / 2) rider.human.knees = 0.05;
+      }, { rider: 'new', compressRelease });
+      const recovery = rest.slice(at(release) - 1, at(release + 0.3) + 1);
+      return Math.max(...recovery.slice(1).map((value, i) => (value - recovery[i]) / STEP));
+    };
+    const levelCatch = WATER.gravity * Math.sqrt(REFERENCE_RIDER.mass / KNEE_STIFFNESS);
+    expect(releaseSpeed()).toBeGreaterThan(1.5 * levelCatch);
+    const supported = releaseSpeed('load');
+    expect(supported).toBeGreaterThan(0);
+    expect(supported).toBeLessThanOrEqual(levelCatch * 1.01);
   });
 
   it('keeps the feet loaded letting Compress and the steer go out of a compressed turn at 9–11 m/s, where at full pace they went light', () => {

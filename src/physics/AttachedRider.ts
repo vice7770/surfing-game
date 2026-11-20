@@ -1258,6 +1258,8 @@ export interface AttachedRiderOptions {
    * catch the body; 'old' at the legs' full pace, as before compress-exit (the `?extension=old` dev switch, for A/Bs).
    */
   extension?: 'old';
+  /** The new rider releases Compress at the pace supported by both feet on the deck. */
+  compressRelease?: 'load';
   /**
    * Snap taken at full effort (snap-quick, 2026-11-05; SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME): by default the shoulders
    * and the weight go as fast as the body can take them while Snap is held; 'old' at the balance's calm pace, as before
@@ -2082,6 +2084,7 @@ export class AttachedRider {
   private readonly feathers: boolean;
   /** Letting Compress go, the legs extend no faster than the stance's spring can catch the body (`projectionCatch`); false with `extension: 'old'`. */
   private readonly catches: boolean;
+  private readonly loadedCompressRelease: boolean;
   /** Snap at full effort (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME); false with `snapQuick: 'old'`. */
   private readonly quick: boolean;
   /** Snap leans for its own turn (SNAP_RAIL_RANGE); only with `snapPivot: 'lean'`. */
@@ -2229,6 +2232,8 @@ export class AttachedRider {
   private tallFrom = false;
   /** The leg was last brought down by Compress (not the crouch alone): letting it go is the projection. */
   private fromCompress = false;
+  /** Still rising from the player's Compress, including steps when the balance reflex asks to keep some knee bend. */
+  private releasingCompress = false;
   /** The carve's flexing legs; only with `carveFlex: 'on'`. */
   private readonly carveFlexes: boolean;
   /** The leg was last brought down by the carve's flex: the load easing, it rises at the projection's catch. */
@@ -2658,6 +2663,7 @@ export class AttachedRider {
     this.phase = options.phase ?? 'prone';
     this.feathers = (options.stroke ?? 'feather') === 'feather';
     this.catches = options.extension !== 'old';
+    this.loadedCompressRelease = this.catches && options.rider === 'new' && options.compressRelease === 'load';
     this.quick = options.snapQuick !== 'old';
     this.snapLean = options.snapPivot === 'lean';
     this.upturnKept = options.snapUpturn !== 'old';
@@ -3083,6 +3089,7 @@ export class AttachedRider {
     this.tallReached = false;
     this.tallFrom = false;
     this.fromCompress = false;
+    this.releasingCompress = false;
     this.fromFlex = false;
     this.snapDriveSide = 0;
     this.snapDriven = 0;
@@ -4394,6 +4401,10 @@ export class AttachedRider {
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
     if (compress > 0 || snap > 0) this.fromCompress = true;
     else if (asked < 0) this.fromCompress = false;
+    if (this.loadedCompressRelease) {
+      if (compress > 0 && this.freeBody) this.releasingCompress = true;
+      else if (!this.freeBody || held > 0 || flexing || this.leg.rest >= asked) this.releasingCompress = false;
+    }
     if (asked < 0 || !this.fromCompress || this.phase !== 'standing' || !this.planing) {
       this.tall = 0;
       this.tallReached = false;
@@ -4414,7 +4425,15 @@ export class AttachedRider {
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).
-    const caught = (this.catches && !down && this.fromCompress) || (!down && this.fromFlex) ? projectionCatch(this.mass, this.legStiffness) : Infinity;
+    const catching = !down && ((this.catches && this.fromCompress) || this.releasingCompress || this.fromFlex);
+    let caught = catching ? projectionCatch(this.mass, this.legStiffness) : Infinity;
+    if (catching && this.releasingCompress && compress === 0) {
+      // A shared extension must keep both soles loaded. With half the spring stiffness at each foot,
+      // the lighter sole's sag relative to its level-stance sag is twice its fraction of body weight.
+      const front = this.contact.frontShare;
+      const lighterLoad = this.captureLoad * Math.min(front, 1 - front);
+      caught *= Math.max(0, Math.min(1, 2 * lighterLoad));
+    }
     const speedLimit = down ? CROUCH_SPEED : Math.min(MAX_LEG_SPEED, caught);
     // While the feet brake the body's bank near their edges, the crouch's legs hold rather than drop (CROUCH_HOLD).
     const hold = this.banking && !compressing

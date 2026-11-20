@@ -98,6 +98,8 @@ export interface RideSessionOptions {
    * catch the body (`AttachedRiderOptions.extension`); 'old' (the `?extension=old` dev switch): at their full pace.
    */
   extension?: 'old';
+  /** Use the new rider's load at each sole to pace the return from Compress. */
+  compressRelease?: 'load';
   /**
    * The duck-dive's two bodies (duck-two-body, 2026-10-31; `docs/research/duck-dive-2026-10-31/two-body-plan.md`): by
    * default the board meets the water as a submerged plate under water (`BoardBodyOptions.submerged`), and the ducking
@@ -313,6 +315,7 @@ export class RideSession {
     this.snapOff = options.snap === 'off';
     this.rider = new AttachedRider(this.board.shape, {
       stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
+      ...(options.compressRelease ? { compressRelease: options.compressRelease } : {}),
       ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
       ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
       ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),

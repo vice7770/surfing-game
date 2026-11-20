@@ -184,6 +184,8 @@ export interface SurfZoneConfig {
    * `?extension=old` dev switch, for A/Bs; online rooms run the default.
    */
   extension?: 'old';
+  /** Use the new rider's load at each sole to pace the return from Compress. */
+  compressRelease?: 'load';
   /**
    * 'off': the riders' Snap input is ignored, as before the snap stance (2026-11-03; `RideSessionOptions.snap`). Every
    * spot. The `?snap=off` dev switch, for A/Bs; online rooms run the default.

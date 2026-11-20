@@ -519,6 +519,7 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...frothSwitch(),
     // `?extension=old`: the legs extending at their full pace letting Compress go, as before compress-exit, for A/Bs.
     ...extensionSwitch(),
+    ...compressReleaseSwitch(),
     // `?snap=off`: the riders' Snap input ignored, as before the snap stance, for A/Bs.
     ...snapSwitch(),
     // `?snapQuick=old`: the riders' Snap set up at the balance's calm pace, as before snap-quick, for A/Bs.
@@ -958,6 +959,11 @@ export function frothSwitch(search?: string): { froth?: 'old' } {
  */
 export function extensionSwitch(search?: string): { extension?: 'old' } {
   return devParam('extension', search)?.trim().toLowerCase() === 'old' ? { extension: 'old' } : {};
+}
+
+/** Opt in to the new rider's two-foot load limit while rising out of Compress. */
+export function compressReleaseSwitch(search?: string): { compressRelease?: 'load' } {
+  return devParam('compressRelease', search)?.trim().toLowerCase() === 'load' ? { compressRelease: 'load' } : {};
 }
 
 /**

@@ -554,6 +554,7 @@ export class SurfZoneRunner {
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
       this.session = new RideSession({
         stance: options.stance, ...(config.stroke ? { stroke: config.stroke } : {}), ...(config.swim ? { swim: config.swim } : {}),
+        ...(config.compressRelease ? { compressRelease: config.compressRelease } : {}),
         ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
         ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
         ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
