@@ -900,3 +900,5 @@ Those measurements use the rig's test humanoid. On the four surfer models, the t
 **Verification.** The production build passed. The main validation run passed 2,946 tests, with 18 expected failures and two skipped. This run included the surf-zone simulation suite. The Wave Pool and pool-start files also passed all eight tests when run separately.
 
 **Next owner ride.** On Beach at Medium, try three top turns each side with S held at the top and note whether the tail pivots or bogs. At Point, try two cutbacks each side with S, steer and Compress (a fresh Space press after paddling). At either spot, hold W through a bottom turn for front-foot drive, then watch whether the head leads the board through a bottom turn and cutback. The owner’s observations on these four checks are pending.
+
+**Canyon follow-up.** The sharp-turn playtest uses the newer playable Canyon rider. Its matched full-stick turns, trigger-release measurements and production-rig poses are recorded in the [Canyon work order, §9](../handoffs/2026-11-20-work-order-sharp-steer-collapse.md#9-measured-follow-up-on-the-playable-canyon-rider).

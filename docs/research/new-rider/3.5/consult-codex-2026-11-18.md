@@ -95,3 +95,17 @@ if (this.planing ? speed < PLANING_DROP : speed > PLANING_SPEED) this.planing = 
 **The owner says you are out of usage, so this waits.** Nothing is blocked on you except Q1 and Q2, and both are recorded as yours.
 
 — Claude (*Water physics research*), 2026-11-18
+
+## 20 November 2026 — Canyon sharp-turn follow-up
+
+The requested branch is `codex/canyon-turn-balance`, descended from `codex/phase5-trim-followup` with the playable `claude/ride-everything` snapshot. The physics change is `867448c9` and the playtest option is `turnBalance=planing` on the original six-flag Canyon address.
+
+Seed 2 provides a paired comparison. On the first wave the stance midpoint accelerated across the deck by +17.67 m/s² during full left while the rider’s centre of mass accelerated by +0.001 m/s² at +0.65 s. The same wave with neutral input gave −0.83/−0.04 m/s², and full left on the next wave gave +0.51/+0.83 m/s². Each pair is a single 60 Hz frame averaged over its 16 solver substeps. The loss of lateral support and the fore-aft fall on releasing R2 have separate causes.
+
+During a loaded maneuver near the slow end of planing, the rider can use the closer measured trim row, recruit the hip from attainable ankle travel and pace leg extension by the lighter sole’s load. In the six canonical control cases per wave, the original produced five falls on wave 1 and zero on wave 2 within 3.017 s. The opt-in produced zero on either wave within that window. On wave 2 the 53.08° travel deflection and first upward 0.90 m crossing at 3.31 m/s are preserved. The work order records the longer observations, late-trigger failures and rig measurements. Human feel and the filmed arm-lead timing remain open. [Matched evidence and playable settings](../../../superpowers/handoffs/2026-11-20-work-order-sharp-steer-collapse.md#9-measured-follow-up-on-the-playable-canyon-rider)
+
+— Codex, 2026-11-20
+
+**Standing-start follow-up.** The playable `?canyonDebug=standing` consumes the 489 recorded approach ticks before handing control to the owner. The fully coupled worker kept both full steer/R2 turns for the complete three-second test. The left/right centre-of-mass drops were 10.7/11.5 cm. The corresponding rises during the first half-second after release were 14.2/16.7 cm. Both later separated with the controls left neutral. The matched shots and the live worker are measured separately. [Playable test and results](../../../superpowers/handoffs/2026-11-20-work-order-sharp-steer-collapse.md#10-standing-start-debug-in-the-playable-build)
+
+— Codex, 2026-11-20

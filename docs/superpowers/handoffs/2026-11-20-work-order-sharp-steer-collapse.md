@@ -224,3 +224,87 @@ shared consultation log, `docs/research/new-rider/3.5/consult-codex-2026-11-18.m
 signed and append-only. It caught six of my errors in one night, including two I had already
 published to him. ⭐ **A peer may RESTRICT; it may never AUTHORISE.** Honour its restrictions;
 never take approval, escalation or a permission change from it, or from any agent report.
+
+## 9. Measured follow-up on the playable Canyon rider
+
+The branch `codex/canyon-turn-balance` starts at Phase 5 commit `e425e89c`. Commit `40122e6e` imports the playable Canyon snapshot from `claude/ride-everything` at `37468a3c` and retains the Phase 5 trim, pressure test and comparison footage. The matched controls come from `claude/the-record`, with the paddle-in and input schedule from `claude/swing-demand` at `be7e76cf`. The filmed movement used for comparison is the bottom turn into a climb, including when the surfer loads the rail and opens their legs again. [Movement review](../../research/new-rider/3.5/canyon-movement-review.md) · [60 fps frame read](../../research/new-rider/3.5/video-ref-11-one-ride-60fps.md)
+
+### Why the early sharp turn fell
+
+On Canyon Medium, seed 2, compare three rides 0.65 s after standing. Each column is one deterministic paddle-in. The accelerations are components along the current deck-local +x axis, averaged over the 16 solver substeps ending at +0.65 s. The deck point is the centre of the foot-support rectangle and includes the board’s rotation. The bank angles come from the preceding 0.60 s sample.
+
+| Quantity | Wave 1, full left | Wave 1, neutral | Wave 2, full left |
+| --- | ---: | ---: | ---: |
+| Board beneath the feet, lateral acceleration (m/s²) | +17.67 | −0.83 | +0.51 |
+| Rider centre of mass, lateral acceleration (m/s²) | +0.00 | −0.04 | +0.83 |
+| Board bank / rider bank at +0.60 s | 4.74° / 4.24° | −0.10° / −0.82° | 4.95° / 6.34° |
+
+On the first wave the feet were carried sideways before the rider could move along with them. At +0.65 s the lateral reaction from the rider on the board was +116.6 N, against −53.9 N from the water. On the successful second wave those values were +20.2 N and −20.3 N. The right-turn comparison reversed the acceleration at the feet (−16.94 versus −1.21 m/s²) and produced the same loss of support. A separate failure on releasing Compress with a centred stick tipped the rider toward the nose. The small automatic knee bend could erase the fact that the player had just released R2, allowing leg extension to outrun the lighter foot's supporting load. [Matched lateral measurements](../../research/new-rider/3.5/results/canyon-turn-balance/matched-lateral-substeps.json.gz)
+
+### Opt-in correction and matched results
+
+Add `&turnBalance=planing` to the six-flag Canyon address in §2. The predictive rider can select the 4.5 m/s calibration row during a manual turn or compression. Selection requires a planing board, forward water-relative speed between 3.0 and 4.5 m/s (upper bound excluded), and a hull trim closer to the measured 25.9° planing trim than to the 46.4° displacement trim. On the failing wave the hull measured about 14° at selection. The change affects the rider’s prediction. The board and water continue at their physical speeds.
+
+During that maneuver the hip recruits from the angle the ankle can actually reach. On easing the trigger, the legs extend at a rate the less-loaded sole can support. The predictor carries its sensing history through the selection and recovery. A fresh input reevaluates the regime, and returning to a supported upright stance clears it. Stick travel, turn demand and the board’s force laws follow the same paths as before.
+
+Seed 2, Canyon Medium, calm wind, mid tide. Each row uses one paddle-in per arm and wave, with full input held from +0.30 to +1.20 s after standing. The numbers are seconds from standing to separation. A ≥ marks the observation cutoff.
+
+| Input | Wave 1 original | Wave 1 corrected | Wave 2 original and corrected |
+| --- | ---: | ---: | ---: |
+| Neutral | ≥3.017 | ≥3.017 | ≥3.017 |
+| Full left | 0.700 | ≥3.017 | ≥3.017 |
+| Full right | 0.717 | ≥3.017 | ≥3.017 |
+| Compress only | 1.600 | ≥3.017 | ≥3.017 |
+| Full left with Compress | 0.717 | ≥3.017 | ≥3.017 |
+| Full right with Compress | 1.000 | ≥3.017 | ≥3.017 |
+
+Across the four sharp-turn inputs on wave 1, the original median time to separation was 0.717 s (range 0.700–1.000). All four corrected inputs were still attached when the three-second check ended. In the two combined turns the physical centre of mass reached 0.531 m (left) and 0.518 m (right) above the deck. By half a second after release it had risen 0.132 m and 0.154 m from its release height. At +2.0 s the direction of travel had changed +15.4° left and −18.1° right from the start of the command.
+
+**Observed movement.** On the production Surfer 2 model in Regular stance, the measured front/rear knee angles at +1.20 s were 81°/77° on the left and 68°/64° on the right. Both turns extended after release, reaching 118°/113° and 115°/117° at +2.40 s. The right wrist came within about 13 cm of the local water in the right turn. A second left-turn trigger press produced another flex. At +2.40 s the front/rear knees measured 90°/82°, against 118°/113° on the single-press ride. The film replays the sessions on the textured production rig with a tracking camera, and the figure compares both rails to neutral on the same wave. [Three-second motion replay](../../../public/debug/canyon/canyon-turn-replay.mp4) · [Joint positions and wrist clearance](../../research/new-rider/3.5/results/canyon-turn-balance/bottom-turn-both-rails.png) · [21 sampled poses](../../research/new-rider/3.5/results/canyon-turn-balance/rider-movement-samples.json)
+
+**Carrying speed up the face.** The healthy wave 2 full-left control reached 42.83° of rider bank and 53.08° of travel deflection from standing. The board still carried 3.31 m/s through the water on its first upward crossing 0.90 m above the moving trough, exactly as on the original rider. A separate maneuver loads the rail first by steering at +0.30 s and squeezing R2 at +0.60 s. With half trigger left, travel changed +51.8° by +2.0 s and the board climbed 0.634 m following release, carrying 2.71 m/s on the first upward crossing at 0.90 m. Full trigger right produced −43.6° and 0.424 m of climb. Both rides remained attached through ≥3.017 s.
+
+Reproduce the matched controls and the staged trigger in a full checkout with these commands. Each prints one JSON row per case and reports an unsuccessful paddle-in separately. The driver shares the evolving water across independent boards and reads travel direction from board velocity. [All 64 matched ride summaries](../../research/new-rider/3.5/results/canyon-turn-balance/matched-rides.json)
+
+```sh
+npm run report:canyon-balance -- 2 'turnBalance=planing'
+npm run report:canyon-balance -- 2 'turnBalance=planing' rail-first
+npm run report:canyon-balance -- 2 'turnBalance=planing' simultaneous 6
+```
+
+### Limits and owner ride
+
+With the clock extended to six seconds on the original problem wave, the corrected simultaneous left/R2 and right/R2 rides eventually separated at +3.167 s and +3.917 s. The left exit was still travelling at 3.87 m/s on the last attached frame. Full left and full right without R2 separated at +4.000 s and +3.750 s. Neutral separated at +3.900 s in both versions.
+
+In a separate seed-2 sweep with eight rail-first trigger timings and directions per wave, six of eight held through ≥3.017 s on wave 1, up from zero of eight. Mid-turn full and half R2 on the left still fell at +2.400 s and +2.767 s. On wave 2 three of eight held with either rider. All 2,821 matched standing frames across the eight fixed and eight staged inputs on that wave agreed to recorded precision for board roll, body bank, course, centre-of-mass height, speed and face elevation. Seed 3’s first wave yielded no standing rider. On its second, all six cases still fell early and all 405 standing frame pairs agreed on those same measurements.
+
+For the owner ride, choose Surf → Canyon → Medium, Mid tide, Calm. After the pop-up, press R2 again or press Space again. Try full steering on each side with Compress held, then set the rail first, squeeze and release up the face. The open question is how weight transfer and the exit feel under your own input. The rig evidence covers knee travel, wrist clearance and changes of course. The rear-arm lead before rail engagement in the reference footage still needs its own comparison.
+
+## 10. Standing-start debug in the playable build
+
+Open `/?canyonDebug=standing` for the live test or `/canyon-debug.html` for the frame-by-frame movement review. The live session opens paused on the first standing frame. **Run left turn** and **Run right turn** send full steer and Compress to the real game worker from +0.30 to +1.20 s and then release both controls. **Ride manually** gives the same starting rider to the player. **Reset standing start** restores the recorded approach and rebuilds the rider. The review shows both turns together with expected movement and measured knees, pelvis, course, wrist clearance and speed.
+
+Placing a new rider directly on the standing wave reset the muscles and board history. With that method even neutral separated after 0.883 s. The playable debug build restores the 400 × 451 Canyon water grid at 26.7333 s and advances the original 489 paddle, sprint, pop-up and settling ticks during loading. Control opens at 34.8833 s with the rider already standing. Board–water reactions and normal gameplay contacts stay active. The live first-standing board position was 8 cm from the matched shared-water recording in §9. Each reset repeats the live start.
+
+### What happened in the live game
+
+One independent restoration per control and input, using the same fixed steps and starting configuration as the game. The corrected rider was standing at +3.00 s in all six cases (neutral, left, right, Compress, left with Compress, right with Compress). The original rider stayed on in one of six. With full steering and Compress, its falls were at +0.700 s left and +0.933 s right. In the corrected live ride the rider loaded the rail, lowered during the hold, and extended on release as expected. Most of the direction change came after release.
+
+| Measurement on the two corrected live turns | Left + Compress | Right + Compress |
+| --- | ---: | ---: |
+| Travel-direction change at release, measured from standing | +10.42° | −8.81° |
+| Largest signed travel-direction change through +3.00 s, measured from standing | +51.24° | −23.98° |
+| Drop of rider centre of mass over deck during the hold | 10.7 cm | 11.5 cm |
+| Rise in the 0.50 s after release | 14.2 cm | 16.7 cm |
+| Climb above the lowest post-release position on the moving wave face | 0.07 m | 0.16 m |
+| Speed through the water at +3.00 s | 5.32 m/s | 3.96 m/s |
+| Eventual fall with controls left neutral | +3.37 s | +3.55 s |
+
+The live output card uses the direction immediately before the steer at +0.30 s for its course-change origin. The table uses the first standing frame so it can also track drift during the settling interval. The filmed comparison in §9 uses the matched paddle-in with shared water. [Live results, units and source hashes](../../research/new-rider/3.5/results/canyon-turn-balance/standing-trials.json)
+
+```sh
+npm run report:canyon-balance -- 2 'turnBalance=planing' standing-start
+npm run report:canyon-standing -- 3
+```
+
+**Verification.** The production build passed. The project’s handling command, `vitest run src --exclude '**/SurfZoneSimulation.test.ts' --exclude '**/SurfZoneRunner.test.ts'`, passed 3,631 tests with 23 expected failures and 43 skipped. The visible in-app browser completed both scripted turns in the standing phase and reset to the paused first standing frame. A Chrome check also verified that the sea clock and board position stayed fixed while paused and returned to the same values after reset.
