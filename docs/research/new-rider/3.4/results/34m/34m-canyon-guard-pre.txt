@@ -1,0 +1,4 @@
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 240 steps: breaking 1.37/1.75, roller 0.70/1.02, front 0.00/0.00, lip 0.06/0.07, foam 2.98/3.36, airSources 0.06/0.08, aeration 1.63/1.81, contact 0.00/0.00, board 0.99/2.35, bubbles 0.19/0.21, spray 0.25/0.39, sounds 0.00/0.00, snapshotFields 4.51/4.95, snapshot 5.10/5.62, summary 0.47/0.51
+  CPU stages per step (step − water + snapshot + summary): 14.34/16.71; water (CPU solver, not timed on the device) 91.2
+  hashes: snapshots 548f3db7ca81d898, state 475f8c56c9debccc

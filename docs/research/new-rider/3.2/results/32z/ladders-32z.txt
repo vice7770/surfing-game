@@ -1,0 +1,31 @@
+Step 3.2z — the two authority ladders, read through the test's OWN allowance.
+Twelve runs a cell (2 stances x 6 entry speeds), the Canyon-matched FaceWater 1.4 m / 16 deg / 5.7 m/s, the stick at
+zero, 9 s each. `v_across` is CaptureState.speedAcross at the fall, m/s; `tolX` is the test's own across-speed
+tolerance reachAcross x omega0 at the fall, m/s. Medians over the runs that fell.
+  HIP_GAIN=<n>  RIDER=new STANCES=compress,tall EXTRAS=-3,-2,-1,0,1.5,3 node <out>/tb.mjs
+  PLUMB=<n>     RIDER=new STANCES=compress,tall EXTRAS=-3,-2,-1,0,1.5,3 node <out>/tb.mjs
+
+== the HIP's ladder (balance.hipCapture, N.m/m). The hip lowers the across-speed and the test's allowance falls
+== FASTER, because reachAcross is credited on the hip's REMAINING range and the correction spends it.
+HIP_GAIN=   0  fell 12/12 at 0.77-1.70 s | bank peak med 32.8 deg | v_across med 0.968 | tolX med 0.855 | v/tol med 0.99 | swing torque peak med 0 N.m | swing angle peak med 0.0 deg
+HIP_GAIN= 250  fell 12/12 at 0.77-1.88 s | bank peak med 37.4 deg | v_across med 0.891 | tolX med 0.843 | v/tol med 0.97 | swing torque peak med 16 N.m | swing angle peak med 6.5 deg
+HIP_GAIN= 500  fell 12/12 at 0.77-2.12 s | bank peak med 33.8 deg | v_across med 0.869 | tolX med 0.772 | v/tol med 0.96 | swing torque peak med 29 N.m | swing angle peak med 10.6 deg
+HIP_GAIN=1000  fell 12/12 at 0.82-2.25 s | bank peak med 32.0 deg | v_across med 0.857 | tolX med 0.597 | v/tol med 1.08 | swing torque peak med 55 N.m | swing angle peak med 17.6 deg
+HIP_GAIN=2000  fell 12/12 at 0.95-2.45 s | bank peak med 33.3 deg | v_across med 0.747 | tolX med 0.191 | v/tol med 0.83 | swing torque peak med 118 N.m | swing angle peak med 22.9 deg
+
+== the ANKLE's ladder (balance.anklePlumb). The opposite shape: the allowance HOLDS and the across-speed does not come
+== down at all, while the body's bank peak halves. Flattening the body is not slowing the weight across the feet.
+ANKLE_PLUMB=0  fell 12/12 at 0.77-1.70 s | bank peak med 32.8 deg | v_across med 0.968 | tolX med 0.855 | v/tol med 0.99 | ankle torque peak med 49 N.m | swing angle peak med 0.0 deg
+ANKLE_PLUMB=0.5  fell 12/12 at 1.00-6.73 s | bank peak med 35.5 deg | v_across med 0.865 | tolX med 0.987 | v/tol med 0.87 | ankle torque peak med 107 N.m | swing angle peak med 16.3 deg
+ANKLE_PLUMB=1  fell 12/12 at 0.53-4.32 s | bank peak med 17.8 deg | v_across med 0.999 | tolX med 0.784 | v/tol med 1.26 | ankle torque peak med 107 N.m | swing angle peak med 15.1 deg
+
+== the HIP_GAIN=2000 cell, run by run: where the exhaustion is (Part 24 section 3a)
+== swing angle peak against the stance's whole hip range (compress 0.4 rad = 22.9 deg, tall 1.2 rad = 68.8 deg),
+== and the test's across-speed tolerance that is credited on what is LEFT of that range.
+compress swing angle peak   0.7  22.9  19.8  22.9  22.9  22.9  deg
+         tolX            0.779 0.000 0.318 0.063 0.000 0.000  m/s
+         reachAcross     0.191 0.000 0.075 0.013 0.000 0.000  m
+tall     swing angle peak  28.0  20.5  46.4  68.8  68.8  68.8  deg
+         tolX            0.944 0.951 0.743 0.488 0.000 0.000  m/s
+         reachAcross     0.338 0.341 0.250 0.111 0.000 0.000  m
+saturated (peak at the whole range) in 4 of 6 compress and 3 of 6 tall; tolerance exactly 0.000 in all 7.

@@ -32,7 +32,7 @@ import { withRichHorizon } from './water/richHorizon';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
-import { packTubeTextures, tubeColumnCount, waterTubePars } from './water/tubeCarve';
+import { packTubeTextures, tubeColumnCount, waterNoCarvePars, waterTubePars } from './water/tubeCarve';
 import { TUBE_CAPACITY, TUBE_STRIDE, carveGrid } from '../wave/tubeTable';
 import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 import { classicRollerFoam, richRollerFoam, richRollerNormal, rollerCrestLight, rollerNormal, waterRollerPars } from './water/rollerGlsl';
@@ -46,6 +46,10 @@ import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopMomentPars, waterChopNormal, waterChopPars } from './waterChop';
 import { glitterProgramKey, glitterUniforms, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { foamFreshMode, foamFreshProgramKey, onFoamFreshChange, waterFoamFreshPars } from './water/foamFreshness';
+import { foamAlbedoBubbles, foamAlbedoColour, foamAlbedoOn, foamAlbedoPars, foamAlbedoProgramKey, onFoamAlbedoChange, withFoamAlbedo } from './water/foamAlbedo';
+import { onRockBedChange, rockBedMode, rockBedProgramKey, withRockBed } from './water/rockBed';
+import { withNormalGuard } from './water/tubeLook';
+import { richBodyGain } from './water/waterLight';
 import { denseLookOn, foamLookProgramKey, laceLookOn, lightLookOn, onFoamLookChange, waterChurnFreshGlsl, withDenseChurn, withFoamLight } from './water/foamLook';
 import {
   CLASSIC_FOAM, WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
@@ -239,6 +243,11 @@ export interface SurfaceSource {
   readonly bedRevision: number;
   /** Bed elevation per grid node, m (negative below datum). */
   writeBed(data: Float32Array): void;
+  /**
+   * A rock floor's cover of the bed per grid node, 0 sand, 1 rock, past 1 darker rock, for the water to draw the rock in
+   * its own albedo (`rockBed.ts`); without it the bed is the spot's one albedo. Written with the bed (`bedRevision`).
+   */
+  writeBedCover?(data: Float32Array): void;
   /** Interleaved surface current (u, w) per grid node, m/s; without it the foam pattern stands still. */
   writeFlow?(data: Float32Array): void;
   /** Its bodies sample a Catmull-Rom surface over the render nodes (`PhysicalSurfWater`), which the Rich look draws (G8). */
@@ -264,6 +273,10 @@ export class WaterSurface {
   private rawData = new Float32Array(1);
   private rawTexture = WaterSurface.createBedTexture(this.rawData, { xMin: 0, zMin: 0, spacing: 1, nx: 1, nz: 1 });
   private bedTexture: DataTexture;
+  /** The rock's cover per grid node, and the bed texture's texels, (height, cover) interleaved, where the source has one. */
+  private bedCover?: { cover: Float32Array; texels: Float32Array };
+  /** The rock floor compiled in (`rockBed.ts`): only where the source's bed has a cover, so every other spot's program is today's. */
+  private rockBedEnabled = false;
   private flowTexture: DataTexture;
   /** G9: (void fraction, plume depth) per grid node, for the Rich churn and plume. */
   private aerationData: Float32Array;
@@ -321,7 +334,7 @@ export class WaterSurface {
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.bedData = new Float32Array(grid.nx * grid.nz);
-    this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
+    this.bedTexture = this.createBed(grid);
     this.flowData = new Float32Array(grid.nx * grid.nz * 2);
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
     this.aerationData = new Float32Array(grid.nx * grid.nz * 2);
@@ -340,7 +353,7 @@ export class WaterSurface {
       waterFoamPattern: { value: 0 },
       waterGrid: { value: new Vector4(grid.xMin, grid.zMin, grid.spacing, 0) },
       waterGridSize: { value: new Vector2(grid.nx, grid.nz) },
-      waterFoamColor: { value: new Color('#d8f2e9') },
+      waterFoamColor: { value: foamAlbedoColour() },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
@@ -394,14 +407,18 @@ export class WaterSurface {
         const richFoam = fresh ? RICH_FOAM_FRESH : RICH_FOAM;
         // The foam's look after the 2026-10-21 playtest (`foamLook.ts`); `?foamLook=off` compiles today's foam.
         const dense = denseLookOn();
+        // What whitewater reflects (C2 step 5i), from the bubble layers under the pixel with `=bubbles` (step 5j);
+        // either value only, so every other program is today's byte for byte.
+        const albedo = foamAlbedoOn();
+        const bubbles = foamAlbedoBubbles();
         const slopePars = this.vertexNormals ? `\n${richVertexSlopePars}` : '';
         // G8: the physics' Catmull-Rom surface, its normal per pixel.
         shader.vertexShader = shader.vertexShader
-          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${richAerationVertexPars}\n${waterCubicPars}\n${waterTubePars}\n${richPatchVertexPars}${slopePars}`)
+          .replace('#include <common>', `#include <common>\n${waterVertexPars}\n${richAerationVertexPars}\n${waterCubicPars}\n${this.barrelEnabled ? waterNoCarvePars : waterTubePars}\n${richPatchVertexPars}${slopePars}`)
           .replace('#include <beginnormal_vertex>', this.vertexNormals ? richBeginVertexNormal : richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${dense ? waterChurnFreshGlsl : ''}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks, laceLookOn())}` : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${this.barrelEnabled ? waterNoCarvePars : waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterGlitterPars}\n${waterChopMomentPars}\n${waterStreakPars}\n${waterChurnPars}${dense ? waterChurnFreshGlsl : ''}${fresh ? `\n${waterFoamFreshPars(foamFreshMode.streaks, laceLookOn())}` : ''}${albedo ? foamAlbedoPars() : ''}\n${richReflectionPars}\n${richPatchFragmentPars}${slopePars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}${roller ? `\n${waterRollerPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
@@ -416,8 +433,15 @@ export class WaterSurface {
         // The light through foam kept to what the foam lets through (item 4b): after the dense churn, whose freshness
         // the glow does not take.
         if (lightLookOn()) shader.fragmentShader = withFoamLight(shader.fragmentShader);
+        // The foam's albedo from the sourced reflectances (step 5i), or from the bubble layers (step 5j), after every
+        // other foam rewrite.
+        if (albedo) shader.fragmentShader = withFoamAlbedo(shader.fragmentShader, bubbles);
+        // The rock floor in its own albedo (the 2026-10-22 playtest), only where the bed has one.
+        if (this.rockBedEnabled) withRockBed(shader, { surface: 'waterHeight', xz: 'waterXZ' });
         // The horizon plan: the haze toward the horizon, and the sky mirrored from the slopes' spread.
         withRichHorizon(shader);
+        // `?tubeLook=merge` (ruling 10): no navy dashes where ripples tip the shading normal past the eye.
+        shader.fragmentShader = withNormalGuard(shader.fragmentShader);
         return;
       }
       shader.vertexShader = shader.vertexShader
@@ -435,8 +459,10 @@ export class WaterSurface {
           .replace(`#include <common>\n${waterFragmentPars}`, `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
       }
+      if (this.rockBedEnabled) withRockBed(shader, { surface: 'waterHeight', xz: 'waterXZ' });
+      shader.fragmentShader = withNormalGuard(shader.fragmentShader);
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}${foamLookProgramKey()}` : ''}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}${this.rollerEnabled ? '-roller' : ''}${this.vertexNormals && this.effectiveLook === 'rich' ? '-vertex-normal' : ''}${this.effectiveLook === 'rich' ? `${glitterProgramKey()}${foamFreshProgramKey()}${foamLookProgramKey()}${foamAlbedoProgramKey()}` : ''}${rockBedProgramKey(this.rockBedEnabled)}`;
     // The glitter's mode (Sea detail, or a dev switch) changes the Rich program.
     onGlitterChange(() => {
       if (this.effectiveLook === 'rich') material.needsUpdate = true;
@@ -447,9 +473,16 @@ export class WaterSurface {
     onFoamLookChange(() => {
       if (this.effectiveLook === 'rich') material.needsUpdate = true;
     });
+    // Step 5i: the cap lives in the uniform (so every mesh sharing it takes it), the age in the Rich program.
+    onFoamAlbedoChange(() => {
+      this.uniforms.waterFoamColor.value = foamAlbedoColour();
+      if (this.effectiveLook === 'rich') material.needsUpdate = true;
+    });
+    onRockBedChange(() => this.refreshRockBed());
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.refreshTubeColumns();
     this.refreshRoller();
+    this.refreshRockBed();
     this.mesh.frustumCulled = false;
     this.patch = new Mesh(createPatchGeometry(PATCH_SIZE, PATCH_SPACING), material);
     this.patch.frustumCulled = false;
@@ -495,6 +528,14 @@ export class WaterSurface {
     if (changed) {
       if (source !== this.bedSource || source.bedRevision !== this.bedRevision) {
         source.writeBed(this.bedData);
+        if (this.bedCover && source.writeBedCover) {
+          const { cover, texels } = this.bedCover;
+          source.writeBedCover(cover);
+          for (let i = 0; i < cover.length; i += 1) {
+            texels[2 * i] = this.bedData[i];
+            texels[2 * i + 1] = cover[i];
+          }
+        }
         this.bedSource = source;
         this.bedRevision = source.bedRevision;
         this.bedTexture.needsUpdate = true;
@@ -778,8 +819,13 @@ export class WaterSurface {
     this.patch.visible = rich;
     this.uniforms.waterPatchActive.value = rich ? 1 : 0;
     this.mesh.material.roughness = rich ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
-    this.uniforms.waterBodyGain.value = rich ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
+    this.refreshBodyGain();
     this.syncBarrelFallback();
+  }
+
+  /** The body gain for the look drawn: Rich's shared one (`richBodyGain`, the water light's) or Classic's. */
+  refreshBodyGain(): void {
+    this.uniforms.waterBodyGain.value = this.effectiveLook === 'rich' ? richBodyGain.value : WATER_BODY_GAIN;
   }
 
   private readonly patchCamera = new Vector3();
@@ -855,16 +901,22 @@ export class WaterSurface {
     this.refreshRoller();
     const grid = source.grid;
     this.refreshBarrelMaskGrid();
-    if (previous.nx === grid.nx && previous.nz === grid.nz && previous.spacing === grid.spacing) return;
+    const resized = previous.nx !== grid.nx || previous.nz !== grid.nz || previous.spacing !== grid.spacing;
+    // The bed's texture for the new grid, or with (or without) the rock's cover the new source's bed has.
+    if (resized || (source.writeBedCover !== undefined) !== (this.bedCover !== undefined)) {
+      this.bedData = new Float32Array(grid.nx * grid.nz);
+      this.bedTexture.dispose();
+      this.bedTexture = this.createBed(grid);
+      this.uniforms.waterBed.value = this.bedTexture;
+      this.bedSource = undefined;
+    }
+    this.refreshRockBed();
+    if (!resized) return;
     this.surfaceData = new Float32Array(grid.nx * grid.nz * 2);
     this.texture.dispose();
     this.texture = WaterSurface.createTexture(this.surfaceData, grid);
     this.uniforms.waterSurface.value = this.texture;
     this.uniforms.waterSurfaceRaw.value = this.texture;
-    this.bedData = new Float32Array(grid.nx * grid.nz);
-    this.bedTexture.dispose();
-    this.bedTexture = WaterSurface.createBedTexture(this.bedData, grid);
-    this.uniforms.waterBed.value = this.bedTexture;
     this.flowData = new Float32Array(grid.nx * grid.nz * 2);
     this.flowTexture.dispose();
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
@@ -972,8 +1024,35 @@ export class WaterSurface {
     return texture;
   }
 
-  private static createBedTexture(data: Float32Array, grid: SurfaceGrid): DataTexture {
-    const texture = new DataTexture(data, grid.nx, grid.nz, RedFormat, FloatType);
+  /**
+   * The bed's texture for the source's grid: its height (red), and where the source's bed has a rock floor's cover, the cover
+   * too (green), from texels kept beside `bedData`.
+   */
+  private createBed(grid: SurfaceGrid): DataTexture {
+    if (!this.source.writeBedCover) {
+      this.bedCover = undefined;
+      return WaterSurface.createBedTexture(this.bedData, grid);
+    }
+    const nodes = grid.nx * grid.nz;
+    this.bedCover = { cover: new Float32Array(nodes), texels: new Float32Array(2 * nodes) };
+    return WaterSurface.createBedTexture(this.bedCover.texels, grid, true);
+  }
+
+  /** Whether the rock floor is compiled in: where the bed has a cover, unless `?rockBed=off` (or `?reefBed=off`). */
+  private refreshRockBed(): void {
+    const on = this.bedCover !== undefined && rockBedMode.on;
+    if (on === this.rockBedEnabled) return;
+    this.rockBedEnabled = on;
+    this.mesh.material.needsUpdate = true;
+  }
+
+  /** Whether the water draws a rock floor in its own albedo (`rockBed.ts`); the spilling curl's body follows it. */
+  get rockBed(): boolean {
+    return this.rockBedEnabled;
+  }
+
+  private static createBedTexture(data: Float32Array, grid: SurfaceGrid, covered = false): DataTexture {
+    const texture = new DataTexture(data, grid.nx, grid.nz, covered ? RGFormat : RedFormat, FloatType);
     texture.magFilter = NearestFilter;
     texture.minFilter = NearestFilter;
     texture.generateMipmaps = false;

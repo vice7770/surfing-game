@@ -3,12 +3,13 @@ import { GRAVITY } from '../dispersion';
 import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedLeafWidthDelta, boundedCCap, sampleBoundedC } from './boundedCProfile';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
+import { BOUNDED_C_CASES } from './barrelLibrary';
 import { decodeCase } from './profileFormat';
 import { carrierWidthDelta, LANDMARK, PROFILE_POINTS, ProfileLibrary, type BarrelCase, type ProfileQuery } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
 
 const FLOATS = 2 * PROFILE_POINTS;
-const cases = readBarrelCases().map(decodeCase);
+const cases = readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const STEP = 0.125;
 
 /** A generic moving carrier, with a caller-authored width curve and valid crest/toe endpoint tangents. */

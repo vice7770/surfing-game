@@ -3,13 +3,14 @@ import { CrashCurve, createCrashSlice } from './crashCurve';
 import type { FrontPoint } from './BreakingFront';
 import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
+import { BOUNDED_C_CASES } from './barrelLibrary';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary, type FrameBlend } from './ProfileLibrary';
 import { sheetAcross, sheetTablesLookup } from './lipSheet';
 import { createContactHit, SweptContact } from './sweptContact';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
 
-const cases = readBarrelCases().map(decodeCase);
+const cases = readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
 const STILL = 0.5;
 const waters = [

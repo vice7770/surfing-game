@@ -1,0 +1,62 @@
+Canyon byte check, step 3.3a (claude/rider-new-33a, cut from main 50f43025). The same command and the same reference
+as C2 step 5f's and 3.2t-3.2z's. FRESH spin-ups, on the tree that merges.
+
+  rolldown scripts/m1-cpu-bench.ts -o <out>/m1-cpu-bench.mjs --format esm --platform node
+  node <out>/cb.mjs             --spot canyon --size medium --steps 3600 --state <fresh-b>.sea   # Canyon B
+  node <out>/m1-cpu-bench.mjs   --spot canyon --size medium --steps 3600 --state <fresh-c>.sea   # default Canyon
+
+THE WRAPPER, WRITTEN OUT, BECAUSE THE SHORTHAND IN 3.2y'S AND 3.2z'S NOTES IS WRONG AND IT COST THIS ROUND A LEG.
+`cb.mjs` is, in full:
+
+    // `?canyonWaves=true` reaches the game through `devTools.ts`'s `currentSearch()`, which reads
+    // `globalThis.location?.search` -- so `location` must be an OBJECT with a `search`, not the string itself.
+    globalThis.location = { search: '?canyonWaves=true' };
+    await import('./m1-cpu-bench.mjs');
+
+3.2y's and 3.2z's notes both write this as `globalThis.location = '?canyonWaves=true'`. A bare STRING has no
+`.search`, so `currentSearch()` reads `undefined ?? ''`, `canyonBedSwitch()` returns `{}` and the bench silently runs
+the DEFAULT Canyon while the operator believes it is running B -- no error, no warning, and a perfectly plausible
+pair of hashes at the end. This round did exactly that on its first leg. WHAT GAVE IT AWAY was the grid the bench
+prints: 400 x 507 = 202800 cells, which is the default Canyon's, against Canyon B's 400 x 451 = 180400. That first
+leg is kept below as the default-Canyon leg, which is what it actually was and which is a leg this check needs
+anyway; the two Canyon B legs below were run afterwards with the wrapper above.
+
+A seatbelt that quietly measures the wrong thing is worse than no seatbelt, so the grid is now the first thing to
+read in every leg's output, before the hashes.
+
+EXPECTED (main's published figures, unchanged from step 5f through 3.2z):
+  Canyon B       snapshots a367d938f15fa934  state 9e5831f80e38abd9
+  default Canyon snapshots ea3d57a4d49f4b48  state a1a2555739210f96
+
+This round changed no source file at all, so this is the only possible result, and it is run anyway because that is
+what a seatbelt is for. A wave-track agent shared the machine throughout; nothing of theirs was stopped, and the step
+times carry that load. The HASHES are the invariant and are unaffected by it.
+
+== Canyon B (?canyonWaves=true), run 1: a fresh spin-up, with the wrapper above
+spun up on the CPU in 44.2 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/33a/bench/cb1.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.17/1.27, roller 0.64/0.77, front 0.00/0.00, lip 0.03/0.03, foam 2.47/2.62, airSources 0.05/0.07, aeration 1.33/1.42, contact 0.00/0.00, board 0.63/0.82, bubbles 0.15/0.17, spray 0.26/0.36, sounds 0.00/0.00, snapshotFields 3.91/4.14, snapshot 4.42/4.70, summary 0.40/0.43
+  CPU stages per step (step − water + snapshot + summary): 11.76/12.78; water (CPU solver, not timed on the device) 78.4
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+leg B run 1 exit: 0
+
+== Canyon B (?canyonWaves=true), run 2: a SECOND independent fresh spin-up, to see the hashes repeat
+spun up on the CPU in 44.2 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/33a/bench/cb2.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.17/1.28, roller 0.64/0.77, front 0.00/0.00, lip 0.03/0.03, foam 2.47/2.62, airSources 0.05/0.07, aeration 1.33/1.43, contact 0.00/0.00, board 0.62/0.85, bubbles 0.15/0.17, spray 0.26/0.37, sounds 0.00/0.00, snapshotFields 3.91/4.13, snapshot 4.41/4.69, summary 0.40/0.43
+  CPU stages per step (step − water + snapshot + summary): 11.76/12.91; water (CPU solver, not timed on the device) 74.9
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+leg B run 2 exit: 0
+
+== default Canyon (no wrapper). This is the leg that was launched BELIEVING it was Canyon B (see the note
+   above); the 400 x 507 grid is what said otherwise, and it is a perfectly good default-Canyon leg.
+spun up on the CPU in 54.7 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/33a/bench/cb1.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.27/1.37, roller 0.40/0.52, front 0.00/0.00, lip 0.03/0.03, foam 3.66/3.91, airSources 0.05/0.07, aeration 1.93/2.05, contact 0.00/0.00, board 0.63/0.80, bubbles 0.17/0.19, spray 0.16/0.24, sounds 0.00/0.00, snapshotFields 4.27/4.62, snapshot 4.77/5.15, summary 0.42/0.45
+  CPU stages per step (step − water + snapshot + summary): 13.86/14.86; water (CPU solver, not timed on the device) 83.6
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+
+leg C exit: 0
+
+RESULT: all four hashes identical to main's published figures, and Canyon B twice over from two independent
+fresh spin-ups.

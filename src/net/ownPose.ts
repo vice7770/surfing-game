@@ -54,7 +54,9 @@ export class OwnPoseTracker {
     out.paddling = paddling;
     // The wipeout spec: what the others need to draw the leash, a duck-dive and a dive.
     out.leashSnapped = out.present && ((rider[RIDER_SNAPSHOT.leash] ?? 0) & LEASH_BITS.snapped) !== 0;
-    out.ducking = out.present && (rider[RIDER_SNAPSHOT.duck] ?? 0) >= 0.3;
+    // Duck-diving: the two-body dive (duck-drawn: its points the swimmer's own parts, drawn as the dive), or the rigid
+    // rider's press.
+    out.ducking = out.present && ((rider[RIDER_SNAPSHOT.duck] ?? 0) >= 0.3 || ((rider[RIDER_SNAPSHOT.swim] ?? 0) & SWIM_BITS.ducking) !== 0);
     out.diving = out.present && ((rider[RIDER_SNAPSHOT.swim] ?? 0) & SWIM_BITS.diving) !== 0;
     // The animation-realism plan's phase 4 (wire flag 128): in the water reeling the leash in, or holding the board.
     const fallen = out.phase === RIDER_PHASES.indexOf('fallen');

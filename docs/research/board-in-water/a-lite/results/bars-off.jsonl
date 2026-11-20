@@ -1,0 +1,28 @@
+{"kind":"placed","heading":0,"angle":20,"fell":"","t":1.5,"mass":73,"frameW":183,"subW":213,"window05W":56,"boardG":0.8,"boardGafter01":0.4,"speed":8.1,"alongFallLine":8.1}
+{"kind":"placed","heading":0,"angle":25,"fell":"","t":1.5,"mass":73,"frameW":497,"subW":508,"window05W":106,"boardG":1.3,"boardGafter01":1.3,"speed":9.36,"alongFallLine":9.36}
+{"kind":"placed","heading":0,"angle":30,"fell":"","t":1.5,"mass":73,"frameW":1309,"subW":2850,"window05W":277,"boardG":12.9,"boardGafter01":12.9,"speed":10.41,"alongFallLine":10.41}
+{"kind":"placed","heading":0,"angle":35,"fell":"balance","t":0.1,"mass":73,"frameW":12166,"subW":14816,"window05W":708,"boardG":20.8,"boardGafter01":0,"speed":8.16,"alongFallLine":7.75}
+{"kind":"placed","heading":0,"angle":40,"fell":"impact","t":0.067,"mass":73,"frameW":20777,"subW":31676,"window05W":1210,"boardG":33.6,"boardGafter01":0,"speed":19.18,"alongFallLine":19}
+{"kind":"placed","heading":0,"angle":45,"fell":"impact","t":0.067,"mass":73,"frameW":19511,"subW":42864,"window05W":1354,"boardG":48.2,"boardGafter01":0,"speed":20.02,"alongFallLine":19.79}
+{"kind":"placed","heading":0,"angle":50,"fell":"impact","t":0.067,"mass":73,"frameW":30864,"subW":56500,"window05W":1544,"boardG":64.6,"boardGafter01":0,"speed":21.24,"alongFallLine":20.98}
+{"kind":"placed","heading":180,"angle":20,"fell":"","t":1.5,"mass":73,"frameW":145,"subW":254,"window05W":71,"boardG":1.9,"boardGafter01":0.5,"speed":0.4,"alongFallLine":0.14}
+{"kind":"placed","heading":180,"angle":25,"fell":"balance","t":0.183,"mass":73,"frameW":4156,"subW":9562,"window05W":318,"boardG":16.8,"boardGafter01":16.8,"speed":2.26,"alongFallLine":2.21}
+{"kind":"placed","heading":180,"angle":30,"fell":"balance","t":0.1,"mass":73,"frameW":12649,"subW":20837,"window05W":804,"boardG":33.3,"boardGafter01":0,"speed":5.97,"alongFallLine":5.94}
+{"kind":"placed","heading":180,"angle":35,"fell":"impact","t":0.067,"mass":73,"frameW":12996,"subW":29396,"window05W":994,"boardG":36.9,"boardGafter01":0,"speed":8.53,"alongFallLine":8.51}
+{"kind":"placed","heading":180,"angle":40,"fell":"impact","t":0.05,"mass":73,"frameW":23233,"subW":40632,"window05W":1152,"boardG":50.5,"boardGafter01":0,"speed":11.66,"alongFallLine":11.64}
+{"kind":"placed","heading":180,"angle":45,"fell":"impact","t":0.05,"mass":73,"frameW":21951,"subW":55217,"window05W":1367,"boardG":57.7,"boardGafter01":0,"speed":13.58,"alongFallLine":13.58}
+{"kind":"placed","heading":180,"angle":50,"fell":"impact","t":0.05,"mass":73,"frameW":28432,"subW":65989,"window05W":1570,"boardG":79,"boardGafter01":0,"speed":14.99,"alongFallLine":14.99}
+{"kind":"tilted","heading":0,"angle":20,"fell":"","t":2.5,"mass":73,"frameW":84,"subW":84,"window05W":22,"boardG":0.7,"boardGafter01":0.7,"speed":7.5,"alongFallLine":7.5}
+{"kind":"tilted","heading":0,"angle":25,"fell":"","t":2.5,"mass":73,"frameW":609,"subW":622,"window05W":95,"boardG":2.1,"boardGafter01":2.1,"speed":9.19,"alongFallLine":9.19}
+{"kind":"tilted","heading":0,"angle":30,"fell":"","t":2.5,"mass":73,"frameW":2011,"subW":2158,"window05W":242,"boardG":8.1,"boardGafter01":8.1,"speed":9.92,"alongFallLine":9.87}
+{"kind":"tilted","heading":0,"angle":35,"fell":"balance","t":1.467,"mass":73,"frameW":9194,"subW":12728,"window05W":734,"boardG":24.9,"boardGafter01":24.9,"speed":14.4,"alongFallLine":14.67}
+{"kind":"tilted","heading":0,"angle":40,"fell":"lost board","t":1.417,"mass":73,"frameW":12674,"subW":28155,"window05W":1126,"boardG":23.9,"boardGafter01":23.9,"speed":18.61,"alongFallLine":19.96}
+{"kind":"tilted","heading":0,"angle":45,"fell":"lost board","t":1.533,"mass":73,"frameW":42,"subW":42,"window05W":13,"boardG":8.5,"boardGafter01":8.5,"speed":6.87,"alongFallLine":6.86}
+{"kind":"tilted","heading":0,"angle":50,"fell":"lost board","t":1.75,"mass":73,"frameW":42,"subW":42,"window05W":12,"boardG":19,"boardGafter01":19,"speed":9.16,"alongFallLine":8.86}
+{"kind":"tilted","heading":180,"angle":20,"fell":"balance","t":2.167,"mass":73,"frameW":88,"subW":88,"window05W":1,"boardG":2,"boardGafter01":2,"speed":0.36,"alongFallLine":0.35}
+{"kind":"tilted","heading":180,"angle":25,"fell":"balance","t":0.983,"mass":73,"frameW":2333,"subW":5742,"window05W":183,"boardG":9.4,"boardGafter01":9.4,"speed":2.48,"alongFallLine":2.48}
+{"kind":"tilted","heading":180,"angle":30,"fell":"balance","t":0.617,"mass":73,"frameW":4761,"subW":9085,"window05W":129,"boardG":16.2,"boardGafter01":16.2,"speed":4.76,"alongFallLine":3.56}
+{"kind":"tilted","heading":180,"angle":35,"fell":"balance","t":0.55,"mass":73,"frameW":8348,"subW":13113,"window05W":319,"boardG":23.3,"boardGafter01":23.3,"speed":6.45,"alongFallLine":4.75}
+{"kind":"tilted","heading":180,"angle":40,"fell":"balance","t":0.5,"mass":73,"frameW":8286,"subW":15076,"window05W":386,"boardG":23.3,"boardGafter01":23.3,"speed":7.59,"alongFallLine":5.42}
+{"kind":"tilted","heading":180,"angle":45,"fell":"balance","t":0.467,"mass":73,"frameW":8736,"subW":16087,"window05W":375,"boardG":25.7,"boardGafter01":25.7,"speed":8.3,"alongFallLine":5.68}
+{"kind":"tilted","heading":180,"angle":50,"fell":"balance","t":0.433,"mass":73,"frameW":8993,"subW":16969,"window05W":343,"boardG":24.4,"boardGafter01":24.4,"speed":9.17,"alongFallLine":6.02}

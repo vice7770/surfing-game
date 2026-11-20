@@ -1,0 +1,84 @@
+# step 11, the hand-thinned lip: periodic-pool-straight-big-l13 at foot 1.08 m
+points 128 (crest 32, lip 64, throat 88, toe 112); frames 179, step 0.0250 units = 0.0139 s, first -1.67 s
+h0 3.04 m; time unit 0.557 s; touchdown 0.808 s (1.4500 units); H at the throw 1.75 m
+the cut: 0.0316 h0 = 0.096 m; floor 0.0066 h0 = 0.020 m; whole to 0.36 units = 0.20 s, held share 0.35 from 0.9 units = 0.50 s
+constant off: the case comes back as the same object: true
+
+## the lip through the flight (lip.mjs's table), before -> after
+tau_s   under_m          t_root_m         t_mid_m          t_tip_m          mid/H            jet_m2             jet/H^2            reach_m
+-0.20   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.0114 -> 0.0114   0.0037 -> 0.0037   0.000 -> 0.000   
+-0.10   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.0370 -> 0.0370   0.0121 -> 0.0121   0.000 -> 0.000   
+ 0.00   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.0396 -> 0.0396   0.0129 -> 0.0129   0.000 -> 0.000   
+ 0.05   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.000 -> 0.000   0.0374 -> 0.0374   0.0122 -> 0.0122   0.000 -> 0.000   
+ 0.10   0.188 -> 0.187   0.167 -> 0.166   0.091 -> 0.086   0.031 -> 0.027   0.052 -> 0.049   0.0666 -> 0.0663   0.0218 -> 0.0217   0.073 -> 0.073   
+ 0.15   0.217 -> 0.212   0.187 -> 0.185   0.101 -> 0.095   0.036 -> 0.031   0.058 -> 0.054   0.0732 -> 0.0723   0.0239 -> 0.0236   0.115 -> 0.115   
+ 0.20   0.287 -> 0.274   0.232 -> 0.230   0.125 -> 0.131   0.048 -> 0.041   0.071 -> 0.075   0.0899 -> 0.0881   0.0294 -> 0.0288   0.163 -> 0.163   
+ 0.30   0.467 -> 0.436   0.335 -> 0.334   0.189 -> 0.182   0.076 -> 0.059   0.108 -> 0.104   0.1312 -> 0.1272   0.0429 -> 0.0416   0.283 -> 0.283   
+ 0.40   0.673 -> 0.654   0.430 -> 0.429   0.242 -> 0.230   0.109 -> 0.102   0.139 -> 0.132   0.1869 -> 0.1791   0.0611 -> 0.0585   0.416 -> 0.416   
+ 0.50   0.898 -> 0.875   0.419 -> 0.418   0.241 -> 0.213   0.143 -> 0.120   0.138 -> 0.122   0.2376 -> 0.2288   0.0777 -> 0.0748   0.556 -> 0.556   
+ 0.60   1.195 -> 1.161   0.405 -> 0.404   0.196 -> 0.165   0.183 -> 0.153   0.112 -> 0.094   0.3001 -> 0.2869   0.0981 -> 0.0938   0.693 -> 0.693   
+ 0.80   0.084 -> 0.083   0.072 -> 0.072   0.042 -> 0.042   0.014 -> 0.012   0.024 -> 0.024   0.4011 -> 0.4011   0.1311 -> 0.1311   0.038 -> 0.038   
+ 0.81   0.011 -> 0.011   0.009 -> 0.009   0.005 -> 0.005   0.002 -> 0.001   0.003 -> 0.003   0.2824 -> 0.2824   0.0923 -> 0.0923   0.005 -> 0.005   
+
+## how far the underside moved across itself (cut points 65..87 to the stored underside line), m
+tau_s   largest  mean    | the points' own move, largest | the top face 40..60 to the underside, mean (before -> after)
+ 0.05   0.000    0.000   | 0.000                          | 0.214 -> 0.214
+ 0.10   0.006    0.003   | 0.024                          | 0.206 -> 0.206
+ 0.15   0.012    0.005   | 0.027                          | 0.211 -> 0.211
+ 0.20   0.022    0.008   | 0.034                          | 0.223 -> 0.223
+ 0.30   0.032    0.013   | 0.044                          | 0.240 -> 0.239
+ 0.40   0.028    0.012   | 0.037                          | 0.248 -> 0.239
+ 0.50   0.022    0.010   | 0.028                          | 0.237 -> 0.230
+ 0.60   0.025    0.011   | 0.030                          | 0.224 -> 0.217
+ 0.80   0.001    0.000   | 0.004                          | 0.771 -> 0.771
+ 0.81   0.000    0.000   | 0.000                          | 0.699 -> 0.699
+
+## every stored frame
+frames with a moved point: 52 of 179 (the first is frame 126, 0.084 s); points moved 1169
+points 0..64 and 88..127 that differ (any frame): 0; points that differ in a frame at or before the throw: 0
+underside points whose thickness grew: 0 (most 0.000 mm); taken under the floor from over it: 0; least thickness left where it was over the floor: 20.1 mm; the largest cut 45.3 mm
+underside's largest turn (points 65..87): 43.9 -> 92.1 deg; the largest rise at one vertex 84.65 deg, frame 126 (0.084 s), point 67: 0.1 -> 84.7 deg
+frames where one underside vertex turns over 5 deg more than stored: 25
+  frame 126 (0.084 s) point 67: 0.1 -> 84.7 deg
+  frame 127 (0.097 s) point 67: 13.4 -> 91.8 deg
+  frame 128 (0.111 s) point 67: 14.9 -> 91.4 deg
+  frame 129 (0.125 s) point 67: 13.9 -> 87.4 deg
+  frame 130 (0.139 s) point 68: 0.1 -> 73.9 deg
+  frame 131 (0.153 s) point 68: 5.9 -> 84.0 deg
+  frame 132 (0.167 s) point 68: 0.3 -> 53.4 deg
+  frame 133 (0.181 s) point 66: 12.0 -> 92.0 deg
+  frame 134 (0.195 s) point 66: 12.5 -> 92.1 deg
+  frame 135 (0.209 s) point 66: 12.0 -> 91.2 deg
+  frame 136 (0.223 s) point 66: 10.8 -> 60.8 deg
+  frame 137 (0.237 s) point 67: 1.1 -> 31.4 deg
+  frame 138 (0.251 s) point 65: 10.6 -> 26.2 deg
+  frame 139 (0.265 s) point 65: 7.6 -> 21.3 deg
+  frame 140 (0.279 s) point 65: 8.9 -> 36.4 deg
+  frame 141 (0.292 s) point 65: 9.0 -> 30.5 deg
+  frame 142 (0.306 s) point 65: 10.3 -> 28.8 deg
+  frame 143 (0.320 s) point 65: 12.5 -> 22.6 deg
+  frame 144 (0.334 s) point 80: 21.5 -> 45.2 deg
+  frame 145 (0.348 s) point 79: 30.9 -> 48.4 deg
+  frame 146 (0.362 s) point 79: 30.9 -> 41.9 deg
+  frame 148 (0.390 s) point 77: 2.7 -> 9.4 deg
+  frame 149 (0.404 s) point 76: 3.7 -> 10.0 deg
+  frame 150 (0.418 s) point 76: 0.4 -> 6.1 deg
+  frame 151 (0.432 s) point 75: 1.9 -> 7.8 deg
+underside segments shorter than 1 mm (64..88, all frames): 3048 -> 3049
+the turn at point 88 after the throw: largest 113.36 -> 112.59 deg; the largest change in one frame 1.509 deg
+the turn at the tip, point 64 (not a bar): largest 22.4 -> 22.4 deg; the largest rise in one frame 0.00 deg
+underside segments turned over by the cut (64..88): 0; points the library's loop closing moves: 2 -> 2
+an underside point's largest move between neighbour frames: 1213.1 -> 1213.1 mm; the largest rise for one point and frame pair 9.65 mm
+the crash's jet at frame 177 (overturnAt, h0^2): stored 0.00167; the cut frames 0.00166; what the crash reads (storedFrames) 0.00167
+the jet at the last stored frame before touchdown (frame 177, 0.794 s): 0.1706 -> 0.1706 H^2
+at 0.10 s, the stored mid point (76) itself: 0.091 -> 0.069 m from the top run; its nearest place on the top run is the tip: true
+at 0.10 s, the top face's points 40..60 to the underside, mean (lip.mjs's mean40-60): 0.206 -> 0.206 m
+
+## bars
+bar | aim | before | after | result
+L1 | mid-lip at 0.10 s at most 0.04 H | 0.052 H (0.091 m) | 0.049 H (0.086 m) | MISS
+L2 | none under 2 cm where it was over; none grows | - | 0 under the floor; 0 grew | pass
+L3 | points 0..64 and 88..127 byte-equal; touchdown 0.808 s; reach equal | touchdown 0.808 s | 0 points differ; 0 before the throw; touchdown 0.808 s; reach equal | pass
+L4 | jet at 0.6 s at least 0.090 H^2; before touchdown at least 0.10 H^2 | 0.0981; 0.1706 | 0.0938; 0.1706 | pass
+L5 | largest underside turn at most 5 deg over; point 88 within 1 deg; no folded segment | 43.9 deg; 113.36 deg | 92.1 deg (one vertex at most +84.65); point 88 changes 1.509 deg; 0 folded | MISS
+L6 | largest move between neighbour frames at most 5 mm over | 1213.1 mm | 1213.1 mm (one point at most +9.65) | pass

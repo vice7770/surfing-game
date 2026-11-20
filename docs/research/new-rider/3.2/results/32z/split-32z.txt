@@ -1,0 +1,52 @@
+Step 3.2z — the across-speed's split, taken the fall test's own way: the body's half and the base's half of
+`CaptureState.speedAcross`, on the test's own feet point (`captureFeet`) and against the test's own board-frame felt
+vertical (`captureFelt`), plus the test's own across-speed tolerance `reachAcross × ω₀`.
+  npx rolldown docs/research/new-rider/3.2/trimbank.ts -o <out>/tb.mjs --format esm --platform node
+  RIDER=new STANCES=compress,tall EXTRAS=-3,-2,-1,0,1.5,3 OUT=<out>/new-32z.jsonl node <out>/tb.mjs
+  RIDER=old STANCES=compress,tall EXTRAS=-3,-2,-1,0,1.5,3 OUT=<out>/old-32z.jsonl node <out>/tb.mjs
+
+## the shipped NEW rider, twelve trim runs (2 stances x 6 entry speeds)
+## trimbank — rider new, law predictor
+   12 runs, 2 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 12 of 12 at 0.77–1.70 s · bound margin 12 · grip 0 · knee 0
+   the mount: the body's first-frame lean 8.69–8.71° on a deck rolled 8.83–8.89° · its CoM 0.126–0.126 m across, feet's half-width 0.130 m
+   the body's bank peak 20.7–65.7° · the board's roll peak 20.9–63.0° · the rail peak 10.9–62.9°
+   the ankle's own span: peak 2.7–9.5° · median 0.3–1.6° (a human ankle has about ±29°)
+   the commands: rest peak 1.97–9.03° · raw peak 2.63–14.35° · ankle torque peak 42–90 N·m (median 6–31)
+   the hip: swing torque peak 0–8 N·m · swing angle peak 0.0–0.3°
+   the hip's trigger (3.2x): signal peak 0.201–0.411 m · opened at 0.22–1.02 s (in 12 of 12) · swing passed 20 N·m at – s (in 0 of 12)
+   the senses: load 8.84–11.38 m/s² · pitch rate 0.24–0.51 rad/s · feet's load median 0.86–1.09 body weights
+   at the fall: margin 0.000–0.000 · past 0.175–0.385 m · capture 0.305–0.515 m = lean 0.130–0.206 + speed 0.164–0.347
+   the capture point's own terms: ω₀ median 3.32–4.62 1/s · CoM height 0.543–0.847 m · the hip's reach past the edge 0.169–0.300 m (feet's half-width 0.13) · felt tilt peak 7.7–15.9°
+   at the fall: ω₀ 3.05–4.71 · reach 0.172–0.385 m · felt tilt -15.9–-7.4°
+   STEP 3.2z — the across-speed SPLIT at the fall, m/s: relative 0.754–1.406 = body 0.715–1.272 − feet -0.302–0.401 · read at 0.750–1.683 s, 1–1 frames before the end · reconstructs the test's own difference to 0.0000–0.0000 m/s
+      over the whole run: |body| peak 0.715–1.294 (median 0.349–0.629) · |feet| peak 0.226–0.574 (median 0.059–0.494) · |relative| peak 0.754–1.406
+      the base's own across-acceleration, m/s²: peak 6.93–25.55 · median 1.17–3.00 · the body's peak 2.42–7.37 · median 1.65–2.56
+      the mean rate each built its across-speed at (speed at the fall over the time to it), m/s²: the base 0.00–0.38 · the body 0.42–1.41
+      the TEST's own across-speed tolerance (reach × ω₀), m/s: at the fall 0.788–1.733 · median 0.658–1.148
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 1.9–4.9° · at the fall -2.32–3.23° at 5.16–9.15 m/s
+
+## the OLD rider on the same twelve. `endStep` runs `captureStep` only for the free body, so the old rider
+## has NO capture point and no across-speed: the split columns are NaN by design and print as dashes. Before the
+## `cap.omega > 0` guard they read a feet across-speed peak of 277 m/s and a base acceleration of 4750 m/s2.
+## trimbank — rider old, law the old rider's own
+   12 runs, 16 s wall · face 1.40 m / 16° / 5.70 m/s, 9 s each
+   fell: 3 of 12 at 7.78–8.87 s · bound margin 0 · grip 3 · knee 0
+   the mount: the body's first-frame lean -0.03–-0.02° on a deck rolled 8.24–8.31° · its CoM 0.000–0.000 m across, feet's half-width 0.130 m
+   the body's bank peak 2.5–66.6° · the board's roll peak 8.3–71.6° · the rail peak 10.8–71.1°
+   the ankle's own span: peak 11.7–66.2° · median 0.7–1.7° (a human ankle has about ±29°)
+   the commands: rest peak 4.31–14.32° · raw peak 0.00–0.00° · ankle torque peak 76–459 N·m (median 6–27)
+   the hip: swing torque peak 0–142 N·m · swing angle peak 0.0–68.8°
+   the hip's trigger (3.2x): signal peak 0.000–0.000 m · opened at – s (in 0 of 12) · swing passed 20 N·m at 8.07–8.07 s (in 1 of 12)
+   the senses: load 0.00–0.00 m/s² · pitch rate 0.00–0.00 rad/s · feet's load median 0.00–0.00 body weights
+   at the fall: margin 1.000–1.000 · past 0.000–0.000 m · capture 0.000–0.000 m = lean 0.000–0.000 + speed 0.000–0.000
+   the capture point's own terms: ω₀ median 0.00–0.00 1/s · CoM height 0.000–0.000 m · the hip's reach past the edge 0.000–0.000 m (feet's half-width 0.13) · felt tilt peak 0.0–0.0°
+   at the fall: ω₀ 0.00–0.00 · reach 0.000–0.000 m · felt tilt 0.0–0.0°
+   STEP 3.2z — the across-speed SPLIT at the fall, m/s: relative – = body – − feet – · read at 7.783–9.000 s, 0–0 frames before the end · reconstructs the test's own difference to – m/s
+      over the whole run: |body| peak – (median –) · |feet| peak – (median –) · |relative| peak –
+      the base's own across-acceleration, m/s²: peak 0.00–0.00 · median 0.00–0.00 · the body's peak 1.36–2.69 · median 0.12–0.46
+      the mean rate each built its across-speed at (speed at the fall over the time to it), m/s²: the base – · the body –
+      the TEST's own across-speed tolerance (reach × ω₀), m/s: at the fall – · median –
+   the old rider's own test, read on this rider: posture error peak 0.000–0.000 m against RECOVERABLE_ERROR 0.250 · at the fall 0.000–0.000 m · frames over it 0–0
+   the board: drift peak 2.5–103.1° · at the fall 0.13–99.77° at 0.62–8.26 m/s

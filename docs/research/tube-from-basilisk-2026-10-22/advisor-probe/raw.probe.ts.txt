@@ -1,0 +1,100 @@
+import { test } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+const W = '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/tube-from-basilisk/';
+import { decodeCase } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/tube-from-basilisk/src/wave/barrel/profileFormat';
+import { ProfileLibrary, PROFILE_POINTS, LANDMARK, heldFrame } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/.claude/worktrees/tube-from-basilisk/src/wave/barrel/ProfileLibrary';
+
+const OUT = '/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/probe/';
+function dist(ax: number, ay: number, bx: number, by: number) { return Math.hypot(ax - bx, ay - by); }
+function segDist(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
+  const dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy; let t = l > 0 ? ((px - ax) * dx + (py - ay) * dy) / l : 0; t = Math.max(0, Math.min(1, t));
+  return dist(px, py, ax + t * dx, ay + t * dy);
+}
+function crossings(p: ArrayLike<number>, from = 0, to = PROFILE_POINTS - 1) {
+  let n = 0;
+  const x = (i: number) => p[2 * i], y = (i: number) => p[2 * i + 1];
+  for (let i = from; i < to; i++) for (let j = i + 2; j < to; j++) {
+    const ax = x(i), ay = y(i), bx = x(i + 1), by = y(i + 1), cx = x(j), cy = y(j), dx = x(j + 1), dy = y(j + 1);
+    const d1 = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+    const d2 = (bx - ax) * (dy - ay) - (by - ay) * (dx - ax);
+    const d3 = (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx);
+    const d4 = (dx - cx) * (by - cy) - (dy - cy) * (bx - cx);
+    if (d1 * d2 < 0 && d3 * d4 < 0) n++;
+  }
+  return n;
+}
+function measure(p: ArrayLike<number>) {
+  const x = (i: number) => p[2 * i], y = (i: number) => p[2 * i + 1];
+  const crestY = y(LANDMARK.crest);
+  let minY = Infinity; for (let i = LANDMARK.crest; i < PROFILE_POINTS; i++) minY = Math.min(minY, y(i));
+  const H = crestY - minY;
+  const th: number[] = [];
+  for (let i = 44; i <= 60; i++) { let m = Infinity; for (let j = 68; j < 88; j++) m = Math.min(m, segDist(x(i), y(i), x(j), y(j), x(j + 1), y(j + 1))); th.push(m); }
+  th.sort((a, b) => a - b);
+  let tip = Infinity; for (let i = 56; i <= 62; i++) for (let j = 66; j < 74; j++) tip = Math.min(tip, segDist(x(i), y(i), x(j), y(j), x(j + 1), y(j + 1)));
+  let a = 0; for (let i = 64; i < 112; i++) a += x(i) * y(i + 1) - x(i + 1) * y(i); a += x(112) * y(64) - x(64) * y(112);
+  // vertical void: max over underside points 64..88 of (y - surface beneath among 88..127)
+  let vh = 0;
+  for (let i = 64; i <= 88; i++) {
+    const px = x(i), py = y(i); let best = NaN;
+    for (let k = 88; k < 127; k++) { const x0 = x(k), x1 = x(k + 1); if (x0 === x1 || (x0 - px) * (x1 - px) > 0) continue; const u = y(k) + (px - x0) / (x1 - x0) * (y(k + 1) - y(k)); if (u < py && !(u <= best)) best = u; }
+    if (best === best && py - best > vh) vh = py - best;
+  }
+  return { H, lipMedian: th[Math.floor(th.length / 2)], lipMax: th[th.length - 1], tip, area: Math.abs(a) / 2, vh };
+}
+const F = 2 * PROFILE_POINTS;
+function load(ids: string[]) { return ids.map((id) => decodeCase(new Uint8Array(readFileSync(W + 'public/barrels/' + id + '.bin')))); }
+test('raw', () => {
+  const rows: string[] = [];
+  const sets: [string, string[], number, number, number[]][] = [
+    ['padang', ['periodic-padang19s-l12', 'pad19-a20-l12', 'pad19-a30-l12', 'pad19-a45-l12'], 1 / 19, 7, [0.9, 1.4, 2.1, 3.1]],
+    ['canyon', ['periodic-canyon23-a29-l13', 'periodic-canyon23-a38-l13', 'periodic-canyon23-a49-l13'], 1 / 23, 6, [1.27, 1.6, 1.86, 2.2, 2.52]],
+  ];
+  for (const [spot, ids, slope, h0, feet] of sets) {
+    const cases = load(ids);
+    rows.push(`## ${spot}`);
+    for (const c of cases) {
+      const n = c.frames.length / F;
+      const hf = heldFrame(c);
+      const tdFrame = Math.round((c.touchdown - c.tauStart) / c.tauStep);
+      let crossedPre = 0, crossedOpen = 0, crossedPost = 0, crossedOpenToHeld = 0;
+      const heldIndex = Math.round((hf.tau - c.tauStart) / c.tauStep);
+      for (let f = 0; f < n; f++) {
+        const fr = c.frames.subarray(f * F, (f + 1) * F);
+        const k = crossings(fr, 0, PROFILE_POINTS - 1);
+        const tau = c.tauStart + f * c.tauStep;
+        if (k > 0) { if (tau < 0) crossedPre++; else if (tau <= c.touchdown) crossedOpen++; else crossedPost++; if (tau >= 0 && f <= heldIndex) crossedOpenToHeld++; }
+      }
+      const fr = c.frames.subarray(heldIndex * F, (heldIndex + 1) * F);
+      const m = measure(fr);
+      rows.push(`${c.id}: A0 ${c.nonlinearity} frames ${n} tauStart ${c.tauStart.toFixed(3)} step ${c.tauStep.toFixed(4)} touchdown ${c.touchdown.toFixed(3)} (frame ${tdFrame}); held tau ${hf.tau.toFixed(3)} (frame ${heldIndex}, ${(tdFrame - heldIndex)} before TD) clear ${hf.clear} voidH ${(hf.voidHeight).toFixed(4)} h0; crossed frames pre/open/post ${crossedPre}/${crossedOpen}/${crossedPost}, open..held ${crossedOpenToHeld}; at held: H ${m.H.toFixed(3)} h0, lip ${(m.lipMedian / m.H).toFixed(3)} H (max ${(m.lipMax / m.H).toFixed(3)}), tip ${(m.tip / m.H).toFixed(3)} H, void ${(m.area / m.H / m.H).toFixed(3)} H^2, vert void ${(m.vh / m.H).toFixed(3)} H (${(m.vh * h0).toFixed(2)} m at h0 ${h0})`);
+    }
+    const lib = new ProfileLibrary(cases, {});
+    const out = new Float32Array(F);
+    // per foot height, at fractions of touchdown with the clear hold
+    for (const foot of feet) {
+      const q = { slope, footHeight: foot, footDepth: h0, seconds: 0 };
+      const probe = lib.profileAt({ ...q, hold: 'contact' }, out);
+      const td = probe.touchdownSeconds, clear = probe.clearSeconds;
+      for (const f of [0.3, 0.5, 0.8, 0.95, 1.0]) {
+        const l = lib.profileAt({ ...q, seconds: f * td, hold: 'contact' }, out);
+        const m = measure(out);
+        rows.push(`  foot ${foot} m (A0 ${(foot / h0).toFixed(3)}) case ${l.caseId}${l.clamped ? ' (clamped)' : ''} tau ${(f * td).toFixed(2)}/${td.toFixed(2)} s (clear ${clear.toFixed(2)}): H ${m.H.toFixed(2)} m, lip ${(m.lipMedian / m.H).toFixed(3)} H = ${m.lipMedian.toFixed(2)} m, tip ${(m.tip / m.H).toFixed(3)} H, void ${(m.area / m.H / m.H).toFixed(3)} H^2, vertical void ${m.vh.toFixed(2)} m, crossings ${crossings(out)}`);
+      }
+    }
+    // blend grid crossings
+    let total = 0, crossed = 0; const where: string[] = [];
+    for (let foot = feet[0] * 0.9; foot <= feet[feet.length - 1] * 1.05; foot += 0.05) {
+      const q = { slope, footHeight: foot, footDepth: h0, seconds: 0 };
+      const t = lib.profileTimes(q);
+      for (let s = -2.5; s <= t.touchdownSeconds + 0.6; s += 0.02) {
+        lib.profileAt({ ...q, seconds: s, hold: 'contact' }, out);
+        total++;
+        const k = crossings(out, 0, PROFILE_POINTS - 1);
+        if (k > 0) { crossed++; if (where.length < 30) where.push(`foot ${foot.toFixed(2)} s ${s.toFixed(2)} (td ${t.touchdownSeconds.toFixed(2)}) k ${k}`); }
+      }
+    }
+    rows.push(`  blend grid (hold contact): ${crossed} of ${total} profiles cross; first: ${where.join('; ')}`);
+  }
+  writeFileSync(OUT + 'raw.txt', rows.join('\n'));
+});

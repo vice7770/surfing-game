@@ -1,0 +1,9 @@
+dx  -4.0: fell standing (lost board)   pop 5.60 ahead 2.96 frac 0.78 slope 19.2 speed 5.58/6.97 | push load -1.25…4.48 heave rms 0.036 m/s a frame
+dx  -2.9: fell standing (lost board)   pop 5.62 ahead 2.91 frac 0.79 slope 19.1 speed 5.57/6.95 | push load -1.13…2.73 heave rms 0.036 m/s a frame
+dx  -1.7: fell standing (lost board)   pop 5.65 ahead 2.88 frac 0.80 slope 18.8 speed 5.56/6.94 | push load -0.51…3.05 heave rms 0.062 m/s a frame
+dx  -0.6: fell standing (lost board)   pop 5.68 ahead 2.83 frac 0.80 slope 18.6 speed 5.55/6.98 | push load 0.17…1.81 heave rms 0.030 m/s a frame
+dx   0.6: fell popping up (balance)    pop 5.68 ahead 2.85 frac 0.80 slope 18.5 speed 5.51/6.94 | push load -10.76…35.81 heave rms 0.102 m/s a frame
+dx   1.7: fell standing (lost board)   pop 5.70 ahead 2.84 frac 0.80 slope 18.3 speed 5.49/6.95 | push load 0.12…1.76 heave rms 0.026 m/s a frame
+dx   2.9: fell standing (balance)      pop 5.72 ahead 2.83 frac 0.80 slope 18.2 speed 5.49/6.97 | push load -0.19…1.83 heave rms 0.023 m/s a frame
+dx   4.0: fell standing (lost board)   pop 5.73 ahead 2.82 frac 0.81 slope 18.0 speed 5.49/6.98 | push load 0.35…1.67 heave rms 0.022 m/s a frame
+canyon big: 8 riders: rode 0, fell popping up 1, other 7

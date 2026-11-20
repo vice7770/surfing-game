@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Maneuver } from '../game/rideAnalysis';
-import { breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, stanceReadout } from './RideHud';
+import { balanceLimitLabel, breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, showsSprintBar, stanceReadout } from './RideHud';
 
 // P9: on by default in Practice, off in natural seas (the spec).
 describe('showsBalanceMeter', () => {
@@ -13,7 +13,8 @@ describe('showsBalanceMeter', () => {
 });
 
 const turn = (kind: Maneuver['kind'], start: number): Maneuver => ({
-  kind, start, end: start + 1, yaw: 1.7, peakYawRate: 1.9, speedIn: 7, speedOut: 6.4, radius: 3.8, lateralG: 1.4, roll: 0.7, faceFraction: 0.3, pocket: false,
+  kind, start, end: start + 1, yaw: 1.7, peakYawRate: 1.9, speedIn: 7, speedOut: 6.4, radius: 3.8, lateralG: 1.4,
+  pathYaw: 1.7, throughWater: 7, roll: 0.7, faceFraction: 0.3, pocket: false,
 });
 
 describe('maneuverCallout', () => {
@@ -26,6 +27,14 @@ describe('maneuverCallout', () => {
 
   it('forgets the last one between rides, so the next ride’s first turn is called', () => {
     expect(maneuverCallout(undefined, 'bottom turn@2.00')).toEqual({ key: '' });
+  });
+
+  // 2026-11-19: a run the analyzer refused to name is not shouted at the player, but the key still moves on, so the
+  // manoeuvre after it is called out as its own.
+  it('says nothing for an unjudged run, and calls the manoeuvre after it', () => {
+    const quiet = maneuverCallout(turn('unjudged', 2), '');
+    expect(quiet).toEqual({ key: 'unjudged@2.00' });
+    expect(maneuverCallout(turn('bottom turn', 3.5), quiet.key).text).toBe('BOTTOM TURN');
   });
 });
 
@@ -68,10 +77,65 @@ describe('stanceReadout', () => {
     expect(stanceReadout({ crouch: 0.4, compress: 0.2 }).level).toBe('crouch');
     expect(stanceReadout({ crouch: 0.1 }).level).toBe('normal');
     expect(stanceReadout({}).level).toBe('normal');
+    // The snap stance: Snap wins over Compress and the crouch held with it, and its weight is on the tail.
+    expect(stanceReadout({ crouch: 1, compress: 1, snap: 0.6, trim: 0.5 })).toEqual({ level: 'snap', weight: -1 });
+    expect(stanceReadout({ compress: 1, snap: 0.4 }).level).toBe('compress');
   });
 
   it('shows the weight always, and the rotation only when the pad asks for one', () => {
     expect(stanceReadout({ trim: -1.4 })).toEqual({ level: 'normal', weight: -1 });
     expect(stanceReadout({ trim: 0.5, rotate: 0.3 })).toEqual({ level: 'normal', weight: 0.5, rotate: 0.3 });
+  });
+});
+
+// The sprint paddle's bar (the owner's choices of 2026-10-22): while paddling, below full; gone once full.
+describe('showsSprintBar', () => {
+  const sprint = (reserve: number, paddling: boolean) => ({ reserve, spent: reserve === 0, paddling, sprinting: false });
+  it('shows while the rider paddles with the reserve below full, and not otherwise', () => {
+    expect(showsSprintBar(sprint(0.6, true))).toBe(true);
+    expect(showsSprintBar(sprint(0, true))).toBe(true);
+    expect(showsSprintBar(sprint(1, true))).toBe(false);
+    expect(showsSprintBar(sprint(0.6, false))).toBe(false);
+    expect(showsSprintBar(undefined)).toBe(false);
+  });
+});
+
+/**
+ * Step 3.2v: **which** of the balance's three limits the meter names. The meter has always drawn only their minimum,
+ * so it said how close the rider was and nothing about why — and the three are three different falls, which is what
+ * the owner's own fall taxonomy turns on. Measured over 30 runs, the capture point's margin bound in every one and the
+ * weight left the feet across the board in every one, with the feet still holding 86-91 % of their grip, so the label
+ * carries real information rather than restating the bar.
+ */
+describe('balanceLimitLabel', () => {
+  it('names the nearest limit while standing', () => {
+    const ride = (limit: 'margin' | 'grip' | 'knee' | 'posture') => ({ phase: 'standing', balanceLimit: { limit } });
+    expect(balanceLimitLabel(ride('margin'), 'metric')).toBe('Weight');
+    expect(balanceLimitLabel(ride('grip'), 'metric')).toBe('Grip');
+    expect(balanceLimitLabel(ride('knee'), 'metric')).toBe('Knees');
+    // The old rider and a prone one have one number with no three terms behind it.
+    expect(balanceLimitLabel(ride('posture'), 'metric')).toBe('Balance');
+  });
+
+  it('names the limit that let go, and the speed, once the rider is off the board', () => {
+    const fallen = { phase: 'fallen' as const, broke: { limit: 'margin' as const, across: true, speed: 8 } };
+    expect(balanceLimitLabel(fallen, 'metric')).toBe('Weight off the side — 29km/h');
+    // Not across: the same limit without the side.
+    expect(balanceLimitLabel({ ...fallen, broke: { ...fallen.broke, across: false } }, 'metric')).toBe('Weight — 29km/h');
+    // A grip failure off the board is a different fall and says so.
+    expect(balanceLimitLabel({ ...fallen, broke: { limit: 'grip', across: true, speed: 8 } }, 'metric')).toBe('Grip off the side — 29km/h');
+  });
+
+  it('says nothing when there is nothing to say, which hides the line', () => {
+    expect(balanceLimitLabel(undefined, 'metric')).toBe('');
+    // Paddling, before any fall.
+    expect(balanceLimitLabel({ phase: 'prone' }, 'metric')).toBe('');
+    // Standing on a status that carries no limits (the dev fixtures, and any older snapshot).
+    expect(balanceLimitLabel({ phase: 'standing' }, 'metric')).toBe('');
+  });
+
+  it('prefers standing over the last fall, so a new ride is not labelled by the old one', () => {
+    const ride = { phase: 'standing' as const, balanceLimit: { limit: 'knee' as const }, broke: { limit: 'margin' as const, across: true, speed: 8 } };
+    expect(balanceLimitLabel(ride, 'metric')).toBe('Knees');
   });
 });

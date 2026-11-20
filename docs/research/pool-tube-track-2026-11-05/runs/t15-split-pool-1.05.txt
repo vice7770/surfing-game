@@ -1,0 +1,197 @@
+pool straight Barrel, H 1.05 m at the feed, cases pool, switches {}, tubeFace {"anchor":true,"union":true,"lag":true,"clockRate":1.25,"thrownEnds":true,"continuity":true,"distance":true,"contour":true,"wallFlow":true,"contact":true,"cap":true,"merge":true,"guard":false,"track":true,"inertia":true,"retire":true,"buoy":true,"drop":true}; 3 periods after 50 s; CPU 1/60 s; 368 s wall
+reads 3208, fronts 10; H_s 0.87 / 1.13 / 1.42 m; drawn H (its crest over the solver's trough) 1.16 / 1.45 / 1.70 m; shift (the drawn crest ahead of the point) 1.03 / 1.90 / 2.66 m; the cases' own lowest less the solver's trough -0.25 / 0.00 / 0.01 m
+the contact's face anchor: {"shifts":0,"solverMisses":0,"caseMisses":0,"reads":0,"troughAtEnd":0,"caseTroughAtEnd":7681}; the front: joins 459, unbroken 0, lost 205, joined beside a front's end (`TubeFace.merge`) 0
+
+## Bar 1, support − solver ≥ −0.02 m on 100 % of face reads (0.05–1.0 H_s): 100.0 % of 38496; min -0.000 m; p0.1 -0.000
+- τ < −1 s (n 636): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.25: 0.00 (min -0.00) | 0.3: 0.00 (min -0.00) | 0.4: 0.01 (min -0.00) | 0.5: 0.06 (min -0.00) | 0.6: 0.14 (min -0.00) | 0.7: 0.22 (min 0.00) | 0.8: 0.25 (min 0.00) | 0.9: 0.17 (min 0.00) | 1: 0.00 (min -0.00)
+- τ −1…0 s (n 1130): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.25: 0.00 (min -0.00) | 0.3: 0.01 (min -0.00) | 0.4: 0.08 (min -0.00) | 0.5: 0.21 (min -0.00) | 0.6: 0.40 (min -0.00) | 0.7: 0.59 (min 0.00) | 0.8: 0.50 (min 0.00) | 0.9: 0.07 (min 0.00) | 1: 0.00 (min -0.00)
+- life 0–0.3 (n 394): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.25: 0.01 (min -0.00) | 0.3: 0.04 (min -0.00) | 0.4: 0.14 (min -0.00) | 0.5: 0.30 (min -0.00) | 0.6: 0.85 (min -0.00) | 0.7: 0.90 (min 0.40) | 0.8: 0.46 (min 0.00) | 0.9: 0.01 (min 0.00) | 1: 0.00 (min -0.00)
+- life 0.3–0.6 (n 369): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.25: 0.00 (min -0.00) | 0.3: 0.03 (min -0.00) | 0.4: 0.16 (min -0.00) | 0.5: 0.54 (min -0.00) | 0.6: 0.86 (min 0.32) | 0.7: 0.70 (min 0.25) | 0.8: 0.22 (min 0.01) | 0.9: 0.00 (min 0.00) | 1: 0.00 (min -0.00)
+- life 0.6–1 (n 556): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.25: 0.01 (min -0.00) | 0.3: 0.19 (min -0.00) | 0.4: 0.67 (min -0.00) | 0.5: 0.79 (min -0.00) | 0.6: 0.72 (min 0.10) | 0.7: 0.51 (min 0.10) | 0.8: 0.09 (min 0.00) | 0.9: 0.00 (min 0.00) | 1: 0.00 (min -0.00)
+- landed (n 123): 0.05: 0.00 (min -0.00) | 0.1: 0.00 (min -0.00) | 0.2: 0.00 (min -0.00) | 0.25: 0.00 (min -0.00) | 0.3: 0.11 (min -0.00) | 0.4: 0.26 (min -0.00) | 0.5: 0.46 (min -0.00) | 0.6: 0.45 (min 0.09) | 0.7: 0.33 (min 0.15) | 0.8: 0.05 (min 0.00) | 0.9: 0.00 (min 0.00) | 1: 0.00 (min -0.00)
+- the wall over the solver's slope (each read's most support − solver over its face points), p10 / p50 / p90 m: τ −1…−0.5 s 0.34 / 0.54 / 0.72 (n 576) | τ −0.5…−0.1 s 0.43 / 0.69 / 0.89 (n 462) | at the throw (|τ| < 0.1 s) 0.65 / 0.91 / 1.06 (n 193) | life 0–0.3 0.74 / 1.00 / 1.11 (n 394) | life 0.3–0.6 0.75 / 0.91 / 1.03 (n 369) | life 0.6–1 0.56 / 0.80 / 0.93 (n 556)
+
+## Bar 3, the cases' own lower face against the solver's (|gap| / H_s over 0.05–0.4 H_s, through life 0.6): p50 0.074 (≤ 0.05), p95 0.343 (≤ 0.15); n 15147
+- τ < −1 s: 0.05: -0.35 / -0.00 / 0.00 | 0.1: -0.36 / -0.04 / 0.05 | 0.2: -0.33 / -0.05 / 0.07 | 0.25: -0.31 / -0.04 / 0.08 | 0.3: -0.28 / -0.03 / 0.08 | 0.4: -0.21 / 0.00 / 0.12 m (case floor − solver, p10 / p50 / p90)
+- τ −1…0 s: 0.05: -0.28 / -0.00 / 0.04 | 0.1: -0.27 / -0.02 / 0.12 | 0.2: -0.23 / -0.02 / 0.15 | 0.25: -0.21 / -0.01 / 0.17 | 0.3: -0.17 / 0.01 / 0.20 | 0.4: -0.07 / 0.08 / 0.27 m (case floor − solver, p10 / p50 / p90)
+- life 0–0.3: 0.05: -0.25 / -0.00 / 0.03 | 0.1: -0.23 / -0.01 / 0.09 | 0.2: -0.17 / -0.00 / 0.12 | 0.25: -0.15 / 0.01 / 0.14 | 0.3: -0.11 / 0.04 / 0.18 | 0.4: -0.01 / 0.14 / 0.27 m (case floor − solver, p10 / p50 / p90)
+- life 0.3–0.6: 0.05: -0.21 / -0.00 / 0.01 | 0.1: -0.20 / -0.01 / 0.05 | 0.2: -0.17 / -0.03 / 0.09 | 0.25: -0.15 / -0.01 / 0.10 | 0.3: -0.13 / 0.02 / 0.15 | 0.4: -0.07 / 0.16 / 0.70 m (case floor − solver, p10 / p50 / p90)
+- life 0.6–1: 0.05: -0.19 / 0.00 / 0.00 | 0.1: -0.23 / -0.01 / 0.02 | 0.2: -0.25 / -0.02 / 0.11 | 0.25: -0.24 / 0.01 / 0.34 | 0.3: -0.24 / 0.19 / 0.43 | 0.4: -0.07 / 0.67 / 0.86 m (case floor − solver, p10 / p50 / p90)
+- landed: 0.05: -0.06 / 0.00 / 0.01 | 0.1: -0.13 / -0.01 / 0.02 | 0.2: -0.16 / -0.06 / 0.04 | 0.25: -0.18 / -0.04 / 0.24 | 0.3: -0.18 / 0.11 / 0.25 | 0.4: -0.15 / 0.26 / 0.54 m (case floor − solver, p10 / p50 / p90)
+
+## Bar 4, the support over the solver at points fixed in the wave's frame (-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5): (m from the solver's face crossing at 0.3 H_s): rise per 1/60 s step p50 / p99 / p99.9 / max 0.0035 / 0.0663 / 0.1786 / 0.365 m (≤ 0.02); steps over 0.02 m 5.1 % of 31010; under the solver by more than 0.02 m 0.0 %
+- on the lower face (−0.5…0.5 m): rise p99 / p99.9 / max 0.026 / 0.070 / 0.365 m; steps over 0.02 m 0.9 %
+- up the face (−3…−1 m): rise p99 / p99.9 / max 0.091 / 0.215 / 0.309 m; steps over 0.02 m 9.3 %
+the largest rises (over 0.2 m), up to 40: 
+  t 52.03 col 7 front 30:7 at -2.5 m: 0.28 → 0.74 m, τ 1.31, life 1.09, weight 0.50, shift 2.03, slice σ 23.8
+  t 53.87 col 13 front 32:13 at -0.5 m: 0.13 → 0.65 m, τ 0.65, life 0.55, weight 1.00, shift 1.55, slice σ 4.2
+  t 61.50 col 6 front 35:6 at -2.5 m: 0.07 → 0.57 m, τ 1.31, life 1.04, weight 0.61, shift 1.75, slice σ 21.2
+  t 65.00 col 16 front 35:16 at -2.5 m: 0.02 → 0.46 m, τ 1.26, life 1.00, weight 1.00, shift -0.57, slice σ 21.5
+  t 69.17 col 26 front 43:26 at -1.5 m: 0.62 → 1.10 m, τ 1.23, life 0.99, weight 1.00, shift 1.99, slice σ 7.1
+  t 70.17 col 3 front 45:3 at -2.5 m: 0.07 → 0.58 m, τ 1.20, life 0.90, weight 1.00, shift 1.25, slice σ 19.2
+  t 70.63 col 4 front 45:4 at -2.5 m: 0.08 → 0.51 m, τ 1.31, life 0.98, weight 1.00, shift 1.43, slice σ 21.4
+  t 71.30 col 6 front 45:6 at -2.5 m: 0.14 → 0.75 m, τ 1.22, life 0.93, weight 1.00, shift 1.17, slice σ 20.9
+  t 71.77 col 7 front 45:7 at -2.5 m: 0.04 → 0.49 m, τ 1.25, life 0.97, weight 1.00, shift 1.85, slice σ 21.1
+  t 74.67 col 15 front 56:15 at -0.5 m: 0.58 → 1.06 m, τ 1.25, life 0.98, weight 0.97, shift 0.91, slice σ 20.1
+  t 77.53 col 23 front 60:23 at -0.5 m: 0.26 → 0.98 m, τ 0.83, life 0.62, weight 1.00, shift 2.86, slice σ 16.2
+each point's first clock -1.77 / -1.69 / -0.69 s; its time from first seen to its throw 1.29 / 1.55 / 2.21 s (n 177)
+
+## Bar 5, air under the lip over the support at life 0.1–0.8: > 0 on 91.9 % (≥ 90 %); p10 / p50 / p90 0.02 / 0.29 / 0.46 m; the cases' own gap 0.07 / 0.40 / 0.55 m; p50 ratio 0.73 (0.7–1.3)
+- life 0–0.3: air 0.01 / 0.34 / 0.47 m, > 0 90.6 %; the cases' own 0.11 / 0.44 / 0.54 m
+- life 0.3–0.6: air 0.02 / 0.34 / 0.48 m, > 0 91.6 %; the cases' own 0.06 / 0.47 / 0.56 m
+- life 0.6–1: air 0.00 / 0.13 / 0.25 m, > 0 84.5 %; the cases' own 0.08 / 0.28 / 0.38 m
+
+## Bar 6, touchdown (each column-wave's first read past life 1; n 58): the solver's breaking ≥ 0.3 within ±0.5 H_s of the tip on 75.9 % (≥ 90 %), its strength 0.00 / 1.00 / 1.00; the tip ahead of the drawn crest 1.63 / 2.02 / 2.59 H_s, within 0.6–1.5 on 0.0 %; in the drawn H 1.64 / 1.86 / 2.30, within 0.6–1.5 on 1.7 %
+
+## Bar 7, the clock after the throw (every thrown point, step to step): p50 1.000× (0.95–1.05), p95 1.169× (≤ 1.25), max 1.250×, at the cap (≥ 1.24×) 4.5 %, n 12720; open time in the solver's time per point (its τ 0 → touchdown) 1.18 / 1.24 / 1.30 s against its case's 1.21 / 1.26 / 1.31 s, ratio p50 0.990, within ±15 % 100.0 % (n 166); at a fixed reef column (points travel along the reef as they come shoreward) 0.49 / 0.58 / 0.66 s (n 53)
+
+## Bar 8, geometry: folds (overlaps) a build 0.017, holes (open overlaps) 0.000, least ray advance 0.0048 m; |dδ/dσ| p50 / p95 0.410 / 0.949 (≤ 0.3); slices with no face crossing (the crest anchor stood) 0.0 %; the saddle 0.00 / 0.09 / 0.20 m, in H_s p50 / p95 / max 0.079 / 0.177 / 0.608 (≤ 0.1)
+
+## Bar 10, the ledger over the run: throws 169, thrown 47.04 m³ of 47.06 asked, crashes 161, foreseen 1, exits 0, missed 0; lip launches 391; the meter {"typical":1.6038095805304264,"sets":1.6038095805304264,"waves":3}
+the crash's counts (cumulative from the start): {"onsets":1140,"throws":391,"asked":94.45525224351762,"thrown":94.43397305264205,"starved":31,"starvedVolume":0.021279190875562543,"crashes":380,"late":0,"missed":0,"covered":3,"foreseen":2,"exits":0,"exitJets":0,"fadeExits":0,"fadeExitJets":0,"lost":0,"paceSlow":0,"paceFast":0,"paceUnmeasured":0,"gated":60959}
+
+## Bar 12, cost (Node, this M1, under shared load): the contact's update a step p50 / p90 9.16 / 12.64 ms; the drawing's loft build p50 / p90 6.08 / 8.44 ms
+
+## Bars 2 and 9, bodies at s 55 in trim (peel 6.72 / 7.80 / 7.81 m/s), no input, each on its own water's surface: game's water | solver's alone; "dropped": its bottom more than 0.1 m under its water's support from where it started; "under the solver's surface": the same against the solver's surface (a fall through the face)
+the game's riders' causes: lost board 22, balance 11, foot slip 1; the solver's: lost board 23
+- ahead 0.3 s, board at 0.3 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 0.63 | 0.00 m; under the solver's surface > 0.1 m 1 | 0, most p90 0.11 | 0.00 m; the game's support over the solver's under it, most p50 / p90 1.02 / 1.08 m
+- ahead 0.3 s, board at 0.6 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 0.60 | 0.01 m; under the solver's surface > 0.1 m 3 | 0, most p90 0.48 | 0.01 m; the game's support over the solver's under it, most p50 / p90 0.97 / 1.02 m
+- ahead 0.3 s, prone at 0.3 of the face: n 3; dropped > 0.1 m 2 | 0; most dropped p90 1.07 | 0.01 m; under the solver's surface > 0.1 m 2 | 0, most p90 1.19 | 0.01 m; the game's support over the solver's under it, most p50 / p90 0.12 / 0.15 m; on at 3 s 2 | 3; fell at p50 2.92 | — s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- ahead 0.3 s, prone at 0.6 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 0.23 | 0.00 m; under the solver's surface > 0.1 m 3 | 0, most p90 0.25 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.46 / 0.49 m; on at 3 s 0 | 3; fell at p50 0.13 | — s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- ahead 0.3 s, rider at 0.3 of the face: n 3; dropped > 0.1 m 0 | 0; most dropped p90 0.03 | 0.00 m; under the solver's surface > 0.1 m 0 | 0, most p90 0.02 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.11 / 0.13 m; on at 3 s 0 | 0; fell at p50 0.27 | 0.40 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- ahead 0.3 s, rider at 0.6 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 1.01 | 0.00 m; under the solver's surface > 0.1 m 3 | 0, most p90 0.65 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.81 / 0.96 m; on at 3 s 0 | 0; fell at p50 0.92 | 0.42 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- throw, board at 0.3 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 0.57 | 0.01 m; under the solver's surface > 0.1 m 2 | 0, most p90 0.21 | 0.01 m; the game's support over the solver's under it, most p50 / p90 0.94 / 1.02 m
+- throw, board at 0.6 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 0.68 | 0.03 m; under the solver's surface > 0.1 m 3 | 0, most p90 0.65 | 0.03 m; the game's support over the solver's under it, most p50 / p90 0.98 / 1.00 m
+- throw, prone at 0.3 of the face: n 3; dropped > 0.1 m 2 | 0; most dropped p90 0.94 | 0.01 m; under the solver's surface > 0.1 m 2 | 0, most p90 0.96 | 0.01 m; the game's support over the solver's under it, most p50 / p90 0.15 / 0.20 m; on at 3 s 0 | 3; fell at p50 1.72 | — s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- throw, prone at 0.6 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 0.70 | 0.01 m; under the solver's surface > 0.1 m 2 | 0, most p90 0.80 | 0.01 m; the game's support over the solver's under it, most p50 / p90 0.64 / 0.94 m; on at 3 s 0 | 3; fell at p50 0.20 | — s; lip on head or torso before touchdown 1, of them fell within 0.5 s 1
+- throw, rider at 0.3 of the face: n 3; dropped > 0.1 m 0 | 0; most dropped p90 0.03 | 0.00 m; under the solver's surface > 0.1 m 0 | 0, most p90 0.04 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.11 / 0.19 m; on at 3 s 0 | 0; fell at p50 0.18 | 0.42 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- throw, rider at 0.6 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 1.05 | 0.00 m; under the solver's surface > 0.1 m 2 | 0, most p90 0.66 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.75 / 0.96 m; on at 3 s 0 | 0; fell at p50 0.37 | 0.38 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- open, life 0.3, board at 0.3 of the face: n 3; dropped > 0.1 m 3 | 0; most dropped p90 0.58 | 0.00 m; under the solver's surface > 0.1 m 2 | 0, most p90 0.24 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.95 / 1.03 m
+- open, life 0.3, board at 0.6 of the face: n 3; dropped > 0.1 m 2 | 0; most dropped p90 0.29 | 0.02 m; under the solver's surface > 0.1 m 3 | 0, most p90 1.36 | 0.02 m; the game's support over the solver's under it, most p50 / p90 0.92 / 1.07 m
+- open, life 0.3, prone at 0.3 of the face: n 3; dropped > 0.1 m 0 | 0; most dropped p90 0.09 | 0.07 m; under the solver's surface > 0.1 m 0 | 0, most p90 0.09 | 0.07 m; the game's support over the solver's under it, most p50 / p90 0.22 / 0.25 m; on at 3 s 0 | 0; fell at p50 0.82 | 1.47 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- open, life 0.3, prone at 0.6 of the face: n 3; dropped > 0.1 m 0 | 1; most dropped p90 0.01 | 0.28 m; under the solver's surface > 0.1 m 0 | 1, most p90 0.03 | 0.28 m; the game's support over the solver's under it, most p50 / p90 0.92 / 1.07 m; on at 3 s 0 | 1; fell at p50 0.15 | 2.32 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+- open, life 0.3, rider at 0.3 of the face: n 3; dropped > 0.1 m 0 | 0; most dropped p90 0.04 | 0.00 m; under the solver's surface > 0.1 m 0 | 0, most p90 0.07 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.12 / 0.22 m; on at 3 s 0 | 0; fell at p50 0.22 | 0.38 s; lip on head or torso before touchdown 1, of them fell within 0.5 s 1
+- open, life 0.3, rider at 0.6 of the face: n 3; dropped > 0.1 m 0 | 0; most dropped p90 0.00 | 0.00 m; under the solver's surface > 0.1 m 0 | 0, most p90 0.00 | 0.00 m; the game's support over the solver's under it, most p50 / p90 0.92 / 1.07 m; on at 3 s 0 | 0; fell at p50 0.17 | 0.48 s; lip on head or torso before touchdown 0, of them fell within 0.5 s 0
+
+# Step 7, the re-ruled bars (the advisor's 2026-11-04 ruling §4)
+## Bar 2a, no overrun: outside the lip's water, the bottom under the support p99 0.829 m (≤ 0.15), p99.9 1.130, max 1.156 m, n 4669; bodies more than 0.15 m under for over 0.1 s: 30 of 54, the longest 1.733 s
+- ahead 0.3 s: under p99 1.015 m, runs over 0.1 s 12 of 18; at 0.3 H_s 0.995, at 0.6 1.041 m
+- throw: under p99 0.829 m, runs over 0.1 s 14 of 18; at 0.3 H_s 0.838, at 0.6 0.804 m
+- open, life 0.3: under p99 0.522 m, runs over 0.1 s 4 of 18; at 0.3 H_s 0.536, at 0.6 0.285 m
+## Bar 2b, lone boards and prone riders at 0.3 H_s, ahead and at the throw, within 0.1 m of the support to touchdown: 50.0 % of 12 (≥ 80 %), lip hits apart 0; by kind: board 4 of 6 (drop p50 / p90 0.04 / 0.57 m); prone 2 of 6 (drop p50 / p90 0.20 / 0.27 m, off before touchdown 1)
+## Bar 2c (information), bodies at 0.6 H_s pitched into the lip's water before touchdown: 0.0 % of 27; board 0 of 9, prone 0 of 9, rider 0 of 9
+## Bar 3, the cases' own lower face against the solver's over 0.05–0.25 H_s (below the anchor), through life 0.6: p50 0.067 (≤ 0.05), p95 0.352 (≤ 0.15), n 10089; over 0.3–0.4 H_s (information) p50 0.087, p95 0.295
+## Bar 4a, below the anchor (0.5, 1, 1.5 m shoreward of the solver's 0.3 H_s crossing): rise p99 0.0136 m a step (≤ 0.02), p99.9 0.0378, max 0.046; steps over 0.02 m 0.2 % of 9303
+## Bar 4b, continuity: the case's crest's place along each point's ray (W = S·n + δ, the shift as the contact placed its case) against the wave's advance C Δt, |ΔW − C Δt| a step p50 / p99 / p99.9 / max 0.0130 / 0.1061 / 0.1681 / 1.401 m (p99 ≤ 0.03), over 0.03 m 16.9 % of 67946
+- the case's crest's speed along the ray over the wave's advance there, p5 / p50 / p95 0.723 / 0.986 / 1.552
+- the shift δ itself (from the point, a crest cell's centre stepping 1 m rows along its column), its change a step p50 / p99 / max 0.0977 / 0.8449 / 3.214 m, over 0.03 m 79.2 %
+- crest-anchor fallbacks after a point's first face anchor (0): 0 steps, 0 of 215 faced points
+- the pre-throw clock (0.5–1.5× real time; no holds over 0.1 s): p1 / p5 / p50 / p95 / p99 0.500 / 0.500 / 1.094 / 1.500 / 1.500×, within 0.5–1.5 100.0 % of 18315; holds over 0.1 s 0 (0 points)
+- the slice's weight (formation and retirement), its change a step p99 / max 0.0556 / 0.0556 (≤ 1/18 = 0.0556), over it 0.0 % of 68475
+## The 40 largest rises at the fixed points, by cause (rise p50 0.164 m a step, smallest 0.131): within a front end's blend (5.3 m) 7, the drawn crest moving against the solver's lower face (> 0.035 m a step) 27, clock jump or hold 2, weight change (> 0.05 a step) 3, the overturn passing (after the throw) 1; at weight ≥ 0.9 31, after the throw 37, from the solver's own surface the read before 1, within 5.3 m of the front's start 2
+  - 0.365 m (within a front end's blend (5.3 m); Δ(crest − lower face) 0.012, Δweight 0.000, Δτ 0.030): t 77.53 col 23 front 60:23 at -0.5 m: 0.26 → 0.98 m, τ 0.83, life 0.62, weight 1.00, shift 2.86, slice σ 16.2
+  - 0.309 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.547, Δweight 0.000, Δτ 0.360): t 71.30 col 6 front 45:6 at -2.5 m: 0.14 → 0.75 m, τ 1.22, life 0.93, weight 1.00, shift 1.17, slice σ 20.9
+  - 0.261 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.341, Δweight 0.000, Δτ 0.160): t 53.87 col 13 front 32:13 at -0.5 m: 0.13 → 0.65 m, τ 0.65, life 0.55, weight 1.00, shift 1.55, slice σ 4.2
+  - 0.256 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.573, Δweight 0.000, Δτ 0.363): t 70.17 col 3 front 45:3 at -2.5 m: 0.07 → 0.58 m, τ 1.20, life 0.90, weight 1.00, shift 1.25, slice σ 19.2
+  - 0.252 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.162, Δweight -0.386, Δτ 0.257): t 61.50 col 6 front 35:6 at -2.5 m: 0.07 → 0.57 m, τ 1.31, life 1.04, weight 0.61, shift 1.75, slice σ 21.2
+  - 0.240 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.075, Δweight -0.032, Δτ 0.040): t 74.67 col 15 front 56:15 at -0.5 m: 0.58 → 1.06 m, τ 1.25, life 0.98, weight 0.97, shift 0.91, slice σ 20.1
+  - 0.237 m (within a front end's blend (5.3 m); Δ(crest − lower face) 0.033, Δweight 0.000, Δτ 0.034): t 69.17 col 26 front 43:26 at -1.5 m: 0.62 → 1.10 m, τ 1.23, life 0.99, weight 1.00, shift 1.99, slice σ 7.1
+  - 0.229 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.080, Δweight -0.067, Δτ 0.010): t 52.03 col 7 front 30:7 at -2.5 m: 0.28 → 0.74 m, τ 1.31, life 1.09, weight 0.50, shift 2.03, slice σ 23.8
+  - 0.228 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.888, Δweight 0.000, Δτ 0.408): t 71.77 col 7 front 45:7 at -2.5 m: 0.04 → 0.49 m, τ 1.25, life 0.97, weight 1.00, shift 1.85, slice σ 21.1
+  - 0.221 m (clock jump or hold; Δ(crest − lower face) -0.012, Δweight 0.000, Δτ 0.449): t 65.00 col 16 front 35:16 at -2.5 m: 0.02 → 0.46 m, τ 1.26, life 1.00, weight 1.00, shift -0.57, slice σ 21.5
+  - 0.215 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.422, Δweight 0.000, Δτ 0.320): t 70.63 col 4 front 45:4 at -2.5 m: 0.08 → 0.51 m, τ 1.31, life 0.98, weight 1.00, shift 1.43, slice σ 21.4
+  - 0.191 m (the drawn crest moving against the solver's lower face (> 0.035 m a step); Δ(crest − lower face) 0.879, Δweight 0.000, Δτ 0.369): t 71.63 col 7 front 45:7 at -2.5 m: 0.13 → 0.52 m, τ 0.99, life 0.77, weight 1.00, shift 1.42, slice σ 19.4
+## Bar 5, usable clearance (held over 0.3 m along the ray) at life 0.3–0.9: p10 / p50 / p90 0.00 / 0.00 / 0.00 m; the cases' own 0.00 / 0.00 / 0.08 m, p50 ratio —; usable > 0 on 9.9 %; the max gap (information) 0.00 / 0.19 / 0.44 m (n 771)
+## Bar 6, touchdown on the solver's breaking ≥ 0.3: within ±0.5 H_s 75.9 % (≥ 85 %), within ±1 H_s 79.3 % (≥ 90 %); the distance as above
+## Bar 7, formation: each point's first clock against its case's earliest frame τ_e (-1.787 / -1.714 / -1.627 s): offset 0.013 / 0.025 / 0.948 s, within 0.1 s on 87.0 % of 216; (the post-throw clock and open time as above; the pre-throw clock under bar 4b)
+## Bar 8, re-ruled: holes 0.000 a build (≤ 0.01), folds 0.017 (≤ 0.05), saddle p95 0.177 H_s (≤ 0.2); the rest as above
+the simulation's anchors (continueAnchor, cumulative over the process): {"kept":107632,"capped":0,"held":26,"stood":0,"eased":0,"crest":0,"gated":1684,"reacquired":646}; its face anchor's reads {"shifts":109988,"solverMisses":46,"caseMisses":0,"reads":6881336,"troughAtEnd":96947,"caseTroughAtEnd":25454}
+
+# The 2026-11-05 re-ruled bars (the advisor's advisor-ruling-2.md)
+## Bar 2a, along the nearest surface's normal, before the body's σ touchdown, outside the lip's water: p99 0.698 m (≤ 0.15), p99.9 1.100, max 1.125, n 3958; bodies over 0.15 m for more than 0.1 s: 25 of 54 (0), the longest 1.700 s; after touchdown (information, wipeouts): p50 / p99 0.002 / 0.273 m, n 711
+- board: p99 0.423 m, over 0.15 m for more than 0.1 s 15 of 18; ahead 0.3 s 0.442, throw 0.416, open, life 0.3 0.423
+- prone: p99 0.995 m, over 0.15 m for more than 0.1 s 5 of 18; ahead 0.3 s 1.092, throw 0.895, open, life 0.3 0.136
+- rider: p99 0.581 m, over 0.15 m for more than 0.1 s 5 of 18; ahead 0.3 s 0.592, throw 0.581, open, life 0.3 0.098
+- (information) leaving the surface, velocity up / shoreward along the ray p10 / p50 / p90: boards -1.04 / -1.04 / -1.04 / 5.82 / 5.82 / 5.82 m/s; prone 1.58 / 1.58 / 1.58 / 3.70 / 3.70 / 3.70 m/s
+## Bar 2b, passive lone boards and prone riders at 0.3 H_s, ahead and at the throw, to touchdown: overrun 66.7 % (≤ 20 %), carried + pitched 33.3 % (≥ 80 %); carried 2 (of them never touched down 1), pitched 2 (into the lip's water 0, off the surface 2), overrun 8 of 12; lip on head or torso (prone, kept apart) 0, overrun without them 66.7 %
+- board, ahead 0.3 s: carried 0 (of them never touched down 0), pitched 1 (into the lip's water 0, off the surface 1), overrun 2 of 3
+- board, throw: carried 1 (of them never touched down 0), pitched 0 (into the lip's water 0, off the surface 0), overrun 2 of 3
+- prone, ahead 0.3 s: carried 1 (of them never touched down 1), pitched 0 (into the lip's water 0, off the surface 0), overrun 2 of 3
+- prone, throw: carried 0 (of them never touched down 0), pitched 1 (into the lip's water 0, off the surface 1), overrun 2 of 3
+## Bar 2c (information), 0.6 H_s bodies to touchdown: carried 0 (of them never touched down 0), pitched 12 (into the lip's water 0, off the surface 12), overrun 15 of 27
+## Cost (information): the bodies' water samples a body step 630.0 on average (14466 body steps)
+## The risks: lone boards clear of the water before touchdown by more than 0.1 / 0.3 m (flung): 17 / 14 of 18, most clear p90 / max 0.900 / 0.997 m; the water's force on the hull turning past 90° in a step (both over half the board's weight): board 75 in 2547 steps, prone 1 in 1001 steps, rider 1 in 410 steps; the sampled normal turning over 30° in a step: board 34, prone 2, rider 2
+## Bar 3, one-sided below the anchor (0.05–0.25 H_s, through life 0.6): the case over the solver (a felt bump) p95 0.113 H_s (≤ 0.05), max 0.822 (≤ 0.1), over at all on 44.3 % of 10089; the case under the solver (information) p50 / p95 by τ: τ < −1 s 0.166 / 0.585 (n 1553), τ −1…0 s 0.157 / 0.361 (n 2400), life 0–0.6 0.082 / 0.333 (n 1668)
+## Bar 4b, re-ruled: jitter |ΔW_n − ΔW_(n−1)| p99 0.0394 m (≤ 0.005), max 0.140 (≤ 0.02), n 67687; against the case's own pace |ΔW − ΔW*| p99 0.1907 m (≤ 0.01), n 67922; single steps |ΔW − C Δt| over 0.1 m (consecutive steps): 791 (0), max 0.357 m, p99.9 0.1613; across a gap of unread steps (not one step's change) 24 reads, over 0.1 m 23, max 1.401; all reads as step 7 measured them, over 0.1 m 814, max 1.401; the cap engaged on 0.0 % of 66423 faced steps (≤ 10 %); the anchor's outcomes this run {"kept":66423,"capped":0,"held":0,"stood":0,"eased":0,"crest":0,"gated":1219,"reacquired":519}; |ΔW − C Δt| (information) p50 / p99 / p99.9 0.0130 / 0.1061 / 0.1681
+- (information) the target's own step against the wave's advance |ΔW* − C Δt|, p50 / p90 / p99: inside a front (3 points or more from its ends) 0.0243 / 0.0699 / 0.1588 m (n 51158); within 3 points of its ends 0.0377 / 0.1250 / 0.3136 m (n 16764)
+  - t 58.817 (over 17 steps) point 298 front 38 (was 30) at its front's start: |ΔW − CΔt| 1.401 m; Δshift -0.911, moved along the ray 2.457 (Δx 0.00, Δz 3.00), anchor gated, target 1.265 (was 2.469), τ 2.158, thrown true, C Δt 0.1458
+  - t 68.750 (over 11 steps) point 380 front 44 at its front's end: |ΔW − CΔt| 1.023 m; Δshift 0.369, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 2.610 (was 2.396), τ -0.735, thrown false, C Δt 0.0533
+  - t 77.017 (over 11 steps) point 418 front 56 at its front's inside: |ΔW − CΔt| 0.991 m; Δshift 3.214, moved along the ray -2.127 (Δx 0.00, Δz -2.27), anchor kept, target 2.105 (was -1.206), τ 1.539, thrown true, C Δt 0.0951
+  - t 68.567 (over 11 steps) point 380 front 44 at its front's end: |ΔW − CΔt| 0.847 m; Δshift 0.192, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 2.396 (was 1.955), τ -0.976, thrown false, C Δt 0.0521
+  - t 68.383 (over 11 steps) point 380 front 44 at its front's end: |ΔW − CΔt| 0.731 m; Δshift 0.075, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 1.955 (was 1.622), τ -1.216, thrown false, C Δt 0.0510
+  - t 68.933 (over 10 steps) point 380 front 44 at its front's end: |ΔW − CΔt| 0.720 m; Δshift 0.068, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 2.845 (was 2.901), τ -0.502, thrown false, C Δt 0.0550
+  - t 69.117 (over 10 steps) point 380 front 44 at its front's end: |ΔW − CΔt| 0.714 m; Δshift 0.063, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 3.069 (was 3.059), τ -0.277, thrown false, C Δt 0.0562
+  - t 69.300 (over 10 steps) point 380 front 44 at its front's end: |ΔW − CΔt| 0.681 m; Δshift 0.031, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 3.183 (was 3.238), τ -0.058, thrown false, C Δt 0.0568
+  - t 69.117 (over 10 steps) point 373 front 44 at its front's start: |ΔW − CΔt| 0.653 m; Δshift 0.004, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 2.991 (was 3.121), τ -0.397, thrown false, C Δt 0.0579
+  - t 69.300 (over 10 steps) point 373 front 44 at its front's start: |ΔW − CΔt| 0.637 m; Δshift -0.012, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 3.087 (was 3.154), τ -0.217, thrown false, C Δt 0.0583
+  - t 68.933 (over 10 steps) point 373 front 44 at its front's start: |ΔW − CΔt| 0.630 m; Δshift -0.020, moved along the ray 0.707 (Δx 0.00, Δz 1.00), anchor kept, target 2.910 (was 3.053), τ -0.522, thrown false, C Δt 0.0572
+  - t 77.267 (over 7 steps) point 421 front 60 (was 56) at its front's inside: |ΔW − CΔt| 0.604 m; Δshift 2.813, moved along the ray -2.116 (Δx 0.00, Δz -2.24), anchor kept, target 2.074 (was -0.818), τ 1.564, thrown true, C Δt 0.0935
+## The ledger, re-ruled: crests thrown more than once 0 of 176 (0); thrown points unbroken at touchdown 93 of 170 touchdowns, their jets pouring 90 (0) (returned to their crests by the guard: —), of them flagged while the solver breaks at their crest 43, their retirement then 0.00 / 0.00 / 0.00; starved 0.05 % of the 47.1 m³ asked (≤ 5 %); bar 6 per jet: on the solver's breaking ≥ 0.3 within ±0.5 H_s 67.7 %, within ±1 H_s 68.3 % of 161 jets (14 unread); the meter as above (±5 % of main); the jets against main (information): 169
+## Bar 8, re-ruled: holes 0.0000 a build (≤ 0.01), at weight ≥ 0.5 0 (0); folds (information) 0.017, overlapping open strips both kept (`TubeFace.merge`) 0.0000 a build; the first holes:
+
+# Ruling 3's bars (the advisor's advisor-ruling-3.md)
+## The wall-water step, the water at a body's bottom step to step before its touchdown, p50 / p90 / p99 m/s: in the case's wall 0.067 / 0.718 / 6.643 (p99 ≤ 1), n 1744; crossing in or out of it 0.023 / 0.031 / 1.812 (p99 ≤ 1), n 22; the solver's (information) 0.023 / 0.025 / 0.089, n 51; the lip's water (information) —, n 0; lone boards alone: in the wall 0.209 / 2.374 / 8.193 (n 572), crossing 0.021 / 0.025 / 0.064 (n 15), elsewhere 0.023 / 0.025 / 0.089
+- (information) the case's surface's own speed over 12 m/s (up, or along the ray off C), by profile index (8 a bin; E 3, the crest 32, the lip 64, the throat 88, the toe 112): -8: 348, 0: 844, 8: 783, 16: 681, 24: 849, 32: 918, 40: 784, 48: 497, 56: 290, 64: 336, 72: 336, 80: 336, 88: 301, 96: 558, 104: 759, 112: 888, 120: 928, 128: 348 of 2236192 vertices
+- (information) the 12 largest steps in the wall, before and after:
+  - 11.91 m/s, board open, life 0.3 0.3 t 53.450:
+      before y 0.439 plain 0.233 case 0.992 low 0.07 top 1.05 along 0.51 up 0.00 C 5.07 B 1.00 w 1.00 n -0.63,-0.70,0.34 depth 0.038 ahead 1.00 life 0.51 flow 1.90,-3.35,-3.37
+      after  y 0.451 plain 0.248 case 0.999 low 0.07 top 1.04 along 5.00 up 0.25 C 5.21 B 1.00 w 1.00 n -0.43,0.06,0.90 depth 0.354 ahead 1.00 life 0.52 flow -1.22,5.47,4.01
+  - 11.36 m/s, board throw 0.3 t 63.433:
+      before y 0.644 plain 0.216 case 1.145 low 0.09 top 1.20 along 0.03 up 0.00 C 4.68 B 1.00 w 1.00 n -0.40,-0.88,0.27 depth 0.019 ahead 1.00 life 0.43 flow 2.19,-1.94,-3.71
+      after  y 0.661 plain 0.230 case 1.155 low 0.09 top 1.20 along 4.96 up -2.39 C 4.43 B 1.00 w 1.00 n -0.50,-0.41,0.76 depth 0.328 ahead 1.00 life 0.44 flow -1.81,1.92,6.20
+  - 10.99 m/s, board open, life 0.3 0.3 t 63.100:
+      before y 0.661 plain 0.234 case 1.166 low 0.09 top 1.21 along -0.26 up 0.00 C 4.34 B 1.00 w 1.00 n -0.44,-0.70,0.55 depth 0.056 ahead 1.00 life 0.42 flow 2.31,-2.90,-2.53
+      after  y 0.673 plain 0.250 case 1.174 low 0.09 top 1.20 along 4.68 up -3.04 C 4.77 B 1.00 w 1.00 n -0.50,-0.55,0.66 depth 0.316 ahead 1.00 life 0.43 flow -1.97,0.92,6.84
+  - 10.24 m/s, board ahead 0.3 s 0.3 t 64.300:
+      before y 0.852 plain 0.288 case 1.287 low 0.11 top 1.30 along 5.27 up -1.75 C 4.29 B 1.00 w 1.00 n -0.24,-0.35,0.91 depth 0.142 ahead 1.00 life 0.32 flow -2.14,2.05,6.39
+      after  y 0.847 plain 0.293 case 1.287 low 0.11 top 1.29 along 2.77 up -1.77 C 4.42 B 1.00 w 1.00 n -0.25,-0.68,0.69 depth 0.140 ahead 1.00 life 0.33 flow 0.85,-5.24,-0.14
+  - 9.67 m/s, board ahead 0.3 s 0.6 t 73.800:
+      before y 0.539 plain 0.121 case 1.143 low 0.08 top 1.20 along 0.62 up -0.93 C 4.24 B 1.00 w 1.00 n -0.32,-0.79,0.52 depth 0.053 ahead 1.00 life 0.49 flow 2.03,-3.47,-2.03
+      after  y 0.539 plain 0.134 case 1.152 low 0.08 top 1.19 along 4.76 up -1.43 C 4.09 B 1.00 w 1.00 n -0.32,-0.25,0.91 depth 0.404 ahead 1.00 life 0.50 flow -0.84,3.05,4.50
+  - 8.19 m/s, board open, life 0.3 0.3 t 73.083:
+      before y 0.664 plain 0.144 case 1.175 low 0.09 top 1.23 along -0.25 up 0.10 C 4.23 B 1.00 w 1.00 n -0.24,0.27,0.93 depth 0.031 ahead 1.00 life 0.42 flow 0.55,-4.12,1.27
+      after  y 0.663 plain 0.159 case 1.182 low 0.09 top 1.22 along 5.87 up -5.24 C 4.34 B 1.00 w 1.00 n -0.35,-0.64,0.68 depth 0.065 ahead 1.00 life 0.43 flow -2.45,-1.75,8.51
+  - 7.90 m/s, board ahead 0.3 s 0.3 t 54.167:
+      before y 0.470 plain 0.229 case 1.000 low 0.07 top 1.06 along 0.46 up 0.00 C 4.94 B 1.00 w 1.00 n -0.29,0.41,0.87 depth 0.041 ahead 1.00 life 0.48 flow -0.19,-4.34,2.54
+      after  y 0.481 plain 0.242 case 1.011 low 0.07 top 1.05 along 5.23 up -2.42 C 4.87 B 1.00 w 1.00 n -0.52,-0.43,0.74 depth 0.300 ahead 1.00 life 0.49 flow -2.47,1.83,6.91
+  - 7.72 m/s, board throw 0.6 t 53.300:
+      before y 0.438 plain 0.264 case 0.619 low 0.09 top 1.13 along 4.41 up 1.81 C 5.18 B 1.00 w 1.00 n -0.36,0.46,0.81 depth 0.078 ahead 0.22 life 0.35 flow -0.83,3.15,3.67
+      after  y 0.443 plain 0.267 case 0.674 low 0.09 top 1.12 along 1.23 up 0.24 C 4.93 B 1.00 w 1.00 n -0.39,0.25,0.89 depth 0.057 ahead 0.00 life 0.36 flow -0.36,-4.46,2.49
+  - 7.52 m/s, board ahead 0.3 s 0.3 t 74.017:
+      before y 0.615 plain 0.117 case 1.198 low 0.09 top 1.23 along -0.45 up 0.00 C 4.30 B 1.00 w 1.00 n -0.51,-0.86,-0.03 depth 0.030 ahead 1.00 life 0.46 flow 2.67,-0.80,-3.44
+      after  y 0.638 plain 0.123 case 1.204 low 0.09 top 1.23 along 4.84 up -2.12 C 4.14 B 1.00 w 1.00 n -0.44,-0.36,0.82 depth 0.443 ahead 1.00 life 0.46 flow -0.37,-0.12,3.41
+  - 7.16 m/s, rider throw 0.6 t 62.817:
+      before y 0.918 plain 0.323 case 1.282 low 0.11 top 1.29 along 4.13 up -4.47 C 4.80 B 1.00 w 1.00 n -0.35,-0.74,0.57 depth 0.088 ahead 1.00 life 0.26 flow -1.37,-3.62,4.93
+      after  y 0.914 plain 0.318 case 1.277 low 0.11 top 1.29 along 1.75 up -2.47 C 4.42 B 1.00 w 1.00 n -0.39,-0.81,0.43 depth 0.156 ahead 1.00 life 0.27 flow 1.41,-4.99,-1.52
+  - 7.08 m/s, prone throw 0.6 t 62.567:
+      before y 0.988 plain 0.387 case 1.303 low 0.13 top 1.33 along 5.30 up 0.89 C 5.29 B 1.00 w 1.00 n -0.34,0.18,0.92 depth 0.065 ahead 1.00 life 0.12 flow -1.00,5.93,4.29
+      after  y 1.034 plain 0.379 case 1.310 low 0.13 top 1.33 along 4.86 up -2.32 C 5.30 B 1.00 w 1.00 n -0.35,-0.47,0.81 depth 0.079 ahead 1.00 life 0.12 flow -1.46,-1.05,5.37
+  - 7.08 m/s, board ahead 0.3 s 0.6 t 63.917:
+      before y 0.711 plain 0.243 case 1.197 low 0.09 top 1.23 along 1.80 up -1.47 C 4.21 B 1.00 w 1.00 n -0.30,-0.05,0.95 depth 0.072 ahead 1.00 life 0.39 flow -0.07,-4.30,1.78
+      after  y 0.736 plain 0.257 case 1.203 low 0.09 top 1.23 along 4.19 up -3.18 C 4.47 B 1.00 w 1.00 n -0.40,-0.59,0.70 depth 0.304 ahead 1.00 life 0.40 flow -2.14,0.54,6.51
+## the default placement (lone boards at rest draft, 5 mm along the nearest normal, with their water along it)
+- 2a (along the nearest normal, before touchdown, outside the lip's water): p99 0.698 m (≤ 0.15), n 3958; bodies over 0.15 m for more than 0.1 s 25 of 54; boards p99 0.423 m
+- 2b (lone boards and prone riders at 0.3 H_s, ahead and at the throw): overrun 66.7 % (≤ 20 %); carried 2, pitched 2 (into the lip's water 0, off the surface 2), overrun 8 of 12; boards at the throw: carried 1, pitched 0 (into the lip's water 0, off the surface 0), overrun 2 of 3; boards ahead: carried 0, pitched 1 (into the lip's water 0, off the surface 1), overrun 2 of 3
+- flings (lone boards more than 0.1 m clear of the water before touchdown, outside the lip's water, no lip over them): 17 of 18, 94.4 % (≤ 10 %); more than 0.3 m 14; anywhere before touchdown (as before) > 0.1 / 0.3 m 17 / 14
+- (information) the hull force turning past 90° in a step, lone boards: 75 in 2547 steps (2.9 %)
+## the old placement (lone boards 5 cm under the support, the surface's vertical speed)
+- 2a (along the nearest normal, before touchdown, outside the lip's water): p99 1.323 m (≤ 0.15), n 3924; bodies over 0.15 m for more than 0.1 s 25 of 54; boards p99 1.366 m
+- 2b (lone boards and prone riders at 0.3 H_s, ahead and at the throw): overrun 66.7 % (≤ 20 %); carried 1, pitched 3 (into the lip's water 0, off the surface 3), overrun 8 of 12; boards at the throw: carried 0, pitched 1 (into the lip's water 0, off the surface 1), overrun 2 of 3; boards ahead: carried 0, pitched 1 (into the lip's water 0, off the surface 1), overrun 2 of 3
+- flings (lone boards more than 0.1 m clear of the water before touchdown, outside the lip's water, no lip over them): 15 of 18, 83.3 % (≤ 10 %); more than 0.3 m 14; anywhere before touchdown (as before) > 0.1 / 0.3 m 15 / 14
+- (information) the hull force turning past 90° in a step, lone boards: 99 in 2513 steps (3.9 %)
+## Bar 4b, ruling 3: jitter p99 0.0394 m (≤ 0.005), max 0.140 (≤ 0.02); own pace against the tracker |ΔW − v̂ Δt| p99 0.0430 m (≤ 0.01), n 67687; the raw target's step inside a front |ΔW* − C Δt| p50 / p90 / p99 0.0243 / 0.0699 / 0.1588 m (p90 ≤ 0.02); single steps over 0.1 m 791 (0), max 0.357 m; the cap (or the tracker's gate) engaged 1.8 % of 68161 faced steps (≤ 10 %)
+- (information) the read's noise σ_v, the raw target's second difference inside a front rms/√6: 0.0268 m (n 51137; its |Δ²| p50 / p90 / p99 0.0263 / 0.1021 / 0.2203); the raw target's step against the tracker |ΔW* − v̂ Δt| p50 / p90 / p99 0.0204 / 0.0600 / 0.1598; own pace against the raw target (as before) p99 0.1907; the outcomes {"kept":66423,"capped":0,"held":0,"stood":0,"eased":0,"crest":0,"gated":1219,"reacquired":519}; the read 62.6 reads a shift, its trough at its window's end on 88.1 %, the case's trough at its profile's last point on 23.1 % (cumulative)
+## Bar 6, ruling 3: per jet, the solver's breaking ≥ 0.3 within ±0.5 H_s of the tip within 0.2 s after the pour starts 73.6 % of 159 (≥ 85 %); at the crash itself (as before) 67.7 %; per column at all weights (each column-wave's nearest slice of any weight, its first read past life 1) 71.0 % of 69
+## Holes, ruling 3: visible holes 0 (0), 0.0000 a build; at weight ≥ 0.5 0 (0); the raw count (information) 0, 0.0000 a build; the first visible:
+## The ledger, ruling 3 (information): thrown points unbroken at touchdown 93 of 170, their retirement then 0.00 / 0.00 / 0.00
+## Cost, ruling 3 (this M1, Node, under the probes' load): a body's step on the game's water 3015.5 µs mean over 7927 body steps; the contact's update p50 9.16 ms

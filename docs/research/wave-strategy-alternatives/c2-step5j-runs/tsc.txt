@@ -1,0 +1,7 @@
+C2 step 5j: the two typechecks, exit codes on their own line, never read through a pipe.
+
+$ npx tsc --noEmit -p .
+EXIT 0
+
+$ npx tsc --noEmit -p server/tsconfig.json
+EXIT 0

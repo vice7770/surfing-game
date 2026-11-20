@@ -3,6 +3,7 @@ import { LINK_TIME } from '../wave/PlungingLip';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
 import { LIP_SUBDIVISIONS, RICH_LIP_REFLECTION, buildRichLipSheet, richLipBeginVertex, richLipBody, richLipFragmentPars, richLipVertexPars } from './water/richLip';
 import { RICH_WATER } from './water/richWaterGlsl';
+import { richBodyGain } from './water/waterLight';
 import { RICH_SHEET_GLITTER, glitterProgramKey, onGlitterChange, richGlitterLights, waterGlitterPars } from './water/glitter';
 import { hazeLandKey, hazeLandRoute, onHazeLandChange, withHazeLand } from './water/hazeLand';
 import { horizonHazeUniforms } from './water/horizonHaze';
@@ -150,6 +151,8 @@ export class LipSheetMesh {
   private readonly classicMaterial: ShaderMaterial;
   private readonly richUniforms: Record<string, { value: unknown }> = {
     ...createOpticsUniforms(),
+    // The Rich body gain, shared by every sheet (`richBodyGain`: 4, or the water light's 1).
+    waterBodyGain: richBodyGain,
     waterReflection: { value: RICH_WATER.reflection },
     lipFoamColor: { value: new Color('#d8f2e9') },
   };
@@ -177,7 +180,6 @@ export class LipSheetMesh {
       depthWrite: false,
     });
     this.classicMaterial = material;
-    this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
     this.richMaterial = new MeshPhysicalMaterial({
       color: '#ffffff', roughness: RICH_BASE_ROUGHNESS, metalness: 0, ior: WATER_IOR, side: DoubleSide, transparent: true, depthWrite: false,
     });
@@ -238,7 +240,6 @@ export class LipSheetMesh {
   /** The spot's water optics (the Rich lip's body and the light through it). */
   setOptics(optics: WaterOptics): void {
     applyOptics(this.richUniforms, optics);
-    this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
   }
 
   /**

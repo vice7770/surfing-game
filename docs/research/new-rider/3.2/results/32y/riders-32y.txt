@@ -1,0 +1,58 @@
+# Step 3.2y — the four riders on the trim cell, free (no hold), 12 runs each
+# (2 stances x 6 entry speeds, the Canyon-matched FaceWater 1.4 m / 16 deg / 5.7 m/s, the stick at zero, 9 s)
+
+### RIDER=new UPRIGHT=on
+## rollspring — free, rider new, counter-roll drive on
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s · board+payload 2.54 kg, its own roll inertia 0.026 kg·m² (effective for a roll moment, 1/(f·I⁻¹·f): 0.0260)
+   datum: every angle is the DECK's roll about the heading from the WORLD's level, + the board's level-left side down; rollAccel is in that same sense, so + at a + roll is DIVERGENT.
+   fell: 12 of 12 at 0.77–1.70 s · rail peak 10.9–62.9°
+   the fit over every frame past 0.2 s (34–90 frames a run): A 148.97–1788.26 1/s² · B 675.61–918.06 1/s · C -295.16–-8.05 rad/s²
+   the same inside 20° of rail (29–63 frames a run): A 42.51–1788.26 1/s² · B 675.61–915.79 1/s · C -295.16–-3.17 rad/s²
+   A > 0 is a divergent roll; A × the system's roll inertia is the net roll stiffness, N·m/rad, sign reversed.
+   the BODY's own fit, bankAccel = A·bank + B·bankRate + C, every frame past 0.2 s (34–90 frames a run):
+     A -38.44–-3.21 1/s² · B 3.39–18.06 1/s · C -1.49–4.39 rad/s² · bank peak 20.7–65.7°
+   the same inside 20° of bank (21–59 frames a run): A -69.48–15.93 1/s² · B -0.28–35.68 1/s · C -9.89–11.34 rad/s²
+   A × m h² is the net stiffness the BODY feels about its feet, N·m/rad, sign reversed; the bare inverted pendulum's own A is g/h = 13.97 1/s² at a CoM height of 0.702 m.
+   the board's roll per degree of the body's bank, least squares over each run's frames: 0.708–1.054
+
+### RIDER=new UPRIGHT=force
+## rollspring — free, rider new, counter-roll drive force
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s · board+payload 2.54 kg, its own roll inertia 0.026 kg·m² (effective for a roll moment, 1/(f·I⁻¹·f): 0.0260)
+   datum: every angle is the DECK's roll about the heading from the WORLD's level, + the board's level-left side down; rollAccel is in that same sense, so + at a + roll is DIVERGENT.
+   fell: 12 of 12 at 0.75–1.58 s · rail peak 3.8–68.7°
+   the fit over every frame past 0.2 s (33–83 frames a run): A 436.87–2186.78 1/s² · B 722.41–890.78 1/s · C -561.81–-82.08 rad/s²
+   the same inside 20° of rail (33–50 frames a run): A -319.71–2186.78 1/s² · B 736.29–893.44 1/s · C -452.82–44.48 rad/s²
+   A > 0 is a divergent roll; A × the system's roll inertia is the net roll stiffness, N·m/rad, sign reversed.
+   the BODY's own fit, bankAccel = A·bank + B·bankRate + C, every frame past 0.2 s (33–83 frames a run):
+     A -341.90–10.24 1/s² · B 6.76–13.71 1/s · C -4.06–59.52 rad/s² · bank peak 14.6–52.4°
+   the same inside 20° of bank (30–50 frames a run): A -341.90–12.88 1/s² · B 5.16–13.70 1/s · C -5.08–63.33 rad/s²
+   A × m h² is the net stiffness the BODY feels about its feet, N·m/rad, sign reversed; the bare inverted pendulum's own A is g/h = 13.94 1/s² at a CoM height of 0.704 m.
+   the board's roll per degree of the body's bank, least squares over each run's frames: 0.322–1.261
+
+### RIDER=old UPRIGHT=on
+## rollspring — free, rider old, counter-roll drive on
+   12 runs, 11 s wall · face 1.40 m / 16° / 5.70 m/s · board+payload 2.54 kg, its own roll inertia 0.026 kg·m² (effective for a roll moment, 1/(f·I⁻¹·f): 0.0260)
+   datum: every angle is the DECK's roll about the heading from the WORLD's level, + the board's level-left side down; rollAccel is in that same sense, so + at a + roll is DIVERGENT.
+   fell: 3 of 12 at 7.78–8.87 s · rail peak 10.8–71.1°
+   the fit over every frame past 0.2 s (455–529 frames a run): A -1333.87–3240.29 1/s² · B 295.97–1672.06 1/s · C -277.50–1.34 rad/s²
+   the same inside 20° of rail (418–529 frames a run): A -2632.45–2852.10 1/s² · B 295.97–1764.71 1/s · C -196.28–-3.35 rad/s²
+   A > 0 is a divergent roll; A × the system's roll inertia is the net roll stiffness, N·m/rad, sign reversed.
+   the BODY's own fit, bankAccel = A·bank + B·bankRate + C, every frame past 0.2 s (455–529 frames a run):
+     A -17.11–-1.55 1/s² · B -0.43–5.30 1/s · C -0.79–0.00 rad/s² · bank peak 2.5–66.6°
+   the same inside 20° of bank (455–529 frames a run): A -6.48–-1.55 1/s² · B -0.43–7.97 1/s · C -0.38–0.00 rad/s²
+   A × m h² is the net stiffness the BODY feels about its feet, N·m/rad, sign reversed; the bare inverted pendulum's own A is g/h = – 1/s² at a CoM height of 0.000 m.
+   the board's roll per degree of the body's bank, least squares over each run's frames: -1.667–1.043
+
+### RIDER=old UPRIGHT=off
+## rollspring — free, rider old, counter-roll drive off
+   12 runs, 1 s wall · face 1.40 m / 16° / 5.70 m/s · board+payload 2.54 kg, its own roll inertia 0.026 kg·m² (effective for a roll moment, 1/(f·I⁻¹·f): 0.0260)
+   datum: every angle is the DECK's roll about the heading from the WORLD's level, + the board's level-left side down; rollAccel is in that same sense, so + at a + roll is DIVERGENT.
+   fell: 12 of 12 at 0.63–0.75 s · rail peak 26.4–67.1°
+   the fit over every frame past 0.2 s (26–33 frames a run): A 215.73–1647.26 1/s² · B 1383.29–1891.26 1/s · C -724.13–298.01 rad/s²
+   the same inside 20° of rail (5–20 frames a run): A -8535.69–2452.77 1/s² · B 0.00–1992.09 1/s · C -637.34–124.27 rad/s²
+   A > 0 is a divergent roll; A × the system's roll inertia is the net roll stiffness, N·m/rad, sign reversed.
+   the BODY's own fit, bankAccel = A·bank + B·bankRate + C, every frame past 0.2 s (26–33 frames a run):
+     A -131.55–77.31 1/s² · B -2.90–30.26 1/s · C -60.36–26.91 rad/s² · bank peak 70.0–70.0°
+   the same inside 20° of bank (6–7 frames a run): A 0.00–0.00 1/s² · B 0.00–0.00 1/s · C 0.00–0.00 rad/s²
+   A × m h² is the net stiffness the BODY feels about its feet, N·m/rad, sign reversed; the bare inverted pendulum's own A is g/h = – 1/s² at a CoM height of 0.000 m.
+   the board's roll per degree of the body's bank, least squares over each run's frames: -0.274–0.930

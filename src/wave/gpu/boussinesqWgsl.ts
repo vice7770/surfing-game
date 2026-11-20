@@ -14,9 +14,9 @@ export const FIELD = {
   ZHS: 22, ZHN: 23, ZETAS: 24, ZETAN: 25, ZWS: 26, ZWN: 27, ZUS: 28, ZUN: 29,
   HALF: 30, SRCX: 31, SRCZ: 32, PREDX: 33, PREDZ: 34, STARTP: 35, STARTQ: 36,
   STRENGTH: 37, AGE: 38, NEXTSTRENGTH: 39, NEXTAGE: 40, NU: 41, VISCX: 42, VISCZ: 43, SHEAR: 44,
-  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52,
+  DDX: 45, DDZ: 46, WET: 47, TC: 48, TR: 49, WEIGHT: 50, RISE: 51, HOLD: 52, ONSET: 53, JOIN: 54,
 } as const;
-export const FIELD_COUNT = 53;
+export const FIELD_COUNT = 55;
 
 /** Grid buffer layout: x centres (nx), then per row: z centre, dz, below, above, gap. */
 export const ROW_STRIDE = 5;
@@ -28,7 +28,11 @@ export const PARAM_WORDS = 32;
 
 const f = (value: number) => (Number.isInteger(value) ? `${value}.0` : `${value}`);
 
-export function boussinesqWgsl(): string {
+/**
+ * The shader. `periodic` (a solver periodic along shore, barrel-gpu 2026-11-06) adds the rows' cyclic solve; without it the
+ * text is the shader as before, so the spots with walls or open edges compile exactly what they did.
+ */
+export function boussinesqWgsl(periodic = false): string {
   const B = MADSEN_SORENSEN_B;
   const ALPHA = B + 1 / 3;
   return /* wgsl */ `
@@ -38,8 +42,8 @@ struct Params {
   manning: f32, restLevel: f32, onset: f32, endShare: f32,
   transition: f32, mixing: f32, dispersive: u32, breaks: u32,
   components: u32, zoneFirst: u32, zoneRows: u32, tau: f32,
-  feedSlots: u32, feedComponents: u32, pad2: f32, pad3: f32,
-  pad4: f32, pad5: f32, pad6: f32, pad7: f32,
+  feedSlots: u32, feedComponents: u32, diagonalJoin: f32, onsetField: u32,
+  joinField: u32, pad5: f32, pad6: f32, pad7: f32,
   pad8: f32, pad9: f32, pad10: f32, pad11: f32,
 };
 
@@ -417,7 +421,12 @@ fn parentAge(current: f32, j: u32) -> f32 {
   let depth = at(${FIELD.H}u, i); let rise = at(${FIELD.RATEH}u, i);
   put(${FIELD.RISE}u, i, rise);
   if (P.breaks == 0u || depth <= BREAKING_DEPTH) { put(${FIELD.NEXTSTRENGTH}u, i, 0.0); put(${FIELD.NEXTAGE}u, i, 0.0); put(${FIELD.NU}u, i, 0.0); return; }
-  // The breaking age comes only from behind the cell's front face, up the half-step surface's slope (breakingAge.ts).
+  // The breaking age comes only from behind the cell's front face, up the half-step surface's slope (breakingAge.ts);
+  // through the diagonal parents only where the cell's own rise rate reaches diagonalJoin √(g h) (0: always).
+  let still = max(BREAKING_DEPTH, at(${FIELD.STILL}u, i));
+  // The join where it varies along the bed (KennedyOptions.joinAt): the cell's own.
+  let join = select(P.diagonalJoin, at(${FIELD.JOIN}u, i), P.joinField != 0u);
+  let diagonals = join <= 0.0 || rise >= join * sqrt(g * still);
   var inherited = select(0.0, at(${FIELD.AGE}u, i), at(${FIELD.STRENGTH}u, i) > 0.0);
   let sx = ddx(${FIELD.HALF}u, ix, iz, false);
   let sz = ddz(${FIELD.HALF}u, ix, iz, false);
@@ -427,22 +436,23 @@ fn parentAge(current: f32, j: u32) -> f32 {
       if (bx >= 0 && bx < i32(nx)) {
         let j = iz * nx + u32(bx);
         inherited = parentAge(inherited, j);
-        if (iz > 0u) { inherited = parentAge(inherited, j - nx); }
-        if (iz < P.nz - 1u) { inherited = parentAge(inherited, j + nx); }
+        if (diagonals && iz > 0u) { inherited = parentAge(inherited, j - nx); }
+        if (diagonals && iz < P.nz - 1u) { inherited = parentAge(inherited, j + nx); }
       }
     } else {
       let bz = i32(iz) + i32(sign(sz));
       if (bz >= 0 && bz < i32(P.nz)) {
         let j = u32(bz) * nx + ix;
         inherited = parentAge(inherited, j);
-        if (ix > 0u) { inherited = parentAge(inherited, j - 1u); }
-        if (ix < nx - 1u) { inherited = parentAge(inherited, j + 1u); }
+        if (diagonals && ix > 0u) { inherited = parentAge(inherited, j - 1u); }
+        if (diagonals && ix < nx - 1u) { inherited = parentAge(inherited, j + 1u); }
       }
     }
   }
-  let still = max(BREAKING_DEPTH, at(${FIELD.STILL}u, i));
   let ramp = min(1.0, inherited / (P.transition * sqrt(still / g)));
-  let threshold = sqrt(g * still) * (P.onset + (P.endShare - P.onset) * ramp);
+  // The onset where it varies over the bed (KennedyOptions.onsetAt): the cell's factor on P.onset, 1 where they agree.
+  let onset = select(P.onset, P.onset * at(${FIELD.ONSET}u, i), P.onsetField != 0u);
+  let threshold = sqrt(g * still) * (onset + (P.endShare - onset) * ramp);
   let b = min(1.0, max(0.0, rise / threshold - 1.0));
   put(${FIELD.NEXTSTRENGTH}u, i, b);
   put(${FIELD.NEXTAGE}u, i, select(0.0, inherited + P.dt, b > 0.0));
@@ -508,19 +518,25 @@ fn parentAge(current: f32, j: u32) -> f32 {
     let qxy = dxOfDz(${FIELD.QZ}u, ix, iz, true, false);
     let qx = ddx(${FIELD.QZ}u, ix, iz, false);
     r += ALPHA * d * d * qxy + d * dx * qy / 6.0 + d * dz * qx / 6.0;
-    // Edge ghosts: P odd at a wall, extended at an open edge.
+${periodic ? `    // Edge ghosts: P odd at a wall, extended at an open edge. Periodic along shore, the edge cells keep their bands:
+    // the first row's a and the last's c couple the row's two ends, which cyclicRow solves.
+    if (P.boundary != PERIODIC) {
+      let edge = select(1.0, -1.0, P.boundary == WALL);
+      if (ix == 0u) { b += edge * a; a = 0.0; }
+      if (ix == P.nx - 1u) { b += edge * c; c = 0.0; }
+    }` : `    // Edge ghosts: P odd at a wall, extended at an open edge.
     let edge = select(1.0, -1.0, P.boundary == WALL);
     if (ix == 0u) { b += edge * a; a = 0.0; }
-    if (ix == P.nx - 1u) { b += edge * c; c = 0.0; }
+    if (ix == P.nx - 1u) { b += edge * c; c = 0.0; }`}
   }
   let scratch = rowScratch(ix, iz);
   put(${FIELD.XHW}u, scratch, a); put(${FIELD.XHE}u, scratch, b); put(${FIELD.XETAW}u, scratch, c); put(${FIELD.XETAE}u, scratch, r);
 }
 
-// K12: P from P̄, one row per thread (Thomas).
+// K12: P from P̄, one row per thread (Thomas)${periodic ? '; periodic along shore, the cyclic system (cyclicRow)' : ''}.
 @compute @workgroup_size(64) fn rows(@builtin(global_invocation_id) id: vec3<u32>) {
   let iz = id.x; if (iz >= P.nz) { return; }
-  let nx = P.nx; let row = iz * nx;
+${periodic ? '  if (P.boundary == PERIODIC) { cyclicRow(iz); return; }\n' : ''}  let nx = P.nx; let row = iz * nx;
   var cPrev = 0.0; var rPrev = 0.0;
   for (var ix = 0u; ix < nx; ix++) {
     let i = rowScratch(ix, iz);
@@ -540,7 +556,45 @@ fn parentAge(current: f32, j: u32) -> f32 {
   }
 }
 
-// K13: the column systems for Q from Q̄ (walls at both cross-shore ends), one cell per thread.
+${periodic ? `// A periodic row's cyclic system by Sherman–Morrison, as the CPU solves it (BoussinesqSolver.cyclic, barrel-gpu): the
+// corners β = a₀ and α = c₍ₙ₋₁₎ folded into the diagonal (b₀ − γ, b₍ₙ₋₁₎ − αβ/γ, γ = −b₀), one Thomas sweep for the right
+// side and one for u = (γ, 0, …, 0, α) on the same bands (their c′ shared), then P = x − z (x₀ + βx₍ₙ₋₁₎/γ) /
+// (1 + z₀ + βz₍ₙ₋₁₎/γ). The u sweep and z use ZHS, dead between the rates and the next substep's predictor, transposed as
+// the bands are.
+fn cyclicRow(iz: u32) {
+  let nx = P.nx; let row = iz * nx;
+  let first = rowScratch(0u, iz); let last = rowScratch(nx - 1u, iz);
+  let beta = at(${FIELD.XHW}u, first); let alpha = at(${FIELD.XETAW}u, last); let gamma = -at(${FIELD.XHE}u, first);
+  let bFirst = at(${FIELD.XHE}u, first) - gamma;
+  let bLast = at(${FIELD.XHE}u, last) - (alpha * beta) / gamma;
+  var cPrev = 0.0; var rPrev = 0.0; var uPrev = 0.0;
+  for (var ix = 0u; ix < nx; ix++) {
+    let i = rowScratch(ix, iz);
+    let a = select(at(${FIELD.XHW}u, i), 0.0, ix == 0u);
+    let b = select(select(at(${FIELD.XHE}u, i), bLast, ix == nx - 1u), bFirst, ix == 0u);
+    let u = select(select(0.0, alpha, ix == nx - 1u), gamma, ix == 0u);
+    let denominator = b - a * cPrev;
+    cPrev = at(${FIELD.XETAW}u, i) / denominator;
+    rPrev = (at(${FIELD.XETAE}u, i) - a * rPrev) / denominator;
+    uPrev = (u - a * uPrev) / denominator;
+    put(${FIELD.TC}u, i, cPrev); put(${FIELD.TR}u, i, rPrev); put(${FIELD.ZHS}u, i, uPrev);
+  }
+  var x = rPrev; var z = uPrev;
+  put(${FIELD.QX}u, row + nx - 1u, x);
+  for (var k = i32(nx) - 2; k >= 0; k--) {
+    let scratch = rowScratch(u32(k), iz);
+    x = at(${FIELD.TR}u, scratch) - at(${FIELD.TC}u, scratch) * x;
+    z = at(${FIELD.ZHS}u, scratch) - at(${FIELD.TC}u, scratch) * z;
+    put(${FIELD.QX}u, row + u32(k), x); put(${FIELD.ZHS}u, scratch, z);
+  }
+  let factor = (at(${FIELD.QX}u, row) + (beta * at(${FIELD.QX}u, row + nx - 1u)) / gamma)
+    / (1.0 + at(${FIELD.ZHS}u, first) + (beta * at(${FIELD.ZHS}u, last)) / gamma);
+  for (var ix = 0u; ix < nx; ix++) {
+    put(${FIELD.QX}u, row + ix, at(${FIELD.QX}u, row + ix) - factor * at(${FIELD.ZHS}u, rowScratch(ix, iz)));
+  }
+}
+
+` : ''}// K13: the column systems for Q from Q̄ (walls at both cross-shore ends), one cell per thread.
 @compute @workgroup_size(64) fn columnTerms(@builtin(global_invocation_id) id: vec3<u32>) {
   let i = cellOf(id); if (i >= P.n) { return; }
   let ix = i % P.nx; let iz = i / P.nx;

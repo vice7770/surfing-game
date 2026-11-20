@@ -14,17 +14,22 @@ import { inTakeOffWindow } from '../physics/takeOffCue';
 import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
+import { deviceStepRefusal } from './gpu/GpuBoussinesq';
 import { BubbleCloud } from './BubbleCloud';
-import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
+import { BOARD_SPRAY_CAPACITY, SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type BoardSpraySheet, type SprayLook } from './SprayCloud';
+import { BOARD_SHEETS, BOARD_SHEET_STRIDE, SheetHistory, createBoardSpraySheet, packBoardSheets, unpackBoardSheets } from '../physics/boardSpray';
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
-import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
+import { decodeWaveCase } from './library/caseFormat';
+import { CURVE_STRIDE } from './library/libraryLoft';
+import { WaveLibrary } from './library/WaveLibrary';
+import { FRONT_CAPACITY, FRONT_STRIDE } from './barrel/frontRecords';
 import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } from './barrel/sweptContact';
 import { cloneTubeApproachObservation, createTubeApproachObservation,
   type TubeApproachCue, type TubeApproachRequest, type TubeBodyPoint, type TubeApproachObservation } from './barrel/tubeApproach';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
-import { SurfZoneSimulation, rideLineupOffset, sweptBarrelOn, tankRiderBounds, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+import { SurfZoneSimulation, rideLineupAlong, rideLineupOffset, sweptBarrelOn, tankRiderBounds, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { RiderBounds } from '../physics/riderBounds';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
@@ -33,6 +38,8 @@ export { surfZoneSea } from './SurfZoneSimulation';
 
 /** Fixed simulation step, s: the game's physics rate. */
 export const SURF_ZONE_STEP = 1 / 60;
+/** Device steps the DEVICE row's whole-upload counts cover: a second of sea (barrel-gpu). */
+export const DEVICE_WINDOW = 60;
 const WORKER_CONTACT_OWNER = Symbol('private worker contact owner');
 /** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7), its volume, m³, and its kind: 0 a jet's water, 1 a splash-up's (G9). */
 export const LIP_STRIDE = 9;
@@ -126,6 +133,11 @@ export interface SurfZoneRunnerOptions {
   barrelCases?: readonly Uint8Array[];
   /** Build the swept contact with no board or rider of the runner's own (reports whose bots ride `water`). */
   contact?: boolean;
+  /**
+   * C2 step 3 (`SurfZoneConfig.wave` 'library'): the wave library's BRL3 case files (public/library). With them the 2 m
+   * pool's breaking wave is the library's, drawn and felt (`WaveZone`); without them, the sea's, as before.
+   */
+  waveCases?: readonly Uint8Array[];
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -141,6 +153,8 @@ export interface RideRequest extends RideInput {
   pocketReflex?: boolean;
   /** The player's stance, taken up at the next ride (a retry or a placement), never mid-ride. */
   stance?: StanceName;
+  /** Online (board-spray): the other players' boards' sheets for this batch, from their poses (`BOARD_SHEET_STRIDE` each). */
+  boardSheets?: Float32Array;
 }
 
 /** The rider's phases in snapshot order, `fallen` once in the water. */
@@ -153,11 +167,15 @@ export const RIDER_PHASES = ['prone', 'push', 'landing', 'standing', 'recover', 
  * feels, the front foot's share of the load smoothed (`AttachedRider.contact.weight`,
  * the phase-5 physics plan's W1; NaN unless upright; local only, not on the wire).
  */
-export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, twist: 32, weight: 33, length: 34 } as const;
+export const RIDER_SNAPSHOT = { points: 0, phase: 21, cue: 22, present: 23, heading: 24, duck: 25, plug: 26, leash: 29, swim: 30, breath: 31, twist: 32, weight: 33, snap: 34, length: 35 } as const;
 /** `RIDER_SNAPSHOT.leash`: the leash is worn whole, has snapped, is being reeled in. */
 export const LEASH_BITS = { worn: 1, snapped: 2, reeling: 4 } as const;
-/** `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under. */
-export const SWIM_BITS = { stroking: 1, diving: 2, under: 4 } as const;
+/**
+ * `RIDER_SNAPSHOT.swim`: the fallen surfer strokes, dives, has its head under; or, on the board again, is still climbing
+ * on from the water (`AttachedRider.climbingOn`, swim-back 2026-10-29); or the rider is in the two-body duck-dive
+ * (`RideSession.ducking`, duck-drawn 2026-10-31): the drawn points are then the swimmer's own parts, its head under or not.
+ */
+export const SWIM_BITS = { stroking: 1, diving: 2, under: 4, climbing: 8, ducking: 16 } as const;
 
 const IDLE: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
 
@@ -173,15 +191,35 @@ export function writeRiderSnapshot(session: RideSession | undefined, cue: boolea
   out[RIDER_SNAPSHOT.cue] = cue ? 1 : 0;
   out[RIDER_SNAPSHOT.present] = 1;
   out[RIDER_SNAPSHOT.heading] = session.heading;
-  out[RIDER_SNAPSHOT.duck] = session.rider.attached ? session.rider.duck.press : 0;
+  out[RIDER_SNAPSHOT.duck] = session.duckPress;
   out[RIDER_SNAPSHOT.breath] = session.breath.level;
-  out[RIDER_SNAPSHOT.twist] = session.rider.attached ? session.rider.twist.angle : 0;
+  out[RIDER_SNAPSHOT.twist] = session.rider.attached ? session.rider.drawnTwist : 0;
   out[RIDER_SNAPSHOT.weight] = session.rider.attached ? session.rider.contact.weight : Number.NaN;
+  // Snap held, 0–1 (snap-arms-gate): the rig draws Snap's arms only on it, so Compress's tail-heavy turns are not Snap.
+  out[RIDER_SNAPSHOT.snap] = session.rider.attached ? session.rider.snapping : 0;
   session.leashPlug(point).toArray(out, RIDER_SNAPSHOT.plug);
   const { leash, surfer } = session;
   out[RIDER_SNAPSHOT.leash] = (leash.snapped ? LEASH_BITS.snapped : LEASH_BITS.worn) | (leash.reeling ? LEASH_BITS.reeling : 0);
-  out[RIDER_SNAPSHOT.swim] = !surfer.active ? 0
-    : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0);
+  out[RIDER_SNAPSHOT.swim] = (!surfer.active ? (session.rider.climbingOn ? SWIM_BITS.climbing : 0)
+    : (surfer.diving ? SWIM_BITS.diving : surfer.lastForces.swim.lengthSq() > 0 ? SWIM_BITS.stroking : 0) | (surfer.underwater ? SWIM_BITS.under : 0))
+    | (session.ducking ? SWIM_BITS.ducking : 0);
+}
+
+/**
+ * **What let go at a fall** (step 3.2v, and the Logbook's fall readout): the balance limit that bound at the
+ * separation, whether the weight left the feet across the board, the speed over ground there, m/s, and the steer
+ * the ride was asking for on the last step the rider was on the board, −1 (right) to 1 (left).
+ *
+ * `limit: 'posture'` is the default (old) rider and a prone one: there the reserve is **one filtered minimum** of the
+ * feet's lateral and longitudinal headroom and their grip (`AttachedRider.rawMargin`, low-passed into
+ * `balanceMargin`), and the three are never kept apart — so on that rider this says only that the minimum ran out,
+ * never which of the three. 'margin' | 'grip' | 'knee' come from `?rider=new`, where they are separate numbers.
+ */
+export interface BrokenLimit {
+  limit: 'margin' | 'grip' | 'knee' | 'posture';
+  across: boolean;
+  speed: number;
+  steer: number;
 }
 
 /** The Wave Lab readout's values, as plain data that can cross the worker boundary. */
@@ -199,9 +237,16 @@ export interface SurfZoneStatus {
     deviceSubsteps: number; devicePack: number; deviceCfl: number; deviceEncode: number; deviceMap: number; deviceUnpack: number;
     /** The latest device step's traffic: bytes written to and read back from the GPU, readback maps and queue submissions. */
     deviceUploadBytes: number; deviceReadbackBytes: number; deviceMaps: number; deviceSubmits: number;
+    /**
+     * Over the last DEVICE_WINDOW device steps (a second of sea; barrel-gpu, 2026-11-06): how many sent the whole
+     * water, the whole plunge zone, or the whole layout, and the mean bytes uploaded a step.
+     */
+    deviceFullWater: number; deviceFullPlunge: number; deviceLayouts: number; deviceUploadMean: number;
   };
   /** Where the water steps: on the GPU (plan P6) or the CPU. */
   compute: 'gpu' | 'cpu';
+  /** Why the water steps on the CPU where a device was asked for (`deviceStepRefusal`, or none came); undefined otherwise. */
+  deviceNote?: string;
   cells: number;
   breakPoint: { x: number; z: number };
   /** Still depth at the break point, including tide, m. */
@@ -211,6 +256,11 @@ export interface SurfZoneStatus {
   /** The surf at the take-off over the last 2 minutes (the wave-sizes spec); undefined while measuring. */
   surf?: SurfReading;
   peel?: PeelEstimate;
+  /**
+   * The Canyon with its beach peaks (canyon-beach-break): each peak's stretch of shore, breaker and peel, so a readout can
+   * follow its view (the Wave Lab's card); `breaker` and `peel` above are the peak nearest the rider's (else the take-off's).
+   */
+  peaks?: { from: number; to: number; breaker: { value: number; type: BreakerType }; peel?: PeelEstimate }[];
   lipLaunches: number;
   lipVolume: number;
   /** Breaks that threw a plunging jet, and that spilled as a roller (plan P7). */
@@ -233,6 +283,15 @@ export interface SurfZoneStatus {
     separation?: RiderSeparation; resets: number; wave: WaveFrame; live?: Maneuver; report?: RideReport & { id: number };
     /** The rider's balance reserve, 0–1 (0 once fallen). */
     balance: number;
+    /**
+     * **Which of the reserve's three limits is nearest, and the three themselves** (step 3.2v,
+     * `AttachedRider.balanceLimits`): `balance` above is their minimum, and until now which one it was never left the
+     * physics. `broke` is the limit at the moment of the latest fall, the speed over ground there, m/s, and the steer
+     * the ride was asking for on the last step the rider was on the board, kept until the next ride starts — so the
+     * owner's own ride says what let go rather than only how close it came.
+     */
+    balanceLimit?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number };
+    broke?: BrokenLimit;
     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
     bank?: number;
     /** Optional dev guidance. This is a geometry observation, not a completed ride. */
@@ -252,6 +311,11 @@ export interface SurfZoneStatus {
     /** The breath held, 1 full to 0 (Part B), and how often a rider held down too long was rescued. */
     breath: number;
     rescues: number;
+    /**
+     * The sprint paddle (the owner's choices of 2026-10-22): its reserve, 1 full to 0 (`PaddleReserve`), whether it
+     * is spent and waiting to refill, whether the rider paddles lying down, and whether it sprints.
+     */
+    sprint?: { reserve: number; spent: boolean; paddling: boolean; sprinting: boolean };
     /** How often the rider has been held at the window's bounds (`SurfZoneRunner.bounds`): the HUD hints at each new one. */
     edgeHolds?: number;
   };
@@ -280,6 +344,9 @@ export interface SurfZoneBuffers {
   /** Spray and mist: x, y, z, size and opacity per particle (`SPRAY_STRIDE`). */
   spray: Float32Array;
   sprayCount: number;
+  /** The board's spray sheets this step (spray-sheet; `BOARD_SHEET_STRIDE` each), drawn as curtains; none with them off. */
+  sheets: Float32Array;
+  sheetCount: number;
   board: Float64Array;
   rider: Float64Array;
   /** Sound (S1): lip landings since the last snapshot (`LIP_HIT_STRIDE`). */
@@ -312,6 +379,12 @@ export interface SurfZoneBuffers {
    */
   curl: Float32Array;
   curlCount: number;
+  /**
+   * C2 step 3 (`?wave=library`): the library's overturn curves (`CURVE`, `CURVE_STRIDE` floats each, `zoneCount` of them),
+   * lofted on the page over the very nodes the surface carries; empty without the library zone.
+   */
+  zone: Float32Array;
+  zoneCount: number;
 }
 
 /**
@@ -325,6 +398,17 @@ export class SurfZoneRunner {
   readonly spray: SprayCloud;
   /** Hidden spray has no effect on water, rider physics or sound. */
   private sprayEnabled = true;
+  /** The boards throw spray (board-spray; `SurfZoneConfig.boardSpray`), as curtains that tear into drops (`spraySheet`). */
+  private readonly boardSprays: boolean;
+  private readonly curtains: boolean;
+  /** This step's sheets off the board (`BOARD_SHEETS` at most), and how many; and the other players' (`setRemoteSheets`). */
+  private readonly boardSheets: BoardSpraySheet[] = Array.from({ length: BOARD_SHEETS }, createBoardSpraySheet);
+  private readonly sheetsInUse: BoardSpraySheet[] = [];
+  private remoteSheets: readonly BoardSpraySheet[] = [];
+  /** The board's sheets' root lines lately, by side (spray-sheet): where their water tears. */
+  private readonly sheetHistory = new SheetHistory();
+  /** How many of this step's sheets are this board's (the first ones), for the snapshot's drawn curtain. */
+  private ownSheets = 0;
   /** Uniform render grid over the window and the whole tank. */
   readonly grid: RenderGrid;
   /** Bed elevation per render node (fixed until the window slides). */
@@ -339,12 +423,29 @@ export class SurfZoneRunner {
   readonly contact?: SweptContact;
   private readonly contactQueries?: SweptSurfaceQueries;
   private readonly ordinaryContactOwner?: OrdinaryContactOwner;
+  /** The worker's face contact's heights (`SweptContact.forFaceWorker`): the water's, through a cache of their own. */
+  private readonly faceHeights?: { invalidate(): void; heightAt(x: number, z: number): number; bedAt(x: number, z: number): number };
   /** Built by `forWorker`: only the worker's own runner may take the solo water prefetch. */
   private readonly workerOwned: boolean;
   /** The contact's last update, ms. */
   contactMs = 0;
   private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
+  /** C2 step 3: the bodies' places the library's contact lofts near (x, z pairs). */
+  private readonly nearBodies = new Float64Array(4);
   private rideResets = 0;
+  /**
+   * Step 3.2v: the balance limit that let go at the latest fall, and the speed over ground there, m/s. Taken on the
+   * frame the rider separates — after that the capture state is whatever it was left at — and held until the rider is
+   * back on the board, which is what lets the HUD name the fall the owner just had.
+   */
+  private broke?: BrokenLimit;
+  private wasAttached = false;
+  /**
+   * The steer asked for on the last step that began with the rider on the board, −1 (right) to 1 (left): what the
+   * ride handed the physics, so the pocket reflex's steer counts as asked for too. A batch applies one input to every
+   * one of its steps (`afterWater`), so this is the input of the step the rider fell on, not a later one.
+   */
+  private lastSteer = 0;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
   private readonly point = new Vector3();
@@ -371,6 +472,11 @@ export class SurfZoneRunner {
   private pipelineStepMs = 0;
   private batchMs = 0;
   private batchSteps = 0;
+  /** Why the water stays on the CPU though a device was asked for (`useDevice`), for the DEVICE row. */
+  private deviceNote?: string;
+  /** The last DEVICE_WINDOW device steps' whole uploads and bytes (barrel-gpu), a ring. */
+  private readonly deviceWindow = { fullWater: new Uint8Array(DEVICE_WINDOW), fullPlunge: new Uint8Array(DEVICE_WINDOW),
+    layouts: new Uint8Array(DEVICE_WINDOW), bytes: new Float64Array(DEVICE_WINDOW), next: 0, filled: 0 };
   private fillMs = 0;
   private snapshotFieldsMs = 0;
   /** The rider against the wave (spec P9 phase 0), and the peel angle it uses, refreshed once per simulated second. */
@@ -393,8 +499,10 @@ export class SurfZoneRunner {
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up', internal?: typeof WORKER_CONTACT_OWNER) {
     // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
     const slope = BARREL_SLOPE[config.spot];
-    const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
-    this.simulation = new SurfZoneSimulation(config, start, library);
+    const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases, config.tubeShape, config.spot, config.heldRule) : undefined;
+    const waveLibrary = options.waveCases && config.wave === 'library' && options.waveCases.length > 0
+      ? new WaveLibrary(options.waveCases.map(decodeWaveCase)) : undefined;
+    this.simulation = new SurfZoneSimulation(config, start, library, waveLibrary);
     this.workerOwned = internal === WORKER_CONTACT_OWNER;
     const requestedGrid = this.simulation.renderGrid(options.renderSpacing ?? 1);
     // The broad Padang tank otherwise copies over 400,000 render nodes every 1/60 s.
@@ -402,34 +510,61 @@ export class SurfZoneRunner {
     const renderSpacing = options.renderSpacing
       ?? (config.spot === 'padang' && requestedGrid.nx * requestedGrid.nz >= 200_000 ? 2 : 1);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
-    this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
+    this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY, BOARD_SPRAY_CAPACITY);
+    // `?lipVeil=on` (C2 step 5g): a plunging lip throws the veil, and the air it drives carries it. Off by default.
+    this.spray.veil = config.lipVeil === 'on';
+    this.boardSprays = config.boardSpray !== 'off';
+    this.curtains = config.spraySheet !== 'off';
     this.grid = requestedGrid.spacing === renderSpacing ? requestedGrid : this.simulation.renderGrid(renderSpacing);
     this.bed = new Float32Array(this.grid.nx * this.grid.nz);
     this.simulation.writeUniformBed(this.bed, this.grid);
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
-    if (library && (options.rider || options.board || options.contact) && this.simulation.front) {
+    const zone = this.simulation.waveZone;
+    if (zone && (options.rider || options.board || options.contact)) {
+      // C2 step 3: the library's overturn is the contact, built over the felt nodes each step (`updateContact`).
+      this.contact = SweptContact.forLoft(() => zone.loft.result);
+      this.contactQueries = this.contact;
+    } else if (library && (options.rider || options.board || options.contact) && this.simulation.front) {
       if (internal === WORKER_CONTACT_OWNER && config.spot === 'padang' && this.simulation.solver instanceof BoussinesqSolver) {
         this.ordinaryContactOwner = SweptContact.forOrdinaryWorker(library, slope!);
         this.contactQueries = this.ordinaryContactOwner.queries;
       } else {
-        this.contact = new SweptContact(library, slope!);
+        // The step 3 ruling's tube at the pool's straight Barrel (`TubeFace`): its contact's loft as its drawing's. In the
+        // worker its rows' heights and normals are found as the queries need them (pool-barrel-perf; the same answers), as
+        // before with `?contactRows=old`.
+        const face = this.simulation.tubeFace;
+        this.contact = face && internal === WORKER_CONTACT_OWNER && config.contactRows !== 'old'
+          ? SweptContact.forFaceWorker(library, slope!, face)
+          : new SweptContact(library, slope!, face ? { face } : {});
         this.contactQueries = this.contact;
       }
     }
     this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contactQueries, renderSpacing);
+    // Its rows are found as the bodies' queries need them, some outside any cache scope (a lone board's step): they read the
+    // water through a node cache of their own, emptied at each update.
+    if (this.contact && this.contact.rowsOnDemand) this.faceHeights = this.water.createCachedPlainSurface();
     this.bounds = tankRiderBounds(this.simulation.config);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     // The rider starts, and relaunches, `rideLineupOffset` seaward of the break line (11 m; nearer at the Canyon's Big).
-    this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? rideLineupOffset(config)));
+    this.rideLineup = new Vector3(this.focus.x + rideLineupAlong(config) + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? rideLineupOffset(config)));
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
-      this.session = new RideSession({ stance: options.stance });
+      this.session = new RideSession({
+        stance: options.stance, ...(config.stroke ? { stroke: config.stroke } : {}), ...(config.swim ? { swim: config.swim } : {}),
+        ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
+        ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
+        ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
+        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}), ...(config.legDrive ? { legDrive: config.legDrive } : {}), ...(config.hull ? { hull: config.hull } : {}), ...(config.railSuction ? { railSuction: config.railSuction } : {}), ...(config.compressPull ? { compressPull: config.compressPull } : {}), ...(config.carveFlex ? { carveFlex: config.carveFlex } : {}), ...(config.snapLegs ? { snapLegs: config.snapLegs } : {}), ...(config.snapCross ? { snapCross: config.snapCross } : {}), ...(config.legPower ? { legPower: config.legPower } : {}), ...(config.rider ? { rider: config.rider } : {}), ...(config.feltFrame ? { feltFrame: config.feltFrame } : {}), ...(config.kneeRoom ? { kneeRoom: config.kneeRoom } : {}), ...(config.stanceReach ? { stanceReach: config.stanceReach } : {}), ...(config.ankleLimit ? { ankleLimit: config.ankleLimit } : {}), ...(config.ankleRange ? { ankleRange: config.ankleRange } : {}), ...(config.bankClamp ? { bankClamp: config.bankClamp } : {}), ...(config.bodyBank ? { bodyBank: config.bodyBank } : {}), ...(config.askCap ? { askCap: config.askCap } : {}), ...(config.stanceDeep ? { stanceDeep: config.stanceDeep } : {}), ...(config.deepen ? { deepen: config.deepen } : {}), ...(config.armCarry ? { armCarry: config.armCarry } : {}), ...(config.trunk ? { trunk: config.trunk } : {}), ...(config.buoyFrame ? { buoyFrame: config.buoyFrame } : {}), ...(config.waterHeel ? { waterHeel: config.waterHeel } : {}), ...(config.mountAgree ? { mountAgree: config.mountAgree } : {}), ...(config.riderBody ? { riderBody: config.riderBody } : {}), ...(config.riderCost ? { riderCost: config.riderCost } : {}), ...(config.plantFloor ? { plantFloor: config.plantFloor } : {}), ...(config.deckHollow ? { deckHollow: config.deckHollow } : {}),
+        ...(config.snapUpturn ? { snapUpturn: config.snapUpturn } : {}),
+      });
       this.board = this.session.board;
     } else if (options.board) {
-      this.board = new BoardBody();
+      this.board = new BoardBody(config.duckBody === 'old' ? { submerged: 'old' } : {});
+      // A riderless board keeps the hull law (the plate is the two-body duck-dive's, `RideSession.ducking`).
+      this.board.plateAllowed = false;
     }
     if (start === 'spun-up') this.seat();
   }
@@ -457,6 +592,8 @@ export class SurfZoneRunner {
     // A detached rider's last strokes are stale: only an attached paddler splashes.
     const strokes = this.session?.rider.attached ? this.session.rider.strokes : undefined;
     return {
+      // The boards' drops are the page's fan (spray-rework), but for #171's (`?boardSpray=old`).
+      boardSheets: this.config.boardSpray === 'old' ? this.sheetsInUse : undefined,
       solver: simulation.solver, foam: simulation.foam, lipImpacts: simulation.lipImpacts, drawnImpacts: simulation.drawnImpacts,
       rollerToes: () => simulation.rollerToes(),
       windSpeed: this.config.windSpeed ?? 0, strokes,
@@ -494,6 +631,7 @@ export class SurfZoneRunner {
   advance(steps: number, input: RideRequest = IDLE, reactions?: ArrayLike<number>): void {
     const batchStart = performance.now();
     this.applyRemote(reactions);
+    this.takeRemoteSheets(input.boardSheets);
     for (let step = 0; step < steps; step += 1) {
       const start = performance.now();
       this.simulation.step(SURF_ZONE_STEP);
@@ -520,9 +658,11 @@ export class SurfZoneRunner {
     const batchStart = performance.now();
     if ((reactions !== undefined || steps !== 1) && this.simulation.hasWaterPrefetch) await this.simulation.discardWaterPrefetch();
     this.applyRemote(reactions);
+    this.takeRemoteSheets(input.boardSheets);
     for (let step = 0; step < steps; step += 1) {
       const start = performance.now();
       await this.simulation.stepAsync(SURF_ZONE_STEP);
+      this.countDeviceStep();
       this.afterWater(step, input);
       // Synchronous pack/CFL/encode/submit is real current CPU work: include it in step and batch wall times.
       if (steps === 1 && reactions === undefined) this.simulation.prefetchWater(SURF_ZONE_STEP);
@@ -530,6 +670,29 @@ export class SurfZoneRunner {
     }
     this.batchMs = performance.now() - batchStart;
     this.batchSteps = steps;
+  }
+
+  /** The window's whole uploads and mean bytes a step (all 0 without a device step yet). */
+  private deviceWindowCounts(): { deviceFullWater: number; deviceFullPlunge: number; deviceLayouts: number; deviceUploadMean: number } {
+    const w = this.deviceWindow;
+    let fullWater = 0, fullPlunge = 0, layouts = 0, bytes = 0;
+    for (let k = 0; k < w.filled; k += 1) {
+      fullWater += w.fullWater[k]; fullPlunge += w.fullPlunge[k]; layouts += w.layouts[k]; bytes += w.bytes[k];
+    }
+    return { deviceFullWater: fullWater, deviceFullPlunge: fullPlunge, deviceLayouts: layouts, deviceUploadMean: w.filled ? bytes / w.filled : 0 };
+  }
+
+  /** The device step just taken into the window of whole uploads (the DEVICE row). */
+  private countDeviceStep(): void {
+    const transfer = this.simulation.device?.transfer;
+    if (!transfer) return;
+    const w = this.deviceWindow;
+    w.fullWater[w.next] = transfer.fullWater > 0 ? 1 : 0;
+    w.fullPlunge[w.next] = transfer.fullPlunge > 0 ? 1 : 0;
+    w.layouts[w.next] = transfer.layouts > 0 ? 1 : 0;
+    w.bytes[w.next] = transfer.uploadBytes;
+    w.next = (w.next + 1) % DEVICE_WINDOW;
+    w.filled = Math.min(DEVICE_WINDOW, w.filled + 1);
   }
 
   /** Other players' boards pushing on this water (spec N1): x, z, jx, jz each (`REACTION_STRIDE`). */
@@ -546,6 +709,11 @@ export class SurfZoneRunner {
   ): Promise<boolean> {
     const { solver } = this.simulation;
     if (!(solver instanceof BoussinesqSolver)) return false;
+    // `?barrelGpu=off`: the periodic sea on the CPU, as before barrel-gpu.
+    if (this.config.barrelGpu === 'off' && solver.periodicAlongShore) {
+      this.deviceNote = 'periodic along shore, kept on the CPU (?barrelGpu=off)';
+      return false;
+    }
     try {
       // A GPU process that never answers (seen when WebGPU wedges) would leave the sea unbuilt: step on the CPU.
       let late = false;
@@ -557,8 +725,15 @@ export class SurfZoneRunner {
         void request.then((arrived) => arrived?.dispose(), () => undefined);
       }
       if (!late) this.simulation.device = device as SolverDevice | undefined;
+      // barrel-gpu's switches: how the CPU's changes go up (the same water on the device either way).
+      this.simulation.device?.configure?.({
+        water: this.config.deviceWater === 'old' ? 'span' : 'runs', plunge: this.config.devicePlunge === 'old' ? 'whole' : 'cells',
+      });
+      // Why the water stays on the CPU, for the DEVICE row: a setup the kernels do not cover, or no device at all.
+      this.deviceNote = this.simulation.device ? undefined : late ? 'no WebGPU device in time' : deviceStepRefusal(solver) ?? 'no WebGPU device';
     } catch (error) {
       console.warn('No surf zone device; stepping on the CPU.', error);
+      this.deviceNote = 'the WebGPU device failed';
     }
     return this.simulation.device !== undefined;
   }
@@ -569,13 +744,32 @@ export class SurfZoneRunner {
    */
   private updateContact(): void {
     const { contact, simulation, contactQueries, ordinaryContactOwner } = this;
+    const zone = simulation.waveZone;
+    if (zone && contact) {
+      // C2 step 3: the overturn's loft over the nodes as felt, then its contact over it.
+      const start = performance.now();
+      // Only near the bodies: the board, and the fallen surfer's.
+      const near = this.nearBodies;
+      let count = 0;
+      if (this.board) { near[count++] = this.board.position.x; near[count++] = this.board.position.z; }
+      if (this.session?.surfer.active) { const pelvis = this.session.surfer.nodes[0].position; near[count++] = pelvis.x; near[count++] = pelvis.z; }
+      this.water.withSurfaceNodeCache(() => zone.contactLoft((x, z) => this.water.plainSurfaceAt(x, z), near.subarray(0, count)));
+      contact.update(this.contactRecords, 0, this.config.tide, () => this.config.tide);
+      this.contactMs = performance.now() - start;
+      return;
+    }
     if (!contactQueries || !simulation.front) return;
     const start = performance.now();
-    const count = writeFrontRecords(simulation.front.points, this.contactRecords);
+    // Only the points whose waves plunge a tube (the spot's tube regime, `tubeFootMax`): the rest are not felt as one.
+    const count = simulation.writeTubeRecords(this.contactRecords);
     // The solver has finished all water mutations; the contact only reads heights for this synchronous build.
     if (ordinaryContactOwner) ordinaryContactOwner.updateFromPlainSurface(this.contactRecords, count, this.config.tide, this.water);
-    else this.water.withSurfaceNodeCache(() => {
-      contact!.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
+    else if (this.faceHeights) {
+      this.faceHeights.invalidate();
+      contact!.update(this.contactRecords, count, this.config.tide, this.faceHeights.heightAt, this.faceHeights.bedAt);
+    } else this.water.withSurfaceNodeCache(() => {
+      const { solver } = simulation;
+      contact!.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z), (x, z) => solver.sampleCentered(solver.bed, x, z));
     });
     this.contactMs = performance.now() - start;
   }
@@ -605,6 +799,9 @@ export class SurfZoneRunner {
       }
       const start = performance.now();
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
+      // The steer of the last step on the board, for `broke` below: read before the step, so a step that ends in a
+      // fall is the one recorded.
+      if (session.rider.attached) this.lastSteer = ridden.steer;
       // The bodies push only the water's discharge (and tally their reactions): its surface heights, bed, lenses and
       // tubes hold through the step, so its render-node heights are found once each (the M1 CPU study, 2026-10-19).
       this.water.withSurfaceNodeCache(() => session.step(SURF_ZONE_STEP, this.water, ridden));
@@ -639,7 +836,10 @@ export class SurfZoneRunner {
     let end = performance.now();
     this.bubbleMs = end - phase;
     phase = end;
-    if (this.sprayEnabled) this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+    if (this.sprayEnabled) {
+      this.collectSheets();
+      this.spray.update(this.sprayScene, SURF_ZONE_STEP);
+    }
     end = performance.now();
     this.sprayMs = end - phase;
     phase = end;
@@ -661,6 +861,39 @@ export class SurfZoneRunner {
     } else if (depth <= EDGE_HINT_CLEAR) {
       this.heldAtEdge = 0;
     }
+  }
+
+  /** The sheets the boards throw this step (board-spray): this board's, from its hull, and the other players'. */
+  private collectSheets(): void {
+    const sheets = this.sheetsInUse;
+    sheets.length = 0;
+    if (!this.boardSprays) return;
+    const count = this.board ? this.board.spraySheets(this.boardSheets, this.config.windSpeed ?? 0, this.config.snapFan) : 0;
+    // The tear where the water went (spray-sheet): each side's root lines lately.
+    const now = this.simulation.solver.time;
+    for (let n = 0; n < count; n += 1) {
+      const sheet = this.boardSheets[n];
+      sheet.source = 0;
+      const key = `0:${sheet.side}`;
+      this.sheetHistory.push(key, now, sheet);
+      this.sheetHistory.tearOf(key, now, sheet);
+      sheets.push(sheet);
+    }
+    this.sheetHistory.prune(now, 0.1);
+    this.ownSheets = count;
+    for (const sheet of this.remoteSheets) sheets.push(sheet);
+    // Without the curtains the drops leave the hull at once, as before spray-sheet.
+    if (!this.curtains) for (const sheet of sheets) sheet.breakup = 0;
+  }
+
+  /** Other players' sheets (board-spray), thrown on every step of this batch: they come with each frame's request. */
+  private takeRemoteSheets(packed?: Float32Array): void {
+    this.remoteSheets = packed && this.boardSprays ? unpackBoardSheets(packed) : [];
+  }
+
+  /** The sheets thrown in the latest step (board-spray): the dev tools' reading. */
+  boardSheetsNow(): readonly BoardSpraySheet[] {
+    return this.sheetsInUse;
   }
 
   /** Each step's lip landings and paddle strokes, kept for the next snapshot's sound (S1). */
@@ -709,7 +942,8 @@ export class SurfZoneRunner {
     this.peelAge += SURF_ZONE_STEP;
     if (this.peelAge >= 1) {
       this.peelAge = 0;
-      this.peelAngle = this.simulation.peelEstimate()?.angleDegrees ?? 0;
+      // The peel of the peak the rider is on (the Canyon's beach peaks; the spot's one peel elsewhere).
+      this.peelAngle = this.simulation.peelEstimate(session.board.centerOfMass.x)?.angleDegrees ?? 0;
     }
     const body = session.rider.attached ? session.board : undefined;
     const position = body ? body.centerOfMass : session.surfer.centerOfMass(this.point);
@@ -772,9 +1006,15 @@ export class SurfZoneRunner {
     if (!session || !analyzer || !wave) return;
     const here = this.water.sampleAt(position.x, position.y, position.z, this.rideSample);
     const left = this.axis.set(1, 0, 0).applyQuaternion(session.board.orientation);
+    // The two speed columns the analyzer needs, and they are not the same number: `speed` over the ground, and the
+    // board's speed through the water along its heading, `boardVelocity·forward − waterFlow·forward`. The heading is
+    // the board's forward projected flat (`RideSession.heading`), so its horizontal unit is (sin, cos).
+    const forwardX = Math.sin(session.heading);
+    const forwardZ = Math.cos(session.heading);
+    const throughWater = (velocity.x - here.flowX) * forwardX + (velocity.z - here.flowZ) * forwardZ;
     analyzer.push({
       t: this.simulation.seaTime, x: position.x, z: position.z, heading: session.heading,
-      speed: Math.hypot(velocity.x, velocity.z), roll: Math.asin(Math.max(-1, Math.min(1, left.y))),
+      speed: Math.hypot(velocity.x, velocity.z), throughWater, roll: Math.asin(Math.max(-1, Math.min(1, left.y))),
       load: session.rider.contact.load, phase: session.phase, wave, depth: here.stillDepth, breakingHere: here.breaking,
     });
     const report = analyzer.report();
@@ -804,8 +1044,10 @@ export class SurfZoneRunner {
       aeration: new Float32Array(nodes * 2),
       bubbles: new Float32Array(PARCEL_CAPACITY * 3),
       bubbleCount: 0,
-      spray: new Float32Array((SPRAY_CAPACITY + WHITEWATER_CAPACITY) * SPRAY_STRIDE),
+      spray: new Float32Array((SPRAY_CAPACITY + WHITEWATER_CAPACITY + BOARD_SPRAY_CAPACITY) * SPRAY_STRIDE),
       sprayCount: 0,
+      sheets: new Float32Array(BOARD_SHEETS * BOARD_SHEET_STRIDE),
+      sheetCount: 0,
       board: new Float64Array(8),
       rider: new Float64Array(RIDER_SNAPSHOT.length),
       lipHits: new Float32Array(SOUND_EVENT_CAPACITY * LIP_HIT_STRIDE),
@@ -821,6 +1063,8 @@ export class SurfZoneRunner {
       rollerLook: new Float32Array(this.simulation.curl ? this.simulation.rollerColumns * ROLLER_SLOTS * BAND_LOOK_STRIDE : 0),
       curl: new Float32Array(this.simulation.curl ? CURL_CAPACITY * CURL_STRIDE : 0),
       curlCount: 0,
+      zone: new Float32Array(this.simulation.waveZone ? this.simulation.waveZone.surface.curves.length : 0),
+      zoneCount: 0,
     };
   }
 
@@ -854,6 +1098,10 @@ export class SurfZoneRunner {
     buffers.bubbles.set(this.bubbles.positions.subarray(0, buffers.bubbleCount * 3));
     buffers.sprayCount = Math.min(buffers.spray.length / SPRAY_STRIDE, this.spray.count);
     buffers.spray.set(this.spray.particles.subarray(0, buffers.sprayCount * SPRAY_STRIDE));
+    // The board's sheets as of the last step, to draw as curtains on the page (spray-sheet).
+    const drawn = this.curtains && this.sprayEnabled ? Math.min(this.ownSheets, BOARD_SHEETS) : 0;
+    if (drawn > 0) packBoardSheets(this.sheetsInUse.slice(0, drawn), buffers.sheets);
+    buffers.sheetCount = drawn;
     const { board } = this;
     buffers.board.fill(0);
     if (board) {
@@ -868,7 +1116,15 @@ export class SurfZoneRunner {
     buffers.strokeHitCount = this.strokeHits.drain(buffers.strokeHits);
     this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
-    buffers.frontCount = simulation.front ? writeFrontRecords(simulation.front.points, buffers.front) : 0;
+    // The drawn tubes: as the contact's, only the points whose waves plunge one (`tubeFootMax`).
+    buffers.frontCount = simulation.writeTubeRecords(buffers.front);
+    // C2 step 3: the library's overturn curves, which the page lofts over the same nodes (`LibraryZone`).
+    const zone = simulation.waveZone?.surface;
+    if (zone && buffers.zone.length > 0) {
+      const count = Math.min(zone.curveCount, Math.floor(buffers.zone.length / CURVE_STRIDE));
+      buffers.zone.set(zone.curves.subarray(0, count * CURVE_STRIDE));
+      buffers.zoneCount = count;
+    } else buffers.zoneCount = 0;
     this.fillMs = performance.now() - start;
   }
 
@@ -908,18 +1164,43 @@ export class SurfZoneRunner {
   status(): SurfZoneStatus {
     const start = performance.now();
     const { simulation } = this;
+    /**
+     * Step 3.2v: the limit that let go, taken on the first snapshot after the rider came off the board. The capture
+     * state and the contact's two shares are not cleared by the separation — nothing calls `project` once the rider is
+     * off — so this reads the fall's own values, and it is cleared when the rider is back on.
+     */
+    if (this.session) {
+      const attached = this.session.rider.attached;
+      if (this.wasAttached && !attached) {
+        const limits = this.session.rider.balanceLimits;
+        this.broke = {
+          limit: limits.limit,
+          across: limits.across,
+          speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
+          steer: this.lastSteer,
+        };
+      } else if (attached && !this.wasAttached) {
+        this.broke = undefined;
+      }
+      this.wasAttached = attached;
+    }
+    // The readout's peak (the Canyon's beach peaks): the one nearest the rider, else the take-off's.
+    const near = this.session ? this.session.board.centerOfMass.x : this.focus.x;
+    const peaks = simulation.readoutPeaks();
     const status: SurfZoneStatus = {
       seaTime: simulation.seaTime,
       timeToSet: simulation.timeToSet,
       stepMs: simulation.lastStepMs + this.boardMs,
       compute: simulation.device ? 'gpu' : 'cpu',
+      ...(simulation.device || !this.deviceNote ? {} : { deviceNote: this.deviceNote }),
       cells: simulation.solver.nx * simulation.solver.nz,
       breakPoint: { ...this.focus },
       breakDepth: this.breakDepth,
-      breaker: { ...this.breaker },
+      breaker: simulation.breakerNear(near) ?? { ...this.breaker },
       breakingFraction: simulation.breakingFraction(),
       surf: simulation.surf.reading(simulation.solver.time),
-      peel: simulation.peelEstimate(),
+      peel: simulation.peelEstimate(near),
+      ...(peaks ? { peaks } : {}),
       lipLaunches: simulation.lipLaunches,
       lipVolume: simulation.lipVolume,
       lipJets: simulation.lipJets,
@@ -940,6 +1221,8 @@ export class SurfZoneRunner {
         live: this.analyzer?.latest && { ...this.analyzer.latest },
         report: this.rideReport && { ...this.rideReport, maneuvers: this.rideReport.maneuvers.map((maneuver) => ({ ...maneuver })) },
         balance: this.session.phase === 'fallen' ? 0 : this.session.rider.balanceReserve,
+        balanceLimit: this.session.rider.balanceLimits,
+        ...(this.broke ? { broke: { ...this.broke } } : {}),
         bank: this.session.rider.attached ? this.session.rider.bank.angle : 0,
         ...(this.tubeApproach?.seaTime === simulation.seaTime ? { tubeApproach: {
           ...this.tubeApproach, mouth: { ...this.tubeApproach.mouth }, inside: { ...this.tubeApproach.inside },
@@ -952,11 +1235,16 @@ export class SurfZoneRunner {
           partSpheres: this.tubeBody.slice(7).map(p => ({ ...p })),
         } } : {}),
         leash: { snapped: this.session.leash.snapped, tension: this.session.leash.tension, distance: this.session.leash.distance, reeling: this.session.leash.reeling },
-        duck: this.session.rider.attached ? this.session.rider.duck.press : 0,
+        duck: this.session.duckPress,
         boardInReach: this.session.surfer.active && this.session.recovery.state === 'free' && this.session.recovery.inReach(this.session.board),
         knock: this.snapshotKnock,
         breath: this.session.breath.level,
         rescues: this.rescues,
+        sprint: {
+          reserve: this.session.reserve.level, spent: this.session.reserve.spent,
+          paddling: this.session.rider.attached && this.session.rider.phase === 'prone' && this.session.rider.paddle,
+          sprinting: this.session.rider.sprintPaddling,
+        },
         edgeHolds: this.edgeHolds,
       } : undefined,
     };
@@ -974,6 +1262,7 @@ export class SurfZoneRunner {
       deviceEncode: device?.encode ?? 0, deviceMap: device?.map ?? 0, deviceUnpack: device?.unpack ?? 0,
       deviceUploadBytes: transfer?.uploadBytes ?? 0, deviceReadbackBytes: transfer?.readbackBytes ?? 0,
       deviceMaps: transfer?.maps ?? 0, deviceSubmits: transfer?.submits ?? 0,
+      ...this.deviceWindowCounts(),
     };
     return status;
   }

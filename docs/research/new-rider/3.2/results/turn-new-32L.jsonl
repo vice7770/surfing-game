@@ -1,0 +1,10 @@
+{"bar":"turn","rider":"new","stance":"tall","v":7.7,"startSpeed":7.97,"peakYawDegS":94.7,"peakYawAtS":1.33,"radiusM":4.3,"toRail30S":0.85,"peakRailDeg":87.3,"turned90S":null,"speedAt90":null,"keptAt90":null,"fell":"balance","fellAtS":1.37,"lean":1.4,"railCapDeg":5}
+{"bar":"turn","rider":"new","stance":"compress","v":7.7,"startSpeed":7.87,"peakYawDegS":60.8,"peakYawAtS":1.57,"radiusM":7.3,"toRail30S":0.97,"peakRailDeg":45.8,"turned90S":null,"speedAt90":null,"keptAt90":null,"fell":"balance","fellAtS":2.23,"lean":1.4,"railCapDeg":5}
+{"bar":"travel","rider":"new","stance":"tall","slopeDeg":8,"heldS":3.78,"endMs":1.21,"endKmh":4.4,"peakKmh":20.5,"inBand":false,"fell":"lost board"}
+{"bar":"travel","rider":"new","stance":"tall","slopeDeg":10,"heldS":7.48,"endMs":2.34,"endKmh":8.4,"peakKmh":24,"inBand":false,"fell":"lost board"}
+{"bar":"travel","rider":"new","stance":"tall","slopeDeg":12,"heldS":8,"endMs":9.67,"endKmh":34.8,"peakKmh":34.8,"inBand":true,"fell":""}
+{"bar":"travel","rider":"new","stance":"tall","slopeDeg":14,"heldS":8,"endMs":12.85,"endKmh":46.2,"peakKmh":46.2,"inBand":false,"fell":""}
+{"bar":"travel","rider":"new","stance":"compress","slopeDeg":8,"heldS":3.32,"endMs":2.94,"endKmh":10.6,"peakKmh":20.3,"inBand":false,"fell":"balance"}
+{"bar":"travel","rider":"new","stance":"compress","slopeDeg":10,"heldS":7.2,"endMs":1.28,"endKmh":4.6,"peakKmh":24,"inBand":false,"fell":"balance"}
+{"bar":"travel","rider":"new","stance":"compress","slopeDeg":12,"heldS":8,"endMs":9.76,"endKmh":35.1,"peakKmh":35.1,"inBand":true,"fell":""}
+{"bar":"travel","rider":"new","stance":"compress","slopeDeg":14,"heldS":8,"endMs":12.93,"endKmh":46.6,"peakKmh":46.6,"inBand":false,"fell":""}

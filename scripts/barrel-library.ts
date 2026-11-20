@@ -11,19 +11,26 @@
  *
  * --runs names the directory holding the runs (tools/basilisk/runs by default). --run NAME converts a run; --keep ID
  * keeps a committed case as it is (its .bin untouched, its rows carried over from barrel-cases.md), for a case whose
- * run is not on this machine. Per case, NAME=VALUE (or one VALUE for every case):
+ * run is not on this machine. --assets DIR, --index FILE and --cases FILE write the case files, the index and the
+ * table elsewhere (a new spot's cases staged beside its runs' report, the game's index untouched; an index ending in
+ * .json is written as its entries alone). Per case, NAME=VALUE (or one VALUE for every case):
  *   --spot: the spot whose transect it was run on (each spot loads only its own cases; PR 7);
  *   --flat: the flat's depth beyond the slope, in h0 (Padang Padang: 1.25 m over 7 m);
  *   --a0: its H0/h0, the key cases blend by, where its own A0 is something else: a periodic train's is its wave height,
  *     so give its crest at the slope's foot over h0 (the advisor's plunge_measure.py runs; their metrics are read in
  *     that form too).
+ *
+ * --format brl3 (C2 step 1b) packs C2's case files into BRL3 instead (scripts/brl3.ts, its own options); --format brl2,
+ * the default, is the above, byte for byte as before.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import type { SpotName } from '../src/wave/Bathymetry';
 import { caseFromLibrary, libraryJson, refitTip, sustainedOverturn } from '../src/wave/barrel/caseFromLibrary';
 import type { BarrelCase } from '../src/wave/barrel/ProfileLibrary';
 import { decodeCase, encodeCase } from '../src/wave/barrel/profileFormat';
 import type { BarrelCaseEntry } from '../src/wave/barrel/barrelLibrary';
+import { packBrl3 } from './brl3';
 
 const options = (name: string): string[] =>
   process.argv.flatMap((arg, i) => (arg === `--${name}` && i + 1 < process.argv.length ? [process.argv[i + 1]] : []));
@@ -38,19 +45,32 @@ const perCase = (name: string) => {
   }
   return (key: string) => pairs.get(key) ?? fallback;
 };
+const format = options('format')[0] ?? 'brl2';
+if (format !== 'brl2' && format !== 'brl3') {
+  console.error(`--format ${format}: brl2 (the default) or brl3`);
+  process.exit(1);
+}
+if (format === 'brl3') {
+  packBrl3(options);
+  process.exit(0);
+}
 const runs = options('run');
 const keeps = options('keep');
 const runsDir = options('runs')[0] ?? 'tools/basilisk/runs';
+const GAME_INDEX = 'src/wave/barrel/barrelLibraryIndex.ts';
+const assetsDir = options('assets')[0] ?? 'public/barrels';
+const indexPath = options('index')[0] ?? GAME_INDEX;
+const casesPath = options('cases')[0] ?? 'docs/research/barrel-cases.md';
 const flatOf = perCase('flat');
 const spotOf = perCase('spot');
 const a0Of = perCase('a0');
-const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang'];
+const SPOTS: readonly SpotName[] = ['beach', 'point', 'reef', 'canyon', 'padang', 'pool'];
 const missing = [
   ...runs.filter((run) => !Number.isFinite(Number(flatOf(run)))).map((run) => `${run}: --flat`),
   ...[...runs, ...keeps].filter((name) => !SPOTS.includes(spotOf(name) as SpotName)).map((name) => `${name}: --spot`),
 ];
 if (runs.length + keeps.length === 0 || missing.length > 0) {
-  console.error(`usage: npm run barrels -- --run NAME … [--keep ID …] --flat [NAME=]DEPTH_OVER_H0 --spot [NAME=]SPOT [--a0 NAME=A0] [--runs DIR]${missing.length ? `\nmissing: ${missing.join(', ')}` : ''}`);
+  console.error(`usage: npm run barrels -- --run NAME … [--keep ID …] --flat [NAME=]DEPTH_OVER_H0 --spot [NAME=]SPOT [--a0 NAME=A0] [--runs DIR] [--assets DIR] [--index FILE] [--cases FILE]${missing.length ? `\nmissing: ${missing.join(', ')}` : ''}`);
   process.exit(1);
 }
 
@@ -145,7 +165,7 @@ function tipRow(c: BarrelCase): string {
 
 /** The rows barrel-cases.md holds for a case, by section, so a kept case's are carried over unchanged. */
 function rowsOf(id: string): { validation?: string; tip?: string; landmarks: string[] } {
-  const path = 'docs/research/barrel-cases.md';
+  const path = casesPath;
   const found: { validation?: string; tip?: string; landmarks: string[] } = { landmarks: [] };
   if (!existsSync(path)) return found;
   let section = '';
@@ -159,7 +179,7 @@ function rowsOf(id: string): { validation?: string; tip?: string; landmarks: str
   return found;
 }
 
-mkdirSync('public/barrels', { recursive: true });
+mkdirSync(assetsDir, { recursive: true });
 const entries: BarrelCaseEntry[] = [];
 const rows: string[] = [];
 const cleanliness: string[] = [];
@@ -171,8 +191,8 @@ for (const name of [...keeps, ...runs]) {
     // A committed case kept as it is: its index entry from its own header, its rows as barrel-cases.md has them.
     // Its frames as they are; its tip fitted again by the regime rule (the advisor's ruling, PR 7).
     const asset = `barrels/${name}.bin`;
-    const barrel = refitTip(decodeCase(new Uint8Array(readFileSync(`public/${asset}`))));
-    writeFileSync(`public/${asset}`, encodeCase(barrel));
+    const barrel = refitTip(decodeCase(new Uint8Array(readFileSync(`${assetsDir}/${name}.bin`))));
+    writeFileSync(`${assetsDir}/${name}.bin`, encodeCase(barrel));
     entries.push({ id: name, spot, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
     const carried = rowsOf(name);
     if (!carried.validation) throw new Error(`${name}: kept, but barrel-cases.md has no row for it`);
@@ -195,7 +215,7 @@ for (const name of [...keeps, ...runs]) {
   const { barrel, refilled } = caseFromLibrary(library, id, flat);
   const asset = `barrels/${id}.bin`;
   const bytes = encodeCase(barrel);
-  writeFileSync(`public/${asset}`, bytes);
+  writeFileSync(`${assetsDir}/${id}.bin`, bytes);
   entries.push({ id, spot, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
   sources.push(`${run} (${spot}, flat ${flat} h0)`);
 
@@ -232,11 +252,14 @@ for (const name of [...keeps, ...runs]) {
   }
 }
 
-for (const file of readdirSync('public/barrels')) {
-  if (!entries.some((entry) => entry.asset === `barrels/${file}`)) console.warn(`public/barrels/${file} is not in this run's index; delete it if it is stale.`);
+if (indexPath === GAME_INDEX) {
+  for (const file of readdirSync(assetsDir)) {
+    if (!entries.some((entry) => entry.asset === `barrels/${file}`)) console.warn(`${assetsDir}/${file} is not in this run's index; delete it if it is stale.`);
+  }
 }
 
-writeFileSync('src/wave/barrel/barrelLibraryIndex.ts', `// Generated by \`npm run barrels\` — do not edit.
+mkdirSync(dirname(indexPath), { recursive: true });
+writeFileSync(indexPath, indexPath.endsWith('.json') ? `${JSON.stringify(entries, null, 2)}\n` : `// Generated by \`npm run barrels\` — do not edit.
 import type { BarrelCaseEntry } from './barrelLibrary';
 
 export const BARREL_CASES: readonly BarrelCaseEntry[] = ${JSON.stringify(entries, null, 2)};
@@ -245,7 +268,8 @@ export const BARREL_CASES: readonly BarrelCaseEntry[] = ${JSON.stringify(entries
 const bySpot = SPOTS.map((spot) => [spot, entries.filter((entry) => entry.spot === spot).map((entry) => `\`${entry.id}\``)] as const)
   .filter(([, ids]) => ids.length > 0).map(([spot, ids]) => `- ${spot}: ${ids.join(', ')}`).join('\n');
 
-writeFileSync('docs/research/barrel-cases.md', `# Barrel cases
+mkdirSync(dirname(casesPath), { recursive: true });
+writeFileSync(casesPath, `# Barrel cases
 
 Generated by \`npm run barrels\` (Padang Padang, Part B) from the advisor's Basilisk runs in \`${runsDir}\`: ${sources.join('; ')}. A kept case's rows are carried over from this file as they were. What the cases are for and how to add one: [barrel-library.md](barrel-library.md).
 

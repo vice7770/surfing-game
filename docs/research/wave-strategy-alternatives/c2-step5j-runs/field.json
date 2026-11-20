@@ -1,0 +1,235 @@
+{
+  "what": "C2 step 5j: the drawn bubble-layer count over the render nodes carrying foam, in the held frame the stills come from",
+  "search": "?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&foamAlbedo=bubbles&compute=gpu&receiver=http://localhost:5323",
+  "seconds": 72,
+  "grid": {
+    "nx": 312,
+    "nz": 511,
+    "xMin": -155.5,
+    "zMin": -479.97,
+    "spacing": 1
+  },
+  "nodes": {
+    "total": 159432,
+    "withFoam": 18450
+  },
+  "d_bubble_m": 0.001,
+  "stats": [
+    {
+      "field": "alpha (void fraction, drawn)",
+      "n": 18450,
+      "mean": 0.0166,
+      "p5": 0,
+      "p25": 0.0003,
+      "median": 0.0026,
+      "p75": 0.0188,
+      "p95": 0.0737,
+      "min": 0,
+      "max": 0.3421
+    },
+    {
+      "field": "plume depth, m (drawn channel)",
+      "n": 18450,
+      "mean": 1.0015,
+      "p5": 0.1243,
+      "p25": 0.5344,
+      "median": 0.9331,
+      "p75": 1.6595,
+      "p95": 1.6595,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "field": "water depth, m",
+      "n": 18450,
+      "mean": 1.7269,
+      "p5": 0.1295,
+      "p25": 0.5994,
+      "median": 1.3717,
+      "p75": 2.6665,
+      "p95": 4.3371,
+      "min": 0.0243,
+      "max": 6.058
+    },
+    {
+      "field": "h = min(plume, depth), m",
+      "n": 18450,
+      "mean": 0.995,
+      "p5": 0.1243,
+      "p25": 0.5344,
+      "median": 0.91,
+      "p75": 1.6595,
+      "p95": 1.6595,
+      "min": 0,
+      "max": 2
+    },
+    {
+      "field": "foam cover (drawn)",
+      "n": 18450,
+      "mean": 0.2003,
+      "p5": 0.0137,
+      "p25": 0.0439,
+      "median": 0.1348,
+      "p75": 0.2662,
+      "p95": 0.701,
+      "min": 0.01,
+      "max": 1
+    },
+    {
+      "field": "N_plume = alpha*h/d",
+      "n": 18450,
+      "mean": 20.1909,
+      "p5": 0.0012,
+      "p25": 0.213,
+      "median": 2.329,
+      "p75": 20.2313,
+      "p95": 90.0881,
+      "min": 0,
+      "max": 684.2986
+    },
+    {
+      "field": "N total",
+      "n": 18450,
+      "mean": 20.3912,
+      "p5": 0.0258,
+      "p25": 0.2714,
+      "median": 2.4749,
+      "p75": 20.4672,
+      "p95": 90.7236,
+      "min": 0.01,
+      "max": 685.1466
+    },
+    {
+      "field": "R(N)",
+      "n": 18450,
+      "mean": 0.2652,
+      "p5": 0.0028,
+      "p25": 0.0291,
+      "median": 0.2147,
+      "p75": 0.5408,
+      "p95": 0.55,
+      "min": 0.0011,
+      "max": 0.55
+    },
+    {
+      "field": "step 5i aged value at the same node",
+      "n": 18450,
+      "mean": 0.247,
+      "p5": 0.18,
+      "p25": 0.18,
+      "median": 0.18,
+      "p75": 0.2621,
+      "p95": 0.5,
+      "min": 0.18,
+      "max": 0.5
+    }
+  ],
+  "buckets": {
+    "N < 1 (less than one layer)": 7400,
+    "N 1-2 (a film, R about 0.10-0.18)": 1418,
+    "N 2-5": 1926,
+    "N 5-12 (0.18 to 0.50, step 5i's whole range)": 1792,
+    "N 12-25": 1783,
+    "N >= 25 (saturated, R >= 0.546)": 4131
+  },
+  "coverWeightedMean": {
+    "R(N)": 0.4327,
+    "step 5i": 0.3354
+  },
+  "sample": {
+    "brightest": [
+      {
+        "alpha": 0.2864,
+        "plume": 1.936,
+        "h": 1.936,
+        "foam": 0.712,
+        "N": 555.3,
+        "R": 0.55,
+        "r5i": 0.5
+      },
+      {
+        "alpha": 0.1774,
+        "plume": 1.819,
+        "h": 1.819,
+        "foam": 0.521,
+        "N": 323.2,
+        "R": 0.55,
+        "r5i": 0.5
+      },
+      {
+        "alpha": 0.1751,
+        "plume": 1.798,
+        "h": 1.798,
+        "foam": 0.637,
+        "N": 315.5,
+        "R": 0.55,
+        "r5i": 0.5
+      },
+      {
+        "alpha": 0.127,
+        "plume": 1.706,
+        "h": 1.706,
+        "foam": 0.772,
+        "N": 217.4,
+        "R": 0.55,
+        "r5i": 0.5
+      },
+      {
+        "alpha": 0.1323,
+        "plume": 1.747,
+        "h": 1.747,
+        "foam": 0.779,
+        "N": 231.9,
+        "R": 0.55,
+        "r5i": 0.5
+      }
+    ],
+    "dimmest": [
+      {
+        "alpha": 0,
+        "plume": 0,
+        "h": 0,
+        "foam": 0.01,
+        "N": 0,
+        "R": 0.0011,
+        "r5i": 0.18
+      },
+      {
+        "alpha": 0,
+        "plume": 0,
+        "h": 0,
+        "foam": 0.01,
+        "N": 0,
+        "R": 0.0011,
+        "r5i": 0.18
+      },
+      {
+        "alpha": 0,
+        "plume": 0,
+        "h": 0,
+        "foam": 0.01,
+        "N": 0,
+        "R": 0.0011,
+        "r5i": 0.18
+      },
+      {
+        "alpha": 0,
+        "plume": 0,
+        "h": 0,
+        "foam": 0.01,
+        "N": 0,
+        "R": 0.0011,
+        "r5i": 0.18
+      },
+      {
+        "alpha": 0,
+        "plume": 0,
+        "h": 0,
+        "foam": 0.01,
+        "N": 0,
+        "R": 0.0011,
+        "r5i": 0.18
+      }
+    ]
+  }
+}

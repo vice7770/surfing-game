@@ -1,0 +1,41 @@
+C2 step 5g: the Canyon byte checks and the veil's own cost.
+
+The bench takes two paths (m1-cpu-bench.ts): with no cache it spins up, saves, re-imports the saved
+32-bit sea and steps; with a cache it imports and then spins up again. Compare only legs that took
+the same path.
+
+  A  branch, veil off, fresh spin-up   snapshots ea3d57a4d49f4b48  state a1a2555739210f96   = step 5f's published main
+  B  main,   veil off, cache read     snapshots a8ac71b70eac2add  state 6319ed883e54b32e
+  D  branch, veil off, cache read     snapshots a8ac71b70eac2add  state 6319ed883e54b32e   = B exactly
+  C  branch, lipVeil=on, cache read   snapshots d742e2abf5514cd3  state 6319ed883e54b32e   snapshot moves, STATE DOES NOT
+
+So: the default Canyon is unchanged on both protocols, and with the veil on only the drawn snapshot moves.
+
+== leg A ==
+spun up on the CPU in 266.9 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/canyon-5g.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.60/3.10, roller 0.51/1.16, front 0.00/0.00, lip 0.03/0.06, foam 4.81/9.06, airSources 0.06/0.16, aeration 2.48/4.73, contact 0.00/0.00, board 0.82/1.96, bubbles 0.22/0.38, spray 0.21/0.47, sounds 0.00/0.00, snapshotFields 5.58/10.62, snapshot 6.20/11.64, summary 0.55/0.89
+  CPU stages per step (step − water + snapshot + summary): 17.80/33.99; water (CPU solver, not timed on the device) 111.5
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+BRANCH EXIT 0
+
+== leg B ==
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.66/2.73, roller 0.60/0.97, front 0.00/0.00, lip 0.03/0.07, foam 4.88/8.13, airSources 0.06/0.12, aeration 2.62/4.10, contact 0.00/0.00, board 0.86/1.57, bubbles 0.23/0.35, spray 0.24/0.44, sounds 0.00/0.00, snapshotFields 5.87/9.52, snapshot 6.54/10.53, summary 0.54/0.90
+  CPU stages per step (step − water + snapshot + summary): 18.64/30.96; water (CPU solver, not timed on the device) 110.5
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+MAIN EXIT 0
+
+== leg D ==
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 2.01/3.33, roller 0.73/1.06, front 0.00/0.00, lip 0.04/0.07, foam 5.97/9.70, airSources 0.08/0.12, aeration 3.18/4.79, contact 0.00/0.00, board 1.03/1.87, bubbles 0.28/0.35, spray 0.28/0.46, sounds 0.00/0.00, snapshotFields 7.13/11.40, snapshot 7.93/12.70, summary 0.66/0.98
+  CPU stages per step (step − water + snapshot + summary): 22.71/35.11; water (CPU solver, not timed on the device) 137.2
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+EXIT 0
+
+== leg C ==
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 2.00/3.16, roller 0.66/1.04, front 0.00/0.00, lip 0.04/0.08, foam 5.99/9.11, airSources 0.07/0.12, aeration 3.17/4.55, contact 0.00/0.00, board 1.03/1.83, bubbles 0.28/0.39, spray 0.27/0.51, sounds 0.00/0.00, snapshotFields 7.06/11.01, snapshot 7.88/12.25, summary 0.66/0.95
+  CPU stages per step (step − water + snapshot + summary): 22.64/33.63; water (CPU solver, not timed on the device) 138.2
+  hashes: snapshots d742e2abf5514cd3, state 6319ed883e54b32e
+VEIL EXIT 0

@@ -1,0 +1,16 @@
+{"angle":25,"i":0,"legW":106,"boardSpin":1.34,"pitch":1,"drive":1.15,"upright":1.14,"balanceRate":0,"leg":0.14,"feasible":false,"cone":5,"v":6.1,"fell":""}
+{"angle":25,"i":1,"legW":202,"boardSpin":1.17,"pitch":2.3,"drive":1.01,"upright":1,"balanceRate":0,"leg":-0.03,"feasible":false,"cone":1,"v":6.1,"fell":""}
+{"angle":25,"i":2,"legW":166,"boardSpin":1.18,"pitch":3.3,"drive":1.01,"upright":1.01,"balanceRate":0,"leg":-0.03,"feasible":true,"cone":0,"v":6.2,"fell":""}
+{"angle":25,"i":3,"legW":211,"boardSpin":1.27,"pitch":4.5,"drive":1.11,"upright":1.09,"balanceRate":0.03,"leg":-0.06,"feasible":true,"cone":2,"v":6.2,"fell":""}
+{"angle":25,"i":4,"legW":255,"boardSpin":1.39,"pitch":5.8,"drive":1.24,"upright":1.18,"balanceRate":0.07,"leg":-0.09,"feasible":true,"cone":2,"v":6.2,"fell":""}
+{"angle":25,"i":5,"legW":336,"boardSpin":1.69,"pitch":7.3,"drive":1.53,"upright":1.44,"balanceRate":0.12,"leg":-0.1,"feasible":true,"cone":3,"v":6.3,"fell":""}
+{"angle":25,"i":6,"legW":427,"boardSpin":2.02,"pitch":9,"drive":1.84,"upright":1.71,"balanceRate":0.16,"leg":-0.08,"feasible":true,"cone":4,"v":6.3,"fell":""}
+{"angle":25,"i":7,"legW":498,"boardSpin":2.26,"pitch":11.1,"drive":2.07,"upright":1.92,"balanceRate":0.19,"leg":-0.07,"feasible":true,"cone":4,"v":6.3,"fell":""}
+{"angle":35,"i":0,"legW":65,"boardSpin":1.18,"pitch":0.9,"drive":1.42,"upright":1.01,"balanceRate":0,"leg":0.2,"feasible":false,"cone":16,"v":6.3,"fell":""}
+{"angle":35,"i":1,"legW":77,"boardSpin":1.02,"pitch":1.9,"drive":1.42,"upright":0.87,"balanceRate":0.05,"leg":0.07,"feasible":false,"cone":7,"v":6.5,"fell":""}
+{"angle":35,"i":2,"legW":49,"boardSpin":0.76,"pitch":2.8,"drive":1.23,"upright":0.65,"balanceRate":0.1,"leg":0.02,"feasible":false,"cone":7,"v":6.6,"fell":""}
+{"angle":35,"i":3,"legW":26,"boardSpin":0.91,"pitch":3.6,"drive":1.4,"upright":0.78,"balanceRate":0.15,"leg":-0.02,"feasible":false,"cone":7,"v":6.8,"fell":""}
+{"angle":35,"i":4,"legW":17,"boardSpin":0.99,"pitch":4.5,"drive":1.5,"upright":0.85,"balanceRate":0.2,"leg":-0.05,"feasible":false,"cone":6,"v":7,"fell":""}
+{"angle":35,"i":5,"legW":9,"boardSpin":1.13,"pitch":5.5,"drive":1.67,"upright":0.97,"balanceRate":0.25,"leg":-0.06,"feasible":false,"cone":6,"v":7.2,"fell":""}
+{"angle":35,"i":6,"legW":7,"boardSpin":1.39,"pitch":6.7,"drive":1.92,"upright":1.18,"balanceRate":0.3,"leg":-0.07,"feasible":false,"cone":6,"v":7.5,"fell":""}
+{"angle":35,"i":7,"legW":22,"boardSpin":1.65,"pitch":8.1,"drive":2.18,"upright":1.41,"balanceRate":0.35,"leg":-0.07,"feasible":false,"cone":6,"v":7.7,"fell":""}

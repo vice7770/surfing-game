@@ -1,11 +1,18 @@
 import type { CrestSample } from './crestOnset';
 import type { OnsetTiming } from './sliceClock';
 import { CarrierSupport, copyCarrierPoint, geometricPaceActive, type CarrierSupportHistory } from './carrierSupport';
+import { GRAVITY } from '../dispersion';
 
 /** Crests in neighbouring columns this many rows apart in z are one front (provisional). */
 const LINK_ROWS = 3;
 /** A crest this close in z to last step's in its column is the same point, m (provisional: 20 m/s × 0.1 s), plus a row, its cell's jump. */
 const MATCH_REACH = 2;
+/**
+ * The step 7 follow-up's join (`FrontOptions.merge`; the advisor's 2026-11-05 ruling §5.1): a crest joining by distance
+ * beside a front's end point within `reach` slice spacings (the front's, a column) along the crest and `clock` s of its
+ * clock (τ_e as it joins) joins that front: its join taken as the end's.
+ */
+export const MERGE = { reach: 1.5, clock: 0.3 } as const;
 /**
  * A crest on its way in, not yet breaking, is the same one this close, m: a long swell's crest is broad and flat on
  * the ramp, so its highest cell jumps metres between steps, while crests there stand a wavelength (100 m and more) apart
@@ -82,8 +89,9 @@ export interface FrontOptions {
    * the nearest chain end in that column or the one before it (a one-column gap) within CLOCK_REACH, when their joins
    * differ by at most CLOCK_SLOPE per metre between them. The 1 s/m split (SPLIT) is left as it is: it still refuses the
    * neighbours it refused, and the clock's slope is a sixth of it, so a pair it refuses is never linked as it stands.
-   * Nothing asks that the two ends lie on one crest line: within 10 m it may join two waves' fronts whose joins agree (the
-   * padangFrontGap probe counts those links).
+   * Narrowed (the advisor, 2026-10-03): the two ends lie within the 3-row reach in z per column between them (3 m beside
+   * it, 6 m across an empty column), so a crest's step onto another crest line, or another wave's front whose joins
+   * happen to agree, stays a front of its own; the padangFrontGap probe counts what it links.
    *
    * Each step keeps every link the rules above make, and the next step matches crests to points in the order the front
    * lists them without the switch (`FrontState.order`): a crest exactly as far from two points in its column takes the
@@ -92,6 +100,68 @@ export interface FrontOptions {
    * the clocks smoothed along them.
    */
   clockLink?: boolean;
+  /**
+   * The lagged join (the water-physics advisor's step 3 ruling, 2026-11-03; the pool's straight Barrel, `TubeFace.lag`):
+   * m deeper than its throw depth for a crest of foot height `footHeight` (m), a sized crest joins there whether or not
+   * the solver breaks it yet, so its slice starts at its case's earliest frame, the wall growing before the throw. It
+   * throws at the later of its crest's throw-depth crossing and the solver's break (`FrontPoint.unbroken` until then), and
+   * one the solver hasn't broken by its foreseen throw + `LEAD_RETIRE.after` s retires over `LEAD_RETIRE.over` s.
+   */
+  lead?: (footHeight: number) => number;
+  /**
+   * Step 7's formation by distance (the advisor's 2026-11-04 ruling §1.4.2; the pool's straight Barrel, `TubeFace.distance`),
+   * in place of `lead`: the signed distance along (dx, dz) from (x, z) to where the still depth is `depth`, m (positive
+   * ahead; Infinity past its reach, NaN with none). A sized crest joins when its distance to its throw contour along its
+   * path (its column) is at most |τ_e| C_p (its crest's pace along it, `pathPace`; τ_e its case's earliest frame,
+   * `OnsetTiming.distance.earliest`): on a plane face the `lead`'s depth, and right on a ledge. Its lip is thrown by its
+   * clock (`advanceClocks`), not by its crest's crossing.
+   */
+  distance?: (x: number, z: number, dx: number, dz: number, depth: number) => number;
+  /**
+   * The step 7 follow-up's guard (the advisor's 2026-11-05 ruling §4; `TubeFace.guard`): a point thrown before the solver
+   * broke it (`FrontPoint.unbroken`) is broken once the crest it claims on its pace breaks (its strength over 0), as a point
+   * off its pace already is. Without it the flag stood on every paced point to its touchdown: 154–156 of the 458–466 points
+   * still flagged at touchdown in 12 periods at a38 stood on the solver's breaking then, and retired by the guard all the same.
+   */
+  paceBreak?: boolean;
+  /**
+   * The step 7 follow-up's join (the advisor's 2026-11-05 ruling §5.1; `TubeFace.merge`): a crest joining by distance beside
+   * a front's end point, within `MERGE.reach` slice spacings along the crest and `MERGE.clock` s of its clock, joins that
+   * front (its join time taken as the end's, so the split never parts them).
+   */
+  merge?: boolean;
+  /**
+   * Ruling 4's C1 formation clock (`TubeFace.formClock`, `OnsetTiming.distance.c1`), with `distance`: a point carries where
+   * its crest stands within its cell (`FrontPoint.crestSub`, `CrestSample.sub`), and a crest's join by distance reads its
+   * distance from there too, so neither steps a row at a time.
+   */
+  subCrest?: boolean;
+  /**
+   * Ruling 7's step 1 (the water-physics advisor's ruling 7, docs/research/surface-rise-2026-11-11/ruling-7; notes in
+   * docs/research/crest-line-2026-11-11/README.md; `TubeFace.crestLine`), with `distance`: before its throw a point stands
+   * where its crest stands within its cell, not on the cell's centre, as it already does after its throw (its slice's
+   * own pace). So the line through the points (σ, the rays, the anchors, the clock's spread along the crest) moves with
+   * the crest and doesn't hop a row at a time. `crestSub` is then 0 (the place is already in `z`). 'sub': the top of the
+   * parabola through the crest's cell and its neighbours (`CrestSample.sub`); 'top': the centre of the crest's top
+   * (`CrestSample.top`), which doesn't leap where a broad crest's highest cell changes.
+   */
+  crestLine?: 'sub' | 'top';
+}
+
+/**
+ * A lagged join's guard (the advisor's step 3 ruling, provisional): a point the solver hasn't broken by its foreseen throw
+ * plus `after` s fades out over `over` s (`FrontPoint.retire`) and leaves the front.
+ */
+export const LEAD_RETIRE = { after: 0.3, over: 0.5 } as const;
+
+/**
+ * A crest's pace along its travel, m/s (step 7's formation and the anchor's cap): its measured speed `speed` held to
+ * 0.5–1.5 × the long-wave speed under it, √(g (d + η)) (`SweptCrash`'s PACE), or that speed unmeasured.
+ */
+export function crestCelerity(speed: number | undefined, depth: number, height: number): number {
+  const wave = Math.sqrt(GRAVITY * Math.max(0, depth + height));
+  if (speed === undefined || !(speed > 0)) return wave;
+  return Math.min(1.5 * wave, Math.max(0.5 * wave, speed));
 }
 
 /** A crest followed shoreward from the wedge's foot until it joins a front, or is dropped. */
@@ -116,6 +186,9 @@ export interface CrestTrack {
   jumped?: number;
   /** With `FrontOptions.ownOnset`: whether its own fresh onset has come since its last jump; absent: it hasn't jumped. */
   risen?: boolean;
+  /** With `FrontOptions.distance`: the direction its crest last travelled, x and z (`CrestSample.dirX`). */
+  dirX?: number;
+  dirZ?: number;
 }
 
 export interface FrontPoint {
@@ -158,6 +231,12 @@ export interface FrontPoint {
   /** When it was last seen, s. */
   seen: number;
   /**
+   * At a spot with `BarrelSpot.tubeSpan` (the Canyon): its tube-regime piece of front has reached that span, so it draws
+   * and is felt as a tube from now on (SurfZoneSimulation's `latchTubeSpans`). Absent: not yet. It travels with the
+   * point, and in the sea handover.
+   */
+  tubeSpan?: true;
+  /**
    * The swept barrel's crash (PR 5, `SweptCrash`): the lip strip holding its jet from its throw on (−1 when it threw
    * none), and when its lip touched down, s. Absent until then; they travel with the point, and in the sea handover.
    */
@@ -185,6 +264,52 @@ export interface FrontPoint {
   crestZ?: number;
   /** Its crest's speed along its column over the last few frames, m/s (`crestMotion`, PACE_SECONDS); absent unmeasured. */
   crestSpeed?: number;
+  /**
+   * With `FrontOptions.lead`: joined ahead of the solver's break, which hasn't come yet (its `broke` is its join's time
+   * until then). Its slice's clock holds short of its throw meanwhile (`advanceClocks`).
+   */
+  unbroken?: true;
+  /** With `FrontOptions.lead`: how far it has retired, 0–1, unbroken past its foreseen throw (`LEAD_RETIRE`); absent: none. */
+  retire?: number;
+  /**
+   * With `OnsetTiming.formationRamp` (the lagged join's): how far its slice has formed since its join, 0–1 (`advanceClocks`;
+   * the advisor's step 3 fallback); absent: formed.
+   */
+  formation?: number;
+  /** With `FrontOptions.distance`: the direction its crest last travelled, x and z (`CrestSample.dirX`): its ray. */
+  dirX?: number;
+  dirZ?: number;
+  /**
+   * Step 7's (the advisor's 2026-11-04 ruling; `SweptCrash`): its anchor's track (`AnchorTrack`, `continueAnchor`), its
+   * drawn crest's speed along its ray, m/s (its crest's pace and its shift's rate: `FRONT_FIELD.crestSpeed`), and its
+   * clock's rate over its last step, × real time, with the clock it was read at (`FRONT_FIELD.tauRate`).
+   */
+  anchorShift?: number;
+  anchorDrawn?: number;
+  anchorRate?: number;
+  anchorTime?: number;
+  anchorGood?: number;
+  anchorEase?: number;
+  anchorNone?: true;
+  anchorX?: number;
+  anchorZ?: number;
+  anchorRayX?: number;
+  anchorRayZ?: number;
+  wallSpeed?: number;
+  tauRate?: number;
+  anchorTau?: number;
+  /**
+   * Ruling 4's C1 formation clock (`OnsetTiming.distance.c1`): the rate its clock's next step advances by, × real time
+   * (`advanceClocks`; none yet: real time), and where its crest stands within its cell, m along +z from `z`
+   * (`FrontOptions.subCrest`).
+   */
+  formRate?: number;
+  crestSub?: number;
+  /** With `TubeFace.guard` (the step 7 follow-up): its held jet went back to its crest (`SweptCrash`), retired unbroken. */
+  jetReturned?: true;
+  /** Diagnostics (`AnchorTrack`; a probe's): its last smoothed shift and what `continueAnchor` did with it. */
+  anchorTarget?: number;
+  anchorLast?: 'kept' | 'capped' | 'held' | 'stood' | 'eased' | 'crest' | 'free' | 'gated' | 'reacquired';
 }
 
 export interface FrontState {
@@ -259,6 +384,11 @@ export class BreakingFront {
   jumps = 0;
   waveJumps = 0;
   latePasses = 0;
+  /**
+   * Set by a probe (none in the game): each joined and each unbroken crest's height over the band, m, so the unbroken
+   * share can be read by size (the Canyon's Medium, the advisor's 2026-10-22 ruling: only sizes with a join row count).
+   */
+  sizes?: { joined: number[]; unbroken: number[] };
   /** Steps a point on its pace (jet or not) ran on at it with no crest in reach (PR 5; a diagnostic). */
   coasted = 0;
   /** With `ownOnset`: jumped crests that crossed their throw depth before their own fresh onset came (a diagnostic). */
@@ -272,6 +402,9 @@ export class BreakingFront {
   bridges = 0;
   private readonly linkReach: number;
   private readonly matchReach: number;
+  private readonly cell: number;
+  /** With `merge`: crests that joined a front beside them (a diagnostic). */
+  merges = 0;
 
   /**
    * `cell`: the rows' spacing where fronts form, m; `timing`: the wedge’s foot, the join and throw depths (sliceClock);
@@ -280,6 +413,7 @@ export class BreakingFront {
   constructor(cell: number, private readonly timing: OnsetTiming, private readonly options: FrontOptions = {}, private readonly carrier?: CarrierSupport) {
     this.linkReach = LINK_ROWS * cell;
     this.matchReach = MATCH_REACH + cell;
+    this.cell = cell;
   }
 
   update(samples: readonly CrestSample[], count: number, time: number): void {
@@ -305,10 +439,15 @@ export class BreakingFront {
       if (holder && !matched.has(holder)) {
         // Its slice runs on from the throw at its own pace: the crest says its wave is still there (SweptCrash).
         matched.add(holder);
-        const next = {
+        const next: FrontPoint = {
           ...holder, sigma: 0, x: s.x, z: holder.z + holder.jetPace! * (time - holder.seen), b: s.b, height: s.eta, crestDepth: s.depth,
           seen: time, crestZ: s.z,
         };
+        if (this.options.paceBreak && next.unbroken && s.strength > 0) {
+          // The solver's break has come to the crest it claims (the guard's follow-up): no longer unbroken.
+          next.broke = time;
+          delete next.unbroken;
+        }
         recordOwnThrow(next, holder, s, time, holder.crestZ);
         points.push(next);
         continue;
@@ -316,18 +455,32 @@ export class BreakingFront {
       // On a front: it stays while its segment breaks at all.
       const point = this.nearest(plainOf.get(s.column), matched, s.z);
       if (point) {
-        if (!(s.strength > 0)) continue;
+        // A lagged join waits for the solver's break (`lead`); a retired one leaves the front.
+        if (!(s.strength > 0) && !(point.unbroken && !(point.retire! >= 1))) continue;
+        if (point.retire! >= 1) continue;
         matched.add(point);
         const fresh = point.fresh ?? (s.rise >= FRESH ? s.depth : null);
         // Its crest's speed over the last few frames: the pace its slice runs on once its jet is thrown (PR 5).
         const crestSpeed = s.speed > 0
           ? point.crestSpeed === undefined ? s.speed : point.crestSpeed + (s.speed - point.crestSpeed) * Math.min(1, (time - point.seen) / PACE_SECONDS)
           : point.crestSpeed;
-        const next = {
-          ...point, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta, crestDepth: s.depth, seen: time, fresh,
+        const next: FrontPoint = {
+          ...point, sigma: 0, x: s.x, z: this.options.crestLine ? crestPlace(s, this.options.crestLine) : s.z, b: s.b, height: s.eta, crestDepth: s.depth, seen: time, fresh,
           ...(crestSpeed === undefined ? {} : { crestSpeed }),
         };
-        recordOwnThrow(next, point, s, time, point.z);
+        if (this.options.distance && s.dirX === s.dirX && s.dirZ === s.dirZ && s.dirX !== undefined) {
+          next.dirX = s.dirX;
+          next.dirZ = s.dirZ;
+        }
+        if (this.options.subCrest) next.crestSub = this.options.crestLine ? 0 : s.sub ?? 0;
+        if (next.unbroken && s.strength > 0) {
+          // The solver's break has come: its throw may now.
+          next.broke = time;
+          delete next.unbroken;
+          delete next.retire;
+        }
+        // By distance its clock throws its lip (`advanceClocks`), not its crest's crossing.
+        if (!this.options.distance) recordOwnThrow(next, point, s, time, point.z);
         points.push(next);
         continue;
       }
@@ -345,6 +498,10 @@ export class BreakingFront {
       }
       followed.add(track);
       const next: CrestTrack = { ...track, z: s.z, depth: s.depth, seen: time, fresh: track.fresh ?? (s.rise >= FRESH ? s.depth : null) };
+      if (this.options.distance && s.dirX === s.dirX && s.dirZ === s.dirZ && s.dirX !== undefined) {
+        next.dirX = s.dirX;
+        next.dirZ = s.dirZ;
+      }
       const jumpedNow = jumped.has(track);
       if (jumpedNow) next.jumped = (track.jumped ?? 0) + 1;
       // With `ownOnset`, a jump waits for its crest's own fresh onset, which may come in the jump's step itself.
@@ -356,7 +513,64 @@ export class BreakingFront {
       if (track.footHeight !== null && s.depth <= deeper && (s.depth >= shallower || next.refHeight === null)) {
         next.refHeight = Math.max(next.refHeight ?? s.eta, s.eta);
       }
-      if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower) {
+      if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower && this.options.distance) {
+        // Step 7's join by distance: its crest within |τ_e| C_p of its throw contour along its path, its column (`distance`).
+        const throwDepth = this.timing.throwDepth(next.footHeight);
+        const dirX = next.dirX ?? 0;
+        const dirZ = next.dirZ ?? 1;
+        const earliest = this.timing.distance?.earliest?.(next.footHeight, this.timing.h0) ?? this.timing.earliest;
+        const reach = this.options.distance(s.x, this.options.crestLine ? crestPlace(s, this.options.crestLine) : this.options.subCrest ? s.z + (s.sub ?? 0) : s.z, 0, 1, throwDepth);
+        const pace = crestCelerity(s.speed, s.depth, s.eta) / Math.max(0.5, dirZ);
+        if (next.crossed === null && reach <= -earliest * pace) next.crossed = time;
+        if (next.crossed !== null) {
+          this.joins += 1;
+          this.sizes?.joined.push(next.refHeight);
+          // The follow-up's join (`merge`): beside a front's end, within a slice spacing and a half along the crest and
+          // 0.3 s of its clock, it joins that front: its join the end's, so the split by joins never parts the two.
+          // *(Built so)* Its own clock, τ_e as it joins: a trial by its distance clock (−D/C_p) merged 930 of 1,000 joins at
+          // a38 1.5 m, chaining waves the split keeps apart (holes 0.157 a build, folds 0.99), so the ruling's literal rule;
+          // and only where the split would part the two (else they link anyway): taking the end's join on every join beside
+          // one (903 of 1,000) carried the first join down the whole peel, so the split never parted two waves (folds 0.75).
+          const end = this.options.merge ? this.endBeside(pointsOf, s, earliest, next.crossed) : undefined;
+          if (end) this.merges += 1;
+          points.push({
+            id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: this.options.crestLine ? crestPlace(s, this.options.crestLine) : s.z, b: s.b, height: s.eta,
+            joined: end ? end.joined : next.crossed, depth: s.depth, throwDepth, crestDepth: s.depth, thrown: null, throwZ: null,
+            footHeight: next.footHeight, footDepth: this.timing.h0,
+            broke: time, tau: earliest, seen: time, fresh: next.fresh, dirX, dirZ,
+            ...(this.options.subCrest ? { crestSub: this.options.crestLine ? 0 : s.sub ?? 0 } : {}),
+            ...(s.speed > 0 ? { crestSpeed: s.speed } : {}),
+            ...(s.strength > 0 ? {} : { unbroken: true as const }),
+            ...(next.jumped ? { jumped: next.jumped } : {}),
+          });
+          continue;
+        }
+      } else if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower && this.options.lead) {
+        // The lagged join (`lead`): a set depth past its throw depth, ahead of the solver's break.
+        const throwDepth = this.timing.throwDepth(next.footHeight);
+        const joinDepth = throwDepth + this.options.lead(next.footHeight);
+        if (next.crossed === null) {
+          const joinF = crossingFraction(track.depth, s.depth, joinDepth);
+          if (joinF !== null) next.crossed = track.seen + joinF * (time - track.seen);
+        }
+        if (next.crossed !== null) {
+          this.joins += 1;
+          this.sizes?.joined.push(next.refHeight);
+          const throwF = crossingFraction(track.depth, s.depth, throwDepth);
+          const broken = s.strength > 0;
+          points.push({
+            id: this.nextId++, front: -1, column: s.column, sigma: 0, x: s.x, z: s.z, b: s.b, height: s.eta,
+            joined: next.crossed, depth: joinDepth, throwDepth, crestDepth: s.depth,
+            thrown: throwF === null ? null : track.seen + throwF * (time - track.seen),
+            throwZ: throwF === null ? null : track.z + throwF * (s.z - track.z),
+            footHeight: next.footHeight, footDepth: this.timing.h0,
+            broke: time, tau: this.timing.earliest, seen: time, fresh: next.fresh,
+            ...(broken ? {} : { unbroken: true as const }),
+            ...(next.jumped ? { jumped: next.jumped } : {}),
+          });
+          continue;
+        }
+      } else if (next.footHeight !== null && next.refHeight !== null && s.depth < shallower) {
         const joinDepth = this.timing.joinDepth(next.refHeight);
         const throwDepth = Math.min(joinDepth, this.timing.throwDepth(next.footHeight));
         if (next.crossed === null) {
@@ -380,6 +594,7 @@ export class BreakingFront {
         const own = ownOnset && next.risen === true;
         if (next.crossed !== null && s.strength > 0 && (!ownOnset || own) && (track.depth > throwDepth || late || (own && jumpedNow))) {
           this.joins += 1;
+          this.sizes?.joined.push(next.refHeight);
           if (track.depth <= throwDepth) this.latePasses += 1;
           // Past its throw depth, it throws as it joins: after it (late), or carried past it by the jump.
           const past = track.depth <= throwDepth || (ownOnset && jumpedNow && s.depth <= throwDepth);
@@ -400,6 +615,7 @@ export class BreakingFront {
         // all, so it has no barrel.
         if (next.crossed !== null && track.depth <= throwDepth && !late) {
           this.unbroken += 1;
+          this.sizes?.unbroken.push(next.refHeight);
           if (ownOnset && track.risen === false) this.unrisen += 1;
           continue;
         }
@@ -471,6 +687,30 @@ export class BreakingFront {
       start = end;
     }
     return leading;
+  }
+
+  /**
+   * With `merge` (the step 7 follow-up): the end point of a front beside crest `s` (in a neighbouring column, its front with no
+   * point in `s`'s), nearest it within `MERGE.reach` slice spacings and `MERGE.clock` s of `tau`, the joining crest's clock,
+   * whose join differs from `joined` (the crest's) by more than the split allows (`SPLIT`).
+   */
+  private endBeside(pointsOf: Map<number, FrontPoint[]>, s: CrestSample, tau: number, joined = -Infinity): FrontPoint | undefined {
+    let best: FrontPoint | undefined;
+    let nearest = MERGE.reach * this.cell;
+    const own = pointsOf.get(s.column) ?? [];
+    for (const column of [s.column - 1, s.column + 1]) {
+      for (const p of pointsOf.get(column) ?? []) {
+        if (!(Math.abs(p.tau - tau) <= MERGE.clock) || own.some((q) => q.front === p.front)) continue;
+        const distance = Math.sqrt((p.x - s.x) * (p.x - s.x) + (p.z - s.z) * (p.z - s.z));
+        // Only where the split by joins would part them (`link`); else they link as they are.
+        if (!(Math.abs(p.joined - joined) > SPLIT * distance)) continue;
+        if (distance <= nearest) {
+          nearest = distance;
+          best = p;
+        }
+      }
+    }
+    return best;
   }
 
   /** Without `jumpReach`: counts a new crest first seen ahead of a sized one in its column within TRACK_REACH. */
@@ -589,7 +829,9 @@ export class BreakingFront {
    * With `clockLink`, after a column's links: each of its heads (points no neighbour took) in turn, in the column's order
    * (z), continues the nearest end of a chain that stops in the column before or CLOCK_BRIDGE columns earlier and is not
    * continued yet, if that end lies within CLOCK_REACH of the head and its join within CLOCK_SLOPE per metre between them
-   * of the head's, both bounds inclusive (the advisor's "within 10 m" and "≤ 0.166 s/m × the gap"). It is the 3-row
+   * of the head's, both bounds inclusive (the advisor's "within 10 m" and "≤ 0.166 s/m × the gap"), and within the 3-row
+   * reach in z per column between them, exclusive (the narrowing, the advisor, 2026-10-03: 3 m beside it, 6 m across an
+   * empty column). It is the 3-row
    * link's own order: with two heads in reach of one end, the first in z takes it, even when the other is nearer (pairing
    * the nearest first instead, synthetic crest lines had a third more clock links crossing one another, and fewer links). The
    * head's chain is recorded under the one it continues (`parents`); the chains themselves, and so the links above, are
@@ -612,6 +854,9 @@ export class BreakingFront {
         const tail = chain.at(-1)!;
         const dx = point.x - tail.x;
         const dz = point.z - tail.z;
+        // Narrowed (the advisor, 2026-10-03): an end is a candidate only within the 3-row reach per column between the
+        // ends (3 m a column on 1 m rows), so a crest's step to another crest line stays two fronts.
+        if (!(Math.abs(dz) < this.linkReach * (point.column - tail.column))) continue;
         const gap = Math.sqrt(dx * dx + dz * dz);
         if (gap <= CLOCK_REACH && Math.abs(point.joined - tail.joined) <= CLOCK_SLOPE * gap && gap < nearest) {
           best = chain;
@@ -676,6 +921,11 @@ export class BreakingFront {
  * σ carried on straight across the gap. Chains go in the order they began, so a parent comes before its child, and a
  * chain end is continued once, so a front's last point is always the end its next chain continues.
  */
+/** Where a crest stands along its column under `FrontOptions.crestLine`: its cell's centre and its place within it. */
+function crestPlace(sample: CrestSample, by: 'sub' | 'top'): number {
+  return sample.z + ((by === 'top' ? sample.top : undefined) ?? sample.sub ?? 0);
+}
+
 function joinChains(chains: readonly FrontPoint[][], parents: ReadonlyMap<FrontPoint[], FrontPoint[]>): FrontPoint[][] {
   const fronts: FrontPoint[][] = [];
   const frontOf = new Map<FrontPoint[], FrontPoint[]>();

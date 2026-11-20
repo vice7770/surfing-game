@@ -1,0 +1,29 @@
+# wall-probe.ts, seed 1, 8 periods, --angles 0,8,12,17; before: --canyon ageJoin=0,alongShore=240 (today's bed), now: this branch.
+## base-medium
+canyon medium Hs 1.4 Tp 11 seed 1: take-off (-9, -137.5); reef columns x -42…41, rows z -318…-2; spin-up 58 s
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 0°): median 0 m, 75th 6 m, 90th 13 m, most 27 m; ≥ 15 m in 17 of 176; its face where it stands: height 1.03 m, top third 3°; steep unbroken columns anywhere over the reef median 59; breaking columns median 30
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 8°): median 0 m, 75th 1 m, 90th 3 m, most 11 m; ≥ 15 m in 0 of 176; its face where it stands: height 1.52 m, top third 9°; steep unbroken columns anywhere over the reef median 3; breaking columns median 30
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 12°): median 0 m, 75th 0 m, 90th 1 m, most 4 m; ≥ 15 m in 0 of 176; its face where it stands: height 1.65 m, top third 13°; steep unbroken columns anywhere over the reef median 0; breaking columns median 30
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 17°): median 0 m, 75th 0 m, 90th 0 m, most 0 m; ≥ 15 m in 0 of 176; its face where it stands: height NaN m, top third NaN°; steep unbroken columns anywhere over the reef median 0; breaking columns median 30
+unbroken faces' top third 50/90/99 % 2.7/6.3/10.9°; run 364 s
+## fin-medium
+canyon medium Hs 1.4 Tp 11 seed 1: take-off (-9, -137.5); reef columns x -42…41, rows z -318…-2; spin-up 63 s
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 0°): median 0 m, 75th 8 m, 90th 17 m, most 39 m; ≥ 15 m in 28 of 176; its face where it stands: height 1.17 m, top third 4°; steep unbroken columns anywhere over the reef median 64; breaking columns median 24
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 8°): median 1 m, 75th 2 m, 90th 4 m, most 11 m; ≥ 15 m in 0 of 176; its face where it stands: height 1.61 m, top third 9°; steep unbroken columns anywhere over the reef median 5; breaking columns median 24
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 12°): median 0 m, 75th 0 m, 90th 1 m, most 4 m; ≥ 15 m in 0 of 176; its face where it stands: height 1.79 m, top third 13°; steep unbroken columns anywhere over the reef median 0; breaking columns median 24
+medium seed 1: 176 samples, 176 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 17°): median 0 m, 75th 0 m, 90th 0 m, most 0 m; ≥ 15 m in 0 of 176; its face where it stands: height NaN m, top third NaN°; steep unbroken columns anywhere over the reef median 0; breaking columns median 24
+unbroken faces' top third 50/90/99 % 2.9/8.0/11.4°; run 389 s
+## base-big
+canyon big Hs 2.4 Tp 14 seed 1: take-off (-9, -154.5); reef columns x -42…41, rows z -318…-2; spin-up 128 s
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 0°): median 0 m, 75th 0 m, 90th 36 m, most 65 m; ≥ 15 m in 27 of 224; its face where it stands: height 1.85 m, top third 4°; steep unbroken columns anywhere over the reef median 83; breaking columns median 49
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 8°): median 0 m, 75th 9 m, 90th 21 m, most 51 m; ≥ 15 m in 42 of 224; its face where it stands: height 2.71 m, top third 9°; steep unbroken columns anywhere over the reef median 15; breaking columns median 49
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 12°): median 0 m, 75th 0 m, 90th 3 m, most 13 m; ≥ 15 m in 0 of 224; its face where it stands: height 2.59 m, top third 14°; steep unbroken columns anywhere over the reef median 0; breaking columns median 49
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 17°): median 0 m, 75th 0 m, 90th 0 m, most 1 m; ≥ 15 m in 0 of 224; its face where it stands: height 3.03 m, top third 20°; steep unbroken columns anywhere over the reef median 0; breaking columns median 49
+unbroken faces' top third 50/90/99 % 7.0/9.5/13.5°; run 732 s
+## fin-big
+canyon big Hs 2.4 Tp 14 seed 1: take-off (-9, -154.5); reef columns x -42…41, rows z -318…-2; spin-up 143 s
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 0°): median 0 m, 75th 0 m, 90th 37 m, most 66 m; ≥ 15 m in 36 of 224; its face where it stands: height 2.10 m, top third 6°; steep unbroken columns anywhere over the reef median 83; breaking columns median 37
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 8°): median 5 m, 75th 10 m, 90th 22 m, most 53 m; ≥ 15 m in 43 of 224; its face where it stands: height 2.51 m, top third 9°; steep unbroken columns anywhere over the reef median 26; breaking columns median 37
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 12°): median 0 m, 75th 2 m, 90th 5 m, most 17 m; ≥ 15 m in 1 of 224; its face where it stands: height 2.64 m, top third 13°; steep unbroken columns anywhere over the reef median 2; breaking columns median 37
+big seed 1: 224 samples, 224 with the reef breaking; wall down the line (≥ 0.6 Hs, ≥ 17°): median 0 m, 75th 0 m, 90th 0 m, most 5 m; ≥ 15 m in 0 of 224; its face where it stands: height 3.12 m, top third 19°; steep unbroken columns anywhere over the reef median 0; breaking columns median 37
+unbroken faces' top third 50/90/99 % 7.5/10.5/14.9°; run 765 s

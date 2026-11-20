@@ -1,0 +1,48 @@
+# The Canyon tube probe (src/wave/probes/canyonTube.probe.test.ts, PROBE=1, seed 3, 60 s, 1 m cells), Big and Medium.
+# rule A, 240 m (main's code; it reproduces docs/research/tube-from-basilisk-2026-10-22's final table exactly):
+the Canyon big (Hs 2.4 m, 14 s), seed 3, 60 s, 1 m cells; tube regime: foot crests to 1.98 m (ξ_f ≥ 0.54)
+front: joins 1061 (late, past the throw depth: 63), unbroken 188 (15.1 % of the crests that reached their throw depth; the bar about 20 %), lost 1403, unsized 3652, jumps 376
+points a frame 142.6, in the tube regime 122.8 (86 %); foot crests 0.58 / 1.23 / 2.03 (n 8410) m; records drawn a frame 122.8
+the curl: slices a frame 11.1; columns the tube takes a frame 8.6; its white later than the curl's own landing by -0.60 / 1.16 / 3.21 (n 1527) s
+sizes with a join row (crests over the band ≥ 0.89 m): joins 873, unbroken 150 (14.7 %); under it: joins 92, unbroken 37 (sizes counted after the spin-up); band crests joined 0.90 / 1.47 / 2.27 (n 965) m, unbroken 0.83 / 1.04 / 1.49 (n 187) m
+open tube runs (open, standing, one front) 0.37 / 2.00 / 19.43 (n 2510) m, in their drawn H 0.23 / 0.96 / 10.31 (n 2510) (the band 1.3–3.5 H / tan α at 53–57°: 0.84–2.64 H; inside 36 %, under 39 %)
+per wave (a front, its longest open run over its life; pods guard on): 95 waves, 1.00 / 2.57 / 29.94 (n 95) m (mean 10.52), in H 0.44 / 1.22 / 13.08 (n 95); inside 0.84–2.64 H 33 %, under 32 %, over 36 %
+CPU ms (Node, this machine's load): the front a step 1.76 / 2.05 / 2.37 (n 1800); the roller and curl with the tube marking 0.40 / 0.47 / 0.58 (n 1800); the page's loft a frame with records 1.20 / 2.49 / 7.23 (n 1800)
+whites started in tube columns 106: hold -0.07 / 1.40 / 2.63 (n 106) s; the slowest tenth (hold ≥ 2.63 s): its touchdown moved while it waited -0.06 / 0.01 / 0.84 (n 11) s, over 0.3 s 3 of 11; all: over 0.3 s 20
+  of the whites whose touchdown moved over 0.3 s: the same point all along 20 (its clock held after the throw 0.00 / 0.00 / 0.00 (n 20) s), another point took the column 0; the slowest tenth's clocks held after the throw 0.00 / 0.00 / 0.00 (n 11) s, changed point 0; every same-point wait's clock held after the throw over 0.3 s 0 of 106
+
+# the join at 0.35, 260 m:
+the Canyon big (Hs 2.4 m, 14 s), seed 3, 60 s, 1 m cells; tube regime: foot crests to 1.98 m (ξ_f ≥ 0.54)
+front: joins 997 (late, past the throw depth: 125), unbroken 372 (27.2 % of the crests that reached their throw depth; the bar about 20 %), lost 1527, unsized 4079, jumps 431
+points a frame 136.1, in the tube regime 117.3 (86 %); foot crests 0.55 / 1.19 / 2.03 (n 8101) m; records drawn a frame 117.3
+the curl: slices a frame 10.1; columns the tube takes a frame 11.2; its white later than the curl's own landing by -0.58 / 0.64 / 2.96 (n 1997) s
+sizes with a join row (crests over the band ≥ 0.89 m): joins 793, unbroken 326 (29.1 %); under it: joins 101, unbroken 38 (sizes counted after the spin-up); band crests joined 0.85 / 1.42 / 2.28 (n 894) m, unbroken 0.89 / 1.29 / 1.86 (n 364) m
+open tube runs (open, standing, one front) 0.30 / 2.09 / 17.43 (n 2153) m, in their drawn H 0.20 / 1.00 / 10.12 (n 2153) (the band 1.3–3.5 H / tan α at 53–57°: 0.84–2.64 H; inside 41 %, under 33 %)
+per wave (a front, its longest open run over its life; pods guard on): 61 waves, 1.00 / 2.68 / 31.00 (n 61) m (mean 9.63), in H 0.77 / 1.37 / 13.93 (n 61); inside 0.84–2.64 H 52 %, under 11 %, over 36 %
+CPU ms (Node, this machine's load): the front a step 1.87 / 2.14 / 2.45 (n 1800); the roller and curl with the tube marking 0.42 / 0.48 / 0.56 (n 1800); the page's loft a frame with records 0.70 / 2.49 / 7.03 (n 1800)
+whites started in tube columns 108: hold -0.25 / 1.40 / 2.71 (n 108) s; the slowest tenth (hold ≥ 2.71 s): its touchdown moved while it waited -0.09 / 0.86 / 0.91 (n 11) s, over 0.3 s 7 of 11; all: over 0.3 s 32
+  of the whites whose touchdown moved over 0.3 s: the same point all along 32 (its clock held after the throw 0.00 / 0.00 / 0.00 (n 32) s), another point took the column 0; the slowest tenth's clocks held after the throw 0.00 / 0.00 / 0.00 (n 11) s, changed point 0; every same-point wait's clock held after the throw over 0.3 s 0 of 108
+
+# this branch (the join at 0.5, 260 m), Big:
+the Canyon big (Hs 2.4 m, 14 s), seed 3, 60 s, 1 m cells; tube regime: foot crests to 1.98 m (ξ_f ≥ 0.54)
+front: joins 950 (late, past the throw depth: 136), unbroken 413 (30.3 % of the crests that reached their throw depth; the bar about 20 %), lost 1525, unsized 4137, jumps 433
+points a frame 127.9, in the tube regime 110.2 (86 %); foot crests 0.55 / 1.19 / 2.01 (n 7614) m; records drawn a frame 110.2
+the curl: slices a frame 9.7; columns the tube takes a frame 11.2; its white later than the curl's own landing by -0.57 / 0.67 / 3.01 (n 1999) s
+sizes with a join row (crests over the band ≥ 0.89 m): joins 748, unbroken 367 (32.9 %); under it: joins 97, unbroken 39 (sizes counted after the spin-up); band crests joined 0.85 / 1.41 / 2.28 (n 845) m, unbroken 0.89 / 1.37 / 1.87 (n 406) m
+open tube runs (open, standing, one front) 0.37 / 2.07 / 18.95 (n 1950) m, in their drawn H 0.23 / 1.00 / 11.65 (n 1950) (the band 1.3–3.5 H / tan α at 53–57°: 0.84–2.64 H; inside 39 %, under 33 %)
+per wave (a front, its longest open run over its life; pods guard on): 57 waves, 1.00 / 2.87 / 33.04 (n 57) m (mean 10.08), in H 0.73 / 1.40 / 15.42 (n 57); inside 0.84–2.64 H 49 %, under 14 %, over 37 %
+CPU ms (Node, this machine's load): the front a step 1.71 / 1.96 / 2.23 (n 1800); the roller and curl with the tube marking 0.38 / 0.42 / 0.49 (n 1800); the page's loft a frame with records 0.54 / 2.13 / 6.37 (n 1800)
+whites started in tube columns 95: hold -0.07 / 1.17 / 2.74 (n 95) s; the slowest tenth (hold ≥ 2.74 s): its touchdown moved while it waited -0.09 / 0.30 / 0.90 (n 10) s, over 0.3 s 4 of 10; all: over 0.3 s 24
+  of the whites whose touchdown moved over 0.3 s: the same point all along 24 (its clock held after the throw 0.00 / 0.00 / 0.00 (n 24) s), another point took the column 0; the slowest tenth's clocks held after the throw 0.00 / 0.00 / 0.00 (n 10) s, changed point 0; every same-point wait's clock held after the throw over 0.3 s 0 of 95
+
+# this branch, Medium (before: the tube-from-basilisk table's final column):
+the Canyon medium (Hs 1.4 m, 11 s), seed 3, 60 s, 1 m cells; tube regime: foot crests to 1.22 m (ξ_f ≥ 0.54)
+front: joins 79 (late, past the throw depth: 18), unbroken 1047 (93.0 % of the crests that reached their throw depth; the bar about 20 %), lost 1540, unsized 3746, jumps 522
+points a frame 11.9, in the tube regime 11.2 (94 %); foot crests 0.32 / 0.59 / 0.94 (n 703) m; records drawn a frame 11.2
+the curl: slices a frame 10.1; columns the tube takes a frame 1.2; its white later than the curl's own landing by -0.62 / -0.28 / 0.49 (n 220) s
+sizes with a join row (crests over the band ≥ 0.81 m): joins 28, unbroken 163 (85.3 %); under it: joins 51, unbroken 788 (sizes counted after the spin-up); band crests joined 0.49 / 0.73 / 1.13 (n 79) m, unbroken 0.41 / 0.60 / 0.92 (n 951) m
+open tube runs (open, standing, one front) 0.13 / 0.50 / 1.18 (n 348) m, in their drawn H 0.12 / 0.42 / 0.91 (n 348) (the band 1.3–3.5 H / tan α at 53–57°: 0.84–2.64 H; inside 10 %, under 87 %)
+per wave (a front, its longest open run over its life; pods guard on): 11 waves, 0.31 / 0.86 / 1.73 (n 11) m (mean 1.18), in H 0.20 / 0.89 / 1.08 (n 11); inside 0.84–2.64 H 45 %, under 45 %, over 9 %
+CPU ms (Node, this machine's load): the front a step 1.69 / 1.92 / 2.22 (n 1800); the roller and curl with the tube marking 0.15 / 0.27 / 0.37 (n 1800); the page's loft a frame with records 0.07 / 0.12 / 0.88 (n 1767)
+whites started in tube columns 24: hold -0.63 / -0.27 / 1.16 (n 24) s; the slowest tenth (hold ≥ 1.16 s): its touchdown moved while it waited -0.04 / -0.00 / 0.00 (n 3) s, over 0.3 s 0 of 3; all: over 0.3 s 0
+  of the whites whose touchdown moved over 0.3 s: the same point all along 0 (its clock held after the throw — s), another point took the column 0; the slowest tenth's clocks held after the throw 0.00 / 0.00 / 0.00 (n 3) s, changed point 0; every same-point wait's clock held after the throw over 0.3 s 0 of 24

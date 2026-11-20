@@ -94,6 +94,9 @@ export const OPEN_EDGE_RAMP = 20;
 
 /** A stable step this short, s (about a thousandth of the surf zone's usual), means the water has diverged. */
 const COLLAPSED_STEP = 1e-5;
+/** Most cells the solver lists one by one between device steps (`waterChangedCells`); past it only their span is kept. */
+export const WATER_LIST = 8192;
+const EMPTY_CELLS = new Int32Array(0);
 
 /**
  * Equal substeps for `dt` at the CFL limit `stable`, on the CPU or the GPU.
@@ -229,6 +232,25 @@ export class ShallowWaterSolver {
   protected predictorZ?: Float64Array;
   protected predictorMask?: Float64Array;
   private readonly target: WaterTarget = { eta: 0, qx: 0, qz: 0 };
+  /**
+   * Which cells' water (h, qx, qz) the CPU has changed since a device last held it (canyon-perf, 2026-10-29): a device
+   * step then sends only those (`waterChangedFrom` … `waterChangedTo`, cell indices, none when from > to), or all of the
+   * water while `waterChangedAll`. Whatever writes h, qx or qz between device steps says so (`markWater`, or
+   * `markAllWater`): a board's push, a lip's launch or landing, an import; the CPU's own step and a window shift mark all.
+   */
+  waterChangedAll = true;
+  waterChangedFrom = Number.POSITIVE_INFINITY;
+  waterChangedTo = -1;
+  /**
+   * The same cells one by one (barrel-gpu, 2026-11-06): each cell marked since a device last held the water, once,
+   * in the order first marked (`waterChangedCells`), while `waterChangedAll` is not set. A device sends their runs rather
+   * than the span from the first to the last: a jet landing at either end of the window and a board's push between them
+   * span thousands of cells. Past WATER_LIST cells, `waterChangedOverflow`: only the span is known.
+   */
+  waterChangedCount = 0;
+  waterChangedOverflow = false;
+  private waterList?: Int32Array;
+  private waterListed?: Uint8Array;
 
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: SolverOptions = {}) {
     this.nx = grid.nx;
@@ -330,9 +352,47 @@ export class ShallowWaterSolver {
     return rate > 0 ? this.courant / rate : Infinity;
   }
 
+  /** Cell `cell`'s water (h, qx or qz) was changed on the CPU (`waterChangedAll`). */
+  markWater(cell: number): void {
+    if (cell < this.waterChangedFrom) this.waterChangedFrom = cell;
+    if (cell > this.waterChangedTo) this.waterChangedTo = cell;
+    // While all of it is marked a device sends it all: the cells need no list.
+    if (this.waterChangedAll || this.waterChangedOverflow) return;
+    const listed = (this.waterListed ??= new Uint8Array(this.nx * this.nz));
+    if (listed[cell]) return;
+    listed[cell] = 1;
+    if (this.waterChangedCount < WATER_LIST) (this.waterList ??= new Int32Array(WATER_LIST))[this.waterChangedCount++] = cell;
+    else this.waterChangedOverflow = true;
+  }
+
+  /** The cells marked one by one since a device last held the water (`waterChangedCount` of them; a view, not a copy). */
+  get waterChangedCells(): Int32Array {
+    return (this.waterList ?? EMPTY_CELLS).subarray(0, this.waterChangedCount);
+  }
+
+  /** The CPU changed water anywhere (`waterChangedAll`). */
+  markAllWater(): void {
+    this.waterChangedAll = true;
+  }
+
+  /** A device now holds exactly this water, every cell (`waterChangedAll`). */
+  waterHeld(): void {
+    this.waterChangedAll = false;
+    this.waterChangedFrom = Number.POSITIVE_INFINITY;
+    this.waterChangedTo = -1;
+    const listed = this.waterListed;
+    if (listed) {
+      if (this.waterChangedOverflow) listed.fill(0);
+      else for (let k = 0; k < this.waterChangedCount; k += 1) listed[this.waterList![k]] = 0;
+    }
+    this.waterChangedCount = 0;
+    this.waterChangedOverflow = false;
+  }
+
   /** Advance by dt seconds, sub-stepping as the CFL condition requires. */
   step(dt: number): void {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
+    this.markAllWater();
     const substeps = cflSubsteps(dt, this.maxStableStep());
     const sub = dt / substeps;
     for (let s = 0; s < substeps; s += 1) {
@@ -426,6 +486,7 @@ export class ShallowWaterSolver {
   shiftAlongShore(columns: number): void {
     const shift = Math.trunc(columns);
     if (shift === 0) return;
+    this.markAllWater();
     const { nx, nz } = this;
     if (Math.abs(shift) >= nx) throw new RangeError(`Cannot shift ${shift} columns in a ${nx}-column window`);
     // The edges move: their columns get the spot's seabed back before they slide inside.

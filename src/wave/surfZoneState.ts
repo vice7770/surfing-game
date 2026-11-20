@@ -2,6 +2,7 @@ import type { LipState } from './PlungingLip';
 import type { FrontState } from './barrel/BreakingFront';
 import type { SpillingFrontState } from './SpillingFront';
 import type { SpillingRollerState } from './SpillingRoller';
+import type { SliceFieldState } from './library/SliceField';
 
 /**
  * A running sea as data (spec N1: the sea handover): its grid (to check it
@@ -24,6 +25,8 @@ export interface SurfZoneState {
    * times and crests, so they ride in the header, not the 32-bit arrays. Absent from older states: a fresh front, no lenses.
    */
   spilling?: { front: SpillingFrontState; roller?: SpillingRollerState };
+  /** C2 step 3's library slices (`?wave=library`): records, the lanes' followed crests, the mean level. Absent: none. */
+  library?: SliceFieldState;
 }
 
 const MAGIC = 0x53455431; // "SET1"
@@ -39,7 +42,7 @@ export function encodeSurfZoneState(state: SurfZoneState): Uint8Array {
   const names = Object.keys(state.arrays);
   const header = new TextEncoder().encode(JSON.stringify({
     nx: state.nx, nz: state.nz, solverTime: state.solverTime, seaTimeOffset: state.seaTimeOffset, counters: state.counters, lip: state.lip, front: state.front,
-    spilling: state.spilling,
+    spilling: state.spilling, ...(state.library ? { library: state.library } : {}),
     arrays: names.map((name) => [name, state.arrays[name].length]),
   }));
   const start = 8 + Math.ceil(header.length / 4) * 4;

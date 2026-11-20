@@ -1,0 +1,10 @@
+step 3 (nearest segment alone): 1274 slices, 1257 neighbouring pairs of one wave; on another segment 68 (5.410 %)
+   the weights' step Σ|Δw| where the segment moved: median 0.072, 90 % 0.225, 99 % 1.346, most 1.346 (68)
+   … where it did not: median 0.024, 90 % 0.118, 99 % 0.183, most 0.288 (1189)
+step 3b (A0_SWITCH 0.25): 1274 slices, 1257 neighbouring pairs of one wave; on another segment 76 (6.046 %)
+   the weights' step Σ|Δw| where the segment moved: median 0.059, 90 % 0.199, 99 % 1.370, most 1.370 (76)
+   … where it did not: median 0.023, 90 % 0.122, 99 % 0.192, most 0.312 (1181)
+   the pairs stepping over 0.5 (3):
+   lanes 6/7 t_h 40.09/38.50: H/d 0.374/0.370, slope 0.0223/0.0466, toe share 0.00/0.00; [b1-a1 1.00] → [b1-a1 0.58 b1-a2 0.09 b2-a1 0.33]
+   lanes 6/7 t_h 50.04/47.58: H/d 0.371/0.291, slope 0.0238/0.0479, toe share 0.00/0.00; [b1-a1 1.00] → [b1-a1 0.31 b1-a2 0.31 b2-a1 0.37]
+   lanes 6/7 t_h 81.42/79.04: H/d 0.464/0.267, slope 0.0229/0.0478, toe share 0.00/0.00; [b1-a1 1.00] → [b1-a1 0.37 b1-a2 0.26 b2-a1 0.37]

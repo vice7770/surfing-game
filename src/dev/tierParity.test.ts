@@ -99,9 +99,11 @@ describe('TierRecorder', () => {
   });
 
   it('reads a surf zone as the page and worker run it', () => {
+    // The Point on its flat onset of before point-onset (`onsetRule`), whose first breaks plunge and throw: with its
+    // depth-keyed onset this small sea's breaks spill, and the recorder would have no throw or tube to count.
     const simulation = new SurfZoneSimulation({
       spot: 'point', seed: 3, significantHeight: 1.4, peakPeriod: 10, directionDegrees: 10, spreading: 12, tide: 0, windSpeed: 0,
-      alongShore: 40, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8,
+      alongShore: 40, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8, onsetRule: 'old',
     });
     // Built spun up, the zone has thrown already (its spin-up advances the lip, as the page's and worker's do since
     // c9fb6a59): the recorder counts from where it starts. One peak period's run holds a break (the next set comes

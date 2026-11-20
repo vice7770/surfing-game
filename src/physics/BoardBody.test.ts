@@ -59,7 +59,10 @@ describe('rigid board body', () => {
     const light = levelBoard(0, deckPayload(20));
     const heavy = levelBoard(0, deckPayload(75));
     const water = new PlaneWater();
-    for (const board of [bare, light, heavy]) run(board, water, 4);
+    for (const board of [bare, light]) run(board, water, 4);
+    // Still sinking 2 s in: a submerged plate sinks face-on at about 1 m/s (duck-two-body's plate drag; the planing
+    // law's wave radiation held it to 0.6 m/s at any depth), and would reach this water's bed before 4 s.
+    run(heavy, water, 2);
     expect(light.position.y).toBeLessThan(bare.position.y - 0.01);
     expect(Math.abs(light.velocity.y)).toBeLessThan(1e-3);
     expect(Math.hypot(light.velocity.x, light.velocity.z)).toBeLessThan(0.02);
@@ -344,5 +347,58 @@ describe('the board on a solid reef (Teahupo\'o Reef, Part C)', () => {
     };
     expect(drop('reef')).toBeLessThan(1);
     expect(drop('sand')).toBe(Infinity);
+  });
+});
+
+// duck-two-body (2026-10-31), the two-body plan's step 1: a board under water meets it as a submerged plate.
+describe('the board under water (duck-two-body)', () => {
+  /** A bare board held level `depth` m under flat water, its centre of mass, then let go moving at `velocity`. */
+  const under = (submerged: 'plate' | 'old', depth: number, velocity: Vector3, payloads: BoardPayload[] = []) => {
+    const board = new BoardBody({ submerged, payloads });
+    board.place(new Vector3(0, -depth, 0), new Quaternion(), velocity);
+    return board;
+  };
+
+  it('sinks face-on under a weight as a plate does, C_D about 1.2 (the planing law gave it its 0.46 and wave damping)', () => {
+    const water = new PlaneWater({ depth: 10 });
+    // At the board's own centre of mass, so it sinks level (on the deck it is top-heavy under water and rolls over).
+    const weight: BoardPayload[] = [{ mass: 75, point: { ...SHAPE.centerOfMass } }];
+    const plate = under('plate', 1, new Vector3(), weight);
+    const old = under('old', 1, new Vector3(), weight);
+    for (const board of [plate, old]) run(board, water, 2.5);
+    // Terminal: the net weight against ½ρ C_D A v², about 1 m/s for the reference planform (0.6 m/s before).
+    const net = (plate.mass - REFERENCE_BOARD.volume * WATER.density) * WATER.gravity;
+    const terminal = Math.sqrt((2 * net) / (WATER.density * 1.18 * SHAPE.planformArea));
+    expect(-plate.velocity.y).toBeGreaterThan(0.8 * terminal);
+    expect(-plate.velocity.y).toBeLessThan(1.25 * terminal);
+    expect(-old.velocity.y).toBeLessThan(0.75 * terminal);
+  });
+
+  it('moves twice the water in heave, only when the whole board is well under', () => {
+    const water = new PlaneWater({ depth: 10 });
+    const push = (submerged: 'plate' | 'old', depth: number) => {
+      const board = under(submerged, depth, new Vector3(0, -1.5, 0));
+      board.step(STEP, water);
+      return -board.velocity.y;
+    };
+    // Deep, the water on both its faces moves with it: a step's buoyancy and drag take less of its speed.
+    expect(push('plate', 1)).toBeGreaterThan(push('old', 1) + 0.05);
+    // Awash (its deck within 15 cm of the surface), the two are the same.
+    expect(push('plate', 0.05)).toBeCloseTo(push('old', 0.05), 9);
+  });
+
+  it('leaves a board with its rider on it as it was (the rigid rider was calibrated on the hull law)', () => {
+    const water = new PlaneWater();
+    const trace = (submerged: 'plate' | 'old') => {
+      const board = new BoardBody({ submerged });
+      board.place(new Vector3(0, SHAPE.centerOfMass.y - 0.03, 0));
+      const rider = new AttachedRider(board.shape);
+      board.attach(rider);
+      for (let i = 0; i < 120; i += 1) board.step(STEP, water);
+      rider.duckDive = 1;
+      for (let i = 0; i < 90; i += 1) board.step(STEP, water);
+      return [...board.position.toArray(), ...board.velocity.toArray()];
+    };
+    expect(trace('plate')).toEqual(trace('old'));
   });
 });

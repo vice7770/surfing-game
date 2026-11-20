@@ -1,0 +1,7 @@
+# Every other spot after 3 s (seed 3, Hs 1.4 m, Tp 11 s, s 150, 12 components, 2 m cells): window, tank, take-off, rider bounds, peel and an FNV-1a hash of h, qx, qz and foam.
+# Identical, line for line, to main (bff9a874, whose solver 7b79f085 does not touch) built the same way.
+beach 160 {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":5} {"x":0,"z":-99.5} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} {"angleDegrees":9.011261116832316,"direction":1,"peelSpeed":31.43867886794284,"lineSlope":-0.056372549019607844,"columns":17,"fit":0.6424856730376173} aa5398f28b4b498a
+point 160 {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":8} {"x":0,"z":-123} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null 3f8f16ab2f41776d
+reef 160 {"offshore":-388.02487623983757,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":30} {"x":-50,"z":-94.5} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null 3b1a87e72987e729
+padang 320 {"offshore":-1143.8503414433649,"zoneInner":-1032.591378704909,"blendEnd":-952.591378704909,"fineFrom":-255,"shore":30,"edgeDepth":25} {"x":-50,"z":-196.59137870490895} {"xMin":-138,"xMax":138,"zMin":-1028.591378704909,"zMax":26} null 3f35df8c3d5b5d65
+pool 280 {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} {"x":27,"z":-214.5} {"xMin":-118,"xMax":118,"zMin":-321.5,"zMax":26} null ded617165301de02

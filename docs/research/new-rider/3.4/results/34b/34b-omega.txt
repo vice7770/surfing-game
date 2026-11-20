@@ -1,0 +1,55 @@
+== 1. liveness of the two constants in the SHIPPED design (P1) ==
+DEFAULT_WEIGHTS keys: stateScale, commandScale, rho, processNoise, senseNoise, bias, heaveSense
+feetReach present: false   captureScale present: false
+(b) the fix on the SHIPPED weights against the shipped design, 306 schedule points: worst entry 0.000e+0
+(c) non-vacuity, the same fix with the two weights ON: smallest relative move over the 306 points 1.193e-2
+
+== 2. the five candidate ω₀, rad/s, over the 306 schedule points ==
+-- shipped
+   ω₀ line    3.4174–4.2233 (3.8849)
+   ω₀ fixed   3.4174–4.2233 (3.8849)
+   ω₀ solved  19.2841–23.9523 (21.9711)
+   ω₀ row     none
+   ω₀ eig     0.4226–7.1585 (3.8213)
+   the held reading against the mass matrix's own diagonal, |√(m g h / M₁₁) − fixed|: 0.0000–0.0000 (0.0000)
+   the unstable eigenvector's share on (θ, θ̇) 0.3044–0.8022 (0.7351)  on (φ, φ̇) 0.4597–0.7181 (0.6626)
+-- two
+   ω₀ line    3.4174–4.2233 (3.8849)
+   ω₀ fixed   3.1614–3.8395 (3.5587)
+   ω₀ solved  7.6443–8.6045 (8.2290)
+   ω₀ row     none
+   ω₀ eig     0.3397–6.0141 (2.3513)
+   the held reading against the mass matrix's own diagonal, |√(m g h / M₁₁) − fixed|: 0.0000–0.0000 (0.0000)
+   the unstable eigenvector's share on (θ, θ̇) 0.0985–0.7968 (0.7183)  on (φ, φ̇) 0.2255–0.7093 (0.6493)
+
+ratios of the medians, two/shipped and each against the line:
+   line    shipped 3.8849  two 3.8849  two/shipped 1.0000  shipped/line 1.0000  two/line 1.0000
+   fixed   shipped 3.8849  two 3.5587  two/shipped 0.9160  shipped/line 1.0000  two/line 0.9160
+   solved  shipped 21.9711  two 8.2290  two/shipped 0.3745  shipped/line 5.6555  two/line 2.1182
+   row     shipped NaN  two NaN  two/shipped NaN  shipped/line NaN  two/line NaN
+   eig     shipped 3.8213  two 2.3513  two/shipped 0.6153  shipped/line 0.9836  two/line 0.6053
+
+by stance depth (the medians over 102 points each):
+   shipped|0    line 3.417  fixed 3.417  solved 19.327  row NaN  eig 3.697
+   shipped|0.195 line 3.885  fixed 3.885  solved 21.971  row NaN  eig 3.686
+   shipped|0.3  line 4.223  fixed 4.223  solved 23.945  row NaN  eig 4.457
+   two|0        line 3.417  fixed 3.161  solved 7.648  row NaN  eig 2.257
+   two|0.195    line 3.885  fixed 3.559  solved 8.229  row NaN  eig 2.320
+   two|0.3      line 4.223  fixed 3.840  solved 8.604  row NaN  eig 3.046
+
+== 4. the gains with the two weights ON: point-mass constants against the plant's own ==
+-- shipped: |ΔK|/|K| 0.0119–2.1237 (0.1795)   the ankle's own gain on the bank 0.7709–1.1367 (0.9496)   on its rate 0.4602–1.0289 (0.6828)
+-- two: |ΔK|/|K| 0.0074–0.2858 (0.1064)   the ankle's own gain on the bank 0.8642–1.0098 (0.9510)   on its rate 0.6738–0.9911 (0.8262)
+
+== 5. the capture row and the bank limit ==
+   depth 0  h 0.840  J 8.679  share 0.1685
+      captureRow θ coefficient 0.8400 m/rad, the same in all four; θ̇ coefficient, m per rad/s: line 0.2458  fixed(two-body) 0.2657  solved(two-body) 0.1098  solved(shipped) 0.0435
+      the bank limit feetReach/L 8.87°, the shipped ranking 2.86°, and it carries no J: L is the same for a point mass and for a body (P2)
+   depth 0.195  h 0.650  J 5.913  share 0.1917
+      captureRow θ coefficient 0.6500 m/rad, the same in all four; θ̇ coefficient, m per rad/s: line 0.1673  fixed(two-body) 0.1826  solved(two-body) 0.0790  solved(shipped) 0.0296
+      the bank limit feetReach/L 11.46°, the shipped ranking 3.70°, and it carries no J: L is the same for a point mass and for a body (P2)
+   depth 0.3  h 0.550  J 4.635  share 0.2099
+      captureRow θ coefficient 0.5500 m/rad, the same in all four; θ̇ coefficient, m per rad/s: line 0.1302  fixed(two-body) 0.1432  solved(two-body) 0.0639  solved(shipped) 0.0230
+      the bank limit feetReach/L 13.54°, the shipped ranking 4.38°, and it carries no J: L is the same for a point mass and for a body (P2)
+
+done

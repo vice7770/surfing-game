@@ -1,0 +1,13 @@
+# usage: flattab.py <json>... ; one block per run of the flat-water arc / linked plans and the trim plan
+import json,sys
+for p in sys.argv[1:]:
+  print('##',p.split('/')[-1])
+  for o in json.load(open(p))['out']:
+    if o['name'].startswith('arc'):
+      w=o['whole']; f=o['first90']; a90=o['at90']; a180=o['at180']
+      print(f"{o['name']:16s} {o['end'][:34]:34s} | {w['turned']} deg in {w['t']} s, v {w['v0']}>{w['vmin']}>{w['v1']} (max {w['vmax']}), R {w['radius']}, mean {w['mean']} peak {w['peak']} deg/s, bank {w['bankMax']} | first 90: {f['t']} s R {f['radius']} v {f['v1']} | 90 at {a90 and a90['t']} s v {a90 and a90['v']}; 180 at {a180 and a180['t']} s v {a180 and a180['v']} | carry mean {w['caMean']} bw, work {w['work']} J")
+    elif o['name'].startswith('linked'):
+      arcs=[a for a in o['arcs'] if a]
+      print(f"{o['name']:16s} {o['end'][:34]:34s} | arcs {len(arcs)} pairs {o['pairs']} | v at flips {[f['v'] for f in o['flips']]} | R {[a['radius'] for a in arcs]} | arc s {[a['t'] for a in arcs]} | mean deg/s {[a['mean'] for a in arcs]} | bank {[a['bankMax'] for a in arcs]} | work J {[a['work'] for a in arcs]}")
+    else:
+      print(f"{o['name']:24s} entry {o['entry']} {o['end'][:40]:40s} t {o['t']} | 2s {o['at2']} | 4s {o['at4']} | 8s {o['at8']} | 12s {o['at12']} | last 4 s {o['last4']} | frac range {o['fracRange']} carry max {o['caMax']}")

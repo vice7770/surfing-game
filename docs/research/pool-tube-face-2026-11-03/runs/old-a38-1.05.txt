@@ -1,0 +1,27 @@
+pool straight Barrel, H 1.05 m at the feed, cases a38, switches {"tubeFace":"old","tubeFrom":"piece"}, tubeFace undefined; 12 periods after 50 s; CPU 1/60 s; 1277 s wall
+reads 0, fronts 0; H_s — m; drawn H (its crest over the solver's trough) — m; shift (the drawn crest ahead of the point) — m; the cases' own lowest less the solver's trough — m
+the contact's face anchor: "none"; the front: joins 550, unbroken 394, lost 455
+
+## Bar 1, support − solver ≥ −0.02 m on 100 % of face reads (0.05–1.0 H_s): — of 0; min Infinity m; p0.1 —
+
+## Bar 3, the cases' own lower face against the solver's (|gap| / H_s over 0.05–0.4 H_s, through life 0.6): p50 — (≤ 0.05), p95 — (≤ 0.15); n 0
+
+## Bar 4, the support over the solver at points fixed in the wave's frame (-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5): (m from the solver's face crossing at 0.3 H_s): rise per 1/60 s step p50 / p99 / p99.9 / max — / — / — / 0.000 m (≤ 0.02); steps over 0.02 m — of 0; under the solver by more than 0.02 m —
+- on the lower face (−0.5…0.5 m): rise p99 / p99.9 / max — / — / 0.000 m; steps over 0.02 m —
+- up the face (−3…−1 m): rise p99 / p99.9 / max — / — / 0.000 m; steps over 0.02 m —
+the largest rises (over 0.2 m), up to 40: 
+  
+each point's first clock 0.00 / 0.00 / 0.00 s; its time from first seen to its throw — s (n 0)
+
+## Bar 5, air under the lip over the support at life 0.1–0.8: > 0 on — (≥ 90 %); p10 / p50 / p90 — m; the cases' own gap — m; p50 ratio — (0.7–1.3)
+
+## Bar 6, touchdown (each column-wave's first read past life 1; n 0): the solver's breaking ≥ 0.3 within ±0.5 H_s of the tip on — (≥ 90 %), its strength —; the tip ahead of the drawn crest — H_s, within 0.6–1.5 on —; in the drawn H —, within 0.6–1.5 on —
+
+## Bar 7, the clock after the throw (every thrown point, step to step): p50 1.000× (0.95–1.05), p95 1.080× (≤ 1.25), max 2.000×, at the cap (≥ 1.24×) 3.3 %, n 14142; open time in the solver's time per point (its τ 0 → touchdown) — s against its case's — s, ratio p50 —, within ±15 % — (n 0); at a fixed reef column (points travel along the reef as they come shoreward) — s (n 0)
+
+## Bar 8, geometry: folds (overlaps) a build 0.000, holes (open overlaps) 0.000, least ray advance Infinity m; |dδ/dσ| p50 / p95 — / — (≤ 0.3); slices with no face crossing (the crest anchor stood) —; the saddle — m, in H_s p50 / p95 / max — / — / -Infinity (≤ 0.1)
+
+## Bar 10, the ledger over the run: throws 0, thrown 0.00 m³ of 0.00 asked, crashes 0, foreseen 0, exits 0, missed 0; lip launches 5; the meter {"typical":1.6326853165162198,"sets":1.6594857381649408,"waves":12}
+the crash's counts (cumulative from the start): {"onsets":2424,"throws":5,"asked":1.112988025998635,"thrown":1.112988025998635,"starved":0,"starvedVolume":0,"crashes":5,"late":0,"missed":0,"covered":5,"foreseen":0,"exits":0,"exitJets":0,"fadeExits":0,"fadeExitJets":0,"lost":0,"paceSlow":0,"paceFast":0,"paceUnmeasured":507,"gated":20963}
+
+## Bar 12, cost (Node, this M1, under shared load): the contact's update a step p50 / p90 1.52 / 3.12 ms; the drawing's loft build p50 / p90 1.99 / 3.74 ms

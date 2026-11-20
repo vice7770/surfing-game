@@ -1,0 +1,11 @@
+pool straight, H 1.05 m at the feed (Hs 1.485), 6 periods after 50 s, 342 s wall; footDepth 4.4; crash on; join rows [{"period":10,"rows":[[0.76,1.43],[0.82,1.6],[0.88,1.83],[0.89,1.91],[0.92,1.96]]}]
+the meter: {"typical":1.6214272444075655,"sets":1.6532279998370614,"waves":6}
+front: joins 185 (late, past the throw depth: 98), unbroken 705 (79.2 %; the bar about 20 %), lost 643, unsized 5763, splits 12; points a frame 12.4; front ids seen 25
+waves joined per column (of 6), by the reef's s: s 20–30 0.00, s 30–40 0.50, s 40–50 0.67, s 50–60 0.67, s 60–70 0.67, s 70–80 0.83, s 80–90 0.83, s 90–100 0.00, s 100–110 0.00, s 110–120 0.00, s 120–130 0.00, s 130–140 0.00, s 140–150 0.00, s 150–160 0.00, s 160–170 0.00, s 170–180 0.00, s 180–190 0.00, s 190–200 0.00
+joins by s: 36 / 57 / 80 (n 304); touchdowns by s 38 / 66 / 84 (n 207); the crest's still depth where each point joined 1.37 / 1.53 / 1.80 (n 197) m
+drawn H, open standing slices 1.25 / 1.39 / 1.57 (n 5522) m; per wave medians 1.31 / 1.39 / 1.58 (n 9) m (the meter's face: 1.52 m at 1.5 m, 1.79 m at 1.8 m)
+vertical air gap, open standing slices 0.47 / 0.61 / 0.76 (n 5522) m; per wave p90 0.69 / 0.75 / 0.86 (n 9) m
+open runs 0.73 / 2.10 / 3.44 (n 367) m; per wave longest 0.50 / 3.01 / 5.70 (n 9) m, in H 0.35 / 2.28 / 3.47 (n 9), where (s) 32 / 52 / 146 (n 9); 9 waves
+lofts 592: folds (overlaps) a build 0.000, holes (open overlaps) 0.000, clamps 0, budget-clamped refinement 0.0 %
+lip foam before touchdown: 5522 standing slices, foam carried (outer or face) p50 / p90 / p99 0.000 / 0.421 / 0.772, carrying foam 1528 (27.7 %; the bar ≤ 5 %), at s 43 / 58 / 78 (n 1528), τ 0.25 / 0.48 / 0.64 (n 1528) s
+CPU ms (Node, this M1): the front a step 2.28 / 2.82 / 5.40 (n 2400); the loft a build 0.03 / 1.27 / 2.92 (n 592)

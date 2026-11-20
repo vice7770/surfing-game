@@ -1,0 +1,18 @@
+ENCODING: sRGB inverse EOTF, Rec. 709 luminance, mean over pixels.
+
+== side, the broken box, n 63800 ==
+  off 0.7975   on 0.6627   foam colour black 0.3044
+  the foam's own diffuse share D = 0.4931 (62 % of the off leg); everything else S = 0.3044 (38 %)
+  this round takes the diffuse term to 0.727 of what it was
+  FLOOR: the darkest this box can be made by the albedo alone = 0.3044, a within-frame ratio of 0.518
+  the three legs' own within-frame ratios: off 1.310  on 1.102  black 0.518
+  flat water in the same frame: off 0.6089  on 0.6012  black 0.5882
+
+== bore-face, the broken box, n 108000 ==
+  off 0.7817   on 0.5747   foam colour black 0.1650
+  the foam's own diffuse share D = 0.6168 (79 % of the off leg); everything else S = 0.1650 (21 %)
+  this round takes the diffuse term to 0.664 of what it was
+  FLOOR: the darkest this box can be made by the albedo alone = 0.1650, a within-frame ratio of 0.296
+  the three legs' own within-frame ratios: off 1.358  on 1.021  black 0.296
+  flat water in the same frame: off 0.5755  on 0.5629  black 0.5580
+

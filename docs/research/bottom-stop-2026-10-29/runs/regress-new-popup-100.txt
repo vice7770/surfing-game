@@ -1,0 +1,17 @@
+dx  -8.0: rode                         pop 7.32 ahead 2.50 frac 0.81 slope 17.2 speed 4.76/5.94 | push load -1.71…2.06 heave rms 0.013 m/s a frame
+dx  -6.9: rode                         pop 7.32 ahead 2.51 frac 0.80 slope 17.7 speed 4.78/5.93 | push load -0.97…1.98 heave rms 0.011 m/s a frame
+dx  -5.9: rode                         pop 7.32 ahead 2.51 frac 0.80 slope 18.2 speed 4.81/5.93 | push load -2.09…1.97 heave rms 0.013 m/s a frame
+dx  -4.8: rode                         pop 7.30 ahead 2.52 frac 0.79 slope 18.5 speed 4.79/5.95 | push load -2.24…1.94 heave rms 0.021 m/s a frame
+dx  -3.7: rode                         pop 7.28 ahead 2.51 frac 0.79 slope 18.8 speed 4.78/5.97 | push load -2.27…1.77 heave rms 0.025 m/s a frame
+dx  -2.7: rode                         pop 7.28 ahead 2.48 frac 0.79 slope 19.2 speed 4.83/5.95 | push load -0.27…1.69 heave rms 0.012 m/s a frame
+dx  -1.6: rode                         pop 7.27 ahead 2.47 frac 0.79 slope 19.4 speed 4.83/5.96 | push load -0.15…1.63 heave rms 0.012 m/s a frame
+dx  -0.5: rode                         pop 7.25 ahead 2.47 frac 0.79 slope 19.6 speed 4.85/5.96 | push load -4.74…2.01 heave rms 0.040 m/s a frame
+dx   0.5: rode                         pop 7.23 ahead 2.43 frac 0.80 slope 19.5 speed 4.86/5.95 | push load -4.89…4.93 heave rms 0.052 m/s a frame
+dx   1.6: rode                         pop 7.20 ahead 2.39 frac 0.81 slope 19.0 speed 4.79/5.96 | push load -3.40…3.52 heave rms 0.036 m/s a frame
+dx   2.7: rode                         pop 7.18 ahead 2.36 frac 0.81 slope 18.7 speed 4.81/5.94 | push load -4.48…5.98 heave rms 0.028 m/s a frame
+dx   3.7: rode                         pop 7.17 ahead 2.32 frac 0.82 slope 18.3 speed 4.83/5.93 | push load -5.00…7.37 heave rms 0.062 m/s a frame
+dx   4.8: rode                         pop 7.15 ahead 2.29 frac 0.83 slope 17.9 speed 4.82/5.92 | push load -4.02…7.20 heave rms 0.035 m/s a frame
+dx   5.9: rode                         pop 7.13 ahead 2.28 frac 0.83 slope 17.7 speed 4.83/5.92 | push load -3.26…8.52 heave rms 0.026 m/s a frame
+dx   6.9: rode                         pop 7.10 ahead 2.28 frac 0.83 slope 17.4 speed 4.76/5.95 | push load -5.28…3.31 heave rms 0.019 m/s a frame
+dx   8.0: rode                         pop 7.08 ahead 2.27 frac 0.83 slope 17.3 speed 4.78/5.95 | push load -4.09…6.72 heave rms 0.024 m/s a frame
+canyon big: 16 riders: rode 16, fell popping up 0, other 0

@@ -1,12 +1,14 @@
 import type { SpotName } from '../../wave/Bathymetry';
 import { barrelCasesFor, loadBarrelLibrary } from '../../wave/barrel/barrelLibrary';
 import type { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
-import { BARREL_SLOPE, SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
+import { BARREL_SLOPE, SweptLoft, type LoftOptions, type LoftResult } from '../../wave/barrel/sweptLoft';
+import type { TubeFace } from '../../wave/barrel/faceAnchor';
 import { SWEPT_BARREL } from '../../wave/SurfZoneSimulation';
-import { sampleCubicSurface } from '../water/cubicSurface';
+import { sampleCubicHeight, sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
-import { sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
+import { sampleSurfaceBed, sampleSurfaceFoam, sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
 import { rasterizeBarrelMask } from './barrelMask';
+import { BrokenCrests } from './brokenCrest';
 import { BarrelWater } from './barrelWater';
 import { SweptBarrelMesh, type SweptBarrelView } from './SweptBarrelMesh';
 
@@ -29,20 +31,34 @@ export class SweptBarrel {
   private mask = new Uint8Array(0);
   private look?: WaterLook;
   private holdClearDrawing = true;
-  private readonly cameraWater = new BarrelWater();
+  /** The step 3 ruling's tube (`TubeFace`; the pool's straight Barrel), as the surf zone's: drawn as it is felt. */
+  private face?: TubeFace;
+  private readonly cameraWater: BarrelWater;
   private cameraWaterRevision = 0;
+  /** Which slices' curls keep the solver's foam: those on a crest already white (drawing only, `brokenCrest.ts`). */
+  private readonly broken = new BrokenCrests();
+  /**
+   * How the Rich drawing reads the water's height at each vertex (pool-barrel-perf, 2026-11-06): 'fast', the default,
+   * `sampleCubicHeight` (the same bits, no slopes or allocations); 'old', the `?barrelHeight=old` dev switch,
+   * `sampleCubicSurface(...).height` as before. Drawing only.
+   */
+  heights: 'fast' | 'old' = 'fast';
   private drawn?: {
     loft: SweptLoft; revision: unknown; surfaceRevision: number; front: Float32Array; count: number; stillLevel: number;
     look: WaterLook; maskGrid: SurfaceGrid; view: SweptBarrelView | undefined; sheetShown: boolean; facesOut: boolean;
+    brokenFoam: boolean; lipFoam: 'carried' | 'old';
   };
 
   /** `view`: a dev view of the curl in place of its shading (`SweptBarrelView`). */
   constructor(
     private readonly water: WaterSurface,
-    private readonly load: (spot: SpotName) => Promise<ProfileLibrary> = (spot) => loadBarrelLibrary(barrelCasesFor(spot)),
+    private readonly load: (spot: SpotName) => Promise<ProfileLibrary> = (spot) => loadBarrelLibrary(barrelCasesFor(spot), undefined, undefined, spot),
     view?: SweptBarrelView,
+    cameraWater: 'fast' | 'old' = 'fast',
   ) {
     this.mesh = new SweptBarrelMesh(water.materialUniforms, view);
+    // `?cameraWater=old`: the camera's water/air test keeps its strips as objects, as before pool-barrel-perf (the same answers).
+    this.cameraWater = new BarrelWater(cameraWater);
     this.ready = new Promise((resolve) => {
       this.resolveReady = resolve;
     });
@@ -52,14 +68,16 @@ export class SweptBarrel {
    * On at a swept spot with a barrel transect (`BARREL_SLOPE`), off at any other or none. `swept` is the spot's switch:
    * SWEPT_BARREL's say unless the caller (the surf zone's config) says otherwise.
    */
-  setSpot(spot: SpotName | undefined, swept = spot !== undefined && SWEPT_BARREL.includes(spot)): void {
+  setSpot(spot: SpotName | undefined, swept = spot !== undefined && SWEPT_BARREL.includes(spot), face?: TubeFace): void {
+    this.face = face;
     this.drawn = undefined;
+    this.broken.clear();
     this.cameraWater.prepare(undefined, undefined);
     const on = spot !== undefined && swept && BARREL_SLOPE[spot] !== undefined;
     this.spot = on ? spot : undefined;
     this.water.setBarrelEnabled(on);
     const library = on ? this.libraries.get(spot) : undefined;
-    this.loft = on && library ? new SweptLoft(library, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing }) : undefined;
+    this.loft = on && library ? new SweptLoft(library, BARREL_SLOPE[spot]!, this.loftOptions()) : undefined;
     if (!on) {
       this.lastLoft = undefined;
       this.mesh.update(undefined);
@@ -71,9 +89,18 @@ export class SweptBarrel {
     this.load(spot).then((loaded) => {
       this.libraries.set(spot, loaded);
       this.loading.delete(spot);
-      if (this.spot === spot) this.loft = new SweptLoft(loaded, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing });
+      if (this.spot === spot) this.loft = new SweptLoft(loaded, BARREL_SLOPE[spot]!, this.loftOptions());
       this.resolveReady();
     }, (error: unknown) => console.warn('The barrel library did not load; the swept barrel stays off.', error));
+  }
+
+  /** Dev A/B: draw `spot`'s cases from `library` from now on (the same cases as another `TubeShape`), geometry and mask together. */
+  useLibrary(spot: SpotName, library: ProfileLibrary): void {
+    this.libraries.set(spot, library);
+    if (this.spot !== spot) return;
+    this.drawn = undefined;
+    this.cameraWater.prepare(undefined, undefined);
+    this.loft = new SweptLoft(library, BARREL_SLOPE[spot]!, this.loftOptions());
   }
 
   /** Keep the last clear roof shape; changing the drawing hold rebuilds geometry and its water mask together. */
@@ -84,8 +111,13 @@ export class SweptBarrel {
     this.cameraWater.prepare(undefined, undefined);
     const library = this.spot !== undefined ? this.libraries.get(this.spot) : undefined;
     this.loft = library && this.spot !== undefined
-      ? new SweptLoft(library, BARREL_SLOPE[this.spot]!, { holdClearDrawing: enabled })
+      ? new SweptLoft(library, BARREL_SLOPE[this.spot]!, this.loftOptions())
       : undefined;
+  }
+
+  /** The drawing loft's options: the clear-roof hold, and the step 3 ruling's tube where the surf zone has it. */
+  private loftOptions(): LoftOptions {
+    return { holdClearDrawing: this.holdClearDrawing, ...(this.face ? { face: this.face } : {}) };
   }
 
   get holdsClearDrawing(): boolean {
@@ -110,14 +142,17 @@ export class SweptBarrel {
     const was = this.drawn;
     if (revision !== undefined && was?.revision === revision && was.loft === this.loft && was.surfaceRevision === water.surfaceRevision && was.front === front
       && was.count === count && was.stillLevel === stillLevel && was.look === look && was.maskGrid === maskGrid && was.view === mesh.view
-      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) {
+      && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut && was.brokenFoam === mesh.brokenFoam
+      && was.lipFoam === mesh.lipFoam) {
       mesh.syncScreenFallback();
       return;
     }
-    const heightAt = look === 'rich'
-      ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
-      : (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z);
-    const loft = this.loft.build(front, count, stillLevel, heightAt);
+    const heightAt = look !== 'rich' ? (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z)
+      : this.heights === 'old' ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
+        : (x: number, z: number) => sampleCubicHeight(surfaceData, grid, x, z);
+    // The bed under the drawn sea, for ruling 22's bed rule on the dug foot (`dugCap`); read only where the foot is dug.
+    const bedData = water.bedData;
+    const loft = this.loft.build(front, count, stillLevel, heightAt, (x: number, z: number) => sampleSurfaceBed(bedData, grid, x, z));
     if (this.mask.length !== maskGrid.nx * maskGrid.nz) this.mask = new Uint8Array(maskGrid.nx * maskGrid.nz);
     const set = rasterizeBarrelMask(loft, maskGrid, this.mask);
     water.setBarrelMask(set > 0 ? this.mask : null);
@@ -125,12 +160,15 @@ export class SweptBarrel {
       this.look = look;
       this.mesh.setLook(look);
     }
-    this.mesh.update(loft);
+    // The solver's foam on each slice's crest, as drawn: a crest already white keeps it on its curl, carried onto its lip
+    // (T3; drawing only).
+    const kept = this.broken.update(loft, (x, z) => sampleSurfaceFoam(surfaceData, grid, x, z));
+    this.mesh.update(loft, kept, this.broken);
     this.lastLoft = loft;
     this.cameraWater.prepare(loft, ++this.cameraWaterRevision);
     this.drawn = {
       loft: this.loft, revision, surfaceRevision: water.surfaceRevision, front, count, stillLevel, look, maskGrid,
-      view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut,
+      view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut, brokenFoam: mesh.brokenFoam, lipFoam: mesh.lipFoam,
     };
   }
 

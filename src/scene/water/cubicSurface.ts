@@ -41,6 +41,46 @@ export function sampleCubicSurface(data: Float32Array, grid: SurfaceGrid, x: num
   return { height, slopeX: hx / grid.spacing, slopeZ: hz / grid.spacing };
 }
 
+/**
+ * `sampleCubicSurface`'s height alone, bit for bit: the same weights (`catmullRomWeights`' expressions) and the same sum in
+ * the same order, without the slopes or the arrays and object each call made. The swept barrel's drawing reads the water
+ * at nearly every vertex of its loft (pool-barrel-perf, 2026-11-06); `?barrelHeight=old` reads it through
+ * `sampleCubicSurface` as before.
+ */
+export function sampleCubicHeight(data: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
+  const gx = (x - grid.xMin) / grid.spacing;
+  const gz = (z - grid.zMin) / grid.spacing;
+  const i0 = Math.floor(gx);
+  const j0 = Math.floor(gz);
+  const tx = gx - i0;
+  const tx2 = tx * tx;
+  const tx3 = tx2 * tx;
+  const wx0 = (-tx3 + 2 * tx2 - tx) / 2;
+  const wx1 = (3 * tx3 - 5 * tx2 + 2) / 2;
+  const wx2 = (-3 * tx3 + 4 * tx2 + tx) / 2;
+  const wx3 = (tx3 - tx2) / 2;
+  const tz = gz - j0;
+  const tz2 = tz * tz;
+  const tz3 = tz2 * tz;
+  const nx = grid.nx;
+  const lastRow = grid.nz - 1;
+  const lastColumn = nx - 1;
+  const c0 = Math.min(lastColumn, Math.max(0, Math.round(foldGridX(i0 - 1, nx))));
+  const c1 = Math.min(lastColumn, Math.max(0, Math.round(foldGridX(i0, nx))));
+  const c2 = Math.min(lastColumn, Math.max(0, Math.round(foldGridX(i0 + 1, nx))));
+  const c3 = Math.min(lastColumn, Math.max(0, Math.round(foldGridX(i0 + 2, nx))));
+  let height = 0;
+  for (let j = 0; j < 4; j += 1) {
+    const wz = j === 0 ? (-tz3 + 2 * tz2 - tz) / 2 : j === 1 ? (3 * tz3 - 5 * tz2 + 2) / 2 : j === 2 ? (-3 * tz3 + 4 * tz2 + tz) / 2 : (tz3 - tz2) / 2;
+    const base = Math.min(lastRow, Math.max(0, j0 + j - 1)) * nx;
+    height += wz * wx0 * data[(base + c0) * 2];
+    height += wz * wx1 * data[(base + c1) * 2];
+    height += wz * wx2 * data[(base + c2) * 2];
+    height += wz * wx3 * data[(base + c3) * 2];
+  }
+  return height;
+}
+
 /** GLSL twin of `sampleCubicSurface` over the water's height texture: (height, dη/dx, dη/dz). Needs `waterFoldPars`. */
 export const waterCubicPars = /* glsl */ `
 vec4 waterCatmullRom( float t ) {

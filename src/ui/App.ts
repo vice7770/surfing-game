@@ -4,6 +4,7 @@ import type { SteamControllerDriver } from '../game/steam/SteamControllerDriver'
 import { stickOf } from '../game/Sticks';
 import { AutoBenchmark, PRESETS, adapterName, needsDetection, withPreset } from '../game/Graphics';
 import { Logbook } from '../game/Logbook';
+import { PerfLog } from '../game/PerfLog';
 import { RideTracker, type RideFrame, type RideResult } from '../game/RideTracker';
 import type { Detection, SettingsStore } from '../game/Settings';
 import { DEFAULT_CONDITIONS, DEFAULT_SPOT, nextBackdropSpot, ridesAsPractice, surfForecastText, type SurfConditions, type SwellSize } from '../game/SurfConditions';
@@ -46,7 +47,7 @@ import type { FlowFrame } from '../game/school/lessonFlow';
 import { OnlineHud, PlayersPanel, onlineHudModel, playersModel } from './OnlineHud';
 import { roomLink } from '../net/roomCode';
 import type { CallId } from '../net/protocol';
-import { createRideEndCard, endCardModel } from './RideEndCard';
+import { createRideEndCard, endCardModel, showsEndCard } from './RideEndCard';
 import { bestTwo, scoreRide } from '../game/waveScore';
 import { HintBook, HintCoach, offersHint, type HintId } from '../game/hints';
 import { RideHud, showsBalanceMeter, showsBreathMeter, type HintKeys } from './RideHud';
@@ -209,6 +210,9 @@ export class App {
   private readonly telemetryPanel = new PhysicsReadoutPanel(this.telemetryList);
   private telemetryClock = 0;
   private fps = 0;
+  /** `?perfLog=on` (dev tool): a ride's performance second by second; F9 saves it as a text file and copies it. */
+  private readonly perfLog = devParam('perfLog') === 'on' ? new PerfLog(() => this.perfNote()) : undefined;
+  private perfBadge?: HTMLElement;
   private rotateHint?: HTMLElement;
   private rotateDismissed = false;
   private readonly sound: GameSound;
@@ -271,6 +275,13 @@ export class App {
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
       if (this.settings.value.controls.bindings.keyboard.mute.includes(event.code)) this.toggleMute();
     });
+    if (this.perfLog) {
+      window.addEventListener('keydown', (event) => {
+        if (event.code !== 'F9' || event.repeat) return;
+        event.preventDefault();
+        this.savePerfLog();
+      });
+    }
     this.steam = options.steam;
     this.steam?.onChange(() => this.steamChanged());
     this.show();
@@ -282,6 +293,40 @@ export class App {
     if (this.steam?.status !== 'connected' || this.settings.value.seen.steamController) return;
     this.settings.markSeen('steamController');
     if (this.stack.current === 'menu') this.show();
+  }
+
+  /** What the performance log's rows cannot say: the build, the switches, the window and the graphics settings. */
+  private perfNote(): string {
+    const canvas = document.querySelector('canvas');
+    const { graphics } = this.settings.value;
+    return [
+      `version ${packageJson.version}`, `switches ${window.location.search || '(none)'}`,
+      `window ${window.innerWidth}×${window.innerHeight} at ×${window.devicePixelRatio}`,
+      `canvas ${canvas?.width ?? 0}×${canvas?.height ?? 0}`,
+      `graphics ${JSON.stringify(graphics)}`,
+    ].join(' · ');
+  }
+
+  private showPerfBadge(text: string): void {
+    if (!this.perfBadge) {
+      this.perfBadge = el('div', { text });
+      Object.assign(this.perfBadge.style, { position: 'fixed', left: '8px', top: '8px', zIndex: '50', font: '11px ui-monospace, monospace', color: '#fff', background: 'rgba(0, 0, 0, 0.55)', padding: '3px 6px', borderRadius: '4px', pointerEvents: 'none' });
+      document.body.append(this.perfBadge);
+    }
+    this.perfBadge.textContent = text;
+  }
+
+  /** F9 with `?perfLog=on`: the log as a downloaded text file, and on the clipboard where the browser allows it. */
+  private savePerfLog(): void {
+    if (!this.perfLog) return;
+    const text = this.perfLog.text();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    link.download = `breakline-perf-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(link.href), 10_000);
+    void navigator.clipboard?.writeText(text).catch(() => undefined);
+    this.showPerfBadge(`PERF LOG saved (${this.perfLog.seconds} s) · also copied`);
   }
 
   /** Sound on or off: M, the gamepad's Back, or a speaker toggle. */
@@ -296,6 +341,11 @@ export class App {
     const dt = intervalMs / 1000;
     this.sound.frame(this.game.soundFrame(dt, this.stack.stack.includes('pause')), this.game.listenerPose, dt);
     if (intervalMs > 0 && intervalMs < 500) this.fps += (1000 / intervalMs - this.fps) * 0.1;
+    if (this.perfLog && this.stack.current === 'ride') {
+      const before = this.perfLog.seconds;
+      this.perfLog.frame(intervalMs, status);
+      if (this.perfLog.seconds !== before) this.showPerfBadge(`PERF LOG ${this.perfLog.seconds} s · F9 saves it`);
+    }
     if (this.stack.current === 'ride' && this.telemetry.isConnected) {
       this.telemetryClock += intervalMs;
       if (this.telemetryClock >= 250) {
@@ -314,7 +364,7 @@ export class App {
     if (this.stack.current === 'ride') {
       const { gameplay, seen } = this.settings.value;
       const ride = this.game.rideStatus;
-      // The touch buttons show for the rider's phase: paddle lying down, Crouch and Compress standing.
+      // The touch buttons show for the rider's phase: paddle lying down, Crouch, Compress and Snap standing.
       this.root.dataset.phase = ride?.phase ?? '';
       // Broken water coming at the rider: a breaking crest seaward of it (the wipeout spec's duck-dive hint).
       const coming = ride?.wave.valid && ride.wave.crestBreaking > 0.3 && ride.wave.aheadOfCrest > 0 ? ride.wave.aheadOfCrest : Infinity;
@@ -620,7 +670,7 @@ export class App {
     this.show();
   }
 
-  /** Feed the ride tracker; a finished ride is logged and summed up on the end card. */
+  /** Feed the ride tracker; a finished ride is logged (no end card: `showsEndCard`). */
   private trackRide(): void {
     const frame = this.game.rideFrame;
     if (!frame) return;
@@ -643,6 +693,7 @@ export class App {
     if (!this.settings.value.seen.rideHints) this.settings.markSeen('rideHints');
     if (records.length > 0) this.sound.playUi('chime');
     this.hideEndCard();
+    if (!showsEndCard(result)) return;
     const scoring = score !== undefined ? { score, bestTwo: bestTwo(this.sessionScores) } : undefined;
     this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units, scoring), {
       replay: () => {
@@ -827,6 +878,7 @@ export class App {
       if (id === 'lean') return t('hint.lean', { keys: '← →' });
       if (id === 'crouch') return t('hint.crouch', { keys: t('touch.crouch') });
       if (id === 'compress') return t('hint.compress', { keys: t('touch.compress') });
+      if (id === 'snap') return t('hint.snap', { keys: t('touch.snap') });
       // Touch has no duck-dive (the milestone spec's touch subset); its pop-up button reels the leash.
       if (id === 'reel') return t('hint.reel', { keys: t('touch.popUp') });
       return '';
@@ -849,7 +901,7 @@ export class App {
   private readonly actionLabel: ActionLabel = (action) => {
     if (this.touchActive()) {
       const touch: Partial<Record<Action, StringKey>> = {
-        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', compress: 'touch.compress', steerLeft: 'touch.left', steerRight: 'touch.right',
+        paddle: 'touch.paddle', popUp: 'touch.popUp', crouch: 'touch.crouch', compress: 'touch.compress', snap: 'touch.snap', steerLeft: 'touch.left', steerRight: 'touch.right',
       };
       const key = touch[action];
       return key ? t(key) : '—';
@@ -1051,6 +1103,7 @@ export class App {
     label('touch-popup', 'touch.popUp');
     label('touch-crouch', 'touch.crouch');
     label('touch-compress', 'touch.compress');
+    label('touch-snap', 'touch.snap');
     label('touch-left', 'touch.left', true);
     label('touch-right', 'touch.right', true);
     document.getElementById('touch-popup')?.addEventListener('pointerdown', (event) => {

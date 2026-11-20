@@ -1,0 +1,224 @@
+{
+ "level": 10,
+ "dx_h0": 0.0625,
+ "frames": 21,
+ "xtoe": 27.406,
+ "h0_m": 5.0,
+ "foot_crest_h0": 0.24996616906666666,
+ "train_crest_h0": 0.24398392305967032,
+ "vertical_found": false,
+ "error": "the crest never reached the slope",
+ "run": "/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs2/tools/basilisk/runs/c2/periodic_pool_c2_b15_a2_p1_L10",
+ "track": [
+  {
+   "t": 0.0,
+   "x": 7.625,
+   "y": 0.243961,
+   "trough": -0.0277285,
+   "angle": 7.203381175822788,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 8.99654
+  },
+  {
+   "t": 1.0,
+   "x": 8.625,
+   "y": 0.241962,
+   "trough": -0.0277681,
+   "angle": 7.380123157771173,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 10.375
+  },
+  {
+   "t": 2.0,
+   "x": 9.75,
+   "y": 0.243109,
+   "trough": -0.0323331,
+   "angle": 7.81955423364616,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 11.0
+  },
+  {
+   "t": 3.0,
+   "x": 10.75,
+   "y": 0.244631,
+   "trough": -0.0316186,
+   "angle": 7.865542049556231,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 12.0578
+  },
+  {
+   "t": 4.0,
+   "x": 11.875,
+   "y": 0.246829,
+   "trough": -0.0372055,
+   "angle": 8.185731113590816,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 12.6875
+  },
+  {
+   "t": 5.0,
+   "x": 12.875,
+   "y": 0.250816,
+   "trough": -0.0367689,
+   "angle": 7.766611463165238,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 13.875
+  },
+  {
+   "t": 6.0,
+   "x": 13.8125,
+   "y": 0.253215,
+   "trough": -0.033557,
+   "angle": 7.726744517961309,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 14.6875
+  },
+  {
+   "t": 7.0,
+   "x": 14.8125,
+   "y": 0.252727,
+   "trough": -0.0310942,
+   "angle": 7.873383103171026,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 15.9375
+  },
+  {
+   "t": 8.0,
+   "x": 15.875,
+   "y": 0.253341,
+   "trough": -0.0344276,
+   "angle": 7.948779955294878,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 16.9375
+  },
+  {
+   "t": 9.0,
+   "x": 16.8125,
+   "y": 0.25527,
+   "trough": -0.0341753,
+   "angle": 8.03236028464241,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 17.875
+  },
+  {
+   "t": 10.0,
+   "x": 17.875,
+   "y": 0.251338,
+   "trough": -0.0341991,
+   "angle": 7.887475264015007,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 19.0625
+  },
+  {
+   "t": 11.0,
+   "x": 18.9375,
+   "y": 0.248229,
+   "trough": -0.0322766,
+   "angle": 8.075378199469101,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 19.875
+  },
+  {
+   "t": 12.0,
+   "x": 19.9375,
+   "y": 0.254188,
+   "trough": -0.0312531,
+   "angle": 8.802675788131193,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.25
+  },
+  {
+   "t": 13.0,
+   "x": 20.9375,
+   "y": 0.259022,
+   "trough": -0.032244,
+   "angle": 8.232878279803879,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.1872
+  },
+  {
+   "t": 14.0,
+   "x": 21.9375,
+   "y": 0.265427,
+   "trough": -0.0323594,
+   "angle": 7.508006762060995,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 23.25
+  },
+  {
+   "t": 15.0,
+   "x": 22.875,
+   "y": 0.258473,
+   "trough": -0.0295782,
+   "angle": 7.641175502432057,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 24.7444
+  },
+  {
+   "t": 16.0,
+   "x": 23.875,
+   "y": 0.250223,
+   "trough": -0.0297766,
+   "angle": 7.401953838292254,
+   "overturned": true,
+   "loop": false,
+   "lip_x": 23.9092
+  },
+  {
+   "t": 17.0,
+   "x": 24.9375,
+   "y": 0.245271,
+   "trough": -0.0320235,
+   "angle": 7.90228598943241,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 26.3125
+  },
+  {
+   "t": 18.0,
+   "x": 26.0,
+   "y": 0.242897,
+   "trough": -0.0345763,
+   "angle": 7.731533221644563,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 27.3125
+  },
+  {
+   "t": 19.0,
+   "x": 27.125,
+   "y": 0.249257,
+   "trough": -0.0511849,
+   "angle": 8.1920180487657,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 28.0625
+  },
+  {
+   "t": 20.0,
+   "x": 28.0625,
+   "y": 0.251623,
+   "trough": -0.0462867,
+   "angle": 9.168471661359854,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 29.25
+  }
+ ]
+}

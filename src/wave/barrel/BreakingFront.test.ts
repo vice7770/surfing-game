@@ -629,26 +629,51 @@ describe('the clock link', () => {
   ];
   const columnsOf = (front: BreakingFront) => front.points.map((point) => point.column);
 
-  it('links two fronts end to end whose joins agree, though their ends stand more than 3 rows apart in z', () => {
-    // The ends are (9.5, 10) and (10.5, 16): 6.08 m apart, their joins 0.25 s, 0.04 s/m.
-    const segments = halves(10, 16, 0.25);
+  it('links two fronts end to end across an empty column whose joins agree, though their ends stand more than 3 rows apart in z', () => {
+    // The ends are (9.5, 10) and (11.5, 15): across the empty column 10, 5.39 m apart, their joins 0.25 s, 0.046 s/m.
+    const segments = halves(11, 15, 0.25);
     expect(fronts(joinTogether(PADANG, segments))).toBe(2);
     const linked = joinTogether(LINKED, segments);
     expect(fronts(linked)).toBe(1);
-    expect(columnsOf(linked)).toEqual(range(0, 20));
-    // σ runs straight across: nine 1 m steps, the 6.08 m, nine more.
-    const gap = Math.sqrt(1 + 6 ** 2);
+    expect(columnsOf(linked)).toEqual([...range(0, 10), ...range(11, 21)]);
+    // σ runs straight across: nine 1 m steps, the 5.39 m, nine more.
+    const gap = Math.sqrt(2 ** 2 + 5 ** 2);
     linked.points.forEach((point, k) => expect(point.sigma).toBeCloseTo(k < 10 ? k : 9 + gap + (k - 10), 9));
-    expect(linked.clockLinks).toBe(1);
-    expect(linked.bridges).toBe(0);
+    expect(linked.bridges).toBe(1);
+    expect(linked.clockLinks).toBe(0);
     expect(linked.splits).toBe(0);
   });
 
+  it('is narrowed to the 3-row reach per column between the ends (the advisor, 2026-10-03)', () => {
+    // Beside it, a 3.5 m step in z stays two fronts though the joins agree: the crest stepped onto another line.
+    const step = joinTogether(LINKED, halves(10, 13.5, 0.25));
+    expect(fronts(step)).toBe(2);
+    expect(step.clockLinks + step.bridges).toBe(0);
+    // Across a one-column hole, 6 m: a 5.9 m step links, 6.1 m does not. So the 10 m reach no longer binds on 1 m rows.
+    expect(fronts(joinTogether(LINKED, halves(11, 15.9, 0.25)))).toBe(1);
+    const far = joinTogether(LINKED, halves(11, 16.1, 0.25));
+    expect(fronts(far)).toBe(2);
+    expect(far.clockLinks + far.bridges).toBe(0);
+    // One head, two ends in reach: the nearer wins though it is listed second (A at z 10 first, B at z 14.5 second).
+    const nearest = joinTogether(LINKED, [
+      { columns: range(0, 10), z: 10, join: 1 }, { columns: range(0, 10), z: 14.5, join: 1 }, { columns: range(11, 21), z: 13, join: 1.25 },
+    ]);
+    const frontAt = (front: BreakingFront, column: number, z: number) => front.points.find((point) => point.column === column && point.z === z)!.front;
+    expect(frontAt(nearest, 11, 13)).toBe(frontAt(nearest, 0, 14.5));
+    expect(frontAt(nearest, 11, 13)).not.toBe(frontAt(nearest, 0, 10));
+    expect(nearest.bridges).toBe(1);
+    // With the switch on, neighbours 1.01 s/m apart stay split.
+    const split = joinTogether(LINKED, halves(10, 10, 1.01));
+    expect(fronts(split)).toBe(2);
+    expect(split.splits).toBe(1);
+    expect(split.clockLinks + split.bridges).toBe(0);
+  });
+
   it('links them while their joins differ by at most 0.166 s per metre between them, and no more', () => {
-    // Ends 4.12 m apart: 0.5 s apart is 0.12 s/m and links; 0.75 s apart is 0.18 s/m and does not, which the 1 s/m split
-    // would never refuse.
-    expect(fronts(joinTogether(LINKED, halves(10, 14, 0.5)))).toBe(1);
-    const apart = joinTogether(LINKED, halves(10, 14, 0.75));
+    // Ends 4.47 m apart across an empty column: 0.5 s apart is 0.11 s/m and links; 0.75 s apart is 0.17 s/m and does not,
+    // which the 1 s/m split would never refuse.
+    expect(fronts(joinTogether(LINKED, halves(11, 14, 0.5)))).toBe(1);
+    const apart = joinTogether(LINKED, halves(11, 14, 0.75));
     expect(fronts(apart)).toBe(2);
     expect(apart.splits).toBe(0);
     expect(apart.clockLinks).toBe(0);
@@ -664,21 +689,6 @@ describe('the clock link', () => {
     expect(fronts(onLine)).toBe(1);
     expect(onLine.bridges).toBe(1);
     expect(fronts(joinTogether(LINKED, [{ columns: range(0, 10), z: 10, join: 0 }, { columns: range(11, 21), z: 10, join: 0.3321 }]))).toBe(2);
-  });
-
-  it('links ends up to 10 m apart, measured straight between them, and none farther', () => {
-    // Side by side (1 m in x): 9.9 m off in z the ends are 9.95 m apart and link; 10 m off they are 10.05 m apart and do
-    // not, though only 10 m apart in z.
-    expect(fronts(joinTogether(LINKED, halves(10, 19.9, 0.25)))).toBe(1);
-    expect(fronts(joinTogether(LINKED, halves(10, 20, 0.25)))).toBe(2);
-    // Exactly 10 m apart is within it: √99 m off in z, from z 0 so that their difference is √99 to the last bit. A millimetre
-    // more in z (10.001 m apart) is past it.
-    const z = Math.sqrt(99);
-    expect(Math.sqrt(1 + z * z)).toBe(10);
-    const atReach = (dz: number) => joinTogether(LINKED, [{ columns: range(0, 10), z: 0, join: 1 }, { columns: range(10, 20), z: dz, join: 1.25 }]);
-    expect(fronts(atReach(z))).toBe(1);
-    expect(atReach(z).clockLinks).toBe(1);
-    expect(fronts(atReach(z + 0.001))).toBe(2);
   });
 
   it('bridges a one-column gap only when the clock link passes, and no wider gap', () => {
@@ -709,22 +719,22 @@ describe('the clock link', () => {
     expect(frontAt(nearest, 10, 10)).toBe(frontAt(nearest, 0, 10));
     expect(frontAt(nearest, 0, 15)).not.toBe(frontAt(nearest, 0, 10));
     expect(nearest.points.filter((point) => point.front === frontAt(nearest, 0, 15))).toHaveLength(10);
-    // Two pieces in reach of one end, 8 m below it (8.06 m apart) and 5 m above (5.10 m): the first in z takes it, though
-    // the other is nearer, and the other starts a front of its own.
+    // Two pieces across an empty column in reach of one end, 5 m below it (5.39 m apart) and 4 m above (4.47 m): the first
+    // in z takes it, though the other is nearer, and the other starts a front of its own.
     const first = joinTogether(LINKED, [
-      { columns: range(0, 10), z: 10, join: 1 }, { columns: range(10, 20), z: 2, join: 1.25 }, { columns: range(10, 20), z: 15, join: 1.25 },
+      { columns: range(0, 10), z: 10, join: 1 }, { columns: range(11, 21), z: 5, join: 1.25 }, { columns: range(11, 21), z: 14, join: 1.25 },
     ]);
     expect(fronts(first)).toBe(2);
-    expect(frontAt(first, 10, 2)).toBe(frontAt(first, 0, 10));
-    expect(frontAt(first, 10, 15)).not.toBe(frontAt(first, 0, 10));
-    expect(first.clockLinks).toBe(1);
+    expect(frontAt(first, 11, 5)).toBe(frontAt(first, 0, 10));
+    expect(frontAt(first, 11, 14)).not.toBe(frontAt(first, 0, 10));
+    expect(first.bridges).toBe(1);
     // The first in z the nearer as well: it takes the end, and the end is taken once.
     const once = joinTogether(LINKED, [
-      { columns: range(0, 10), z: 10, join: 1 }, { columns: range(10, 20), z: 14, join: 1.25 }, { columns: range(10, 20), z: 18, join: 1.25 },
+      { columns: range(0, 10), z: 10, join: 1 }, { columns: range(11, 21), z: 13, join: 1.25 }, { columns: range(11, 21), z: 15.5, join: 1.25 },
     ]);
     expect(fronts(once)).toBe(2);
-    expect(frontAt(once, 10, 14)).toBe(frontAt(once, 0, 10));
-    expect(once.clockLinks).toBe(1);
+    expect(frontAt(once, 11, 13)).toBe(frontAt(once, 0, 10));
+    expect(once.bridges).toBe(1);
   });
 
   it('leaves the 1 s/m split alone: a true split stays two fronts with the link on', () => {
@@ -741,7 +751,7 @@ describe('the clock link', () => {
 
   it('refuses a handed-over order that names a point the state does not hold, or misses or repeats one, taking none of it', () => {
     // The last step's clock link joined the halves, so the state lists its points in the order they match by.
-    const state = joinTogether(LINKED, halves(10, 16, 0.25)).exportState();
+    const state = joinTogether(LINKED, halves(11, 15, 0.25)).exportState();
     expect(state.order).toBeDefined();
     const order = state.order!;
     const byNumber = (a: number, b: number) => a - b;
@@ -829,7 +839,8 @@ describe('the clock link', () => {
         const columns = b.column - a.column;
         const gap = Math.sqrt((b.x - a.x) ** 2 + (b.z - a.z) ** 2);
         const facing = a.front !== b.front && lastOf.get(a.front) === a.id && firstOf.get(b.front) === b.id;
-        if (!(facing && columns >= 1 && columns <= 2 && gap <= 10 && Math.abs(b.joined - a.joined) <= 0.166 * gap)) problems.push(`${step}: a link ${link} the clock does not allow`);
+        const narrow = Math.abs(b.z - a.z) < 3 * columns;
+        if (!(facing && columns >= 1 && columns <= 2 && gap <= 10 && narrow && Math.abs(b.joined - a.joined) <= 0.166 * gap)) problems.push(`${step}: a link ${link} the clock does not allow`);
         if (columns === 1) neighbours += 1;
         else bridges += 1;
       }
@@ -854,8 +865,9 @@ describe('the clock link', () => {
       }
     });
     expect(problems).toEqual([]);
-    // The run uses both links, the counters count each step's, and a good share of its steps have fewer fronts for it.
-    expect(neighbours).toBeGreaterThan(0);
+    // The run bridges holes, the counters count each step's, and a good share of its steps have fewer fronts for it. Narrowed,
+    // the link never joins neighbours: one within the 3-row reach beside an end the 3-row link has already taken.
+    expect(neighbours).toBe(0);
     expect(bridges).toBeGreaterThan(0);
     expect(on.clockLinks).toBe(neighbours);
     expect(on.bridges).toBe(bridges);

@@ -649,6 +649,154 @@ The coordinator's call on batch D's one miss: the frontside cutback's cascade is
 3. Any spot: W held through a bottom turn. *Look for:* more drive off the front foot than before.
 4. Any spot: a bottom turn and a cutback, watching the head. *Look for:* it still turns into the turn first, a touch later than before (it looks 0.45 s ahead of a turn, not 0.6).
 
+### The paddle balance (2026-10-22, `claude/paddle-balance`, after batches A–E)
+
+The owner's ride: "too unbalanced on the board and getting up from it. While paddling he loses balance and falls off." Reproduced first, with headless probes of `RideSession` (the board and the attached rider, no `SurfZoneRunner`):
+- paddling: 55 runs on flat water, chop (`ChopWater`), swell (1.2 and 2 m, 10 s, from five directions) and a 1.4 m face running up behind the paddler (12°, 18° and 25°, headed along it and 30° across), each straight and weaving (full steer one way, none, the other way, none, 2 s each);
+- a chop sweep: 72 runs of 30 s (12 seeds, `ChopWater` at scale 1, 1.6 and 2, straight and weaving);
+- pop-ups: on a static 15° slope, at each tenth of a second through a stroke (12); on a 1.2 m face (14° and 18°, headed along it and 30° across) at the cue and 0.15, 0.3 and 0.45 s after it (20); on flat water with no wave (12).
+
+**The causes:**
+- **Paddling (batch C, item 2.8).** The stroke's roll asked the hips for its tracking error, and its rate alone asks 0.22 m of their 0.1 m reach. When chop, a steering stroke or a face rolled the board the other way, the hips were held 0.03–0.08 m toward the low rail while it rolled toward it at 50–70°/s. Past about 36° the hips' 0.1 m cannot right the board (its roll with the hips held there, on flat water). It capsized, and the rider slid off ('lost board').
+- **Sloping water (older).** The prone balance levelled the board to the world's horizontal. Lying awash, the body moves with the surface water, so the vertical it feels is the surface's normal: the free surface is a surface of equal pressure, so g − a is normal to it. Across sloping water the hips spent their reach against the water's own level.
+- **The pop-up (batch C).** The push took the duck-dive's hold (1.0 m of shift per rad), made for a board under water. On a floating or planing board the body's shift came a quarter cycle or more behind the board's roll and rang it up. The board rolled 22–79° in the rise. Carried rigidly with the deck, the rising body also swings across by its height per radian of roll (0.45 m by the push's end).
+
+**The fix (`AttachedRider.ts`; the reasoning in STROKE_ROLL's, PRONE_ROLL_SHIFT's and `armsGiveStep`'s comments):**
+1. **The balance first** (the "posture first" principle of dual-task balance, Shumway-Cook and Woollacott). The hips level the board within their reach; the stroke's swing has what is left. On flat water the board rocks as before.
+2. **The water's level.** Lying down, the roll the balance reads is from the water's surface normal under the board (`waterUp`, the otoliths' vertical); the rate is the board's own. On flat water the two levels are the same.
+3. **Pushing up, the hips' balance and the arms' give.** The push leaves the duck-dive's hold for the prone balance. As the chest leaves the deck, the board rolls under the hands while the body's centre of mass stays over the board's middle: its lift over the prone posture times tan of the roll, within the hands' span (DUCK_SHIFT).
+
+| Probe | `main` (a246523d) | Before batch C (2dd9ba52) | The balance first | As built |
+|---|---|---|---|---|
+| Paddling, 55 runs: falls | 8 (chop ×1.6, weaving and straight; the 12° face at ±30°; the 18° face weaving) | 0 | 1 (chop ×1.6, seed 3, weaving) | 0 |
+| Chop sweep, 72 runs: falls (×1 / ×1.6 / ×2) | 18 (3 / 8 / 7) | 0 | 3 (0 / 1 / 2) | 0 (the board's roll at most 35°) |
+| Flat water: the roll rail to rail; the cruise | 18.6°; 1.62 m/s | 11.4°; 1.64 | 18.6°; 1.62 | 18.6°; 1.62 |
+| Pop-up on the 15° slope, 12: falls (in the rise) | 11 (10), the board 22–79° in the rise | 0 of 6, the board 9–19° | — | 0, the board 15° on average and 18° at most in the rise |
+| …the first 2 s standing: the board's largest roll, its range, the balance margin's least (means) | — (1 stood) | 11–14°, 17–23°, 0.23–0.45 | — | 7.2°, 11°, 0.63 (the margin's mean 0.86) |
+| Pop-up on the face, 20: falls (in the rise) | 17 (12) | — | — | 4 (3, nose-diving at the foot of the 18° face; 1 standing on a board that had lost the wave) |
+| Pop-up on flat water, 12: falls (in the rise) | 12 (2) | — | — | 12 (2): no wave carries a standing rider |
+
+`ChopWater` at scale 1 is a choppy sea, Hs 0.65–0.8 m of 2.2–4.2 s waves, sloped 8–12° at the 99th percentile. At 1.6 and 2 (Hs 1.0–1.55 m, slopes to 23–28°) it is steeper than linear waves stand without breaking.
+
+**Tried and not kept** (don't retry):
+- **The push carried upright like the landing.** Kept level in pitch as well, the body's centre of mass moved out of the landing's support on a nose-up board, and the towed 6 m/s pop-up fell.
+- **The push's reach widened to the hands' span** (0.2 m, at the prone gains or more). It rang like the duck-dive's hold.
+- **The rails held when the hips run out,** paddling on the duck-dive's hold. All 72 chop runs fell.
+- **A leg-spread reflex** past an extrapolated 18–28°. It came too late: 3 of 72 as before.
+- **The legs spread all the time.** It cut the flat-water roll to 14°, against the stroke's bar of 15°.
+- **Easing the stroke's roll by the extrapolated roll.** It changed nothing.
+- **Levelling to the board's own felt acceleration** (low-passed over 0.1 s). 2 of 72 fell: it is noisier than the water's normal.
+
+**Tests:**
+- New (`AttachedRider.test.ts`, "the paddle's balance"):
+  - a choppy sea, straight and weaving;
+  - the face lifting the board at ±30°;
+  - pop-ups at six points of the stroke on the 15° slope.
+  
+  All three failed on `main`.
+- The roller lens's fingerprints were re-recorded for its four prone riders, whose balance changes by design. The standing rider is unchanged.
+- Results, after merging `main` at 7b79f085 (the camera stick, the Canyon rock bed):
+  - the main suite: 2,843 passed, with 18 pinned fails as before;
+    - the barrel library's two files and the surf forecast need `docs/research` data. They were run again with it checked out (20 passed);
+  - `SurfZoneSimulation`'s rider subset: 11 passed;
+  - `tsc --noEmit` is clean.
+
+**Shot list (paddle balance):**
+1. Beach or Point, Medium: paddle 30 s through the chop, weaving left and right. *Look for:* no falls. The board still rocks rail to rail with each stroke on flat water; in chop it rides the water's tilt instead of fighting it.
+2. Paddle 30° across a wave's face as it lifts you, and don't pop up. *Look for:* you stay on.
+3. Catch three waves each way, popping up at the cue. *Look for:*
+   - the board stays flatter while you push up;
+   - the body stays over the board as it rolls under the hands;
+   - the first second standing is calmer.
+
+   Say if the pop-up feels slower or heavier.
+4. Pop up late on a steep face. *Look for:* a nose-dive at the bottom still throws you. That is a real cause.
+5. Paddle into whitewater or under a closing lip, and duck-dive once. *Look for:* the bore and the lip still knock you off; the duck-dive works as before.
+
+### The sprint paddle (2026-10-22, `claude/sprint-paddle` from `claude/paddle-balance`)
+
+The owner's choices of 2026-10-22, built as given.
+
+**Control.** Double-press the paddle and keep holding it to sprint; letting go stops the sprint, and the paddling with it. A single press held cruises, as before.
+- `SprintPress` (`InputAxes.ts`) reads the paddle as `Controls` combines it across the keyboard (Space, ↑), the pads (RT, and the Steam Controller through them) and the touch paddle button.
+- The double press is a release and a press again within `DOUBLE_PRESS_WINDOW`, 0.3 s:
+  - deliberate double presses come 0.1–0.25 s apart;
+  - a quarter of a cruising stroke is too short a stop to mean one.
+- `RideInput.sprint` carries it to the worker.
+
+**The physics** (`AttachedRider`'s SPRINT_PADDLE_* constants, with their reasoning). The strokes go over to the sprint in 0.3 s:
+- **Rate:** 70 a minute a side, against 50 cruising (the owner's figure, from Sheppard et al. 2013, Nessler et al. 2019 and Volschenk et al. 2021).
+- **Overlapping pulls:** 0.43 of each arm's cycle, against 0.28. Swimmers' arm phases overlap more as they speed up (Chollet, Chalies and Chatard 2000).
+- **A deeper catch:**
+  - the hand 0.32 m down, against 0.25;
+  - the forearm upright and the upper arm in the water. Their extra drag area (×2.4 the hand's and forearm's) pushes as a plate, along the stroke only.
+- **The arm pulling all out:** it gives way at 0.8 body weights, against 0.4. Sprint paddling is limited by pulling strength (Sheppard et al. 2012).
+
+The catch's own quickening (SPRINT_CYCLE) stays, and stays free.
+
+**The reserve** (`PaddleReserve`):
+- **Model:** the anaerobic reserve, as W′ in the critical-power model (Skiba et al. 2012), with surfing's short sprints between long paddles (Farley et al. 2012).
+- **Owner's numbers, linear both ways:**
+  - 8 s of sprinting;
+  - 15 s to refill, at anything else (cruising, lying still, riding, swimming);
+  - emptied, it cruises until a quarter is back.
+- **Where it lives:** in `RideSession`, as the surfer's own. It is kept through falls and climbs back on, and is full at each placement (a new session, a retry, a lesson's start), like the breath.
+
+**The HUD:**
+- a small bar at the bottom centre;
+- shown while paddling below full, and fading out at full;
+- the accent colour while spent;
+- high-contrast and reduced-motion rules like the balance meter's;
+- strings `hud.sprint` and `action.paddle.help`.
+
+The status carries `ride.sprint` (the reserve, spent, paddling, sprinting).
+
+**Online:** no wire field. The pose sends the seven drawn points, the hands among them, 20 times a second, so another player's sprint shows as its faster, deeper strokes.
+
+| On flat water (the speed averaged over a stroke) | Cruise | Sprint |
+|---|---|---|
+| Top speed | 1.59 m/s | 2.08 m/s |
+| 1 m/s from rest | 1.12 s | 0.55 s |
+| 90 % of its own top speed | 2.42 s | 1.83 s |
+| The cruise's 90 % (1.43 m/s) | 2.43 s | 1.00 s |
+| The hand's greatest load | 0.40 body weights | 0.78 |
+| Strokes a minute a side | 50 | 70 |
+
+**The balance while sprinting** (the paddle-balance probes, the sprint held):
+
+| Probe | With an endless reserve | With the 8 s reserve |
+|---|---|---|
+| Paddling, 55 runs | 0 falls | 0 falls |
+| Chop sweep, 72 runs | 2 falls, both at ×2 | 4 falls, all at ×2 |
+
+`ChopWater` ×2 is Hs 1.3–1.55 m at 2–4 s, sloped to 28°: steeper than linear waves stand unbroken. Cruising holds it with no falls.
+- **Tried first:** the sprint's extra area as a sphere's drag, the way the hand's is drawn. It turned the chop's flow across the stroke into side forces on the arm: 11 of 72 fell. As a plate along the stroke, 2.
+- **Also tried:** easing the sprint whenever the hips run out of reach. It changed nothing.
+
+**Tests:**
+- the double press, from the keyboard (Space, ↑) and a pad's RT; none standing;
+- the reserve's drain, refill and lockout;
+- the sprint's top speed and its sooner reach to it;
+- 70 strokes a minute with the drawn hand deeper;
+- running out at 8 s, back after 3.75 s, full at a new placement;
+- the bar's visibility (`showsSprintBar`).
+
+Results:
+- the main suite: 2,852 passed (the settings test updated for the paddle's new help line, re-run on its own), with the 18 pinned fails as before;
+- `SurfZoneSimulation`'s rider subset: 11 passed;
+- `tsc --noEmit` is clean.
+
+**Shot list (sprint paddle):**
+1. Any spot: hold paddle for 10 s, then double-press and hold. *Look for:*
+   - the strokes quicken and dig deeper;
+   - the board picks up speed within a second;
+   - the bar appears at the bottom centre and empties over about 8 s;
+   - the paddler drops back to cruise when it runs out.
+2. Keep holding after it empties. *Look for:* the sprint comes back by itself about 4 s later (a quarter refilled). Let go, and it refills in 15 s; it fades out when full.
+3. Paddle for a wave, and sprint the last two seconds. *Look for:* a catch that is easier than before. Say if it feels too easy.
+4. Sprint through chop, steering. *Look for:* no falls.
+5. Try it on the pad (RT twice), with touch (the paddle button tapped twice and held), and with high-contrast HUD and reduced motion on.
+
 ---
 
 ## 4. Decisions for the owner (each with the recommended answer)

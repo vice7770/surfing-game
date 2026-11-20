@@ -1,0 +1,25 @@
+C2 step 3 bars: ?poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library; cases periodic-pool-c2-b1-a2-l12.bin, periodic-pool-c2-b1-a3-l12.bin, periodic-pool-c2-b2-a2-l12.bin, periodic-pool-c2-b2-a3-l12.bin, periodic-pool-c2-b3-a1-l12.bin, periodic-pool-c2-b3-a2-l12.bin, periodic-pool-c2-b3-a3-l12.bin; lanes 153 (σ 106.8 m), footprint 15687 nodes; from 40 to 130 s (solver), sea built at 21.0 s
+ran 512 s wall; slices made 1519 (slope clamped 414, A0 clamped 847, some τ clamped 1153, at the toe 567); tracker {"raws":1868,"fitted":1519,"borrowed":0,"atToe":712}
+
+=== at the hand-over (each slice where its blend starts; 1275 slices, 11 with no sea crest within 3 m) ===
+crest: the case's over still water less the sea's (bar within 0.25 m): median 0.069, 90 % 0.233, 99 % 1.085, most 1.295 (1264); |gap| over 0.25: 10.5 %
+height: the case's H over the sea's (bar 0.95–1.05): median 1.073, 90 % 1.353, 99 % 3.500, most 5.746 (1264); outside the bar: 61.9 %
+   on the field's whole lanes (end weight 1): median 1.079, 90 % 1.362, 99 % 3.593, most 5.746 (1173), outside 63.7 %; and of those no key clamped: median –, 90 % –, 99 % –, most – (0), outside 0.0 %; their crest gap median –, 90 % –, 99 % –, most – (0)
+   of them τ-clamped 969, slope-clamped 330, A0-clamped 723; the toe's share median 0.00, 90 % 1.00, 99 % 1.00, most 1.00 (1264); the library's throw after t_h median 4.97, 90 % 5.28, 99 % 5.32, most 5.34 (1264) s
+the mean step under a board (|period-mean of felt − sea| at points −10…+10 m along the lane; bar 0.03 m): median 0.001, 90 % 0.016, 99 % 0.037, most 0.113 (1420); over 0.03: 2.8 %
+the surface rising under a board through the blend (|d(felt − sea)/dt|; bar 0.4 m/s median): median 0.00, 90 % 0.17, 99 % 0.51, most 13.96 (204480)
+
+=== along the crest ===
+J1, the share's step between neighbouring lanes (|Δα| |case − sea|; bar 0.05 m at 90 %, 0.10 most): median 0.007, 90 % 0.045, 99 % 0.137, most 1.268 (742336); over 0.05 8.5 %, over 0.10 2.1 %
+(a diagnostic) the whole step between neighbouring lanes' surfaces at the same world point (lanes ≈ 0.7 m apart): median 0.025, 90 % 0.149, 99 % 0.501, most 2.022 (724910); the sea's own there median 0.014, 90 % 0.047, 99 % 0.112, most 0.535 (724910)
+   the rib (the middle lane of three off their line, at the same world point): median 0.012, 90 % 0.092, 99 % 0.361, most 1.878 (687850); over 0.02 35.0 %
+J2, the face's slope between neighbouring lanes, worst on the face (bar 2° at 90 %, 4° most, both ends of the course): start median 1.83, 90 % 2.96, 99 % 3.76, most 5.79 (1563); end median 2.18, 90 % 4.19, 99 % 11.90, most 73.87 (1891); all median 2.03, 90 % 3.95, 99 % 12.73, most 73.87 (6029)
+J3, at the frames' two ends on the lanes' stations (the first inside against the sea; the slope to the one outside): height median 0.0007, 90 % 0.0044, 99 % 0.0113, most 0.0298 (24454) m (bar 0.01); slope step median 0.15, 90 % 1.00, 99 % 2.58, most 6.77 (24454)° (bar 2)
+J5, the share's step 1 m apart (pairs in the course): over 0.2 in 13.1 % of 11963 (bar under 5 %; median 0.086, 90 % 0.217, 99 % 0.314, most 0.999 (11963)); the crest place off its neighbours' line: over 0.5 m in 9.5 % (bar under 10 %; median 0.112, 90 % 0.486, 99 % 1.175, most 8.498 (22404) m)
+
+=== the mesh and drawn = felt ===
+quads of the contact's loft off the water (slivers left out): 1360945; folded over 90°: 103556; the fold median 6.9, 90 % 71.1, 99 % 170.4, most 180.0 (1360945)°
+drawn = felt (bar 0.005 m): where the seam mask is off median 0.0000, 90 % 0.0011, 99 % 0.0092, most 0.6379 (30849); on median 0.0000, 90 % 0.0000, 99 % 0.0067, most 0.0403 (24522); in its dithered band, the loft against the cubic surface median 0.0017, 90 % 0.0324, 99 % 0.2246, most 1.1796 (13629)
+
+=== cost per step on this machine (ms) ===
+worker: hand-over and slices median 0.83, 90 % 1.10, 99 % 1.51, most 7.39 (5401); the zone's surface median 2.45, 90 % 2.85, 99 % 3.64, most 20.21 (5401); the contact's loft median 1.90, 90 % 2.40, 99 % 3.00, most 12.00 (5401); page (snapshot write + loft + mask, measured here): median 6.24, 90 % 10.39, 99 % 54.05, most 54.05 (46)

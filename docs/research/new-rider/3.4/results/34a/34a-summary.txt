@@ -1,0 +1,168 @@
+# step 3.4a — the two-body rider as a plant: the twenty shipped / control / symmetric / two-body arms, every control,
+# every row. The four inertia-sweep arms are in their own .txt files beside this one and in README Part 1 section 8.
+# Spans are lo–hi of the per-run medians over the arm, with the arm's own median in brackets.
+# The median convention is the probe's own (s[floor(p n)]), so the shipped rows reproduce 3.3p to the digit.
+=== 1. the fall, every arm, the probe's own median convention ===
+  unsteered-deck           n= 24 fell  24 of  24  1.100–2.067 s, median 1.183   Compress 8 of 8
+  ctl-unsteered-deck       n= 24 fell  24 of  24  1.100–2.067 s, median 1.183   Compress 8 of 8
+  sym-unsteered-deck       n= 24 fell  24 of  24  1.050–2.100 s, median 1.217   Compress 8 of 8
+  two-unsteered-deck       n= 24 fell  24 of  24  1.083–2.683 s, median 1.450   Compress 8 of 8
+
+  unsteered-world          n= 24 fell  24 of  24  0.767–1.950 s, median 0.950   Compress 8 of 8
+  ctl-unsteered-world      n= 24 fell  24 of  24  0.767–1.950 s, median 0.950   Compress 8 of 8
+  sym-unsteered-world      n= 24 fell  24 of  24  0.767–2.000 s, median 0.967   Compress 8 of 8
+  two-unsteered-world      n= 24 fell  24 of  24  0.733–2.567 s, median 1.283   Compress 8 of 8
+
+  low-deck                 n= 18 fell  18 of  18  0.517–7.100 s, median 1.033   Compress 6 of 6
+  ctl-low-deck             n= 18 fell  18 of  18  0.517–7.100 s, median 1.033   Compress 6 of 6
+  sym-low-deck             n= 18 fell  18 of  18  0.517–7.183 s, median 1.050   Compress 6 of 6
+  two-low-deck             n= 18 fell  18 of  18  0.500–6.233 s, median 1.033   Compress 6 of 6
+
+  low-world                n= 18 fell  18 of  18  0.117–6.900 s, median 0.767   Compress 6 of 6
+  ctl-low-world            n= 18 fell  18 of  18  0.117–6.900 s, median 0.767   Compress 6 of 6
+  sym-low-world            n= 18 fell  18 of  18  0.117–7.200 s, median 0.767   Compress 6 of 6
+  two-low-world            n= 18 fell  18 of  18  0.117–6.250 s, median 0.733   Compress 6 of 6
+
+  steered-deck             n= 18 fell  18 of  18  1.367–4.117 s, median 3.067   Compress 6 of 6
+  ctl-steered-deck         n= 18 fell  18 of  18  1.367–4.117 s, median 3.067   Compress 6 of 6
+  sym-steered-deck         n= 18 fell  18 of  18  1.367–4.083 s, median 3.000   Compress 6 of 6
+  two-steered-deck         n= 18 fell  18 of  18  1.317–3.183 s, median 2.500   Compress 6 of 6
+
+=== 2. the controls ===
+  unsteered-deck           ctlOff 1.1e-14  relCtl−relFull 9.8e-12  foot ctl 3.6e-14  rollClose 4.0e-15  bankClose 7.4e-13  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1529
+  ctl-unsteered-deck       ctlOff 1.1e-14  relCtl−relFull 1.8e-11  foot ctl 3.3e-14  rollClose 4.0e-15  bankClose 5.6e-13  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1529
+  sym-unsteered-deck       ctlOff 1.1e-14  relCtl−relFull 2.4e-11  foot ctl 3.5e-14  rollClose 2.0e-15  bankClose 1.5e-13  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1543
+  two-unsteered-deck       ctlOff 1.1e-14  relCtl−relFull 1.9e-11  foot ctl 5.7e-14  rollClose 8.0e-15  bankClose 3.0e-13  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1746
+  unsteered-world          ctlOff 1.1e-14  relCtl−relFull 2.7e-11  foot ctl 3.2e-14  rollClose 1.2e-14  bankClose 7.4e-13  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1231
+  ctl-unsteered-world      ctlOff 1.1e-14  relCtl−relFull 1.8e-11  foot ctl 3.9e-14  rollClose 2.0e-14  bankClose 2.5e-13  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1231
+  sym-unsteered-world      ctlOff 1.1e-14  relCtl−relFull 2.4e-11  foot ctl 2.8e-14  rollClose 3.0e-15  bankClose 2.3e-13  crossSym 2.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1242
+  two-unsteered-world      ctlOff 1.1e-14  relCtl−relFull 1.9e-11  foot ctl 3.6e-14  rollClose 8.0e-15  bankClose 2.7e-13  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 1543
+  low-deck                 ctlOff 1.1e-14  relCtl−relFull 1.1e-11  foot ctl 2.5e-12  rollClose 6.3e-14  bankClose 1.8e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 1264
+  ctl-low-deck             ctlOff 1.2e-14  relCtl−relFull 1.6e-11  foot ctl 3.5e-12  rollClose 4.2e-14  bankClose 1.8e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 1264
+  sym-low-deck             ctlOff 1.1e-14  relCtl−relFull 4.9e-12  foot ctl 9.3e-13  rollClose 5.0e-15  bankClose 1.6e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 1239
+  two-low-deck             ctlOff 1.0e-14  relCtl−relFull 7.5e-12  foot ctl 3.4e-11  rollClose 3.0e-15  bankClose 1.4e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 1180
+  low-world                ctlOff 9.0e-15  relCtl−relFull 1.2e-11  foot ctl 5.7e-12  rollClose 6.3e-14  bankClose 1.4e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 971
+  ctl-low-world            ctlOff 9.0e-15  relCtl−relFull 1.7e-11  foot ctl 7.6e-12  rollClose 4.2e-14  bankClose 2.8e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 971
+  sym-low-world            ctlOff 9.0e-15  relCtl−relFull 3.6e-12  foot ctl 1.8e-12  rollClose 3.0e-15  bankClose 5.7e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 967
+  two-low-world            ctlOff 1.0e-14  relCtl−relFull 2.2e-12  foot ctl 4.8e-11  rollClose 3.0e-15  bankClose 3.7e-14  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 911
+  steered-deck             ctlOff 1.2e-14  relCtl−relFull 2.9e-11  foot ctl 5.0e-12  rollClose 1.2e-12  bankClose 3.0e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 2504
+  ctl-steered-deck         ctlOff 1.2e-14  relCtl−relFull 2.1e-11  foot ctl 9.7e-12  rollClose 1.2e-12  bankClose 1.5e-13  crossSym 1.0e-15  sideRollCtl 0.0e+00  sense 0.0e+00  live 2504
+  sym-steered-deck         ctlOff 1.2e-14  relCtl−relFull 5.2e-10  foot ctl 2.4e-11  rollClose 3.7e-14  bankClose 4.8e-14  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 2476
+  two-steered-deck         ctlOff 1.1e-14  relCtl−relFull 2.0e-11  foot ctl 6.7e-12  rollClose 2.9e-14  bankClose 8.5e-14  crossSym 1.0e-15  sideRollCtl 1.0e-15  sense 0.0e+00  live 2117
+
+=== 3. 3.3p reproduced on this tree (the shipped arms, the controller's own blend) ===
+  unsteered-deck     rollRel 10.050  bankRel 3.540  rollRate 10.641  bankRate 2.552  rollSign 0.338  bankSign 0.696  live 24 of 24
+  unsteered-world    rollRel 9.366  bankRel 3.310  rollRate 9.092  bankRate 3.097  rollSign 0.333  bankSign 0.733  live 24 of 24
+  low-deck           rollRel 2.725  bankRel 3.833  rollRate 3.980  bankRate 4.620  rollSign 0.579  bankSign 0.625  live 18 of 18
+  low-world          rollRel 7.420  bankRel 3.722  rollRate 7.857  bankRate 3.634  rollSign 0.378  bankSign 0.735  live 12 of 18
+  steered-deck       rollRel 4.035  bankRel 8.298  rollRate 3.934  bankRate 5.131  rollSign 0.605  bankSign 0.650  live 18 of 18
+
+=== 4. the two rows, scored on the SHIPPED ride (the apples-to-apples comparison) ===
+   the plant rebuilt at the controller's own exact point; the blend separated out in §3
+  unsteered-deck     ROLL shipped    4.323–16.203 (10.300)  sym    4.248–15.931 (10.142)  two    5.654–18.730 (10.066)
+  unsteered-world    ROLL shipped     4.046–22.981 (9.385)  sym     3.960–22.678 (9.217)  two     4.339–26.943 (9.922)
+  low-deck           ROLL shipped     0.902–16.618 (2.797)  sym     0.903–16.362 (2.746)  two     0.847–19.283 (3.982)
+  low-world          ROLL shipped     0.891–18.459 (7.423)  sym     0.893–18.190 (7.326)  two     0.870–20.104 (9.065)
+  steered-deck       ROLL shipped      2.336–8.773 (3.851)  sym      2.297–8.596 (3.771)  two     1.773–11.330 (3.267)
+
+  unsteered-deck     LEAN shipped      1.863–9.601 (3.515)  sym     1.470–10.817 (3.082)  two      0.487–2.738 (1.039)
+  unsteered-world    LEAN shipped      2.307–9.723 (3.269)  sym     1.569–10.976 (3.290)  two      0.561–2.827 (1.109)
+  low-deck           LEAN shipped      2.295–9.126 (3.713)  sym      1.997–9.200 (4.007)  two      0.622–3.970 (1.413)
+  low-world          LEAN shipped     2.414–14.023 (3.901)  sym     2.032–14.490 (3.990)  two      0.622–3.194 (1.284)
+  steered-deck       LEAN shipped     3.654–18.941 (7.475)  sym     3.588–18.807 (8.077)  two      0.849–6.645 (1.967)
+
+  unsteered-deck     two better: roll 10 of 24, lean 24 of 24 | under 1 at the median — roll shipped 0 two 0, lean shipped 0 two 10 (of 24)
+  unsteered-world    two better: roll 10 of 24, lean 24 of 24 | under 1 at the median — roll shipped 0 two 0, lean shipped 0 two 10 (of 24)
+  low-deck           two better: roll 6 of 18, lean 18 of 18 | under 1 at the median — roll shipped 9 two 6, lean shipped 0 two 3 (of 18)
+  low-world          two better: roll 2 of 12, lean 12 of 12 | under 1 at the median — roll shipped 1 two 1, lean shipped 0 two 1 (of 12)
+  steered-deck       two better: roll 11 of 18, lean 18 of 18 | under 1 at the median — roll shipped 0 two 0, lean shipped 0 two 3 (of 18)
+
+  unsteered-deck     roll sign    0.190–0.462 (0.338) ->    0.190–0.448 (0.338) | lean sign    0.474–0.845 (0.696) ->    0.627–0.852 (0.785)
+  unsteered-world    roll sign    0.083–0.476 (0.333) ->    0.083–0.476 (0.339) | lean sign    0.488–0.844 (0.738) ->    0.587–0.841 (0.758)
+  low-deck           roll sign    0.157–0.955 (0.579) ->    0.157–0.950 (0.549) | lean sign    0.316–0.833 (0.625) ->    0.316–0.840 (0.625)
+  low-world          roll sign    0.000–0.941 (0.378) ->    0.000–0.941 (0.378) | lean sign    0.412–1.000 (0.686) ->    0.412–1.000 (0.759)
+  steered-deck       roll sign    0.373–0.770 (0.609) ->    0.358–0.762 (0.624) | lean sign    0.328–0.832 (0.650) ->    0.328–0.838 (0.650)
+
+=== 5. the one-step residual, the 3.3o headline, on the shipped ride ===
+  unsteered-deck     roll rate  4.155–15.915 (10.641) ->  5.454–18.440 (10.332) | bank rate    1.415–9.497 (2.552) ->    0.535–3.321 (0.884)
+  unsteered-world    roll rate   3.796–19.418 (9.092) ->   4.319–21.420 (9.964) | bank rate   2.022–10.029 (3.097) ->    0.619–3.452 (0.993)
+  low-deck           roll rate   1.441–18.771 (3.980) ->   2.028–20.387 (5.369) | bank rate   1.970–22.273 (4.620) ->    0.602–5.122 (1.395)
+  low-world          roll rate   2.999–19.753 (7.857) ->  4.567–23.064 (10.732) | bank rate    1.099–5.060 (3.634) ->    0.139–1.846 (1.318)
+  steered-deck       roll rate    2.471–9.084 (3.934) ->   1.820–11.599 (3.821) | bank rate   3.966–23.179 (5.131) ->    0.880–6.492 (1.342)
+  unsteered-deck     bank rate under 1 at the median: shipped 0, two 19, of 24
+  unsteered-world    bank rate under 1 at the median: shipped 0, two 13, of 24
+  low-deck           bank rate under 1 at the median: shipped 0, two 4, of 18
+  low-world          bank rate under 1 at the median: shipped 0, two 4, of 12
+  steered-deck       bank rate under 1 at the median: shipped 0, two 4, of 18
+
+=== 6. the force at the feet ===
+  unsteered-deck     shipped |N|    122.4–263.2 (214.7)  two |N|     91.5–218.8 (157.7)  two/shipped    0.584–0.883 (0.749)
+  unsteered-world    shipped |N|    122.3–240.4 (172.7)  two |N|     89.5–193.4 (126.3)  two/shipped    0.593–0.948 (0.804)
+  low-deck           shipped |N|     63.5–613.1 (308.9)  two |N|     49.5–208.4 (126.4)  two/shipped    0.089–0.816 (0.629)
+  low-world          shipped |N|      8.0–235.0 (135.3)  two |N|     47.2–158.9 (112.8)  two/shipped -16.934–16.043 (0.790)
+  steered-deck       shipped |N|     37.3–406.7 (214.5)  two |N|     60.9–289.6 (173.6)  two/shipped    0.680–1.393 (0.847)
+
+=== 7. the four lateral reads: the game, the shipped model, the two-body ===
+  unsteered-deck     sway kg: game  2.796–3.787 (3.225) model 2.540 two 10.407–11.377 (11.097) | game/model 1.101–1.491 (1.270) game/two 0.260–0.336 (0.297)
+  unsteered-world    sway kg: game  2.796–3.617 (3.120) model 2.540 two 10.407–11.368 (11.086) | game/model 1.101–1.424 (1.228) game/two 0.258–0.319 (0.289)
+  low-deck           sway kg: game  2.801–5.580 (3.548) model 2.540 two 10.429–11.386 (11.088) | game/model 1.103–2.197 (1.397) game/two 0.261–0.516 (0.315)
+  low-world          sway kg: game  2.800–3.341 (2.970) model 2.540 two 10.429–11.385 (11.076) | game/model 1.102–1.315 (1.169) game/two 0.261–0.313 (0.268)
+  steered-deck       sway kg: game  3.058–4.871 (3.387) model 2.540 two 10.556–11.384 (11.143) | game/model 1.204–1.918 (1.333) game/two 0.280–0.452 (0.302)
+
+  unsteered-deck     side→roll: game -0.11916–-0.03718 (-0.07081) model 0 two -0.03547–-0.02022 (-0.03102) | game/two 1.807–3.999 (2.708)
+  unsteered-world    side→roll: game -0.10415–-0.03628 (-0.05669) model 0 two -0.03627–-0.02022 (-0.03096) | game/two 1.411–3.794 (2.256)
+  low-deck           side→roll: game -0.33627–-0.03689 (-0.11930) model 0 two -0.02351–-0.01692 (-0.01723) | game/two 1.692–19.655 (10.694)
+  low-world          side→roll: game -0.20632–-0.03603 (-0.05227) model 0 two -0.02397–-0.01692 (-0.02222) | game/two 1.630–12.399 (2.398)
+  steered-deck       side→roll: game -0.14768–-0.06386 (-0.08514) model 0 two -0.03228–-0.02489 (-0.02711) | game/two 2.258–4.789 (3.532)
+
+  unsteered-deck     roll inertia game/model 0.747–1.184 (0.929) game/two 0.746–1.182 (0.926) | yaw game/model 0.964–1.061 (1.021) game/two 0.908–0.999 (0.959)
+  unsteered-world    roll inertia game/model 0.807–1.446 (1.107) game/two 0.805–1.443 (1.104) | yaw game/model 0.964–1.052 (1.008) game/two 0.907–0.990 (0.947)
+  low-deck           roll inertia game/model 0.088–1.020 (0.542) game/two 0.088–1.018 (0.541) | yaw game/model 0.940–1.145 (1.011) game/two 0.886–1.081 (0.954)
+  low-world          roll inertia game/model 0.187–1.123 (0.926) game/two 0.187–1.121 (0.924) | yaw game/model 0.922–1.026 (0.981) game/two 0.870–0.959 (0.921)
+  steered-deck       roll inertia game/model 0.573–1.121 (0.753) game/two 0.572–1.118 (0.751) | yaw game/model 1.022–1.126 (1.042) game/two 0.959–1.061 (0.979)
+
+=== 8. the bank coordinate, and the ankle's own authority over the body's lean ===
+  unsteered-deck     bank inertia met: shipped  0.688–1.611 (0.964) two 5.324–10.287 (6.874) | |ankle authority model/game| shipped 1.213–1.949 (1.537) two 0.185–0.312 (0.233)
+  unsteered-world    bank inertia met: shipped  0.688–1.611 (0.964) two 5.327–10.287 (6.874) | |ankle authority model/game| shipped 1.213–1.948 (1.506) two 0.185–0.288 (0.225)
+  low-deck           bank inertia met: shipped  0.687–1.614 (1.134) two 5.320–10.290 (7.817) | |ankle authority model/game| shipped 1.230–4.209 (2.553) two 0.186–0.629 (0.395)
+  low-world          bank inertia met: shipped  0.687–1.614 (1.291) two 5.320–10.290 (8.668) | |ankle authority model/game| shipped 1.228–2.030 (1.369) two 0.187–0.327 (0.203)
+  steered-deck       bank inertia met: shipped  0.687–1.475 (0.932) two  5.320–9.631 (6.704) | |ankle authority model/game| shipped 1.424–2.600 (1.592) two 0.199–0.368 (0.237)
+
+=== 9. the body's own weight on its own lean: the LINE, the SOLVED row, and the game's own source ===
+  unsteered-deck     game gravity °/s²    114.2–495.0 (320.7) | line/game 0.924–1.103 (0.982) | solved shipped/game 29.572–35.406 (31.470) | solved two/game 4.022–5.272 (4.401)
+  unsteered-world    game gravity °/s²    113.0–434.6 (269.4) | line/game 0.930–1.079 (0.962) | solved shipped/game 29.778–34.651 (30.845) | solved two/game 3.942–5.302 (4.360)
+  low-deck           game gravity °/s²     50.3–505.9 (327.3) | line/game 0.785–1.259 (0.955) | solved shipped/game 25.011–40.165 (30.413) | solved two/game 3.593–6.300 (4.283)
+  low-world          game gravity °/s²     23.3–273.4 (199.3) | line/game 0.714–9.763 (1.013) | solved shipped/game 22.724–310.884 (32.511) | solved two/game 3.514–46.312 (4.544)
+  steered-deck       game gravity °/s²    100.4–670.5 (318.3) | line/game 0.631–1.000 (0.922) | solved shipped/game 20.189–32.142 (29.494) | solved two/game 2.695–4.625 (3.874)
+
+=== 10. the roll row's groups and its conditioning ===
+  unsteered-deck     water side shipped   1356.5–5058.1 (3950.4) two      237.6–866.0 (596.8)
+  unsteered-world    water side shipped   1334.6–5016.8 (3047.5) two      235.0–789.0 (496.5)
+  low-deck           water side shipped    829.2–3160.5 (2048.8) two      120.4–505.6 (215.7)
+  low-world          water side shipped    783.5–2767.5 (1865.6) two      119.5–494.9 (329.8)
+  steered-deck       water side shipped    498.4–3801.2 (1952.7) two      118.2–797.8 (389.1)
+  unsteered-deck     cond shipped   1.58–6.38 (2.37) two   0.93–2.62 (2.08) game   1.75–9.26 (3.64)
+  unsteered-world    cond shipped   1.94–6.31 (2.58) two   1.01–4.39 (2.36) game   1.68–7.29 (3.11)
+  low-deck           cond shipped   0.76–4.25 (2.12) two   0.61–2.24 (1.38) game   0.85–6.38 (2.78)
+  low-world          cond shipped   0.87–4.62 (2.29) two   0.80–2.31 (1.61) game   0.54–6.46 (2.54)
+  steered-deck       cond shipped  1.54–16.00 (3.32) two   1.45–6.33 (2.73) game  2.77–27.45 (5.79)
+
+=== 11. the ridden arms: the two-body plant and the two others, against the shipped ride ===
+  the ridden control (BODY=control) against the shipped rider: 102 runs, 816 column reads, 0 mismatches
+  sym-unsteered-deck       differs on a column in 24 of 24 runs; median 1.183 -> 1.217 (x1.03), longer in 14 of 24
+  two-unsteered-deck       differs on a column in 24 of 24 runs; median 1.183 -> 1.450 (x1.23), longer in 15 of 24
+  sym-unsteered-world      differs on a column in 24 of 24 runs; median 0.950 -> 0.967 (x1.02), longer in 10 of 24
+  two-unsteered-world      differs on a column in 24 of 24 runs; median 0.950 -> 1.283 (x1.35), longer in 14 of 24
+  sym-low-deck             differs on a column in 18 of 18 runs; median 1.033 -> 1.050 (x1.02), longer in 7 of 18
+  two-low-deck             differs on a column in 18 of 18 runs; median 1.033 -> 1.033 (x1.00), longer in 11 of 18
+  sym-low-world            differs on a column in 15 of 18 runs; median 0.767 -> 0.767 (x1.00), longer in 3 of 18
+  two-low-world            differs on a column in 17 of 18 runs; median 0.767 -> 0.733 (x0.96), longer in 5 of 18
+  sym-steered-deck         differs on a column in 17 of 18 runs; median 3.067 -> 3.000 (x0.98), longer in 2 of 18
+  two-steered-deck         differs on a column in 18 of 18 runs; median 3.067 -> 2.500 (x0.82), longer in 6 of 18
+
+=== 12. the two-body plant ridden: its own rows on its OWN ride ===
+  two-unsteered-deck     roll   2.758–18.760 (8.440) lean    0.648–4.129 (1.609) | roll rate 4.907–18.975 (9.831) bank rate  0.658–2.978 (1.079) | rollSign 0.216–0.613 (0.319) leanSign 0.468–0.842 (0.716)
+  two-unsteered-world    roll   3.988–18.709 (7.782) lean    0.641–3.630 (1.618) | roll rate 4.738–18.258 (8.330) bank rate  0.655–3.080 (1.225) | rollSign 0.143–0.560 (0.330) leanSign 0.520–0.875 (0.732)
+  two-low-deck           roll    0.875–9.857 (2.802) lean    0.690–2.715 (1.291) | roll rate 1.490–10.470 (3.447) bank rate  0.789–3.976 (1.018) | rollSign 0.176–0.944 (0.543) leanSign 0.300–0.843 (0.656)
+  two-low-world          roll   0.941–10.275 (5.206) lean    0.564–1.632 (0.862) | roll rate 1.079–10.470 (5.472) bank rate  0.559–1.629 (0.931) | rollSign 0.143–0.714 (0.544) leanSign 0.143–0.783 (0.689)
+  two-steered-deck       roll    1.372–8.700 (2.478) lean    0.655–6.297 (1.475) | roll rate  1.541–7.910 (2.439) bank rate  0.668–7.430 (2.178) | rollSign 0.528–0.821 (0.676) leanSign 0.379–0.815 (0.650)

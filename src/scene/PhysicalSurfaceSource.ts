@@ -45,9 +45,21 @@ export class PhysicalSurfaceSource implements SurfaceSource {
   readonly writeRoller?: (into: Float32Array) => number;
   readonly rollerColumns?: number;
   private readonly rollerSource?: RenderableSurfZone;
+  /** A rock floor's cover of the bed per render node, when the spot draws one (`rockCoverFor`): a function of the world point. */
+  readonly writeBedCover?: (data: Float32Array) => void;
 
-  constructor(private readonly simulation: RenderableSurfZone, spacing = 1) {
+  constructor(private readonly simulation: RenderableSurfZone, spacing = 1, rockCover?: (x: number, z: number) => number) {
     this.grid = simulation.renderGrid(spacing);
+    if (rockCover) {
+      this.writeBedCover = (data) => {
+        const grid = this.grid;
+        grid.xMin = simulation.windowXMin;
+        for (let r = 0; r < grid.nz; r += 1) {
+          const z = grid.zMin + r * grid.spacing;
+          for (let c = 0; c < grid.nx; c += 1) data[r * grid.nx + c] = rockCover(grid.xMin + c * grid.spacing, z);
+        }
+      };
+    }
     if (simulation.writeTubes) {
       this.writeTubes = (into) => simulation.writeTubes!(into);
       this.tubeColumnWidth = simulation.tubeColumnWidth;

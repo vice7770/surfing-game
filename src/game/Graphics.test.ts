@@ -9,7 +9,7 @@ const steady = (ms: number, n = 360) => Array.from({ length: n }, () => ms);
 
 describe('graphics', () => {
   it('starts the settings on Auto with the Medium values', () => {
-    expect(defaultSettings().graphics).toEqual({ preset: 'auto', ...PRESETS.medium, glow: false });
+    expect(defaultSettings().graphics).toEqual({ preset: 'auto', ...PRESETS.medium, glow: false, glowAntialias: 2 });
   });
 
   it('picks High on a GPU tier that keeps the frame rate, Medium on the CPU', () => {
@@ -64,7 +64,7 @@ describe('graphics', () => {
   it('turns the preset to Custom when an advanced value changes, and back when a preset is chosen', () => {
     const custom = withAdvanced(withPreset(defaultSettings().graphics, 'high'), { caustics: false });
     expect(custom.preset).toBe('custom');
-    expect(withPreset(custom, 'medium')).toEqual({ preset: 'medium', ...PRESETS.medium, glow: false });
+    expect(withPreset(custom, 'medium')).toEqual({ preset: 'medium', ...PRESETS.medium, glow: false, glowAntialias: 2 });
   });
 
   it('detects again when there is no detection or the graphics card changed', () => {
@@ -80,7 +80,7 @@ describe('graphics', () => {
     expect(PRESETS.low.particles).toBe('low');
     expect(PRESETS.medium.particles).toBe('medium');
     for (const preset of ['high', 'ultra'] as const) expect(PRESETS[preset].particles).toBe('high');
-    expect(resolveGraphics({ preset: 'low', ...PRESETS.low, glow: false }, undefined, 2).particles).toBe('low');
+    expect(resolveGraphics({ preset: 'low', ...PRESETS.low, glow: false, glowAntialias: 2 }, undefined, 2).particles).toBe('low');
     expect(resolveGraphics(withAdvanced(defaultSettings().graphics, { particles: 'medium' }), undefined, 2).particles).toBe('medium');
   });
 
@@ -88,15 +88,15 @@ describe('graphics', () => {
   it('puts Low on the Classic water and the others on Rich', () => {
     expect(PRESETS.low.waterLook).toBe('classic');
     for (const preset of ['medium', 'high', 'ultra'] as const) expect(PRESETS[preset].waterLook).toBe('rich');
-    expect(resolveGraphics({ preset: 'low', ...PRESETS.low, glow: false }, undefined, 2).waterLook).toBe('classic');
-    expect(resolveGraphics({ preset: 'high', ...PRESETS.high, glow: false }, undefined, 2).waterLook).toBe('rich');
+    expect(resolveGraphics({ preset: 'low', ...PRESETS.low, glow: false, glowAntialias: 2 }, undefined, 2).waterLook).toBe('classic');
+    expect(resolveGraphics({ preset: 'high', ...PRESETS.high, glow: false, glowAntialias: 2 }, undefined, 2).waterLook).toBe('rich');
   });
 
   // The riding-body plan, step 1: the player's own surfer is always the full body (on Medium the camera's 11 m drew the
   // low-poly one); online surfers keep the preset's distance.
   it('draws your own surfer with the full body at every preset, at the preset\'s textures', () => {
     for (const preset of ['low', 'medium', 'high', 'ultra'] as const) {
-      const resolved = resolveGraphics({ preset, ...PRESETS[preset], glow: false }, undefined, 2);
+      const resolved = resolveGraphics({ preset, ...PRESETS[preset], glow: false, glowAntialias: 2 }, undefined, 2);
       expect(ownSurferDetail(resolved)).toEqual({ lodDistance: Infinity, textureCap: SURFER_DETAIL[preset].textureCap });
       expect(resolved.surferLodDistance).toBe(SURFER_DETAIL[preset].surferLodDistance);
     }
@@ -221,6 +221,15 @@ describe('graphics', () => {
     expect(resolveGraphics(withPreset(on, 'low'), undefined, 2).glow).toBe(false);
     expect(resolveGraphics(withAdvanced(on, { waterLook: 'classic' }), undefined, 2).glow).toBe(false);
     expect(resolveGraphics(defaultSettings().graphics, undefined, 2).glow).toBe(false);
+  });
+
+  it('keeps the glow anti-aliasing at 2× by default, out of every preset, and resolves the chosen samples', () => {
+    expect(defaultSettings().graphics.glowAntialias).toBe(2);
+    for (const preset of ['low', 'medium', 'high', 'ultra'] as const) expect(PRESETS[preset]).not.toHaveProperty('glowAntialias');
+    const four = { ...defaultSettings().graphics, glow: true, glowAntialias: 4 as const };
+    expect(withPreset(four, 'high')).toMatchObject({ preset: 'high', glowAntialias: 4 });
+    expect(resolveGraphics(four, undefined, 2).glowSamples).toBe(4);
+    expect(resolveGraphics(defaultSettings().graphics, undefined, 2).glowSamples).toBe(2);
   });
 
   it('turns the glow on or off from the URL for an A/B, still on Rich only', () => {

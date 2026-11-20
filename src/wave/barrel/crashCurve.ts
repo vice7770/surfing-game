@@ -1,9 +1,17 @@
 import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
+import { ANCHOR_CONTINUITY, continueAnchor, FaceAnchor, readNoise, smoothPlaces, smoothShifts, trackAnchor, type TroughWave, type TubeFace } from './faceAnchor';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
-import { LOFT, collapseFade } from './sweptLoft';
+import { pathPace } from './sliceClock';
+import { LOFT, collapseFade, endBlendLength, endWeight } from './sweptLoft';
+
+/**
+ * Ruling 3's smooth wall (`TubeFace.track`): the clock's rate the wall water's shape moves at is smoothed over this long, s
+ * (an exponential mean; *built so*, provisional): `CrashCurve.prepareAnchors`.
+ */
+export const WALL_CLOCK = 0.2;
 
 /** One front point's barrel as the loft draws it at its clock (the Padang Padang spec, Part B, PR 5: the crash). */
 export interface CrashSlice {
@@ -79,6 +87,8 @@ export interface JetMotion {
 export interface SliceClock {
   tau?: number;
   z?: number;
+  /** Under the face ruling, the point's smoothed shift (`prepareShifts`), m; absent or NaN: the crest anchor. */
+  shift?: number;
 }
 
 const LAST = PROFILE_POINTS - 1;
@@ -133,8 +143,37 @@ export class CrashCurve {
   private readonly normal = { x: 0, z: 0 };
   private readonly raySample = new Float64Array(2);
   private readonly directRays: CrestRayPlan;
+  /** The last run's ends and their blends (`endBlendLength`), kept while the same run is sliced point by point. */
+  private endA?: FrontPoint;
+  private endB?: FrontPoint;
+  private endTauA = Number.NaN;
+  private endTauB = Number.NaN;
+  private readonly ends = new Float64Array(2);
+  private readonly endProfile = new Float32Array(2 * PROFILE_POINTS);
 
-  constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
+  /** The step 3 ruling's tube (`TubeFace`): the face anchor's arithmetic and the thrown ends' blend, as the loft's. */
+  private readonly face?: TubeFace;
+  private readonly faceAnchor?: FaceAnchor;
+  private faceRaw = new Float64Array(0);
+  private faceSigma = new Float64Array(0);
+  /** Per point of a run, its case's crest over its crossing at the contact's hold, m, its place and its ray (`prepareAnchors`). */
+  private faceCase = new Float64Array(0);
+  /** Ruling 18's build 1 (`TubeFace.anchorLine`): per point of a run, its kept shift, then its place smoothed along the crest. */
+  private faceKept = new Float64Array(0);
+  private faceX = new Float64Array(0);
+  private faceZ = new Float64Array(0);
+  private faceRayX = new Float64Array(0);
+  private faceRayZ = new Float64Array(0);
+  /** Ruling 3's tracker: per point of a run, the solver's face's slope at its read's crossing, then smoothed along σ. */
+  private faceSlope = new Float64Array(0);
+  private readonly faceScratch = new Float64Array(3);
+  private readonly faceRay = { x: 0, z: 0 };
+
+  constructor(private readonly library: ProfileLibrary, private readonly slope: number, face?: TubeFace) {
+    if (face && library.options.geometry !== 'bounded-C') {
+      this.face = face;
+      if (face.anchor) this.faceAnchor = new FaceAnchor(library, slope, face.continuity);
+    }
     this.directRays = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
     for (const c of library.options.geometry === 'bounded-C' ? [] : library.cases) {
       const held = library.heldFrameOf(c);
@@ -164,9 +203,9 @@ export class CrashCurve {
     } else {
       into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
     }
-    const d = Math.min(p.sigma - first, last - p.sigma);
-    const r = Math.min(1, d / LOFT.endBlend);
-    into.endWeight = d <= 0 ? 0 : r * r * (3 - 2 * r);
+    // The loft's end weight (`endWeight`): 1 m at an end that has thrown, at least its height H at a young one.
+    const ends = this.endsOf(points, start, end);
+    into.endWeight = endWeight(p.sigma, first, last, ends[0], ends[1]);
     // The drawn frame: the touchdown frame from touchdown on (PR 4), faded over the tube's collapse.
     const query = { slope: this.slope, footHeight: p.footHeight, footDepth: p.footDepth };
     const profile = this.profile;
@@ -179,11 +218,14 @@ export class CrashCurve {
     into.collapse = lookup.collapseSeconds;
     into.fade = collapseFade(tau, touchdown, lookup.collapseSeconds);
     into.weight = into.endWeight * into.fade;
-    // The anchor, as the loft places it: the crest point K = S − c n, at the point's z or the one asked.
+    // The anchor, as the loft places it: the crest point K = S − c n, at the point's z or the one asked; under the face
+    // ruling at the point's shift, K = S + (δ − c) n (`prepareShifts`).
     const z = clock.z ?? p.z;
     const crest = profile[2 * LANDMARK.crest];
-    const ax = p.x - crest * nx;
-    const az = z - crest * nz;
+    const shift = this.faceAnchor ? clock.shift ?? Number.NaN : Number.NaN;
+    const along0 = shift === shift ? shift - crest : -crest;
+    const ax = p.x + along0 * nx;
+    const az = z + along0 * nz;
     into.anchorX = ax;
     into.anchorZ = az;
     // The drawn tip and crest (lifted by the drawing's weight); the landing at the touchdown frame's own height (lifted by
@@ -282,6 +324,21 @@ export class CrashCurve {
     return into;
   }
 
+  /** Run [start, end)'s two ends' blends, m, as the loft lays them (`endBlendLength`). */
+  private endsOf(points: readonly FrontPoint[], start: number, end: number): Float64Array {
+    const a = points[start];
+    const b = points[end - 1];
+    if (a !== this.endA || b !== this.endB || a.tau !== this.endTauA || b.tau !== this.endTauB) {
+      this.endA = a;
+      this.endB = b;
+      this.endTauA = a.tau;
+      this.endTauB = b.tau;
+      this.ends[0] = endBlendLength(this.library, this.slope, a.footHeight, a.footDepth, a.tau, this.endProfile, this.face?.thrownEnds);
+      this.ends[1] = endBlendLength(this.library, this.slope, b.footHeight, b.footDepth, b.tau, this.endProfile, this.face?.thrownEnds);
+    }
+    return this.ends;
+  }
+
   /**
    * Explicitly prepare the whole front after its positions and arc length have been finalized. The plan copies
    * transport-precision controls, so later point mutations cannot change an already prepared scope. `into` lets
@@ -307,6 +364,154 @@ export class CrashCurve {
     into.x = this.raySample[0];
     into.z = this.raySample[1];
     return into;
+  }
+
+  /**
+   * Under the face ruling, the run's points' shifts (`FaceAnchor.shift`, the drawing's hold, each on its own ray), smoothed
+   * along σ as the loft's (`smoothShifts`), into `out[start, end)`; NaN everywhere without the face anchor.
+   */
+  prepareShifts(points: readonly FrontPoint[], start: number, end: number, heightAt: (x: number, z: number) => number, rays: CrestRayPlan | undefined, out: Float64Array): void {
+    if (!this.faceAnchor) {
+      out.fill(Number.NaN, start, end);
+      return;
+    }
+    const n = end - start;
+    if (this.faceRaw.length < n) {
+      this.faceRaw = new Float64Array(2 * n);
+      this.faceSigma = new Float64Array(2 * n);
+    }
+    for (let k = start; k < end; k += 1) {
+      const p = points[k];
+      const ray = this.ray(points, start, end, k, this.faceRay, rays);
+      this.faceSigma[k - start] = p.sigma;
+      this.faceRaw[k - start] = this.faceAnchor.shift(p.footHeight, p.footDepth, p.tau, 'drawing', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch);
+    }
+    smoothShifts(this.faceSigma, this.faceRaw, n, this.faceRaw.subarray(n, 2 * n));
+    for (let k = 0; k < n; k += 1) out[start + k] = this.faceRaw[n + k];
+  }
+
+  /**
+   * Step 7 (the advisor's 2026-11-04 ruling; `TubeFace.continuity`, `.wallFlow`): the run's points' anchors kept step to
+   * step. Each point's raw shift under the contact's hold (the shape the drawing, clear-roof hold, and the contact draw),
+   * smoothed along σ as before, then kept by `continueAnchor` (with `continuity`: capped, held on a miss, never back to
+   * the crest anchor; without, as smoothed, its rate alone tracked) on the point (`FrontPoint.anchorShift`, the records'
+   * `anchor`). Into `out[start, end)` each point's shift for the crash's own slices, under the drawing's hold: the kept
+   * shift moved by its case's crest-over-crossing at that hold against the contact's (or, without `continuity`, the
+   * drawing's own smoothed shifts, as `prepareShifts`). And for the wall's water, each point's drawn crest's speed along its
+   * ray (its crest's pace and its shift's rate) and its clock's rate since its last step (`wallSpeed`, `tauRate`). `wave`:
+   * the sea's period and still depth, for ruling 3's read of the solver's trough (`TubeFace.track`).
+   */
+  prepareAnchors(
+    points: FrontPoint[], start: number, end: number, heightAt: (x: number, z: number) => number, rays: CrestRayPlan | undefined,
+    time: number, out: Float64Array, wave?: TroughWave,
+  ): void {
+    const anchor = this.faceAnchor!;
+    const continuity = this.face!.continuity;
+    // The step 7 follow-up's cap (`TubeFace.cap`): 0.45 C rather than 0.3 C.
+    const crestShare = this.face!.cap ? ANCHOR_CONTINUITY.crestWide : ANCHOR_CONTINUITY.crest;
+    // Ruling 3's tracker (`TubeFace.track`): the solver's trough within half a wavelength ahead, W tracked, its rate the wall's.
+    const track = this.face!.track;
+    if (!continuity) this.prepareShifts(points, start, end, heightAt, rays, out);
+    const n = end - start;
+    if (this.faceRaw.length < 2 * n) {
+      this.faceRaw = new Float64Array(4 * n);
+      this.faceSigma = new Float64Array(2 * n);
+    }
+    if (track && this.faceSlope.length < 2 * n) this.faceSlope = new Float64Array(4 * n);
+    if (this.faceCase.length < n) {
+      this.faceCase = new Float64Array(2 * n);
+      this.faceX = new Float64Array(2 * n);
+      this.faceZ = new Float64Array(2 * n);
+      this.faceRayX = new Float64Array(2 * n);
+      this.faceRayZ = new Float64Array(2 * n);
+    }
+    for (let k = start; k < end; k += 1) {
+      const p = points[k];
+      const ray = this.ray(points, start, end, k, this.faceRay, rays);
+      const i = k - start;
+      this.faceSigma[i] = p.sigma;
+      this.faceX[i] = p.x;
+      this.faceZ[i] = p.z;
+      this.faceRayX[i] = ray.x;
+      this.faceRayZ[i] = ray.z;
+      this.faceRaw[i] = anchor.shift(p.footHeight, p.footDepth, p.tau, 'contact', p.x, p.z, ray.x, ray.z, heightAt, this.faceScratch, track ? wave : undefined);
+      // The case's crest over its crossing at the contact's hold (NaN without a crossing).
+      this.faceCase[i] = this.faceScratch[1] - this.faceScratch[0];
+      if (track) this.faceSlope[i] = this.faceRaw[i] === this.faceRaw[i] ? anchor.slope : Number.NaN;
+    }
+    const kept = this.faceRaw.subarray(n, 2 * n);
+    if (track) {
+      // Ruling 3's tracker: the anchors' places (the solver's crossing matched to the case's: each raw shift less its case's
+      // crest over its crossing) smoothed along σ as the shifts were, each point's own case part added back for W's reading
+      // (`trackAnchor`), and the read's slope there for its noise (`readNoise`).
+      for (let i = 0; i < n; i += 1) this.faceRaw[i] -= this.faceCase[i];
+      smoothPlaces(this.faceSigma, this.faceX, this.faceZ, this.faceRaw, this.faceRayX, this.faceRayZ, n, kept);
+      smoothShifts(this.faceSigma, this.faceSlope, n, this.faceSlope.subarray(n, 2 * n));
+    } else if (continuity) {
+      // With continuity, the places the shifts put the case's crest are smoothed (`smoothPlaces`), as before without.
+      smoothPlaces(this.faceSigma, this.faceX, this.faceZ, this.faceRaw, this.faceRayX, this.faceRayZ, n, kept);
+    } else smoothShifts(this.faceSigma, this.faceRaw, n, kept);
+    for (let k = start; k < end; k += 1) {
+      const p = points[k];
+      const i = k - start;
+      // The wave's advance along the point's ray: its crest's pace along its column, projected on the ray.
+      const celerity = pathPace(p.crestSpeed, p.crestDepth, p.height, p.dirZ) * Math.max(0, this.faceRayZ[i]);
+      const dt = p.anchorTime === undefined ? 0 : time - p.anchorTime;
+      const tauRate = p.anchorTau !== undefined && dt > 0 ? (p.tau - p.anchorTau) / dt : 1;
+      // Ruling 3 (`TubeFace.track`; *built so*): the wall water's shape moves at the clock's rate smoothed over
+      // `WALL_CLOCK` s. Before the throw the clock follows −D/C_p within 0.5–1.5× real time and sits on either bound on 5 %
+      // of steps each (pool 1.5 m), so its rate step to step swung the case's surface's own speed by half of itself: over
+      // 12 m/s on 0.6 % of the wall's vertices at the lip, and the wall water 12 m/s a step at p99.
+      // Ruling 4's C1 clock (`OnsetTiming.distance.c1`): the rate its clock's next step advances by, set this step, so the
+      // shape drawn at τ and its water read the τ̇ that shape will move by; no smoothing of its own.
+      p.tauRate = p.formRate !== undefined ? p.formRate
+        : track && p.tauRate !== undefined && dt > 0 ? p.tauRate + (tauRate - p.tauRate) * Math.min(1, dt / WALL_CLOCK) : tauRate;
+      p.anchorTau = p.tau;
+      const shift = track
+        ? trackAnchor(p, kept[i] + this.faceCase[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], crestShare, readNoise(this.faceSlope[n + i]))
+        : continueAnchor(p, kept[i], time, celerity, p.x, p.z, this.faceRayX[i], this.faceRayZ[i], continuity, crestShare, this.face!.cap);
+      // The drawn crest's speed along its ray (its case's crest's place, W = S·n + δ, step to step), and the ray. Under the
+      // tracker (ruling 3, §1) its rate is the tracker's estimate (`trackAnchor`), not W's change in one step, which carried
+      // the read's noise into the wall water: 0.12 m a step of jitter is a 7.2 m/s change in that rate.
+      // Ruling 6 (`TubeFace.stream`): the wave's own advance instead. The drawn crest's rate ran at 7.5–8.8 m/s before the
+      // throw on a wave doing 5, and changed by up to 0.8 m/s in a step; the streamline wall water needs the wave's speed.
+      p.wallSpeed = this.face?.stream ? celerity : p.anchorRate ?? celerity;
+      p.anchorRayX = this.faceRayX[i];
+      p.anchorRayZ = this.faceRayZ[i];
+      if (!continuity) continue;
+      if (!(shift === shift)) {
+        out[k] = Number.NaN;
+        continue;
+      }
+      // The crash's own slices under the drawing's hold: the case's crest over its crossing there, against the contact's.
+      const contact = this.faceCase[k - start];
+      anchor.caseFace(p.footHeight, p.footDepth, p.tau, 'drawing', this.faceScratch);
+      const drawing = this.faceScratch[1] - this.faceScratch[0];
+      out[k] = contact === contact && drawing === drawing ? shift - contact + drawing : shift;
+    }
+    if (!continuity || !this.face!.anchorLine) return;
+    // Ruling 18's build 1 (`TubeFace.anchorLine`): the places the points kept, each on its own history, smoothed along the
+    // crest once more with the same kernel, into `anchorDrawn` (the records' `anchor`: the drawn case, the contact, the
+    // wall's water, the online record). The kept shift is left as it is: the cap works on its own state. The crash's own
+    // slices (`out`) stay on the kept places too: moved to the smooth line they changed each jet's asked volume (0.4 % at
+    // the first throws, measured), and with it every later throw, which the ruling forbids (step6/README.md).
+    if (this.faceKept.length < 2 * n) this.faceKept = new Float64Array(4 * n);
+    const keptShifts = this.faceKept;
+    const drawn = this.faceKept.subarray(n, 2 * n);
+    for (let i = 0; i < n; i += 1) {
+      const shift = points[start + i].anchorShift;
+      // A point still on the crest anchor (`continueAnchor` returned NaN) has none.
+      keptShifts[i] = shift !== undefined && out[start + i] === out[start + i] ? shift : Number.NaN;
+    }
+    smoothPlaces(this.faceSigma, this.faceX, this.faceZ, keptShifts, this.faceRayX, this.faceRayZ, n, drawn);
+    for (let i = 0; i < n; i += 1) {
+      const p = points[start + i];
+      if (!(keptShifts[i] === keptShifts[i])) {
+        delete p.anchorDrawn;
+        continue;
+      }
+      p.anchorDrawn = drawn[i];
+    }
   }
 
   /** A point's touchdown and collapse times, s, without building its profile. */

@@ -1,0 +1,8 @@
+new regular 7.3: 12 deg 0.885 true, 25 deg 0.645 true
+new regular 8.5: 12 deg 0.883 true, 25 deg 0.715 true
+new goofy 7.3: 12 deg 0.885 true, 25 deg 0.645 true
+new goofy 8.5: 12 deg 0.883 true, 25 deg 0.715 true
+old regular 7.3: 12 deg 0.885 true, 25 deg 0.633 true
+old regular 8.5: 12 deg 0.881 true, 25 deg 0.729 true
+old goofy 7.3: 12 deg 0.885 true, 25 deg 0.633 true
+old goofy 8.5: 12 deg 0.881 true, 25 deg 0.729 true

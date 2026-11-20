@@ -58,7 +58,9 @@ def local_landmarks(main, xmin, ahead=3.0):
     return landmarks(main, hs_level=trough, xmin_search=xmin, **ROBUST), trough
 
 
-def build(run, level, L0, slope, a0, h0_m, tmin, xmin):
+def build(run, level, L0, slope, a0, h0_m, tmin, xmin, capture=None):
+    """capture: a list, or None (the default; the output is the same either way). When a list, each kept frame's surface
+    chain and landmarks are appended to it as (t, main, lm), in the frames' order (c2_library.py re-spaces them)."""
     pl = json.load(open(run.rstrip("/") + "_plunge.json"))
     tv, ti = pl["t_vertical"], pl["t_touchdown"]
     dx = L0 / 2 ** level
@@ -136,6 +138,8 @@ def build(run, level, L0, slope, a0, h0_m, tmin, xmin):
                "profile": np.round(prof, 5).tolist() if prof is not None else None,
                "cavity32": np.round(resample_piece(np.vstack([cav, cav[:1]]), 32, True), 5).tolist() if cav is not None else None}
         frames.append(rec)
+        if capture is not None:
+            capture.append((t, main, dict(lm)))
         prev = {k: main[lm[k]] for k in ("crest", "lip", "toe")}
         stats["total"] += 1
         ph = stats["by_phase"].setdefault(phase, {"n": 0, "clean": 0, "flags": {}})

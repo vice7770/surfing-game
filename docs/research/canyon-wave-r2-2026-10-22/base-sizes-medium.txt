@@ -1,0 +1,16 @@
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 3 seed(s) × 14 periods; c_b 4.69 m/s; layout reef, window 240 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-17,"peakZ":-120,"angle":70,"takeOffX":-9,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":0,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":240,"peelReach":10,"runOn":1,"ageJoin":0}
+tracker: 39 samples, 34 clean; toward +x 34 of 34; median angle 39°, median peel speed 8.0 m/s; readout: left (+x) 27, closes out 12
+crests: 44; starts median x -19, 10–90 % -21…-6, within ±10 m 39 of 44; start z median -140, depth median 1.71 m, seaward of the line median 16 m
+  starts by bed part: arm end 30, arm face 14; on the arm (face or end) 44 of 44
+  close-outs (≥ 40 m within 2 s): 0; spans median 12 m, 90th 18 m
+  upcoast (> 2 onsets over 5 m within 3 s): 4; reach median 4 m, 90th 7 m, most 26 m
+  off the beach face (the flanks' shore break left out): close-outs 0; spans median 12 m, 90th 18 m; upcoast 4; reach median 4 m, 90th 7 m, most 26 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 40; toward +x 40; median 44°, speed 6.9 m/s
+onsets: 5189; by bed part: beach face 3555, arm face 1239, arm top 237, arm end 158; depth median 1.63 m, 10–90 % 1.17…2.30 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 11.41°): 417 reads; closes out 105 (25 %), left (+x) 308 (74 %), right (−x) 4 (1 %), mixed 0 (0 %); clean toward +x 365 of 369; median angle 39°, angle of the +x reads ≥ 27°: median 43°
+health seed 1: fastest 7.41 m/s, Froude caps 0 (0 in water), volume -0.04 %, finite true; onsets per 100 s 951 592
+health seed 2: fastest 7.28 m/s, Froude caps 0 (0 in water), volume -0.39 %, finite true; onsets per 100 s 1279 305
+health seed 3: fastest 8.76 m/s, Froude caps 0 (0 in water), volume -0.09 %, finite true; onsets per 100 s 1446 616
+medium (3 files pooled): 43 crests; ride along shore median 19 m, 75th 29, 90th 38; along its breaks median 56 m, 90th 128; duration median 9.5 s, 75th 16.8, 90th 19.5; ≥ 10 s 21 of 43; peel over the ride median 52°; upcoast within 3 s median 3 m, 90th 7 m; breaking down the reef whatever its peel (gaps under 8 m along shore): along shore median 28 m, 90th 43; duration median 14.2 s, 90th 19.5; ≥ 10 s 26 of 43
+  faces down the line (along the break line from the peak; s = 0 ±15, then ±7.5 m): per crest, face / its own peak's at 30 m 0.73 (25–75 % 0.67–0.83; 32 crests), 60 m 0.48 (25–75 % 0.36–0.56; 29 crests), 90 m 0.38 (25–75 % 0.29–0.48; 26 crests); peak face median 2.00 m | the sets' faces (top third of the breaks in each bin): peak 2.46 m, 30 m 1.97 (0.80), 60 m 1.35 (0.55), 90 m 0.90 (0.36); breaks per bin 317/140/140/138

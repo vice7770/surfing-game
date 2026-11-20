@@ -1,0 +1,48 @@
+# Step 3.5b — the Canyon byte check, in its A/B form: `main` (183c4828) against this branch, same machine, same seed,
+# same step count, BOTH PATHS RUN (a fresh spin-up and an imported --state), 240 steps.
+#
+# The handoff's three cautions, each honoured and each visible below:
+#   (1) the wrapper is `globalThis.location = { search: '?canyonWaves=true' }` PREPENDED to the bundle (a bare string
+#       silently benches the default Canyon via `devTools.ts:9`);
+#   (2) the GRID is printed and read — B 400 x 451 = 180400 cells, render 401 x 511, solver t 22.000;
+#   (3) the "spun up on the CPU in ... s" line is printed, and the two paths are kept apart and reported separately,
+#       because on `main` alone they give DIFFERENT hashes with identical build, grid, seed and steps.
+#
+# Build: rolldown scripts/m1-cpu-bench.ts on each tree, then the wrapper prepended to each bundle.
+#   node bench-<leg>-B.mjs --spot canyon --steps 240 --state <path>
+#
+# No reference from an earlier round is quoted as a pass: the folder's own B reference
+# (a367d938f15fa934 / 9e5831f80e38abd9) was taken at 3,600 steps and CANNOT be compared with 240. What IS compared is
+# the two trees against each other. The imported pair below does happen to reproduce the handoff's own recorded
+# 240-step imported pair (548f3db7ca81d898 / 475f8c56c9debccc), which is a second, independent agreement.
+
+##### PATH 1 — Canyon B, each leg spinning the sea up FRESH in its own process
+
+canyon medium, 64 components, 400 x 451 = 180400 cells, render 401 x 511, solver t 22.000
+
+main    (183c4828)                spun up on the CPU in 47.7 s   hashes: snapshots e3dbec2465df6c10, state abb6419d6cca4c3a
+branch  (claude/35b-fourth-row)   spun up on the CPU in 44.6 s   hashes: snapshots e3dbec2465df6c10, state abb6419d6cca4c3a
+                                                                 ====> IDENTICAL, both columns
+
+##### PATH 2 — Canyon B, both legs IMPORTING the same kept .sea (no "spun up" line printed by either)
+
+canyon medium, 64 components, 400 x 451 = 180400 cells, render 401 x 511, solver t 22.000
+
+main    (183c4828)                imported   hashes: snapshots 548f3db7ca81d898, state 475f8c56c9debccc
+branch  (claude/35b-fourth-row)   imported   hashes: snapshots 548f3db7ca81d898, state 475f8c56c9debccc
+                                             ====> IDENTICAL, both columns
+
+##### caution (3), reproduced here rather than taken on trust
+
+The SAME bundle, the SAME grid, the SAME 240 steps and the SAME seed, the only difference being whether the sea was
+spun up in that process or imported from a kept .sea:
+
+  fresh spin-up  : snapshots e3dbec2465df6c10, state abb6419d6cca4c3a
+  state imported : snapshots 548f3db7ca81d898, state 475f8c56c9debccc
+
+So the two paths must never be compared with each other, and every pairing above is like for like.
+
+##### stage timings, for the record (p50/p95 ms over the 240 imported-path steps)
+
+main    breaking 1.20/1.44  foam 2.51/2.74  board 0.89/2.06  snapshot 4.51/4.89  stages 12.50/13.87  water 77.0
+branch  breaking 1.19/1.42  foam 2.57/2.71  board 0.88/1.98  snapshot 4.61/4.86  stages 12.55/13.74  water 80.0

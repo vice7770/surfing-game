@@ -1,0 +1,118 @@
+// The turn-pair and cutback probe (2026-11-10; not part of the suite). Scripted stick / Compress on FaceWater matched to the Canyon's version B arm wave.
+// PLAN=pair: trim -> [down: Compress + stick down the face until DROP deg off the fall line] -> [up: stick up the face, Compress held (CLIMB=hold) or
+//   let go (CLIMB=release), until UP deg off the fall line or TOP of the face] -> down again ... PAIRS times. WAIT=1: at UP deg the stick centres
+//   (the climb's Compress kept or not, as CLIMB says) and the rider waits for TOP of the face before the turn down. LOW=<fraction>: after the turn
+//   down the stick centres (Compress kept) until the board is below LOW of the face, and only then the next bottom turn starts.
+// PLAN=cutback: trim -> [cut: Compress + stick away from the face until the heading has turned CUT deg, or the turn dies] -> [back: stick reversed,
+//   Compress held, until the heading is back] -> [out: no input, 1 s].
+// The wave runs toward +z. The rider starts heading -45 deg (toward -x and the shore). steer -1 turns up the face, +1 down it.
+import { writeFileSync } from 'node:fs';
+import { Vector3 } from 'three';
+import { it } from 'vitest';
+import { AttachedRider } from './AttachedRider';
+import { BoardBody } from './BoardBody';
+import { createWaterSample } from './SurfWater';
+import { FaceWater } from './testing/FaceWater';
+import { DEG, STEP, diff, frameOf, onWater, r, type Frame, type Rig } from './zz-r2Lab';
+
+const OUT = process.env.OUT ?? '/dev/null';
+const num = (k: string, d: string) => (process.env[k] ?? d).split(',').map(Number);
+const str = (k: string, d: string) => (process.env[k] ?? d).split(',');
+const HEIGHTS = num('HEIGHTS', '1.4'); const SPEEDS = num('SPEEDS', '0,1.5'); const STEERS = num('STEERS', '0.5,1'); const ATS = num('ATS', '0.75');
+const PLAN = process.env.PLAN ?? 'pair'; const DRIVES = str('DRIVES', 'off,on');
+const CLIMBS = str('CLIMBS', 'hold,release'); const TOPS = str('TOPS', '50/9,65/9,150/0.5,150/0.7'); // UP deg / TOP fraction
+const DROP = Number(process.env.DROP ?? 20); const WAIT = process.env.WAIT === '1'; const LOW = Number(process.env.LOW ?? 9); const PAIRS = Number(process.env.PAIRS ?? 2);
+const DOWN = process.env.DOWN ?? 'compress'; // the down-turn: compress | steer
+const CUTS = num('CUTS', '150,180');
+const SECONDS = Number(process.env.SECONDS ?? 12);
+const TRACE = process.env.TRACE ?? ''; const EVERY = Number(process.env.EVERY ?? 3);
+const FALL = new Vector3(0, 0, 1);
+const CANYON: Record<string, { depth: number; slope: number; speed: number }> = { '1.4': { depth: 2.6, slope: 16, speed: 5.7 }, '1.95': { depth: 3.7, slope: 16, speed: 6.8 } };
+
+interface Ev { step: string; t: number; v: number; frac: number; ahead: number; ff: number; head: number; bank: number }
+
+it('probe', () => {
+  const out: unknown[] = []; const traces: Record<string, unknown[]> = {};
+  const variants = PLAN === 'pair' ? CLIMBS.flatMap((c) => TOPS.map((t) => `${c} ${t}`)) : CUTS.map((c) => `cut ${c}`);
+  for (const height of HEIGHTS) for (const speed of SPEEDS) for (const steer of STEERS) for (const at of ATS) for (const variant of variants) for (const drive of DRIVES) {
+    const m = CANYON[String(height)];
+    const water = new FaceWater({ depth: m.depth, height, slope: m.slope, speed: m.speed });
+    const atZ = water.crestZ() + at * water.front;
+    const entry = (water.speed - water.sampleAt(0, 10, atZ, createWaterSample()).flowZ) / Math.cos(45 / DEG) + speed;
+    const base = onWater(water, 0, atZ, -45, entry);
+    const board = base.board as BoardBody;
+    board.attach(new AttachedRider(board.shape, { phase: 'standing', ...(drive === 'on' ? { legDrive: 'on' as const } : {}), ...JSON.parse(process.env.OPTS ?? '{}') }));
+    const rig = { board, get rider() { return board.rider as AttachedRider; }, get heading() { const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation); return Math.atan2(f.x, f.z); } } as Rig;
+    const name = `${PLAN} ${height} ${speed} ${steer} ${at} ${variant} ${drive}`; const tag = `${WAIT ? 'wait ' : ''}drop ${DROP}`;
+    const [climb, topSpec] = variant.split(' '); const [UP, TOP] = PLAN === 'pair' ? topSpec.split('/').map(Number) : [0, 0]; const CUT = PLAN === 'cutback' ? Number(topSpec) : 0;
+    const frames: any[] = []; const events: Ev[] = [];
+    let last = rig.heading; let phase = 'pre'; let t0 = 0; let turned = 0; let fell = Number.NaN; let cause = ''; let fellIn = ''; let end = '';
+    let ups = 0; let downs = 0; let slowFor = 0; let behindFor = 0; let aheadFor = 0; let phaseTurn = 0; let path = 0; let farTurn = 0;
+    const sample = createWaterSample();
+    const state = () => { const f = new Vector3(0, 0, 1).applyQuaternion(board.orientation); const fh = f.clone().setY(0).normalize(); water.sampleAt(board.position.x, board.position.y, board.position.z, sample);
+      return { ff: Math.acos(Math.max(-1, Math.min(1, fh.dot(FALL)))) * DEG, head: Math.atan2(f.x, f.z) * DEG, frac: water.faceFraction(board.position.z), ahead: (board.position.z - water.crestZ()) / water.front, v: Math.hypot(board.velocity.x - sample.flowX, board.velocity.z - sample.flowZ) }; };
+    const mark = (step: string, t: number) => { const s = state(); events.push({ step, t: r(t, 2)!, v: r(s.v, 1)!, frac: r(s.frac, 2)!, ahead: r(s.ahead, 2)!, ff: r(s.ff)!, head: r(s.head)!, bank: r((board.rider as AttachedRider).bank.angle * DEG)! }); };
+    const go = (p: string, t: number) => { phase = p; t0 = t; phaseTurn = 0; mark(p, t); };
+    for (let n = 0; n < Math.round(SECONDS / STEP); n += 1) {
+      const t = n * STEP; const rider = board.rider as AttachedRider; const s = state();
+      // heading up the face = toward -x here (head negative, ff rising); `upward` is true while the board points across or up the face on the start's side.
+      if (PLAN === 'pair') {
+        if (phase === 'pre' && t >= 0.2) { go('down', t); downs += 1; }
+        else if (phase === 'down' && s.ff <= DROP && t - t0 >= 0.1) { if (s.frac <= LOW) { go('up', t); ups += 1; } else go('run', t); }
+        else if (phase === 'run' && s.frac <= LOW) { go('up', t); ups += 1; }
+        else if (phase === 'up' && s.head < 0 && (s.ff >= UP || s.frac >= TOP + 0.15) && t - t0 >= 0.1) { if (WAIT && s.frac < TOP) go('wait', t); else if (ups > PAIRS) go('out', t); else { go('down', t); downs += 1; } }
+        else if (phase === 'wait' && s.frac >= TOP) { if (ups > PAIRS) go('out', t); else { go('down', t); downs += 1; } }
+        else if (phase === 'out' && t - t0 >= 1) { end = 'done'; break; }
+        if ((phase === 'up' || phase === 'down' || phase === 'wait' || phase === 'run') && t - t0 > 4) { end = `timeout in ${phase}`; break; }
+      } else {
+        if (phase === 'pre' && t >= 0.2) { go('cut', t); turned = 0; path = 0; }
+        else if (phase === 'cut' && (turned >= CUT || slowFor > 0.5 || t - t0 > 6)) { farTurn = turned; go('back', t); }
+        else if (phase === 'back' && (turned <= 3 || slowFor > 0.5 || t - t0 > 6)) { go('out', t); }
+        else if (phase === 'out' && t - t0 >= 1) { end = 'done'; break; }
+      }
+      const up = phase === 'up'; const down = phase === 'down';
+      rider.trim = 0; rider.snap = 0;
+      if (PLAN === 'pair') {
+        rider.steer = up ? -steer : down ? steer : 0;
+        const c = ((down || phase === 'run') && DOWN === 'compress') || ((up || phase === 'wait') && climb === 'hold') ? 1 : 0;
+        rider.compress = c; rider.crouch = c ? 0.6 : 0;
+      } else {
+        rider.steer = phase === 'cut' ? steer : phase === 'back' ? -steer : 0;
+        const c = phase === 'cut' || phase === 'back' ? 1 : 0; rider.compress = c; rider.crouch = c ? 0.6 : 0;
+      }
+      water.advance(STEP);
+      board.step(STEP, water);
+      if (!rider.attached) { fell = t + STEP; cause = String(rider.separation); fellIn = phase; break; }
+      const f = frameOf({ board, rider, heading: rig.heading } as Rig, water, t + STEP, phase, FALL, last) as Frame & Record<string, any>;
+      const q = rider as any; const d = diff(rig.heading * DEG, last * DEG);
+      turned += d; phaseTurn += d; if (phase === 'cut' || phase === 'back') path += f.speed * STEP;
+      slowFor = Math.abs(f.rate) < 5 && (phase === 'cut' || phase === 'back') ? slowFor + STEP : 0;
+      water.sampleAt(board.position.x, board.position.y, board.position.z, sample);
+      Object.assign(f, { frac: water.faceFraction(board.position.z), ahead: (board.position.z - water.crestZ()) / water.front, local: Math.atan(Math.abs(sample.slopeZ)) * DEG, lim: q.limit, arest: q.ankleRest * DEG, sw: rider.swing.angle * DEG, bkr: q.bank.rate * DEG,
+        lo: q.leanOutForce.length() / (q.mass * 9.81), as: q.assistForce.length() / (q.mass * 9.81), ca: q.carryForce.length() / (q.mass * 9.81), dr: q.driveForce.length() / (q.mass * 9.81), du: q.legPush.used, yw: board.angularVelocity.y * DEG, legRest: q.leg.rest, turned, st: rider.steer, cp: rider.compress, x: board.position.x, vz: board.velocity.z, vx: board.velocity.x, by: board.position.y - sample.surfaceY });
+      frames.push(f); last = rig.heading;
+      behindFor = f.ahead < 0 ? behindFor + STEP : 0; aheadFor = f.ahead > 1.5 ? aheadFor + STEP : 0;
+      if (behindFor > 1) { end = `behind the crest in ${phase}`; break; }
+      if (PLAN === 'pair' && aheadFor > 2) { end = `off the front in ${phase}`; break; }
+    }
+    const lf = frames[frames.length - 1]; if (PLAN === 'cutback' && phase === 'cut') farTurn = turned;
+    const fellAt = Number.isNaN(fell) ? '' : `frac ${r(lf.frac, 2)} ahead ${r(lf.ahead, 2)} v ${r(lf.speed, 1)} ff ${r(lf.fromFall)} bank ${r(lf.bank)} lim ${lf.lim}`;
+    const kind = Number.isNaN(fell) ? (end || 'time up') : Math.abs(lf.bank) >= 45 ? 'sudden' : cause === 'balance' && Math.abs(lf.bank) <= 20 && lf.speed < 2.5 ? 'stall' : 'other';
+    const seg = (ph: string, k: number) => { let c = 0; let inside = false; const got: any[] = []; for (const f of frames) { if (f.phase === ph && !inside) { c += 1; inside = true; } else if (f.phase !== ph) inside = false; if (inside && c === k) got.push(f); } return got; };
+    const stat = (fs: any[]) => fs.length === 0 ? null : { n: fs.length, t: r(fs.length * STEP, 2), v0: r(fs[0].speed, 1), v1: r(fs[fs.length - 1].speed, 1), vmin: r(Math.min(...fs.map((f) => f.speed)), 1), ff0: r(fs[0].fromFall), ff1: r(fs[fs.length - 1].fromFall), ffmax: r(Math.max(...fs.map((f) => f.fromFall))), ffmin: r(Math.min(...fs.map((f) => f.fromFall))), peak: r(Math.max(...fs.map((f) => Math.abs(f.rate)))), fracMax: r(Math.max(...fs.map((f) => f.frac)), 2), fracMin: r(Math.min(...fs.map((f) => f.frac)), 2), aheadMax: r(Math.max(...fs.map((f) => f.ahead)), 2), bankMax: r(Math.max(...fs.map((f) => Math.abs(f.bank)))) };
+    const row: any = { name, tag, height, speed, steer, at, variant, drive, kind, end, fell: r(fell, 2), fellIn, cause, fellAt, ups, downs, high: r(Math.max(...frames.map((f) => f.frac)), 2), aheadMax: r(Math.max(...frames.map((f) => f.ahead)), 2), entry: r(entry, 1), events };
+    if (PLAN === 'pair') { row.segs = {}; for (let k = 1; k <= PAIRS + 1; k += 1) { row.segs[`down${k}`] = stat(seg('down', k)); row.segs[`up${k}`] = stat(seg('up', k)); } }
+    else {
+      const cut = seg('cut', 1); const back = seg('back', 1);
+      const turnOf = (fs: any[]) => fs.length ? fs[fs.length - 1].turned - (fs[0].turned - 0) : 0;
+      const pathOf = (fs: any[]) => fs.reduce((a, f) => a + f.speed * STEP, 0);
+      row.cut = stat(cut); row.back = stat(back); row.farTurn = r(farTurn); row.cutRadius = cut.length && Math.abs(farTurn) > 5 ? r(pathOf(cut) / (Math.abs(farTurn) / DEG), 1) : null;
+      row.backTurn = back.length ? r(back[back.length - 1].turned - farTurn) : null; row.backRadius = back.length && Math.abs(back[back.length - 1].turned - farTurn) > 5 ? r(pathOf(back) / (Math.abs(back[back.length - 1].turned - farTurn) / DEG), 1) : null;
+      row.endTurned = r(lf.turned); row.endAhead = r(lf.ahead, 2); row.endFrac = r(lf.frac, 2); row.vEnd = r(lf.speed, 1); row.farAhead = cut.length ? r(cut[cut.length - 1].ahead, 2) : null; row.farV = cut.length ? r(cut[cut.length - 1].speed, 1) : null;
+      row.xSpan = r(Math.max(...frames.map((f) => f.x)) - Math.min(...frames.map((f) => f.x)), 1);
+    }
+    out.push(row);
+    if (TRACE && name === TRACE) traces[name] = frames.filter((_, i) => i % EVERY === 0).map((f) => ({ t: r(f.t, 2), ph: f.phase, st: f.st, cp: f.cp, frac: r(f.frac, 2), ahead: r(f.ahead, 2), ff: r(f.fromFall), head: r(f.heading), rate: r(f.rate), v: r(f.speed, 1), fin: r(f.fin), bank: r(f.bank), ref: r(f.bankRef), bkr: r(f.bkr), arest: r(f.arest), sw: r(f.sw), roll: r(f.roll), pitch: r(f.pitch), load: r(f.load, 2), front: r(f.front, 2), lim: f.lim, pl: f.planing ? 1 : 0, leg: r(f.legRest, 2), lo: r(f.lo, 2), as: r(f.as, 2), ca: r(f.ca, 2), dr: r(f.dr, 2), du: r(f.du, 2), by: r(f.by, 2), vz: r(f.vz, 1), vx: r(f.vx, 1) }));
+  }
+  writeFileSync(OUT, JSON.stringify({ out, traces }, null, 1));
+});

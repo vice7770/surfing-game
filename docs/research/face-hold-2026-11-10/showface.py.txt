@@ -1,0 +1,9 @@
+import json,sys
+d=json.load(open(sys.argv[1]))
+print('slope H    v  plan ctrl      high steep least vEnd endFr | topFr topFF vTop turned peak fin round | fell  in    cause')
+for o in d['out']:
+  g=lambda k,w: str(o[k]).rjust(w)
+  print(str(o['slope']).ljust(5), str(o['height']).ljust(4), str(o['speed']).ljust(2), o['plan'].ljust(4), o['control'].ljust(8), g('high',5), g('steep',5), g('least',5), g('vEnd',4), g('endFrac',5), '|', g('topFrac',5), g('topFrom',5), g('vTop',4), g('turned',6), g('peak',4), g('fin',3), g('round',5), '|', g('fell',5), o['fellIn'].ljust(5), o['cause'].ljust(10), o.get('fellAt',''))
+for k,v in d['traces'].items():
+  print('TRACE',k)
+  for f in v: print('  ', f)

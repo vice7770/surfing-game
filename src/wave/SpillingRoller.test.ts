@@ -812,3 +812,90 @@ function sampleDepth(g: Sea, x: number, z: number): number {
   const i = iz * g.nx + ix;
   return (g.h[i] * (1 - tx) + g.h[i + 1] * tx) * (1 - tz) + (g.h[i + g.nx] * (1 - tx) + g.h[i + g.nx + 1] * tx) * tz;
 }
+
+// After a plunge (after-tube, 2026-11-11; ruling 11): the pool's lens is born on its seeds by the slice's clock,
+// part-grown, and is kept from shedding for a splash cycle. The Canyon's options are the defaults, untouched.
+describe('SpillingRoller: seeded after a plunge', () => {
+  const NX = 21;
+  /** A bore the solver is not breaking (B = 0), its crest handed over as the seed of wave 7 in every column. */
+  function seeded(options: Partial<RollerOptions>) {
+    const g = sea(NX, -40, 40);
+    const roller = new SpillingRoller(g, { edgeColumns: 0, mask: 'solver', ...options });
+    const strength = new Float64Array(g.nx * g.nz);
+    const sheds: number[] = [];
+    roller.onShed = (event) => sheds.push(event.time);
+    let time = 0;
+    const frontAt = () => -20 + 4 * time;
+    const seeds = { waves: [{ id: 7 }], crestAt: (wave: number) => (wave === 0 ? frontAt() + boreShape().crest : Number.NaN) };
+    const steps = (seconds: number) => {
+      for (let n = Math.round(seconds * 60); n > 0; n -= 1) {
+        time += 1 / 60;
+        writeBore(g, frontAt, depthFor(2));
+        roller.update(time, 1 / 60, seeds, strength, 1);
+      }
+    };
+    /** The middle column's lens, whichever slot holds it. */
+    const lens = () => [0, 1, 2, 3].map((slot) => roller.lens(10, slot)).find((l) => l !== undefined);
+    return { lens, sheds, steps };
+  }
+
+  // Ruling 12 (after-tube, 2026-11-11): behind the pool's reef the bed falls away under the bore.
+  it('reads the same Froude number either way on a level bed, and a stronger bore by its height on a falling one', () => {
+    expect(ROLLER_DEFAULTS.froudeBy).toBe('depths');
+    const read = (by: 'depths' | 'height', fall: number) => {
+      const g = sea(5, -40, 40);
+      writeBore(g, () => 0, depthFor(2));
+      // The bed falls `fall` per m ahead of the front (z > 0), under the same surface.
+      for (let iz = 0; iz < g.nz; iz += 1) {
+        const drop = fall * Math.max(0, g.zCenters[iz]);
+        for (let ix = 0; ix < g.nx; ix += 1) {
+          g.bed[iz * g.nx + ix] -= drop;
+          g.h[iz * g.nx + ix] += drop;
+        }
+      }
+      const reader = new SectionReader();
+      reader.froudeBy = by;
+      const out = createSection();
+      expect(reader.read(g, 2, boreShape().crest, 'seed', 12, 12, 2, new Float64Array(g.nx * g.nz), out)).toBe(true);
+      return out;
+    };
+    // (The height is between the refined extremes, the depths are read between rows: the same to 1 %.)
+    expect(read('height', 0).froude2 / read('depths', 0).froude2).toBeCloseTo(1, 2);
+    const depths = read('depths', 0.1);
+    const height = read('height', 0.1);
+    expect(height.height).toBeCloseTo(depths.height, 12);
+    expect(height.froude2).toBeCloseTo(((1 + height.height / height.troughDepth) * (2 + height.height / height.troughDepth)) / 2, 9);
+    expect(height.froude2).toBeGreaterThan(depths.froude2 + 0.05);
+  });
+
+  it('leaves the Canyon\'s lens as it was: born by the solver\'s tests, from nothing, shed when they fail', () => {
+    expect(ROLLER_DEFAULTS).toMatchObject({ birthBy: 'solver', birthScale: 0, shedAfter: 0 });
+    const canyon = seeded({});
+    canyon.steps(1);
+    expect(canyon.lens()).toBeUndefined();
+  });
+
+  it('is born on its seed with no test of the solver\'s breaking, part-grown', () => {
+    const pool = seeded({ birthBy: 'seed', birthScale: 0.5, growthDepths: 3, shedAfter: 1 });
+    pool.steps(2 / 60);
+    const lens = pool.lens();
+    expect(lens).toBeDefined();
+    expect(lens!.wave).toBe(7);
+    expect(lens!.g).toBeGreaterThanOrEqual(0.5);
+    expect(lens!.g).toBeLessThan(0.6);
+  });
+
+  it('is not shed inside its hold, and is shed by the Canyon\'s tests after it', () => {
+    const pool = seeded({ birthBy: 'seed', birthScale: 0.5, growthDepths: 3, shedAfter: 1 });
+    pool.steps(0.9);
+    expect(pool.sheds).toHaveLength(0);
+    expect(pool.lens()).toBeDefined();
+    pool.steps(0.4);
+    expect(pool.sheds.length).toBeGreaterThan(0);
+    expect(Math.min(...pool.sheds)).toBeGreaterThanOrEqual(1);
+    const unheld = seeded({ birthBy: 'seed', birthScale: 0.5, growthDepths: 3 });
+    unheld.steps(0.9);
+    expect(unheld.sheds.length).toBeGreaterThan(0);
+    expect(Math.min(...unheld.sheds)).toBeLessThan(0.5);
+  });
+});

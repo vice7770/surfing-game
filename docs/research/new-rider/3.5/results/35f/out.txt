@@ -1,0 +1,785 @@
+# Step 3.5f — the planing latch's own band, 3–4 m/s
+#
+# Every arm is RIDER=new FELT=deck BODY=two — the owner's own ?rider=new&feltFrame=deck&riderBody=two — at the
+# folder's own placement (AHEAD 0.75, SIDE −45, 9 s a run, the stance held). `s16` is FACE=1.4,16,5.7, the
+# Canyon-matched arm (PR #223); `f73` is FACE=1.4,7.32,5.7, step 3.4h's closest fit to the owner's own water.
+# -s0 is the stick NEVER TOUCHED, -s1 the stick HARD OVER. Band = [3, 4) m/s.
+
+## §0 The live window, and the three speeds the question has to keep apart
+
+  arm      runs  frames(all)  frames(live)  cut   odd   |through−probe| med/max   |speed3D−through| med/max
+   s16-s0    51         3693          3642   51     0       0.011 / 1.095            0.716 / 1.646
+   s16-s1    51         1710          1659   51     0       0.016 / 1.367            0.536 / 1.646
+   f73-s0    51         3928          3877   51     0       0.005 / 1.839            0.546 / 1.857
+   f73-s1    51         2582          2531   51     0       0.014 / 1.839            0.464 / 1.297
+
+  `cut` is the frames dropped by cutting each run at its first `attached == 0` (one a run, the frame the rider
+  came off on). `odd` is the runs with a frame that is attached while not upright or not standing — plant.ts's
+  other two break conditions. The two speed columns are the SAME frames read three ways (m/s).
+
+## §1 The latch on a ride: every state change, against the rule in the source
+
+  Each row is one change of `planingNow` inside one run. `through` is the latch's own speed on the frame BEFORE
+  the change and on the frame OF it (the dump reads `through` after the step and `planingNow` from the last
+  `prepare` inside it, so the crossing is expected one frame early).
+
+  arm      stance    steer  entry   frame    t      0→1/1→0   through(prev→now)        probe(now)  cap(now)
+   s16-s0      tall      0   3.50     12  0.200   0→1 (on)    3.940 →  4.046          4.037     20.26
+   s16-s0      tall      0   3.60     11  0.183   0→1 (on)    3.910 →  4.031          4.022     20.13
+   s16-s0      tall      0   3.64     11  0.183   0→1 (on)    3.947 →  4.068          4.059     20.47
+   s16-s0      tall      0   3.65     11  0.183   0→1 (on)    3.956 →  4.077          4.066     20.53
+   s16-s0      tall      0   3.66     11  0.183   0→1 (on)    3.966 →  4.087          4.075     20.62
+   s16-s0    crouch      0   3.50     24  0.400   0→1 (on)    3.925 →  4.051          3.656     16.84
+   s16-s0    crouch      0   3.60     14  0.233   0→1 (on)    3.970 →  4.020          4.002     19.94
+   s16-s0    crouch      0   3.64     13  0.217   0→1 (on)    3.945 →  4.008          3.993     19.86
+   s16-s0    crouch      0   3.65     13  0.217   0→1 (on)    3.954 →  4.017          4.002     19.94
+   s16-s0    crouch      0   3.66     13  0.217   0→1 (on)    3.964 →  4.028          4.013     20.04
+   s16-s0    crouch      0   4.00    355  5.917   1→0 (off)   3.016 →  2.970          2.963      0.00
+   s16-s0  compress      0   3.50     29  0.483   0→1 (on)    4.005 →  4.014          3.787     18.00
+   s16-s0  compress      0   3.60     13  0.217   0→1 (on)    3.944 →  4.023          4.008     19.99
+   s16-s0  compress      0   3.64     13  0.217   0→1 (on)    3.984 →  4.055          4.046     20.34
+   s16-s0  compress      0   3.65     13  0.217   0→1 (on)    3.993 →  4.064          4.055     20.43
+   s16-s0  compress      0   3.66     13  0.217   0→1 (on)    4.003 →  4.073          4.064     20.51
+   s16-s1      tall      1   3.50     12  0.200   0→1 (on)    3.940 →  4.046          4.037     20.26
+   s16-s1      tall      1   3.60     11  0.183   0→1 (on)    3.910 →  4.031          4.022     20.13
+   s16-s1      tall      1   3.64     11  0.183   0→1 (on)    3.947 →  4.068          4.059     20.47
+   s16-s1      tall      1   3.65     11  0.183   0→1 (on)    3.956 →  4.077          4.066     20.53
+   s16-s1      tall      1   3.66     11  0.183   0→1 (on)    3.966 →  4.087          4.075     20.62
+   s16-s1    crouch      1   3.50     24  0.400   0→1 (on)    3.925 →  4.051          3.656     16.84
+   s16-s1    crouch      1   3.60     14  0.233   0→1 (on)    3.970 →  4.020          4.002     19.94
+   s16-s1    crouch      1   3.64     13  0.217   0→1 (on)    3.945 →  4.008          3.993     19.86
+   s16-s1    crouch      1   3.65     13  0.217   0→1 (on)    3.954 →  4.017          4.002     19.94
+   s16-s1    crouch      1   3.66     13  0.217   0→1 (on)    3.964 →  4.028          4.013     20.04
+   s16-s1  compress      1   3.50     29  0.483   0→1 (on)    4.005 →  4.014          3.787     18.00
+   s16-s1  compress      1   3.60     13  0.217   0→1 (on)    3.944 →  4.023          4.008     19.99
+   s16-s1  compress      1   3.64     13  0.217   0→1 (on)    3.984 →  4.055          4.046     20.34
+   s16-s1  compress      1   3.65     13  0.217   0→1 (on)    3.993 →  4.064          4.055     20.43
+   s16-s1  compress      1   3.66     13  0.217   0→1 (on)    4.003 →  4.073          4.064     20.51
+   f73-s0      tall      0   3.64     15  0.250   0→1 (on)    3.995 →  4.022          4.019     20.10
+   f73-s0      tall      0   3.64     43  0.717   1→0 (off)   3.025 →  2.965          2.950      0.00
+   f73-s0      tall      0   3.65     14  0.233   0→1 (on)    3.975 →  4.004          4.001     19.93
+   f73-s0      tall      0   3.65     43  0.717   1→0 (off)   3.031 →  2.972          2.957      0.00
+   f73-s0      tall      0   3.66     14  0.233   0→1 (on)    3.984 →  4.013          4.010     20.02
+   f73-s0      tall      0   3.66     43  0.717   1→0 (off)   3.038 →  2.978          2.964      0.00
+   f73-s0      tall      0   3.67     14  0.233   0→1 (on)    3.994 →  4.023          4.019     20.10
+   f73-s0      tall      0   3.67     43  0.717   1→0 (off)   3.043 →  2.985          2.971      0.00
+   f73-s0      tall      0   3.68     43  0.717   1→0 (off)   3.055 →  2.989          2.991      0.00
+   f73-s0      tall      0   3.69     43  0.717   1→0 (off)   3.061 →  2.995          2.997      0.00
+   f73-s0      tall      0   3.70     44  0.733   1→0 (off)   3.000 →  2.936          2.938      0.00
+   f73-s0      tall      0   3.75     44  0.733   1→0 (off)   3.028 →  2.964          2.966      0.00
+   f73-s0      tall      0   4.00     47  0.783   1→0 (off)   3.001 →  2.944          2.947      0.00
+   f73-s0      tall      0   4.50     56  0.933   1→0 (off)   3.030 →  2.991          2.993      0.00
+   f73-s0      tall      0   5.00    114  1.900   1→0 (off)   3.018 →  2.965          2.967      0.00
+   f73-s0    crouch      0   3.50     27  0.450   0→1 (on)    3.984 →  4.035          4.031     20.21
+   f73-s0    crouch      0   3.50     46  0.767   1→0 (off)   3.343 →  2.902          1.829      0.00
+   f73-s0    crouch      0   3.60     25  0.417   0→1 (on)    4.001 →  4.028          3.996     19.89
+   f73-s0    crouch      0   3.60     46  0.767   1→0 (off)   3.084 →  2.775          2.005      0.00
+   f73-s0    crouch      0   3.64     24  0.400   0→1 (on)    4.002 →  4.034          3.975     19.69
+   f73-s0    crouch      0   3.64     46  0.767   1→0 (off)   3.033 →  2.761          2.087      0.00
+   f73-s0    crouch      0   3.65     23  0.383   0→1 (on)    3.965 →  4.010          3.930     19.28
+   f73-s0    crouch      0   3.65     46  0.767   1→0 (off)   3.018 →  2.762          2.114      0.00
+   f73-s0    crouch      0   3.66     23  0.383   0→1 (on)    3.974 →  4.019          3.939     19.36
+   f73-s0    crouch      0   3.66     46  0.767   1→0 (off)   3.007 →  2.763          2.145      0.00
+   f73-s0    crouch      0   3.67     23  0.383   0→1 (on)    3.982 →  4.027          3.948     19.44
+   f73-s0    crouch      0   3.67     46  0.767   1→0 (off)   3.000 →  2.765          2.166      0.00
+   f73-s0    crouch      0   3.68     46  0.767   1→0 (off)   3.037 →  2.960          2.961      0.00
+   f73-s0    crouch      0   3.69     46  0.767   1→0 (off)   3.044 →  2.967          2.968      0.00
+   f73-s0    crouch      0   3.70     46  0.767   1→0 (off)   3.052 →  2.975          2.975      0.00
+   f73-s0    crouch      0   3.75     47  0.783   1→0 (off)   3.012 →  2.936          2.936      0.00
+   f73-s0    crouch      0   4.00     49  0.817   1→0 (off)   3.046 →  2.974          2.977      0.00
+   f73-s0    crouch      0   4.50     57  0.950   1→0 (off)   3.017 →  2.959          2.950      0.00
+   f73-s0    crouch      0   5.00    100  1.667   1→0 (off)   3.009 →  2.928          2.930      0.00
+   f73-s0  compress      0   3.66     29  0.483   0→1 (on)    3.989 →  4.008          3.994     19.87
+   f73-s0  compress      0   3.66     45  0.750   1→0 (off)   3.105 →  2.922          2.724      0.00
+   f73-s0  compress      0   3.67     29  0.483   0→1 (on)    3.997 →  4.016          4.003     19.95
+   f73-s0  compress      0   3.67     45  0.750   1→0 (off)   3.113 →  2.931          2.735      0.00
+   f73-s0  compress      0   3.68     46  0.767   1→0 (off)   3.083 →  2.986          2.991      0.00
+   f73-s0  compress      0   3.69     46  0.767   1→0 (off)   3.092 →  2.994          2.999      0.00
+   f73-s0  compress      0   3.70     47  0.783   1→0 (off)   3.003 →  2.907          2.910      0.00
+   f73-s0  compress      0   3.75     47  0.783   1→0 (off)   3.045 →  2.949          2.953      0.00
+   f73-s0  compress      0   4.00     49  0.817   1→0 (off)   3.068 →  2.980          2.981      0.00
+   f73-s0  compress      0   4.50     57  0.950   1→0 (off)   3.040 →  2.971          2.948      0.00
+   f73-s0  compress      0   5.00     72  1.200   1→0 (off)   3.073 →  2.889          2.748      0.00
+   f73-s1      tall      1   3.64     15  0.250   0→1 (on)    3.995 →  4.022          4.019     20.10
+   f73-s1      tall      1   3.64     36  0.600   1→0 (off)   3.111 →  2.980          2.831      0.00
+   f73-s1      tall      1   3.65     14  0.233   0→1 (on)    3.975 →  4.004          4.001     19.93
+   f73-s1      tall      1   3.66     14  0.233   0→1 (on)    3.984 →  4.013          4.010     20.02
+   f73-s1      tall      1   3.67     14  0.233   0→1 (on)    3.994 →  4.023          4.019     20.10
+   f73-s1    crouch      1   3.50     27  0.450   0→1 (on)    3.984 →  4.035          4.031     20.21
+   f73-s1    crouch      1   3.50     38  0.633   1→0 (off)   3.165 →  2.933          2.772      0.00
+   f73-s1    crouch      1   3.60     25  0.417   0→1 (on)    4.001 →  4.028          3.996     19.89
+   f73-s1    crouch      1   3.60     38  0.633   1→0 (off)   3.101 →  2.912          2.789      0.00
+   f73-s1    crouch      1   3.64     24  0.400   0→1 (on)    4.002 →  4.034          3.975     19.69
+   f73-s1    crouch      1   3.64     38  0.633   1→0 (off)   3.093 →  2.989          2.976      0.00
+   f73-s1    crouch      1   3.65     23  0.383   0→1 (on)    3.965 →  4.010          3.930     19.28
+   f73-s1    crouch      1   3.65     39  0.650   1→0 (off)   3.011 →  2.991          2.990      0.00
+   f73-s1    crouch      1   3.66     23  0.383   0→1 (on)    3.974 →  4.019          3.939     19.36
+   f73-s1    crouch      1   3.66     52  0.867   1→0 (off)   3.259 →  2.501          2.333      0.00
+   f73-s1    crouch      1   3.67     23  0.383   0→1 (on)    3.982 →  4.027          3.948     19.44
+   f73-s1    crouch      1   3.67     52  0.867   1→0 (off)   3.068 →  2.443          2.252      0.00
+   f73-s1    crouch      1   4.50     51  0.850   1→0 (off)   3.103 →  2.950          2.713      0.00
+   f73-s1  compress      1   3.66     29  0.483   0→1 (on)    3.989 →  4.008          3.994     19.87
+   f73-s1  compress      1   3.66     50  0.833   1→0 (off)   3.136 →  2.726          1.729      0.00
+   f73-s1  compress      1   3.67     29  0.483   0→1 (on)    3.997 →  4.016          4.003     19.95
+   f73-s1  compress      1   3.67     51  0.850   1→0 (off)   2.989 →  2.552          1.870      0.00
+   f73-s1  compress      1   4.50     54  0.900   1→0 (off)   3.041 →  2.905          2.800      0.00
+   f73-s1  compress      1   5.00     73  1.217   1→0 (off)   3.069 →  2.919          2.544      0.00
+
+  100 of 100 changes are consistent with the rule on `through` within one frame ('!' marks any that are not).
+
+## §2 How much of a ride sits in the band, and in which latch state
+
+  Live frames only. `band(through)` is the band on the LATCH's own speed; `band(probe)` the same window on the
+  speed the cap is built from. `on`/`off` split the band's frames by `planingNow`, and `runs` counts the runs
+  that have at least one frame of that kind.
+
+  arm      stance    steer  live    band(through)      on            off           band(probe)    runs on/off
+   s16-s0      tall      0   1220     415  34.0 %     323  26.5 %    92   7.5 %    442  36.2 %  11/6 of 17
+   s16-s0    crouch      0   1336     407  30.5 %     292  21.9 %   115   8.6 %    459  34.4 %  11/6 of 17
+   s16-s0  compress      0   1086     329  30.3 %     213  19.6 %   116  10.7 %    349  32.1 %  11/6 of 17
+   s16-s1      tall      1    556     183  32.9 %      91  16.4 %    92  16.5 %    206  37.1 %  11/6 of 17
+   s16-s1    crouch      1    559     221  39.5 %     106  19.0 %   115  20.6 %    272  48.7 %  11/6 of 17
+   s16-s1  compress      1    544     213  39.2 %      97  17.8 %   116  21.3 %    257  47.2 %  11/6 of 17
+   f73-s0      tall      0   1403     472  33.6 %     303  21.6 %   169  12.0 %    477  34.0 %  11/7 of 17
+   f73-s0    crouch      0   1242     481  38.7 %     301  24.2 %   180  14.5 %    452  36.4 %  13/8 of 17
+   f73-s0  compress      0   1232     535  43.4 %     257  20.9 %   278  22.6 %    505  41.0 %  9/8 of 17
+   f73-s1      tall      1    804     309  38.4 %     121  15.0 %   188  23.4 %    344  42.8 %  10/7 of 17
+   f73-s1    crouch      1    773     331  42.8 %     127  16.4 %   204  26.4 %    364  47.1 %  12/8 of 17
+   f73-s1  compress      1    954     406  42.6 %     123  12.9 %   283  29.7 %    427  44.8 %  9/8 of 17
+
+## §2b The dwell: the longest unbroken stretch one run spends in the band OFF the plane
+
+  One number a run: the longest run of consecutive live frames with `through` in the band and `planingNow == 0`,
+  in seconds. Runs with no such frame are not counted and the count is printed, because that is the population.
+
+  arm      stance    runs with any   of    dwell span (s)   median (s)
+   s16-s0      tall              6    17      0.167–0.683   0.167
+   s16-s0    crouch              6    17      0.200–0.717   0.217
+   s16-s0  compress              6    17      0.183–0.700   0.200
+   s16-s1      tall              6    17      0.167–0.683   0.167
+   s16-s1    crouch              6    17      0.200–0.717   0.217
+   s16-s1  compress              6    17      0.183–0.700   0.200
+   f73-s0      tall              7    17      0.217–0.683   0.233
+   f73-s0    crouch              8    17      0.033–0.583   0.367
+   f73-s0  compress              8    17      0.117–0.733   0.717
+   f73-s1      tall              7    17      0.217–0.683   0.317
+   f73-s1    crouch              8    17      0.033–0.583   0.367
+   f73-s1  compress              8    17      0.200–0.733   0.717
+
+## §3 The stick's own authority, per latch state — the stick never touched against the stick hard over
+
+  The measured form of "unresponsive". For every face, stance and entry the reader pairs the `-s0` run (the stick
+  NEVER TOUCHED) with the `-s1` run (the stick HARD OVER): the same water, the same placement, the same stance,
+  the same entry — one input changed. It then counts **column-values**, as step 3.5a's flat-control result did:
+  every numeric column of the dump that is not a label, on every frame both runs are live for, compared pair to
+  pair, split by the latch state the frame is in. `mism(1e-9)` is how many of those values differ at all.
+
+  `virgin` = off the plane and NEITHER run has planed yet (the honest off-plane population); `after` = off the
+  plane but one of them has already planed, so the pair had already parted; `on` = planing.
+
+  arm   stance    entry  frames  cols  state   values      mism(1e-9)   mism(1e-6)  firstΔ t   |Δroll| max  |Δrail| max  |Δhead| last
+   s16      tall   1.00      39   133  virgin     5187           0            0          –        0.000        0.000        0.000
+   s16      tall   2.00      29   133  virgin     3857           0            0          –        0.000        0.000        0.000
+   s16      tall   3.00      59   133  virgin     7847           0            0          –        0.000        0.000        0.000
+   s16      tall   3.50      11   133  virgin     1463           0            0          –        0.000        0.000        0.000
+   s16      tall   3.50      15   133      on     1995        1171         1171      0.200        3.737        3.692        0.244
+   s16      tall   3.60      10   133  virgin     1330           0            0          –        0.000        0.000        0.000
+   s16      tall   3.60      16   133      on     2128        1259         1259      0.183        4.730        4.530        0.630
+   s16      tall   3.64      10   133  virgin     1330           0            0          –        0.000        0.000        0.000
+   s16      tall   3.64      16   133      on     2128        1261         1261      0.183        4.923        4.644        1.087
+   s16      tall   3.65      10   133  virgin     1330           0            0          –        0.000        0.000        0.000
+   s16      tall   3.65      16   133      on     2128        1263         1263      0.183        5.074        4.797        1.049
+   s16      tall   3.66      10   133  virgin     1330           0            0          –        0.000        0.000        0.000
+   s16      tall   3.66      16   133      on     2128        1261         1261      0.183        5.184        4.894        1.135
+   s16      tall   3.67      16   133      on     2128        1287         1287      0.017        2.130        1.388       12.590
+   s16      tall   3.68      16   133      on     2128        1286         1286      0.017        2.137        1.390       12.586
+   s16      tall   3.69      16   133      on     2128        1290         1289      0.017        2.139        1.388       12.584
+   s16      tall   3.70      16   133      on     2128        1287         1287      0.017        2.142        1.386       12.581
+   s16      tall   3.75      16   133      on     2128        1288         1288      0.017        2.158        1.383       12.571
+   s16      tall   4.00      16   133      on     2128        1285         1285      0.017        2.420        1.388       12.366
+   s16      tall   4.50      77   133      on    10241        6469         6469      0.017       25.653       29.242       14.838
+   s16      tall   5.00      61   133      on     8113        5133         5132      0.017       59.291       61.528       10.541
+   s16      tall   6.00      62   133      on     8246        5080         5079      0.017       32.425       38.573       31.120
+   s16    crouch   1.00      36   133  virgin     4788           0            0          –        0.000        0.000        0.000
+   s16    crouch   2.00      33   133  virgin     4389           0            0          –        0.000        0.000        0.000
+   s16    crouch   3.00      52   133  virgin     6916           0            0          –        0.000        0.000        0.000
+   s16    crouch   3.50      23   133  virgin     3059           0            0          –        0.000        0.000        0.000
+   s16    crouch   3.50      38   133      on     5054        3070         3070      0.400        1.646        1.677        0.188
+   s16    crouch   3.60      13   133  virgin     1729           0            0          –        0.000        0.000        0.000
+   s16    crouch   3.60      14   133      on     1862        1096         1096      0.233        2.272        3.271        6.429
+   s16    crouch   3.64      12   133  virgin     1596           0            0          –        0.000        0.000        0.000
+   s16    crouch   3.64      15   133      on     1995        1177         1177      0.217        2.643        3.767        6.657
+   s16    crouch   3.65      12   133  virgin     1596           0            0          –        0.000        0.000        0.000
+   s16    crouch   3.65      15   133      on     1995        1180         1180      0.217        2.554        3.645        6.752
+   s16    crouch   3.66      12   133  virgin     1596           0            0          –        0.000        0.000        0.000
+   s16    crouch   3.66      15   133      on     1995        1182         1182      0.217        2.814        3.964        6.875
+   s16    crouch   3.67      16   133      on     2128        1298         1297      0.017        2.748        2.433       13.222
+   s16    crouch   3.68      16   133      on     2128        1300         1300      0.017        2.748        2.431       13.219
+   s16    crouch   3.69      16   133      on     2128        1299         1299      0.017        2.749        2.429       13.216
+   s16    crouch   3.70      16   133      on     2128        1299         1299      0.017        2.785        2.459       13.235
+   s16    crouch   3.75      16   133      on     2128        1294         1294      0.017        2.599        2.505       13.197
+   s16    crouch   4.00      16   133      on     2128        1291         1291      0.017        2.374        2.512       12.994
+   s16    crouch   4.50      48   133      on     6384        4007         4007      0.017       10.994       11.406        4.653
+   s16    crouch   5.00      62   133      on     8246        5224         5223      0.017       56.170       59.016       12.491
+   s16    crouch   6.00      61   133      on     8113        5006         5005      0.017       27.266       33.385       26.790
+   s16  compress   1.00      36   133  virgin     4788           0            0          –        0.000        0.000        0.000
+   s16  compress   2.00      32   133  virgin     4256           0            0          –        0.000        0.000        0.000
+   s16  compress   3.00      46   133  virgin     6118           0            0          –        0.000        0.000        0.000
+   s16  compress   3.50      28   133  virgin     3724           0            0          –        0.000        0.000        0.000
+   s16  compress   3.50      20   133      on     2660        1607         1607      0.483        1.041        0.757        1.800
+   s16  compress   3.60      12   133  virgin     1596           0            0          –        0.000        0.000        0.000
+   s16  compress   3.60      15   133      on     1995        1179         1179      0.217        3.346        3.458        5.841
+   s16  compress   3.64      12   133  virgin     1596           0            0          –        0.000        0.000        0.000
+   s16  compress   3.64      15   133      on     1995        1184         1184      0.217        3.731        3.794        5.947
+   s16  compress   3.65      12   133  virgin     1596           0            0          –        0.000        0.000        0.000
+   s16  compress   3.65      15   133      on     1995        1186         1186      0.217        3.788        3.858        5.848
+   s16  compress   3.66      12   133  virgin     1596           0            0          –        0.000        0.000        0.000
+   s16  compress   3.66      15   133      on     1995        1185         1185      0.217        3.740        3.794        6.224
+   s16  compress   3.67      16   133      on     2128        1297         1296      0.017        2.894        2.085       13.471
+   s16  compress   3.68      16   133      on     2128        1298         1298      0.017        2.892        2.085       13.468
+   s16  compress   3.69      16   133      on     2128        1298         1298      0.017        2.823        2.132       13.428
+   s16  compress   3.70      16   133      on     2128        1300         1300      0.017        2.822        2.131       13.423
+   s16  compress   3.75      16   133      on     2128        1294         1294      0.017        2.794        2.120       13.404
+   s16  compress   4.00      16   133      on     2128        1290         1290      0.017        2.674        2.164       13.279
+   s16  compress   4.50      48   133      on     6384        4006         4006      0.017        7.778        8.211       10.580
+   s16  compress   5.00      64   133      on     8512        5402         5401      0.017       41.679       45.962       17.831
+   s16  compress   6.00      66   133      on     8778        5497         5496      0.017       26.531       30.781       39.644
+   f73      tall   1.00      37   133  virgin     4921           0            0          –        0.000        0.000        0.000
+   f73      tall   2.00      47   133  virgin     6251           0            0          –        0.000        0.000        0.000
+   f73      tall   3.00      62   133  virgin     8246           0            0          –        0.000        0.000        0.000
+   f73      tall   3.50      70   133  virgin     9310           0            0          –        0.000        0.000        0.000
+   f73      tall   3.60      72   133  virgin     9576           0            0          –        0.000        0.000        0.000
+   f73      tall   3.64      14   133  virgin     1862           0            0          –        0.000        0.000        0.000
+   f73      tall   3.64      17   133   after     2261        1475         1475      0.717       55.340       55.737        8.702
+   f73      tall   3.64      28   133      on     3724        2299         2298      0.250       17.609       16.336       14.555
+   f73      tall   3.65      13   133  virgin     1729           0            0          –        0.000        0.000        0.000
+   f73      tall   3.65      18   133      on     2394        1433         1433      0.233        7.224        8.259       13.504
+   f73      tall   3.66      13   133  virgin     1729           0            0          –        0.000        0.000        0.000
+   f73      tall   3.66      17   133      on     2261        1351         1350      0.233        7.275        8.090       10.919
+   f73      tall   3.67      13   133  virgin     1729           0            0          –        0.000        0.000        0.000
+   f73      tall   3.67      17   133      on     2261        1355         1355      0.233        7.829        8.677       11.328
+   f73      tall   3.68      38   133      on     5054        3157         3157      0.017       17.899       18.459       10.697
+   f73      tall   3.69      38   133      on     5054        3152         3152      0.017       17.891       18.454       10.709
+   f73      tall   3.70      38   133      on     5054        3153         3153      0.017       17.926       18.474       10.315
+   f73      tall   3.75      37   133      on     4921        3064         3064      0.017       19.095       19.582        9.989
+   f73      tall   4.00      34   133      on     4522        2785         2785      0.017       12.197       12.256       27.573
+   f73      tall   4.50      46   133      on     6118        3840         3840      0.017       15.958       15.973       19.345
+   f73      tall   5.00      55   133      on     7315        4515         4515      0.017       24.524       25.125       19.209
+   f73      tall   6.00      80   133      on    10640        6582         6581      0.017       32.122       33.774       38.936
+   f73    crouch   1.00      46   133  virgin     6118           0            0          –        0.000        0.000        0.000
+   f73    crouch   2.00      50   133  virgin     6650           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.00      49   133  virgin     6517           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.50      26   133  virgin     3458           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.50       4   133   after      532         349          349      0.767       54.075       54.101        1.522
+   f73    crouch   3.50      19   133      on     2527        1553         1553      0.450       28.936       28.348        5.389
+   f73    crouch   3.60      24   133  virgin     3192           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.60       2   133   after      266         174          174      0.767       45.780       45.433        2.273
+   f73    crouch   3.60      21   133      on     2793        1719         1718      0.417       33.905       33.321        5.258
+   f73    crouch   3.64      23   133  virgin     3059           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.64       6   133   after      798         528          528      0.767       77.889       80.098       22.380
+   f73    crouch   3.64      22   133      on     2926        1804         1804      0.400       44.128       43.982        0.452
+   f73    crouch   3.65      22   133  virgin     2926           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.65       7   133   after      931         616          616      0.767       81.561       84.060       25.247
+   f73    crouch   3.65      23   133      on     3059        1886         1886      0.383       44.648       44.595        0.620
+   f73    crouch   3.66      22   133  virgin     2926           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.66       7   133   after      931         628          628      0.767       81.122       83.719       26.202
+   f73    crouch   3.66      23   133      on     3059        1882         1882      0.383       44.701       44.707        1.271
+   f73    crouch   3.67      22   133  virgin     2926           0            0          –        0.000        0.000        0.000
+   f73    crouch   3.67       7   133   after      931         628          628      0.767       80.819       83.376       25.947
+   f73    crouch   3.67      23   133      on     3059        1882         1882      0.383       45.201       45.262        1.892
+   f73    crouch   3.68      20   133      on     2660        1619         1619      0.017        9.070        7.617       16.132
+   f73    crouch   3.69      20   133      on     2660        1620         1620      0.017        9.074        7.621       16.130
+   f73    crouch   3.70      20   133      on     2660        1621         1621      0.017        9.077        7.625       16.128
+   f73    crouch   3.75      20   133      on     2660        1616         1616      0.017        9.092        7.649       16.046
+   f73    crouch   4.00      21   133      on     2793        1696         1696      0.017       10.936        9.566       15.204
+   f73    crouch   4.50      52   133      on     6916        4380         4380      0.017       18.289       18.884       16.125
+   f73    crouch   5.00      64   133      on     8512        5276         5271      0.017       27.711       29.108       30.855
+   f73    crouch   6.00      81   133      on    10773        6673         6672      0.017       37.921       40.697       47.473
+   f73  compress   1.00      36   133  virgin     4788           0            0          –        0.000        0.000        0.000
+   f73  compress   2.00      49   133  virgin     6517           0            0          –        0.000        0.000        0.000
+   f73  compress   3.00      76   133  virgin    10108           0            0          –        0.000        0.000        0.000
+   f73  compress   3.50      62   133  virgin     8246           0            0          –        0.000        0.000        0.000
+   f73  compress   3.60      63   133  virgin     8379           0            0          –        0.000        0.000        0.000
+   f73  compress   3.64      64   133  virgin     8512           0            0          –        0.000        0.000        0.000
+   f73  compress   3.65      64   133  virgin     8512           0            0          –        0.000        0.000        0.000
+   f73  compress   3.66      28   133  virgin     3724           0            0          –        0.000        0.000        0.000
+   f73  compress   3.66       8   133   after     1064         716          716      0.750       25.179       28.047       31.846
+   f73  compress   3.66      16   133      on     2128        1294         1294      0.483       21.035       21.408        5.052
+   f73  compress   3.67      28   133  virgin     3724           0            0          –        0.000        0.000        0.000
+   f73  compress   3.67       9   133   after     1197         808          808      0.750       30.021       32.163       32.492
+   f73  compress   3.67      16   133      on     2128        1297         1297      0.483       24.449       24.832        5.257
+   f73  compress   3.68      40   133      on     5320        3347         3347      0.017       73.726       74.779       15.879
+   f73  compress   3.69      40   133      on     5320        3346         3346      0.017       73.585       74.635       15.826
+   f73  compress   3.70      40   133      on     5320        3349         3349      0.017       73.478       74.537       15.978
+   f73  compress   3.75      40   133      on     5320        3344         3344      0.017       72.345       73.391       15.744
+   f73  compress   4.00      42   133      on     5586        3511         3511      0.017       72.480       73.691       18.378
+   f73  compress   4.50      20   133   after     2660        1779         1779      0.950       52.573       51.907        7.042
+   f73  compress   4.50      56   133      on     7448        4749         4749      0.017       22.056       22.743       17.903
+   f73  compress   5.00      10   133   after     1330         879          879      1.200       52.014       56.384       43.338
+   f73  compress   5.00      71   133      on     9443        5959         5958      0.017       30.947       32.236       39.604
+   f73  compress   6.00      76   133      on    10108        6310         6309      0.017       47.007       50.168       52.034
+
+  Collected over every entry of the ladder, per face and per latch state — the headline of the round:
+
+  arm   state   run-pairs  frames  column-values  mismatches(1e-9)  share        |Δroll| max span   |Δhead| last span
+   s16  virgin         24     561          74613                 0       0.00 %          0.00–0.00  0.00–0.00
+   s16      on         42    1093         145369             89366      61.48 %         1.04–59.29  0.19–39.64
+   f73  virgin         27    1095         145635                 0       0.00 %          0.00–0.00  0.00–0.00
+   f73   after         11      97          12901              8580      66.51 %        25.18–81.56  1.52–43.34
+   f73      on         36    1312         174496            108419      62.13 %         7.22–73.73  0.45–52.03
+
+  And the same two states restricted to the BAND itself (`through` in the band on the s0 run's own frame), so
+  the comparison is at the speeds the question is about and not at every speed the ladder passes through:
+
+  arm   state   frames  column-values  mismatches(1e-9)  share        |Δroll| max   |Δrail| max   |Δbank| max
+   s16  virgin     323          42959                 0       0.00 %         0.00          0.00          0.00
+   s16      on     386          51338             31643      61.64 %         5.18          4.89         13.44
+   f73  virgin     620          82460                 0       0.00 %         0.00          0.00          0.00
+   f73   after       6            798               527      66.04 %        52.01         56.38         48.04
+   f73      on     587          78071             49557      63.48 %        73.73         74.78         71.12
+
+## §4 H1 — the pair of runs the latch separates at the MOUNT, and the null pairs beside it
+
+  For each arm and stance the reader finds the adjacent pair of the entry ladder whose frame-1 `planingNow`
+  differs (`LATCH`), and the adjacent pairs immediately below and above it, which do not (`null−`, `null+`).
+  **The mount flips TWO things at that step, not one**: `reset` sets `planing` (and so the ask cap) AND `banked`
+  — the body's placement, plumb or square to the deck — off the same test [R, `AttachedRider.ts:2857–2860`],
+  so this pair is the latch at the mount and not the cap alone. The `-s0` rows, where the ask is identically 0
+  on both sides, are the `banked` channel with the cap taken out of it.
+  Every pair is the same water, the same placement, the same stance and the same stick; the pair's own
+  Δthrough(f1) is printed, so the confound is a number on the row. Δ columns are |A − B| over the frames both
+  runs are live for, and the time is each pair's own.
+
+  arm      stance    steer  kind    entries        n   Δthrough(f1)  Δcap med/max   Δask med/max   Δroll med/max   Δrail med/max   Δbank med/max   Δyaw° /s med/max   Δhead(last)
+   s16-s0      tall      0   null−    3.65/3.66    58      0.0098     0.09 /  0.69   0.00 /  0.00   0.08 /  1.30   0.10 /  1.28   0.15 /  1.72    1.38 /  26.70     0.09
+   s16-s0      tall      0   LATCH    3.66/3.67    58      0.0127     2.91 / 17.68   0.00 /  0.00  17.03 / 48.95  18.89 / 53.67  16.45 / 37.76   52.26 / 117.84    23.08
+   s16-s0      tall      0   null+    3.67/3.68    91      0.0100     0.09 /  1.66   0.00 /  0.00   0.02 / 10.28   0.02 /  9.93   0.03 /  4.42    1.38 /  29.40     0.52
+   s16-s0    crouch      0   null−    3.65/3.66    64      0.0099     0.09 /  0.26   0.00 /  0.00   0.34 /  1.48   0.27 /  1.49   0.06 /  2.06    0.90 /   7.14     0.27
+   s16-s0    crouch      0   LATCH    3.66/3.67    57      0.0127     3.31 / 17.02   0.00 /  0.00  14.76 / 52.23  16.28 / 59.20  16.94 / 39.20   63.96 / 180.66    32.39
+   s16-s0    crouch      0   null+    3.67/3.68    57      0.0099     0.09 /  0.26   0.00 /  0.00   0.01 /  0.60   0.01 /  0.59   0.00 /  0.31    0.24 /   9.90     0.57
+   s16-s0  compress      0   null−    3.65/3.66    50      0.0099     0.08 /  0.36   0.00 /  0.00   0.03 /  2.33   0.03 /  2.30   0.09 /  2.71    1.08 /  11.40     0.20
+   s16-s0  compress      0   LATCH    3.66/3.67    50      0.0127     3.39 / 17.04   0.00 /  0.00  14.87 / 70.03  16.04 / 71.35  14.01 / 73.09   58.92 / 176.04     8.04
+   s16-s0  compress      0   null+    3.67/3.68    82      0.0099     0.09 /  1.01   0.00 /  0.00   0.24 /  5.79   0.16 /  5.75   0.16 /  4.94    1.50 /  31.08     0.21
+   s16-s1      tall      1   null−    3.65/3.66    26      0.0098     0.03 /  0.16   0.08 /  0.11   0.01 /  0.22   0.01 /  0.18   0.01 /  0.16    0.60 /   8.46     0.09
+   s16-s1      tall      1   LATCH    3.66/3.67    16      0.0127    17.09 / 17.58  10.19 / 13.79   7.29 / 17.42   7.01 / 20.98   9.98 / 12.87   21.36 / 338.70    21.93
+   s16-s1      tall      1   null+    3.67/3.68    16      0.0099     0.09 /  0.09   0.00 /  0.07   0.00 /  0.01   0.00 /  0.01   0.00 /  0.01    0.00 /   0.06     0.00
+   s16-s1    crouch      1   null−    3.65/3.66    27      0.0099     0.03 /  0.18   0.11 /  0.17   0.01 /  0.29   0.01 /  0.29   0.02 /  0.16    0.12 /   2.16     0.13
+   s16-s1    crouch      1   LATCH    3.66/3.67    16      0.0127    16.57 / 17.02  10.70 / 14.76   6.75 / 14.77   6.58 / 17.43   9.35 / 11.58   29.28 / 299.34    21.59
+   s16-s1    crouch      1   null+    3.67/3.68    16      0.0099     0.09 /  0.09   0.00 /  0.08   0.00 /  0.00   0.00 /  0.01   0.00 /  0.01    0.00 /   0.06     0.00
+   s16-s1  compress      1   null−    3.65/3.66    27      0.0099     0.03 /  0.12   0.06 /  0.17   0.01 /  0.21   0.02 /  0.14   0.01 /  0.36    0.06 /   2.82     0.33
+   s16-s1  compress      1   LATCH    3.66/3.67    16      0.0127    16.67 / 17.02  10.70 / 14.86   6.87 / 15.09   6.70 / 17.86   9.35 / 11.59   29.28 / 302.52    21.99
+   s16-s1  compress      1   null+    3.67/3.68    16      0.0099     0.09 /  0.09   0.00 /  0.08   0.00 /  0.00   0.00 /  0.01   0.00 /  0.01    0.00 /   0.06     0.00
+   f73-s0      tall      0   null−    3.66/3.67    73      0.0099     0.00 /  0.09   0.00 /  0.00   0.04 /  0.43   0.04 /  0.43   0.01 /  0.32    0.24 /   4.32     0.05
+   f73-s0      tall      0   LATCH    3.67/3.68    73      0.0111     0.23 / 19.45   0.00 /  0.00   8.43 / 34.16   8.97 / 34.84   5.36 / 23.39   27.06 / 116.52     4.74
+   f73-s0      tall      0   null+    3.68/3.69    88      0.0099     0.00 /  0.09   0.00 /  0.00   0.01 /  0.57   0.01 /  0.57   0.01 /  0.46    0.18 /  21.78     0.23
+   f73-s0    crouch      0   null−    3.66/3.67    52      0.0099     0.00 /  0.09   0.00 /  0.00   0.04 /  0.46   0.04 /  0.48   0.02 /  0.29    0.30 /   3.12     0.34
+   f73-s0    crouch      0   LATCH    3.67/3.68    52      0.0111     3.84 / 19.96   0.00 /  0.00   6.06 / 26.62   6.43 / 26.97   4.39 / 36.27   36.30 /  98.04     4.00
+   f73-s0    crouch      0   null+    3.68/3.69    82      0.0099     0.06 /  0.09   0.00 /  0.00   0.02 /  0.49   0.02 /  0.51   0.01 /  0.39    0.18 /  23.04     0.03
+   f73-s0  compress      0   null−    3.66/3.67    64      0.0099     0.00 /  0.08   0.00 /  0.00   0.06 /  0.42   0.06 /  0.42   0.03 /  0.34    0.18 /   8.46     0.05
+   f73-s0  compress      0   LATCH    3.67/3.68    64      0.0111     3.06 / 19.19   0.00 /  0.00   7.25 / 38.18   7.68 / 39.82   5.10 / 33.89   43.74 / 204.42    18.37
+   f73-s0  compress      0   null+    3.68/3.69    80      0.0099     0.07 /  0.09   0.00 /  0.00   0.03 /  0.78   0.03 /  0.81   0.02 /  0.57    0.06 /   4.14     0.55
+   f73-s1      tall      1   null−    3.66/3.67    30      0.0099     0.02 /  0.10   0.09 /  0.33   0.01 /  0.85   0.01 /  0.86   0.02 /  0.26    0.30 /   6.06     0.45
+   f73-s1      tall      1   LATCH    3.67/3.68    30      0.0111     4.36 / 19.44   9.36 / 16.92   5.04 / 18.54   6.36 / 19.22   5.56 / 10.58  103.02 / 264.24     9.58
+   f73-s1      tall      1   null+    3.68/3.69    38      0.0099     0.08 /  0.09   0.05 /  0.08   0.00 /  0.09   0.00 /  0.09   0.00 /  0.03    0.06 /   0.78     0.01
+   f73-s1    crouch      1   null−    3.66/3.67    58      0.0099     0.02 /  1.66   0.11 /  0.20   0.08 /  1.01   0.09 /  1.05   0.07 /  1.75    0.42 /  32.64     0.39
+   f73-s1    crouch      1   LATCH    3.67/3.68    20      0.0111    17.77 / 19.19  14.51 / 16.51   1.93 /  6.03   1.90 /  6.84   4.90 / 18.96   53.94 / 219.06    20.78
+   f73-s1    crouch      1   null+    3.68/3.69    20      0.0099     0.09 /  0.09   0.02 /  0.08   0.00 /  0.00   0.00 /  0.00   0.00 /  0.01    0.00 /   0.24     0.00
+   f73-s1  compress      1   null−    3.66/3.67    52      0.0099     0.00 /  4.65   0.00 /  1.59   0.06 /  5.52   0.06 /  5.61   0.03 /  5.78    0.30 /  43.86     0.46
+   f73-s1  compress      1   LATCH    3.67/3.68    40      0.0111    17.74 / 25.60  16.30 / 23.16   6.32 / 85.38   7.06 / 85.43  18.30 / 85.31   96.54 / 212.46     4.28
+   f73-s1  compress      1   null+    3.68/3.69    40      0.0099     0.09 /  0.16   0.06 /  0.11   0.00 /  0.17   0.00 /  0.17   0.01 /  0.19    0.12 /   2.04     0.07
+
+  And the same three kinds collected, so the latch pair is read against its own nulls and not against nothing:
+
+  kind    pairs   Δroll(max) span      Δrail(max) span      Δyaw(max) span       Δhead(last) span     n span
+   null−     12            0.21–5.52            0.14–5.61           2.16–43.86            0.05–0.46   26–73
+   LATCH     12           6.03–85.38           6.84–85.43         98.04–338.70           4.00–32.39   16–73
+   null+     12           0.00–10.28            0.00–9.93           0.06–31.08            0.00–0.57   16–91
+
+## §4b The latch pair frame by frame (the first 0.5 s, every third frame)
+
+  s16-s0 tall steer=0: OFF entry 3.66 (58 live frames) vs ON entry 3.67 (91)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.64/  3.65   0/1         0.00/ 16.71     0.00/  0.00     8.33/  8.90     -0.63/ -0.06     -0.04/  8.72         –/     –
+    0.067     3.70/  3.69   0/1         0.00/ 17.09     0.00/  0.00     5.72/  8.97     -3.61/ -0.41     -0.64/  8.64       2.8/  -4.4
+    0.117     3.75/  3.70   0/1         0.00/ 17.17     0.00/  0.00     3.27/  9.06     -6.32/ -0.71     -1.97/  8.64       9.2/  -4.4
+    0.167     3.97/  3.76   0/1         0.00/ 17.68     0.00/  0.00    -0.68/  9.27    -10.58/ -0.80     -3.35/  8.66     -15.5/   7.9
+    0.217     4.25/  3.82   1/1        22.23/ 18.10     0.00/  0.00    -5.43/  9.25    -16.01/ -0.91     -3.41/  8.32     -69.4/  24.1
+    0.267     4.19/  3.88   1/1        21.57/ 18.58     0.00/  0.00    -8.16/  8.88    -19.66/ -1.27     -1.92/  7.50     -78.8/  25.6
+    0.317     3.96/  3.94   1/1        19.61/ 19.24     0.00/  0.00    -9.00/  8.01    -21.21/ -2.17     -0.10/  6.67     -44.7/  11.3
+    0.367     3.77/  4.02   1/1        17.25/ 20.10     0.00/  0.00    -7.04/  6.52    -19.59/ -3.84      0.28/  6.56       2.6/  -8.5
+    0.417     3.90/  4.08   1/1        16.39/ 20.64     0.00/  0.00    -3.72/  5.00    -16.16/ -5.66     -1.92/  7.20      51.1/ -16.8
+    0.467     4.01/  4.06   1/1        17.32/ 20.48     0.00/  0.00    -3.32/  4.73    -15.39/ -6.13     -6.10/  7.77      59.9/   1.1
+    0.517     4.15/  4.08   1/1        20.40/ 20.26     0.00/  0.00    -7.89/  6.00    -19.77/ -4.74     -9.96/  7.28      17.8/  32.8
+
+  s16-s0 crouch steer=0: OFF entry 3.66 (64 live frames) vs ON entry 3.67 (57)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.64/  3.65   0/1         0.00/ 16.71     0.00/  0.00     8.33/  8.90     -0.63/ -0.06     -0.04/  8.72         –/     –
+    0.067     3.67/  3.67   0/1         0.00/ 16.90     0.00/  0.00     5.75/  8.97     -3.59/ -0.41     -0.54/  8.65       2.3/  -4.5
+    0.117     3.68/  3.64   0/1         0.00/ 16.69     0.00/  0.00     3.50/  9.06     -6.14/ -0.72     -1.37/  8.70       4.9/  -4.7
+    0.167     3.82/  3.64   0/1         0.00/ 16.68     0.00/  0.00     0.55/  9.24     -9.50/ -0.84     -1.99/  8.77     -25.6/   7.5
+    0.217     4.03/  3.69   1/1        20.04/ 16.97     0.00/  0.00    -3.41/  9.33    -14.19/ -0.86     -1.45/  8.43     -64.1/  25.1
+    0.267     4.08/  3.76   1/1        20.54/ 17.57     0.00/  0.00    -5.65/  9.12    -17.21/ -1.04      0.52/  7.40     -54.6/  27.3
+    0.317     3.92/  3.86   1/1        19.15/ 18.51     0.00/  0.00    -5.39/  8.25    -17.40/ -1.93      2.14/  6.15      -8.4/  12.5
+    0.367     3.97/  4.00   1/1        17.97/ 19.93     0.00/  0.00    -3.65/  6.60    -15.70/ -3.75      0.87/  5.69      28.7/  -7.3
+    0.417     4.25/  4.15   1/1        18.35/ 21.32     0.00/  0.00    -3.23/  4.76    -15.04/ -5.88     -4.44/  6.38      50.1/ -17.4
+    0.467     4.24/  4.16   1/1        20.12/ 21.29     0.00/  0.00    -6.99/  3.55    -18.45/ -7.31    -10.70/  6.95      44.6/  -3.4
+    0.517     4.43/  4.20   1/1        23.79/ 21.23     0.00/  0.00   -15.79/  3.86    -27.31/ -6.93    -14.49/  5.94     -20.2/  28.7
+
+  s16-s0 compress steer=0: OFF entry 3.66 (50 live frames) vs ON entry 3.67 (83)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.64/  3.65   0/1         0.00/ 16.71     0.00/  0.00     8.33/  8.90     -0.63/ -0.06     -0.04/  8.72         –/     –
+    0.067     3.67/  3.67   0/1         0.00/ 16.90     0.00/  0.00     5.75/  8.97     -3.59/ -0.41     -0.54/  8.65       2.3/  -4.5
+    0.117     3.68/  3.64   0/1         0.00/ 16.69     0.00/  0.00     3.50/  9.06     -6.14/ -0.72     -1.37/  8.70       4.9/  -4.7
+    0.167     3.85/  3.66   0/1         0.00/ 16.81     0.00/  0.00     0.17/  9.24     -9.87/ -0.84     -2.00/  8.76     -25.2/   7.6
+    0.217     4.07/  3.71   1/1        20.51/ 17.17     0.00/  0.00    -4.10/  9.28    -14.87/ -0.90     -1.44/  8.37     -65.4/  25.4
+    0.267     4.06/  3.78   1/1        20.42/ 17.69     0.00/  0.00    -6.07/  9.05    -17.63/ -1.10      0.56/  7.36     -55.5/  27.4
+    0.317     3.84/  3.85   1/1        18.44/ 18.47     0.00/  0.00    -5.80/  8.27    -17.81/ -1.91      2.31/  6.37      -7.4/  10.1
+    0.367     3.83/  3.94   1/1        16.99/ 19.34     0.00/  0.00    -3.35/  6.87    -15.44/ -3.54      1.35/  6.43      24.6/ -13.2
+    0.417     4.07/  3.99   1/1        17.07/ 19.80     0.00/  0.00    -2.23/  5.82    -14.08/ -4.93     -3.56/  7.72      54.8/ -19.7
+    0.467     4.12/  4.01   1/1        18.68/ 19.98     0.00/  0.00    -5.69/  6.30    -17.10/ -4.63    -10.28/  8.80      58.5/   5.8
+    0.517     4.33/  4.15   1/1        22.52/ 20.28     0.00/  0.00   -15.58/  7.81    -26.91/ -2.87    -15.60/  7.38      -6.4/  51.7
+
+  s16-s1 tall steer=1: OFF entry 3.66 (26 live frames) vs ON entry 3.67 (16)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.64/  3.65   0/1         0.00/ 16.71     0.00/  1.34     8.33/  8.89     -0.63/ -0.06     -0.04/  8.72         –/     –
+    0.067     3.70/  3.69   0/1         0.00/ 17.10     0.00/  5.35     5.72/  8.68     -3.61/ -0.71     -0.64/  8.80       2.8/  -7.7
+    0.117     3.75/  3.70   0/1         0.00/ 17.18     0.00/  9.36     3.27/  7.83     -6.32/ -2.04     -1.97/  9.59       9.2/ -11.8
+    0.167     3.97/  3.79   0/1         0.00/ 17.58     0.00/ 13.37    -0.68/  8.71    -10.58/ -1.33     -3.35/  9.53     -15.5/  37.6
+    0.217     4.29/  4.21   1/1        22.54/ 17.48     3.43/ 15.99    -5.78/  9.51    -16.37/  0.12     -3.37/  5.63     -72.1/ 126.3
+    0.267     4.33/  4.31   1/1        22.62/ 14.73     7.44/ 15.96   -10.11/  6.75    -21.76/ -0.78     -1.33/ -3.45    -105.9/ 232.8
+
+  s16-s1 crouch steer=1: OFF entry 3.66 (27 live frames) vs ON entry 3.67 (16)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.64/  3.65   0/1         0.00/ 16.71     0.00/  1.34     8.33/  8.89     -0.63/ -0.06     -0.04/  8.72         –/     –
+    0.067     3.67/  3.67   0/1         0.00/ 16.92     0.00/  5.35     5.75/  8.69     -3.59/ -0.71     -0.54/  8.81       2.3/  -7.7
+    0.117     3.68/  3.64   0/1         0.00/ 16.68     0.00/  9.36     3.50/  7.85     -6.14/ -2.03     -1.37/  9.62       4.9/ -11.2
+    0.167     3.82/  3.69   0/1         0.00/ 16.46     0.00/ 13.25     0.55/  9.03     -9.50/ -0.99     -1.99/  9.24     -25.6/  40.9
+    0.217     4.03/  4.10   1/1        20.04/ 16.30     0.42/ 15.18    -3.41/ 10.92    -14.19/  1.58     -1.45/  4.63     -64.1/ 130.3
+    0.267     4.14/  4.36   1/1        20.97/ 13.88     4.43/ 15.02    -6.38/  6.37    -17.96/ -1.02      0.68/ -5.95     -59.5/ 239.9
+
+  s16-s1 compress steer=1: OFF entry 3.66 (27 live frames) vs ON entry 3.67 (16)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.64/  3.65   0/1         0.00/ 16.71     0.00/  1.34     8.33/  8.89     -0.63/ -0.06     -0.04/  8.72         –/     –
+    0.067     3.67/  3.67   0/1         0.00/ 16.92     0.00/  5.35     5.75/  8.69     -3.59/ -0.71     -0.54/  8.81       2.3/  -7.7
+    0.117     3.68/  3.64   0/1         0.00/ 16.68     0.00/  9.36     3.50/  7.85     -6.14/ -2.03     -1.37/  9.62       4.9/ -11.2
+    0.167     3.85/  3.72   0/1         0.00/ 16.62     0.00/ 13.28     0.17/  8.89     -9.87/ -1.13     -2.00/  9.23     -25.2/  41.8
+    0.217     4.07/  4.10   1/1        20.51/ 16.32     1.09/ 15.28    -4.10/ 10.48    -14.87/  1.19     -1.44/  4.36     -65.4/ 134.6
+    0.267     4.13/  4.32   1/1        20.90/ 13.70     5.10/ 14.97    -7.10/  6.16    -18.69/ -1.16      0.76/ -6.08     -62.9/ 239.6
+
+  f73-s0 tall steer=0: OFF entry 3.67 (73 live frames) vs ON entry 3.68 (88)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.85/  3.86   0/1         0.00/ 18.47     0.00/  0.00     3.62/  3.92     -0.32/ -0.02      0.00/  3.89         –/     –
+    0.067     3.90/  3.90   0/1         0.00/ 19.00     0.00/  0.00     2.32/  3.89     -1.69/ -0.13     -0.25/  3.82       2.3/  -0.8
+    0.117     3.87/  3.90   0/1         0.00/ 18.98     0.00/  0.00     1.14/  3.88     -2.93/ -0.22     -0.87/  3.78       5.8/  -0.3
+    0.167     3.93/  3.90   0/1         0.00/ 19.00     0.00/  0.00    -0.49/  3.88     -4.63/ -0.27     -1.40/  3.77      -8.2/   4.2
+    0.217     3.99/  3.95   0/1         0.00/ 19.45     0.00/  0.00    -3.23/  3.77     -7.53/ -0.42     -1.62/  3.64     -35.5/   9.6
+    0.267     4.06/  4.03   1/1        20.45/ 20.16     0.00/  0.00    -5.69/  3.67    -10.22/ -0.55     -1.42/  3.38     -45.1/  10.0
+    0.317     4.04/  4.10   1/1        20.31/ 20.83     0.00/  0.00    -6.81/  3.49    -11.51/ -0.75     -1.25/  3.15     -20.8/   6.2
+    0.367     4.02/  4.09   1/1        20.00/ 20.79     0.00/  0.00    -6.42/  3.08    -11.22/ -1.21     -1.52/  3.13      -9.6/   0.5
+    0.417     4.00/  4.02   1/1        19.91/ 20.11     0.00/  0.00    -5.27/  2.58    -10.21/ -1.76     -2.04/  3.26     -29.4/  -1.5
+    0.467     3.95/  3.91   1/1        19.51/ 19.07     0.00/  0.00    -4.39/  2.45     -9.53/ -1.94     -2.03/  3.33     -40.9/   4.3
+    0.517     3.78/  3.76   1/1        17.96/ 17.73     0.00/  0.00    -4.31/  2.90     -9.61/ -1.49     -1.41/  3.22     -14.8/  12.2
+
+  f73-s0 crouch steer=0: OFF entry 3.67 (52 live frames) vs ON entry 3.68 (82)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.84/  3.85   0/1         0.00/ 18.46     0.00/  0.00     3.62/  3.92     -0.32/ -0.02      0.00/  3.89         –/     –
+    0.067     3.87/  3.88   0/1         0.00/ 18.78     0.00/  0.00     2.34/  3.89     -1.67/ -0.13     -0.20/  3.82       2.0/  -0.8
+    0.117     3.79/  3.80   0/1         0.00/ 18.10     0.00/  0.00     1.18/  3.85     -2.89/ -0.24     -0.62/  3.79       3.5/  -0.7
+    0.167     3.76/  3.73   0/1         0.00/ 17.50     0.00/  0.00    -0.07/  3.92     -4.24/ -0.25     -0.71/  3.80     -12.8/   3.8
+    0.217     3.80/  3.72   0/1         0.00/ 17.34     0.00/  0.00    -1.83/  3.92     -6.19/ -0.29     -0.17/  3.71     -38.0/   9.1
+    0.267     3.77/  3.78   0/1         0.00/ 17.90     0.00/  0.00    -2.97/  3.87     -7.54/ -0.37      0.67/  3.41     -34.0/   9.1
+    0.317     3.81/  3.88   0/1         0.00/ 18.79     0.00/  0.00    -2.79/  3.65     -7.44/ -0.61      0.67/  2.97      13.0/   7.3
+    0.367     3.98/  4.01   0/1         0.00/ 19.96     0.00/  0.00    -2.15/  3.04     -6.72/ -1.26     -1.15/  2.63      43.7/   4.5
+    0.417     4.08/  4.10   1/1        20.41/ 20.83     0.00/  0.00    -2.54/  2.11     -7.05/ -2.23     -3.80/  2.51      11.5/  -0.7
+    0.467     4.21/  4.10   1/1        21.76/ 20.87     0.00/  0.00    -5.19/  1.26     -9.88/ -3.14     -4.75/  2.49     -54.7/  -5.0
+    0.517     4.20/  3.99   1/1        21.18/ 19.88     0.00/  0.00    -8.09/  0.89    -13.12/ -3.58     -3.08/  2.39     -80.1/  -3.5
+
+  f73-s0 compress steer=0: OFF entry 3.67 (64 live frames) vs ON entry 3.68 (80)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.84/  3.85   0/1         0.00/ 18.46     0.00/  0.00     3.62/  3.92     -0.32/ -0.02      0.00/  3.89         –/     –
+    0.067     3.87/  3.88   0/1         0.00/ 18.78     0.00/  0.00     2.34/  3.89     -1.67/ -0.13     -0.20/  3.82       2.0/  -0.8
+    0.117     3.79/  3.80   0/1         0.00/ 18.11     0.00/  0.00     1.18/  3.85     -2.89/ -0.24     -0.62/  3.79       3.5/  -0.7
+    0.167     3.79/  3.76   0/1         0.00/ 17.71     0.00/  0.00    -0.08/  3.92     -4.24/ -0.24     -0.79/  3.80     -12.4/   3.9
+    0.217     3.84/  3.77   0/1         0.00/ 17.83     0.00/  0.00    -2.00/  3.90     -6.34/ -0.31     -0.42/  3.70     -36.4/   9.3
+    0.267     3.78/  3.81   0/1         0.00/ 18.15     0.00/  0.00    -3.42/  3.83     -7.98/ -0.40      0.26/  3.41     -33.0/   9.3
+    0.317     3.77/  3.84   0/1         0.00/ 18.47     0.00/  0.00    -3.51/  3.63     -8.16/ -0.63      0.37/  3.04       6.9/   6.7
+    0.367     3.84/  3.88   0/1         0.00/ 18.81     0.00/  0.00    -2.88/  3.11     -7.49/ -1.19     -0.90/  2.85      30.2/   2.7
+    0.417     3.89/  3.91   0/1         0.00/ 19.05     0.00/  0.00    -2.75/  2.46     -7.36/ -1.90     -2.88/  2.88       1.6/  -1.3
+    0.467     4.00/  3.91   0/1         0.00/ 19.07     0.00/  0.00    -4.54/  2.02     -9.32/ -2.39     -3.78/  2.89     -44.8/  -1.0
+    0.517     3.99/  3.90   1/1        19.61/ 18.96     0.00/  0.00    -7.11/  2.01    -12.17/ -2.43     -2.51/  2.62     -59.6/   6.0
+
+  f73-s1 tall steer=1: OFF entry 3.67 (30 live frames) vs ON entry 3.68 (38)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.85/  3.86   0/1         0.00/ 18.47     0.00/  1.34     3.62/  3.92     -0.32/ -0.02      0.00/  3.89         –/     –
+    0.067     3.90/  3.90   0/1         0.00/ 19.00     0.00/  5.35     2.32/  3.57     -1.69/ -0.46     -0.25/  3.96       2.3/  -4.0
+    0.117     3.87/  3.89   0/1         0.00/ 18.89     0.00/  9.36     1.14/  2.42     -2.93/ -1.72     -0.87/  4.62       5.8/  -7.3
+    0.167     3.93/  3.91   0/1         0.00/ 18.98     0.00/ 13.37    -0.49/  2.29     -4.63/ -1.84     -1.40/  5.10      -8.2/  36.4
+    0.217     3.99/  4.09   0/1         0.00/ 19.44     0.00/ 16.92    -3.23/  3.15     -7.53/ -0.75     -1.62/  3.51     -35.5/  97.3
+    0.267     4.07/  4.17   1/1        20.56/ 18.98     3.43/ 18.39    -5.84/  3.38    -10.37/  0.03     -1.32/ -0.97     -47.2/ 159.2
+    0.317     4.10/  4.06   1/1        20.71/ 20.30     7.44/ 18.81    -7.88/ -0.04    -12.65/ -3.00     -0.08/ -6.08     -46.3/ -18.9
+    0.367     3.99/  4.31   1/1        19.77/ 21.98    11.45/ 20.61    -8.41/ -6.47    -13.38/ -9.88      1.87/ -8.08     -27.6/ -89.7
+    0.417     3.89/  4.54   1/1        18.43/ 22.72    15.36/ 21.80    -5.59/-13.57    -10.61/-17.65      2.42/ -7.72      28.7/-171.8
+    0.467     3.96/  4.27   1/1        16.35/ 20.47    16.50/ 21.59     1.07/-15.43     -3.71/-20.21      0.27/ -5.29     106.3/-145.9
+
+  f73-s1 crouch steer=1: OFF entry 3.67 (58 live frames) vs ON entry 3.68 (20)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.84/  3.85   0/1         0.00/ 18.46     0.00/  1.34     3.62/  3.92     -0.32/ -0.02      0.00/  3.89         –/     –
+    0.067     3.87/  3.88   0/1         0.00/ 18.79     0.00/  5.35     2.34/  3.57     -1.67/ -0.46     -0.20/  3.97       2.0/  -4.0
+    0.117     3.79/  3.80   0/1         0.00/ 18.10     0.00/  9.36     1.18/  2.36     -2.89/ -1.77     -0.62/  4.60       3.5/  -6.6
+    0.167     3.76/  3.76   0/1         0.00/ 17.59     0.00/ 13.37    -0.07/  2.69     -4.24/ -1.44     -0.71/  4.74     -12.8/  41.1
+    0.217     3.80/  3.98   0/1         0.00/ 17.21     0.00/ 15.83    -1.83/  3.80     -6.19/ -0.04     -0.17/  2.04     -38.0/ 111.0
+    0.267     3.77/  4.11   0/1         0.00/ 15.77     0.00/ 16.24    -2.97/  1.83     -7.54/ -1.36      0.67/ -5.56     -34.0/ 185.1
+    0.317     3.81/  3.88   0/1         0.00/ 17.29     0.00/ 15.86    -2.79/ -3.72     -7.44/ -6.41      0.67/-15.32      13.0/   5.0
+
+  f73-s1 compress steer=1: OFF entry 3.67 (53 live frames) vs ON entry 3.68 (40)
+    t       through off/on   planing   cap off/on      ask off/on      roll off/on       rail off/on       bank off/on       yaw°/s off/on
+    0.017     3.84/  3.85   0/1         0.00/ 18.46     0.00/  1.34     3.62/  3.92     -0.32/ -0.02      0.00/  3.89         –/     –
+    0.067     3.87/  3.88   0/1         0.00/ 18.79     0.00/  5.35     2.34/  3.57     -1.67/ -0.46     -0.20/  3.97       2.0/  -4.0
+    0.117     3.79/  3.80   0/1         0.00/ 18.10     0.00/  9.36     1.18/  2.36     -2.89/ -1.77     -0.62/  4.60       3.5/  -6.6
+    0.167     3.79/  3.78   0/1         0.00/ 17.82     0.00/ 13.37    -0.08/  2.68     -4.24/ -1.44     -0.79/  4.79     -12.4/  40.9
+    0.217     3.84/  4.00   0/1         0.00/ 17.74     0.00/ 16.09    -2.00/  3.81     -6.34/ -0.05     -0.42/  2.35     -36.4/ 108.4
+    0.267     3.78/  4.09   0/1         0.00/ 16.36     0.00/ 16.68    -3.42/  2.25     -7.98/ -0.97      0.26/ -4.56     -33.0/ 179.5
+    0.317     3.77/  3.87   0/1         0.00/ 17.68     0.00/ 16.30    -3.51/ -2.57     -8.16/ -5.32      0.37/-13.22       6.9/   2.6
+    0.367     3.84/  4.02   0/1         0.00/ 19.95     0.00/ 18.24    -2.88/ -8.59     -7.49/-11.70     -0.90/-20.90      30.2/ -66.5
+    0.417     3.89/  4.36   0/1         0.00/ 23.23     0.00/ 20.47    -2.75/-16.95     -7.36/-20.55     -2.88/-27.41       1.6/-121.8
+    0.467     4.00/  4.60   0/1         0.00/ 25.60     0.00/ 23.14    -4.54/-28.46     -9.32/-32.72     -3.78/-33.58     -44.8/-160.1
+    0.517     4.03/  4.53   1/1        19.68/ 24.82     3.34/ 24.44    -7.03/-41.66    -12.09/-46.57     -2.26/-40.75     -59.8/-164.5
+
+
+## §5 H2 — matched speed inside the band: the two states' frames in the same 0.1 m/s bin
+
+  Live frames with `through` in the band, binned on the LATCH's own speed, per stance and stick. `runs` is how
+  many distinct runs the bin's frames come from, so a bin carried by one trajectory is visible. Only bins that
+  hold BOTH states are printed, because a bin with one state in it cannot answer the question.
+
+  arm      stance    steer  bin        state  n    runs  cap med   |ask| med  |rail| med  |bank| med  |yaw| med  |rollRate| med  radius med
+   s16-s0      tall      0    3.2–3.3    off    6     1     0.00       0.00       42.93       20.24       22.9           145.9        8.0
+   s16-s0      tall      0    3.2–3.3     on    5     1    13.02       0.00       59.06       42.69        2.2           136.7       84.8
+   s16-s0      tall      0    3.3–3.4    off    6     1     0.00       0.00       25.77        6.20       39.8           111.4        4.7
+   s16-s0      tall      0    3.3–3.4     on    2     1    13.88       0.00       53.89       33.93       11.4            76.6       16.6
+   s16-s0      tall      0    3.4–3.5    off    6     2     0.00       0.00       20.37        7.86       30.8            62.6        6.5
+   s16-s0      tall      0    3.4–3.5     on   14     6    14.94       0.00       57.35       36.95        6.2            84.6       31.5
+   s16-s0      tall      0    3.5–3.6    off   12     3     0.00       0.00       15.75        2.64        5.9            59.1       33.9
+   s16-s0      tall      0    3.5–3.6     on   29     6    15.45       0.00       59.98       41.44        8.8           108.2       22.7
+   s16-s0      tall      0    3.6–3.7    off   24     6     0.00       0.00        3.61        0.65        2.8            55.5       74.3
+   s16-s0      tall      0    3.6–3.7     on   38     9    16.55       0.00       45.01       18.69       23.2            88.2        8.9
+   s16-s0      tall      0    3.7–3.8    off   14     6     0.00       0.00        7.46        2.51        7.9            59.5       26.8
+   s16-s0      tall      0    3.7–3.8     on   85    10    17.49       0.00       18.38        8.67        8.5            26.8       25.1
+   s16-s0      tall      0    3.8–3.9    off    6     5     0.00       0.00        8.90        2.99        2.5            89.4       86.8
+   s16-s0      tall      0    3.8–3.9     on   73    10    18.28       0.00        6.99        7.81       26.9            59.5        8.1
+   s16-s0      tall      0    3.9–4.0    off    5     5     0.00       0.00       10.60        3.36       15.5            97.9       14.5
+   s16-s0      tall      0    3.9–4.0     on   77    11    19.07       0.00        6.70        6.68       26.8            36.4        8.3
+   s16-s0    crouch      0    3.0–3.1    off    8     1     0.00       0.00        5.54        1.24        2.6            57.9       65.2
+   s16-s0    crouch      0    3.0–3.1     on    2     1    11.92       0.00       26.06       16.74       58.0            54.0        3.0
+   s16-s0    crouch      0    3.1–3.2    off    5     1     0.00       0.00       50.43       25.26       21.6            82.6        8.1
+   s16-s0    crouch      0    3.1–3.2     on    4     2    12.78       0.00       86.42       70.00       43.1            74.2        4.2
+   s16-s0    crouch      0    3.2–3.3    off    7     1     0.00       0.00       43.00       17.94       37.4            95.9        4.7
+   s16-s0    crouch      0    3.2–3.3     on   11     2    13.28       0.00       67.80       51.84        1.3           140.8      146.8
+   s16-s0    crouch      0    3.3–3.4    off    6     1     0.00       0.00       22.06        2.12       14.2            30.4       13.4
+   s16-s0    crouch      0    3.3–3.4     on   13     3    14.24       0.00       68.84       54.17        4.9           112.8       39.0
+   s16-s0    crouch      0    3.4–3.5    off    6     2     0.00       0.00       21.13        2.59       35.8            32.4        5.5
+   s16-s0    crouch      0    3.4–3.5     on   33     6    15.03       0.00       69.23       54.01        3.9           147.5       50.6
+   s16-s0    crouch      0    3.5–3.6    off   13     3     0.00       0.00        6.21        1.42        4.7            56.0       42.4
+   s16-s0    crouch      0    3.5–3.6     on   37     6    15.58       0.00       57.72       40.36        6.6           105.7       30.5
+   s16-s0    crouch      0    3.6–3.7    off   35     6     0.00       0.00        4.47        0.79        4.0            55.5       52.7
+   s16-s0    crouch      0    3.6–3.7     on   74     9    16.77       0.00        0.84        8.74        6.6             4.1       31.7
+   s16-s0    crouch      0    3.7–3.8    off   13     6     0.00       0.00        9.51        1.87       11.8            73.6       18.0
+   s16-s0    crouch      0    3.7–3.8     on   46    10    17.38       0.00        0.88        8.67       27.3             3.6        7.8
+   s16-s0    crouch      0    3.8–3.9    off   13     6     0.00       0.00       12.67        2.00       41.0            83.2        5.3
+   s16-s0    crouch      0    3.8–3.9     on   31    11    18.29       0.00       16.38        6.54       18.7            27.2       11.7
+   s16-s0    crouch      0    3.9–4.0    off    9     5     0.00       0.00       14.27        1.55       54.7            86.2        4.1
+   s16-s0    crouch      0    3.9–4.0     on   41    10    19.29       0.00        3.07        5.90       14.3            34.2       15.8
+   s16-s0  compress      0    3.5–3.6    off   11     3     0.00       0.00        5.34        1.11        4.7            56.0       42.4
+   s16-s0  compress      0    3.5–3.6     on    2     1    15.12       0.00       56.65       36.21       55.3           113.2        3.6
+   s16-s0  compress      0    3.6–3.7    off   40     6     0.00       0.00        5.29        1.08        4.0            55.7       52.6
+   s16-s0  compress      0    3.6–3.7     on   48     5    16.89       0.00        0.77        8.72        5.0             3.6       42.1
+   s16-s0  compress      0    3.7–3.8    off   14     6     0.00       0.00       11.75        1.90       29.4            87.0        7.2
+   s16-s0  compress      0    3.7–3.8     on   58     9    17.43       0.00        0.98        8.57       20.6             5.4       10.4
+   s16-s0  compress      0    3.8–3.9    off    7     5     0.00       0.00       11.64        2.01       40.1            96.2        5.5
+   s16-s0  compress      0    3.8–3.9     on   61    10    18.06       0.00       51.72       29.36       20.7            93.5       10.5
+   s16-s0  compress      0    3.9–4.0    off   13     5     0.00       0.00       14.77        1.89       54.5            79.3        4.1
+   s16-s0  compress      0    3.9–4.0     on   44    10    19.61       0.00        4.10        6.76       13.2            27.3       17.2
+   s16-s1      tall      1    3.4–3.5    off    6     2     0.00       0.00       20.37        7.86       30.8            62.6        6.5
+   s16-s1      tall      1    3.4–3.5     on    2     1    14.49      13.47       21.21        5.01       61.0           167.0        3.2
+   s16-s1      tall      1    3.5–3.6    off   12     3     0.00       0.00       15.75        2.64        5.9            59.1       33.9
+   s16-s1      tall      1    3.5–3.6     on    7     4    15.37      14.50       19.75        5.64       37.3           160.0        5.4
+   s16-s1      tall      1    3.6–3.7    off   24     6     0.00       0.00        3.61        0.65        2.8            55.5       74.3
+   s16-s1      tall      1    3.6–3.7     on   21     9    16.71      13.59       11.90        5.95       39.1           126.2        5.3
+   s16-s1      tall      1    3.7–3.8    off   14     6     0.00       0.00        7.46        2.51        7.9            59.5       26.8
+   s16-s1      tall      1    3.7–3.8     on   42     8    17.39       9.36        1.64        8.98       11.0            13.8       19.4
+   s16-s1      tall      1    3.8–3.9    off    6     5     0.00       0.00        8.90        2.99        2.5            89.4       86.8
+   s16-s1      tall      1    3.8–3.9     on   12    10    17.79      14.55        1.85        8.81       63.6            36.0        3.4
+   s16-s1      tall      1    3.9–4.0    off    5     5     0.00       0.00       10.60        3.36       15.5            97.9       14.5
+   s16-s1      tall      1    3.9–4.0     on    7     7    18.97      12.70       22.76        3.81       63.4            67.4        3.5
+   s16-s1    crouch      1    3.1–3.2    off    5     1     0.00       0.00       50.43       25.26       21.6            82.6        8.1
+   s16-s1    crouch      1    3.1–3.2     on    4     1    12.79      13.20       86.14       70.00       21.8            21.1        8.3
+   s16-s1    crouch      1    3.2–3.3    off    7     1     0.00       0.00       43.00       17.94       37.4            95.9        4.7
+   s16-s1    crouch      1    3.2–3.3     on    6     1    13.31      13.33       82.21       68.07       12.7           192.6       14.6
+   s16-s1    crouch      1    3.3–3.4    off    6     1     0.00       0.00       22.06        2.12       14.2            30.4       13.4
+   s16-s1    crouch      1    3.3–3.4     on    6     1    13.81      14.11       59.24       39.40       19.3            99.6        9.8
+   s16-s1    crouch      1    3.4–3.5    off    6     2     0.00       0.00       21.13        2.59       35.8            32.4        5.5
+   s16-s1    crouch      1    3.4–3.5     on    4     1    13.62      15.15       53.03       29.00       49.7           110.8        3.8
+   s16-s1    crouch      1    3.5–3.6    off   13     3     0.00       0.00        6.21        1.42        4.7            56.0       42.4
+   s16-s1    crouch      1    3.5–3.6     on    1     1    13.78      16.78       47.36       22.31       48.6           120.6        3.9
+   s16-s1    crouch      1    3.6–3.7    off   35     6     0.00       0.00        4.47        0.79        4.0            55.5       52.7
+   s16-s1    crouch      1    3.6–3.7     on   34     5    16.85       8.02        1.64        9.29       11.2            20.8       18.7
+   s16-s1    crouch      1    3.7–3.8    off   13     6     0.00       0.00        9.51        1.87       11.8            73.6       18.0
+   s16-s1    crouch      1    3.7–3.8     on   21     5    17.19       8.02        0.39        8.72       11.2            20.7       18.9
+   s16-s1    crouch      1    3.8–3.9    off   13     6     0.00       0.00       12.67        2.00       41.0            83.2        5.3
+   s16-s1    crouch      1    3.8–3.9     on   10     6    17.86      10.78       17.78        4.72       19.6            98.1       11.0
+   s16-s1    crouch      1    3.9–4.0    off    9     5     0.00       0.00       14.27        1.55       54.7            86.2        4.1
+   s16-s1    crouch      1    3.9–4.0     on   20    10    19.40      11.11       14.61        6.85       28.8            49.7        7.8
+   s16-s1  compress      1    3.5–3.6    off   11     3     0.00       0.00        5.34        1.11        4.7            56.0       42.4
+   s16-s1  compress      1    3.5–3.6     on    8     1    15.65      14.89       63.46       45.82       31.0           146.7        6.5
+   s16-s1  compress      1    3.6–3.7    off   40     6     0.00       0.00        5.29        1.08        4.0            55.7       52.6
+   s16-s1  compress      1    3.6–3.7     on   40     9    16.83       9.36        1.66        9.00       11.0            23.4       19.1
+   s16-s1  compress      1    3.7–3.8    off   14     6     0.00       0.00       11.75        1.90       29.4            87.0        7.2
+   s16-s1  compress      1    3.7–3.8     on   23     8    17.28       9.36        1.12        8.81       13.1            23.4       16.2
+   s16-s1  compress      1    3.8–3.9    off    7     5     0.00       0.00       11.64        2.01       40.1            96.2        5.5
+   s16-s1  compress      1    3.8–3.9     on   10     9    17.60      13.54       19.90        8.21       55.1            54.2        3.9
+   s16-s1  compress      1    3.9–4.0    off   13     5     0.00       0.00       14.77        1.89       54.5            79.3        4.1
+   s16-s1  compress      1    3.9–4.0     on   16    10    19.31      13.47        1.58        6.60       57.9            40.6        3.9
+   f73-s0      tall      0    3.0–3.1    off    4     3     0.00       0.00       16.42        4.62       18.2            10.2        9.5
+   f73-s0      tall      0    3.0–3.1     on   20    11    11.95       0.00        4.88        2.66        6.9            12.4       25.4
+   f73-s0      tall      0    3.1–3.2    off    6     3     0.00       0.00        8.30        2.76       24.2            22.3        7.4
+   f73-s0      tall      0    3.1–3.2     on   18    11    12.52       0.00        4.70        2.68        8.5            12.2       21.2
+   f73-s0      tall      0    3.2–3.3    off   12     3     0.00       0.00        3.43        1.19        4.2            27.1       43.9
+   f73-s0      tall      0    3.2–3.3     on   18    11    13.34       0.00        6.93        2.31       28.1            18.9        6.6
+   f73-s0      tall      0    3.3–3.4    off    8     3     0.00       0.00        8.91        1.81       31.4            30.9        6.1
+   f73-s0      tall      0    3.3–3.4     on   18    11    14.13       0.00        2.98        2.77        9.7            17.2       19.8
+   f73-s0      tall      0    3.4–3.5    off   13     3     0.00       0.00       12.95        2.41       28.6            22.3        6.9
+   f73-s0      tall      0    3.4–3.5     on   19    11    15.02       0.00        8.56        2.57       28.7            19.0        6.9
+   f73-s0      tall      0    3.5–3.6    off   10     3     0.00       0.00       14.43        4.14       49.0             7.2        4.1
+   f73-s0      tall      0    3.5–3.6     on   26    11    15.90       0.00        4.44        3.00       21.2            11.2        9.6
+   f73-s0      tall      0    3.6–3.7    off    5     2     0.00       0.00        2.61        0.66        4.7            25.7       44.3
+   f73-s0      tall      0    3.6–3.7     on   54    11    16.86       0.00        9.58        6.20       17.6            15.7       11.9
+   f73-s0      tall      0    3.7–3.8    off   15     2     0.00       0.00        3.32        1.09        5.6            26.0       38.2
+   f73-s0      tall      0    3.7–3.8     on   19    11    17.73       0.00        2.39        2.40       13.3            11.1       16.2
+   f73-s0      tall      0    3.8–3.9    off   52     6     0.00       0.00        3.29        1.07        5.7            25.8       38.8
+   f73-s0      tall      0    3.8–3.9     on   37    11    18.71       0.00        1.01        3.32       10.1             1.1       22.0
+   f73-s0      tall      0    3.9–4.0    off   44     6     0.00       0.00        7.54        1.54       26.4            38.0        8.6
+   f73-s0      tall      0    3.9–4.0     on   74    11    19.51       0.00        1.17        3.48        8.3             2.4       27.2
+   f73-s0    crouch      0    3.0–3.1    off    3     2     0.00       0.00       30.51       14.89      148.6            86.4        1.1
+   f73-s0    crouch      0    3.0–3.1     on   15    12    11.62       0.00        7.91        1.73       33.9            20.1        5.1
+   f73-s0    crouch      0    3.1–3.2    off   16     1     0.00       0.00        5.84        0.53       23.3            27.9        7.7
+   f73-s0    crouch      0    3.1–3.2     on   30     7    12.63       0.00       11.06       23.50       13.1           149.4       13.8
+   f73-s0    crouch      0    3.2–3.3    off    5     1     0.00       0.00        1.72        0.22        1.6            25.7      117.7
+   f73-s0    crouch      0    3.2–3.3     on   12     8    13.43       0.00        3.44        1.63        7.1            50.8       26.1
+   f73-s0    crouch      0    3.3–3.4    off    3     1     0.00       0.00        4.81        1.90      123.7            75.1        1.1
+   f73-s0    crouch      0    3.3–3.4     on   23    10    13.81       0.00        3.16        3.30        7.2            53.8       26.2
+   f73-s0    crouch      0    3.4–3.5    off    4     1     0.00       0.00        9.98        3.92       37.6            38.3        5.1
+   f73-s0    crouch      0    3.4–3.5     on   31    12    14.49       0.00        7.18        1.76       20.8            87.3        9.3
+   f73-s0    crouch      0    3.5–3.6    off    7     2     0.00       0.00        4.28        1.78       21.7            35.5        9.4
+   f73-s0    crouch      0    3.5–3.6     on   24    13    15.58       0.00        4.49        1.87       22.4            62.3        9.0
+   f73-s0    crouch      0    3.6–3.7    off   19     3     0.00       0.00        5.61        0.61       22.1            26.9        9.4
+   f73-s0    crouch      0    3.6–3.7     on   31    13    16.46       0.00        3.76        1.94       42.0            40.8        4.9
+   f73-s0    crouch      0    3.7–3.8    off   73     7     0.00       0.00        5.54        0.61       21.2            25.9       10.1
+   f73-s0    crouch      0    3.7–3.8     on   46    13    17.58       0.00        0.29        3.77        9.1             0.7       23.6
+   f73-s0    crouch      0    3.8–3.9    off   33     7     0.00       0.00        2.10        0.20        3.5            24.7       62.7
+   f73-s0    crouch      0    3.8–3.9     on   56    13    18.44       0.00        0.36        3.41        7.3             2.5       30.0
+   f73-s0    crouch      0    3.9–4.0    off   17     6     0.00       0.00        6.88        1.15       39.2            15.6        5.7
+   f73-s0    crouch      0    3.9–4.0     on   33    12    19.37       0.00        0.78        2.84        5.6             2.6       40.5
+   f73-s0  compress      0    3.0–3.1    off    9     5     0.00       0.00       11.99        7.40       24.0            57.7        6.6
+   f73-s0  compress      0    3.0–3.1     on    7     7    11.90       0.00        5.66        1.23       13.4            11.3       13.0
+   f73-s0  compress      0    3.1–3.2    off   20     2     0.00       0.00        7.57        0.78       21.1            27.9        8.6
+   f73-s0  compress      0    3.1–3.2     on   10     8    12.65       0.00        5.61        1.24       15.8            17.6       11.4
+   f73-s0  compress      0    3.2–3.3    off   11     3     0.00       0.00        9.91        2.47       16.6            25.7       11.1
+   f73-s0  compress      0    3.2–3.3     on    8     7    13.53       0.00        4.99        1.18       15.3            22.2       12.2
+   f73-s0  compress      0    3.3–3.4    off    6     4     0.00       0.00       10.95        8.87       60.8            50.3        3.1
+   f73-s0  compress      0    3.3–3.4     on   15     9    14.01       0.00        4.45        7.48       13.3            38.1       14.3
+   f73-s0  compress      0    3.4–3.5    off   15     6     0.00       0.00       12.20        5.55       61.6            51.2        3.1
+   f73-s0  compress      0    3.4–3.5     on    8     7    15.11       0.00        4.03        1.25       11.9            25.0       16.6
+   f73-s0  compress      0    3.5–3.6    off   16     5     0.00       0.00       10.09        3.37       34.7            52.6        5.5
+   f73-s0  compress      0    3.5–3.6     on   16     9    15.58       0.00        3.56        1.27       35.7            23.2        5.6
+   f73-s0  compress      0    3.6–3.7    off   29     4     0.00       0.00        8.23        0.33       21.5            23.9        9.7
+   f73-s0  compress      0    3.6–3.7     on   21     9    16.41       0.00        4.54        1.27       10.0            20.2       20.7
+   f73-s0  compress      0    3.7–3.8    off   77     6     0.00       0.00        7.58        0.45       12.4            23.2       17.3
+   f73-s0  compress      0    3.7–3.8     on   34     9    17.83       0.00        0.32        3.62        8.3             0.9       26.1
+   f73-s0  compress      0    3.8–3.9    off   66     6     0.00       0.00        7.27        0.60       26.3            24.7        8.3
+   f73-s0  compress      0    3.8–3.9     on   80     9    18.55       0.00        0.49        3.17        6.8             2.0       32.5
+   f73-s0  compress      0    3.9–4.0    off   29     5     0.00       0.00        9.38        3.44       45.1            43.5        5.0
+   f73-s0  compress      0    3.9–4.0     on   58     9    19.23       0.00        2.21        2.88        1.7             6.6      133.8
+   f73-s1      tall      1    3.1–3.2    off   14     4     0.00       0.18       27.02       27.21      126.8           171.4        1.4
+   f73-s1      tall      1    3.1–3.2     on    3     3    11.42      14.53        1.85       16.64       62.2           114.9        2.7
+   f73-s1      tall      1    3.2–3.3    off   13     4     0.00       0.00        3.43        1.19        4.2            27.1       43.9
+   f73-s1      tall      1    3.2–3.3     on    3     3    12.25      15.41        3.90       13.73       96.1           105.9        1.8
+   f73-s1      tall      1    3.3–3.4    off    9     4     0.00       0.00        8.91        1.81       31.4            30.9        6.1
+   f73-s1      tall      1    3.3–3.4     on    1     1    11.54      13.75        4.00        6.83      178.2            61.9        1.0
+   f73-s1      tall      1    3.4–3.5    off   16     4     0.00       0.00       13.95        2.73       35.7            33.1        5.5
+   f73-s1      tall      1    3.4–3.5     on   13     6    13.67      16.37        7.79        1.47       36.1           185.8        5.2
+   f73-s1      tall      1    3.5–3.6    off   10     3     0.00       0.00       14.43        4.14       49.0             7.2        4.1
+   f73-s1      tall      1    3.5–3.6     on   11     5    15.82      17.86       14.59        1.02       32.3           148.8        6.3
+   f73-s1      tall      1    3.6–3.7    off    6     3     0.00       0.00        9.87        1.39        4.7            26.0       44.3
+   f73-s1      tall      1    3.6–3.7     on    1     1    16.49      18.59       16.64        0.50       21.5           147.5        9.6
+   f73-s1      tall      1    3.7–3.8    off   16     3     0.00       0.00        3.91        1.28        5.6            26.2       38.2
+   f73-s1      tall      1    3.7–3.8     on    6     6    17.21      19.26       18.56        0.94       49.9           111.7        4.2
+   f73-s1      tall      1    3.8–3.9    off   53     6     0.00       0.00        3.29        1.07        5.7            25.8       38.8
+   f73-s1      tall      1    3.8–3.9     on   35     8    18.50      14.12        5.57        2.42       20.3            57.4       10.9
+   f73-s1      tall      1    3.9–4.0    off   44     6     0.00       0.00        7.54        1.54       26.4            38.0        8.6
+   f73-s1      tall      1    3.9–4.0     on   48    10    19.18      12.03        1.84        3.89       27.6            17.6        8.1
+   f73-s1    crouch      1    3.0–3.1    off    5     4     0.00       0.00       13.42       15.20       81.7           107.1        2.1
+   f73-s1    crouch      1    3.0–3.1     on    8     4    11.80      12.93        9.65       23.57       47.3           199.5        3.7
+   f73-s1    crouch      1    3.1–3.2    off   18     3     0.00       0.00        6.59        0.62       30.9            34.8        5.8
+   f73-s1    crouch      1    3.1–3.2     on    8     6    12.04      13.24        2.80       19.42       34.0           189.4        5.2
+   f73-s1    crouch      1    3.2–3.3    off    6     2     0.00       0.00        8.89        0.50       10.5            26.5       17.5
+   f73-s1    crouch      1    3.2–3.3     on    7     5    12.68      13.81        0.70       17.11       51.4           179.7        3.5
+   f73-s1    crouch      1    3.3–3.4    off    6     3     0.00       0.44       21.63       29.10      146.9            75.1        1.3
+   f73-s1    crouch      1    3.3–3.4     on    3     3    13.34      12.65       21.73       28.71      147.1           236.2        1.3
+   f73-s1    crouch      1    3.4–3.5    off    6     3     0.00       0.00       18.09        4.97       89.6            47.2        2.1
+   f73-s1    crouch      1    3.4–3.5     on    1     1    11.26      11.44        6.70       13.02       71.0           179.1        2.4
+   f73-s1    crouch      1    3.5–3.6    off    9     4     0.00       0.00        7.90        5.90       26.1            56.9        7.9
+   f73-s1    crouch      1    3.5–3.6     on    7     5    13.18      14.04        3.73       14.49       72.4           181.4        2.5
+   f73-s1    crouch      1    3.6–3.7    off   21     5     0.00       0.00        6.29        0.63       31.0            27.8        6.7
+   f73-s1    crouch      1    3.6–3.7     on    4     2    17.05      16.94       47.92       37.62      240.1           226.3        0.9
+   f73-s1    crouch      1    3.7–3.8    off   83     7     0.00       0.00        6.23        0.63       22.1            26.8        9.7
+   f73-s1    crouch      1    3.7–3.8     on   17     7    17.69      13.37        1.93        4.87       41.1            31.8        5.2
+   f73-s1    crouch      1    3.8–3.9    off   33     7     0.00       0.00        2.10        0.20        3.5            24.7       62.7
+   f73-s1    crouch      1    3.8–3.9     on   45     9    18.10      14.21        1.77        4.60       40.9            29.8        5.3
+   f73-s1    crouch      1    3.9–4.0    off   17     6     0.00       0.00        6.88        1.15       39.2            15.6        5.7
+   f73-s1    crouch      1    3.9–4.0     on   27     7    18.92      15.83        0.46        3.97       76.4            24.1        2.9
+   f73-s1  compress      1    3.0–3.1    off    8     5     0.00       0.00       16.19       12.79       58.4            95.9        2.7
+   f73-s1  compress      1    3.0–3.1     on    2     2    10.08      15.13       21.52       33.02       47.8           264.9        3.4
+   f73-s1  compress      1    3.1–3.2    off   22     3     0.00       0.00        8.29        0.83       23.9            32.6        7.5
+   f73-s1  compress      1    3.1–3.2     on    1     1     4.58       9.10        1.75       14.06      157.9           177.5        0.7
+   f73-s1  compress      1    3.2–3.3    off   10     3     0.00       0.00       10.08        3.06       22.7            25.7        8.1
+   f73-s1  compress      1    3.2–3.3     on    1     1    10.48      12.80       17.93       30.15       10.3           199.5       16.0
+   f73-s1  compress      1    3.3–3.4    off    7     5     0.00       0.00       10.95        8.87       60.8            50.3        3.1
+   f73-s1  compress      1    3.3–3.4     on    2     2    14.59      16.47        5.81       14.61       10.9           258.7       17.8
+   f73-s1  compress      1    3.4–3.5    off   16     6     0.00       0.00       13.26        5.83       65.2            51.9        3.0
+   f73-s1  compress      1    3.4–3.5     on    6     3    14.76      12.84        4.34       13.41       19.5           205.9       10.0
+   f73-s1  compress      1    3.5–3.6    off   17     5     0.00       0.00       10.45        3.37       34.7            52.4        5.6
+   f73-s1  compress      1    3.5–3.6     on   10     6    15.16      20.98       67.73       58.51       57.7           195.1        3.4
+   f73-s1  compress      1    3.6–3.7    off   31     5     0.00       0.00        8.31        0.34       22.0            23.9        9.4
+   f73-s1  compress      1    3.6–3.7     on    8     6    16.50      19.53       73.09       64.22       34.0           207.6        6.1
+   f73-s1  compress      1    3.7–3.8    off   77     6     0.00       0.00        7.58        0.45       12.4            23.2       17.3
+   f73-s1  compress      1    3.7–3.8     on   22     7    17.16      17.59        9.99       13.37       21.1           148.6       10.0
+   f73-s1  compress      1    3.8–3.9    off   66     6     0.00       0.00        7.27        0.60       26.3            24.7        8.3
+   f73-s1  compress      1    3.8–3.9     on   42     6    18.21      12.03        1.77        4.60        9.0            25.7       24.3
+   f73-s1  compress      1    3.9–4.0    off   29     5     0.00       0.00        9.38        3.44       45.1            43.5        5.0
+   f73-s1  compress      1    3.9–4.0     on   29     9    19.16      15.70        2.17        7.28       25.7            78.4        8.7
+
+  `cap med` is signed (it is 0 by construction off the plane); every other angle column is the median of its own
+  magnitude, °, °/s for the rates; `radius` is the bin's median speed through the water over its median yaw
+  rate, m — the turn the board is actually carving, not the one the cap was built on.
+
+## §6 The real Canyon sea — how much of an actual ride sits in the band, and in which state
+
+  `3.5/foam.ts`'s `MODE=ride` rig on the owner's own spot: the real Canyon sea as `?canyonWaves=true` builds
+  it (`canyonBed: 'b'`, stage 2, CPU, 1/60 s), each rider placed where the corridor's foam toe crosses the
+  ride line, `?rider=new&feltFrame=deck&riderBody=two`. **The rig's stick is never touched** (`rd.steer = 0`),
+  so this section is the OCCUPANCY of the band and not a steering test. Live frames only, cut at the first
+  `attached == 0`, and the five columns it reads are step 3.5f's own read-only addition to that file.
+
+  stance    entry  riders  live   through<3     3–4 band      on      off     through≥4     planed  lost the plane
+  compress      2       4    182    182 100.0 %     0   0.0 %      0      0      0   0.0 %     0/4  0/4
+  compress      5       4    248     76  30.6 %    20   8.1 %     20      0    152  61.3 %     4/4  2/4
+    crouch      2       4    172    172 100.0 %     0   0.0 %      0      0      0   0.0 %     0/4  0/4
+    crouch      5       4    247    108  43.7 %    20   8.1 %     20      0    119  48.2 %     4/4  2/4
+      tall      2       4    187    187 100.0 %     0   0.0 %      0      0      0   0.0 %     0/4  0/4
+      tall      5       4    255     76  29.8 %    26  10.2 %     26      0    153  60.0 %     4/4  2/4
+
+  `planed` is the riders that ever had `planingNow == 1`; `lost the plane` the riders that had it and then did
+  not, while still attached. `through<3` is the always-off region — the ask cap is exactly 0 on every one of
+  those frames, whatever the history is.
+
+# end

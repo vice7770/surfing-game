@@ -1,0 +1,51 @@
+# step-bench.ts (CPU, 64 components, 300 steps after spin-up, this M1, load 1.4–2.6): each change on its own, run in turn, twice.
+canyon medium (old): 240 × 451 = 108240 cells, 64 components; spun up in 24.2 s
+step (1/30 s), 300 steps: p50 48.57 ms, mean 62.46 ms, p95 92.85 ms; 0.449 µs a cell (p50)
+load 1.67 1.57 3.45
+canyon medium (today): 260 × 451 = 117260 cells, 64 components; spun up in 26.6 s
+step (1/30 s), 300 steps: p50 53.54 ms, mean 74.15 ms, p95 100.95 ms; 0.457 µs a cell (p50)
+load 1.62 1.56 3.33
+canyon big (old): 240 × 451 = 108240 cells, 64 components; spun up in 56.8 s
+step (1/30 s), 300 steps: p50 50.24 ms, mean 58.82 ms, p95 96.49 ms; 0.464 µs a cell (p50)
+load 2.36 1.73 3.24
+canyon big (today): 260 × 451 = 117260 cells, 64 components; spun up in 62.5 s
+step (1/30 s), 300 steps: p50 101.96 ms, mean 84.70 ms, p95 102.63 ms; 0.869 µs a cell (p50)
+load 1.64 1.67 3.07
+canyon medium (old): 240 × 451 = 108240 cells, 64 components; spun up in 24.3 s
+step (1/30 s), 300 steps: p50 47.94 ms, mean 61.89 ms, p95 91.76 ms; 0.443 µs a cell (p50)
+load 1.63 1.66 2.99
+canyon medium (today): 260 × 451 = 117260 cells, 64 components; spun up in 26.7 s
+step (1/30 s), 300 steps: p50 53.43 ms, mean 74.09 ms, p95 100.84 ms; 0.456 µs a cell (p50)
+load 2.56 1.93 3.02
+canyon big (old): 240 × 451 = 108240 cells, 64 components; spun up in 56.7 s
+step (1/30 s), 300 steps: p50 50.15 ms, mean 58.72 ms, p95 96.27 ms; 0.463 µs a cell (p50)
+load 1.61 1.78 2.86
+canyon big (today): 260 × 451 = 117260 cells, 64 components; spun up in 62.6 s
+step (1/30 s), 300 steps: p50 102.17 ms, mean 84.94 ms, p95 102.88 ms; 0.871 µs a cell (p50)
+load 1.38 1.67 2.71
+
+canyon big (old): 240 × 451 = 108240 cells, 64 components; spun up in 56.3 s
+step (1/30 s), 300 steps: p50 49.76 ms, mean 58.28 ms, p95 95.52 ms; 0.460 µs a cell (p50)
+canyon big (today, tube off): 260 × 451 = 117260 cells, 64 components; spun up in 61.3 s
+step (1/30 s), 300 steps: p50 100.65 ms, mean 83.30 ms, p95 101.08 ms; 0.858 µs a cell (p50)
+canyon big (today ageJoin=0,alongShore=240): 240 × 451 = 108240 cells, 64 components; spun up in 56.4 s
+step (1/30 s), 300 steps: p50 49.92 ms, mean 58.24 ms, p95 94.51 ms; 0.461 µs a cell (p50)
+canyon big (today): 260 × 451 = 117260 cells, 64 components; spun up in 62.2 s
+step (1/30 s), 300 steps: p50 101.49 ms, mean 84.31 ms, p95 102.15 ms; 0.866 µs a cell (p50)
+canyon big (old): 240 × 451 = 108240 cells, 64 components; spun up in 56.3 s
+step (1/30 s), 300 steps: p50 49.79 ms, mean 58.30 ms, p95 95.59 ms; 0.460 µs a cell (p50)
+canyon big (today, tube off): 260 × 451 = 117260 cells, 64 components; spun up in 62.2 s
+step (1/30 s), 300 steps: p50 101.29 ms, mean 84.68 ms, p95 103.34 ms; 0.864 µs a cell (p50)
+canyon big (today ageJoin=0,alongShore=240): 240 × 451 = 108240 cells, 64 components; spun up in 56.4 s
+step (1/30 s), 300 steps: p50 49.93 ms, mean 58.22 ms, p95 94.58 ms; 0.461 µs a cell (p50)
+canyon big (today): 260 × 451 = 117260 cells, 64 components; spun up in 62.7 s
+step (1/30 s), 300 steps: p50 101.97 ms, mean 85.40 ms, p95 109.64 ms; 0.870 µs a cell (p50)
+canyon medium (today, tube off): 260 × 451 = 117260 cells, 64 components; spun up in 26.7 s
+step (1/30 s), 300 steps: p50 52.63 ms, mean 73.67 ms, p95 100.91 ms; 0.449 µs a cell (p50)
+canyon medium (old): 240 × 451 = 108240 cells, 64 components; spun up in 24.4 s
+step (1/30 s), 300 steps: p50 47.89 ms, mean 61.87 ms, p95 91.68 ms; 0.442 µs a cell (p50)
+
+# substeps.ts: the steps the solver splits, and which limit splits them (Big, 300 steps, no tube)
+canyon big ageJoin=0: 67 of 300 steps split (67 by the eddy viscosity); dt over the advective limit p50 0.83, p95 0.85, max 0.85
+canyon big ageJoin=0.35: 157 of 300 steps split (157 by the eddy viscosity); dt over the advective limit p50 0.83, p95 0.86, max 0.99
+canyon big today (0.5): 191 of 300 steps split (191 by the eddy viscosity); dt over the advective limit p50 0.83, p95 0.87, max 0.97

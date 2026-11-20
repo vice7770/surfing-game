@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
-import { POOL, POOL_EDGE_HEIGHT, poolCrestZ, poolDepth, poolNormalShare, poolRiddenAt, poolSea, poolTankLayout, poolTerraceZ, regularSignificantHeight } from './pool';
-import { SurfZoneSimulation, takeOffPoint, tankLayout } from './SurfZoneSimulation';
+import {
+  POOL_STRAIGHT, POOL_STRAIGHT_EDGE_HEIGHT, poolFloorOf, poolStraightAt, poolStraightBreakDepth, poolStraightCrestDepth, poolStraightDepth, poolStraightFrame,
+  poolStraightPlatformZ, poolStraightRiddenAt, POOL_LEDGE, poolStraightLedgeDepth, POOL_INSIDE, poolStraightInsideDepth,
+  POOL, POOL_BARREL, POOL_BARREL_EDGE_HEIGHT, POOL_BARREL_FACES, POOL_EDGE_HEIGHT, poolBarrelBreakDepth, poolBarrelCrestDepth, poolBarrelDepth, poolBarrelGradient,
+  poolBarrelPlatformZ, poolBarrelRiddenAt, poolCrestZ, poolDeckZ, poolDepth, poolNormalShare, poolRampFootZ, poolRiddenAt, poolSea, poolSpot, poolTankLayout, poolTerraceZ,
+  regularSignificantHeight,
+} from './pool';
+import { RIDE_LINEUP_OFFSET, SurfZoneSimulation, rideLineupOffset, surfZoneSea, takeOffPoint, tankLayout } from './SurfZoneSimulation';
 
 describe('the Wave Pool (the movement-flow spec)', () => {
   it('is the same on both arms, so every wave peels both ways alike', () => {
@@ -57,5 +63,243 @@ describe('the Wave Pool (the movement-flow spec)', () => {
     expect(poolRiddenAt(-POOL.takeOffX)).toBe(false);
     expect(tankLayout(config).edgeDepth).toBe(POOL.feedDepth);
     expect(SurfZoneSimulation).toBeDefined();
+  });
+});
+
+describe('the Wave Pool’s Barrel A-frame (step 1, kept for A/B: `?poolBarrel=aframe`)', () => {
+  const barrel = {
+    spot: 'pool' as const, seed: 1, significantHeight: regularSignificantHeight(POOL_BARREL_EDGE_HEIGHT.small), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000, tide: 0,
+    poolWaves: 'barrel' as const, poolBarrel: 'aframe' as const,
+  };
+
+  it('barrels both arms alike, mirrored', () => {
+    for (const [x, z] of [[5, -240], [15, -200], [30, -175], [45, -140], [60, -100], [100, -60]]) {
+      expect(poolBarrelDepth(-x, z)).toBeCloseTo(poolBarrelDepth(x, z), 12);
+    }
+    expect(poolSpot('barrel', 'aframe').depthAt).toBe(poolBarrelDepth);
+    expect(poolSpot().depthAt).toBe(poolDepth);
+  });
+
+  it('runs the same machine: the feed, the zone and the ramp foot, with the plain feed at the zone’s inner edge', () => {
+    const training = poolTankLayout(30);
+    const layout = poolTankLayout(30, 'barrel');
+    expect({ ...layout, fineFrom: 0 }).toEqual({ ...training, fineFrom: 0 });
+    expect(layout.fineFrom).toBe(Math.min(training.fineFrom, poolBarrelPlatformZ() - 10));
+    expect(tankLayout(barrel)).toEqual({ ...layout, edgeDepth: POOL.feedDepth });
+    // No ridges run on seaward: the bed is the ramp alone there, the same at every x, and the feed at the ramp's foot.
+    for (const x of [0, 20, 45, 120]) {
+      expect(poolBarrelDepth(x, poolRampFootZ())).toBeCloseTo(POOL.feedDepth, 9);
+      expect(poolBarrelDepth(x, layout.zoneInner)).toBeCloseTo(POOL.feedDepth, 9);
+      expect(poolBarrelDepth(x, poolBarrelPlatformZ() - 10)).toBeCloseTo(poolBarrelDepth(140, poolBarrelPlatformZ() - 10), 9);
+    }
+  });
+
+  it('crosses a level platform to one steep face, its knee shoreward of the platform’s edge everywhere', () => {
+    const b = POOL_BARREL;
+    for (let x = 0; x <= POOL.alongShore / 2; x += 0.5) {
+      // Continuous at the platform's edge (no step), and level there.
+      expect(poolBarrelDepth(x, poolBarrelPlatformZ() + 1e-6)).toBeCloseTo(b.platformDepth, 6);
+      expect(poolBarrelDepth(x, poolBarrelPlatformZ() - 1e-6)).toBeCloseTo(b.platformDepth, 4);
+    }
+    // On the barrel section the face climbs at `gradient` square to the crest line, from the knee to the crest.
+    for (const x of [20, 27, 35, 45]) {
+      const crest = poolCrestZ(x, POOL_BARREL);
+      const normal = poolNormalShare(x, POOL_BARREL);
+      expect(poolBarrelDepth(x, crest)).toBeCloseTo(poolBarrelCrestDepth(x), 6);
+      // From |x| crestEase the crest shallows on to `outerCrestDepth` at the barrel section's end (keeping its break in order).
+      if (x >= b.crestEase) expect(poolBarrelCrestDepth(x)).toBeCloseTo(b.armCrestDepth + ((b.outerCrestDepth - b.armCrestDepth) * (x - b.crestEase)) / (b.armLength - b.crestEase), 9);
+      const rise = poolBarrelDepth(x, crest - 5 / normal) - poolBarrelDepth(x, crest - 10 / normal);
+      expect(-rise / 5).toBeCloseTo(b.gradient, 6);
+      expect(poolBarrelGradient(x)).toBeCloseTo(b.gradient, 9);
+    }
+    // At the tip, met square, the face is `tipGradient`.
+    expect(poolBarrelGradient(0)).toBeCloseTo(b.tipGradient, 9);
+    expect(poolBarrelDepth(0, POOL.apexZ)).toBeCloseTo(b.crestDepth, 6);
+    expect(poolBarrelDepth(0, POOL.apexZ - 10)).toBeCloseTo(b.crestDepth + 10 * b.tipGradient, 6);
+    // Its planform is its own (`POOL_BARREL`'s keys), the training's tip.
+    expect(poolCrestZ(0, POOL_BARREL)).toBe(POOL.apexZ);
+    expect(POOL_BARREL.apexZ).toBe(POOL.apexZ);
+  });
+
+  it('backs off past the barrel section into the platform, level across the open side edges', () => {
+    const b = POOL_BARREL;
+    expect(poolBarrelCrestDepth(b.armLength)).toBeCloseTo(b.outerCrestDepth, 9);
+    for (let x = b.crestEase + 1; x <= b.armLength; x += 1) expect(poolBarrelCrestDepth(x)).toBeLessThan(poolBarrelCrestDepth(x - 1));
+    expect(poolBarrelCrestDepth(b.armLength + b.taperWidth)).toBeCloseTo(b.platformDepth, 9);
+    for (let x = b.armLength + 1; x <= b.armLength + b.taperWidth; x += 1) expect(poolBarrelCrestDepth(x)).toBeGreaterThan(poolBarrelCrestDepth(x - 1));
+    // Past the back-off: the platform from its edge to the beach face, the same at every x out to the edges.
+    const edge = POOL.alongShore / 2;
+    // (The beach face's toe lies at platformDepth / shoreSlope from the waterline: 36 m at 4.5 m.)
+    for (const z of [poolBarrelPlatformZ() + 1, -150, -60, -b.platformDepth / POOL.shoreSlope - 1]) {
+      expect(poolBarrelDepth(edge, z)).toBeCloseTo(b.platformDepth, 9);
+      expect(poolBarrelDepth(b.armLength + b.taperWidth + 1, z)).toBeCloseTo(b.platformDepth, 9);
+      expect(poolBarrelDepth(edge - 3, z)).toBeCloseTo(poolBarrelDepth(edge, z), 9);
+    }
+    // The lagoon inside the finger, then the training's beach face and deck.
+    expect(poolBarrelDepth(0, -100)).toBeCloseTo(b.lagoonDepth, 9);
+    expect(poolBarrelDepth(0, 0)).toBeCloseTo(0, 9);
+    expect(poolBarrelDepth(0, poolDeckZ() + 5)).toBeCloseTo(-POOL.deck, 9);
+  });
+
+  it('gates its breaking age along the crests, as the Canyon does; the training floor keeps rule A', () => {
+    const layout = (config: Parameters<typeof tankLayout>[0]) => (new SurfZoneSimulation({ ...config, componentCount: 1, spinUpPeriods: 0 } as never, 'warm').solver as unknown as { deviceLayout(): { breaking?: { diagonalJoin?: number } } }).deviceLayout().breaking?.diagonalJoin;
+    expect(layout(barrel)).toBe(POOL_BARREL.ageJoin);
+    expect(layout({ ...barrel, poolAgeJoin: 0 }) ?? 0).toBe(0);
+    const { poolWaves: _, ...training } = barrel;
+    expect(layout({ ...training, poolAgeJoin: 0.5 }) ?? 0).toBe(0);
+  });
+
+  it("reads its take-off as plunging, from its bed's steepest slope (its arm's along +z would call it spilling)", () => {
+    const sim = new SurfZoneSimulation({ ...barrel, componentCount: 1, spinUpPeriods: 0 } as never, 'warm');
+    expect(sim.iribarren().type).toBe('plunging');
+    expect(sim.iribarren().value).toBeGreaterThan(0.6);
+  });
+
+  it('waits on the right arm’s barrel section, where its first breaks are', () => {
+    const takeOff = takeOffPoint(barrel);
+    expect(takeOff.x).toBeCloseTo(POOL_BARREL.takeOffX, 6);
+    expect(poolBarrelDepth(takeOff.x, takeOff.z)).toBeCloseTo(poolBarrelBreakDepth(POOL_BARREL_EDGE_HEIGHT.small), 1);
+    expect(takeOff.z).toBeLessThan(poolCrestZ(POOL.takeOffX, POOL_BARREL));
+    expect(poolBarrelRiddenAt(POOL_BARREL.takeOffX)).toBe(true);
+    expect(poolBarrelRiddenAt(-POOL_BARREL.takeOffX)).toBe(false);
+    // Riders start nearer the break than at the other spots: the face along +z is steep there.
+    expect(rideLineupOffset(barrel)).toBe(POOL_BARREL.startOut);
+    const { poolWaves: _, ...training } = barrel;
+    expect(rideLineupOffset(training)).toBe(RIDE_LINEUP_OFFSET);
+    expect(POOL_BARREL_EDGE_HEIGHT.small).toBeLessThan(POOL_BARREL_EDGE_HEIGHT.big);
+    expect(POOL_BARREL_FACES).toEqual({ small: 1.5, big: 1.8 });
+  });
+});
+
+describe('the Wave Pool’s Barrel straight reef (pool-barrel-straight, 2026-11-01)', () => {
+  const straight = {
+    spot: 'pool' as const, seed: 1, significantHeight: regularSignificantHeight(POOL_STRAIGHT_EDGE_HEIGHT.small), peakPeriod: POOL.period, directionDegrees: 0, spreading: 1000, tide: 0,
+    poolWaves: 'barrel' as const,
+  };
+
+  it("is the Barrel's default floor; the A-frame is the A/B; Training is untouched", () => {
+    expect(poolFloorOf(straight)).toBe('straight');
+    expect(poolFloorOf({ ...straight, poolBarrel: 'aframe' })).toBe('aframe');
+    expect(poolFloorOf({ poolWaves: 'training', poolBarrel: 'aframe' })).toBe('training');
+    expect(poolFloorOf({})).toBe('training');
+    expect(poolSpot('barrel').depthAt).toBe(poolStraightDepth);
+    expect(poolSpot('training', 'aframe').depthAt).toBe(poolDepth);
+  });
+
+  it('wraps its sides: the columns at the walls are the same plain ramp, platform and beach', () => {
+    const edge = POOL.alongShore / 2;
+    for (let z = -330; z <= 5; z += 1) {
+      expect(poolStraightDepth(-edge, z)).toBeCloseTo(poolStraightDepth(edge, z), 12);
+      expect(poolStraightDepth(-edge + 0.5, z)).toBeCloseTo(poolStraightDepth(edge - 0.5, z), 12);
+    }
+    for (const z of [-250, -150, -60]) expect(poolStraightDepth(edge, z)).toBeCloseTo(POOL_STRAIGHT.platformDepth, 12);
+    // The machine's floor at the zone's inner edge and the ramp's foot, the same at every x: no ridges, no step.
+    const layout = poolTankLayout(30, 'straight');
+    for (const x of [-120, 0, 84, 120]) {
+      expect(poolStraightDepth(x, layout.zoneInner)).toBeCloseTo(POOL.feedDepth, 9);
+      expect(poolStraightDepth(x, poolStraightPlatformZ() + 1e-6)).toBeCloseTo(POOL_STRAIGHT.platformDepth, 6);
+    }
+  });
+
+  it('runs one straight reef from its +x start toward −x, its face square to it and its crest along it', () => {
+    const r = POOL_STRAIGHT;
+    const start = poolStraightAt(0);
+    const end = poolStraightAt(r.crestProfile[r.crestProfile.length - 1][0]);
+    expect(start.x).toBeGreaterThan(end.x);
+    expect(start.z).toBeLessThan(end.z);
+    // Along its crest line the depth is its crest's; the barrel section's crest the profile's.
+    for (const s of [20, 40, 65, 100, 150, 175, 200]) {
+      const p = poolStraightAt(s);
+      expect(poolStraightDepth(p.x, p.z)).toBeCloseTo(poolStraightCrestDepth(s), 9);
+      expect(poolStraightFrame(p.x, p.z).s).toBeCloseTo(s, 9);
+    }
+    for (const s of [70, 120, 170]) expect(poolStraightCrestDepth(s)).toBeCloseTo(0.9, 9);
+    // The face: `gradient` square to the crest line, seaward.
+    const phi = (r.reefAngle * Math.PI) / 180;
+    const p = poolStraightAt(120);
+    const at = (n: number) => poolStraightDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi));
+    expect((at(15) - at(5)) / 10).toBeCloseTo(r.gradient, 9);
+    expect(at(60)).toBeCloseTo(r.platformDepth, 9);
+    // Behind it the top, then straight back down to the platform: no lagoon shallower than it.
+    const back = (n: number) => poolStraightDepth(p.x + n * Math.sin(phi), p.z + n * Math.cos(phi));
+    expect(back(3)).toBeCloseTo(0.9, 9);
+    expect(back(r.flatWidth + 10)).toBeCloseTo(0.9 + 10 * r.backSlope, 9);
+    expect(back(60)).toBeCloseTo(r.platformDepth, 9);
+    expect(poolStraightRiddenAt(start.x - 1)).toBe(true);
+    expect(poolStraightRiddenAt(-139)).toBe(false);
+  });
+
+  // pool-ledge-floor (2026-11-08, `?poolFloor=ledge`): the same reef with the advisor's steeper face; the default unchanged.
+  it('runs the steeper ledge with `poolFloor` ledge alone: its face at `POOL_LEDGE`, its crest, top and back as today', () => {
+    const r = POOL_STRAIGHT;
+    expect(r.gradient).toBeCloseTo(1 / 9.5, 12);
+    expect(r.kneeRounding).toBe(3);
+    expect(poolSpot('barrel').depthAt).toBe(poolStraightDepth);
+    expect(poolSpot('barrel', undefined, 'ledge').depthAt).toBe(poolStraightLedgeDepth);
+    expect(poolSpot('training', undefined, 'ledge').depthAt).toBe(poolDepth);
+    const phi = (r.reefAngle * Math.PI) / 180;
+    const p = poolStraightAt(120);
+    const at = (n: number) => poolStraightLedgeDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi));
+    expect(at(0)).toBeCloseTo(0.9, 9);
+    expect((at(1.5) - at(0.5))).toBeCloseTo(POOL_LEDGE.gradient, 9);
+    expect(at((r.platformDepth - 0.9) / POOL_LEDGE.gradient + POOL_LEDGE.kneeRounding)).toBeCloseTo(r.platformDepth, 9);
+    for (const n of [-3, -20, -60]) expect(poolStraightLedgeDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi))).toBeCloseTo(poolStraightDepth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi)), 12);
+  });
+
+  // after-tube (2026-11-11, `?poolFloor=inside`; ruling 12): a level shelf behind the reef's top; the default unchanged.
+  it('runs the shallow inside with `poolFloor` inside alone: a shelf behind the top, all seaward of it as today', () => {
+    const r = POOL_STRAIGHT;
+    expect(POOL_INSIDE).toEqual({ step: 0.3, width: 16 });
+    expect(poolSpot('barrel', undefined, 'inside').depthAt).toBe(poolStraightInsideDepth);
+    expect(poolSpot('training', undefined, 'inside').depthAt).toBe(poolDepth);
+    expect(poolSpot('barrel', 'aframe', 'inside').depthAt).toBe(poolBarrelDepth);
+    const phi = (r.reefAngle * Math.PI) / 180;
+    const behind = (s: number, m: number, depth = poolStraightInsideDepth) => {
+      const p = poolStraightAt(s);
+      const n = -(r.flatWidth + m);
+      return depth(p.x - n * Math.sin(phi), p.z - n * Math.cos(phi));
+    };
+    // On the barrel (crest 0.9 m): the top, 1:10 down to the 1.2 m shelf, the shelf for 16 m, then 1:10 to the platform.
+    expect(behind(120, -3)).toBeCloseTo(0.9, 9);
+    expect(behind(120, 2)).toBeCloseTo(1.1, 9);
+    for (const m of [3, 10, 19]) expect(behind(120, m), `${m} m behind the top`).toBeCloseTo(1.2, 9);
+    expect(behind(120, 29)).toBeCloseTo(2.2, 9);
+    expect(behind(120, 60)).toBeCloseTo(r.platformDepth, 9);
+    // Today's floor is already 2 m deeper at the shelf's end.
+    expect(behind(120, 19, poolStraightDepth)).toBeCloseTo(2.8, 9);
+    // It follows the crest's own profile along the reef: nothing at the reef's deep ends.
+    expect(behind(0, 10)).toBeCloseTo(r.platformDepth, 9);
+    expect(behind(240, 10)).toBeCloseTo(r.platformDepth, 9);
+    // Seaward of the top's inner edge it is today's floor, to the bit.
+    for (const s of [10, 40, 80, 120, 200]) {
+      const p = poolStraightAt(s);
+      for (const n of [-6, -3, 0, 5, 20, 60]) {
+        const x = p.x - n * Math.sin(phi);
+        const z = p.z - n * Math.cos(phi);
+        expect(poolStraightInsideDepth(x, z), `s ${s}, n ${n}`).toBe(poolStraightDepth(x, z));
+      }
+    }
+  });
+
+  it("sends the machine's wave obliquely, its along-shore wavelength fitting the window n times", () => {
+    const sea = surfZoneSea(straight);
+    const [component] = sea.components;
+    expect(component.direction).toBeLessThan(0);
+    expect(Math.abs(-component.kx * POOL.alongShore - 2 * Math.PI * POOL_STRAIGHT.periodicWaves)).toBeLessThan(1e-9);
+    // Training and the A-frame: square to the tank.
+    expect(surfZoneSea({ ...straight, poolWaves: undefined }).components[0].direction).toBe(0);
+    expect(surfZoneSea({ ...straight, poolBarrel: 'aframe' }).components[0].direction).toBe(0);
+    const sim = new SurfZoneSimulation({ ...straight, componentCount: 1, spinUpPeriods: 0 } as never, 'warm');
+    expect((sim.solver as unknown as { periodicAlongShore: boolean }).periodicAlongShore).toBe(true);
+    expect((new SurfZoneSimulation({ ...straight, poolBarrel: 'aframe', componentCount: 1, spinUpPeriods: 0 } as never, 'warm').solver as unknown as { periodicAlongShore: boolean }).periodicAlongShore).toBe(false);
+  });
+
+  it('waits at its take-off near the start, the rider starting seaward of it', () => {
+    const takeOff = takeOffPoint(straight);
+    expect(takeOff.x).toBeCloseTo(poolStraightAt(POOL_STRAIGHT.takeOffS).x, 6);
+    expect(poolStraightDepth(takeOff.x, takeOff.z)).toBeCloseTo(poolStraightBreakDepth(POOL_STRAIGHT_EDGE_HEIGHT.small), 1);
+    expect(rideLineupOffset(straight)).toBeCloseTo(POOL_STRAIGHT.startOut.small, 9);
+    expect(rideLineupOffset({ ...straight, significantHeight: regularSignificantHeight(POOL_STRAIGHT_EDGE_HEIGHT.big) })).toBeCloseTo(POOL_STRAIGHT.startOut.big, 9);
+    expect(POOL_STRAIGHT_EDGE_HEIGHT.small).toBeLessThan(POOL_STRAIGHT_EDGE_HEIGHT.big);
   });
 });

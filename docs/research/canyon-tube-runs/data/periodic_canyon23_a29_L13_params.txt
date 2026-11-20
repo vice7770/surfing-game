@@ -1,0 +1,17 @@
+name=canyon23_a29
+kind=p2
+level=13
+h0=6
+H_over_h0=0.29
+period=11
+S1=0.0434783
+HMID=0.3666667
+S2=0.0322581
+HS=0.1666667
+domain=56
+tout0=28
+tmax=38.5
+xwin0=33
+xwin1=48
+xtoe=26.006
+train_c=1.0151412537874

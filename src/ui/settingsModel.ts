@@ -54,6 +54,10 @@ function graphicsRows(settings: GameSettings, context: SettingsContext): Row[] {
     { kind: 'choice', id: 'waterLook', label: t('settings.waterLook'), value: g.waterLook, options: options('settings.waterLook', ['classic', 'rich']) },
     // The glow and colour grade, offered with the Rich look only.
     ...(g.waterLook === 'rich' ? [{ kind: 'toggle' as const, id: 'glow', label: t('settings.glow'), value: g.glow }] : []),
+    // Its anti-aliasing, while the glow is on.
+    ...(g.waterLook === 'rich' && g.glow
+      ? [{ kind: 'choice' as const, id: 'glowAntialias', label: t('settings.glowAntialias'), help: t('settings.glowAntialias.help'), value: String(g.glowAntialias), options: options('settings.glowAntialias', ['2', '4']) }]
+      : []),
     { kind: 'toggle', id: 'caustics', label: t('settings.caustics'), value: g.caustics },
     { kind: 'toggle', id: 'sprayMist', label: t('settings.sprayMist'), value: g.sprayMist },
     { kind: 'choice', id: 'particles', label: t('settings.particles'), help: t('settings.particles.help'), value: g.particles, options: options('settings.particles', ['low', 'medium', 'high']) },
@@ -75,7 +79,7 @@ function controlRows(settings: GameSettings, context: SettingsContext): Row[] {
       disabled: steam !== 'disconnected',
     },
     { kind: 'heading', id: 'sticks', label: t('settings.sticks') },
-    { kind: 'choice', id: 'trimStick', label: t('settings.trimStick'), value: trimStick, options: options('settings.trimStick', ['right', 'left']) },
+    { kind: 'choice', id: 'trimStick', label: t('settings.trimStick'), help: t('settings.trimStick.help'), value: trimStick, options: options('settings.trimStick', ['right', 'left']) },
     { kind: 'choice', id: 'stickResponse', label: t('settings.stickResponse'), help: t('settings.stickResponse.help'), value: stickResponse, options: options('settings.stickResponse', ['linear', 'precise']) },
     { kind: 'slider', id: 'deadzoneSteam', label: t('settings.deadzoneSteam'), help: deadzoneHelp, value: deadzoneSteam, min: 0, max: MAX_DEADZONE, step: 0.01 },
     { kind: 'slider', id: 'deadzoneGamepad', label: t('settings.deadzoneGamepad'), help: deadzoneHelp, value: deadzoneGamepad, min: 0, max: MAX_DEADZONE, step: 0.01 },
@@ -83,7 +87,7 @@ function controlRows(settings: GameSettings, context: SettingsContext): Row[] {
   ];
   for (const action of REBINDABLE) {
     const label = t(`action.${action}` as StringKey);
-    // The standing actions (P9) say what they do, as the key card.
+    // The standing actions (P9) say what they do, as the key card; the camera, its stick swing.
     const helpKey = `action.${action}.help`;
     const help = helpKey in EN ? { help: t(helpKey as StringKey) } : {};
     for (const slot of [0, 1] as const) {
@@ -152,6 +156,7 @@ export function applyRow(settings: GameSettings, id: string, value: string | num
   if (id === 'preset') return { tab: 'graphics', patch: withPreset(settings.graphics, value as GraphicsPreset, settings.detected) };
   // The glow is no preset's: it keeps the preset.
   if (id === 'glow') return { tab: 'graphics', patch: { glow: value === true } };
+  if (id === 'glowAntialias') return { tab: 'graphics', patch: { glowAntialias: Number(value) === 4 ? 4 : 2 } };
   if ((ADVANCED as readonly string[]).includes(id)) {
     const typed = id === 'frameLimit' && value !== 'screen' ? Number(value) : value;
     return { tab: 'graphics', patch: withAdvanced(settings.graphics, { [id]: typed }) };

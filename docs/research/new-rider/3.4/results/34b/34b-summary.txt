@@ -1,0 +1,153 @@
+# step 3.4b — the cost function on the plant it is designed on: the forty arms
+# plant `pt` = the shipped point-mass plant, `two` = `?riderBody=two`.
+# cost `off` = the shipped cost function (neither weight), `point` = the two weights with the point mass's
+# omega0 (3.2j's and 3.2n's own design), `fixed` = the body's own inertia with its feet held, `plant` = the plant's own.
+# Spans are lo-hi of the per-run medians over the arm with the arm's own median in brackets; the median convention is
+# the probe's own (s[floor(p n)]).
+
+=== 1. the fall, every arm ===
+arm                            n    fell                  fellAt, s   Compress
+-- unsteered-deck
+   pt-off                     24  24/24         1.100–2.067 (1.183)    8/8
+   pt-point                   24  24/24         1.717–6.083 (4.317)    8/8
+   pt-fixed                   24  24/24         1.717–6.083 (4.317)    8/8
+   pt-plant                   24  24/24         1.617–6.017 (4.000)    8/8
+   two-off                     24  24/24         1.083–2.683 (1.450)    8/8
+   two-point                   24  24/24         1.233–4.400 (4.050)    8/8
+   two-fixed                   24  24/24         1.117–4.967 (3.950)    8/8
+   two-plant                   24  24/24         1.450–4.800 (3.933)    8/8
+-- unsteered-world
+   pt-off                     24  24/24         0.767–1.950 (0.950)    8/8
+   pt-point                   24  24/24         1.733–6.067 (4.467)    8/8
+   pt-fixed                   24  24/24         1.733–6.067 (4.467)    8/8
+   pt-plant                   24  24/24         1.167–5.983 (3.317)    8/8
+   two-off                     24  24/24         0.733–2.567 (1.283)    8/8
+   two-point                   24  24/24         1.067–4.367 (3.883)    8/8
+   two-fixed                   24  24/24         0.950–4.717 (3.983)    8/8
+   two-plant                   24  24/24         1.233–5.417 (3.883)    8/8
+-- low-deck
+   pt-off                     18  18/18         0.517–7.100 (1.033)    6/6
+   pt-point                   18  18/18         0.500–6.950 (1.267)    6/6
+   pt-fixed                   18  18/18         0.500–6.950 (1.267)    6/6
+   pt-plant                   18  18/18         0.500–6.950 (1.217)    6/6
+   two-off                     18  18/18         0.500–6.233 (1.033)    6/6
+   two-point                   18  18/18         0.417–4.633 (0.850)    6/6
+   two-fixed                   18  18/18         0.417–2.750 (0.850)    6/6
+   two-plant                   18  18/18         0.433–2.117 (0.883)    6/6
+-- low-world
+   pt-off                     18  18/18         0.117–6.900 (0.767)    6/6
+   pt-point                   18  18/18         0.117–6.950 (1.233)    6/6
+   pt-fixed                   18  18/18         0.117–6.950 (1.233)    6/6
+   pt-plant                   18  18/18         0.117–6.917 (1.133)    6/6
+   two-off                     18  18/18         0.117–6.250 (0.733)    6/6
+   two-point                   18  18/18         0.117–3.533 (0.600)    6/6
+   two-fixed                   18  18/18         0.117–2.567 (0.600)    6/6
+   two-plant                   18  18/18         0.117–2.117 (0.983)    6/6
+-- steered-deck
+   pt-off                     18  18/18         1.367–4.117 (3.067)    6/6
+   pt-point                   18  18/18         1.333–2.950 (1.967)    6/6
+   pt-fixed                   18  18/18         1.333–2.950 (1.967)    6/6
+   pt-plant                   18  18/18         1.200–3.383 (2.033)    6/6
+   two-off                     18  18/18         1.317–3.183 (2.500)    6/6
+   two-point                   18  18/18         0.500–2.500 (1.300)    6/6
+   two-fixed                   18  18/18         0.500–2.750 (1.300)    6/6
+   two-plant                   18  18/18         0.517–3.017 (1.667)    6/6
+-- short-deck
+   pt-off                     24   0/24                           –    0/8
+   pt-point                   24   0/24                           –    0/8
+   pt-fixed                   24   0/24                           –    0/8
+   pt-plant                   24   0/24                           –    0/8
+   two-off                     24   0/24                           –    0/8
+   two-point                   24   0/24                           –    0/8
+   two-fixed                   24   0/24                           –    0/8
+   two-plant                   24   0/24                           –    0/8
+
+=== 2. the rows, per arm, against the bank ledger (the lean row, the roll row, the one-step bank-rate residual) ===
+arm                                            LEAN row rel             ROLL row rel          bank-rate resid  lean sign  roll sign
+-- unsteered-deck
+   pt-off                             1.676–9.019 (3.540)    4.300–16.386 (10.050)      1.415–9.497 (2.552)      0.696      0.338
+   pt-point                           1.465–9.803 (4.764)     1.330–19.245 (2.622)     1.600–11.513 (4.925)      0.674      0.673
+   pt-fixed                           1.465–9.803 (4.764)     1.330–19.245 (2.622)     1.600–11.513 (4.925)      0.674      0.673
+   pt-plant                           2.163–8.640 (4.565)     1.359–12.851 (4.449)      2.315–9.811 (4.888)      0.645      0.618
+   two-off                             0.640–4.029 (1.638)     2.763–18.847 (9.087)      0.689–2.935 (1.097)      0.716      0.321
+   two-point                           0.729–2.007 (1.026)     1.090–11.691 (2.259)      0.588–2.201 (1.051)      0.702      0.679
+   two-fixed                           0.688–1.899 (0.899)     1.121–10.015 (2.135)      0.665–1.904 (0.982)      0.719      0.680
+   two-plant                           0.688–2.739 (1.137)     1.792–11.396 (2.957)      0.652–2.970 (1.270)      0.669      0.643
+-- unsteered-world
+   pt-off                             2.295–9.097 (3.310)     3.787–23.204 (9.366)     2.022–10.029 (3.097)      0.733      0.333
+   pt-point                           1.486–8.836 (4.290)     1.370–20.814 (2.584)     1.600–10.521 (4.787)      0.670      0.674
+   pt-fixed                           1.486–8.836 (4.290)     1.370–20.814 (2.584)     1.600–10.521 (4.787)      0.670      0.674
+   pt-plant                           1.690–8.150 (4.614)     1.350–11.814 (5.642)      1.767–9.100 (4.953)      0.659      0.593
+   two-off                             0.637–3.623 (1.673)     4.003–18.675 (7.471)      0.619–2.951 (1.195)      0.736      0.330
+   two-point                           0.700–2.071 (1.022)     1.382–10.763 (2.243)      0.590–2.886 (1.052)      0.714      0.704
+   two-fixed                           0.663–1.823 (0.911)     1.522–10.380 (2.201)      0.665–2.023 (0.909)      0.727      0.694
+   two-plant                           0.588–2.223 (1.057)     1.715–10.276 (2.717)      0.563–2.719 (1.160)      0.694      0.634
+-- low-deck
+   pt-off                            2.372–12.136 (3.833)     0.902–16.656 (2.725)     1.970–22.273 (4.620)      0.625      0.579
+   pt-point                           1.607–8.481 (4.931)     0.888–10.563 (1.407)     1.847–23.743 (6.534)      0.611      0.697
+   pt-fixed                           1.607–8.481 (4.931)     0.888–10.563 (1.407)     1.847–23.743 (6.534)      0.611      0.697
+   pt-plant                           1.368–7.846 (4.736)      0.890–8.368 (1.361)     1.811–22.782 (5.452)      0.579      0.618
+   two-off                             0.716–2.908 (1.292)      0.872–9.857 (2.673)      0.750–4.163 (1.026)      0.656      0.543
+   two-point                           0.765–2.991 (1.082)      0.893–5.963 (1.708)      0.705–3.949 (0.949)      0.650      0.619
+   two-fixed                           0.754–2.999 (1.049)      0.893–5.822 (1.696)      0.710–3.942 (0.974)      0.650      0.645
+   two-plant                           0.688–3.384 (1.314)      0.901–5.332 (1.463)      0.603–4.393 (0.997)      0.649      0.581
+-- low-world
+   pt-off                            2.579–13.334 (3.722)     0.891–18.468 (7.420)      1.099–5.060 (3.634)      0.735      0.378
+   pt-point                           1.439–7.869 (3.473)     0.864–10.563 (3.043)      0.637–7.840 (3.586)      0.710      0.697
+   pt-fixed                           1.439–7.869 (3.473)     0.864–10.563 (3.043)      0.637–7.840 (3.586)      0.710      0.697
+   pt-plant                          1.492–12.723 (4.550)     0.902–10.582 (5.651)      1.038–7.764 (3.531)      0.734      0.618
+   two-off                             0.561–1.763 (0.867)     0.938–10.272 (5.328)      0.572–1.608 (0.934)      0.711      0.537
+   two-point                           0.693–1.782 (0.879)      0.905–4.794 (1.493)      0.655–2.186 (0.846)      0.708      0.625
+   two-fixed                           0.717–1.782 (0.906)      0.905–5.251 (1.623)      0.642–1.874 (0.853)      0.706      0.635
+   two-plant                           0.652–1.834 (0.872)      0.882–5.040 (1.223)      0.603–2.487 (0.798)      0.720      0.591
+-- steered-deck
+   pt-off                            3.742–18.954 (8.298)      2.435–8.772 (4.035)     3.966–23.179 (5.131)      0.650      0.605
+   pt-point                          2.859–19.775 (7.908)      1.284–7.101 (3.639)     3.222–27.608 (7.892)      0.534      0.630
+   pt-fixed                          2.859–19.775 (7.908)      1.284–7.101 (3.639)     3.222–27.608 (7.892)      0.534      0.630
+   pt-plant                          2.882–28.229 (7.133)      1.994–9.161 (3.459)     3.599–22.057 (5.736)      0.541      0.612
+   two-off                             0.702–6.369 (1.498)      1.349–8.017 (2.374)      0.714–7.441 (2.279)      0.650      0.672
+   two-point                           0.496–5.825 (0.821)      0.845–2.472 (1.397)      0.481–7.298 (0.585)      0.788      0.727
+   two-fixed                           0.523–3.976 (0.818)      0.872–2.364 (1.464)      0.455–7.918 (0.599)      0.773      0.712
+   two-plant                           0.488–2.663 (0.895)      0.771–3.880 (1.356)      0.505–2.747 (0.874)      0.714      0.736
+-- short-deck
+   pt-off                             2.152–9.794 (3.190)     2.240–40.168 (9.774)     2.061–12.575 (2.948)      0.708      0.354
+   pt-point                          1.286–12.114 (4.650)     2.623–20.776 (9.418)     1.319–11.668 (4.822)      0.646      0.500
+   pt-fixed                          1.286–12.114 (4.650)     2.623–20.776 (9.418)     1.319–11.668 (4.822)      0.646      0.500
+   pt-plant                           1.872–7.264 (4.294)     2.635–16.168 (9.497)      2.103–8.206 (4.222)      0.646      0.479
+   two-off                             0.720–3.034 (1.301)     2.567–26.039 (6.512)      0.696–2.773 (1.244)      0.729      0.417
+   two-point                           0.562–0.977 (0.740)      2.126–7.818 (2.944)      0.491–1.190 (0.788)      0.750      0.583
+   two-fixed                           0.480–1.005 (0.746)      1.926–7.032 (3.105)      0.472–1.029 (0.750)      0.771      0.583
+   two-plant                           0.557–1.144 (0.825)      2.136–8.295 (3.510)      0.545–1.422 (0.823)      0.771      0.563
+
+=== 3. the cost function's own constant, per stance, rad/s (read off the ridden plant at 7 m/s) ===
+   tall      line 3.4174  fixed(two) 3.1614  solved(two) 7.6477  solved(shipped) 19.3321
+   crouch    line 3.8849  fixed(two) 3.5587  solved(two) 8.229  solved(shipped) 21.9767
+   compress  line 4.2233  fixed(two) 3.8395  solved(two) 8.6044  solved(shipped) 23.9523
+
+=== 4. the controls over the ride columns ===
+   C1 `pt-fixed` against `pt-point` (with no body the held reading IS the point mass's): 1260 column reads, 0 mismatches
+   C2 pt-off unsteered-deck: ledger control -deckTotal vs the game 0.009–0.046 (0.020), lean column 0.092–0.455 (0.248)
+   C2 two-off unsteered-deck: ledger control -deckTotal vs the game 0.005–0.050 (0.026), lean column 0.053–0.753 (0.232)
+
+=== 5. P0 controls, worst over every arm ===
+   1008 runs in all; sense residual peak 0.000e+00, tick spacing off 0.000e+00 s, group closure roll 6.811e-12 bank 7.077e-12
+
+=== 6. how the weighted ride differs — the board it holds and the speed it runs ===
+-- unsteered-deck
+   pt-off    measured |rail|   14.82 deg, speed   8.69 m/s, MAX_BANK-clamped frames   2.0, the game's own |lean acc|   101.4 deg/s2, |roll acc|   142.0
+   pt-point  measured |rail|    9.20 deg, speed   6.45 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|    91.5 deg/s2, |roll acc|   195.8
+   pt-fixed  measured |rail|    9.20 deg, speed   6.45 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|    91.5 deg/s2, |roll acc|   195.8
+   pt-plant  measured |rail|   12.19 deg, speed   6.48 m/s, MAX_BANK-clamped frames   2.0, the game's own |lean acc|   107.5 deg/s2, |roll acc|   193.1
+   two-off    measured |rail|   15.59 deg, speed   8.68 m/s, MAX_BANK-clamped frames   8.0, the game's own |lean acc|    83.4 deg/s2, |roll acc|   162.4
+   two-point  measured |rail|    8.00 deg, speed   6.46 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   168.2 deg/s2, |roll acc|   348.8
+   two-fixed  measured |rail|    7.99 deg, speed   6.49 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   220.2 deg/s2, |roll acc|   411.1
+   two-plant  measured |rail|    8.36 deg, speed   6.35 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   178.2 deg/s2, |roll acc|   291.7
+-- low-deck
+   pt-off    measured |rail|   45.61 deg, speed   4.32 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   450.9 deg/s2, |roll acc|  1606.9
+   pt-point  measured |rail|   42.68 deg, speed   4.32 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   424.7 deg/s2, |roll acc|  1194.5
+   pt-fixed  measured |rail|   42.68 deg, speed   4.32 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   424.7 deg/s2, |roll acc|  1194.5
+   pt-plant  measured |rail|   43.65 deg, speed   4.32 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   412.0 deg/s2, |roll acc|  1417.1
+   two-off    measured |rail|   27.37 deg, speed   4.61 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   347.2 deg/s2, |roll acc|   941.4
+   two-point  measured |rail|   24.76 deg, speed   4.22 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   611.8 deg/s2, |roll acc|  1312.1
+   two-fixed  measured |rail|   25.05 deg, speed   4.22 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   598.4 deg/s2, |roll acc|  1188.6
+   two-plant  measured |rail|   22.76 deg, speed   4.23 m/s, MAX_BANK-clamped frames   0.0, the game's own |lean acc|   534.7 deg/s2, |roll acc|  2112.5

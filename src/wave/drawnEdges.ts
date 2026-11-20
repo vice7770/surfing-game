@@ -53,6 +53,8 @@ export const DRAWN_EDGES = {
  */
 export interface PeelEnd {
   readonly direction: 1 | -1;
+  /** Per entry of `age`, its own peel's direction where the waves peel different ways (an A-frame's arms); absent: `direction`. */
+  readonly directions?: ArrayLike<number>;
   /** `frayRow`: per cell of the row, as `values[start + k]` is at `age[k]`; `frayBand`: slot-major, `nx` a slot. */
   readonly age: ArrayLike<number>;
   readonly young: number;
@@ -112,8 +114,8 @@ export function frayRow(values: Float64Array, start: number, count: number, xCen
     const x1 = xCenters[end] + 0.5 * dx;
     const scale = Math.min(1, (endShare * (x1 - x0)) / (endCut + endFade));
     // The peel-side end, where the lip lands, frays only as far as its fingers while young.
-    const youngLow = peel && peel.direction < 0 ? peelWeight(peel.age[ix], peel.young) : 0;
-    const youngHigh = peel && peel.direction > 0 ? peelWeight(peel.age[end], peel.young) : 0;
+    const youngLow = peel && (peel.directions ? peel.directions[ix] : peel.direction) < 0 ? peelWeight(peel.age[ix], peel.young) : 0;
+    const youngHigh = peel && (peel.directions ? peel.directions[end] : peel.direction) > 0 ? peelWeight(peel.age[end], peel.young) : 0;
     const fadeLow = scale * (endFade + (peelFade - endFade) * youngLow);
     const fadeHigh = scale * (endFade + (peelFade - endFade) * youngHigh);
     // Each end its own noise: keyed by where it lies along shore, so neighbouring runs fray differently.
@@ -186,8 +188,10 @@ export function frayBand(table: Float32Array, slots: number, nx: number, stride:
       const noiseLow = edgeNoise(column / 7, ts, slot + 31);
       const noiseHigh = edgeNoise(end / 7, ts, slot + 61);
       // Where the lip lands, while young: over half a column to `peelBandFade`.
-      const youngLow = peel && peel.direction < 0 ? peelWeight(peel.age[slot * nx + column], peel.young) : 0;
-      const youngHigh = peel && peel.direction > 0 ? peelWeight(peel.age[slot * nx + end], peel.young) : 0;
+      const lowAt = slot * nx + column;
+      const highAt = slot * nx + end;
+      const youngLow = peel && (peel.directions ? peel.directions[lowAt] : peel.direction) < 0 ? peelWeight(peel.age[lowAt], peel.young) : 0;
+      const youngHigh = peel && (peel.directions ? peel.directions[highAt] : peel.direction) > 0 ? peelWeight(peel.age[highAt], peel.young) : 0;
       const full = (noise: number) => 1 + (bandFade - 1) * noise;
       const light = (noise: number) => peelBandFade * (0.5 + 0.5 * noise);
       const low = Math.min(most, full(noiseLow) + (light(noiseLow) - full(noiseLow)) * youngLow);

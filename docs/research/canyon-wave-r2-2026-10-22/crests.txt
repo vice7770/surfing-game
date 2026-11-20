@@ -1,0 +1,25 @@
+# The crest bar (crest-angle-report.ts), seed 1, 600 s, 64 components, the 260 m window with the breaking-age join; two-sided recounted against the Beach's p90 per band (6.2, 6.7, 8.9, 8.7°: twosided.mjs).
+Crest angles: canyon, medium (Hs 1.4 m, Tp 11 s, 0°, s 150), seed 1, 64 components, 600 s. Take-off (-9, -142); lines z = -386, -172, -107, -71, -36; crests followed over x -110…111.
+Crest lines every second: 7543 over 600 s; stations -118, -105, -90, -75, -60, -45, -30, -15, 0, 15, 30, 45, 60, 75, 90, 105, 118 (open −x: -118 -105 -90 -75 -60; arm: -45 -30 -15 0 15 30 45; open +x: 60 75 90 105 118). |angle| p50 / p90 °:
+| Band | open −x | arm | open +x | Edge chevron −x / +x (2 \|angle\| at x -118 / 118) | Signed median, outer thirds −x / +x (a V: − / +) | Two-sided (outer thirds past ±5°) |
+|---|---|---|---|---|---|---|
+| seaward | 2.6 / 6.5 (5857) | 2.3 / 7.2 (8032) | 1.7 / 4.9 (5590) | 3.6 / 9.4 · 2.3 / 6.5 | 1.5 / -0.3 | 5 of 795 |
+| take-off | 2.5 / 7.1 (790) | 4.9 / 13.9 (1310) | 1.4 / 4.6 (857) | 3.4 / 8.9 · 1.5 / 5.9 | 0.7 / -0.4 | 0 of 90 |
+| inside | 3.2 / 15.5 (1754) | 7.8 / 24.8 (2888) | 2.3 / 7.9 (2081) | 3.7 / 10.3 · 2.5 / 9.3 | 1.1 / -0.9 | 0 of 72 |
+| inner | 3.7 / 12.4 (3396) | 10.5 / 27.9 (4243) | 2.6 / 8.0 (4203) | 3.9 / 10.9 · 4.2 / 11.3 | -1.6 / -0.1 | 0 of 26 |
+
+Health over 600 s: fastest water 9.44 m/s; Froude caps 0 (0 in water); volume 0.29 %; finite true.
+crest-medium.json seaward 2 of 795; take-off 0 of 90; inside 0 of 72; inner 0 of 26
+
+Crest angles: canyon, big (Hs 2.4 m, Tp 14 s, 0°, s 150), seed 1, 64 components, 600 s. Take-off (-9, -165); lines z = -386, -195, -124, -83, -42; crests followed over x -110…111.
+Crest lines every second: 5606 over 600 s; stations -118, -105, -90, -75, -60, -45, -30, -15, 0, 15, 30, 45, 60, 75, 90, 105, 118 (open −x: -118 -105 -90 -75 -60; arm: -45 -30 -15 0 15 30 45; open +x: 60 75 90 105 118). |angle| p50 / p90 °:
+| Band | open −x | arm | open +x | Edge chevron −x / +x (2 \|angle\| at x -118 / 118) | Signed median, outer thirds −x / +x (a V: − / +) | Two-sided (outer thirds past ±5°) |
+|---|---|---|---|---|---|---|
+| seaward | 2.4 / 6.6 (4807) | 2.2 / 6.8 (6388) | 1.6 / 4.3 (4530) | 3.3 / 10.3 · 2.2 / 6.1 | 1.4 / -0.2 | 0 of 673 |
+| take-off | 2.4 / 7.4 (765) | 4.1 / 11.9 (1162) | 1.6 / 5.4 (820) | 3.3 / 9.8 · 2.2 / 6.5 | 1.3 / -1.0 | 0 of 109 |
+| inside | 4.0 / 15.1 (2030) | 5.7 / 17.3 (2994) | 2.0 / 6.4 (2204) | 4.6 / 16.3 · 2.6 / 7.5 | 1.3 / -1.4 | 0 of 176 |
+| inner | 4.6 / 13.2 (3314) | 8.1 / 21.2 (3964) | 3.0 / 8.9 (3831) | 5.5 / 17.2 · 4.6 / 14.3 | -1.5 / -0.2 | 6 of 188 |
+
+Health over 600 s: fastest water 10.41 m/s; Froude caps 39 (0 in water); volume -0.19 %; finite true.
+crest-big.json seaward 0 of 673; take-off 0 of 109; inside 0 of 176; inner 0 of 188
+

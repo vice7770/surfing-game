@@ -13,6 +13,44 @@ import { POINT, type RiderVisualState } from './riderVisualState';
  */
 export const SNAP_FROM = -0.05;
 export const SNAP_FULL = -0.3;
+/**
+ * The drawing's dev switches, set once by the page (`PhysicalMode`): every rider drawn on this page reads them alike,
+ * the player's and other players'. `snapArms: 'old'` (`?snapArms=old`): Snap drawn as before snap-carve (its arms, and
+ * the tube's pose for a deep Snap: `HumanoidRig`'s `RIG_DETAIL.snapArms`, `StageBlend`'s tube).
+ */
+export const RIG_SWITCHES: RigSwitches = {};
+/**
+ * `snapArms: 'old'` as above. The turning body (2026-11-10, the owner's "the movement of the surfer is very off"; the
+ * study in docs/research/turn-body-2026-11-10), each opt-in and drawn only:
+ * - `turnTrunk: 'lean'` (`?turnTrunk=lean`): in a turn the trunk leans with the physics' lean line, not folded over the toes.
+ * - `turnLead: 'on'` (`?turnLead=on`): the stick (`RiderVisualState.steer`) turns the head, then the chest, then the hips,
+ *   and starts the turn's pose, before the board comes round. Another player's stick is not on the wire (0): as before.
+ * - `cutbackHand: 'back'` (`?cutbackHand=back`): in a frontside cutback the back hand reaches for the water, the front arm
+ *   points where the board goes.
+ * `?turnBody=on` sets all three (`turnBodySwitches`).
+ * - `twistHips: 'whole'` (set with `?rider=new`, the new surfer's step 3.2e): the hips turn against the board by the whole
+ *   twist, as the chest does: the physics' twist is the pelvis, trunk, arms and head turning as one on the legs.
+ * - `trunk: 'mass'` (set by `?trunk=mass` **with** `?rider=new`, step 3.5h): standing, the rig adds **no fold of its
+ *   own**. The physics' hip rotor folds the trunk and moves its mass with it (`AttachedRiderOptions.trunk`), and the
+ *   pelvis, torso and head of `state.points` already carry that fold into `up` and `chestUp` - so the drawn trunk is
+ *   the physical trunk, one angle read by both, and `poseHinge`'s `backForMass` never fires, which leaves exactly one
+ *   mass-position correction and one owner of it. Without `?rider=new` there is no rotor to read, so the switch is
+ *   not set and the drawing is unchanged.
+ */
+export interface RigSwitches { snapArms?: 'old'; turnTrunk?: 'lean'; turnLead?: 'on'; cutbackHand?: 'back'; twistHips?: 'whole'; trunk?: 'mass' }
+
+/** The turning body's switches from a page's address (`RIG_SWITCHES`); `enabled` false (the dev tools off), none. */
+export function turnBodySwitches(search: string, enabled = true): Pick<RigSwitches, 'turnTrunk' | 'turnLead' | 'cutbackHand'> {
+  if (!enabled) return {};
+  const params = new URLSearchParams(search);
+  const is = (name: string, value: string) => params.get(name)?.trim().toLowerCase() === value;
+  const all = is('turnBody', 'on');
+  return {
+    ...(all || is('turnTrunk', 'lean') ? { turnTrunk: 'lean' as const } : {}),
+    ...(all || is('turnLead', 'on') ? { turnLead: 'on' as const } : {}),
+    ...(all || is('cutbackHand', 'back') ? { cutbackHand: 'back' as const } : {}),
+  };
+}
 /** A turn this fast, rad/s, is a full one for the stance's shapes (Part B's leading arm). */
 export const TURN_FULL = 1.5;
 
@@ -45,6 +83,18 @@ export function stanceBlend(state: RiderVisualState, out: StanceBlend = { stance
   out.back = weightBack(state);
   return out;
 }
+
+/**
+ * How far into Snap the drawn state is, 0 to 1 (snap-carve): the weight back (`weightBack`) with the shoulders wound
+ * (`state.twist`, Snap's aim, full at SNAP_TWIST, TWIST_RANGE). Either alone is not Snap: a tube's backside crouch sits
+ * the pelvis back on a pitched board, and the pad's rotation stick winds the shoulders.
+ */
+export function snapShare(state: RiderVisualState): number {
+  // Snap held where the drawing knows it (snap-arms-gate): Compress alone is no Snap, however far back and wound.
+  if (state.snap === 0) return 0;
+  return weightBack(state) * Math.min(1, Math.abs(state.twist) / SNAP_TWIST);
+}
+const SNAP_TWIST = (45 * Math.PI) / 180;
 
 /** How far the weight is back, 0 to 1: where the pelvis sits over the stance, level. */
 export function weightBack(state: RiderVisualState): number {

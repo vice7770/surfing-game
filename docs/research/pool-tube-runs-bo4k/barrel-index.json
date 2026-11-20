@@ -1,0 +1,10 @@
+[
+  {
+    "id": "periodic-pool-straight-big-l14",
+    "spot": "pool",
+    "slope": 0.0463,
+    "nonlinearity": 0.3536,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-straight-big-l14.bin"
+  }
+]

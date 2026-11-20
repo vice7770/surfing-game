@@ -1,17 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DEFAULT_BINDINGS, type PadState } from './Bindings';
-import { Controls } from './Controls';
+import { DEFAULT_BINDINGS, rebind, type Bindings, type PadState } from './Bindings';
+import { CROUCH_SHARE } from '../physics/AttachedRider';
+import { Controls, stanceHandoverSwitch } from './Controls';
 import type { StickSettings } from './Sticks';
+import { decodeState, tritonPad } from './steam/tritonProtocol';
 
 const pad = (buttons: number[] = [], x = 0): PadState => ({
   buttons: Array.from({ length: 17 }, (_, i) => buttons.includes(i)), axes: [x, 0, 0, 0],
 });
 
-function setup(stick?: StickSettings) {
+function setup(stick?: StickSettings, stanceHandover?: 'old') {
   const target = new EventTarget();
   let pads: PadState[] = [];
   const handlers = { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() };
-  const controls = new Controls(() => DEFAULT_BINDINGS, handlers, { target, pads: () => pads, ...(stick ? { stick: () => stick } : {}) });
+  const controls = new Controls(() => DEFAULT_BINDINGS, handlers, { target, pads: () => pads, ...(stick ? { stick: () => stick } : {}), ...(stanceHandover ? { stanceHandover } : {}) });
   const key = (type: 'keydown' | 'keyup', code: string, repeat = false) =>
     target.dispatchEvent(Object.assign(new Event(type), { code, repeat }));
   return { controls, handlers, key, target, setPads: (next: PadState[]) => { pads = next; } };
@@ -68,16 +70,18 @@ describe('Controls', () => {
     expect(standing.trim).toBeLessThan(0);
   });
 
-  it('reads the duck-dive from LT as an analog value lying down', () => {
+  // duck-dive-l3 (2026-10-31): the duck-dive is on L3 (and the D-pad down); LT crouches only, standing.
+  it('duck-dives fully from L3 lying down, and not from LT, which crouches standing', () => {
     const { controls, setPads } = setup();
-    const values = Array.from({ length: 17 }, (_, i) => (i === 6 ? 0.4 : 0));
+    setPads([pad([10])]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, false).duckDive).toBe(1);
+    expect(controls.rideRequest(1 / 60, true).duckDive ?? 0).toBe(0);
+    const values = Array.from({ length: 17 }, (_, i) => (i === 6 ? 0.8 : 0));
     setPads([{ ...pad([6]), values }]);
     controls.poll();
-    expect(controls.rideRequest(1 / 60, false).duckDive).toBeCloseTo(0.4, 2);
-    // Held, it stays as deep as the trigger says (the keys' ramp is the keyboard's).
-    for (let i = 0; i < 60; i += 1) controls.rideRequest(1 / 60, false);
-    expect(controls.rideRequest(1 / 60, false).duckDive).toBeCloseTo(0.4, 2);
-    expect(controls.rideRequest(1 / 60, true).duckDive ?? 0).toBe(0);
+    expect(controls.rideRequest(1 / 60, false).duckDive ?? 0).toBe(0);
+    expect(controls.rideRequest(1 / 60, true).crouch).toBeGreaterThan(0.5);
   });
 
   it('duck-dives fully from the D-pad down', () => {
@@ -188,6 +192,71 @@ describe('the ride request (P9)', () => {
     expect(lowest).toBeGreaterThan(0.99);
   });
 
+  // stance-handover (the owner, 2026-11-05): the deepest stance held wins. Compress held on Space, Snap pressed on Q on
+  // top takes over at once, and letting Space go keeps it; Q let go with Space still held hands back to Compress at once;
+  // from the crouch, Snap goes straight down. The depth is the one the rider asks for: Snap wins over the crouch and
+  // Compress held with it (`AttachedRider`), the crouch at CROUCH_SHARE of the full depth. Cross-faded (the old ramps),
+  // it fell to half at the ramps' crossing.
+  describe('the deepest stance held wins', () => {
+    const depth = (request: { crouch?: number; compress?: number; snap?: number }) => {
+      const snap = request.snap ?? 0;
+      return Math.max(CROUCH_SHARE * (request.crouch ?? 0) * (1 - snap), (request.compress ?? 0) * (1 - snap), snap);
+    };
+    const lowestOver = (controls: Controls, frames = 30) => {
+      let lowest = 1;
+      for (let i = 0; i < frames; i += 1) lowest = Math.min(lowest, depth(controls.rideRequest(1 / 60, true)));
+      return lowest;
+    };
+    it('hands Compress over to Snap pressed on top at once, and keeps Snap when Compress is let go', () => {
+      const { controls, key } = setup();
+      key('keydown', 'Space');
+      controls.rideRequest(0.3, true);
+      key('keydown', 'KeyQ');
+      expect(controls.rideRequest(1 / 60, true).snap).toBe(1);
+      expect(lowestOver(controls)).toBe(1);
+      key('keyup', 'Space');
+      expect(lowestOver(controls)).toBe(1);
+      expect(controls.rideRequest(1 / 60, true).snap).toBe(1);
+    });
+    it('hands Snap back to Compress at once when Q is let go with Space held', () => {
+      const { controls, key } = setup();
+      key('keydown', 'Space');
+      key('keydown', 'KeyQ');
+      controls.rideRequest(0.3, true);
+      key('keyup', 'KeyQ');
+      const request = controls.rideRequest(1 / 60, true);
+      expect(request).toMatchObject({ snap: 0, compress: 1 });
+      expect(lowestOver(controls)).toBe(1);
+    });
+    it('goes from the crouch straight down into Snap, and back to the crouch without rising past it', () => {
+      const { controls, key } = setup();
+      key('keydown', 'ShiftLeft');
+      controls.rideRequest(0.3, true);
+      key('keydown', 'KeyQ');
+      expect(lowestOver(controls)).toBe(1);
+      key('keyup', 'KeyQ');
+      expect(lowestOver(controls)).toBeCloseTo(CROUCH_SHARE, 9);
+    });
+    it('ramps Snap from nothing as before, and lets it go as before', () => {
+      const { controls, key } = setup();
+      key('keydown', 'KeyQ');
+      expect(controls.rideRequest(0.1, true).snap).toBeCloseTo(0.5, 9);
+      controls.rideRequest(0.2, true);
+      key('keyup', 'KeyQ');
+      expect(controls.rideRequest(0.1, true).snap).toBeCloseTo(0.5, 9);
+    });
+    it('cross-fades the ramps as before with `?stanceHandover=old` (a dev switch)', () => {
+      expect(stanceHandoverSwitch('?stanceHandover=old')).toEqual({ stanceHandover: 'old' });
+      expect(stanceHandoverSwitch('?stanceHandover=OLD')).toEqual({ stanceHandover: 'old' });
+      for (const search of ['', '?stanceHandover', '?stanceHandover=new', '?snap=off']) expect(stanceHandoverSwitch(search), search).toEqual({});
+      const { controls, key } = setup(undefined, 'old');
+      key('keydown', 'Space');
+      controls.rideRequest(0.3, true);
+      key('keydown', 'KeyQ');
+      expect(lowestOver(controls)).toBeLessThan(0.55);
+    });
+  });
+
   // The final review: paddling on Space and popping up on Enter, the player still holds Space as the rider lands.
   it('compresses only on a press made standing, not on the paddle input held through the pop-up', () => {
     const { controls, key } = setup();
@@ -198,6 +267,26 @@ describe('the ride request (P9)', () => {
     controls.rideRequest(0.2, true);
     key('keydown', 'Space');
     expect(controls.rideRequest(0.2, true).compress).toBe(1);
+  });
+
+  // The snap stance (2026-11-03): Snap held on Q or RB standing only (nothing lying down); ramped from the keyboard, at
+  // once from the pad's button; let go on a pause; and the touch button beside Compress.
+  it('snaps on Q or RB standing, held, and does nothing lying down', () => {
+    const prone = setup();
+    prone.key('keydown', 'KeyQ');
+    expect(prone.controls.rideRequest(0.2, false).snap).toBe(0);
+    const { controls, key, setPads } = setup();
+    key('keydown', 'KeyQ');
+    expect(controls.rideRequest(1 / 60, true).snap).toBeGreaterThan(0);
+    expect(controls.rideRequest(0.2, true).snap).toBe(1);
+    key('keyup', 'KeyQ');
+    expect(controls.rideRequest(0.2, true).snap).toBe(0);
+    setPads([pad([5])]);
+    controls.poll();
+    expect(controls.rideRequest(1 / 60, true).snap).toBe(1);
+    expect(controls.rideRequest(1 / 60, false).snap).toBe(0);
+    controls.enabled = false;
+    expect(controls.rideRequest(0.2, true).snap).toBe(0);
   });
 
   it('touches the stances with the touch buttons, and lets Compress go on a pause', () => {
@@ -211,21 +300,40 @@ describe('the ride request (P9)', () => {
     const controls = new Controls(() => DEFAULT_BINDINGS, { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() }, { target: new EventTarget(), pads: () => [], document: page });
     buttons.get('touch-compress')!.dispatchEvent(Object.assign(new Event('pointerdown'), { pointerId: 1 }));
     expect(controls.rideRequest(0.2, true).compress).toBe(1);
+    buttons.get('touch-snap')!.dispatchEvent(Object.assign(new Event('pointerdown'), { pointerId: 2 }));
+    expect(controls.rideRequest(0.2, true).snap).toBe(1);
     controls.enabled = false;
     controls.enabled = true;
-    expect(controls.rideRequest(0.2, true).compress).toBe(0);
+    expect(controls.rideRequest(0.2, true)).toMatchObject({ compress: 0, snap: 0 });
   });
 
-  // The movement-flow spec: the pad's right stick across turns the upper body, standing; the keyboard leaves the body
-  // to turn with the ride by itself, so a key pressed after the pad hands the rotation back (Review Focus 3).
-  it('asks for the upper body\'s rotation from the pad\'s right stick, standing, until a key is pressed', () => {
+  // The owner, 2026-10-22: the pad's right stick across swings the camera in every stage, and no longer asks for the
+  // upper body's rotation: the body turns with the ride by itself on the pad too, as on the keyboard and touch.
+  it('swings the camera from the pad\'s right stick across, lying down and standing, and asks for no rotation', () => {
     const { controls, key, setPads } = setup();
     setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0.8, 0] }]);
     controls.poll();
-    expect(controls.rideRequest(1 / 60, true).rotate).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
-    expect(controls.rideRequest(1 / 60, false).rotate).toBeUndefined();
-    key('keydown', 'KeyW');
+    expect(controls.cameraSwing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
     expect(controls.rideRequest(1 / 60, true).rotate).toBeUndefined();
+    expect(controls.rideRequest(1 / 60, false).rotate).toBeUndefined();
+    expect(controls.rideRequest(1 / 60, true)).not.toHaveProperty('rotate');
+    // Still swinging after a key, the stick being held; not while a menu is open, nor once it is let go.
+    key('keydown', 'KeyW');
+    expect(controls.cameraSwing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+    controls.enabled = false;
+    expect(controls.cameraSwing).toBe(0);
+    controls.enabled = true;
+    setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, -1, 0] }]);
+    controls.poll();
+    expect(controls.cameraSwing).toBe(-1);
+    setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0.1, 0] }]);
+    controls.poll();
+    expect(controls.cameraSwing).toBe(0);
+    // Trim on the left stick: the right stick across still swings.
+    const left = setup({ trimStick: 'left', stickResponse: 'linear', deadzoneSteam: 0.05, deadzoneGamepad: 0.15 });
+    left.setPads([{ buttons: Array.from({ length: 17 }, () => false), axes: [0, 0, 0.8, 0] }]);
+    left.controls.poll();
+    expect(left.controls.cameraSwing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
   });
 
   it('ramps keys in over 0.2 s; opposite keys cancel, and unbound keys do nothing', () => {
@@ -259,6 +367,132 @@ describe('the ride request (P9)', () => {
     setPads([analog({ 7: 0.04 })]);
     controls.poll();
     expect(controls.rideRequest(1 / 60, true).compress).toBe(0);
+  });
+
+  /**
+   * analog-stance (2026-11-19): on the owner's Steam Controller a trigger past TRIGGER_PRESS also reads as a plain
+   * button press (`tritonProtocol`), that press was folded in with the keyboard, and the key's RAMP_TIME ramp then ran
+   * up behind the trigger and won over its travel: a steady quarter-pull asked 0.25 on the first frame, 0.5 by the
+   * sixth and a full stance by the twelfth, then held on for 0.2 s after the trigger was let go. Every stance on the
+   * pad now asks by its travel, as the sticks already did. Synthesised state reports, not a pad: no controller is
+   * attached here, so the reports are built and decoded, which is where the digital press is made.
+   */
+  describe('the pad asks for a stance by its travel (analog-stance)', () => {
+    const steamPad = ({ rt = 0, lt = 0, bits = 0 } = {}): PadState => {
+      const data = new DataView(new ArrayBuffer(20));
+      data.setUint32(1, bits, true);
+      data.setInt16(5, Math.round(lt * 32767), true);
+      data.setInt16(7, Math.round(rt * 32767), true);
+      const state = decodeState(0x42, data);
+      if (!state) throw new Error('not a state report');
+      return tritonPad(state, 'steam:0');
+    };
+    /** RB's bit, for a plain button rebound to a stance. */
+    const RB = 0x200;
+    const bound = (bindings: Bindings) => {
+      let pads: PadState[] = [];
+      const controls = new Controls(() => bindings, { retry: vi.fn(), camera: vi.fn(), pause: vi.fn() }, { target: new EventTarget(), pads: () => pads });
+      return { controls, setPads: (next: PadState[]) => { pads = next; } };
+    };
+    /** `frames` frames of the pad as it stands, returning each frame's request. */
+    const ride = (controls: Controls, frames: number, standing = true) => {
+      const out: ReturnType<Controls['rideRequest']>[] = [];
+      for (let i = 0; i < frames; i += 1) {
+        controls.poll();
+        out.push(controls.rideRequest(1 / 60, standing));
+      }
+      return out;
+    };
+
+    it('holds a quarter-pulled trigger at a quarter of Compress, for as long as it is held', () => {
+      const { controls, setPads } = bound(DEFAULT_BINDINGS);
+      setPads([steamPad({ rt: 0.25 })]);
+      const asked = ride(controls, 30).map((request) => request.compress ?? 0);
+      for (const [frame, value] of asked.entries()) expect(value, `frame ${frame}`).toBeCloseTo(0.25, 3);
+    });
+
+    it('tracks the trigger up and down the ladder', () => {
+      const { controls, setPads } = bound(DEFAULT_BINDINGS);
+      for (const travel of [0.2, 0.5, 0.9, 0.35]) {
+        setPads([steamPad({ rt: travel })]);
+        expect(ride(controls, 15).at(-1)!.compress, `${travel}`).toBeCloseTo(travel, 3);
+      }
+    });
+
+    it('lets Compress go the frame the trigger is released, with no 0.2 s tail', () => {
+      const { controls, setPads } = bound(DEFAULT_BINDINGS);
+      setPads([steamPad({ rt: 0.9 })]);
+      ride(controls, 30);
+      setPads([steamPad({ rt: 0 })]);
+      expect(ride(controls, 1)[0].compress).toBe(0);
+    });
+
+    it('crouches by LT’s travel, and lets the crouch go at once', () => {
+      const { controls, setPads } = bound(DEFAULT_BINDINGS);
+      setPads([steamPad({ lt: 0.3 })]);
+      for (const request of ride(controls, 30)) expect(request.crouch).toBeCloseTo(0.3, 3);
+      setPads([steamPad({ lt: 0 })]);
+      expect(ride(controls, 1)[0].crouch).toBe(0);
+    });
+
+    // The paddle is RT too (it compresses standing), and the owner is still holding it as the rider lands.
+    it('does not compress from the trigger held through the pop-up, however far it is pulled', () => {
+      const { controls, setPads } = bound(DEFAULT_BINDINGS);
+      setPads([steamPad({ rt: 0.6 })]);
+      expect(ride(controls, 1, false)[0]).toMatchObject({ paddle: true, compress: 0 });
+      for (const request of ride(controls, 30)) expect(request.compress).toBe(0);
+      // Let it go standing and pull it again: a press made standing compresses, by its travel.
+      setPads([steamPad({ rt: 0 })]);
+      ride(controls, 1);
+      setPads([steamPad({ rt: 0.3 })]);
+      expect(ride(controls, 1)[0].compress).toBeCloseTo(0.3, 3);
+    });
+
+    // Rebinding, both ways: Snap onto RT swaps Compress onto RB (`rebind`, the two being live in the same context).
+    it('keeps a trigger rebound to a plain action analog, and a button rebound to Compress at full', () => {
+      const bindings = rebind(DEFAULT_BINDINGS, 'gamepad', 'snap', 0, 7);
+      expect(bindings.gamepad).toMatchObject({ snap: [7], compress: [5] });
+      const { controls, setPads } = bound(bindings);
+      setPads([steamPad({ rt: 0.3 })]);
+      for (const request of ride(controls, 30)) expect(request.snap).toBeCloseTo(0.3, 3);
+      setPads([steamPad({ bits: RB })]);
+      // A plain button asks for the whole stance on its first frame, and for none on the frame it is let go.
+      expect(ride(controls, 1)[0].compress).toBe(1);
+      setPads([steamPad({})]);
+      expect(ride(controls, 1)[0].compress).toBe(0);
+    });
+
+    // A second slot: Compress on RT and on A (`rebind` moves the pop-up off A). Only the first was read before.
+    it('reads every button bound to a stance, not only the first slot', () => {
+      const bindings = rebind(DEFAULT_BINDINGS, 'gamepad', 'compress', 1, 0);
+      expect(bindings.gamepad.compress).toEqual([7, 0]);
+      const { controls, setPads } = bound(bindings);
+      setPads([steamPad({ bits: 0x1 })]);
+      expect(ride(controls, 1)[0].compress).toBe(1);
+      setPads([steamPad({})]);
+      expect(ride(controls, 1)[0].compress).toBe(0);
+    });
+
+    // Requirement: the keyboard and touch ramps are deliberate (spec P9) and must not be flattened with the pad's.
+    it('still ramps Compress in and out on the keyboard, over RAMP_TIME', () => {
+      const { controls, key } = setup();
+      key('keydown', 'Space');
+      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(0.5, 9);
+      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(1, 9);
+      key('keyup', 'Space');
+      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(0.5, 9);
+      expect(controls.rideRequest(0.1, true).compress).toBeCloseTo(0, 9);
+    });
+
+    // A trigger resting a few hundredths in is at rest on every stance, not only Compress and Snap.
+    it('ignores a trigger resting just off its stop, and lets the key’s ramp through underneath it', () => {
+      const { controls, setPads, key } = setup();
+      setPads([steamPad({ rt: 0.04, lt: 0.04 })]);
+      controls.poll();
+      expect(controls.rideRequest(1 / 60, true)).toMatchObject({ compress: 0, crouch: 0 });
+      key('keydown', 'ShiftLeft');
+      expect(controls.rideRequest(0.1, true).crouch).toBeCloseTo(0.5, 9);
+    });
   });
 
   it('trims with the left stick when the player chooses it (C1)', () => {
@@ -298,5 +532,36 @@ describe('the ride request (P9)', () => {
     target.dispatchEvent(Object.assign(new Event('keydown'), { code: 'KeyM', repeat: true }));
     expect(mute).toHaveBeenCalledTimes(1);
   });
-});
 
+  // The sprint paddle (the owner's choices of 2026-10-22): the paddle double-pressed and held, on any device.
+  it('sprints on a double press of the paddle held, from the keyboard or a pad, and not standing', () => {
+    const STEP = 1 / 60;
+    const { controls, key, setPads } = setup();
+    key('keydown', 'Space');
+    expect(controls.rideRequest(STEP, false)).toMatchObject({ paddle: true, sprint: false });
+    key('keyup', 'Space');
+    for (let i = 0; i < 6; i += 1) controls.rideRequest(STEP, false);
+    key('keydown', 'Space');
+    expect(controls.rideRequest(STEP, false)).toMatchObject({ paddle: true, sprint: true });
+    key('keyup', 'Space');
+    expect(controls.rideRequest(STEP, false)).toMatchObject({ paddle: false, sprint: false });
+    // ArrowUp, the other paddle key, the same.
+    key('keydown', 'ArrowUp');
+    controls.rideRequest(STEP, false);
+    key('keyup', 'ArrowUp');
+    controls.rideRequest(STEP, false);
+    key('keydown', 'ArrowUp');
+    expect(controls.rideRequest(STEP, false).sprint).toBe(true);
+    key('keyup', 'ArrowUp');
+    // RT on a pad: pressed, let go, pressed again within 0.3 s.
+    for (let i = 0; i < 30; i += 1) controls.rideRequest(STEP, false);
+    for (const held of [true, false, true]) {
+      setPads([pad(held ? [7] : [])]);
+      controls.poll();
+      controls.rideRequest(0.1, false);
+    }
+    expect(controls.lastRequest).toMatchObject({ paddle: true, sprint: true });
+    // Standing, the paddle's keys do not paddle, and nothing sprints.
+    expect(controls.rideRequest(STEP, true)).toMatchObject({ paddle: false, sprint: false });
+  });
+});

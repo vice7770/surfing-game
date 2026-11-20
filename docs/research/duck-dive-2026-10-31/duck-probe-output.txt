@@ -1,0 +1,16 @@
+## Flat water
+{"case":"1.5 s press, from rest","deck":"0.42","nose":"0.28","restPitch":"9.2","pitchAt03":"13.1","pitch":"-2.3 to 13.1","rollMax":"6","off":"stayed on","lifted":"0.00","surfaced":true}
+{"case":"3 s press, from rest","deck":"0.42","nose":"0.34","restPitch":"9.2","pitchAt03":"13.1","pitch":"0.7 to 13.1","rollMax":"85","off":"off at 4.65 s","lifted":"0.32","surfaced":true}
+{"case":"1.5 s press, from paddling (1.62 m/s)","deck":"0.23","nose":"0.23","restPitch":"11.4","pitchAt03":"15.6","pitch":"-0.8 to 15.6","rollMax":"79","off":"off at 1.08 s","lifted":"0.10","surfaced":true}
+{"case":"3 s press, from paddling (1.62 m/s)","deck":"0.23","nose":"0.23","restPitch":"11.4","pitchAt03":"15.6","pitch":"-0.8 to 15.6","rollMax":"79","off":"off at 1.08 s","lifted":"0.10","surfaced":true}
+## Test bore (1.2 m broken wave), five starts each
+{"depth":2.5,"case":"on top","pushed":"5.7","on":"3/5","pushedOn":"4.5","offAfter":"0.0–0.0 s","deepest":"—"}
+{"depth":2.5,"case":"early (9 m)","pushed":"2.5","on":"0/5","pushedOn":"—","offAfter":"0.0–0.3 s","deepest":"0.37"}
+{"depth":2.5,"case":"on time (2.5 m)","pushed":"1.2","on":"5/5","pushedOn":"1.2","offAfter":"—","deepest":"1.38"}
+{"depth":2.5,"case":"late (0.3 m)","pushed":"2.8","on":"1/5","pushedOn":"1.7","offAfter":"0.7–2.5 s","deepest":"1.35"}
+{"depth":2.5,"case":"on time, 3 s hold","pushed":"2.4","on":"0/5","pushedOn":"—","offAfter":"2.9–3.7 s","deepest":"1.38"}
+{"depth":1.2,"case":"on top","pushed":"10.4","on":"0/5","pushedOn":"—","offAfter":"0.0–3.4 s","deepest":"—"}
+{"depth":1.2,"case":"early (9 m)","pushed":"4.5","on":"0/5","pushedOn":"—","offAfter":"0.0–0.0 s","deepest":"0.26"}
+{"depth":1.2,"case":"on time (2.5 m)","pushed":"7.3","on":"0/5","pushedOn":"—","offAfter":"0.6–1.1 s","deepest":"1.43"}
+{"depth":1.2,"case":"late (0.3 m)","pushed":"9.1","on":"0/5","pushedOn":"—","offAfter":"3.0–3.9 s","deepest":"1.30"}
+{"depth":1.2,"case":"on time, 3 s hold","pushed":"7.4","on":"0/5","pushedOn":"—","offAfter":"0.6–1.1 s","deepest":"1.44"}

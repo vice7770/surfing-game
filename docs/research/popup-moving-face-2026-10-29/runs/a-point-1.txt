@@ -1,0 +1,8 @@
+point medium seed 1: take-off (0, -123.0), default start 11 m out; starts 11 m out (2.96 m deep); t 22.0 s after the spin-up (0 s wall)
+stepped to t 159.5 s; 13 waves from 11 m out (193 s wall)
+-- from 11 m out (2.96 m deep), set faces ≥ 1.76 m:
+good      sets 5: rode 1, no cue 0, left on the crest 4, white water 0, fell 0; rides: pop 0.67 s after the crest passed the start, standing 1.20 s after the pop, face under the board 16°, 0.76 up; paddling top speed 4.94 m/s
+good      all  13: rode 1, no cue 6, left on the crest 6, white water 0, fell 0; rides: pop 0.67 s after the crest passed the start, standing 1.20 s after the pop, face under the board 16°, 0.76 up; paddling top speed 4.23 m/s
+early     sets 5: rode 4, no cue 0, left on the crest 1, white water 0, fell 0; rides: pop 1.07 s after the crest passed the start, standing 1.20 s after the pop, face under the board 20°, 0.67 up; paddling top speed 4.82 m/s
+early     all  13: rode 5, no cue 6, left on the crest 2, white water 0, fell 0; rides: pop 1.07 s after the crest passed the start, standing 1.20 s after the pop, face under the board 19°, 0.67 up; paddling top speed 4.04 m/s
+wall 193 s

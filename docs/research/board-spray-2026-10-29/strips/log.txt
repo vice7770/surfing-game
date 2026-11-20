@@ -1,0 +1,32 @@
+2026-10-29T19:26:49.580Z saved board-spray-compress.png (838468 bytes)
+2026-10-29T19:26:49.583Z compress: {"case":"compress","start":"trough at 30.1 s","frames":[{"t":0.8,"speed":6.69,"sheets":1,"flux":48.8,"spray":382,"boardSpawns":118},{"t":1.1,"speed":6.15,"sheets":1,"flux":130.4,"spray":673,"boardSpawns":302}]}
+2026-10-29T19:27:09.661Z spray GPU: {"drawn":6.115,"hidden":6.05,"sprayCost":-0.01}
+2026-10-29T19:29:20.563Z saved board-spray-compress.png (850290 bytes)
+2026-10-29T19:29:20.567Z compress: {"case":"compress","start":"trough at 30.1 s","frames":[{"t":0.8,"speed":6.69,"sheets":1,"flux":48.8,"spray":382,"boardSpawns":118},{"t":1.1,"speed":6.15,"sheets":1,"flux":130.4,"spray":673,"boardSpawns":302}]}
+2026-10-29T19:29:40.317Z spray GPU: {"drawn":6.084,"hidden":6.032,"sprayCost":0.019}
+2026-10-29T19:31:20.641Z saved board-spray-trim.png (1746370 bytes)
+2026-10-29T19:31:20.644Z trim: {"case":"trim","start":"face at 30.1 s","frames":[{"t":0.5,"speed":7.66,"sheets":1,"flux":11.1,"spray":345,"boardSpawns":33},{"t":0.8,"speed":7.57,"sheets":1,"flux":21.1,"spray":364,"boardSpawns":61},{"t":1.1,"speed":7.26,"sheets":1,"flux":13.4,"spray":498,"boardSpawns":94},{"t":1.4,"speed":6.94,"sheets":1,"flux":19.1,"spray":1538,"boardSpawns":124}]}
+2026-10-29T19:32:11.750Z saved board-spray-turn.png (1717983 bytes)
+2026-10-29T19:32:11.752Z turn: {"case":"turn","start":"trough at 40.1 s","frames":[{"t":0.5,"speed":5.57,"sheets":1,"flux":31,"spray":412,"boardSpawns":64},{"t":0.8,"speed":5.53,"sheets":1,"flux":39.4,"spray":557,"boardSpawns":121},{"t":1.1,"speed":5.39,"sheets":1,"flux":88.4,"spray":1019,"boardSpawns":235},{"t":1.4,"speed":4.27,"sheets":1,"flux":156.4,"spray":3349,"boardSpawns":450}]}
+2026-10-29T19:33:04.102Z saved board-spray-compress.png (1708788 bytes)
+2026-10-29T19:33:04.105Z compress: {"case":"compress","start":"trough at 50.1 s","frames":[{"t":0.5,"speed":6.5,"sheets":1,"flux":28.2,"spray":277,"boardSpawns":64},{"t":0.8,"speed":6.83,"sheets":1,"flux":40.2,"spray":537,"boardSpawns":119},{"t":1.1,"speed":6.33,"sheets":1,"flux":108.6,"spray":1912,"boardSpawns":266},{"t":1.4,"speed":5.02,"sheets":1,"flux":78.6,"spray":4115,"boardSpawns":430}]}
+2026-10-29T19:33:24.049Z spray GPU: {"drawn":8.592,"hidden":8.617,"sprayCost":-0.05}
+2026-10-29T19:41:00.850Z saved board-spray-trim.png (1739678 bytes)
+2026-10-29T19:41:00.855Z trim: {"case":"trim","start":"face at 30.1 s","frames":[{"t":0.5,"speed":7.66,"sheets":2,"flux":5.5,"spray":326,"boardSpawns":31},{"t":0.8,"speed":7.57,"sheets":2,"flux":7,"spray":353,"boardSpawns":40},{"t":1.1,"speed":7.26,"sheets":2,"flux":5,"spray":518,"boardSpawns":56},{"t":1.4,"speed":6.94,"sheets":2,"flux":6.3,"spray":1496,"boardSpawns":67}]}
+2026-10-29T19:41:51.872Z saved board-spray-turn.png (1715531 bytes)
+2026-10-29T19:41:51.879Z turn: {"case":"turn","start":"trough at 40.1 s","frames":[{"t":0.5,"speed":5.57,"sheets":2,"flux":11.7,"spray":391,"boardSpawns":21},{"t":0.8,"speed":5.53,"sheets":1,"flux":39,"spray":573,"boardSpawns":68},{"t":1.1,"speed":5.39,"sheets":1,"flux":55.4,"spray":1026,"boardSpawns":187},{"t":1.4,"speed":4.27,"sheets":1,"flux":16.5,"spray":3209,"boardSpawns":276}]}
+2026-10-29T19:42:44.130Z saved board-spray-compress.png (1707884 bytes)
+2026-10-29T19:42:44.137Z compress: {"case":"compress","start":"trough at 50.1 s","frames":[{"t":0.5,"speed":6.5,"sheets":2,"flux":10,"spray":259,"boardSpawns":20},{"t":0.8,"speed":6.83,"sheets":1,"flux":63.8,"spray":558,"boardSpawns":88},{"t":1.1,"speed":6.33,"sheets":1,"flux":97.7,"spray":1961,"boardSpawns":273},{"t":1.4,"speed":5.02,"sheets":1,"flux":31.6,"spray":4357,"boardSpawns":395}]}
+2026-10-29T19:43:03.780Z spray GPU: {"drawn":8.662,"hidden":8.765,"sprayCost":0.172}
+2026-10-29T19:44:58.062Z saved board-spray-trim.png (2528132 bytes)
+2026-10-29T19:44:58.068Z trim: {"case":"trim","start":"face at 30.1 s","frames":[{"t":0.6,"speed":7.69,"sheets":2,"flux":4.1,"spray":296,"boardSpawns":31},{"t":0.9,"speed":7.46,"sheets":2,"flux":7.1,"spray":350,"boardSpawns":48},{"t":1.2,"speed":7.18,"sheets":2,"flux":4.7,"spray":617,"boardSpawns":59},{"t":1.5,"speed":6.78,"sheets":2,"flux":7.3,"spray":2262,"boardSpawns":69}]}
+2026-10-29T19:47:15.205Z saved board-spray-trim.png (2528132 bytes)
+2026-10-29T19:47:15.210Z trim: {"case":"trim","start":"face at 30.1 s","frames":[{"t":0.6,"speed":7.69,"sheets":2,"flux":4.1,"spray":296,"boardSpawns":31},{"t":0.9,"speed":7.46,"sheets":2,"flux":7.1,"spray":350,"boardSpawns":48},{"t":1.2,"speed":7.18,"sheets":2,"flux":4.7,"spray":617,"boardSpawns":59},{"t":1.5,"speed":6.78,"sheets":2,"flux":7.3,"spray":2262,"boardSpawns":69}]}
+2026-10-29T19:48:05.783Z saved board-spray-turn.png (2429610 bytes)
+2026-10-29T19:48:05.790Z turn: {"case":"turn","start":"trough at 40.1 s","frames":[{"t":0.6,"speed":5.54,"sheets":2,"flux":12.6,"spray":541,"boardSpawns":31},{"t":0.9,"speed":5.62,"sheets":1,"flux":47.9,"spray":470,"boardSpawns":99},{"t":1.2,"speed":5.24,"sheets":1,"flux":55.4,"spray":1882,"boardSpawns":225},{"t":1.5,"speed":3.51,"sheets":1,"flux":8.8,"spray":3609,"boardSpawns":286}]}
+2026-10-29T19:48:58.142Z saved board-spray-compress.png (2409311 bytes)
+2026-10-29T19:48:58.145Z compress: {"case":"compress","start":"trough at 50.1 s","frames":[{"t":0.6,"speed":6.62,"sheets":1,"flux":22.6,"spray":272,"boardSpawns":31},{"t":0.9,"speed":6.92,"sheets":1,"flux":99.6,"spray":601,"boardSpawns":147},{"t":1.2,"speed":5.85,"sheets":1,"flux":70.3,"spray":2686,"boardSpawns":328},{"t":1.5,"speed":4.58,"sheets":1,"flux":25.3,"spray":4405,"boardSpawns":416}]}
+2026-10-29T19:49:17.728Z spray GPU: {"drawn":22.007,"hidden":21.979,"sprayCost":-0.001}
+2026-10-29T19:51:19.160Z saved board-spray-compress-off.png (2379003 bytes)
+2026-10-29T19:51:19.163Z compress: {"case":"compress","start":"trough at 30.1 s","frames":[{"t":0.6,"speed":6.49,"sheets":0,"flux":0,"spray":293,"boardSpawns":0},{"t":0.9,"speed":6.86,"sheets":0,"flux":0,"spray":327,"boardSpawns":0},{"t":1.2,"speed":5.26,"sheets":0,"flux":0,"spray":619,"boardSpawns":0},{"t":1.5,"speed":4.25,"sheets":0,"flux":0,"spray":2277,"boardSpawns":0}]}
+2026-10-29T19:51:39.306Z spray GPU: {"drawn":22.758,"hidden":22.791,"sprayCost":0.015}

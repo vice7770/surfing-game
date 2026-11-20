@@ -1,0 +1,53 @@
+
+# step 3.3p — the internal plant against the game, 24 runs, new rider, deck filter, ledger on, heel predict
+# fell 24 of 24, at 0.883–4.767 s, median 2.433
+# P0a sense residual, peak over runs: 0.000e+0  | tick spacing off: 0.000e+0 s
+# P0c ledger split 0.00e+0 closure 0.00e+0 residual 0.00e+0 apart 16
+# P0e group closure, roll 2.62e-13 bank 1.18e-12
+# P0b the ledger vs the game's own state change: roll 0.004–0.034 rel, lean 0.022–0.463 | measured roll acc 56.200–699.700 °/s², lean 41.700–482.800
+# P0g the blend's own error (exact point vs the controller's blend) 0.555–1.519 median, 2.010–720.025 peak
+# P1 one-step residual: roll rate 5.507–62.814 °/s median (peak 108.316–348.253), bank rate 4.427–30.009 (peak 26.065–146.105)
+#    over the component's own change: roll rate 3.573–15.979, bank rate 1.634–10.758, roll 0.273–1.004, bank 0.078–0.789, slip 2.307–17.075
+#    share of ticks above 1: roll rate 0.821–1.000, bank rate 0.667–1.000
+#    with the derived slip's sign reversed: roll rate 3.532–16.120, bank rate 2.555–21.804
+#    scaled rms 0.263–1.496 median, 1.505–6.969 peak | first six ticks' roll-rate ratio 0.624–2.372
+# P1 rows vs the ledger: roll model 372.000–4194.800 °/s² vs game 58.600–905.500, rel err 1.941–15.492 (peak 35.269–197117.348), sign right 0.323–0.615
+#                        bank model 254.800–1685.300 vs game 43.700–537.600, rel err 1.202–10.897 (peak 23.454–27516.294), sign right 0.262–0.699
+#    last 0.2 s: roll 0.441–25.021, bank 0.238–6.745
+# P2 model roll row by group, °/s² median: waterRoll 227.000–4283.000 waterYaw 41.300–248.000 waterSide 590.100–2877.900 ankle 495.800–3713.300 twist 38.300–156.100 feetFwd 16.800–117.400 rest 535.400–2266.400
+#    game roll row by group: water 432.700–2386.400 rider 480.000–2814.500 board 20.800–256.900 | carry 0.000–0.000 gyro 0.057–12.997
+#    SIGNED sums: model water 687.400–4845.200 vs game water+board 414.500–2606.100 | model rider 584.300–4645.900 vs game rider 480.000–2814.500
+#    water gap -2.087–0.289 rel (739.400–2823.100 °/s²), rider gap -0.279–2.831 rel (606.200–3101.000 °/s²)
+#    carry's share of the roll row 0.000–0.000, of the lean row 0.000–0.000; carry's own peak 0.000–0.000 °/s²
+#    the pendulum's own g/L term 26.700–375.700 °/s²; bank row ankle 265.000–3679.900 rest 555.100–8415.500
+# P3 schedule's rail peak 0.000–0.000° vs measured |rail| median 2.230–27.570° peak 42.180–96.910°
+#    heelRoll at 0 -318.400–-163.500 vs at the measured rail -225.200–148.200 N·m/rad; sign flips in 0.000–0.868 of ticks
+#    P3c: rel err with the measured rail's plant 1.016–15.073 against 1.941–15.492; it HELPS in 0.075–0.973 of ticks
+# P4 speed median 4.492–8.662 m/s, min 2.687–7.782; clamped to the table's 4–12 in 0.000–0.105 of ticks
+# P5 counterfactuals, roll row rel err: shipped 1.941–15.492 | rail 1.016–15.073 | sway 75.54 kg 1.659–7.128 | both 1.183–16.450
+#    bank row rel err: shipped 1.202–10.897 | rail 1.488–16.477 | sway 1.066–6.753 | both 1.036–8.195
+#    closest on the roll row, share of ticks: shipped 0.025–0.706 rail 0.029–0.585 sway 0.095–0.651 both 0.000–0.341
+# P6 (3.3p) the game's own inertias off its own A⁻¹, per-run medians over the arm:
+#    sway mass GAME 2.963–4.130 kg (lo 2.814–3.016, peak 4.935–14.722) vs MODEL 2.540–2.540; ratio 1.166–1.626
+#    the bank row welded 3.748–5.065 kg | EVERYTHING but translation welded (P0c) 76.037–87.437 kg — must read the masses SUMMED; singular 0.000–0.000
+#    A is symmetric: |side→roll − roll→sway| peak 0.000–0.000
+#    roll inertia GAME 0.405–1.056 kg·m² vs MODEL 0.747–1.223; ratio 0.414–1.152
+#    yaw inertia GAME 1.820–2.065 kg·m² vs MODEL 1.797–1.962; ratio 0.995–1.096
+#    cross terms: side→roll -0.174–-0.049 rad/s per N·s, roll→sway -0.174–-0.049 m/s per N·m·s, side→Δu̇/L -0.523–-0.186
+# P7 (3.3p) FORCE against FORCE, the twelve derivatives at the state vs the game's own water, no inertia between:
+#    roll moment K: model 11.000–164.600 N·m vs game 8.600–54.500; |ratio| 1.025–4.145, signed 0.879–3.813, sign right 0.733–0.953
+#    … with the heel against the WATER instead of the world's level: model 19.300–221.000 N·m, signed ratio 1.793–5.337 (face tilt 0.590–10.170°)
+#    side force Y: model 39.100–144.000 N vs game 24.700–229.500; |ratio| 0.498–2.668, sign right 0.529–0.985 | at the water's heel 41.700–178.000 N
+#    yaw moment N: model 8.600–35.200 N·m vs game 6.100–38.000; |ratio| 0.487–2.121, sign right 0.236–0.590
+# P8 (3.3p) the TILT plant — the water's own terms at the heel against the WATER, the tilt a measured input:
+#    roll row rel err 1.912–15.082 against shipped 1.941–15.492; sign right 0.323–0.615 against 0.323–0.615
+#    lean row rel err 1.165–10.151 against shipped 1.202–10.897; sign right 0.262–0.744 against 0.262–0.699
+#    one-step ratios: roll rate 3.581–15.122 against 3.573–15.979; bank rate 1.573–10.293 against 1.634–10.758
+#    share above 1: roll 0.821–1.000 against 0.821–1.000; bank 0.641–1.000 against 0.667–1.000
+#    tilt AND the measured rail together: roll 0.926–15.863 lean 1.408–60.931, roll sign 0.492–0.780
+# P9 (3.3p) the DERIVED plant's ceiling — the model's own forces through the GAME's own 4x4 compliance:
+#    roll row rel err 4.418–38.541 against shipped 1.941–15.492; sign right 0.265–0.604 against 0.323–0.615
+#    with the water's heel at the water too: rel err 5.311–66.813, sign right 0.281–0.590
+#    the mapping's own control, diagonal only / the model's K over its own I_roll: 0.868–2.478 (must sit in 0.75-1.18, the two inertias' own ratio)
+# P10 (3.3p) the roll row's CONDITIONING — its largest single term over the net it produces:
+#    in the model 1.170–10.510x, in the GAME 2.380–16.430x

@@ -1,8 +1,8 @@
 import {
-  CANYON, PADANG, REEF, canyonArmAt, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type CanyonBed, type SpotName, type SurfSpot,
+  PADANG, REEF, canyonArmAt, canyonBankEdge, canyonBankJoin, canyonBankOn, canyonBarAt, canyonBars, canyonJoin, canyonOnset, canyonPeelAt, canyonReefSpan, canyonShape, createSpot, padangForeFootZ, padangReefAt, pointOnset, reefLedgeAt, smoothstep, type CanyonBed, type CanyonJoinRule, type CanyonShape, type SpotName, type SurfSpot,
 } from './Bathymetry';
 import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
-import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
+import { BreakingModel, PeelTracker, aFrameEstimate, breakerDepthFor, type PeelEstimate } from './Breaking';
 import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
 import { AERATION, AerationField } from './AerationField';
@@ -14,7 +14,10 @@ import { focusX } from './Refraction';
 import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
 import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
 import { SeaState } from './SeaState';
-import { POOL, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout } from './pool';
+import {
+  POOL, POOL_BARREL, POOL_REF, POOL_STRAIGHT, poolBarrelBreakDepth, poolBarrelRiddenAt, poolBreakDepth, poolFloorOf, poolPeriodOf, poolRefLine, poolRefOn, poolRiddenAt, poolSea, poolStraightBreakDepth,
+  poolStraightAt, poolStraightDirection, poolStraightFrame, poolStraightPlatformZ, poolStraightRiddenAt, poolStraightStartOut, poolTankLayout, type PoolBarrelLayout, type PoolFloor, type PoolFloorFace, type PoolReefSwitch, type PoolSizeSwitch, type PoolWaves,
+} from './pool';
 import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
 import { SeaStateBoundary } from './SeaStateBoundary';
 import { SideFeed } from './SideFeed';
@@ -25,17 +28,24 @@ import { riderBounds, sideMargin, type RiderBounds } from '../physics/riderBound
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
 import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
-import { BARREL_SPOTS } from './barrel/barrelSpots';
+import { BARREL_SPOTS, barrelSpotOf, tubeFootMax, type PoolReachSwitch } from './barrel/barrelSpots';
+import { tubeFaceOf, type TubeFace } from './barrel/faceAnchor';
+import type { PoolTubeCase, TubeShape } from './barrel/barrelLibrary';
+import type { HeldRule } from './barrel/heldJetStep';
 import { columnCrests, type CrestSample } from './barrel/crestOnset';
-import type { ProfileLibrary } from './barrel/ProfileLibrary';
-import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
+import { LANDMARK, type ProfileLibrary } from './barrel/ProfileLibrary';
+import { advanceClocks, onsetTiming, throwContourDistance, type OnsetTiming } from './barrel/sliceClock';
 import { SweptCrash } from './barrel/SweptCrash';
+import { AFTER_TUBE, TouchdownSeeds } from './barrel/touchdownSeeds';
 import { CarrierSupport } from './barrel/carrierSupport';
+import { latchTubeSpans, writeFrontRecords } from './barrel/frontRecords';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE, SpillingRoller } from './SpillingRoller';
 import { frayBand } from './drawnEdges';
-import { BAND_LOOK_STRIDE, SPILLING_CURL_OLD_PSI_MAX, SpillingCurl } from './SpillingCurl';
+import { BAND_LOOK_STRIDE, SpillingCurl } from './SpillingCurl';
+import { WaveZone } from './library/WaveZone';
+import type { WaveLibrary } from './library/WaveLibrary';
 
 /** No drawn splashes (`drawnImpacts` without a spilling lip). */
 const NO_IMPACTS: readonly LipImpact[] = [];
@@ -52,6 +62,10 @@ export interface LipThrowEvent {
   height: number;
   /** Where along shore the crest threw, m. */
   x: number;
+  /** Where across shore the crest stood, m, the still depth there, m, and the breaker-point Iribarren number the throw read. */
+  z?: number;
+  depth?: number;
+  iribarren?: number;
   tube: TubeGeometry;
   /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured, and the gradient it climbs. */
   vortexRatio?: number;
@@ -92,6 +106,422 @@ export interface SurfZoneConfig {
   windSpeed?: number;
   /** Kennedy onset threshold as a fraction of √(gh); defaults per spot. */
   breakingOnset?: number;
+  /**
+   * 'old': every spot's onset as before step 3b of the all-spots survey (2026-10-28), one value a spot (the Canyon keeps its
+   * per-cell field, which came before): today only the Point's depth-keyed onset (`POINT_ONSET`) goes back to its flat
+   * 0.65. The `?onset=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  onsetRule?: 'old';
+  /**
+   * How the paddler's hands meet water outrunning the stroke (`AttachedRiderOptions.stroke`, canyon-catch 2026-10-29):
+   * 'feather', the default, edge-on; 'old', broadside as before (the `?stroke=old` dev switch, for A/Bs). Every spot's
+   * rider; online rooms run the default.
+   */
+  stroke?: 'feather' | 'old';
+  /**
+   * 'old': the sea's surface held still through the bodies' step, as before popup-moving-face (2026-10-29); by default
+   * the bodies sample it moving at its rise rate to each substep's time (`PhysicalSurfWaterOptions.surfaceMotion`). The
+   * `?surfaceMotion=old` dev switch, for A/Bs. Every spot's bodies; online rooms run the default.
+   */
+  surfaceMotion?: 'old';
+  /**
+   * 'old': the plain surface's heights read as before pool-barrel-perf (2026-11-06; `PhysicalSurfWaterOptions.plainHeight`):
+   * every sample gathers its 16 render nodes again and weighs them through arrays. By default a sample in a cache scope
+   * (the swept contact's build, the bodies' step) that needs the last sample's nodes keeps them: the same bits, faster.
+   * The `?plainHeight=old` dev switch, for A/Bs. Every spot's water; online rooms run the default.
+   */
+  plainHeight?: 'old';
+  /**
+   * 'old': the worker's swept contact under the face ruling (the Wave Pool's straight Barrel) builds every row's heights
+   * and normals at each update, as before pool-barrel-perf (2026-11-06); by default it finds them as its queries need
+   * them (`SweptContact.forFaceWorker`): the same answers. The `?contactRows=old` dev switch, for A/Bs; online rooms run
+   * the default.
+   */
+  contactRows?: 'old';
+  /**
+   * 'old': the device gets the water the CPU changed between its steps as one span, from the first changed cell to the
+   * last, as before barrel-gpu (2026-11-06; `GpuBoussinesq.configure`); by default each run of changed cells. The
+   * same water on the device either way. The `?deviceWater=old` dev switch, for A/Bs. Every spot on the device; online
+   * rooms run the default.
+   */
+  deviceWater?: 'old';
+  /**
+   * 'old': a lip's launch marks the whole water changed, so the device gets all of it, as before barrel-gpu
+   * (`PlungingLip.launchMarks`); by default the cells the launch takes water and momentum from. The same water either way.
+   * The `?launchWater=old` dev switch, for A/Bs. Every spot with a lip; online rooms run the default.
+   */
+  launchWater?: 'old';
+  /**
+   * 'old': the device gets the whole plunge zone whenever a cell enters or leaves it, as before barrel-gpu; by
+   * default those cells alone. The device reads only whether a cell's hold runs, which is the same either way. The
+   * `?devicePlunge=old` dev switch, for A/Bs. Every spot on the device; online rooms run the default.
+   */
+  devicePlunge?: 'old';
+  /**
+   * 'off': a sea periodic along shore (the Wave Pool's straight Barrel) steps on the CPU, as before barrel-gpu (2026-11-06),
+   * where by default the GPU steps it as every other spot (its rows' cyclic solves on the device). The `?barrelGpu=off` dev
+   * switch, for A/Bs; online rooms run the default.
+   */
+  barrelGpu?: 'off';
+  /**
+   * 'old': back on the board after a wipeout as before swim-back (2026-10-29): the reel to the ankle, and the hands' and
+   * chest's springs pulling the body onto the deck (`RideSessionOptions.swim`); by default the reel brings the tail to
+   * the hand and the swimmer climbs on from where the body is. The `?swim=old` dev switch, for A/Bs; online rooms run
+   * the default.
+   */
+  swim?: 'old';
+  /**
+   * 'old': a roller's froth drags a board's whole wetted hull anywhere in the lens's footprint, past its g-blended flow
+   * and uncapped, as before bottom-stop (2026-10-29); by default only where the lens reaches (ξ ≤ g), past the roller's
+   * own water (c·n̂), at most its grip on the face (Duncan's shear) and on the share of the hull's depth it covers
+   * (`PhysicalSurfWaterOptions.froth`). Only the Canyon has roller lenses. The `?froth=old` dev switch, for A/Bs; online
+   * rooms run the default.
+   */
+  froth?: 'old';
+  /**
+   * 'old': letting Compress go, the rider's legs extend at their full pace, as before compress-exit (2026-10-29); by
+   * default no faster than the stance's spring can catch the body (`AttachedRiderOptions.extension`). Every spot. The
+   * `?extension=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  extension?: 'old';
+  /**
+   * 'off': the riders' Snap input is ignored, as before the snap stance (2026-11-03; `RideSessionOptions.snap`). Every
+   * spot. The `?snap=off` dev switch, for A/Bs; online rooms run the default.
+   */
+  snap?: 'off';
+  /**
+   * 'old': the riders' Snap set up at the balance's calm pace, as before snap-quick (2026-11-05); by default the shoulders
+   * and the weight go onto the tail as fast as the body can take them (`RideSessionOptions.snapQuick`). Every spot. The
+   * `?snapQuick=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  snapQuick?: 'old';
+  /**
+   * 'lean': the riders' Snap leans for its own turn, up to 70° (snap-lean, 2026-11-05; `RideSessionOptions.snapPivot`),
+   * opt-in; by default the steer's 50°, as before. Every spot. The `?snapPivot=lean` dev switch, to ride; online rooms run
+   * the default.
+   */
+  snapPivot?: 'lean';
+  /**
+   * 'old': Snap let go, the riders' weight stays over the tail until the balance's band is crossed, as before
+   * snap-recentre (2026-11-06; `RideSessionOptions.snapRecentre`); by default it is centred again. Every spot. The
+   * `?snapRecentre=old` dev switch, for A/Bs; online rooms run the default.
+   */
+  snapRecentre?: 'old';
+  /**
+   * 'old': with `snapPivot: 'lean'`, a Snap turning up the face leans as far as a top turn, as before snap-upturn
+   * (2026-11-08; `RideSessionOptions.snapUpturn`); by default it asks for the steer's rail. The `?snapUpturn=old` dev
+   * switch, for A/Bs.
+   */
+  snapUpturn?: 'old';
+  /**
+   * 'deep': Snap's legs load to the tube tuck's 0.45 m (snap-carve, 2026-11-08; `RideSessionOptions.snapDepth`); by
+   * default as deep as Compress. Every spot. The `?snapDepth=deep` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  snapDepth?: 'deep';
+  /**
+   * 'on': a full steer under Snap stamps the weight past the tail for a moment, then back over the fins (snap-stamp,
+   * 2026-11-08; `RideSessionOptions.snapStamp`); by default Snap as before. Every spot. The `?snapStamp=on` dev switch,
+   * opt-in, to ride; online rooms run the default.
+   */
+  snapStamp?: 'on';
+  /**
+   * 'on': the riders' two legs act apart (rider-agile, 2026-11-09; `RideSessionOptions.agile`): a full steer under Snap
+   * launches the tail with the feet's couple in place of the stamp. Every spot. The `?agile=on` dev switch, opt-in, to
+   * ride; online rooms run the default.
+   */
+  agile?: 'on';
+  /**
+   * 'on': at a rail change the riders' legs push the body toward the new rail against the board at the back foot, in
+   * the lean-out pull's place (leg-drive, 2026-11-10; `RideSessionOptions.legDrive`). **'turn'** is that and the
+   * compressed turn's lean led in by the same pair, in COMPRESS_PULL's place (step 3.2t; `AttachedRider`'s `legTurn` note).
+   * Every spot. The `?legDrive=on` and `?legDrive=turn` dev switches, opt-in, to ride; online rooms run the default.
+   */
+  legDrive?: 'on' | 'turn';
+  /**
+   * The hull's cross-section (step 3.2u; `RideSessionOptions.hull`): **'rail'** gives the board a real rail band — its
+   * own normals, with the buried rail's suction and its ventilation latch — in place of the single flat-bottom normal
+   * every patch has carried until now. `railSuction: 'off'` builds the section and makes no suction, which tells the
+   * geometry's effect from the grip's. `compressPull: 'off'` deletes the old rider's unpaired compressed-turn pull.
+   * Every spot. The `?hull=rail`, `?railSuction=off` and `?compressPull=off` dev switches, opt-in; online rooms run the
+   * default.
+   */
+  hull?: 'rail';
+  railSuction?: 'off';
+  compressPull?: 'off';
+  /**
+   * 'on': on a standing, stick-only carve the riders' legs flex with the turn's load, to a moderate crouch at most
+   * (carve-flex, 2026-11-10; `RideSessionOptions.carveFlex`). Every spot. The `?carveFlex=on` dev switch, opt-in, to
+   * ride; online rooms run the default.
+   */
+  carveFlex?: 'on';
+  /**
+   * 'drive': under Snap with the stick pushed, the riders' legs load as the Snap begins and extend as the board comes
+   * round, in place of holding Snap's full depth (snap-legs, 2026-11-10; `RideSessionOptions.snapLegs`). Every spot.
+   * The `?snapLegs=drive` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  snapLegs?: 'drive';
+  /**
+   * 'on': a Snap taken on the other rail keeps the riders' weight where it is until the body has come over the board,
+   * the back foot pushing it across, and only then weights the tail (snap-cross, 2026-11-10;
+   * `RideSessionOptions.snapCross`). Every spot. The `?snapCross=on` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  snapCross?: 'on';
+  /**
+   * 'cap': the riders' standing contact makes no energy on steep water: when the feet cannot give the push the coupled
+   * solve needs, the board takes only what the legs give, and the contact's net power stays within a human's (ruling 27's
+   * A-lite, 2026-11-12; `RideSessionOptions.legPower`). Every spot. The `?legPower=cap` dev switch, opt-in, to ride;
+   * online rooms run the default.
+   */
+  legPower?: 'cap';
+  /**
+   * 'new': the riders are the new surfer (docs/research/new-rider/design.md, ruling 29; `RideSessionOptions.rider`). Step
+   * 3.1: standing, the body free along the board too, leaning with the face; softer knees with a strength cap; the
+   * contact's power within A-lite's window. Every spot. The `?rider=new` dev switch, opt-in, to ride; online rooms run
+   * the default.
+   */
+  rider?: 'new';
+  /**
+   * 'deck': the standing riders' felt vertical is low-passed on the **deck's own axes** rather than in the world (step
+   * 3.3c, the wave-shape advisor's second ruling of 2026-11-15; `RideSessionOptions.feltFrame`) — what a body-fixed
+   * sensor does, so the same 0.1 s costs `T · d(tilt)/dt` instead of `Ω · T` against a rolling deck. No force, no hull
+   * law and no spot's drive changes. Every spot. The `?feltFrame=deck` dev switch, opt-in, to ride; online rooms run the
+   * default.
+   */
+  feltFrame?: 'deck';
+  /**
+   * 'achieved': the new surfer's balance reads the **knees' travel left** at the depth its leg has actually reached
+   * rather than at the depth the player commands, so its own knee drop spends the travel it is using instead of
+   * reaching `CROUCH_DEPTH` on a standing stance and leaving Compress nothing to add (step 3.3f;
+   * `RideSessionOptions.kneeRoom`, `humanBalance`'s `stanceRoom`). The new surfer (`?rider=new`) only; nothing on the
+   * default rider, no force and no hull law is touched. Every spot. The `?kneeRoom=achieved` dev switch, opt-in, to
+   * ride; online rooms run the default.
+   */
+  kneeRoom?: 'achieved';
+  /**
+   * 'keep': **a deep crouch keeps its catching reach.** The stance room's hip range and arms are read at the riding
+   * stance (±1.2 rad, arms free) whatever the leg's depth is, while the knees' travel stays the stance's own, so
+   * Compress no longer trades its moment bar away for a reach of 0.16–0.18 m against the standing stance's 0.25–0.35
+   * (step 3.3g §2b; `RideSessionOptions.stanceReach`, `humanBalance`'s `stanceRoom`). **The owner's ruling of
+   * 2026-11-16**, in their words: *"Keep the reach in Compress — a deep crouch keeps its arms and hip swing."* It
+   * moves the hip's stop as well as the fall test's credit, and the arms really go out. The new surfer (`?rider=new`)
+   * only; nothing on the default rider, no force and no hull law is touched. Every spot. The `?stanceReach=keep` dev
+   * switch, opt-in, to ride; online rooms run the default.
+   */
+  stanceReach?: 'keep';
+  /**
+   * 'feet': **the ankle's torque is bounded by the moment the soles can transmit** — `legLoad` times the feet's own
+   * half-width across, the bound `AttachedRider`'s LEAN_IN_RATE note already derives at 93 N·m and nothing enforced
+   * (step 3.3i; `RideSessionOptions.ankleLimit`). Step 3.3i measured the shipped ankle demanding **up to 717 N·m,
+   * past that bound in 2.3–10.1 % of substeps and by up to 4.9×**, on twelve full-stick runs. It is the joint's own
+   * limit and not a cap on a number: the board's share of the ankle's couple is carried where it always was, by the
+   * contact reaction applied at the rider's centre of mass, and the two were measured to pair to 4.24 N·m at the
+   * median. Past the clamp the sole is on its edge and the body is not held — which is a topple. The new surfer
+   * (`?rider=new`) only; no force and no hull law is touched. Every spot. The `?ankleLimit=feet` dev switch, opt-in,
+   * to ride; online rooms run the default.
+   */
+  ankleLimit?: 'feet';
+  /**
+   * 'load' or 'wide': **the bound on the rest the balance may command at the ankle** (step 3.3k;
+   * `RideSessionOptions.ankleRange`). Step 3.3j measured that bound — ANKLE_REST_RANGE, ±14.32° — **at its stop when
+   * the rider goes, in 62 of 72 runs**, while the hip had room left in 69 of 72, and named widening it as the one A/B
+   * worth running. 'load' is the bound's own derivation (`rollModel.bankAuthority`'s `restRange`) with the live load
+   * and the live sole instead of one body weight and 0.13 m, so it is identically the shipped bound at one body
+   * weight, wider under load and narrower when the feet go light; 'wide' is twice the shipped bound and is paid for by
+   * no geometry. Only the bound on the commanded rest moves: the hip's share and the old rider are untouched. The new
+   * surfer (`?rider=new`) only; no force and no hull law is touched. Every spot. The `?ankleRange=load|wide` dev
+   * switch, opt-in, to ride; online rooms run the default.
+   */
+  ankleRange?: 'load' | 'wide';
+  /**
+   * Step 3.4i: **the 70 degree clamp on the MEASURED bank lifted.** `AttachedRider.frame` measures the body's bank as
+   * how far its centre of mass leans over the feet and clamps that **reading** to plus or minus MAX_BANK at three
+   * sites; the reading is then the datum for the ankle's own spring and for the body's frame, so past 70 degrees the
+   * spring pulls against a lean the body is not at. Step 3.4h measured `bankFall` at 70.00 exactly in 21 of 24 runs
+   * of the shipped arm, so the published fall classifier's 45 degree threshold sits on a truncated column. `'off'`
+   * removes those three clamps and nothing else: every other MAX_BANK bounds a force or a command, not a reading.
+   * The new surfer (`?rider=new`) only; no force and no hull law is touched. Every spot. The `?bankClamp=off` dev
+   * switch, opt-in, to ride, and pinned off in the online rooms.
+   */
+  bankClamp?: 'off';
+  /**
+   * 'hip': **THE BODY BANKS WITH THE DECK** (step 3.5i, the spec's step 3.1; `RideSessionOptions.bodyBank`,
+   * `AttachedRiderOptions.bodyBank`). Turning, `3.5/board-slips-away.md` measured the deck banking past 20 degrees at
+   * 0.683 s while the body does not bank with it, on a foot support 0.260 m across in every stance — so the two may
+   * differ by only 10.9 degrees before the centre of pressure pins at the support's edge (`limit = 'tip'`, 90 of 90
+   * riders). ONE term and no drive: `project`'s bound gains the rotor's own angular momentum rate, which the
+   * centre-of-pressure identity has and the code left out, so a body whose trunk is being thrown stops paying for its
+   * own hip strategy at the sole. `tip` goes from 90 of 90 to 66 of 90 on his spot and the pinned share from 52.0 to
+   * 32.3 per cent; the friction cone binds in 28 of 90 riders against 6. The new surfer (`?rider=new`) only; no force
+   * is invented, no hull law is touched. Every spot. The `?bodyBank=hip` dev switch, opt-in, to ride, pinned off in
+   * the online rooms.
+   */
+  bodyBank?: 'hip';
+  /**
+   * '1.5' | '2' | '4' | '4.5': **the minimum carved radius the rider's COMMANDED lean is bounded by, m** (step 3.5a,
+   * the owner's ruling of 2026-11-17 *"cap the ask"*; `RideSessionOptions.askCap`, `AttachedRiderOptions.askCap`), so
+   * the bound on both the balance's own reference and the steer's request is `θ_max = atan(v² / (g R_min))` — 4.9° at
+   * 1.3 m/s, 25° at 3, 52° at 5 on the advisor's 2.0 m.
+   *
+   * **The cap already ships** at `TURN_RADIUS = 4.5 m` on both lines, and shipped it is **0 off the plane**, so below
+   * 3 m/s the rider already asks to stand plumb. Every value here therefore *loosens* the low-speed ask and tightens
+   * nothing: the switch replaces R_min **and** removes the planing gate, and `'4.5'` isolates the gate alone. R_min is
+   * the one unsourced number in it — nobody has published a shortboard's minimum carved radius.
+   *
+   * It bounds a **command**: no torque, damper, brake or yaw moment is added, and no force in the game changes. The
+   * new surfer and the old both read it, since both reference lines are capped in `prepareBank`. Every spot. The
+   * `?askCap` dev switch, opt-in, to ride, and pinned off in the online rooms.
+   */
+  askCap?: '1.5' | '2' | '4' | '4.5' | '9';
+  /**
+   * Step 3.5b, **shipped by default since step 3.5c**: **the stance ladder's fourth rung read**, the tube tuck's
+   * 0.45 m of leg depth (`STANCE_TUCK`, measured from de Leva's segments in `3.2/inertia.probe.ts`). Without it
+   * `stanceAt` clamps the depth at Compress's 0.30 m, and on `?rider=new` the ACHIEVED depth already passes that
+   * ceiling in 0.11-0.96 of Compress's live ticks because the balance's own knee drop adds up to 0.044 m over the
+   * command (step 3.3f) - so the balance designed and coupled those ticks as Compress, on a pendulum 37.5 % too long
+   * and an inertia 1.89x out. The row adds the tuck to `stanceAt`/`bodyInertiaAt` **and** a fourth knot to the gain
+   * schedule (neither reaches the gains without the other).
+   *
+   * **The owner's ruling D of 2026-11-17, "keep the row"**, with its cost stated: 0.70 s off Compress's median ride
+   * on step 3.5b's own 20-run cell, falls unchanged at 20 of 20. `'off'` is the old three-row plant, kept so a ride
+   * can be priced against this track's pre-ruling numbers; `'on'` is the shipped behaviour said out loud. The new
+   * surfer only; no force and no hull law. Every spot. The `?stanceDeep` dev switch, pinned to the ship default in
+   * the online rooms.
+   */
+  stanceDeep?: 'on' | 'off';
+  /**
+   * Step 3.5b: **the deepen button** (ruling C's addition of 2026-11-17, *"keep the held compress, both patterns are
+   * real"*). `'on'`: full manual crouch reaches the tube tuck's depth (MANUAL_CROUCH_DEPTH, 0.45 m) anywhere, not only
+   * under a tube's curl, and Compress no longer fades that extra tuck away - so the crouch key deepens whatever stance
+   * is held, landing in the 35-50 %-of-standing spike band four of the five video references show at turn entry. **On
+   * the owner's input only: no automatic dip, and no clock, timer, fatigue or stamina anywhere in it** (the owner's
+   * *"lets leave it as infite stamina"*). One existing posture target is ungated; no force and no new quantity. Every
+   * spot. The `?deepen=on` dev switch, opt-in, to ride, and pinned off in the online rooms.
+   */
+  deepen?: 'on';
+  /**
+   * Step 3.5g: **the arm carriage channel** (`engine-target.md` rows 4, 5 and 15; the owner's "geometry rows first" of
+   * 2026-11-18). The drawn standing hands get a **height, a spread and a left/right of their own**, answering the
+   * player's own stick and **never leg depth** (both *"tall ⇒ arms spread"* and *"deep ⇒ arms spread"* are refuted by
+   * the footage): both hands low and drawn in at rest, the lead hand down at the rail with the rear arm up and back at
+   * a turn's load, and the rear arm overhead only on a hard ask. Fast up and slow back, so the hand can arrive before
+   * the rail bites and stay after the ask drops.
+   *
+   * `'on'` is the whole channel; `'rest'` holds the rest carriage whatever the stick says (row 15 on its own, for the
+   * A/B). **Drawing only: no part mass moves, no force is added and no existing force changes.** No clock, no timer,
+   * no fatigue and no stamina. Every spot. The `?armCarry=on|rest` dev switch, opt-in, to ride, and pinned off in the
+   * online rooms (the drawn hands are on the wire).
+   */
+  armCarry?: 'on' | 'rest';
+  /**
+   * Step 3.5h: **the trunk's fold moves the body's mass, and the drawn trunk stops being a function of leg depth**
+   * (rows 1 and 2 of `docs/research/new-rider/3.5/engine-target.md`; `RideSessionOptions.trunk`,
+   * `AttachedRiderOptions.trunk`, `RIG_SWITCHES.trunk`). The new surfer's hip rotor turns the mass model's own
+   * torso, head and arms about the physical pelvis, on the axis `StandingBody.couple` already pairs its torque on;
+   * and standing, the rig draws that one trunk instead of interpolating a second one from leg depth. **Geometry: the
+   * torque was already paired and already booked, and no force, drive or constant is added.** The new surfer
+   * (`?rider=new`) only. Every spot. The `?trunk=mass` dev switch, opt-in, to ride, and pinned off in the online
+   * rooms.
+   */
+  trunk?: 'mass';
+  /**
+   * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
+   * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
+   * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is
+   * rotated, not added — but it is a **hull law**, so it changes how every spot drives the board and the owner asked
+   * for it behind a switch, measured, with nothing changing until they say so. Every spot. The `?buoyFrame=hull` dev
+   * switch, opt-in, to ride; online rooms run the default.
+   */
+  buoyFrame?: 'hull';
+  /**
+   * 'tilt': the balance's own internal model reads the water's twelve captive derivatives at the board's heel
+   * **against the water** and takes the face's own tilt as a measured input, instead of reading them at the board's
+   * roll from the **world's level** (step 3.3p; `RideSessionOptions.waterHeel`, `DesignWeights.waterHeel`). Every one
+   * of those derivatives was measured in a lab against a flat free surface, so on a face the model is reading them at
+   * an angle the lab never measured — a datum defect, found by reading. **Measured and not a fix**: it takes the
+   * model's own water roll moment from 2.06–3.59× the game's to 0.97–2.93× and the share of ticks whose roll
+   * acceleration it gets the SIGN of right from 0.190–0.462 to 0.390–0.825, and it makes both rows' magnitudes worse,
+   * because that row is a near-cancellation. Nothing in the force path moves and no gain changes: the tilt is an
+   * input to the predictor, so with the switch off the design is byte-for-byte the one that ships. The new surfer
+   * (`?rider=new`) only. Every spot. The `?waterHeel=tilt` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  waterHeel?: 'tilt' | 'predict' | 'ref';
+  /**
+   * 'deck' | 'felt' | 'both': the mount made to agree with its own argument (step 3.4e;
+   * `RideSessionOptions.mountAgree`, `AttachedRiderOptions.mountAgree`). 'deck' places the standing body square to
+   * the deck at **any** entry speed instead of plumb to the world below `PLANING_SPEED`; 'felt' seeds the felt
+   * vertical's low pass at the **face's own normal** instead of the world's vertical; 'both' does both. Two initial
+   * conditions at the moment of standing up; no force and no control law changes. The new surfer (`?rider=new`) only.
+   * Every spot. The `?mountAgree` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  mountAgree?: 'deck' | 'felt' | 'both';
+  /**
+   * 'two': the balance's own internal plant gives the rider's body an inertia of its own in the frontal plane, so the
+   * board's roll, the body's bank, the turn and the sway are solved **together** and the force at the feet comes out
+   * of the solve, instead of the body being a point mass on a massless leg whose reaction is the substituted
+   * `τ / h − m g θ` (step 3.4a; `RideSessionOptions.riderBody`, `DesignWeights.riderBody`). The shipped plant is the
+   * zero-inertia limit of the same system, which is what 'control' runs and what the tests assert. It changes the
+   * plant the design, the filter and the predictor are built on; it changes no control law and no force in the game.
+   * The new surfer (`?rider=new`) only. Every spot. The `?riderBody=two` dev switch, opt-in, to ride; online rooms
+   * run the default.
+   */
+  riderBody?: 'two' | 'control' | 'symmetric';
+  /**
+   * 'point' | 'fixed' | 'plant': the balance's two **optional** costs — the bank's cost as each stance's own limit
+   * (step 3.2n) and the capture point's own rank-one cost (step 3.2j), **neither of which the shipped design has** —
+   * turned on together, with the capture point's ω₀ the point mass's `√(g/L)` ('point', which is 3.2j's and 3.2n's own
+   * design and the control), the body's own with its feet held ('fixed'), or the plant's own solved rate ('plant')
+   * (step 3.4b; `RideSessionOptions.riderCost`, `DesignWeights.captureOmega`). It changes the **cost** the gains are
+   * designed against, no force in the game. The new surfer (`?rider=new`) only, and meant to ride alongside
+   * `?riderBody=two`. Every spot. The `?riderCost` dev switch, opt-in; online rooms run the default.
+   */
+  riderCost?: 'point' | 'fixed' | 'plant';
+  /**
+   * '4.5' | '5' | '6': the lowest row of the balance's own plant table (`PLANT_SPEEDS`) its internal model may be
+   * built on, m/s (step 3.4m; `RideSessionOptions.plantFloor`, `DesignWeights.plantFloor`). Shipped, the lookup
+   * clamps to the table's first speed, so **every design at or below 4 m/s reads row `'4'`** — the table's own
+   * sign-turnover row, measured at 46.4° of trim and 0.513 m of draft, while the game's board down there rides at
+   * 16.0–17.3° and 0.273–0.301 m, nearest measured row `'4.5'` (README Parts 11–12). Each value is a row the lab
+   * measured; none is invented. It changes the **plant** the design, the filter and the predictor are built on; it
+   * changes no control law and no force in the game. The new surfer (`?rider=new`) only. Every spot. The
+   * `?plantFloor` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  plantFloor?: '4.5' | '5' | '6';
+  /**
+   * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
+   * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
+   * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  deckHollow?: 'on';
+  /**
+   * The duck-dive's two bodies (duck-two-body, 2026-10-31): the board as a submerged plate under water, and the ducking
+   * rider as its own body held to the rails (`RideSessionOptions.duckBody`). 'old': as before (`?duckBody=old`).
+   */
+  duckBody?: 'old';
+  /**
+   * 'off': no board throws spray, as before board-spray (2026-10-29); by default a planing board throws a sheet off its
+   * rails and tail (`physics/boardSpray.ts`), drawn in the spray (`SprayCloud`). Visual only. The `?boardSpray=off` dev
+   * switch, for A/Bs; online rooms run the default.
+   */
+  boardSpray?: 'off' | 'old';
+  /**
+   * 'on' (C2 step 5g, `?lipVeil=on`, dev, opt-in): a plunging lip throws the veil the owner's Abu Dhabi reference
+   * shows — Erinin 2023's two post-impact droplet regions in three size classes, carried up by the air the breaker
+   * drives (`SprayCloud`, `LIP_VEIL` and `VEIL_AIR`). Visual only, and off by default, so the game is as it was.
+   */
+  lipVeil?: 'on';
+  /**
+   * 'old': the boards' spray as before snap-fan (2026-11-05): a jet steeper than 45° off its path leaves where its run
+   * through a negative tan(2α) put it, not at the high rail of its own station (`HullSprayState.exits`), and other players'
+   * hulls throw at their board's velocity alone, not with their spin (`RemoteSpray`, on the page). Visual only. The
+   * `?snapFan=old` dev switch, for A/Bs; online rooms run the default here (the page's other players' spin follows it).
+   */
+  snapFan?: 'old';
+  /**
+   * 'off': the boards' spray leaves the hull as drops, as before spray-sheet (2026-10-30); by default it leaves as a
+   * curtain of water that tears into the drops a little way out, drawn on the page (`SpraySheetMesh`). The
+   * `?spraySheet=off` dev switch, for A/Bs; online rooms run the default.
+   */
+  spraySheet?: 'off';
   /** Foam e-folding times; defaults per spot. */
   foamDecay?: FoamDecay;
   /** Solver stage: 1 shallow water, 2 Madsen–Sørensen Boussinesq with Kennedy breaking (the default). */
@@ -139,6 +569,12 @@ export interface SurfZoneConfig {
    */
   spillingCurl?: boolean;
   /**
+   * Whether the spilling lip's curl, band and roller front take the local wave's H where a column has none of its own
+   * (no lens, no section, a bridged gap), rather than the nominal take-off H (canyon-curl-front, 2026-10-23): on by
+   * default; `?curlLocal=off` draws them as before, for A/Bs. Drawn only: nothing felt changes.
+   */
+  curlLocal?: boolean;
+  /**
    * Whether a spilling spot's drawn whitewater and roller band fray at their ends and toe (the foam look, item 4a,
    * `drawnEdges.ts`): on by default where the spot's front asks for it; false draws them square (the before stills).
    * Look only: nothing felt changes.
@@ -161,12 +597,258 @@ export interface SurfZoneConfig {
    */
   startOut?: number;
   /**
-   * The Canyon's bed (the `?canyonBed=old` dev switch, to ride the two side by side): 'reef', the default, the reef bed
-   * (2026-10-22); 'old', the bed before it (`CANYON_OLD_BED`) with its own take-off (`CANYON_TAKE_OFF_DEPTH_OLD`), start
-   * (`CANYON_RIDE_LINEUP_OLD`) and drawn curl (`SPILLING_CURL_OLD_PSI_MAX`): main's Canyon until the reef bed. Every other
-   * spot ignores it; online rooms always run the reef bed.
+   * The Canyon's layout (the `?canyonBed` and `?canyonRamp=half` dev switches, to ride them side by side): 'reef', the
+   * default, today's (version C, canyon-c: one straight bank peeling from +x into the flipped reef bowl, `CANYON`); 'half',
+   * today's with its bank's edge ramp halved (`CANYON_HALF_RAMP`, the advisor's option (b), with its own take-off depth and
+   * starts); 'b', version B (`CANYON_B`, main's Canyon at 4eee1e5f); 'old', version A (`CANYON_BEACH`, main's at 376d9cd4),
+   * B and A with their take-off and starts at the upcoast peak. Every other spot ignores it; online rooms always run the
+   * default.
    */
   canyonBed?: CanyonBed;
+  /**
+   * The Wave Pool's kind of wave (the Surf screen's Waves row, the pool-barrel decisions of 2026-10-31): 'training', the
+   * default, its A-frame for faces of 1.0–1.5 m (`POOL`); 'barrel', the same machine onto a floor that plunges a tube: the
+   * straight reef its oblique wave peels along, a right-hander from the +x wall (`POOL_STRAIGHT`, pool-barrel-straight), or
+   * step 1's A-frame (`poolBarrel` 'aframe'), each with its own take-off, start, ridden reef and breaking-age gate. Every
+   * other spot ignores it; online rooms carry it in their conditions.
+   */
+  poolWaves?: PoolWaves;
+  /**
+   * The Wave Pool's Barrel layout (pool-barrel-straight): the straight reef the machine's oblique wave peels along, the
+   * default (`POOL_STRAIGHT`), or 'aframe', step 1's mirrored A-frame (`POOL_BARREL`): the `?poolBarrel=aframe` dev switch,
+   * for A/Bs. Only with `poolWaves` 'barrel'; online rooms always run the default.
+   */
+  poolBarrel?: PoolBarrelLayout;
+  /**
+   * The straight Barrel's reef face (pool-ledge-floor, 2026-11-08): today's 1/9.5 face (undefined, the default) or 'ledge',
+   * the advisor's step-7 ledge (`POOL_LEDGE`: about 1:4.5 along the ray, its knee rounded ±1 m), the `?poolFloor=ledge`
+   * dev switch, or 'inside', a shallow shelf behind the reef's top (`POOL_INSIDE`, ruling 12), `?poolFloor=inside`.
+   * Only on the straight Barrel floor; online rooms always run the default.
+   */
+  poolFloor?: PoolFloorFace;
+  /**
+   * The straight Barrel at the owner's reference size (ruling 13, pool-look-reference 2026-11-11): 'ref', today's 1.8 m
+   * Barrel made 1.11 times larger by Froude for 2 m faces (`POOL_REF`: the floor, the machine's period, the first break and
+   * the start; the tube's transect, `barrelSpotOf`), the `?poolSize=ref` dev switch. The config's `significantHeight`,
+   * `peakPeriod` and `poolTubeCase` are set with it (`surfZoneConfigFor`). Only on the straight Barrel floor; with
+   * `poolFloor` 'inside' its shelf is scaled too, 'ledge' is ignored. Online rooms always run the default.
+   */
+  poolSize?: PoolSizeSwitch;
+  /**
+   * How the tube cases' held frames are found (ruling 16, pool-look-reference step 4): 'jet-step', `heldFrameJetStep`
+   * (a frame whose jet area jumps over 1.25 × the frame before's is refused: the pool's `big` case holds at frame 175).
+   * Set only with `poolSize` 'ref' (`poolRefConfig`; `?poolHeld=old` leaves it unset); unset, `heldFrame` as always.
+   * Read where the library is built (`libraryFromBytes`): the surf zone's and the page's.
+   */
+  heldRule?: HeldRule;
+  /**
+   * The reference size's lengths along its reef (ruling 16, pool-look-reference step 4): 'short', the 1.8 m Barrel's
+   * own (235 m, as before step 4), the `?poolReef=short` A/B; unset, × 1.11 (`POOL_REF`, `poolRefLine`). Read only with
+   * `poolSize` 'ref' (the floor, the take-off, the peel's columns and the front's reach, `barrelSpotOf`).
+   */
+  poolReef?: PoolReefSwitch;
+  /**
+   * The reference size's front reach (ruling 17, pool-look-reference step 5): 'long' (`?poolReach=long`), the tube's
+   * front follows crests to s 150 along the long reef in place of 111 (`POOL_REF_FRONT_REACH_LONG`). Read only with
+   * `poolSize` 'ref' and the long reef (`barrelSpotOf`); unset, the reach as before. Online rooms pin `poolSize`.
+   */
+  poolReach?: PoolReachSwitch;
+  /**
+   * The Canyon's breaking-age join, in place of its layout's (`CANYON.ageJoin`): the `?canyonAgeJoin=<J>` dev switch, 0
+   * for rule A as at every other spot (canyon-wave-r2), to A/B the gate alone on today's layout, its tube included. Every
+   * other spot ignores it; online rooms always run the default.
+   */
+  canyonAgeJoin?: number;
+  /**
+   * How version C's bank passes its breaking age along its crests (`canyonJoin`, the water-physics advisor's second ruling,
+   * 2026-11-04): 'bed', the default, keyed to the bed (rule A on its face, the reef's gate on its top, back and inside); 'zone',
+   * the take-off zone's gate up the line from x +31 (the `?canyonJoin=zone` dev switch: the branch's head at ca567450). Every
+   * other layout and spot ignores it; online rooms always run the default.
+   */
+  canyonJoin?: CanyonJoinRule;
+  /**
+   * The Canyon's start along the shore: by default CANYON_START_ALONG m along x from its take-off (screen-left in the start's
+   * front view), clear of the waves breaking on the rider; 'old' (the `?canyonStart=old` dev switch) at the take-off, as
+   * before 2026-11-08. Every other spot ignores it; online rooms always run the default.
+   */
+  canyonStart?: 'old';
+  /**
+   * The Wave Pool's Barrel floor's breaking-age join, in place of its own (`POOL_BARREL.ageJoin`): the `?poolAgeJoin=<J>`
+   * dev switch, 0 for rule A as the training floor runs, to A/B the gate alone. Every other floor and spot ignores it;
+   * online rooms always run the default.
+   */
+  poolAgeJoin?: number;
+  /**
+   * Whether the Canyon's reef counts its waves' onsets in sequence (canyon-reef-sequence, 2026-10-27, `CANYON.reefBoreHold`):
+   * in its columns a bore that drops out for under the hold is no new wave, and a crest breaking on the reef waits only
+   * for the last break on the reef, not for the bores and shore break behind it, and the spilling front joins a following
+   * crest a wavelength seaward of them even inside that wait, so each crest's white is drawn down the reef. False: the `?canyonReefSeq=off` dev switch, for A/Bs (main's until
+   * 2026-10-27); online rooms run the default.
+   */
+  canyonReefSeq?: boolean;
+  /**
+   * Whether the Canyon's beach peaks draw and feel as the reef does (canyon-beach-look, 2026-10-28): their onsets feed
+   * the spilling front, one group of waves per arm peeling away from its tip (`CANYON_BEACH_LOOK`), so their breaking gets
+   * the drawn spilling lip and curl, the roller lenses and their push, and the roller front. False: the
+   * `?canyonBeachLook=off` dev switch, for A/Bs (the solver's own whitewater there, main's until 2026-10-28); online rooms
+   * run the default.
+   */
+  canyonBeachLook?: boolean;
+  /**
+   * How the swept barrel draws and collides its tubes (`TubeShape`): each case's own Basilisk frames, the default, or
+   * 'bounded-C', the authored C profile drawn from 2026-10-05 to 2026-10-22 (the `?tubeShape=c` dev A/B). Online rooms
+   * always run the default.
+   */
+  tubeShape?: TubeShape;
+  /**
+   * The Wave Pool's straight Barrel's tube cases (`PoolTubeCase`): 'a38', the Canyon's case, the default since the
+   * owner's call of 2026-11-04 (unset or `?poolTubeCase=a38`), or 'pool', its own level-13 runs (the `?poolTubeCase=pool`
+   * dev A/B). The page loads the cases and hands them to the surf zone, so both draw and feel the same. Online rooms
+   * always run the default.
+   */
+  poolTubeCase?: PoolTubeCase;
+  /**
+   * The surfable tube's switches (the water-physics advisor's step 3 ruling, 2026-11-03; `TubeFace`), at a spot whose
+   * barrel is `faceAnchor`'s (the Wave Pool's straight Barrel); the page and the worker read them alike, online rooms pin
+   * the defaults:
+   * - `tubeFace` 'old' (`?tubeFace=old`): the support is the loft's floor wherever the loft is, as before;
+   * - `tubeFrom` 'piece' (`?tubeFrom=piece`): the fitted piece as before: the crest anchor and the forward rest, the join at
+   *   the white with zero lag, the 2× catch-up clock, thrown ends over 1 m. With `tubeFace` 'old': exactly the build before;
+   * - `tubeLag` 0 (`?tubeLag=0`): the join at the white, zero lag;
+   * - `tubeClock` 'old' (`?tubeClock=old`): a thrown clock catches up at 2×.
+   */
+  tubeFace?: 'old';
+  tubeFrom?: 'piece';
+  tubeLag?: 0;
+  tubeClock?: 'old';
+  /**
+   * Step 7, Q1's switches (the water-physics advisor's 2026-11-04 ruling, `TubeFace.continuity`, `.distance`, `.contour`,
+   * `.wallFlow`), each piece's A/B alone, at the same `faceAnchor` spot; the page and the worker read them alike, online
+   * rooms pin the defaults (all on). All three of `tubeAnchor`, `tubeForm` and `wallFlow` 'old' give step 6's build:
+   * - `tubeAnchor` 'old' (`?tubeAnchor=old`): the anchor's shift computed afresh each build, as step 6;
+   * - `tubeForm` 'old' (`?tubeForm=old`): the lagged join at its lead's depth, the clock's fit before the throw, the
+   *   formation ramp from the join, the throw at the later of the crossing and the break, as step 6; 'early'
+   *   (`?tubeForm=early`, ruling 17, opt-in): the formation as now, and the seam blend's share runs from −2.3 to −0.7
+   *   √(h0/g) before the throw (`TUBE_FORM_EARLY`), read with `tubeSeam` 'blend' and `crestLine` (the URL switch sets both);
+   * - `tubeThrow` 'break' (`?tubeThrow=break`): by distance, the throw waits for the solver's break as well;
+   * - `wallFlow` 'old' (`?wallFlow=old`): the wall's water carries the solver's flow, as step 6.
+   */
+  tubeAnchor?: 'old';
+  tubeForm?: 'old' | 'early';
+  tubeThrow?: 'break';
+  wallFlow?: 'old';
+  /**
+   * The step 7 follow-up's switches (the water-physics advisor's 2026-11-05 ruling, `TubeFace.contact`, `.cap`, `.merge`,
+   * `.guard`), each piece's A/B alone; online rooms pin the defaults (the first three on, the guard off). The first three
+   * 'old' (and no `tubeGuard`) give main's build before it:
+   * - `tubeContact` 'old' (`?tubeContact=old`): a body takes its water from the vertical line through it, as before;
+   * - `tubeCap` 'old' (`?tubeCap=old`): the anchor's continuity cap at 0.3 C, as before;
+   * - `tubeMerge` 'old' (`?tubeMerge=old`): joins and overlap drops as before;
+   * - `tubeGuard` 'on' (`?tubeGuard=on`, opt-in): the retire guard by the case's open time, the paced points' breaks and the
+   *   unbroken jets returned to their crests; off (the default), the guard at 0.3 s + 0.5 s, as before (the coordinator,
+   *   2026-11-05: on, it raised the meter 8.1 % at a38 1.5 m, past the owner's ±5 %).
+   */
+  tubeContact?: 'old';
+  tubeCap?: 'old';
+  tubeMerge?: 'old';
+  tubeGuard?: 'on';
+  /**
+   * Ruling 3's switches (the water-physics advisor's 2026-11-05 ruling on step 7's five open questions; `TubeFace.track`,
+   * `.inertia`, `.retire`, `.buoy`, `.drop`), each piece's A/B alone; online rooms pin the defaults (the inertia and no
+   * retire on, the rest off). `tubeInertia` and `tubeRetire` 'old' (and none 'on') give main's build before it:
+   * - `tubeTrack` 'on' (`?tubeTrack=on`, opt-in): the smooth wall; off (the default), the anchor read against its window's
+   *   end, capped step by step, its per-step rate the wall water's speed, the wall water at full weight up to the solver's
+   *   surface, as before;
+   * - `tubeInertia` 'old' (`?tubeInertia=old`): no water acceleration on a hull's added mass in the wall water, as before;
+   *   'path' (`?tubeInertia=path`): with `wallBody` 'stream' too, that acceleration along the hull's path as before, not
+   *   the water's own (`TubeFace.follow`);
+   * - `tubeRetire` 'old' (`?tubeRetire=old`): a contour-thrown point still unbroken retires 0.3 s past its throw, as before;
+   * - `tubeBuoy` 'on' (`?tubeBuoy=on`, opt-in): the wall water's buoyancy along the true normal past the clamp; off (the
+   *   default), along the clamped slope past 60°, as before;
+   * - `tubeDrop` 'on' (`?tubeDrop=on`, opt-in): the lighter of two overlapping strips gives way; off (the default),
+   *   overlapping strips dropped by phase, then weight, as before.
+   */
+  tubeTrack?: 'on';
+  tubeInertia?: 'old' | 'path';
+  tubeRetire?: 'old';
+  tubeBuoy?: 'on';
+  tubeDrop?: 'on';
+  /**
+   * Ruling 4's rank 1, the C1 formation clock (the water-physics advisor's advisor-ruling-4.md; `TubeFace.formClock`,
+   * docs/research/form-clock-2026-11-11/README.md): 'old' (`?formClock=old`) is step 7's clock exactly (each step clamped
+   * to 0.5–1.5 × real time, its crest a cell centre, the wall water's rate a difference over the last step); 'c1'
+   * (`?formClock=c1`) the C1 clock; absent, `FORM_CLOCK_DEFAULT`'s. Online rooms pin the default.
+   */
+  formClock?: 'old' | 'c1';
+  /**
+   * Ruling 5's seam blend, opt-in (the water-physics advisor's advisor-ruling-5.md §4; `TubeFace.seam`,
+   * docs/research/tube-seam-2026-11-11/README.md): 'blend' (`?tubeSeam=blend`) gives the case's drawn loft, its collided
+   * surface and its water's flow one weight over the solver's, by the case's height over the solver's surface and by its
+   * slice clock; `seamTau` (`?seamTau=on,full`, s) and `seamBand` (`?seamBand=m`) are its tuning inputs, read with it
+   * alone. Absent: off, exactly as before. Online rooms pin all three absent.
+   */
+  tubeSeam?: 'blend';
+  seamTau?: readonly [number, number];
+  seamBand?: number;
+  /**
+   * Ruling 6's streamline wall water, opt-in (the water-physics advisor's advisor-ruling-6.md §4; `TubeFace.stream`,
+   * docs/research/wall-body-2026-11-11/README.md): 'stream' (`?wallBody=stream`, read with `?tubeSeam=blend` alone) gives
+   * the case's water the flow of a streamline along its surface at the wave's own speed. Absent: off, exactly as before.
+   * Online rooms pin it absent.
+   */
+  wallBody?: 'stream';
+  /**
+   * The water behind the Barrel's tube (after-tube, 2026-11-11; ruling 11, docs/research/after-tube-2026-11-11/README.md):
+   * 'roller' (`?afterTube=roller`, dev, opt-in) gives each column the Canyon's roller lens from its tube's touchdown on
+   * (`TouchdownSeeds`, `SpillingRoller` with the 'solver' mask), drawn as the Canyon's band. Drawn only: the rider's
+   * water is unchanged. Absent: the sea's flat foam there, as before.
+   */
+  afterTube?: 'roller';
+  /**
+   * C2 step 3 (docs/research/wave-strategy-alternatives/c2-step3.md), opt-in: 'library' (`?wave=library`), the breaking
+   * wave from the Basilisk library in the 2 m pool (`poolSize` 'ref', the straight Barrel): each lane of the reef hands
+   * its crest over from the sea (ruling 31's rule), the library's heights are written into the render nodes the sea's
+   * mesh draws and the rider feels, and its overturn is a loft over them (`WaveZone`). The sea runs on underneath,
+   * unchanged. Needs the library's cases (the constructor's `waveLibrary`); anywhere else, or without them, nothing.
+   * Online rooms pin it absent.
+   */
+  wave?: 'library';
+  /**
+   * The water light (ruling 25e, `src/scene/water/waterLight.ts`): Rich body gain 1 and display exposure 1.6. 'on'
+   * (`?waterLight=on`) at any spot, 'off' (`?waterLight=off`) in the 2 m pool, where it is on by default. Drawn only:
+   * the solver never reads it. Absent: the spot's default (on only with `poolSize` 'ref'). Online rooms pin it absent.
+   */
+  waterLight?: 'on' | 'off';
+  /**
+   * Ruling 7's step 1, opt-in (the water-physics advisor's ruling 7; `TubeFace.crestLine`,
+   * docs/research/crest-line-2026-11-11/README.md): each front point stands where its crest stands within its cell
+   * before its throw, so the crest line moves with the crest; 'sub' (`?crestLine=sub`) by the parabola through the
+   * crest's cell and its neighbours, 'top' (`?crestLine=top`) by the centre of the crest's top quarter. Absent: off,
+   * exactly as before. Online rooms pin it absent.
+   */
+  crestLine?: 'sub' | 'top';
+  /**
+   * Ruling 18's build 1, opt-in (`TubeFace.anchorLine`, `?anchorLine=smooth`;
+   * docs/research/pool-look-reference-2026-11-11/step6/README.md): the shifts the points kept are smoothed along the
+   * crest once more into the records' anchor (one water for the drawing, the contact and the wall water; the crash's slices keep the kept places), and
+   * the loft joins its records with a C1 curve. Read with `crestLine` alone. Absent: off, exactly as before. Online rooms
+   * pin it absent.
+   */
+  anchorLine?: 'smooth';
+  /**
+   * Ruling 18's build 2, opt-in (`TubeFace.arcMesh`, `?loftMesh=arc`;
+   * docs/research/pool-look-reference-2026-11-11/step6/README.md): before the throw the loft's vertices stand at fixed
+   * shares of the crest-to-toe arc on the profile's own curve, so the quads between slices do not pleat where the
+   * library's lip mark slides. The curve itself is unchanged. Absent: off, exactly as before. Online rooms pin it absent.
+   */
+  loftMesh?: 'arc';
+  /**
+   * Ruling 21, opt-in and with `tubeSeam` alone (`TubeFace.dug`, `?wallFoot=dug`;
+   * docs/research/pool-look-reference-2026-11-11/ruling-21.md): on the wave's front the drawn surface, the collided one and
+   * a body's water are the case's also where it lies under the solver's sea, and the return to the sea is made ahead of
+   * the toe (hold to 0.05 H, ease over 2 H, give up at 5 H). Absent: off, exactly as before. Online rooms pin it absent.
+   */
+  wallFoot?: 'dug';
 }
 
 /**
@@ -178,11 +860,42 @@ export interface SurfZoneConfig {
  *   on the 70° arm, so jets would fire on the gentle fan too. The spilling lip draws its overturn (`SpillingCurl`) until
  *   the swept barrel is measured for it.
  */
+/**
+ * C2 step 3's lanes (`WaveZone`): traced from a row on the 2 m pool's platform across this span of x, m (wrapped into the
+ * window); the lanes that never reach the throw contour within a face's reach are dropped.
+ */
+export const WAVE_ZONE_ROW = { from: 40, to: 200 } as const;
+
 export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
 
-/** Each spilling spot's front: the Canyon peels left to right seen from the beach (+x), at a 55° visible peel. */
+/**
+ * The Canyon's beach peaks' groups of the spilling front (canyon-beach-look, 2026-10-28; `SpillingFrontOptions.groups`):
+ * each arm's front keeps up with the solver's break (a 20° cap, c_b / sin 20° ≈ 2.9 c_b): its bars already peel at a
+ * visible 50–60° on their own, and a front held to the reef's 55° (or 40°) withheld sections the solver broke ahead of
+ * it, splitting the line (the up peak's frames with a patch 26 % → 31 % at 40°, Medium, 3 seeds). No upcoast gate: upcoast of an arm is its tip and the other arm,
+ * whose own group draws it; counted from an arm's first onset, the reef's 6 m left a gap at the tip, where an A-frame's
+ * first section breaks both sides of it at once. Each wave is dropped 20 s after its first onset, not the reef's 45 s:
+ * an arm starts a wave every 3–4 s (Medium), and its break has run its 45–55 m arm in some 10–15 s, so at 45 s the
+ * front kept some 60 beach waves live, each seeding roller lenses in its bores.
+ */
+export const CANYON_BEACH_LOOK = { peelAngleDegrees: 20, upcoastMargin: Infinity, lifetime: 20 } as const;
+
+/**
+ * Version C's bank's group of the spilling front (canyon-c, 2026-11-03): the beach peaks' (`CANYON_BEACH_LOOK`: the 20°
+ * cap, so the front keeps up with the solver's break, and no upcoast gate, so rule A's spread up the line shows as the
+ * solver breaks it), one group peeling −x from the tip to the bowl, each wave kept 30 s: the bank's line runs 162 m
+ * along shore from its tip to the bowl at about c_b / sin α · cos 45°, 6.3–8.6 m/s from Small to Big (the advisor's peel
+ * speeds, 8.9–12.1 m/s along the line), 19–26 s from the tip, where an A-frame's 45–55 m arm took 10–15 s.
+ */
+export const CANYON_BANK_LOOK = { ...CANYON_BEACH_LOOK, lifetime: 30 } as const;
+
+/**
+ * Each spilling spot's front: the Canyon's own waves (its reef bowl's) peel right to left seen from the beach (−x), at a
+ * 55° visible peel, since canyon-c (2026-11-03) flipped the bowl to peel with the bank; left to right (+x) on versions B
+ * and A (`?canyonBed=b`, `?canyonBed=old`).
+ */
 export const SPILLING_FRONT: Partial<Record<SpotName, Partial<SpillingFrontOptions>>> = {
-  canyon: { direction: 1, peelAngleDegrees: 55, drawnEdges: true },
+  canyon: { direction: -1, peelAngleDegrees: 55, drawnEdges: true },
 };
 
 /**
@@ -213,9 +926,12 @@ export function surfaceDrift(solver: Pick<ShallowWaterSolver, 'bed' | 'restLevel
  */
 export const SPILLING_CURL_FOAM_DECAY: FoamDecay = { dense: 3, residual: 6 };
 
-/** Whether a sea draws the spilling lip: wherever its spilling front runs (no swept barrel there), unless the config says not. */
-export function spillingCurlOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingFront' | 'spillingCurl' | 'sweptBarrel'>): boolean {
-  return spillingFrontOn(config) && config.spillingCurl !== false && !sweptBarrelOn(config);
+/**
+ * Whether a sea draws the spilling lip: wherever its spilling front runs (no swept crash there: the Canyon's tubes leave
+ * its spilling front, roller and curl as they were), unless the config says not.
+ */
+export function spillingCurlOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingFront' | 'spillingCurl' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): boolean {
+  return spillingFrontOn(config) && config.spillingCurl !== false && !sweptCrashOn(config);
 }
 
 /** Whether a sea's whitewater follows a spilling front: the config's say, else SPILLING_SPOTS. */
@@ -226,16 +942,39 @@ export function spillingFrontOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingF
 /**
  * Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run.
  * The owner's switch: a spot with a barrel transect (`BARREL_SPOTS`) is switched on by adding it here (Part B, PR 7).
+ * The Canyon left it on canyon-beach-break (2026-10-23, the owner: "spilling waves are supposed to be the default for the
+ * Canyon. A tube on the reef section is OK. The tube in the video isn't surfable; it's the same as Padang's. Leave the
+ * reef section as it is and the tubing work for later"): its tube is the `?canyonTube=on` dev switch, its wiring kept.
  */
-export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
+export const SWEPT_BARREL: readonly SpotName[] = ['padang', 'pool'];
 
-/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel transect. */
-export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
+/**
+ * The Wave Pool's floors whose barrel is swept (pool-barrel-drawing, 2026-11-01): the Barrel's straight reef, whose
+ * transect its tube cases stand for (`BARREL_SPOTS.pool`). Training and the Barrel's A-frame (`?poolBarrel=aframe`) never.
+ */
+export const SWEPT_POOL_FLOORS: readonly PoolFloor[] = ['straight'];
+
+/**
+ * Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel
+ * transect. At the Canyon, on either layout, only when the config asks (`?canyonTube=on`): its reef's tube as main ran
+ * it from 2026-10-22 to canyon-beach-break, on the reef's columns alone (`advanceFront`).
+ */
+export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): boolean {
+  if (config.spot === 'pool' && !SWEPT_POOL_FLOORS.includes(poolFloorOf(config))) return false;
   return (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) && BARREL_SPOTS[config.spot] !== undefined;
+}
+
+/**
+ * Whether a swept sea's jets leave and land on the barrel's clock (the swept crash, PR 5): the config's say, else the
+ * spot's (`BarrelSpot.crash`: off at the Canyon), else on. It needs the profile library as well (the constructor's).
+ */
+export function sweptCrashOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel' | 'sweptCrash' | 'canyonBed' | 'poolWaves' | 'poolBarrel'>): boolean {
+  return sweptBarrelOn(config) && (config.sweptCrash ?? BARREL_SPOTS[config.spot]?.crash ?? true);
 }
 
 /** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
 const FRONT_MIN_HEIGHT = 0.25;
+
 
 /** Columns at each open along-shore edge where no lip is thrown: the reach of the solver's stencils. */
 const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
@@ -246,9 +985,14 @@ const REEF_PATH_REACH = 400;
 /** Along-shore window width unless the config or the spot says otherwise, m. */
 export const ALONG_SHORE = 160;
 
-/** The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), else ALONG_SHORE. */
-export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore'>): number {
-  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? POOL.alongShore : ALONG_SHORE);
+/**
+ * The window's along-shore width, m: the config's, else Padang Padang's own (its peak well inside the −x side), the Wave
+ * Pool's (its straight Barrel's at the reference size has its own, `POOL_REF.alongShore`: ruling 14), or the Canyon's
+ * layout's (`CANYON.alongShore`, 400 m since canyon-beach-break, on either layout), else ALONG_SHORE.
+ */
+export function alongShoreOf(config: Pick<SurfZoneConfig, 'spot' | 'alongShore' | 'canyonBed' | 'poolWaves' | 'poolBarrel' | 'poolSize'>): number {
+  return config.alongShore ?? (config.spot === 'padang' ? PADANG.alongShore : config.spot === 'pool' ? (poolRefOn(config) ? POOL_REF.alongShore : POOL.alongShore)
+    : config.spot === 'canyon' ? canyonShape(config.canyonBed).alongShore : ALONG_SHORE);
 }
 
 /**
@@ -284,10 +1028,26 @@ export interface SolverDevice {
   readonly diagnostics?: { substeps: number; pack: number; cfl: number; encode: number; map: number; unpack: number };
   /** Optional traffic of its latest step: bytes uploaded and read back, readback maps and queue submissions. */
   readonly transfer?: DeviceTransfer;
+  /** Optional: how it sends the CPU's changes, from its next step (barrel-gpu's switches). */
+  configure?(options: SolverDeviceTraffic): void;
 }
 
-/** What a device step moved between the CPU and the GPU, and how many round trips it took. */
-export interface DeviceTransfer { uploadBytes: number; readbackBytes: number; maps: number; submits: number }
+/**
+ * What a device step moved between the CPU and the GPU, and how many round trips it took; and of its uploads, how many
+ * sent the whole water (h, qx, qz), the whole plunge zone, or the whole layout (barrel-gpu, 2026-11-06).
+ */
+export interface DeviceTransfer {
+  uploadBytes: number; readbackBytes: number; maps: number; submits: number;
+  fullWater: number; fullPlunge: number; layouts: number;
+}
+
+/** How a device sends the CPU's changes (`GpuBoussinesq.configure`): each change's old path, for A/Bs (barrel-gpu). */
+export interface SolverDeviceTraffic {
+  /** 'span': the water the CPU changed goes up as one span from the first changed cell to the last. */
+  water?: 'runs' | 'span';
+  /** 'whole': the plunge zone goes up whole whenever a cell enters or leaves it. */
+  plunge?: 'cells' | 'whole';
+}
 
 /** A surf zone built spun up (on the CPU, at once), or only warm-started, to spin up later on its device (`spinUp`). */
 export type SurfZoneStart = 'spun-up' | 'warm';
@@ -347,13 +1107,14 @@ export function tankLayout(config: SurfZoneConfig): TankLayout {
   const today: TankLayout = { ...TANK, edgeDepth: OFFSHORE_DEPTH[config.spot] };
   // The Canyon (its straight-crest bed): its own zone and edge (CANYON.edgeDepth, deep enough for Big since the canyon-big
   // redesign), with 1 m cells from the zone in, so the waves shoaling onto its platform are resolved (on 4 m cells they
-  // lost a third of their height unbroken).
+  // lost a third of their height unbroken). Its layout's (`canyonShape`): the zone from z −390 since canyon-layout.
   if (config.spot === 'canyon') {
-    const zoneInner = CANYON.zoneInner;
-    return { offshore: zoneInner - CANYON.zoneLength, zoneInner, blendEnd: zoneInner + CANYON.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: CANYON.edgeDepth };
+    const c = canyonShape(config.canyonBed);
+    const zoneInner = c.zoneInner;
+    return { offshore: zoneInner - c.zoneLength, zoneInner, blendEnd: zoneInner + c.blendLength, fineFrom: zoneInner, shore: TANK.shore, edgeDepth: c.edgeDepth };
   }
   // The Wave Pool's machine: its own layout, fed where its regular wave is near linear (the movement-flow spec).
-  if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore), edgeDepth: today.edgeDepth };
+  if (config.spot === 'pool') return { ...poolTankLayout(TANK.shore, poolFloorOf(config)), edgeDepth: today.edgeDepth };
   // The Reef's edge is always deep (REEF.deep, the Teahupo'o Reef spec): today's inner tank, whose forereef
   // lies inside it, with the zone lengthened to absorb its long waves.
   if (config.spot === 'reef') {
@@ -537,7 +1298,14 @@ export function edgeHeight(config: SurfZoneConfig, edgeDepth = OFFSHORE_DEPTH[co
 export function surfZoneSea(config: SurfZoneConfig): SeaState {
   const tank = tankLayout(config);
   // The Wave Pool's machine: one regular wave, the same every time (the movement-flow spec).
-  if (config.spot === 'pool') return poolSea(edgeHeight(config, tank.edgeDepth), tank.edgeDepth + config.tide, madsenSorensenWaveNumber);
+  if (config.spot === 'pool') {
+    // Square to the tank, or oblique onto the Barrel's straight reef (`POOL_STRAIGHT`): at its feed, wrapped across the sides
+    // when they wrap (its along-shore wavelength fitting the window).
+    const depth = tank.edgeDepth + config.tide;
+    const direction = poolFloorOf(config) === 'straight'
+      ? poolStraightDirection(madsenSorensenWaveNumber((2 * Math.PI) / poolPeriodOf(config), depth), alongShoreOf(config)) : 0;
+    return poolSea(edgeHeight(config, tank.edgeDepth), depth, madsenSorensenWaveNumber, direction, poolPeriodOf(config));
+  }
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot] && solverStage(config.spot, config.stage) === 2;
   return SeaState.fromSpectrum({
     significantHeight: edgeHeight(config, tank.edgeDepth),
@@ -578,35 +1346,74 @@ export const TAKE_OFF_INDEX: Record<SpotName, number> = { beach: 1.14, point: 1.
  */
 export const PADANG_TAKE_OFF_INDEX = { intercept: 0.47, perMetre: 0.19 } as const;
 
-/** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak. */
-export function peakTakeOffX(spot: SpotName): number {
-  return spot === 'padang' ? PADANG.takeOffX : spot === 'pool' ? POOL.takeOffX : spot === 'canyon' ? CANYON.takeOffX : REEF.takeOffX;
+/** Where a peak take-off waits along shore: at the Reef's, Padang Padang's, the Wave Pool's or the Canyon's own peak (its layout's). */
+export function peakTakeOffX(spot: SpotName, canyonBed?: CanyonBed, poolWaves?: PoolWaves, poolBarrel?: PoolBarrelLayout, poolSize?: PoolSizeSwitch, poolReef?: PoolReefSwitch): number {
+  const floor = poolFloorOf({ poolWaves, poolBarrel });
+  // The reference size's reef (`?poolSize=ref`): its own line and take-off along it (`poolRefLine`).
+  const ref = spot === 'pool' && poolRefOn({ spot, poolWaves, poolBarrel, poolSize }) ? poolRefLine(poolReef) : undefined;
+  return spot === 'padang' ? PADANG.takeOffX
+    : spot === 'pool' ? (ref ? poolStraightAt(ref.takeOffS, ref.startX).x : floor === 'straight' ? poolStraightAt(POOL_STRAIGHT.takeOffS).x : floor === 'aframe' ? POOL_BARREL.takeOffX : POOL.takeOffX)
+    : spot === 'canyon' ? canyonShape(canyonBed).takeOffX : REEF.takeOffX;
 }
 
 /**
- * Where the Canyon's sets start breaking, m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a least-squares
- * line through the depth by which nine in ten of each size's waves have started breaking in the take-off's column
- * (x −30 ± 4 m; each wave's most seaward onset there), 2.23, 2.69 and 3.82 m for Small, Medium and Big (the reef bed,
- * 2026-10-22, docs/research/canyon-reef-bed-2026-10-22: 3 seeds × 14 periods each; within 0.05 m of the line). Riders
- * wait where the arm's face is this deep (`takeOffPoint`), so the sets break at, not seaward of, the take-off.
- * - On the reef bed Big's sets break 0.25 m shallower than on the 1:30 face below a 2.8 m hinge, where the same probe
- *   gave 2.26, 2.65 and 4.07 m (1.06 + 1.24 Hs, from 2026-10-11 until the reef bed; re-run 2026-10-22, the same).
- * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs: 1.49, 1.96 and 2.50 m). On
- *   the arm's 1:30 face the waves of a size break over 30–60 m across shore, so half of them, the bigger half, broke
- *   15–45 m seaward of that take-off, on top of a rider who waited there: the owner's playtest (2026-10-11), "the wave
- *   blows right on top, without the chance to paddle to pick up speed". The rider starts `rideLineupOffset` further
- *   out still: 11 m, but at Big 6 m, just seaward of where one wave in ten starts breaking (`CANYON_RIDE_LINEUP`).
- * Re-measure if the arm or the swells change.
+ * Where the Canyon's sets start breaking at its default start's beach peak (the upcoast bar's tip, canyon-beach-break,
+ * 2026-10-23, docs/research/canyon-beach-break-2026-10-23), m deep, against a size's Hs (given at `CANYON_SWELL_DEPTH`): a
+ * least-squares line through the depth by which nine in ten of each size's waves have started breaking in the tip's column
+ * (± 4 m; each wave's most seaward break there, the game's onsets without their filters), 1.87, 2.61 and 3.57 m for Small,
+ * Medium and Big (3 seeds × 14 periods each; the line gives 1.94, 2.50 and 3.61 m). Riders wait where the bar is this deep
+ * (`takeOffPoint`), so the sets break at, not seaward of, the take-off. On the bar's 1:50 they break 94, 131 and 179 m from
+ * the waterline: further out as they grow, as a spilling beach's do (the owner's decision 6). Re-measure if the bars,
+ * their breaking or the swells change.
  */
-export const CANYON_TAKE_OFF_DEPTH = { base: 1.24, perMetre: 1.07 } as const;
+export const CANYON_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
 
-/** `CANYON_TAKE_OFF_DEPTH` on the bed before the reef bed (`SurfZoneConfig.canyonBed` 'old'), its fit from 2026-10-11. */
-export const CANYON_TAKE_OFF_DEPTH_OLD = { base: 1.06, perMetre: 1.24 } as const;
+/**
+ * Where the Canyon's reef's sets start breaking on its arm, m deep, against Hs: canyon-wave-r2's fit (2026-10-22,
+ * docs/research/canyon-wave-r2-2026-10-22: 3 seeds × 14 periods each; 2.34, 2.73 and 3.47 m for Small, Medium and Big,
+ * within 0.01 m of the line) in the take-off's column (x −9 ± 4 m). The reef's own take-off (`canyonReefTakeOff`), where
+ * its readout reads its breaker, on the layout before canyon-b (`CANYON_BEACH`, the `?canyonBed=old` dev switch).
+ * - With the breaking age's diagonal join (`CANYON.ageJoin`) the crest beside the peak's break no longer breaks early on
+ *   the age it inherited, so the sets start breaking shallower: on the same face canyon-long-wave's fit was 1.50 + 1.00 Hs
+ *   (2.39, 2.86 and 4.00 m), Big's most of all.
+ * - Until 2026-10-11 the line ran through each size's median first onset (0.96 + 0.65 Hs). On the arm's 1:30 face the
+ *   waves of a size broke over 30–60 m across shore, so half of them broke 15–45 m seaward of that take-off, on top of a
+ *   rider who waited there: the owner's playtest (2026-10-11), "the wave blows right on top, without the chance to paddle
+ *   to pick up speed".
+ */
+export const CANYON_REEF_TAKE_OFF_DEPTH = { base: 1.67, perMetre: 0.75 } as const;
 
-/** How deep the Canyon's sets of significant height Hs start breaking on its arm, m (`CANYON_TAKE_OFF_DEPTH`), on a bed. */
+/**
+ * Where version C's sets start breaking at its start on the bank (canyon-c, 2026-11-03: x +75, a third of the way from the
+ * tip to the bowl), m deep, against Hs: provisional, the upcoast bar's fit (`CANYON_TAKE_OFF_DEPTH`) until measured there.
+ */
+export const CANYON_BANK_TAKE_OFF_DEPTH = { base: 0.95, perMetre: 1.11 } as const;
+
+/**
+ * Where version C's sets start breaking at its start with its bank's edge ramp halved (`CANYON_HALF_RAMP`, the
+ * `?canyonRamp=half` dev switch, the advisor's option (b), 2026-11-04), m deep, against Hs: a least-squares line through
+ * the depth by which nine in ten of each size's waves have started breaking in the take-off's column (x 75 ± 4 m; each
+ * wave's most seaward break there, the frame probe's), 2.18, 2.89 and 3.80 m for Small, Medium and Big (seed 1, seeds 1–2
+ * and seed 1 × 12 periods; the line gives 2.25, 2.78 and 3.84 m). With the ramp halved the edge there is 1.68 m deep and the
+ * sets break on the face, 23 m seaward of it at Medium's median: the take-off lies 3.5, 12.5 and 10 m further out than the
+ * full ramp's (`CANYON_BANK_TAKE_OFF_DEPTH`). Provisional: one to two seeds a size.
+ */
+export const CANYON_HALF_TAKE_OFF_DEPTH = { base: 1.30, perMetre: 1.06 } as const;
+
+/**
+ * How deep the Canyon's sets of significant height Hs start breaking at its default start, m: on version C's bank
+ * (`CANYON_BANK_TAKE_OFF_DEPTH`), no shallower than the bank's edge there (its face's top: shallower water lies only on the
+ * beach face, 150 m inshore), or at the upcoast peak's tip on versions B and A (`CANYON_TAKE_OFF_DEPTH`; canyon-b's bowl
+ * left the tip, where riders start, as it was).
+ */
 export function canyonTakeOffDepth(significantHeight: number, bed: CanyonBed = 'reef'): number {
-  const fit = bed === 'old' ? CANYON_TAKE_OFF_DEPTH_OLD : CANYON_TAKE_OFF_DEPTH;
-  return fit.base + fit.perMetre * significantHeight;
+  const c = canyonShape(bed);
+  if (canyonBankOn(c)) {
+    // With its edge ramp halved (`?canyonRamp=half`), its own fit (`CANYON_HALF_TAKE_OFF_DEPTH`).
+    const fit = bed === 'half' ? CANYON_HALF_TAKE_OFF_DEPTH : CANYON_BANK_TAKE_OFF_DEPTH;
+    return Math.max(canyonBankEdge(c.takeOffX, c), fit.base + fit.perMetre * significantHeight);
+  }
+  return CANYON_TAKE_OFF_DEPTH.base + CANYON_TAKE_OFF_DEPTH.perMetre * significantHeight;
 }
 
 /**
@@ -619,46 +1426,63 @@ export const RIDE_LINEUP_OFFSET = 11;
 
 /**
  * The Canyon's start, m seaward of its take-off, against Hs (`rideLineupOffset`: linear between these sizes, held beyond
- * them): where the faces become catchable, about 17° over the highest third of the waves, but seaward of where one wave
- * in ten starts breaking. The catch diagnosis (2026-10-22): from rest on Big's 14° faces 11 m out the board was picked
- * up only 2–2.5 m ahead of the crest, 90–93 % up the face, and the rider fell over the back as the crest passed; already
- * paddling, from the take-off, on 17–19° it dropped in. Measured along the take-off's column with no rider on the reef bed
- * (2026-10-22, docs/research/canyon-reef-bed-2026-10-22: big-start's transect probe, 2 seeds × 12 periods a size, the face
- * the rider feels, each wave's steepest front over 1 m; the waves' starts pooled with the size report's 3 seeds × 14):
- * - Big: 12–13° 11 m out, 13° 6 m out, 14–15° at the take-off, 17° only 10–14 m inside it; one wave in ten starts
- *   breaking 5.3 m seaward of the take-off (4 of 64 seaward of 6 m out; their median 20.5 m inside the take-off). So Big
- *   starts 6 m out, the rule's priority (the owner's 2026-10-11 "not on top of the breaking"), on faces about as gentle
- *   as the 11 m start the catch diagnosis found too gentle (12–13°): on the reef bed's steeper face the breaks come
- *   closer, so the two halves of the rule no longer meet. `?startOut=0` tries the take-off (14–15°; 7 of 40 in the size
- *   report's runs break seaward of it). On the 1:30 bed, until the reef bed, Big started at its take-off (offset 0):
- *   17° 6–12 m inside it, one wave in 23 breaking seaward of it, their median 41 m inside.
- * - Medium: 6–7° 11 m out, 11–12° at the take-off, 17° 9–12 m inside it; one wave in ten starts breaking 1 m seaward of
- *   the take-off: the same rule would start it 1–2 m out, but it keeps 11 m (the owner, 2026-10-12: "fine for now") until
- *   it is ridden again, as on the 1:30 bed (17° about at the take-off, one in ten there).
- * - Small: 17° 7–8 m inside the take-off, one wave in ten starts breaking 6 m seaward of it: 11 m, as before.
- * Re-measure if the arm or the swells change.
+ * them): as far in as a paddler catches the sets best, but seaward of where one wave in ten starts breaking (the owner,
+ * 2026-10-11: "not on top of the breaking"; 2026-10-23, decision 5). At the upcoast beach peak since canyon-beach-break
+ * (2026-10-23, docs/research/canyon-beach-break-2026-10-23): canyon-wave-r2's catch model (`catch-model.mjs`: a point-mass
+ * paddler, 80 kg, the prone drag and the 2.1 m/s sprint of `AttachedRider`, caught in `inTakeOffWindow`) on the solver's own
+ * waves in the tip's column, 2 seeds × 12 periods a size:
+ * - Small: one wave in ten breaks 4.5 m seaward of the take-off; 6 m out catches 90 % of the sets (one in ten breaks on
+ *   the paddler): 6 m, 103 m from the waterline.
+ * - Medium: one in ten breaks inside it; 9 m out catches 80 % of the sets, none breaking on the paddler (60 % from 11 m):
+ *   9 m, 134 m.
+ * - Big: one in ten breaks inside it; 3 m out catches 86 % (77 % from 11 m), none breaking on the paddler: 3 m, 183.5 m.
+ * The bars' waves are kinder to catch than the reef's (its sets: 33, 44 and 50 % at its starts, canyon-wave-r2). On a 1:50
+ * bar the starts lie nearer the beach as the swell drops: a spilling beach's sizes break across its width.
+ * Re-measure if the bars, their breaking or the swells change.
  */
 export const CANYON_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
-  { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 2.4, offset: 6 },
+  { significantHeight: 0.9, offset: 6 },
+  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 2.4, offset: 3 },
 ];
 
-/** `CANYON_RIDE_LINEUP` on the bed before the reef bed (`SurfZoneConfig.canyonBed` 'old'): Big at its take-off (big-start). */
-export const CANYON_RIDE_LINEUP_OLD: readonly { readonly significantHeight: number; readonly offset: number }[] = [
-  { significantHeight: 0.9, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 1.4, offset: RIDE_LINEUP_OFFSET },
-  { significantHeight: 2.4, offset: 0 },
+/**
+ * Version C's start on its bank (canyon-c, 2026-11-03), m seaward of its take-off (`CANYON_BANK_TAKE_OFF_DEPTH`), against
+ * Hs, as `CANYON_RIDE_LINEUP`: provisional, the upcoast peak's until measured there.
+ */
+export const CANYON_BANK_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
+  { significantHeight: 0.9, offset: 6 },
+  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 2.4, offset: 3 },
+];
+
+/**
+ * Version C's start with its bank's edge ramp halved (`?canyonRamp=half`), m seaward of its take-off
+ * (`CANYON_HALF_TAKE_OFF_DEPTH`), against Hs: the bank's offsets (`CANYON_BANK_RIDE_LINEUP`), checked against the rule they
+ * keep (seaward of where one wave in ten starts breaking): in the take-off's column one wave in ten broke first at z −163.5,
+ * −211.5 and −251.5 at Small, Medium and Big (the frame probe, as the fit's), and these starts lie at −185.5, −212 and
+ * −252.5. No catch was measured (the owner rides): provisional.
+ */
+export const CANYON_HALF_RIDE_LINEUP: readonly { readonly significantHeight: number; readonly offset: number }[] = [
+  { significantHeight: 0.9, offset: 6 },
+  { significantHeight: 1.4, offset: 9 },
+  { significantHeight: 2.4, offset: 3 },
 ];
 
 /**
  * Where the rider starts and relaunches, m seaward of the take-off: the config's (`startOut`, the `?startOut` dev switch),
  * else the Canyon's for its size (`CANYON_RIDE_LINEUP`), else RIDE_LINEUP_OFFSET. Online spawns start here too.
  */
-export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed'>): number {
+export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'significantHeight' | 'startOut' | 'canyonBed' | 'poolWaves' | 'poolBarrel' | 'poolSize'>): number {
   if (config.startOut !== undefined && Number.isFinite(config.startOut)) return config.startOut;
+  // The Wave Pool's Barrel floors: their own starts (`POOL_STRAIGHT.startOut`, `POOL_BARREL.startOut`, the catch probe's).
+  if (config.spot === 'pool' && config.poolWaves === 'barrel') {
+    return poolFloorOf(config) === 'aframe' ? POOL_BARREL.startOut : poolStraightStartOut(config.significantHeight / Math.SQRT2, poolRefOn(config) ? 'ref' : undefined);
+  }
   if (config.spot !== 'canyon') return RIDE_LINEUP_OFFSET;
-  const sizes = config.canyonBed === 'old' ? CANYON_RIDE_LINEUP_OLD : CANYON_RIDE_LINEUP;
+  // Version C's start on its bank (canyon-c); versions B and A at the upcoast peak (canyon-b left it as it was).
+  const c = canyonShape(config.canyonBed);
+  const sizes = config.canyonBed === 'half' ? CANYON_HALF_RIDE_LINEUP : canyonBankOn(c) ? CANYON_BANK_RIDE_LINEUP : CANYON_RIDE_LINEUP;
   const height = config.significantHeight;
   if (!(height > sizes[0].significantHeight)) return sizes[0].offset;
   for (let i = 1; i < sizes.length; i += 1) {
@@ -668,6 +1492,14 @@ export function rideLineupOffset(config: Pick<SurfZoneConfig, 'spot' | 'signific
     }
   }
   return sizes[sizes.length - 1].offset;
+}
+
+/** The Canyon's start, m along x from its take-off: −x is screen-left in the start's front view (the owner, 2026-11-08). */
+export const CANYON_START_ALONG = -10;
+
+/** Where the rider starts along the shore from the take-off, m (`canyonStart`): CANYON_START_ALONG at the Canyon, else 0. */
+export function rideLineupAlong(config: Pick<SurfZoneConfig, 'spot' | 'canyonStart'>): number {
+  return config.spot === 'canyon' && config.canyonStart !== 'old' ? CANYON_START_ALONG : 0;
 }
 
 /** A focus take-off stays this far inside the window's open along-shore edges, m. */
@@ -680,7 +1512,7 @@ export const TAKE_OFF_EDGE_MARGIN = 30;
  * line (`focusX`), inside the window's open edges.
  */
 export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
-  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
+  const spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config), poolReef: config.poolReef });
   const tank = tankLayout(config);
   const deeper = tank.edgeDepth > OFFSHORE_DEPTH[config.spot];
   const height = edgeHeight(config, tank.edgeDepth);
@@ -690,27 +1522,70 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   // estimate from its Hs put the take-off 14 m seaward of the break, and 1.5 H put it 13–23 m inside it.
   // The Canyon's waves break up its arm's face (the straight-crest bed): the shoaled-breaker estimate put the take-off
   // inside the measured breaks.
-  const target = config.spot === 'pool' ? poolBreakDepth(height / Math.SQRT2)
+  const floor = poolFloorOf(config);
+  const target = config.spot === 'pool' ? (poolRefOn(config) ? poolStraightBreakDepth(height / Math.SQRT2, 'ref')
+    : (floor === 'straight' ? poolStraightBreakDepth : floor === 'aframe' ? poolBarrelBreakDepth : poolBreakDepth)(height / Math.SQRT2))
     : config.spot === 'canyon' ? canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide
       : breakerDepthFor(height, tank.edgeDepth + config.tide, index);
-  const breakZ = (x: number) => {
-    // Scan the whole simulated bed from the relaxation zone inward.
-    for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
-      if (tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide <= target) return z;
-    }
-    return tank.fineFrom;
-  };
+  const breakZ = (x: number) => firstReaching(spot, tank, x, target, config.tide);
   const reach = Math.max(0, alongShoreOf(config) / 2 - TAKE_OFF_EDGE_MARGIN);
   if (TAKE_OFF[config.spot] === 'centre' || reach === 0) return { x: 0, z: breakZ(0) };
   // The Reef's, Padang Padang's, the Wave Pool's and the Canyon's riders wait at their peak, where each wave first breaks.
   if (TAKE_OFF[config.spot] === 'peak') {
-    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot)));
+    const x = Math.min(reach, Math.max(-reach, peakTakeOffX(config.spot, config.canyonBed, config.poolWaves, config.poolBarrel, config.poolSize, config.poolReef)));
     return { x, z: breakZ(x) };
   }
   const bed = (x: number, z: number) => tankDepth(spot, tank.edgeDepth, x, z, tank) + config.tide;
   const swell = { period: config.peakPeriod, direction: (config.directionDegrees * Math.PI) / 180 };
   const x = focusX(bed, swell, tank.zoneInner, breakZ(0), -reach, reach);
   return { x, z: breakZ(x) };
+}
+
+/** Where the tank's bed along +z at x is first `target` deep or shallower at the tide, scanning from the relaxation zone in, z. */
+function firstReaching(spot: SurfSpot, tank: TankLayout, x: number, target: number, tide: number): number {
+  for (let z = tank.zoneInner; z < tank.shore; z += 0.5) {
+    if (tankDepth(spot, tank.edgeDepth, x, z, tank) + tide <= target) return z;
+  }
+  return tank.fineFrom;
+}
+
+/**
+ * The Canyon's reef's own take-off, where its readout reads its breaker (canyon-beach-break: riders now start at a beach
+ * peak): at its take-off x (`CANYON.reefTakeOffX`), where its arm is as deep as its sets start breaking
+ * (`CANYON_REEF_TAKE_OFF_DEPTH`).
+ */
+export function canyonReefTakeOff(config: SurfZoneConfig): { x: number; z: number } {
+  const c = canyonShape(config.canyonBed);
+  const depth = CANYON_REEF_TAKE_OFF_DEPTH.base + CANYON_REEF_TAKE_OFF_DEPTH.perMetre * config.significantHeight;
+  return { x: c.reefTakeOffX, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), c.reefTakeOffX, depth + config.tide, config.tide) };
+}
+
+/**
+ * How far above version B's bowl platform (canyon-b) its waves are taken to break, m, where the sea would break them deeper:
+ * on the face just past the knee, where the platform has carried them unbroken (the advisor; Mead & Black). The readout's
+ * bowl take-off (`canyonBowlTakeOff`) and the drawn curl's bowl columns (`SpillingCurlOptions.breakerDepthAt`).
+ */
+export const BOWL_FACE_BELOW_PLATFORM = 0.2;
+
+/**
+ * Version B's reef bowl's take-off (canyon-b), where the readout reads its breaker: midway along the whole bowl, where its
+ * bed first reaches the depth the default start's sets break at (`canyonTakeOffDepth`), no deeper than just above its
+ * platform (Big's sets would read the bar's slope seaward of it; they break on the bowl's face, the advisor).
+ */
+export function canyonBowlTakeOff(config: SurfZoneConfig): { x: number; z: number } {
+  const c = canyonShape(config.canyonBed);
+  const x = c.upPeakX + 0.5 * (c.bowlFrom + c.bowlRamp + c.bowlEnd);
+  const target = Math.min(canyonTakeOffDepth(config.significantHeight, config.canyonBed), c.bowlPlatform - BOWL_FACE_BELOW_PLATFORM) + config.tide;
+  return { x, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), x, target, config.tide) };
+}
+
+/**
+ * A Canyon beach peak's take-off (canyon-beach-break): at its bar's tip, where the bed is as deep as the default start's
+ * sets start breaking (`canyonTakeOffDepth`), so its readout reads its breaker there.
+ */
+export function canyonBeachTakeOff(config: SurfZoneConfig, x: number): { x: number; z: number } {
+  const target = canyonTakeOffDepth(config.significantHeight, config.canyonBed) + config.tide;
+  return { x, z: firstReaching(createSpot('canyon', config.seed, { canyonBed: config.canyonBed }), tankLayout(config), x, target, config.tide) };
 }
 
 /**
@@ -734,6 +1609,9 @@ export function tankDepth(
 }
 
 const WET = 0.01;
+/** `writeUniformSnapshot`'s row notes: a solver row holds foam, or air or plume. */
+const FOAMED = 1;
+const AIRED = 2;
 
 /**
  * Physical surf zone for one spot: a seeded sea enters through an offshore
@@ -766,6 +1644,11 @@ export class SurfZoneSimulation {
   /** Each throw, for reports: the jet asked for and thrown, the wave, its void and, for a reef break, its vortex ratio. */
   onThrow?: (event: LipThrowEvent) => void;
   readonly peel: PeelTracker;
+  /**
+   * Whether a column's new break at z counts toward the peel, where the spot says (the Canyon's arm, `canyonPeelAt`);
+   * every break elsewhere.
+   */
+  private readonly peelOnsetAt?: (column: number, z: number) => boolean;
   /** The waves breaking at the take-off, as surf reports measure them (the wave-sizes spec). */
   readonly surf: SurfMeter;
   /** Called with every wave measured starting to break, anywhere in the window (reports listen here). */
@@ -779,6 +1662,11 @@ export class SurfZoneSimulation {
    * library: they replace Kennedy's lip there, and the whitewater waits for their touchdown.
    */
   readonly crash?: SweptCrash;
+  /** The step 3 ruling's tube at a `faceAnchor` spot (`tubeFaceOf`); undefined elsewhere, and with both old switches. */
+  readonly tubeFace?: TubeFace;
+  /** The Barrel's after-tube roller (`SurfZoneConfig.afterTube`) and its seeds: drawn, never felt. */
+  private readonly afterRoller?: SpillingRoller;
+  private readonly afterSeeds?: TouchdownSeeds;
   /** The spilling front, at a spilling spot (`SPILLING_SPOTS`): it holds the whitewater back ahead of each wave's peel. */
   readonly spilling?: SpillingFront;
   /**
@@ -791,6 +1679,20 @@ export class SurfZoneSimulation {
    * it reads the front, the lenses and the water, and writes only what is drawn.
    */
   readonly curl?: SpillingCurl;
+  /**
+   * The highest foot crest whose wave plunges a tube (`tubeFootMax`, the spot's tube regime), m: Infinity where every
+   * front point does. The front's records leave the rest out (`writeFrontRecords`), so they are neither drawn nor felt.
+   */
+  readonly tubeFootMax: number = Infinity;
+  /**
+   * At a spot with `BarrelSpot.tubeSpan` (the Canyon): only the front's pieces that have reached their span draw, are
+   * felt and take the curl's columns (`latchTubeSpans`).
+   */
+  readonly tubeSpanned: boolean = false;
+  /** With a tube regime and a spilling curl: the library, and per column the solver time a tube there touches down and its crest's z (NaN: none). */
+  private readonly tubeLibrary?: ProfileLibrary;
+  private readonly tubeTouchdown?: Float64Array;
+  private readonly tubeZ?: Float64Array;
   /** The roller front's toe line for the drawn spray (`rollerToes`), kept for the step it was written at. */
   private toes?: RollerToes & { readonly table: Float32Array; readonly look: Float32Array; time: number };
   /** The whitewater whose foam is drawn with the spilling lip on: the front's, held back until each curl lands. */
@@ -814,11 +1716,39 @@ export class SurfZoneSimulation {
   private readonly onsetTiming?: OnsetTiming;
   /** Where the front follows crests from, z: the fine zone's start, or the relaxation zone's inner edge (`BarrelSpot.frontFrom`). */
   private readonly frontFrom: number;
+  /**
+   * At the Canyon with its beach peaks: whether an along-shore position is the reef's (its footprint, `canyonReefSpan`),
+   * where the swept barrel's front follows crests and the spilling front sees onsets. The beach peaks' A-frames peel both
+   * ways, which the spilling front (one direction, its upcoast gate) cannot follow: their white and the breaking the rider
+   * feels are the solver's own, as at the Beach (the water-physics advisor, 2026-10-23).
+   */
+  private readonly reefAt?: (x: number) => boolean;
+  /** The Canyon's beach peaks' tips along shore with the beach look on (`canyonBeachLook`): their arms' groups. */
+  private readonly beachLook?: readonly number[];
+  /** The Canyon's layout (`canyonShape`). */
+  private readonly canyonShape: CanyonShape;
+  /**
+   * The Canyon's beach peaks (canyon-beach-break): each arm's peel, over the breaks on its own bar. One tracker across both
+   * arms of an A-frame reads as a close-out (the Wave Pool's note), so the left arm (toward +x) and the right have one each.
+   */
+  private readonly beachPeel?: { x: number; left: PeelTracker; right: PeelTracker; onBar: (x: number, z: number) => boolean; bowl: boolean; bank: boolean }[];
+  /** The Canyon's readout per peak with its beach peaks, built when first asked: each peak's take-off x and breaker there. */
+  private peakBreakers?: { x: number; breaker: { value: number; type: BreakerType }; bowl?: { value: number; type: BreakerType } }[];
   lastStepMs = 0;
+  /** C2 step 3's library zone (`SurfZoneConfig.wave` 'library'), and its last step's cost, ms. */
+  readonly waveZone?: WaveZone;
+  libraryMs = 0;
   /** Latest step's wall time by stage, including the device readback wait in `water`. */
   readonly stepCosts = { water: 0, breaking: 0, roller: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
+  /**
+   * The Canyon's reef columns' onsets (`CANYON.reefBoreHold`, canyon-reef-sequence): where each column's break was last
+   * seen, z, and when, s (a column breaking again within `hold` s counts its jump from there, not from none), and when
+   * each last started breaking on the reef (`peelOnsetAt`), s, which alone a break on the reef waits 0.7 Tp for; one more
+   * than `crestGap` m seaward of where the column last broke, inside that wait, goes to the spilling front alone.
+   */
+  private readonly reefOnsets?: { hold: number; crestGap: number; columns: Uint8Array; seenZ: Float64Array; seenAt: Float64Array; lastOnReef: Float64Array };
   /** The first pass records the warm field's bores; onsets count from the next step. */
   private onsetsArmed = false;
   /** When each column last started a wave that could throw a lip, s. */
@@ -840,6 +1770,10 @@ export class SurfZoneSimulation {
   private velocityZ?: Float64Array;
   /** Each cell's void fraction, for `writeUniformAeration`. */
   private voidFractions?: Float64Array;
+  /** Each cell's foam cover (dense + lace), for `writeUniformSnapshot`'s nodes. */
+  private foamCover?: Float64Array;
+  /** Per solver row, whether it holds any foam (`FOAMED`) or any air or plume (`AIRED`), for `writeUniformSnapshot`. */
+  private snapshotRows?: Uint8Array;
   /** Foam and aeration move over the same post-water flow; only their field values change between them. */
   private readonly advectionStencil = new AdvectionStencil();
 
@@ -847,21 +1781,45 @@ export class SurfZoneSimulation {
   private readonly spinUpSeconds: number;
 
   /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
-  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
-    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed });
+  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary, waveLibrary?: WaveLibrary) {
+    this.spot = createSpot(config.spot, config.seed, { canyonBed: config.canyonBed, poolWaves: config.poolWaves, poolBarrel: config.poolBarrel, poolFloor: config.poolFloor, poolSize: config.poolSize, poolWindow: alongShoreOf(config), poolReef: config.poolReef });
     const tank = tankLayout(config);
     this.tank = tank;
     const offshoreDepth = tank.edgeDepth;
     const alongShore = alongShoreOf(config);
     const dx = config.dx ?? 1;
     const grid = {
-      nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx, xBoundary: 'open' as const,
+      // The Barrel's straight floor wraps its sides when its machine's wave fits the window (`POOL_STRAIGHT.periodicWaves`).
+      nx: Math.round(alongShore / dx), xMin: -alongShore / 2, dx,
+      xBoundary: config.spot === 'pool' && poolFloorOf(config) === 'straight' && POOL_STRAIGHT.periodicWaves > 0 ? 'periodic' as const : 'open' as const,
       zEdges: stretchedEdges(tank.offshore, tank.shore, tank.fineFrom, config.fineSpacing ?? 1, config.coarseSpacing ?? 4),
     };
     const depthAt = (x: number, z: number) => tankDepth(this.spot, offshoreDepth, x, z, tank);
     const onset = config.breakingOnset ?? BREAKING_ONSET[config.spot];
+    // The Canyon's breaking age joins through the diagonals only on steep enough water (`CANYON.ageJoin`, canyon-wave-r2).
+    // So does the Wave Pool's Barrel floor's (`POOL_BARREL.ageJoin`, pool-barrel); its training floor keeps rule A.
+    const diagonalJoin = config.spot === 'canyon' ? config.canyonAgeJoin ?? canyonShape(config.canyonBed).ageJoin
+      : config.spot === 'pool' && config.poolWaves === 'barrel' ? config.poolAgeJoin ?? (poolFloorOf(config) === 'aframe' ? POOL_BARREL.ageJoin : POOL_STRAIGHT.ageJoin) : 0;
+    // Its beach breaks earlier than its reef (`canyonOnset`, canyon-beach-break): the onset over the bed, at each cell's
+    // centre, levelled like the bed across the open edges' bands (the transect OPEN_EDGE_RAMP m in).
+    const shape = canyonShape(config.canyonBed);
+    const inside = alongShore / 2 - OPEN_EDGE_RAMP;
+    // The Point's eases from 0.45 √(g h) in water 3 m deep or less to its 0.65 by 4.5 m (`pointOnset`, point-onset), over
+    // the still water at the session's tide, levelled across the open edges' bands as the Canyon's; `?onset=old`
+    // (`onsetRule`) keeps its flat 0.65.
+    const onsetAt = config.spot === 'canyon' && config.breakingOnset === undefined && shape.beach && shape.barOnset !== onset
+      ? (x: number, z: number) => canyonOnset(Math.min(inside, Math.max(-inside, x)), z, onset, shape)
+      : config.spot === 'point' && config.breakingOnset === undefined && config.onsetRule !== 'old'
+        ? (x: number, z: number) => pointOnset(depthAt(Math.min(inside, Math.max(-inside, x)), z) + config.tide, onset) : undefined;
+    // …and passes its breaking age along its crests by the beach's rule (`canyonJoin`: rule A), the reef keeping its gate;
+    // on version C's bank by the bed, at each cell's centre (rule A on its face, the gate behind its edge), or by its take-off
+    // zone (`SurfZoneConfig.canyonJoin` 'zone').
+    const joinRule = config.canyonJoin === 'zone' ? 'zone' as const : 'bed' as const;
+    const joinAt = config.spot === 'canyon' && config.canyonAgeJoin === undefined && shape.beach && shape.barJoin !== diagonalJoin
+      ? (x: number, z: number) => canyonJoin(Math.min(inside, Math.max(-inside, x)), z, diagonalJoin, shape, joinRule) : undefined;
+    const kennedy = { onset, ...(diagonalJoin > 0 ? { diagonalJoin } : {}), ...(onsetAt ? { onsetAt } : {}), ...(joinAt ? { joinAt } : {}) };
     this.solver = solverStage(config.spot, config.stage) === 2
-      ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: { onset } })
+      ? new BoussinesqSolver(grid, depthAt, { waterLevel: config.tide, breaking: kennedy })
       : new ShallowWaterSolver(grid, depthAt, { waterLevel: config.tide });
     this.sea = surfZoneSea(config);
     if (this.solver instanceof BoussinesqSolver) this.solver.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
@@ -879,26 +1837,74 @@ export class SurfZoneSimulation {
     }
     this.spinUpSeconds = spinUp;
     // Nothing below reads the water, so all of it can be built before the spin-up.
-    this.breaking = new BreakingModel(this.solver, { onset });
+    this.breaking = new BreakingModel(this.solver, kennedy);
     this.breaking.onsetScale = windOnsetScale(config.windSpeed ?? 0, this.breakerDepth());
     // The Reef's peel is its ledge's: breaks past it (the pass, the lagoon's beach face) are not its wave.
     // Padang Padang's is its reef's, from the peak to the channel. The Wave Pool's A-frame peels both ways alike, so a
     // fit across both arms reads as a close-out: its peel is the right arm's, where riders wait. The Canyon's is its
-    // arm's, from the peak to the beach face: upcoast of the peak the square crests close out on the beach.
+    // arm's, from the peak to the beach face: upcoast of the peak, and past the arm's end (canyon-layout's flanks), the
+    // square crests close out on the beach. Its layout's arm (`SurfZoneConfig.canyonBed`).
     const xCenters = this.solver.xCenters;
-    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? poolRiddenAt
-      : config.spot === 'canyon' ? canyonArmAt : undefined;
+    const canyon = canyonShape(config.canyonBed);
+    this.canyonShape = canyon;
+    const ridden = config.spot === 'reef' ? reefLedgeAt : config.spot === 'padang' ? padangReefAt : config.spot === 'pool' ? { training: poolRiddenAt, aframe: poolBarrelRiddenAt, straight: poolRefOn(config) ? ((line) => (x: number) => poolStraightRiddenAt(x, line))(poolRefLine(config.poolReef)) : (x: number) => poolStraightRiddenAt(x) }[poolFloorOf(config)]
+      : config.spot === 'canyon' ? (x: number) => canyonArmAt(x, canyon) : undefined;
     this.peel = new PeelTracker(xCenters, config.peakPeriod, undefined, ridden && ((column) => ridden(xCenters[column])));
+    // The Canyon's lagoon and its beach face behind the arm are not its wave (`CANYON.peelReach`; every break on the old layout).
+    if (config.spot === 'canyon' && Number.isFinite(canyon.peelReach)) this.peelOnsetAt = (column, z) => canyonPeelAt(xCenters[column], z, canyon);
+    if (config.spot === 'canyon' && canyon.beach) {
+      const span = canyonReefSpan(canyon);
+      this.reefAt = (x) => x >= span.from && x <= span.to;
+      this.beachPeel = canyonBars(canyon).map((bar, k) => {
+        // An arm's columns: from the tip's (a metre either side) out to the end of its taper (version B's upcoast bar's +x
+        // arm on into its bowl, canyon-b; version C's bank's −x arm on through the flipped bowl to its −x end, canyon-c).
+        const arm = (side: 1 | -1) => (column: number) => {
+          const u = side * (xCenters[column] - bar.x);
+          return u >= -1 && u <= (side > 0 ? bar.plusReach + bar.plusTaper : bar.bank ? bar.x - span.from : bar.reach + canyon.barTaper);
+        };
+        return {
+          x: bar.x, left: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(1)), right: new PeelTracker(xCenters, config.peakPeriod, undefined, arm(-1)),
+          onBar: (x: number, z: number) => canyonBarAt(x, z, canyon) === k, bowl: bar.bowl, bank: bar.bank,
+        };
+      });
+    }
     this.outerBreak = new Float64Array(this.solver.nx).fill(Infinity);
+    // The beach peaks' columns count their onsets in sequence too with the beach look (canyon-beach-look), each on its bar:
+    // the spilling front's waves join by onsets, as the reef's.
+    const reefSeq = config.spot === 'canyon' && canyon.beach && canyon.reefBoreHold > 0 && config.canyonReefSeq !== false;
+    const beachSeq = config.spot === 'canyon' && canyon.beach && canyon.reefBoreHold > 0 && config.canyonBeachLook !== false && spillingFrontOn(config);
+    if (reefSeq || beachSeq) {
+      const span = canyonReefSpan(canyon);
+      const bars = canyonBars(canyon);
+      const { nx } = this.solver;
+      const zone = (x: number) => {
+        if (x >= span.from && x <= span.to) return reefSeq ? 1 : 0;
+        // Version C's bank (canyon-c): from the bowl to the end of its fade past the tip.
+        const k = bars.findIndex((bar) => (bar.bank ? x >= bar.x - bar.reach - bar.minusTaper && x <= bar.x + bar.plusReach + bar.plusTaper
+          : Math.abs(x - bar.x) <= bar.reach + canyon.barTaper));
+        return beachSeq && k >= 0 ? 2 + k : 0;
+      };
+      this.reefOnsets = {
+        hold: canyon.reefBoreHold, crestGap: canyon.reefCrestGap, columns: Uint8Array.from(xCenters, zone),
+        seenZ: new Float64Array(nx).fill(Infinity), seenAt: new Float64Array(nx).fill(-Infinity), lastOnReef: new Float64Array(nx).fill(-Infinity),
+      };
+    }
     this.lip = new PlungingLip(this.solver, undefined, LIP_JET[config.spot]?.sourceShare);
+    // `?launchWater=old`: a launch marks the whole water for the device, as before barrel-gpu (the same water).
+    if (config.launchWater === 'old') this.lip.launchMarks = 'all';
     this.foam = new FoamField(this.solver, config.foamDecay ?? (spillingCurlOn(config) ? SPILLING_CURL_FOAM_DECAY : FOAM_DECAY[config.spot]));
     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
-      // A swept barrel's pour lands under the solver's hump, where the drawn lip comes down: its spray rises from there (PR 5).
-      this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0, ...(flight?.swept ? { y: flight.y } : {}) });
       // Its impact's energy drives air down in proportion to how far it fell (G9).
       const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
+      // A swept barrel's pour lands under the solver's hump, where the drawn lip comes down: its spray rises from there (PR 5).
+      this.lipImpacts.push({
+        x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0,
+        // C2 step 5g: the veil's ruler is the wave the parcel fell from, with its fall as the fallback the plunge hold uses.
+        height: flight && flight.waveHeight > 0 ? flight.waveHeight : drop,
+        ...(flight?.swept ? { y: flight.y } : {}),
+      });
       this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
       // Where it lands the water is an impact, not a dispersive wave: its wave's young roller is shallow water for a
       // while (a splash-up's short fall's zone lies inside its jet's), never back past where it left the crest.
@@ -915,19 +1921,91 @@ export class SurfZoneSimulation {
     this.frontFrom = tank.fineFrom;
     if (sweptBarrelOn(config)) {
       // The spot's barrel record (`BARREL_SPOTS`); `barrel` is the constructor's profile library, for the crash.
-      const record = BARREL_SPOTS[config.spot]!;
-      this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', record.onset);
+      const record = barrelSpotOf(config)!;
+      // The step 3 ruling at the pool (`TubeFace`): the thrown clock's cap, the lagged join, the crash's anchor. Its lagged
+      // join keys on where the drawn case goes vertical: the lowest run scaled by Froude to the foot crest (`froude`).
+      const face = barrel?.options.geometry === 'bounded-C' ? undefined : tubeFaceOf(record.faceAnchor !== undefined, config);
+      const tables = face?.lag ? { ...record.onset, throwDepth: { ...record.onset.throwDepth, froude: true as const } } : record.onset;
+      this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', tables);
+      this.tubeFace = face;
+      if (face) this.onsetTiming.thrownRate = face.clockRate;
+      if (face?.lag && !face.distance) this.onsetTiming.formationRamp = record.faceAnchor!.ramp;
+      // Step 7's formation by distance (`TubeFace.distance`): the join and the pre-throw clock by the throw contour.
+      if (face?.distance) {
+        // τ_e: each point's case's earliest frame at its size (the library's), as its drawn slice reads it.
+        const library = barrel;
+        const earliest = library && library.options.geometry !== 'bounded-C' && BARREL_SLOPE[config.spot] !== undefined
+          ? (footHeight: number, footDepth: number) => library.profileTimes({ slope: BARREL_SLOPE[config.spot]!, footHeight, footDepth }).startSeconds
+          : undefined;
+        // The step 7 follow-up's guard (`TubeFace.guard`): the retire guard by each point's case's open time.
+        const openTime = face.guard && library && library.options.geometry !== 'bounded-C' && BARREL_SLOPE[config.spot] !== undefined
+          ? (footHeight: number, footDepth: number) => library.profileTimes({ slope: BARREL_SLOPE[config.spot]!, footHeight, footDepth }).touchdownSeconds
+          : undefined;
+        this.onsetTiming.distance = {
+          to: this.throwDistance, contour: face.contour, ...(earliest ? { earliest } : {}), ...(openTime ? { openTime } : {}),
+          // Ruling 3 (`TubeFace.retire`): a contour-thrown point is never retired for being unbroken.
+          ...(face.retire ? { keepThrown: true } : {}),
+          // Ruling 4's rank 1 (`TubeFace.formClock`): the C1 formation clock.
+          ...(face.formClock ? { c1: true } : {}),
+        };
+      }
+      const lead = face?.lag && !face.distance ? record.faceAnchor!.lead : undefined;
       const slope = BARREL_SLOPE[config.spot];
-      const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && config.sweptCrash !== false ? new CarrierSupport(barrel, slope) : undefined;
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front, carrier);
+      const crash = sweptCrashOn(config);
+      const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && crash ? new CarrierSupport(barrel, slope) : undefined;
+      const frontOptions = config.barrelFront ?? record.front;
+      const options = face?.distance
+        ? { ...frontOptions, distance: this.throwDistance, ...(face.guard ? { paceBreak: true } : {}), ...(face.merge ? { merge: true } : {}), ...(face.formClock ? { subCrest: true } : {}), ...(face.crestLine ? { crestLine: face.crestLine } : {}) }
+        : lead ? { ...frontOptions, lead } : frontOptions;
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, options, carrier);
       this.frontFrom = barrelFrontFrom(config, tank);
-      if (barrel && slope !== undefined && config.sweptCrash !== false) {
-        this.crash = new SweptCrash(barrel, slope);
+      if (barrel && slope !== undefined && crash) {
+        this.crash = new SweptCrash(barrel, slope, face);
         this.whitewater = new Float64Array(this.solver.h.length);
+        if (config.afterTube === 'roller' && config.spot === 'pool') {
+          // Ruling 11 (after-tube, 2026-11-11): the lens after a plunge is born on its slice's clock, part-grown (a plunge
+          // hands its energy to the roller at once), grows over 3 breaker depths (one splash cycle's travel), and does not
+          // shed inside its first splash cycle, 2√(2 H_b / g) with H_b = 0.85 h_b. The Canyon's own are untouched.
+          const splashCycle = 2 * Math.sqrt((2 * AFTER_TUBE.breakerHeight * this.breakerDepth()) / GRAVITY);
+          this.afterRoller = new SpillingRoller(this.solver, {
+            mask: 'solver', birthBy: 'seed', birthScale: AFTER_TUBE.birthScale, growthDepths: AFTER_TUBE.growthDepths, shedAfter: splashCycle, froudeBy: AFTER_TUBE.froudeBy,
+          });
+          this.afterSeeds = new TouchdownSeeds(this.solver.nx, (p) => barrel.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth }).touchdownSeconds);
+        }
+      }
+      // A spot whose waves plunge a tube only from a regime (the Canyon): the rest are its own look's, and the tube's
+      // columns hold its white until the tube's own touchdown (`markTubeColumns`).
+      this.tubeFootMax = tubeFootMax(config.spot, config.peakPeriod);
+      if (barrel && slope !== undefined && Number.isFinite(this.tubeFootMax)) {
+        this.tubeLibrary = barrel;
+        this.tubeSpanned = BARREL_SPOTS[config.spot]?.tubeSpan !== undefined;
+        this.tubeTouchdown = new Float64Array(this.solver.nx).fill(Number.NaN);
+        this.tubeZ = new Float64Array(this.solver.nx).fill(Number.NaN);
       }
     }
     if (spillingFrontOn(config) && !this.crash) {
-      this.spilling = new SpillingFront(this.solver, { ...SPILLING_FRONT[config.spot], ...(config.drawnEdges === false ? { drawnEdges: false } : {}) });
+      // The Canyon's beach peaks: a group of the front's waves per arm, each peeling away from its tip (canyon-beach-look).
+      // Version C's bank (canyon-c): one group peeling −x from the end of its fade past the tip to the flipped bowl, whose
+      // own front (the front's own waves, `SPILLING_FRONT`) takes over where it ramps in.
+      const bankGroups = config.spot === 'canyon' && canyonBankOn(canyon) && config.canyonBeachLook !== false
+        ? canyonBars(canyon).map((bar) => ({ direction: -1 as const, ...CANYON_BANK_LOOK, span: { from: canyonBankJoin(canyon).x, to: bar.x + bar.plusTaper } }))
+        : undefined;
+      const beachGroups = bankGroups ?? (config.spot === 'canyon' && canyon.beach && config.canyonBeachLook !== false
+        ? canyonBars(canyon).flatMap((bar) => ([-1, 1] as const).map((direction) => ({
+          direction, ...CANYON_BEACH_LOOK,
+          // Each arm's span: from its tip to the end of its bar's taper.
+          span: direction < 0 ? { from: bar.x - bar.reach - canyon.barTaper, to: bar.x }
+            // Version B's upcoast +x arm hands on to the bowl's own front where it ramps in (canyon-b).
+            : { from: bar.x, to: bar.bowl ? canyon.upPeakX + canyon.bowlFrom : bar.x + bar.reach + canyon.barTaper },
+        })))
+        : []);
+      if (beachGroups.length) this.beachLook = canyonBars(canyon).map((bar) => bar.x);
+      this.spilling = new SpillingFront(this.solver, {
+        ...SPILLING_FRONT[config.spot],
+        // Versions B and A's reef bowl and reef peel +x (canyon-b and before).
+        ...(config.spot === 'canyon' && !canyonBankOn(canyon) ? { direction: 1 as const } : {}),
+        ...(config.drawnEdges === false ? { drawnEdges: false } : {}), ...(beachGroups.length ? { groups: beachGroups } : {}),
+      });
       this.whitewater = new Float64Array(this.solver.h.length);
       if (config.roller !== false) {
         const mask = config.rollerMask ?? 'front';
@@ -936,15 +2014,34 @@ export class SurfZoneSimulation {
       }
       if (config.spillingCurl !== false) {
         const breakerDepth = this.breakerDepth();
+        const canyon = this.canyonShape;
+        // Version B's bowl (canyon-b): its waves break on its face, so its columns' curls are sized there even when the sea
+        // would break them deeper (Big's, on the bar seaward of the platform).
+        const bowlDepth = Math.min(breakerDepth, canyon.bowlPlatform - BOWL_FACE_BELOW_PLATFORM + config.tide);
         this.curl = new SpillingCurl(this.solver, {
           breakerDepth, breakerHeight: BREAKER_INDEX * breakerDepth,
           // The overturn fits' H0/h0, as the plunging lip's: the incoming sea's height over the tank's offshore depth.
           nonlinearity: edgeHeight(config, tank.edgeDepth) / (tank.edgeDepth + config.tide),
-          // The old Canyon bed draws its own curl, the span ending at its 1:30 face (`SurfZoneConfig.canyonBed`).
-          ...(config.spot === 'canyon' && config.canyonBed === 'old' ? { psiMax: SPILLING_CURL_OLD_PSI_MAX } : {}),
+          ...(config.curlLocal === false ? { local: false } : {}),
+          ...(config.spot === 'canyon' && canyon.bowl ? { breakerDepthAt: (x: number) => (canyonArmAt(x, canyon) ? bowlDepth : breakerDepth) } : {}),
         });
         this.drawnWhitewater = new Float64Array(this.solver.h.length);
       }
+    }
+    // C2 step 3's library zone (`?wave=library`): in the 2 m pool's straight Barrel, with the library's cases.
+    if (config.wave === 'library' && waveLibrary && config.spot === 'pool' && poolRefOn(config) && poolFloorOf(config) === 'straight') {
+      let main = this.sea.components[0];
+      for (const c of this.sea.components) if (c.amplitude > main.amplitude) main = c;
+      this.waveZone = new WaveZone(this.solver, waveLibrary, {
+        direction: main.direction, platformDepth: POOL_REF.platformDepth + config.tide, baseZ: poolStraightPlatformZ() + 2,
+        fromX: WAVE_ZONE_ROW.from, toX: WAVE_ZONE_ROW.to, period: config.peakPeriod,
+        // The reef's lanes: their throw point on its face (seaward of its top's back edge) and along its length.
+        keep: (_tx, _tz, px, pz) => {
+          const line = poolRefLine(config.poolReef);
+          const { s, n } = poolStraightFrame(px, pz, line.startX);
+          return s >= 0 && s <= line.crestProfile[line.crestProfile.length - 1][0] && n >= -POOL_REF.flatWidth;
+        },
+      }, this.renderGrid(1));
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -988,6 +2085,9 @@ export class SurfZoneSimulation {
       // G9: the air breaking drove into the water, which draws the churn.
       'aeration.air': this.aeration.air, 'aeration.depth': this.aeration.depth,
       outerBreak: this.outerBreak, lastThrow: this.lastThrow, lastOnset: this.lastOnset,
+      ...(this.reefOnsets
+        ? { 'reefOnsets.seenZ': this.reefOnsets.seenZ, 'reefOnsets.seenAt': this.reefOnsets.seenAt, 'reefOnsets.lastOnReef': this.reefOnsets.lastOnReef }
+        : {}),
     };
     if (solver instanceof BoussinesqSolver) {
       arrays.breakingStrength = solver.breakingStrength;
@@ -1016,6 +2116,7 @@ export class SurfZoneSimulation {
       lip: this.lip.exportState(),
       ...(this.front ? { front: this.front.exportState() } : {}),
       ...(this.spilling ? { spilling: { front: this.spilling.exportState(), ...(this.roller ? { roller: this.roller.exportState() } : {}) } } : {}),
+      ...(this.waveZone ? { library: this.waveZone.exportState() } : {}),
     };
   }
 
@@ -1023,6 +2124,7 @@ export class SurfZoneSimulation {
   importState(state: SurfZoneState): void {
     const { solver } = this;
     if (state.nx !== solver.nx || state.nz !== solver.nz) throw new Error(`A sea state from another tank (${state.nx}×${state.nz}, not ${solver.nx}×${solver.nz})`);
+    solver.markAllWater();
     const arrays = this.stateArrays();
     for (const [name, values] of Object.entries(state.arrays)) {
       const target = arrays[name];
@@ -1054,9 +2156,15 @@ export class SurfZoneSimulation {
     else this.spilling?.reset();
     if (state.spilling?.roller) this.roller?.importState(state.spilling.roller);
     else this.roller?.reset();
+    this.afterRoller?.reset();
     // The spilling lip keeps nothing of its own: it is rebuilt from the front and lenses taken over, as the donor's was.
-    if (this.curl) this.curl.update(solver.time, 0, this.spilling!, this.roller, this.breaking.strength);
+    if (this.curl) {
+      this.markTubeColumns();
+      this.curl.update(solver.time, 0, this.spilling!, this.roller, this.breaking.strength, this.tubeColumns());
+    }
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
+    // The library's slices come over exactly; a donor without them leaves this zone as it stands (fresh lanes).
+    if (state.library) this.waveZone?.importState(state.library);
   }
 
   get seaTime(): number {
@@ -1174,15 +2282,27 @@ export class SurfZoneSimulation {
     phase = end;
     // Its roller lenses (S3) read the water and the front, after the front's step.
     if (this.roller) this.roller.update(this.solver.time, dt, this.spilling!, this.breaking.strength, this.breakerDepth());
+    // The Barrel's after-tube lenses: born where its lips have touched down (the front's last step), then the water's.
+    if (this.afterRoller && this.front) this.afterRoller.update(this.solver.time, dt, this.afterSeeds!.read(this.front.points), this.breaking.strength, this.breakerDepth());
     // The spilling lip's columns, after the lenses' step: what the next step's drawn whitewater and the snapshot read.
-    this.curl?.update(this.solver.time, dt, this.spilling!, this.roller, this.breaking.strength);
+    if (this.curl) {
+      this.markTubeColumns();
+      this.curl.update(this.solver.time, dt, this.spilling!, this.roller, this.breaking.strength, this.tubeColumns());
+    }
     end = performance.now();
     this.stepCosts.roller = end - phase;
     phase = end;
-    this.advanceFront();
+    this.advanceFront(dt);
     end = performance.now();
     this.stepCosts.front = end - phase;
     phase = end;
+    // The library's zone reads the sea as it now stands and writes nothing back (C2 step 3: one-way).
+    if (this.waveZone) {
+      this.waveZone.step();
+      end = performance.now();
+      this.libraryMs = end - phase;
+      phase = end;
+    }
     this.lip.step(dt);
     end = performance.now();
     this.stepCosts.lip = end - phase;
@@ -1209,14 +2329,100 @@ export class SurfZoneSimulation {
     this.lastStepMs = end - start;
   }
 
+  /**
+   * Each column's tube, at a spot with a tube regime and a spilling curl (the Canyon): the solver time its youngest
+   * tube-regime front point there touches down (its clock from now to the library's touchdown) and its crest's z, NaN
+   * where none. The spilling curl draws nothing there and holds its white until that touchdown, so the tube and the curl
+   * never draw the same metre of crest (the advisor, 2026-10-22). Read from the front as the last step left it.
+   */
+  private markTubeColumns(): void {
+    const { front, tubeLibrary, tubeTouchdown, tubeZ } = this;
+    if (!front || !tubeLibrary || !tubeTouchdown || !tubeZ) return;
+    tubeTouchdown.fill(Number.NaN);
+    tubeZ.fill(Number.NaN);
+    const slope = BARREL_SLOPE[this.config.spot]!;
+    const time = this.solver.time;
+    for (const p of front.points) {
+      if (!(p.footHeight <= this.tubeFootMax) || (this.tubeSpanned && p.tubeSpan !== true) || p.column < 0 || p.column >= tubeTouchdown.length) continue;
+      const touchdown = time - p.tau + tubeLibrary.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth }).touchdownSeconds;
+      // The youngest wave's: the one touching down last.
+      if (!(touchdown <= tubeTouchdown[p.column])) {
+        tubeTouchdown[p.column] = touchdown;
+        tubeZ[p.column] = p.z;
+      }
+    }
+  }
+
+  /**
+   * At a spot with `BarrelSpot.tubeSpan` (the Canyon): marks the front's pieces that have reached their span, which then
+   * stay marked (`latchTubeSpans`). H is the drawn height at the throw of a piece's highest foot crest, from the library
+   * (the advisor's fourth ruling, 2026-10-22).
+   */
+  private latchTubeSpans(): void {
+    const span = BARREL_SPOTS[this.config.spot]?.tubeSpan;
+    if (!this.tubeSpanned || !this.front || span === undefined) return;
+    latchTubeSpans(this.front.points, this.tubeFootMax, span, (p) => this.throwHeight(p.footHeight, p.footDepth));
+  }
+
+  /** A tube's drawn height at its throw (τ = 0) for a foot crest and depth, m: crest over the lower of its toe and front. */
+  private throwHeight(footHeight: number, footDepth: number): number {
+    const library = this.tubeLibrary!;
+    const query = { slope: BARREL_SLOPE[this.config.spot]!, footHeight, footDepth, seconds: 0, hold: 'contact' as const };
+    const point = this.heightPoint;
+    library.pointAt(query, LANDMARK.crest, point);
+    const crest = point[1];
+    library.pointAt(query, LANDMARK.toe, point);
+    const toe = point[1];
+    library.pointAt(query, LANDMARK.front, point);
+    return Math.max(1e-6, crest - Math.min(toe, point[1]));
+  }
+
+  private readonly heightPoint = new Float64Array(2);
+
+  /**
+   * Step 7's formation by distance (`FrontOptions.distance`, `OnsetTiming.distance`): the signed distance along (dx, dz)
+   * from (x, z) to where the still depth is `depth`, m, on the solver's bed (`throwContourDistance`).
+   */
+  private readonly throwDistance = (x: number, z: number, dx: number, dz: number, depth: number): number => {
+    const { solver } = this;
+    return throwContourDistance((px, pz) => solver.restLevel - solver.sampleCentered(solver.bed, px, pz), x, z, dx, dz, depth);
+  };
+
+  /** The front's records as the page draws them and the contact feels them: the tube regime's and, with a span, the spanned pieces' (`writeFrontRecords`). */
+  writeTubeRecords(out: Float32Array): number {
+    return this.front ? writeFrontRecords(this.front.points, out, this.tubeFootMax, this.tubeSpanned) : 0;
+  }
+
+  /** The columns' tubes for the spilling curl (`markTubeColumns`), when there are any to read. */
+  private tubeColumns(): { touchdown: Float64Array; z: Float64Array } | undefined {
+    return this.tubeTouchdown && this.tubeZ ? { touchdown: this.tubeTouchdown, z: this.tubeZ } : undefined;
+  }
+
   /** The swept barrel's front (Part B): the crests breaking in the fine zone, linked into lines, and their clocks. */
-  private advanceFront(): void {
+  private advanceFront(dt: number): void {
     const { front, solver } = this;
     if (!front) return;
     const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
-    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
+    let count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
+    // The Canyon's tube is the reef's (`?canyonTube=on`): its beach peaks spill, so their crests never join its front; the
+    // Wave Pool's straight reef's, on its reef alone (`BarrelSpot.frontAt`).
+    const ridden = this.reefAt;
+    const at = barrelSpotOf(this.config)?.frontAt;
+    if (ridden || at) {
+      let kept = 0;
+      for (let k = 0; k < count; k += 1) {
+        const sample = this.crestSamples[k];
+        if (ridden && !ridden(sample.x)) continue;
+        if (at && !at(sample.x, sample.z)) continue;
+        this.crestSamples[k] = this.crestSamples[kept];
+        this.crestSamples[kept] = sample;
+        kept += 1;
+      }
+      count = kept;
+    }
     front.update(this.crestSamples, count, solver.time);
-    this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
+    this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!, dt);
+    this.latchTubeSpans();
     if (this.crash) {
       // The barrel's jets leave and land on its clock, and the whitewater waits for its touchdown (PR 5).
       const { throws, volume } = this.crash.update(front.points, {
@@ -1259,18 +2465,100 @@ export class SurfZoneSimulation {
   }
 
   /** Breaker-point Iribarren number from the bed slope at the break line and H_b = γ h_b. */
-  iribarren(): { value: number; type: BreakerType } {
-    const point = this.breakPoint();
+  iribarren(point = this.breakPoint()): { value: number; type: BreakerType } {
     const bed = (z: number) => tankDepth(this.spot, this.tank.edgeDepth, point.x, z, this.tank);
-    const slope = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
+    const alongZ = Math.abs(bed(point.z - 2) - bed(point.z + 2)) / 4;
+    // The Wave Pool's Barrel floor reads its bed's steepest slope, square to its arm's contours, as its lip throws do
+    // (`throwLip`): along +z its 71° arm reads a third of it, 1:26 for 1:9.5, and called its plunging take-off spilling.
+    const barrel = this.config.spot === 'pool' && this.config.poolWaves === 'barrel';
+    const across = barrel ? Math.abs(tankDepth(this.spot, this.tank.edgeDepth, point.x - 2, point.z, this.tank) - tankDepth(this.spot, this.tank.edgeDepth, point.x + 2, point.z, this.tank)) / 4 : 0;
+    const slope = barrel ? Math.hypot(alongZ, across) : alongZ;
     const depth = this.breakerDepth();
     const overCrest = submergedCrest((ahead) => bed(point.z + ahead) + this.config.tide, depth, slope);
     const readout = describeSwell({ height: BREAKER_INDEX * depth, period: this.config.peakPeriod, depth, bedSlope: slope, submergedCrest: overCrest });
     return { value: readout.iribarren, type: readout.breakerType };
   }
 
-  peelEstimate(): PeelEstimate | undefined {
-    return this.peel.estimate(this.solver.time, this.breakerCelerity());
+  /**
+   * The peel the readout gives: the spot's (at the Canyon, its reef's), or, at the Canyon with its beach peaks, the peel of
+   * the peak nearest along-shore position x when one is given (the rider's, or the view's): the reef's on its footprint,
+   * else the nearest beach peak's two arms (`aFrameEstimate`).
+   */
+  peelEstimate(x?: number): PeelEstimate | undefined {
+    const peak = x === undefined ? undefined : this.beachPeakNear(x);
+    if (!peak) return this.peel.estimate(this.solver.time, this.breakerCelerity());
+    // Each arm's fit leaves out the open edge's levelled band, where the bed is no longer the bar's.
+    const margin = OPEN_EDGE_RAMP / (this.solver.nx * this.solver.dx);
+    const celerity = this.breakerCelerity();
+    // Version C's bank (canyon-c) peels one way, −x from its tip into the flipped bowl: its one arm's peel, and the readout
+    // says "spilling bank into a plunging reef bowl, right …°".
+    if (peak.bank) {
+      const bank = peak.right.estimate(this.solver.time, celerity, margin);
+      const bowl = this.peakBreakerAt(peak.x)?.bowl;
+      return bank && { ...bank, bank: true, ...(bowl ? { bowl: bowl.type } : {}) };
+    }
+    const estimate = aFrameEstimate(peak.left.estimate(this.solver.time, celerity, margin), peak.right.estimate(this.solver.time, celerity, margin), x! < peak.x ? -1 : 1);
+    // Version B's upcoast peak runs into its reef bowl (canyon-b): the readout names the bowl's breaker too.
+    const bowl = peak.bowl ? this.peakBreakerAt(peak.x)?.bowl : undefined;
+    return estimate && bowl ? { ...estimate, bowl: bowl.type } : estimate;
+  }
+
+  /**
+   * The Canyon's peaks with its beach peaks, for a readout that follows the view (the Wave Lab): each one's stretch of
+   * shore (the reef's footprint, each bar's tip ± its reach and taper), its breaker and its peel now. Undefined elsewhere.
+   */
+  readoutPeaks(): { from: number; to: number; breaker: { value: number; type: BreakerType }; peel?: PeelEstimate }[] | undefined {
+    if (!this.beachPeel) return undefined;
+    const c = canyonShape(this.config.canyonBed);
+    const reef = canyonReefSpan(c);
+    const middle = 0.5 * (reef.from + reef.to);
+    // Version B (canyon-b) has no reef of its own: its bowl is the upcoast peak's, whose stretch runs on into it.
+    return [
+      ...(c.reef ? [{ from: reef.from, to: reef.to, breaker: this.breakerNear(middle)!, peel: this.peelEstimate(middle) }] : []),
+      // Version C's bank's (canyon-c) runs on through the flipped bowl to its −x end.
+      ...canyonBars(c).map((bar) => ({
+        from: bar.bank ? reef.from : bar.x - bar.reach - c.barTaper, to: bar.x + bar.plusReach + bar.plusTaper, breaker: this.breakerNear(bar.x)!, peel: this.peelEstimate(bar.x),
+      })),
+    ];
+  }
+
+  /** The beach peak nearest along-shore position x, or none: off the Canyon's beach, or on its reef's footprint. */
+  private beachPeakNear(x: number): NonNullable<SurfZoneSimulation['beachPeel']>[number] | undefined {
+    // On version B's bowl (canyon-b) the upcoast peak's: the bowl is its +x arm's end, not a reef of its own.
+    if (!this.beachPeel || (this.canyonShape.reef && this.reefAt?.(x))) return undefined;
+    let best = this.beachPeel[0];
+    for (const peak of this.beachPeel) if (Math.abs(x - peak.x) < Math.abs(x - best.x)) best = peak;
+    return best;
+  }
+
+  /**
+   * The breaker the readout gives for the peak nearest along-shore position x, at the Canyon with its beach peaks: the
+   * reef's at its own take-off (`canyonReefTakeOff`) on its footprint, else the nearest beach peak's at its tip
+   * (`canyonBeachTakeOff`). Undefined elsewhere: the spot's one take-off's (`iribarren`).
+   */
+  breakerNear(x: number): { value: number; type: BreakerType } | undefined {
+    if (!this.beachPeel) return undefined;
+    const peak = this.beachPeakNear(x);
+    return { ...(this.peakBreakerAt(peak?.x) ?? this.peakBreakers![0]).breaker };
+  }
+
+  /**
+   * The readout's breakers, built when first asked: the reef's at its take-off (none on versions B and C), each beach
+   * peak's at its tip (version C's bank's at the start), and the bowl's at its take-off (`canyonBowlTakeOff`) beside its
+   * peak's. The entry for a peak
+   * at x (the reef's: none).
+   */
+  private peakBreakerAt(x: number | undefined): NonNullable<SurfZoneSimulation['peakBreakers']>[number] | undefined {
+    if (!this.beachPeel) return undefined;
+    this.peakBreakers ??= [
+      ...(this.canyonShape.reef ? [{ x: Number.NaN, breaker: this.iribarren(canyonReefTakeOff(this.config)) }] : []),
+      ...this.beachPeel.map((peak) => ({
+        // Version C's bank's at the start (`takeOffPoint`), a third of the way along it (canyon-c).
+        x: peak.x, breaker: this.iribarren(peak.bank ? this.breakPoint() : canyonBeachTakeOff(this.config, peak.x)),
+        ...(peak.bowl ? { bowl: this.iribarren(canyonBowlTakeOff(this.config)) } : {}),
+      })),
+    ];
+    return this.peakBreakers.find((p) => p.x === x);
   }
 
   /** Share of wet surf-zone cells breaking with B > 0.3. */
@@ -1309,15 +2597,63 @@ export class SurfZoneSimulation {
       }
       const previous = this.outerBreak[column];
       this.outerBreak[column] = outer;
-      if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
+      // On the Canyon's reef a bore that dropped out for under the hold is still where it was last seen, and a break on the
+      // reef waits only for the last on the reef (`reefBoreHold`): the bores and shore break behind it are other breaks.
+      // A break on the reef more than `reefCrestGap` m seaward of where the column last broke is the next crest: inside the
+      // wait it is no onset (the readout reads one wave a period), but the spilling front joins it, so its white is drawn.
+      let from = previous;
+      let seen = Infinity;
+      const reef = this.reefOnsets?.columns[column] ? this.reefOnsets : undefined;
+      if (reef) {
+        seen = reef.seenZ[column];
+        if (!(previous < Infinity) && solver.time - reef.seenAt[column] <= reef.hold) from = seen;
+        if (outer < Infinity) {
+          reef.seenZ[column] = outer;
+          reef.seenAt[column] = solver.time;
+        }
+      }
+      // On the reef (`peelReach`), or on its own bar in a beach peak's columns (`canyonBarAt`).
+      const zone = reef ? reef.columns[column] : 0;
+      const onReef = reef !== undefined && outer < from - 5
+        && (zone === 1 ? !this.peelOnsetAt || this.peelOnsetAt(column, outer) : canyonBarAt(solver.xCenters[column], outer, this.canyonShape) === zone - 2);
+      if (this.onsetsArmed && onReef && outer < seen - reef.crestGap && !this.newBreaker(column, row, reef.lastOnReef[column])) {
+        if (this.newBreaker(column, row, -Infinity)) this.observeFront(column, outer);
+      } else if (this.onsetsArmed && outer < from - 5 && this.newBreaker(column, row, onReef ? reef.lastOnReef[column] : this.lastOnset[column])) {
         this.lastOnset[column] = solver.time;
-        this.peel.markOnset(column, solver.time, outer);
-        this.spilling?.observeOnset(column, solver.time, outer);
+        if (onReef) reef.lastOnReef[column] = solver.time;
+        if (!this.peelOnsetAt || this.peelOnsetAt(column, outer)) this.peel.markOnset(column, solver.time, outer);
+        if (this.beachPeel) {
+          const x = solver.xCenters[column];
+          for (const peak of this.beachPeel) {
+            if (!peak.onBar(x, outer)) continue;
+            if (peak.left.measures(column)) peak.left.markOnset(column, solver.time, outer);
+            if (peak.right.measures(column)) peak.right.markOnset(column, solver.time, outer);
+          }
+        }
+        this.observeFront(column, outer);
         this.measureBreak(column, row);
         this.throwLip(column, row);
       }
     }
     this.onsetsArmed = true;
+  }
+
+  /**
+   * The spilling front hears of a new break in `column` at z: on the Canyon's reef (or anywhere, without its beach) its own
+   * waves'; with the beach look, on a beach peak's bar, its arm's group's (the −x arm's left of the tip, the +x arm's right).
+   */
+  private observeFront(column: number, z: number): void {
+    const front = this.spilling;
+    if (!front) return;
+    const x = this.solver.xCenters[column];
+    if (!this.reefAt || this.reefAt(x)) {
+      front.observeOnset(column, this.solver.time, z);
+      return;
+    }
+    if (!this.beachLook) return;
+    const bar = canyonBarAt(x, z, this.canyonShape);
+    // Version C's bank (canyon-c) has one group, peeling −x.
+    if (bar >= 0) front.observeOnset(column, this.solver.time, z, canyonBankOn(this.canyonShape) ? 1 : 1 + 2 * bar + (x >= this.beachLook[bar] ? 1 : 0));
   }
 
   /** Where each column's outermost breaking cell lies across shore, z (Infinity when the column is not breaking). */
@@ -1327,13 +2663,14 @@ export class SurfZoneSimulation {
 
   /**
    * Whether a column's break at `row` starts a new wave: at most one per
-   * 0.7 Tp, and only where the still depth is at least 0.4 h_b. Shallower
-   * first breaks are swash bores reaching the shore after a lull; counting
-   * them read every spot's peel as mixed peaks.
+   * 0.7 Tp after `last` (the column's last onset; on the Canyon's reef, its
+   * last on the reef), and only where the still depth is at least 0.4 h_b.
+   * Shallower first breaks are swash bores reaching the shore after a lull;
+   * counting them read every spot's peel as mixed peaks.
    */
-  private newBreaker(column: number, row: number): boolean {
+  private newBreaker(column: number, row: number, last = this.lastOnset[column]): boolean {
     const { solver } = this;
-    if (solver.time - this.lastOnset[column] < 0.7 * this.config.peakPeriod) return false;
+    if (solver.time - last < 0.7 * this.config.peakPeriod) return false;
     return solver.restLevel - solver.bed[row * solver.nx + column] >= 0.4 * this.breakerDepth();
   }
 
@@ -1446,7 +2783,7 @@ export class SurfZoneSimulation {
       jetFlightTime(shape.shape, height), height,
     );
     this.onThrow?.({
-      asked: shape.volume, thrown, height, x, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,
+      asked: shape.volume, thrown, height, x, z: zCenters[crestRow], depth: stillDepth, iribarren, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,
       speedOverCrest: speed / motion.speed,
     });
     if (thrown > 0) {
@@ -1491,7 +2828,12 @@ export class SurfZoneSimulation {
 
   /** S3: the solver columns the roller's table spans (0 without a roller), the first one's centre x and their width, m. */
   get rollerColumns(): number {
-    return this.roller ? this.solver.nx : 0;
+    return this.band ? this.solver.nx : 0;
+  }
+
+  /** The roller that is drawn: a spilling spot's own (felt too), else the Barrel's after-tube one (drawn only). */
+  private get band(): SpillingRoller | undefined {
+    return this.roller ?? this.afterRoller;
   }
 
   get rollerColumn0(): number {
@@ -1509,15 +2851,16 @@ export class SurfZoneSimulation {
    * curl landed and its wave's H, for the roller front (drawn only; left as it is without the lip).
    */
   writeRoller(into: Float32Array, look?: Float32Array): number {
-    if (!this.roller) return 0;
-    into.set(this.roller.table);
-    if (this.curl) {
+    if (!this.band) return 0;
+    into.set(this.band.table);
+    if (this.curl && this.roller) {
       this.curl.drawBand(into, this.spilling!, this.roller, this.solver.time, look && look.length > 0 ? look : undefined);
       // Its drawn band frays at its ends along the crest as the drawn whitewater does (the foam look, item 4a), its
       // peel-side end, where the lip lands, only a column while young (the Canyon lip, round 5).
       if (this.spilling!.options.drawnEdges) {
         frayBand(into, ROLLER_SLOTS, this.solver.nx, ROLLER_STRIDE, ROLLER_FIELD.scale, this.solver.time,
-          { direction: this.spilling!.options.direction, age: this.curl.bandAge, young: this.curl.span });
+          { direction: this.spilling!.options.direction, age: this.curl.bandAge, young: this.curl.span,
+            ...(this.spilling!.options.groups?.length ? { directions: this.curl.bandDirection } : {}) });
       }
     }
     return this.solver.nx;
@@ -1593,6 +2936,7 @@ export class SurfZoneSimulation {
    */
   writeUniformSurface(data: Float32Array, grid: RenderGrid, carve = true): void {
     this.writeUniformFields(grid, data);
+    this.waveZone?.applySnapshot(data, undefined, grid);
     if (carve) carveGrid(data, grid, this.lip.tubeTable, this.lip.tubeCount, this.solver.dx);
   }
 
@@ -1603,24 +2947,48 @@ export class SurfZoneSimulation {
    */
   writeUniformSnapshot(surface: Float32Array, flow: Float32Array, aeration: Float32Array, grid: RenderGrid): void {
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
-    const { h, bed, qx, qz, nx } = this.solver;
+    const { h, bed, qx, qz, nx, nz } = this.solver;
     const { dense, residual } = this.foam;
-    const plume = this.aeration.depth;
+    const { air, depth: plume } = this.aeration;
     if (!this.velocityX || this.velocityX.length !== h.length) {
       this.velocityX = new Float64Array(h.length);
       this.velocityZ = new Float64Array(h.length);
     }
     if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
+    if (!this.foamCover || this.foamCover.length !== h.length) this.foamCover = new Float64Array(h.length);
+    if (!this.snapshotRows || this.snapshotRows.length !== nz) this.snapshotRows = new Uint8Array(nz);
     const u = this.velocityX;
     const w = this.velocityZ!;
     const fraction = this.voidFractions;
-    for (let i = 0; i < h.length; i += 1) {
-      const wet = h[i] > WET;
-      u[i] = wet ? qx[i] / h[i] : 0;
-      w[i] = wet ? qz[i] / h[i] : 0;
-      fraction[i] = this.aeration.voidFraction(i);
-      // With the spilling lip, a young curl's column draws its air where the drawn whitewater is: none before it lands.
-      if (this.curl) fraction[i] *= this.curl.airShare(i, dense[i] + residual[i]);
+    const cover = this.foamCover;
+    const held = this.snapshotRows;
+    const { curl } = this;
+    // Row by row, so a cell's column is at hand (canyon-perf, 2026-10-29): the same arithmetic as before, without a call
+    // or a remainder per cell, and each cell's foam cover (dense + lace) summed once for the nodes that read it. Each row
+    // also notes whether it holds any foam (FOAMED) or any air or plume (AIRED): a node whose four cells hold none gets
+    // the +0 their weighted sum would give, without reading them.
+    for (let iz = 0; iz < nz; iz += 1) {
+      const start = iz * nx;
+      let foamed = 0;
+      let aired = 0;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const i = start + ix;
+        const water = h[i];
+        const wet = water > WET;
+        u[i] = wet ? qx[i] / water : 0;
+        w[i] = wet ? qz[i] / water : 0;
+        const foam = dense[i] + residual[i];
+        cover[i] = foam;
+        // The plume's void fraction (`AerationField.voidFraction`).
+        const reach = plume[i];
+        const share = reach > 0 ? Math.min(1, air[i] / reach) : 0;
+        // With the spilling lip, a young curl's column draws its air where the drawn whitewater is: none before it lands.
+        const void_ = curl ? share * curl.airShareAt(ix, i, foam) : share;
+        fraction[i] = void_;
+        if (foam !== 0) foamed = FOAMED;
+        if (void_ !== 0 || reach !== 0) aired = AIRED;
+      }
+      held[iz] = foamed | aired;
     }
     const nodes = grid.nx;
     const lines = grid.nz;
@@ -1628,26 +2996,42 @@ export class SurfZoneSimulation {
       const row = rows[r] * nx;
       const tz = rowWeights[r];
       const line = r * nodes;
+      const rowsHeld = held[rows[r]] | held[rows[r] + 1];
+      const foamed = (rowsHeld & FOAMED) !== 0;
+      const aired = (rowsHeld & AIRED) !== 0;
       for (let c = 0; c < nodes; c += 1) {
         const i = row + columns[c];
+        const j = i + nx;
         const tx = columnWeights[c];
         const w00 = (1 - tx) * (1 - tz);
         const w10 = tx * (1 - tz);
         const w01 = (1 - tx) * tz;
         const w11 = tx * tz;
         const o = (line + c) * 2;
-        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
-        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
-        surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
-        surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
-          + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
-        flow[o] = depth > WET ? u[i] * w00 + u[i + 1] * w10 + u[i + nx] * w01 + u[i + nx + 1] * w11 : 0;
-        flow[o + 1] = depth > WET ? w[i] * w00 + w[i + 1] * w10 + w[i + nx] * w01 + w[i + nx + 1] * w11 : 0;
-        aeration[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[i + nx] + w11 * fraction[i + nx + 1];
-        aeration[o + 1] = w00 * plume[i] + w10 * plume[i + 1] + w01 * plume[i + nx] + w11 * plume[i + nx + 1];
+        const depth = h[i] * w00 + h[i + 1] * w10 + h[j] * w01 + h[j + 1] * w11;
+        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[j] * w01 + bed[j + 1] * w11;
+        if (depth > WET) {
+          surface[o] = depth + bottom;
+          surface[o + 1] = foamed ? cover[i] * w00 + cover[i + 1] * w10 + cover[j] * w01 + cover[j + 1] * w11 : 0;
+          flow[o] = u[i] * w00 + u[i + 1] * w10 + u[j] * w01 + u[j + 1] * w11;
+          flow[o + 1] = w[i] * w00 + w[i + 1] * w10 + w[j] * w01 + w[j + 1] * w11;
+        } else {
+          surface[o] = bottom - 0.05;
+          surface[o + 1] = 0;
+          flow[o] = 0;
+          flow[o + 1] = 0;
+        }
+        if (aired) {
+          aeration[o] = w00 * fraction[i] + w10 * fraction[i + 1] + w01 * fraction[j] + w11 * fraction[j + 1];
+          aeration[o + 1] = w00 * plume[i] + w10 * plume[i + 1] + w01 * plume[j] + w11 * plume[j + 1];
+        } else {
+          aeration[o] = 0;
+          aeration[o + 1] = 0;
+        }
       }
     }
     this.writeLensTops(surface, grid);
+    this.waveZone?.applySnapshot(surface, aeration, grid);
   }
 
   /**
@@ -1655,7 +3039,7 @@ export class SurfZoneSimulation {
    * (`PhysicalSurfWater`'s node heights). Where `riseAt` finds no lens it adds 0, which leaves the main pass's height.
    */
   private writeLensTops(surface: Float32Array, grid: RenderGrid): void {
-    const { roller } = this;
+    const roller = this.band;
     const lenses = this.rollerReach();
     if (!roller || !(lenses.low <= lenses.high)) return;
     const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
@@ -1709,9 +3093,16 @@ export class SurfZoneSimulation {
     }
   }
 
-  /** G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes. */
+  /**
+   * G9: resample the aeration to interleaved (void fraction, plume depth, m) per render node; 0 on dry nodes.
+   *
+   * C2 step 5b: the library's bore carries its own aerated water, so its void fraction and plume go in here too. The
+   * worker's own snapshot gets them from `writeUniformSnapshot`; this is the in-page path (`PhysicalSurfaceSource`),
+   * which asks for the three fields separately, and without this its bore kept the sea's air under the library's white.
+   */
   writeUniformAeration(data: Float32Array, grid: RenderGrid): void {
     this.writeUniformFields(grid, undefined, undefined, data);
+    this.waveZone?.applyAeration(data, grid);
   }
 
   /** Resample the depth-averaged current to interleaved (u, w) per render node, m/s; 0 on dry nodes. */
@@ -1742,7 +3133,7 @@ export class SurfZoneSimulation {
         if (aeration) fraction![i] = this.curl ? this.aeration.voidFraction(i) * this.curl.airShare(i, dense[i] + residual[i]) : this.aeration.voidFraction(i);
       }
     }
-    const { roller } = this;
+    const roller = this.band;
     const lenses = this.rollerReach();
     for (let r = 0; r < grid.nz; r += 1) {
       const row = rows[r] * nx;
@@ -1780,7 +3171,7 @@ export class SurfZoneSimulation {
   /** The roller's lenses' reach across shore for a pass over the render nodes; none without a roller. */
   private rollerReach(): { low: number; high: number } {
     const reach = this.rollerExtent;
-    if (this.roller) return this.roller.extentZ(reach);
+    if (this.band) return this.band.extentZ(reach);
     reach.low = Number.POSITIVE_INFINITY;
     reach.high = Number.NEGATIVE_INFINITY;
     return reach;

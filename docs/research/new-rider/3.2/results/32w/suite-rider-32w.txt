@@ -1,0 +1,10 @@
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/wt-rider-32w
+
+
+ Test Files  57 passed (57)
+      Tests  740 passed | 21 expected fail (761)
+   Start at  02:57:01
+   Duration  146.12s (tests 97%, transform 1%, import 1%)
+
+vitest exit: 0

@@ -32,7 +32,9 @@ describe('settingsModel', () => {
     const rows = settingsModel('controls', defaultSettings(), context);
     const help = (action: string) => rows.find((r) => r.kind === 'binding' && r.action === action && 'help' in r)?.['help' as never];
     for (const action of ['trimForward', 'trimBack', 'crouch', 'compress', 'hand']) expect(help(action)).toBeTruthy();
-    expect(help('paddle')).toBeUndefined();
+    // The sprint paddle (the owner's choices of 2026-10-22): the paddle's double press is told where it is bound.
+    expect(help('paddle')).toContain('press twice and hold to sprint');
+    expect(help('popUp')).toBeUndefined();
   });
 
   // The stances spec: Regular or Goofy, a Gameplay choice.
@@ -71,10 +73,12 @@ describe('settingsModel', () => {
     expect(settingsModel('graphics', low, context).find((row) => row.id === 'redetect')).toBeUndefined();
   });
 
-  it('lists two keys and two gamepad buttons for each of the seventeen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress; the wipeout spec the duck-dive)', () => {
+  it('lists two keys and two gamepad buttons for each of the eighteen actions (P9 adds trim, crouch and the hand; S1 adds mute; N1 the four calls; C1 a second button; the stances spec Compress; the wipeout spec the duck-dive; the snap stance Snap)', () => {
     const bindings = settingsModel('controls', defaultSettings(), context).filter((row) => row.kind === 'binding');
-    expect(bindings).toHaveLength(68);
-    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(17);
+    expect(bindings).toHaveLength(72);
+    expect(new Set(bindings.map((row) => row.kind === 'binding' && row.action)).size).toBe(18);
+    const snap = bindings.find((row) => row.kind === 'binding' && row.action === 'snap');
+    expect(snap).toMatchObject({ help: expect.stringContaining('the snap off the top') });
     const duck = bindings.find((row) => row.kind === 'binding' && row.action === 'duckDive');
     expect(duck).toMatchObject({ help: expect.stringContaining('push the board under') });
   });
@@ -104,19 +108,29 @@ describe('settingsModel', () => {
     expect(value('bind:gamepad:mute:0', 'steam')).toMatchObject({ value: 'View' });
     expect(value('bind:gamepad:hand:1', 'steam')).toMatchObject({ value: 'L4' });
     expect(value('bind:gamepad:retry:1')).toMatchObject({ value: '—' });
+    // duck-dive-l3: the duck-dive on L3, and the left and right calls with no pad button by default.
+    expect(value('bind:gamepad:duckDive:0')).toMatchObject({ value: 'L3' });
+    expect(value('bind:gamepad:callLeft:0')).toMatchObject({ value: '—' });
+    expect(value('bind:gamepad:callRight:1')).toMatchObject({ value: '—' });
   });
 });
 
 describe('applyRow', () => {
   it('turns the preset to Custom for a hand-set value, and copies a chosen preset', () => {
     expect(applyRow(defaultSettings(), 'caustics', false)).toEqual({ tab: 'graphics', patch: expect.objectContaining({ preset: 'custom', caustics: false }) });
-    expect(applyRow(defaultSettings(), 'preset', 'low')).toEqual({ tab: 'graphics', patch: { preset: 'low', ...PRESETS.low, glow: false } });
+    expect(applyRow(defaultSettings(), 'preset', 'low')).toEqual({ tab: 'graphics', patch: { preset: 'low', ...PRESETS.low, glow: false, glowAntialias: 2 } });
     expect(applyRow(defaultSettings(), 'frameLimit', '30')).toEqual({ tab: 'graphics', patch: expect.objectContaining({ frameLimit: 30 }) });
   });
 
   it('rebinds through the swap rules, and refuses a reserved key', () => {
     expect(applyRow(defaultSettings(), 'bind:keyboard:paddle:0', 'KeyW')).toMatchObject({ tab: 'controls' });
     expect(applyRow(defaultSettings(), 'bind:keyboard:paddle:0', 'Escape')).toBeUndefined();
+    // An action with no pad button by default takes one in either slot (duck-dive-l3: the left and right calls; R3 is the
+    // camera's since the snap stance, so L5).
+    const first = applyRow(defaultSettings(), 'bind:gamepad:callLeft:0', 19);
+    expect(first?.patch).toMatchObject({ bindings: { gamepad: { callLeft: [19] } } });
+    const second = applyRow(defaultSettings(), 'bind:gamepad:callRight:1', 16);
+    expect(second?.patch).toMatchObject({ bindings: { gamepad: { callRight: [16] } } });
   });
 
   it('applies gameplay and accessibility values to their tabs', () => {
@@ -145,6 +159,22 @@ describe('applyRow', () => {
     expect(settingsModel('graphics', classic, context).map((r) => r.id)).not.toContain('glow');
     expect(applyRow(defaultSettings(), 'glow', true)).toEqual({ tab: 'graphics', patch: { glow: true } });
     expect(applyRow(defaultSettings(), 'glow', false)).toEqual({ tab: 'graphics', patch: { glow: false } });
+  });
+
+  // The owner's ask (2026-10-22): the glow's anti-aliasing as a setting, 2× or 4×.
+  it('offers the glow anti-aliasing, 2× or 4×, under the glow while it is on, without making the preset Custom', () => {
+    expect(settingsModel('graphics', defaultSettings(), context).map((r) => r.id)).not.toContain('glowAntialias');
+    const glowing = { ...defaultSettings(), graphics: { ...defaultSettings().graphics, glow: true } };
+    const rows = settingsModel('graphics', glowing, context);
+    const ids = rows.map((r) => r.id);
+    expect(ids.indexOf('glowAntialias')).toBe(ids.indexOf('glow') + 1);
+    expect(rows.find((r) => r.id === 'glowAntialias')).toMatchObject({
+      kind: 'choice', value: '2', label: 'Glow anti-aliasing', options: [{ value: '2', label: '2×' }, { value: '4', label: '4×' }],
+    });
+    const classic = { ...glowing, graphics: { ...glowing.graphics, preset: 'low' as const, ...PRESETS.low } };
+    expect(settingsModel('graphics', classic, context).map((r) => r.id)).not.toContain('glowAntialias');
+    expect(applyRow(glowing, 'glowAntialias', '4')).toEqual({ tab: 'graphics', patch: { glowAntialias: 4 } });
+    expect(applyRow(glowing, 'glowAntialias', '2')).toEqual({ tab: 'graphics', patch: { glowAntialias: 2 } });
   });
 
   // The Particles setting, after Spray and mist; it applies at once, the running sea included.

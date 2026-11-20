@@ -1,0 +1,40 @@
+pool straight small (H 1.05 m at the feed), 12 periods after 50 s (428 s wall); xBoundary periodic; floor ledge {"gradient":0.5,"kneeRounding":1}; the sea's direction -39.1°; u of the take-off 40 m, of the reef's end 235 m; {"side":1,"periodicWaves":2,"direction":39,"platformDepth":4.5,"platformLead":20,"startX":115,"startZ":-221,"reefAngle":40,"gradient":0.10526315789473684,"kneeRounding":3,"crestProfile":[[0,4.5],[30,1.6],[65,0.9],[175,0.9],[205,2],[235,4.5]],"flatWidth":6,"backSlope":0.1,"takeOffS":40,"startOut":{"small":18,"big":13.5},"ageJoin":0.5,"wrapWallWidth":0,"wrapWallFrom":-150}
+surf meter typical 1.70 m, sets 1.72 m (13 waves); health: finite true, fastest 6.28 m/s, least water on the reef top 0.16 m, volume 0.26 % since 50 s; lip jets 2345, rollers 237; mean along-shore current behind the reef 50–150 s -0.045 m/s, last -0.075 m/s
+the crest at the face's toe (8.2 m seaward of the crest line): s 65 crest 0.88 m (A0 0.194), H 1.27 m, s 120 crest 0.85 m (A0 0.188), H 1.27 m, s 175 crest 0.93 m (A0 0.207), H 1.46 m; 10 m seaward: s 65 crest 0.85 m (A0 0.189), s 120 crest 1.13 m (A0 0.250), s 175 crest 0.91 m (A0 0.203)
+the wave on the platform 10 m seaward of the knee: s 65 H 1.30 m (H/h 0.289), s 120 H 1.56 m (H/h 0.347), s 175 H 1.48 m (H/h 0.328)
+15 waves: start at 9.07 s in the period (sd 0.36), x 92 (sd 13.5; u 31), z -196, 1.58 m deep; one travelling line reached u 0: 15 (+0.0 s, sd 0.00), u 30: 15 (+0.0 s, sd 0.13), u 40: 15 (+1.6 s, sd 0.62), u 65: 12 (+5.1 s, sd 1.93), u 100: 11 (+12.5 s, sd 4.12), u 150: 1 (+— s, sd —), u 175: 0 (+— s, sd —), u 205: 0 (+— s, sd —), u 235: 0 (+— s, sd —); its end median u 139 (10th 40); longest line median 24 m; frames with a patch median 14 %
+  peel along the reef u 0–40: 25.00 m/s (25.00–37.50)
+  peel along the reef u 40–65: 7.21 m/s (6.25–9.38)
+  peel along the reef u 65–175: — m/s (—–—)
+  peel along the reef u 40–175: — m/s (—–—)
+  peel along the reef u 175–225: — m/s (—–—)
+  waves: t 9.47 x 93 → u 147 by +20.0 s | t 9.60 x 92 → u 139 by +18.4 s | t 9.20 x 93 → u 143 by +19.2 s | t 9.60 x 91 → u 135 by +17.6 s | t 8.93 x 93 → u 40 by +2.1 s | t 9.07 x 54 → u 139 by +8.5 s | t 9.33 x 92 → u 40 by +1.6 s | t 8.93 x 54 → u 139 by +8.8 s | t 9.20 x 93 → u 40 by +1.6 s | t 9.07 x 92 → u 143 by +19.2 s | t 8.67 x 92 → u 143 by +19.7 s | t 8.53 x 93 → u 144 by +19.7 s | t 8.40 x 92 → u 142 by +19.7 s | t 9.07 x 92 → u 144 by +19.5 s | t 8.93 x 91 → u 91 by +10.7 s
+u  -20–-10 (x 130…124): onsets 100, depth 1.31 m, H 1.77 m, face 34°; jets 97 (97 %), at 1.81 m, X — Y —, ξb along the ray — (bed's 1.31), H 1.98 m, void W 1.04 × L 2.34 m, tilt 23°
+u  -10–0 (x 123…116): onsets 112, depth 1.44 m, H 1.81 m, face 35°; jets 112 (100 %), at 1.81 m, X — Y —, ξb along the ray — (bed's 1.31), H 2.00 m, void W 1.05 × L 2.36 m, tilt 23°
+u    0–10 (x 115…108): onsets 113, depth 1.44 m, H 1.75 m, face 36°; jets 112 (99 %), at 1.81 m, X — Y —, ξb along the ray — (bed's 1.31), H 1.95 m, void W 1.02 × L 2.30 m, tilt 23°
+u   10–20 (x 107…101): onsets 98, depth 1.31 m, H 1.66 m, face 37°; jets 98 (100 %), at 1.81 m, X — Y —, ξb along the ray — (bed's 1.31), H 1.87 m, void W 0.98 × L 2.20 m, tilt 23°
+u   20–30 (x 100…93): onsets 168, depth 1.44 m, H 1.60 m, face 33°; jets 71 (42 %), at 1.75 m, X 17.3 Y 1.95, ξb along the ray 0.69 (bed's 1.31), H 1.70 m, void W 0.89 × L 2.00 m, tilt 23°
+u   30–40 (x 92…85): onsets 112, depth 1.51 m, H 1.56 m, face 23°; jets 24 (21 %), at 2.32 m, X 14.2 Y 1.75, ξb along the ray 0.88 (bed's 4.03), H 1.13 m, void W 0.61 × L 1.24 m, tilt 23°
+u   40–50 (x 84…78): onsets 98, depth 1.30 m, H 1.41 m, face 22°; jets 41 (42 %), at 2.51 m, X 9.9 Y 1.47, ξb along the ray 1.13 (bed's 2.36), H 1.25 m, void W 0.76 × L 1.31 m, tilt 23°
+u   50–60 (x 77…70): onsets 112, depth 1.04 m, H 1.32 m, face 26°; jets 34 (30 %), at 3.29 m, X 6.4 Y 1.42, ξb along the ray 1.77 (bed's 3.74), H 1.24 m, void W 0.75 × L 1.22 m, tilt 23°
+u   60–70 (x 69…62): onsets 112, depth 0.90 m, H 1.23 m, face 25°; jets 6 (5 %), at 2.99 m, X 4.5 Y 1.42, ξb along the ray 2.44 (bed's 1.04), H 1.26 m, void W 0.78 × L 1.29 m, tilt 23°
+u   70–80 (x 61…55): onsets 111, depth 0.90 m, H 0.90 m, face 23°; jets 21 (19 %), at 1.44 m, X — Y —, ξb along the ray — (bed's 1.48), H 1.41 m, void W 0.74 × L 1.67 m, tilt 23°
+u   80–90 (x 54…47): onsets 205, depth 0.91 m, H 0.93 m, face 24°; jets 75 (37 %), at 1.31 m, X — Y —, ξb along the ray — (bed's 1.48), H 1.27 m, void W 0.67 × L 1.50 m, tilt 23°
+u   90–100 (x 46…39): onsets 214, depth 1.06 m, H 0.81 m, face 23°; jets 93 (43 %), at 1.21 m, X — Y —, ξb along the ray — (bed's 1.29), H 0.76 m, void W 0.40 × L 0.90 m, tilt 23°
+u  100–110 (x 38…32): onsets 181, depth 1.19 m, H 0.68 m, face 22°; jets 87 (48 %), at 1.20 m, X 20.1 Y 2.13, ξb along the ray 1.07 (bed's 1.29), H 0.52 m, void W 0.27 × L 0.61 m, tilt 23°
+u  110–120 (x 31…24): onsets 154, depth 1.15 m, H 0.74 m, face 24°; jets 62 (40 %), at 1.20 m, X 18.0 Y 1.99, ξb along the ray 1.44 (bed's 1.29), H 0.66 m, void W 0.35 × L 0.78 m, tilt 23°
+u  120–130 (x 23…16): onsets 134, depth 1.05 m, H 0.79 m, face 22°; jets 49 (37 %), at 1.29 m, X — Y —, ξb along the ray — (bed's 1.25), H 0.85 m, void W 0.45 × L 1.01 m, tilt 23°
+u  130–140 (x 15…9): onsets 126, depth 1.23 m, H 0.97 m, face 20°; jets 45 (36 %), at 1.46 m, X — Y —, ξb along the ray — (bed's 1.17), H 1.02 m, void W 0.53 × L 1.20 m, tilt 23°
+u  140–150 (x 8…1): onsets 117, depth 1.94 m, H 0.80 m, face 15°; jets 65 (56 %), at 1.84 m, X — Y —, ξb along the ray — (bed's 1.04), H 0.78 m, void W 0.41 × L 0.92 m, tilt 23°
+u  150–160 (x -1…-8): onsets 101, depth 1.76 m, H 0.81 m, face 13°; jets 67 (66 %), at 1.72 m, X 28.2 Y 2.65, ξb along the ray 0.53 (bed's 1.08), H 0.68 m, void W 0.35 × L 0.80 m, tilt 23°
+u  160–170 (x -9…-15): onsets 56, depth 1.07 m, H 1.01 m, face 20°; jets 21 (38 %), at 1.29 m, X 22.7 Y 2.29, ξb along the ray 0.66 (bed's 1.25), H 0.83 m, void W 0.44 × L 0.98 m, tilt 23°
+u  170–180 (x -16…-23): onsets 78, depth 0.92 m, H 0.96 m, face 22°; jets 1 (1 %), at 4.44 m, X — Y —, ξb along the ray — (bed's 0.60), H 1.18 m, void W 0.62 × L 1.39 m, tilt 23°
+u  180–190 (x -24…-31): onsets 117, depth 0.81 m, H 1.24 m, face 30°; jets 0 (0 %), at — m, X — Y —, ξb along the ray — (bed's —), H — m, void W — × L — m, tilt —°
+u  190–200 (x -32…-38): onsets 98, depth 0.94 m, H 1.54 m, face 35°; jets 10 (10 %), at 1.56 m, X — Y —, ξb along the ray — (bed's 1.41), H 1.83 m, void W 0.96 × L 2.16 m, tilt 23°
+u  200–210 (x -39…-46): onsets 112, depth 0.94 m, H 1.60 m, face 35°; jets 61 (54 %), at 1.56 m, X — Y —, ξb along the ray — (bed's 1.41), H 1.81 m, void W 0.95 × L 2.14 m, tilt 23°
+u  210–220 (x -47…-54): onsets 114, depth 0.94 m, H 1.42 m, face 34°; jets 64 (56 %), at 1.56 m, X — Y —, ξb along the ray — (bed's 1.41), H 1.65 m, void W 0.87 × L 1.95 m, tilt 23°
+u  220–230 (x -55…-61): onsets 94, depth 0.81 m, H 1.23 m, face 30°; jets 10 (11 %), at 1.56 m, X — Y —, ξb along the ray — (bed's 1.41), H 1.54 m, void W 0.81 × L 1.81 m, tilt 23°
+u  230–240 (x -62…-69): onsets 76, depth 0.81 m, H 1.05 m, face 27°; jets 0 (0 %), at — m, X — Y —, ξb along the ray — (bed's —), H — m, void W — × L — m, tilt —°
+u  240–250 (x -70…-77): onsets 37, depth 0.81 m, H 0.98 m, face 27°; jets 0 (0 %), at — m, X — Y —, ξb along the ray — (bed's —), H — m, void W — × L — m, tilt —°
+u  250–260 (x -78…-84): onsets 28, depth 0.81 m, H 1.03 m, face 30°; jets 0 (0 %), at — m, X — Y —, ξb along the ray — (bed's —), H — m, void W — × L — m, tilt —°
+plunging (jets on half the onsets or more): -20–-10, -10–0, 0–10, 10–20, 140–150, 150–160, 200–210, 210–220

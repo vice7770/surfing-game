@@ -1,0 +1,16 @@
+{"bar":"glide","rider":"new","water":"plane","faceDeg":13.4,"v":5,"fell":"","heldS":3,"speedEnd":6.19,"draftCm":11.6,"minReserve":0.64,"pressureShare":[-0.11,0.12]}
+{"bar":"glide","rider":"new","water":"plane","faceDeg":11,"v":7,"fell":"","heldS":3,"speedEnd":7.11,"draftCm":8.5,"minReserve":0.64,"pressureShare":[-0.07,0.05]}
+{"bar":"glide","rider":"new","water":"plane","faceDeg":10.4,"v":9,"fell":"","heldS":3,"speedEnd":8.84,"draftCm":5.3,"minReserve":0.65,"pressureShare":[-0.03,0.07]}
+{"bar":"glide","rider":"new","water":"plane","faceDeg":11.1,"v":12,"fell":"","heldS":3,"speedEnd":11.78,"draftCm":2.7,"minReserve":0.66,"pressureShare":[-0.03,0]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":13.4,"v":5,"fell":"settling: balance","heldS":0,"speedEnd":4.29,"draftCm":24.4,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":11,"v":7,"fell":"","heldS":3,"speedEnd":8.16,"draftCm":10,"minReserve":0.61,"pressureShare":[-0.13,0.06]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":10.4,"v":9,"fell":"","heldS":3,"speedEnd":9.31,"draftCm":9.1,"minReserve":0.48,"pressureShare":[-0.18,0.12]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":11.1,"v":12,"fell":"balance","heldS":2.28,"speedEnd":7.95,"draftCm":6.2,"minReserve":0,"pressureShare":[-0.46,1]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":13.4,"v":5,"fell":"settling: balance","heldS":0,"speedEnd":3.41,"draftCm":37,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":11,"v":7,"fell":"balance","heldS":1.08,"speedEnd":1.66,"draftCm":54.2,"minReserve":0.02,"pressureShare":[-0.54,0.39]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":10.4,"v":9,"fell":"settling: lost board","heldS":0,"speedEnd":5.04,"draftCm":1.7,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":11.1,"v":12,"fell":"settling: lost board","heldS":0,"speedEnd":6.93,"draftCm":1.6,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":13.4,"v":5,"fell":"settling: balance","heldS":0,"speedEnd":5.98,"draftCm":22.7,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":11,"v":7,"fell":"balance","heldS":0.1,"speedEnd":6.83,"draftCm":12.2,"minReserve":0.04,"pressureShare":[0.18,0.23]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":10.4,"v":9,"fell":"balance","heldS":0.48,"speedEnd":7.46,"draftCm":14.5,"minReserve":0,"pressureShare":[-0.23,0.18]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":11.1,"v":12,"fell":"","heldS":3,"speedEnd":11.61,"draftCm":2.5,"minReserve":0.63,"pressureShare":[-0.04,0.05]}

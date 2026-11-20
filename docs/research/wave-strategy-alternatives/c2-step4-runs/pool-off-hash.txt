@@ -1,0 +1,1 @@
+pool ref Barrel, 900 steps from /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s4/sea21.bin: solver t 36.000, lip jets 278, hash 0545d279d79bafe7, library key false

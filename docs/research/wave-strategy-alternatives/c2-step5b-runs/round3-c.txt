@@ -1,0 +1,13 @@
+cases 19, stored depths 2; lanes 153; from 40 to 58 s; parts C
+
+## C. Ruling 35 item 2: the surface's share and the flow's at one seat
+  |the nodes' share − the point's| (bar 0.02): median 0.0000, 90 % 0.0000, 99 % 0.0074, most 0.0536 (19955); over 0.02 0.5 %
+  in the field's middle (its lane's end weight 1): median 0.0000, 90 % 0.0000, 99 % 0.0000, most 0.0000 (18071); over 0.02 0.0 %
+  at its σ ends (the end taper): median 0.0000, 90 % 0.0078, 99 % 0.0486, most 0.0536 (1884); over 0.02 4.8 %
+  the nodes' share median 0.985, 90 % 1.000, 99 % 1.000, most 1.000 (19955)
+  the point's share median 0.985, 90 % 1.000, 99 % 1.000, most 1.000 (19955)
+  |the nodes' share − the same sum evaluated at the point| (what step 4 gave the flow): median 0.0003, 90 % 0.0160, 99 % 0.1448, most 0.2966 (19955); over 0.02 8.0 %
+
+the sea's crest lost on a step, over the whole run: 0
+
+ran 570 s wall; slices made 480 (slope clamped 140, A0 clamped 269, some τ clamped 294, at the toe 184); tracker {"raws":624,"fitted":480,"borrowed":1,"atToe":235,"rejected":12}

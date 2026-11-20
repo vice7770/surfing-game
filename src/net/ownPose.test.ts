@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP } from '../wave/SurfZoneRunner';
+import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS } from '../wave/SurfZoneRunner';
 import { createPose } from './poseCodec';
 import { OwnPoseTracker } from './ownPose';
 
@@ -44,6 +44,24 @@ describe('OwnPoseTracker', () => {
     expect(tracker.write(fallen(), () => 1, 10, false, createPose(), true).recovering).toBe(true);
     // Riding, never.
     expect(tracker.write(snapshot(), () => 1, 10, false, createPose(), true).recovering).toBe(false);
+  });
+
+  // duck-drawn: the duck-diving flag (wire flag 16) sends the two-body dive whole (the snapshot's ducking bit), its press
+  // let go included, as it did the rigid rider's press from 0.3.
+  it('marks the duck-dive: the two-body dive whole, or the rigid rider\'s press', () => {
+    const lying = () => {
+      const source = snapshot();
+      source.rider[RIDER_SNAPSHOT.phase] = RIDER_PHASES.indexOf('prone');
+      return source;
+    };
+    const tracker = new OwnPoseTracker();
+    expect(tracker.write(lying(), () => 1, 10, false, createPose()).ducking).toBe(false);
+    const diving = lying();
+    diving.rider[RIDER_SNAPSHOT.swim] = SWIM_BITS.ducking | SWIM_BITS.under;
+    expect(tracker.write(diving, () => 1, 10, false, createPose()).ducking).toBe(true);
+    const pressing = lying();
+    pressing.rider[RIDER_SNAPSHOT.duck] = 0.5;
+    expect(tracker.write(pressing, () => 1, 10, false, createPose()).ducking).toBe(true);
   });
 
   it('marks a pose without a rider', () => {

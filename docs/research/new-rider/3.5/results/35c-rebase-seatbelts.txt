@@ -1,0 +1,121 @@
+# Steps 3.5b + 3.5c REBASED onto main's 3.5a (the ask-cap) — the seatbelts re-run on the rebased tree.
+#
+# WHY RE-RUN. PR #392's numbers were all taken on a tree based at 183c4828. PR #389 (step 3.5a) then squash-merged
+# to main as 660cc94e, so #392 no longer applied; nine files conflicted and seven were source. Every number below
+# was therefore re-measured on the REBASED tree, because a seatbelt taken on a different base is not a seatbelt.
+#
+# TREE. `claude/35b-fourth-row` = origin/main (73b17ddb) + one commit carrying 3.5b + 3.5c.
+#   main advanced from 660cc94e to 73b17ddb mid-round; 73b17ddb touches only
+#   `.claude/skills/surf-video-read/SKILL.md`, a markdown doc. `src/` and `docs/research` are byte-identical across
+#   that rebase step (`git diff b31032c6 HEAD -- src/ docs/research` empty), so every figure below stands on both.
+#
+# PROBE. `docs/research/new-rider/3.3/plant.ts`, the probe steps 3.4i/3.4l/3.4m/3.4n published these arms from,
+#   built with rolldown from each tree. `RIDER=new FELT=deck BODY=two` — the rider the owner rides
+#   (`?rider=new&feltFrame=deck&riderBody=two`) — `AHEAD` 0.75, `SIDE` -45, 9 s a run, the stance HELD, the stick
+#   never touched unless a leg says otherwise. `f73` = FACE 1.4,7.32,5.7; `s16` = FACE 1.4,16,5.7;
+#   `-l` = absolute entries 1-6 m/s x 3 stances = 18 runs; `-g` = the glide cell's 8 entries x 3 = 24.
+#   The live window and the fall classifier are the probe's own, unchanged.
+
+
+##### 1. THE THREE REFERENCE ARMS, on the rebased tree at the shipped default
+
+arm      runs  fell     range, s        median, s     the reference this folder publishes
+f73-l      18  18/18    0.617-2.533     1.450         18 of 18, 0.617-2.533 s, median 1.450  -> MATCHES
+s16-l      18  18/18    0.500-6.233     1.033         18 of 18, median 1.033                 -> MATCHES
+f73-g      24  24/24    1.667-5.183     4.650         24 of 24, median 4.650                 -> MATCHES
+
+# All three arms read their published figures to the digit on the rebased tree. Step 3.5c's finding that the new
+# default re-bases the arms to themselves therefore still holds with #389's code in the tree.
+
+
+##### 2. `?stanceDeep=off` STILL REPRODUCES THE OLD PLANT — and against a stronger reference than 3.5c's
+
+# 3.5c compared `?stanceDeep=off` with its own pre-flip default. On the rebased tree the comparison available is
+# better: `?stanceDeep=off` against MAIN'S OWN DEFAULT, i.e. the tree with the branch absent altogether. Two
+# bundles, two trees, the same probe and the same commands.
+
+leg B: rebased tree, STDEEP=off      vs      leg C: main 660cc94e, default
+  f73-l    18 runs x 388 columns    0 mismatches
+  s16-l    18 runs x 388 columns    0 mismatches
+  f73-g    24 runs x 388 columns    0 mismatches
+  TOTAL    60 runs x 388 columns    0 mismatches        ====> BYTE-IDENTICAL
+
+# (3.5c's own figure was 54 runs x 359 columns. The column count rose to 388 because #389 added its 37 probe
+# columns to this same probe; the run count is 60 here because f73-g's 24 are counted in.)
+
+# The flip is still LIVE, which is the control on the line above — the new default against `?stanceDeep=off`:
+  f73-l     7 of 18 rows differ
+  s16-l     4 of 18 rows differ
+  f73-g    10 of 24 rows differ
+# So `off` reaches the old plant and the default does not. No third behaviour appeared.
+
+
+##### 3. THE TWO SWITCHES DO NOT INTERACT — #389's claim 3 re-run with the fourth row ON
+
+# #389 claim 3: "The switch is inert with the stick centred, at every value ... differ in two columns only
+# (`askCapMed`, `askHeldMed` - both instrument columns describing the cap) ... Every physics column - `fell`,
+# `fellAt`, `bankFall`, `rollFall`, `railFall` and the rest - is identical." Re-run on `f73-l` against the
+# rebased DEFAULT, so the fourth stance row is on throughout:
+
+ASKCAP=1.5   columns moved: 3  [askCapArm, askCapMed, askHeldMed]   non-instrument columns: NONE
+ASKCAP=2     columns moved: 3  [askCapArm, askCapMed, askHeldMed]   non-instrument columns: NONE
+ASKCAP=4     columns moved: 3  [askCapArm, askCapMed, askHeldMed]   non-instrument columns: NONE
+ASKCAP=4.5   columns moved: 2  [askCapArm, askCapMed]               non-instrument columns: NONE
+ASKCAP=9     columns moved: 3  [askCapArm, askCapMed, askHeldMed]   non-instrument columns: NONE
+
+# `askCapArm` is the arm's own label column; `askCapMed` and `askHeldMed` are the two instrument columns #389 named.
+# `4.5` moving `askCapMed` ALONE is #389's own check that 4.5 isolates the planing gate: the radius is unchanged, so
+# `askHeldMed` cannot move. The result is #389's, reproduced value for value with the row shipping.
+
+# A note on method, because the first version of this check was WRONG and the wrong version is worth recording:
+# I first compared whole rows and read all 18 as "differing", which looked like a failure. It was my test that was
+# wrong, not the tree - #389 never claimed whole-row identity with the switch SET, it claimed identity on every
+# physics column. The column-wise comparison above is the claim #389 actually made.
+
+# The ask-cap arm itself, with the stick HARD OVER (STEERS=1) and the old plant on both sides:
+  rebased STDEEP=off ASKCAP=2   vs   main ASKCAP=2     18 runs x 388 columns, 0 mismatches  ====> IDENTICAL
+# So #389's switch still does on the rebased tree exactly what it did on main.
+
+# Positive control, so "identical" above is not read as "the switch is dead": on the rebased default with the stick
+# hard over, ASKCAP=2 moves all 18 rows and the median ride from 0.850 s to 0.817 s. The cap is live.
+
+
+##### 4. THE CANYON BYTE CHECK — the 3,600-step reference, fresh spin-up, path named
+
+# Build: ./node_modules/.bin/rolldown scripts/m1-cpu-bench.ts -o bench.raw.mjs --format esm --platform node
+#        wrapper PREPENDED:  { echo "globalThis.location = { search: '?canyonWaves=true' };"; cat bench.raw.mjs; }
+#        verified as the bundle's FIRST line (a bare string silently benches the default Canyon, devTools.ts:9).
+# Run:   node bench-B.mjs --spot canyon --steps 3600 --state ./fresh.sea   (deleted first, so the spin-up is fresh)
+
+spun up on the CPU in 84.4 s; kept in ./fresh.sea      <- the FRESH SPIN-UP path, said out loud
+canyon medium, 64 components, 400 x 451 = 180400 cells, render 401 x 511, solver t 22.000   <- grid B, read not assumed
+
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+  reference B (3,600 steps, fresh spin-ups):  a367d938f15fa934 / 9e5831f80e38abd9
+                                              ====> IDENTICAL, both columns. THE REFERENCE PAIR DOES NOT MOVE.
+
+# 84.4 s against 3.5c's 49.0 s is wall clock on a loaded machine (two other sessions' node processes at ~92 % CPU);
+# the hash does not depend on it. A fresh spin-up and an imported --state give different pairs on main alone
+# (step 3.4i measured that), which is why the path is named and the two are never compared.
+
+
+##### 5. SUITES, on the rebased tree, all with --maxWorkers=1
+
+src/physics                      58 files, 638 passed | 21 expected fail (659)   (3.5c: 58 files, 638 passed)
+src/scene/rig + src/game         70 files, 741 passed (741)                      (3.5c: 70 files, 740 passed)
+src/wave/SurfZoneRunner.test.ts  1 file,  43 passed (43), run by hand            (3.5c: 43/43)
+tsc -b                           clean
+
+# The rig+game +1 against 3.5c is ACCOUNTED FOR, not waved past: `PhysicalMode.test.ts` now holds 108 `it` blocks,
+# 3.5c's 107 plus the one `askCap` test #389 added. Both rounds' switch tests are in it and both pass.
+# `src/wave/SurfZoneSimulation.test.ts` declares 644.5 minutes of per-test timeout and cannot gate anything; it was
+# not run. `SurfZoneRunner.test.ts` is outside the merge suite, so it is run by hand; its four stale tests were
+# fixed on 2026-11-14, which is why 43/43 is a real pass and a red there would be news.
+
+
+##### 6. NO HIDDEN MOTORS — this round resolves conflicts and adds no force
+
+# Grepped over every ADDED `src/` line in the final diff: no `applyImpulse`, `addForce`, `applyForce`, `.torque =`,
+# `velocity =`, `angularVelocity =`, brake or damper. The seven hits for `clock|timer|fatigue|stamina` are all
+# comment lines SAYING there is none. Main's `askCap` code in `AttachedRider` (`askRadius`, `askUngated`,
+# `prepareBank`'s `most`/`held`/`want`, `leanProbe`'s three new columns) is byte-identical to main's own.

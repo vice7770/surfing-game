@@ -1,0 +1,36 @@
+# Step 3.5c - the three reference arms re-measured on the new default, and the row's cost by rider.
+#
+# Probe: docs/research/new-rider/3.3/plant.ts (the probe steps 3.4i, 3.4l, 3.4m and 3.4n published these arms from),
+# with one added env switch, STDEEP=on|off, and nothing else changed. 9 s a run, AHEAD 0.75, SIDE -45, stance HELD.
+# Live window and fall classifier: the probe's own, unchanged.
+#
+# PART 1 - THE THREE REFERENCE ARMS. RIDER=new FELT=deck BODY=two (the rider the owner rode on 2026-11-16),
+#          STEERS=0 (the stick never touched), which is how every published figure for these arms was taken.
+
+arm     stance      n   fell  OLD plant (=?stanceDeep=off) NEW default (ships)        d med   ratio  moved span of the moves 
+f73-l   tall        6    6/6  1.483 (0.633-2.533)      1.483 (0.633-2.533)       +0.000  1.0000      0 -                 
+        crouch      6    6/6  1.500 (0.783-1.817)      1.500 (0.783-1.817)       +0.000  1.0000      0 -                 
+        compress    6    6/6  1.450 (0.617-1.617)      1.450 (0.617-1.533)       +0.000  1.0000      2 -0.084 .. +0.017 s
+        ALL        18  18/18  1.450 (0.617-2.533)      1.450 (0.617-2.533)       +0.000  1.0000      2 -0.084 .. +0.017 s
+
+s16-l   tall        6    6/6  1.050 (0.500-2.733)      1.050 (0.500-2.733)       +0.000  1.0000      0 -                 
+        crouch      6    6/6  1.033 (0.567-6.233)      1.033 (0.567-6.233)       +0.000  1.0000      0 -                 
+        compress    6    6/6  1.167 (0.550-1.767)      1.167 (0.550-1.733)       +0.000  1.0000      2 -0.034 .. -0.017 s
+        ALL        18  18/18  1.033 (0.500-6.233)      1.033 (0.500-6.233)       +0.000  1.0000      2 -0.034 .. -0.017 s
+
+f73-g   tall        8    8/8  4.950 (1.767-5.100)      4.950 (1.767-5.100)       +0.000  1.0000      0 -                 
+        crouch      8    8/8  4.833 (1.717-5.183)      4.833 (1.717-5.183)       +0.000  1.0000      0 -                 
+        compress    8    8/8  4.650 (1.667-5.017)      4.650 (1.667-5.017)       +0.000  1.0000      1 -0.200 .. -0.200 s
+        ALL        24  24/24  4.650 (1.667-5.183)      4.650 (1.667-5.183)       +0.000  1.0000      1 -0.200 .. -0.200 s
+
+# PART 2 - WHY 3.5b's -0.70 s DOES NOT APPEAR ABOVE. One cell, one face (1.4 m, 16 deg, 5.7 m/s, 2.6 m deep),
+#          3.5b's own EXTRAS=0,0.75,1.5,2.25,3 x STEERS=0.25,0.5,0.75,1 = 20 runs a stance, Compress's row:
+
+cell                                                       OLD plant              NEW default               d med  moved span of the moves   
+plant.ts, plain ?rider=new (3.5b's rider)                  3.083 (n=20)           2.367                    -0.716     16 -1.684 .. +0.416 s  
+plant.ts, FELT=deck BODY=two (the OWNER's rider), s16      2.517 (n=20)           2.567                    +0.050     15 -0.900 .. +1.533 s  
+plant.ts, FELT=deck BODY=two (the OWNER's rider), f73      2.200 (n=20)           2.250                    +0.050     17 -1.450 .. +0.833 s  
+depth.ts, plain ?rider=new (3.5b's own probe + cell)       3.067 (n=20)           2.367                    -0.700     17 -1.633 .. +0.233 s  
+
+# Falls: 20 of 20 -> 20 of 20 in every cell above, every stance. Nothing in this round moves a fall count.
+

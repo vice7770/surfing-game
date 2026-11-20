@@ -1,0 +1,17 @@
+periodic-pool-c2-b1-a1-l12: frames 660, frames rebuilt 118, velocity filled 4914 of 337920 (1.45 %)
+periodic-pool-c2-b1-a2-l12: frames 618, frames rebuilt 84, velocity filled 12320 of 316416 (3.89 %)
+periodic-pool-c2-b1-a3-l12: frames 625, frames rebuilt 102, velocity filled 15476 of 320000 (4.84 %)
+periodic-pool-c2-b2-a1-l12: frames 621, frames rebuilt 97, velocity filled 7948 of 317952 (2.50 %)
+periodic-pool-c2-b2-a2-l12: frames 628, frames rebuilt 95, velocity filled 17176 of 321536 (5.34 %)
+periodic-pool-c2-b2-a3-l12: frames 635, frames rebuilt 62, velocity filled 17270 of 325120 (5.31 %)
+periodic-pool-c2-b3-a1-l12: frames 612, frames rebuilt 115, velocity filled 7860 of 313344 (2.51 %)
+periodic-pool-c2-b3-a2-l12: frames 627, frames rebuilt 71, velocity filled 10164 of 321024 (3.17 %)
+periodic-pool-c2-b3-a3-l12: frames 632, frames rebuilt 57, velocity filled 17444 of 323584 (5.39 %)
+
+over all nine cases, where the run gave no sample:
+  back to crest: 1.56 %
+  crest to lip: 5.76 %
+  lip to throat: 5.03 %
+  throat to toe: 4.29 %
+  toe to front: 1.96 %
+  before the throw: 0.01 %; from the throw: 7.77 %

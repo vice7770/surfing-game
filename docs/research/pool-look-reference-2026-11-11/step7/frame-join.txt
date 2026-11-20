@@ -1,0 +1,44 @@
+=== big: periodic-pool-straight-big-l13; foot crest 1.25 m, scale (h0) 3.524 m, frames 0.0150 s apart; 179 frames, frame 120 at clock -0.00000 s, the first frame with an underside: 126 (clock 0.090 s) ===
+stored frames before the throw that are their neighbours' point-by-point join (refilled by the builder): 30 of 120; in the last 0.6 s: 11 of 40
+frame pairs before the throw: 120; pairs with one frame with an underside and one without (today's join): 0
+A1, clock first frame..-0.6 s, at each stored frame's own time, the curve off the raw frame, crest to toe, both ways: arc join median 0.0012, 90 % 0.0027, most 0.0036 m (80); today's join median 0.0000, 90 % 0.0000, most 0.0000 m (80); the arc join's vertices off the raw frame's own (along the curve) median 1.5836, 90 % 2.1906, most 2.6940 m (80)
+A1, clock -0.6..0 s, at each stored frame's own time, the curve off the raw frame, crest to toe, both ways: arc join median 0.0015, 90 % 0.0046, most 0.0128 m (40); today's join median 0.0000, 90 % 0.0000, most 0.0000 m (40); the arc join's vertices off the raw frame's own (along the curve) median 0.3900, 90 % 1.0973, most 1.6919 m (40)
+   over 0.005 m: frame 104 (clock -0.240 s, 0.0070 m, the mark's share 0.13, refilled); frame 113 (clock -0.105 s, 0.0124 m, the mark's share 0.40, refilled); frame 117 (clock -0.045 s, 0.0128 m, the mark's share 0.50, refilled)
+A3, clock 0 and after (every 0.003 s to the last frame): the arc join's profile against today's, the largest vertex move 0.000000 m; pointAt at the five marks 0.000000 m
+   the step at clock 0 (the profile 1e-7 s before against at 0): arc join, largest vertex move 0.0011 m (along the curve: the curve itself off the raw frame 0.0002 m); today's join 0.000001 m
+   before the throw, pointAt against profileAt's own point (crest, lip, throat, toe; -1.6..0 s): largest 8.26e-7 m
+   before the throw (-0.6..0 s), the mark's place, arc join against today's: lip median 0.5059, 90 % 1.2774, most 2.1670 m (163); throat median 0.5059, 90 % 1.2774, most 2.1670 m (163)
+the face anchor's crossing (the curve through the anchor's level, from the crest; -1.6..0 s every 0.003 s): arc join against today's median 0.0012, 90 % 0.0106, most 0.2135 m (534); at the stored frames' own times, arc join against the raw frame median 0.0011, 90 % 0.0021, most 0.0029 m (106)
+   its move per 0.003 s: arc join median 0.0139, 90 % 0.0173, most 0.0606 m (533); today's join median 0.0141, 90 % 0.0193, most 0.2061 m (533)
+A2, clock -1.6..-0.6 s: each frame left out and read from a library of every other frame (frames 0.0300 s apart), the curve off the real frame, crest to toe, both ways:
+   today's join: median 0.0139, 90 % 0.0368, most 0.3993 m (66)
+   arc join:     median 0.0137, 90 % 0.0287, most 0.3993 m (66)
+   split: the frame and both its neighbours as the run gave them: today median 0.0141, 90 % 0.0516, most 0.3993 m (37); arc median 0.0137, 90 % 0.0142, most 0.3993 m (37)
+          the frame or a neighbour refilled by the builder:    today median 0.0000, 90 % 0.0294, most 0.0508 m (29); arc median 0.0139, 90 % 0.0364, most 0.0389 m (29)
+A2, clock -0.6..0 s: each frame left out and read from a library of every other frame (frames 0.0300 s apart), the curve off the real frame, crest to toe, both ways:
+   today's join: median 0.0139, 90 % 0.1284, most 0.2706 m (40)
+   arc join:     median 0.0140, 90 % 0.1365, most 0.2756 m (40)
+   split: the frame and both its neighbours as the run gave them: today median 0.0140, 90 % 0.0939, most 0.2706 m (18); arc median 0.0139, 90 % 0.0142, most 0.0142 m (18)
+          the frame or a neighbour refilled by the builder:    today median 0.0102, 90 % 0.1284, most 0.2460 m (22); arc median 0.0558, 90 % 0.1365, most 0.2756 m (22)
+=== a38: periodic-canyon23-a38-l13; foot crest 1.26 m, scale (h0) 4.065 m, frames 0.0161 s apart; 174 frames, frame 120 at clock -0.00000 s, the first frame with an underside: 125 (clock 0.080 s) ===
+stored frames before the throw that are their neighbours' point-by-point join (refilled by the builder): 38 of 120; in the last 0.6 s: 2 of 37
+frame pairs before the throw: 120; pairs with one frame with an underside and one without (today's join): 0
+A1, clock first frame..-0.6 s, at each stored frame's own time, the curve off the raw frame, crest to toe, both ways: arc join median 0.0012, 90 % 0.0021, most 0.0080 m (83); today's join median 0.0000, 90 % 0.0000, most 0.0000 m (83); the arc join's vertices off the raw frame's own (along the curve) median 0.7316, 90 % 1.0481, most 3.3410 m (83)
+   over 0.005 m: frame 14 (clock -1.706 s, 0.0080 m, the mark's share 0.56, refilled); frame 15 (clock -1.690 s, 0.0050 m, the mark's share 0.31, refilled); frame 34 (clock -1.384 s, 0.0055 m, the mark's share 0.41, refilled); frame 36 (clock -1.352 s, 0.0050 m, the mark's share 0.46, refilled)
+A1, clock -0.6..0 s, at each stored frame's own time, the curve off the raw frame, crest to toe, both ways: arc join median 0.0016, 90 % 0.0027, most 0.0042 m (37); today's join median 0.0000, 90 % 0.0000, most 0.0000 m (37); the arc join's vertices off the raw frame's own (along the curve) median 0.3360, 90 % 0.6168, most 0.7033 m (37)
+A3, clock 0 and after (every 0.003 s to the last frame): the arc join's profile against today's, the largest vertex move 0.000000 m; pointAt at the five marks 0.000000 m
+   the step at clock 0 (the profile 1e-7 s before against at 0): arc join, largest vertex move 0.0004 m (along the curve: the curve itself off the raw frame 0.0000 m); today's join 0.000001 m
+   before the throw, pointAt against profileAt's own point (crest, lip, throat, toe; -1.6..0 s): largest 8.71e-7 m
+   before the throw (-0.6..0 s), the mark's place, arc join against today's: lip median 0.3099, 90 % 0.6963, most 0.8771 m (163); throat median 0.3099, 90 % 0.6963, most 0.8771 m (163)
+the face anchor's crossing (the curve through the anchor's level, from the crest; -1.6..0 s every 0.003 s): arc join against today's median 0.0008, 90 % 0.0070, most 0.1104 m (534); at the stored frames' own times, arc join against the raw frame median 0.0004, 90 % 0.0016, most 0.0029 m (99)
+   its move per 0.003 s: arc join median 0.0146, 90 % 0.0161, most 0.0395 m (533); today's join median 0.0146, 90 % 0.0179, most 0.0952 m (533)
+A2, clock -1.6..-0.6 s: each frame left out and read from a library of every other frame (frames 0.0322 s apart), the curve off the real frame, crest to toe, both ways:
+   today's join: median 0.0049, 90 % 0.0210, most 0.0954 m (62)
+   arc join:     median 0.0112, 90 % 0.0178, most 0.1045 m (62)
+   split: the frame and both its neighbours as the run gave them: today median 0.0159, 90 % 0.0247, most 0.0248 m (17); arc median 0.0159, 90 % 0.0163, most 0.0163 m (17)
+          the frame or a neighbour refilled by the builder:    today median 0.0000, 90 % 0.0203, most 0.0954 m (45); arc median 0.0110, 90 % 0.0417, most 0.1045 m (45)
+A2, clock -0.6..0 s: each frame left out and read from a library of every other frame (frames 0.0322 s apart), the curve off the real frame, crest to toe, both ways:
+   today's join: median 0.0320, 90 % 0.0975, most 0.1097 m (37)
+   arc join:     median 0.0162, 90 % 0.0164, most 0.0557 m (37)
+   split: the frame and both its neighbours as the run gave them: today median 0.0334, 90 % 0.0975, most 0.1097 m (31); arc median 0.0162, 90 % 0.0164, most 0.0164 m (31)
+          the frame or a neighbour refilled by the builder:    today median 0.0251, 90 % 0.0555, most 0.0555 m (6); arc median 0.0282, 90 % 0.0557, most 0.0557 m (6)

@@ -1,0 +1,8 @@
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 150.1 s; kept in <scratch>/canyon-b.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== default Canyon
+spun up on the CPU in 252.0 s; kept in <scratch>/canyon-c.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96

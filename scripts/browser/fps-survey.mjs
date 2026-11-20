@@ -2,6 +2,7 @@
 //   npm run build && npm run preview        (the game on http://localhost:4173; --url to point elsewhere)
 //   npm run survey:fps -- docs/research/fps/<date>-<machine>-1-presets.json --commit=<sha> [--presets=low,medium,high,ultra] [--spots=Beach,Point,Reef,Canyon]
 //   npm run survey:fps -- docs/research/fps/<date>-<machine>-2-settings.json --features --spot=Beach [--swell=Big] [--only=<setting>,…]
+//   npm run survey:fps -- <out>.json --features --spot="Wave Pool" --waves=Barrel --swell="1.5 m" --only="High (baseline)" [--url='http://localhost:4173/?poolTubeCase=pool']
 //   npm run report:fps                       (docs/research/fps-report.md from every run)
 // Writes the samples, their statistics and the machine. The display caps the frame rate, so each frame's GPU
 // time is measured too (EXT_disjoint_timer_query_webgl2): the headroom under the cap. It is the game's context
@@ -27,6 +28,8 @@ const PRESETS = (args.presets ?? 'low,medium,high,ultra').split(',');
 const SPOTS = (args.spots ?? 'Beach,Point,Reef,Canyon').split(',');
 /** The Surf screen's swell for the rides (Practice, Small, Medium or Big); left as the screen has it when omitted. */
 const SWELL = args.swell;
+/** The Wave Pool's Waves row for its rides (Training or Barrel; pool-barrel-perf); left as the screen has it when omitted. */
+const WAVES = args.waves;
 /** Seconds sampled per screen: menus, rides. */
 const MENU_SECONDS = Number(args.menuSeconds ?? 6);
 const RIDE_SECONDS = Number(args.rideSeconds ?? 10);
@@ -565,6 +568,11 @@ async function ride(setting, spot, { pause = false } = {}) {
   await sleep(600);
   await page.click('.spot-card', spot);
   await sleep(300);
+  // The Wave Pool's Waves row first: its size row offers that kind's sizes (the Barrel's '1.5 m' and '1.8 m').
+  if (WAVES) {
+    await page.click('.segmented button', WAVES);
+    await sleep(300);
+  }
   if (SWELL) {
     await page.click('.segmented button', SWELL);
     await sleep(300);

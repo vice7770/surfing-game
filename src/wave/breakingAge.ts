@@ -23,6 +23,7 @@ export const FACE_SLOPE = 1e-4;
  */
 export function inheritedAge(
   i: number, ix: number, iz: number, nx: number, nz: number, slopeX: number, slopeZ: number, strength: Float64Array, age: Float64Array,
+  diagonals = true,
 ): number {
   let inherited = strength[i] > 0 ? age[i] : 0;
   if (slopeX * slopeX + slopeZ * slopeZ <= FACE_SLOPE * FACE_SLOPE) return inherited;
@@ -32,15 +33,15 @@ export function inheritedAge(
     if (bx < 0 || bx >= nx) return inherited;
     const j = iz * nx + bx;
     if (strength[j] > 0) inherited = Math.max(inherited, age[j]);
-    if (iz > 0 && strength[j - nx] > 0) inherited = Math.max(inherited, age[j - nx]);
-    if (iz < nz - 1 && strength[j + nx] > 0) inherited = Math.max(inherited, age[j + nx]);
+    if (diagonals && iz > 0 && strength[j - nx] > 0) inherited = Math.max(inherited, age[j - nx]);
+    if (diagonals && iz < nz - 1 && strength[j + nx] > 0) inherited = Math.max(inherited, age[j + nx]);
     return inherited;
   }
   const bz = iz + Math.sign(slopeZ);
   if (bz < 0 || bz >= nz) return inherited;
   const j = bz * nx + ix;
   if (strength[j] > 0) inherited = Math.max(inherited, age[j]);
-  if (ix > 0 && strength[j - 1] > 0) inherited = Math.max(inherited, age[j - 1]);
-  if (ix < nx - 1 && strength[j + 1] > 0) inherited = Math.max(inherited, age[j + 1]);
+  if (diagonals && ix > 0 && strength[j - 1] > 0) inherited = Math.max(inherited, age[j - 1]);
+  if (diagonals && ix < nx - 1 && strength[j + 1] > 0) inherited = Math.max(inherited, age[j + 1]);
   return inherited;
 }

@@ -1,5 +1,6 @@
 import { Quaternion, Vector3, type Bone } from 'three';
-import { LANDING_TIME, PUSH_TIME, RECOVER_TIME } from '../../physics/AttachedRider';
+import { CLIMB_TIME, LANDING_TIME, PUSH_TIME, RECOVER_TIME } from '../../physics/AttachedRider';
+import { DUCK_BODY } from '../../physics/duckingBody';
 import { ArmSwing, armPendulum } from './armSwing';
 import { Breathing } from './breathing';
 import { Follower, balanceAlarmOf, type DrawnCues } from './causeFilter';
@@ -13,7 +14,7 @@ import { FALL_READING, FallStages, type FallWeights } from './fallStages';
 import { StageBlend, WaterStages } from './stageBlend';
 import { HEAD_CENTRE, RAIL_MIDDLE } from './stanceGauge';
 import { LEASH } from '../../physics/Leash';
-import { TURN_FULL, stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
+import { RIG_SWITCHES, TURN_FULL, snapShare, stanceBlend, weightBack, type StanceBlend } from './stanceBlend';
 import {
   FALL_POSES, LYING_POSES, SIT, TAKE_OFF, createStandingPose, lyingPose, sitScan, stagePose,
   type HandOffset, type LegAngles, type LyingPose, type StageWeights, type StandingPose, type WaterWeights,
@@ -97,6 +98,8 @@ interface Rest {
  * The code-driven layer: what the physics does not say about the body (art
  * direction from surf photography, not measured). Angles in degrees.
  */
+export { RIG_SWITCHES };
+
 export const RIG_DETAIL = {
   /**
    * The stance's own numbers (the feet's angles, the knees standing tall, the
@@ -374,6 +377,43 @@ export const RIG_DETAIL = {
   reachBend: 60,
   reachFade: 0.1,
   reachHandover: 0.25,
+  /**
+   * Snap's arms (snap-carve, the owner's feedback of 2026-11-08: "the surfer doesn't move the arms"; drawn only, from the
+   * drawn state, so other players' riders draw them alike; `RIG_SWITCHES.snapArms`). The poses are read from the owner's
+   * reference, Surf Analytica's "JJF and one perfect full rail carve", and the animation-realism plan's §5.11:
+   * - **The shoulders lead, the arms with them:** Snap read from the drawn state (`snapShare`: the weight back with the
+   *   shoulders wound) counts as the turn for the arms' share (`armTurn`),
+   *   as a yaw rate does: the leading arm points along the look, which the twist turns (Rapture: the head and shoulders
+   *   rotate first; de Sousa 2022: the chest and the leading arm to the lip), before the board comes round.
+   * - **The trailing arm swings up and back** (the reference's 6–9 s): opposite the look, `trailSwing`° from the
+   *   trunk's down (the plan's top turn: 55° at most, the arms at chest height or below), the elbow soft (`arms.elbow`).
+   * - **The inside hand at the water** (the reference's 0–2 s; de Sousa 2022: the body leans in until the inside hand
+   *   nears the water; Kerr at the turn's base: the lead hand at the water): with the weight back, the legs loaded
+   *   (`stanceBlend` depth from `depthFrom` to `depthFull`) and the board on its rail (rolled `rollFrom`° to
+   *   `rollFull`°), in a bottom turn (not yet climbing: the board rising slower than `climbFrom` to `climbFull` m/s; the
+   *   stage reader reads a weight-back turn as a redirect), the inside arm (frontside the trailing, backside the leading:
+   *   the physics' own rule for Compress's hand, `REACH_ALONG`) reaches for the water off the low rail, `railOut` m out
+   *   and `along` m toward its own end of the board; the spine bends toward it as for Compress's hand (`reachBend`).
+   */
+  /**
+   * The turning body (2026-11-10, the owner's "the movement of the surfer is very off"; the study and its fixes in
+   * docs/research/turn-body-2026-11-10; each opt-in by `RIG_SWITCHES`, drawn only, every motion from the stick, the
+   * board's roll or the turn's weight).
+   * - `turnTrunk: 'lean'`: by the turn's weight (the stage reader's), the key pose's forward hinge comes down to
+   *   `hinge`° (it folded the chest over the toes: on the toes' rail on top of the lean, on the heels' against it), and
+   *   the drawn trunk (the spine's base to the neck) is kept within `line`° of the physics' lean line across the board
+   *   (the pelvis to the torso's centre) and within the key pose's `tiltMost` of upright, both eased over `ease`°: the
+   *   reach bend passed them (the heels' side 72° against the physics' 38°).
+   * - `turnLead: 'on'`: the stick (`RiderVisualState.steer`), followed at `follow` rad/s (0.1 s behind), turns the head
+   *   `head`° into the turn; followed again (0.1 s later) the chest `chest`°; again, the hips `hips`°; and it counts as
+   *   `turn` of a full turn for the turn's pose (`StanceBlend.turn`), so the pose starts with the stick and the measured
+   *   turn rate takes over as the board comes round (never more than the larger of the two).
+   * - `cutbackHand: 'back'`: on the heels' rail in a frontside redirect (the stage reader's weight), Snap's hand at
+   *   the water is the back hand's and the front arm points where the board goes: `pointReach` of the arm from its
+   *   shoulder along the nose, turned into the turn by `pointLead` s of the turn rate (`pointMost`° at most), `pointDrop` m below it.
+   */
+  turnBody: { hinge: 12, line: 10, ease: 4, follow: 20, head: 35, chest: 24, hips: 14, turn: 0.5, pointReach: 0.85, pointLead: 0.3, pointMost: 40, pointDrop: 0.05 },
+  snapArms: { trailSwing: 55, depthFrom: 0.6, depthFull: 0.9, rollFrom: 10, rollFull: 25, climbFrom: 0.3, climbFull: 1, railOut: 0.08, along: 0.2 },
   /** The tube's grabbing wrist over its rail's edge, m (the hand's thickness on the rail). */
   grabAbove: 0.035,
   /**
@@ -420,6 +460,55 @@ export const RIG_DETAIL = {
   kick: 0.15,
   kickRate: 2,
 };
+
+/**
+ * The drawn two-body duck-dive (duck-drawn, 2026-10-31: the two-body plan's step 6). Ducking, the snapshot's points
+ * are the swimmer's own parts (`DetachedSurfer`'s centres; its arms' and legs' are the limbs' middles, `SWIM_BITS.ducking`),
+ * and the rig draws the body as the physics holds it, with no clip:
+ * - **the hands on the rails** where the physics' grips are (`DuckingBody.gripPoint`: `DUCK_BODY.gripAhead` m ahead of the
+ *   board's middle as the press comes on, back to `gripBack` as it is let go), the wrist `FALL_POSES.climb.above` over
+ *   the rail, within the arm's reach of the drawn shoulder, the elbows out to the sides, back off the chest and toward the
+ *   hips (`elbow`, in the body's own frame);
+ * - **the trunk** the physics' own (its pelvis, chest and head parts), the chest facing the deck, the head tucked by the
+ *   press as before, its drawn press following the physics' no faster than `duckRate` a second (another player's comes
+ *   on and off whole: its press is not sent);
+ * - **each leg** straight through its part's centre, as a fallen body's (`RIG_DETAIL.fallenReach`), and the back leg's
+ *   knee on the tail where the physics' knee presses (`DUCK_BODY.kneeAt`) as its part comes there: all of it within
+ *   `kneeNear` m of that point on the deck (the knee's spring holds the part `DUCK_BODY.kneeContact` from it), none past
+ *   `kneeFar`; the thigh from the hip to the knee, `kneeAbove` m over the deck, the shin back along the deck `shinLift`°
+ *   off it (Barefoot Surf's duck-dive: the knee or the foot on the tail, the other leg trailing).
+ * - **The chest's facing** square to the spine and the board's across (`diveFacing`): the deck's down along the board,
+ *   the tail as the head goes down to the deck; each elbow's bend carried on from the last frame round its arm
+ *   (`keepElbow`), as a fallen arm's.
+ * - **In** over `in` s, the press's own time, from the lying pose as last drawn (the hands from beside the chest over the
+ *   rail, out and up by at most `handArc` m; the feet from the deck's tail); **out**, as the physics climbs back on from
+ *   the water (`AttachedRider.climbFrom`), as a climb from the water is drawn (`CLIMB_TIME`): the feet, knees, elbows
+ *   and facing from how the dive drew them, the hands sliding back along the rails from its grips over the climb's
+ *   first `handsBack`.
+ * The page's other layers keep out of it (`PointInertia` and `BodyInertia` read the body in the world, and the bones'
+ * layer takes nothing in the dive or the climb straight after it for a jump).
+ */
+export const DIVE_DRAWN = {
+  in: DUCK_BODY.pressTime,
+  kneeNear: DUCK_BODY.kneeContact + 0.03,
+  kneeFar: 0.4,
+  kneeAbove: 0.05,
+  shinLift: 15,
+  duckRate: 6,
+  handArc: 0.08,
+  handsBack: 0.25,
+  elbow: { out: 1, back: 0.7, hips: 0.5 },
+} as const;
+
+
+/**
+ * The stick's lead on a part already turned `turned` by the board's own turn (`turnLead`): what is left of `asked` past
+ * it the same way (the stick starts the turn, the board's yaw rate takes it over), all of it against the other way.
+ */
+function leadPast(turned: number, asked: number): number {
+  if (turned * asked <= 0) return asked;
+  return Math.sign(asked) * Math.max(0, Math.abs(asked) - Math.abs(turned));
+}
 
 /**
  * Poses a Mixamo-named skeleton from a `RiderVisualState` each frame: the hips
@@ -480,8 +569,17 @@ export class HumanoidRig {
   /** The chest's line this solve (the upper spine, bent for the lead shoulder's drop): the free arms spread from its down. */
   private readonly chestLine = new Vector3(0, 1, 0);
   private readonly hipsFollower = new Follower(RIG_DETAIL.cascade.hipsFollow);
+  /** The cascade's own turn of the chest and of the hips, followed as they are: what the stick's lead goes past (`leadPast`). */
+  private readonly chestTurned = new Follower(RIG_DETAIL.cascade.chestFollow);
+  private readonly hipsTurned = new Follower(RIG_DETAIL.cascade.hipsFollow);
   /** Standing, how far the trunk hinges forward at the hips this solve, rad (step 3), and at which clock. */
   private hingeAngle = 0;
+  /**
+   * Step 3.5h (`RIG_SWITCHES.trunk`): standing, the physics owns the trunk and the pelvis. Set in `hinge()` and read
+   * in `poseHinge`, where it stands `backForMass` down, so the pelvis has exactly **one** owner from the first
+   * standing frame - including while the rate limiter is still walking the landing's own carried-in hinge out to 0.
+   */
+  private physicsTrunk = false;
   private hingeClock = Number.NaN;
   /** Standing, the arms' share of the turn this solve, 0 to 1 (`armRate`), and at which clock. */
   private armTurn = 0;
@@ -501,6 +599,11 @@ export class HumanoidRig {
   private readonly leanFollower = new Follower(RIG_DETAIL.gazeFollow);
   private readonly headLook = new Vector3();
   private readonly blend: StanceBlend = { stance: 'regular', depth: 0, turn: 0, back: 0 };
+  /** The turning body (`RIG_DETAIL.turnBody`): the stick followed for the head, the chest and the hips (0 with `turnLead` off), and the trunk's share of the lean this solve. */
+  private readonly steerFollowers = [0, 1, 2].map(() => new Follower(RIG_DETAIL.turnBody.follow));
+  private readonly steerLead = { head: 0, chest: 0, hips: 0 };
+  private leanIn = 0;
+  private readonly leanScratch = { nose: new Vector3(), across: new Vector3(), trunk: new Vector3(), line: new Vector3(), axis: new Vector3(), base: new Vector3(), neck: new Vector3(), point: new Vector3() };
   /** Upright, the stages read from the drawn state (`stageBlend.ts`) and the key pose they blend (`stagePoses.ts`), this solve. */
   private readonly stages = new StageBlend();
   /** The stages' weights this solve (read only: for tests and the dev views). */
@@ -543,6 +646,34 @@ export class HumanoidRig {
   private climbing = false;
   private readonly climbFeet = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
   private climbOnSince = Number.NaN;
+  /**
+   * How long the drawn climb-on takes, s: the physics' own climb (CLIMB_TIME; swim-back, 2026-10-29), its points carrying
+   * the body from the water onto the deck, or the climb's `on` after a body that snapped to prone (`swim: 'old'`).
+   */
+  private climbOnTime: number = FALL_POSES.climb.on;
+  /**
+   * The two-body duck-dive (`DIVE_DRAWN`): when this dive's drawing began (−∞: met mid-dive), the last solve's clock and
+   * whether it drew the dive, and whether the climb drawn now follows one; the drawn press and its clock.
+   */
+  private diveSince = Number.NaN;
+  private diveClock = Number.NaN;
+  private diveWas = false;
+  /** Ducking, the last solve's clock (the elbows' bends carried on from it, `keepElbow`); none not ducking. */
+  private diveElbowClock = Number.NaN;
+  private climbFromDive = false;
+  private drawnDuck = 0;
+  private duckClock = Number.NaN;
+  /** Lying, the trunk's points, the hands' and the ankles' targets as last drawn (the board's frame), whether set: the dive comes in from them. */
+  private readonly diveFrom = [new Vector3(), new Vector3(), new Vector3()];
+  private readonly diveHandFrom = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private readonly diveFootFrom = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private diveFromSet = false;
+  /** Ducking, the hands' targets as last drawn (the board's frame): the climb back on slides them back from there. */
+  private readonly diveHands = { left: new Vector3(), right: new Vector3() } as Record<Side, Vector3>;
+  private readonly diveScratch = { a: new Vector3(), b: new Vector3(), c: new Vector3(), d: new Vector3() };
+  /** Ducking, each leg's kneel on the tail as drawn (`followKneel`), and at which clock. */
+  private readonly kneelDrawn: Record<Side, number> = { left: 0, right: 0 };
+  private readonly kneelClock: Record<Side, number> = { left: Number.NaN, right: Number.NaN };
   /** Where the chest faced at the last solve before the fall (the fallen facing turns from it), and whether one was. */
   private readonly fallFrom = new Vector3();
   private fallFromSet = false;
@@ -608,6 +739,10 @@ export class HumanoidRig {
   private readonly leadAim = new Vector3();
   /** Each hand's reach down this solve, handed over at `reachHandover` (`followReach`), and at which clock. */
   private readonly reaching: Record<Side, number> = { left: 0, right: 0 };
+  /** Standing, how far into Snap the drawn state reads this solve (`snapShare`; 0 with `snapArms: 'old'`). */
+  private snapBack = 0;
+  /** Each hand this solve: the physics' point, or toward the water in Snap's loaded bottom turn (`snapArms`). */
+  private readonly drawnHand: Record<Side, Vector3> = { left: new Vector3(), right: new Vector3() };
   private reachClock = Number.NaN;
   /** The body's line this solve, before the hinge: the physics' trunk, followed; and less its pitch along the board (the standing lift's). */
   private readonly bodyUp = new Vector3();
@@ -737,6 +872,7 @@ export class HumanoidRig {
    */
   solve(state: RiderVisualState, cues?: DrawnCues): void {
     this.advanceCrawl(state);
+    this.followDuck(state);
     const { up, forward, left, boardUp, boardForward, chestUp, hipsForward, target, pole } = this;
     const p = state.points;
     boardUp.set(0, 1, 0).applyQuaternion(state.boardQuaternion);
@@ -750,13 +886,24 @@ export class HumanoidRig {
     const fw = fallen ? this.fall.update(state) : undefined;
     if (!fallen) this.fall.reset();
     this.reelGrip = '';
-    if (state.phase === 'prone' && phaseTime === 0 && this.climbing) this.climbOnSince = state.clock;
-    else if (state.phase !== 'prone') this.climbOnSince = Number.NaN;
-    const climbOn = state.phase === 'prone' && state.clock - this.climbOnSince < FALL_POSES.climb.on ? (state.clock - this.climbOnSince) / FALL_POSES.climb.on : 1;
+    // The two-body duck-dive (`DIVE_DRAWN`): its drawing's share, coming in; once it is over and the body climbs back on,
+    // that climb is drawn as one from the water (another player's too: the climbing bit is local).
+    const diving = state.phase === 'prone' && state.swim.ducking;
+    const dive = this.diveShare(state, diving);
+    const fromDive = state.phase === 'prone' && !diving && this.diveWas;
+    const climbingOn = state.phase === 'prone' && state.swim.climbing;
+    if (state.phase === 'prone' && ((phaseTime === 0 && (this.climbing || climbingOn)) || fromDive)) {
+      this.climbOnSince = state.clock;
+      this.climbOnTime = climbingOn || fromDive ? CLIMB_TIME : FALL_POSES.climb.on;
+      this.climbFromDive = fromDive;
+    } else if (state.phase !== 'prone') this.climbOnSince = Number.NaN;
+    const climbOn = state.phase === 'prone' && state.clock - this.climbOnSince < this.climbOnTime ? (state.clock - this.climbOnSince) / this.climbOnTime : 1;
     // Lying, the water stages and their key pose (the animation-realism plan's phase 3), and the pop-up's drawn places.
     if (lying) lyingPose(this.water.update(state), this.lying);
     else this.water.reset();
-    this.lyingShare = lying ? this.lyingPoseShare(state, phaseTime) * smooth(climbOn) : 0;
+    // Ducking, the trunk's points come in from where the lying body was drawn.
+    if (diving && dive < 1) this.trunkIntoDive(state, dive);
+    this.lyingShare = lying ? (diving ? 1 - dive : this.lyingPoseShare(state, phaseTime)) * smooth(climbOn) : 0;
     const sit = state.phase === 'prone' || state.phase === 'push' ? this.water.weights.sit : 0;
     if (lying) this.placeLying(state, phaseTime);
     if (upright) this.swingFeet(state);
@@ -803,6 +950,11 @@ export class HumanoidRig {
       forward.copy(boardUp).negate();
       // Sitting, the chest faces the nose.
       if (sit > 0) turnToward(forward, this.sitUp(SIT.lean + 90, this.direction), sit, forward);
+      // Ducking, the chest turned with the spine about the board's across: facing the deck along it, the tail as the head
+      // goes down to the deck (the deck's down square to a spine that dives at it vanished, and the arms' sides with it);
+      // climbing back on after, handed back to the deck's down as the lying pose comes in.
+      const turned = diving ? dive : this.climbFromDive && climbOn < 1 ? 1 - smooth(climbOn) : 0;
+      if (turned > 0) this.diveFacing(state, up, turned, forward);
     } else {
       // Fallen: the heading square to the spine, as far as the spine rises, and the water's down square to it. Upright
       // the heading leads, lying flat or diving the down: a swimmer faces the water (step 8: the heading alone vanished
@@ -825,8 +977,12 @@ export class HumanoidRig {
     this.bodyUp.copy(up);
     if (upright) {
       stanceBlend(state, this.blend);
+      this.followSteer(state);
       stagePose(this.stages.update(state, this.blend), this.pose);
-    } else this.stages.reset();
+    } else {
+      this.stages.reset();
+      this.followSteer(state);
+    }
     if (state.phase === 'standing' && this.pose.grab.share > 0) this.grabRail(state);
     // Where the key pose has the hips and the chest face (toward the nose, or past the toes toward the tail), then the
     // anticipation cascade: each turned into the turn ahead of the board by its lead (the head's is the look's).
@@ -838,17 +994,34 @@ export class HumanoidRig {
       const most = cascade.twistMost;
       const blend = state.standingBlend;
       const toNose = (this.blend.stance === 'regular' ? 1 : -1) * (180 / Math.PI);
-      chest += Math.max(-most, Math.min(most, toNose * blend * (cascade.chest * state.yawRate + state.twist)));
-      hips += Math.max(-most, Math.min(most, toNose * blend * (cascade.hips * state.yawRate + cascade.hipsTwist * state.twist)));
+      const chestTurn = Math.max(-most, Math.min(most, toNose * blend * (cascade.chest * state.yawRate + state.twist)));
+      // The new surfer (`RIG_SWITCHES.twistHips`): its twist is the pelvis's too, so the hips turn by all of it.
+      const hipsTwist = RIG_SWITCHES.twistHips === 'whole' ? 1 : cascade.hipsTwist;
+      const hipsTurn = Math.max(-most, Math.min(most, toNose * blend * (cascade.hips * state.yawRate + hipsTwist * state.twist)));
+      chest += chestTurn;
+      hips += hipsTurn;
       // The neck's reach from where the chest is turning to, followed as the gaze is (its yaw-rate lead carries what
       // is left of the board's wobble in the yaw rate).
       this.turnTowardNose(this.chestAim.copy(forward), this.aimFollower.follow(chest, state.clock));
       chest = this.chestFollower.follow(chest, state.clock);
       hips = this.hipsFollower.follow(hips, state.clock);
+      const chestTurned = this.chestTurned.follow(chestTurn, state.clock);
+      const hipsTurned = this.hipsTurned.follow(hipsTurn, state.clock);
+      // The stick's lead (`turnLead`): the chest and the hips into the turn before the board, after the head.
+      if (this.steerLead.chest !== 0 || this.steerLead.hips !== 0) {
+        // Ahead of the turn the board's yaw rate already gives, not on top of it (`leadPast`).
+        const way = (this.blend.stance === 'regular' ? 1 : -1) * blend;
+        const chestLead = leadPast(chestTurned, way * this.steerLead.chest * RIG_DETAIL.turnBody.chest);
+        chest += chestLead;
+        hips += leadPast(hipsTurned, way * this.steerLead.hips * RIG_DETAIL.turnBody.hips);
+        this.turnTowardNose(this.chestAim, chestLead);
+      }
     } else {
       this.chestFollower.seed(chest, state.clock);
       this.aimFollower.seed(chest, state.clock);
       this.hipsFollower.seed(hips, state.clock);
+      this.chestTurned.seed(0, state.clock);
+      this.hipsTurned.seed(0, state.clock);
     }
     const landing = state.phase !== 'standing';
     this.turnTowardNose(hipsForward.copy(forward), hips, landing);
@@ -921,9 +1094,12 @@ export class HumanoidRig {
       this.pitchFollower2.seed(0, state.clock);
     }
     this.orientSpine(chestUp);
+    this.snapHands(state);
     this.followReach(state);
-    if (state.phase === 'standing') this.bendToReach(state, chestUp);
-    else {
+    if (state.phase === 'standing') {
+      this.bendToReach(state, chestUp);
+      if (this.leanIn > 0) this.keepLeanLine(state, chestUp);
+    } else {
       for (const follower of this.bendFollower) follower.seed(0, state.clock);
       this.pitchFollower.seed(0, state.clock);
       this.yawFollower.reset();
@@ -940,7 +1116,7 @@ export class HumanoidRig {
       // Looking ahead along the deck, its look below the deck's plane the lying key pose's (neutral, the eyes forward;
       // lifting to scan; down in the catch). Ducking, the head tucks from looking ahead to facing the deck, crown toward
       // the nose. Sitting, upright, looking about the level as the scan turns it.
-      const duck = state.phase === 'prone' ? Math.min(1, Math.max(0, state.duck)) : 0;
+      const duck = state.phase === 'prone' ? this.drawnDuck : 0;
       const look = (LYING_LOOK + (this.lying.look - LYING_LOOK) * this.lyingShare) * DEG;
       this.direction.copy(boardUp).addScaledVector(boardForward, Math.tan(look)).lerp(this.scratch.copy(boardForward).addScaledVector(boardUp, 0.2), duck);
       this.hint.copy(boardForward).lerp(this.middle.copy(boardUp).negate(), duck);
@@ -975,6 +1151,11 @@ export class HumanoidRig {
         }
         if (lying) this.lyingKnees(state, pole);
         else pole.copy(this.facing);
+        // Ducking, straight through its part, or the back knee on the tail (`DIVE_DRAWN`).
+        if (diving) {
+          this.divingLeg(state, side, hip, foot, dive, target, pole);
+          this.kneeWas[side].copy(pole);
+        }
         // Fallen, the reflexes and the stages' legs over the ragdoll's; back on the board after a climb, the feet swung on,
         // the knees turning from how they kicked to how they lie.
         if (fw) {
@@ -982,6 +1163,8 @@ export class HumanoidRig {
           this.kneeWas[side].copy(pole);
         }
         if (lying && climbOn < 1) {
+          // The feet swung on from where they were drawn in the water: over the physics' climb (onto its points), or,
+          // snapped to prone, over the climb's `on`.
           this.climbOnFoot(state, side, climbOn, target);
           turnToward(this.fallScratch.a.copy(this.kneeWas[side]).normalize(), this.fallScratch.b.copy(pole).normalize(), smooth(climbOn), pole);
         }
@@ -993,6 +1176,8 @@ export class HumanoidRig {
           this.liftOffClock = state.clock;
         }
       }
+      // Lying, where the foot was drawn: a dive comes in from it.
+      if (state.phase === 'prone' && !diving) this.toBoard(state, target, this.diveFootFrom[side]);
       solveTwoBone(hip, this.upperLeg, this.lowerLeg, target, pole, this.joints.knee[side], this.joints.ankle[side]);
       // The ball, where the flat foot meets the deck ahead of the ankle.
       const ball = this.pivot;
@@ -1059,8 +1244,13 @@ export class HumanoidRig {
       // The clavicle at rest against the chest (it follows its arm below, standing): the shoulder read from this solve.
       this.restLocal(BONES.shoulder[side]);
       const shoulder = this.bones.get(BONES.arm[side])!.getWorldPosition(this.joints.shoulder[side]);
-      const hand = p[side === 'left' ? POINT.leftHand : POINT.rightHand];
+      const hand = state.phase === 'standing' ? this.drawnHand[side] : p[side === 'left' ? POINT.leftHand : POINT.rightHand];
       if (state.phase === 'prone') this.strokeSide(side, RIG_DETAIL.strokeElbow, pole);
+      // Ducking, the elbows out to the sides, back off the chest and toward the hips, in the body's own frame (`DIVE_DRAWN.elbow`):
+      // square enough to wherever the arm reaches its rail from, ahead, below or outboard of it (a pole along the board
+      // turned the elbow over as the arm swung from reaching forward to back; one out to the side, as the body hung off
+      // that side of the board).
+      if (diving) turnToward(pole.normalize(), this.diveElbow(side, this.diveScratch.c), dive, pole);
       // Back on the board after a climb, the elbows turning from how they held the rail.
       if (state.phase === 'prone' && climbOn < 1) turnToward(this.fallScratch.a.copy(this.elbowWas[side]).normalize(), this.fallScratch.b.copy(pole).normalize(), smooth(climbOn), pole);
       if (fallen && state.swim.stroking) this.crawlHand(state, side, shoulder, target);
@@ -1068,6 +1258,8 @@ export class HumanoidRig {
       // Fallen, the reflexes (the shield, the cause's shape, surfacing, the reach) and the stages that hold something
       // (the cord, the rail) over the ragdoll's.
       if (fw) this.fallenArm(state, fw, side, shoulder, hand, target, pole);
+      // The two-body duck-dive: the hand on its rail at the physics' grip (`DIVE_DRAWN`).
+      else if (diving) this.divingHand(state, side, shoulder, dive, target);
       else if (state.phase === 'prone' && state.duck > 0.3) this.straightOnRail(hand, shoulder, target);
       // Lying, and landing (the crouched landing's hand passed through the arm's full reach, the elbow snapping), the
       // hand brought within the arm's reach smoothly; in the catch the arm reaches all of it (the lying key pose's).
@@ -1078,6 +1270,11 @@ export class HumanoidRig {
         // The planted hand comes off the deck smoothly as the straight arm runs out of reach (the reach begins).
         this.softReach(shoulder, hand, target, 1, TAKE_OFF.hand.lift);
       } else target.copy(hand);
+      // Back on after a dive (the climb from the water), the hand slides back along the rail from the dive's grip.
+      if (state.phase === 'prone' && !diving && climbOn < 1 && this.climbFromDive) {
+        const back = minimumJerk(climbOn / DIVE_DRAWN.handsBack);
+        target.lerp(this.fromBoard(state, this.diveHands[side], this.diveScratch.a), 1 - back);
+      }
       // Sitting, the hands rest on the thighs, the elbows out and back.
       if (sit > 0) this.sitHand(state, side, shoulder, sit, target, pole);
       // Pushing, where each hand is: the landing's arms come from it (`TAKE_OFF.armsIn`).
@@ -1100,6 +1297,14 @@ export class HumanoidRig {
       // all the way, the upper arm swung onto the line in the last frames, faster the nearer it came, and stopped dead.
       // Eased from the ragdoll's own reach (`fallenReach`) to the arm's (`armReach`).
       if (fallen) this.softReach(shoulder, target, target, RIG_DETAIL.armReach, RIG_DETAIL.armReach - RIG_DETAIL.fallenReach);
+      // Lying, where the hand was drawn (a dive comes in from it); ducking, where it holds (the climb back on leaves from it),
+      // and the elbow's bend carried on from where it was, round the arm toward its pole (`keepElbow`: whichever way the
+      // pole is set, an arm reaching its rail from some side lies along it, and the elbow went over in a frame).
+      if (state.phase === 'prone') this.toBoard(state, target, diving ? this.diveHands[side] : this.diveHandFrom[side]);
+      if (diving) {
+        this.keepElbow(state, side, shoulder, target, pole, this.diveElbowClock);
+        this.elbowWas[side].copy(pole);
+      }
       solveTwoBone(shoulder, this.upperArm, this.lowerArm, target, pole, this.joints.elbow[side], this.joints.wrist[side]);
       this.aimLimb(BONES.arm[side], BONES.foreArm[side], shoulder, this.joints.elbow[side], this.joints.wrist[side], pole, fallen);
       // The hand's back toward the deck's normal, turning to the chest's facing as the forearm comes along the normal
@@ -1127,8 +1332,9 @@ export class HumanoidRig {
       // Sitting, the hand's back up on the thigh.
       if (sit > 0) handHint.lerp(WORLD_UP, sit);
       this.orient(BONES.hand[side], forearm, handHint);
+      // Ducking, the hands grip the rails as hard as a stroke's pull.
       const curl = state.phase === 'prone'
-        ? RIG_DETAIL.fingerCurlRelaxed + (RIG_DETAIL.fingerCurlStroke - RIG_DETAIL.fingerCurlRelaxed) * state.stroking
+        ? RIG_DETAIL.fingerCurlRelaxed + (RIG_DETAIL.fingerCurlStroke - RIG_DETAIL.fingerCurlRelaxed) * Math.max(state.stroking, diving ? dive : 0)
         : RIG_DETAIL.fingerCurlRelaxed;
       this.curlFingers(side, curl);
     }
@@ -1145,13 +1351,28 @@ export class HumanoidRig {
       }
       this.fallenClock = state.clock;
       this.climbing = fw.climb > 0.5;
-      if (this.climbing) for (const side of SIDES) this.toBoard(state, this.joints.ankle[side], this.climbFeet[side]);
+      // Where the drawn ankles were on the board: the climb's feet start there (a board held to climb, or one the physics
+      // climbs straight onto: swim-back).
+      for (const side of SIDES) this.toBoard(state, this.joints.ankle[side], this.climbFeet[side]);
     } else {
       this.climbing = false;
       this.gripSet = false;
       this.fallFrom.copy(this.facing);
       this.fallFromSet = true;
     }
+    // Ducking, the leash from the drawn ankle (the physics' leg point is the leg's middle), and the drawn feet where the
+    // climb back on starts; lying, the trunk's points, where a dive comes in from.
+    if (diving) {
+      for (const side of SIDES) {
+        p[side === 'left' ? POINT.leftFoot : POINT.rightFoot].copy(this.joints.ankle[side]);
+        this.toBoard(state, this.joints.ankle[side], this.climbFeet[side]);
+      }
+    } else if (state.phase === 'prone') {
+      for (let i = 0; i < 3; i += 1) this.toBoard(state, p[i], this.diveFrom[i]);
+    }
+    this.diveFromSet = state.phase === 'prone' && !diving ? true : diving && this.diveFromSet;
+    this.diveWas = diving;
+    this.diveElbowClock = diving ? state.clock : Number.NaN;
   }
 
   /**
@@ -1167,7 +1388,37 @@ export class HumanoidRig {
     // rail change swings the turn's pose in 0.3 s, and its trunk with it drew the swing's edges into the wobble band.
     const tall = this.tallFollower.follow(this.pose.hinge.tall, state.clock);
     const deep = this.deepFollower.follow(this.pose.hinge.deep, state.clock);
-    const wanted = ((tall + (deep - tall) * depth) * Math.PI) / 180;
+    let wanted = ((tall + (deep - tall) * depth) * Math.PI) / 180;
+    /**
+     * **One trunk state, read by both** (`trunk: 'mass'`, step 3.5h; rows 1 and 2 of 3.5/engine-target.md).
+     *
+     * The defect this answers is narrower than "the drawn trunk is a function of leg depth", and the narrower
+     * statement is the true one: the line above is affine in `this.blend.depth` **within one stage**, but the stage
+     * itself changes, `tallFollower`/`deepFollower` move `tall` and `deep` as the stages swing, and `leanIn` bends
+     * the result - so the drawn trunk *can* move at a fixed depth today. **What it has never had is a channel of its
+     * own that is coupled to the body's mass.** Every input above is a drawn quantity, and none of them moves
+     * `AttachedRider.parts`, so a convincing crouch sits over mass that never folded. With the switch the physics'
+     * hip rotor folds the trunk, moves the mass with it, and arrives here already in `state.points`' pelvis, torso
+     * and head - read into `up` (§1) and `chestUp` (§3) before this runs. So standing, the rig adds nothing of its
+     * own, and `physicsTrunk` also stands `poseHinge`'s `backForMass` down: **one fold, one pelvis, one correction,
+     * and the physics owns all three.**
+     *
+     * **The landing's own hinge is left alone** - there is no rotor there (`AttachedRider.freeBody` wants
+     * `phase === 'standing'`), so the drawing's fold is the only trunk the landing has and its own compensation is
+     * honest. Coming out of it, `wanted` drops to 0 while `hingeAngle` still carries the landing's fold, and the
+     * follower and the rate limiter below walk it out smoothly rather than snapping it.
+     *
+     * **No timing claim is needed for the guarantee, and none is made.** `physicsTrunk` holds for every standing
+     * frame, carried-in angle or not, so **exactly one owner applies the pelvis translation** - and two compensations
+     * that cannot both be applied cannot stack, however long any blend takes. (A rate bound here would be a floor on
+     * the walk-out, not a ceiling: `hingeRate` is a maximum rate, and the follower slows as it nears 0.)
+     */
+    this.physicsTrunk = RIG_SWITCHES.trunk === 'mass' && state.phase === 'standing';
+    if (this.physicsTrunk) wanted = 0;
+    // In a turn the trunk leans with the body's line rather than folding over the toes (`turnTrunk`), by the turn's weight;
+    // not in the tube's crouch, folded under the lip with a hand on the rail.
+    this.leanIn = RIG_SWITCHES.turnTrunk === 'lean' && state.phase === 'standing' ? state.standingBlend * this.stages.weights.turn * (1 - this.stages.weights.tube) : 0;
+    if (this.leanIn > 0) wanted += (Math.min(wanted, (RIG_DETAIL.turnBody.hinge * Math.PI) / 180) - wanted) * this.leanIn;
     unhinged.up.copy(this.up);
     unhinged.hipsForward.copy(this.hipsForward);
     unhinged.facing.copy(this.facing);
@@ -1287,7 +1538,8 @@ export class HumanoidRig {
    * takes it all.
    */
   private followArmTurn(state: RiderVisualState): void {
-    const now = Math.min(1, Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate);
+    // In Snap the wound shoulders count as the turn (`snapArms`): the arms go with them before the board comes round.
+    const now = Math.min(1, Math.max(Math.abs(state.yawRate) / RIG_DETAIL.armLeadRate, this.snapBack));
     const dt = state.clock - this.armClock;
     const up = RIG_DETAIL.armRate * dt;
     const down = RIG_DETAIL.armFall * dt;
@@ -1668,6 +1920,12 @@ export class HumanoidRig {
   reset(): void {
     this.fall.reset();
     this.fallFromSet = false;
+    this.diveSince = Number.NaN;
+    this.diveClock = Number.NaN;
+    this.diveWas = false;
+    this.climbFromDive = false;
+    this.duckClock = Number.NaN;
+    this.diveFromSet = false;
     this.reelClock = Number.NaN;
     this.climbing = false;
     this.climbOnSince = Number.NaN;
@@ -1680,6 +1938,7 @@ export class HumanoidRig {
     this.water.reset();
     this.hingeClock = Number.NaN;
     this.hingeAngle = 0;
+    this.physicsTrunk = false;
     this.armClock = Number.NaN;
     this.alarmClock = Number.NaN;
     this.reachClock = Number.NaN;
@@ -1702,6 +1961,9 @@ export class HumanoidRig {
     this.chestFollower.reset();
     this.aimFollower.reset();
     this.hipsFollower.reset();
+    this.chestTurned.reset();
+    this.hipsTurned.reset();
+    for (const follower of this.steerFollowers) follower.reset();
     this.pumpLift = 0;
   }
 
@@ -1711,7 +1973,10 @@ export class HumanoidRig {
     this.up.copy(unhinged.up).applyAxisAngle(left, angle);
     this.hipsForward.copy(unhinged.hipsForward).applyAxisAngle(left, angle);
     this.facing.copy(unhinged.facing).applyAxisAngle(left, angle);
-    const back = angle <= 0 ? 0 : this.backForMass(state, angle);
+    // Step 3.5h: with the physics owning the trunk, it owns the mass-position correction too - `partPosition`
+    // subtracts the physics' own `localCenter`, so the drawn pelvis already moves back as the trunk folds. A second
+    // shift here would move it twice, and `physicsTrunk` holds whatever angle is still being walked out.
+    const back = angle <= 0 || this.physicsTrunk ? 0 : this.backForMass(state, angle);
     this.placeHips(this.hipsAt.copy(unhinged.hips).addScaledVector(levelForward, -back));
   }
 
@@ -1785,6 +2050,137 @@ export class HumanoidRig {
   }
 
   /**
+   * Each hand this solve (`drawnHand`): the physics' point; standing in Snap's loaded bottom turn (`snapArms`), the
+   * inside hand toward the water off the low rail, by how far the weight is back, the legs loaded and the board on its
+   * rail, before it climbs. Sets `snapBack` for the arms' turn and the trailing arm's swing.
+   */
+  private snapHands(state: RiderVisualState): void {
+    const { snapArms } = RIG_DETAIL;
+    for (const side of SIDES) this.drawnHand[side].copy(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand]);
+    this.snapBack = RIG_SWITCHES.snapArms === 'old' || state.phase !== 'standing' ? 0 : state.standingBlend * snapShare(state);
+    if (this.snapBack <= 0) return;
+    const ramp = (x: number, from: number, full: number) => Math.max(0, Math.min(1, (x - from) / (full - from)));
+    const across = this.handScratch.set(1, 0, 0).applyQuaternion(state.boardQuaternion);
+    const roll = Math.asin(Math.max(-1, Math.min(1, across.y))) / DEG;
+    const share = this.snapBack * ramp(this.blend.depth, snapArms.depthFrom, snapArms.depthFull)
+      * ramp(Math.abs(roll), snapArms.rollFrom, snapArms.rollFull) * (1 - ramp(state.climb, snapArms.climbFrom, snapArms.climbFull));
+    if (share <= 0) return;
+    // The low rail: the board's local +x side when it is rolled down (Regular's toes are on its −x rail).
+    const low = roll < 0 ? 1 : -1;
+    const toes = this.blend.stance === 'regular' ? -1 : 1;
+    const frontside = low === toes;
+    // On the heels' rail in a frontside redirect (the cutback), the back hand's share of the reach (`cutbackHand`): the
+    // stage reader's weights, which swing, so the hands hand over rather than switch.
+    const back = RIG_SWITCHES.cutbackHand === 'back' && !frontside ? this.stages.weights.redirect * (1 - this.stages.weights.backside) : 0;
+    for (const side of SIDES) {
+      const rear = this.isRearFoot(state, side);
+      const part = back > 0 ? (rear ? back : 1 - back) : rear === frontside ? 1 : 0;
+      // The front arm then points where the board goes: along the nose turned into the turn, from its shoulder.
+      if (back > 0 && !rear) {
+        const { turnBody } = RIG_DETAIL;
+        const L = this.leanScratch;
+        const nose = L.nose.copy(this.boardForward).setY(0);
+        if (nose.lengthSq() > 1e-8) {
+          const most = (turnBody.pointMost * Math.PI) / 180;
+          nose.normalize().applyAxisAngle(WORLD_UP, Math.max(-most, Math.min(most, turnBody.pointLead * state.yawRate)));
+          const point = this.bones.get(BONES.arm[side])!.getWorldPosition(L.point).addScaledVector(nose, turnBody.pointReach * this.armLength);
+          point.y -= turnBody.pointDrop;
+          if (part > 0) this.drawnHand[side].lerp(this.cutbackWater(state, low, 1, L.axis), share * part);
+          this.drawnHand[side].lerp(point, share * back);
+        }
+        continue;
+      }
+      if (part <= 0) continue;
+      if (back > 0) {
+        this.drawnHand[side].lerp(this.cutbackWater(state, low, -1, this.leanScratch.axis), share * part);
+        continue;
+      }
+      const end = frontside ? -1 : 1;
+      // In the board's shape frame (`boardDeck`): beside the hips, toward the arm's own end, out off the low rail at its
+      // bottom (the water line of a board on its rail).
+      const z = this.scratch.copy(state.points[POINT.pelvis]).sub(state.boardPosition).applyQuaternion(this.boardInverse.copy(state.boardQuaternion).invert()).add(BOARD_CENTRE).z
+        + end * snapArms.along;
+      const water = this.scratch.set(low * (railHalfWidth(z) + snapArms.railOut), 0, z).sub(BOARD_CENTRE).applyQuaternion(state.boardQuaternion).add(state.boardPosition);
+      this.drawnHand[side].lerp(water, share);
+    }
+  }
+
+  /** Snap's hand at the water (`snapHands`): beside the hips toward the arm's `end` of the board (−1 the tail), off the `low` rail at its bottom. */
+  private cutbackWater(state: RiderVisualState, low: number, end: number, out: Vector3): Vector3 {
+    const { snapArms } = RIG_DETAIL;
+    const z = out.copy(state.points[POINT.pelvis]).sub(state.boardPosition).applyQuaternion(this.boardInverse.copy(state.boardQuaternion).invert()).add(BOARD_CENTRE).z
+      + end * snapArms.along;
+    return out.set(low * (railHalfWidth(z) + snapArms.railOut), 0, z).sub(BOARD_CENTRE).applyQuaternion(state.boardQuaternion).add(state.boardPosition);
+  }
+
+  /**
+   * The stick followed for the turn's lead (`turnLead`, `RIG_DETAIL.turnBody`): the head's, then the chest's, then the
+   * hips' (each the last followed again), and its share of the turn added to the stance's (`StanceBlend.turn`) so the
+   * turn's pose starts with the stick. None off the switch, off the standing phase, or with no stick (another player's).
+   */
+  private followSteer(state: RiderVisualState): void {
+    const lead = this.steerLead;
+    const on = RIG_SWITCHES.turnLead === 'on' && state.phase === 'standing';
+    const steer = on && Number.isFinite(state.steer) ? Math.max(-1, Math.min(1, state.steer)) : 0;
+    if (!on) {
+      for (const follower of this.steerFollowers) follower.seed(0, state.clock);
+      lead.head = 0;
+      lead.chest = 0;
+      lead.hips = 0;
+      return;
+    }
+    lead.head = this.steerFollowers[0].follow(steer, state.clock);
+    lead.chest = this.steerFollowers[1].follow(lead.head, state.clock);
+    lead.hips = this.steerFollowers[2].follow(lead.chest, state.clock);
+    if (lead.head === 0) return;
+    // + steer turns the board toward its left, the heading growing: off Regular's toes (`stanceBlend`).
+    const asked = (this.blend.stance === 'regular' ? -1 : 1) * lead.head * RIG_DETAIL.turnBody.turn;
+    const most = Math.max(Math.abs(this.blend.turn), Math.abs(asked));
+    this.blend.turn = Math.max(-most, Math.min(most, this.blend.turn + asked));
+  }
+
+  /**
+   * In a turn (`turnTrunk`, by `leanIn`), keeps the drawn trunk (the spine's base to the neck, as solved) within the
+   * key pose's `tiltMost` of upright (or the physics' own trunk's, past it) and within `turnBody.line`° of the physics'
+   * lean line across the board (the pelvis to the torso's centre), turning the chest back by what is past, eased (`softCap`): the reach bend and the lead
+   * shoulder's drop carried it past both. Leaves `chestUp` as the spine is.
+   */
+  private keepLeanLine(state: RiderVisualState, chestUp: Vector3): void {
+    const { turnBody } = RIG_DETAIL;
+    const L = this.leanScratch;
+    const nose = L.nose.copy(this.boardForward).setY(0);
+    if (nose.lengthSq() < 1e-8) return;
+    nose.normalize();
+    const across = L.across.crossVectors(WORLD_UP, nose).normalize();
+    const line = L.line.subVectors(state.points[POINT.torso], state.points[POINT.pelvis]);
+    if (line.lengthSq() < 1e-10) return;
+    const wanted = Math.atan2(line.dot(across), line.y);
+    const band = (turnBody.ease * Math.PI) / 180;
+    const within = (turnBody.line * Math.PI) / 180;
+    // No less than the physics' own trunk is from upright: a rider going over is drawn going over.
+    const most = Math.max((this.pose.tiltMost * Math.PI) / 180, Math.acos(Math.max(-1, Math.min(1, line.y / line.length()))));
+    const trunk = () => this.bones.get(BONES.neck)!.getWorldPosition(L.neck).sub(this.bones.get(BONES.spine[0])!.getWorldPosition(L.base));
+    // The chest turns about twice what the trunk's line does (the lower spine stays with the hips): a few passes settle it.
+    for (let pass = 0; pass < 3; pass += 1) {
+      const t = L.trunk.copy(trunk());
+      if (t.lengthSq() < 1e-10) return;
+      const off = Math.atan2(t.dot(across), t.y) - wanted;
+      const kept = Math.sign(off) * softCap(Math.abs(off), within, band);
+      const turn = this.leanIn * 1.6 * (off - kept);
+      // + about the nose turns the up toward the board's right.
+      if (Math.abs(turn) > 1e-5) this.orientSpine(chestUp.applyAxisAngle(nose, turn));
+      const now = pass === 0 && Math.abs(turn) <= 1e-5 ? t : L.trunk.copy(trunk());
+      const tilt = Math.acos(Math.max(-1, Math.min(1, now.y / now.length())));
+      const over = this.leanIn * 1.6 * (tilt - softCap(tilt, most, band));
+      if (over > 1e-5) {
+        const axis = L.axis.crossVectors(now, WORLD_UP);
+        if (axis.lengthSq() > 1e-10) this.orientSpine(chestUp.applyAxisAngle(axis.normalize(), over));
+      }
+      if (Math.abs(turn) <= 1e-5 && over <= 1e-5) break;
+    }
+  }
+
+  /**
    * Each hand's reach down (`reachDepth`), handed over no faster than in
    * `reachHandover` s (the animation-realism plan: the relaxed hand at the knee
    * and the physics' spread hand dipping to the water in a banked carve are far
@@ -1796,7 +2192,7 @@ export class HumanoidRig {
     this.reachClock = state.clock;
     if (dt === 0) return;
     for (const side of SIDES) {
-      const now = state.phase === 'standing' ? this.reachDepth(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand]) : 0;
+      const now = state.phase === 'standing' ? this.reachDepth(this.drawnHand[side]) : 0;
       if (dt > 0 && dt < 0.25) {
         const most = dt / RIG_DETAIL.reachHandover;
         this.reaching[side] += Math.max(-most, Math.min(most, now - this.reaching[side]));
@@ -1847,7 +2243,7 @@ export class HumanoidRig {
     let short = 0;
     let depth = 0;
     for (const candidate of SIDES) {
-      const hand = state.points[candidate === 'left' ? POINT.leftHand : POINT.rightHand];
+      const hand = this.drawnHand[candidate];
       const down = this.reaching[candidate];
       if (down <= 0) continue;
       const gap = (this.bones.get(BONES.arm[candidate])!.getWorldPosition(this.target).distanceTo(hand) - reach) * down;
@@ -1858,7 +2254,7 @@ export class HumanoidRig {
       }
     }
     if (!side) return false;
-    const hand = middle.subVectors(state.points[side === 'left' ? POINT.leftHand : POINT.rightHand], pivot);
+    const hand = middle.subVectors(this.drawnHand[side], pivot);
     const shoulderOf = () => this.bones.get(BONES.arm[side])!.getWorldPosition(this.target).sub(pivot);
     bendAxis.crossVectors(shoulderOf(), hand);
     if (bendAxis.lengthSq() < 1e-10) return false;
@@ -2030,6 +2426,17 @@ export class HumanoidRig {
       else ahead.copy(out);
       this.blendAim(shoulder, relaxed, this.spreadArm(shoulder, down, ahead, trail.swing, arms.elbow, this.spreadAt), swingUp, most);
     }
+    // In Snap the trailing arm swings up and back, opposite where the shoulders lead (`snapArms`).
+    const snapTrail = this.isRearFoot(state, side) ? this.snapBack * this.armTurn : 0;
+    if (snapTrail > 0) {
+      const behind = this.handNose.copy(this.look).negate().addScaledVector(down, this.look.dot(down));
+      if (behind.lengthSq() > 1e-8) {
+        behind.normalize();
+        const swung = this.spreadArm(shoulder, down, behind, RIG_DETAIL.snapArms.trailSwing, arms.elbow, this.spreadAt);
+        most = Math.max(most, swung.distanceTo(shoulder));
+        this.blendAim(shoulder, relaxed, swung, snapTrail, most);
+      }
+    }
     // Losing balance the arms go out, straightening: out to the straight arm's own reach.
     if (this.alarm > 0) {
       const spread = this.spreadArm(shoulder, down, out, Math.min(arms.alarmElevation, this.pose.alarm), Math.min(arms.alarmElbow, this.pose.alarmElbow), this.spreadAt);
@@ -2164,7 +2571,12 @@ export class HumanoidRig {
     // the gaze is and within the neck's reach; the look the leading arm points along stays the board's.
     const { leanLead } = RIG_DETAIL;
     const leaning = (leanLead.time * GRAVITY * state.leanRate) / Math.max(state.speed, leanLead.slowest);
-    const led = this.headLook.copy(look).applyAxisAngle(WORLD_UP, this.leanFollower.follow(state.standingBlend * (RIG_DETAIL.lookAhead - lag) * leaning, state.clock));
+    // And by the stick (`turnLead`): the head first into the turn the player asks for.
+    // Past where the gaze already is off the nose, not on top of it (`leadPast`).
+    const nose = this.scratch.copy(this.boardForward).setY(0);
+    const off = nose.lengthSq() > 1e-8 ? Math.atan2(nose.z * look.x - nose.x * look.z, nose.dot(look)) : 0;
+    const asked = leadPast(off, (state.standingBlend * this.steerLead.head * RIG_DETAIL.turnBody.head * Math.PI) / 180);
+    const led = this.headLook.copy(look).applyAxisAngle(WORLD_UP, this.leanFollower.follow(state.standingBlend * (RIG_DETAIL.lookAhead - lag) * leaning, state.clock) + asked);
     if (hint.lengthSq() > 1e-8) {
       const turn = Math.atan2(this.scratch.crossVectors(hint, led).y, hint.dot(led));
       const most = (RIG_DETAIL.neckTurn * Math.PI) / 180;
@@ -2262,6 +2674,158 @@ export class HumanoidRig {
     if (distance < 1e-9) return out.copy(hand);
     const reach = softCap(distance, most * this.armLength, ease * this.armLength);
     return offset.multiplyScalar(reach / distance).add(shoulder);
+  }
+
+  /**
+   * The duck-dive's press as drawn, 0–1: the physics' (the snapshot's), followed no faster than `DIVE_DRAWN.duckRate` a
+   * second (the physics' own press is slower; another player's comes on and off whole).
+   */
+  private followDuck(state: RiderVisualState): void {
+    const dt = state.clock - this.duckClock;
+    const wanted = Math.min(1, Math.max(0, state.duck));
+    const most = DIVE_DRAWN.duckRate * dt;
+    this.drawnDuck = dt >= 0 && dt < 0.25 ? this.drawnDuck + Math.max(-most, Math.min(most, wanted - this.drawnDuck)) : wanted;
+    this.duckClock = state.clock;
+  }
+
+  /**
+   * The two-body duck-dive's drawing's share this solve (`DIVE_DRAWN.in`), 0 not ducking; a dive met mid-way (a new
+   * rig, a long frame) is drawn whole at once.
+   */
+  private diveShare(state: RiderVisualState, diving: boolean): number {
+    const dt = state.clock - this.diveClock;
+    const fresh = !(dt >= 0 && dt < 0.25);
+    this.diveClock = state.clock;
+    if (fresh) this.diveWas = false;
+    if (!diving) {
+      this.diveSince = Number.NaN;
+      return 0;
+    }
+    if (Number.isNaN(this.diveSince)) this.diveSince = fresh || !this.diveFromSet ? Number.NEGATIVE_INFINITY : state.clock;
+    return minimumJerk((state.clock - this.diveSince) / DIVE_DRAWN.in);
+  }
+
+  /**
+   * Ducking, where the chest faces (`DIVE_DRAWN`): square to the spine `up` and to the board's across (its +x, the lying
+   * body's left), on the deck's side: the deck's down while the spine lies along the board, turning toward the tail as
+   * the head goes down to the deck; from the lying facing in `out` by `dive`. Undefined only for a spine along the
+   * board's across, where the lying facing is kept.
+   */
+  private diveFacing(state: RiderVisualState, up: Vector3, dive: number, out: Vector3): Vector3 {
+    const across = this.diveScratch.c.set(1, 0, 0).applyQuaternion(state.boardQuaternion);
+    across.addScaledVector(up, -across.dot(up));
+    if (across.lengthSq() < 1e-6) return out;
+    const facing = this.diveScratch.d.crossVectors(across.normalize(), up).normalize();
+    this.perpendicular(out, up);
+    return turnToward(out, facing, dive, out);
+  }
+
+  /** Ducking, an elbow's pole (`DIVE_DRAWN.elbow`): out to its side, back off the chest and toward the hips, unit, into `out`. */
+  private diveElbow(side: Side, out: Vector3): Vector3 {
+    const { elbow } = DIVE_DRAWN;
+    return out.copy(this.left).multiplyScalar((side === 'left' ? 1 : -1) * elbow.out).addScaledVector(this.facing, -elbow.back)
+      .addScaledVector(this.up, -elbow.hips).normalize();
+  }
+
+  /** Ducking, coming in: the trunk's points from where the lying body was drawn (the board's frame), `dive` of the way. */
+  private trunkIntoDive(state: RiderVisualState, dive: number): void {
+    if (!this.diveFromSet) return;
+    for (let i = 0; i < 3; i += 1) state.points[i].lerp(this.fromBoard(state, this.diveFrom[i], this.diveScratch.a), 1 - dive);
+  }
+
+  /**
+   * Ducking, a hand's target (`DIVE_DRAWN`): on its rail where the physics' grip is (`DuckingBody.gripPoint`, by the
+   * drawn press), coming in from where the lying hand was drawn, within the arm's reach of the shoulder.
+   */
+  private divingHand(state: RiderVisualState, side: Side, shoulder: Vector3, dive: number, out: Vector3): void {
+    const z = DUCK_BODY.gripBack + (DUCK_BODY.gripAhead - DUCK_BODY.gripBack) * this.drawnDuck;
+    const local = this.diveScratch.a.set((side === 'left' ? 1 : -1) * (railHalfWidth(z) - 0.02), deckAt(z) + FALL_POSES.climb.above, z).sub(BOARD_CENTRE);
+    // Coming in, from where the lying hand was (beside the chest, or mid-stroke in the water) over the rail: out and up
+    // `handArc` m at most on the way, as the climb's feet come over it.
+    if (dive < 1 && this.diveFromSet) {
+      local.lerp(this.diveScratch.b.copy(this.diveHandFrom[side]), 1 - dive);
+      const arc = DIVE_DRAWN.handArc * Math.sin(Math.PI * dive);
+      local.x += (side === 'left' ? 1 : -1) * arc;
+      local.y += arc;
+    }
+    this.fromBoard(state, local, out);
+    this.softReach(shoulder, out, out, RIG_DETAIL.duckArmReach);
+  }
+
+  /**
+   * Ducking, a leg's ankle target and knee pole (`DIVE_DRAWN`): straight through its part's centre (`centre`), and the
+   * back leg's knee on the tail as its part comes onto the physics' knee point, the shin back along the deck; coming in
+   * from where the lying foot was drawn.
+   */
+  private divingLeg(state: RiderVisualState, side: Side, hip: Vector3, centre: Vector3, dive: number, target: Vector3, pole: Vector3): void {
+    const { a: spot, b: knee, c: shin, d: ankle } = this.diveScratch;
+    target.subVectors(centre, hip).setLength(RIG_DETAIL.fallenReach * this.legLength).add(hip);
+    // The knees toward the deck and the nose, as lying (`lyingKnees` with the feet in order; it reads its way across from
+    // the feet, and ducking those are the legs' parts, which move about: the near-straight legs spun about themselves).
+    pole.copy(this.boardForward).sub(this.boardUp).normalize();
+    const kneel = this.followKneel(state, side, this.diveBackLeg(state, side) ? this.kneelShare(state, centre) : 0, dive);
+    if (kneel > 0) {
+      this.kneeSpot(state, spot).addScaledVector(this.boardUp, DIVE_DRAWN.kneeAbove);
+      this.kneeOnDeck(hip, spot, knee);
+      const lift = DIVE_DRAWN.shinLift * DEG;
+      shin.copy(this.boardForward).multiplyScalar(-Math.cos(lift)).addScaledVector(this.boardUp, Math.sin(lift));
+      ankle.copy(knee).addScaledVector(shin, this.lowerLeg);
+      target.lerp(ankle, kneel);
+      // The knee bends toward where it kneels.
+      const bend = shin.copy(knee).sub(this.middle.copy(hip).lerp(ankle, 0.5));
+      if (bend.lengthSq() > 1e-10 && pole.lengthSq() > 1e-10) turnToward(pole.normalize(), bend.normalize(), kneel, pole);
+    }
+    if (dive < 1 && this.diveFromSet) target.lerp(this.fromBoard(state, this.diveFootFrom[side], spot), 1 - dive);
+  }
+
+  /**
+   * Ducking, a leg's kneel as drawn: its reading (`kneelShare`) followed no faster than the physics' knee comes on
+   * (`DUCK_BODY.kneeTime` for all of it), easing in and out of that pace (`keptStep`): the knee's spring draws the leg's
+   * part in faster than that once it is near, and the kneel's share by distance jumped with it.
+   */
+  private followKneel(state: RiderVisualState, side: Side, wanted: number, dive: number): number {
+    const dt = state.clock - this.kneelClock[side];
+    this.kneelClock[side] = state.clock;
+    const fresh = !(dt >= 0 && dt < 0.25) || dive === 0;
+    this.kneelDrawn[side] = fresh ? wanted : this.kneelDrawn[side] + keptStep(wanted - this.kneelDrawn[side], 1 / DUCK_BODY.kneeTime, dt);
+    return this.kneelDrawn[side];
+  }
+
+  /** Ducking, where the physics' knee presses the tail (`DUCK_BODY.kneeAt`), on the deck, in the world, into `out`. */
+  private kneeSpot(state: RiderVisualState, out: Vector3): Vector3 {
+    return this.fromBoard(state, out.set(0, deckAt(DUCK_BODY.kneeAt), DUCK_BODY.kneeAt).sub(BOARD_CENTRE), out);
+  }
+
+  /** Ducking, how far a leg kneels on the tail, 0–1: by how near its part (`centre`) is to the knee's point (`DIVE_DRAWN`). */
+  private kneelShare(state: RiderVisualState, centre: Vector3): number {
+    const distance = centre.distanceTo(this.kneeSpot(state, this.diveScratch.d));
+    return 1 - smooth((distance - DIVE_DRAWN.kneeNear) / (DIVE_DRAWN.kneeFar - DIVE_DRAWN.kneeNear));
+  }
+
+  /** Ducking, whether `side` is the back leg (the knee's): by the stance where the drawing knows it, else the leg whose part is nearer the tail's knee point. */
+  private diveBackLeg(state: RiderVisualState, side: Side): boolean {
+    if (state.stance) return side === (state.stance === 'regular' ? 'right' : 'left');
+    const spot = this.kneeSpot(state, this.diveScratch.d);
+    const left = state.points[POINT.leftFoot].distanceToSquared(spot);
+    const right = state.points[POINT.rightFoot].distanceToSquared(spot);
+    return side === (right <= left ? 'right' : 'left');
+  }
+
+  /**
+   * Kneeling, the knee as near `spot` as the thigh lets it be: beyond the thigh's reach of the hip, toward it; within
+   * it, on the deck's plane through the spot at the thigh's length from the hip, nearest the spot (the thigh's reach
+   * meets the deck in a circle through which the spot is passed), so past the spot along the deck. The two meet at the
+   * reach (the spot itself).
+   */
+  private kneeOnDeck(hip: Vector3, spot: Vector3, out: Vector3): Vector3 {
+    const up = this.boardUp;
+    if (hip.distanceToSquared(spot) >= this.upperLeg * this.upperLeg) return out.subVectors(spot, hip).setLength(this.upperLeg).add(hip);
+    const height = (hip.x - spot.x) * up.x + (hip.y - spot.y) * up.y + (hip.z - spot.z) * up.z;
+    const centre = this.diveScratch.d.copy(hip).addScaledVector(up, -height);
+    const radius = Math.sqrt(this.upperLeg * this.upperLeg - height * height);
+    const way = out.subVectors(spot, centre);
+    if (way.lengthSq() < 1e-10) way.copy(this.boardForward).negate();
+    return way.setLength(radius).add(centre);
   }
 
   /** Ducking, a hand on its rail slid forward along the board until the arm from the shoulder is straight. */
@@ -2766,10 +3330,11 @@ export class HumanoidRig {
    * `FALL_POSES.elbowRate` rad/s, into `pole`. Folded tight (the shield), the
    * elbow's bend runs round a wide circle, and where its aim came along the
    * arm's line it went over to the other side in a frame; the arm straight
-   * (reaching for the rail), the aim is the arm's turn about itself.
+   * (reaching for the rail), the aim is the arm's turn about itself. `since`:
+   * the clock of the last solve that kept it (the two-body duck-dive's too).
    */
-  private keepElbow(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, pole: Vector3): void {
-    const dt = state.clock - this.fallenClock;
+  private keepElbow(state: RiderVisualState, side: Side, shoulder: Vector3, target: Vector3, pole: Vector3, since = this.fallenClock): void {
+    const dt = state.clock - since;
     const kept = this.elbowPole[side];
     const axis = this.fallScratch.c.subVectors(target, shoulder);
     if (axis.lengthSq() < 1e-8) return;
@@ -2788,7 +3353,11 @@ export class HumanoidRig {
     }
     last.normalize();
     const want = this.middle.copy(pole).addScaledVector(axis, -pole.dot(axis));
-    if (want.lengthSq() < 1e-8) return;
+    if (want.lengthSq() < 1e-8) {
+      pole.copy(last);
+      kept.copy(pole);
+      return;
+    }
     want.normalize();
     const angle = Math.atan2(this.scratch.crossVectors(last, want).dot(axis), last.dot(want));
     pole.copy(last).applyAxisAngle(axis, keptStep(angle, FALL_POSES.elbowRate, dt));

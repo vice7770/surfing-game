@@ -1,0 +1,28 @@
+# python3 onset.py <json> : per run and per steer change, how long after the stick moved each part first passes a mark toward the new turn.
+# board roll 10 deg, board yaw rate 20 deg/s, board heading 10 deg; physics bank 10, physics twist 10; drawn trunk lean 10 (from its value at the change),
+# drawn head / chest / hips 10 deg toward the turn against the board (from their value at the change). "-" = never in the phase.
+import json, sys
+runs = json.load(open(sys.argv[1]))
+def first(fr, i0, i1, fn):
+    for i in range(i0, i1):
+        if fn(fr[i]): return f"{fr[i]['t'] - fr[i0]['t']:.2f}"
+    return '-'
+def unwrap(a, ref):
+    while a - ref > 180: a -= 360
+    while a - ref < -180: a += 360
+    return a
+print('| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |'); print('|' + ' --- |' * 14)
+for run in runs:
+    fr = run['frames']; changes = [i for i in range(1, len(fr)) if fr[i]['steer'] != fr[i-1]['steer'] and fr[i]['steer'] != 0]
+    for n, i0 in enumerate(changes):
+        i1 = next((j for j in range(i0 + 1, len(fr)) if fr[j]['steer'] != fr[i0]['steer']), len(fr))
+        s = 1 if fr[i0]['steer'] > 0 else -1; f0 = fr[i0]
+        rel = lambda f, k: s * unwrap(f['d'][k] - f0['d'][k], 0)
+        hd = lambda f: s * unwrap(f['heading'] - f0['heading'], 0) if 'heading' in f else 0
+        cols = [first(fr, i0, i1, lambda f: s * f['roll'] > 10), first(fr, i0, i1, lambda f: s * f['yaw'] > 20), first(fr, i0, i1, lambda f: hd(f) > 10),
+                first(fr, i0, i1, lambda f: s * f['bank'] > 10), first(fr, i0, i1, lambda f: s * (f['twist'] - f0['twist']) > 10),
+                first(fr, i0, i1, lambda f: s * (f['d']['trunk']['left'] - f0['d']['trunk']['left']) > 10 and s * f['d']['trunk']['left'] > 10),
+                first(fr, i0, i1, lambda f: rel(f, 'headYaw') > 10), first(fr, i0, i1, lambda f: rel(f, 'chestYaw') > 10), first(fr, i0, i1, lambda f: rel(f, 'hipYaw') > 10)]
+        j = next((j for j in range(i0, i1) if hd(fr[j]) > 10), None)
+        at = [f"{rel(fr[j], k):.0f}" if j is not None else '-' for k in ('headYaw', 'chestYaw', 'hipYaw')]
+        print(f"| {run['name']} | {'first turn' if n == 0 else 'rail change'} | " + ' | '.join(cols + at) + ' |')

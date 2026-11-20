@@ -1,0 +1,90 @@
+# Step 3.2x ladders. Every cell is 12 runs (2 stances x 6 entry speeds); every span is the whole population.
+
+## A. The slope ladder, hip's trigger off vs on, PAIRED run for run (the headline refutation)
+# 'sooner' counts the runs that fell EARLIER with the trigger on than the same run with it off.
+slope | gain N.m/m | fell | later | same | SOONER | fall span s | rail peak deg | swing deg | swing N.m
+4 | 0 | 12/12 | 0 | 12 | 0 | 1.08-3.38 | 10.4-52.2 | 4.3-63.4 | 33-256
+4 | 500 | 12/12 | 7 | 2 | 3 | 1.07-4.65 | 10.1-65.8 | 5.9-59.9 | 75-263
+4 | 1000 | 12/12 | 2 | 2 | 8 | 0.98-3.07 | 8.6-52.2 | 5.6-44.2 | 126-260
+4 | 2000 | 12/12 | 1 | 2 | 9 | 0.73-2.73 | 6.6-52.4 | 7.0-43.1 | 135-269
+8 | 0 | 12/12 | 0 | 12 | 0 | 0.88-4.02 | 12.7-60.0 | 2.0-68.8 | 26-270
+8 | 500 | 12/12 | 5 | 0 | 7 | 0.97-4.45 | 9.1-55.1 | 6.0-68.8 | 103-234
+8 | 1000 | 12/12 | 1 | 0 | 11 | 0.75-1.97 | 10.2-52.9 | 6.0-68.8 | 134-242
+8 | 2000 | 12/12 | 1 | 0 | 11 | 0.47-1.95 | 7.3-52.5 | 6.1-68.8 | 148-252
+12 | 0 | 12/12 | 0 | 12 | 0 | 0.53-4.37 | 10.1-69.9 | 1.8-68.8 | 15-180
+12 | 500 | 12/12 | 6 | 2 | 4 | 0.50-4.83 | 9.8-65.4 | 10.5-68.8 | 84-227
+12 | 1000 | 12/12 | 3 | 1 | 8 | 0.47-4.75 | 8.3-56.7 | 9.6-68.8 | 64-253
+12 | 2000 | 12/12 | 1 | 1 | 10 | 0.45-1.53 | 8.9-48.3 | 13.0-55.5 | 69-270
+16 | 0 | 12/12 | 0 | 12 | 0 | 0.77-1.70 | 10.9-62.9 | 0.0-0.3 | 0-8
+16 | 500 | 12/12 | 8 | 4 | 0 | 0.77-2.12 | 12.2-65.6 | 0.2-68.8 | 8-97
+16 | 1000 | 12/12 | 10 | 1 | 1 | 0.82-2.25 | 12.7-60.8 | 0.3-68.8 | 17-166
+16 | 2000 | 12/12 | 11 | 1 | 0 | 0.95-2.45 | 12.2-59.5 | 0.7-68.8 | 35-179
+20 | 0 | 12/12 | 0 | 12 | 0 | 0.52-2.12 | 13.8-34.4 | 4.3-68.8 | 21-177
+20 | 500 | 12/12 | 7 | 1 | 4 | 0.52-3.37 | 11.3-55.9 | 3.5-68.8 | 36-241
+20 | 1000 | 12/12 | 8 | 0 | 4 | 0.57-2.13 | 10.4-32.3 | 16.3-68.8 | 130-189
+20 | 2000 | 12/12 | 6 | 0 | 6 | 0.48-1.53 | 5.9-24.4 | 12.2-68.8 | 137-292
+
+Totals over the five slopes, 60 runs a gain, paired: later / same / sooner
+  gain 500 : 33 / 9 / 18
+  gain 1000 : 24 / 4 / 32
+  gain 2000 : 20 / 4 / 36
+
+## B. capPoint at the fall, every run of every cell measured this round
+# capPoint is the centre of mass's own place across the felt vertical, m, from the feet's middle;
+# the feet's half-width across is 0.130 m, and weightPast (half of the fall test) is |capPoint| > 0.130.
+rows read 648 | new-rider falls 636 | |capPoint| at the fall: min 0.014 median 0.131 max 0.611
+falls with |capPoint| within 1 mm of the feet edge 0.130 m: 276 of 636
+
+## C. The ankle rest's slew bound. On the shipped predictor, and on 3.2w's own gain-3 law where it was diagnosed.
+law | ANKLE_RATE rad/s | HIP_GAIN | fell | fall span s | rail peak deg | ankle torque peak N.m
+predictor | 4 | 0 | 12/12 | 0.77-1.70 | 10.9-62.9 | 42-90
+predictor | 4 | 2000 | 12/12 | 0.95-2.45 | 12.2-59.5 | 45-188
+predictor | 1.5 | 0 | 12/12 | 0.77-1.70 | 10.9-62.9 | 42-91
+predictor | 1.5 | 2000 | 12/12 | 0.95-2.32 | 12.2-60.2 | 45-207
+predictor | 0.5 | 0 | 12/12 | 0.77-1.75 | 10.8-62.8 | 42-94
+predictor | 0.5 | 2000 | 12/12 | 0.95-2.35 | 12.2-71.9 | 43-210
+predictor | inf (shipped) | 0 | 12/12 | 0.77-1.70 | 10.9-62.9 | 42-90
+gains 0,3,0.1 | inf | 0 | 12/12 | 0.38-0.43 | 4.9-9.8 | 181-290
+gains 0,3,0.1 | inf | 2000 | 12/12 | 0.37-0.43 | 4.7-10.0 | 149-292
+gains 0,3,0.1 | 4 | 0 | 12/12 | 0.38-0.43 | 4.2-9.8 | 170-258
+gains 0,3,0.1 | 4 | 2000 | 12/12 | 0.37-0.43 | 4.6-10.0 | 152-262
+gains 0,3,0.1 | 1.5 | 0 | 12/12 | 0.38-0.45 | 3.5-8.0 | 59-162
+gains 0,3,0.1 | 1.5 | 2000 | 12/12 | 0.38-0.45 | 3.2-9.6 | 43-145
+gains 0,3,0.1 | 0.5 | 0 | 12/12 | 0.42-1.30 | 3.8-61.4 | 75-192
+gains 0,3,0.1 | 0.5 | 2000 | 12/12 | 0.42-1.58 | 3.7-62.7 | 64-343
+
+## D. The deck's roll in the ankle's rest (standing plumb on a slope), with and without the hip's trigger
+PLUMB | HIP_GAIN | fell | fall span s | bank peak deg | roll peak deg | ankle span median deg | ankle span peak deg
+0 | 0 | 12/12 | 0.77-1.70 | 20.7-65.7 | 20.9-63.0 | 0.3-1.6 | 2.7-9.5
+0 | 2000 | 12/12 | 0.95-2.45 | 25.8-59.3 | 22.3-59.5 | 0.4-1.8 | 2.5-12.0
+0.5 | 0 | 12/12 | 1.00-6.73 | 17.2-70.0 | 18.8-76.6 | 1.2-4.6 | 7.0-54.9
+0.5 | 2000 | 12/12 | 0.97-7.02 | 17.5-70.0 | 12.0-76.4 | 1.2-4.3 | 6.4-27.9
+1 | 0 | 12/12 | 0.53-4.32 | 12.1-34.6 | 11.4-48.4 | 3.8-7.8 | 10.2-22.3
+1 | 2000 | 12/12 | 0.48-1.68 | 12.5-38.1 | 11.4-40.3 | 2.7-6.1 | 8.4-20.3
+
+## E. The fall's own gate, over every new-rider fall this round measured (53 cells, 636 falls)
+# |capPoint| at the fall, m - the centre of mass across the felt vertical from the feet's middle.
+# weightPast, one of the two booleans the fall test is the && of, is |capPoint| > the feet's half-width 0.130 m.
+falls 636 | min 0.014 p10 0.130 p25 0.130 median 0.131 p75 0.131 p90 0.151 max 0.611
+at or past the feet edge 0.130 m: 635 of 636 | within 1 mm of it: 276 | within 10 mm: 543
+
+## F. The shipped hip (no 3.2x wiring at all) by face slope, 12 runs a cell
+# 3.2w's 'the hip delivers 0-8 N.m and 0.0-0.3 deg' is the 16 deg cell. The ankle-overflow path fires at the others.
+face slope | fell | swing angle peak deg | swing torque peak N.m | trigger opened s | rail peak deg
+4 | 12/12 | 4.3-63.4 | 33-256 | 0.20-1.87 | 10.4-52.2
+8 | 12/12 | 2.0-68.8 | 26-270 | 0.13-1.18 | 12.7-60.0
+12 | 12/12 | 1.8-68.8 | 15-180 | 0.12-0.33 | 10.1-69.9
+16 | 12/12 | 0.0-0.3 | 0-8 | 0.22-1.02 | 10.9-62.9
+20 | 12/12 | 4.3-68.8 | 21-177 | 0.08-0.10 | 13.8-34.4
+
+## G. The across speed at the fall, every new-rider fall this round (53 cells, 636 falls)
+# capSpeed x omega0 run by run: the centre of mass's speed across the felt vertical, m/s, which is the quantity
+# the capture point's velocity term was built from (it enters as capSpeed = vx / omega0).
+falls 636 | min 0.19 p25 0.92 median 1.21 p75 1.70 max 3.13 m/s
+omega0 per run 3.13 - 4.62 1/s  => the capture point counts across speed at 0.22 - 0.32 m per m/s
+
+## H. Top-heaviness against the fall: the two stances over all 636 new-rider runs
+stance | runs | fell | fall s min/median/max | CoM height over the feet, m
+compress | 318 | 318 | 0.38/1.02/7.02 | 0.502-0.784
+tall | 318 | 318 | 0.37/1.00/4.40 | 0.597-0.848
+25-30 percent less m g h in the lower stance, and the same fall rate: top-heaviness alone does not predict it.

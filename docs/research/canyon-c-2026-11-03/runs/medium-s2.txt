@@ -1,0 +1,48 @@
+canyon C medium seed 2, 12 periods after 22 s of spin-up (986 s wall); frames every 0.25 s; 
+grid 400×507; regions: line -70…165 (the bowl's end x -55), bank -22…165, bowl -70…-22; take-off column x 75 ± 4
+solver line: 13 waves; frames breaking 1204, frames with a patch 41 %; per wave: longest line p50 55 m (90th 84), typical 25 m, frames with a patch p50 22 %; its line 2 s after it starts p50 15 m (≥ 40 m: 1 of 13); −x end: travelled median 28 m (90th 43), reached x -55 in 1 of 13; +x end: travelled median 0 m (90th 7), reached x 165 in 0 of 13
+  bar 1, up the line: white ≤ 10 m +x of the first break in 5 of 13 (38 %); up p50 19 m, p90 123 m
+  bar 2, first breaks: all x p10/p50/p90 24/65/116, out p50 158 m; sets (top third by H ≥ 1.84 m, 5) x p10/p50/p90 84/102/123, out p50 210 m; Spearman(x*, H) 0.81 (n 13); within 10 m of the tip 0 of 13
+  bar 3, one line from the first break to the bowl's end (x -55): 1 of 13, sets 0 of 5
+  bar 4, Hutt's peel on the bank (x -22…140): median 48° over 10 stretches; by stretch: 100…120: 47° (1; V 6.7, c 4.9 m/s); 60…80: 61° (2; V 6.3, c 5.3 m/s); 40…60: 59° (1; V 5.6, c 4.8 m/s); 20…40: 58° (2; V 8.8, c 4.9 m/s); 0…20: 28° (3; V 10.1, c 4.7 m/s); -20…0: 48° (1; V 6.3, c 4.6 m/s)
+  take-off column (x 75 ± 4): 7 of 13 waves break there; start depth p50 2.25 m, p90 2.59 m; most seaward z p10 -193.5, p50 -168.5
+solver bank: 13 waves; frames breaking 1141, frames with a patch 41 %; per wave: longest line p50 53 m (90th 68), typical 19 m, frames with a patch p50 30 %; its line 2 s after it starts p50 15 m (≥ 40 m: 1 of 12); −x end: travelled median 28 m (90th 43), reached x -22 in 4 of 13; +x end: travelled median 0 m (90th 7), reached x 165 in 0 of 13
+  bar 1, up the line: white ≤ 10 m +x of the first break in 7 of 13 (54 %); up p50 8 m, p90 56 m
+  bar 2, first breaks: all x p10/p50/p90 24/65/116, out p50 158 m; sets (top third by H ≥ 1.84 m, 5) x p10/p50/p90 84/102/123, out p50 210 m; Spearman(x*, H) 0.88 (n 13); within 10 m of the tip 0 of 13
+  bar 3, one line from the first break to the bowl's end (x -55): 0 of 13, sets 0 of 5
+  bar 4, Hutt's peel on the bank (x -22…140): median 57° over 7 stretches; by stretch: 100…120: 47° (1; V 6.7, c 4.9 m/s); 60…80: 61° (2; V 6.3, c 5.3 m/s); 40…60: 59° (1; V 5.6, c 4.8 m/s); 20…40: 58° (1; V 5.7, c 4.9 m/s); 0…20: 28° (2; V 10.3, c 4.7 m/s)
+  take-off column (x 75 ± 4): 7 of 13 waves break there; start depth p50 2.29 m, p90 2.72 m; most seaward z p10 -193.5, p50 -168.5
+solver bowl: 8 waves; frames breaking 338, frames with a patch 3 %; per wave: longest line p50 40 m (90th 48), typical 28 m, frames with a patch p50 2 %; its line 2 s after it starts p50 26 m (≥ 40 m: 0 of 7); −x end: travelled median 14 m (90th 38), reached x -55 in 4 of 8; +x end: travelled median 7 m (90th 15), reached x -22 in 8 of 8
+drawn line: 17 waves; frames breaking 1255, frames with a patch 40 %; per wave: longest line p50 44 m (90th 77), typical 27 m, frames with a patch p50 35 %; its line 2 s after it starts p50 18 m (≥ 40 m: 2 of 16); −x end: travelled median 30 m (90th 63), reached x -55 in 1 of 17; +x end: travelled median 1 m (90th 41), reached x 165 in 0 of 17
+  bar 1, up the line: white ≤ 10 m +x of the first break in 6 of 17 (35 %); up p50 28 m, p90 132 m
+  bar 2, first breaks: all x p10/p50/p90 -31/44/116, out p50 142 m; sets (top third by H ≥ 1.68 m, 6) x p10/p50/p90 66/103/124, out p50 178 m; Spearman(x*, H) 0.82 (n 17); within 10 m of the tip 0 of 17
+  bar 3, one line from the first break to the bowl's end (x -55): 1 of 17, sets 0 of 6
+  bar 4, Hutt's peel on the bank (x -22…140): median 46° over 11 stretches; by stretch: 100…120: 47° (1; V 6.7, c 4.9 m/s); 60…80: 61° (2; V 6.3, c 5.3 m/s); 20…40: 57° (2; V 8.4, c 4.9 m/s); 0…20: 30° (3; V 9.4, c 4.7 m/s); -20…0: 46° (3; V 6.5, c 4.6 m/s)
+  take-off column (x 75 ± 4): 8 of 17 waves break there; start depth p50 2.40 m, p90 2.59 m; most seaward z p10 -187.5, p50 -141.5
+drawn bank: 15 waves; frames breaking 1100, frames with a patch 36 %; per wave: longest line p50 44 m (90th 71), typical 22 m, frames with a patch p50 24 %; its line 2 s after it starts p50 12 m (≥ 40 m: 1 of 14); −x end: travelled median 30 m (90th 61), reached x -22 in 6 of 15; +x end: travelled median 0 m (90th 8), reached x 165 in 0 of 15
+  bar 1, up the line: white ≤ 10 m +x of the first break in 8 of 15 (53 %); up p50 8 m, p90 107 m
+  bar 2, first breaks: all x p10/p50/p90 19/46/116, out p50 144 m; sets (top third by H ≥ 1.77 m, 5) x p10/p50/p90 84/104/124, out p50 210 m; Spearman(x*, H) 0.85 (n 15); within 10 m of the tip 0 of 15
+  bar 3, one line from the first break to the bowl's end (x -55): 0 of 15, sets 0 of 5
+  bar 4, Hutt's peel on the bank (x -22…140): median 48° over 8 stretches; by stretch: 100…120: 47° (1; V 6.7, c 4.9 m/s); 60…80: 61° (2; V 6.3, c 5.3 m/s); 20…40: 57° (1; V 5.8, c 4.9 m/s); 0…20: 31° (2; V 9.4, c 4.7 m/s); -20…0: 48° (2; V 8.4, c 4.6 m/s)
+  take-off column (x 75 ± 4): 7 of 15 waves break there; start depth p50 2.35 m, p90 2.54 m; most seaward z p10 -187.5, p50 -163.5
+drawn bowl: 8 waves; frames breaking 311, frames with a patch 5 %; per wave: longest line p50 35 m (90th 48), typical 27 m, frames with a patch p50 3 %; its line 2 s after it starts p50 22 m (≥ 40 m: 0 of 7); −x end: travelled median 21 m (90th 37), reached x -55 in 4 of 8; +x end: travelled median 5 m (90th 14), reached x -22 in 8 of 8
+onsets x  160…170:   1 (and 5 inside the edge); crest speed p50 3.6 m/s; depth p50 0.70 m, H p50 0.79 m, face p50 19° (p90 19), bed 1:15, ξb p50 1.03 (p90 1.03), ξb ≥ 0.5 in 100 %
+onsets x   90…100:   4 (and 104 inside the edge); crest speed p50 5.1 m/s; depth p50 2.64 m, H p50 2.06 m, face p50 19° (p90 20), bed 1:44, ξb p50 0.22 (p90 0.22), ξb ≥ 0.5 in 0 %
+onsets x   80…90:  10 (and 102 inside the edge); crest speed p50 5.5 m/s; depth p50 2.60 m, H p50 1.95 m, face p50 20° (p90 21), bed 1:44, ξb p50 0.23 (p90 0.23), ξb ≥ 0.5 in 0 %
+onsets x   70…80:  10 (and 105 inside the edge); crest speed p50 5.4 m/s; depth p50 2.42 m, H p50 1.72 m, face p50 21° (p90 21), bed 1:44, ξb p50 0.24 (p90 0.25), ξb ≥ 0.5 in 0 %
+onsets x   60…70:   6 (and 107 inside the edge); crest speed p50 5.2 m/s; depth p50 2.05 m, H p50 1.78 m, face p50 19° (p90 19), bed 1:44, ξb p50 0.23 (p90 0.23), ξb ≥ 0.5 in 0 %
+onsets x   50…60:  19 (and 95 inside the edge); crest speed p50 4.8 m/s; depth p50 2.19 m, H p50 1.63 m, face p50 16° (p90 18), bed 1:44, ξb p50 0.24 (p90 0.31), ξb ≥ 0.5 in 0 %
+onsets x   40…50:  52 (and 93 inside the edge); crest speed p50 4.8 m/s; depth p50 1.92 m, H p50 1.39 m, face p50 17° (p90 19), bed 1:44, ξb p50 0.26 (p90 0.30), ξb ≥ 0.5 in 0 %
+onsets x   30…40:  68 (and 76 inside the edge); crest speed p50 4.9 m/s; depth p50 1.76 m, H p50 1.25 m, face p50 17° (p90 19), bed 1:44, ξb p50 0.28 (p90 0.31), ξb ≥ 0.5 in 0 %
+onsets x   20…30:  90 (and 58 inside the edge); crest speed p50 4.8 m/s; depth p50 1.76 m, H p50 1.23 m, face p50 15° (p90 18), bed 1:44, ξb p50 0.28 (p90 0.39), ξb ≥ 0.5 in 0 %
+onsets x   10…20: 100 (and 41 inside the edge); crest speed p50 4.8 m/s; depth p50 1.80 m, H p50 1.23 m, face p50 13° (p90 18), bed 1:44, ξb p50 0.28 (p90 0.38), ξb ≥ 0.5 in 0 %
+onsets x    0…10: 111 (and 41 inside the edge); crest speed p50 4.7 m/s; depth p50 1.82 m, H p50 1.13 m, face p50 14° (p90 17), bed 1:44, ξb p50 0.29 (p90 0.32), ξb ≥ 0.5 in 0 %
+onsets x  -10…0: 123 (and 25 inside the edge); crest speed p50 4.7 m/s; depth p50 1.76 m, H p50 1.14 m, face p50 15° (p90 19), bed 1:44, ξb p50 0.29 (p90 0.33), ξb ≥ 0.5 in 0 %
+onsets x  -20…-10: 130 (and 16 inside the edge); crest speed p50 4.6 m/s; depth p50 1.71 m, H p50 1.22 m, face p50 17° (p90 20), bed 1:44, ξb p50 0.29 (p90 0.33), ξb ≥ 0.5 in 0 %
+onsets x  -30…-20:  88 (and 7 inside the edge); crest speed p50 4.7 m/s; depth p50 1.55 m, H p50 1.44 m, face p50 24° (p90 27), bed 1:45, ξb p50 0.26 (p90 0.86), ξb ≥ 0.5 in 14 %
+onsets x  -40…-30:  82 (and 0 inside the edge); crest speed p50 4.8 m/s; depth p50 1.28 m, H p50 1.36 m, face p50 25° (p90 28), bed 1:19, ξb p50 0.53 (p90 1.28), ξb ≥ 0.5 in 59 %
+onsets x  -50…-40:  62 (and 0 inside the edge); crest speed p50 5.0 m/s; depth p50 1.28 m, H p50 1.38 m, face p50 24° (p90 28), bed 1:18, ξb p50 0.55 (p90 0.88), ξb ≥ 0.5 in 68 %
+onsets x  -60…-50:  42 (and 0 inside the edge); crest speed p50 4.0 m/s; depth p50 1.30 m, H p50 1.19 m, face p50 23° (p90 26), bed 1:16, ξb p50 0.76 (p90 0.97), ξb ≥ 0.5 in 62 %
+onsets x  -70…-60:  35 (and 0 inside the edge); crest speed p50 3.5 m/s; depth p50 0.77 m, H p50 1.00 m, face p50 23° (p90 27), bed 1:15, ξb p50 0.91 (p90 1.12), ξb ≥ 0.5 in 100 %
+surf at the start's band (x 75 ± 10): typical 1.78 m, sets 1.95 m, 15 waves
+wall 986 s

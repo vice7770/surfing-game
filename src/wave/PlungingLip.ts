@@ -291,6 +291,11 @@ interface LipStrip {
   swept?: boolean;
   /** A swept jet whose pour waits: for its crash, or for its point to leave the front (PR 5; the advisor, 2026-10-03). */
   held?: boolean;
+  /**
+   * The momentum its water took from the crest, x and z, m⁴/s (`drawFromCrest`'s, as much as the crest's flow along the jet
+   * could give), kept for `returnJet` (the step 7 follow-up's guard; `holdJet`'s `keepTaken`). Absent otherwise.
+   */
+  taken?: [number, number];
 }
 
 /** A void under a flying jet, riding with the crest that threw it. */
@@ -330,6 +335,7 @@ interface LipStripState {
   splash?: number;
   swept?: boolean;
   held?: boolean;
+  taken?: [number, number];
   tube?: Omit<FlyingTube, 'closedAt'> & { closedAt: number | null };
 }
 
@@ -404,6 +410,11 @@ export class PlungingLip implements LipParcelSource {
   /** Landings that came down past an open along-shore edge, whole or in part, and the water they took out of the window, m³. */
   escapedLandings = 0;
   escapedVolume = 0;
+  /** The momentum the last `drawFromCrest` took, x and z, m⁴/s (signed). */
+  private readonly lastTaken: [number, number] = [0, 0];
+  /** Held jets returned to their crests (`returnJet`; the step 7 follow-up's guard), and their water, m³. */
+  returnedJets = 0;
+  returnedVolume = 0;
   /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
   trappedAir = 0;
   /**
@@ -474,6 +485,13 @@ export class PlungingLip implements LipParcelSource {
   private tubeRows = 0;
 
   /**
+   * What a launch marks changed for a device (`ShallowWaterSolver.markWater`): 'cells', the cells its water and momentum
+   * come from (barrel-gpu, 2026-11-06); 'all', the whole water, as canyon-perf did (the `?launchWater=old` switch).
+   * The water is the same either way: only what goes up to the device differs.
+   */
+  launchMarks: 'cells' | 'all' = 'cells';
+
+  /**
    * `sourceShare` is the most of a source cell's water above the wave's trough one throw may take
    * (`drawFromCrest`): SOURCE_SHARE, or the spot's own.
    */
@@ -531,6 +549,7 @@ export class PlungingLip implements LipParcelSource {
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
         ...(strip.swept ? { swept: true } : {}),
         ...(strip.held ? { held: true } : {}),
+        ...(strip.taken ? { taken: [strip.taken[0], strip.taken[1]] as [number, number] } : {}),
         ...(strip.tube ? {
           tube: { ...strip.tube, geometry: { ...strip.tube.geometry }, closedAt: Number.isNaN(strip.tube.closedAt) ? null : strip.tube.closedAt },
         } : {}),
@@ -559,6 +578,7 @@ export class PlungingLip implements LipParcelSource {
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
         ...(strip.swept ? { swept: true } : {}),
         ...(strip.held ? { held: true } : {}),
+        ...(strip.taken ? { taken: [strip.taken[0], strip.taken[1]] as [number, number] } : {}),
         ...(tube ? {
           tube: {
             ...tube, geometry: { ...tube.geometry }, id: tube.id ?? id,
@@ -598,6 +618,9 @@ export class PlungingLip implements LipParcelSource {
     const surface = (index: number) => h[index] + bed[index];
     const height = waveHeight > 0 ? waveHeight : surface(cell) - restLevel;
     if (!(height > 0) || !(h[cell] > 0)) return 0;
+    // A launch takes water and momentum from its window and rings: with `?launchWater=old` the device gets all of the water
+    // again (canyon-perf); by default the rings' cells, below, which hold every cell it changes.
+    if (this.launchMarks === 'all') this.solver.markAllWater();
     const trough = surface(cell) - height;
     const reach = SOURCE_REACH * height;
     const column = cell % nx;
@@ -612,6 +635,8 @@ export class PlungingLip implements LipParcelSource {
       const ring = [...(back ? [(row - k) * nx + column] : []), ...(ahead ? [(row + k) * nx + column] : [])];
       if (ring.length > 0) rings.push(ring);
     }
+    // Its water comes from the window (within the rings) and its momentum from the rings: no other cell changes.
+    if (this.launchMarks === 'cells') for (const ring of rings) for (const index of ring) this.solver.markWater(index);
     // Its water: within SOURCE_REACH wave heights of the crest, tapered to none there.
     const window: number[] = [];
     const weights: number[] = [];
@@ -632,6 +657,8 @@ export class PlungingLip implements LipParcelSource {
       this.starvedVolume += volume - thrown;
     }
     // Its momentum: from the rings out to where their flow along the jet covers it, nearest first.
+    this.lastTaken[0] = 0;
+    this.lastTaken[1] = 0;
     for (const [q, speed] of [[qx, velocity.x], [qz, velocity.z]] as const) {
       const wanted = Math.abs(thrown * speed);
       if (!(wanted > 0)) continue;
@@ -642,6 +669,7 @@ export class PlungingLip implements LipParcelSource {
         for (const index of rings[reached]) carried += Math.max(0, sign * q[index]) * area(index);
       }
       const taken = Math.min(wanted, carried);
+      this.lastTaken[q === qx ? 0 : 1] = sign * taken;
       if (taken < wanted) {
         this.momentumClamps += 1;
         this.unplacedMomentum += wanted - taken;
@@ -729,7 +757,7 @@ export class PlungingLip implements LipParcelSource {
    * the tube, so its void carves nothing. Returns the strip and the water thrown; strip −1 when none was (the pool can't
    * hold a strip, or the crest has nothing above its trough).
    */
-  holdJet(jet: SweptJet): { strip: number; thrown: number } {
+  holdJet(jet: SweptJet, keepTaken = false): { strip: number; thrown: number } {
     if (this.free.length < STRIP_PARCELS || !(jet.volume > 0)) return { strip: -1, thrown: 0 };
     const thrown = this.drawFromCrest(jet.cell, { x: jet.velocityX, z: jet.velocityZ }, jet.volume, jet.waveHeight);
     if (!(thrown > 0)) return { strip: -1, thrown: 0 };
@@ -738,6 +766,7 @@ export class PlungingLip implements LipParcelSource {
     const column = Math.round(jet.launchX / this.solver.dx - 0.5);
     const strip: LipStrip = {
       column, launchTime: this.time, parcels: [], live: STRIP_PARCELS, kind: 0, waveHeight: jet.waveHeight, swept: true, held: true,
+      ...(keepTaken ? { taken: [this.lastTaken[0], this.lastTaken[1]] as [number, number] } : {}),
       tube: {
         id: stripId, geometry: { length: jet.voidLength, width: jet.voidHeight, tilt: 0 }, x: jet.launchX, z: jet.launchZ, y: jet.launchY,
         dirX: jet.dirX, dirZ: jet.dirZ, crestSpeed: jet.crestSpeed, relativeSpeed: jet.relativeSpeed, closedAt: Number.NaN, air: 0, released: 0,
@@ -846,6 +875,44 @@ export class PlungingLip implements LipParcelSource {
     let first = Infinity;
     for (const parcel of strip.parcels) if (parcel >= 0 && this.state[parcel] === 2 && this.releaseAt[parcel] < first) first = this.releaseAt[parcel];
     for (const parcel of strip.parcels) if (parcel >= 0 && this.state[parcel] === 2) this.releaseAt[parcel] = this.time + (this.releaseAt[parcel] - first);
+    return true;
+  }
+
+  /**
+   * A held jet whose point's lip never plunged (the step 7 follow-up's guard, `TubeFace.guard`: the solver never broke its
+   * crest by its touchdown, so it retired) goes back to the crest it left instead of pouring ahead: each waiting parcel's
+   * water returns to the solver at (x, z), the point's crest now, with the momentum `drawFromCrest` took with it (kept on the
+   * strip by `holdJet`'s `keepTaken`; else its velocity's), so mass and momentum are kept and nothing lands; its void never closed, so it traps no air. True when it
+   * did; false for a strip no longer held.
+   */
+  returnJet(stripId: number, x: number, z: number): boolean {
+    const strip = this.strips.get(stripId);
+    if (!strip?.swept || !strip.held) return false;
+    strip.held = false;
+    let waiting = 0;
+    for (const parcel of strip.parcels) if (parcel >= 0 && this.state[parcel] === 2) waiting += this.volume[parcel];
+    // The momentum it took (`holdJet`'s `keepTaken`), else its own velocity's, shared by volume.
+    const [takenX, takenZ] = strip.taken ?? [Number.NaN, Number.NaN];
+    for (let k = 0; k < strip.parcels.length; k += 1) {
+      const parcel = strip.parcels[k];
+      if (parcel < 0 || this.state[parcel] !== 2) continue;
+      const volume = this.volume[parcel];
+      const share = waiting > 0 ? volume / waiting : 0;
+      const mx = takenX === takenX ? share * takenX : volume * this.vx[parcel];
+      const mz = takenZ === takenZ ? share * takenZ : volume * this.vz[parcel];
+      if (!this.deposit(x, z, volume, mx, mz)) {
+        this.escapedLandings += 1;
+        this.escapedVolume += volume;
+      }
+      this.returnedVolume += volume;
+      this.active[parcel] = 0;
+      this.state[parcel] = 0;
+      this.free.push(parcel);
+      strip.parcels[k] = -1;
+      strip.live -= 1;
+    }
+    this.returnedJets += 1;
+    if (strip.live === 0) this.removeStrip(stripId, strip);
     return true;
   }
 
@@ -1238,6 +1305,7 @@ export class PlungingLip implements LipParcelSource {
     solver.h[cell] += volume / area;
     solver.qx[cell] += momentumX / area;
     solver.qz[cell] += momentumZ / area;
+    solver.markWater(cell);
     return true;
   }
 

@@ -338,6 +338,44 @@ describe('PhysicalSurfWater', () => {
     expect(water.sampleAt(0.1, solver.bed[0], 0.3, out).flowY).toBeCloseTo(0, 9);
   });
 
+  // popup-moving-face (2026-10-29): the bodies integrate over the step that brought the water to its state, so a moving
+  // face must be sampled where it was at each substep's time, not held at the step's end through it.
+  it('moves its surface back through the step at its rise rate, to where the step found it, unless held (`surfaceMotion: \'old\'`)', () => {
+    const depth = 2;
+    const solver = new ShallowWaterSolver({ nx: 4, xMin: -2, dx: 1, zEdges: uniformEdges(-30, 30, 120), xBoundary: 'periodic' }, () => depth);
+    // A hump 0.5 m high travelling shoreward at √(g d): its front face, 2.8 m ahead of its top, climbs ~0.5 m/s.
+    const c = Math.sqrt(9.81 * depth);
+    for (let iz = 0; iz < solver.nz; iz += 1) {
+      const eta = 0.5 * Math.exp(-((solver.zCenters[iz] / 4) ** 2));
+      for (let ix = 0; ix < solver.nx; ix += 1) {
+        solver.h[iz * solver.nx + ix] = depth + eta;
+        solver.qz[iz * solver.nx + ix] = c * eta;
+      }
+    }
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 10 });
+    const held = new PhysicalSurfWater(solver, { peakPeriod: 10, surfaceMotion: 'old' });
+    const out = createWaterSample();
+    const dt = 1 / 60;
+    for (const z of [2, 2.8, 4]) {
+      const before = water.surfaceAt(0.3, z);
+      solver.step(dt);
+      const after = water.surfaceAt(0.3, z);
+      expect(after - before, `z ${z}`).toBeGreaterThan(0.004);
+      water.setSampleTime(-dt);
+      held.setSampleTime(-dt);
+      const moved = water.surfaceAt(0.3, z);
+      // Within a tenth of the step's climb of where it was; the sample agrees with the height.
+      expect(Math.abs(moved - before), `z ${z}`).toBeLessThan(0.1 * (after - before));
+      expect(water.sampleAt(0.3, moved - 0.2, z, out).surfaceY, `z ${z}`).toBeCloseTo(moved, 12);
+      expect(held.surfaceAt(0.3, z)).toBe(after);
+      expect(held.sampleAt(0.3, after - 0.2, z, out).surfaceY).toBe(after);
+      // Back at the water's own time, the state's surface.
+      water.setSampleTime(0);
+      expect(water.surfaceAt(0.3, z)).toBe(after);
+      expect(water.sampleAt(0.3, after - 0.2, z, out).surfaceY).toBe(after);
+    }
+  });
+
   it('says when a point lies beyond the simulated window', () => {
     const { water } = channel();
     const out = createWaterSample();
@@ -416,11 +454,11 @@ describe('PhysicalSurfWater\'s turbulence', () => {
 });
 
 /** The toy tube (h0 3 m: foot crest 0.9 m at A0 0.3) on a straight front along +x at z = 0, thrown there, at τ `tau`, s. */
-function sweptChannel(tau = 0.05) {
+function sweptChannel(tau = 0.05, sweptUnion = false) {
   const { solver, breaking } = channel(3, 1);
   const library = new ProfileLibrary([tubeCase(0.3)]);
   const contact = new SweptContact(library, 0.05);
-  const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, swept: contact });
+  const water = new PhysicalSurfWater(solver, { peakPeriod: 10, breaking, swept: contact, ...(sweptUnion ? { sweptUnion } : {}) });
   const n = 17;
   const records = new Float32Array(n * FRONT_STRIDE);
   for (let k = 0; k < n; k += 1) {
@@ -430,7 +468,7 @@ function sweptChannel(tau = 0.05) {
     records[o + FRONT_FIELD.throwZ] = 0;
   }
   contact.update(records, n, solver.restLevel, (x, z) => water.plainSurfaceAt(x, z));
-  return { water, solver, times: library.profileTimes({ slope: 0.05, footHeight: 0.9, footDepth: 3 }) };
+  return { water, solver, contact, times: library.profileTimes({ slope: 0.05, footHeight: 0.9, footDepth: 3 }) };
 }
 // At x = 0.9 h0 = 2.7 m ahead (z 2.7): the flat below, the underside at 0.55 h0 and the top at 0.575 h0 over still
 // water; the top crosses there at profile index 32 + 32 × 0.75, three quarters of the way to the tip.
@@ -438,6 +476,27 @@ const UNDER = 0.55 * 3;
 const TOP = 0.575 * 3;
 
 describe('the swept contact through the water (Padang Padang, Part B, PR 4)', () => {
+  it('with the union (the surfable tube\'s step 3 ruling), never answers under the solver\'s surface', () => {
+    const { water, solver, contact } = sweptChannel(0.05, true);
+    const before = new PhysicalSurfWater(solver, { peakPeriod: 10, swept: contact });
+    // The solver's water stands 0.3 m over the loft built on it: the loft's floor lies under it ahead of the face.
+    for (let i = 0; i < solver.h.length; i += 1) solver.h[i] += 0.3;
+    const plain = water.plainSurfaceAt(0, 2.7);
+    expect(plain).toBeCloseTo(solver.restLevel + 0.3, 2);
+    expect(before.surfaceAt(0, 2.7)).toBeCloseTo(solver.restLevel, 2);
+    expect(water.surfaceAt(0, 2.7)).toBeCloseTo(plain, 6);
+    // Under the solver's surface: its water, whatever the loft says.
+    const under = water.sampleAt(0, plain - 0.1, 2.7, createWaterSample());
+    expect(under.surfaceY).toBeCloseTo(plain, 6);
+    expect(under.covered).toBe(false);
+    expect(under.ceilingY).toBeUndefined();
+    // In the tube's air over it: the floor raised to the solver's, the curl still over it.
+    const air = water.sampleAt(0, solver.restLevel + 1, 2.7, createWaterSample());
+    expect(air.surfaceY).toBeCloseTo(plain, 6);
+    expect(air.ceilingY).toBeCloseTo(solver.restLevel + UNDER, 2);
+    expect(air.covered).toBe(true);
+  });
+
   it('answers the tube’s air with the face below and the curl above, covered and open', () => {
     const { water, solver } = sweptChannel();
     const sample = water.sampleAt(0, solver.restLevel + 1, 2.7, createWaterSample());

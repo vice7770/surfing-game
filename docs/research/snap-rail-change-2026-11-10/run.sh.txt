@@ -1,0 +1,11 @@
+# Rail-change probes (2026-11-10). From the repo root: bash docs/research/snap-rail-change-2026-11-10/run.sh.txt <out-dir> <tag> '<rider options json>' [ENV=value...]
+# Runs the 48-run set (Compress cutback + stick-only cutback, 6-11 m/s, toe + heel, flat water + the Canyon-matched wave) and writes <tag>-<plan>-<water>.json.
+# e.g.  run.sh.txt out base '{}'     run.sh.txt out notwist '{}' NOTWIST=1     run.sh.txt out legdrive '{"legDrive":"on"}'
+# Then, in <out-dir>:  python3 sum.py.txt base-cutback=base-cutback-flat.json,base-cutback-canyon.json ...   (falls.py.txt the same; share.py.txt base notwist ...; frames.py.txt <json> "<run name>")
+set -e
+D=docs/research/snap-rail-change-2026-11-10; O=${1:?out dir}; tag=${2:?tag}; opts=${3:-'{}'}; shift 3 || true; mkdir -p "$O"; O=$(cd "$O" && pwd)
+T=src/physics/zz-railchange.test.ts; cp $D/railchange.test.ts.txt $T
+for P in cutback standcut; do for W in flat canyon; do
+  env "$@" OPTS="$opts" OUT=$O/$tag-$P-$W.json PLAN=$P WATER=$W SPEEDS=${SPEEDS:-6,7,8,9,10,11} npx vitest run $T 2>&1 | grep -E "rror|failed" || true
+done; done
+rm $T

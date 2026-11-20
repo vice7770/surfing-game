@@ -173,8 +173,10 @@ describe('SnapshotSurfZone at a swept spot (Padang Padang, Part B, PR 3)', () =>
 // The Canyon roller lens (S3, Task 4): the roller's table travels in the snapshot for both looks to draw the band.
 describe('the roller lens in the snapshot', () => {
   it('carries the Canyon\'s roller table to the page, where the water\'s source offers it with its columns', async () => {
-    // Square drawn edges, so the table travels as written (the foam look frays the drawn band's run ends; below).
-    const host = new LocalSurfZone({ ...config, spot: 'canyon', drawnEdges: false });
+    // Square drawn edges, so the table travels as written (the foam look frays the drawn band's run ends; below). On
+    // version B's layout (`?canyonBed=b`), whose 40 m window about x 0 has no wave breaking yet: version C's bank crosses
+    // it (canyon-c, 2026-11-03), and the spilling lip reshapes its live lenses' drawn band (`writeRoller`).
+    const host = new LocalSurfZone({ ...config, spot: 'canyon', canyonBed: 'b', drawnEdges: false });
     await host.ready;
     const roller = host.runner.simulation.roller!;
     const { nx, dx, xCenters } = host.runner.simulation.solver;

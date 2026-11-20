@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { Quaternion, Scene, Vector3 } from 'three';
 import { WaterSurface } from '../scene/WaterSurface';
+import { RIG_SWITCHES } from '../scene/rig/stanceBlend';
 import { FlatSurfaceSource } from '../scene/FlatSurfaceSource';
 import { SPOT_OPTICS } from '../scene/waterOptics';
 import { stormSwell } from '../wave/StormSwell';
@@ -8,12 +10,13 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonBedSwitch, startOutSwitch, surfZoneConfigFor, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, bodyBankSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, armCarrySwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
-import { rideLineupOffset, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { alongShoreOf, rideLineupAlong, rideLineupOffset, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { encodeSurfZoneState } from '../wave/surfZoneState';
+import { POOL_REF } from '../wave/pool';
 
 const quick = { alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1, componentCount: 8 };
 
@@ -74,22 +77,650 @@ describe('PhysicalMode', () => {
     for (const search of ['', '?startOut', '?startOut=', '?startOut=far', '?startOut=Infinity']) expect(startOutSwitch(search), search).toEqual({});
     const big = physicalSettingsFor('canyon', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
     try {
-      vi.stubGlobal('location', { search: '?startOut=11' });
+      vi.stubGlobal('location', { search: '?startOut=6' });
       const compared = surfZoneConfigFor(big, 5, false);
-      expect(compared.startOut).toBe(11);
-      // Today's start at the Canyon's Big, 11 m out, in place of its own.
-      expect(rideLineupOffset(compared)).toBe(11);
+      expect(compared.startOut).toBe(6);
+      // The short arm's start at the Canyon's Big, 6 m out, in place of its own (11 m since canyon-long-wave).
+      expect(rideLineupOffset(compared)).toBe(6);
       vi.stubGlobal('location', { search: '' });
       const own = surfZoneConfigFor(big, 5, false);
       expect(own.startOut).toBeUndefined();
-      expect(rideLineupOffset(own)).toBeLessThan(11);
+      // Its own: 3 m out at Big's beach peak since canyon-beach-break (11 m on the reef before).
+      expect(rideLineupOffset(own)).toBe(3);
     } finally {
       vi.unstubAllGlobals();
     }
   });
 
-  // The `?canyonBed=old` dev switch (the reef bed, 2026-10-22): main's Canyon from before it, carried in the config, so the
-  // worker builds that bed and the seabed is drawn from it; absent or anything else, the reef bed.
+  // The `?canyonTube=on` and `?tubeShape=c` dev switches: the Canyon's reef with its swept tubes (its default from the tube
+  // from Basilisk, 2026-10-22, until canyon-beach-break, 2026-10-23, when the owner turned it off: "spilling waves are
+  // supposed to be the default for the Canyon"), and the authored bounded-C in place of the cases' own frames; an online
+  // room's config keeps the defaults.
+  it('turns the Canyon\'s tubes on with `?canyonTube=on`, and draws the bounded-C with `?tubeShape=c` (dev switches)', () => {
+    expect(canyonTubeSwitch('?canyonTube=on')).toEqual({ sweptBarrel: true });
+    for (const search of ['', '?canyonTube', '?canyonTube=off']) expect(canyonTubeSwitch(search), search).toEqual({});
+    expect(tubeShapeSwitch('?tubeShape=c')).toEqual({ tubeShape: 'bounded-C' });
+    expect(tubeShapeSwitch('?tubeShape=basilisk')).toEqual({});
+    const canyon = physicalSettingsFor('canyon', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const padang = physicalSettingsFor('padang', { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(canyon, 5, false).sweptBarrel).toBeUndefined();
+      vi.stubGlobal('location', { search: '?canyonTube=on' });
+      expect(surfZoneConfigFor(canyon, 5, false).sweptBarrel).toBe(true);
+      // Only the Canyon's: Padang Padang keeps its barrel.
+      expect(surfZoneConfigFor(padang, 5, false).sweptBarrel).toBeUndefined();
+      expect(surfZoneConfigFor(canyon, 5, false, { sweptBarrel: undefined }).sweptBarrel).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeShape=c' });
+      expect(surfZoneConfigFor(padang, 5, false).tubeShape).toBe('bounded-C');
+      expect(surfZoneConfigFor(padang, 5, false, { tubeShape: 'basilisk' }).tubeShape).toBe('basilisk');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The Wave Pool's straight Barrel's tube switches (pool-tube-cases, 2026-11-03; pool-tube-face, 2026-11-04): its tube
+  // case, the Canyon's a38 by default since the owner's call (`?poolTubeCase=pool` for its own runs, `=a38` the default
+  // by name), and the surfable tube's A/Bs; the Barrel's alone, and an online room's config keeps the defaults.
+  it('draws the Barrel\'s tube from a38 unless `?poolTubeCase=pool`, and takes the surfable tube\'s switches (dev switches)', () => {
+    expect(poolTubeCaseSwitch('?poolTubeCase=pool')).toEqual({ poolTubeCase: 'pool' });
+    expect(poolTubeCaseSwitch('?poolTubeCase=POOL')).toEqual({ poolTubeCase: 'pool' });
+    expect(poolTubeCaseSwitch('?poolTubeCase=a38')).toEqual({ poolTubeCase: 'a38' });
+    for (const search of ['', '?poolTubeCase', '?poolTubeCase=', '?poolTubeCase=a49', '?poolTubeCase=own']) expect(poolTubeCaseSwitch(search), search).toEqual({});
+    expect(tubeFaceSwitches('?tubeFace=old&tubeFrom=piece')).toEqual({ tubeFace: 'old', tubeFrom: 'piece' });
+    expect(tubeFaceSwitches('?tubeLag=0&tubeClock=old')).toEqual({ tubeLag: 0, tubeClock: 'old' });
+    for (const search of ['', '?tubeFace=new', '?tubeFrom=lip', '?tubeLag=1', '?tubeClock=new']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      // Unset: the default, a38 (`barrelCasesFor`), as every online room runs it.
+      expect(surfZoneConfigFor(barrel, 5, false).poolTubeCase).toBeUndefined();
+      vi.stubGlobal('location', { search: '?poolTubeCase=pool&tubeFace=old&tubeFrom=piece' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ poolTubeCase: 'pool', tubeFace: 'old', tubeFrom: 'piece' });
+      // Only the Barrel's: Training and the other spots ignore them.
+      expect(surfZoneConfigFor(training, 5, false).poolTubeCase).toBeUndefined();
+      expect(surfZoneConfigFor(training, 5, false).tubeFace).toBeUndefined();
+      // An online room's overrides pin the defaults.
+      const online = surfZoneConfigFor(barrel, 5, false, { poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined });
+      expect([online.poolTubeCase, online.tubeFace, online.tubeFrom, online.tubeLag, online.tubeClock]).toEqual([undefined, undefined, undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // Step 7, Q1's switches (pool-tube-wall, 2026-11-04): each piece's A/B alone; the Barrel's alone; online rooms pin them.
+  it('takes step 7\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
+    expect(tubeFaceSwitches('?tubeAnchor=old')).toEqual({ tubeAnchor: 'old' });
+    expect(tubeFaceSwitches('?tubeForm=old&tubeThrow=break')).toEqual({ tubeForm: 'old', tubeThrow: 'break' });
+    expect(tubeFaceSwitches('?wallFlow=OLD')).toEqual({ wallFlow: 'old' });
+    expect(tubeFaceSwitches('?tubeAnchor=old&tubeForm=old&wallFlow=old&tubeFace=old')).toEqual({ tubeAnchor: 'old', tubeForm: 'old', wallFlow: 'old', tubeFace: 'old' });
+    for (const search of ['?tubeAnchor=new', '?tubeForm=1', '?tubeThrow=contour', '?tubeThrow=old', '?wallFlow=new', '?wallFlow']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const unset = surfZoneConfigFor(barrel, 5, false);
+      expect([unset.tubeAnchor, unset.tubeForm, unset.tubeThrow, unset.wallFlow]).toEqual([undefined, undefined, undefined, undefined]);
+      vi.stubGlobal('location', { search: '?tubeAnchor=old&tubeForm=old&tubeThrow=break&wallFlow=old' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeAnchor: 'old', tubeForm: 'old', tubeThrow: 'break', wallFlow: 'old' });
+      const plain = surfZoneConfigFor(training, 5, false);
+      expect([plain.tubeAnchor, plain.tubeForm, plain.tubeThrow, plain.wallFlow]).toEqual([undefined, undefined, undefined, undefined]);
+      const online = surfZoneConfigFor(barrel, 5, false, { tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined });
+      expect([online.tubeAnchor, online.tubeForm, online.tubeThrow, online.wallFlow]).toEqual([undefined, undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The step 7 follow-up's switches (pool-tube-contact, 2026-11-05): each piece's A/B alone; the Barrel's alone; online pins.
+  it('takes the step 7 follow-up\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
+    expect(tubeFaceSwitches('?tubeContact=old')).toEqual({ tubeContact: 'old' });
+    expect(tubeFaceSwitches('?tubeCap=OLD&tubeMerge=old')).toEqual({ tubeCap: 'old', tubeMerge: 'old' });
+    expect(tubeFaceSwitches('?tubeGuard=ON&wallFlow=old')).toEqual({ wallFlow: 'old', tubeGuard: 'on' });
+    // The guard is opt-in: `=old` and anything else leave it off (no key).
+    for (const search of ['?tubeContact=new', '?tubeCap=0.3', '?tubeMerge', '?tubeGuard=1', '?tubeGuard=old', '?tubeGuard']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const keys = (c: Record<string, unknown>) => [c.tubeContact, c.tubeCap, c.tubeMerge, c.tubeGuard];
+    try {
+      expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined]);
+      vi.stubGlobal('location', { search: '?tubeContact=old&tubeCap=old&tubeMerge=old&tubeGuard=on' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeContact: 'old', tubeCap: 'old', tubeMerge: 'old', tubeGuard: 'on' });
+      expect(keys(surfZoneConfigFor(training, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined]);
+      const online = surfZoneConfigFor(barrel, 5, false, { tubeContact: undefined, tubeCap: undefined, tubeMerge: undefined, tubeGuard: undefined });
+      expect(keys(online as never)).toEqual([undefined, undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // pool-barrel-perf's switches (2026-11-06): each output-identical speed-up's old path; the contact's at the Barrel alone, the
+  // plain surface's everywhere; online rooms pin both worker ones; the three drawing ones are the page's own.
+  it('takes pool-barrel-perf\'s switches, the worker\'s in the config and pinned online, the drawing\'s on the page (dev switches)', () => {
+    expect(plainHeightSwitch('?plainHeight=OLD')).toEqual({ plainHeight: 'old' });
+    expect(contactRowsSwitch('?contactRows=old')).toEqual({ contactRows: 'old' });
+    for (const search of ['', '?plainHeight=new', '?plainHeight', '?contactRows=on']) {
+      expect(plainHeightSwitch(search), search).toEqual({});
+      expect(contactRowsSwitch(search), search).toEqual({});
+    }
+    expect([barrelHeightOld('?barrelHeight=old'), cameraWaterOld('?cameraWater=Old'), barrelMeshOld('?barrelMesh=old')]).toEqual([true, true, true]);
+    expect([barrelHeightOld(''), cameraWaterOld('?cameraWater=fast'), barrelMeshOld('?barrelMesh')]).toEqual([false, false, false]);
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const reef = physicalSettingsFor('reef', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const keys = (c: Record<string, unknown>) => [c.plainHeight, c.contactRows];
+    try {
+      expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual([undefined, undefined]);
+      vi.stubGlobal('location', { search: '?plainHeight=old&contactRows=old' });
+      expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual(['old', 'old']);
+      expect(keys(surfZoneConfigFor(training, 5, false) as never)).toEqual(['old', undefined]);
+      expect(keys(surfZoneConfigFor(reef, 5, false) as never)).toEqual(['old', undefined]);
+      const online = surfZoneConfigFor(barrel, 5, false, { plainHeight: undefined, contactRows: undefined });
+      expect(keys(online as never)).toEqual([undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // barrel-gpu's switches (2026-11-06): each output-identical change's old path, at every spot; online rooms pin them.
+  it('takes barrel-gpu\'s switches at every spot, and an online room pins their defaults (dev switches)', () => {
+    expect(deviceTrafficSwitches('?deviceWater=OLD&launchWater=old&devicePlunge=old')).toEqual({ deviceWater: 'old', launchWater: 'old', devicePlunge: 'old' });
+    expect(deviceTrafficSwitches('?launchWater=old')).toEqual({ launchWater: 'old' });
+    for (const search of ['', '?deviceWater=runs', '?launchWater', '?devicePlunge=on']) expect(deviceTrafficSwitches(search), search).toEqual({});
+    const keys = (c: Record<string, unknown>) => [c.deviceWater, c.launchWater, c.devicePlunge];
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const reef = physicalSettingsFor('reef', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+    try {
+      expect(keys(surfZoneConfigFor(barrel, 5, true) as never)).toEqual([undefined, undefined, undefined]);
+      vi.stubGlobal('location', { search: '?deviceWater=old&launchWater=old&devicePlunge=old' });
+      expect(keys(surfZoneConfigFor(barrel, 5, true) as never)).toEqual(['old', 'old', 'old']);
+      expect(keys(surfZoneConfigFor(reef, 5, true) as never)).toEqual(['old', 'old', 'old']);
+      const online = surfZoneConfigFor(reef, 5, true, { deviceWater: undefined, launchWater: undefined, devicePlunge: undefined });
+      expect(keys(online as never)).toEqual([undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // barrel-gpu's switch (2026-11-06): the straight Barrel's periodic sea back on the CPU, at the Barrel alone; online pins it.
+  it('takes barrel-gpu\'s switch at the Barrel alone, and an online room pins its default (dev switch)', () => {
+    expect(barrelGpuSwitch('?barrelGpu=OFF')).toEqual({ barrelGpu: 'off' });
+    for (const search of ['', '?barrelGpu=on', '?barrelGpu', '?barrelGpu=old']) expect(barrelGpuSwitch(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, true).barrelGpu).toBeUndefined();
+      vi.stubGlobal('location', { search: '?barrelGpu=off' });
+      expect(surfZoneConfigFor(barrel, 5, true).barrelGpu).toBe('off');
+      expect(surfZoneConfigFor(training, 5, true).barrelGpu).toBeUndefined();
+      expect(surfZoneConfigFor(barrel, 5, true, { barrelGpu: undefined }).barrelGpu).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // pool-ledge-floor's switch (2026-11-08): the straight Barrel on the steeper ledge, at the Barrel alone; online pins it.
+  it('takes pool-ledge-floor\'s switch at the Barrel alone, and an online room pins its default (dev switch)', () => {
+    expect(poolFloorSwitch('?poolFloor=LEDGE')).toEqual({ poolFloor: 'ledge' });
+    // after-tube's shallow inside (2026-11-11, ruling 12): the same switch's other value.
+    expect(poolFloorSwitch('?poolFloor=Inside')).toEqual({ poolFloor: 'inside' });
+    for (const search of ['', '?poolFloor=old', '?poolFloor', '?poolFloor=knee']) expect(poolFloorSwitch(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, true).poolFloor).toBeUndefined();
+      vi.stubGlobal('location', { search: '?poolFloor=ledge' });
+      expect(surfZoneConfigFor(barrel, 5, true).poolFloor).toBe('ledge');
+      expect(surfZoneConfigFor(training, 5, true).poolFloor).toBeUndefined();
+      expect(surfZoneConfigFor(barrel, 5, true, { poolFloor: undefined }).poolFloor).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // pool-look-reference's switch (2026-11-11, ruling 13): the straight Barrel at the reference size; online pins the default.
+  it('takes `?poolSize=ref` at the straight Barrel alone: its wave, period and case; an online room pins its default (dev switch)', () => {
+    expect(poolSizeSwitch('?poolSize=ref')).toEqual({ poolSize: 'ref' });
+    expect(poolSizeSwitch('?poolSize=REF ')).toEqual({ poolSize: 'ref' });
+    for (const search of ['', '?poolSize', '?poolSize=', '?poolSize=big', '?poolSize=2', '?poolsize=ref']) expect(poolSizeSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' });
+    const before = surfZoneConfigFor(barrel, 5, true);
+    const trainingBefore = surfZoneConfigFor(training, 5, true);
+    try {
+      expect(before.poolSize).toBeUndefined();
+      expect(before.peakPeriod).toBe(10);
+      expect(before.poolTubeCase).toBeUndefined();
+      vi.stubGlobal('location', { search: '?poolSize=ref' });
+      const ref = surfZoneConfigFor(barrel, 5, true);
+      expect(ref.poolSize).toBe('ref');
+      expect(ref.peakPeriod).toBe(10.5);
+      expect(ref.significantHeight).toBeCloseTo(POOL_REF.edgeHeight * Math.SQRT2, 12);
+      expect(ref.poolTubeCase).toBe('big');
+      // The reference size replaces the Small / Big choice.
+      const small: PhysicalSettings = { ...physicalSettingsFor('pool', { ...conditions, swell: 'small' }, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+      expect(surfZoneConfigFor(small, 5, true)).toEqual(ref);
+      // Everything else is the default's config.
+      expect({ ...ref, poolSize: undefined, peakPeriod: 10, significantHeight: before.significantHeight, poolTubeCase: undefined, heldRule: undefined }).toEqual({ ...before, poolSize: undefined, poolTubeCase: undefined });
+      // Training and an online room's pin: the config as without the switch.
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined });
+      // The A-frame layout never takes it; the ledge is dropped under it; the inside and another tube case's ask stay or go.
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolBarrel=aframe' });
+      expect(surfZoneConfigFor(barrel, 5, true).peakPeriod).toBe(10);
+      expect(surfZoneConfigFor(barrel, 5, true).poolTubeCase).toBeUndefined();
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolFloor=ledge' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual(ref);
+      // Step 4, build 3 (ruling 16's call 1): a tube case named in the URL wins over `big`; nothing else changes, and
+      // anything but a38 or pool is no name. The jet-step held rule stays (it moves no case but `big`).
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolFloor=ledge&poolTubeCase=pool' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolTubeCase: 'pool' });
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolTubeCase=a38' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolTubeCase: 'a38' });
+      expect(surfZoneConfigFor(barrel, 5, true).heldRule).toBe('jet-step');
+      for (const search of ['?poolSize=ref&poolTubeCase=big', '?poolSize=ref&poolTubeCase=', '?poolSize=ref&poolTubeCase=other']) {
+        vi.stubGlobal('location', { search });
+        expect(surfZoneConfigFor(barrel, 5, true), search).toEqual(ref);
+      }
+      // An online room's pin leaves the default's case choice as it was.
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolTubeCase=a38' });
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined, poolTubeCase: 'a38' });
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolFloor=inside' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolFloor: 'inside' });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(poolRefConfig(before)).toBe(before);
+  });
+
+  // pool-look-reference step 2 (ruling 14): the reference size's window is 311 m by itself; `?poolWindow` is its A/B.
+  it('takes `?poolWindow=<m>` only together with `?poolSize=ref`: the first build\'s 280 m window for A/Bs (dev switch)', () => {
+    expect(poolWindowSwitch('?poolWindow=280')).toEqual({ poolWindow: 280 });
+    expect(poolWindowSwitch('?poolWindow= 296.4 ')).toEqual({ poolWindow: 296 });
+    expect(poolWindowSwitch('?poolWindow=240')).toEqual({ poolWindow: 240 });
+    expect(poolWindowSwitch('?poolWindow=400')).toEqual({ poolWindow: 400 });
+    for (const search of ['', '?poolWindow', '?poolWindow=', '?poolWindow=wide', '?poolWindow=239', '?poolWindow=401', '?poolWindow=-280', '?poolWindow=0', '?poolwindow=280']) expect(poolWindowSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' });
+    const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'auto' });
+    const before = surfZoneConfigFor(barrel, 5, true);
+    const trainingBefore = surfZoneConfigFor(training, 5, true);
+    const canyonBefore = surfZoneConfigFor(canyon, 5, true);
+    try {
+      // The default carries no width: the pool's 280 m.
+      expect(before.alongShore).toBeUndefined();
+      expect(alongShoreOf(before)).toBe(280);
+      vi.stubGlobal('location', { search: '?poolSize=ref' });
+      const ref = surfZoneConfigFor(barrel, 5, true);
+      expect(ref.alongShore).toBeUndefined();
+      expect(alongShoreOf(ref)).toBe(311);
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolWindow=280' });
+      const first = surfZoneConfigFor(barrel, 5, true);
+      expect(first).toEqual({ ...ref, alongShore: 280 });
+      expect(alongShoreOf(first)).toBe(280);
+      // An online room pins the size, so the window does nothing there; nor at Training, the A-frame or another spot.
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined });
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolWindow=280&poolBarrel=aframe' });
+      expect(surfZoneConfigFor(barrel, 5, true).alongShore).toBeUndefined();
+      // Without the size it does nothing.
+      vi.stubGlobal('location', { search: '?poolWindow=311' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual(before);
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(poolRefConfig(before, 311)).toBe(before);
+  });
+
+  // pool-look-reference step 4 (ruling 16): the reference size's tube case is held by the jet-step test; `?poolHeld=old` is its A/B.
+  it('holds the reference size\'s tube case by the jet-step test; `?poolHeld=old` only together with `?poolSize=ref` (dev switch)', () => {
+    expect(poolHeldOld('?poolHeld=old')).toBe(true);
+    expect(poolHeldOld('?poolHeld= OLD ')).toBe(true);
+    for (const search of ['', '?poolHeld', '?poolHeld=', '?poolHeld=new', '?poolheld=old']) expect(poolHeldOld(search), search).toBe(false);
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' });
+    const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'auto' });
+    const before = surfZoneConfigFor(barrel, 5, true);
+    const trainingBefore = surfZoneConfigFor(training, 5, true);
+    const canyonBefore = surfZoneConfigFor(canyon, 5, true);
+    try {
+      expect(before.heldRule).toBeUndefined();
+      expect('heldRule' in before).toBe(false);
+      vi.stubGlobal('location', { search: '?poolSize=ref' });
+      const ref = surfZoneConfigFor(barrel, 5, true);
+      expect(ref.heldRule).toBe('jet-step');
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolHeld=old' });
+      const old = surfZoneConfigFor(barrel, 5, true);
+      expect('heldRule' in old).toBe(false);
+      expect({ ...old, heldRule: 'jet-step' }).toEqual(ref);
+      // An online room pins the size, so neither the rule nor its switch reaches it; nor Training, the A-frame or another spot.
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined });
+      expect('heldRule' in surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toBe(false);
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolBarrel=aframe' });
+      expect('heldRule' in surfZoneConfigFor(barrel, 5, true)).toBe(false);
+      // Without the size the switch does nothing.
+      vi.stubGlobal('location', { search: '?poolHeld=old' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual(before);
+      vi.stubGlobal('location', { search: '?poolTubeCase=pool' });
+      expect('heldRule' in surfZoneConfigFor(barrel, 5, true)).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(poolRefConfig(before, undefined, true)).toBe(before);
+  });
+
+  // pool-look-reference step 4 (ruling 16): the reference size's reef is 1.11 times longer along its line; `?poolReef=short` is its A/B.
+  it('lays the reference size\'s reef on its longer line; `?poolReef=short` only together with `?poolSize=ref` (dev switch)', () => {
+    expect(poolReefShort('?poolReef=short')).toBe(true);
+    expect(poolReefShort('?poolReef= SHORT ')).toBe(true);
+    for (const search of ['', '?poolReef', '?poolReef=', '?poolReef=long', '?poolreef=short']) expect(poolReefShort(search), search).toBe(false);
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' });
+    const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'auto' });
+    const before = surfZoneConfigFor(barrel, 5, true);
+    const trainingBefore = surfZoneConfigFor(training, 5, true);
+    const canyonBefore = surfZoneConfigFor(canyon, 5, true);
+    try {
+      expect('poolReef' in before).toBe(false);
+      vi.stubGlobal('location', { search: '?poolSize=ref' });
+      const ref = surfZoneConfigFor(barrel, 5, true);
+      expect('poolReef' in ref).toBe(false);
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolReef=short' });
+      const short = surfZoneConfigFor(barrel, 5, true);
+      expect(short).toEqual({ ...ref, poolReef: 'short' });
+      // An online room pins the size, so the switch does not reach it; nor Training, the A-frame or another spot.
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined });
+      expect('poolReef' in surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toBe(false);
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolReef=short&poolBarrel=aframe' });
+      expect('poolReef' in surfZoneConfigFor(barrel, 5, true)).toBe(false);
+      // Without the size the switch does nothing.
+      vi.stubGlobal('location', { search: '?poolReef=short' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual(before);
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(poolRefConfig(before, undefined, false, true)).toBe(before);
+  });
+
+  // pool-look-reference step 5 (ruling 17): `?poolReach=long` takes the reference size's tube front to s 150 along the long reef.
+  it('takes the reference size\'s front to s 150 with `?poolReach=long`, only with `?poolSize=ref` and the long reef (dev switch)', () => {
+    expect(poolReachLong('?poolReach=long')).toBe(true);
+    expect(poolReachLong('?poolReach= LONG ')).toBe(true);
+    for (const search of ['', '?poolReach', '?poolReach=', '?poolReach=short', '?poolreach=long']) expect(poolReachLong(search), search).toBe(false);
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', conditions, { stage: 2, compute: 'auto' });
+    const canyon = physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'auto' });
+    const before = surfZoneConfigFor(barrel, 5, true);
+    const trainingBefore = surfZoneConfigFor(training, 5, true);
+    const canyonBefore = surfZoneConfigFor(canyon, 5, true);
+    try {
+      expect('poolReach' in before).toBe(false);
+      vi.stubGlobal('location', { search: '?poolSize=ref' });
+      const ref = surfZoneConfigFor(barrel, 5, true);
+      expect('poolReach' in ref).toBe(false);
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolReach=long' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolReach: 'long' });
+      // An online room pins the size, so the switch does not reach it; nor Training or another spot.
+      expect(surfZoneConfigFor(barrel, 5, true, { poolSize: undefined })).toEqual({ ...before, poolSize: undefined });
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+      // The short reef keeps the pool's own reach: the switch is not read with it.
+      vi.stubGlobal('location', { search: '?poolSize=ref&poolReef=short&poolReach=long' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual({ ...ref, poolReef: 'short' });
+      // Without the size the switch does nothing.
+      vi.stubGlobal('location', { search: '?poolReach=long' });
+      expect(surfZoneConfigFor(barrel, 5, true)).toEqual(before);
+      expect(surfZoneConfigFor(training, 5, true)).toEqual(trainingBefore);
+      expect(surfZoneConfigFor(canyon, 5, true)).toEqual(canyonBefore);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(poolRefConfig(before, undefined, false, false, true)).toBe(before);
+  });
+
+  // The DEVICE row (barrel-gpu): where the water steps and, on the GPU, what its step moves.
+  it('says in the DEVICE row where the water steps, why the CPU, and the GPU step\'s traffic', () => {
+    const config = { spot: 'pool', compute: 'auto', stage: 2 } as SurfZoneConfig;
+    const pipeline = { deviceUploadBytes: 12 * 1024, deviceUploadMean: 30 * 1024, deviceReadbackBytes: 3682 * 1024, deviceFullWater: 0, deviceFullPlunge: 1, deviceLayouts: 0 };
+    const status = (extra: Record<string, unknown>) => ({ compute: 'gpu', pipelineMs: pipeline, ...extra }) as never;
+    expect(formatDevice(config, status({}))).toBe('GPU · 12 kB up (30 mean), 3,682 kB back a step · whole water 0, plunge zone 1, layout 0 in the last second');
+    expect(formatDevice(config, status({ compute: 'cpu', deviceNote: 'periodic along shore, kept on the CPU (?barrelGpu=off)' })))
+      .toBe('CPU · the water steps here: periodic along shore, kept on the CPU (?barrelGpu=off)');
+    expect(formatDevice({ ...config, compute: 'cpu' }, status({ compute: 'cpu' }))).toBe('CPU · the water steps here: Water simulation: fast');
+    expect(formatDevice(config, status({ compute: 'cpu' }))).toBe('CPU · the water steps here');
+  });
+
+  // Ruling 4's rank 1 (form-clock, 2026-11-11): the C1 formation clock's switch; the Barrel's alone; online rooms pin it.
+  it('takes `?formClock=old` and `?formClock=c1` at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?formClock=old')).toEqual({ formClock: 'old' });
+    expect(tubeFaceSwitches('?formClock=C1&tubeCap=old')).toEqual({ tubeCap: 'old', formClock: 'c1' });
+    for (const search of ['?formClock', '?formClock=', '?formClock=on', '?formClock=new', '?formClock=1']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).formClock).toBeUndefined();
+      for (const value of ['old', 'c1'] as const) {
+        vi.stubGlobal('location', { search: `?formClock=${value}` });
+        expect(surfZoneConfigFor(barrel, 5, false).formClock).toBe(value);
+        expect(surfZoneConfigFor(training, 5, false).formClock).toBeUndefined();
+        expect(surfZoneConfigFor(barrel, 5, false, { formClock: undefined }).formClock).toBeUndefined();
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // Ruling 5 (tube-seam, 2026-11-11): the seam blend's switch and its two tuning inputs; the Barrel's alone; online rooms pin it.
+  it('takes `?tubeSeam=blend` (with `?seamTau=on,full`, `?seamBand=m`) at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?tubeSeam=blend')).toEqual({ tubeSeam: 'blend' });
+    expect(tubeFaceSwitches('?tubeSeam=Blend&formClock=c1')).toEqual({ formClock: 'c1', tubeSeam: 'blend' });
+    expect(tubeFaceSwitches('?tubeSeam=blend&seamTau=-0.75,0&seamBand=0.3')).toEqual({ tubeSeam: 'blend', seamTau: [-0.75, 0], seamBand: 0.3 });
+    expect(tubeFaceSwitches('?tubeSeam=blend&seamTau=0,-1&seamBand=x')).toEqual({ tubeSeam: 'blend' });
+    // The tuning inputs do nothing without the switch.
+    for (const search of ['?tubeSeam', '?tubeSeam=', '?tubeSeam=on', '?tubeSeam=old', '?seamTau=-0.75,0', '?seamBand=0.3', '?seamTau=-0.75,0&seamBand=0.3']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.tubeSeam).toBeUndefined();
+      expect(plain.seamTau).toBeUndefined();
+      expect(plain.seamBand).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeSeam=blend&seamTau=-0.75,0&seamBand=0.3' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeSeam: 'blend', seamTau: [-0.75, 0], seamBand: 0.3 });
+      expect(surfZoneConfigFor(training, 5, false).tubeSeam).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeSeam: undefined, seamTau: undefined, seamBand: undefined });
+      expect(room.tubeSeam).toBeUndefined();
+      expect(room.seamTau).toBeUndefined();
+      expect(room.seamBand).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // Ruling 6 (wall-body, 2026-11-11): the streamline wall water's switch; read with the seam blend alone; online rooms pin it.
+  // Ruling 7's step 1 (crest-line, 2026-11-11): the crest line's switch; the Barrel's alone; online rooms pin it.
+  it('takes `?crestLine=sub` or `top` at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?crestLine=sub')).toEqual({ crestLine: 'sub' });
+    expect(tubeFaceSwitches('?crestLine=Sub&formClock=c1')).toEqual({ formClock: 'c1', crestLine: 'sub' });
+    expect(tubeFaceSwitches('?crestLine=top')).toEqual({ crestLine: 'top' });
+    for (const search of ['?crestLine', '?crestLine=', '?crestLine=on', '?crestLine=old', '?crestLine=1']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).crestLine).toBeUndefined();
+      vi.stubGlobal('location', { search: '?crestLine=sub' });
+      expect(surfZoneConfigFor(barrel, 5, false).crestLine).toBe('sub');
+      expect(surfZoneConfigFor(training, 5, false).crestLine).toBeUndefined();
+      expect(surfZoneConfigFor(barrel, 5, false, { crestLine: undefined }).crestLine).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // Ruling 17 (pool-look-reference step 5, 2026-11-12): the early course's switch turns the seam blend and the crest line on.
+  it('takes `?tubeForm=early`, which turns `tubeSeam=blend` and `crestLine=top` on; an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?tubeForm=early')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+    expect(tubeFaceSwitches('?tubeForm= Early &wallBody=stream')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', wallBody: 'stream' });
+    expect(tubeFaceSwitches('?tubeForm=early&tubeSeam=blend&crestLine=top')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+    // A crest line or a course given with it is kept (`tubeFaceOf`: the course given wins).
+    expect(tubeFaceSwitches('?tubeForm=early&crestLine=sub')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'sub' });
+    expect(tubeFaceSwitches('?tubeForm=early&seamTau=-1,-0.25&seamBand=0.3')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', seamTau: [-1, -0.25], seamBand: 0.3 });
+    // `old` is as it was; anything else is nothing.
+    expect(tubeFaceSwitches('?tubeForm=old')).toEqual({ tubeForm: 'old' });
+    for (const search of ['?tubeForm', '?tubeForm=', '?tubeForm=on', '?tubeForm=late', '?tubeform=early']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.tubeForm).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeForm=early' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...plain, tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+      expect(surfZoneConfigFor(training, 5, false).tubeForm).toBeUndefined();
+      // An online room pins all three.
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeForm: undefined, tubeSeam: undefined, crestLine: undefined });
+      expect(room).toEqual({ ...plain, tubeForm: undefined, tubeSeam: undefined, crestLine: undefined });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('takes `?wallFoot=dug` with the seam blend alone, at the Barrel alone, and an online room pins the default (ruling 21)', () => {
+    expect(tubeFaceSwitches('?wallFoot=dug')).toEqual({});
+    expect(tubeFaceSwitches('?tubeSeam=blend&wallFoot=dug')).toEqual({ tubeSeam: 'blend', wallFoot: 'dug' });
+    expect(tubeFaceSwitches('?tubeForm=early&loftMesh=arc&wallFoot= Dug ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', loftMesh: 'arc', wallFoot: 'dug' });
+    for (const search of ['?tubeSeam=blend&wallFoot', '?tubeSeam=blend&wallFoot=', '?tubeSeam=blend&wallFoot=on', '?tubeSeam=blend&wallfoot=dug']) expect(tubeFaceSwitches(search), search).toEqual({ tubeSeam: 'blend' });
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?tubeSeam=blend' });
+      const blend = surfZoneConfigFor(barrel, 5, false);
+      expect(blend.wallFoot).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeSeam=blend&wallFoot=dug' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...blend, wallFoot: 'dug' });
+      expect(surfZoneConfigFor(training, 5, false).wallFoot).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeSeam: undefined, wallFoot: undefined });
+      expect(room.wallFoot).toBeUndefined();
+      expect(room.tubeSeam).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('takes `?loftMesh=arc` at the Barrel alone, and an online room pins the default (dev switch; ruling 18\'s build 2)', () => {
+    expect(tubeFaceSwitches('?loftMesh=arc')).toEqual({ loftMesh: 'arc' });
+    expect(tubeFaceSwitches('?tubeForm=early&anchorLine=smooth&loftMesh= Arc ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth', loftMesh: 'arc' });
+    for (const search of ['?loftMesh', '?loftMesh=', '?loftMesh=on', '?loftMesh=old', '?loftmesh=arc']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.loftMesh).toBeUndefined();
+      vi.stubGlobal('location', { search: '?loftMesh=arc' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...plain, loftMesh: 'arc' });
+      expect(surfZoneConfigFor(training, 5, false).loftMesh).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { loftMesh: undefined });
+      expect(room).toEqual({ ...plain, loftMesh: undefined });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('takes `?anchorLine=smooth` at the Barrel alone, and an online room pins the default (dev switch; ruling 18\'s build 1)', () => {
+    expect(tubeFaceSwitches('?anchorLine=smooth')).toEqual({ anchorLine: 'smooth' });
+    expect(tubeFaceSwitches('?tubeForm=early&anchorLine= Smooth ')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth' });
+    for (const search of ['?anchorLine', '?anchorLine=', '?anchorLine=on', '?anchorLine=old', '?anchorline=smooth']) expect(tubeFaceSwitches(search), search).toEqual({});
+    // `?tubeForm=early` alone is as it was: the switch adds nothing by itself.
+    expect(tubeFaceSwitches('?tubeForm=early')).toEqual({ tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top' });
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      const plain = surfZoneConfigFor(barrel, 5, false);
+      expect(plain.anchorLine).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeForm=early&anchorLine=smooth' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toEqual({ ...plain, tubeForm: 'early', tubeSeam: 'blend', crestLine: 'top', anchorLine: 'smooth' });
+      expect(surfZoneConfigFor(training, 5, false).anchorLine).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeForm: undefined, tubeSeam: undefined, crestLine: undefined, anchorLine: undefined });
+      expect(room).toEqual({ ...plain, tubeForm: undefined, tubeSeam: undefined, crestLine: undefined, anchorLine: undefined });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('takes `?wallBody=stream` with `?tubeSeam=blend` alone, at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?tubeSeam=blend&wallBody=stream')).toEqual({ tubeSeam: 'blend', wallBody: 'stream' });
+    expect(tubeFaceSwitches('?wallBody=Stream&tubeSeam=blend&formClock=c1')).toEqual({ formClock: 'c1', tubeSeam: 'blend', wallBody: 'stream' });
+    for (const search of ['?wallBody=stream', '?wallBody', '?wallBody=on&tubeSeam=blend', '?wallBody=old&tubeSeam=blend']) expect('wallBody' in tubeFaceSwitches(search), search).toBe(false);
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).wallBody).toBeUndefined();
+      vi.stubGlobal('location', { search: '?tubeSeam=blend&wallBody=stream' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeSeam: 'blend', wallBody: 'stream' });
+      expect(surfZoneConfigFor(training, 5, false).wallBody).toBeUndefined();
+      const room = surfZoneConfigFor(barrel, 5, false, { tubeSeam: undefined, seamTau: undefined, seamBand: undefined, wallBody: undefined });
+      expect(room.tubeSeam).toBeUndefined();
+      expect(room.wallBody).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('takes `?afterTube=roller` at the Barrel alone, and an online room pins the default (dev switch)', () => {
+    expect(tubeFaceSwitches('?afterTube=roller')).toEqual({ afterTube: 'roller' });
+    expect(tubeFaceSwitches('?afterTube=Roller&tubeSeam=blend')).toEqual({ tubeSeam: 'blend', afterTube: 'roller' });
+    for (const search of ['', '?afterTube', '?afterTube=on', '?afterTube=old']) expect('afterTube' in tubeFaceSwitches(search), search).toBe(false);
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      expect(surfZoneConfigFor(barrel, 5, false).afterTube).toBeUndefined();
+      vi.stubGlobal('location', { search: '?afterTube=roller' });
+      expect(surfZoneConfigFor(barrel, 5, false).afterTube).toBe('roller');
+      expect(surfZoneConfigFor(training, 5, false).afterTube).toBeUndefined();
+      expect(surfZoneConfigFor(barrel, 5, false, { afterTube: undefined }).afterTube).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // Ruling 3's switches (pool-tube-track, 2026-11-05): each piece's A/B alone; the Barrel's alone; online rooms pin them.
+  it('takes ruling 3\'s switches at the Barrel alone, and an online room pins their defaults (dev switches)', () => {
+    expect(tubeFaceSwitches('?tubeTrack=on')).toEqual({ tubeTrack: 'on' });
+    expect(tubeFaceSwitches('?tubeInertia=OLD&tubeRetire=old')).toEqual({ tubeInertia: 'old', tubeRetire: 'old' });
+    // Step 2 of the surfer track: `?tubeInertia=path` keeps the path rule under `?wallBody=stream`.
+    expect(tubeFaceSwitches('?tubeInertia=Path')).toEqual({ tubeInertia: 'path' });
+    // The smooth wall, the buoyancy and the drop rule are opt-in: `=on` turns each on; `=old` and anything else leave them off.
+    expect(tubeFaceSwitches('?tubeBuoy=ON&tubeDrop=on&tubeCap=old')).toEqual({ tubeCap: 'old', tubeBuoy: 'on', tubeDrop: 'on' });
+    for (const search of ['?tubeTrack=old', '?tubeTrack=new', '?tubeInertia', '?tubeRetire=1', '?tubeBuoy=old', '?tubeDrop=', '?tubeDrop=old']) expect(tubeFaceSwitches(search), search).toEqual({});
+    const barrel: PhysicalSettings = { ...physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), poolWaves: 'barrel' };
+    const training = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const keys = (c: Record<string, unknown>) => [c.tubeTrack, c.tubeInertia, c.tubeRetire, c.tubeBuoy, c.tubeDrop];
+    try {
+      expect(keys(surfZoneConfigFor(barrel, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined, undefined]);
+      vi.stubGlobal('location', { search: '?tubeTrack=on&tubeInertia=old&tubeRetire=old&tubeBuoy=on&tubeDrop=on' });
+      expect(surfZoneConfigFor(barrel, 5, false)).toMatchObject({ tubeTrack: 'on', tubeInertia: 'old', tubeRetire: 'old', tubeBuoy: 'on', tubeDrop: 'on' });
+      expect(keys(surfZoneConfigFor(training, 5, false) as never)).toEqual([undefined, undefined, undefined, undefined, undefined]);
+      const online = surfZoneConfigFor(barrel, 5, false, { tubeTrack: undefined, tubeInertia: undefined, tubeRetire: undefined, tubeBuoy: undefined, tubeDrop: undefined });
+      expect(keys(online as never)).toEqual([undefined, undefined, undefined, undefined, undefined]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonBed=old` dev switch (the reef bed, 2026-10-22; repointed by canyon-b, 2026-11-01): main's Canyon from before
+  // version B (the reef with a beach peak either side), carried in the config, so the worker builds that bed and the
+  // seabed is drawn from it; absent or anything else, today's (version B).
   it('runs the Canyon\'s old bed with `?canyonBed=old` (a dev switch), and the reef bed otherwise', () => {
     expect(canyonBedSwitch('?canyonBed=old')).toEqual({ canyonBed: 'old' });
     for (const search of ['', '?canyonBed', '?canyonBed=', '?canyonBed=reef', '?canyonBed=OLD']) expect(canyonBedSwitch(search), search).toEqual({});
@@ -101,6 +732,1206 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonWaves` dev switch (the owner, 2026-11-05: "an option like ?canyonwaves=true to allow me to use the previous
+  // waves"): 'true' or 'b', version B (the waves version C replaced); 'a' or 'old', version A; either spelling of the name;
+  // `?canyonBed` wins over it, it over `?canyonRamp`; an online room's config fixes the default.
+  it('brings back the Canyon\'s previous waves with `?canyonWaves=true` (a dev switch), and keeps the default otherwise', () => {
+    for (const search of ['?canyonWaves=true', '?canyonwaves=true', '?canyonWaves=TRUE', '?canyonWaves=b', '?canyonWaves=true&canyonRamp=half']) {
+      expect(canyonBedSwitch(search), search).toEqual({ canyonBed: 'b' });
+    }
+    for (const search of ['?canyonWaves=a', '?canyonwaves=old']) expect(canyonBedSwitch(search), search).toEqual({ canyonBed: 'old' });
+    expect(canyonBedSwitch('?canyonBed=old&canyonWaves=true')).toEqual({ canyonBed: 'old' });
+    for (const search of ['?canyonWaves', '?canyonWaves=', '?canyonWaves=false', '?canyonWaves=c']) expect(canyonBedSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonwaves=true' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBe('b');
+      expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonRamp=half` dev switch (canyon-c, 2026-11-04: the water-physics advisor's option (b), the owner's call):
+  // today's Canyon with its bank's edge ramp halved, as the 'half' layout, so the worker builds that bed and its own take-off
+  // and starts; `?canyonBed=b` or `=old` win over it; an online room's config fixes the default.
+  it('halves the Canyon bank\'s edge ramp with `?canyonRamp=half` (a dev switch), and keeps the default otherwise', () => {
+    expect(canyonBedSwitch('?canyonRamp=half')).toEqual({ canyonBed: 'half' });
+    expect(canyonBedSwitch('?canyonRamp=HALF')).toEqual({ canyonBed: 'half' });
+    expect(canyonBedSwitch('?canyonBed=b&canyonRamp=half')).toEqual({ canyonBed: 'b' });
+    expect(canyonBedSwitch('?canyonBed=half')).toEqual({});
+    for (const search of ['', '?canyonRamp', '?canyonRamp=', '?canyonRamp=full', '?canyonRamp=0.5']) expect(canyonBedSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonRamp=half' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonBed).toBe('half');
+      expect(surfZoneConfigFor(medium, 5, false, { canyonBed: 'reef' }).canyonBed).toBe('reef');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonStart=old` dev switch (2026-11-08): the Canyon's rider at its take-off, as before the start moved 10 m left.
+  it('starts the Canyon rider at its take-off with `?canyonStart=old` (a dev switch), and 10 m screen-left of it otherwise', () => {
+    expect(canyonStartSwitch('?canyonStart=old')).toEqual({ canyonStart: 'old' });
+    for (const search of ['', '?canyonStart', '?canyonStart=new']) expect(canyonStartSwitch(search), search).toEqual({});
+    expect(rideLineupAlong({ spot: 'canyon' })).toBe(-10);
+    expect(rideLineupAlong({ spot: 'canyon', canyonStart: 'old' })).toBe(0);
+    expect(rideLineupAlong({ spot: 'reef' })).toBe(0);
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?canyonStart=old' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonStart).toBe('old');
+      expect(surfZoneConfigFor(physicalSettingsFor('beach', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonStart).toBeUndefined();
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { canyonStart: undefined }).canyonStart).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonJoin=zone` dev switch (canyon-c, 2026-11-04): version C's bank passing its breaking age by its take-off zone
+  // (the branch's head at ca567450) in place of its bed, carried in the config to the worker at the Canyon only; online
+  // rooms run the default.
+  it('passes the Canyon bank\'s breaking age by its take-off zone with `?canyonJoin=zone` (a dev switch), and by its bed otherwise', () => {
+    expect(canyonJoinSwitch('?canyonJoin=zone')).toEqual({ canyonJoin: 'zone' });
+    expect(canyonJoinSwitch('?canyonJoin=ZONE')).toEqual({ canyonJoin: 'zone' });
+    for (const search of ['', '?canyonJoin', '?canyonJoin=', '?canyonJoin=bed', '?canyonJoin=0']) expect(canyonJoinSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?canyonJoin=zone' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonJoin).toBe('zone');
+      expect(surfZoneConfigFor(physicalSettingsFor('beach', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonJoin).toBeUndefined();
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { canyonJoin: undefined }).canyonJoin).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonBeachLook=off` dev switch (canyon-beach-look): the Canyon's beach peaks drawn as the solver breaks them,
+  // carried in the config to the worker at the Canyon only; online rooms run the default.
+  it('draws the Canyon beach peaks as the solver breaks them with `?canyonBeachLook=off` (a dev switch), and as the reef otherwise', () => {
+    expect(canyonBeachLookSwitch('?canyonBeachLook=off')).toEqual({ canyonBeachLook: false });
+    for (const search of ['', '?canyonBeachLook', '?canyonBeachLook=on', '?canyonBeachLook=0']) expect(canyonBeachLookSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?canyonBeachLook=off' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonBeachLook).toBe(false);
+      expect(surfZoneConfigFor(physicalSettingsFor('beach', conditions, { stage: 2, compute: 'cpu' }), 5, false).canyonBeachLook).toBeUndefined();
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { canyonBeachLook: undefined }).canyonBeachLook).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?stroke=old` dev switch (canyon-catch, 2026-10-29): every spot's paddler with hands broadside to water that
+  // outruns them, as before, carried in the config to the worker; anything else leaves the default (the feathering hand).
+  it('paddles with the stroke as before canyon-catch with `?stroke=old` (a dev switch), and today\'s otherwise', () => {
+    expect(strokeSwitch('?stroke=old')).toEqual({ stroke: 'old' });
+    expect(strokeSwitch('?stroke=OLD')).toEqual({ stroke: 'old' });
+    for (const search of ['', '?stroke', '?stroke=', '?stroke=feather', '?stroke=new']) expect(strokeSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?stroke=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).stroke, spot).toBe('old');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { stroke: undefined }).stroke).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).stroke).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?surfaceMotion=old` dev switch (popup-moving-face, 2026-10-29): every spot's bodies sample the sea's surface held
+  // still through their step, as before, carried in the config to the worker; anything else leaves the default (moving).
+  it('holds the sea\'s surface still through the bodies\' step with `?surfaceMotion=old` (a dev switch), and moves it otherwise', () => {
+    expect(surfaceMotionSwitch('?surfaceMotion=old')).toEqual({ surfaceMotion: 'old' });
+    expect(surfaceMotionSwitch('?surfaceMotion=OLD')).toEqual({ surfaceMotion: 'old' });
+    for (const search of ['', '?surfaceMotion', '?surfaceMotion=', '?surfaceMotion=new', '?stroke=old']) expect(surfaceMotionSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?surfaceMotion=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).surfaceMotion, spot).toBe('old');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { surfaceMotion: undefined }).surfaceMotion).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).surfaceMotion).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?duckDrawn=old` dev switch (duck-drawn, 2026-10-31): the page's own two-body duck-dive drawn as before; drawing
+  // only, so nothing goes to the sea's config.
+  it('draws the two-body duck-dive as before with `?duckDrawn=old` (a dev switch), and as the dive otherwise', () => {
+    expect(duckDrawnOld('?duckDrawn=old')).toBe(true);
+    expect(duckDrawnOld('?duckDrawn=OLD')).toBe(true);
+    for (const search of ['', '?duckDrawn', '?duckDrawn=', '?duckDrawn=new', '?duckBody=old']) expect(duckDrawnOld(search), search).toBe(false);
+  });
+
+  // The `?spraySheet=off` dev switch (spray-sheet, 2026-10-30): the boards' spray as drops at once, carried in the config
+  // to the worker; anything else leaves the default (the curtain that tears into them).
+  it('throws the boards\' spray as drops at once with `?spraySheet=off` (a dev switch), and as a curtain otherwise', () => {
+    expect(spraySheetSwitch('?spraySheet=off')).toEqual({ spraySheet: 'off' });
+    expect(spraySheetSwitch('?spraySheet=OFF')).toEqual({ spraySheet: 'off' });
+    for (const search of ['', '?spraySheet', '?spraySheet=', '?spraySheet=on', '?boardSpray=off']) expect(spraySheetSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?spraySheet=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).spraySheet, spot).toBe('off');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { spraySheet: undefined }).spraySheet).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).spraySheet).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?boardSpray=off` dev switch (board-spray, 2026-10-29): no spray off the boards, carried in the config to the
+  // worker; anything else leaves the default (the sheets off the rails and tail).
+  it('throws no spray off the boards with `?boardSpray=off` (a dev switch), and throws it otherwise', () => {
+    expect(boardSpraySwitch('?boardSpray=off')).toEqual({ boardSpray: 'off' });
+    expect(boardSpraySwitch('?boardSpray=OFF')).toEqual({ boardSpray: 'off' });
+    // `?boardSpray=old` (spray-rework, 2026-10-31): #171's spray, the worker's round drops and the clear curtain.
+    expect(boardSpraySwitch('?boardSpray=old')).toEqual({ boardSpray: 'old' });
+    expect(boardSpraySwitch('?boardSpray=OLD')).toEqual({ boardSpray: 'old' });
+    for (const search of ['', '?boardSpray', '?boardSpray=', '?boardSpray=on', '?froth=old']) expect(boardSpraySwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?boardSpray=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).boardSpray, spot).toBe('off');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { boardSpray: undefined }).boardSpray).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).boardSpray).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapRecentre=old` dev switch (snap-recentre, 2026-11-06): every spot's rider leaving the weight over the tail
+  // after Snap, as before; anything else, and an online room, leave the default (the weight centred again).
+  it('leaves the weight over the tail after Snap with `?snapRecentre=old` (a dev switch), and centres it otherwise', () => {
+    expect(snapRecentreSwitch('?snapRecentre=old')).toEqual({ snapRecentre: 'old' });
+    expect(snapRecentreSwitch('?snapRecentre=OLD')).toEqual({ snapRecentre: 'old' });
+    for (const search of ['', '?snapRecentre', '?snapRecentre=', '?snapRecentre=on', '?snap=off']) expect(snapRecentreSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapRecentre=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapRecentre, spot).toBe('old');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapRecentre: undefined }).snapRecentre).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapRecentre).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapUpturn=old` dev switch (snap-upturn, 2026-11-08): with `?snapPivot=lean`, every spot's rider leaning a Snap
+  // up the face as far as a top turn, as before; anything else, and an online room, leave the default (the steer's rail).
+  it('leans a Snap up the face as far as a top turn with `?snapUpturn=old` (a dev switch), and the steer\'s rail otherwise', () => {
+    expect(snapUpturnSwitch('?snapUpturn=old')).toEqual({ snapUpturn: 'old' });
+    expect(snapUpturnSwitch('?snapUpturn=OLD')).toEqual({ snapUpturn: 'old' });
+    for (const search of ['', '?snapUpturn', '?snapUpturn=', '?snapUpturn=on', '?snapPivot=lean']) expect(snapUpturnSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapUpturn=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapUpturn, spot).toBe('old');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapUpturn: undefined }).snapUpturn).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapUpturn).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapArms=old` dev switch (snap-carve, 2026-11-08): the page's drawing only, Snap's arms as before.
+  it('draws Snap\'s arms as before with `?snapArms=old` (a page drawing switch), and following the turn otherwise', () => {
+    expect(snapArmsSwitch('?snapArms=old')).toEqual({ snapArms: 'old' });
+    expect(snapArmsSwitch('?snapArms=OLD')).toEqual({ snapArms: 'old' });
+    for (const search of ['', '?snapArms', '?snapArms=', '?snapArms=new', '?snapDepth=deep']) expect(snapArmsSwitch(search), search).toEqual({});
+  });
+
+  // The `?snapDepth=deep` dev switch (snap-carve, 2026-11-08): opt-in, every spot's rider loading Snap to the tube tuck's
+  // depth; anything else, and an online room, leave the default (Compress's depth).
+  it('loads Snap to the tube tuck with `?snapDepth=deep` (an opt-in dev switch), and as deep as Compress otherwise', () => {
+    expect(snapDepthSwitch('?snapDepth=deep')).toEqual({ snapDepth: 'deep' });
+    expect(snapDepthSwitch('?snapDepth=DEEP')).toEqual({ snapDepth: 'deep' });
+    for (const search of ['', '?snapDepth', '?snapDepth=', '?snapDepth=old', '?snap=off']) expect(snapDepthSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapDepth=deep' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapDepth, spot).toBe('deep');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapDepth: undefined }).snapDepth).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapDepth).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  // The `?agile=on` dev switch (rider-agile, 2026-11-09): opt-in, every spot's rider with its two legs acting apart;
+  // anything else, and an online room, leave the default.
+  it('uses the agile legs with `?agile=on` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(agileSwitch('?agile=on')).toEqual({ agile: 'on' });
+    expect(agileSwitch('?agile=ON')).toEqual({ agile: 'on' });
+    for (const search of ['', '?agile', '?agile=', '?agile=off', '?snapStamp=on']) expect(agileSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?agile=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).agile, spot).toBe('on');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { agile: undefined }).agile).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).agile).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  // The `?legDrive=on` dev switch (leg-drive, 2026-11-10): opt-in, every spot's rider righting itself at a rail change by
+  // its legs; anything else, and an online room, leave the default.
+  it('uses the leg drive with `?legDrive=on` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(legDriveSwitch('?legDrive=on')).toEqual({ legDrive: 'on' });
+    expect(legDriveSwitch('?legDrive=ON')).toEqual({ legDrive: 'on' });
+    // `?legDrive=turn` (step 3.2t): 'on' and the compressed turn's lead-in too, in COMPRESS_PULL's place.
+    expect(legDriveSwitch('?legDrive=turn')).toEqual({ legDrive: 'turn' });
+    expect(legDriveSwitch('?legDrive=TURN')).toEqual({ legDrive: 'turn' });
+    for (const search of ['', '?legDrive', '?legDrive=', '?legDrive=off', '?legDrive=yes', '?agile=on']) expect(legDriveSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?legDrive=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).legDrive, spot).toBe('on');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { legDrive: undefined }).legDrive).toBeUndefined();
+      vi.stubGlobal('location', { search: '?legDrive=turn' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).legDrive, spot).toBe('turn');
+      }
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).legDrive).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?hull=rail` dev switch (step 3.2u): opt-in, the board's real rail band with the buried rail's suction, in
+  // place of the flat sheet every patch's single normal came from; `?railSuction=off` keeps the section and drops the
+  // grip, `?compressPull=off` deletes the old rider's unpaired compressed-turn pull. Anything else leaves the default.
+  it('shapes the hull with `?hull=rail` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(hullSwitch('?hull=rail')).toEqual({ hull: 'rail' });
+    expect(hullSwitch('?hull=RAIL')).toEqual({ hull: 'rail' });
+    expect(hullSwitch('?hull=rail&railSuction=off')).toEqual({ hull: 'rail', railSuction: 'off' });
+    expect(hullSwitch('?compressPull=off')).toEqual({ compressPull: 'off' });
+    expect(hullSwitch('?hull=rail&railSuction=off&compressPull=off')).toEqual({ hull: 'rail', railSuction: 'off', compressPull: 'off' });
+    for (const search of ['', '?hull', '?hull=', '?hull=flat', '?hull=on', '?railSuction=on', '?compressPull=on', '?legDrive=on']) expect(hullSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?hull=rail&compressPull=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        const config = surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false);
+        expect(config.hull, spot).toBe('rail');
+        expect(config.compressPull, spot).toBe('off');
+        expect(config.railSuction, spot).toBeUndefined();
+      }
+      vi.stubGlobal('location', { search: '' });
+      const plain = surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false);
+      expect(plain.hull).toBeUndefined();
+      expect(plain.railSuction).toBeUndefined();
+      expect(plain.compressPull).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?carveFlex=on` dev switch (carve-flex, 2026-11-10): opt-in, every spot's standing rider flexing its legs with a
+  // stick-only carve's load; anything else, and an online room, leave the default.
+  it('flexes the legs in a carve with `?carveFlex=on` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(carveFlexSwitch('?carveFlex=on')).toEqual({ carveFlex: 'on' });
+    expect(carveFlexSwitch('?carveFlex=ON')).toEqual({ carveFlex: 'on' });
+    for (const search of ['', '?carveFlex', '?carveFlex=', '?carveFlex=off', '?legDrive=on']) expect(carveFlexSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?carveFlex=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).carveFlex, spot).toBe('on');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { carveFlex: undefined }).carveFlex).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).carveFlex).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapLegs=drive` dev switch (snap-legs, 2026-11-10): opt-in, every spot's rider under Snap extending the legs as
+  // the board comes round; anything else, and an online room, leave the default.
+  it('drives the legs through a Snap with `?snapLegs=drive` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(snapLegsSwitch('?snapLegs=drive')).toEqual({ snapLegs: 'drive' });
+    expect(snapLegsSwitch('?snapLegs=DRIVE')).toEqual({ snapLegs: 'drive' });
+    for (const search of ['', '?snapLegs', '?snapLegs=', '?snapLegs=on', '?snapLegs=off', '?carveFlex=on']) expect(snapLegsSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapLegs=drive' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapLegs, spot).toBe('drive');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapLegs: undefined }).snapLegs).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapLegs).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapCross=on` dev switch (snap-cross, 2026-11-10): opt-in, every spot's rider under Snap weighting the tail only
+  // once the body has come over the board; anything else, and an online room, leave the default.
+  it('waits for the body to cross before Snap weights the tail with `?snapCross=on` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(snapCrossSwitch('?snapCross=on')).toEqual({ snapCross: 'on' });
+    expect(snapCrossSwitch('?snapCross=ON')).toEqual({ snapCross: 'on' });
+    for (const search of ['', '?snapCross', '?snapCross=', '?snapCross=off', '?snapCross=drive', '?snapLegs=drive']) expect(snapCrossSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapCross=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapCross, spot).toBe('on');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapCross: undefined }).snapCross).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapCross).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?rider=new` dev switch (the new surfer, docs/research/new-rider; step 3.1): opt-in, every spot's rider the new surfer;
+  // anything else, and an online room, the old rider. The room's pin is read from main.ts: removing it fails here.
+  it('rides the new surfer with `?rider=new` (an opt-in dev switch), and the old rider otherwise', () => {
+    expect(riderSwitch('?rider=new')).toEqual({ rider: 'new' });
+    expect(riderSwitch('?rider=NEW')).toEqual({ rider: 'new' });
+    for (const search of ['', '?rider', '?rider=', '?rider=old', '?rider=on', '?legPower=cap']) expect(riderSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?rider=new' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).rider, spot).toBe('new');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\brider: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { rider: undefined }).rider).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).rider).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?feltFrame=deck` dev switch (step 3.3c, the wave-shape advisor's second ruling of 2026-11-15): opt-in, every spot's
+  // standing rider keeps the felt vertical's 0.1 s low pass on the DECK's own axes, as a body-fixed sensor does, instead of in
+  // the world; anything else, and an online room, the world frame as before. The room's pin is read from main.ts: removing it
+  // fails here.
+  it('holds the felt vertical on the deck\'s axes with `?feltFrame=deck` (an opt-in dev switch), and in the world otherwise', () => {
+    expect(feltFrameSwitch('?feltFrame=deck')).toEqual({ feltFrame: 'deck' });
+    expect(feltFrameSwitch('?feltFrame=DECK')).toEqual({ feltFrame: 'deck' });
+    for (const search of ['', '?feltFrame', '?feltFrame=', '?feltFrame=world', '?feltFrame=on', '?rider=new']) {
+      expect(feltFrameSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?feltFrame=deck' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).feltFrame, spot).toBe('deck');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bfeltFrame: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { feltFrame: undefined }).feltFrame).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).feltFrame).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?kneeRoom=achieved` dev switch (step 3.3f): opt-in, the new surfer's balance reads the knees' travel left at the
+  // depth its leg has reached rather than at the one commanded, so its own knee drop stops spending the whole of
+  // Compress's travel on a standing stance; anything else, and an online room, the commanded depth as before.
+  it('reads the knees\' travel where the leg is with `?kneeRoom=achieved` (an opt-in dev switch), and at the commanded depth otherwise', () => {
+    expect(kneeRoomSwitch('?kneeRoom=achieved')).toEqual({ kneeRoom: 'achieved' });
+    expect(kneeRoomSwitch('?kneeRoom=ACHIEVED')).toEqual({ kneeRoom: 'achieved' });
+    for (const search of ['', '?kneeRoom', '?kneeRoom=', '?kneeRoom=held', '?kneeRoom=on', '?buoyFrame=hull']) {
+      expect(kneeRoomSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?kneeRoom=achieved' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).kneeRoom, spot).toBe('achieved');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bkneeRoom: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { kneeRoom: undefined }).kneeRoom).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).kneeRoom).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?stanceReach=keep` dev switch (step 3.3h, the owner's ruling of 2026-11-16): opt-in, a deep crouch keeps the
+  // riding stance's hip range and free arms, so Compress keeps its catching reach as well as its lower centre of mass;
+  // anything else, and an online room, the stance's own room as before.
+  it('keeps a deep crouch\'s reach with `?stanceReach=keep` (an opt-in dev switch), and uses the stance\'s own room otherwise', () => {
+    expect(stanceReachSwitch('?stanceReach=keep')).toEqual({ stanceReach: 'keep' });
+    expect(stanceReachSwitch('?stanceReach=KEEP')).toEqual({ stanceReach: 'keep' });
+    for (const search of ['', '?stanceReach', '?stanceReach=', '?stanceReach=on', '?stanceReach=cut', '?kneeRoom=achieved']) {
+      expect(stanceReachSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?stanceReach=keep' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceReach, spot).toBe('keep');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bstanceReach: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { stanceReach: undefined }).stanceReach).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceReach).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?ankleLimit=feet` dev switch (step 3.3i): opt-in, the ankle's torque is bounded by the moment the soles can
+  // transmit (`legLoad` × the feet's half-width across, the 93 N·m `AttachedRider`'s own note derives); anything else,
+  // and an online room, the ankle unbounded as it always was.
+  it('bounds the ankle\'s torque with `?ankleLimit=feet` (an opt-in dev switch), and leaves it unbounded otherwise', () => {
+    expect(ankleLimitSwitch('?ankleLimit=feet')).toEqual({ ankleLimit: 'feet' });
+    expect(ankleLimitSwitch('?ankleLimit=FEET')).toEqual({ ankleLimit: 'feet' });
+    for (const search of ['', '?ankleLimit', '?ankleLimit=', '?ankleLimit=on', '?ankleLimit=sole', '?stanceReach=keep']) {
+      expect(ankleLimitSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?ankleLimit=feet' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).ankleLimit, spot).toBe('feet');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bankleLimit: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { ankleLimit: undefined }).ankleLimit).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).ankleLimit).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?ankleRange=load|wide` dev switch (step 3.3k): opt-in, the bound on the rest the balance may command at the
+  // ankle — read off the live sole (`load`) or doubled (`wide`); anything else, and an online room, the shipped
+  // ±14.32° (`ANKLE_REST_RANGE`, which step 3.3j measured at its stop at the fall in 62 of 72 runs).
+  it('moves the commanded ankle rest\'s bound with `?ankleRange=load|wide` (an opt-in dev switch), and ships it otherwise', () => {
+    expect(ankleRangeSwitch('?ankleRange=load')).toEqual({ ankleRange: 'load' });
+    expect(ankleRangeSwitch('?ankleRange=WIDE')).toEqual({ ankleRange: 'wide' });
+    for (const search of ['', '?ankleRange', '?ankleRange=', '?ankleRange=on', '?ankleRange=feet', '?ankleLimit=feet']) {
+      expect(ankleRangeSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?ankleRange=load' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).ankleRange, spot).toBe('load');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bankleRange: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { ankleRange: undefined }).ankleRange).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).ankleRange).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?bankClamp=off` dev switch (step 3.4i): opt-in, the 70° clamp on the MEASURED bank lifted at
+  // `AttachedRider.frame`'s three sites — the reading the ankle's own spring and the body's frame are built on, and
+  // which step 3.4h found at 70.00 exactly in 21 of 24 runs; anything else, and an online room, the clamp as it ships.
+  it('lifts the measured bank\'s 70° clamp with `?bankClamp=off` (an opt-in dev switch), and clamps it otherwise', () => {
+    expect(bankClampSwitch('?bankClamp=off')).toEqual({ bankClamp: 'off' });
+    expect(bankClampSwitch('?bankClamp=OFF')).toEqual({ bankClamp: 'off' });
+    for (const search of ['', '?bankClamp', '?bankClamp=', '?bankClamp=on', '?bankClamp=lift', '?ankleRange=load']) {
+      expect(bankClampSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?bankClamp=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).bankClamp, spot).toBe('off');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bbankClamp: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { bankClamp: undefined }).bankClamp).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).bankClamp).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?bodyBank=hip` dev switch (step 3.5i): opt-in, `project`'s free centre of pressure gains the trunk rotor's
+  // own angular momentum rate, the third term of the centre-of-pressure identity. `tip` goes from 90 of 90 Canyon
+  // riders to 66 of 90; anything else, and an online room, the contact's bound exactly as it ships.
+  it('counts the trunk rotor\'s moment in the contact\'s bound with `?bodyBank=hip` (an opt-in dev switch), and leaves it out otherwise', () => {
+    expect(bodyBankSwitch('?bodyBank=hip')).toEqual({ bodyBank: 'hip' });
+    expect(bodyBankSwitch('?bodyBank=HIP')).toEqual({ bodyBank: 'hip' });
+    expect(bodyBankSwitch('?bodyBank=%20hip%20')).toEqual({ bodyBank: 'hip' });
+    for (const search of ['', '?bodyBank', '?bodyBank=', '?bodyBank=on', '?bodyBank=lean', '?bankClamp=off']) {
+      expect(bodyBankSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?bodyBank=hip' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).bodyBank, spot).toBe('hip');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bbodyBank: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { bodyBank: undefined }).bodyBank).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).bodyBank).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?askCap=1.5|2|4|4.5|9` dev switch (step 3.5a): opt-in, the minimum carved radius the rider's COMMANDED lean is
+  // bounded by, m, so the bound is atan(v²/(g R_min)) at every speed in place of the shipped 4.5 m with no ask at all
+  // off the plane; anything else, and an online room, the cap as it ships.
+  it('bounds the commanded lean on `?askCap=1.5|2|4|4.5|9`\'s own minimum radius (an opt-in dev switch), and on the shipped 4.5 m turn otherwise', () => {
+    expect(askCapSwitch('?askCap=1.5')).toEqual({ askCap: '1.5' });
+    expect(askCapSwitch('?askCap=2')).toEqual({ askCap: '2' });
+    expect(askCapSwitch('?askCap=4')).toEqual({ askCap: '4' });
+    expect(askCapSwitch('?askCap=4.5')).toEqual({ askCap: '4.5' });
+    expect(askCapSwitch('?askCap=9')).toEqual({ askCap: '9' });
+    // `Number(null) === 0` and `Number('')  === 0`, so every value is matched as a string and none is parsed: a bare
+    // switch, a blank, a re-spelling of the same number and anything outside the four are all the shipped cap.
+    for (const search of ['', '?askCap', '?askCap=', '?askCap=on', '?askCap=2.0', '?askCap=1.50', '?askCap=0',
+      '?askCap=2m', '?askCap=3', '?askCap=20', '?askCap=-2', '?askCap=9.0', '?bankClamp=off']) {
+      expect(askCapSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?askCap=2' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).askCap, spot).toBe('2');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\baskCap: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { askCap: undefined }).askCap).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).askCap).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?stanceDeep` dev switch (step 3.5b; **shipped by default since step 3.5c**, the owner's ruling D of
+  // 2026-11-17 "keep the row"): the stance ladder's fourth rung — the tube tuck's 0.45 m — is read by the balance's
+  // plant and by its gain schedule, instead of every leg past Compress's 0.30 m being designed and coupled as
+  // Compress. `off` is the old three-row plant, kept so a ride can be priced against this track's published history;
+  // `on` says the shipped behaviour out loud, so step 3.5b's own addresses keep working. An online room is pinned to
+  // the ship default, which is now the fourth rung.
+  it('carries `?stanceDeep=off` and `=on` (the row ships; `off` is the old 0.30 m clamp), and ignores anything else', () => {
+    expect(stanceDeepSwitch('?stanceDeep=off')).toEqual({ stanceDeep: 'off' });
+    expect(stanceDeepSwitch('?stanceDeep=OFF')).toEqual({ stanceDeep: 'off' });
+    expect(stanceDeepSwitch('?stanceDeep=on')).toEqual({ stanceDeep: 'on' });
+    expect(stanceDeepSwitch('?stanceDeep=ON')).toEqual({ stanceDeep: 'on' });
+    for (const search of ['', '?stanceDeep', '?stanceDeep=', '?stanceDeep=deep', '?stanceDeep=0', '?stanceReach=keep']) {
+      expect(stanceDeepSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      for (const [search, want] of [['?stanceDeep=off', 'off'], ['?stanceDeep=on', 'on']] as const) {
+        vi.stubGlobal('location', { search });
+        for (const spot of ['point', 'pool', 'canyon'] as const) {
+          expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceDeep, `${spot} ${search}`).toBe(want);
+        }
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      // The pin is still `undefined`, and `undefined` is now the fourth rung rather than the 0.30 m clamp.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bstanceDeep: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { stanceDeep: undefined }).stanceDeep).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceDeep).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?deepen=on` dev switch (step 3.5b, the owner's ruling C): opt-in, full manual crouch reaches the tube tuck's
+  // 0.45 m anywhere and Compress does not fade it away, so the crouch key deepens whatever stance is held — on the
+  // owner's input only, with no clock and no stamina; anything else, and an online room, the tuck under a curl only.
+  it('deepens the held stance to the tuck with `?deepen=on` (an opt-in dev switch), and keeps the tube gate otherwise', () => {
+    expect(deepenSwitch('?deepen=on')).toEqual({ deepen: 'on' });
+    expect(deepenSwitch('?deepen=ON')).toEqual({ deepen: 'on' });
+    for (const search of ['', '?deepen', '?deepen=', '?deepen=off', '?deepen=dip', '?snapDepth=deep']) {
+      expect(deepenSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?deepen=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).deepen, spot).toBe('on');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bdeepen: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { deepen: undefined }).deepen).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).deepen).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?armCarry=on|rest` dev switch (step 3.5g; `engine-target.md` rows 4, 5 and 15, on the owner's "geometry rows
+  // first" of 2026-11-18): opt-in, the arm carriage channel — the drawn standing hands get a HEIGHT, a SPREAD and a
+  // LEFT/RIGHT of their own, answering the player's own stick and NEVER leg depth (V7 found four carriages inside the
+  // Tall band with the narrowest and lowest arms at its deepest leg position, so both depth links are refuted).
+  // `rest` is the rest carriage alone. Drawing only: no part mass moves and no force is added. Anything else, and an
+  // online room, the shipped one-scalar spread.
+  it('carries `?armCarry=on` and `=rest` (an opt-in dev switch), and ignores anything else', () => {
+    expect(armCarrySwitch('?armCarry=on')).toEqual({ armCarry: 'on' });
+    expect(armCarrySwitch('?armCarry=ON')).toEqual({ armCarry: 'on' });
+    expect(armCarrySwitch('?armCarry=rest')).toEqual({ armCarry: 'rest' });
+    expect(armCarrySwitch('?armCarry=REST')).toEqual({ armCarry: 'rest' });
+    for (const search of ['', '?armCarry', '?armCarry=', '?armCarry=off', '?armCarry=over', '?armCarry=1', '?snapArms=old']) {
+      expect(armCarrySwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      for (const [search, want] of [['?armCarry=on', 'on'], ['?armCarry=rest', 'rest']] as const) {
+        vi.stubGlobal('location', { search });
+        for (const spot of ['point', 'pool', 'canyon'] as const) {
+          expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).armCarry, `${spot} ${search}`).toBe(want);
+        }
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and removing that pin fails here.
+      // The drawn hands ARE on the wire (`RIDER_SNAPSHOT.points`), so an unpinned switch would reach other players.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\barmCarry: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { armCarry: undefined }).armCarry).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).armCarry).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?buoyFrame=hull` dev switch (step 3.3d, the wave-shape advisor's item 2): opt-in, every spot's board resolves the
+  // water's hydrostatic support along the HULL's own normal where the deck is dry and the patch planes, instead of along the
+  // water's surface normal; anything else, and an online room, the surface normal as before. It is a hull law and it changes
+  // every spot's drive, so the room's pin matters: it is read from main.ts and removing it fails here.
+  it('points the hydrostatic support along the hull with `?buoyFrame=hull` (an opt-in dev switch), and at the water\'s surface otherwise', () => {
+    expect(buoyFrameSwitch('?buoyFrame=hull')).toEqual({ buoyFrame: 'hull' });
+    expect(buoyFrameSwitch('?buoyFrame=HULL')).toEqual({ buoyFrame: 'hull' });
+    for (const search of ['', '?buoyFrame', '?buoyFrame=', '?buoyFrame=surface', '?buoyFrame=on', '?feltFrame=deck']) {
+      expect(buoyFrameSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?buoyFrame=hull' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).buoyFrame, spot).toBe('hull');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bbuoyFrame: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { buoyFrame: undefined }).buoyFrame).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).buoyFrame).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?legPower=cap` dev switch (ruling 27's A-lite, 2026-11-12): opt-in, every spot's standing rider's contact kept from
+  // making energy on steep water; anything else, and an online room, leave the default.
+  it('caps the legs\' power with `?legPower=cap` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(legPowerSwitch('?legPower=cap')).toEqual({ legPower: 'cap' });
+    expect(legPowerSwitch('?legPower=CAP')).toEqual({ legPower: 'cap' });
+    for (const search of ['', '?legPower', '?legPower=', '?legPower=off', '?legPower=on', '?legDrive=on']) expect(legPowerSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?legPower=cap' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).legPower, spot).toBe('cap');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\blegPower: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { legPower: undefined }).legPower).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).legPower).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?wave=library` dev switch (C2 step 3, 2026-11-13): opt-in, the 2 m pool's breaking wave from the Basilisk library;
+  // read on the pool's Barrel alone, and an online room leaves the default.
+  it('takes the pool\'s wave from the library with `?wave=library` (an opt-in dev switch), and as before otherwise', () => {
+    expect(waveSwitch('?wave=library')).toEqual({ wave: 'library' });
+    expect(waveSwitch('?wave=LIBRARY ')).toEqual({ wave: 'library' });
+    for (const search of ['', '?wave', '?wave=', '?wave=sea', '?waves=library']) expect(waveSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?poolSize=ref&wave=library' });
+      expect(surfZoneConfigFor(physicalSettingsFor('pool', { ...conditions, waves: 'barrel' }, { stage: 2, compute: 'cpu' }), 5, false).wave).toBe('library');
+      for (const spot of ['point', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).wave, spot).toBeUndefined();
+      }
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bwave: undefined\b/);
+      vi.stubGlobal('location', { search: '?poolSize=ref' });
+      expect(surfZoneConfigFor(physicalSettingsFor('pool', { ...conditions, waves: 'barrel' }, { stage: 2, compute: 'cpu' }), 5, false).wave).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?waterHeel=tilt|predict` dev switch (step 3.3p): opt-in, the new surfer's balance reads its internal model's
+  // three HEEL derivatives at the board's heel against the WATER and takes the face's own tilt as a measured input,
+  // instead of reading them at the board's roll from the world's level. Measured and NOT a fix (Part 39): it doubles the
+  // unsteered ride and halves the owner's own low-speed cell, so the room's pin matters and is read from main.ts here.
+  it('reads the water\'s derivatives at the heel against the water with `?waterHeel=tilt|predict` (an opt-in dev switch), and at the world\'s level otherwise', () => {
+    expect(waterHeelSwitch('?waterHeel=tilt')).toEqual({ waterHeel: 'tilt' });
+    expect(waterHeelSwitch('?waterHeel=TILT')).toEqual({ waterHeel: 'tilt' });
+    expect(waterHeelSwitch('?waterHeel=predict')).toEqual({ waterHeel: 'predict' });
+    // Step 3.4e's fourth cell of the 2x2: the reference's own steady turn alone.
+    expect(waterHeelSwitch('?waterHeel=ref')).toEqual({ waterHeel: 'ref' });
+    expect(waterHeelSwitch('?waterHeel=REF')).toEqual({ waterHeel: 'ref' });
+    for (const search of ['', '?waterHeel', '?waterHeel=', '?waterHeel=level', '?waterHeel=on', '?waterHeel=reference', '?buoyFrame=hull']) {
+      expect(waterHeelSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?waterHeel=predict' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).waterHeel, spot).toBe('predict');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bwaterHeel: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { waterHeel: undefined }).waterHeel).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).waterHeel).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?mountAgree=deck|felt|both` dev switch (step 3.4e): opt-in, the moment the new surfer stands up made to agree
+  // with its own stated argument — the body square to the deck at ANY entry speed (the shipped mount flips the rule at
+  // PLANING_SPEED, nine runs of eighteen each way on the owner's own cell), and/or the felt vertical's low pass seeded
+  // at the face's own normal (the shipped seed is the WORLD's vertical, which reaches the face's normal at 0.250 s).
+  it('makes the mount agree with its own argument with `?mountAgree=deck|felt|both` (an opt-in dev switch), and mounts as it ships otherwise', () => {
+    expect(mountAgreeSwitch('?mountAgree=deck')).toEqual({ mountAgree: 'deck' });
+    expect(mountAgreeSwitch('?mountAgree=DECK')).toEqual({ mountAgree: 'deck' });
+    expect(mountAgreeSwitch('?mountAgree=felt')).toEqual({ mountAgree: 'felt' });
+    expect(mountAgreeSwitch('?mountAgree=both')).toEqual({ mountAgree: 'both' });
+    for (const search of ['', '?mountAgree', '?mountAgree=', '?mountAgree=on', '?mountAgree=level', '?waterHeel=tilt']) {
+      expect(mountAgreeSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?mountAgree=both' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).mountAgree, spot).toBe('both');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bmountAgree: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { mountAgree: undefined }).mountAgree).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).mountAgree).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?riderBody=two` dev switch (step 3.4a): opt-in, the new surfer's balance runs its internal plant with the
+  // rider's body as a segment of its own — an inertia in the frontal plane about its own centre of mass — instead of a
+  // point mass on a massless leg whose reaction is the substituted `τ / h − m g θ`. `control` is the same assembly at
+  // zero inertia, which reproduces the shipped plant; `symmetric` is the coupling made consistent on its own.
+  it('runs the balance\'s plant on a two-body rider with `?riderBody=two|control|symmetric` (an opt-in dev switch), and on the point mass otherwise', () => {
+    expect(riderBodySwitch('?riderBody=two')).toEqual({ riderBody: 'two' });
+    expect(riderBodySwitch('?riderBody=TWO')).toEqual({ riderBody: 'two' });
+    expect(riderBodySwitch('?riderBody=control')).toEqual({ riderBody: 'control' });
+    expect(riderBodySwitch('?riderBody=symmetric')).toEqual({ riderBody: 'symmetric' });
+    for (const search of ['', '?riderBody', '?riderBody=', '?riderBody=point', '?riderBody=on', '?waterHeel=tilt']) {
+      expect(riderBodySwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?riderBody=two' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).riderBody, spot).toBe('two');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\briderBody: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { riderBody: undefined }).riderBody).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).riderBody).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?riderCost=point|fixed|plant` dev switch (step 3.4b): opt-in, the balance designs its gains against two costs
+  // the shipped design does not have — the bank's cost as each stance's own limit (`feetReach`, 3.2n) and the capture
+  // point's rank-one cost (`captureScale`, 3.2j) — with the capture point's own lean divergence rate ω₀ the point
+  // mass's with its feet held (`point`, which is 3.2j's and 3.2n's own design and the control), the body's own held
+  // (`fixed`), or the plant's own solved rate (`plant`).
+  it('designs the balance against its two optional costs with `?riderCost=point|fixed|plant` (an opt-in dev switch), and against neither otherwise', () => {
+    expect(riderCostSwitch('?riderCost=point')).toEqual({ riderCost: 'point' });
+    expect(riderCostSwitch('?riderCost=PLANT')).toEqual({ riderCost: 'plant' });
+    expect(riderCostSwitch('?riderCost=fixed')).toEqual({ riderCost: 'fixed' });
+    for (const search of ['', '?riderCost', '?riderCost=', '?riderCost=on', '?riderCost=two', '?riderCost=solved', '?riderBody=two']) {
+      expect(riderCostSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?riderCost=plant' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).riderCost, spot).toBe('plant');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\briderCost: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { riderCost: undefined }).riderCost).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).riderCost).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?plantFloor=4.5|5|6` dev switch (step 3.4m): opt-in, the lowest MEASURED row of the balance's own water table
+  // its internal model may be built on, so a design below 4 m/s stops inheriting row '4' — the table's own
+  // sign-turnover row (yaw moment per radian of slip +143.8 at 4 against +41.3, −28.6 and −161.0 at 4.5, 5 and 6).
+  // '4.5' is the row the game's own board picks out down there by its draft. Anything else, the shipped floor of 4.
+  it('builds the balance\'s plant off a higher measured row with `?plantFloor=4.5|5|6` (an opt-in dev switch), and off the shipped 4 m/s floor otherwise', () => {
+    expect(plantFloorSwitch('?plantFloor=4.5')).toEqual({ plantFloor: '4.5' });
+    expect(plantFloorSwitch('?plantFloor=5')).toEqual({ plantFloor: '5' });
+    expect(plantFloorSwitch('?plantFloor=6')).toEqual({ plantFloor: '6' });
+    // Not a free number: only the three rows the sensitivity measured, and nothing below 4, where no honest row exists.
+    for (const search of ['', '?plantFloor', '?plantFloor=', '?plantFloor=4', '?plantFloor=1.3', '?plantFloor=on',
+      '?plantFloor=4.50', '?plantFloor=5.5', '?plantFloor=7', '?plantFloor=0', '?riderBody=two']) {
+      expect(plantFloorSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?plantFloor=4.5' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).plantFloor, spot).toBe('4.5');
+      }
+      // An online room pins it to the default: main.ts's room overrides name it, and they win over the address.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bplantFloor: undefined\b/);
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { plantFloor: undefined }).plantFloor).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).plantFloor).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?deckHollow=on` dev switch (deck-hollow, 2026-11-10): opt-in, every spot's banked planing board keeping its deck
+  // and the rider's legs dry in the open hollow; anything else, and an online room, leave the default.
+  it('keeps the hollow over a banked deck with `?deckHollow=on` (an opt-in dev switch), and rides as before otherwise', () => {
+    expect(deckHollowSwitch('?deckHollow=on')).toEqual({ deckHollow: 'on' });
+    expect(deckHollowSwitch('?deckHollow=ON')).toEqual({ deckHollow: 'on' });
+    for (const search of ['', '?deckHollow', '?deckHollow=', '?deckHollow=off', '?agile=on']) expect(deckHollowSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?deckHollow=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).deckHollow, spot).toBe('on');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { deckHollow: undefined }).deckHollow).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).deckHollow).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  // The `?snapStamp=on` dev switch (snap-stamp, 2026-11-08): opt-in, every spot's rider stamping on a full steer under
+  // Snap; anything else, and an online room, leave the default (Snap's carve).
+  it('stamps on a full steer under Snap with `?snapStamp=on` (an opt-in dev switch), and carves as before otherwise', () => {
+    expect(snapStampSwitch('?snapStamp=on')).toEqual({ snapStamp: 'on' });
+    expect(snapStampSwitch('?snapStamp=ON')).toEqual({ snapStamp: 'on' });
+    for (const search of ['', '?snapStamp', '?snapStamp=', '?snapStamp=off', '?snap=off']) expect(snapStampSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapStamp=on' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapStamp, spot).toBe('on');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapStamp: undefined }).snapStamp).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapStamp).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapPivot=lean` dev switch (snap-lean, 2026-11-05): opt-in, every spot's rider leaning Snap for its own turn,
+  // carried in the config to the worker; anything else, and an online room, leave the default (the steer's 50°).
+  it('leans Snap for its own turn with `?snapPivot=lean` (an opt-in dev switch), and as the steer asks otherwise', () => {
+    expect(snapPivotSwitch('?snapPivot=lean')).toEqual({ snapPivot: 'lean' });
+    expect(snapPivotSwitch('?snapPivot=LEAN')).toEqual({ snapPivot: 'lean' });
+    for (const search of ['', '?snapPivot', '?snapPivot=', '?snapPivot=old', '?snapPivot=on', '?snapQuick=old']) expect(snapPivotSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapPivot=lean' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapPivot, spot).toBe('lean');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapPivot: undefined }).snapPivot).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapPivot).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapQuick=old` dev switch (snap-quick, 2026-11-05): every spot's rider setting Snap up at the calm pace, as
+  // before, carried in the config to the worker; anything else, and an online room, leave the default (full effort).
+  it('sets Snap up at the calm pace with `?snapQuick=old` (a dev switch), and at full effort otherwise', () => {
+    expect(snapQuickSwitch('?snapQuick=old')).toEqual({ snapQuick: 'old' });
+    expect(snapQuickSwitch('?snapQuick=OLD')).toEqual({ snapQuick: 'old' });
+    for (const search of ['', '?snapQuick', '?snapQuick=', '?snapQuick=new', '?snap=off']) expect(snapQuickSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapQuick=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapQuick, spot).toBe('old');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapQuick: undefined }).snapQuick).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapQuick).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snapFan=old` dev switch (snap-fan, 2026-11-05): every spot's boards throwing as before (a steep jet's exit),
+  // carried in the config to the worker; anything else, and an online room, leave the default. (Other players' spin, on
+  // the page, reads the switch itself: `RemoteSpray`.)
+  it('throws the boards\' spray as before snap-fan with `?snapFan=old` (a dev switch), and the default otherwise', () => {
+    expect(snapFanSwitch('?snapFan=old')).toEqual({ snapFan: 'old' });
+    expect(snapFanSwitch('?snapFan=OLD')).toEqual({ snapFan: 'old' });
+    for (const search of ['', '?snapFan', '?snapFan=', '?snapFan=new', '?snapQuick=old']) expect(snapFanSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snapFan=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snapFan, spot).toBe('old');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snapFan: undefined }).snapFan).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snapFan).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?extension=old` dev switch (compress-exit, 2026-10-29): every spot's rider letting Compress go as before,
+  // carried in the config to the worker; anything else leaves the default (the legs no faster than the spring's catch).
+  it('extends the legs at their full pace letting Compress go with `?extension=old` (a dev switch), and caught otherwise', () => {
+    expect(extensionSwitch('?extension=old')).toEqual({ extension: 'old' });
+    expect(extensionSwitch('?extension=OLD')).toEqual({ extension: 'old' });
+    for (const search of ['', '?extension', '?extension=', '?extension=new', '?froth=old']) expect(extensionSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?extension=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).extension, spot).toBe('old');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { extension: undefined }).extension).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).extension).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?snap=off` dev switch (the snap stance, 2026-11-03): every spot's rider ignores Snap's input, carried in the
+  // config to the worker; an online room's config fixes the default.
+  it('ignores Snap with `?snap=off` (a dev switch), and keeps it otherwise', () => {
+    expect(snapSwitch('?snap=off')).toEqual({ snap: 'off' });
+    expect(snapSwitch('?snap=OFF')).toEqual({ snap: 'off' });
+    for (const search of ['', '?snap', '?snap=', '?snap=on', '?extension=old']) expect(snapSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?snap=off' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).snap, spot).toBe('off');
+      }
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { snap: undefined }).snap).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).snap).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?froth=old` dev switch (bottom-stop, 2026-10-29): a roller's froth on the boards as before, carried in the
+  // config to the worker; anything else leaves the default (only where the lens reaches, at most its grip).
+  it('drags boards with a roller\'s froth as before bottom-stop with `?froth=old` (a dev switch), and today\'s otherwise', () => {
+    expect(frothSwitch('?froth=old')).toEqual({ froth: 'old' });
+    expect(frothSwitch('?froth=OLD')).toEqual({ froth: 'old' });
+    for (const search of ['', '?froth', '?froth=', '?froth=new', '?swim=old']) expect(frothSwitch(search), search).toEqual({});
+    const conditions = { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?froth=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).froth, spot).toBe('old');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { froth: undefined }).froth).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).froth).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?swim=old` dev switch (swim-back, 2026-10-29): every spot's fallen surfer back on the board as before, carried
+  // in the config to the worker; anything else leaves the default (the reel to the hand, the climb from the water).
+  it('gets back on the board as before swim-back with `?swim=old` (a dev switch), and today\'s otherwise', () => {
+    expect(swimSwitch('?swim=old')).toEqual({ swim: 'old' });
+    expect(swimSwitch('?swim=OLD')).toEqual({ swim: 'old' });
+    for (const search of ['', '?swim', '?swim=', '?swim=new', '?stroke=old']) expect(swimSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?swim=old' });
+      for (const spot of ['point', 'pool', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).swim, spot).toBe('old');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { swim: undefined }).swim).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).swim).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?onset=old` dev switch (point-onset, step 3b of the all-spots survey): every spot's onset as before, carried in
+  // the config to the worker at every spot; anything else leaves the default.
+  it('runs every spot\'s onset as before step 3b with `?onset=old` (a dev switch), and today\'s otherwise', () => {
+    expect(onsetSwitch('?onset=old')).toEqual({ onsetRule: 'old' });
+    expect(onsetSwitch('?onset=OLD')).toEqual({ onsetRule: 'old' });
+    for (const search of ['', '?onset', '?onset=', '?onset=new', '?onset=0.45']) expect(onsetSwitch(search), search).toEqual({});
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?onset=old' });
+      for (const spot of ['point', 'beach', 'canyon'] as const) {
+        expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).onsetRule, spot).toBe('old');
+      }
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(physicalSettingsFor('point', conditions, { stage: 2, compute: 'cpu' }), 5, false, { onsetRule: undefined }).onsetRule).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonReefSeq=off` dev switch (canyon-reef-sequence): the Canyon's reef counting its onsets as main did, carried
+  // in the config to the worker; anything else, or another spot, leaves the default.
+  it('counts the Canyon reef\'s onsets as main did with `?canyonReefSeq=off` (a dev switch), and in sequence otherwise', () => {
+    expect(canyonReefSeqSwitch('?canyonReefSeq=off')).toEqual({ canyonReefSeq: false });
+    expect(canyonReefSeqSwitch('?canyonReefSeq=OFF')).toEqual({ canyonReefSeq: false });
+    for (const search of ['', '?canyonReefSeq', '?canyonReefSeq=', '?canyonReefSeq=on', '?canyonReefSeq=0']) expect(canyonReefSeqSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const beach = physicalSettingsFor('beach', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonReefSeq=off' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonReefSeq).toBe(false);
+      expect(surfZoneConfigFor(beach, 5, false).canyonReefSeq).toBeUndefined();
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(medium, 5, false, { canyonReefSeq: undefined }).canyonReefSeq).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?canyonAgeJoin=<J>` dev switch (canyon-wave-r2): the Canyon's breaking-age join alone, 0 for rule A, carried in
+  // the config to the worker; anything else leaves the layout's own.
+  it('runs the Canyon\'s breaking-age join from `?canyonAgeJoin=<J>` (a dev switch), and its layout\'s otherwise', () => {
+    expect(canyonAgeJoinSwitch('?canyonAgeJoin=0')).toEqual({ canyonAgeJoin: 0 });
+    expect(canyonAgeJoinSwitch('?canyonAgeJoin=0.35')).toEqual({ canyonAgeJoin: 0.35 });
+    for (const search of ['', '?canyonAgeJoin', '?canyonAgeJoin=', '?canyonAgeJoin=-1', '?canyonAgeJoin=off']) expect(canyonAgeJoinSwitch(search), search).toEqual({});
+    const medium = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    const beach = physicalSettingsFor('beach', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    try {
+      vi.stubGlobal('location', { search: '?canyonAgeJoin=0' });
+      expect(surfZoneConfigFor(medium, 5, false).canyonAgeJoin).toBe(0);
+      expect(surfZoneConfigFor(beach, 5, false).canyonAgeJoin).toBeUndefined();
+      // An online room's config fixes it: the default on every client.
+      expect(surfZoneConfigFor(medium, 5, false, { canyonAgeJoin: undefined }).canyonAgeJoin).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }
@@ -444,13 +2275,29 @@ describe('PhysicalMode', () => {
     expect(mode.nextView()).toBe('side');
     expect(mode.nextView()).toBe('overview');
     expect(mode.nextView()).toBe('front');
+    // The owner, 2026-10-22: the right stick swings the ride view round the rider, lying down too.
+    mode.update(1 / 60);
+    for (let frame = 0; frame < 30; frame += 1) {
+      mode.camera.steerSwing(1, 1 / 60);
+      mode.update(1 / 60);
+    }
+    mode.camera.steerSwing(0, 1);
+    const swung = mode.camera.swing;
+    expect(swung).toBeGreaterThan(0.5);
     expect(mode.readout().find((row) => row.label === 'RIDER')?.value).toMatch(/^PRONE · \d+\.\d m\/s/);
     mode.advance(1, { paddle: false, popUp: true, steer: 0 });
+    mode.update(1 / 60);
     expect(local.runner.session!.rider.phase).toBe('push');
     mode.retry();
     mode.advance(1);
+    mode.update(1 / 60);
     expect(local.runner.session!.rider.phase).toBe('prone');
     expect(local.runner.status().ride!.resets).toBe(1);
+    // Popping up and paddling out again keep it; the camera button starts the next view from its own framing.
+    expect(mode.camera.swing).toBe(swung);
+    expect(mode.camera.view).toBe('front');
+    expect(mode.nextView()).toBe('behind');
+    expect(mode.camera.swing).toBe(0);
     mode.setVisible(false);
     expect(mode.board.visible).toBe(false);
     expect(mode.surfer.group.visible).toBe(false);
@@ -551,6 +2398,39 @@ describe('PhysicalMode', () => {
     expect(mode.config?.spot).toBe('point');
   });
 
+  // The reviewer's catch on PR #431's study branch: `RIG_SWITCHES` is a module-level global that every rig on the
+  // page reads each frame, and the drawn-trunk flag used to be written where the config is computed - after the GPU
+  // await and BEFORE the supersession guard. A start abandoned while asking for the tier could therefore reach in and
+  // change the trunk of the ride already running, and then return false without putting it back.
+  it('never lets a superseded start change the live ride\'s drawn trunk (`RIG_SWITCHES.trunk`)', async () => {
+    const water = new WaterSurface(new FlatSurfaceSource());
+    const mode = new PhysicalMode(new Scene());
+    RIG_SWITCHES.trunk = undefined;
+    // The ride that is running draws the rig's own hinge.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    expect(RIG_SWITCHES.trunk).toBeUndefined();
+    // A start that asks for the physics trunk, suspended inside the GPU await (the Reef raises stage 1 to 2, which is
+    // what makes `compute` 'auto' and the tier worth asking for).
+    let release = (): void => {};
+    const gpuTier = (): Promise<boolean> => new Promise<boolean>((resolve) => { release = () => resolve(false); });
+    const never = (): SurfZoneHost => { throw new Error('a superseded start must not build a surf zone'); };
+    const stuck = mode.start(
+      { ...DEFAULT_PHYSICAL_SETTINGS, spot: 'reef', stage: 1, compute: 'cpu' }, 5, water,
+      { ...quick, trunk: 'mass', rider: 'new' }, never, gpuTier,
+    );
+    // Superseded, and only then let go of the tier.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, quick)).toBe(true);
+    release();
+    expect(await stuck).toBe(false);
+    // The abandoned start never reached the page's drawing.
+    expect(RIG_SWITCHES.trunk).toBeUndefined();
+    // And the switch still works on a start that IS accepted.
+    expect(await mode.start({ ...DEFAULT_PHYSICAL_SETTINGS, spot: 'beach' }, 1, water, { ...quick, trunk: 'mass', rider: 'new' })).toBe(true);
+    expect(RIG_SWITCHES.trunk).toBe('mass');
+    RIG_SWITCHES.trunk = undefined;
+    mode.stop();
+  }, 60_000);
+
   it('describes the running sea, solver cost and next set in the Wave Lab readout', async () => {
     const mode = new PhysicalMode(new Scene());
     const water = new WaterSurface(new FlatSurfaceSource());
@@ -560,6 +2440,10 @@ describe('PhysicalMode', () => {
     expect(value('SPOT')).toBe('CANYON');
     expect(value('SWELL')).toMatch(/^Hs 1\.8 m · Tp 12\.0 s · 10°$/);
     expect(value('SOLVER')).toMatch(/cells · \d+\.\d ms\/step$/);
+    // The worker's whole step (pool-barrel-perf): the telemetry's way to tell the worker from the page.
+    expect(value('WORKER')).toMatch(/^\d+\.\d ms a step \(16\.7 keeps real time\) · water \d+\.\d · contact \d+\.\d · snapshot \d+\.\d$/);
+    // The water's device (barrel-gpu): this local host steps it on the CPU.
+    expect(value('DEVICE')).toMatch(/^CPU · the water steps here/);
     expect(value('NEXT SET')).toBe('in 25 s');
     expect(value('BREAKER')).toMatch(/^ξ \d+\.\d\d · (SPILLING|PLUNGING|SURGING)$/);
     // The Canyon's terrace (the canyon spilling prototype) may already have broken a wave during the spin-up.

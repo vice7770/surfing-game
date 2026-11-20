@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
 import { createWaterSample } from '../../physics/SurfWater';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../../wave/SurfZoneSimulation';
-import { sampleCubicSurface, waterCubicPars } from './cubicSurface';
+import { sampleCubicHeight, sampleCubicSurface, waterCubicPars } from './cubicSurface';
 import { richNormalFragment } from './richWaterGlsl';
 
 const config: SurfZoneConfig = {
@@ -51,6 +51,34 @@ describe('the drawn Catmull-Rom surface', () => {
     expect(sampleCubicSurface(data, grid, 4.5, 1).height).toBeCloseTo(sampleCubicSurface(data, grid, 1.5, 1).height, 6);
     // Across shore the nodes clamp: rows past the edge repeat the edge row's heights.
     expect(sampleCubicSurface(data, grid, 1.5, -2).height).toBeCloseTo(1.5, 6);
+  });
+
+  it('reads the same height bit for bit without the slopes (`sampleCubicHeight`, pool-barrel-perf)', () => {
+    // Scrambled heights over an odd grid, at points inside, between nodes, on them, past every edge and far past them.
+    const grid = { xMin: -13.25, zMin: 40.5, spacing: 1, nx: 37, nz: 23 };
+    const data = new Float32Array(2 * grid.nx * grid.nz);
+    let seed = 7;
+    const next = () => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed / 2147483648;
+    };
+    for (let i = 0; i < data.length; i += 1) data[i] = i % 2 === 0 ? (next() - 0.4) * 3 : next();
+    let checked = 0;
+    for (const spacing of [1, 2, 0.5]) {
+      const g = { ...grid, spacing };
+      for (let k = 0; k < 4000; k += 1) {
+        const x = g.xMin + (next() * 1.6 - 0.3) * g.nx * spacing;
+        const z = g.zMin + (next() * 1.6 - 0.3) * g.nz * spacing;
+        expect(Object.is(sampleCubicHeight(data, g, x, z), sampleCubicSurface(data, g, x, z).height)).toBe(true);
+        checked += 1;
+      }
+      for (let r = -2; r < g.nz + 2; r += 1) for (let c = -2; c < g.nx + 2; c += 1) {
+        const x = g.xMin + c * spacing;
+        const z = g.zMin + r * spacing;
+        expect(Object.is(sampleCubicHeight(data, g, x, z), sampleCubicSurface(data, g, x, z).height)).toBe(true);
+      }
+    }
+    expect(checked).toBe(12000);
   });
 
   it('flips the per-pixel normal for the underside and writes it in view space', () => {

@@ -1,0 +1,314 @@
+{
+ "level": 10,
+ "dx_h0": 0.0625,
+ "frames": 28,
+ "xtoe": 34.76,
+ "h0_m": 6.0,
+ "foot_crest_h0": 0.4192355364705882,
+ "train_crest_h0": 0.4097152735769442,
+ "vertical_found": false,
+ "note": "the face never went vertical (steepest 21 deg at t 26.50); the break is placed at its steepest frame; that is the last frame, so the run may have ended before the break",
+ "t_vertical": 26.5,
+ "x_vertical": 39.0625,
+ "depth_vertical_h0": 0.8129346142499999,
+ "t_touchdown": null,
+ "crest_at_vertical_h0": 0.432107,
+ "trough_at_vertical_h0": -0.0696553,
+ "depth_vertical_m": 4.877607685499999,
+ "suggest": {
+  "tswitch": 21.5,
+  "tmax": 33.0,
+  "xwin0": 32,
+  "xwin1": 49
+ },
+ "analysis": {
+  "t_from": 25.5,
+  "t_to": 31.5,
+  "xmin_plunge": 37.4375,
+  "tmin": 23.5,
+  "xmin_library": 35.28125
+ },
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-canyon-tubes/tools/basilisk/runs/periodic_canyon23_a49_p1_L10",
+ "track": [
+  {
+   "t": 0.0,
+   "x": 10.0625,
+   "y": 0.409712,
+   "trough": -0.0311284,
+   "angle": 12.707741512596483,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 11.125
+  },
+  {
+   "t": 1.0,
+   "x": 11.0625,
+   "y": 0.411191,
+   "trough": -0.027208,
+   "angle": 13.552206662219884,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 12.3125
+  },
+  {
+   "t": 2.0,
+   "x": 12.375,
+   "y": 0.409563,
+   "trough": -0.0372303,
+   "angle": 14.385424945772767,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 13.375
+  },
+  {
+   "t": 3.0,
+   "x": 13.5,
+   "y": 0.417498,
+   "trough": -0.0396648,
+   "angle": 15.35110598904824,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 14.0625
+  },
+  {
+   "t": 4.0,
+   "x": 14.625,
+   "y": 0.430842,
+   "trough": -0.0401127,
+   "angle": 15.948664950217212,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 15.25
+  },
+  {
+   "t": 5.0,
+   "x": 15.6875,
+   "y": 0.441095,
+   "trough": -0.0371383,
+   "angle": 15.275065141915698,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 16.125
+  },
+  {
+   "t": 6.0,
+   "x": 16.75,
+   "y": 0.450667,
+   "trough": -0.0355243,
+   "angle": 15.518923709770533,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 17.25
+  },
+  {
+   "t": 7.0,
+   "x": 17.8125,
+   "y": 0.450907,
+   "trough": -0.0350766,
+   "angle": 15.381496591839577,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 18.3125
+  },
+  {
+   "t": 8.0,
+   "x": 18.875,
+   "y": 0.450151,
+   "trough": -0.0371202,
+   "angle": 15.015117170197632,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 19.4375
+  },
+  {
+   "t": 9.0,
+   "x": 20.0,
+   "y": 0.445209,
+   "trough": -0.0370651,
+   "angle": 15.379660308568251,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 20.6842
+  },
+  {
+   "t": 10.0,
+   "x": 21.125,
+   "y": 0.445943,
+   "trough": -0.0393528,
+   "angle": 15.917961025133112,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 21.625
+  },
+  {
+   "t": 11.0,
+   "x": 22.1875,
+   "y": 0.459308,
+   "trough": -0.040517,
+   "angle": 15.644229971396381,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 22.9375
+  },
+  {
+   "t": 12.0,
+   "x": 23.1875,
+   "y": 0.455157,
+   "trough": -0.0381104,
+   "angle": 14.969060321878997,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 23.75
+  },
+  {
+   "t": 13.0,
+   "x": 24.3125,
+   "y": 0.449307,
+   "trough": -0.0277394,
+   "angle": 14.854361248667011,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 24.875
+  },
+  {
+   "t": 14.0,
+   "x": 25.4375,
+   "y": 0.448298,
+   "trough": -0.0366412,
+   "angle": 14.993136216930598,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 26.1835
+  },
+  {
+   "t": 15.0,
+   "x": 26.5,
+   "y": 0.454677,
+   "trough": -0.0361765,
+   "angle": 15.299731171436603,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 27.2482
+  },
+  {
+   "t": 16.0,
+   "x": 27.6875,
+   "y": 0.452859,
+   "trough": -0.0391293,
+   "angle": 18.095634000695423,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 28.375
+  },
+  {
+   "t": 17.0,
+   "x": 28.6875,
+   "y": 0.471601,
+   "trough": -0.0321425,
+   "angle": 15.833195011413453,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 29.0
+  },
+  {
+   "t": 18.0,
+   "x": 29.5625,
+   "y": 0.463006,
+   "trough": -0.019956,
+   "angle": 13.737758093215952,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 30.4375
+  },
+  {
+   "t": 19.0,
+   "x": 30.7046,
+   "y": 0.4375,
+   "trough": -0.0239201,
+   "angle": 12.505606898801586,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 32.0623
+  },
+  {
+   "t": 20.0,
+   "x": 31.75,
+   "y": 0.41496,
+   "trough": -0.0207497,
+   "angle": 12.79056896605039,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 32.8744
+  },
+  {
+   "t": 21.0,
+   "x": 33.0,
+   "y": 0.402815,
+   "trough": -0.0292381,
+   "angle": 13.61904454221946,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 34.0
+  },
+  {
+   "t": 22.0,
+   "x": 34.1875,
+   "y": 0.411109,
+   "trough": -0.0436075,
+   "angle": 14.085395705948763,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 34.875
+  },
+  {
+   "t": 23.0,
+   "x": 35.25,
+   "y": 0.426191,
+   "trough": -0.0578546,
+   "angle": 14.393315153076362,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 35.9375
+  },
+  {
+   "t": 24.0,
+   "x": 36.3125,
+   "y": 0.430528,
+   "trough": -0.062971,
+   "angle": 14.584519940250345,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 36.7504
+  },
+  {
+   "t": 25.0,
+   "x": 37.375,
+   "y": 0.427401,
+   "trough": -0.0653381,
+   "angle": 15.467100513724967,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 38.1875
+  },
+  {
+   "t": 26.0,
+   "x": 38.5,
+   "y": 0.429684,
+   "trough": -0.0762962,
+   "angle": 17.72870388857008,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 38.9356
+  },
+  {
+   "t": 26.5,
+   "x": 39.0625,
+   "y": 0.432107,
+   "trough": -0.0696553,
+   "angle": 20.712848430839706,
+   "overturned": false,
+   "loop": false,
+   "lip_x": 39.7491
+  }
+ ]
+}

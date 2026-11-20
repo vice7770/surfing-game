@@ -1,0 +1,17 @@
+name=pool_straight_small
+kind=p2
+level=13
+h0=4.5
+H_over_h0=0.352
+period=10
+S1=0.0535
+HMID=0.2
+S2=0.0535
+HS=0.2
+domain=64
+tout0=24.5
+tmax=35
+xwin0=31
+xwin1=47
+xtoe=27.646
+train_c=1.0428365364105436

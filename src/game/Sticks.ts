@@ -17,6 +17,8 @@ export const DEFAULT_STICK: StickSettings = { trimStick: 'right', stickResponse:
 export const MAX_DEADZONE = 0.3;
 /** Precise is this much cubic, the rest linear: about half the linear response at mid-stick. */
 const PRECISE_CUBIC = 0.6;
+/** The camera's swing (the owner, 2026-10-22): the right stick across, whichever stick trims. */
+export const SWING_AXIS = 2;
 /** A pad counts as touched with a button down or a stick pushed past this. */
 const TOUCH = 0.5;
 
@@ -30,18 +32,20 @@ export function shapeAxis(value: number, deadzone: number, response: StickRespon
 }
 
 /**
- * Steering from the left stick (positive right), trim from the chosen stick (up for forward) and the upper body's
- * rotation from the right stick across (positive right: where the rider looks, the movement-flow spec), with the
- * pad's own dead zone.
+ * Steering from the left stick (positive right), trim from the chosen stick (up for forward) and the camera's swing
+ * round the rider from the right stick across (positive right: the camera moves to its right; the owner, 2026-10-22),
+ * with the pad's own dead zone. The swing stays on the right stick whichever stick trims: with trim on the left, the
+ * right stick's up and down are free. The right stick across turned the upper body until then; the body now turns
+ * with the ride by itself on every device.
  */
-export function padSticks(pad: PadState | undefined, stick: StickSettings): { steer: number; trim: number; rotate: number } {
-  if (!pad) return { steer: 0, trim: 0, rotate: 0 };
+export function padSticks(pad: PadState | undefined, stick: StickSettings): { steer: number; trim: number; swing: number } {
+  if (!pad) return { steer: 0, trim: 0, swing: 0 };
   const deadzone = pad.kind === 'steam' ? stick.deadzoneSteam : stick.deadzoneGamepad;
   const trimAxis = stick.trimStick === 'right' ? 3 : 1;
   return {
     steer: shapeAxis(pad.axes[0] ?? 0, deadzone, stick.stickResponse),
     trim: shapeAxis(-(pad.axes[trimAxis] ?? 0), deadzone, stick.stickResponse),
-    rotate: shapeAxis(pad.axes[2] ?? 0, deadzone, stick.stickResponse),
+    swing: shapeAxis(pad.axes[SWING_AXIS] ?? 0, deadzone, stick.stickResponse),
   };
 }
 

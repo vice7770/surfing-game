@@ -1,0 +1,176 @@
+
+# f73-g, cell `all` (entries 4.435,5.435,6.435,7.435,8.435,8.935,9.435,10.435) — 24 of 24 runs, 5031 frames, every frame live
+
+## A. Which quantity reaches 56–84° — the three angles and the ask, per stance
+  (`roll` the board from the world's level, `rail` its heel against the water under it, `bank` the body's
+   lean over its feet. `ask`/`cap` are `leanProbe`'s own two: the eased lean the balance holds and the bound
+   its speed allows. `plan` is the share of frames the board planes.)
+    stance          runs     fell at s   |roll| peak   |rail| peak   |bank| peak       ask med      ask peak       cap med          plan   through med
+      tall             8   1.767–5.100     54.9–84.8     54.1–84.4     34.9–70.0          0.00          0.00         41.97          89 %          6.30
+    crouch             8   1.717–5.183     48.9–90.1     56.0–89.3     32.6–70.0          0.00          0.00         42.52          89 %          6.36
+  compress             8   1.667–5.017     48.0–95.7     55.1–96.0     35.7–70.0          0.00          0.00         43.09          94 %          6.43
+
+## B. Drive or coast — when the roll RATE is established, and how much of the angle comes after it
+  (`rate peak` is max |rollAxis·ω|, °/s. `t90` is the first frame at 90 % of that peak, and `roll@t90` the
+   roll there. `after t90` is the share of the whole |roll| swing accumulated after t90 — a coast if it is
+   most of it. `|net| med` is the roll ledger's own `rlTotal`, the mean moment the board's inertia took.)
+    stance           runs  rate peak °/s          t90 s     roll@t90 °   roll at fall      after t90 t90 inside 25°  |net| med N·m       net in25      net out25
+      tall              8         60–243    1.650–5.000      22.6–69.4      54.9–84.8           21 %         2 of 8          0.024         -0.000          0.024
+    crouch              8         82–214    1.600–5.167      16.7–71.9      48.9–89.7           25 %         1 of 8          0.034         -0.003         -0.046
+  compress              8         83–322    1.367–4.967      19.8–84.0      48.0–89.5           16 %         2 of 8          0.034         -0.001         -0.005
+
+  and where the rate comes from in TIME — the mount's own first frame against the peak. `f1` is frame 1
+  alone (t = 0.0167 s), `7f` the mount's first seven frames (t ≤ 0.117 s, the window step 3.4f found the
+  ankle pinned on its own bound for), both as `rollAxis·ω` in °/s, and `ankle τ f1` the torque at frame 1.
+    stance             runs      rate f1 °/s      rate 7f °/s        rate peak        f1 / peak        7f / peak   ankle τ f1 N·m dk_ankle f1 °/s²      net f1 °/s²
+      tall                8        -1.1–-0.4          0.8–2.2           60–243              1 %              2 %        -1.9–-1.4        -193–-156          -66–-25
+    crouch                8        -1.1–-0.4          0.4–2.0           82–214              1 %              1 %        -1.9–-1.4        -192–-155          -67–-25
+  compress                8        -1.1–-0.4          0.4–2.0           83–322              1 %              1 %        -1.9–-1.4        -192–-155          -67–-25
+
+## C. The board's own roll budget, N·m on the roll ledger's datum — medians of per-run medians, per window
+  (`rider` is the ledger's RESIDUAL — everything the rider's coupling carries, feet and the pair's own
+   inertia together, and it is reported as a residual. `inertial` is added mass + radiation. `hull` is the
+   four patch totals plus the fins and rails. `net` is `rlTotal`, what the board's own inertia took, and
+   `net/|largest|` is how much of the largest term survives the cancellation.)
+
+  window `whole`:
+    stance           runs         frames          rider       inertial           hull           gyro            net|net|/|largest| rider+inertial
+      tall              8           1717           0.07          -0.13           0.81          0.001         -0.000         0.0001          -0.06
+    crouch              8           1695          -1.78           0.38           1.98          0.000         -0.004         0.0018          -1.41
+  compress              8           1619          -4.36           0.61           4.37          0.001         -0.002         0.0004          -3.74
+
+  window `in25`:
+    stance           runs         frames          rider       inertial           hull           gyro            net|net|/|largest| rider+inertial
+      tall              8           1557           0.27          -0.09           0.08          0.000         -0.000         0.0004           0.18
+    crouch              8           1527          -1.50           0.38           1.87          0.000         -0.003         0.0016          -1.12
+  compress              8           1382          -4.30           0.58           4.07          0.000         -0.001         0.0003          -3.72
+
+  window `out25`:
+    stance           runs         frames          rider       inertial           hull           gyro            net|net|/|largest| rider+inertial
+      tall              8            160          -0.18           0.69           2.12          0.016          0.024         0.0112           0.51
+    crouch              8            168          -4.34           2.64           6.15          0.024         -0.046         0.0075          -1.69
+  compress              8            237          -6.91           1.90           6.55          0.026         -0.005         0.0008          -5.01
+
+## D. WHO ROLLS THE DECK, by name — `bankLedger.deck` over the `drive` window
+  (the window is each run's own leading frames with NO `apart` substep, so the partition describes every
+   substep of every frame in it. `mean °/s²` is that source's own mean deck-roll acceleration over the window,
+   a median of the per-run means, and `Σ|terms|` share is its magnitude over the sum of all twenty-three
+   magnitudes — a share in [0, 1], unlike a share of a net that is itself a cancellation residual. `same sign`
+   counts the runs whose own mean has the median's sign. `× net` is the source over the window's own net.)
+
+  tall — 8 runs; drive window 93–300 frames, to t 1.550–5.000 s
+    and |roll| 38.0–54.0°; the rate the window ends on -97–170 °/s,
+    the rate the booked net itself gives over it -76–170 °/s (the instrument against the trajectory);
+    net 11 °/s² against Σ|terms| 832 °/s² — the net is 1.28 % of the traffic.
+            source       mean °/s²  Σ|terms| share       same sign           × net  span over runs
+          pressure             -68           8.1 %          6 of 8            -6.3        -430–313
+             ankle              59           7.1 %          5 of 8             5.6        -29–1421
+             pitch             -55           6.6 %          6 of 8            -5.1         -163–34
+         addedMass             -10           1.3 %          6 of 8            -1.0         -141–28
+              fins               9           1.1 %          6 of 8             0.9          -33–24
+               leg              -9           1.1 %          5 of 8            -0.8        -521–200
+            weight              -8           0.9 %          8 of 8            -0.7          -78–-2
+          buoyancy              -7           0.8 %          7 of 8            -0.6           -20–2
+           gravity               5           0.6 %          6 of 8             0.4           -3–19
+             rails               4           0.5 %          8 of 8             0.4            2–21
+         yawCouple               4           0.4 %          6 of 8             0.3           -1–14
+          friction               3           0.3 %          5 of 8             0.2           -22–7
+
+  crouch — 8 runs; drive window 73–308 frames, to t 1.217–5.133 s
+    and |roll| 11.3–60.8°; the rate the window ends on -89–126 °/s,
+    the rate the booked net itself gives over it -62–123 °/s (the instrument against the trajectory);
+    net 16 °/s² against Σ|terms| 676 °/s² — the net is 2.34 % of the traffic.
+            source       mean °/s²  Σ|terms| share       same sign           × net  span over runs
+             ankle             118          17.5 %          6 of 8             7.5       -150–1596
+               leg             -36           5.3 %          6 of 8            -2.3         -313–29
+             pitch             -20           2.9 %          6 of 8            -1.3         -146–26
+            weight             -17           2.5 %          7 of 8            -1.1           -81–0
+         addedMass             -11           1.6 %          6 of 8            -0.7         -177–50
+          buoyancy              -8           1.1 %          7 of 8            -0.5          -32–17
+           gravity               6           1.0 %          6 of 8             0.4           -3–35
+         yawCouple               6           0.9 %          7 of 8             0.4           -2–15
+             rails               5           0.7 %          8 of 8             0.3            3–28
+              fins               3           0.5 %          4 of 8             0.2          -18–55
+          pressure               3           0.4 %          5 of 8             0.2        -899–253
+             swing               1           0.1 %          4 of 8             0.0           -26–5
+
+  compress — 8 runs; drive window 75–296 frames, to t 1.250–4.933 s
+    and |roll| 9.6–69.6°; the rate the window ends on -75–158 °/s,
+    the rate the booked net itself gives over it -75–159 °/s (the instrument against the trajectory);
+    net 11 °/s² against Σ|terms| 560 °/s² — the net is 2.00 % of the traffic.
+            source       mean °/s²  Σ|terms| share       same sign           × net  span over runs
+             ankle             223          39.8 %          6 of 8            19.9       -206–2049
+               leg             -51           9.1 %          7 of 8            -4.6        -259–133
+            weight             -26           4.6 %          7 of 8            -2.3           -91–1
+             pitch             -22           3.9 %          7 of 8            -1.9         -139–25
+          buoyancy             -18           3.2 %          6 of 8            -1.6          -42–18
+         addedMass             -17           3.1 %          7 of 8            -1.6         -167–76
+           gravity              11           2.1 %          7 of 8             1.0           -5–58
+          pressure              -8           1.5 %          5 of 8            -0.8       -1440–212
+             rails               7           1.3 %          8 of 8             0.7            3–34
+              fins              -7           1.3 %          5 of 8            -0.7          -15–77
+         yawCouple               6           1.0 %          8 of 8             0.5            0–17
+          friction              -4           0.6 %          6 of 8            -0.3           -23–6
+             swing              -2           0.3 %          6 of 8            -0.1          -33–16
+
+  the same partition split BEFORE the fall and DURING it, which is the round's own question: the `drive`
+  window intersected with `in25` and with `out25`. Each row is a stance; `top three` names the three largest
+  sources by |mean| with their Σ|terms| shares, so "the largest term" can be read per window rather than
+  pooled over a run that is partly a capsize.
+  `base` is which frames the partition is read on: `drive`, the contiguous leading window above — whose
+  cumulative figures are a trajectory — or `booked`, EVERY frame of the run with no `apart` substep, which is
+  not contiguous (so it is read as a mean and never integrated) but is the only window a face whose very first
+  frame is already `apart` has at all.
+    stance         base       window         runs       frames     net °/s²Σ|terms| °/s²    net sharetop three sources by |mean °/s²|
+      tall        drive         in25            8         1557           11          519        2.1 %pressure 117 (23 %)  ankle 75 (15 %)  leg -57 (11 %)
+      tall        drive        out25            8           94           39         6428        0.6 %pressure -1568 (24 %)  leg 1026 (16 %)  ankle 402 (6 %)
+      tall       booked         in25            8         1557           11          519        2.1 %pressure 117 (23 %)  ankle 75 (15 %)  leg -57 (11 %)
+      tall       booked        out25            8           95           39         6428        0.6 %pressure -1568 (24 %)  leg 1026 (16 %)  ankle 402 (6 %)
+    crouch        drive         in25            8         1498            9          606        1.5 %ankle 117 (19 %)  leg -95 (16 %)  pressure 88 (15 %)
+    crouch        drive        out25            7           88          133         4921        2.7 %pressure -1381 (28 %)  ankle 597 (12 %)  leg 149 (3 %)
+    crouch       booked         in25            8         1511           13          606        2.1 %ankle 117 (19 %)  leg -95 (16 %)  pressure 88 (15 %)
+    crouch       booked        out25            8          111          133         7316        1.8 %pressure -1381 (19 %)  leg 1126 (15 %)  ankle 883 (12 %)
+  compress        drive         in25            8         1373           11          683        1.6 %ankle 217 (32 %)  leg -204 (30 %)  pressure 108 (16 %)
+  compress        drive        out25            7          143          117         4083        2.9 %pressure -1577 (39 %)  leg 1315 (32 %)  ankle 349 (9 %)
+  compress       booked         in25            8         1375           13          683        1.9 %ankle 217 (32 %)  leg -204 (30 %)  pressure 108 (16 %)
+  compress       booked        out25            8          167          117         6506        1.8 %pressure -1721 (26 %)  leg 1335 (21 %)  ankle 542 (8 %)
+
+  and the one test that says whether the largest term is a CORRECTION or a DRIVE. `bank` is the body's own
+  lean over its stance point in the HEADING's frame, not against the deck [R, `AttachedRider.frame`], and
+  `mAnkle` is the ankle's own moment on the body (the ledger's row 7, which is `−τ_ankle`). So: is the ankle
+  correcting (its moment opposes the lean) — and does the SAME torque's deck roll carry the body further the
+  way it is already leaning, and the way the deck is already rolling? Shares of the window's own frames,
+  frames with |bank| ≤ 1e-6° dropped (no lean to have a sign). Read on the `booked` window (every frame with
+  no `apart` substep), so a face whose first frame is already `apart` is still readable.
+    stance                  frames          ankle corrects     its deck roll leans     with the deck's own      |dk_ankle| > |net|
+                                                  the lean        the body further               roll rate                        
+      tall                    1652                  54.8 %                  54.8 %                  74.9 %                  86.3 %
+    crouch                    1622                  76.1 %                  76.2 %                  76.0 %                  79.4 %
+  compress                    1542                  83.1 %                  83.1 %                  74.8 %                  87.1 %
+
+## E. The plant the moments are divided by, and the round's own controls
+  (`I_board` is the board ALONE about the roll ledger's datum; `1/rollDeckPer` the coupled one the integrator
+   meets. `°/s² per N·m` is 1/I_board in degrees — the hair-trigger, if it is one. `ankleDeck` is the deck's
+   roll per unit ankle torque-impulse off the same `A⁻¹`, and `authority` is `|ankleOwn/ankleRel|`.)
+    stance   I_board kg·m²   1/rollDeckPer    °/s² per N·m     |ankleDeck|       authority     ankle τ N·m     dkClose max     dkSplit max      apart/subs
+      tall         0.02620           1.311            2186           0.831           0.405           -0.18          0.0e+0          0.0e+0          0.0/16
+    crouch         0.02620           1.167            2186           0.846           0.510            1.67          0.0e+0          0.0e+0          0.0/16
+  compress         0.02620           1.148            2186           0.849           0.579            4.11          0.0e+0          0.0e+0          0.0/16
+
+  and the roll ledger's own control, which has no model in it: the board's own net moment divided by the
+  board's own roll inertia is a rate change, so `−rlTotal/I_board·dt` summed over a run must reproduce the
+  rate the board is actually spinning at. `sign` is the share of frames where the predicted and the measured
+  frame-to-frame change agree in sign. A tensor's off-diagonal terms and the step's own averaging are the
+  gap, and both are printed rather than corrected for.
+    stance            runs          frames   predicted °/s    measured °/s           ratio     sign agrees
+      tall               8            1717          -40–24          -61–43           1.374  92.6 % of 1709
+    crouch               8            1695         -52–173        -115–158           1.130  91.5 % of 1687
+  compress               8            1619          -91–66         -105–69           0.452  91.8 % of 1611
+
+  the ankle's own identity, as an independent control on § D: the ledger's `dk_ankle` against
+  `ankleDeck × (−ankleTau)` — the same quantity built from the unit compliance and the torque instead of
+  from the partition. Both are reads off the same `A⁻¹`; a gap means one of them is not what it says.
+    stance            frames dk_ankle med °/s²    from unit read             ratio    max |gap| °/s²
+      tall              1652                -6                -4             1.842              5104
+    crouch              1622                77                80             0.959              7797
+  compress              1542               181               195             0.930              1823

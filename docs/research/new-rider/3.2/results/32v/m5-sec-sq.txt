@@ -1,0 +1,23 @@
+
+## turnpath — section, cheat off, power 2, rider old, window 4.0 s + 5.0 s hold, gate 85°, start 45° off the fall line
+   6 runs, 10 s wall · the face 1.40 m / 16° / 5.70 m/s, depth 2.6 m
+   the gate: 0 of 6 · why each run stopped: gate 0 · window 4 · fell 2
+   heading: reached 49.6–76.8° off the fall line · came round 9.4–123.1° from the start · in the window 5.4–99.9° · the unsigned metric's fold 0.0–0.0°
+   the heading's own rate: 14.88 °/s median, 204.8 °/s peak · over the window's last half second -12.2–33.7 °/s
+   the roll path: lean asked 37.5° (peak 50.0°) → body 12.7° (peak 70.0°) → board roll -11.2° (peak 9.9°) → heading 62.6°
+   drift -0.56° median, 7.0° peak · lateral 0.173 g median, 1.415 g peak · nUp 1.039
+   the cheat's work on the body: assist 0.0 J · carry 2103.7 J · lean-out 0.0 J
+   the yaw ledger over the turn, N·m·s about the world vertical (positive the turn's way):
+     fins           3.558 median  (-6.0–6.3)
+     rails          0.000 median  (0.0–0.0)
+     pressure     -40.837 median  (-186.8–-5.3)
+     friction       3.515 median  (-0.5–7.6)
+     addedMass    -15.130 median  (-23.6–-10.7)
+     radiation     -2.004 median  (-3.6–-1.4)
+     buoyancy      -4.228 median  (-7.6–-2.3)
+     froth          0.000 median  (0.0–0.0)
+     suction        0.000 median  (0.0–0.0)
+     bed            0.000 median  (0.0–0.0)
+     gyro          -0.008 median  (-0.2–0.0)
+     rider         68.588 median  (18.9–204.9)
+     total         -0.015 median  (-0.8–0.4)

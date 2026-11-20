@@ -1,0 +1,37 @@
+{
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-pool-tubes/tools/basilisk/runs/periodic_pool_straight_big_L13",
+ "t_vertical": 28.175,
+ "t_impact": 29.625,
+ "timing": "plunge_measure.py: the local trough as the water level, the crest looked for at x >= XMIN, touchdown = first enclosed tube, the frame before it with the jet >= 3 cells off the face",
+ "at_vertical": {
+  "crest_m": 2.068407,
+  "x_m": 169.2423,
+  "trough_m": -0.5179815,
+  "H_m": 2.5863885
+ },
+ "pre_touchdown": {
+  "t": 29.6,
+  "crest_m": 1.9936125,
+  "trough_m": -0.4913145,
+  "H_m": 2.484927,
+  "jet_m2": 0.034130250153014074,
+  "tube_m2": 0.004288388508001784,
+  "tube_L_m": 0.20218570140236697,
+  "tube_W_m": 0.03847468484441663,
+  "L/W": 5.2550320352190685,
+  "tilt_deg": 60.389564538174206,
+  "lip_m": 0.16880644831106004,
+  "lip_cells": 4.80160564084793,
+  "per H at touchdown": {
+   "jet": 0.005527289366689356,
+   "tube": 0.0006944913703897316,
+   "lip": 0.06793215587864755
+  },
+  "per H at vertical": {
+   "jet": 0.005102135053872485,
+   "tube": 0.0006410716954375322,
+   "lip": 0.06526724361442994
+  },
+  "open_s": 0.9820639191439643
+ }
+}

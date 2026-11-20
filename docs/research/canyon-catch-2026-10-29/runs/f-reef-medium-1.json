@@ -1,0 +1,383 @@
+{
+ "size": "medium",
+ "seed": 1,
+ "defaultOut": 9,
+ "focus": {
+  "x": -9,
+  "z": -137.5
+ },
+ "starts": [
+  {
+   "out": 11,
+   "z": -148.5,
+   "depth": 3.1947747545929124,
+   "setFace": 1.7489944624029514,
+   "rows": [
+    {
+     "placed": 28.57,
+     "arrival": 5.13,
+     "face": 1.12,
+     "set": false,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 1.23,
+       "maxSpeedProne": 3.23,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 1.23,
+       "maxSpeedProne": 3.23,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 1.2,
+       "maxSpeedProne": 3.23,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 41.9,
+     "arrival": 5.27,
+     "face": 1.06,
+     "set": false,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 2.38,
+       "maxSpeedProne": 3.82,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 3.05,
+       "maxSpeedProne": 4.06,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 2.37,
+       "maxSpeedProne": 3.88,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 52.77,
+     "arrival": 4.82,
+     "face": 1.75,
+     "set": true,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 1.68,
+       "maxSpeedProne": 4.22,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 1.68,
+       "maxSpeedProne": 4.22,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 1.67,
+       "maxSpeedProne": 4.28,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 64.68,
+     "arrival": 5.15,
+     "face": 1.95,
+     "set": true,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 2.65,
+       "maxSpeedProne": 4.85,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 2.98,
+       "maxSpeedProne": 5.09,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 2.6,
+       "maxSpeedProne": 4.78,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 75.65,
+     "arrival": 5.32,
+     "face": 2.33,
+     "set": true,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 2.98,
+       "maxSpeedProne": 4.89,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 3.68,
+       "maxSpeedProne": 5,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 2.9,
+       "maxSpeedProne": 4.85,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 86.12,
+     "arrival": 4.8,
+     "face": 2.42,
+     "set": true,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "white water",
+       "cue": 0.6,
+       "pop": 0.6,
+       "fell": 1.15,
+       "cause": "lost board",
+       "popSlope": 16.3,
+       "popFraction": 0.83,
+       "popAhead": 2.78,
+       "popSpeed": 5.09,
+       "popCrest": 6.27,
+       "maxSpeedProne": 5.19,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "white water",
+       "cue": 0.6,
+       "pop": 0.6,
+       "fell": 1.15,
+       "cause": "lost board",
+       "popSlope": 16.3,
+       "popFraction": 0.83,
+       "popAhead": 2.78,
+       "popSpeed": 5.09,
+       "popCrest": 6.27,
+       "maxSpeedProne": 5.19,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "rode",
+       "cue": 0.92,
+       "pop": 0.92,
+       "stand": 2.12,
+       "fell": 4.2,
+       "cause": "lost board",
+       "popSlope": 15.4,
+       "popFraction": 0.89,
+       "popAhead": 2.05,
+       "popSpeed": 5.03,
+       "popCrest": 6.27,
+       "maxSpeedProne": 5.23,
+       "riding": 2.08
+      }
+     ]
+    },
+    {
+     "placed": 98.12,
+     "arrival": 5.57,
+     "face": 1.18,
+     "set": false,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "left on the crest",
+       "reached": 3.45,
+       "cue": 2.23,
+       "pop": 2.23,
+       "stand": 3.43,
+       "fell": 4.37,
+       "cause": "balance",
+       "popSlope": 1.3,
+       "popFraction": 0.98,
+       "popAhead": 1.71,
+       "popSpeed": 3.35,
+       "popCrest": 4.09,
+       "maxSpeedProne": 3.41,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 5.27,
+       "maxSpeedProne": 3.48,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "left on the crest",
+       "reached": 3.43,
+       "cue": 2.22,
+       "pop": 2.22,
+       "stand": 3.42,
+       "fell": 4.35,
+       "cause": "balance",
+       "popSlope": 1.3,
+       "popFraction": 0.99,
+       "popAhead": 1.69,
+       "popSpeed": 3.36,
+       "popCrest": 4.13,
+       "maxSpeedProne": 3.47,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 105.35,
+     "arrival": 6.15,
+     "face": 0.47,
+     "set": false,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 2.92,
+       "maxSpeedProne": 2.93,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 3.07,
+       "maxSpeedProne": 2.98,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 2.85,
+       "maxSpeedProne": 2.98,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 111.08,
+     "arrival": 6.48,
+     "face": 1.06,
+     "set": false,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 5.13,
+       "maxSpeedProne": 2.95,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 5.13,
+       "maxSpeedProne": 2.95,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 5.15,
+       "maxSpeedProne": 3,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 124.77,
+     "arrival": 5.82,
+     "face": 1.19,
+     "set": false,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 2.83,
+       "maxSpeedProne": 3.74,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "white water",
+       "reached": 3.3,
+       "maxSpeedProne": 3.75,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 2.72,
+       "maxSpeedProne": 3.75,
+       "riding": 0
+      }
+     ]
+    },
+    {
+     "placed": 153.07,
+     "arrival": 5.72,
+     "face": 0.78,
+     "set": false,
+     "riders": [
+      {
+       "script": "good",
+       "outcome": "no cue",
+       "reached": 2.75,
+       "maxSpeedProne": 3.31,
+       "riding": 0
+      },
+      {
+       "script": "early",
+       "outcome": "no cue",
+       "reached": 3.2,
+       "maxSpeedProne": 3.39,
+       "riding": 0
+      },
+      {
+       "script": "good/old",
+       "outcome": "no cue",
+       "reached": 2.75,
+       "maxSpeedProne": 3.4,
+       "riding": 0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

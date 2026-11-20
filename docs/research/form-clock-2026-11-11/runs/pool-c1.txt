@@ -1,0 +1,77 @@
+# prone riders through the forming tube: pool straight Barrel, H 1.05 m at the feed, cases pool, switches {"formClock":"c1"}
+tubeFace {"anchor":true,"union":true,"lag":true,"clockRate":1.25,"thrownEnds":true,"continuity":true,"distance":true,"contour":true,"wallFlow":true,"contact":true,"cap":true,"merge":true,"guard":false,"track":false,"inertia":true,"retire":true,"buoy":false,"drop":false,"formClock":true}
+4 waves of riders after 50 s; measured 44.2 s; CPU 1/60 s; 223 s of wall time; take-off (84.4, -195.5), s 39.9; first throw there at 50.68 s; game start 18.0 m out
+
+## The clock (every front point, every step)
+before the throw: rate p50 1.064, p95 1.257, p99 1.484, max 1.500 (n 25296); on a rate bound 7.08 % of steps (0.5×: 6.30 %, 1.5×: 0.78 %) [bar: ≤ 1 %]
+|Δτ̇| a step, before the throw: p50 0.0051, p95 0.0167, p99 0.0167, max 0.0167 (n 25023) [bar: p99 ≤ 0.02]
+|Δτ̇| a step, every step (the throw and after it too): p50 0.0000, p95 0.0125, p99 0.0167, max 0.0167 (n 94026)
+the wall water's rate (tauRate), its change a step: p50 0.0000, p95 0.0123, p99 0.0167, max 0.1667 (n 93475); against the step the clock then took: p50 0.0000, p95 0.0000, p99 0.0000, max 0.2340 (n 93475)
+formation bar 7: each point's first clock less its case's τ_e: p5 0.017, p50 0.017, p95 2.574, p99 7.655, max 8.093 (n 291) s; within 0.1 s on 90.38 % of 291
+the contour throw: the crest's own distance to its contour as its clock crosses 0: p5 -0.96, p50 -0.16, p95 0.61 m, within 1 m on 93.65 % of 252; thrown before the solver broke it 57.54 %
+throws by reef column (n seaward of the reef line, less the take-off's 0.16 m): s 30: 0.16 (n 23); s 45: 1.86 (n 68); s 60: 4.71 (n 62); s 75: 5.80 (n 47); s 90: 5.73 (n 43); s 105: 4.72 (n 9)
+the surf meter over the measured time: {"typical":1.6038012724817394,"sets":1.6363766507143378,"waves":4}
+
+## The felt water at the board (attached riders, its change a step, m/s)
+every step: p50 0.010, p95 0.189, p99 1.632, max 6.692 (n 23132)
+in the case's water: p50 0.269, p95 2.029, p99 3.304, max 5.432 (n 432) [bar: p99 ≤ 0.2]
+
+## Passive prone: fell 14 of 32 [bar: ≤ 3 of 32] (lost board 14); in the case's water as they fell 7
+  wave 0 s 40 3 m out: fell at 4.67 s (lost board; 3.0 m seaward of the take-off's line)
+  wave 0 s 40 12 m out: held
+  wave 0 s 55 0 m out: fell at 7.53 s (lost board; -0.0 m seaward of the take-off's line; in the case's water)
+  wave 0 s 55 6 m out: fell at 6.77 s (lost board; 5.6 m seaward of the take-off's line; in the case's water)
+  wave 0 s 55 12 m out: held
+  wave 0 s 55 18 m out: held
+  wave 0 s 70 3 m out: held
+  wave 0 s 70 12 m out: held
+  wave 1 s 40 3 m out: fell at 4.92 s (lost board; 2.4 m seaward of the take-off's line; in the case's water)
+  wave 1 s 40 12 m out: held
+  wave 1 s 55 0 m out: fell at 7.62 s (lost board; 0.3 m seaward of the take-off's line; in the case's water)
+  wave 1 s 55 6 m out: fell at 6.57 s (lost board; 6.6 m seaward of the take-off's line)
+  wave 1 s 55 12 m out: held
+  wave 1 s 55 18 m out: held
+  wave 1 s 70 3 m out: fell at 0.20 s (lost board; 1.8 m seaward of the take-off's line)
+  wave 1 s 70 12 m out: fell at 7.95 s (lost board; 10.1 m seaward of the take-off's line)
+  wave 2 s 40 3 m out: fell at 5.32 s (lost board; 1.2 m seaward of the take-off's line; in the case's water)
+  wave 2 s 40 12 m out: held
+  wave 2 s 55 0 m out: fell at 7.62 s (lost board; 0.6 m seaward of the take-off's line; in the case's water)
+  wave 2 s 55 6 m out: fell at 6.55 s (lost board; 6.3 m seaward of the take-off's line)
+  wave 2 s 55 12 m out: held
+  wave 2 s 55 18 m out: held
+  wave 2 s 70 3 m out: fell at 0.17 s (lost board; 1.8 m seaward of the take-off's line)
+  wave 2 s 70 12 m out: held
+  wave 3 s 40 3 m out: held
+  wave 3 s 40 12 m out: held
+  wave 3 s 55 0 m out: fell at 7.52 s (lost board; 0.9 m seaward of the take-off's line; in the case's water)
+  wave 3 s 55 6 m out: fell at 7.65 s (lost board; 3.9 m seaward of the take-off's line)
+  wave 3 s 55 12 m out: held
+  wave 3 s 55 18 m out: held
+  wave 3 s 70 3 m out: held
+  wave 3 s 70 12 m out: held
+
+## Scripted rides: 24; popped up 20; stood 4; failed pop-ups 16 of 20 [bar: ≤ 2 of 16] (balance 4, lost board 12); fell after standing 4 (balance 4); fell paddling, before any pop-up 0 (none); never popped up and held 4
+  wave 0 18.0 m out steer 0: cue 3.65 s, up from 3.65 s; fell at 4.55 s (balance, landing); carried -9.3 m past the take-off
+  wave 0 18.0 m out steer -0.5: cue 3.65 s, up from 3.65 s; fell at 4.55 s (balance, landing); carried -9.3 m past the take-off
+  wave 0 15.0 m out steer 0: cue 3.73 s, up from 3.73 s, stood 4.93 s; fell at 5.87 s (balance, standing); carried -3.5 m past the take-off
+  wave 0 15.0 m out steer -0.5: cue 3.73 s, up from 3.73 s, stood 4.93 s; fell at 5.25 s (balance, standing); carried -4.6 m past the take-off
+  wave 0 12.0 m out steer 0: cue 3.98 s, up from 3.98 s; fell at 4.62 s (lost board, push); carried -5.2 m past the take-off
+  wave 0 12.0 m out steer -0.5: cue 3.98 s, up from 3.98 s; fell at 4.62 s (lost board, push); carried -5.2 m past the take-off
+  wave 1 18.0 m out steer 0: cue 3.63 s, up from 3.63 s; fell at 4.55 s (balance, landing, in the case's water); carried -8.9 m past the take-off
+  wave 1 18.0 m out steer -0.5: cue 3.63 s, up from 3.63 s; fell at 4.55 s (balance, landing, in the case's water); carried -8.9 m past the take-off
+  wave 1 15.0 m out steer 0: cue 3.68 s, up from 3.68 s; fell at 4.42 s (lost board, landing, in the case's water); carried -7.5 m past the take-off
+  wave 1 15.0 m out steer -0.5: cue 3.68 s, up from 3.68 s; fell at 4.42 s (lost board, landing, in the case's water); carried -7.5 m past the take-off
+  wave 1 12.0 m out steer 0: cue 3.87 s, up from 3.87 s; fell at 4.42 s (lost board, push); carried -5.6 m past the take-off
+  wave 1 12.0 m out steer -0.5: cue 3.87 s, up from 3.87 s; fell at 4.42 s (lost board, push); carried -5.6 m past the take-off
+  wave 2 18.0 m out steer 0: no cue; on the board to the end; carried 1.4 m past the take-off
+  wave 2 18.0 m out steer -0.5: no cue; on the board to the end; carried 1.4 m past the take-off
+  wave 2 15.0 m out steer 0: cue 3.80 s, up from 3.80 s; fell at 4.53 s (lost board, landing, in the case's water); carried -7.6 m past the take-off
+  wave 2 15.0 m out steer -0.5: cue 3.80 s, up from 3.80 s; fell at 4.53 s (lost board, landing, in the case's water); carried -7.6 m past the take-off
+  wave 2 12.0 m out steer 0: cue 4.00 s, up from 4.00 s; fell at 4.38 s (lost board, push); carried -6.2 m past the take-off
+  wave 2 12.0 m out steer -0.5: cue 4.00 s, up from 4.00 s; fell at 4.38 s (lost board, push); carried -6.2 m past the take-off
+  wave 3 18.0 m out steer 0: no cue; on the board to the end; carried 0.1 m past the take-off
+  wave 3 18.0 m out steer -0.5: no cue; on the board to the end; carried 0.1 m past the take-off
+  wave 3 15.0 m out steer 0: cue 4.23 s, up from 4.23 s, stood 5.43 s; fell at 6.23 s (balance, standing); carried -4.5 m past the take-off
+  wave 3 15.0 m out steer -0.5: cue 4.23 s, up from 4.23 s, stood 5.43 s; fell at 5.75 s (balance, standing); carried -5.2 m past the take-off
+  wave 3 12.0 m out steer 0: cue 4.30 s, up from 4.30 s; fell at 5.02 s (lost board, push); carried -4.1 m past the take-off
+  wave 3 12.0 m out steer -0.5: cue 4.30 s, up from 4.30 s; fell at 5.02 s (lost board, push); carried -4.1 m past the take-off

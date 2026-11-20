@@ -1,0 +1,20 @@
+old padang medium: 160 x 617 cells, render 161 x 626, t 34.000
+new padang medium: 160 x 617 cells, render 161 x 626, t 34.000
+ms p50/p95 over 240 steps (order alternated):
+breaking       old 0.12/0.17  new 0.12/0.17  new/old p50 1.01, paired median diff 0.00
+roller         old 0.00/0.00  new 0.00/0.00  new/old p50 1.14, paired median diff 0.00
+front          old 1.76/2.67  new 1.76/2.68  new/old p50 1.00, paired median diff -0.01
+lip            old 0.09/0.11  new 0.09/0.12  new/old p50 1.02, paired median diff 0.00
+foam           old 1.34/1.41  new 1.34/1.40  new/old p50 1.00, paired median diff 0.00
+airSources     old 0.05/0.05  new 0.05/0.05  new/old p50 1.00, paired median diff 0.00
+aeration       old 0.86/0.99  new 0.85/0.99  new/old p50 0.99, paired median diff 0.00
+contact        old 2.68/3.88  new 2.70/3.86  new/old p50 1.01, paired median diff 0.01
+board          old 0.65/1.84  new 0.66/1.82  new/old p50 1.02, paired median diff 0.01
+bubbles        old 0.15/0.17  new 0.15/0.18  new/old p50 1.00, paired median diff 0.00
+spray          old 0.48/0.58  new 0.49/0.63  new/old p50 1.01, paired median diff 0.00
+sounds         old 0.00/0.00  new 0.00/0.00  new/old p50 0.98, paired median diff -0.00
+snapshotFields old 1.86/1.97  new 1.86/1.97  new/old p50 1.00, paired median diff 0.00
+snapshot       old 2.14/2.30  new 2.14/2.33  new/old p50 1.00, paired median diff 0.00
+summary        old 0.17/0.18  new 0.17/0.18  new/old p50 1.02, paired median diff 0.00
+cpu            old 11.22/13.34  new 11.22/13.21  new/old p50 1.00, paired median diff 0.01
+snapshots differing on 260 of 260 steps frame 0 board; frame 0 rider; frame 0 reaction; frame 1 board; frame 1 rider; state old bae1379c7003683d new d8d942d08d785a93 DIFFER

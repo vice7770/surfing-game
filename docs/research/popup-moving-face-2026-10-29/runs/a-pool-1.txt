@@ -1,0 +1,8 @@
+pool medium seed 1: take-off (27, -205.0), default start 11 m out; starts 11 m out (1.90 m deep); t 20.0 s after the spin-up (0 s wall)
+stepped to t 143.9 s; 12 waves from 11 m out (424 s wall)
+-- from 11 m out (1.90 m deep), set faces ≥ 1.22 m:
+good      sets 4: rode 2, no cue 0, left on the crest 2, white water 0, fell 0; rides: pop 2.20 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.68 up; paddling top speed 4.03 m/s
+good      all  12: rode 4, no cue 0, left on the crest 8, white water 0, fell 0; rides: pop 2.20 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.67 up; paddling top speed 4.06 m/s
+early     sets 4: rode 2, no cue 0, left on the crest 2, white water 0, fell 0; rides: pop 4.25 s after the crest passed the start, standing 1.20 s after the pop, face under the board 21°, 0.80 up; paddling top speed 4.11 m/s
+early     all  12: rode 5, no cue 0, left on the crest 7, white water 0, fell 0; rides: pop 2.53 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.55 up; paddling top speed 4.14 m/s
+wall 424 s

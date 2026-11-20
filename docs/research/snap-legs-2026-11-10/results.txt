@@ -1,0 +1,212 @@
+##### 1. the cutback from a Compress carve (toe = frontside cutback's first turn on the toes), switch off
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| cut-flat-off cutback flat 6 toe | 52/75 -> 55/99 -> 58/101 | 0.37 -> 0.48 -> 0.37 | -0.30 -> -0.30 | -1 | 122 | 0.23 | 0.50 | 78 | 4.0 -> 1.2 | falls 2.63 s (1.12 after Snap, balance) |
+| cut-flat-off cutback flat 6 heel | 17/74 -> 40/80 -> 33/74 | 0.47 -> 0.50 -> 0.53 | -0.30 -> -0.30 | -10 | 130 | 0.25 | 0.03 | 30 | 4.0 -> 0.5 | falls 2.68 s (1.17 after Snap, balance) |
+| cut-flat-off cutback flat 8 toe | 5/60 -> 71/82 -> 5/77 | 0.43 -> 0.53 -> 0.43 | -0.30 -> -0.30 | 27 | 192 | 0.48 | 0.32 | 75 | 6.6 -> 1.2 | falls 3.23 s (1.72 after Snap, balance) |
+| cut-flat-off cutback flat 8 heel | 52/66 -> 67/82 -> 61/89 | 0.48 -> 0.53 -> 0.56 | -0.30 -> -0.29 | 31 | 187 | 0.50 | 0.10 | 96 | 6.8 -> 1.0 | falls 3.63 s (2.12 after Snap, balance) |
+| cut-flat-off cutback flat 11 toe | 57/47 -> 104/56 -> 104/56 | 0.48 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 38 | 73 | 0.42 | 0.23 | 56 | 10.4 -> 6.4 | falls 4.07 s (2.55 after Snap, lost board) |
+| cut-flat-off cutback flat 11 heel | 71/49 -> 71/49 -> 71/49 | 0.48 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 38 | 73 | 0.42 | 0.23 | 56 | 10.4 -> 6.4 | falls 4.07 s (2.55 after Snap, lost board) |
+| cut-canyon-off cutback canyon 6 toe | 61/57 -> 63/66 -> 83/58 | 0.39 -> 0.49 -> 0.39 | -0.30 -> -0.30 | -42 | -54 | never | 0.00 | 0 | 6.9 -> 7.2 | falls 1.82 s (0.30 after Snap, balance) |
+| cut-canyon-off cutback canyon 6 heel | 67/50 -> 70/53 -> 70/53 | 0.48 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 45 | 122 | 0.38 | 0.28 | 69 | 9.4 -> 5.8 | falls 4.05 s (2.53 after Snap, balance) |
+| cut-canyon-off cutback canyon 8 toe | 56/38 -> 101/58 -> 95/69 | 0.47 -> 0.55 -> 0.56 | -0.30 -> -0.28 | -1 | 74 | 0.48 | 0.12 | 4 | 8.7 -> 6.0 | falls 2.80 s (1.28 after Snap, balance) |
+| cut-canyon-off cutback canyon 8 heel | 63/52 -> 73/55 -> 73/59 | 0.48 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 41 | 76 | 0.42 | 0.23 | 65 | 9.9 -> 5.7 | falls 3.83 s (2.32 after Snap, balance) |
+| cut-canyon-off cutback canyon 11 toe | 54/55 -> 70/56 -> 102/66 | 0.47 -> 0.54 -> 0.52 | -0.30 -> -0.28 | 30 | 57 | 0.43 | 0.25 | 0 | 11.2 -> 4.4 | falls 2.97 s (1.45 after Snap, balance) |
+| cut-canyon-off cutback canyon 11 heel | 71/47 -> 74/50 -> 71/47 | 0.48 -> 0.51 -> 0.52 | -0.30 -> -0.30 | 36 | 60 | 0.40 | 0.25 | 51 | 11.2 -> 7.3 | rides |
+##### 2. Snap from a stick-only carve, switch off
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-off standcut flat 6 toe | 43/90 -> 69/44 -> 49/90 | 0.34 -> 0.29 -> 0.34 | -0.30 -> -0.30 | -0 | 114 | 0.33 | 1.05 | 49 | 4.2 -> 1.6 | falls 2.83 s (1.32 after Snap, balance) |
+| stand-flat-off standcut flat 6 heel | 14/93 -> 26/52 -> 17/97 | 0.34 -> 0.29 -> 0.34 | -0.30 -> -0.30 | -0 | 112 | 0.33 | 1.05 | 48 | 4.2 -> 1.6 | falls 2.83 s (1.32 after Snap, balance) |
+| stand-flat-off standcut flat 8 toe | 43/87 -> 46/88 -> 54/96 | 0.47 -> 0.51 -> 0.47 | -0.30 -> -0.30 | 23 | 157 | 0.53 | 0.32 | 99 | 6.7 -> 0.5 | falls 3.02 s (1.50 after Snap, balance) |
+| stand-flat-off standcut flat 8 heel | 26/86 -> 47/97 -> 26/102 | 0.47 -> 0.51 -> 0.47 | -0.30 -> -0.30 | 23 | 157 | 0.53 | 0.32 | 99 | 6.7 -> 0.5 | falls 3.02 s (1.50 after Snap, balance) |
+| stand-flat-off standcut flat 11 toe | 64/47 -> 76/51 -> 72/59 | 0.51 -> 0.51 -> 0.54 | -0.30 -> -0.30 | 45 | 203 | 0.45 | 0.07 | 93 | 9.2 -> 3.3 | falls 3.32 s (1.80 after Snap, balance) |
+| stand-flat-off standcut flat 11 heel | 66/56 -> 78/60 -> 70/77 | 0.51 -> 0.51 -> 0.54 | -0.30 -> -0.30 | 45 | 203 | 0.45 | 0.07 | 93 | 9.2 -> 3.3 | falls 3.32 s (1.80 after Snap, balance) |
+| stand-canyon-off standcut canyon 6 toe | 118/133 -> 117/130 -> 118/133 | 0.78 -> 0.74 -> 0.78 | -0.10 -> -0.00 | -44 | -26 | never | 0.00 | 0 | 6.3 -> 6.3 | falls 1.85 s (0.33 after Snap, balance) |
+| stand-canyon-off standcut canyon 6 heel | 72/44 -> 94/78 -> 72/49 | 0.50 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 40 | 132 | 0.37 | 0.22 | 77 | 8.0 -> 5.8 | falls 3.80 s (2.28 after Snap, balance) |
+| stand-canyon-off standcut canyon 8 toe | 116/129 -> 116/129 -> 116/132 | 0.74 -> 0.78 -> 0.74 | -0.27 -> -0.07 | -44 | -85 | never | 0.00 | 0 | 8.1 -> 6.9 | falls 1.97 s (0.45 after Snap, balance) |
+| stand-canyon-off standcut canyon 8 heel | 69/66 -> 82/78 -> 76/72 | 0.52 -> 0.53 -> 0.52 | -0.30 -> -0.30 | 83 | 287 | 0.42 | 0.07 | 86 | 9.2 -> 4.4 | falls 2.90 s (1.38 after Snap, balance) |
+| stand-canyon-off standcut canyon 11 toe | 78/76 -> 78/78 -> 93/76 | 0.54 -> 0.55 -> 0.54 | -0.30 -> -0.30 | 16 | 325 | 0.42 | 0.30 | 27 | 9.9 -> 3.5 | falls 2.82 s (1.30 after Snap, balance) |
+| stand-canyon-off standcut canyon 11 heel | 66/46 -> 95/98 -> 68/50 | 0.52 -> 0.57 -> 0.52 | -0.30 -> -0.30 | 46 | 128 | 0.35 | 0.27 | 77 | 9.8 -> 5.5 | falls 3.85 s (2.33 after Snap, balance) |
+##### 3. half a stick under Snap, switch off
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| half-flat-off cutback flat 6 toe | 52/75 -> 55/99 -> 58/101 | 0.37 -> 0.48 -> 0.37 | -0.30 -> -0.30 | -1 | 122 | 0.23 | 0.50 | 78 | 4.0 -> 1.2 | falls 2.63 s (1.12 after Snap, balance) |
+| half-flat-off cutback flat 6 heel | 17/74 -> 40/80 -> 33/74 | 0.47 -> 0.50 -> 0.53 | -0.30 -> -0.30 | -10 | 130 | 0.25 | 0.03 | 30 | 4.0 -> 0.5 | falls 2.68 s (1.17 after Snap, balance) |
+| half-flat-off cutback flat 7 toe | 56/72 -> 75/75 -> 79/72 | 0.47 -> 0.56 -> 0.57 | -0.30 -> -0.27 | -17 | 86 | 0.33 | 0.00 | 0 | 4.7 -> 1.4 | falls 2.67 s (1.15 after Snap, balance) |
+| half-flat-off cutback flat 7 heel | 48/62 -> 56/64 -> 62/62 | 0.47 -> 0.56 -> 0.57 | -0.30 -> -0.27 | -17 | 86 | 0.33 | 0.00 | 0 | 4.7 -> 1.4 | falls 2.67 s (1.15 after Snap, balance) |
+| half-flat-off cutback flat 8 toe | 43/60 -> 72/85 -> 43/78 | 0.46 -> 0.54 -> 0.46 | -0.30 -> -0.30 | 15 | 194 | 0.48 | 0.43 | 51 | 6.6 -> 0.5 | falls 3.20 s (1.68 after Snap, balance) |
+| half-flat-off cutback flat 8 heel | 31/66 -> 67/87 -> 31/98 | 0.47 -> 0.54 -> 0.47 | -0.30 -> -0.30 | 14 | 181 | 0.50 | 0.43 | 56 | 6.8 -> 0.5 | falls 3.22 s (1.70 after Snap, balance) |
+| half-flat-off cutback flat 9 toe | 55/55 -> 76/69 -> 89/67 | 0.48 -> 0.53 -> 0.54 | -0.30 -> -0.30 | 19 | 179 | 0.40 | 0.55 | 42 | 8.3 -> 3.3 | falls 3.97 s (2.45 after Snap, lost board) |
+| half-flat-off cutback flat 9 heel | 56/59 -> 78/82 -> 56/66 | 0.48 -> 0.54 -> 0.54 | -0.30 -> -0.30 | 20 | 179 | 0.37 | 0.57 | 42 | 8.6 -> 3.4 | falls 4.05 s (2.53 after Snap, lost board) |
+| half-flat-off cutback flat 10 toe | 57/51 -> 74/60 -> 96/59 | 0.48 -> 0.53 -> 0.53 | -0.30 -> -0.30 | 16 | 97 | 0.37 | 0.58 | 33 | 9.5 -> 5.0 | rides |
+| half-flat-off cutback flat 10 heel | 63/50 -> 82/78 -> 63/52 | 0.48 -> 0.53 -> 0.53 | -0.30 -> -0.30 | 16 | 93 | 0.37 | 0.58 | 33 | 9.6 -> 5.1 | rides |
+| half-flat-off cutback flat 11 toe | 57/47 -> 74/51 -> 103/65 | 0.48 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 18 | 52 | 0.37 | 0.58 | 25 | 10.4 -> 6.4 | rides |
+| half-flat-off cutback flat 11 heel | 74/59 -> 86/75 -> 76/62 | 0.48 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 18 | 52 | 0.37 | 0.58 | 25 | 10.4 -> 6.4 | rides |
+| half-canyon-off cutback canyon 6 toe | 61/57 -> 63/66 -> 83/58 | 0.39 -> 0.49 -> 0.39 | -0.30 -> -0.30 | -42 | -54 | never | 0.00 | 0 | 6.9 -> 7.2 | falls 1.82 s (0.30 after Snap, balance) |
+| half-canyon-off cutback canyon 6 heel | 64/49 -> 82/77 -> 64/49 | 0.48 -> 0.53 -> 0.53 | -0.30 -> -0.30 | 16 | 114 | 0.33 | 0.63 | 33 | 9.4 -> 5.3 | rides |
+| half-canyon-off cutback canyon 7 toe | 60/68 -> 61/68 -> 62/69 | 0.48 -> 0.48 -> 0.49 | -0.30 -> -0.30 | -37 | -75 | never | 0.00 | 0 | 7.9 -> 6.6 | falls 1.98 s (0.47 after Snap, balance) |
+| half-canyon-off cutback canyon 7 heel | 64/53 -> 76/77 -> 64/54 | 0.48 -> 0.53 -> 0.53 | -0.30 -> -0.30 | 17 | 80 | 0.32 | 0.53 | 30 | 10.0 -> 5.2 | rides |
+| half-canyon-off cutback canyon 8 toe | 56/38 -> 101/58 -> 95/69 | 0.47 -> 0.55 -> 0.56 | -0.30 -> -0.28 | -1 | 74 | 0.48 | 0.12 | 4 | 8.7 -> 6.0 | falls 2.80 s (1.28 after Snap, balance) |
+| half-canyon-off cutback canyon 8 heel | 63/58 -> 83/73 -> 73/62 | 0.48 -> 0.52 -> 0.53 | -0.30 -> -0.30 | 18 | 67 | 0.35 | 0.60 | 28 | 9.9 -> 5.7 | rides |
+| half-canyon-off cutback canyon 9 toe | 50/48 -> 96/58 -> 102/73 | 0.47 -> 0.54 -> 0.57 | -0.30 -> -0.23 | 60 | 66 | 0.55 | 0.33 | 10 | 9.6 -> 7.1 | falls 2.65 s (1.13 after Snap, balance) |
+| half-canyon-off cutback canyon 9 heel | 67/59 -> 82/59 -> 77/67 | 0.49 -> 0.51 -> 0.53 | -0.30 -> -0.30 | 18 | 49 | 0.28 | 0.52 | 27 | 9.8 -> 5.8 | rides |
+| half-canyon-off cutback canyon 10 toe | 50/46 -> 86/66 -> 87/62 | 0.47 -> 0.52 -> 0.54 | -0.30 -> -0.30 | 7 | 89 | 0.40 | 0.52 | 0 | 10.2 -> 7.1 | falls 3.15 s (1.63 after Snap, balance) |
+| half-canyon-off cutback canyon 10 heel | 76/60 -> 84/76 -> 76/62 | 0.48 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 18 | 50 | 0.35 | 0.60 | 24 | 10.6 -> 6.5 | rides |
+| half-canyon-off cutback canyon 11 toe | 54/54 -> 93/56 -> 92/61 | 0.47 -> 0.50 -> 0.52 | -0.30 -> -0.30 | 17 | 116 | 0.40 | 0.43 | 23 | 11.2 -> 7.0 | falls 3.78 s (2.27 after Snap, balance) |
+| half-canyon-off cutback canyon 11 heel | 75/54 -> 86/76 -> 75/54 | 0.48 -> 0.51 -> 0.52 | -0.30 -> -0.30 | 16 | 47 | 0.33 | 0.63 | 23 | 11.2 -> 7.4 | rides |
+##### Snap with the stick from trim, switch off
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| top-flat-off standcut flat 6 toe | 55/65 -> 87/65 -> 55/66 | 0.52 -> 0.52 -> 0.56 | -0.30 -> -0.30 | 50 | 161 | 0.10 | 0.22 | 104 | 5.3 -> 1.0 | falls 2.03 s (1.50 after Snap, balance) |
+| top-flat-off standcut flat 6 heel | 63/63 -> 70/64 -> 63/85 | 0.52 -> 0.52 -> 0.56 | -0.30 -> -0.30 | 50 | 161 | 0.10 | 0.22 | 104 | 5.3 -> 1.0 | falls 2.03 s (1.50 after Snap, balance) |
+| top-flat-off standcut flat 7 toe | 41/65 -> 92/66 -> 41/70 | 0.52 -> 0.53 -> 0.54 | -0.30 -> -0.30 | 42 | 180 | 0.10 | 0.23 | 72 | 6.2 -> 1.7 | falls 2.62 s (2.08 after Snap, balance) |
+| top-flat-off standcut flat 7 heel | 59/57 -> 73/59 -> 59/98 | 0.52 -> 0.53 -> 0.54 | -0.30 -> -0.30 | 42 | 180 | 0.10 | 0.23 | 72 | 6.2 -> 1.7 | falls 2.62 s (2.08 after Snap, balance) |
+| top-flat-off standcut flat 8 toe | 84/61 -> 98/61 -> 84/61 | 0.53 -> 0.53 -> 0.54 | -0.30 -> -0.30 | 45 | 133 | 0.10 | 0.23 | 110 | 7.1 -> 2.5 | falls 2.52 s (1.98 after Snap, balance) |
+| top-flat-off standcut flat 8 heel | 67/54 -> 70/62 -> 71/75 | 0.53 -> 0.53 -> 0.54 | -0.30 -> -0.30 | 45 | 133 | 0.10 | 0.23 | 110 | 7.1 -> 2.5 | falls 2.52 s (1.98 after Snap, balance) |
+| top-flat-off standcut flat 9 toe | 92/58 -> 111/58 -> 110/61 | 0.52 -> 0.52 -> 0.53 | -0.30 -> -0.30 | 47 | 156 | 0.08 | 0.25 | 105 | 8.1 -> 4.1 | falls 2.62 s (2.08 after Snap, balance) |
+| top-flat-off standcut flat 9 heel | 66/43 -> 69/50 -> 70/56 | 0.52 -> 0.52 -> 0.53 | -0.30 -> -0.30 | 47 | 156 | 0.08 | 0.25 | 105 | 8.1 -> 4.1 | falls 2.62 s (2.08 after Snap, balance) |
+| top-flat-off standcut flat 10 toe | 93/53 -> 102/60 -> 105/53 | 0.52 -> 0.52 -> 0.53 | -0.30 -> -0.30 | 30 | 72 | 0.08 | 0.42 | 54 | 9.1 -> 5.1 | falls 2.58 s (2.05 after Snap, balance) |
+| top-flat-off standcut flat 10 heel | 64/37 -> 65/38 -> 70/58 | 0.52 -> 0.52 -> 0.53 | -0.30 -> -0.30 | 30 | 72 | 0.08 | 0.42 | 54 | 9.1 -> 5.1 | falls 2.58 s (2.05 after Snap, balance) |
+| top-flat-off standcut flat 11 toe | 93/38 -> 97/60 -> 93/38 | 0.52 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 27 | 77 | 0.08 | 0.45 | 14 | 10.0 -> 7.3 | falls 2.43 s (1.90 after Snap, balance) |
+| top-flat-off standcut flat 11 heel | 65/35 -> 67/36 -> 72/53 | 0.52 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 27 | 77 | 0.08 | 0.45 | 14 | 10.0 -> 7.3 | falls 2.43 s (1.90 after Snap, balance) |
+| top-canyon-off standcut canyon 6 toe | 99/49 -> 109/50 -> 108/51 | 0.48 -> 0.49 -> 0.49 | -0.30 -> -0.30 | 44 | 118 | 0.10 | 0.12 | 100 | 6.1 -> 6.2 | falls 2.77 s (2.23 after Snap, lost board) |
+| top-canyon-off standcut canyon 6 heel | 71/57 -> 80/62 -> 71/63 | 0.51 -> 0.53 -> 0.54 | -0.30 -> -0.30 | 73 | 125 | 0.12 | 0.25 | 73 | 6.1 -> 4.1 | falls 1.80 s (1.27 after Snap, balance) |
+| top-canyon-off standcut canyon 7 toe | 97/52 -> 113/53 -> 114/54 | 0.48 -> 0.50 -> 0.51 | -0.30 -> -0.30 | 40 | 87 | 0.08 | 0.22 | 86 | 7.1 -> 6.5 | falls 3.12 s (2.58 after Snap, lost board) |
+| top-canyon-off standcut canyon 7 heel | 70/50 -> 81/47 -> 71/57 | 0.51 -> 0.54 -> 0.53 | -0.30 -> -0.30 | 74 | 178 | 0.10 | 0.25 | 90 | 7.2 -> 5.4 | falls 1.92 s (1.38 after Snap, balance) |
+| top-canyon-off standcut canyon 8 toe | 99/54 -> 113/56 -> 110/58 | 0.50 -> 0.51 -> 0.53 | -0.30 -> -0.30 | 37 | 102 | 0.08 | 0.23 | 79 | 8.1 -> 5.9 | rides |
+| top-canyon-off standcut canyon 8 heel | 69/43 -> 69/52 -> 71/58 | 0.51 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 58 | 134 | 0.10 | 0.25 | 94 | 8.2 -> 5.0 | falls 2.12 s (1.58 after Snap, balance) |
+| top-canyon-off standcut canyon 9 toe | 97/43 -> 107/58 -> 105/43 | 0.51 -> 0.51 -> 0.52 | -0.30 -> -0.30 | 32 | 75 | 0.08 | 0.42 | 46 | 9.1 -> 6.7 | falls 2.42 s (1.88 after Snap, balance) |
+| top-canyon-off standcut canyon 9 heel | 66/36 -> 69/56 -> 68/55 | 0.51 -> 0.52 -> 0.53 | -0.30 -> -0.30 | 52 | 99 | 0.08 | 0.25 | 69 | 9.1 -> 6.5 | falls 2.28 s (1.75 after Snap, balance) |
+| top-canyon-off standcut canyon 10 toe | 95/40 -> 100/59 -> 98/40 | 0.52 -> 0.52 -> 0.52 | -0.30 -> -0.30 | 29 | 70 | 0.08 | 0.47 | 24 | 10.1 -> 7.6 | falls 2.47 s (1.93 after Snap, balance) |
+| top-canyon-off standcut canyon 10 heel | 65/32 -> 68/33 -> 77/53 | 0.51 -> 0.51 -> 0.53 | -0.30 -> -0.30 | 28 | 86 | 0.08 | 0.38 | 27 | 10.0 -> 7.6 | falls 2.15 s (1.62 after Snap, balance) |
+| top-canyon-off standcut canyon 11 toe | 91/36 -> 96/59 -> 91/36 | 0.51 -> 0.52 -> 0.51 | -0.30 -> -0.30 | 26 | 90 | 0.07 | 0.47 | 5 | 10.9 -> 8.1 | falls 2.78 s (2.25 after Snap, balance) |
+| top-canyon-off standcut canyon 11 heel | 66/32 -> 70/38 -> 79/43 | 0.50 -> 0.51 -> 0.50 | -0.30 -> -0.30 | 27 | 89 | 0.08 | 0.42 | 1 | 10.9 -> 8.5 | falls 2.38 s (1.85 after Snap, balance) |
+##### 1. the cutback from a Compress carve (toe = frontside cutback's first turn on the toes), switch on
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| cut-flat-on cutback flat 6 toe | 54/75 -> 58/91 -> 54/103 | 0.47 -> 0.41 -> 0.49 | -0.30 -> -0.25 | 0 | 218 | 0.23 | 0.33 | 67 | 4.0 -> 2.3 | falls 2.45 s (0.93 after Snap, balance) |
+| cut-flat-on cutback flat 6 heel | 18/74 -> 45/89 -> 34/86 | 0.47 -> 0.53 -> 0.59 | -0.30 -> -0.19 | -8 | 143 | 0.25 | 0.10 | 58 | 4.0 -> 0.6 | falls 2.73 s (1.22 after Snap, lost board) |
+| cut-flat-on cutback flat 8 toe | 1/60 -> 72/88 -> 21/112 | 0.48 -> 0.56 -> 0.58 | -0.30 -> -0.12 | 26 | 186 | 0.48 | 0.25 | 68 | 6.6 -> 2.0 | falls 3.50 s (1.98 after Snap, lost board) |
+| cut-flat-on cutback flat 8 heel | 53/66 -> 68/88 -> 76/108 | 0.48 -> 0.56 -> 0.71 | -0.30 -> -0.12 | 37 | 180 | 0.50 | 0.10 | 88 | 6.8 -> 1.0 | falls 3.58 s (2.07 after Snap, balance) |
+| cut-flat-on cutback flat 11 toe | 57/47 -> 124/79 -> 124/79 | 0.48 -> 0.68 -> 0.68 | -0.30 -> -0.13 | 44 | 89 | 0.42 | 0.23 | 56 | 10.4 -> 6.9 | falls 3.90 s (2.38 after Snap, lost board) |
+| cut-flat-on cutback flat 11 heel | 74/57 -> 85/75 -> 85/75 | 0.48 -> 0.68 -> 0.68 | -0.30 -> -0.13 | 44 | 89 | 0.42 | 0.23 | 56 | 10.4 -> 6.9 | falls 3.90 s (2.38 after Snap, lost board) |
+| cut-canyon-on cutback canyon 6 toe | 61/57 -> 63/66 -> 83/58 | 0.39 -> 0.49 -> 0.39 | -0.30 -> -0.30 | -42 | -54 | never | 0.00 | 0 | 6.9 -> 7.2 | falls 1.82 s (0.30 after Snap, balance) |
+| cut-canyon-on cutback canyon 6 heel | 67/61 -> 87/75 -> 87/75 | 0.48 -> 0.68 -> 0.68 | -0.30 -> -0.13 | 48 | 136 | 0.38 | 0.27 | 69 | 9.4 -> 6.3 | falls 3.85 s (2.33 after Snap, balance) |
+| cut-canyon-on cutback canyon 8 toe | 56/38 -> 90/67 -> 95/70 | 0.47 -> 0.58 -> 0.58 | -0.30 -> -0.26 | -1 | 83 | 0.48 | 0.12 | 6 | 8.7 -> 5.5 | falls 2.80 s (1.28 after Snap, balance) |
+| cut-canyon-on cutback canyon 8 heel | 63/61 -> 83/71 -> 88/83 | 0.48 -> 0.64 -> 0.69 | -0.30 -> -0.13 | 40 | 119 | 0.42 | 0.23 | 69 | 9.9 -> 5.6 | falls 3.77 s (2.25 after Snap, balance) |
+| cut-canyon-on cutback canyon 11 toe | 54/55 -> 70/56 -> 107/72 | 0.47 -> 0.54 -> 0.56 | -0.30 -> -0.24 | 30 | 58 | 0.43 | 0.25 | 0 | 11.2 -> 4.4 | falls 2.97 s (1.45 after Snap, balance) |
+| cut-canyon-on cutback canyon 11 heel | 79/55 -> 80/59 -> 84/66 | 0.48 -> 0.59 -> 0.66 | -0.30 -> -0.14 | 37 | 52 | 0.40 | 0.25 | 48 | 11.2 -> 7.4 | falls 4.30 s (2.78 after Snap, balance) |
+##### 2. Snap from a stick-only carve, switch on
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| stand-flat-on standcut flat 6 toe | 44/103 -> 56/71 -> 45/108 | 0.48 -> 0.37 -> 0.48 | -0.24 -> -0.19 | -0 | 208 | 0.33 | 0.90 | 51 | 4.2 -> 3.1 | falls 2.68 s (1.17 after Snap, balance) |
+| stand-flat-on standcut flat 6 heel | 18/99 -> 18/84 -> 22/106 | 0.48 -> 0.37 -> 0.48 | -0.24 -> -0.19 | -0 | 208 | 0.33 | 0.90 | 51 | 4.2 -> 3.1 | falls 2.68 s (1.17 after Snap, balance) |
+| stand-flat-on standcut flat 8 toe | 39/89 -> 39/98 -> 50/122 | 0.53 -> 0.56 -> 0.57 | -0.29 -> -0.13 | 18 | 165 | 0.53 | 0.32 | 78 | 6.7 -> 0.6 | falls 3.03 s (1.52 after Snap, balance) |
+| stand-flat-on standcut flat 8 heel | 19/86 -> 40/105 -> 19/123 | 0.53 -> 0.56 -> 0.57 | -0.29 -> -0.13 | 18 | 165 | 0.53 | 0.32 | 78 | 6.7 -> 0.6 | falls 3.03 s (1.52 after Snap, balance) |
+| stand-flat-on standcut flat 11 toe | 73/55 -> 77/56 -> 106/80 | 0.54 -> 0.58 -> 0.69 | -0.28 -> -0.12 | 69 | 224 | 0.45 | 0.07 | 99 | 9.2 -> 5.0 | falls 3.18 s (1.67 after Snap, balance) |
+| stand-flat-on standcut flat 11 heel | 79/64 -> 80/65 -> 95/94 | 0.54 -> 0.58 -> 0.69 | -0.28 -> -0.12 | 69 | 224 | 0.45 | 0.07 | 99 | 9.2 -> 5.0 | falls 3.18 s (1.67 after Snap, balance) |
+| stand-canyon-on standcut canyon 6 toe | 118/133 -> 117/130 -> 118/133 | 0.78 -> 0.74 -> 0.78 | -0.10 -> -0.00 | -44 | -26 | never | 0.00 | 0 | 6.3 -> 6.3 | falls 1.85 s (0.33 after Snap, balance) |
+| stand-canyon-on standcut canyon 6 heel | 80/52 -> 94/78 -> 88/74 | 0.52 -> 0.52 -> 0.69 | -0.28 -> -0.12 | 48 | 132 | 0.37 | 0.22 | 74 | 8.0 -> 6.4 | falls 3.72 s (2.20 after Snap, balance) |
+| stand-canyon-on standcut canyon 8 toe | 116/129 -> 116/129 -> 116/132 | 0.74 -> 0.78 -> 0.74 | -0.27 -> -0.07 | -44 | -85 | never | 0.00 | 0 | 8.1 -> 6.9 | falls 1.97 s (0.45 after Snap, balance) |
+| stand-canyon-on standcut canyon 8 heel | 78/74 -> 81/77 -> 103/99 | 0.54 -> 0.56 -> 0.68 | -0.28 -> -0.12 | 79 | 287 | 0.42 | 0.07 | 95 | 9.2 -> 5.0 | falls 3.00 s (1.48 after Snap, balance) |
+| stand-canyon-on standcut canyon 11 toe | 78/77 -> 78/79 -> 124/96 | 0.55 -> 0.55 -> 0.70 | -0.28 -> -0.12 | 16 | 333 | 0.42 | 0.53 | 39 | 9.9 -> 3.0 | falls 2.97 s (1.45 after Snap, lost board) |
+| stand-canyon-on standcut canyon 11 heel | 76/62 -> 95/98 -> 83/67 | 0.55 -> 0.57 -> 0.69 | -0.27 -> -0.12 | 50 | 128 | 0.35 | 0.27 | 71 | 9.8 -> 6.1 | falls 3.83 s (2.32 after Snap, balance) |
+##### 3. half a stick under Snap, switch on
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| half-flat-on cutback flat 6 toe | 52/75 -> 59/75 -> 53/104 | 0.46 -> 0.36 -> 0.46 | -0.30 -> -0.27 | 0 | 174 | 0.23 | 0.38 | 69 | 4.0 -> 1.8 | falls 2.50 s (0.98 after Snap, balance) |
+| half-flat-on cutback flat 6 heel | 16/74 -> 43/86 -> 32/77 | 0.47 -> 0.52 -> 0.57 | -0.30 -> -0.24 | -9 | 136 | 0.25 | 0.05 | 47 | 4.0 -> 0.5 | falls 2.75 s (1.23 after Snap, balance) |
+| half-flat-on cutback flat 7 toe | 56/72 -> 75/75 -> 79/72 | 0.47 -> 0.56 -> 0.57 | -0.30 -> -0.27 | -17 | 86 | 0.33 | 0.00 | 0 | 4.7 -> 1.4 | falls 2.67 s (1.15 after Snap, balance) |
+| half-flat-on cutback flat 7 heel | 48/62 -> 56/64 -> 62/62 | 0.47 -> 0.56 -> 0.57 | -0.30 -> -0.27 | -17 | 86 | 0.33 | 0.00 | 0 | 4.7 -> 1.4 | falls 2.67 s (1.15 after Snap, balance) |
+| half-flat-on cutback flat 8 toe | 36/60 -> 71/86 -> 36/88 | 0.48 -> 0.55 -> 0.50 | -0.30 -> -0.21 | 16 | 192 | 0.48 | 0.40 | 56 | 6.6 -> 0.5 | falls 3.25 s (1.73 after Snap, balance) |
+| half-flat-on cutback flat 8 heel | 20/66 -> 67/89 -> 20/108 | 0.48 -> 0.55 -> 0.51 | -0.30 -> -0.21 | 15 | 178 | 0.50 | 0.40 | 61 | 6.8 -> 0.6 | falls 3.27 s (1.75 after Snap, balance) |
+| half-flat-on cutback flat 9 toe | 55/56 -> 76/69 -> 97/79 | 0.48 -> 0.53 -> 0.60 | -0.30 -> -0.23 | 21 | 180 | 0.40 | 0.55 | 40 | 8.3 -> 3.4 | falls 3.90 s (2.38 after Snap, lost board) |
+| half-flat-on cutback flat 9 heel | 60/64 -> 78/82 -> 64/77 | 0.48 -> 0.54 -> 0.60 | -0.30 -> -0.23 | 23 | 177 | 0.37 | 0.57 | 38 | 8.6 -> 3.5 | falls 3.93 s (2.42 after Snap, lost board) |
+| half-flat-on cutback flat 10 toe | 57/52 -> 74/60 -> 101/66 | 0.48 -> 0.53 -> 0.58 | -0.30 -> -0.25 | 17 | 97 | 0.37 | 0.58 | 32 | 9.5 -> 5.1 | rides |
+| half-flat-on cutback flat 10 heel | 67/56 -> 82/78 -> 67/57 | 0.48 -> 0.53 -> 0.58 | -0.30 -> -0.25 | 16 | 93 | 0.37 | 0.58 | 32 | 9.6 -> 5.2 | rides |
+| half-flat-on cutback flat 11 toe | 57/47 -> 74/51 -> 108/70 | 0.48 -> 0.52 -> 0.56 | -0.30 -> -0.26 | 18 | 52 | 0.37 | 0.58 | 25 | 10.4 -> 6.4 | rides |
+| half-flat-on cutback flat 11 heel | 74/62 -> 86/75 -> 79/66 | 0.48 -> 0.52 -> 0.56 | -0.30 -> -0.26 | 18 | 52 | 0.37 | 0.58 | 25 | 10.4 -> 6.4 | rides |
+| half-canyon-on cutback canyon 6 toe | 61/57 -> 63/66 -> 83/58 | 0.39 -> 0.49 -> 0.39 | -0.30 -> -0.30 | -42 | -54 | never | 0.00 | 0 | 6.9 -> 7.2 | falls 1.82 s (0.30 after Snap, balance) |
+| half-canyon-on cutback canyon 6 heel | 67/54 -> 82/77 -> 68/54 | 0.48 -> 0.53 -> 0.57 | -0.30 -> -0.25 | 16 | 113 | 0.33 | 0.63 | 32 | 9.4 -> 5.4 | rides |
+| half-canyon-on cutback canyon 7 toe | 60/68 -> 61/68 -> 62/69 | 0.48 -> 0.48 -> 0.49 | -0.30 -> -0.30 | -37 | -75 | never | 0.00 | 0 | 7.9 -> 6.6 | falls 1.98 s (0.47 after Snap, balance) |
+| half-canyon-on cutback canyon 7 heel | 66/58 -> 78/76 -> 69/61 | 0.48 -> 0.53 -> 0.57 | -0.30 -> -0.25 | 17 | 80 | 0.32 | 0.55 | 29 | 10.0 -> 5.2 | rides |
+| half-canyon-on cutback canyon 8 toe | 56/38 -> 90/67 -> 95/70 | 0.47 -> 0.57 -> 0.57 | -0.30 -> -0.27 | -1 | 77 | 0.48 | 0.12 | 5 | 8.7 -> 5.7 | falls 2.80 s (1.28 after Snap, balance) |
+| half-canyon-on cutback canyon 8 heel | 63/63 -> 83/73 -> 76/67 | 0.48 -> 0.52 -> 0.57 | -0.30 -> -0.25 | 18 | 67 | 0.35 | 0.60 | 28 | 9.9 -> 5.7 | rides |
+| half-canyon-on cutback canyon 9 toe | 50/48 -> 96/58 -> 102/73 | 0.47 -> 0.54 -> 0.57 | -0.30 -> -0.23 | 60 | 68 | 0.55 | 0.33 | 10 | 9.6 -> 7.1 | falls 2.65 s (1.13 after Snap, balance) |
+| half-canyon-on cutback canyon 9 heel | 67/62 -> 85/63 -> 81/74 | 0.49 -> 0.54 -> 0.57 | -0.30 -> -0.25 | 18 | 48 | 0.28 | 0.52 | 26 | 9.8 -> 5.9 | rides |
+| half-canyon-on cutback canyon 10 toe | 50/46 -> 91/71 -> 91/65 | 0.47 -> 0.55 -> 0.56 | -0.30 -> -0.27 | 7 | 89 | 0.40 | 0.58 | 0 | 10.2 -> 7.0 | falls 3.18 s (1.67 after Snap, balance) |
+| half-canyon-on cutback canyon 10 heel | 76/63 -> 84/76 -> 80/67 | 0.48 -> 0.52 -> 0.56 | -0.30 -> -0.26 | 18 | 50 | 0.35 | 0.60 | 24 | 10.6 -> 6.6 | rides |
+| half-canyon-on cutback canyon 11 toe | 54/55 -> 94/58 -> 94/64 | 0.47 -> 0.51 -> 0.55 | -0.30 -> -0.27 | 17 | 113 | 0.40 | 0.45 | 23 | 11.2 -> 6.9 | falls 3.83 s (2.32 after Snap, balance) |
+| half-canyon-on cutback canyon 11 heel | 78/58 -> 86/76 -> 78/58 | 0.48 -> 0.51 -> 0.55 | -0.30 -> -0.26 | 17 | 47 | 0.33 | 0.63 | 23 | 11.2 -> 7.4 | rides |
+##### Snap with the stick from trim, switch on
+| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| top-flat-on standcut flat 6 toe | 71/78 -> 96/78 -> 71/82 | 0.59 -> 0.61 -> 0.71 | -0.22 -> -0.12 | 60 | 156 | 0.10 | 0.22 | 118 | 5.3 -> 1.6 | falls 2.03 s (1.50 after Snap, balance) |
+| top-flat-on standcut flat 6 heel | 76/72 -> 76/72 -> 76/101 | 0.59 -> 0.61 -> 0.71 | -0.22 -> -0.12 | 60 | 156 | 0.10 | 0.22 | 118 | 5.3 -> 1.6 | falls 2.03 s (1.50 after Snap, balance) |
+| top-flat-on standcut flat 7 toe | 88/74 -> 96/74 -> 88/78 | 0.58 -> 0.59 -> 0.71 | -0.23 -> -0.12 | 56 | 177 | 0.10 | 0.23 | 100 | 6.2 -> 2.2 | falls 2.30 s (1.77 after Snap, balance) |
+| top-flat-on standcut flat 7 heel | 76/65 -> 77/66 -> 86/96 | 0.58 -> 0.59 -> 0.71 | -0.23 -> -0.12 | 56 | 177 | 0.10 | 0.23 | 100 | 6.2 -> 2.2 | falls 2.30 s (1.77 after Snap, balance) |
+| top-flat-on standcut flat 8 toe | 95/75 -> 110/70 -> 124/80 | 0.58 -> 0.69 -> 0.69 | -0.23 -> -0.12 | 69 | 145 | 0.10 | 0.23 | 112 | 7.1 -> 4.7 | falls 2.15 s (1.62 after Snap, balance) |
+| top-flat-on standcut flat 8 heel | 75/63 -> 96/85 -> 91/83 | 0.58 -> 0.69 -> 0.69 | -0.23 -> -0.12 | 69 | 145 | 0.10 | 0.23 | 112 | 7.1 -> 4.7 | falls 2.15 s (1.62 after Snap, balance) |
+| top-flat-on standcut flat 9 toe | 95/73 -> 133/81 -> 119/83 | 0.57 -> 0.69 -> 0.70 | -0.24 -> -0.12 | 50 | 152 | 0.08 | 0.25 | 104 | 8.1 -> 4.8 | falls 2.60 s (2.07 after Snap, balance) |
+| top-flat-on standcut flat 9 heel | 73/58 -> 86/75 -> 88/86 | 0.57 -> 0.69 -> 0.70 | -0.24 -> -0.12 | 50 | 152 | 0.08 | 0.25 | 104 | 8.1 -> 4.8 | falls 2.60 s (2.07 after Snap, balance) |
+| top-flat-on standcut flat 10 toe | 95/69 -> 131/77 -> 131/82 | 0.56 -> 0.67 -> 0.70 | -0.24 -> -0.12 | 45 | 127 | 0.08 | 0.25 | 84 | 9.1 -> 5.5 | falls 2.67 s (2.13 after Snap, balance) |
+| top-flat-on standcut flat 10 heel | 71/45 -> 79/60 -> 83/69 | 0.56 -> 0.67 -> 0.70 | -0.24 -> -0.12 | 45 | 127 | 0.08 | 0.25 | 84 | 9.1 -> 5.5 | falls 2.67 s (2.13 after Snap, balance) |
+| top-flat-on standcut flat 11 toe | 96/66 -> 101/66 -> 137/77 | 0.56 -> 0.58 -> 0.67 | -0.25 -> -0.14 | 27 | 63 | 0.08 | 0.60 | 36 | 10.0 -> 6.8 | falls 2.58 s (2.05 after Snap, balance) |
+| top-flat-on standcut flat 11 heel | 70/41 -> 71/44 -> 99/84 | 0.56 -> 0.58 -> 0.67 | -0.25 -> -0.14 | 27 | 63 | 0.08 | 0.60 | 36 | 10.0 -> 6.8 | falls 2.58 s (2.05 after Snap, balance) |
+| top-canyon-on standcut canyon 6 toe | 103/59 -> 137/74 -> 132/78 | 0.55 -> 0.66 -> 0.68 | -0.23 -> -0.12 | 47 | 145 | 0.10 | 0.12 | 96 | 6.1 -> 6.3 | falls 2.65 s (2.12 after Snap, balance) |
+| top-canyon-on standcut canyon 6 heel | 78/63 -> 79/63 -> 85/84 | 0.56 -> 0.58 -> 0.69 | -0.23 -> -0.13 | 60 | 126 | 0.12 | 0.25 | 59 | 6.1 -> 4.3 | falls 1.82 s (1.28 after Snap, balance) |
+| top-canyon-on standcut canyon 7 toe | 100/60 -> 128/68 -> 139/76 | 0.54 -> 0.63 -> 0.68 | -0.24 -> -0.12 | 47 | 93 | 0.08 | 0.22 | 82 | 7.1 -> 7.2 | falls 2.93 s (2.40 after Snap, lost board) |
+| top-canyon-on standcut canyon 7 heel | 78/57 -> 100/80 -> 83/72 | 0.56 -> 0.70 -> 0.67 | -0.23 -> -0.14 | 73 | 201 | 0.10 | 0.25 | 88 | 7.2 -> 7.0 | falls 1.87 s (1.33 after Snap, balance) |
+| top-canyon-on standcut canyon 8 toe | 101/61 -> 135/77 -> 135/78 | 0.54 -> 0.67 -> 0.69 | -0.24 -> -0.12 | 41 | 87 | 0.08 | 0.23 | 74 | 8.1 -> 6.5 | falls 2.85 s (2.32 after Snap, balance) |
+| top-canyon-on standcut canyon 8 heel | 77/51 -> 81/70 -> 85/87 | 0.56 -> 0.66 -> 0.69 | -0.23 -> -0.13 | 57 | 156 | 0.10 | 0.25 | 89 | 8.2 -> 5.5 | falls 2.10 s (1.57 after Snap, balance) |
+| top-canyon-on standcut canyon 9 toe | 100/65 -> 121/70 -> 135/76 | 0.55 -> 0.63 -> 0.69 | -0.24 -> -0.12 | 35 | 67 | 0.08 | 0.25 | 60 | 9.1 -> 6.7 | falls 2.85 s (2.32 after Snap, balance) |
+| top-canyon-on standcut canyon 9 heel | 73/44 -> 94/84 -> 81/69 | 0.56 -> 0.69 -> 0.69 | -0.24 -> -0.13 | 66 | 137 | 0.08 | 0.25 | 89 | 9.1 -> 7.8 | falls 2.12 s (1.58 after Snap, balance) |
+| top-canyon-on standcut canyon 10 toe | 97/67 -> 110/68 -> 142/75 | 0.55 -> 0.60 -> 0.69 | -0.25 -> -0.12 | 29 | 67 | 0.08 | 0.50 | 43 | 10.1 -> 7.0 | falls 2.63 s (2.10 after Snap, balance) |
+| top-canyon-on standcut canyon 10 heel | 71/40 -> 71/40 -> 95/80 | 0.56 -> 0.59 -> 0.70 | -0.25 -> -0.12 | 29 | 75 | 0.08 | 0.50 | 48 | 10.0 -> 6.3 | falls 2.82 s (2.28 after Snap, lost board) |
+| top-canyon-on standcut canyon 11 toe | 96/62 -> 101/64 -> 117/64 | 0.56 -> 0.57 -> 0.65 | -0.25 -> -0.17 | 27 | 79 | 0.07 | 0.55 | 21 | 10.9 -> 8.0 | falls 2.60 s (2.07 after Snap, balance) |
+| top-canyon-on standcut canyon 11 heel | 70/39 -> 72/41 -> 100/69 | 0.55 -> 0.57 -> 0.64 | -0.25 -> -0.16 | 28 | 80 | 0.08 | 0.47 | 24 | 10.9 -> 8.1 | falls 2.35 s (1.82 after Snap, lost board) |
+##### means over six speeds, both sides, flat and the Canyon-matched wave (24 runs a row)
+| setting | runs | early | knees F/R mid | knees F/R exit | pelvis mid / exit | roll | yaw | old s | turned | kept | v out | falls in hold | falls in all | to fall s |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| cut6-off | 24 | 2 | 79/64 | 75/65 | 0.52 / 0.52 | 28 | 112 | 0.41 | 55 | 0.46 | 4.2 | 7 | 21 | 1.99 |
+| stand6-off | 24 | 3 | 72/77 | 65/78 | 0.51 / 0.51 | 29 | 177 | 0.51 | 68 | 0.35 | 2.8 | 15 | 21 | 1.47 |
+| cut6-on | 24 | 2 | 86/76 | 87/82 | 0.60 / 0.64 | 31 | 126 | 0.41 | 55 | 0.51 | 4.6 | 7 | 22 | 1.89 |
+| stand6-on | 24 | 3 | 71/82 | 78/93 | 0.53 / 0.60 | 33 | 192 | 0.51 | 66 | 0.44 | 3.5 | 14 | 21 | 1.35 |
+| cut6-deep-off | 24 | 2 | 64/41 | 64/39 | 0.39 / 0.41 | 26 | 122 | 0.38 | 55 | 0.41 | 3.8 | 4 | 16 | 2.20 |
+| stand6-deep-off | 24 | 3 | 75/73 | 64/68 | 0.47 / 0.43 | 35 | 153 | 0.54 | 57 | 0.33 | 2.9 | 15 | 21 | 1.36 |
+| cut6-deep-on | 24 | 2 | 76/59 | 82/68 | 0.55 / 0.62 | 31 | 102 | 0.38 | 47 | 0.49 | 4.6 | 4 | 20 | 2.08 |
+| stand6-deep-on | 24 | 3 | 77/77 | 76/84 | 0.52 / 0.55 | 42 | 172 | 0.54 | 60 | 0.43 | 3.7 | 17 | 20 | 1.28 |
+| cut6-stamp-off | 24 | 2 | 83/64 | 78/63 | 0.53 / 0.54 | 31 | 96 | 0.43 | 50 | 0.45 | 4.1 | 7 | 21 | 1.95 |
+| stand6-stamp-off | 24 | 3 | 83/87 | 68/84 | 0.54 / 0.54 | 25 | 171 | 0.60 | 55 | 0.29 | 2.4 | 12 | 21 | 1.42 |
+| cut6-stamp-on | 24 | 2 | 87/72 | 90/78 | 0.60 / 0.65 | 34 | 111 | 0.43 | 46 | 0.45 | 4.2 | 8 | 22 | 1.81 |
+| stand6-stamp-on | 24 | 3 | 83/88 | 76/97 | 0.57 / 0.63 | 25 | 177 | 0.60 | 53 | 0.31 | 2.7 | 12 | 21 | 1.39 |
+| cut6-lean-off | 24 | 2 | 76/61 | 75/64 | 0.53 / 0.53 | 33 | 138 | 0.45 | 71 | 0.43 | 4.0 | 7 | 22 | 1.75 |
+| stand6-lean-off | 24 | 3 | 72/76 | 67/77 | 0.51 / 0.51 | 32 | 170 | 0.52 | 76 | 0.32 | 2.6 | 13 | 21 | 1.47 |
+| cut6-lean-on | 24 | 2 | 85/72 | 87/78 | 0.61 / 0.65 | 43 | 162 | 0.45 | 71 | 0.53 | 4.9 | 8 | 22 | 1.56 |
+| stand6-lean-on | 24 | 3 | 75/81 | 80/92 | 0.57 / 0.60 | 37 | 189 | 0.52 | 71 | 0.43 | 3.4 | 13 | 21 | 1.37 |
+| cut6-agile-off | 24 | 2 | 79/63 | 75/63 | 0.52 / 0.52 | 35 | 150 | 0.36 | 52 | 0.44 | 4.1 | 9 | 21 | 1.72 |
+| stand6-agile-off | 24 | 3 | 76/82 | 72/76 | 0.54 / 0.52 | 29 | 177 | 0.47 | 76 | 0.32 | 2.7 | 9 | 21 | 1.59 |
+| cut6-agile-on | 24 | 2 | 85/70 | 88/79 | 0.57 / 0.62 | 41 | 163 | 0.36 | 50 | 0.50 | 4.7 | 8 | 22 | 1.59 |
+| stand6-agile-on | 24 | 3 | 78/87 | 86/91 | 0.57 / 0.63 | 33 | 183 | 0.47 | 78 | 0.38 | 3.2 | 11 | 21 | 1.55 |
+| cut6-both-off | 24 | 1 | 77/63 | 73/60 | 0.51 / 0.52 | 24 | 110 | 0.38 | 52 | 0.52 | 4.6 | 6 | 19 | 2.13 |
+| stand6-both-off | 24 | 2 | 80/79 | 69/74 | 0.53 / 0.51 | 44 | 168 | 0.42 | 73 | 0.35 | 2.8 | 11 | 22 | 1.55 |
+| cut6-both-on | 24 | 1 | 83/69 | 84/73 | 0.56 / 0.63 | 30 | 120 | 0.38 | 49 | 0.59 | 5.1 | 7 | 21 | 1.98 |
+| stand6-both-on | 24 | 2 | 84/82 | 81/93 | 0.58 / 0.62 | 49 | 182 | 0.42 | 66 | 0.45 | 3.7 | 15 | 22 | 1.41 |
+| half-off | 24 | 2 | 77/72 | 72/67 | 0.53 / 0.52 | 13 | 100 | 0.37 | 28 | 0.48 | 4.5 | 6 | 12 | 2.24 |
+| top-off | 24 | 0 | 86/54 | 81/58 | 0.52 / 0.53 | 42 | 117 | 0.09 | 67 | 0.60 | 5.1 | 4 | 23 | 1.94 |
+| half-on | 24 | 2 | 78/72 | 74/72 | 0.53 / 0.56 | 13 | 102 | 0.37 | 28 | 0.49 | 4.5 | 6 | 12 | 2.24 |
+| top-on | 24 | 0 | 99/69 | 105/80 | 0.63 / 0.69 | 48 | 123 | 0.09 | 78 | 0.66 | 5.5 | 4 | 24 | 1.89 |
+##### 4. same bytes with the switch on and no Snap held?
+trim flat: identical
+trim flat (legDrive + carveFlex): identical
+compress flat: identical
+compress flat (legDrive + carveFlex): identical
+stick flat: identical
+stick flat (legDrive + carveFlex): identical
+trim canyon: identical
+trim canyon (legDrive + carveFlex): identical
+compress canyon: identical
+compress canyon (legDrive + carveFlex): identical
+stick canyon: identical
+stick canyon (legDrive + carveFlex): identical

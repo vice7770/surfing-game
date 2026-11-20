@@ -1,0 +1,10 @@
+canyon big seed 1: take-off (-112, -180.5), default start 3 m out; starts 3 m out (3.67 m deep); t 28.0 s after the spin-up (136 s wall)
+stepped to t 197.5 s; 14 waves from 3 m out (2113 s wall)
+-- from 3 m out (3.67 m deep), set faces ≥ 2.29 m:
+good      sets 5: rode 4, no cue 0, left on the crest 1, white water 0, fell 0; rides: pop 0.50 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.79 up; paddling top speed 5.30 m/s
+good      all  14: rode 8, no cue 5, left on the crest 1, white water 0, fell 0; rides: pop 0.62 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.79 up; paddling top speed 4.88 m/s
+turnL     sets 5: rode 4, no cue 0, left on the crest 1, white water 0, fell 0; rides: pop 0.50 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.79 up; paddling top speed 5.30 m/s
+turnL     all  14: rode 8, no cue 5, left on the crest 1, white water 0, fell 0; rides: pop 0.62 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.79 up; paddling top speed 4.88 m/s
+turnR     sets 5: rode 4, no cue 0, left on the crest 1, white water 0, fell 0; rides: pop 0.50 s after the crest passed the start, standing 1.20 s after the pop, face under the board 18°, 0.79 up; paddling top speed 5.30 m/s
+turnR     all  14: rode 8, no cue 5, left on the crest 1, white water 0, fell 0; rides: pop 0.62 s after the crest passed the start, standing 1.20 s after the pop, face under the board 17°, 0.79 up; paddling top speed 4.88 m/s
+wall 2113 s

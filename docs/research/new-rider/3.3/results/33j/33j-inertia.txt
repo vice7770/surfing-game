@@ -1,0 +1,94 @@
+# step 3.3j read (a): the solve's own roll inertia. Controls then the ride.
+
+## MODE=dry
+{"mode":"dry","rider":"standing","steps":2,"mass":2.54,"asymPeak":0.003724520959569,"rollSolve":0.026156,"rollDry":0.026205,"rollWater":-0.000049,"heaveSolve":2.54,"wetted":0,"volume":0,"rollSolveSpan":"0.0262–0.0262","added":0,"addedOnly":0,"radDamp":0,"damp":0,"restTerm":0,"h":0.00104167,"dampCoeff":0}
+{"mode":"dry","rider":"none","steps":2,"mass":2.54,"asymPeak":0.00370358442663,"rollSolve":0.026008,"rollDry":0.026205,"rollWater":-0.000197,"heaveSolve":2.54,"wetted":0,"volume":0,"rollSolveSpan":"0.0260–0.0260","added":0,"addedOnly":0,"radDamp":0,"damp":0,"restTerm":-0.0002,"h":0.00416667,"dampCoeff":0}
+
+# step 3.3j read (a) — the dry CONTROL, a board on PlaneWater, with a standing rider and without one
+# P1 (dry, standing): rollSolve must EQUAL rollDry exactly (0.0262 kg·m²) and heaveSolve the board's own mass (2.54 kg).
+# P2 (float, standing): rollSolve > rollDry by order 0.2–1.2 kg·m².
+# The GATE's own negative control: with no rider the solve eliminates `system` IN PLACE, so that read must be ASYMMETRIC.
+
+| mode | rider | steps | x̂ᵀAx̂ kg·m² | x̂ᵀIx̂ kg·m² | the water's share | ŷᵀAŷ kg | the board's mass kg | wetted m² | volume m³ | asymmetry peak | rollSolve over the run |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| dry | standing | 2 | 0.026156 | 0.026205 | -0.000049 | 2.54 | 2.54 | 0 | 0 | 0.003724520959569 | 0.0262–0.0262 |
+| dry | none | 2 | 0.026008 | 0.026205 | -0.000197 | 2.54 | 2.54 | 0 | 0 | 0.00370358442663 | 0.0260–0.0260 |
+
+# the hand reconstruction, patch by patch, out of the arrays the assembly read — P4: the three must close on x̂ᵀAx̂.
+| mode | rider | x̂ᵀAx̂ | x̂ᵀIx̂ (dry) | + added inertia | + h·damping | = REST (foils, plate, rider yaw) | the substep h, s | the damping h⁻¹·damp, N·m·s/rad |
+|---|---|---|---|---|---|---|---|---|
+| dry | standing | 0.026156 | 0.026205 | 0 | 0 | 0 | 0.00104167 | 0 |
+| dry | none | 0.026008 | 0.026205 | 0 | 0 | -0.0002 | 0.00416667 | 0 |
+
+## MODE=float
+{"mode":"float","rider":"standing","steps":30,"mass":2.54,"asymPeak":0,"rollSolve":1.811387,"rollDry":0.026205,"rollWater":1.785182,"heaveSolve":152.3735,"wetted":0.5169,"volume":0.020938,"rollSolveSpan":"0.2853–2.1103","added":1.7829,"addedOnly":1.7754,"radDamp":0.0075,"damp":0.0022,"restTerm":0.0001,"h":0.00104167,"dampCoeff":2.11}
+{"mode":"float","rider":"none","steps":30,"mass":2.54,"asymPeak":0.047477666918662,"rollSolve":0.935419,"rollDry":0.026205,"rollWater":0.909214,"heaveSolve":63.8777,"wetted":0.3414,"volume":0.002936,"rollSolveSpan":"0.2587–0.9361","added":0.9093,"addedOnly":0.8815,"radDamp":0.0278,"damp":0,"restTerm":-0.0001,"h":0.00416667,"dampCoeff":0}
+
+# step 3.3j read (a) — the float CONTROL, a board on PlaneWater, with a standing rider and without one
+# P1 (dry, standing): rollSolve must EQUAL rollDry exactly (0.0262 kg·m²) and heaveSolve the board's own mass (2.54 kg).
+# P2 (float, standing): rollSolve > rollDry by order 0.2–1.2 kg·m².
+# The GATE's own negative control: with no rider the solve eliminates `system` IN PLACE, so that read must be ASYMMETRIC.
+
+| mode | rider | steps | x̂ᵀAx̂ kg·m² | x̂ᵀIx̂ kg·m² | the water's share | ŷᵀAŷ kg | the board's mass kg | wetted m² | volume m³ | asymmetry peak | rollSolve over the run |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| float | standing | 30 | 1.811387 | 0.026205 | 1.785182 | 152.3735 | 2.54 | 0.5169 | 0.020938 | 0 | 0.2853–2.1103 |
+| float | none | 30 | 0.935419 | 0.026205 | 0.909214 | 63.8777 | 2.54 | 0.3414 | 0.002936 | 0.047477666918662 | 0.2587–0.9361 |
+
+# the hand reconstruction, patch by patch, out of the arrays the assembly read — P4: the three must close on x̂ᵀAx̂.
+| mode | rider | x̂ᵀAx̂ | x̂ᵀIx̂ (dry) | + added inertia | + h·damping | = REST (foils, plate, rider yaw) | the substep h, s | the damping h⁻¹·damp, N·m·s/rad |
+|---|---|---|---|---|---|---|---|---|
+| float | standing | 1.811387 | 0.026205 | 1.7829 | 0.0022 | 0.0001 | 0.00104167 | 2.11 |
+| float | none | 0.935419 | 0.026205 | 0.9093 | 0 | -0.0001 | 0.00416667 | 0 |
+
+## MODE=ride FELT=deck STANCES=tall,compress STEERS=0.25,1 EXTRAS=0,1.5,3
+{"mode":"ride","rider":"new","stance":"tall","extra":0,"steer":0.25,"felt":"deck","steps":230,"live":218,"clean":213,"cleanShare":0.977,"asymPeakClean":0,"asymPeakDirty":0.234994,"fellAt":3.833,"rollDryMedian":0.026205,"rollSolveMedian":1.1404,"rollSolveMin":0.7513,"rollSolveMax":1.3877,"rollWaterMedian":1.1142,"ratioMedian":43.52,"trimN":156,"rollSolveTrim":1.1961,"steepN":0,"rollSolveSteep":null,"heaveMedian":92.16,"wettedMedian":0.372,"railMedian":7.1,"railPeak":21.7,"cosPower":3.41,"fitN":213,"addedMedian":1.0932,"addedOnlyMedian":1.0876,"radDampMedian":0.0058,"dampAllMedian":16.16,"dampAllTrim":17.28,"addedOnlyTrim":1.1483,"dampMedian":0.0111,"restMedian":0.0058,"closePeak":0.0158,"hMedian":0.00104167,"dampCoeffMedian":10.64,"dampCoeffTrim":11.23,"alphaPerNmDry":2186,"alphaPerNmSolve":50.2}
+{"mode":"ride","rider":"new","stance":"compress","extra":0,"steer":0.25,"felt":"deck","steps":229,"live":217,"clean":185,"cleanShare":0.853,"asymPeakClean":0,"asymPeakDirty":0.274069,"fellAt":3.817,"rollDryMedian":0.026205,"rollSolveMedian":1.1254,"rollSolveMin":0.3856,"rollSolveMax":1.7709,"rollWaterMedian":1.0992,"ratioMedian":42.95,"trimN":157,"rollSolveTrim":1.1395,"steepN":0,"rollSolveSteep":null,"heaveMedian":88.98,"wettedMedian":0.3706,"railMedian":4.7,"railPeak":25.6,"cosPower":2.18,"fitN":185,"addedMedian":1.0757,"addedOnlyMedian":1.0708,"radDampMedian":0.0057,"dampAllMedian":15.88,"dampAllTrim":16.62,"addedOnlyTrim":1.0847,"dampMedian":0.011,"restMedian":0.009,"closePeak":0.0244,"hMedian":0.00104167,"dampCoeffMedian":10.56,"dampCoeffTrim":11.07,"alphaPerNmDry":2186,"alphaPerNmSolve":50.9}
+{"mode":"ride","rider":"new","stance":"tall","extra":0,"steer":1,"felt":"deck","steps":162,"live":150,"clean":145,"cleanShare":0.967,"asymPeakClean":0,"asymPeakDirty":0.214732,"fellAt":2.7,"rollDryMedian":0.026205,"rollSolveMedian":0.6832,"rollSolveMin":0.1017,"rollSolveMax":0.935,"rollWaterMedian":0.657,"ratioMedian":26.07,"trimN":19,"rollSolveTrim":0.8939,"steepN":6,"rollSolveSteep":0.1672,"heaveMedian":76.9,"wettedMedian":0.3709,"railMedian":31.1,"railPeak":70.3,"cosPower":2.3,"fitN":145,"addedMedian":0.6292,"addedOnlyMedian":0.6264,"radDampMedian":0.0028,"dampAllMedian":9.4,"dampAllTrim":15.36,"addedOnlyTrim":0.8448,"dampMedian":0.0076,"restMedian":0.0141,"closePeak":0.0535,"hMedian":0.00104167,"dampCoeffMedian":7.3,"dampCoeffTrim":10.12,"alphaPerNmDry":2186,"alphaPerNmSolve":83.9}
+{"mode":"ride","rider":"new","stance":"compress","extra":0,"steer":1,"felt":"deck","steps":159,"live":147,"clean":137,"cleanShare":0.932,"asymPeakClean":0,"asymPeakDirty":0.26734,"fellAt":2.65,"rollDryMedian":0.026205,"rollSolveMedian":0.8813,"rollSolveMin":0.0381,"rollSolveMax":1.2718,"rollWaterMedian":0.8551,"ratioMedian":33.63,"trimN":38,"rollSolveTrim":0.9239,"steepN":3,"rollSolveSteep":0.0648,"heaveMedian":80.38,"wettedMedian":0.3462,"railMedian":17.8,"railPeak":74,"cosPower":3.71,"fitN":137,"addedMedian":0.8268,"addedOnlyMedian":0.8231,"radDampMedian":0.0041,"dampAllMedian":12.23,"dampAllTrim":14.14,"addedOnlyTrim":0.8768,"dampMedian":0.0087,"restMedian":0.0174,"closePeak":0.0235,"hMedian":0.00104167,"dampCoeffMedian":8.39,"dampCoeffTrim":9.3,"alphaPerNmDry":2186,"alphaPerNmSolve":65}
+{"mode":"ride","rider":"new","stance":"tall","extra":1.5,"steer":0.25,"felt":"deck","steps":226,"live":214,"clean":200,"cleanShare":0.935,"asymPeakClean":0,"asymPeakDirty":0.255466,"fellAt":3.767,"rollDryMedian":0.026205,"rollSolveMedian":1.0337,"rollSolveMin":0.7356,"rollSolveMax":1.303,"rollWaterMedian":1.0075,"ratioMedian":39.45,"trimN":99,"rollSolveTrim":1.0086,"steepN":0,"rollSolveSteep":null,"heaveMedian":89.72,"wettedMedian":0.3644,"railMedian":10.1,"railPeak":22.1,"cosPower":-1.24,"fitN":200,"addedMedian":0.9873,"addedOnlyMedian":0.982,"radDampMedian":0.0054,"dampAllMedian":16,"dampAllTrim":15.95,"addedOnlyTrim":0.9666,"dampMedian":0.0112,"restMedian":0.007,"closePeak":0.0339,"hMedian":0.00104167,"dampCoeffMedian":10.72,"dampCoeffTrim":10.54,"alphaPerNmDry":2186,"alphaPerNmSolve":55.4}
+{"mode":"ride","rider":"new","stance":"compress","extra":1.5,"steer":0.25,"felt":"deck","steps":215,"live":203,"clean":190,"cleanShare":0.936,"asymPeakClean":0,"asymPeakDirty":0.280305,"fellAt":3.583,"rollDryMedian":0.026205,"rollSolveMedian":1.0516,"rollSolveMin":0.3943,"rollSolveMax":1.234,"rollWaterMedian":1.0254,"ratioMedian":40.13,"trimN":115,"rollSolveTrim":1.0356,"steepN":0,"rollSolveSteep":null,"heaveMedian":88.65,"wettedMedian":0.3497,"railMedian":8.5,"railPeak":18.6,"cosPower":-3.35,"fitN":190,"addedMedian":0.999,"addedOnlyMedian":0.9942,"radDampMedian":0.005,"dampAllMedian":14.63,"dampAllTrim":14.18,"addedOnlyTrim":0.9937,"dampMedian":0.0106,"restMedian":0.0067,"closePeak":0.0369,"hMedian":0.00104167,"dampCoeffMedian":10.13,"dampCoeffTrim":9.86,"alphaPerNmDry":2186,"alphaPerNmSolve":54.5}
+{"mode":"ride","rider":"new","stance":"tall","extra":1.5,"steer":1,"felt":"deck","steps":79,"live":67,"clean":62,"cleanShare":0.925,"asymPeakClean":0,"asymPeakDirty":0.252376,"fellAt":1.317,"rollDryMedian":0.026205,"rollSolveMedian":0.7383,"rollSolveMin":0.042,"rollSolveMax":0.932,"rollWaterMedian":0.7121,"ratioMedian":28.17,"trimN":17,"rollSolveTrim":0.8512,"steepN":7,"rollSolveSteep":0.0608,"heaveMedian":63.43,"wettedMedian":0.3031,"railMedian":22.7,"railPeak":75.1,"cosPower":3.24,"fitN":62,"addedMedian":0.692,"addedOnlyMedian":0.6864,"radDampMedian":0.0031,"dampAllMedian":9.96,"dampAllTrim":16.76,"addedOnlyTrim":0.7965,"dampMedian":0.0073,"restMedian":0.0134,"closePeak":0.0194,"hMedian":0.00104167,"dampCoeffMedian":7.02,"dampCoeffTrim":11.69,"alphaPerNmDry":2186,"alphaPerNmSolve":77.6}
+{"mode":"ride","rider":"new","stance":"compress","extra":1.5,"steer":1,"felt":"deck","steps":78,"live":66,"clean":60,"cleanShare":0.909,"asymPeakClean":0,"asymPeakDirty":0.181781,"fellAt":1.3,"rollDryMedian":0.026205,"rollSolveMedian":0.5193,"rollSolveMin":0.0383,"rollSolveMax":0.9287,"rollWaterMedian":0.4931,"ratioMedian":19.82,"trimN":16,"rollSolveTrim":0.5823,"steepN":9,"rollSolveSteep":0.0624,"heaveMedian":58.79,"wettedMedian":0.3065,"railMedian":29.4,"railPeak":83.6,"cosPower":2.46,"fitN":60,"addedMedian":0.4661,"addedOnlyMedian":0.4641,"radDampMedian":0.0027,"dampAllMedian":11,"dampAllTrim":13.83,"addedOnlyTrim":0.5341,"dampMedian":0.0086,"restMedian":0.0129,"closePeak":0.0236,"hMedian":0.00104167,"dampCoeffMedian":8.25,"dampCoeffTrim":9.61,"alphaPerNmDry":2186,"alphaPerNmSolve":110.3}
+{"mode":"ride","rider":"new","stance":"tall","extra":3,"steer":0.25,"felt":"deck","steps":231,"live":219,"clean":208,"cleanShare":0.95,"asymPeakClean":0,"asymPeakDirty":0.285431,"fellAt":3.85,"rollDryMedian":0.026205,"rollSolveMedian":0.9917,"rollSolveMin":0.6637,"rollSolveMax":1.4253,"rollWaterMedian":0.9654,"ratioMedian":37.84,"trimN":139,"rollSolveTrim":0.9876,"steepN":0,"rollSolveSteep":null,"heaveMedian":83.69,"wettedMedian":0.3506,"railMedian":7.4,"railPeak":29.7,"cosPower":2.12,"fitN":208,"addedMedian":0.9524,"addedOnlyMedian":0.9477,"radDampMedian":0.0051,"dampAllMedian":15.53,"dampAllTrim":15.2,"addedOnlyTrim":0.9341,"dampMedian":0.0111,"restMedian":0.0038,"closePeak":0.0573,"hMedian":0.00104167,"dampCoeffMedian":10.67,"dampCoeffTrim":10.3,"alphaPerNmDry":2186,"alphaPerNmSolve":57.8}
+{"mode":"ride","rider":"new","stance":"compress","extra":3,"steer":0.25,"felt":"deck","steps":243,"live":231,"clean":218,"cleanShare":0.944,"asymPeakClean":0,"asymPeakDirty":0.278919,"fellAt":4.05,"rollDryMedian":0.026205,"rollSolveMedian":0.9734,"rollSolveMin":0.4481,"rollSolveMax":1.1677,"rollWaterMedian":0.9472,"ratioMedian":37.15,"trimN":158,"rollSolveTrim":0.9552,"steepN":0,"rollSolveSteep":null,"heaveMedian":80.28,"wettedMedian":0.3337,"railMedian":7.4,"railPeak":30.3,"cosPower":0.62,"fitN":218,"addedMedian":0.9369,"addedOnlyMedian":0.9324,"radDampMedian":0.0047,"dampAllMedian":14.75,"dampAllTrim":14.75,"addedOnlyTrim":0.9068,"dampMedian":0.0107,"restMedian":0.0032,"closePeak":0.0571,"hMedian":0.00104167,"dampCoeffMedian":10.27,"dampCoeffTrim":10.27,"alphaPerNmDry":2186,"alphaPerNmSolve":58.9}
+{"mode":"ride","rider":"new","stance":"tall","extra":3,"steer":1,"felt":"deck","steps":92,"live":80,"clean":75,"cleanShare":0.938,"asymPeakClean":0,"asymPeakDirty":0.27305,"fellAt":1.533,"rollDryMedian":0.026205,"rollSolveMedian":0.6467,"rollSolveMin":0.0369,"rollSolveMax":0.9913,"rollWaterMedian":0.6205,"ratioMedian":24.68,"trimN":15,"rollSolveTrim":0.8825,"steepN":11,"rollSolveSteep":0.053,"heaveMedian":70.03,"wettedMedian":0.3385,"railMedian":29.9,"railPeak":75.4,"cosPower":3.57,"fitN":75,"addedMedian":0.5793,"addedOnlyMedian":0.5768,"radDampMedian":0.0026,"dampAllMedian":10.74,"dampAllTrim":18.16,"addedOnlyTrim":0.8204,"dampMedian":0.0089,"restMedian":0.0226,"closePeak":0.0357,"hMedian":0.00104167,"dampCoeffMedian":8.57,"dampCoeffTrim":12.98,"alphaPerNmDry":2186,"alphaPerNmSolve":88.6}
+{"mode":"ride","rider":"new","stance":"compress","extra":3,"steer":1,"felt":"deck","steps":90,"live":78,"clean":65,"cleanShare":0.833,"asymPeakClean":0,"asymPeakDirty":0.280512,"fellAt":1.5,"rollDryMedian":0.026205,"rollSolveMedian":0.498,"rollSolveMin":0.0406,"rollSolveMax":0.9814,"rollWaterMedian":0.4718,"ratioMedian":19,"trimN":15,"rollSolveTrim":0.6307,"steepN":4,"rollSolveSteep":0.0753,"heaveMedian":60.12,"wettedMedian":0.3078,"railMedian":34,"railPeak":76.8,"cosPower":3.24,"fitN":65,"addedMedian":0.4379,"addedOnlyMedian":0.4345,"radDampMedian":0.0022,"dampAllMedian":10.71,"dampAllTrim":15.39,"addedOnlyTrim":0.5768,"dampMedian":0.009,"restMedian":0.0195,"closePeak":0.0409,"hMedian":0.00104167,"dampCoeffMedian":8.63,"dampCoeffTrim":10.89,"alphaPerNmDry":2186,"alphaPerNmSolve":115.1}
+
+# step 3.3j read (a) — the solve's own roll inertia, rider=new, felt=deck
+# Canyon-matched FaceWater 1.4 m / 16° / 5.7 m/s, 2.6 m deep — a FIT to Canyon, not Canyon.
+# 3 entry speeds × 2 sticks × 2 stances = 12 runs.
+# P3: 0.6–1.2 kg·m² near trim, falling as cos³ of the rail. FALSIFICATION: 0.03 kg·m² means the matrix never reaches the roll equation.
+
+| group | n | clean steps, share | x̂ᵀAx̂ median kg·m² | its span | x̂ᵀIx̂ (3.3h's I_zz) | ratio | near trim (rail < 10°) | past 60° | cos power | ŷᵀAŷ kg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| tall | 6 | 0.925–0.977 | 0.647–1.140 | 0.037–1.425 | 0.0262–0.0262 | 24.7–43.5 | 0.851–1.196 | 0.053–0.167 | -1.24–3.57 | 63.4–92.2 |
+| compress | 6 | 0.833–0.944 | 0.498–1.125 | 0.038–1.771 | 0.0262–0.0262 | 19.0–43.0 | 0.582–1.139 | 0.062–0.075 | -3.35–3.71 | 58.8–89.0 |
+| stick 0.25 | 6 | 0.853–0.977 | 0.973–1.140 | 0.386–1.771 | 0.0262–0.0262 | 37.1–43.5 | 0.955–1.196 | – | -3.35–3.41 | 80.3–92.2 |
+| stick 1 | 6 | 0.833–0.967 | 0.498–0.881 | 0.037–1.272 | 0.0262–0.0262 | 19.0–33.6 | 0.582–0.924 | 0.053–0.167 | 2.30–3.71 | 58.8–80.4 |
+| all | 12 | 0.833–0.977 | 0.498–1.140 | 0.037–1.771 | 0.0262–0.0262 | 19.0–43.5 | 0.582–1.196 | 0.053–0.167 | -3.35–3.71 | 58.8–92.2 |
+
+| group | rail median ° | rail peak ° | wetted m² | 1 N·m on 3.3h's I_zz, °/s² | 1 N·m on the SOLVE's, °/s² | asymmetry peak, clean | the same, rejected |
+|---|---|---|---|---|---|---|---|
+| tall | 7.1–31.1 | 21.7–75.4 | 0.3031–0.3720 | 2186–2186 | 50.2–88.6 | 0.000000000000000–0.000000000000000 | 0.2147–0.2854 |
+| compress | 4.7–34.0 | 18.6–83.6 | 0.3065–0.3706 | 2186–2186 | 50.9–115.1 | 0.000000000000000–0.000000000000000 | 0.1818–0.2805 |
+| stick 0.25 | 4.7–10.1 | 18.6–30.3 | 0.3337–0.3720 | 2186–2186 | 50.2–58.9 | 0.000000000000000–0.000000000000000 | 0.2350–0.2854 |
+| stick 1 | 17.8–34.0 | 70.3–83.6 | 0.3031–0.3709 | 2186–2186 | 65.0–115.1 | 0.000000000000000–0.000000000000000 | 0.1818–0.2805 |
+| all | 4.7–34.0 | 18.6–83.6 | 0.3031–0.3720 | 2186–2186 | 50.2–115.1 | 0.000000000000000–0.000000000000000 | 0.1818–0.2854 |
+
+# the decomposition (P4: the three close on x̂ᵀAx̂) and the hull's own roll DAMPING off the same assembly (sourced 12.7 N·m·s/rad)
+| group | x̂ᵀAx̂ | dry | added inertia | h·damping | REST (foils, plate, yaw) | closure peak | h, s | damping N·m·s/rad | the same near trim |
+|---|---|---|---|---|---|---|---|---|---|
+| tall | 0.647–1.140 | 0.0262–0.0262 | 0.579–1.093 | 0.0073–0.0112 | 0.0038–0.0226 | 0.0158–0.0573 | 0.00104167–0.00104167 | 7.0–10.7 | 10.1–13.0 |
+| compress | 0.498–1.125 | 0.0262–0.0262 | 0.438–1.076 | 0.0086–0.0110 | 0.0032–0.0195 | 0.0235–0.0571 | 0.00104167–0.00104167 | 8.3–10.6 | 9.3–11.1 |
+| stick 0.25 | 0.973–1.140 | 0.0262–0.0262 | 0.937–1.093 | 0.0106–0.0112 | 0.0032–0.0090 | 0.0158–0.0573 | 0.00104167–0.00104167 | 10.1–10.7 | 9.9–11.2 |
+| stick 1 | 0.498–0.881 | 0.0262–0.0262 | 0.438–0.827 | 0.0073–0.0090 | 0.0129–0.0226 | 0.0194–0.0535 | 0.00104167–0.00104167 | 7.0–8.6 | 9.3–13.0 |
+| all | 0.498–1.140 | 0.0262–0.0262 | 0.438–1.093 | 0.0073–0.0112 | 0.0032–0.0226 | 0.0158–0.0573 | 0.00104167–0.00104167 | 7.0–10.7 | 9.3–13.0 |
+
+# and the added term split into what is an INERTIA and what is h times a damping (h·radiation), both read off the same arrays
+| group | added inertia, all | addedMass + entrained ALONE | the same near trim | h·radiation | pressure + radiation damping, N·m·s/rad | the same near trim |
+|---|---|---|---|---|---|---|
+| tall | 0.579–1.093 | 0.577–1.088 | 0.796–1.148 | 0.0026–0.0058 | 9.4–16.2 | 15.2–18.2 |
+| compress | 0.438–1.076 | 0.434–1.071 | 0.534–1.085 | 0.0022–0.0057 | 10.7–15.9 | 13.8–16.6 |
+| stick 0.25 | 0.937–1.093 | 0.932–1.088 | 0.907–1.148 | 0.0047–0.0058 | 14.6–16.2 | 14.2–17.3 |
+| stick 1 | 0.438–0.827 | 0.434–0.823 | 0.534–0.877 | 0.0022–0.0041 | 9.4–12.2 | 13.8–18.2 |
+| all | 0.438–1.093 | 0.434–1.088 | 0.534–1.148 | 0.0022–0.0058 | 9.4–16.2 | 13.8–18.2 |

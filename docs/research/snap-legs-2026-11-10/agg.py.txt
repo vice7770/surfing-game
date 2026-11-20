@@ -1,0 +1,25 @@
+# python3 agg.py <tag>=<json>,<json>... ... : one row per switch setting, averaged over every run of the files (snap-legs, 2026-11-10).
+# Runs that fall within 0.5 s of Snap (the carve's own fall, the same with every setting) are counted in 'early' and left out of the means.
+# knees mid / exit = drawn front/rear knee at the board's fastest turn the new way / as Snap is let go (or 0.3 s before the fall); pelvis the same, m;
+# roll = most roll on the new rail; yaw = fastest turn the new way; old = time still turning the old way; turned = heading come round by the end of the hold;
+# kept = speed out / speed in over the hold; in hold = falls while Snap is held; to fall = mean time from Snap to the fall, riders that never fall counted at the run's end (3 s).
+import json, sys
+print('| setting | runs | early | knees F/R mid | knees F/R exit | pelvis mid / exit | roll | yaw | old s | turned | kept | v out | falls in hold | falls in all | to fall s |')
+print('|' + ' --- |' * 15)
+for arg in sys.argv[1:]:
+    tag, files = arg.split('='); rows = []; early = 0; n = 0
+    for path in files.split(','):
+        for run in json.load(open(path)):
+            n += 1; fr = run['frames']; snap = [f for f in fr if f['phase'] == 'snap']
+            if not snap or (run['fell'] and run['fell'] - snap[0]['t'] < 0.5): early += 1; continue
+            s = -run['dir']; t0 = snap[0]['t']
+            body = [f for f in snap if not (run['fell'] and f['t'] > run['fell'] - 0.3)] or snap
+            mid = max(snap, key=lambda f: s * f['yaw']); ex = body[-1]
+            old = next((f['t'] - t0 for f in snap if s * f['yaw'] > 0), 1.5)
+            ext = min(s * f['turned'] for f in snap)
+            inhold = bool(run['fell']) and fr[-1]['phase'] == 'snap'
+            rows.append(dict(kmF=mid['d']['kneeF'], kmR=mid['d']['kneeR'], keF=ex['d']['kneeF'], keR=ex['d']['kneeR'], pm=mid['p']['pelvisDeck'], pe=ex['p']['pelvisDeck'],
+                roll=max(s * f['roll'] for f in snap), yaw=s * mid['yaw'], old=old, turned=s * snap[-1]['turned'] - ext, kept=snap[-1]['v'] / snap[0]['v'], vout=snap[-1]['v'],
+                inhold=inhold, fell=bool(run['fell']), tofall=(run['fell'] - t0) if run['fell'] else 3.0))
+    m = lambda k: sum(r[k] for r in rows) / len(rows)
+    print(f"| {tag} | {n} | {early} | {m('kmF'):.0f}/{m('kmR'):.0f} | {m('keF'):.0f}/{m('keR'):.0f} | {m('pm'):.2f} / {m('pe'):.2f} | {m('roll'):.0f} | {m('yaw'):.0f} | {m('old'):.2f} | {m('turned'):.0f} | {m('kept'):.2f} | {m('vout'):.1f} | {sum(r['inhold'] for r in rows)} | {sum(r['fell'] for r in rows)} | {m('tofall'):.2f} |")

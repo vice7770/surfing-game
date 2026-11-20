@@ -1,0 +1,22 @@
+# python3 falls.py <tag>=<json>,... : what each run's rider fails at first (rail-change probe), and the split by count.
+# old side   = the body never comes over the board: it falls into the OLD turn, still at speed (v >= 3 m/s at the fall)
+# speed gone = off the plane (under 3 m/s) before the body is over the board: the turn stalls, the board stands on its tail
+# thrown     = over the board and on the new rail, at speed, while Snap is held: the body goes past its lean and falls inside the new turn
+# stall      = over the board, turned, then off the plane (speed gone on the new rail); falls inside the new turn, most after Snap is let go
+import json, sys
+per = '--runs' in sys.argv
+for arg in [a for a in sys.argv[1:] if a != '--runs']:
+    tag, files = arg.split('='); count = {}
+    for path in files.split(','):
+        for run in json.load(open(path)):
+            fr = run['frames']; snap = [f for f in fr if f['phase'] == 'snap']; t0 = snap[0]['t'] - 1/60
+            after = [f for f in fr if f['t'] > t0]
+            first = lambda cond: next((round(f['t'] - t0, 2) for f in after if cond(f)), None)
+            cross = first(lambda f: f['bank'] > 2); off = first(lambda f: not f['planing']); last = fr[-1]
+            if not run['fell']: kind = 'rides'
+            elif cross is None: kind = 'speed gone' if off is not None and last['v'] < 3 else 'old side'
+            elif off is None or last['v'] >= 3 and last['phase'] == 'snap': kind = 'thrown'
+            else: kind = 'stall'
+            count[kind] = count.get(kind, 0) + 1
+            if per: print(f"{tag:6s} {run['name']:24s} {kind:10s} fell {('%.2f' % (run['fell'] - t0)) if run['fell'] else '  - '} {str(run.get('cause') or ''):10s} in {last['phase']:7s} v {last['v']:.1f} lean {last['bank']:4.0f} roll {last['roll']:4.0f} pitch {last['pitch']:3.0f} | body over at {cross} off the plane at {off} margin at Snap {snap[0]['margin']} limit {snap[0]['limit']}")
+    print(tag, dict(sorted(count.items())))

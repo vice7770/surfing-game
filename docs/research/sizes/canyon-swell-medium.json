@@ -1,0 +1,20 @@
+[
+ {
+  "spot": "canyon",
+  "source": "buoy",
+  "significantHeight": 1.4,
+  "period": 11,
+  "heightAt": "edge",
+  "takeOffZ": -125,
+  "stepMs": 114.19482161388899,
+  "cells": 180400,
+  "typical": 1.7764246443201157,
+  "sets": 2.0491254719836016,
+  "waves": 559,
+  "setBreakZ": -126.5,
+  "takeOffTypical": 1.8661695928929742,
+  "takeOffSets": 1.9709191296056778,
+  "takeOffWaves": 28,
+  "size": "medium"
+ }
+]

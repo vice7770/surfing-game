@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canyonArmAt } from './Bathymetry';
+import { CANYON, CANYON_B, CANYON_BEACH, canyonArmAt, canyonBankJoin } from './Bathymetry';
 import { overturn, overturnParameter, overturnSize } from './Overturn';
 import {
   BAND_LOOK_FIELD, BAND_LOOK_OLD, BAND_LOOK_STRIDE, CURL_CAPACITY, CURL_FIELD, CURL_STRIDE, SPILLING_CURL, SpillingCurl, curlSize, curlStage,
@@ -248,6 +248,58 @@ describe('the spilling lip on a spilling front', () => {
   });
 });
 
+describe('the spilling lip beside a swept tube (the Canyon’s tube regime, 2026-10-22)', () => {
+  it('draws no curl and no splash where a tube stands on its wave’s crest, and holds its white until the tube’s touchdown', () => {
+    const grid = tank();
+    const run = (withTube: boolean) => {
+      const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
+      for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
+      const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+      const size = grid.nx * grid.nz;
+      const [out, felt, drawn] = [new Float64Array(size), new Float64Array(size), new Float64Array(size)];
+      // A tube on columns 6–8 (x −14 to −12, which the front reached 0.5–1.5 s in), its crest at z 0.5 (the curl's at
+      // 0), touching down 3 s in.
+      const touchdown = new Float64Array(grid.nx).fill(Number.NaN);
+      const z = new Float64Array(grid.nx).fill(Number.NaN);
+      for (let ix = 6; ix <= 8; ix += 1) {
+        touchdown[ix] = 3;
+        z[ix] = 0.5;
+      }
+      const dt = 0.02;
+      let splashes = 0;
+      const tubeSplashes: number[] = [];
+      for (let step = 1; step <= 100; step += 1) {
+        const time = step * dt;
+        front.update(time, dt, 2, grid.strength, out, felt, drawn, curl);
+        curl.update(time, dt, front, undefined, grid.strength, withTube ? { touchdown, z } : undefined);
+        splashes += curl.splashes.length;
+        for (const splash of curl.splashes) if (splash.x >= -14 && splash.x <= -12) tubeSplashes.push(splash.x);
+      }
+      const into = new Float32Array(CURL_CAPACITY * CURL_STRIDE);
+      const count = curl.writeCurls(into, front, (_x, zz) => 1 / Math.cosh(zz / 3) ** 2);
+      const xs = Array.from({ length: count }, (_, k) => into[k * CURL_STRIDE + CURL_FIELD.x]);
+      return { curl, xs, splashes, tubeSplashes };
+    };
+    const plain = run(false);
+    const tubed = run(true);
+    // Without the tube the curl stands across x −14 to −12; with it, none there, the rest as before.
+    expect(plain.xs.some((x) => x >= -14 && x <= -12)).toBe(true);
+    expect(tubed.xs.some((x) => x >= -14 && x <= -12)).toBe(false);
+    // The tube only takes slices away: every slice drawn beside it is drawn without it too.
+    expect(tubed.xs.every((x) => plain.xs.includes(x))).toBe(true);
+    expect(Array.from(tubed.curl.tube.subarray(6, 9)).every((v) => v === 1)).toBe(true);
+    expect(tubed.curl.tube[10]).toBe(0);
+    expect(plain.splashes).toBeGreaterThan(tubed.splashes);
+    expect(tubed.tubeSplashes).toEqual([]);
+    // At 2 s the tube has not landed: its columns draw none of their white yet, though the curl's own clock has.
+    const column = 7;
+    const age = tubed.curl.age[column];
+    expect(plain.curl.share(column, age, 1)).toBeGreaterThan(0);
+    expect(tubed.curl.share(column, age, 1)).toBe(0);
+    expect(tubed.curl.impact[column]).toBeCloseTo(age + 1, 6);
+  });
+});
+
 describe('the spilling lip\'s band', () => {
   it('draws no band before the curl lands, then a bright one from the landing line, growing to the lens\'s toe', () => {
     const grid = tank();
@@ -256,7 +308,9 @@ describe('the spilling lip\'s band', () => {
     const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
     const out = new Float64Array(grid.nx * grid.nz);
     // One lens in column 20 (x = 0), slot 0: the felt table's, faint (its scale still growing with its travel).
-    const roller = { tableWave: (column: number, slot: number) => (column === 20 && slot === 0 ? front.waves[0].id : -1) } as unknown as SpillingRoller;
+    const roller = {
+      tableWave: (column: number, slot: number) => (column === 20 && slot === 0 ? front.waves[0].id : -1), lensOf: () => false,
+    } as unknown as SpillingRoller;
     const felt = new Float32Array(ROLLER_SLOTS * grid.nx * ROLLER_STRIDE);
     const o = 20 * ROLLER_STRIDE;
     felt[o + ROLLER_FIELD.scale] = 0.2;
@@ -297,11 +351,11 @@ describe('the spilling lip\'s band', () => {
 });
 
 describe('the roller band\'s drawn look (the Canyon roller front)', () => {
-  it('writes beside the drawn table each entry\'s time since its curl landed and its wave\'s H, and leaves the table as without it', () => {
+  it.each([true, false])('writes beside the drawn table each entry\'s time since its curl landed and its wave\'s H, and leaves the table as without it (local %s)', (local) => {
     const grid = tank();
     const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
     for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
-    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28 });
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28, local });
     const out = new Float64Array(grid.nx * grid.nz);
     // Column 20's lens (slot 0) is the front wave's, its section 1.4 m high; column 22's (slot 1) a wave the front has dropped.
     const roller = {
@@ -334,8 +388,9 @@ describe('the roller band\'s drawn look (the Canyon roller front)', () => {
       const reached = front.waves[0].reached[20];
       if (!(reached === reached)) continue;
       const own = 20 * BAND_LOOK_STRIDE;
-      // Its own touchdown while its curl is the column's (younger than the look's span); the nominal one's after.
-      const impact = time - reached < curl.span ? curl.impact[20] : impactTime(SPILLING_CURL.nominalShare * 1.56);
+      // Its own touchdown while its curl is the column's (younger than the look's span); after, its lens's H's (the local
+      // wave's), or, as before canyon-curl-front, the nominal one's.
+      const impact = time - reached < curl.span ? curl.impact[20] : impactTime(local ? 1.4 : SPILLING_CURL.nominalShare * 1.56);
       expect(look[own + BAND_LOOK_FIELD.since]).toBeCloseTo(time - reached - impact, 5);
       expect(look[own + BAND_LOOK_FIELD.height]).toBeCloseTo(1.4, 6);
       if (look[own + BAND_LOOK_FIELD.since] >= 0) landed += 1;
@@ -346,6 +401,45 @@ describe('the roller band\'s drawn look (the Canyon roller front)', () => {
       expect(look[21 * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height]).toBe(0);
     }
     expect(landed).toBeGreaterThan(20);
+  });
+});
+
+describe('the local wave\'s H where a column has none (canyon-curl-front)', () => {
+  it.each([true, false])('draws a bridged gap\'s band at its run\'s lenses\' H, linear between them (local %s; else the nominal)', (local) => {
+    const grid = tank();
+    const front = new SpillingFront(grid, { peelAngleDegrees: 90 });
+    for (let ix = 5; ix < grid.nx; ix += 1) front.observeOnset(ix, 0, 1);
+    const curl = new SpillingCurl(grid, { breakerDepth: 2, breakerHeight: 1.56, nonlinearity: 0.28, local });
+    const out = new Float64Array(grid.nx * grid.nz);
+    // One run of the front wave's band over columns 18–22, slot 0: lenses at 18 (1.0 m) and 22 (2.0 m), a gap between.
+    const lenses = new Map([[18, 1], [22, 2]]);
+    const roller = {
+      tableWave: (column: number, slot: number) => (slot === 0 && column >= 18 && column <= 22 ? front.waves[0].id : -1),
+      lensOf: (column: number, _id: number, view: { height: number }) => {
+        const height = lenses.get(column);
+        if (height === undefined) return false;
+        view.height = height;
+        return true;
+      },
+    } as unknown as SpillingRoller;
+    const drawn = new Float32Array(ROLLER_SLOTS * grid.nx * ROLLER_STRIDE);
+    const look = new Float32Array(ROLLER_SLOTS * grid.nx * BAND_LOOK_STRIDE);
+    for (let step = 1; step <= 50; step += 1) {
+      const time = step * 0.02;
+      front.update(time, 0.02, 2, grid.strength, out);
+      curl.update(time, 0.02, front, undefined, grid.strength);
+    }
+    drawn.fill(0);
+    for (let column = 18; column <= 22; column += 1) {
+      drawn[column * ROLLER_STRIDE + ROLLER_FIELD.scale] = 1;
+      drawn[column * ROLLER_STRIDE + ROLLER_FIELD.length] = 5;
+    }
+    curl.drawBand(drawn, front, roller, 1, look);
+    const height = (column: number) => look[column * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height];
+    expect(height(18)).toBeCloseTo(1, 6);
+    expect(height(22)).toBeCloseTo(2, 6);
+    const nominal = SPILLING_CURL.nominalShare * 1.56;
+    for (const [column, between] of [[19, 1.25], [20, 1.5], [21, 1.75]]) expect(height(column)).toBeCloseTo(local ? between : nominal, 5);
   });
 });
 
@@ -387,17 +481,18 @@ describe('the spilling lip\'s splash', () => {
 
 describe('the spilling lip at the Canyon', () => {
   // The reef bed (2026-10-22): the span's steep end is the 1:23 face below the fan's hinge (1:30 and 0.35 H before), and the
-  // owner's call (Q24) lets Pick & Feddersen size the curl on it, so near the peak it stands 0.40 H high.
+  // owner's call (Q24) lets Pick & Feddersen size the curl on it, so near the peak it stands 0.40 H high. On the old layout
+  // (`?canyonBed=old`) since canyon-b (2026-11-01), whose reef is gone.
   it('stands its curl a quarter to two fifths of the wave high (0.2–0.40 H) along the arm, highest by the peak', () => {
     const simulation = new SurfZoneSimulation({
       spot: 'canyon', seed: 1, significantHeight: 1.4, peakPeriod: 11, directionDegrees: 0, spreading: 150, tide: 0,
-      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, canyonBed: 'old',
     }, 'warm');
     const curl = simulation.curl!;
     const { xCenters, nx } = simulation.solver;
     let arm = 0;
     for (let column = 0; column < nx; column += 1) {
-      if (!canyonArmAt(xCenters[column])) continue;
+      if (!canyonArmAt(xCenters[column], CANYON_BEACH)) continue;
       arm += 1;
       for (const height of [0.6, 1, 1.4]) {
         const share = curl.size(column, height).width / height;
@@ -416,12 +511,12 @@ describe('the spilling lip at the Canyon', () => {
   it('scales the curl with H: at Big (H 2.5 m) 0.83–0.99 m high, landing 1.9 m ahead, its lip 0.15–0.21 m thick', () => {
     const simulation = new SurfZoneSimulation({
       spot: 'canyon', seed: 1, significantHeight: 2.4, peakPeriod: 14, directionDegrees: 0, spreading: 150, tide: 0,
-      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1,
+      componentCount: 8, alongShore: 160, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, canyonBed: 'old',
     }, 'warm');
     const curl = simulation.curl!;
     const { xCenters, nx } = simulation.solver;
     for (let column = 0; column < nx; column += 1) {
-      if (!canyonArmAt(xCenters[column])) continue;
+      if (!canyonArmAt(xCenters[column], CANYON_BEACH)) continue;
       for (const [height, high, ahead, thick] of [[2.5, [0.82, 0.995], 1.88, [0.148, 0.211]], [1.3, [0.43, 0.52], 0.98, [0.077, 0.11]]] as const) {
         const size = curl.size(column, height);
         expect(size.width).toBeGreaterThanOrEqual(high[0]);
@@ -432,6 +527,61 @@ describe('the spilling lip at the Canyon', () => {
       }
       // Its touchdown comes later on a bigger wave: about 0.95 s at Big.
       expect(impactTime(2.5)).toBeCloseTo(0.95, 2);
+    }
+  });
+
+  // Version B (canyon-b, 2026-11-01): the up-coast peak's +x arm runs into a reef bowl. On the arm the curl is the bar's;
+  // over the whole bowl it stands 0.40 H at Medium and at Big, whose waves the platform carries unbroken to the face (sized
+  // at the sea's breaker depth, Big's would read the bar's 1:50 seaward of the platform).
+  // Version B's since canyon-c (2026-11-03, `?canyonBed=b`).
+  it('stands the curl 0.40 H over version B\'s whole reef bowl at Medium and Big, about a quarter of H on the arm before it', () => {
+    const B = CANYON_B;
+    for (const [significantHeight, peakPeriod] of [[1.4, 11], [2.4, 14]] as const) {
+      const simulation = new SurfZoneSimulation({
+        spot: 'canyon', seed: 1, significantHeight, peakPeriod, directionDegrees: 0, spreading: 150, tide: 0,
+        componentCount: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, canyonBed: 'b',
+      }, 'warm');
+      const curl = simulation.curl!;
+      const { xCenters, nx } = simulation.solver;
+      let whole = 0;
+      for (let column = 0; column < nx; column += 1) {
+        const u = xCenters[column] - B.upPeakX;
+        if (u >= B.bowlFrom + B.bowlRamp + 5 && u <= B.bowlEnd) {
+          whole += 1;
+          expect(curl.size(column, 1).width).toBeGreaterThan(0.39);
+        }
+        if (u >= 25 && u <= B.bowlFrom - 5) {
+          expect(curl.size(column, 1).width).toBeGreaterThan(0.2);
+          expect(curl.size(column, 1).width).toBeLessThan(0.27);
+        }
+      }
+      expect(whole).toBeGreaterThan(8);
+    }
+  });
+
+  // Version C (canyon-c, 2026-11-03): the same bowl, its planform flipped about its middle: the curl stands 0.40 H over
+  // the whole bowl at Medium and Big, as B's, its columns mirrored.
+  it('stands the curl 0.40 H over version C\'s whole flipped bowl at Medium and Big, as B\'s', () => {
+    const middle = CANYON.upPeakX + 0.5 * (CANYON.bowlFrom + CANYON.bowlRamp + CANYON.bowlEnd);
+    for (const [significantHeight, peakPeriod] of [[1.4, 11], [2.4, 14]] as const) {
+      const build = (canyonBed?: 'b') => new SurfZoneSimulation({
+        spot: 'canyon', seed: 1, significantHeight, peakPeriod, directionDegrees: 0, spreading: 150, tide: 0,
+        componentCount: 8, dx: 1, fineSpacing: 1, coarseSpacing: 4, spinUpPeriods: 1, ...(canyonBed ? { canyonBed } : {}),
+      }, 'warm');
+      const c = build();
+      const b = build('b');
+      const { xCenters, nx } = c.solver;
+      let whole = 0;
+      for (let column = 0; column < nx; column += 1) {
+        const x = xCenters[column];
+        if (!(x <= canyonBankJoin().x - CANYON.bowlRamp - 5 && x >= middle - (CANYON.bowlEnd - CANYON.bowlFrom - CANYON.bowlRamp) / 2)) continue;
+        whole += 1;
+        expect(canyonArmAt(x)).toBe(true);
+        expect(c.curl!.size(column, 1).width).toBeGreaterThan(0.39);
+        const mirror = b.solver.xCenters.findIndex((bx) => Math.abs(bx - (2 * middle - x)) < 0.5);
+        expect(c.curl!.size(column, 1).width).toBeCloseTo(b.curl!.size(mirror, 1).width, 2);
+      }
+      expect(whole).toBeGreaterThan(8);
     }
   });
 });

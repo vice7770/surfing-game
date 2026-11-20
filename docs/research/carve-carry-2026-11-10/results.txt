@@ -1,0 +1,479 @@
+########## CARRY 0
+### pair set B
+n 16; top turn begun 16; 1 pair 7; 2 pairs 1
+  first-pair failures: {'behind the crest in run': 2, 'behind the crest in down': 1, 'sudden fall in down': 4, 'stall fall in down': 2}
+  ends after one pair: {'timeout in wait': 3, 'behind the crest in down': 1, 'sudden fall in down': 2}
+  ends after two pairs: {'timeout in wait': 1}
+  pair 1 3.49–4.80 s (median 4.32); pair 2 4.25 s (median 4.25); bottom->top 1.49–2.80 s (median 2.08); waiting on the flat 0.65–1.80 s (median 1.05)
+  bottom turn 0.83–1.27 s, ends 0.84–1.14 face lengths ahead, radius about 6.1–12.8 m (median 9.7); top turn 0.87–1.12 s, radius about 5.1–12.9 m (median 9.2)
+  v at the bottom turn 7.9–9.6 (median 8.9); v at the top turn 1.7–6.4 (median 4.9)
+### pair set C
+n 8; top turn begun 8; 1 pair 3; 2 pairs 2
+  first-pair failures: {'sudden fall in down': 2, 'stall fall in down': 1, 'stall fall in run': 1, 'other fall in down': 1}
+  ends after one pair: {'behind the crest in down': 1}
+  ends after two pairs: {'timeout in wait': 1, 'done': 1}
+  pair 1 3.55–4.80 s (median 3.90); pair 2 4.05–4.98 s (median 4.98); bottom->top 1.43–2.40 s (median 1.87); waiting on the flat 0.46–1.43 s (median 0.80)
+  bottom turn 0.77–1.27 s, ends 0.92–1.14 face lengths ahead, radius about 6.1–12.4 m (median 9.7); top turn 1.02–1.58 s, radius about 6.1–7.5 m (median 7.2)
+  v at the bottom turn 8.1–9.6 (median 8.9); v at the top turn 3.2–4.9 (median 4.7)
+### pair set A (on the flat ahead of the wave)
+n 8; top turn begun 8; 1 pair 8; 2 pairs 6
+  first-pair failures: {}
+  ends after one pair: {'sudden fall in down': 2}
+  ends after two pairs: {'done': 4, 'sudden fall in out': 1, 'sudden fall in up': 1}
+  pair 1 1.57–2.47 s (median 2.00); pair 2 1.43–2.57 s (median 1.87); bottom->top 0.83–1.35 s (median 1.04); waiting on the flat - s (median nan)
+  bottom turn 0.83–1.35 s, ends 0.92–1.14 face lengths ahead, radius about 6.0–11.9 m (median 9.5); top turn 0.73–1.15 s, radius about 3.9–7.3 m (median 5.1)
+  v at the bottom turn 8.1–9.6 (median 8.9); v at the top turn 6.5–7.7 (median 7.2)
+### cutback 150/180
+n 16: {'falls in the turn back (sudden)': 9, 'falls in the first arc': 7}
+  first arc: 2.03–4.67 s, radius 5.2–10.6 m (median 7.5), v at the start 6.5–9.0, lowest 0.5–5.2, at the far end 0.7–5.2 (median 2.6), far end 0.09–0.91 face lengths ahead
+### cutback 90/120
+n 8: {'completes': 3, 'falls in the turn back (sudden)': 4, 'falls in the turn back (stall)': 1}
+  first arc: 1.40–2.65 s, radius 6.2–11.5 m (median 8.6), v at the start 7.5–9.0, lowest 5.4–7.1, at the far end 5.4–7.1 (median 6.2), far end 0.94–1.25 face lengths ahead
+  completed runs: [('1.4 0 0.5 0.75 cut 90 off', 'cut', 2.12, 's R', 10.1, 'back', 1.42, 's R', 4.3, 'end ahead', 0.31, 'frac', 0.77, 'v', 0.5, 'vmin back', 3.2), ('1.4 1.5 0.5 0.75 cut 90 off', 'cut', 2.23, 's R', 11.5, 'back', 1.42, 's R', 4.3, 'end ahead', 0.4, 'frac', 0.64, 'v', 0.5, 'vmin back', 3.1), ('1.4 1.5 1 0.75 cut 90 off', 'cut', 1.52, 's R', 8.4, 'back', 1.52, 's R', 4.1, 'end ahead', 0.26, 'frac', 0.84, 'v', 0.6, 'vmin back', 2.1)]
+### trim
+trim 0 stand free        entry 7.4 | time up                              at 16 s | last 4 s: v 7.4 (6.3–8), toward shore 6, 42 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0.02, 0.24] | carry max 0 bw
+trim 0 stand line        entry 7.4 | time up                              at 16 s | last 4 s: v 7.3 (7–7.4), toward shore 5.7, 44 deg off the fall line, face fraction 0.12, ahead 0.78 | face fraction range [0.07, 0.16] | carry max 0 bw
+trim 0 compress free     entry 7.4 | dropped behind the crest             at 15.63 s | last 4 s: v 3 (0.6–4), toward shore 3.8, 51 deg off the fall line, face fraction 0.81, ahead 0.18 | face fraction range [0, 1] | carry max 0 bw
+trim 0 compress line     entry 7.4 | time up                              at 16 s | last 4 s: v 7.3 (7–7.4), toward shore 5.7, 44 deg off the fall line, face fraction 0.12, ahead 0.78 | face fraction range [0.07, 0.16] | carry max 0 bw
+trim 1.5 stand free      entry 8.9 | time up                              at 16 s | last 4 s: v 3.7 (1.7–4.3), toward shore 4.5, 46 deg off the fall line, face fraction 0.91, ahead 0.13 | face fraction range [0, 1] | carry max 0 bw
+trim 1.5 stand line      entry 8.9 | time up                              at 16 s | last 4 s: v 7.3 (6.4–7.8), toward shore 5.9, 44 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0.01, 0.36] | carry max 0 bw
+trim 1.5 compress free   entry 8.9 | fall (balance) bank 0 v 1.6          at 11.72 s | last 4 s: v 4.9 (1.1–8.6), toward shore 4.4, 39 deg off the fall line, face fraction 0.16, ahead 0.86 | face fraction range [0, 0.85] | carry max 0 bw
+trim 1.5 compress line   entry 8.9 | time up                              at 16 s | last 4 s: v 7.4 (6.5–7.9), toward shore 5.9, 44 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0.01, 0.31] | carry max 0 bw
+### flat water
+## arc-c0.json
+arc 6 0.5 180    fall (lost board) bank 70 v 0.3    | 96 deg in 2.37 s, v 5.9>0.3>0.3 (max 5.9), R 4.4, mean 41 peak 107 deg/s, bank 70 | first 90: 1.33 s R 4 v 2.4 | 90 at 1.33 s v 2.4; 180 at None s v None | carry mean 0 bw, work 0 J
+arc 6 1 180      fall (balance) bank 70 v 0.6       | 111 deg in 1.93 s, v 5.9>0.6>0.6 (max 5.9), R 3.5, mean 57 peak 124 deg/s, bank 70 | first 90: 1.07 s R 3.5 v 2.9 | 90 at 1.07 s v 2.8; 180 at None s v None | carry mean 0 bw, work 0 J
+arc 7.5 0.5 180  fall (lost board) bank 70 v 0.4    | 135 deg in 2.9 s, v 7.3>0.4>0.4 (max 7.3), R 5, mean 46 peak 110 deg/s, bank 70 | first 90: 1.55 s R 6 v 4.5 | 90 at 1.55 s v 4.5; 180 at None s v None | carry mean 0 bw, work 0 J
+arc 7.5 1 180    fall (balance) bank 70 v 0.7       | 147 deg in 2.27 s, v 7.3>0.7>0.7 (max 7.3), R 3.8, mean 65 peak 112 deg/s, bank 70 | first 90: 1.17 s R 4.9 v 4.5 | 90 at 1.17 s v 4.4; 180 at None s v None | carry mean 0 bw, work 0 J
+## arc9-c0.json
+arc 9 0.5 180    fall (lost board) bank 70 v 0.4    | 161 deg in 3.58 s, v 8.8>0.3>0.4 (max 8.8), R 6.2, mean 45 peak 106 deg/s, bank 70 | first 90: 1.92 s R 8.7 v 5.3 | 90 at 1.92 s v 5.2; 180 at None s v None | carry mean 0 bw, work 0 J
+arc 9 1 180      fall (balance) bank 70 v 1         | 160 deg in 2.38 s, v 8.8>1>1 (max 8.8), R 5, mean 67 peak 99 deg/s, bank 70 | first 90: 1.4 s R 6.9 v 5.7 | 90 at 1.4 s v 5.6; 180 at None s v None | carry mean 0 bw, work 0 J
+## linked-c0.json
+linked 6 0.5 30  fall (balance) bank 0 v 0.7        | arcs 0 pairs [] | v at flips [5.9, 4.7] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 6 0.5 45  fall (balance) bank 70 v 0.6       | arcs 0 pairs [] | v at flips [5.9, 4.3] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 6 1 30    fall (balance) bank 0 v 0.8        | arcs 0 pairs [] | v at flips [5.9, 5.6] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 6 1 45    fall (balance) bank 70 v 0.7       | arcs 0 pairs [] | v at flips [5.9, 5.2] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 7.5 0.5 30 fall (balance) bank -70 v 0.4      | arcs 1 pairs [] | v at flips [7.4, 5.9, 3.7] | R [5.1] | arc s [1.17] | mean deg/s [53] | bank [20] | work J [0]
+linked 7.5 0.5 45 fall (lost board) bank -70 v 0.5   | arcs 0 pairs [] | v at flips [7.4, 5.5] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 7.5 1 30  fall (balance) bank -64 v 1        | arcs 1 pairs [] | v at flips [7.4, 6.9, 3.8] | R [4.7] | arc s [1.13] | mean deg/s [57] | bank [34] | work J [0]
+linked 7.5 1 45  fall (balance) bank 0 v 0.9        | arcs 0 pairs [] | v at flips [7.4, 6.6] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+### every pair run
+1.4 0 0.5 0.75 hold 60/0.5 off         behind the crest in run  fell None in       ups 1 high 1 aheadMax 0.99 | 
+      d@0.2(v7.5 f0.16 h47) u@1.03(v8.1 f0.06 h20) w@2.27(v6.7 f0.01 h61) d@3.15(v4.2 f0.5 h83) r@4.92(v3 f1 h19)
+1.4 0 0.5 0.75 hold 60/0.7 off         behind the crest in down fell None in       ups 1 high 1 aheadMax 0.99 | 
+      d@0.2(v7.5 f0.16 h47) u@1.03(v8.1 f0.06 h20) w@2.27(v6.7 f0.01 h61) d@3.42(v3.8 f0.71 h87)
+1.4 0 1 0.75 hold 60/0.5 off           sudden                   fell 3.53 in down  ups 1 high 1 aheadMax 0.92 | frac 1 ahead -0.04 v 2.8 ff 87 bank -70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.4 f0.09 h19) w@1.82(v7.3 f0.03 h61) d@2.47(v3.9 f0.51 h105)
+1.4 0 1 0.75 hold 60/0.7 off           sudden                   fell 3.53 in down  ups 1 high 1 aheadMax 0.92 | frac 1 ahead -0.14 v 3.1 ff 105 bank -70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.4 f0.09 h19) w@1.82(v7.3 f0.03 h61) d@2.65(v3.4 f0.71 h111)
+1.4 1.5 0.5 0.75 hold 60/0.5 off       stall                    fell 4.65 in down  ups 1 high 1 aheadMax 1.14 | frac 1 ahead -0.23 v 2.2 ff 78 bank 0 lim tip
+      d@0.2(v9 f0.13 h46) u@1.08(v8.9 f0 h19) w@2.35(v6.7 f0 h61) d@3.37(v3 f0.51 h94)
+1.4 1.5 0.5 0.75 hold 60/0.7 off       stall                    fell 4.65 in down  ups 1 high 1 aheadMax 1.14 | frac 1 ahead -0.23 v 2.2 ff 78 bank 0 lim tip
+      d@0.2(v9 f0.13 h46) u@1.08(v8.9 f0 h19) w@2.35(v6.7 f0 h61) d@3.57(v2.4 f0.7 h105)
+1.4 1.5 1 0.75 hold 60/0.5 off         sudden                   fell 3.33 in down  ups 1 high 0.93 aheadMax 1.07 | frac 0.93 ahead 0.16 v 0.7 ff 94 bank -70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.87(v9.6 f0.01 h20) w@1.83(v7.5 f0 h60) d@2.68(v2.2 f0.51 h104)
+1.4 1.5 1 0.75 hold 60/0.7 off         sudden                   fell 3.33 in down  ups 1 high 0.93 aheadMax 1.07 | frac 0.93 ahead 0.16 v 0.7 ff 94 bank -70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.87(v9.6 f0.01 h20) w@1.83(v7.5 f0 h60) d@2.9(v1.7 f0.71 h101)
+1.4 0 0.5 0.75 hold 60/0.5 off         timeout in wait          fell None in       ups 2 high 0.64 aheadMax 0.96 | 
+      d@0.2(v7.5 f0.16 h47) u@0.75(v7.9 f0.12 h34) w@1.77(v7.4 f0.08 h61) d@2.83(v6.2 f0.5 h68) r@3.85(v7.4 f0.55 h35) u@4.45(v8.7 f0.25 h24) w@5.53(v8.3 f0.01 h61)
+1.4 0 0.5 0.75 hold 60/0.7 off         timeout in wait          fell None in       ups 2 high 0.74 aheadMax 1.02 | 
+      d@0.2(v7.5 f0.16 h47) u@0.75(v7.9 f0.12 h34) w@1.77(v7.4 f0.08 h61) d@3.55(v6.4 f0.7 h62) r@4.42(v7.6 f0.62 h35) u@5.07(v9.1 f0.25 h24) w@6.28(v8.4 f0 h61)
+1.4 0 1 0.75 hold 60/0.5 off           behind the crest in down fell None in       ups 2 high 1 aheadMax 1.02 | 
+      d@0.2(v7.5 f0.16 h47) u@0.68(v8.2 f0.14 h35) w@1.52(v7.7 f0.09 h61) d@2.17(v5.5 f0.5 h90) r@3.12(v6.6 f0.74 h34) u@4.17(v8.3 f0.24 h6) w@5.25(v8.3 f0 h61) d@6.1(v4.1 f0.51 h106)
+1.4 0 1 0.75 hold 60/0.7 off           sudden                   fell 8.18 in down  ups 2 high 0.95 aheadMax 1.09 | frac 0.92 ahead 0.17 v 0.8 ff 98 bank -70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@0.68(v8.2 f0.14 h35) w@1.52(v7.7 f0.09 h61) d@2.4(v5.3 f0.7 h93) r@3.38(v5.8 f0.94 h34) u@5.48(v8.5 f0.25 h2) w@6.68(v8.1 f0 h60) d@7.8(v1.7 f0.71 h103)
+1.4 1.5 0.5 0.75 hold 60/0.5 off       timeout in wait          fell None in       ups 3 high 0.68 aheadMax 0.99 | 
+      d@0.2(v9 f0.13 h46) u@0.73(v9.2 f0.05 h35) w@1.73(v7.8 f0 h60) d@3.02(v5.7 f0.5 h70) r@4.05(v6.8 f0.62 h34) u@4.85(v8.6 f0.25 h22) w@6.43(v7.4 f0.05 h61) d@7.5(v6.3 f0.5 h68) r@8.55(v7.6 f0.53 h34) u@9.1(v8.8 f0.25 h24) w@10.18(v8.4 f0.01 h62)
+1.4 1.5 0.5 0.75 hold 60/0.7 off       timeout in wait          fell None in       ups 2 high 0.79 aheadMax 1.06 | 
+      d@0.2(v9 f0.13 h46) u@0.73(v9.2 f0.05 h35) w@1.73(v7.8 f0 h60) d@3.53(v5.8 f0.7 h65) r@4.47(v6.8 f0.72 h35) u@5.4(v9 f0.24 h21) w@6.82(v8 f0 h60)
+1.4 1.5 1 0.75 hold 60/0.5 off         sudden                   fell 7.9 in down  ups 2 high 0.94 aheadMax 1.08 | frac 0.94 ahead 0.15 v 0.9 ff 100 bank -70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.68(v9.6 f0.06 h34) w@1.53(v8.4 f0.01 h60) d@2.38(v5.2 f0.51 h93) r@3.5(v5.8 f0.88 h34) u@5.2(v8.4 f0.24 h4) w@6.38(v8.1 f0 h60) d@7.27(v2.4 f0.51 h107)
+1.4 1.5 1 0.75 hold 60/0.7 off         behind the crest in run  fell None in       ups 1 high 1 aheadMax 0.97 | 
+      d@0.2(v9 f0.13 h46) u@0.68(v9.6 f0.06 h34) w@1.53(v8.4 f0.01 h60) d@2.58(v4.9 f0.7 h98) r@3.68(v4.8 f1 h33)
+1.4 0 0.5 0.75 hold 60/0.3 off         behind the crest in down fell None in       ups 2 high 1 aheadMax 1.14 | 
+      d@0.2(v7.5 f0.16 h47) u@1.03(v8.1 f0.06 h20) w@2.27(v6.7 f0.01 h61) d@2.9(v4.7 f0.31 h78) r@4.48(v5.3 f0.78 h20) u@5.83(v8.3 f0.25 h4) w@7.6(v7.1 f0 h60) d@8.43(v4.2 f0.3 h85)
+1.4 0 0.5 0.75 hold 45/0.3 off         timeout in wait          fell None in       ups 3 high 0.48 aheadMax 0.99 | 
+      d@0.2(v7.5 f0.16 h47) u@1.03(v8.1 f0.06 h20) w@1.95(v7.3 f0 h45) d@3.33(v4.9 f0.3 h58) r@4.35(v6.1 f0.44 h19) u@4.93(v7.2 f0.25 h5) w@6.08(v7.7 f0 h45) d@7.87(v5.5 f0.3 h52) r@8.83(v7 f0.3 h19) u@8.98(v7.2 f0.25 h10) w@10(v7.8 f0.03 h46)
+1.4 0 1 0.75 hold 60/0.3 off           sudden                   fell 3.87 in down  ups 1 high 1 aheadMax 0.92 | frac 1 ahead 0.04 v 2.5 ff 49 bank -70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.4 f0.09 h19) w@1.82(v7.3 f0.03 h61) d@2.28(v4.7 f0.31 h103)
+1.4 0 1 0.75 hold 45/0.3 off           done                     fell None in       ups 3 high 0.92 aheadMax 1.07 | 
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.4 f0.09 h19) w@1.62(v7.5 f0.02 h46) d@2.42(v4.9 f0.31 h76) r@3.57(v6.2 f0.55 h19) u@4.4(v7.3 f0.25 h7) w@5.37(v8.1 f0 h46) d@6.25(v4.6 f0.3 h85) r@7.9(v5.2 f0.8 h20) u@9.38(v8.3 f0.25 h0) w@10.33(v8.5 f0 h45) o@11.58(v4.8 f0.31 h74)
+1.4 1.5 0.5 0.75 hold 60/0.3 off       stall                    fell 4.6 in down  ups 1 high 1 aheadMax 1.14 | frac 1 ahead -0.15 v 2.2 ff 71 bank 0 lim tip
+      d@0.2(v9 f0.13 h46) u@1.08(v8.9 f0 h19) w@2.35(v6.7 f0 h61) d@3.15(v3.8 f0.3 h87)
+1.4 1.5 0.5 0.75 hold 45/0.3 off       stall                    fell 6.07 in run   ups 1 high 1 aheadMax 1.14 | frac 1 ahead -0.3 v 1.2 ff 4 bank 0 lim tip
+      d@0.2(v9 f0.13 h46) u@1.08(v8.9 f0 h19) w@2.05(v7.2 f0 h45) d@3.48(v3.8 f0.3 h66) r@5.63(v1.4 f1 h20)
+1.4 1.5 1 0.75 hold 60/0.3 off         sudden                   fell 3.32 in down  ups 1 high 0.92 aheadMax 1.07 | frac 0.92 ahead 0.17 v 0.8 ff 93 bank -70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.87(v9.6 f0.01 h20) w@1.83(v7.5 f0 h60) d@2.5(v3.2 f0.31 h98)
+1.4 1.5 1 0.75 hold 45/0.3 off         other                    fell 4.27 in down  ups 1 high 1 aheadMax 1.07 | frac 1 ahead -0.14 v 2.7 ff 63 bank 0 lim tip
+      d@0.2(v9 f0.13 h46) u@0.87(v9.6 f0.01 h20) w@1.67(v7.7 f0 h46) d@2.62(v4 f0.3 h85)
+1.4 0 0.5 0.75 hold 50/9 off           done                     fell None in       ups 3 high 0.57 aheadMax 0.99 | 
+      d@0.2(v7.5 f0.16 h47) u@1.03(v8.1 f0.06 h20) d@2.07(v7 f0 h50) u@2.95(v6.1 f0.03 h20) d@3.82(v5.3 f0.09 h50) u@4.82(v4.8 f0.33 h19) o@5.78(v5.8 f0.37 h51)
+1.4 0 0.5 0.75 hold 65/9 off           done                     fell None in       ups 3 high 0.48 aheadMax 0.99 | 
+      d@0.2(v7.5 f0.16 h47) u@1.03(v8.1 f0.06 h20) d@2.35(v6.5 f0.03 h65) u@3.5(v5.6 f0.26 h19) d@4.8(v6.3 f0.3 h65) u@6.07(v7.5 f0.33 h19) o@7.47(v7.7 f0.05 h65)
+1.4 0 1 0.75 hold 50/9 off             done                     fell None in       ups 3 high 0.63 aheadMax 0.92 | 
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.4 f0.09 h19) d@1.68(v7.5 f0.02 h50) u@2.42(v6.5 f0.05 h19) d@3.13(v6.4 f0.06 h51) u@3.85(v5.9 f0.14 h19) o@4.55(v6.4 f0.16 h51)
+1.4 0 1 0.75 hold 65/9 off             sudden                   fell 6.58 in out   ups 3 high 0.82 aheadMax 0.92 | frac 0.82 ahead 0.27 v 5 ff 98 bank -70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.4 f0.09 h19) d@1.88(v7.2 f0.05 h66) u@2.87(v5.8 f0.24 h19) d@3.73(v6.8 f0.26 h65) u@4.58(v6.6 f0.34 h20) o@5.65(v7.7 f0.17 h66)
+1.4 1.5 0.5 0.75 hold 50/9 off         sudden                   fell 5.18 in down  ups 2 high 0.87 aheadMax 1.14 | frac 0.87 ahead 0.22 v 0.6 ff 52 bank -70 lim tip
+      d@0.2(v9 f0.13 h46) u@1.08(v8.9 f0 h19) d@2.17(v7 f0 h50) u@3.08(v5.6 f0 h19) d@3.87(v4.1 f0.08 h51)
+1.4 1.5 0.5 0.75 hold 65/9 off         sudden                   fell 5.7 in down  ups 2 high 0.85 aheadMax 1.14 | frac 0.85 ahead 0.25 v 2.5 ff 47 bank -70 lim flight
+      d@0.2(v9 f0.13 h46) u@1.08(v8.9 f0 h19) d@2.43(v6.5 f0 h65) u@3.55(v4.5 f0.2 h19) d@4.83(v4.1 f0.52 h66)
+1.4 1.5 1 0.75 hold 50/9 off           done                     fell None in       ups 3 high 0.98 aheadMax 1.07 | 
+      d@0.2(v9 f0.13 h46) u@0.87(v9.6 f0.01 h20) d@1.73(v7.7 f0 h51) u@2.47(v5.8 f0.01 h19) d@3.1(v5.3 f0.04 h51) u@4(v3.6 f0.29 h20) o@5.22(v3 f0.69 h50)
+1.4 1.5 1 0.75 hold 65/9 off           sudden                   fell 5.2 in up    ups 3 high 0.79 aheadMax 1.07 | frac 0.79 ahead 0.3 v 3.1 ff 13 bank -70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.87(v9.6 f0.01 h20) d@1.9(v7.3 f0 h66) u@2.82(v4.7 f0.13 h20) d@3.73(v4.4 f0.39 h65) u@4.97(v3.6 f0.76 h20)
+### every cutback run
+1.4 0 0.5 0.5 cut 150 off      sudden     fell 4.5 in back| cut: turned 151 in 3.32s R 9.5 v 6.5>5.1>5.1 peak 126 far ahead 0.8 | back: turned -3 in 0.97s R None v>0.5>0.6 peak 122 | end turned 149 ahead 0.18 frac 0.91 v 0.6 x-span 9.3 | frac 0.91 ahead 0.18 v 0.6 ff 103 bank 70 lim tip
+1.4 0 0.5 0.5 cut 180 off      sudden     fell 4.45 in cut | cut: turned 161 in 4.23s R 9.6 v 6.5>0.6>0.7 peak 126 far ahead 0.18 | back: turned None in Nones R None v>None>None peak None | end turned 161 ahead 0.18 frac 0.92 v 0.7 x-span 9.3 | frac 0.92 ahead 0.18 v 0.7 ff 115 bank 70 lim flight
+1.4 0 0.5 0.75 cut 150 off     sudden     fell 3.9 in back| cut: turned 150 in 2.75s R 7.4 v 7.5>3.7>3.7 peak 124 far ahead 0.77 | back: turned -1 in 0.93s R None v>0.5>0.8 peak 88 | end turned 149 ahead 0.21 frac 0.89 v 0.8 x-span 6.2 | frac 0.89 ahead 0.21 v 0.8 ff 102 bank 70 lim tip
+1.4 0 0.5 0.75 cut 180 off     sudden     fell 3.9 in cut | cut: turned 150 in 3.68s R 7.8 v 7.5>0.5>0.8 peak 124 far ahead 0.21 | back: turned None in Nones R None v>None>None peak None | end turned 150 ahead 0.21 frac 0.89 v 0.8 x-span 6.2 | frac 0.89 ahead 0.21 v 0.8 ff 104 bank 70 lim tip
+1.4 0 1 0.5 cut 150 off        sudden     fell 2.77 in back| cut: turned 150 in 2.23s R 6.4 v 6.5>4.5>4.5 peak 117 far ahead 0.65 | back: turned 21 in 0.32s R 2.5 v>1.7>1.7 peak 74 | end turned 171 ahead 0.43 frac 0.6 v 1.7 x-span 6.7 | frac 0.6 ahead 0.43 v 1.7 ff 125 bank 70 lim none
+1.4 0 1 0.5 cut 180 off        sudden     fell 2.75 in cut | cut: turned 170 in 2.53s R 6 v 6.5>1.8>1.8 peak 117 far ahead 0.44 | back: turned None in Nones R None v>None>None peak None | end turned 170 ahead 0.44 frac 0.59 v 1.8 x-span 6.6 | frac 0.59 ahead 0.44 v 1.8 ff 125 bank 70 lim none
+1.4 0 1 0.75 cut 150 off       sudden     fell 2.63 in back| cut: turned 150 in 2.03s R 5.5 v 7.5>2.6>2.6 peak 107 far ahead 0.73 | back: turned 15 in 0.38s R 2.3 v>0.9>0.9 peak 52 | end turned 165 ahead 0.48 frac 0.54 v 0.9 x-span 4.6 | frac 0.54 ahead 0.48 v 0.9 ff 118 bank 70 lim none
+1.4 0 1 0.75 cut 180 off       sudden     fell 2.63 in cut | cut: turned 165 in 2.42s R 5.2 v 7.5>0.9>0.9 peak 107 far ahead 0.48 | back: turned None in Nones R None v>None>None peak None | end turned 165 ahead 0.48 frac 0.54 v 0.9 x-span 4.6 | frac 0.54 ahead 0.48 v 0.9 ff 118 bank 70 lim none
+1.4 1.5 0.5 0.5 cut 150 off    sudden     fell 4.92 in back| cut: turned 152 in 3.42s R 10.3 v 8>5.2>5.2 peak 119 far ahead 0.91 | back: turned -15 in 1.28s R 8.2 v>0.6>0.7 peak 129 | end turned 137 ahead 0.12 frac 0.96 v 0.7 x-span 9.3 | frac 0.96 ahead 0.12 v 0.7 ff 92 bank 70 lim flight
+1.4 1.5 0.5 0.5 cut 180 off    sudden     fell 4.88 in cut | cut: turned 159 in 4.67s R 10.6 v 8>0.5>0.8 peak 129 far ahead 0.09 | back: turned None in Nones R None v>None>None peak None | end turned 159 ahead 0.09 frac 0.98 v 0.8 x-span 9.4 | frac 0.98 ahead 0.09 v 0.8 ff 114 bank 70 lim tip
+1.4 1.5 0.5 0.75 cut 150 off   sudden     fell 4.45 in back| cut: turned 151 in 2.95s R 8.4 v 9>4.3>4.3 peak 117 far ahead 0.89 | back: turned -10 in 1.28s R 9.6 v>0.6>0.9 peak 115 | end turned 141 ahead 0.13 frac 0.95 v 0.9 x-span 6.7 | frac 0.95 ahead 0.13 v 0.9 ff 94 bank 70 lim flight
+1.4 1.5 0.5 0.75 cut 180 off   sudden     fell 4.43 in cut | cut: turned 146 in 4.22s R 9.3 v 9>0.5>0.9 peak 117 far ahead 0.13 | back: turned None in Nones R None v>None>None peak None | end turned 146 ahead 0.13 frac 0.95 v 0.9 x-span 6.7 | frac 0.95 ahead 0.13 v 0.9 ff 100 bank 70 lim flight
+1.4 1.5 1 0.5 cut 150 off      sudden     fell 3.17 in back| cut: turned 151 in 2.33s R 7.5 v 8>5.2>5.2 peak 117 far ahead 0.86 | back: turned 30 in 0.62s R 2.5 v>0.8>0.8 peak 117 | end turned 181 ahead 0.41 frac 0.63 v 0.8 x-span 7.4 | frac 0.63 ahead 0.41 v 0.8 ff 135 bank 70 lim none
+1.4 1.5 1 0.5 cut 180 off      sudden     fell 3.1 in back| cut: turned 180 in 2.75s R 6.7 v 8>1.3>1.3 peak 117 far ahead 0.52 | back: turned 4 in 0.13s R None v>0.9>0.9 peak 39 | end turned 184 ahead 0.43 frac 0.6 v 0.9 x-span 7.3 | frac 0.6 ahead 0.43 v 0.9 ff 139 bank 70 lim none
+1.4 1.5 1 0.75 cut 150 off     sudden     fell 2.87 in back| cut: turned 151 in 2.17s R 6.4 v 9>3.6>3.6 peak 100 far ahead 0.89 | back: turned 26 in 0.48s R 2 v>0.8>0.8 peak 99 | end turned 177 ahead 0.54 frac 0.44 v 0.8 x-span 5.5 | frac 0.44 ahead 0.54 v 0.8 ff 130 bank 70 lim none
+1.4 1.5 1 0.75 cut 180 off     sudden     fell 2.87 in cut | cut: turned 177 in 2.65s R 5.7 v 9>0.8>0.8 peak 100 far ahead 0.54 | back: turned None in Nones R None v>None>None peak None | end turned 177 ahead 0.54 frac 0.45 v 0.8 x-span 5.5 | frac 0.45 ahead 0.54 v 0.8 ff 131 bank 70 lim none
+1.4 0 0.5 0.75 cut 90 off      done       fell None in     | cut: turned 91 in 2.12s R 10.1 v 7.5>6.2>6.2 peak 70 far ahead 1.07 | back: turned -88 in 1.42s R 4.3 v>3.2>3.2 peak 134 | end turned 4 ahead 0.31 frac 0.77 v 0.5 x-span 5.4 | 
+1.4 0 0.5 0.75 cut 120 off     sudden     fell 4.13 in back| cut: turned 121 in 2.5s R 8.6 v 7.5>5.5>5.5 peak 116 far ahead 0.94 | back: turned -27 in 1.42s R 5.9 v>0.6>0.6 peak 127 | end turned 94 ahead 0.18 frac 0.92 v 0.6 x-span 6 | frac 0.92 ahead 0.18 v 0.6 ff 48 bank 70 lim tip
+1.4 0 1 0.75 cut 90 off        sudden     fell 4.07 in back| cut: turned 91 in 1.4s R 6.9 v 7.5>7>7 peak 103 far ahead 1.01 | back: turned -39 in 2.45s R 9.8 v>0.6>0.6 peak 141 | end turned 52 ahead 0.14 frac 0.95 v 0.6 x-span 4.5 | frac 0.95 ahead 0.14 v 0.6 ff 6 bank -70 lim flight
+1.4 0 1 0.75 cut 120 off       sudden     fell 2.83 in back| cut: turned 121 in 1.7s R 6.2 v 7.5>5.6>5.6 peak 107 far ahead 0.94 | back: turned 24 in 0.92s R 4.9 v>0.8>0.8 peak 109 | end turned 144 ahead 0.43 frac 0.61 v 0.8 x-span 4.5 | frac 0.61 ahead 0.43 v 0.8 ff 98 bank 70 lim none
+1.4 1.5 0.5 0.75 cut 90 off    done       fell None in     | cut: turned 90 in 2.23s R 11.5 v 9>6.2>6.2 peak 64 far ahead 1.25 | back: turned -88 in 1.42s R 4.3 v>3.1>3.1 peak 129 | end turned 0 ahead 0.4 frac 0.64 v 0.5 x-span 6.6 | 
+1.4 1.5 0.5 0.75 cut 120 off   stall      fell 4.27 in back| cut: turned 120 in 2.65s R 9.8 v 9>5.4>5.4 peak 91 far ahead 1.1 | back: turned -11 in 1.4s R 17.4 v>0.8>1.1 peak 152 | end turned 110 ahead 0.31 frac 0.77 v 1.1 x-span 6.9 | frac 0.77 ahead 0.31 v 1.1 ff 63 bank 0 lim tip
+1.4 1.5 1 0.75 cut 90 off      done       fell None in     | cut: turned 90 in 1.52s R 8.4 v 9>7.1>7.1 peak 87 far ahead 1.19 | back: turned -88 in 1.52s R 4.1 v>2.1>2.1 peak 186 | end turned 44 ahead 0.26 frac 0.84 v 0.6 x-span 5.5 | 
+1.4 1.5 1 0.75 cut 120 off     sudden     fell 3.15 in back| cut: turned 120 in 1.85s R 7.3 v 9>5.7>5.7 peak 95 far ahead 1.11 | back: turned 21 in 1.08s R 6.8 v>0.6>0.8 peak 102 | end turned 141 ahead 0.47 frac 0.54 v 0.8 x-span 5.5 | frac 0.54 ahead 0.47 v 0.8 ff 94 bank 70 lim none
+### trace: flat arc, 7.5 m/s, stick 1
+0.02 v 7.5 turned 0 rate 0 bank 0 asked 0 planing 1 load 0.18 carry bw 0 assist bw 0
+0.22 v 7.34 turned 0.01 rate 0.34 bank 0.07 asked 4.77 planing 1 load 0.96 carry bw 0 assist bw 0.04
+0.42 v 7.05 turned -2.71 rate 26.86 bank 10.77 asked 46.42 planing 1 load 1.06 carry bw 0 assist bw 0.36
+0.62 v 7.11 turned 11.44 rate 94.77 bank 23.68 asked 48.69 planing 1 load 1.22 carry bw 0 assist bw 0.27
+0.82 v 6.91 turned 29.94 rate 105.29 bank 32.2 asked 47.58 planing 1 load 1.23 carry bw 0 assist bw 0.32
+1.02 v 6.44 turned 51.88 rate 111.89 bank 37.31 asked 44.43 planing 1 load 1.31 carry bw 0 assist bw 0.1
+1.22 v 5.44 turned 73.51 rate 106.56 bank 38.86 asked 36.22 planing 1 load 1.27 carry bw 0 assist bw 0
+1.42 v 4.16 turned 94.03 rate 99.92 bank 36.7 asked 24.27 planing 1 load 1.05 carry bw 0 assist bw 0
+1.62 v 2.86 turned 112.26 rate 81.41 bank 31.66 asked 8.58 planing 0 load 0.83 carry bw 0 assist bw 0
+1.82 v 2.02 turned 126.68 rate 59.18 bank 27.66 asked 0.16 planing 0 load 0.48 carry bw 0 assist bw 0
+2.02 v 1.55 turned 133.32 rate 19.94 bank 51.5 asked 0 planing 0 load 0.35 carry bw 0 assist bw 0
+2.22 v 1.21 turned 139.12 rate 33.04 bank 70 asked 0 planing 0 load 0.09 carry bw 0 assist bw 0
+2.42 v 0.84 turned 146.96 rate 22.37 bank 70 asked 0 planing 0 load 0.1 carry bw 0 assist bw 0
+########## CARRY 0.2
+### pair set B
+n 16; top turn begun 15; 1 pair 7; 2 pairs 3
+  first-pair failures: {'behind the crest in run': 4, 'behind the crest in down': 4, 'timeout in wait': 1}
+  ends after one pair: {'timeout in wait': 3, 'behind the crest in run': 1}
+  ends after two pairs: {'done': 3}
+  pair 1 3.24–6.55 s (median 4.00); pair 2 3.88–4.95 s (median 4.40); bottom->top 1.65–3.05 s (median 2.25); waiting on the flat 0.80–2.01 s (median 1.16)
+  bottom turn 0.85–1.35 s, ends 0.87–1.20 face lengths ahead, radius about 7.3–13.2 m (median 11.2); top turn 0.88–1.03 s, radius about 5.5–12.7 m (median 6.8)
+  v at the bottom turn 8.1–9.9 (median 9.2); v at the top turn 3.4–6.6 (median 4.6)
+### pair set C
+n 8; top turn begun 8; 1 pair 6; 2 pairs 6
+  first-pair failures: {'behind the crest in down': 1, 'behind the crest in run': 1}
+  ends after one pair: {}
+  ends after two pairs: {'done': 5, 'time up': 1}
+  pair 1 3.53–6.35 s (median 4.63); pair 2 3.59–6.29 s (median 4.38); bottom->top 1.63–2.89 s (median 2.20); waiting on the flat 0.63–1.90 s (median 1.01)
+  bottom turn 0.82–1.35 s, ends 0.99–1.20 face lengths ahead, radius about 7.3–13.9 m (median 11.4); top turn 1.12–1.63 s, radius about 5.9–9.0 m (median 7.8)
+  v at the bottom turn 8.5–9.9 (median 9.2); v at the top turn 3.8–5.3 (median 4.7)
+### pair set A (on the flat ahead of the wave)
+n 8; top turn begun 8; 1 pair 8; 2 pairs 8
+  first-pair failures: {}
+  ends after one pair: {}
+  ends after two pairs: {'done': 5, 'sudden fall in out': 2, 'stall fall in up': 1}
+  pair 1 1.65–2.65 s (median 2.09); pair 2 1.42–2.65 s (median 1.98); bottom->top 0.87–1.45 s (median 1.12); waiting on the flat - s (median nan)
+  bottom turn 0.87–1.45 s, ends 0.99–1.20 face lengths ahead, radius about 7.3–13.7 m (median 11.1); top turn 0.78–1.22 s, radius about 5.9–9.0 m (median 7.3)
+  v at the bottom turn 8.5–9.9 (median 9.2); v at the top turn 7.0–8.4 (median 8.0)
+### cutback 150/180
+n 16: {'falls in the turn back (sudden)': 14, 'falls in the first arc': 1, 'falls in the turn back (stall)': 1}
+  first arc: 2.23–4.60 s, radius 6.4–13.3 m (median 9.2), v at the start 6.5–9.0, lowest 1.0–8.1, at the far end 1.0–8.7 (median 5.7), far end -0.04–1.08 face lengths ahead
+### cutback 90/120
+n 8: {'completes': 5, 'falls in the turn back (sudden)': 3}
+  first arc: 1.50–3.02 s, radius 7.6–13.3 m (median 10.3), v at the start 7.5–9.0, lowest 6.4–8.8, at the far end 6.4–8.8 (median 7.9), far end 1.06–1.43 face lengths ahead
+  completed runs: [('1.4 0 0.5 0.75 cut 90 off', 'cut', 2.28, 's R', 11.4, 'back', 1.7, 's R', 6.3, 'end ahead', 0.54, 'frac', 0.43, 'v', 0.8, 'vmin back', 4.7), ('1.4 0 1 0.75 cut 90 off', 'cut', 1.5, 's R', 8, 'back', 1.38, 's R', 6.4, 'end ahead', 0.76, 'frac', 0.15, 'v', 3.2, 'vmin back', 6.6), ('1.4 1.5 0.5 0.75 cut 90 off', 'cut', 2.47, 's R', 13.3, 'back', 1.73, 's R', 6.7, 'end ahead', 0.78, 'frac', 0.12, 'v', 2.1, 'vmin back', 4.8), ('1.4 1.5 1 0.75 cut 90 off', 'cut', 1.63, 's R', 9.6, 'back', 1.53, 's R', 7.6, 'end ahead', 1.09, 'frac', 0, 'v', 3.4, 'vmin back', 7.1), ('1.4 1.5 1 0.75 cut 120 off', 'cut', 2.07, 's R', 9, 'back', 1.7, 's R', 5.7, 'end ahead', 0.64, 'frac', 0.29, 'v', 2.2, 'vmin back', 6.1)]
+### trim
+trim 0 stand free        entry 7.4 | time up                              at 16 s | last 4 s: v 7.4 (6.3–8), toward shore 6, 42 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0.02, 0.24] | carry max 0 bw
+trim 0 stand line        entry 7.4 | time up                              at 16 s | last 4 s: v 7.3 (7–7.4), toward shore 5.7, 44 deg off the fall line, face fraction 0.12, ahead 0.78 | face fraction range [0.07, 0.16] | carry max 0 bw
+trim 0 compress free     entry 7.4 | dropped behind the crest             at 15.63 s | last 4 s: v 3 (0.6–4), toward shore 3.8, 51 deg off the fall line, face fraction 0.81, ahead 0.18 | face fraction range [0, 1] | carry max 0 bw
+trim 0 compress line     entry 7.4 | time up                              at 16 s | last 4 s: v 7.3 (6.9–7.6), toward shore 5.8, 44 deg off the fall line, face fraction 0.13, ahead 0.78 | face fraction range [0.06, 0.16] | carry max 0.013 bw
+trim 1.5 stand free      entry 8.9 | time up                              at 16 s | last 4 s: v 3.7 (1.7–4.3), toward shore 4.5, 46 deg off the fall line, face fraction 0.91, ahead 0.13 | face fraction range [0, 1] | carry max 0 bw
+trim 1.5 stand line      entry 8.9 | time up                              at 16 s | last 4 s: v 7.3 (6.4–7.8), toward shore 5.9, 44 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0.01, 0.36] | carry max 0 bw
+trim 1.5 compress free   entry 8.9 | fall (balance) bank 0 v 1.6          at 11.72 s | last 4 s: v 4.9 (1.1–8.6), toward shore 4.4, 39 deg off the fall line, face fraction 0.16, ahead 0.86 | face fraction range [0, 0.85] | carry max 0 bw
+trim 1.5 compress line   entry 8.9 | time up                              at 16 s | last 4 s: v 7.5 (6.2–8.3), toward shore 6, 43 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0, 0.31] | carry max 0.021 bw
+### flat water
+## arc-c0.2.json
+arc 6 0.5 180    fall (lost board) bank 70 v 0.3    | 109 deg in 2.58 s, v 5.9>0.3>0.3 (max 5.9), R 4.4, mean 42 peak 109 deg/s, bank 70 | first 90: 1.32 s R 4.2 v 3.4 | 90 at 1.32 s v 3.4; 180 at None s v None | carry mean 0.03 bw, work 270 J
+arc 6 1 180      fall (balance) bank 70 v 0.7       | 128 deg in 2.02 s, v 5.9>0.7>0.7 (max 5.9), R 3.3, mean 64 peak 123 deg/s, bank 70 | first 90: 1.07 s R 3.6 v 3.8 | 90 at 1.07 s v 3.7; 180 at None s v None | carry mean 0.05 bw, work 327 J
+arc 7.5 0.5 180  fall (lost board) bank 70 v 0.3    | 164 deg in 3.4 s, v 7.3>0.3>0.3 (max 7.3), R 5.1, mean 48 peak 109 deg/s, bank 70 | first 90: 1.68 s R 6.7 v 5.2 | 90 at 1.68 s v 5.2; 180 at None s v None | carry mean 0.05 bw, work 636 J
+arc 7.5 1 180    done                               | 180 deg in 2.5 s, v 7.3>0.9>0.9 (max 7.3), R 4, mean 72 peak 104 deg/s, bank 70 | first 90: 1.23 s R 5.5 v 5.9 | 90 at 1.23 s v 5.8; 180 at 2.48 s v 0.9 | carry mean 0.09 bw, work 1003 J
+## arc9-c0.2.json
+arc 9 0.5 180    done                               | 181 deg in 3.18 s, v 8.8>3.9>3.9 (max 8.8), R 6.7, mean 57 peak 105 deg/s, bank 26 | first 90: 2.1 s R 9.9 v 6.1 | 90 at 2.1 s v 6.1; 180 at 3.17 s v 3.9 | carry mean 0.08 bw, work 1132 J
+arc 9 1 180      done                               | 181 deg in 2.57 s, v 8.8>4.6>4.6 (max 8.8), R 6.1, mean 70 peak 97 deg/s, bank 56 | first 90: 1.5 s R 8 v 7.6 | 90 at 1.5 s v 7.6; 180 at 2.55 s v 4.6 | carry mean 0.17 bw, work 2296 J
+## linked-c0.2.json
+linked 6 0.5 30  fall (balance) bank -64 v 1.1      | arcs 0 pairs [] | v at flips [5.9, 4.9] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 6 0.5 45  fall (balance) bank 0 v 0.8        | arcs 0 pairs [] | v at flips [5.9, 4.7] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 6 1 30    fall (balance) bank 0 v 1.9        | arcs 0 pairs [] | v at flips [5.9, 5.8] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 6 1 45    fall (balance) bank 0 v 1.7        | arcs 0 pairs [] | v at flips [5.9, 5.5] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 7.5 0.5 30 fall (balance) bank 0 v 1          | arcs 1 pairs [] | v at flips [7.4, 6.2, 4.5] | R [5.8] | arc s [1.22] | mean deg/s [51] | bank [21] | work J [204]
+linked 7.5 0.5 45 fall (balance) bank -70 v 0.4      | arcs 1 pairs [] | v at flips [7.4, 5.9, 3.1] | R [4.2] | arc s [1.48] | mean deg/s [62] | bank [22] | work J [245]
+linked 7.5 1 30  fall (balance) bank 63 v 1.2       | arcs 1 pairs [] | v at flips [7.4, 7.2, 5.5] | R [5.7] | arc s [1.07] | mean deg/s [57] | bank [35] | work J [290]
+linked 7.5 1 45  fall (balance) bank -70 v 0.7      | arcs 1 pairs [] | v at flips [7.4, 7.1, 4.3] | R [4.2] | arc s [1.35] | mean deg/s [69] | bank [39] | work J [332]
+### every pair run
+1.4 0 0.5 0.75 hold 60/0.5 off         behind the crest in run  fell None in       ups 1 high 1 aheadMax 1.05 | 
+      d@0.2(v7.5 f0.16 h47) u@1.05(v8.5 f0.05 h20) w@2.37(v7.2 f0 h61) d@3.38(v4.3 f0.51 h84) r@4.98(v4.5 f0.99 h20)
+1.4 0 0.5 0.75 hold 60/0.7 off         behind the crest in run  fell None in       ups 1 high 1 aheadMax 1.05 | 
+      d@0.2(v7.5 f0.16 h47) u@1.05(v8.5 f0.05 h20) w@2.37(v7.2 f0 h61) d@3.63(v4 f0.71 h87) r@5.08(v2.8 f1 h20)
+1.4 0 1 0.75 hold 60/0.5 off           behind the crest in run  fell None in       ups 1 high 1 aheadMax 0.99 | 
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.8 f0.08 h19) w@1.85(v8.1 f0 h60) d@2.68(v4.6 f0.51 h99) r@4.15(v4.7 f1 h20)
+1.4 0 1 0.75 hold 60/0.7 off           behind the crest in run  fell None in       ups 1 high 1 aheadMax 0.99 | 
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.8 f0.08 h19) w@1.85(v8.1 f0 h60) d@2.87(v4.3 f0.7 h103) r@4.33(v2.1 f1 h20)
+1.4 1.5 0.5 0.75 hold 60/0.5 off       behind the crest in down fell None in       ups 1 high 1 aheadMax 1.2 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.2 f0 h20) w@2.43(v7.4 f0 h60) d@3.67(v3.8 f0.51 h87)
+1.4 1.5 0.5 0.75 hold 60/0.7 off       behind the crest in down fell None in       ups 1 high 1 aheadMax 1.2 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.2 f0 h20) w@2.43(v7.4 f0 h60) d@3.88(v3.4 f0.7 h93)
+1.4 1.5 1 0.75 hold 60/0.5 off         behind the crest in down fell None in       ups 1 high 1 aheadMax 1.16 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v9.9 f0.01 h19) w@1.95(v8.2 f0 h61) d@2.95(v4 f0.5 h104)
+1.4 1.5 1 0.75 hold 60/0.7 off         behind the crest in down fell None in       ups 1 high 1 aheadMax 1.16 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v9.9 f0.01 h19) w@1.95(v8.2 f0 h61) d@3.13(v3.5 f0.71 h111)
+1.4 0 0.5 0.75 hold 60/0.5 off         timeout in wait          fell None in       ups 2 high 0.59 aheadMax 0.97 | 
+      d@0.2(v7.5 f0.16 h47) u@0.75(v8.1 f0.12 h34) w@1.78(v7.8 f0.06 h60) d@3.12(v6.6 f0.5 h65) r@4.1(v8.3 f0.45 h35) u@4.47(v9.1 f0.25 h26) w@5.55(v9.1 f0.01 h62)
+1.4 0 0.5 0.75 hold 60/0.7 off         timeout in wait          fell None in       ups 1 high 0.66 aheadMax 0.89 | 
+      d@0.2(v7.5 f0.16 h47) u@0.75(v8.1 f0.12 h34) w@1.78(v7.8 f0.06 h60)
+1.4 0 1 0.75 hold 60/0.5 off           done                     fell None in       ups 3 high 0.8 aheadMax 1.01 | 
+      d@0.2(v7.5 f0.16 h47) u@0.68(v8.4 f0.13 h35) w@1.53(v8.4 f0.06 h61) d@2.33(v6.2 f0.5 h84) r@3.22(v7.9 f0.65 h34) u@3.92(v8.8 f0.24 h14) w@4.92(v9.6 f0 h61) d@6.18(v6.4 f0.51 h79) r@7.12(v8 f0.66 h34) u@7.8(v9 f0.25 h16) w@8.77(v9.9 f0 h60) o@10.27(v6.8 f0.51 h73)
+1.4 0 1 0.75 hold 60/0.7 off           done                     fell None in       ups 3 high 1 aheadMax 1.12 | 
+      d@0.2(v7.5 f0.16 h47) u@0.68(v8.4 f0.13 h35) w@1.53(v8.4 f0.06 h61) d@2.62(v5.9 f0.7 h85) r@3.53(v7.2 f0.87 h34) u@4.68(v9 f0.24 h11) w@5.8(v9.8 f0 h60) d@7.35(v5.8 f0.71 h87) r@8.3(v6.9 f0.91 h35) u@9.63(v8.9 f0.24 h7) w@10.8(v9.6 f0 h61) o@12.32(v5.5 f0.7 h89)
+1.4 1.5 0.5 0.75 hold 60/0.5 off       timeout in wait          fell None in       ups 2 high 0.66 aheadMax 1.01 | 
+      d@0.2(v9 f0.13 h46) u@0.73(v9.4 f0.04 h35) w@1.77(v8.1 f0 h61) d@3.18(v5.9 f0.51 h69) r@4.22(v7.6 f0.56 h35) u@4.82(v9 f0.24 h24) w@5.95(v8.8 f0 h60)
+1.4 1.5 0.5 0.75 hold 60/0.7 off       timeout in wait          fell None in       ups 2 high 0.76 aheadMax 1.07 | 
+      d@0.2(v9 f0.13 h46) u@0.73(v9.4 f0.04 h35) w@1.77(v8.1 f0 h61) d@3.78(v6.1 f0.7 h63) r@4.72(v7.6 f0.65 h35) u@5.42(v9.3 f0.24 h24) w@7.22(v8.1 f0 h60)
+1.4 1.5 1 0.75 hold 60/0.5 off         done                     fell None in       ups 3 high 1 aheadMax 1.08 | 
+      d@0.2(v9 f0.13 h46) u@0.68(v9.8 f0.05 h34) w@1.57(v8.9 f0 h61) d@2.52(v5.7 f0.51 h91) r@3.52(v7.1 f0.81 h34) u@4.58(v8.7 f0.25 h9) w@5.7(v9.6 f0 h60) d@6.78(v5.7 f0.51 h93) r@7.82(v7.1 f0.84 h34) u@8.98(v8.7 f0.24 h9) w@10.12(v9.6 f0 h61) o@11.27(v5.7 f0.51 h91)
+1.4 1.5 1 0.75 hold 60/0.7 off         behind the crest in run  fell None in       ups 2 high 1 aheadMax 1.18 | 
+      d@0.2(v9 f0.13 h46) u@0.68(v9.8 f0.05 h34) w@1.57(v8.9 f0 h61) d@2.73(v5.5 f0.7 h93) r@3.75(v6.4 f0.98 h34) u@7.23(v8.4 f0.25 h3) w@8.57(v8.9 f0 h61) d@9.9(v4.4 f0.71 h104) r@11.2(v3 f1 h33)
+1.4 0 0.5 0.75 hold 60/0.3 off         done                     fell None in       ups 3 high 0.87 aheadMax 1.17 | 
+      d@0.2(v7.5 f0.16 h47) u@1.05(v8.5 f0.05 h20) w@2.37(v7.2 f0 h61) d@3.13(v4.8 f0.31 h80) r@4.73(v6.2 f0.72 h20) u@5.68(v8.5 f0.24 h8) w@7.47(v8.1 f0 h60) d@8.55(v5.3 f0.3 h78) r@10.18(v7.4 f0.55 h20) u@10.68(v8.6 f0.25 h10) w@12.35(v8.3 f0 h60) o@13.57(v5.6 f0.3 h74)
+1.4 0 0.5 0.75 hold 45/0.3 off         done                     fell None in       ups 3 high 0.55 aheadMax 1.05 | 
+      d@0.2(v7.5 f0.16 h47) u@1.05(v8.5 f0.05 h20) w@2.07(v7.6 f0 h46) d@3.5(v4.7 f0.31 h62) r@4.63(v6.4 f0.48 h20) u@5.22(v7.6 f0.25 h8) w@6.45(v8.2 f0 h45) d@8.45(v5.3 f0.3 h53) r@9.43(v7.1 f0.32 h20) u@9.6(v7.4 f0.25 h10) w@10.63(v8.3 f0.01 h46) o@13.53(v6.7 f0.3 h48)
+1.4 0 1 0.75 hold 60/0.3 off           done                     fell None in       ups 3 high 0.96 aheadMax 1.09 | 
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.8 f0.08 h19) w@1.85(v8.1 f0 h60) d@2.48(v5.3 f0.3 h93) r@3.83(v6.8 f0.67 h18) u@4.68(v8 f0.25 h5) w@5.92(v9 f0 h60) d@6.75(v5.3 f0.31 h93) r@8.08(v6.9 f0.69 h20) u@8.97(v8.2 f0.24 h4) w@10.18(v9.1 f0 h60) o@11.05(v5.5 f0.31 h90)
+1.4 0 1 0.75 hold 45/0.3 off           done                     fell None in       ups 3 high 0.6 aheadMax 1.01 | 
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.8 f0.08 h19) w@1.67(v8.4 f0 h46) d@2.68(v5.2 f0.31 h75) r@3.8(v7.1 f0.52 h18) u@4.38(v7.4 f0.25 h6) w@5.33(v8.9 f0 h46) d@6.62(v5.6 f0.3 h69) r@7.62(v7.6 f0.43 h19) u@7.97(v7.4 f0.25 h5) w@8.82(v9 f0.01 h45) o@10.3(v6.3 f0.3 h62)
+1.4 1.5 0.5 0.75 hold 60/0.3 off       behind the crest in down fell None in       ups 1 high 1 aheadMax 1.2 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.2 f0 h20) w@2.43(v7.4 f0 h60) d@3.43(v4.4 f0.31 h82)
+1.4 1.5 0.5 0.75 hold 45/0.3 off       time up                  fell None in       ups 3 high 0.81 aheadMax 1.2 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.2 f0 h20) w@2.07(v7.7 f0 h45) d@3.97(v3.8 f0.3 h58) r@5.6(v4.3 f0.8 h20) u@7.43(v8.3 f0.25 h3) w@8.88(v8.4 f0 h45) d@11.08(v3.9 f0.31 h56) r@12.48(v5.1 f0.68 h19) u@13.72(v8 f0.24 h4) w@15.15(v8.2 f0 h46)
+1.4 1.5 1 0.75 hold 60/0.3 off         behind the crest in run  fell None in       ups 1 high 1 aheadMax 1.16 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v9.9 f0.01 h19) w@1.95(v8.2 f0 h61) d@2.78(v4.6 f0.32 h98) r@4.78(v1.8 f1 h20)
+1.4 1.5 1 0.75 hold 45/0.3 off         done                     fell None in       ups 3 high 0.79 aheadMax 1.16 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v9.9 f0.01 h19) w@1.72(v8.5 f0 h46) d@3.08(v4.6 f0.31 h74) r@4.6(v6.1 f0.74 h19) u@5.67(v8.2 f0.25 h2) w@6.67(v8.9 f0 h46) d@8.12(v5.3 f0.31 h71) r@9.18(v7.2 f0.5 h20) u@9.73(v7.4 f0.24 h4) w@10.65(v9 f0 h46) o@11.98(v5.7 f0.31 h67)
+1.4 0 0.5 0.75 hold 50/9 off           done                     fell None in       ups 3 high 0.65 aheadMax 1.05 | 
+      d@0.2(v7.5 f0.16 h47) u@1.05(v8.5 f0.05 h20) d@2.17(v7.5 f0 h50) u@3.1(v6.5 f0 h19) d@3.97(v5.5 f0.03 h51) u@4.9(v4.6 f0.24 h20) o@5.85(v5.4 f0.36 h51)
+1.4 0 0.5 0.75 hold 65/9 off           done                     fell None in       ups 3 high 0.35 aheadMax 1.05 | 
+      d@0.2(v7.5 f0.16 h47) u@1.05(v8.5 f0.05 h20) d@2.45(v7 f0 h65) u@3.67(v6.5 f0.15 h19) d@5(v6.7 f0.16 h66) u@6.32(v8.1 f0.2 h20) o@7.73(v7.7 f0.01 h66)
+1.4 0 1 0.75 hold 50/9 off             done                     fell None in       ups 3 high 0.63 aheadMax 1.04 | 
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.8 f0.08 h19) d@1.72(v8.4 f0 h50) u@2.5(v7.5 f0 h19) d@3.25(v6.2 f0 h50) u@3.92(v5.4 f0.05 h20) o@4.53(v5.3 f0.14 h50)
+1.4 0 1 0.75 hold 65/9 off             sudden                   fell 6.87 in out   ups 3 high 0.82 aheadMax 0.99 | frac 0.82 ahead 0.27 v 4.9 ff 98 bank -70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@0.85(v8.8 f0.08 h19) d@1.92(v8 f0 h65) u@2.85(v7.6 f0.06 h20) d@3.83(v7.2 f0.05 h65) u@4.83(v6.7 f0.21 h19) o@5.9(v7.8 f0.13 h66)
+1.4 1.5 0.5 0.75 hold 50/9 off         stall                    fell 6 in up    ups 3 high 0.88 aheadMax 1.2 | frac 0.88 ahead 0.21 v 0.8 ff 1 bank 0 lim tip
+      d@0.2(v9 f0.13 h46) u@1.08(v9.2 f0 h20) d@2.2(v7.6 f0 h50) u@3.17(v6.4 f0 h20) d@4(v5.1 f0 h50) u@5.02(v2.1 f0.29 h20)
+1.4 1.5 0.5 0.75 hold 65/9 off         done                     fell None in       ups 3 high 0.52 aheadMax 1.2 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.2 f0 h20) d@2.53(v7.3 f0 h65) u@3.73(v6.1 f0.05 h20) d@4.87(v5.6 f0.19 h65) u@6.2(v6.6 f0.45 h20) o@7.67(v8.3 f0.12 h66)
+1.4 1.5 1 0.75 hold 50/9 off           done                     fell None in       ups 3 high 0.63 aheadMax 1.21 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v9.9 f0.01 h19) d@1.78(v8.4 f0 h51) u@2.62(v7.6 f0 h19) d@3.38(v6.3 f0 h50) u@4.07(v5.2 f0 h20) o@4.65(v4.6 f0.05 h51)
+1.4 1.5 1 0.75 hold 65/9 off           sudden                   fell 6.75 in out   ups 3 high 0.85 aheadMax 1.16 | frac 0.85 ahead 0.24 v 4 ff 68 bank -70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.88(v9.9 f0.01 h19) d@2.03(v8.2 f0 h66) u@3(v7.5 f0 h19) d@3.88(v5.9 f0.05 h66) u@5.03(v4.6 f0.38 h19) o@5.87(v6 f0.49 h65)
+### every cutback run
+1.4 0 0.5 0.5 cut 150 off      sudden     fell 5.48 in back| cut: turned 152 in 3.83s R 11.9 v 6.5>6.5>6.8 peak 110 far ahead 0.85 | back: turned 0 in 1.43s R None v>1.2>1.2 peak 123 | end turned 152 ahead -0.1 frac 1 v 1.2 x-span 15.1 | frac 1 ahead -0.1 v 1.2 ff 106 bank 70 lim flight
+1.4 0 0.5 0.5 cut 180 off      sudden     fell 4.92 in back| cut: turned 180 in 4.12s R 10.5 v 6.5>3.9>3.9 peak 123 far ahead 0.55 | back: turned 2 in 0.58s R None v>1.6>1.6 peak 40 | end turned 182 ahead 0.1 frac 0.97 v 1.6 x-span 14 | frac 0.97 ahead 0.1 v 1.6 ff 137 bank 70 lim flight
+1.4 0 0.5 0.75 cut 150 off     sudden     fell 4.4 in back| cut: turned 152 in 3.17s R 9 v 7.5>5.7>5.7 peak 120 far ahead 0.8 | back: turned -6 in 1.02s R 20.2 v>0.6>0.6 peak 120 | end turned 145 ahead 0.15 frac 0.94 v 0.6 x-span 9.8 | frac 0.94 ahead 0.15 v 0.6 ff 99 bank 70 lim flight
+1.4 0 0.5 0.75 cut 180 off     sudden     fell 4.23 in cut | cut: turned 170 in 4.02s R 8.8 v 7.5>1>1 peak 121 far ahead 0.17 | back: turned None in Nones R None v>None>None peak None | end turned 170 ahead 0.17 frac 0.92 v 1 x-span 9.6 | frac 0.92 ahead 0.17 v 1 ff 123 bank 70 lim flight
+1.4 0 1 0.5 cut 150 off        sudden     fell 3.72 in back| cut: turned 152 in 2.45s R 8.2 v 6.5>6.4>8.7 peak 117 far ahead 0.8 | back: turned -25 in 1.05s R 10.3 v>3.1>3.4 peak 111 | end turned 127 ahead 0.15 frac 0.94 v 3.4 x-span 13.2 | frac 0.94 ahead 0.15 v 3.4 ff 81 bank 70 lim flight
+1.4 0 1 0.5 cut 180 off        sudden     fell 3.17 in back| cut: turned 181 in 2.77s R 7.5 v 6.5>4.7>4.7 peak 117 far ahead 0.47 | back: turned 13 in 0.18s R 3.2 v>3.5>3.5 peak 85 | end turned 194 ahead 0.3 frac 0.78 v 3.5 x-span 11.4 | frac 0.78 ahead 0.3 v 3.5 ff 148 bank 70 lim tip
+1.4 0 1 0.75 cut 150 off       sudden     fell 3.25 in back| cut: turned 151 in 2.23s R 7 v 7.5>7.2>7.2 peak 116 far ahead 0.87 | back: turned 25 in 0.8s R 5.2 v>1.1>1.1 peak 125 | end turned 176 ahead 0.28 frac 0.8 v 1.1 x-span 9 | frac 0.8 ahead 0.28 v 1.1 ff 129 bank 70 lim none
+1.4 0 1 0.75 cut 180 off       sudden     fell 3.07 in back| cut: turned 180 in 2.55s R 6.4 v 7.5>3.1>3.1 peak 122 far ahead 0.57 | back: turned 15 in 0.3s R 2.2 v>1.2>1.2 peak 62 | end turned 196 ahead 0.34 frac 0.73 v 1.2 x-span 8.7 | frac 0.73 ahead 0.34 v 1.2 ff 149 bank 70 lim none
+1.4 1.5 0.5 0.5 cut 150 off    stall      fell 5.53 in back| cut: turned 151 in 4.32s R 13.3 v 8>5.7>5.7 peak 77 far ahead 1.08 | back: turned -12 in 1s R 14.1 v>1.1>1.4 peak 174 | end turned 139 ahead 0.33 frac 0.75 v 1.4 x-span 13.4 | frac 0.75 ahead 0.33 v 1.4 ff 93 bank 0 lim tip
+1.4 1.5 0.5 0.5 cut 180 off    sudden     fell 5.87 in back| cut: turned 181 in 4.6s R 11.6 v 8>4.8>4.8 peak 128 far ahead 0.77 | back: turned -4 in 1.05s R None v>0.5>0.6 peak 115 | end turned 176 ahead 0.04 frac 0.99 v 0.6 x-span 13.2 | frac 0.99 ahead 0.04 v 0.6 ff 131 bank 70 lim flight
+1.4 1.5 0.5 0.75 cut 150 off   sudden     fell 5 in back| cut: turned 151 in 3.48s R 10.5 v 9>6>6.1 peak 106 far ahead 0.93 | back: turned -32 in 1.3s R 4.9 v>0.5>0.5 peak 130 | end turned 119 ahead 0.09 frac 0.98 v 0.5 x-span 11.1 | frac 0.98 ahead 0.09 v 0.5 ff 73 bank 70 lim flight
+1.4 1.5 0.5 0.75 cut 180 off   sudden     fell 4.77 in back| cut: turned 180 in 3.73s R 9.2 v 9>3.9>3.9 peak 131 far ahead 0.66 | back: turned -3 in 0.82s R None v>0.8>0.8 peak 68 | end turned 178 ahead 0.09 frac 0.98 v 0.8 x-span 11 | frac 0.98 ahead 0.09 v 0.8 ff 131 bank 70 lim flight
+1.4 1.5 1 0.5 cut 150 off      sudden     fell 6.32 in out | cut: turned 150 in 3.6s R 12.1 v 8>5.8>5.9 peak 92 far ahead 0.41 | back: turned -147 in 1.82s R 3.8 v>2.6>2.6 peak 167 | end turned 0 ahead -0.16 frac 1 v 0.7 x-span 22.7 | frac 1 ahead -0.16 v 0.7 ff 46 bank -70 lim tip
+1.4 1.5 1 0.5 cut 180 off      sudden     fell 5.15 in back| cut: turned 181 in 4.08s R 11 v 8>5.8>6.4 peak 92 far ahead -0.04 | back: turned 20 in 0.85s R 11.6 v>2.1>2.1 peak 72 | end turned 201 ahead -0.74 frac 1 v 2.1 x-span 22.3 | frac 1 ahead -0.74 v 2.1 ff 155 bank 70 lim none
+1.4 1.5 1 0.75 cut 150 off     sudden     fell 3.92 in back| cut: turned 150 in 2.47s R 8.5 v 9>8.1>8.1 peak 87 far ahead 1.02 | back: turned -15 in 1.23s R 14.3 v>0.6>0.6 peak 127 | end turned 135 ahead 0.16 frac 0.93 v 0.6 x-span 11.8 | frac 0.93 ahead 0.16 v 0.6 ff 89 bank 70 lim tip
+1.4 1.5 1 0.75 cut 180 off     sudden     fell 3.47 in back| cut: turned 182 in 2.73s R 7.6 v 9>5.7>5.7 peak 134 far ahead 0.72 | back: turned 32 in 0.52s R 2.3 v>1.2>1.2 peak 113 | end turned 214 ahead 0.27 frac 0.82 v 1.2 x-span 11 | frac 0.82 ahead 0.27 v 1.2 ff 168 bank 70 lim none
+1.4 0 0.5 0.75 cut 90 off      done       fell None in     | cut: turned 91 in 2.28s R 11.4 v 7.5>7.1>7.1 peak 60 far ahead 1.21 | back: turned -89 in 1.7s R 6.3 v>4.7>4.7 peak 94 | end turned -26 ahead 0.54 frac 0.43 v 0.8 x-span 5.6 | 
+1.4 0 0.5 0.75 cut 120 off     sudden     fell 6.37 in out | cut: turned 121 in 2.82s R 10.3 v 7.5>6.4>6.4 peak 65 far ahead 1.06 | back: turned -118 in 2.4s R 5.2 v>3.8>5 peak 152 | end turned 13 ahead 0.37 frac 0.69 v 3.7 x-span 10.6 | frac 0.69 ahead 0.37 v 3.7 ff 34 bank -70 lim flight
+1.4 0 1 0.75 cut 90 off        done       fell None in     | cut: turned 90 in 1.5s R 8 v 7.5>7.4>8.4 peak 97 far ahead 1.12 | back: turned -88 in 1.38s R 6.4 v>6.6>6.6 peak 125 | end turned -23 ahead 0.76 frac 0.15 v 3.2 x-span 5.5 | 
+1.4 0 1 0.75 cut 120 off       sudden     fell 4.73 in out | cut: turned 120 in 1.92s R 7.6 v 7.5>7.4>7.9 peak 97 far ahead 1.07 | back: turned -119 in 1.65s R 5.1 v>5.5>6.7 peak 192 | end turned -28 ahead 0.48 frac 0.52 v 2.6 x-span 9 | frac 0.52 ahead 0.48 v 2.6 ff 75 bank -70 lim flight
+1.4 1.5 0.5 0.75 cut 90 off    done       fell None in     | cut: turned 91 in 2.47s R 13.3 v 9>7.3>7.3 peak 51 far ahead 1.43 | back: turned -88 in 1.73s R 6.7 v>4.8>4.8 peak 91 | end turned -37 ahead 0.78 frac 0.12 v 2.1 x-span 6.7 | 
+1.4 1.5 0.5 0.75 cut 120 off   sudden     fell 6.05 in out | cut: turned 121 in 3.02s R 11.8 v 9>6.5>6.5 peak 58 far ahead 1.28 | back: turned -119 in 1.87s R 4.6 v>4.1>4.1 peak 113 | end turned -4 ahead 0.36 frac 0.7 v 0.9 x-span 11.1 | frac 0.7 ahead 0.36 v 0.9 ff 51 bank -70 lim flight
+1.4 1.5 1 0.75 cut 90 off      done       fell None in     | cut: turned 91 in 1.63s R 9.6 v 9>8.8>8.8 peak 84 far ahead 1.33 | back: turned -88 in 1.53s R 7.6 v>7.1>7.1 peak 107 | end turned -19 ahead 1.09 frac 0 v 3.4 x-span 5.7 | 
+1.4 1.5 1 0.75 cut 120 off     done       fell None in     | cut: turned 121 in 2.07s R 9 v 9>8.5>8.5 peak 84 far ahead 1.28 | back: turned -119 in 1.7s R 5.7 v>6.1>6.1 peak 127 | end turned -34 ahead 0.64 frac 0.29 v 2.2 x-span 10.9 | 
+### trace: flat arc, 7.5 m/s, stick 1
+########## CARRY 0.4
+### pair set B
+n 16; top turn begun 15; 1 pair 14; 2 pairs 6
+  first-pair failures: {'sudden fall in run': 1, 'timeout in wait': 1}
+  ends after one pair: {'sudden fall in run': 2, 'timeout in wait': 5, 'sudden fall in down': 1}
+  ends after two pairs: {'time up': 4, 'done': 2}
+  pair 1 3.29–6.42 s (median 4.60); pair 2 4.92–7.22 s (median 5.83); bottom->top 1.85–3.75 s (median 2.54); waiting on the flat 0.96–2.68 s (median 1.45)
+  bottom turn 0.88–1.43 s, ends 0.91–1.26 face lengths ahead, radius about 8.3–14.6 m (median 11.8); top turn 0.77–1.65 s, radius about 5.1–15.4 m (median 8.2)
+  v at the bottom turn 8.2–10.3 (median 9.5); v at the top turn 4.3–6.9 (median 5.4)
+### pair set C
+n 8; top turn begun 8; 1 pair 7; 2 pairs 7
+  first-pair failures: {'stall fall in run': 1}
+  ends after one pair: {}
+  ends after two pairs: {'done': 7}
+  pair 1 3.61–4.74 s (median 4.29); pair 2 3.56–5.35 s (median 4.34); bottom->top 1.95–3.35 s (median 2.75); waiting on the flat 0.82–2.33 s (median 1.45)
+  bottom turn 0.87–1.43 s, ends 1.08–1.26 face lengths ahead, radius about 9.1–15.3 m (median 13.4); top turn 1.00–1.70 s, radius about 6.7–10.3 m (median 7.1)
+  v at the bottom turn 8.8–10.3 (median 9.5); v at the top turn 3.5–5.8 (median 5.2)
+### pair set A (on the flat ahead of the wave)
+n 8; top turn begun 8; 1 pair 8; 2 pairs 8
+  first-pair failures: {}
+  ends after one pair: {}
+  ends after two pairs: {'sudden fall in out': 1, 'done': 6, 'off the front in up': 1}
+  pair 1 1.83–2.90 s (median 2.31); pair 2 1.73–2.63 s (median 2.20); bottom->top 0.95–1.55 s (median 1.20); waiting on the flat - s (median nan)
+  bottom turn 0.95–1.55 s, ends 1.09–1.26 face lengths ahead, radius about 9.2–15.0 m (median 13.1); top turn 0.88–1.35 s, radius about 8.6–12.0 m (median 10.6)
+  v at the bottom turn 8.8–10.3 (median 9.5); v at the top turn 7.9–9.6 (median 9.0)
+### cutback 150/180
+n 16: {'falls in the turn back (stall)': 1, 'falls in the turn back (sudden)': 9, 'dropped behind the crest': 3, 'falls in the first arc': 1, 'completes': 2}
+  first arc: 2.77–5.30 s, radius 9.7–17.1 m (median 14.3), v at the start 6.5–9.0, lowest 5.1–8.2, at the far end 5.1–12.1 (median 7.0), far end -0.31–1.27 face lengths ahead
+  completed runs: [('1.4 1.5 0.5 0.5 cut 150 off', 'cut', 4.9, 's R', 15.9, 'back', 4.03, 's R', 10.1, 'end ahead', 1.02, 'frac', 0, 'v', 8.1, 'vmin back', 3.7), ('1.4 1.5 0.5 0.75 cut 150 off', 'cut', 4.23, 's R', 14.3, 'back', 2.83, 's R', 5.4, 'end ahead', -0.26, 'frac', 1, 'v', 0.8, 'vmin back', 3.3)]
+### cutback 90/120
+n 8: {'completes': 8}
+  first arc: 1.60–3.52 s, radius 9.2–15.9 m (median 13.4), v at the start 7.5–9.0, lowest 7.4–8.9, at the far end 8.1–10.9 (median 9.0), far end 1.27–1.71 face lengths ahead
+  completed runs: [('1.4 0 0.5 0.75 cut 90 off', 'cut', 2.5, 's R', 13.4, 'back', 2.2, 's R', 10.6, 'end ahead', 1.29, 'frac', 0, 'v', 4.3, 'vmin back', 6.7), ('1.4 0 0.5 0.75 cut 120 off', 'cut', 3.23, 's R', 12.9, 'back', 2.67, 's R', 9.3, 'end ahead', 0.74, 'frac', 0.16, 'v', 3.7, 'vmin back', 6.6), ('1.4 0 1 0.75 cut 90 off', 'cut', 1.6, 's R', 9.2, 'back', 1.93, 's R', 12.6, 'end ahead', 2.03, 'frac', 0, 'v', 8, 'vmin back', 9.4), ('1.4 0 1 0.75 cut 120 off', 'cut', 2.18, 's R', 9.8, 'back', 4.12, 's R', 19.4, 'end ahead', 2.24, 'frac', 0, 'v', 5.4, 'vmin back', 7.4), ('1.4 1.5 0.5 0.75 cut 90 off', 'cut', 2.75, 's R', 15.9, 'back', 2.32, 's R', 11.6, 'end ahead', 1.71, 'frac', 0, 'v', 4.8, 'vmin back', 7), ('1.4 1.5 0.5 0.75 cut 120 off', 'cut', 3.52, 's R', 15, 'back', 2.75, 's R', 9.6, 'end ahead', 1.01, 'frac', 0, 'v', 3.9, 'vmin back', 6.4), ('1.4 1.5 1 0.75 cut 90 off', 'cut', 1.75, 's R', 11.1, 'back', 1.93, 's R', 13.4, 'end ahead', 2.81, 'frac', 0, 'v', 8.7, 'vmin back', 10.1), ('1.4 1.5 1 0.75 cut 120 off', 'cut', 3.05, 's R', 14.6, 'back', 2.32, 's R', 10.4, 'end ahead', 1.43, 'frac', 0, 'v', 7.4, 'vmin back', 8.4)]
+### trim
+trim 0 stand free        entry 7.4 | time up                              at 16 s | last 4 s: v 7.4 (6.3–8), toward shore 6, 42 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0.02, 0.24] | carry max 0 bw
+trim 0 stand line        entry 7.4 | time up                              at 16 s | last 4 s: v 7.3 (7–7.4), toward shore 5.7, 44 deg off the fall line, face fraction 0.12, ahead 0.78 | face fraction range [0.07, 0.16] | carry max 0 bw
+trim 0 compress free     entry 7.4 | dropped behind the crest             at 15.63 s | last 4 s: v 3 (0.6–4), toward shore 3.8, 51 deg off the fall line, face fraction 0.81, ahead 0.18 | face fraction range [0, 1] | carry max 0 bw
+trim 0 compress line     entry 7.4 | time up                              at 16 s | last 4 s: v 7.3 (6.7–8), toward shore 5.8, 44 deg off the fall line, face fraction 0.13, ahead 0.77 | face fraction range [0.05, 0.17] | carry max 0.028 bw
+trim 1.5 stand free      entry 8.9 | time up                              at 16 s | last 4 s: v 3.7 (1.7–4.3), toward shore 4.5, 46 deg off the fall line, face fraction 0.91, ahead 0.13 | face fraction range [0, 1] | carry max 0 bw
+trim 1.5 stand line      entry 8.9 | time up                              at 16 s | last 4 s: v 7.3 (6.4–7.8), toward shore 5.9, 44 deg off the fall line, face fraction 0.15, ahead 0.76 | face fraction range [0.01, 0.36] | carry max 0 bw
+trim 1.5 compress free   entry 8.9 | fall (balance) bank 0 v 1.6          at 11.72 s | last 4 s: v 4.9 (1.1–8.6), toward shore 4.4, 39 deg off the fall line, face fraction 0.16, ahead 0.86 | face fraction range [0, 0.85] | carry max 0 bw
+trim 1.5 compress line   entry 8.9 | time up                              at 16 s | last 4 s: v 7.7 (5.9–8.8), toward shore 6.2, 43 deg off the fall line, face fraction 0.17, ahead 0.76 | face fraction range [0, 0.31] | carry max 0.042 bw
+### flat water
+## arc-c0.4.json
+arc 6 0.5 180    fall (lost board) bank 70 v 0.3    | 134 deg in 2.92 s, v 5.9>0.3>0.3 (max 5.9), R 4.2, mean 46 peak 112 deg/s, bank 70 | first 90: 1.35 s R 4.6 v 4.5 | 90 at 1.35 s v 4.4; 180 at None s v None | carry mean 0.08 bw, work 743 J
+arc 6 1 180      fall (balance) bank 70 v 0.5       | 144 deg in 2.32 s, v 5.9>0.5>0.5 (max 6), R 3.5, mean 62 peak 121 deg/s, bank 70 | first 90: 1.07 s R 3.9 v 4.8 | 90 at 1.07 s v 4.7; 180 at None s v None | carry mean 0.11 bw, work 889 J
+arc 7.5 0.5 180  done                               | 181 deg in 2.98 s, v 7.3>4.9>4.9 (max 7.3), R 5.8, mean 61 peak 98 deg/s, bank 26 | first 90: 1.82 s R 7.6 v 6 | 90 at 1.82 s v 5.9; 180 at 2.97 s v 4.9 | carry mean 0.16 bw, work 1975 J
+arc 7.5 1 180    done                               | 181 deg in 2.62 s, v 7.3>7.1>8.7 (max 9), R 6.5, mean 69 peak 107 deg/s, bank 50 | first 90: 1.37 s R 6.6 v 7.7 | 90 at 1.37 s v 7.7; 180 at 2.6 s v 8.7 | carry mean 0.35 bw, work 5290 J
+## arc9-c0.4.json
+arc 9 0.5 180    done                               | 180 deg in 3.98 s, v 8.8>6.5>6.5 (max 8.8), R 9.5, mean 45 peak 65 deg/s, bank 25 | first 90: 2.32 s R 11.7 v 7.3 | 90 at 2.32 s v 7.3; 180 at 3.97 s v 6.5 | carry mean 0.16 bw, work 3376 J
+arc 9 1 180      done                               | 180 deg in 3.37 s, v 8.8>8.5>12.5 (max 12.5), R 10.6, mean 53 peak 98 deg/s, bank 51 | first 90: 1.63 s R 9.3 v 9.7 | 90 at 1.63 s v 9.7; 180 at 3.35 s v 12.5 | carry mean 0.38 bw, work 9274 J
+## linked-c0.4.json
+linked 6 0.5 30  fall (balance) bank -70 v 0.6      | arcs 1 pairs [] | v at flips [5.9, 5.1, 2] | R [4.8] | arc s [1.38] | mean deg/s [44] | bank [19] | work J [222]
+linked 6 0.5 45  fall (balance) bank -66 v 0.9      | arcs 0 pairs [] | v at flips [5.9, 5] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 6 1 30    fall (balance) bank -70 v 0.7      | arcs 1 pairs [] | v at flips [5.9, 6, 3.3] | R [4.3] | arc s [1.13] | mean deg/s [56] | bank [25] | work J [285]
+linked 6 1 45    fall (balance) bank -64 v 1        | arcs 0 pairs [] | v at flips [5.9, 5.8] | R [] | arc s [] | mean deg/s [] | bank [] | work J []
+linked 7.5 0.5 30 fall (balance) bank 70 v 0.6       | arcs 2 pairs [2.67] | v at flips [7.4, 6.5, 5.1, 2.1] | R [6.8, 4.6] | arc s [1.32, 1.35] | mean deg/s [48, 47] | bank [22, 22] | work J [508, 229]
+linked 7.5 0.5 45 fall (balance) bank 0 v 1.2        | arcs 1 pairs [] | v at flips [7.4, 6.4, 4.6] | R [5.4] | arc s [1.63] | mean deg/s [57] | bank [24] | work J [683]
+linked 7.5 1 30  fall (balance) bank 0 v 1.2        | arcs 2 pairs [2.13] | v at flips [7.4, 7.5, 7.1, 4.4] | R [6.4, 4.9] | arc s [1.05, 1.08] | mean deg/s [59, 59] | bank [36, 32] | work J [762, 438]
+linked 7.5 1 45  fall (balance) bank 70 v 0.4       | arcs 2 pairs [2.75] | v at flips [7.4, 7.6, 6.3, 3.5] | R [5.4, 4] | arc s [1.32, 1.43] | mean deg/s [71, 64] | bank [40, 38] | work J [1163, 561]
+### every pair run
+1.4 0 0.5 0.75 hold 60/0.5 off         time up                  fell None in       ups 3 high 0.87 aheadMax 1.27 | 
+      d@0.2(v7.5 f0.16 h47) u@1.07(v8.8 f0.04 h20) w@2.5(v7.9 f0 h60) d@3.7(v4.8 f0.5 h80) r@5.35(v7.7 f0.67 h20) u@5.95(v9.3 f0.24 h12) w@8.17(v8.2 f0 h60) d@10.15(v4.9 f0.51 h68) r@11.47(v8.2 f0.47 h20) u@11.78(v9 f0.25 h13) w@13.38(v9.3 f0 h61) o@15.98(v5.9 f0.5 h61)
+1.4 0 0.5 0.75 hold 60/0.7 off         time up                  fell None in       ups 3 high 0.97 aheadMax 1.32 | 
+      d@0.2(v7.5 f0.16 h47) u@1.07(v8.8 f0.04 h20) w@2.5(v7.9 f0 h60) d@3.98(v4.5 f0.7 h83) r@5.38(v5.9 f0.92 h20) u@6.88(v8.7 f0.24 h3) w@9.32(v7.7 f0 h60) d@11.47(v4.1 f0.71 h73) r@12.73(v5.9 f0.87 h20) u@14.05(v8.7 f0.25 h5)
+1.4 0 1 0.75 hold 60/0.5 off           done                     fell None in       ups 3 high 0.93 aheadMax 1.26 | 
+      d@0.2(v7.5 f0.16 h47) u@0.87(v9.2 f0.07 h19) w@2(v9.1 f0 h61) d@3.02(v5.4 f0.51 h96) r@4.35(v7.8 f0.8 h19) u@5.13(v9.1 f0.25 h1) w@6.43(v10.9 f0 h61) d@8.92(v6.6 f0.5 h68) r@9.98(v10.4 f0.29 h19) u@10.05(v10.7 f0.24 h15) w@11.3(v11.6 f0 h60) o@13.93(v7.5 f0.5 h67)
+1.4 0 1 0.75 hold 60/0.7 off           sudden                   fell 5.63 in run   ups 1 high 1 aheadMax 1.09 | frac 1 ahead -0.29 v 0.5 ff 21 bank 70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@0.87(v9.2 f0.07 h19) w@2(v9.1 f0 h61) d@3.22(v5.1 f0.71 h100) r@4.4(v5.5 f1 h20)
+1.4 1.5 0.5 0.75 hold 60/0.5 off       time up                  fell None in       ups 3 high 0.86 aheadMax 1.26 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.5 f0 h20) w@2.5(v8.2 f0 h60) d@4.1(v4.5 f0.5 h78) r@5.67(v7.2 f0.71 h20) u@6.38(v9.1 f0.24 h11) w@8.6(v8.1 f0 h60) d@10.5(v5.1 f0.5 h68) r@11.83(v8.5 f0.43 h20) u@12.08(v9.1 f0.25 h13) w@13.68(v9.4 f0 h61)
+1.4 1.5 0.5 0.75 hold 60/0.7 off       time up                  fell None in       ups 3 high 0.96 aheadMax 1.32 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.5 f0 h20) w@2.5(v8.2 f0 h60) d@4.4(v4.3 f0.71 h80) r@5.75(v5.6 f0.93 h20) u@7.5(v8.6 f0.25 h1) w@9.93(v7.7 f0 h60) d@12.12(v4 f0.71 h72) r@13.38(v5.9 f0.87 h20) u@14.72(v8.7 f0.25 h5)
+1.4 1.5 1 0.75 hold 60/0.5 off         done                     fell None in       ups 3 high 0.92 aheadMax 1.26 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v10.3 f0.01 h19) w@2.02(v9.5 f0 h60) d@3.42(v5.4 f0.51 h89) r@4.75(v8 f0.78 h19) u@5.48(v9.2 f0.25 h0) w@6.77(v10.9 f0 h60) d@9.3(v6.7 f0.5 h67) r@10.35(v10.4 f0.3 h20) u@10.42(v10.7 f0.24 h15) w@11.65(v11.5 f0 h60) o@14.3(v7.5 f0.5 h66)
+1.4 1.5 1 0.75 hold 60/0.7 off         sudden                   fell 11.53 in run   ups 2 high 0.99 aheadMax 1.28 | frac 0.45 ahead 0.53 v 7.6 ff 44 bank 70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.88(v10.3 f0.01 h19) w@2.02(v9.5 f0 h60) d@3.63(v5.1 f0.7 h92) r@4.78(v6.7 f0.95 h20) u@6.43(v8.6 f0.25 h5) w@7.83(v10.8 f0 h61) d@10.12(v6.4 f0.7 h76) r@11.3(v10 f0.54 h19)
+1.4 0 0.5 0.75 hold 60/0.5 off         timeout in wait          fell None in       ups 2 high 0.58 aheadMax 1.02 | 
+      d@0.2(v7.5 f0.16 h47) u@0.75(v8.2 f0.12 h34) w@1.8(v8.2 f0.04 h60) d@3.28(v6.9 f0.5 h64) r@4.3(v9 f0.4 h35) u@4.55(v9.6 f0.24 h28) w@5.78(v10 f0 h61)
+1.4 0 0.5 0.75 hold 60/0.7 off         timeout in wait          fell None in       ups 1 high 0.63 aheadMax 0.91 | 
+      d@0.2(v7.5 f0.16 h47) u@0.75(v8.2 f0.12 h34) w@1.8(v8.2 f0.04 h60)
+1.4 0 1 0.75 hold 60/0.5 off           timeout in wait          fell None in       ups 2 high 0.7 aheadMax 1.05 | 
+      d@0.2(v7.5 f0.16 h47) u@0.68(v8.6 f0.13 h35) w@1.57(v9.1 f0.03 h61) d@2.53(v6.7 f0.5 h81) r@3.52(v9.3 f0.58 h34) u@3.97(v9.8 f0.24 h19) w@4.93(v11.2 f0 h60)
+1.4 0 1 0.75 hold 60/0.7 off           timeout in wait          fell None in       ups 2 high 0.87 aheadMax 1.14 | 
+      d@0.2(v7.5 f0.16 h47) u@0.68(v8.6 f0.13 h35) w@1.57(v9.1 f0.03 h61) d@2.87(v6.6 f0.7 h80) r@3.87(v9 f0.75 h34) u@4.52(v10.1 f0.25 h19) w@5.58(v11.7 f0 h61)
+1.4 1.5 0.5 0.75 hold 60/0.5 off       timeout in wait          fell None in       ups 2 high 0.61 aheadMax 1.03 | 
+      d@0.2(v9 f0.13 h46) u@0.73(v9.5 f0.04 h35) w@1.8(v8.5 f0 h60) d@3.43(v6.3 f0.51 h67) r@4.45(v8.5 f0.47 h35) u@4.83(v9.3 f0.24 h26) w@6(v9.7 f0 h60)
+1.4 1.5 0.5 0.75 hold 60/0.7 off       timeout in wait          fell None in       ups 2 high 0.71 aheadMax 1.08 | 
+      d@0.2(v9 f0.13 h46) u@0.73(v9.5 f0.04 h35) w@1.8(v8.5 f0 h60) d@4.48(v6.9 f0.7 h57) r@5.25(v8.5 f0.53 h35) u@5.68(v9.6 f0.25 h26) w@6.97(v9.8 f0 h60)
+1.4 1.5 1 0.75 hold 60/0.5 off         sudden                   fell 8.68 in down  ups 2 high 0.8 aheadMax 1.1 | frac 0.33 ahead 0.61 v 9.2 ff 54 bank 70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.68(v10 f0.05 h34) w@1.58(v9.6 f0 h60) d@2.75(v6.3 f0.51 h84) r@3.8(v8.7 f0.7 h35) u@4.43(v9.7 f0.24 h19) w@5.48(v11.3 f0 h60) d@7.5(v7.8 f0.5 h70)
+1.4 1.5 1 0.75 hold 60/0.7 off         sudden                   fell 10.28 in run   ups 2 high 0.91 aheadMax 1.15 | frac 0.33 ahead 0.62 v 8.5 ff 50 bank 70 lim flight
+      d@0.2(v9 f0.13 h46) u@0.68(v10 f0.05 h34) w@1.58(v9.6 f0 h60) d@3.03(v6.1 f0.71 h84) r@4.03(v8.3 f0.83 h34) u@4.87(v9.7 f0.24 h15) w@5.98(v11.3 f0 h61) d@9.13(v8 f0.7 h61) r@9.92(v10.3 f0.49 h35)
+1.4 0 0.5 0.75 hold 60/0.3 off         done                     fell None in       ups 3 high 0.72 aheadMax 1.23 | 
+      d@0.2(v7.5 f0.16 h47) u@1.07(v8.8 f0.04 h20) w@2.5(v7.9 f0 h60) d@3.43(v5.2 f0.3 h78) r@5.13(v8.6 f0.44 h19) u@5.4(v9.2 f0.25 h12) w@7.05(v9.1 f0 h60) d@9.37(v5.2 f0.3 h63) r@10.57(v7.8 f0.34 h20) u@10.75(v8.1 f0.24 h11) w@12.27(v8.8 f0 h60) o@13.92(v6.6 f0.3 h61)
+1.4 0 0.5 0.75 hold 45/0.3 off         done                     fell None in       ups 3 high 0.48 aheadMax 1.11 | 
+      d@0.2(v7.5 f0.16 h47) u@1.07(v8.8 f0.04 h20) w@2.12(v8 f0 h45) d@4.02(v4.7 f0.3 h56) r@5.02(v6.7 f0.41 h19) u@5.43(v7.5 f0.25 h7) w@6.6(v8.6 f0 h45) d@8.98(v5.7 f0.3 h51) u@9.95(v8.1 f0.22 h20) w@11.07(v8.8 f0 h45) o@13.75(v5.7 f0.3 h50)
+1.4 0 1 0.75 hold 60/0.3 off           done                     fell None in       ups 3 high 0.72 aheadMax 1.37 | 
+      d@0.2(v7.5 f0.16 h47) u@0.87(v9.2 f0.07 h19) w@2(v9.1 f0 h61) d@2.82(v5.8 f0.31 h90) r@4.02(v8.4 f0.58 h20) u@4.5(v8.7 f0.25 h3) w@5.7(v10.4 f0 h61) d@7.3(v7.2 f0.3 h71) u@8.53(v11.3 f0.16 h20) w@9.8(v11.7 f0 h60) o@12.27(v7 f0.3 h70)
+1.4 0 1 0.75 hold 45/0.3 off           done                     fell None in       ups 3 high 0.54 aheadMax 1.11 | 
+      d@0.2(v7.5 f0.16 h47) u@0.87(v9.2 f0.07 h19) w@1.73(v9 f0 h45) d@3.18(v5.5 f0.31 h69) r@4.18(v8.1 f0.42 h20) u@4.48(v8 f0.24 h0) w@5.3(v9.8 f0 h45) d@7.78(v6.7 f0.3 h52) u@8.6(v9.4 f0.16 h19) w@9.5(v10 f0 h45) o@11.98(v6.2 f0.3 h58)
+1.4 1.5 0.5 0.75 hold 60/0.3 off       done                     fell None in       ups 3 high 0.71 aheadMax 1.26 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.5 f0 h20) w@2.5(v8.2 f0 h60) d@3.83(v4.9 f0.31 h76) r@5.45(v8.1 f0.49 h20) u@5.82(v9.1 f0.24 h12) w@7.47(v9 f0 h60) d@9.65(v5.3 f0.3 h63) r@10.88(v8.1 f0.31 h19) u@11(v8.4 f0.24 h13) w@12.57(v9 f0 h61) o@13.97(v6.5 f0.3 h67)
+1.4 1.5 0.5 0.75 hold 45/0.3 off       stall                    fell 6.95 in run   ups 1 high 1 aheadMax 1.26 | frac 1 ahead -0.23 v 1.2 ff 0 bank 0 lim tip
+      d@0.2(v9 f0.13 h46) u@1.08(v9.5 f0 h20) w@2.1(v8.4 f0 h45) d@4.43(v3.5 f0.3 h59) r@6.52(v1.5 f1 h20)
+1.4 1.5 1 0.75 hold 60/0.3 off         done                     fell None in       ups 3 high 0.79 aheadMax 1.25 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v10.3 f0.01 h19) w@2.02(v9.5 f0 h60) d@3.2(v5.8 f0.31 h86) r@4.48(v8.3 f0.65 h19) u@5.03(v8.9 f0.24 h2) w@6.25(v10.4 f0 h60) d@8.3(v6.8 f0.3 h66) u@9.37(v10.4 f0.18 h20) w@10.6(v11.1 f0 h60) o@12.5(v7.4 f0.3 h71)
+1.4 1.5 1 0.75 hold 45/0.3 off         done                     fell None in       ups 3 high 0.54 aheadMax 1.25 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v10.3 f0.01 h19) w@1.75(v9.3 f0 h46) d@3.75(v5 f0.31 h66) r@4.77(v7.5 f0.45 h19) u@5.17(v7.5 f0.25 h3) w@6.05(v9.6 f0 h46) d@7.85(v6.3 f0.3 h60) u@8.73(v9.1 f0.23 h19) w@9.62(v10.3 f0 h46) o@12.33(v6.7 f0.3 h56)
+1.4 0 0.5 0.75 hold 50/9 off           sudden                   fell 6.83 in out   ups 3 high 0.68 aheadMax 1.13 | frac 0.68 ahead 0.38 v 1.8 ff 46 bank -70 lim flight
+      d@0.2(v7.5 f0.16 h47) u@1.07(v8.8 f0.04 h20) d@2.25(v7.9 f0 h50) u@3.27(v7 f0 h20) d@4.18(v6.2 f0 h50) u@5.02(v5.2 f0.03 h19) o@5.85(v4.6 f0.17 h51)
+1.4 0 0.5 0.75 hold 65/9 off           done                     fell None in       ups 3 high 0.33 aheadMax 1.11 | 
+      d@0.2(v7.5 f0.16 h47) u@1.07(v8.8 f0.04 h20) d@2.6(v7.9 f0 h65) u@3.95(v7.6 f0.03 h19) d@5.28(v6.8 f0.03 h66) u@6.58(v7.5 f0.16 h19) o@7.97(v7.8 f0.03 h65)
+1.4 0 1 0.75 hold 50/9 off             done                     fell None in       ups 3 high 0.17 aheadMax 1.4 | 
+      d@0.2(v7.5 f0.16 h47) u@0.87(v9.2 f0.07 h19) d@1.82(v9 f0 h50) u@2.7(v8.7 f0 h20) d@3.58(v8.4 f0 h51) u@4.43(v7.9 f0 h20) o@5.23(v7.3 f0 h50)
+1.4 0 1 0.75 hold 65/9 off             done                     fell None in       ups 3 high 0.53 aheadMax 1.19 | 
+      d@0.2(v7.5 f0.16 h47) u@0.87(v9.2 f0.07 h19) d@2.08(v9.2 f0 h66) u@3.18(v9 f0 h20) d@4.3(v8.7 f0 h66) u@5.38(v8.5 f0 h20) o@6.42(v8 f0 h65)
+1.4 1.5 0.5 0.75 hold 50/9 off         done                     fell None in       ups 3 high 0.61 aheadMax 1.34 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.5 f0 h20) d@2.23(v8.3 f0 h50) u@3.3(v7.3 f0 h19) d@4.27(v6.4 f0 h50) u@5.12(v5.4 f0 h20) o@5.92(v4.2 f0.01 h50)
+1.4 1.5 0.5 0.75 hold 65/9 off         done                     fell None in       ups 3 high 0.67 aheadMax 1.26 | 
+      d@0.2(v9 f0.13 h46) u@1.08(v9.5 f0 h20) d@2.63(v8.1 f0 h65) u@3.98(v7.1 f0 h20) d@5.15(v5.9 f0.02 h66) u@6.4(v5.4 f0.35 h20) o@7.87(v7.7 f0.27 h65)
+1.4 1.5 1 0.75 hold 50/9 off           off the front in up      fell None in       ups 3 high 0.15 aheadMax 1.75 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v10.3 f0.01 h19) d@1.85(v9.3 f0 h51) u@2.77(v9.1 f0 h20) d@3.67(v8.7 f0 h51) u@4.55(v8.4 f0 h19)
+1.4 1.5 1 0.75 hold 65/9 off           done                     fell None in       ups 3 high 0.15 aheadMax 1.65 | 
+      d@0.2(v9 f0.13 h46) u@0.88(v10.3 f0.01 h19) d@2.08(v9.6 f0 h65) u@3.23(v9.3 f0 h20) d@4.4(v9.2 f0 h66) u@5.55(v9 f0 h20) o@6.68(v8.8 f0 h65)
+### every cutback run
+1.4 0 0.5 0.5 cut 150 off      stall      fell 5.97 in back| cut: turned 151 in 4.72s R 14.6 v 6.5>6.5>6.8 peak 73 far ahead 0.94 | back: turned 9 in 1.03s R 23.1 v>1.3>1.3 peak 160 | end turned 159 ahead 0.15 frac 0.94 v 1.3 x-span 18 | frac 0.94 ahead 0.15 v 1.3 ff 114 bank 0 lim tip
+1.4 0 0.5 0.5 cut 180 off      sudden     fell 6 in back| cut: turned 181 in 4.98s R 12.7 v 6.5>5.1>5.1 peak 132 far ahead 0.64 | back: turned 8 in 0.8s R 13.7 v>1.4>1.5 peak 102 | end turned 189 ahead 0.02 frac 1 v 1.5 x-span 17.5 | frac 1 ahead 0.02 v 1.5 ff 143 bank 70 lim flight
+1.4 0 0.5 0.75 cut 150 off     behind the fell None in     | cut: turned 151 in 3.82s R 12.1 v 7.5>7.4>7.8 peak 84 far ahead 0.86 | back: turned -102 in 2.25s R 5.5 v>1.8>1.8 peak 135 | end turned 48 ahead -0.18 frac 1 v 1.8 x-span 21.5 | 
+1.4 0 0.5 0.75 cut 180 off     sudden     fell 5.28 in back| cut: turned 180 in 4.12s R 10.8 v 7.5>5.3>5.3 peak 105 far ahead 0.52 | back: turned -46 in 0.95s R 4.3 v>2.4>2.4 peak 149 | end turned 135 ahead -0.15 frac 1 v 2.4 x-span 17.6 | frac 1 ahead -0.15 v 2.4 ff 88 bank 70 lim flight
+1.4 0 1 0.5 cut 150 off        sudden     fell 6.67 in back| cut: turned 150 in 4.3s R 15.1 v 6.5>6.4>7.5 peak 108 far ahead 0.34 | back: turned -87 in 2.15s R 10.8 v>6.5>7.6 peak 230 | end turned 63 ahead 0.49 frac 0.52 v 7.6 x-span 34.2 | frac 0.52 ahead 0.49 v 7.6 ff 17 bank -70 lim flight
+1.4 0 1 0.5 cut 180 off        sudden     fell 5.2 in cut | cut: turned 157 in 4.98s R 16.4 v 6.5>6.4>8.3 peak 137 far ahead -0.31 | back: turned None in Nones R None v>None>None peak None | end turned 157 ahead -0.31 frac 1 v 8.3 x-span 29.1 | frac 1 ahead -0.31 v 8.3 ff 111 bank 70 lim flight
+1.4 0 1 0.75 cut 150 off       sudden     fell 4.07 in back| cut: turned 151 in 2.77s R 10.3 v 7.5>7.4>12.1 peak 92 far ahead 0.92 | back: turned 9 in 1.08s R 60.8 v>7.9>7.9 peak 136 | end turned 161 ahead -0.18 frac 1 v 7.9 x-span 23.1 | frac 1 ahead -0.18 v 7.9 ff 114 bank -70 lim flight
+1.4 0 1 0.75 cut 180 off       sudden     fell 4.13 in back| cut: turned 181 in 3.08s R 9.7 v 7.5>7.4>9.2 peak 132 far ahead 0.51 | back: turned -4 in 0.83s R None v>6.7>6.7 peak 120 | end turned 177 ahead -0.5 frac 1 v 6.7 x-span 21.7 | frac 1 ahead -0.5 v 6.7 ff 130 bank -63 lim flight
+1.4 1.5 0.5 0.5 cut 150 off    done       fell None in     | cut: turned 150 in 4.9s R 15.9 v 8>6.8>6.8 peak 62 far ahead 1.27 | back: turned -147 in 4.03s R 10.1 v>3.7>10.2 peak 102 | end turned -7 ahead 1.02 frac 0 v 8.1 x-span 22.8 | 
+1.4 1.5 0.5 0.5 cut 180 off    sudden     fell 6.63 in back| cut: turned 180 in 5.3s R 14.1 v 8>6.6>6.6 peak 133 far ahead 0.79 | back: turned 3 in 1.12s R None v>0.5>0.5 peak 139 | end turned 183 ahead -0.05 frac 1 v 0.5 x-span 17.5 | frac 1 ahead -0.05 v 0.5 ff 137 bank 70 lim flight
+1.4 1.5 0.5 0.75 cut 150 off   done       fell None in     | cut: turned 150 in 4.23s R 14.3 v 9>8.2>8.2 peak 48 far ahead 1.04 | back: turned -148 in 2.83s R 5.4 v>3.3>3.3 peak 142 | end turned -8 ahead -0.26 frac 1 v 0.8 x-span 25.2 | 
+1.4 1.5 0.5 0.75 cut 180 off   behind the fell None in     | cut: turned 182 in 4.57s R 12.6 v 9>6.5>6.5 peak 127 far ahead 0.63 | back: turned 40 in 1.68s R 6.3 v>1.1>1.1 peak 118 | end turned 222 ahead -0.74 frac 1 v 1.1 x-span 20.1 | 
+1.4 1.5 1 0.5 cut 150 off      sudden     fell 6.37 in back| cut: turned 152 in 4.9s R 17.1 v 8>7.2>7.9 peak 123 far ahead 0.91 | back: turned -12 in 1.25s R 15.3 v>0.5>0.5 peak 155 | end turned 139 ahead 0.05 frac 0.99 v 0.5 x-span 27.3 | frac 0.99 ahead 0.05 v 0.5 ff 94 bank 70 lim flight
+1.4 1.5 1 0.5 cut 180 off      sudden     fell 6.02 in back| cut: turned 180 in 5.1s R 14.9 v 8>5.9>5.9 peak 151 far ahead 0.68 | back: turned 17 in 0.7s R 5.2 v>1.1>1.1 peak 125 | end turned 197 ahead 0.13 frac 0.96 v 1.1 x-span 26.8 | frac 0.96 ahead 0.13 v 1.1 ff 152 bank 70 lim tip
+1.4 1.5 1 0.75 cut 150 off     sudden     fell 6.83 in back| cut: turned 150 in 4.3s R 15.4 v 9>6.3>6.3 peak 81 far ahead 0.52 | back: turned -100 in 2.32s R 9.5 v>5.9>7.4 peak 275 | end turned 50 ahead 0.56 frac 0.4 v 7.4 x-span 31.6 | frac 0.4 ahead 0.56 v 7.4 ff 4 bank -70 lim flight
+1.4 1.5 1 0.75 cut 180 off     behind the fell None in     | cut: turned 180 in 4.75s R 13.8 v 9>6.3>7 peak 82 far ahead 0.06 | back: turned -67 in 1.05s R 6.2 v>6.5>7.3 peak 149 | end turned 114 ahead -0.65 frac 1 v 7.3 x-span 32.8 | 
+1.4 0 0.5 0.75 cut 90 off      done       fell None in     | cut: turned 90 in 2.5s R 13.4 v 7.5>7.4>8.4 peak 51 far ahead 1.42 | back: turned -88 in 2.2s R 10.6 v>6.7>6.7 peak 66 | end turned -15 ahead 1.29 frac 0 v 4.3 x-span 7.8 | 
+1.4 0 0.5 0.75 cut 120 off     done       fell None in     | cut: turned 121 in 3.23s R 12.9 v 7.5>7.4>8.1 peak 51 far ahead 1.28 | back: turned -118 in 2.67s R 9.3 v>6.6>6.6 peak 71 | end turned -14 ahead 0.74 frac 0.16 v 3.7 x-span 17.4 | 
+1.4 0 1 0.75 cut 90 off        done       fell None in     | cut: turned 90 in 1.6s R 9.2 v 7.5>7.4>10.2 peak 92 far ahead 1.27 | back: turned -88 in 1.93s R 12.6 v>9.4>10.8 peak 86 | end turned -12 ahead 2.03 frac 0 v 8 x-span 10.3 | 
+1.4 0 1 0.75 cut 120 off       done       fell None in     | cut: turned 121 in 2.18s R 9.8 v 7.5>7.4>10.9 peak 92 far ahead 1.29 | back: turned -118 in 4.12s R 19.4 v>7.4>7.4 peak 89 | end turned -10 ahead 2.24 frac 0 v 5.4 x-span 19.2 | 
+1.4 1.5 0.5 0.75 cut 90 off    done       fell None in     | cut: turned 90 in 2.75s R 15.9 v 9>8.7>8.7 peak 48 far ahead 1.71 | back: turned -87 in 2.32s R 11.6 v>7>7 peak 63 | end turned -16 ahead 1.71 frac 0 v 4.8 x-span 8.6 | 
+1.4 1.5 0.5 0.75 cut 120 off   done       fell None in     | cut: turned 121 in 3.52s R 15 v 9>8.4>8.4 peak 48 far ahead 1.57 | back: turned -118 in 2.75s R 9.6 v>6.4>6.4 peak 65 | end turned -9 ahead 1.01 frac 0 v 3.9 x-span 19 | 
+1.4 1.5 1 0.75 cut 90 off      done       fell None in     | cut: turned 90 in 1.75s R 11.1 v 9>8.9>10.9 peak 81 far ahead 1.54 | back: turned -88 in 1.93s R 13.4 v>10.1>10.6 peak 122 | end turned 9 ahead 2.81 frac 0 v 8.7 x-span 8.7 | 
+1.4 1.5 1 0.75 cut 120 off     done       fell None in     | cut: turned 120 in 3.05s R 14.6 v 9>8.9>9 peak 81 far ahead 1.37 | back: turned -117 in 2.32s R 10.4 v>8.4>10.3 peak 79 | end turned -22 ahead 1.43 frac 0 v 7.4 x-span 23.7 | 
+### trace: flat arc, 7.5 m/s, stick 1
+0.02 v 7.5 turned 0 rate 0 bank 0 asked 0 planing 1 load 0.18 carry bw 0 assist bw 0
+0.22 v 7.34 turned 0.01 rate 0.34 bank 0.07 asked 4.77 planing 1 load 0.96 carry bw 0 assist bw 0.04
+0.42 v 7.11 turned -2.73 rate 26.57 bank 10.79 asked 46.67 planing 1 load 1.06 carry bw 0.08 assist bw 0.35
+0.62 v 7.37 turned 10.95 rate 89.86 bank 23.89 asked 49.85 planing 1 load 1.24 carry bw 0.18 assist bw 0.22
+0.82 v 7.41 turned 26.08 rate 73.21 bank 32.83 asked 50 planing 1 load 1.25 carry bw 0.26 assist bw 0.22
+1.02 v 7.65 turned 44.56 rate 100.39 bank 38.82 asked 50 planing 1 load 1.35 carry bw 0.32 assist bw 0.22
+1.22 v 7.54 turned 61.39 rate 76.33 bank 42.73 asked 50 planing 1 load 1.37 carry bw 0.37 assist bw 0
+1.42 v 7.73 turned 76.77 rate 85.44 bank 45.41 asked 50 planing 1 load 1.34 carry bw 0.41 assist bw 0
+1.62 v 7.7 turned 92.62 rate 67.19 bank 47.02 asked 50 planing 1 load 1.43 carry bw 0.43 assist bw 0
+1.82 v 7.97 turned 107.58 rate 80.76 bank 48.28 asked 50 planing 1 load 1.41 carry bw 0.45 assist bw 0
+2.02 v 7.97 turned 123.15 rate 63.48 bank 48.87 asked 50 planing 1 load 1.47 carry bw 0.46 assist bw 0
+2.22 v 8.29 turned 136.48 rate 75.84 bank 49.55 asked 50 planing 1 load 1.34 carry bw 0.47 assist bw 0
+2.42 v 8.3 turned 152.86 rate 59.3 bank 49.65 asked 50 planing 1 load 1.56 carry bw 0.47 assist bw 0.02
+2.62 v 8.61 turned 164.61 rate 67.92 bank 50.1 asked 50 planing 1 load 1.33 carry bw 0.48 assist bw 0
+2.82 v 8.68 turned 180.52 rate 50.85 bank 49.99 asked 50 planing 1 load 1.58 carry bw 0.48 assist bw 0.01

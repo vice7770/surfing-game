@@ -1,0 +1,1 @@
+the Canyon medium, 60 s, alternate steps: the roller and curl's step ms on 0.1570 / 0.2151 / 0.2888 (n 900) / off 0.1567 / 0.2143 / 0.2889 (n 900); the drawn band with its look (writeRoller) ms on 0.0416 / 0.0459 / 0.0505 (n 900) / off 0.0403 / 0.0442 / 0.0482 (n 900)

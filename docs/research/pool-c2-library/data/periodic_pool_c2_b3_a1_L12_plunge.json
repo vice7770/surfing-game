@@ -1,0 +1,36 @@
+{
+ "run": "/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs/tools/basilisk/runs/c2/periodic_pool_c2_b3_a1_L12",
+ "t_vertical": 26.725,
+ "t_touchdown": 27.5,
+ "at_vertical": {
+  "crest_m": 0.91218,
+  "x_m": 169.6095,
+  "trough_m": -0.4667925,
+  "H_m": 1.3789725
+ },
+ "pre_touchdown": {
+  "t": 27.375,
+  "crest_m": 0.9535150000000001,
+  "trough_m": -0.43670800000000004,
+  "H_m": 1.3902230000000002,
+  "jet_m2": 0.23084955101619897,
+  "tube_m2": 0.14753818750996572,
+  "tube_L_m": 0.6756929905380542,
+  "tube_W_m": 0.4132387762046541,
+  "L/W": 1.6351151669354018,
+  "tilt_deg": 59.29706818711234,
+  "lip_m": 0.3416485804187098,
+  "lip_cells": 4.373101829359486,
+  "per H at touchdown": {
+   "jet": 0.1194428330244403,
+   "tube": 0.07633707329257407,
+   "lip": 0.2457509193983338
+  },
+  "per H at vertical": {
+   "jet": 0.12139975867636804,
+   "tube": 0.07758776346072137,
+   "lip": 0.2477559055156719
+  },
+  "open_s": 0.5532892101342365
+ }
+}

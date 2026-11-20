@@ -99,6 +99,107 @@ describe('GpuBoussinesq host', () => {
     }
   });
 
+  // canyon-perf (2026-10-29): the water went up whole before every step, though it had just come back from the device
+  // and only a board's push or a lip's landing had touched it since. Now only the cells the CPU marked go up, and the
+  // device's water is then the same bits a whole upload would have made it: a stand-in GPU with memory, whose step nudges
+  // the water, checks it step by step against the CPU's arrays, and that a step after one whose result never came back
+  // (no readback) sends it all again.
+  it('sends only the water the CPU changed since the device last held it, leaving the device the same bits', async () => {
+    vi.stubGlobal('GPUBufferUsage', { STORAGE: 1, COPY_DST: 2, COPY_SRC: 4, MAP_READ: 8, UNIFORM: 16 });
+    vi.stubGlobal('GPUShaderStage', { COMPUTE: 1 });
+    vi.stubGlobal('GPUMapMode', { READ: 1 });
+    type Memory = { size: number; usage: number; bytes: Uint8Array };
+    const memories: Memory[] = [];
+    const waterWrites: { offset: number; length: number }[] = [];
+    let fields: Memory | undefined;
+    const n = 64;
+    const device = {
+      queue: {
+        writeBuffer: (buffer: Memory, offset: number, data: ArrayBuffer | Float32Array, dataOffset = 0, size?: number) => {
+          const bytes = data instanceof ArrayBuffer ? new Uint8Array(data, dataOffset, size) : new Uint8Array(data.buffer, data.byteOffset + dataOffset * 4, (size ?? data.length - dataOffset) * 4);
+          buffer.bytes.set(bytes, offset);
+          if (buffer === fields && offset < 3 * n * 4) waterWrites.push({ offset, length: bytes.length });
+        },
+        // The device's step: every cell's water nudged, then the readback copies run.
+        submit: (commands: { copies: (() => void)[] }[]) => {
+          const water = new Float32Array(fields!.bytes.buffer, 0, 3 * n);
+          for (let i = 0; i < water.length; i += 1) water[i] = Math.fround(water[i] * 1.001 + 0.001);
+          for (const command of commands) for (const copy of command.copies) copy();
+        },
+        onSubmittedWorkDone: async () => {},
+      },
+      createBuffer: ({ size, usage }: { size: number; usage: number }) => {
+        const memory = { size, usage, bytes: new Uint8Array(size), mapAsync: async () => {}, unmap: () => {}, destroy: () => {}, getMappedRange: () => memory.bytes.slice().buffer };
+        memories.push(memory);
+        if (size === FIELD_COUNT * n * 4) fields = memory;
+        return memory;
+      },
+      createBindGroupLayout: () => ({}), createPipelineLayout: () => ({}), createBindGroup: () => ({}), createComputePipeline: () => ({}),
+      createShaderModule: () => ({ getCompilationInfo: async () => ({ messages: [] }) }),
+      createCommandEncoder: () => {
+        const copies: (() => void)[] = [];
+        return {
+          beginComputePass: () => ({ setBindGroup: () => {}, setPipeline: () => {}, dispatchWorkgroups: () => {}, end: () => {} }),
+          copyBufferToBuffer: (from: Memory, fromOffset: number, to: Memory, toOffset: number, size: number) => {
+            copies.push(() => to.bytes.set(from.bytes.subarray(fromOffset, fromOffset + size), toOffset));
+          },
+          finish: () => ({ copies }),
+        };
+      },
+      destroy: () => {},
+    };
+    const gpu = { requestAdapter: async () => ({ limits: { maxStorageBufferBindingSize: 1e9, maxBufferSize: 1e9 }, requestDevice: async () => device }) } as unknown as GPU;
+    try {
+      const solver = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(-8, 0, 8), xBoundary: 'open' }, () => 2);
+      expect(solver.nx * solver.nz).toBe(n);
+      for (let i = 0; i < n; i += 1) {
+        solver.qx[i] = 0.1 * Math.sin(i);
+        solver.qz[i] = 0.05 * Math.cos(i);
+      }
+      const host = await GpuBoussinesq.create(solver, gpu);
+      if (!host) throw new Error('adapter missing');
+      // The device's water against the CPU's, as f32 bits.
+      const held = () => {
+        const water = new Float32Array(fields!.bytes.buffer, 0, 3 * n);
+        return [solver.h, solver.qx, solver.qz].every((array, k) => array.every((value, i) => Object.is(Math.fround(value), water[k * n + i])));
+      };
+      const step = async () => { waterWrites.length = 0; await host.step(1 / 60); };
+      // The first step sends it all, in one write; its result comes back.
+      await step();
+      expect(waterWrites).toEqual([{ offset: 0, length: 3 * n * 4 }]);
+      expect(held()).toBe(true);
+      // Nothing changed: nothing goes up, and the device still holds the CPU's water.
+      await step();
+      expect(waterWrites).toEqual([]);
+      expect(held()).toBe(true);
+      // A push on two cells, marked: only that run of cells goes up, in each of the three fields.
+      solver.qx[9] += 0.25;
+      solver.markWater(9);
+      solver.qz[12] -= 0.5;
+      solver.markWater(12);
+      const before = [solver.h, solver.qx, solver.qz].map((array) => Float32Array.from(array));
+      await step();
+      expect(waterWrites).toEqual([0, 1, 2].map((k) => ({ offset: (k * n + 9) * 4, length: 4 * 4 })));
+      // What went up was the CPU's water, as a whole upload would have sent it: the device then nudged and returned it.
+      const nudged = before.map((array) => array.map((value) => Math.fround(value * 1.001 + 0.001)));
+      expect([solver.h, solver.qx, solver.qz].map((array) => Float32Array.from(array))).toEqual(nudged);
+      expect(held()).toBe(true);
+      // A step whose result never comes back leaves the device's water its own: the next step sends it all again.
+      host.readback = false;
+      await step();
+      host.readback = true;
+      await step();
+      expect(waterWrites).toEqual([{ offset: 0, length: 3 * n * 4 }]);
+      expect(held()).toBe(true);
+      // The CPU's own step marks all of it.
+      solver.step(1 / 60);
+      await step();
+      expect(waterWrites).toEqual([{ offset: 0, length: 3 * n * 4 }]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   // The M1 readback study (2026-10-17): a frame's CFL substeps went to the queue one submission each, and a GPU busy
   // drawing the page schedules each submission separately. They now go in one, with each substep's Params at its own
   // dynamic offset: the same kernels, parameters and order.
@@ -299,6 +400,50 @@ describe('GpuBoussinesq host', () => {
     expect(feed).toBeInstanceOf(SideFeed);
     writeParams(fedSolver, fedLayout, { boundary: fedLayout.zones[0] as SeaStateBoundary, firstRow: 0, rows: 12, feed }, 0.02, 0.04, bytes);
     expect([words[20], words[21]]).toEqual([feed.deviceShape().slots, feed.deviceShape().components]);
+    // The breaking age's diagonal join (canyon-wave-r2): 0 (rule A, every spot but the Canyon) unless the solver sets it,
+    // and the device gates the diagonal parents with it as the CPU does (`inheritedAge`).
+    expect(floats[22]).toBe(0);
+    const joined = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, { breaking: { onset: 0.65, diagonalJoin: 0.5 } });
+    const joinedLayout = joined.deviceLayout();
+    expect(joinedLayout.breaking?.diagonalJoin).toBe(0.5);
+    writeParams(joined, joinedLayout, undefined, 0.02, 0.04, bytes);
+    expect(floats[22]).toBe(0.5);
+    const source = boussinesqWgsl();
+    expect(source).toContain(`let join = select(P.diagonalJoin, at(${FIELD.JOIN}u, i), P.joinField != 0u);`);
+    expect(source).toContain('let diagonals = join <= 0.0 || rise >= join * sqrt(g * still);');
+    expect(source.match(/if \(diagonals && /g)).toHaveLength(4);
+    // The onset over the bed (canyon-beach-break, `KennedyOptions.onsetAt`): off (word 23 = 0) unless the solver has a field,
+    // which the device multiplies into P.onset per cell, as the CPU does; 1 exactly where the two agree.
+    expect(words[23]).toBe(0);
+    expect(joinedLayout.breaking?.onsetFactor).toBeUndefined();
+    const varied = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, {
+      breaking: { onset: 0.65, onsetAt: (x) => (x < 4 ? 0.65 : 0.45) },
+    });
+    const variedLayout = varied.deviceLayout();
+    const factor = variedLayout.breaking!.onsetFactor!;
+    expect(factor[0]).toBe(1);
+    expect(factor[7]).toBeCloseTo(0.45 / 0.65, 12);
+    writeParams(varied, variedLayout, undefined, 0.02, 0.04, bytes);
+    expect(words[23]).toBe(1);
+    expect(source).toContain(`let onset = select(P.onset, P.onset * at(${FIELD.ONSET}u, i), P.onsetField != 0u);`);
+    expect(source).toContain('let threshold = sqrt(g * still) * (onset + (P.endShare - onset) * ramp);');
+    // The join along the bed (canyon-beach-break, `KennedyOptions.joinAt`): word 24, and the cell's own join.
+    expect(words[24]).toBe(0);
+    const gated = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, {
+      breaking: { onset: 0.65, diagonalJoin: 0.5, joinAt: (x) => (x < 4 ? 0.5 : 0) },
+    });
+    const gatedLayout = gated.deviceLayout();
+    expect(Array.from(gatedLayout.breaking!.joinField!.subarray(0, 8))).toEqual([0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0]);
+    writeParams(gated, gatedLayout, undefined, 0.02, 0.04, bytes);
+    expect([words[23], words[24]]).toEqual([0, 1]);
+    // …and across shore (canyon-c, 2026-11-04: version C's bank keyed to its bed, rule A on its face, the gate behind its
+    // edge): the field the CPU step reads is the one the device uploads, cell by cell.
+    const keyed = new BoussinesqSolver({ nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(0, 8, 8), xBoundary: 'open' }, () => 3, {
+      breaking: { onset: 0.65, diagonalJoin: 0.5, joinAt: (_x, z) => (z < 4 ? 0 : 0.5) },
+    });
+    const keyedField = keyed.deviceLayout().breaking!.joinField!;
+    expect(Array.from({ length: 8 }, (_, iz) => keyedField[iz * 8 + 3])).toEqual([0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5]);
+    expect(keyedField).toBe((keyed as unknown as { joinField: Float64Array }).joinField);
   });
 
   it('reads back the surface rise rate, which a lip needs to find its crest\'s motion', () => {
@@ -310,8 +455,11 @@ describe('GpuBoussinesq host', () => {
   });
 
   describe('the device tier\'s data flow', () => {
-    // The Point on 1 m cells throws within a second of its spin-up.
-    const config = { ...quick, dx: 1, fineSpacing: 1 };
+    // The Point on 1 m cells throws within a second of its spin-up. On its flat onset of before point-onset (`onsetRule`):
+    // with its depth-keyed onset it breaks within two frames, the eddy viscosity's limit splits each 1/30 s frame into two
+    // CFL substeps, and the CPU's clock, adding the two, ends a frame some 1e-15 s from the device's, which adds the frame
+    // whole; the offshore zone's sea then differs in the last bits. The data flow under test is the same.
+    const config = { ...quick, dx: 1, fineSpacing: 1, onsetRule: 'old' as const };
     const seconds = 3;
     const step = 1 / 30;
     let reference: Promise<SurfZoneSimulation> | undefined;
@@ -359,7 +507,9 @@ describe('GpuBoussinesq host', () => {
   it('refuses setups the kernels do not cover', () => {
     const grid = { nx: 8, xMin: 0, dx: 1, zEdges: uniformEdges(-8, 0, 8) };
     const flat = () => 2;
-    expect(deviceStepRefusal(new BoussinesqSolver({ ...grid, xBoundary: 'periodic' }, flat))).toMatch(/periodic/);
+    // Periodic along shore it runs since barrel-gpu (GpuBoussinesq.periodic.test.ts), on rows of three columns or more.
+    expect(deviceStepRefusal(new BoussinesqSolver({ ...grid, xBoundary: 'periodic' }, flat))).toBeUndefined();
+    expect(deviceStepRefusal(new BoussinesqSolver({ ...grid, nx: 2, xBoundary: 'periodic' }, flat))).toMatch(/periodic/);
     expect(deviceStepRefusal(new BoussinesqSolver(grid, flat, { dispersion: false }))).toMatch(/stage 1/);
     expect(deviceStepRefusal(new BoussinesqSolver(grid, flat))).toBeUndefined();
     expect(deviceStepRefusal(new SurfZoneSimulation(quick).solver as BoussinesqSolver)).toBeUndefined();

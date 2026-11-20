@@ -1,7 +1,8 @@
 import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import {
-  PATCH_VERTICES, ROLLER_FRONT, RollerFrontMesh, buildFrontPatches, createFrontPatches, frontEnvelope, frontFresh, frontLump,
+  PATCH_VERTICES, ROLLER_FRONT, ROLLER_TOE, RollerFrontMesh, buildFrontPatches, createFrontPatches, frontEnvelope, frontFresh, frontLump,
+  rollerToeMode,
 } from './RollerFrontMesh';
 import { WaterSurface, type SurfaceSource } from './WaterSurface';
 import { BAND_LOOK_FIELD, BAND_LOOK_STRIDE } from '../wave/SpillingCurl';
@@ -133,12 +134,38 @@ describe('the roller front\'s mesh', () => {
     expect(shader.vertexShader).toContain('vec3 rfWater = waterCubic( vec2( rfX, rfZ0 ) );');
     // The drawn table from the water's own roller texture, as the band reads it.
     expect(shader.vertexShader).toContain('texelFetch( waterRoller, ivec2( 2 * rfColumn, rfSlot ), 0 )');
-    expect(shader.vertexShader).toContain('waterRollerToe( rfX, waterTime, rfB.w )');
+    // Its nose on the band's toe line's long lobes; its fingers the fragments' (canyon-curl-front).
+    expect(shader.vertexShader).toContain('rfToeLobes( rfX, waterTime, rfB.w )');
     expect(shader.vertexShader).toContain('vec3 transformed = rfPosition;');
     expect(shader.fragmentShader).toContain('outgoingLight *= ( 1.0 +');
     // On the water's own uniforms: its heights, foam colour and sun.
     for (const name of ['waterSurface', 'waterGrid', 'waterRoller', 'waterRollerColumn0', 'rfLook', 'waterFoamColor', 'waterSunDirection', 'waterChurnMap', 'waterTime']) {
       expect(shader.uniforms).toHaveProperty(name);
+    }
+  });
+
+  it('draws its toe leaning forward, aerated and fingered, or, with ?rollerToe=old, as the first build did', () => {
+    const programs = [false, true].map((old) => {
+      rollerToeMode.old = old;
+      const front = new RollerFrontMesh(new WaterSurface(source).materialUniforms);
+      const shader = { uniforms: {}, vertexShader: ShaderLib.standard.vertexShader, fragmentShader: ShaderLib.standard.fragmentShader };
+      front.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+      return { shader, key: front.mesh.material.customProgramCacheKey() };
+    });
+    rollerToeMode.old = false;
+    const [today, before] = programs;
+    expect(today.key).not.toBe(before.key);
+    // Today's: the nose sunk under the water and leaning forward, cut into fingers and aerated toward the waterline.
+    expect(today.shader.vertexShader).toContain(`rfPosition.z += ${ROLLER_TOE.lean} * rho * sn;`);
+    expect(today.shader.vertexShader).toContain(`float rfCenterLift = -${ROLLER_TOE.sink} * rfR;`);
+    expect(today.shader.fragmentShader).toContain('varying float vRfToe;');
+    expect(today.shader.fragmentShader).toContain('rfChurn.y');
+    // The first build's: the band's whole toe line, the nose standing on the water, nothing cut.
+    expect(before.shader.vertexShader).toContain('waterRollerToe( rfX, waterTime, rfB.w )');
+    expect(before.shader.vertexShader).toContain('float rfCenterLift = 0.0 * rfR;');
+    for (const token of ['vRfToe', 'rfToeLobes', 'ROLLER_TOE']) {
+      expect(before.shader.vertexShader).not.toContain(token);
+      expect(before.shader.fragmentShader).not.toContain(token);
     }
   });
 });

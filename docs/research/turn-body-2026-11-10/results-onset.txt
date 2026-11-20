@@ -1,0 +1,56 @@
+## file: carve-flat
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| carve flat 8 toe | first turn | 0.22 | 0.23 | 0.43 | 0.20 | - | 0.28 | 0.60 | 1.15 | - | -3 | -10 | -6 |
+| carve flat 8 heel | first turn | 0.22 | 0.23 | 0.43 | 0.20 | - | 0.62 | 0.62 | 1.28 | - | -3 | -4 | -2 |
+| carve flat 11 toe | first turn | 0.23 | 0.20 | 0.48 | 0.20 | - | 0.28 | 0.63 | 2.05 | - | 1 | -11 | -8 |
+| carve flat 11 heel | first turn | 0.23 | 0.20 | 0.48 | 0.20 | - | 0.83 | 0.63 | - | - | 1 | -4 | -2 |
+## file: stand-flat
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| carve flat 8 toe | first turn | 0.23 | 0.32 | 0.58 | 0.20 | - | 0.32 | 0.70 | - | - | 3 | -8 | -7 |
+| carve flat 8 heel | first turn | 0.23 | 0.32 | 0.58 | 0.20 | - | 0.75 | 0.70 | - | - | 3 | -6 | -3 |
+| carve flat 11 toe | first turn | 0.23 | 0.28 | 0.67 | 0.20 | - | 0.33 | 0.73 | - | - | 8 | -7 | -7 |
+| carve flat 11 heel | first turn | 0.23 | 0.28 | 0.67 | 0.20 | - | 0.75 | 0.73 | - | - | 8 | -6 | -4 |
+## file: cut1-flat
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| cutback flat 8.5 toe | first turn | 0.22 | 0.22 | 0.43 | 0.20 | - | 0.28 | 0.62 | - | - | -3 | -10 | -7 |
+| cutback flat 8.5 toe | rail change | 0.47 | 0.48 | 0.75 | 0.53 | 0.08 | 0.90 | 0.20 | 1.37 | - | 62 | -17 | -26 |
+| cutback flat 8.5 heel | first turn | 0.22 | 0.22 | 0.43 | 0.20 | - | 0.63 | 0.62 | - | - | -3 | -4 | -2 |
+| cutback flat 8.5 heel | rail change | 0.47 | 0.45 | 0.77 | 0.55 | 0.08 | 0.52 | 0.23 | 0.25 | 0.98 | 38 | 81 | -4 |
+## file: standcut1-flat
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| standcut flat 8.5 toe | first turn | 0.23 | 0.32 | 0.58 | 0.20 | - | 0.32 | 0.70 | - | - | 2 | -9 | -8 |
+| standcut flat 8.5 toe | rail change | - | 0.58 | - | - | 0.08 | - | 0.33 | 0.35 | 0.38 | - | - | - |
+| standcut flat 8.5 heel | first turn | 0.23 | 0.32 | 0.58 | 0.20 | - | 0.72 | 0.70 | - | - | 2 | -6 | -4 |
+| standcut flat 8.5 heel | rail change | - | 0.58 | - | - | 0.08 | - | 0.20 | 0.22 | 0.33 | - | - | - |
+## file: carve-canyon
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| carve canyon 8 toe | first turn | 0.20 | 0.20 | 0.42 | 0.18 | - | 0.27 | 0.60 | 1.77 | 1.77 | -8 | -9 | -5 |
+| carve canyon 8 heel | first turn | 0.20 | 0.20 | 0.47 | 0.20 | - | 0.70 | 0.62 | - | - | 2 | -1 | 0 |
+| carve canyon 11 toe | first turn | 0.23 | 0.18 | 0.47 | 0.18 | - | 0.28 | 0.62 | 1.93 | - | 1 | -11 | -8 |
+| carve canyon 11 heel | first turn | 0.25 | 0.20 | 0.48 | 0.22 | - | 0.95 | 0.63 | - | - | 0 | -4 | -2 |
+## file: stand-canyon
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| carve canyon 8 toe | first turn | 0.23 | 0.27 | 0.62 | 0.20 | - | 0.28 | 0.73 | - | - | 4 | -5 | -5 |
+| carve canyon 8 heel | first turn | 0.22 | 0.27 | 0.63 | 0.20 | - | 0.67 | 0.70 | - | - | 7 | -2 | 0 |
+| carve canyon 11 toe | first turn | 0.23 | 0.30 | 0.67 | 0.18 | - | 0.32 | 0.73 | - | - | 8 | -8 | -8 |
+| carve canyon 11 heel | first turn | 0.25 | 0.30 | 0.68 | 0.22 | - | 0.77 | 0.77 | - | - | 7 | -6 | -3 |
+## file: cut1-canyon
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| cutback canyon 8.5 toe | first turn | 0.20 | 0.20 | 0.43 | 0.18 | - | 0.27 | 0.62 | - | - | -5 | -9 | -5 |
+| cutback canyon 8.5 toe | rail change | - | - | - | 0.62 | 0.08 | 0.97 | 0.30 | 0.77 | - | - | - | - |
+| cutback canyon 8.5 heel | first turn | 0.22 | 0.20 | 0.47 | 0.20 | - | 0.72 | 0.63 | - | - | 2 | -1 | 0 |
+| cutback canyon 8.5 heel | rail change | 0.58 | 0.45 | 1.05 | 0.58 | 0.08 | 0.42 | 0.23 | 0.25 | 0.92 | 90 | 128 | 32 |
+## file: standcut1-canyon
+| run | change | roll 10 | yaw 20/s | heading 10 | P bank 10 | P twist 10 | D lean 10 | D head 10 | D chest 10 | D hips 10 | head at board 10 | chest at board 10 | hips at board 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| standcut canyon 8.5 toe | first turn | 0.23 | 0.27 | 0.62 | 0.18 | - | 0.30 | 0.72 | - | - | 3 | -6 | -6 |
+| standcut canyon 8.5 toe | rail change | - | - | - | - | 0.08 | - | - | 0.25 | 0.27 | - | - | - |
+| standcut canyon 8.5 heel | first turn | 0.22 | 0.27 | 0.63 | 0.22 | - | 0.65 | 0.72 | - | - | 7 | -2 | -0 |
+| standcut canyon 8.5 heel | rail change | 0.43 | 0.40 | 1.12 | 0.53 | 0.08 | 0.48 | 0.18 | 0.20 | 0.82 | 103 | 103 | 49 |

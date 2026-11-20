@@ -1,0 +1,25 @@
+===== CANYON B (?canyonWaves=true) =====
+spun up on the CPU in 42.9 s; kept in <scratch>/bench33h/B.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.25/1.75, roller 0.69/1.10, front 0.00/0.00, lip 0.03/0.04, foam 2.59/4.65, airSources 0.06/0.10, aeration 1.38/2.09, contact 0.00/0.00, board 0.70/1.55, bubbles 0.17/0.22, spray 0.29/0.55, sounds 0.00/0.00, snapshotFields 4.12/8.85, snapshot 4.64/9.75, summary 0.42/0.56
+  CPU stages per step (step − water + snapshot + summary): 12.63/25.10; water (CPU solver, not timed on the device) 82.9
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+===== CANYON DEFAULT =====
+spun up on the CPU in 61.3 s; kept in <scratch>/bench33h/D.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.25/1.54, roller 0.38/0.57, front 0.00/0.00, lip 0.03/0.03, foam 3.65/4.19, airSources 0.04/0.08, aeration 1.92/2.24, contact 0.00/0.00, board 0.63/0.87, bubbles 0.17/0.22, spray 0.16/0.28, sounds 0.00/0.00, snapshotFields 4.15/5.26, snapshot 4.63/5.85, summary 0.42/0.50
+  CPU stages per step (step − water + snapshot + summary): 13.52/16.69; water (CPU solver, not timed on the device) 83.7
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+
+Both spin-ups are the "spun up on the CPU in ... s" line (B 42.9 s, default 61.3 s), so neither arm
+imported a kept .sea: both state files were written by this run, into a new bench33h/ directory that
+did not exist before it. The wrapper for the B arm is one PREPENDED line on the bundle,
+`globalThis.location = { search: '?canyonWaves=true' }`, because a dynamic import makes rolldown split
+the chunk. Grids read, not assumed: B 400 x 451 = 180400, default 400 x 507 = 202800.
+
+main's reference (3.3g, results/33g/33g-canyon-byte-check.txt, itself the same as 3.3f's):
+  B       snapshots a367d938f15fa934, state 9e5831f80e38abd9  -- SAME
+  default snapshots ea3d57a4d49f4b48, state a1a2555739210f96  -- SAME
+
+All four match, which they must: this round touches no solver, no wave, no spot file and no hull law,
+and its one behavioural change is an opt-in balance switch that is off by default and off in the bench.

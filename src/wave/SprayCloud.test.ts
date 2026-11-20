@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, TOE_SPRAY, splashLaunch, type LipImpact, type RollerToes, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { BOARD_SPRAY_PER_KG, FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, VEIL_CROSS, VEIL_OPTICS, type BoardSpraySheet, TOE_SPRAY, splashLaunch, type LipImpact, type RollerToes, type SprayScene, type StrokeSplash } from './SprayCloud';
 import { BAND_LOOK_FIELD, BAND_LOOK_STRIDE } from './SpillingCurl';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from './SpillingRoller';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 import { PARTICLE_BUDGETS } from './particleBudget';
+import { createBoardSpraySheet, placeTear } from '../physics/boardSpray';
 import { busyWhitewater } from './particleTestSupport';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
@@ -434,6 +435,254 @@ describe('a swept barrel’s landing spray (Padang Padang, Part B, PR 5)', () =>
   });
 });
 
+describe('a plunging lip’s veil (C2 step 5g, `?lipVeil=on`)', () => {
+  /** A jet landing from a 2 m wave: 6.3 m/s down and 4 m/s on, as a 2 m lip's parcel lands. */
+  const jet = (): LipImpact => ({ x: 5, z: 14, volume: 0.4, vx: 0, vy: -6.3, vz: 4, kind: 0, height: 2 });
+  /** The drops' launch directions, read as the step they take over a tiny dt after they are spawned. */
+  function launches(cloud: SprayCloud, scene: SprayScene): { elevation: number }[] {
+    const before: number[] = [];
+    for (let k = 0; k < cloud.count; k += 1) before.push(cloud.particles[k * SPRAY_STRIDE], cloud.particles[k * SPRAY_STRIDE + 1], cloud.particles[k * SPRAY_STRIDE + 2]);
+    const count = cloud.count;
+    const dt = 1 / 2000;
+    cloud.update({ ...scene, lipImpacts: [] }, dt);
+    const out: { elevation: number }[] = [];
+    for (let k = 0; k < Math.min(count, cloud.count); k += 1) {
+      const dx = cloud.particles[k * SPRAY_STRIDE] - before[k * 3];
+      const dy = cloud.particles[k * SPRAY_STRIDE + 1] - before[k * 3 + 1];
+      const dz = cloud.particles[k * SPRAY_STRIDE + 2] - before[k * 3 + 2];
+      out.push({ elevation: Math.atan2(dy, Math.hypot(dx, dz)) });
+    }
+    return out;
+  }
+
+  it('is off until it is asked for, and leaves every landing as it was', () => {
+    expect(new SprayCloud(1).veil).toBe(false);
+    const plain = new SprayCloud(9);
+    plain.update(flatScene(0, [jet()]), 1 / 60);
+    const same = new SprayCloud(9);
+    same.update(flatScene(0, [{ ...jet(), height: undefined }]), 1 / 60);
+    // The wave height a landing now carries is read by nothing but the veil.
+    expect(same.count).toBe(plain.count);
+    for (let k = 0; k < plain.count * SPRAY_STRIDE; k += 1) expect(same.particles[k]).toBe(plain.particles[k]);
+  });
+
+  it('throws Erinin’s two regions, at the curl near 81° and over the turbulent zone near 56°', () => {
+    const cloud = new SprayCloud(11);
+    cloud.veil = true;
+    const scene = flatScene(0, [jet()]);
+    cloud.update(scene, 1 / 60);
+    expect(cloud.count).toBeGreaterThan(100);
+    const elevations = launches(cloud, scene).map((l) => (l.elevation * 180) / Math.PI);
+    const mean = elevations.reduce((a, b) => a + b, 0) / elevations.length;
+    // Between the two means, and both regions represented (the spread is ±15° about each).
+    expect(mean).toBeGreaterThan(56);
+    expect(mean).toBeLessThan(81);
+    expect(elevations.filter((e) => e > 73).length / elevations.length).toBeGreaterThan(0.2);
+    expect(elevations.filter((e) => e < 64).length / elevations.length).toBeGreaterThan(0.2);
+  });
+
+  it('throws them at the measured mean of the impact speed, with a tail past twice it', () => {
+    // Sixty landings on their own seeds, so the exponential's tail has a population to show itself in.
+    const scene = flatScene(0, []);
+    const speeds: number[] = [];
+    for (let n = 0; n < 60; n += 1) {
+      const one = new SprayCloud(100 + n);
+      one.veil = true;
+      const impacts = [jet()];
+      one.update({ ...scene, lipImpacts: impacts }, 1 / 60);
+      const dt = 1 / 2000;
+      const before: number[] = [];
+      for (let k = 0; k < one.count; k += 1) before.push(one.particles[k * SPRAY_STRIDE], one.particles[k * SPRAY_STRIDE + 1], one.particles[k * SPRAY_STRIDE + 2]);
+      const count = one.count;
+      one.update({ ...scene, lipImpacts: [] }, dt);
+      for (let k = 0; k < Math.min(count, one.count); k += 1) {
+        const dx = one.particles[k * SPRAY_STRIDE] - before[k * 3];
+        const dy = one.particles[k * SPRAY_STRIDE + 1] - before[k * 3 + 1];
+        const dz = one.particles[k * SPRAY_STRIDE + 2] - before[k * 3 + 2];
+        speeds.push(Math.hypot(dx, dy, dz) / dt);
+      }
+    }
+    const impactSpeed = Math.hypot(6.3, 4);
+    const ratios = speeds.map((v) => v / impactSpeed);
+    const mean = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+    // The exponential's own mean is 0.38; gravity over the step and the floor move it a little.
+    expect(mean).toBeGreaterThan(0.3);
+    expect(mean).toBeLessThan(0.46);
+    expect(Math.max(...ratios)).toBeGreaterThan(2);
+    expect(Math.max(...ratios)).toBeLessThanOrEqual(2.2);
+  });
+
+  it('throws nothing over water the lip has not hit: every drop leaves at or behind the landing', () => {
+    const cloud = new SprayCloud(13);
+    cloud.veil = true;
+    const landing = jet();
+    cloud.update(flatScene(0, [landing]), 1 / 60);
+    const run = Math.hypot(landing.vx, landing.vz);
+    for (let k = 0; k < cloud.count; k += 1) {
+      const along = ((cloud.particles[k * SPRAY_STRIDE] - landing.x) * landing.vx + (cloud.particles[k * SPRAY_STRIDE + 2] - landing.z) * landing.vz) / run;
+      expect(along).toBeLessThanOrEqual(1e-9);
+    }
+  });
+
+  it('lets the breaker’s air carry the light drops over the lip, where thrown drops cannot reach', () => {
+    const highest = (veil: boolean) => {
+      const cloud = new SprayCloud(14);
+      cloud.veil = veil;
+      const scene = flatScene(0, [jet()]);
+      cloud.update(scene, 1 / 60);
+      let top = -Infinity;
+      for (let step = 0; step < 150; step += 1) {
+        cloud.update({ ...scene, lipImpacts: [] }, 1 / 60);
+        for (let k = 0; k < cloud.count; k += 1) top = Math.max(top, cloud.particles[k * SPRAY_STRIDE + 1]);
+      }
+      return top;
+    };
+    const lofted = highest(true);
+    const thrown = highest(false);
+    // One landing on still water lifts its own drops to 2.39 m against the 1.42 m they are thrown to. In the pool,
+    // where a peeling crest seeds patch after patch along it, the top measures 3.61 m (c2-step5g.md §5).
+    expect(thrown).toBeLessThan(1.6);
+    expect(lofted).toBeGreaterThan(2.2);
+  });
+
+  it('does not blow before the air has had time to form, so the barrel’s mouth stays clear', () => {
+    const topAt = (seconds: number) => {
+      const cloud = new SprayCloud(15);
+      cloud.veil = true;
+      const scene = flatScene(0, [jet()]);
+      cloud.update(scene, 1 / 60);
+      let top = -Infinity;
+      for (let step = 0; step < Math.round(seconds * 60); step += 1) {
+        cloud.update({ ...scene, lipImpacts: [] }, 1 / 60);
+        // The two light bands only (the wide sprites). C2 step 5h: with the advisor's corrected area shares the
+        // over-1 mm band is 54 % of the sprites rather than 35 %, and the speed law's tail carries a few of them
+        // ballistically past 2 m inside the onset — an extreme of a heavy class, not the veil, and reading the
+        // highest particle of any class measures it instead of what this test is about. The air is what carries
+        // the light drops; c2-step5g.md §5.1 makes the same argument for the body against the top.
+        for (let k = 0; k < cloud.count; k += 1) {
+          if (cloud.particles[k * SPRAY_STRIDE + 3] > 0.25) top = Math.max(top, cloud.particles[k * SPRAY_STRIDE + 1]);
+        }
+      }
+      return top;
+    };
+    // Up to the onset nothing is lifted, so the drops are only as high as they were thrown: 0.70 m against 1.93.
+    const before = topAt(0.24);
+    const after = topAt(1.4);
+    expect(after).toBeGreaterThan(before + 1);
+  });
+
+  /**
+   * C2 step 5h: the opacity. A sprite's drawn alpha is 1 − e^(−τ) with τ = Q·A_x/(πD²/4), so the effective
+   * cross-section it stands for can be read straight back off the packed alpha and width at birth, where the
+   * end-of-life taper is still 1.
+   */
+  const crossOf = (cloud: SprayCloud, k: number): number => {
+    const width = cloud.particles[k * SPRAY_STRIDE + 3];
+    const alpha = cloud.particles[k * SPRAY_STRIDE + 4];
+    return -Math.log(1 - alpha) * (Math.PI * width * width) / 4;
+  };
+  const totalCross = (cloud: SprayCloud): number => {
+    let sum = 0;
+    for (let k = 0; k < cloud.count; k += 1) sum += crossOf(cloud, k);
+    return sum;
+  };
+
+  it('draws each sprite at the optical depth of the water it stands for, not at a constant', () => {
+    const cloud = new SprayCloud(21);
+    cloud.veil = true;
+    cloud.update(flatScene(0, [jet()]), 1 / 60);
+    const alphas = new Set<number>();
+    for (let k = 0; k < cloud.count; k += 1) alphas.add(Math.round(cloud.particles[k * SPRAY_STRIDE + 4] * 1e6));
+    // Off, every drop in a landing packs at exactly 0.8 and every mist at exactly 0.25: two values for the lot.
+    const plain = new SprayCloud(21);
+    plain.update(flatScene(0, [jet()]), 1 / 60);
+    const plainAlphas = new Set<number>();
+    for (let k = 0; k < plain.count; k += 1) plainAlphas.add(Math.round(plain.particles[k * SPRAY_STRIDE + 4] * 1e6));
+    expect(plainAlphas.size).toBe(2);
+    expect(alphas.size).toBeGreaterThan(20);
+    // And it is translucent where the veil is: the 0.2–1 mm band is drawn under a tenth, against the flat 0.25 of
+    // the mist sprite it borrows, while a millimetre drop cluster on its 6–14 cm disc stays opaque, as it should.
+    let veilClass = 0;
+    let thin = 0;
+    for (let k = 0; k < cloud.count; k += 1) {
+      if (cloud.particles[k * SPRAY_STRIDE + 3] < 0.25) continue;
+      veilClass += 1;
+      if (cloud.particles[k * SPRAY_STRIDE + 4] < 0.1) thin += 1;
+    }
+    expect(veilClass).toBeGreaterThan(50);
+    expect(thin).toBe(veilClass);
+  });
+
+  it('conserves a sprite’s cross-section as it spreads, so its alpha is dilution and not a fade curve', () => {
+    const cloud = new SprayCloud(23);
+    cloud.veil = true;
+    const scene = flatScene(0, [jet()]);
+    cloud.update(scene, 1 / 60);
+    // `remove` packs the live ones to the front, so no index survives a flight. Conservation is read off the
+    // population instead: every cross-section still in the air must be one the landing issued, and the widths must
+    // have grown. The read-back goes through float32 alpha and width, so it is a part in 10⁴, not exact.
+    const wide = () => {
+      const out: { cross: number; width: number }[] = [];
+      for (let k = 0; k < cloud.count; k += 1) {
+        if (cloud.particles[k * SPRAY_STRIDE + 3] > 0.25) out.push({ cross: crossOf(cloud, k), width: cloud.particles[k * SPRAY_STRIDE + 3] });
+      }
+      return out;
+    };
+    const born = wide();
+    expect(born.length).toBeGreaterThan(50);
+    for (let step = 0; step < 18; step += 1) cloud.update({ ...scene, lipImpacts: [] }, 1 / 60);
+    const grown = wide();
+    expect(grown.length).toBeGreaterThan(20);
+    const mean = (list: { width: number }[]) => list.reduce((sum, a) => sum + a.width, 0) / list.length;
+    expect(mean(grown)).toBeGreaterThan(mean(born) * 1.05);
+    // Every survivor's cross-section is one of the ones issued, unchanged: the water did not evaporate as it spread.
+    for (const a of grown) {
+      const nearest = Math.min(...born.map((b) => Math.abs(b.cross - a.cross) / b.cross));
+      expect(nearest).toBeLessThan(1e-3);
+    }
+    // So an older sprite's alpha is lower only because its disc is wider, by the 1/D² a conserved cross-section gives.
+    const tau = (a: { cross: number; width: number }) => (4 * a.cross) / (Math.PI * a.width * a.width);
+    const sample = grown[0];
+    const source = born.reduce((best, b) => (Math.abs(b.cross - sample.cross) < Math.abs(best.cross - sample.cross) ? b : best), born[0]);
+    expect(tau(sample) / tau(source) / (source.width / sample.width) ** 2).toBeCloseTo(1, 3);
+  });
+
+  it('draws the same optical depth at every Particles level, because the water is what is divided', () => {
+    const total = (level: 'high' | 'medium' | 'low') => {
+      const cloud = new SprayCloud(27);
+      cloud.veil = true;
+      cloud.setLevel(level);
+      cloud.update(flatScene(0, [jet(), { ...jet(), x: 4 }, { ...jet(), x: 6 }]), 1 / 60);
+      return { cross: totalCross(cloud), count: cloud.count };
+    };
+    const high = total('high');
+    const low = total('low');
+    // Low draws a fraction of the sprites High does, and each one then stands for proportionally more water, so the
+    // optical depth the landing paints is level-independent where the old constant alpha made it follow the count.
+    expect(low.count).toBeLessThan(high.count * 0.6);
+    expect(low.cross / high.cross).toBeGreaterThan(0.8);
+    expect(low.cross / high.cross).toBeLessThan(1.25);
+  });
+
+  it('scales the veil with the water the landing throws, and carries its own sourced floor', () => {
+    const cross = (whole: number) => {
+      const cloud = new SprayCloud(29);
+      cloud.veil = true;
+      cloud.update(flatScene(0, [{ ...jet(), volume: 0.4, whole }]), 1 / 60);
+      return totalCross(cloud);
+    };
+    // Twice the jet's water, twice the airborne droplets, twice the cross-section — at the same sprite count, since
+    // the count law reads `volume` (what stays) and this reads `whole` (what fell).
+    expect(cross(0.8) / cross(0.4)).toBeCloseTo(2, 1);
+    // φ ships 40 times its own sourced floor, and the floor is carried beside it so the gap is visible in the code.
+    expect(VEIL_OPTICS.airborne / VEIL_OPTICS.airborneSourced).toBeCloseTo(40, 0);
+    // Each class's sprites carry that class's water, so the three factors land within 2 % of one another.
+    const factors = [VEIL_CROSS.spray, VEIL_CROSS.veil, VEIL_CROSS.mist];
+    expect(Math.min(...factors)).toBeGreaterThan(1300);
+    expect(Math.max(...factors)).toBeLessThan(2000);
+  });
+});
+
 describe('indexed sources and presentation packing', () => {
   it('replays the full-grid traversal exactly in both looks and every budget, including full pools', () => {
     for (const look of ['rich', 'classic'] as const) {
@@ -565,5 +814,74 @@ describe('the roller front\'s toe spray (the Canyon roller front)', () => {
     const plainCount = plain.count;
     expect(toed.count).toBeGreaterThanOrEqual(plainCount);
     expect(Array.from(toed.particles.subarray(0, plainCount * SPRAY_STRIDE))).toEqual(Array.from(plain.particles.subarray(0, plainCount * SPRAY_STRIDE)));
+  });
+});
+
+describe('a board\'s spray (board-spray)', () => {
+  /** A hard turn's sheet: `flux` kg/s leaving 4 cm over the water along 0.6 m of rail, out and up at 6 and 5 m/s. */
+  const sheet = (flux: number): BoardSpraySheet => ({
+    ...createBoardSpraySheet(), x: 5, y: 0.04, z: 20, alongX: 0, alongZ: 1, length: 0.6, vx: 6, vy: 5, vz: 2, flux, spread: 1, fall: 7,
+    mist: 0.1, boardX: 0, boardY: 0, boardZ: 8,
+  });
+
+  it('throws BOARD_SPRAY_PER_KG drawn particles per kilogram of the sheet\'s water, out along its velocity', () => {
+    const cloud = new SprayCloud(4, 4096, 1024, 512);
+    cloud.update({ ...flatScene(), boardSheets: [sheet(60)] }, 0.1);
+    expect(cloud.boardSpawns).toBeGreaterThanOrEqual(Math.floor(60 * 0.1 * BOARD_SPRAY_PER_KG) - 1);
+    expect(cloud.boardSpawns).toBeLessThanOrEqual(Math.ceil(60 * 0.1 * BOARD_SPRAY_PER_KG) + 1);
+    // A twentieth of a second later: on their way out and up.
+    cloud.update(flatScene(), 0.05);
+    let out = 0;
+    for (let k = 0; k < cloud.count; k += 1) if (cloud.particles[k * SPRAY_STRIDE] > 5 && cloud.particles[k * SPRAY_STRIDE + 1] > 0.04) out += 1;
+    expect(out / cloud.count).toBeGreaterThan(0.8);
+  });
+
+  it('keeps the boards\' spray in a pool of its own, scaled by the Particles setting, without crowding the sea\'s', () => {
+    const cloud = new SprayCloud(4, 4096, 1024, 512);
+    for (let frame = 0; frame < 120; frame += 1) cloud.update({ ...flatScene(), boardSheets: [sheet(400)] }, 1 / 60);
+    expect(cloud.boardCount).toBe(512);
+    const medium = new SprayCloud(4, 4096, 1024, 512);
+    medium.setLevel('medium');
+    for (let frame = 0; frame < 120; frame += 1) medium.update({ ...flatScene(), boardSheets: [sheet(400)] }, 1 / 60);
+    expect(medium.boardCount).toBe(256);
+    // None without a pool of its own.
+    const none = new SprayCloud(4);
+    none.update({ ...flatScene(), boardSheets: [sheet(400)] }, 1 / 60);
+    expect(none.count).toBe(0);
+  });
+
+  it('throws the drops from where the curtain tears when it is drawn (spray-sheet), from the root when it is not', () => {
+    // Off a board doing 8 m/s along +z: the sheet's water flies at (6, 5, −6) m/s relative to it, tearing 0.1 s out.
+    const torn = new SprayCloud(4, 4096, 1024, 512);
+    const curtain = { ...sheet(60), breakup: 0.1, onset: 0.03 };
+    // Torn where the hull's course would carry it: the root 0.1 s at (6, 5, −6) relative to the board, less gravity's.
+    placeTear(curtain, 5, 0.04, 20, 0, 1, 0.6, 6, 5, -6, 6, 5, 2, 0.1);
+    torn.update({ ...flatScene(), boardSheets: [curtain] }, 0.1);
+    const plain = new SprayCloud(4, 4096, 1024, 512);
+    plain.update({ ...flatScene(), boardSheets: [sheet(60)] }, 0.1);
+    expect(torn.count).toBe(plain.count);
+    const mean = (cloud: SprayCloud, axis: number) => {
+      let sum = 0;
+      for (let k = 0; k < cloud.count; k += 1) sum += cloud.particles[k * SPRAY_STRIDE + axis];
+      return sum / cloud.count;
+    };
+    expect(mean(plain, 0)).toBeCloseTo(5, 6);
+    // Most 0.6 m out and back, 0.45 m up (less gravity's), at the tear; a fifth shed on the way: a little short of it.
+    expect(mean(torn, 0)).toBeGreaterThan(5.45);
+    expect(mean(torn, 0)).toBeLessThan(5.65);
+    expect(mean(torn, 1)).toBeGreaterThan(0.35);
+    expect(mean(torn, 2)).toBeLessThan(20.3 - 0.4);
+  });
+
+  it('throws them on its own random stream: the sea\'s drops are as they were', () => {
+    const plain = new SprayCloud(9, 4096, 1024, 512);
+    const sprayed = new SprayCloud(9, 4096, 1024, 512);
+    for (let frame = 0; frame < 90; frame += 1) {
+      const scene = busyWhitewater(frame);
+      plain.update(scene, 1 / 60);
+      sprayed.update({ ...scene, boardSheets: [sheet(80)] }, 1 / 60);
+      expect(sprayed.count - sprayed.boardCount).toBe(plain.count);
+    }
+    expect(sprayed.boardCount).toBeGreaterThan(0);
   });
 });

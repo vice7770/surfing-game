@@ -1,0 +1,23 @@
+pool barrel H 1 (8 periods after 50 s, 273 s wall); {"platformDepth":4,"gradient":0.10526315789473684,"tipGradient":0.0714286,"tipEase":15,"crestDepth":1,"armCrestDepth":0.9,"crestEase":25,"kneeRounding":3,"flatWidth":6,"lagoonSlope":0.05555555555555555,"lagoonDepth":1.8,"armLength":45,"taperWidth":25,"platformLead":10}
+surf meter {"typical":1.587429266929718,"sets":1.6108082367764873,"waves":19}; platform at the take-off's knee (z -258, 4.00 m): H 1.29 m, H/h 0.32; least water on the top 0.26 m; fastest 5.30 m/s
+tip onsets: t 50.1 z -206 d 1.00 f 1.35 | t 58.0 z -217 d 1.46 f 1.63 | t 68.2 z -216 d 1.39 f 1.53 | t 78.0 z -217 d 1.46 f 1.58 | t 88.0 z -217 d 1.46 f 1.54 | t 98.0 z -217 d 1.46 f 1.54 | t 108.0 z -217 d 1.46 f 1.61 | t 118.0 z -217 d 1.46 f 1.55 | t 128.0 z -217 d 1.46 f 1.52 | t 138.2 z -216 d 1.39 f 1.56 | t 148.0 z -217 d 1.46 f 1.48
+onsets deeper than 2.6 m: 0
+|x|  0–5: R onsets 55 d 1.46 face 1.54, jets 1 X 17.9 Y 1.99 ξ 0.71 H 1.66 W 0.86 L 1.99 d 1.61 ; L onsets 44 d 1.46 face 1.55, jets 4 X 18.2 Y 2.01 ξ 0.72 H 1.65 W 0.84 L 1.97 d 1.61
+|x|  5–10: R onsets 55 d 1.53 face 1.52, jets 38 X 19.1 Y 2.06 ξ 0.80 H 1.62 W 0.79 L 1.91 d 1.66 ; L onsets 55 d 1.51 face 1.53, jets 34 X 19.1 Y 2.06 ξ 0.80 H 1.61 W 0.79 L 1.90 d 1.66
+|x| 10–15: R onsets 55 d 1.66 face 1.52, jets 50 X 20.2 Y 2.13 ξ 0.88 H 1.56 W 0.72 L 1.82 d 1.81 ; L onsets 55 d 1.64 face 1.51, jets 50 X 20.2 Y 2.14 ξ 0.87 H 1.57 W 0.72 L 1.83 d 1.81
+|x| 15–20: R onsets 55 d 1.80 face 1.44, jets 50 X 20.5 Y 2.15 ξ 0.84 H 1.54 W 0.70 L 1.80 d 1.96 ; L onsets 55 d 1.76 face 1.46, jets 50 X 20.5 Y 2.15 ξ 0.84 H 1.53 W 0.70 L 1.79 d 1.96
+|x| 20–25: R onsets 52 d 1.97 face 1.26, jets 50 X 19.7 Y 2.10 ξ 0.87 H 1.36 W 0.64 L 1.59 d 2.13 ; L onsets 53 d 1.93 face 1.28, jets 50 X 20.2 Y 2.13 ξ 0.87 H 1.35 W 0.61 L 1.58 d 2.13
+|x| 25–30: R onsets 50 d 2.20 face 0.95, jets 50 X 16.5 Y 1.89 ξ 0.88 H 1.18 W 0.62 L 1.38 d 2.36 ; L onsets 50 d 2.15 face 0.99, jets 50 X 16.5 Y 1.89 ξ 0.88 H 1.17 W 0.62 L 1.37 d 2.36
+|x| 30–35: R onsets 50 d 2.40 face 0.98, jets 50 X 15.3 Y 1.82 ξ 0.87 H 1.09 W 0.60 L 1.24 d 2.56 ; L onsets 50 d 2.40 face 0.96, jets 50 X 15.4 Y 1.82 ξ 0.87 H 1.08 W 0.60 L 1.22 d 2.56
+|x| 35–40: R onsets 55 d 2.08 face 0.91, jets 50 X 12.4 Y 1.63 ξ 1.26 H 0.96 W 0.56 L 1.02 d 2.23 ; L onsets 54 d 2.11 face 0.92, jets 50 X 12.3 Y 1.62 ξ 1.26 H 0.95 W 0.56 L 1.01 d 2.23
+|x| 40–45: R onsets 53 d 1.58 face 0.67, jets 46 X 10.7 Y 1.52 ξ 1.29 H 0.96 W 0.56 L 0.99 d 1.73 ; L onsets 54 d 1.60 face 0.66, jets 47 X 10.8 Y 1.52 ξ 1.29 H 0.96 W 0.56 L 1.00 d 1.72
+|x| 45–50: R onsets 50 d 1.57 face 0.75, jets 44 X 10.0 Y 1.47 ξ 1.80 H 0.96 W 0.58 L 0.99 d 1.68 ; L onsets 54 d 1.59 face 0.77, jets 45 X 9.5 Y 1.44 ξ 1.80 H 0.94 W 0.58 L 0.98 d 1.68
+|x| 50–55: R onsets 15 d 1.47 face 0.88, jets 13 X 8.8 Y 1.42 ξ 2.59 H 0.79 W 0.48 L 0.82 d 1.65 ; L onsets 23 d 1.47 face 0.77, jets 14 X 9.9 Y 1.46 ξ 2.60 H 0.79 W 0.50 L 0.79 d 1.65
+|x| 55–60: R onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d — ; L onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d —
+|x| 60–65: R onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d — ; L onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d —
+|x| 65–70: R onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d — ; L onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d —
+|x| 70–75: R onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d — ; L onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d —
+x 27: t 50.9 z -197 d 2.20 f 1.07 | t 60.8 z -197 d 2.20 f 0.91 | t 70.6 z -198 d 2.24 f 1.03 | t 80.7 z -197 d 2.20 f 0.87 | t 90.6 z -197 d 2.20 f 0.84 | t 100.6 z -197 d 2.20 f 0.89 | t 110.5 z -198 d 2.24 f 0.92 | t 120.5 z -198 d 2.24 f 0.89 | t 130.6 z -198 d 2.24 f 0.88 | t 140.7 z -197 d 2.20 f 0.88
+x 45: t 50.3 z -143 d 2.00 f 0.81 | t 60.9 z -139 d 1.82 f 0.83 | t 71.1 z -137 d 1.72 f 0.73 | t 81.4 z -134 d 1.59 f 0.81 | t 91.4 z -134 d 1.59 f 0.79 | t 100.9 z -137 d 1.72 f 0.72 | t 111.3 z -134 d 1.59 f 0.79 | t 123.1 z -125 d 1.17 f 0.58 | t 131.1 z -135 d 1.63 f 0.70 | t 141.4 z -134 d 1.59 f 0.75
+x -27: t 50.7 z -198 d 2.15 f 1.13 | t 60.7 z -198 d 2.15 f 1.01 | t 70.4 z -199 d 2.19 f 1.02 | t 80.6 z -198 d 2.15 f 0.97 | t 90.5 z -198 d 2.15 f 0.92 | t 100.5 z -198 d 2.15 f 0.96 | t 110.5 z -198 d 2.15 f 0.90 | t 120.4 z -199 d 2.19 f 0.98 | t 130.5 z -199 d 2.19 f 0.99 | t 140.6 z -198 d 2.15 f 0.96
+x -45: t 50.2 z -143 d 1.89 f 0.78 | t 60.5 z -141 d 1.80 f 0.67 | t 70.7 z -139 d 1.71 f 0.72 | t 81.1 z -136 d 1.57 f 0.76 | t 91.5 z -134 d 1.48 f 0.78 | t 100.7 z -139 d 1.71 f 0.77 | t 111.2 z -136 d 1.57 f 0.76 | t 121.6 z -133 d 1.44 f 0.79 | t 131.0 z -136 d 1.57 f 0.67 | t 141.3 z -135 d 1.53 f 0.69

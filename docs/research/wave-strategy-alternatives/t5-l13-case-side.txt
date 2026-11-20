@@ -1,0 +1,48 @@
+lengths x 1, times x 1.000 (Froude); tau = s before the face goes vertical (the throw)
+
+periodic_pool_far_big_L13_library.json (library, level 13, h0 4.5 m; frames tau -5.42 to 3.93 s)
+  tau s | crest before its throw place, m | crest over still water, m | H over the trough ahead, m | face, deg
+   -6.0 | —
+   -5.5 | —
+   -5.0 |   35.5 |  1.63 |  1.91 |   15
+   -4.5 |   31.8 |  1.65 |  2.01 |   16
+   -4.0 |   28.2 |  1.66 |  2.13 |   15
+   -3.5 |   25.1 |  1.71 |  2.24 |   18
+   -3.0 |   21.9 |  1.69 |  2.25 |   19
+   -2.5 |   17.7 |  1.76 |  2.33 |   20
+   -2.0 |   14.7 |  1.81 |  2.38 |   20
+   -1.5 |   11.7 |  1.86 |  2.40 |   26
+   -1.0 |    8.7 |  1.78 |  2.36 |   35
+   -0.5 |    3.6 |  1.92 |  2.48 |   50
+    0.0 |    0.0 |  2.00 |  2.53 |   89
+
+periodic_pool_straight_big_L13_library.json (library, level 13, h0 4.5 m; frames tau -2.03 to 3.95 s)
+  tau s | crest before its throw place, m | crest over still water, m | H over the trough ahead, m | face, deg
+   -6.0 | —
+   -5.5 | —
+   -5.0 | —
+   -4.5 | —
+   -4.0 | —
+   -3.5 | —
+   -3.0 | —
+   -2.5 | —
+   -2.0 |   14.2 |  1.81 |  2.37 |   20
+   -1.5 |   11.2 |  1.88 |  2.41 |   26
+   -1.0 |    8.3 |  1.82 |  2.37 |   34
+   -0.5 |    3.4 |  1.98 |  2.50 |   51
+    0.0 |    0.0 |  2.07 |  2.59 |   90
+
+The overlap: periodic_pool_far_big_L13_library.json against periodic_pool_straight_big_L13_library.json (the same tau, clean frames of both; each profile from its own crest at tau 0, point by point)
+  tau s | frames | point gap, m: median, 90 % (medians over the frames) | crest place gap, m | H gap, m
+   -2.5 |   1 | 0.279, 0.530 | 0.527 | 0.004
+   -2.0 |  21 | 0.492, 0.550 | 0.492 | 0.007
+   -1.5 |  12 | 0.430, 0.504 | 0.457 | 0.015
+   -1.0 |  23 | 0.318, 0.570 | 0.211 | 0.011
+   -0.5 |   9 | 0.167, 0.354 | 0.140 | 0.051
+    0.0 |  30 | 0.097, 0.352 | 0.070 | 0.054
+    0.5 |  30 | 0.095, 0.219 | 0.035 | 0.053
+    1.0 |  24 | 0.105, 0.194 | 0.035 | 0.034
+    1.5 |  23 | 0.233, 0.604 | 0.105 | 0.048
+    2.0 |  21 | 0.944, 1.945 | 0.879 | 0.271
+    2.5 |  15 | 1.409, 3.205 | 2.074 | 0.259
+    3.0 |  14 | 1.879, 2.539 | 1.617 | 0.427

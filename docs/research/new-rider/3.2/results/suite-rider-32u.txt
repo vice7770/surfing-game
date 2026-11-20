@@ -1,0 +1,490 @@
+
+ RUN  v5.0.1 /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/r32r-m
+
+ ✓ src/physics/carveFlex.test.ts > the carve's flexing legs (opt-in) > leaves the default alone: the stick alone never bends the legs 943ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > lowers the physical and published head while retaining a loaded standing rider at 6 m/s 857ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > reports more front-foot load during landing than in the settled stance 870ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > lowers the physical and published head while retaining a loaded standing rider at 8 m/s 827ms
+ ✓ src/physics/snapCross.test.ts > Snap's rail change (opt-in) > leaves the default alone: Snap weights the tail at once, on the old rail, and the legs push nothing 2002ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 3° face at 9 m/s with the old turn running on under 22° (regular, side 1) 2011ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > lowers the physical and published head while retaining a loaded standing rider at 11 m/s 452ms
+ ✓ src/physics/carveFlex.test.ts > the carve's flexing legs (opt-in) > bends nothing without the stick: trim rides exactly as with the switch off 1542ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > rides a board towed at 6 m/s, pressing its weight onto the deck between its feet 1299ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > keeps planing round 160° across a 10° face from 5.5 m/s with the coaching's 65/35 on the back foot, not full back (regular, side 1) 2519ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 3° face at 9 m/s with the old turn running on under 22° (regular, side -1) 919ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > keeps most of its balance in reserve on a board towed straight 951ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > keeps planing round 160° across a 10° face from 5.5 m/s with the coaching's 65/35 on the back foot, not full back (regular, side -1) 1159ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 3° face at 9 m/s with the old turn running on under 22° (goofy, side 1) 752ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > uses the lighter Padang grid for ordinary play and preserves supplied sea configurations 369ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > turns the Canyon's spilling lip off for `?spillingCurl=0` (a dev switch), and leaves it on otherwise 61ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > starts the rider `?startOut=<m>` seaward of the take-off (a dev switch), and at the spot's own start otherwise 1ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > turns the Canyon's tubes on with `?canyonTube=on`, and draws the bounded-C with `?tubeShape=c` (dev switches) 1ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > draws the Barrel's tube from a38 unless `?poolTubeCase=pool`, and takes the surfable tube's switches (dev switches) 5ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes step 7's switches at the Barrel alone, and an online room pins their defaults (dev switches) 3ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes the step 7 follow-up's switches at the Barrel alone, and an online room pins their defaults (dev switches) 1ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes pool-barrel-perf's switches, the worker's in the config and pinned online, the drawing's on the page (dev switches) 1ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes barrel-gpu's switches at every spot, and an online room pins their defaults (dev switches) 2ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes barrel-gpu's switch at the Barrel alone, and an online room pins its default (dev switch) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes pool-ledge-floor's switch at the Barrel alone, and an online room pins its default (dev switch) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?poolSize=ref` at the straight Barrel alone: its wave, period and case; an online room pins its default (dev switch) 4ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?poolWindow=<m>` only together with `?poolSize=ref`: the first build's 280 m window for A/Bs (dev switch) 3ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > holds the reference size's tube case by the jet-step test; `?poolHeld=old` only together with `?poolSize=ref` (dev switch) 2ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > lays the reference size's reef on its longer line; `?poolReef=short` only together with `?poolSize=ref` (dev switch) 2ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes the reference size's front to s 150 with `?poolReach=long`, only with `?poolSize=ref` and the long reef (dev switch) 3ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > says in the DEVICE row where the water steps, why the CPU, and the GPU step's traffic 33ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > keeps the pumping crouch and Compress targets, and selects the usual turn stance from a deeper tuck 1521ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > runs out of balance reserve before it lets go of a sinking board 527ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > sinks a board it stands on at rest 300ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 3° face at 9 m/s with the old turn running on under 22° (goofy, side -1) 771ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > lets go once it tips beyond recovery, and stops loading the board 473ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > falls with the board as one body in the air, conserving momentum 173ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > keeps planing round 160° across a 10° face from 5.5 m/s with the coaching's 65/35 on the back foot, not full back (goofy, side 1) 1244ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?formClock=old` and `?formClock=c1` at the Barrel alone, and an online room pins the default (dev switch) 2ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?tubeSeam=blend` (with `?seamTau=on,full`, `?seamBand=m`) at the Barrel alone, and an online room pins the default (dev switch) 3ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?crestLine=sub` or `top` at the Barrel alone, and an online room pins the default (dev switch) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?tubeForm=early`, which turns `tubeSeam=blend` and `crestLine=top` on; an online room pins the default (dev switch) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?wallFoot=dug` with the seam blend alone, at the Barrel alone, and an online room pins the default (ruling 21) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?loftMesh=arc` at the Barrel alone, and an online room pins the default (dev switch; ruling 18's build 2) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?anchorLine=smooth` at the Barrel alone, and an online room pins the default (dev switch; ruling 18's build 1) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?wallBody=stream` with `?tubeSeam=blend` alone, at the Barrel alone, and an online room pins the default (dev switch) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes `?afterTube=roller` at the Barrel alone, and an online room pins the default (dev switch) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes ruling 3's switches at the Barrel alone, and an online room pins their defaults (dev switches) 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > runs the Canyon's old bed with `?canyonBed=old` (a dev switch), and the reef bed otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > brings back the Canyon's previous waves with `?canyonWaves=true` (a dev switch), and keeps the default otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > halves the Canyon bank's edge ramp with `?canyonRamp=half` (a dev switch), and keeps the default otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > starts the Canyon rider at its take-off with `?canyonStart=old` (a dev switch), and 10 m screen-left of it otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > passes the Canyon bank's breaking age by its take-off zone with `?canyonJoin=zone` (a dev switch), and by its bed otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > draws the Canyon beach peaks as the solver breaks them with `?canyonBeachLook=off` (a dev switch), and as the reef otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > paddles with the stroke as before canyon-catch with `?stroke=old` (a dev switch), and today's otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > holds the sea's surface still through the bodies' step with `?surfaceMotion=old` (a dev switch), and moves it otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > draws the two-body duck-dive as before with `?duckDrawn=old` (a dev switch), and as the dive otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > throws the boards' spray as drops at once with `?spraySheet=off` (a dev switch), and as a curtain otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > throws no spray off the boards with `?boardSpray=off` (a dev switch), and throws it otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > leaves the weight over the tail after Snap with `?snapRecentre=old` (a dev switch), and centres it otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > leans a Snap up the face as far as a top turn with `?snapUpturn=old` (a dev switch), and the steer's rail otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > draws Snap's arms as before with `?snapArms=old` (a page drawing switch), and following the turn otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > loads Snap to the tube tuck with `?snapDepth=deep` (an opt-in dev switch), and as deep as Compress otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > uses the agile legs with `?agile=on` (an opt-in dev switch), and rides as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > uses the leg drive with `?legDrive=on` (an opt-in dev switch), and rides as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > shapes the hull with `?hull=rail` (an opt-in dev switch), and rides as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > flexes the legs in a carve with `?carveFlex=on` (an opt-in dev switch), and rides as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > drives the legs through a Snap with `?snapLegs=drive` (an opt-in dev switch), and rides as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > waits for the body to cross before Snap weights the tail with `?snapCross=on` (an opt-in dev switch), and rides as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > rides the new surfer with `?rider=new` (an opt-in dev switch), and the old rider otherwise 2ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > caps the legs' power with `?legPower=cap` (an opt-in dev switch), and rides as before otherwise 1ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes the pool's wave from the library with `?wave=library` (an opt-in dev switch), and as before otherwise 6ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > keeps the hollow over a banked deck with `?deckHollow=on` (an opt-in dev switch), and rides as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > stamps on a full steer under Snap with `?snapStamp=on` (an opt-in dev switch), and carves as before otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > leans Snap for its own turn with `?snapPivot=lean` (an opt-in dev switch), and as the steer asks otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > sets Snap up at the calm pace with `?snapQuick=old` (a dev switch), and at full effort otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > throws the boards' spray as before snap-fan with `?snapFan=old` (a dev switch), and the default otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > extends the legs at their full pace letting Compress go with `?extension=old` (a dev switch), and caught otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > ignores Snap with `?snap=off` (a dev switch), and keeps it otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > drags boards with a roller's froth as before bottom-stop with `?froth=old` (a dev switch), and today's otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > gets back on the board as before swim-back with `?swim=old` (a dev switch), and today's otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > runs every spot's onset as before step 3b with `?onset=old` (a dev switch), and today's otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > counts the Canyon reef's onsets as main did with `?canyonReefSeq=off` (a dev switch), and in sequence otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > runs the Canyon's breaking-age join from `?canyonAgeJoin=<J>` (a dev switch), and its layout's otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > uploads snapshot visuals once while the camera keeps moving, and refreshes same-time restores and settings 1147ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > lets buoys and storms reach 4 m, and the Canyon 3 m as before (wave sizes) 3ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > gives Practice's groundswell at the tank's edge and a buoy's in deep water (wave sizes) 37ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > maps the spread slider from groundswell to windswell spreading 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes buoy values directly and derives them from a storm in storm mode 5ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > keeps a derived storm swell inside what the tank can carry 2ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > practises on a steady groundswell whatever the buoy and storm say 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > practises the Reef on its own groundswell and every other spot on the shared one 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > practises Padang Padang on its own long-period groundswell 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > takes a spot’s own spreading when it sets one, and the spread slider’s otherwise 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > the Wave Lab’s sea > maps the spread at the break from the game’s refracted groundswell to the advisor’s floor 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > the Wave Lab’s sea > brings every buoy swell in square to the beach and long-crested, whatever the sliders say 10ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > the Wave Lab’s sea > brings every storm’s swell in square to the beach, no broader than the floor 34ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > the Wave Lab’s sea > runs no bigger than each spot’s Big, a buoy’s height and a storm’s alike 7ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > the Wave Lab’s sea > keeps the raw spread and direction behind the dev flag ?labRawSea=1 2ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > closes the board and rider energy ledger through a landing 259ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 5° face at 9 m/s with the old turn running on under 22° (regular, side 1) 795ms
+ ✓ src/physics/carveFlex.test.ts > the carve's flexing legs (opt-in) > sinks as the turn's load comes on, to a moderate crouch at most, and rises again as it ends, on both sides 2822ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > floats prone, nose up with the nose at the surface and the head well above water 256ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > the Wave Lab’s sea > leaves Surf’s and Practice’s seas exactly as they were 1ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > roughens the chop more under onshore than offshore wind 0ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > builds the Reef on stage 2 even when the water tier or a dev asks for stage 1 614ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 5° face at 9 m/s with the old turn running on under 22° (regular, side -1) 806ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > keeps planing round 160° across a 10° face from 5.5 m/s with the coaching's 65/35 on the back foot, not full back (goofy, side -1) 1247ms
+ ✓ src/physics/carveFlex.test.ts > the carve's flexing legs (opt-in) > flexes in proportion: a gentle turn a little, a full turn more 1070ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > paddles up to a steady 1.5–2 m/s in flat water without planing, pushing the water back 975ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > shows the physical sea on the shared water surface and frames its break 880ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 5° face at 9 m/s with the old turn running on under 22° (goofy, side 1) 795ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > gives the sea it starts the water look for its spray, and the running sea every change (G9: Classic keeps its spray) 361ms
+ ✓ src/physics/snapCross.test.ts > Snap's rail change (opt-in) > changes nothing with no Snap held: trim, a Compress carve, a stick-only carve and a rail change ride exactly as with the switch off 5006ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > selects monotonically shallower tuck depths as partial Compress rises, without extending above its final stance 3181ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > gives the sea it starts the Particles level, the running sea every change, and draws the lip sheet at its detail 335ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > across a 5° face from 5.5 m/s planes 120° round, and is off the plane before 160° (regular, side 1) 1188ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > comes off a compressed carve on a 5° face at 9 m/s with the old turn running on under 22° (goofy, side -1) 652ms
+ ✓ src/physics/carveFlex.test.ts > the carve's flexing legs (opt-in) > lets Compress go deeper on top, exactly as Compress alone 1423ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > stays loaded while a continuous Compress ramp extends a prepared tuck within the two stance depths 863ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > frames a riderless sea from its idle view, and a ride from the default view 647ms
+ ✓ src/physics/carveFlex.test.ts > the carve's flexing legs (opt-in) > acts on the board only through the leg: unloading it sinking, pressing it rising, with no net force on the two 315ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > does no work in a compressed turn begun upright, or riding straight 733ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > rides as the chosen surfer: the body loaded once, dressed, and the board in its design 63ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > lets go of a superseded surf zone at once, without waiting for its spin-up 276ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > paddles faster over the ground with a following current 1915ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > across a 5° face from 5.5 m/s planes 120° round, and is off the plane before 160° (goofy, side 1) 1237ms
+ ✓ src/physics/leanOut.test.ts > the rail change (the movement-flow spec) > does no work in a rail change without Compress 603ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > gets no stroke force with its hands out of the water 55ms
+ ✓ src/physics/AttachedRider.test.ts > rider coupled to the board > cannot pull the rider down with a board that drops away: it flies instead 499ms
+ ✓ src/physics/snapCross.test.ts > Snap's rail change (opt-in) > keeps the weight over the middle until the body has come over the board, then puts it on the tail, on both sides 2442ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > floats bare at the draft that displaces its own mass, and settles level 485ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > lets only the latest of overlapping starts take over 1438ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > keeps nominal world points when landing at 0 after mount undefined 24ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > keeps nominal world points when landing at 0.23362283028731087 after mount undefined 5ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > keeps nominal world points when landing at 1.5707963267948966 after mount undefined 5ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > keeps nominal world points when landing at -1.5707963267948966 after mount undefined 6ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > keeps nominal world points when landing at 0.23362283028731087 after mount -0.8 21ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > stands from prone in about 1.2 s on a planing board, landing on the front foot 851ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > carves the same cutback on a face whose water runs up it as on still water (regular, side 1) 1552ms
+ ✓ src/physics/RideSession.test.ts > ride session > rides the same with or without the standing inputs left at rest 1682ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > floats 20 kg deeper, but cannot float a 75 kg rider at rest 630ms
+ ✓ src/physics/snapCross.test.ts > Snap's rail change (opt-in) > pushes the body across with the back foot, within the leg's strength, only while the body leans the old way 893ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > stands up on a board at rest in flat water, noting it has no support, and never lies back down on its own 849ms
+ ✓ src/physics/RideSession.test.ts > ride session > lies the standing rider back down on the pop-up key 527ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > carries a 75 kg rider when towed at 6 m/s, but not at 0.5 m/s 394ms
+ ✓ src/physics/snapCross.test.ts > Snap's rail change (opt-in) > has its equal and opposite on the board at the back foot: nothing on rider plus board, the moment the two forces' couple 425ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > lands from a 1 m drop and settles, with its energy ledger closed 124ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > drops down a steep face at close to the frictionless speed, with its energy ledger closed 123ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > lies back down when asked while standing 389ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > retains the pumping/Compress selection through partial turn inputs with manual crouch 0 3091ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > describes the running sea, solver cost and next set in the Wave Lab readout 1364ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > stops paddling once the hands push up 136ms
+ ✓ src/physics/RideSession.test.ts > ride session > places the rider standing on the face, moving with the water and along its heading 1ms
+ ✓ src/physics/RideSession.test.ts > ride session > places a board that follows the surface moving along a sloped face: the water's rise plus the slope along its motion 3ms
+ ✓ src/physics/RideSession.test.ts > ride session > places anywhere on the water, even in the whitewater, and stays finite 519ms
+ ✓ src/physics/RideSession.test.ts > ride session > starts prone on a board floating level at the given point, heading the given way 3ms
+ ✓ src/physics/RideSession.test.ts > ride session > relaunches drifting with the water and lying along its surface, so paddling off does not throw the rider 107ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > cues the pop-up only when planing down a face 372ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > shows the rider against the crest in the readout 446ms
+ ✓ src/physics/cutback.test.ts > the cutback (the movement-flow spec) > carves the same cutback on a face whose water runs up it as on still water (goofy, side 1) 1728ms
+ ✓ src/physics/RideSession.test.ts > ride session > throws the rider off a board stopped dead, into a fall body that keeps its momentum 590ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > refines its substeps while entering the water, not while gliding down a face 94ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > drifts up to a current’s speed, handing the water the momentum it takes 852ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > builds the sea from a storm and reports it 406ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > samples the water, then hands each patch’s reaction back once per step 51ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > gives the same motion at 1/60 and 1/120 s steps, and bit-identical repeats 230ms
+ ✓ src/physics/AttachedRider.test.ts > pop-up > stands up on a steep face, and notes one too gentle to plane on 666ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > rests on dry ground without sinking into it 73ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > feels no water beyond the domain 82ms
+ ✓ src/physics/RideSession.test.ts > ride session > starts the fall body from the rider's own pose, lying down or standing: each part where it was, moving with it 468ms
+ ✓ src/physics/BoardBody.test.ts > rigid board body > takes a detached surfer’s strike through the contact seam, conserving momentum 68ms
+ ✓ src/physics/BoardBody.test.ts > broken water > carries a board in a bore's roller 232ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > builds the GPU tier's richer sea only when a GPU answers and the water may use it 780ms
+ ✓ src/physics/legDrive.test.ts > the leg drive (opt-in) > leaves the default alone: no push, and the lean-out pull as before 727ms
+ ✓ src/game/PhysicalMode.test.ts > PhysicalMode > runs practice on the same solver with only the incoming swell changed 385ms
+ ✓ src/physics/snapCross.test.ts > Snap's rail change (opt-in) > turns less hard the old way after Snap than the default does 2479ms
+ ✓ src/physics/RideSession.test.ts > ride session > keeps the riderless board floating while the rider falls and swims 890ms
+ ✓ src/physics/RideSession.test.ts > ride session > lets the lip strike the rider on the board, and the surfer once fallen 2ms
+ ✓ src/physics/RideSession.test.ts > ride session > lets the swimmer climb back onto a board within reach, the pair keeping its momentum 193ms
+ ✓ src/physics/AttachedRider.test.ts > weight-shift steering > loads the rail on the requested side, rolling the board and turning it that way 1370ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > retains the pumping/Compress selection through partial turn inputs with manual crouch 0.6 2678ms
+ ✓ src/physics/RideSession.test.ts > ride session > cannot climb onto a board out of reach 276ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > keeps the body on the deck through the press, the knee and the release (each stage eases in) 399ms
+ ✓ src/physics/RideSession.test.ts > the duck-dive in a ride > passes the Duck-dive input to the rider lying down 55ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > keeps a board flung away from the fallen surfer within the stretched leash 287ms
+ ✓ src/physics/legDrive.test.ts > the leg drive (opt-in) > replaces the lean-out pull, never both, and pushes without Compress too 1211ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > comes back up with the rider on after a full push, deeper than lying awash 389ms
+ ✓ src/physics/AttachedRider.test.ts > weight-shift steering > carves a full-steer turn across the face 670ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > ties the back foot: the right ankle regular, the left goofy 12ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > puts the plug on the deck at the tail 3ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > holding the pop-up key reels the board in and climbs back on 164ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > reels the board's tail to the hand nearer it, and the drawn cord with it 122ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > manual tube tuck > extends from a prepared tuck through normal loaded dynamics rather than snapping the body up 733ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > does not pop up when the reel is still held after climbing on 73ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > lets go of a held board to dive 158ms
+ ✓ src/physics/snapCross.test.ts > Snap's rail change (opt-in) > is the leg drive's own push where that is on already: `legDrive: 'on'` on top changes nothing 1391ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > the tube tuck's gate > keeps full manual crouch at the pumping depth on open water 602ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > a strong push sinks the reference board 0.5–1 m (survey §5) 213ms
+ ✓ src/physics/RideSession.test.ts > the leash in a ride > gives a new leash on a relaunch 1ms
+ ✓ src/physics/RideSession.test.ts > breath in a ride > never drains lying on the board, even with the deck under water; a duck-dive holds it a little, the body under 677ms
+ ✓ src/physics/legDrive.test.ts > the leg drive (opt-in) > pushes toward the new rail within the leg's strength and the back foot's grip, only while the body leans the old way 1178ms
+ ✓ src/physics/AttachedRider.test.ts > weight-shift steering > carves a three-quarter turn across the face 1096ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > the tube tuck's gate > folds full manual crouch into the deep tuck under a tube's curl 462ms
+ ✓ src/physics/legDrive.test.ts > the leg drive (opt-in) > sums to nothing on rider plus board, and its moment is the two forces' couple 282ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > keeps hold of the board when ducking from paddling speed 641ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > pushes shallower on a lighter press (analog) 639ms
+ ✓ src/physics/RideSession.test.ts > breath in a ride > drains while the fallen surfer is held under, faster diving than relaxed 628ms
+ ✓ src/physics/BoardBody.test.ts > fins and rails > straighten a board sliding sideways into its path 38ms
+ ✓ src/physics/BoardBody.test.ts > fins and rails > let a finless board slide on 9ms
+ ✓ src/physics/BoardBody.test.ts > a standing rider on the board > carves the same at 1/60 and 1/120 s steps 3313ms
+ ✓ src/physics/RideSession.test.ts > breath in a ride > comes back full on a relaunch 2ms
+ ✓ src/physics/RideSession.test.ts > hitting the reef (Teahupo'o Reef, Part C) > names a fall that comes as the board strikes the reef "reef", and one in open water by its own cause 157ms
+ ✓ src/physics/AttachedRider.deepCrouch.test.ts > the tube tuck's gate > rises back to the pumping depth through normal dynamics once the curl no longer covers it 642ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > sinks a 50 L board less than the reference 490ms
+ ✓ src/physics/compressTurn.test.ts > the compressed turn (the movement-flow spec) > comes round 90° in about a second, frontside, and stays on 1189ms
+ ✓ src/physics/RideSession.test.ts > hitting the reef (Teahupo'o Reef, Part C) > names the fall a strike on the reef knocks the rider into, inside the ride's own step, and not one long after it 334ms
+ ✓ src/physics/BoardBody.test.ts > the board on a solid reef (Teahupo'o Reef, Part C) > slides down sand steeper than its friction, and holds on reef that grips harder: the bed pushes along its own normal 388ms
+ ✓ src/physics/BoardBody.test.ts > the board on a solid reef (Teahupo'o Reef, Part C) > marks a strike on reef, and not a landing on sand 133ms
+ ✓ src/physics/RideSession.test.ts > hitting the reef (Teahupo'o Reef, Part C) > ends nothing when a paddler's board just touches the reef 288ms
+ ✓ src/physics/BoardBody.test.ts > the board under water (duck-two-body) > sinks face-on under a weight as a plate does, C_D about 1.2 (the planing law gave it its 0.46 and wave damping) 180ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > a 50 L board is practically un-diveable (survey §5) 441ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > the arms sink the nose first: the press tips the board nose-down and puts the nose under 99ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > the knee follows the arms about 0.3 s later, and both let go on release 129ms
+ ✓ src/physics/standingBody.test.ts > the new surfer standing (rider: new, step 3.1) > caps the legs' push at the knees' strength, weaker as they bend (the design's 3.0, 2.25, 2.1 and 1.9 body weights) 3ms
+ ✓ src/physics/standingBody.test.ts > the new surfer standing (rider: new, step 3.1) > stands free along the board, and lying down is the old rider's step for step 441ms
+ ✓ src/physics/compressTurn.test.ts > the compressed turn (the movement-flow spec) > comes round 90° in about a second, backside, and stays on 874ms
+ ✓ src/physics/BoardBody.test.ts > the board under water (duck-two-body) > moves twice the water in heave, only when the whole board is well under 3ms
+ ✓ src/physics/BoardBody.test.ts > the board under water (duck-two-body) > leaves a board with its rider on it as it was (the rigid rider was calibrated on the hull law) 433ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > does not paddle while ducking 302ms
+ ✓ src/physics/legDrive.test.ts > the leg drive (opt-in) > has more reach crouched than standing, and the push ends at the reach 1618ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > reaches the hands forward onto the rails, ahead of the chest, while ducking 63ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > draws the kneeling leg's foot on the deck behind the knee 141ms
+ ✓ src/physics/AttachedRider.test.ts > weight-shift steering > links half-steer turns across the face for 6 s 2115ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > ducks in the stance the rider has now, the back knee on the tail 84ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > does nothing standing 30ms
+ ✓ src/physics/standingBody.test.ts > the new surfer standing (rider: new, step 3.1) > holds a start placed straight down a 35° face, where the old rider is thrown, within the legs' power 635ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > refuses a pop-up while ducking 186ms
+ ✓ src/physics/duckDive.test.ts > duck-dive > comes back lying normally after a relaunch mid-duck 103ms
+ ✓ src/physics/BoardRecovery.test.ts > BoardRecovery > rejects a distant board without pulling it toward the swimmer 16ms
+ ✓ src/physics/BoardRecovery.test.ts > BoardRecovery > starts a nearby grab through equal and opposite impulses without moving positions 4ms
+ ✓ src/physics/BoardRecovery.test.ts > BoardRecovery > breaks the grab if the board moves beyond reach 3ms
+ ✓ src/physics/BoardRecovery.test.ts > BoardRecovery > can draw a reachable swimmer into prone contact without a position jump (`swim: 'old'`) 5ms
+ ✓ src/physics/BoardRecovery.test.ts > the climb from the water > climbs a board within reach, deck-up and turned, at once, without moving or pushing anything 2ms
+ ✓ src/physics/BoardRecovery.test.ts > the climb from the water > turns an upside-down board deck-up in the hands before the climb 6ms
+ ✓ src/physics/BoardRecovery.test.ts > grabbing the board from any side > grabs a board pointing the other way, turns it and climbs on 417ms
+ ✓ src/physics/legDrive.test.ts > the leg drive leading a compressed turn (`legDrive: 'turn'`, opt-in) > leaves 'on' and the default alone: the compressed pull is still the body's own, and the legs lead nothing 769ms
+ ✓ src/physics/duckDive.test.ts > lying down in aerated water > sits deeper than in clear water 395ms
+ ✓ src/physics/legDrive.test.ts > the leg drive leading a compressed turn (`legDrive: 'turn'`, opt-in) > replaces the compressed pull with the legs' own push, never both 290ms
+ ✓ src/physics/standingBody.test.ts > the new surfer standing (rider: new, step 3.1) > leans with a 20° face going down it, so the board trims flatter and gains speed (bar N2) 790ms
+ ✓ src/physics/AttachedRider.test.ts > weight-shift steering > means the same direction in either stance 985ms
+ ✓ src/physics/deckHollow.test.ts > the hollow over a banked planing deck (deck-hollow, 2026-11-10) > is open (dry) behind the entry and sealed (wet) a seal time later, whatever the speed 1ms
+ ✓ src/physics/deckHollow.test.ts > the hollow over a banked planing deck (deck-hollow, 2026-11-10) > closes sooner over a shallower deck, and from the tail first as the board slows 0ms
+ ✓ src/physics/deckHollow.test.ts > the hollow over a banked planing deck (deck-hollow, 2026-11-10) > never stands off the plane, over a deck above the surface or at rest, and fades out in broken water 0ms
+ ✓ src/physics/deckHollow.test.ts > the hollow over a banked planing deck (deck-hollow, 2026-11-10) > places a rail's deck edge half a patch spacing past its outer patch 0ms
+ ✓ src/physics/deckHollow.test.ts > a Compress turn on flat water with the hollow (`deckHollow: "on"`) > keeps the legs out of the water the banked deck runs under: the water takes far less from the rider, and the turn keeps more speed 1468ms
+ ✓ src/physics/compressTurn.test.ts > the compressed turn (the movement-flow spec) > turns clearly sharper than the crouch alone 1566ms
+ ✓ src/physics/legDrive.test.ts > the leg drive leading a compressed turn (`legDrive: 'turn'`, opt-in) > pushes the body toward the lean it is asked for, within the leg's strength, and only while the body is behind that lean 420ms
+ ✓ src/physics/legPower.test.ts > the legs' power limit (legPower: cap) > by default, the contact on a 35° face straight down makes kilowatts and throws the board (the study's leak) 217ms
+ ✓ src/physics/legPower.test.ts > the legs' power limit (legPower: cap) > with the cap, the contact on steep faces up and down stays within a human's power and does not throw the board 355ms
+ ✓ src/physics/standingBody.test.ts > the new surfer's yaw inertia (rider: new, step 3.2b) > turns its own yaw inertia with the board through the feet (the lower share; the upper on the twist), slowing the board's answer to a couple; the old rider has none 797ms
+ ✓ src/physics/deckHollow.test.ts > a Compress turn on flat water with the hollow (`deckHollow: "on"`) > changes nothing in level trim: both rails ride at one height, so no station has an air path 820ms
+ ✓ src/physics/compressTurn.test.ts > the compressed turn (the movement-flow spec) > does not turn a board ridden straight, nor carry it 642ms
+ ✓ src/physics/BoardRecovery.test.ts > grabbing the board from any side > rights an upside-down board before climbing on 1464ms
+ ✓ src/physics/legDrive.test.ts > the leg drive leading a compressed turn (`legDrive: 'turn'`, opt-in) > pushes nothing riding straight, and nothing out of Compress 738ms
+ ✓ src/physics/legDrive.test.ts > the leg drive leading a compressed turn (`legDrive: 'turn'`, opt-in) > sums to nothing on rider plus board: the lead-in is a pair like the rail change's 105ms
+ ✓ src/physics/BoardRecovery.test.ts > grabbing the board from any side > twists the board with the hands: the swimmer takes the opposite turn 219ms
+ ✓ src/physics/predictiveBalance.test.ts > predictive balance (step 3.2d, model only) > discretises a first-order lag exactly 2ms
+ ✓ src/physics/predictiveBalance.test.ts > predictive balance (step 3.2d, model only) > keeps the gains' own modes in the nominal loop with the delay (the predictor exact on its own model) 94ms
+ ✓ src/physics/humanBalance.test.ts > stanceRoom (the design's table) > gives each stance its knee travel, hip range and arms 2ms
+ ✓ src/physics/humanBalance.test.ts > stanceRoom (the design's table) > leaves less room the lower the stance 1ms
+ ✓ src/physics/humanBalance.test.ts > DelayLine > reads a channel as it was `delay` ago, interpolated, and the first sample before it began 0ms
+ ✓ src/physics/humanBalance.test.ts > DelayLine > keeps no more than the span needs as it runs, growing only if it must 1ms
+ ✓ src/physics/humanBalance.test.ts > HumanBalance > senses the body's bank and its rate, and hands them on BALANCE_DELAY late 1ms
+ ✓ src/physics/humanBalance.test.ts > HumanBalance > reads the capture point against the feet, and a fall only when it is past the room and the weight past the edge 0ms
+ ✓ src/physics/humanBalance.test.ts > HumanBalance > bounds a rotor by what it can deliver inside a horizon (step 3.2i, not wired) 0ms
+ ✓ src/physics/humanBalance.test.ts > HumanBalance > holds the capture point while the feet are light, and reads it again on the way back into load (step 3.2h) 1ms
+ ✓ src/physics/humanBalance.test.ts > HumanBalance > lowers the knees and puts the arms out once the hip nears its range, in proportion, and comes back 6ms
+ ✓ src/physics/humanBalance.test.ts > HumanBalance > gives a rotor's angular impulse to its range 1ms
+ ✓ src/physics/humanBalance.test.ts > the roll model with the human delay (rollModel) > finds the free roll unstable with no balance: the turn's pull over-rights the body and the lean weaves 3ms
+ ✓ src/physics/humanBalance.test.ts > the roll model with the human delay (rollModel) > damps it with the body's own bank rate through the delay, and rings once the angle is fed back too 2ms
+ ✓ src/physics/humanBalance.test.ts > the roll model with the human delay (rollModel) > settles a kicked board with the delay exact, and gives the steady rest for a lean asked 8ms
+ ✓ src/physics/humanBalance.test.ts > the rider's yaw inertia (step 3.2b) > turns with the stance's depth from de Leva's segments, and the arms out add to it 0ms
+ ✓ src/physics/humanBalance.test.ts > the yaw model (rollModel humanYawLoop, step 3.2b) > moves the derivatives to the board's own centre of mass: the heel's yaw nearly cancels, the fins' weathercock and damping grow 0ms
+ ✓ src/physics/humanBalance.test.ts > the yaw model (rollModel humanYawLoop, step 3.2b) > grows the free roll near 1.1 Hz with 3.2's gains and no rider yaw inertia, and the inertia slows it without damping it 2ms
+ ✓ src/physics/humanBalance.test.ts > the twist model (rollModel humanTwistLoop, step 3.2c) > is 3.2b's rigid coupling when the twist is stiff: the board's share and the upper body's add up 3ms
+ ✓ src/physics/humanBalance.test.ts > the twist model (rollModel humanTwistLoop, step 3.2c) > turns the board and the upper body by opposite equal moments: the twist keeps the yaw momentum 0ms
+ ✓ src/physics/humanBalance.test.ts > the twist model (rollModel humanTwistLoop, step 3.2c) > agrees in time, with the delay exact, with the modes on the delay's Padé 62ms
+ ✓ src/physics/predictiveBalance.test.ts > predictive balance in the game (step 3.2e, the runtime controller) > runs the same loop as the analysis (`closedLoop`) at a table point: ten states (what ships) 85ms
+ ✓ src/physics/predictiveBalance.test.ts > predictive balance in the game (step 3.2e, the runtime controller) > holds the plant's own steady turn for the lean asked for, between the table's points: ten states (what ships) 54ms
+ ✓ src/physics/predictiveBalance.test.ts > predictive balance in the game (step 3.2e, the runtime controller) > runs the same loop as the analysis (`closedLoop`) at a table point: fourteen states, the board sensed 82ms
+ ✓ src/physics/predictiveBalance.test.ts > predictive balance in the game (step 3.2e, the runtime controller) > holds the plant's own steady turn for the lean asked for, between the table's points: fourteen states, the board sensed 97ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > matches Savitsky’s dynamic planing lift at the calibration point 3ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > wets the calm-water length of a trimmed plate 2ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > keeps uniform pressure within a quarter of Savitsky’s lift over the surfboard planing range 4ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > concentrates the pressure behind the spray root, following Savitsky over the whole planing range 18ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > spreads pressure evenly when the flow meets the hull head-on 1ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > drags the wetted bottom with the ITTC 1957 friction line 0ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > floats a patch by the water it displaces, and does nothing where there is no water 0ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > pushes a floating patch down the slope of the water surface, normal to it 0ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > floats a capsized patch on its deck and resists it being pushed down deck first 1ms
+ ✓ src/physics/hullForces.test.ts > hull patch forces > reports the derivative of its pressure along the normal 0ms
+ ✓ src/physics/hullForces.test.ts > a hull patch in aerated water > scales its buoyancy, pressure and friction by the share of the water that is water 0ms
+ ✓ src/physics/legPower.test.ts > the legs' power limit (legPower: cap) > with the cap, a straight glide on flat water is the same, step for step 1169ms
+ ✓ src/physics/boardShape.test.ts > monotone curve > passes through its points without overshooting them 2ms
+ ✓ src/physics/boardShape.test.ts > reference shortboard hull > holds exactly the reference volume within the reference dimensions 0ms
+ ✓ src/physics/boardShape.test.ts > reference shortboard hull > carries the board’s mass near mid-length on the centreline, with a long body’s inertia 0ms
+ ✓ src/physics/boardShape.test.ts > reference shortboard hull > points every bottom patch down, tilted forward where the nose rocker rises 1ms
+ ✓ src/physics/boardShape.test.ts > reference shortboard hull > exposes the curves it is built from, so a renderer can draw the same hull 1ms
+ ✓ src/physics/duckTwoBody.test.ts > the two-body duck-dive > pushes the nose down first: the board pitches nose-down, its nose deeper than its tail 863ms
+ ✓ src/wave/SprayCloud.test.ts > paddle splashes > throws drops in proportion to the work the stroke does on the water 5ms
+ ✓ src/wave/SprayCloud.test.ts > paddle splashes > throws them up and back, away from the push on the hand 2ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > throws a lip impact’s drops at the splash-up’s speeds (G9), with a fifth either way of variety 1ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > keeps Classic’s impact spray as it was before G9: from the jet’s whole water, 30–80 % up and 20–60 % on, none from splash-ups 9ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > throws a lip impact’s drops up as fast as its splash-up sheet goes, from the downward impact speed (G9) 2ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > throws the drawn splashes (the Canyon spilling lip) as lip impacts in the look's way, apart from the impacts 5ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > splashes drops up from a lip impact in proportion to its energy, which fall back into the water 12ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > carries drops downwind 4ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > feathers mist seaward off a steep crest in offshore wind, and not in calm air 9ms
+ ✓ src/wave/SprayCloud.test.ts > spray and mist > stays within its pool and replays a seed exactly 8ms
+ ✓ src/wave/SprayCloud.test.ts > the foam ball (G9) > keeps about A·w / v_s foam-ball sprites alive in a roller, each half a metre to 0.8 m across 4ms
+ ✓ src/wave/SprayCloud.test.ts > the foam ball (G9) > holds them in its cross-section, riding with the crest and tumbling at its speed over its radius 1ms
+ ✓ src/wave/SprayCloud.test.ts > the foam ball (G9) > lets them drift on for a second once the roller is gone 1ms
+ ✓ src/wave/SprayCloud.test.ts > the foam ball (G9) > gives a closing tube’s whitewater its own room, so the spray keeps its whole pool and the foam ball its own 0ms
+ ✓ src/wave/SprayCloud.test.ts > the foam ball (G9) > marks a spit’s and an eruption’s drops as the tube’s own: spray 3, mist 4 1ms
+ ✓ src/wave/SprayCloud.test.ts > the foam ball (G9) > packs each particle’s kind after its opacity: spray 0, mist 1, foam ball 2 0ms
+ ✓ src/wave/SprayCloud.test.ts > the spit and the eruption (G9) > blows a spit’s spray and mist out of the mouth at its speed, s_a particles per m³ of air 0ms
+ ✓ src/wave/SprayCloud.test.ts > the spit and the eruption (G9) > bursts an eruption’s spray and mist straight up 0ms
+ ✓ src/wave/SprayCloud.test.ts > the Particles setting > keeps the spray exactly as it was at High, the default, in both looks 732ms
+ ✓ src/physics/finForces.test.ts > fin forces > pushes back against sideslip either way 2ms
+ ✓ src/physics/finForces.test.ts > fin forces > lifts in proportion to the attack at first, peaks near the stall and loses lift beyond it 1ms
+ ✓ src/physics/finForces.test.ts > fin forces > grips only as much as it is in the water 1ms
+ ✓ src/physics/finForces.test.ts > fin forces > reports the derivative of its sideways force 0ms
+ ✓ src/wave/SprayCloud.test.ts > the Particles setting > spawns a share of each source’s particles at Medium and Low 1ms
+ ✓ src/wave/SprayCloud.test.ts > the Particles setting > fills a share of each pool at Medium and Low 0ms
+ ✓ src/wave/SprayCloud.test.ts > the Particles setting > draws the mist narrower at Medium and Low, the drops and foam balls as wide as ever 1ms
+ ✓ src/wave/SprayCloud.test.ts > the Particles setting > takes a new level at once: particles in the air live out their time, new ones follow the budget 27ms
+ ✓ src/wave/SprayCloud.test.ts > a swept barrel’s landing spray (Padang Padang, Part B, PR 5) > rises from the landing’s own height in both looks, not from the water under the drawn curl; every other landing as before 12ms
+ ✓ src/wave/SprayCloud.test.ts > a plunging lip’s veil (C2 step 5g, `?lipVeil=on`) > is off until it is asked for, and leaves every landing as it was 35ms
+ ✓ src/wave/SprayCloud.test.ts > a plunging lip’s veil (C2 step 5g, `?lipVeil=on`) > throws Erinin’s two regions, at the curl near 81° and over the turbulent zone near 56° 2ms
+ ✓ src/wave/SprayCloud.test.ts > a plunging lip’s veil (C2 step 5g, `?lipVeil=on`) > throws them at the measured mean of the impact speed, with a tail past twice it 55ms
+ ✓ src/physics/duckTwoBody.test.ts > the two-body duck-dive > sinks the reference board 0.5–1 m with a strong push (survey §5) 334ms
+ ✓ src/wave/SprayCloud.test.ts > a plunging lip’s veil (C2 step 5g, `?lipVeil=on`) > throws nothing over water the lip has not hit: every drop leaves at or behind the landing 4ms
+ ✓ src/wave/SprayCloud.test.ts > a plunging lip’s veil (C2 step 5g, `?lipVeil=on`) > lets the breaker’s air carry the light drops over the lip, where thrown drops cannot reach 29ms
+ ✓ src/wave/SprayCloud.test.ts > a plunging lip’s veil (C2 step 5g, `?lipVeil=on`) > does not blow before the air has had time to form, so the barrel’s mouth stays clear 9ms
+ ✓ src/wave/SprayCloud.test.ts > indexed sources and presentation packing > replays the full-grid traversal exactly in both looks and every budget, including full pools 144ms
+ ✓ src/physics/railSection.test.ts > the rail section, against the flat board it replaces > leaves the flat board exactly as it was 2ms
+ ✓ src/physics/railSection.test.ts > the rail section, against the flat board it replaces > keeps the planform, every station beam, the width and the volume 1ms
+ ✓ src/physics/railSection.test.ts > the rail section, against the flat board it replaces > gives the band its own normals, four facets a rail, spaced by equal turn angle 7ms
+ ✓ src/physics/railSection.test.ts > the rail section, against the flat board it replaces > carries a rail thick enough for the band that turns it over 1ms
+ ✓ src/physics/railSection.test.ts > the buried rail’s suction > acts along the normal, into the water, and only on a leeward facet 1ms
+ ✓ src/physics/railSection.test.ts > the buried rail’s suction > makes nothing without a band, without a gate, or out of the water 0ms
+ ✓ src/physics/railSection.test.ts > the buried rail’s suction > never exceeds Breslin & Skalak’s measured ceiling of 2.5 ρ g h 0ms
+ ✓ src/physics/railSection.test.ts > the buried rail’s suction > is driven by the cross-plane flow alone, so a board running straight down its rail makes none 0ms
+ ✓ src/physics/railSection.test.ts > the board with the section on it > reports the band’s own ledger and nothing on the flat board 4ms
+ ✓ src/physics/railSection.test.ts > the board with the section on it > builds the section without the suction when asked, and the two differ only there 2ms
+ ✓ src/physics/railSection.test.ts > COMPRESS_PULL deleted (`compressPull: 'off'`, opt-in) > removes the compressed turn’s unpaired pull, and leaves the carry and the lean-out alone 1132ms
+ ✓ src/wave/SprayCloud.test.ts > indexed sources and presentation packing > packs on the next read and keeps the same result when intermediate snapshots are skipped 90ms
+ ✓ src/wave/SprayCloud.test.ts > indexed sources and presentation packing > packs widths from the last update when the budget changes before a snapshot reads them 108ms
+ ✓ src/wave/SprayCloud.test.ts > the roller front's toe spray (the Canyon roller front) > throws a sparse fringe forward off the toe line at 1.5 c and 30–45° up, in Rich only, once its curl has landed 2ms
+ ✓ src/wave/SprayCloud.test.ts > the roller front's toe spray (the Canyon roller front) > throws them on its own random stream: every other drop is as it was 0ms
+ ✓ src/wave/SprayCloud.test.ts > a board's spray (board-spray) > throws BOARD_SPRAY_PER_KG drawn particles per kilogram of the sheet's water, out along its velocity 1ms
+ ✓ src/wave/SprayCloud.test.ts > a board's spray (board-spray) > keeps the boards' spray in a pool of its own, scaled by the Particles setting, without crowding the sea's 20ms
+ ✓ src/wave/SprayCloud.test.ts > a board's spray (board-spray) > throws the drops from where the curtain tears when it is drawn (spray-sheet), from the root when it is not 1ms
+ ✓ src/wave/SprayCloud.test.ts > a board's spray (board-spray) > throws them on its own random stream: the sea's drops are as they were 97ms
+ ✓ src/physics/duckTwoBody.test.ts > the two-body duck-dive > keeps hold of the board through a 3 s dive from paddling speed, and lies on it again after 434ms
+ ✓ src/physics/duckTwoBody.test.ts > the two-body duck-dive > lies on the board again a few seconds after a dive from rest 181ms
+ ✓ src/physics/duckTwoBody.test.ts > the two-body duck-dive > cannot sink a 50 L board half as deep as the reference (survey §5: practically un-diveable) 279ms
+ ✓ src/physics/duckTwoBody.test.ts > the two-body duck-dive > keeps the rigid rider's dive with `duckBody: 'old'` 49ms
+ ✓ src/physics/AttachedRider.test.ts > standing on the leg > stands balanced down a face for 20 s with no input, the load between its feet 4071ms
+ ✓ src/physics/AttachedRider.test.ts > standing on the leg > holds its weight on the leg riding a towed board, and settles within a second when the water drops away 328ms
+ ✓ src/physics/AttachedRider.test.ts > standing on the leg > only pushes: dropped 0.3 m at speed it flies unloaded, lands through its leg and rides on, the ledger closed 161ms
+ ✓ src/physics/AttachedRider.test.ts > standing on the leg > starts a relaunch in its neutral stance, whatever it was doing before 396ms
+ ✓ src/physics/AttachedRider.test.ts > steering while lying down > holds its line within 10° over 20 s of paddling through oblique swell 476ms
+ ✓ src/physics/AttachedRider.test.ts > steering while lying down > turns toward the requested side by pulling harder with the other arm 310ms
+ ✓ src/physics/AttachedRider.test.ts > steering while lying down > turns without paddling by sweeping one arm 307ms
+ ✓ src/physics/AttachedRider.test.ts > steering while lying down > turns faster at full steer than at half without paddling, half no faster than the old stroke 312ms
+ ✓ src/physics/AttachedRider.test.ts > steering while lying down > draws the full-steer sweep as a smooth stroke 142ms
+ ✓ src/physics/AttachedRider.test.ts > steering while lying down > keeps the glide from paddling while sweeping hard 345ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > holds its line across the face with no input, leaning into the face 1303ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > holds the new line after a turn 816ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > takes up a line within half a second of letting go of a hard turn 154ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > slows with its weight back and runs with it forward, the nose rising and falling 987ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > tucks deeper than Compress under a tube's curl and stands back up 1075ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > keeps Compress shallower than the manual tuck under a tube's curl, deepens the pumping crouch, and releases back to it 1187ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > leaves the weight where W/S put it: over the front foot with W, the back foot with S 963ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > the reaching hand > reaches the inside hand into the face, the rear arm frontside and the leading arm backside 405ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > the reaching hand > touches the water rather than plunging into it 147ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > the reaching hand > reaches with no hand unless compressing 136ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > the reaching hand > keeps the hand in the face (E) on the wave side, even leaning away from it 131ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > the reaching hand > adds no lean of its own 729ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > Compress > lies down straight from Compress 313ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > turns hard with a full lean and a crouch, keeping most of its speed 270ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds a three-quarter carve on its rail 249ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds a gentle carve at 5 m/s, the swing within its range 605ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns the same way over the ground in either stance 404ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > starts upright when mounted again mid-carve, and rides on 428ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > stays near upright riding straight, towed or down the face 1364ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > stays upright standing still or gliding slowly on flat water, until the board sinks away 540ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > leans no further than a turn at its speed can hold 242ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > stays on a slow board down the face, nudged sideways 461ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > carries the body upright below planing, and banks on a planing board 377ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > carries a leaning body back upright when the board drops off the plane 328ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > does not dig the rail past its bite at full steer 234ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > judges the rail's bite against the water, not the world's level 2ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds a crouched full-steer turn on flat water at 8 m/s 204ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds a crouched full-steer turn on flat water at 11 m/s 207ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds Compress taken mid-turn on flat water at 7 m/s 466ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds Compress taken mid-turn on flat water at 8 m/s 529ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds Compress taken mid-turn on flat water at 10 m/s 531ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds Compress taken mid-turn on flat water at 11 m/s 496ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds Compress taken mid-turn at 11 m/s no worse than before the top-turn plan 246ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > makes a deep U at the bottom of the face 409ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns at least as hard compressed as crouched, keeping as much speed 689ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > stays on through a compressed bottom turn, frontside 359ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > stays on through a compressed bottom turn, backside 320ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > stays on through a compressed bottom turn, from standing 366ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > stays on through a compressed bottom turn, from the full pumping posture 337ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > keeps standing and turns through ninety degrees after a deep manual tuck under a tube's curl 355ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns back down the face from a climb, backside at 6 m/s 255ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns back down the face from a climb, backside at 8 m/s 250ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns back down the face from a climb, frontside at 6 m/s 232ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns back down the face from a climb, frontside at 8 m/s 226ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns back down the face from a climb, backside, goofy at 8 m/s 232ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns back down the face from a climb, frontside, goofy at 8 m/s 224ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns the steered way on a partial steer held 30° across at 8 m/s (-0.2) 689ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns the steered way on a partial steer held 30° across at 8 m/s (0.3) 737ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns the steered way on a partial steer held 45° across at 7 m/s (0.3) 715ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > turns the steered way on a partial steer held 60° across at 9 m/s (-0.1) 752ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds its line on a steer of 0.01, inside the heading hold 1186ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > holds its line on a steer of 0.03, inside the heading hold 1210ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > never pulls the board in a top turn that stalls, from 4.5 m/s 262ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > never pulls the board in a top turn that stalls, from 5 m/s 246ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > never pulls the board in a top turn that stalls, from 5.5 m/s 263ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > changes rail from a carve at 6 m/s 303ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > changes rail from a carve at 8 m/s 304ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > changes rail from a carve at 10 m/s 306ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > snaps back down the face from a climb with the weight back 187ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > carries a bottom turn up the face into a top turn back down it 275ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > cuts back from across the face, turning 150° and staying on 244ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > carves the same turn on the moving face as on the still face, at the same speed through the water 513ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > snaps back down the moving face from a climb with the weight back 173ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > carries a bottom turn up the moving face into a top turn back down it 233ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > cuts back across the moving face, turning 150° and staying on 225ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > lands upright, banking only once standing 69ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > has no bank lying down 62ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > the banked body (turn redesign) > does not grow the roll–yaw wobble riding straight 1069ms
+ ✓ src/physics/AttachedRider.test.ts > lean, trim, crouch and heading hold > leans and holds its line the same way in either stance 1104ms
+ ✓ src/physics/AttachedRider.test.ts > the balance margin > is near 1 standing centred on a towed board, and 1 lying down 306ms
+ ✓ src/physics/AttachedRider.test.ts > the balance margin > falls below 0.3 while the centre of pressure is pushed near the edge across the feet, and recovers 410ms
+ ✓ src/physics/AttachedRider.test.ts > the balance margin > serves the margin to the balance meter while standing 241ms
+ ✓ src/physics/AttachedRider.test.ts > the balance margin > spreads the drawn arms as the margin shrinks 29ms
+ ✓ src/physics/AttachedRider.test.ts > the swing drawn > turns the drawn head and arms with the swing 250ms
+ ✓ src/physics/AttachedRider.test.ts > the swing drawn > draws the parts where they are with no swing, and lying down 31ms
+ ✓ src/physics/AttachedRider.test.ts > a hand in the face > drags a hand in the face beside it to slow down, turning toward it 522ms
+ ✓ src/physics/AttachedRider.test.ts > a hand in the face > retains a braking and steering hand in the deeper tube tuck 461ms
+ ✓ src/physics/AttachedRider.test.ts > a hand in the face > never pulls harder than an arm can 234ms
+ ✓ src/physics/AttachedRider.test.ts > a hand in the face > touches nothing with no water beside it to reach 224ms
+ ✓ src/physics/AttachedRider.test.ts > lip strikes > is covered, not touched, by a lip falling 1 m over it lying down, and struck by it standing 151ms
+ ✓ src/physics/AttachedRider.test.ts > lip strikes > knocks a standing rider off, taking the equal and opposite impulse from the parcel 231ms
+ ✓ src/physics/AttachedRider.test.ts > lip strikes > rides out a light splash 346ms
+ ✓ src/physics/AttachedRider.test.ts > lip strikes > leaves a rider alone when the parcel passes clear overhead 369ms
+ ✓ src/physics/AttachedRider.test.ts > prone balance > rights a board tipped 15° under a prone rider 65ms
+ ✓ src/physics/AttachedRider.test.ts > prone balance > never pushes a hand harder than an arm can, however fast the board runs, and feathers a hand the board outruns 114ms
+ ✓ src/physics/AttachedRider.test.ts > prone balance > records each pulling hand’s stroke for the spray: beside a rail, pushed forward by the water 40ms
+ ✓ src/physics/AttachedRider.test.ts > prone balance > records no strokes while lying still 21ms
+ ✓ src/physics/AttachedRider.test.ts > prone balance > stays on the board lying still through a minute of oblique swell 1055ms
+ ✓ src/physics/AttachedRider.test.ts > the stroke (the phase 5 physics plan, item 2.8) > strokes 50 times a minute a side cruising on flat water, rolling the board toward each arm as it pulls 484ms
+ ✓ src/physics/AttachedRider.test.ts > the stroke (the phase 5 physics plan, item 2.8) > quickens its strokes down a face 107ms
+ ✓ src/physics/AttachedRider.test.ts > the paddle's balance (the paddle-balance fix) > paddles through a choppy sea, straight and steering, and stays on 6854ms
+ ✓ src/physics/AttachedRider.test.ts > the paddle's balance (the paddle-balance fix) > stays on as a wave's face lifts the board, paddling 30° across it 496ms
+ ✓ src/physics/AttachedRider.test.ts > the paddle's balance (the paddle-balance fix) > pops up at any point of the stroke on a 15° slope, the board within 20° as the body rises, and stands 2308ms
+ ✓ src/physics/AttachedRider.test.ts > the sprint paddle > settles about a third faster than cruising on flat water, and comes up to it sooner 594ms
+ ✓ src/physics/AttachedRider.test.ts > the sprint paddle > sprints down a 12° face faster than it did with its hand broadside to water outrunning it 376ms
+ ✓ src/physics/AttachedRider.test.ts > the sprint paddle > strokes 70 times a minute a side, the hand deeper, as the drawn arms show 295ms
+ ✓ src/physics/AttachedRider.test.ts > the sprint paddle > runs out after about 8 s held, cruises until a quarter is back, then sprints again; a new placement is full 233ms
+ ✓ src/physics/AttachedRider.test.ts > catching > never cues or stands from paddling on flat water 657ms
+ ✓ src/physics/AttachedRider.test.ts > catching > paddles faster down a passing swell’s face than on flat water 702ms
+ ✓ src/physics/AttachedRider.test.ts > the curl overhead (the swept barrel, Part B, PR 4) > pushes the head down when the curl’s underside reaches it, and not when it clears it 92ms
+ ✓ src/physics/AttachedRider.test.ts > the curl overhead (the swept barrel, Part B, PR 4) > gives the lip’s water drag and no buoyancy: a falling jet, near the air’s pressure (the advisor, 2026-09-30) 251ms
+ ✓ src/physics/AttachedRider.test.ts > the curl overhead (the swept barrel, Part B, PR 4) > keeps “feet under water” for real water: a foot in the curl’s water, air beneath, is not sunk 620ms
+
+ Test Files  24 passed (24)
+      Tests  468 passed | 13 expected fail (481)
+   Start at  01:15:12
+   Duration  77.40s (tests 94%, transform 4%, import 2%)
+

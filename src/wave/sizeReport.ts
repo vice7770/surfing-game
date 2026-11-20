@@ -28,6 +28,8 @@ export interface SizeRun {
   period: number;
   /** Where the run's height was given: in deep water (shoaled to the edge) or at the tank's edge. */
   heightAt: 'deep' | 'edge';
+  /** The Surf screen's swell size this run measures (`--swells`), shown as measured rather than fitted. */
+  size?: 'small' | 'medium' | 'big';
   typical: number;
   sets: number;
   waves: number;
@@ -84,7 +86,8 @@ export interface SizeGate {
   detail: string;
 }
 
-const label = (run: SizeRun) => (run.source === 'practice' ? `${run.spot} practice` : `${run.spot} Hs ${run.significantHeight} m Tp ${run.period} s`);
+const label = (run: SizeRun) => (run.source === 'practice' ? `${run.spot} practice`
+  : `${run.spot}${run.size ? ` ${run.size}` : ''} Hs ${run.significantHeight} m Tp ${run.period} s`);
 const same = (a: SizeRun, b: SizeRun) => a.spot === b.spot && a.source === b.source && a.significantHeight === b.significantHeight
   && a.period === b.period && a.heightAt === b.heightAt;
 

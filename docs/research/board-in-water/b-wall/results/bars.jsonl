@@ -1,0 +1,20 @@
+{"name":"rises 5 cm at 1 m/s","rule":"path","baseForce":1.08,"spike":1.36,"peakWallPush":2.37,"peakLoad":2.51,"fell":"","fellAfter":null}
+{"name":"rises 5 cm at 2 m/s","rule":"path","baseForce":1.08,"spike":2.31,"peakWallPush":5.12,"peakLoad":3.85,"fell":"","fellAfter":null}
+{"name":"rises 5 cm at 4 m/s","rule":"path","baseForce":1.08,"spike":2.59,"peakWallPush":6.9,"peakLoad":4,"fell":"balance","fellAfter":0.18}
+{"name":"rises 20 cm at 1 m/s","rule":"path","baseForce":1.08,"spike":1.36,"peakWallPush":2.37,"peakLoad":2.51,"fell":"","fellAfter":null}
+{"name":"rises 20 cm at 2 m/s","rule":"path","baseForce":1.08,"spike":2.76,"peakWallPush":5.12,"peakLoad":3.98,"fell":"lost board","fellAfter":0.23}
+{"name":"rises 20 cm at 4 m/s","rule":"path","baseForce":1.08,"spike":2.92,"peakWallPush":6.4,"peakLoad":4,"fell":"balance","fellAfter":0.2}
+{"name":"still flow step 0 → 1 m/s over 10 cm","rule":"path","baseForce":1.12,"spike":0.56,"peakWallPush":0.77,"peakLoad":1.71,"fell":"","fellAfter":null}
+{"name":"still flow step 0 → 2 m/s over 10 cm","rule":"path","baseForce":1.12,"spike":1.39,"peakWallPush":1.34,"peakLoad":2.69,"fell":"","fellAfter":null}
+{"name":"accelerating 3 m/s²","rule":"path","baseForce":1.08,"spike":0.25,"peakWallPush":0.52,"peakLoad":1.35,"fell":"","fellAfter":null,"meanWallPushN":368,"handN":371,"ratio":0.992}
+{"name":"accelerating 3 m/s² + still step 1 m/s","rule":"path","baseForce":1.12,"spike":0.66,"peakWallPush":1.04,"peakLoad":1.82,"fell":"","fellAfter":null,"meanWallPushN":82,"handN":74,"ratio":1.106}
+{"name":"rises 5 cm at 1 m/s","rule":"follow","baseForce":1.08,"spike":1.36,"peakWallPush":2.37,"peakLoad":2.51,"fell":"","fellAfter":null}
+{"name":"rises 5 cm at 2 m/s","rule":"follow","baseForce":1.08,"spike":2.31,"peakWallPush":5.12,"peakLoad":3.85,"fell":"","fellAfter":null}
+{"name":"rises 5 cm at 4 m/s","rule":"follow","baseForce":1.08,"spike":2.59,"peakWallPush":6.9,"peakLoad":4,"fell":"balance","fellAfter":0.18}
+{"name":"rises 20 cm at 1 m/s","rule":"follow","baseForce":1.08,"spike":1.36,"peakWallPush":2.37,"peakLoad":2.51,"fell":"","fellAfter":null}
+{"name":"rises 20 cm at 2 m/s","rule":"follow","baseForce":1.08,"spike":2.76,"peakWallPush":5.12,"peakLoad":3.98,"fell":"lost board","fellAfter":0.23}
+{"name":"rises 20 cm at 4 m/s","rule":"follow","baseForce":1.08,"spike":2.92,"peakWallPush":6.4,"peakLoad":4,"fell":"balance","fellAfter":0.2}
+{"name":"still flow step 0 → 1 m/s over 10 cm","rule":"follow","baseForce":1.12,"spike":0.32,"peakWallPush":0,"peakLoad":1.47,"fell":"","fellAfter":null}
+{"name":"still flow step 0 → 2 m/s over 10 cm","rule":"follow","baseForce":1.12,"spike":0.88,"peakWallPush":0,"peakLoad":2.03,"fell":"","fellAfter":null}
+{"name":"accelerating 3 m/s²","rule":"follow","baseForce":1.08,"spike":0.25,"peakWallPush":0.52,"peakLoad":1.35,"fell":"","fellAfter":null,"meanWallPushN":368,"handN":371,"ratio":0.992}
+{"name":"accelerating 3 m/s² + still step 1 m/s","rule":"follow","baseForce":1.1,"spike":0.47,"peakWallPush":0.3,"peakLoad":1.62,"fell":"","fellAfter":null,"meanWallPushN":99,"handN":101,"ratio":0.986}

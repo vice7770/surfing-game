@@ -71,6 +71,328 @@ The owner asked for them (2026-09-30) to source the Reef's lip and tube, which a
 `tools/basilisk/run_periodic.sh` runs a train of cnoidal waves, so the wave studied, the second crest, breaks into the trough its predecessor leaves. The owner approved these runs on 2026-09-30. A level-9 test on the Reef's 1:4.2 ledge shows the step: the first wave's backwash drains the ledge to about 1.8 m below still level, and the second crest breaks at the ledge top.
 - **`periodic.c`:** `slope.c` with the solitary wave replaced by the train in `train.dat`, written by `analysis/cnoidal_train.py` (first-order cnoidal theory). It dumps `final` at the end, so a finer build can continue from it, and can keep its finest two levels inside a window (`XWIN0`, `XWIN1`).
 - **Two phases per case:** level 10 until the second crest nears the break, then level 12 inside a window around it.
-- **Cases:** `reef42` and `reef60` (the Reef's ledge at 1:4.2 and 1:6); `padang19`, `padang19b` and `padang19c` (Padang's 16 s, 18 s and 14 s swells, which give the swept barrel its onset lag for swell); `padang19s` (the Small swell, for the barrel library); `point21_a08`, `point21_a15`, `point21_a23` and `point21_a30` (the Point's transect at four sizes, for PR 7); `reef42_a35` (a 3.5 m crest on the Reef's ledge, the second point of its throw line). PR 7's records say which of them the library uses, and why.
-- **Commands:** `run`, `status` and `analyse`, optionally with case names. Set `PYTHON` to a Python with numpy, scipy and matplotlib.
+- **Cases:** `reef42` and `reef60` (the Reef's ledge at 1:4.2 and 1:6); `padang19`, `padang19b` and `padang19c` (Padang's 16 s, 18 s and 14 s swells, which give the swept barrel its onset lag for swell); `padang19s` (the Small swell, for the barrel library); `point21_a08`, `point21_a15`, `point21_a23` and `point21_a30` (the Point's transect at four sizes, for PR 7); `reef42_a35` (a 3.5 m crest on the Reef's ledge, the second point of its throw line); `canyon23_a29`, `canyon23_a38` and `canyon23_a49` (the Canyon's reef bed, below). PR 7's records say which of them the library uses, and why.
+- **Two-slope beds:** a case may end with `:HMID:S2`, the depth where the first slope ends (in h0) and the second slope from there to the flat, as `slope.c` takes them. Without them the bed is one slope to the flat, and the old cases build exactly as before (their qcc command lines were checked byte for byte, 2026-10-21).
+- **A reef top (2026-11-04):** after those, `:TOP:SBACK` ends the flat `TOP` h0 past the last slope, then drops at `SBACK` (default 1/20) back to the deep bed's depth (h0) and runs flat to the wall: a reef crest with a lagoon behind it, instead of a flat to the closed wall that over-drains the wave studied. It is `periodic.c`'s `REEFTOP` and `SBACK`. Leave the two-slope fields empty for a one-slope bed (`name:…:w1:::2.7:0.05`). Off by default: every older case's qcc line is unchanged (checked byte for byte), and a level-8 run of `pool_straight_small` with and without the change wrote identical facets, bed and dump. `analysis/crest_track.py` reads the reef top from `params.txt` for the still depth.
+- **Commands:** `run`, `status` and `analyse`, optionally with case names. Set `PYTHON` to a Python with numpy, scipy and matplotlib. For a supervisor: `fg` (both phases in the foreground), `scout` (the whole case at `SCOUT_LEVEL`, 10, every frame written, which `analysis/crest_track.py` reads to place the switch, end and window), `compile`, `cases` and `flags` (the qcc command lines). `CASES_FILE` replaces or adds case definitions by name; `RUNS` moves the runs' folder; `OMP=1` builds with OpenMP.
 - **Overview figure:** `analysis/train_overview.py` draws a run's surface along the whole domain at chosen times.
+
+## Where a report lands: `CANYON_OUT` is relative to the checkout the script lives in
+
+`canyon_pipeline.py` resolves `CANYON_OUT` (and `CANYON_ASSETS`) against `REPO`, and `REPO` is two directories above the
+script — **the checkout the pipeline was started from, not the main one.** So a relative `CANYON_OUT` run from a git
+worktree or a scratchpad copy writes the report inside *that* copy, where `git status` in the main checkout never sees
+it and a worktree cleanup deletes it. C2 step 5f's five A0 cases were nearly lost that way on 2026-11-14: seven to ten
+hours of runs sat in a session scratchpad that was being emptied for disk space, and were rescued by hand.
+
+**Run the pipeline from the main checkout**, or if you must run it from a worktree, give `CANYON_OUT` as an **absolute**
+path into the main checkout:
+
+```
+CANYON_OUT=/Users/you/path/to/surfing-game/docs/research/<report-folder> …
+```
+
+Either way, `git status` in the main checkout is the check: if the report folder is not there as untracked files when
+the batch ends, it was written somewhere else. Commit it before any worktree is removed.
+
+## The Canyon's tube runs
+
+The swept barrel for the Canyon needs its own Navier–Stokes cases on the reef bed of 2026-10-22 (`docs/research/canyon-reef-bed-2026-10-22/README.md`, "What the swept-barrel step will need"), on canyon-long-wave's planar arm (`docs/research/canyon-long-wave-2026-10-22/README.md`, "The tube runs": the take-off 8 m downcoast of the peak, now x −9, on one 1:23 face). `tools/basilisk/run_canyon.sh` runs all three on the M4 Pro and turns them into the barrel library's files, in one command.
+
+The cases are two-crest cnoidal trains, the second crest studied, along the wave's path from the arm's 6 m foot (h0): one planar face at 1:23 to the 1.0 m crest (0.167 h0), then flat to the closed right wall. Since canyon-long-wave (`docs/research/canyon-long-wave-2026-10-22/README.md`, "The tube runs") the arm's face is planar and runs into the beach: every column along it has this transect, so there is no separate down-the-line case (`canyon23f54_a38`, on the fan's 1:54 at x 18, is gone; on the fan the face rounded at the 2.2 m hinge, 0.367 h0, into 1:31 at the take-off).
+
+| Case | Transect | H/h0 | T | What it sources |
+|---|---|---|---|---|
+| `canyon23_a29` | x −9, the take-off (planar 1:23) | 0.29 | 11 s | Medium's sets: a real tube, or only a curl? |
+| `canyon23_a38` | x −9 (planar 1:23) | 0.38 | 14 s | Big's typical wave |
+| `canyon23_a49` | x −9 (planar 1:23) | 0.49 | 14 s | Big's sets |
+
+**What it does,** per case, three at once (one core each):
+1. **Scout:** the whole case at level 10, every 0.1 written (minutes). `analysis/crest_track.py` follows the second crest and finds where its face goes vertical. That places phase 2 (in √(h0/g) and h0): the switch 5 before vertical, the end 3 after touchdown (at least 5 after vertical; 6.5 if the scout saw none), and the window from 3 h0 behind the crest as it stands 3 before vertical to at least 8 h0 ahead of where it goes vertical. They are frozen in `tools/basilisk/runs/canyon/cases.txt`, so a resumed run keeps them.
+2. **Phase 1** at level 10 to the switch, then **phase 2** at level 13 inside the window (4.1–5.0 cm cells at the 56–68 h0 domains, so a lip of about 0.2 m spans about 4–5 cells; basilisk-profiles.md's rule asks for about 6). Each build is compiled once. If phase 2 ends too soon after its own break (finer grids can break a little later than the scout), it is carried on by 4, once, from its final state.
+3. **Analysis:** the foot crest A0 from the scout; then `plunge_measure.py` (face vertical, touchdown, the tube and jet just before it) and `periodic_library.py` (the 128-point profiles), with the crest searches placed from the level-13 track; figures if matplotlib is there.
+4. **The library's files:** `npm run barrels` writes each case that threw a tube to `public/barrels/periodic-canyon23-*-l13.bin`, the swept barrel's case format. The game's index (`src/wave/barrel/barrelLibraryIndex.ts`) is left alone: the cases' entries and validation table go to `docs/research/canyon-tube-runs/barrel-index.json` and `barrel-cases.md`.
+5. **The report:** `docs/research/canyon-tube-runs/report.md` (and `summary.json`): per case, where the face went vertical and in what depth, H, the tube's open time, jet and tube per H² against Pick & Feddersen's fits, L/W, tilt, cells across the lip, clean frames and wall times. The analysis files are copied to its `data/`, so the cases can be rebuilt on any machine.
+
+**On the M4 Pro**, from the repo. If you ran any Canyon case before 2026-10-22's long-wave face (the cases kept their names but their bed is now one 1:23 slope), delete `tools/basilisk/runs/canyon` first: its frozen `cases.txt` and finished phases would otherwise be reused.
+
+```
+git fetch origin
+git checkout claude/canyon-tube-runs
+git pull
+tools/basilisk/run_canyon.sh check     # what's missing, and how to install it
+tools/basilisk/run_canyon.sh setup     # only if check asked: Basilisk into ~/basilisk-C, numpy/scipy/matplotlib into tools/basilisk/.venv
+tools/basilisk/run_canyon.sh smoke     # optional, about a minute: levels 7 and 8, proves the compile, run and analysis plumbing
+tools/basilisk/run_canyon.sh           # the runs
+```
+
+`check` looks for Xcode's command line tools (`xcode-select --install`), Basilisk's `qcc`, Python 3.9+ with numpy and scipy (matplotlib for the figures), npm with the repo's `node_modules` (`npm ci`; only the last step needs it) and at least 5 GB free (the set writes about 1–2 GB, in `tools/basilisk/runs/`, git-ignored). `setup` downloads: a git clone of Basilisk's GitHub mirror (2.8 GB, built in about a minute) and the Python packages.
+
+`tools/basilisk/run_canyon.sh` starts the runs in the background, kept awake with `caffeinate` (plugged in, the Mac won't sleep), and follows the log; Ctrl-C stops following, not the runs. The log is in `tools/basilisk/runs/canyon/logs/latest/`, one file per case beside the supervisor's.
+
+- **Progress:** `tools/basilisk/run_canyon.sh status` (each case's phase, t, cells and ETA, and the set's), or `tools/basilisk/run_canyon.sh log` to follow again. The ETAs extrapolate the last 20 minutes; the set's is rough until every case is in phase 2.
+- **How long** (an estimate, not measured on the M4): the scouts and phase 1 about 10–20 minutes; phase 2 at level 13 roughly 2–4 h per case on one performance core, all three at once; the analysis 10–20 minutes. So about 3–5 hours for the set. It rests on the level-12 periodic runs (phase 2 took 20–38 minutes on a quiet M1, 1.8–2.1 h under load) at about 5× per level and the M4's faster core. Up to about a day if it costs like whole-domain level-13 runs.
+- **Stopping and resuming:** `tools/basilisk/run_canyon.sh stop`, then `tools/basilisk/run_canyon.sh` again; after a restart or a crash, just run it again. Each run resumes from its last 10-minute checkpoint, and finished scouts, phases and analyses are skipped.
+- **Options:** `-j N` (cases at once; default all three, at most one per performance core and per 4 GB). `LEVEL2=14` runs phase 2 one level finer, reusing phase 1 (about 5× the cost), if the report shows fewer than about 4 cells across the lip; give `status` the same `LEVEL2`. `OMP=1` gives each case its share of the performance cores with OpenMP (needs `brew install libomp`; untested so far: libomp wasn't on the M1).
+- **If a case fails,** the supervisor says so and carries on with the others; its log (`tools/basilisk/runs/canyon/logs/latest/<case>.log`) and the run's `err.log` say why. Rerun to retry it. To scout a case again, delete its line in `tools/basilisk/runs/canyon/cases.txt` and its `periodic_<case>_*` folders.
+- **Again from the finished runs:** `tools/basilisk/run_canyon.sh analyse` redoes the analysis, the case files and the report (after installing matplotlib or `npm ci`, say).
+
+**Afterwards, commit and push** the case files and the report folder, so the Canyon's swept barrel can be wired next:
+
+```
+git add public/barrels/periodic-canyon23-*.bin docs/research/canyon-tube-runs
+git commit -m "data(canyon): the Canyon's tube runs at level 13"
+git push
+```
+
+A case that threw no tube has no `.bin` (its row in the report says so, as `point21_a08` did at the Point); its analysis files are in `data/` all the same.
+
+## The Wave Pool's Barrel tube runs
+
+Step 2 of the Wave Pool's Barrel mode: the Barrel's straight reef (pool-barrel-straight, 2026-11-01;
+`docs/research/pool-barrel-straight-2026-11-01/README.md`), its transect along the reef's ray over the barrel section, as
+Navier–Stokes cases, so step 3 can draw the tube from them. The reef is uniform along its barrel section, so there is one
+case per size (step 1's A-frame cases, `pool_barrel_*`, were never run and are replaced):
+
+| Case | Transect | H/h0 | T | What it sources |
+|---|---|---|---|---|
+| `pool_straight_small` | the reef's ray over s 65–175: the 4.5 m platform up one face (1:18.7 along the ray) to the 0.9 m crest | 0.352 | 10 s | Barrel 1.5 m faces |
+| `pool_straight_big` | the same, the face 1:21.6 along the bigger wave's ray | 0.437 | 10 s | Barrel 1.8 m faces |
+
+The numbers are the solver's own measurements on the floor: H/h0 is the machine wave's height on the platform 10 m seaward
+of the face's knee over the barrel section, over its 4.5 m; S1 is 1/X, Mead & Black's gradient along the crests' travel at
+their lip jets there.
+
+`tools/basilisk/run_pool.sh` (or `npm run barrels:pool`) is `run_canyon.sh` for these cases (`TUBE_SET=pool`): the same
+scout, two phases, analysis, case files and report, with the runs in `tools/basilisk/runs/pool/` and the report in
+`docs/research/pool-tube-runs/`. On the M4 Pro, from the repo:
+
+```
+git fetch origin
+git checkout claude/pool-barrel-straight      # or main, once it is merged
+git pull
+npm run barrels:pool -- check        # what's missing, and how to install it
+npm run barrels:pool -- setup        # only if check asked: Basilisk into ~/basilisk-C, numpy/scipy/matplotlib into tools/basilisk/.venv
+npm run barrels:pool -- smoke        # optional, about a minute: levels 7 and 8, proves the plumbing
+npm run barrels:pool                 # the runs, in the background, kept awake; Ctrl-C stops following, not the runs
+npm run barrels:pool -- status       # each case's phase and ETA
+```
+
+- **How long** (an estimate, not measured on the M4): the scouts and phase 1 about 10–20 minutes; phase 2 at level 13
+  roughly 2–4 h per case on one performance core, both at once; the analysis 10–20 minutes. So about 2.5–4.5 hours for
+  the pair. Each domain is 64 h0 = 288 m, so level 13 gives 3.5 cm cells: a 0.15–0.25 m lip spans about 4–7 cells. If the
+  report shows fewer than about 4 across the lip, `LEVEL2=14 npm run barrels:pool` reruns phase 2 one level finer (about
+  5× the cost; phase 1 is reused).
+- **Stop and resume:** `npm run barrels:pool -- stop`, then `npm run barrels:pool` again; after a restart or crash just
+  run it again (10-minute checkpoints). One case only: `POOL_CASES=pool_straight_small npm run barrels:pool`.
+  `stop` stops every pool case (`pool_*`).
+- **Afterwards,** commit and push the case files and the report:
+
+```
+git add public/barrels/periodic-pool-straight-*.bin docs/research/pool-tube-runs
+git commit -m "data(pool): the Wave Pool's Barrel tube runs at level 13"
+git push
+```
+
+The `.bin` files are listed in no game index: step 3 (the drawing) wires them, with a `pool` entry in `BARREL_SPOTS`.
+
+## The Wave Pool's bigger-tube batch (2026-11-04)
+
+The advisor's step-7 ruling on the pool's surfable tube (`docs/research/pool-tube-wall-2026-11-04/advisor-ruling.md`, §2.2
+items 2–3) asks one question of the M4: does a Reef-type ledge, one face at 1:4.5 along the reef's ray from the 4.5 m
+platform to the 0.9 m crest, give the Barrel a clearly bigger usable tube than today's knee face? The floor changes only
+if it does. The owner chose the six cases (2026-11-04); the advisor's sizes ruling added the two face-matched knee cases. The plan, the beds and the decision rule are in
+`docs/research/pool-tube-runs-2/README.md`.
+
+| Case | Face along the ray | H/h0 | What it tests |
+|---|---|---|---|
+| `pool_knee_small`, `pool_knee_big` | today's knee: 1:18.7 / 1:21.6 | 0.26 / 0.32 | the reference: today's floor at the game's own crests (A0 ≈ 0.19 / 0.245) |
+| `pool_ledge_small`, `pool_ledge_big` | the ledge: 1:4.5 | 0.32 / 0.37 | the candidate, sized for the same faces (A0 ≈ 0.24 / 0.29) |
+| `pool_steep9_small`, `pool_steep9_big` | 1:9 | 0.26 / 0.32 | the trend between them (the optional pair) |
+| `pool_kneeface_small`, `pool_kneeface_big` | today's knee | 0.23 / 0.245 | the decision rule's comparator: the knee at the ledge's 2D faces (about 1.62 / 1.86 m; the advisor's sizes ruling) |
+
+Every case, the knee's too, has the same reef top along the ray: the 0.9 m crest 2.7 h0 (12.2 m) long, then 1:20 back
+down to 4.5 m and flat to the wall. That is the floor's 6 m `flatWidth` and 1/10 `backSlope` (`POOL_STRAIGHT`) crossed at
+cos α ≈ 0.5, so the knee and the ledge differ in the face alone. The domain stays 64 h0 (288 m), so level 13 gives the
+earlier pool runs' 3.5 cm cells; it holds every back slope (the knee's big case has the least deep water before the wall,
+0.57 h0).
+
+**On the M4 Pro**, from the repo:
+
+```
+git pull                                    # main, once claude/pool-tube-runs-2 is merged
+npm run barrels:pool -- check               # the prerequisites (setup installs what's missing)
+JOBS=8 POOL_CASES="pool_ledge_big pool_ledge_small pool_kneeface_big pool_kneeface_small pool_knee_big pool_knee_small pool_steep9_big pool_steep9_small" CANYON_OUT=docs/research/pool-tube-runs-2 npm run barrels:pool
+npm run barrels:pool -- status              # the last run's cases: phase, t and ETA
+```
+
+- **What it does:** each case as the earlier pool runs: a level-10 scout places its switch, end and window; phase 1 at
+  level 10, phase 2 at level 13 (`LEVEL2` stays 13) in the window; then the analysis, the case files and the report.
+  The M1's level-10 scouts (2026-11-04) broke all six in the domain, the knee on its face and the ledge at the crest
+  edge; the case lines carry their windows, and the M4's scout places its own.
+- **Where it writes:** the runs in `tools/basilisk/runs/` (git-ignored; the windows frozen in `runs/pool/cases.txt` beside
+  the earlier pool cases', which keep theirs). The report, `summary.json`, `data/`, the figures, `barrel-index.json`,
+  `barrel-cases.md` and the case files (`barrels/*.bin`) all go to `docs/research/pool-tube-runs-2/`. Nothing goes to
+  `public/barrels` or the game's index: the batch's cases are candidates until the decision rule picks. (Naming any of
+  them in `POOL_CASES` does that; the pipeline refuses to write their report over `docs/research/pool-tube-runs`.)
+- **How long:** about 2.5–3 h with `JOBS=8` (an estimate). The earlier pair's phase 2 took 2h01 and 2h21 on the M4 at the
+  same level, domain and kind of window; the scouts and phase 1 take minutes, the analysis about 10 minutes. Six at once
+  give each case its own performance core, but share the memory bandwidth.
+- **Stop and resume:** `npm run barrels:pool -- stop` (it stops every pool case), then the same run command again; after a
+  restart or a crash just run it again (10-minute checkpoints). `POOL_CASES="…" npm run barrels:pool -- analyse` redoes
+  the analysis and the report from the finished runs.
+- **Send back** the report folder, and nothing else:
+
+```
+git add docs/research/pool-tube-runs-2
+git commit -m "data(pool): the bigger-tube batch at level 13"
+git push
+```
+
+  `git status` should then show nothing under `public/barrels` or `src/`. A case that threw no tube has no `.bin`; its
+  analysis files are in `data/` all the same.
+
+## The Wave Pool's thin-lip run: Bo 4000 at level 14 (2026-11-12)
+
+The owner's note on the 2 m pool (2026-11-12): the falling lip is too thick for the wave's size. The lip-look ruling
+(`docs/research/lip-look-2026-11-11/README.md`, rank 3) names the cause and the fix at the source: every run above
+compiles `periodic.c` with a Bond number of 1000 on h0, so the capillary length is h0/√1000 = 0.032 h0 (14 cm at the
+run's 4.5 m depth, 9 to 11 cm at the size the game shows the case; 2.7 mm in real water), and it holds the lip thick as
+it leaves the crest. Feddersen 2024 ran the Surf Ranch
+at Bo = 4000: the capillary length halves (0.016 h0), about 4 cells of the run's grid at level 14 (2 at level 13, too
+few, hence the finer level). This run is the 2 m pool's own case (`pool_straight_big`) at that Bond number. Nothing else changes:
+the same bed, wave, domain and Reynolds number.
+
+`BO` (and `RE`) are read by `run_periodic.sh`: when set, the scout and both phases compile with `-DBO=…` (`-DRE=…`) and
+each build's `params.txt` records them; unset, the compile lines are the earlier runs' byte for byte. A build already
+compiled keeps its own number, so this run has **a runs folder of its own** (`RUNS`), and a report folder of its own.
+
+**On the M4 Pro**, from the repo:
+
+```
+git pull
+npm run barrels:pool -- check
+RUNS="$PWD/tools/basilisk/runs/bo4k" BO=4000 LEVEL2=14 POOL_CASES="pool_straight_big" CANYON_OUT=docs/research/pool-tube-runs-bo4k npm run barrels:pool
+RUNS="$PWD/tools/basilisk/runs/bo4k" npm run barrels:pool -- status
+```
+
+- **What it does:** as the earlier pool runs: a level-10 scout places the switch, the end and the window; phase 1 at
+  level 10; phase 2 at level 14 (1.76 cm cells) in the window; then the analysis, the case file and the report.
+- **Where it writes:** the runs in `tools/basilisk/runs/bo4k/` (git-ignored; the earlier runs in `tools/basilisk/runs/`
+  are not touched). The report, `summary.json`, `data/`, the figures and the case file (`barrels/*.bin`) go to
+  `docs/research/pool-tube-runs-bo4k/`. Nothing goes to `public/barrels` or the game's index: the case is a candidate
+  until it is measured against the ruling's bars.
+- **How long:** about a day. The earlier level-14 phase 2 runs took 20h42 and 22h31 on the M4
+  (`docs/research/pool-tube-runs-2/report-l14.md`; this case at level 13 took 2h21). A thinner lip may add cells and
+  time. With `brew install libomp`, put `OMP=1` in front of the run command: the one case then gets all the performance
+  cores (how much that saves is not measured). The Mac is kept awake by the script.
+- **Stop and resume:** `RUNS="$PWD/tools/basilisk/runs/bo4k" npm run barrels:pool -- stop`, then the same run command
+  again (10-minute checkpoints; keep `RUNS`, `BO` and `LEVEL2` the same). `stop` stops every pool case on the machine.
+- **Send back** the report folder, and nothing else:
+
+```
+git add docs/research/pool-tube-runs-bo4k
+git commit -m "data(pool): the pool's tube at Bo 4000, level 14"
+git push
+```
+
+  `git status` should then show nothing under `public/barrels` or `src/`. If the wave threw no tube there is no `.bin`;
+  send the folder all the same.
+
+**After it lands** (not built yet): the case goes into the game behind a switch (`?poolTubeCase=bo4k`), and
+`docs/research/lip-look-2026-11-11/tools/lip.mjs` reads it against the ruling's bars: tip thickness at 0.1 s at most
+0.025 m, mid-lip at most 0.04 H at 0.1 s, jet water at touchdown 0.10 to 0.22 H², tube area not below the present
+case's. If it misses them it is not wired in.
+
+## The T5 run: the 2 m pool's case from twice as far out (2026-11-12)
+
+The owner chose the route C2 for a surfable wave (2026-11-12): the whole breaking wave from the Basilisk library
+(`docs/research/wave-strategy-alternatives/README.md`). Its test T5 asks one run: the 2 m pool's case started twice as
+far out, so its frames 2 to 4 s before the throw can be compared with the live sea there (height within 10 %). Today's
+case (`pool_straight_big`, `docs/research/pool-tube-runs/`) runs its fine phase from 5 √(h0/g) (3.4 s) before the face
+goes vertical, and its library keeps only the last 3 (2.0 s). The design and the measure plan:
+`docs/research/wave-strategy-alternatives/t5-run.md`.
+
+**The case, `pool_far_big`:** `pool_straight_big`'s line under its own name (the same bed, wave, domain, Bond and
+Reynolds numbers, levels 10 and 13). Two numbers change, both in `canyon_pipeline.py`'s `EARLY`:
+- the switch to level 13 comes 10 √(h0/g) before vertical, not 5 (`crest_track.py --lead 10`), so the window's back moves
+  from 31 to 25 h0 (the crest then stands about 1 h0 before the face's toe);
+- the library keeps its frames from 8 before vertical, not 3 (`--lib-lead 8`; 5.4 s at 4.5 m).
+
+The name of its own keeps it apart from any other run of `pool_straight_big`: the Bo 4000 run's builds are
+`periodic_pool_straight_big_*`, and a run of the same name would wait for them. Its report goes to
+`docs/research/pool-tube-runs-t5/` (a batch's own folder, as the bigger-tube batch's), its case file beside it in
+`barrels/`, never in `public/barrels`. Every other case runs exactly as before: their qcc lines (all 48, with and without
+`BO`, `LEVEL2` and `VELOUT`) and the scout's placement of `pool_straight_big` (23, 34, 31–47, from its committed scout
+track) were checked unchanged on 2026-11-12.
+
+**On the M4 Pro**, from the repo:
+
+```
+git pull
+npm run barrels:pool -- check
+RUNS="$PWD/tools/basilisk/runs/t5" POOL_CASES="pool_far_big" CANYON_OUT=docs/research/pool-tube-runs-t5 npm run barrels:pool
+RUNS="$PWD/tools/basilisk/runs/t5" npm run barrels:pool -- status
+```
+
+- **What it does:** a level-10 scout (minutes) places the switch, end and window (t 18, 34 and x 25–47 h0: the M1's
+  scout of this case placed exactly these, 2026-11-12); phase 1 at level 10 to the switch; phase 2 at level 13 (3.5 cm cells) in the window; then the
+  analysis, the case file and the report.
+- **How long:** about 3.5 to 6 hours (an estimate; t5-run.md has the reasoning). Today's case's phase 2 took 2h21 on the
+  M4 for 11 √(h0/g); this one runs 16, the extra 5 before the break, in a window 22 h0 long instead of 16.
+- **Beside the Bo 4000 run:** yes. Each run has its own `RUNS` folder, supervisor and case name. T5 takes one
+  performance core and well under 1 GB (a level-11 dry run on the M1 took about 100 MB); the M4 Pro has 10 performance
+  cores and 48 GB. If the Bo 4000 run uses `OMP=1`, its threads share the cores with T5, so it may run a little slower.
+- **Stop and resume:** `RUNS="$PWD/tools/basilisk/runs/t5" POOL_PREFIX=pool_far npm run barrels:pool -- stop` stops
+  only this run (`run_pool.sh`'s `POOL_PREFIX`; unset it is `pool`, as before). The Bo 4000 run's stop line (no
+  `POOL_PREFIX`) stops every pool case, this one too: start it again with the same run command (10-minute checkpoints).
+- **Send back** the report folder, and nothing else:
+
+```
+git add docs/research/pool-tube-runs-t5
+git commit -m "data(pool): the T5 run, the 2 m pool's case from twice as far out"
+git push
+```
+
+  `git status` should then show nothing under `public/barrels` or `src/`.
+
+**After it lands:** `docs/research/wave-strategy-alternatives/t5_case_side.py` prints the case's wave per half second
+before the throw and the overlap with today's library; the sea's side is a solver probe (t5-run.md, the measure plan).
+
+## The velocity under the surface (2026-11-11)
+
+Every run above kept the surface only (`output_facets`), so the game has no measured flow for its tube's water. With
+`VELOUT` defined, `periodic.c` also writes `vel/v<t>.dat` at every fine frame: one row per surface cell of open water
+inside the window,
+
+```
+x y nx ny Delta   u v w   u v w   …
+```
+
+the cell's centre, the surface's unit normal out of the water and the cell's size, then one `u v w` per sample depth:
+the velocity that deep into the water along the normal, and the water's fraction there (under 0.5 the sample is in air,
+spray or the bed). The first sample is 1.5 cells deep, clear of the mixed cells whose velocity is part air's; the rest
+are at `VELDEPTHS` (0.01, 0.02, 0.05 and 0.1 h0). Units as the run's: h0 = 1, g = 1, the fixed frame. Without `VELOUT`
+the run and its files are exactly as before (a level-9 smoke case wrote identical facets with and without it).
+
+`tools/basilisk/run_velocity.sh` reruns the game's three pool-tube cases this way, in one command, on the M4 Pro:
+
+```
+tools/basilisk/run_velocity.sh
+```
+
+- It takes each case's definition from the `params.txt` stored beside its library in `docs/research/*/data`, so the
+  rerun is the run the game's profiles came from, whatever `run_periodic.sh`'s built-in line says today.
+- It runs in `tools/basilisk/runs/vel`, a folder of its own: no finished run is touched. Phase 1 (level 10, about a
+  minute) runs again there.
+- The three cases run side by side, one core each (`OMP=1` as elsewhere). At level 13 they took 2 h 01, 2 h 21 and
+  3 h 13 on the M4 Pro.
+- Then `analysis/profile_velocity.py` (standard library only) gives every point of every stored 128-point profile the
+  nearest surface cell's samples, and writes `docs/research/pool-tube-flow/data/periodic_<case>_L13_velocity.json`
+  (about 3 MB a case). Each frame's `match` says how far its points were from the cells they took; a rerun that drifted
+  from the stored profiles shows there.
+- `status`, `pack` (the packing again) and `cases` (the definitions) as subcommands. `VEL_CASES` and `LEVEL2` choose
+  other cases: `LEVEL2=14 VEL_CASES="pool_knee_big pool_kneeface_big" tools/basilisk/run_velocity.sh` for the level-14
+  knees (about 22 hours).
+
+Not run yet at full size: the compile, a level-9 smoke run and the packing were checked on the M1 (2026-11-11).

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { REEF, type SpotName } from '../Bathymetry';
-import { SWEPT_BARREL, SurfZoneSimulation, sweptBarrelOn, type SurfZoneConfig } from '../SurfZoneSimulation';
-import { libraryFromBytes } from './barrelLibrary';
+import { SWEPT_BARREL, SurfZoneSimulation, spillingCurlOn, sweptBarrelOn, sweptCrashOn, type SurfZoneConfig } from '../SurfZoneSimulation';
+import { barrelCasesFor, libraryFromBytes } from './barrelLibrary';
 import { BARREL_CASES } from './barrelLibraryIndex';
-import { BARREL_SPOTS, FLOOR_MARGIN } from './barrelSpots';
+import { BARREL_SPOTS, FLOOR_MARGIN, tubeFootMax } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
@@ -35,18 +35,33 @@ function records(n: number, tau: number, footHeight: number, footDepth: number):
 }
 
 describe('the swept barrel’s spots (Part B, PR 7)', () => {
-  it('leaves the owner’s switch alone: only Padang Padang is swept unless a test says so', () => {
-    expect(SWEPT_BARREL).toEqual(['padang']);
-    for (const spot of ['beach', 'point', 'reef', 'canyon'] as const) {
+  it('leaves the owner’s switch alone: Padang Padang is swept unless a test says so, the Canyon (2026-10-22 to 2026-10-23) only when asked', () => {
+    expect(SWEPT_BARREL).toEqual(['padang', 'pool']);
+    for (const spot of ['beach', 'point', 'reef'] as const) {
       expect(sweptBarrelOn({ spot })).toBe(false);
       // A test can switch a spot on only where it has a barrel transect.
       expect(sweptBarrelOn({ spot, sweptBarrel: true })).toBe(BARREL_SPOTS[spot] !== undefined);
+    }
+    // The Canyon's tubes (canyon-beach-break): off by default, on with `?canyonTube=on` (the config's say), on either layout
+    // (`?canyonBed=old&canyonTube=on` is main's Canyon at 376d9cd4 with its reef's tube).
+    expect(sweptBarrelOn({ spot: 'canyon' })).toBe(false);
+    expect(sweptBarrelOn({ spot: 'canyon', sweptBarrel: true })).toBe(true);
+    expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old' })).toBe(false);
+    expect(sweptBarrelOn({ spot: 'canyon', canyonBed: 'old', sweptBarrel: true })).toBe(true);
+    // The Wave Pool (pool-barrel-drawing): its straight Barrel only; Training and the A-frame never, even when asked.
+    expect(sweptBarrelOn({ spot: 'pool', poolWaves: 'barrel' })).toBe(true);
+    expect(sweptCrashOn({ spot: 'pool', poolWaves: 'barrel' })).toBe(true);
+    expect(sweptCrashOn({ spot: 'pool', poolWaves: 'barrel', sweptCrash: false })).toBe(false);
+    expect(sweptBarrelOn({ spot: 'pool', poolWaves: 'barrel', sweptBarrel: false })).toBe(false);
+    for (const config of [{}, { poolWaves: 'training' as const }, { poolWaves: 'barrel' as const, poolBarrel: 'aframe' as const }]) {
+      expect(sweptBarrelOn({ spot: 'pool', ...config })).toBe(false);
+      expect(sweptBarrelOn({ spot: 'pool', ...config, sweptBarrel: true })).toBe(false);
     }
   });
 
   it('gives every spot with cases a transect, and every transect cases', () => {
     for (const spot of SPOTS) expect(BARREL_SPOTS[spot], spot).toBeDefined();
-    for (const spot of Object.keys(BARREL_SPOTS) as SpotName[]) expect(SPOTS, spot).toContain(spot);
+    for (const spot of Object.keys(BARREL_SPOTS) as SpotName[]) expect(barrelCasesFor(spot).length, spot).toBeGreaterThan(0);
   });
 
   it('throws the Reef’s lips on the line through its two runs, never shallower than its top at the tide', () => {
@@ -70,9 +85,10 @@ describe.each(SPOTS)('the swept barrel at %s, switched on inside the test', (spo
   const barrel = BARREL_SPOTS[spot]!;
   const bytes = readBarrelCases(spot);
   const cases = bytes.map(decodeCase);
-  const library = libraryFromBytes(bytes);
+  // At a spot whose cases are one family (the Wave Pool) each takes the spot's slope, as the game loads them.
+  const library = libraryFromBytes(bytes, 'basilisk', spot);
   // A case in the middle of the spot's own slope's range, by its H0/h0.
-  const own = cases.filter((c) => Math.abs(c.slope - barrel.slope) <= 1e-6 * barrel.slope).sort((a, b) => a.nonlinearity - b.nonlinearity);
+  const own = library.cases.filter((c) => Math.abs(c.slope - barrel.slope) <= 1e-6 * barrel.slope).sort((a, b) => a.nonlinearity - b.nonlinearity);
   const middle = own[Math.floor(own.length / 2)];
   const footDepth = barrel.footDepth;
   const footHeight = middle.nonlinearity * footDepth;
@@ -129,8 +145,72 @@ describe.each(SPOTS)('the swept barrel at %s, switched on inside the test', (spo
     const config: SurfZoneConfig = {
       spot, seed: 1, significantHeight: 1, peakPeriod: 12, directionDegrees: 0, spreading: 24, tide: 0,
       componentCount: 8, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+      // The Wave Pool's transect is its straight Barrel's (its Training floor never draws a tube).
+      ...(spot === 'pool' ? { poolWaves: 'barrel' as const } : {}),
     };
     expect(new SurfZoneSimulation({ ...config, sweptBarrel: true }, 'warm').front).toBeDefined();
     expect(new SurfZoneSimulation({ ...config, sweptBarrel: false }, 'warm').front).toBeUndefined();
+  });
+});
+
+describe('the Canyon’s barrel transect (the tube from Basilisk, 2026-10-22)', () => {
+  const canyon = BARREL_SPOTS.canyon!;
+
+  it('throws where its three runs went vertical, with a period term, clamped to the runs', () => {
+    const at = (period: number) => onsetTiming(canyon.footDepth, period, true, canyon.onset);
+    // a38 (14 s, 1.86 m → 2.74 m), a49 (14 s, 2.52 m → 3.59 m), a29 (11 s, 1.27 m → 2.79 m): exact.
+    expect(at(14).throwDepth(1.8599071679999999)).toBeCloseTo(2.740354281192891, 9);
+    expect(at(14).throwDepth(2.5191580799999995)).toBeCloseTo(3.590326732873789, 9);
+    expect(at(11).throwDepth(1.2682458461538462)).toBeCloseTo(2.788606727843102, 9);
+    // canyon23f74_a38 (14 s, 1.886 m → 2.761 m), not in the fit, within 0.013 m.
+    expect(Math.abs(at(14).throwDepth(1.8863036746987953) - 2.7610994726910683)).toBeLessThan(0.014);
+    // Clamped: a 9 s wave throws as an 11 s one, a 16 s as a 14 s one; a crest under 1.27 m as one of 1.27 m.
+    expect(at(9).throwDepth(2)).toBe(at(11).throwDepth(2));
+    expect(at(16).throwDepth(2)).toBe(at(14).throwDepth(2));
+    expect(at(11).throwDepth(0.9)).toBe(at(11).throwDepth(1.2682458461538462));
+    // Padang Padang's has no period term.
+    const padang = BARREL_SPOTS.padang!;
+    expect(onsetTiming(7, 16, true, padang.onset).throwDepth(2)).toBe(onsetTiming(7, 18, true, padang.onset).throwDepth(2));
+  });
+
+  it('joins small crests where the solver fresh-breaks 6 of 12 waves, and clamps under its lowest such row', () => {
+    const at = (period: number) => onsetTiming(canyon.footDepth, period, true, canyon.onset);
+    // The small drives (the advisor's third ruling, 2026-10-22): 11 s at 1.25 m (band crest 0.81 m, onset 1.93 m on 10
+    // waves), 12 s at 1.25 m (0.94 → 1.76, 6 waves), 14 s at 1.1 m (0.89 → 1.80, 11 waves).
+    expect(at(11).joinDepth(0.81)).toBeCloseTo(1.93, 9);
+    expect(at(12).joinDepth(0.94)).toBeCloseTo(1.76, 9);
+    expect(at(14).joinDepth(0.89)).toBeCloseTo(1.8, 9);
+    // Under the lowest row a crest clamps to it; at 9 s no small drive broke more than one wave, so its 1.5 m row stays first.
+    expect(at(11).joinDepth(0.6)).toBe(at(11).joinDepth(0.81));
+    expect(at(9).joinDepth(0.6)).toBeCloseTo(1.89, 9);
+    // Each period's rows rise with the crest.
+    for (const { rows } of canyon.onset.join) {
+      for (let k = 1; k < rows.length; k += 1) expect(rows[k][0]).toBeGreaterThan(rows[k - 1][0]);
+    }
+  });
+
+  it('plunges a tube only where ξ_f = S / √(η_foot / L0) ≥ 0.54: foot crests to 0.82, 1.22, 1.46 and 1.98 m at 9, 11, 12 and 14 s', () => {
+    expect(tubeFootMax('canyon', 9)).toBeCloseTo(0.82, 2);
+    expect(tubeFootMax('canyon', 11)).toBeCloseTo(1.22, 2);
+    expect(tubeFootMax('canyon', 12)).toBeCloseTo(1.46, 2);
+    expect(tubeFootMax('canyon', 14)).toBeCloseTo(1.98, 2);
+    expect(tubeFootMax('padang', 16)).toBe(Infinity);
+    // The runs: a38 (1.86 m at 14 s) a tube; a49 (2.52 m at 14 s) and a29 (1.27 m at 11 s) not.
+    expect(1.8599 <= tubeFootMax('canyon', 14)).toBe(true);
+    expect(2.5192 <= tubeFootMax('canyon', 14)).toBe(false);
+    expect(1.2682 <= tubeFootMax('canyon', 11)).toBe(false);
+  });
+
+  it('runs without the crash, so its spilling front, roller and curl stay (the 6 s lace too), and joins zero-lag crests late', () => {
+    expect(sweptCrashOn({ spot: 'canyon' })).toBe(false);
+    expect(sweptCrashOn({ spot: 'padang' })).toBe(true);
+    // With its tube on (`?canyonTube=on`, off by default since canyon-beach-break).
+    expect(sweptCrashOn({ spot: 'canyon', sweptCrash: true })).toBe(false);
+    expect(sweptCrashOn({ spot: 'canyon', sweptBarrel: true, sweptCrash: true })).toBe(true);
+    expect(spillingCurlOn({ spot: 'canyon' })).toBe(true);
+    // The curl gives way only to a crash that runs: with the tube off by default, asking for the crash alone runs none.
+    expect(spillingCurlOn({ spot: 'canyon', sweptCrash: true })).toBe(true);
+    expect(spillingCurlOn({ spot: 'canyon', sweptBarrel: true, sweptCrash: true })).toBe(false);
+    expect(canyon.front).toEqual({ joinPast: 1.5 });
   });
 });

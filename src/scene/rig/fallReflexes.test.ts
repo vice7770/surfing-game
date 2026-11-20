@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { STANCE_RECIPES, drawnRecipe, type StanceRecipe } from '../../dev/ridingPoses';
 import type { StanceName } from '../../physics/riderPosture';
 import { BOARD_CENTRE, deckAt, railHalfWidth } from './boardDeck';
+import { CLIMB_TIME } from '../../physics/AttachedRider';
 import { LEASH } from '../../physics/Leash';
 import { FALL_READING } from './fallStages';
 import { readGlbSkeleton } from './glbSkeleton';
@@ -180,11 +181,12 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
     expect(Math.max(...turned) - Math.min(...turned)).toBeGreaterThan(30);
   });
 
+  // As before swim-back (`swim: 'old'`): the cord reeled to the ankle, down to its 0.8 m reach, takes a pull or two.
   it.each([['regular', 'right'], ['goofy', 'left']] as const)('reels hand over hand (%s), the back foot\'s hand first: 0.8–1.5 pulls a second, the cord drawn from the pulling hand, the trunk within 30° of the vertical', (stance, first) => {
     const grips: { time: number; side: string }[] = [];
     let trunk = 90;
     let reelFrom = Number.NaN;
-    drawnFall({ ...STANCE_RECIPES.reel, seconds: 4.2 }, stance, ({ time, state, angles, body }) => {
+    drawnFall({ ...STANCE_RECIPES.reel, seconds: 4.2, swim: 'old' }, stance, ({ time, state, angles, body }) => {
       if (Number.isNaN(reelFrom) && body.rig.fallWeights.reel > 0) reelFrom = time;
       if (!state.leash.gripped) return;
       const side = SIDES.find((s) => body.rig.joints.wrist[s].distanceTo(state.leash.grip) < 1e-6) ?? '?';
@@ -203,9 +205,10 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
     expect(trunk).toBeLessThanOrEqual(30);
   });
 
+  // As before swim-back (`swim: 'old'`): the hands' springs pull the body onto the deck, and it snaps to prone there.
   it('climbs on from the side: both hands on the near rail by its middle as the swimmer comes beside it, the chest over the deck before the legs swing on, the prone pose easing in over 0.4 s', () => {
     // The slow fall's swimmer reels in and grabs the board at 16.3 s; it comes on at about 17.5 s.
-    const recipe: StanceRecipe = { phase: 'prone', water: 'flat', start: 'standing', speed: 2, separate: 0.5, controls: [{ at: 3, reel: true }], seconds: 18.4 };
+    const recipe: StanceRecipe = { phase: 'prone', water: 'flat', start: 'standing', speed: 2, separate: 0.5, controls: [{ at: 3, reel: true }], seconds: 18.4, swim: 'old' };
     const bones = skeleton('surfer2');
     const gauge = new StanceGauge(bones);
     const body = new PosedBody(bones);
@@ -242,6 +245,44 @@ describe('the fall\'s reflexes over the ragdoll (the animation-realism plan, pha
     expect(chestOn).toBeLessThan(feetOn);
     expect(feetOn - prone).toBeGreaterThan(0.1);
     expect(feetOn - prone).toBeLessThanOrEqual(FALL_POSES.climb.on + 0.05);
+    expect(fastestFoot).toBeLessThan(6);
+  });
+
+  // swim-back (2026-10-29): the physics climbs the body on from where it is (CLIMB_TIME), and the drawing follows it.
+  it('climbs on from the water as the physics carries it: the chest over the deck before the feet, the feet never flung', () => {
+    const recipe: StanceRecipe = { phase: 'prone', water: 'flat', start: 'standing', speed: 2, separate: 0.5, controls: [{ at: 3, reel: true }], seconds: 12 };
+    const bones = skeleton('surfer2');
+    const gauge = new StanceGauge(bones);
+    const body = new PosedBody(bones);
+    let chestOn = Number.NaN;
+    let feetOn = Number.NaN;
+    let prone = Number.NaN;
+    let fastestFoot = 0;
+    const lastAnkles = SIDES.map(() => new Vector3());
+    let lastTime = Number.NaN;
+    drawnRecipe(recipe, 'regular', at, (state) => {
+      body.update(state);
+      if (state.clock < 3) return;
+      const joints = gauge.joints();
+      const inverse = state.boardQuaternion.clone().invert();
+      const shape = (v: Vector3) => v.clone().sub(state.boardPosition).applyQuaternion(inverse).add(BOARD_CENTRE);
+      const over = (v: Vector3) => {
+        const s = shape(v);
+        return Math.abs(s.x) < railHalfWidth(s.z) && s.y > deckAt(s.z) - 0.1;
+      };
+      if (Number.isNaN(prone) && state.phase === 'prone') prone = state.clock;
+      if (Number.isNaN(prone)) return;
+      if (Number.isNaN(chestOn) && over(joints.spine.clone().add(joints.neck).multiplyScalar(0.5))) chestOn = state.clock;
+      if (Number.isNaN(feetOn) && over(joints.ankle.left) && over(joints.ankle.right)) feetOn = state.clock;
+      if (Number.isFinite(lastTime)) {
+        SIDES.forEach((side, i) => { fastestFoot = Math.max(fastestFoot, shape(joints.ankle[side]).distanceTo(lastAnkles[i]) / (state.clock - lastTime)); });
+      }
+      SIDES.forEach((side, i) => lastAnkles[i].copy(shape(joints.ankle[side])));
+      lastTime = state.clock;
+    });
+    expect(Number.isFinite(prone)).toBe(true);
+    expect(chestOn).toBeLessThanOrEqual(feetOn);
+    expect(feetOn - prone).toBeLessThanOrEqual(CLIMB_TIME + 0.1);
     expect(fastestFoot).toBeLessThan(6);
   });
 

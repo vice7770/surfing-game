@@ -1,0 +1,18 @@
+[
+  {
+    "id": "periodic-pool-knee-big-l14",
+    "spot": "pool",
+    "slope": 0.0463,
+    "nonlinearity": 0.2416,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-knee-big-l14.bin"
+  },
+  {
+    "id": "periodic-pool-kneeface-big-l14",
+    "spot": "pool",
+    "slope": 0.0463,
+    "nonlinearity": 0.1731,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-kneeface-big-l14.bin"
+  }
+]

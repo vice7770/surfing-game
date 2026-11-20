@@ -1,0 +1,18 @@
+# Every other spot and the Canyon's old layout after 3 s (seed 3, Hs 1.4 m, Tp 11 s, s 150, 12 components, 2 m cells): window, tank, take-off, rider bounds, peel and an FNV-1a hash of h, qx, qz and the foam (other-spots.ts).
+# This branch:
+beach 160 {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":5} {"x":0,"z":-99.5} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null f446bd7854c0a55f
+point 160 {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":8} {"x":0,"z":-123} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null 2d8a9a961d719821
+reef 160 {"offshore":-388.02487623983757,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":30} {"x":-50,"z":-94.5} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null ea8bead6d8c220a5
+padang 320 {"offshore":-1143.8503414433649,"zoneInner":-1032.591378704909,"blendEnd":-952.591378704909,"fineFrom":-255,"shore":30,"edgeDepth":25} {"x":-50,"z":-196.59137870490895} {"xMin":-138,"xMax":138,"zMin":-1028.591378704909,"zMax":26} null 1ece64b8e59283db
+pool 280 {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} {"x":27,"z":-214.5} {"xMin":-118,"xMax":118,"zMin":-321.5,"zMax":26} null af4222987963ca2b
+canyon 260 {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9} {"x":-9,"z":-141.5} {"xMin":-108,"xMax":108,"zMin":-386,"zMax":26} null 4f1bb26bfa501e7c
+canyon (old) 240 {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9} {"x":-9,"z":-141.5} {"xMin":-98,"xMax":98,"zMin":-386,"zMax":26} null f46f60b7dee732e8
+# main (1577e577, the same Canyon as 578202fd) built the same way:
+beach 160 {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":5} {"x":0,"z":-99.5} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null f446bd7854c0a55f
+point 160 {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":8} {"x":0,"z":-123} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null 2d8a9a961d719821
+reef 160 {"offshore":-388.02487623983757,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":30} {"x":-50,"z":-94.5} {"xMin":-58,"xMax":58,"zMin":-266,"zMax":26} null ea8bead6d8c220a5
+padang 320 {"offshore":-1143.8503414433649,"zoneInner":-1032.591378704909,"blendEnd":-952.591378704909,"fineFrom":-255,"shore":30,"edgeDepth":25} {"x":-50,"z":-196.59137870490895} {"xMin":-138,"xMax":138,"zMin":-1028.591378704909,"zMax":26} null 1ece64b8e59283db
+pool 280 {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9} {"x":27,"z":-214.5} {"xMin":-118,"xMax":118,"zMin":-321.5,"zMax":26} null af4222987963ca2b
+canyon 240 {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9} {"x":-9,"z":-141.5} {"xMin":-98,"xMax":98,"zMin":-386,"zMax":26} null f46f60b7dee732e8
+canyon (old) 220 {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9} {"x":-2,"z":-147.5} {"xMin":-88,"xMax":88,"zMin":-386,"zMax":26} {"angleDegrees":9.782124633814197,"direction":1,"peelSpeed":27.63248514949743,"lineSlope":1.0464285714285715,"columns":15,"fit":0.7516072593252094} 9501b4b6c1ff25e1
+# Beach, Point, Reef, Padang Padang and the Wave Pool: identical line for line. This branch's 'canyon (old)' is main's 'canyon' exactly (hash f46f60b7dee732e8); main's own 'old' is canyon-layout's short arm, no longer reachable.

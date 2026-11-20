@@ -1,0 +1,291 @@
+case periodic-pool-straight-small-l13: slope 0.053475935828877004, H0/h0 0.2706, H_I 0.312594 h0, tauStart -3, step 0.02500000000000213, touchdown 2.1999999999999993 (sqrt(h0/g)), frames 209
+  tau -3.00: steepest 21 deg, crest-to-toe mean 12 deg, crest 0.297 toe -0.068 h0, crest x -3.16
+  tau -2.97: steepest 21 deg, crest-to-toe mean 12 deg, crest 0.298 toe -0.069 h0, crest x -3.13
+  tau -2.95: steepest 21 deg, crest-to-toe mean 12 deg, crest 0.298 toe -0.069 h0, crest x -3.10
+  tau -2.92: steepest 22 deg, crest-to-toe mean 12 deg, crest 0.298 toe -0.070 h0, crest x -3.04
+  tau -2.90: steepest 22 deg, crest-to-toe mean 12 deg, crest 0.298 toe -0.070 h0, crest x -3.02
+  tau -2.87: steepest 22 deg, crest-to-toe mean 12 deg, crest 0.299 toe -0.070 h0, crest x -2.98
+  tau -2.85: steepest 22 deg, crest-to-toe mean 13 deg, crest 0.299 toe -0.070 h0, crest x -2.96
+  tau -2.82: steepest 22 deg, crest-to-toe mean 13 deg, crest 0.299 toe -0.070 h0, crest x -2.93
+  tau -2.80: steepest 22 deg, crest-to-toe mean 13 deg, crest 0.300 toe -0.070 h0, crest x -2.90
+  tau -2.77: steepest 22 deg, crest-to-toe mean 13 deg, crest 0.300 toe -0.070 h0, crest x -2.87
+  tau -2.75: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.300 toe -0.071 h0, crest x -2.84
+  tau -2.72: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.301 toe -0.071 h0, crest x -2.81
+  tau -2.70: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.301 toe -0.071 h0, crest x -2.79
+  tau -2.67: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.301 toe -0.072 h0, crest x -2.77
+  tau -2.65: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.75
+  tau -2.62: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.73
+  tau -2.60: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.70
+  tau -2.57: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.68
+  tau -2.55: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.66
+  tau -2.52: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.65
+  tau -2.50: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.63
+  tau -2.47: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.073 h0, crest x -2.61
+  tau -2.45: steepest 23 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.073 h0, crest x -2.59
+  tau -2.42: steepest 24 deg, crest-to-toe mean 13 deg, crest 0.302 toe -0.072 h0, crest x -2.57
+  tau -2.40: steepest 24 deg, crest-to-toe mean 13 deg, crest 0.301 toe -0.073 h0, crest x -2.55
+  tau -2.37: steepest 24 deg, crest-to-toe mean 13 deg, crest 0.301 toe -0.073 h0, crest x -2.52
+  tau -2.35: steepest 24 deg, crest-to-toe mean 14 deg, crest 0.301 toe -0.073 h0, crest x -2.44
+  tau -2.32: steepest 24 deg, crest-to-toe mean 14 deg, crest 0.301 toe -0.073 h0, crest x -2.41
+  tau -2.30: steepest 24 deg, crest-to-toe mean 14 deg, crest 0.300 toe -0.073 h0, crest x -2.36
+  tau -2.27: steepest 25 deg, crest-to-toe mean 14 deg, crest 0.300 toe -0.073 h0, crest x -2.30
+  tau -2.25: steepest 25 deg, crest-to-toe mean 14 deg, crest 0.301 toe -0.073 h0, crest x -2.27
+  tau -2.22: steepest 25 deg, crest-to-toe mean 15 deg, crest 0.301 toe -0.073 h0, crest x -2.23
+  tau -2.20: steepest 25 deg, crest-to-toe mean 15 deg, crest 0.301 toe -0.073 h0, crest x -2.19
+  tau -2.17: steepest 25 deg, crest-to-toe mean 15 deg, crest 0.301 toe -0.073 h0, crest x -2.16
+  tau -2.15: steepest 26 deg, crest-to-toe mean 15 deg, crest 0.302 toe -0.073 h0, crest x -2.12
+  tau -2.12: steepest 26 deg, crest-to-toe mean 16 deg, crest 0.302 toe -0.073 h0, crest x -2.06
+  tau -2.10: steepest 26 deg, crest-to-toe mean 16 deg, crest 0.303 toe -0.073 h0, crest x -2.02
+  tau -2.07: steepest 27 deg, crest-to-toe mean 16 deg, crest 0.304 toe -0.073 h0, crest x -1.99
+  tau -2.05: steepest 27 deg, crest-to-toe mean 17 deg, crest 0.305 toe -0.072 h0, crest x -1.96
+  tau -2.02: steepest 28 deg, crest-to-toe mean 17 deg, crest 0.306 toe -0.072 h0, crest x -1.93
+  tau -2.00: steepest 28 deg, crest-to-toe mean 17 deg, crest 0.307 toe -0.072 h0, crest x -1.91
+  tau -1.97: steepest 28 deg, crest-to-toe mean 17 deg, crest 0.308 toe -0.072 h0, crest x -1.88
+  tau -1.95: steepest 28 deg, crest-to-toe mean 17 deg, crest 0.309 toe -0.071 h0, crest x -1.85
+  tau -1.92: steepest 29 deg, crest-to-toe mean 18 deg, crest 0.311 toe -0.071 h0, crest x -1.82
+  tau -1.90: steepest 30 deg, crest-to-toe mean 18 deg, crest 0.312 toe -0.071 h0, crest x -1.79
+  tau -1.87: steepest 27 deg, crest-to-toe mean 18 deg, crest 0.313 toe -0.071 h0, crest x -1.76
+  tau -1.85: steepest 30 deg, crest-to-toe mean 19 deg, crest 0.315 toe -0.070 h0, crest x -1.73
+  tau -1.82: steepest 30 deg, crest-to-toe mean 19 deg, crest 0.317 toe -0.070 h0, crest x -1.71
+  tau -1.80: steepest 31 deg, crest-to-toe mean 19 deg, crest 0.318 toe -0.069 h0, crest x -1.69
+  tau -1.77: steepest 31 deg, crest-to-toe mean 19 deg, crest 0.320 toe -0.069 h0, crest x -1.66
+  tau -1.75: steepest 32 deg, crest-to-toe mean 19 deg, crest 0.322 toe -0.069 h0, crest x -1.64
+  tau -1.72: steepest 32 deg, crest-to-toe mean 20 deg, crest 0.323 toe -0.069 h0, crest x -1.62
+  tau -1.70: steepest 32 deg, crest-to-toe mean 20 deg, crest 0.325 toe -0.068 h0, crest x -1.59
+  tau -1.67: steepest 33 deg, crest-to-toe mean 20 deg, crest 0.327 toe -0.067 h0, crest x -1.57
+  tau -1.65: steepest 33 deg, crest-to-toe mean 20 deg, crest 0.328 toe -0.067 h0, crest x -1.55
+  tau -1.62: steepest 34 deg, crest-to-toe mean 20 deg, crest 0.330 toe -0.067 h0, crest x -1.52
+  tau -1.60: steepest 34 deg, crest-to-toe mean 21 deg, crest 0.332 toe -0.066 h0, crest x -1.50
+  tau -1.57: steepest 34 deg, crest-to-toe mean 21 deg, crest 0.334 toe -0.066 h0, crest x -1.48
+  tau -1.55: steepest 35 deg, crest-to-toe mean 21 deg, crest 0.335 toe -0.066 h0, crest x -1.45
+  tau -1.52: steepest 31 deg, crest-to-toe mean 21 deg, crest 0.337 toe -0.066 h0, crest x -1.43
+  tau -1.50: steepest 35 deg, crest-to-toe mean 22 deg, crest 0.338 toe -0.065 h0, crest x -1.41
+  tau -1.47: steepest 35 deg, crest-to-toe mean 22 deg, crest 0.340 toe -0.065 h0, crest x -1.39
+  tau -1.45: steepest 36 deg, crest-to-toe mean 22 deg, crest 0.341 toe -0.065 h0, crest x -1.37
+  tau -1.42: steepest 36 deg, crest-to-toe mean 22 deg, crest 0.343 toe -0.064 h0, crest x -1.35
+  tau -1.40: steepest 36 deg, crest-to-toe mean 22 deg, crest 0.344 toe -0.064 h0, crest x -1.33
+  tau -1.37: steepest 37 deg, crest-to-toe mean 22 deg, crest 0.345 toe -0.063 h0, crest x -1.30
+  tau -1.35: steepest 37 deg, crest-to-toe mean 22 deg, crest 0.346 toe -0.063 h0, crest x -1.29
+  tau -1.32: steepest 37 deg, crest-to-toe mean 22 deg, crest 0.347 toe -0.062 h0, crest x -1.27
+  tau -1.30: steepest 37 deg, crest-to-toe mean 23 deg, crest 0.348 toe -0.063 h0, crest x -1.24
+  tau -1.27: steepest 38 deg, crest-to-toe mean 23 deg, crest 0.349 toe -0.063 h0, crest x -1.22
+  tau -1.25: steepest 39 deg, crest-to-toe mean 23 deg, crest 0.350 toe -0.062 h0, crest x -1.20
+  tau -1.22: steepest 38 deg, crest-to-toe mean 23 deg, crest 0.351 toe -0.063 h0, crest x -1.18
+  tau -1.20: steepest 39 deg, crest-to-toe mean 23 deg, crest 0.352 toe -0.062 h0, crest x -1.16
+  tau -1.17: steepest 39 deg, crest-to-toe mean 23 deg, crest 0.353 toe -0.063 h0, crest x -1.13
+  tau -1.15: steepest 39 deg, crest-to-toe mean 23 deg, crest 0.353 toe -0.063 h0, crest x -1.11
+  tau -1.12: steepest 40 deg, crest-to-toe mean 23 deg, crest 0.354 toe -0.062 h0, crest x -1.09
+  tau -1.10: steepest 40 deg, crest-to-toe mean 23 deg, crest 0.355 toe -0.063 h0, crest x -1.07
+  tau -1.07: steepest 41 deg, crest-to-toe mean 23 deg, crest 0.355 toe -0.063 h0, crest x -1.05
+  tau -1.05: steepest 40 deg, crest-to-toe mean 23 deg, crest 0.356 toe -0.064 h0, crest x -1.02
+  tau -1.02: steepest 41 deg, crest-to-toe mean 23 deg, crest 0.356 toe -0.064 h0, crest x -1.00
+  tau -1.00: steepest 41 deg, crest-to-toe mean 23 deg, crest 0.356 toe -0.065 h0, crest x -0.98
+  tau -0.97: steepest 42 deg, crest-to-toe mean 23 deg, crest 0.357 toe -0.065 h0, crest x -0.95
+  tau -0.95: steepest 42 deg, crest-to-toe mean 23 deg, crest 0.357 toe -0.065 h0, crest x -0.93
+  tau -0.92: steepest 42 deg, crest-to-toe mean 24 deg, crest 0.358 toe -0.066 h0, crest x -0.91
+  tau -0.90: steepest 43 deg, crest-to-toe mean 24 deg, crest 0.358 toe -0.066 h0, crest x -0.88
+  tau -0.87: steepest 42 deg, crest-to-toe mean 24 deg, crest 0.359 toe -0.066 h0, crest x -0.86
+  tau -0.85: steepest 42 deg, crest-to-toe mean 24 deg, crest 0.359 toe -0.067 h0, crest x -0.83
+  tau -0.82: steepest 44 deg, crest-to-toe mean 24 deg, crest 0.360 toe -0.067 h0, crest x -0.80
+  tau -0.80: steepest 46 deg, crest-to-toe mean 24 deg, crest 0.360 toe -0.067 h0, crest x -0.78
+  tau -0.77: steepest 45 deg, crest-to-toe mean 24 deg, crest 0.361 toe -0.067 h0, crest x -0.76
+  tau -0.75: steepest 46 deg, crest-to-toe mean 24 deg, crest 0.362 toe -0.068 h0, crest x -0.73
+  tau -0.72: steepest 47 deg, crest-to-toe mean 25 deg, crest 0.363 toe -0.067 h0, crest x -0.70
+  tau -0.70: steepest 47 deg, crest-to-toe mean 25 deg, crest 0.364 toe -0.068 h0, crest x -0.68
+  tau -0.67: steepest 49 deg, crest-to-toe mean 25 deg, crest 0.365 toe -0.068 h0, crest x -0.66
+  tau -0.65: steepest 49 deg, crest-to-toe mean 25 deg, crest 0.366 toe -0.069 h0, crest x -0.63
+  tau -0.62: steepest 50 deg, crest-to-toe mean 25 deg, crest 0.367 toe -0.068 h0, crest x -0.60
+  tau -0.60: steepest 51 deg, crest-to-toe mean 26 deg, crest 0.368 toe -0.069 h0, crest x -0.58
+  tau -0.57: steepest 51 deg, crest-to-toe mean 26 deg, crest 0.369 toe -0.069 h0, crest x -0.55
+  tau -0.55: steepest 48 deg, crest-to-toe mean 26 deg, crest 0.371 toe -0.069 h0, crest x -0.53
+  tau -0.52: steepest 55 deg, crest-to-toe mean 27 deg, crest 0.372 toe -0.069 h0, crest x -0.50
+  tau -0.50: steepest 56 deg, crest-to-toe mean 27 deg, crest 0.374 toe -0.069 h0, crest x -0.48
+  tau -0.47: steepest 57 deg, crest-to-toe mean 27 deg, crest 0.376 toe -0.069 h0, crest x -0.45
+  tau -0.45: steepest 58 deg, crest-to-toe mean 27 deg, crest 0.378 toe -0.069 h0, crest x -0.43
+  tau -0.42: steepest 63 deg, crest-to-toe mean 28 deg, crest 0.380 toe -0.069 h0, crest x -0.41
+  tau -0.40: steepest 58 deg, crest-to-toe mean 28 deg, crest 0.381 toe -0.069 h0, crest x -0.38
+  tau -0.37: steepest 65 deg, crest-to-toe mean 29 deg, crest 0.383 toe -0.070 h0, crest x -0.35
+  tau -0.35: steepest 65 deg, crest-to-toe mean 29 deg, crest 0.385 toe -0.070 h0, crest x -0.33
+  tau -0.32: steepest 67 deg, crest-to-toe mean 29 deg, crest 0.387 toe -0.070 h0, crest x -0.30
+  tau -0.30: steepest 68 deg, crest-to-toe mean 30 deg, crest 0.389 toe -0.069 h0, crest x -0.28
+  tau -0.27: steepest 68 deg, crest-to-toe mean 30 deg, crest 0.391 toe -0.069 h0, crest x -0.26
+  tau -0.25: steepest 73 deg, crest-to-toe mean 31 deg, crest 0.393 toe -0.069 h0, crest x -0.23
+  tau -0.22: steepest 76 deg, crest-to-toe mean 31 deg, crest 0.395 toe -0.070 h0, crest x -0.21
+  tau -0.20: steepest 79 deg, crest-to-toe mean 31 deg, crest 0.397 toe -0.070 h0, crest x -0.19
+  tau -0.17: steepest 84 deg, crest-to-toe mean 32 deg, crest 0.399 toe -0.069 h0, crest x -0.16
+  tau -0.15: steepest 86 deg, crest-to-toe mean 32 deg, crest 0.401 toe -0.069 h0, crest x -0.14
+  tau -0.12: steepest 89 deg, crest-to-toe mean 33 deg, crest 0.402 toe -0.069 h0, crest x -0.12
+  tau -0.10: steepest 92 deg (overturned), crest-to-toe mean 33 deg, crest 0.404 toe -0.069 h0, crest x -0.09
+  tau -0.07: steepest 96 deg (overturned), crest-to-toe mean 33 deg, crest 0.406 toe -0.070 h0, crest x -0.07
+  tau -0.05: steepest 99 deg (overturned), crest-to-toe mean 34 deg, crest 0.407 toe -0.070 h0, crest x -0.05
+  tau -0.02: steepest 103 deg (overturned), crest-to-toe mean 34 deg, crest 0.409 toe -0.068 h0, crest x -0.02
+  tau 0.00: steepest 106 deg (overturned), crest-to-toe mean 35 deg, crest 0.410 toe -0.069 h0, crest x 0.00
+  tau 0.03: steepest 104 deg (overturned), crest-to-toe mean 35 deg, crest 0.411 toe -0.069 h0, crest x 0.02
+  tau 0.05: steepest 117 deg (overturned), crest-to-toe mean 35 deg, crest 0.412 toe -0.069 h0, crest x 0.04
+  tau 0.08: steepest 121 deg (overturned), crest-to-toe mean 36 deg, crest 0.413 toe -0.069 h0, crest x 0.06
+  tau 0.10: steepest 122 deg (overturned), crest-to-toe mean 36 deg, crest 0.414 toe -0.069 h0, crest x 0.09
+  tau 0.13: steepest 115 deg (overturned), crest-to-toe mean 36 deg, crest 0.415 toe -0.069 h0, crest x 0.11
+  tau 0.15: steepest 139 deg (overturned), crest-to-toe mean 37 deg, crest 0.415 toe -0.069 h0, crest x 0.13
+  tau 0.18: steepest 139 deg (overturned), crest-to-toe mean 37 deg, crest 0.416 toe -0.069 h0, crest x 0.15
+  tau 0.20: steepest 179 deg (overturned), crest-to-toe mean 37 deg, crest 0.416 toe -0.069 h0, crest x 0.17
+  tau 0.23: steepest 156 deg (overturned), crest-to-toe mean 37 deg, crest 0.416 toe -0.069 h0, crest x 0.20
+  tau 0.25: steepest 161 deg (overturned), crest-to-toe mean 38 deg, crest 0.416 toe -0.068 h0, crest x 0.22
+  tau 0.28: steepest 159 deg (overturned), crest-to-toe mean 38 deg, crest 0.416 toe -0.070 h0, crest x 0.24
+  tau 0.30: steepest 170 deg (overturned), crest-to-toe mean 38 deg, crest 0.416 toe -0.070 h0, crest x 0.26
+  tau 0.33: steepest 180 deg (overturned), crest-to-toe mean 38 deg, crest 0.415 toe -0.070 h0, crest x 0.28
+  tau 0.35: steepest 165 deg (overturned), crest-to-toe mean 38 deg, crest 0.414 toe -0.069 h0, crest x 0.30
+  tau 0.38: steepest 180 deg (overturned), crest-to-toe mean 39 deg, crest 0.414 toe -0.069 h0, crest x 0.33
+  tau 0.40: steepest 179 deg (overturned), crest-to-toe mean 38 deg, crest 0.413 toe -0.070 h0, crest x 0.34
+  tau 0.43: steepest 177 deg (overturned), crest-to-toe mean 39 deg, crest 0.412 toe -0.070 h0, crest x 0.37
+  tau 0.45: steepest 171 deg (overturned), crest-to-toe mean 39 deg, crest 0.411 toe -0.070 h0, crest x 0.38
+  tau 0.48: steepest 179 deg (overturned), crest-to-toe mean 39 deg, crest 0.410 toe -0.069 h0, crest x 0.41
+  tau 0.50: steepest 170 deg (overturned), crest-to-toe mean 39 deg, crest 0.408 toe -0.070 h0, crest x 0.43
+  tau 0.53: steepest 178 deg (overturned), crest-to-toe mean 39 deg, crest 0.407 toe -0.070 h0, crest x 0.45
+  tau 0.55: steepest 179 deg (overturned), crest-to-toe mean 39 deg, crest 0.405 toe -0.070 h0, crest x 0.47
+  tau 0.58: steepest 176 deg (overturned), crest-to-toe mean 39 deg, crest 0.404 toe -0.070 h0, crest x 0.49
+case periodic-pool-straight-big-l13: slope 0.053475935828877004, H0/h0 0.3547, H_I 0.443025 h0, tauStart -3, step 0.02499999999999858, touchdown 1.4499999999999993 (sqrt(h0/g)), frames 179
+  tau -3.00: steepest 20 deg, crest-to-toe mean 16 deg, crest 0.401 toe -0.075 h0, crest x -3.20
+  tau -2.98: steepest 20 deg, crest-to-toe mean 16 deg, crest 0.401 toe -0.075 h0, crest x -3.17
+  tau -2.95: steepest 20 deg, crest-to-toe mean 16 deg, crest 0.401 toe -0.075 h0, crest x -3.15
+  tau -2.93: steepest 20 deg, crest-to-toe mean 16 deg, crest 0.402 toe -0.075 h0, crest x -3.13
+  tau -2.90: steepest 20 deg, crest-to-toe mean 16 deg, crest 0.402 toe -0.074 h0, crest x -3.10
+  tau -2.88: steepest 21 deg, crest-to-toe mean 16 deg, crest 0.403 toe -0.074 h0, crest x -3.08
+  tau -2.85: steepest 21 deg, crest-to-toe mean 16 deg, crest 0.403 toe -0.074 h0, crest x -3.05
+  tau -2.83: steepest 21 deg, crest-to-toe mean 16 deg, crest 0.404 toe -0.073 h0, crest x -3.03
+  tau -2.80: steepest 22 deg, crest-to-toe mean 16 deg, crest 0.404 toe -0.073 h0, crest x -3.01
+  tau -2.78: steepest 22 deg, crest-to-toe mean 16 deg, crest 0.405 toe -0.073 h0, crest x -2.99
+  tau -2.75: steepest 22 deg, crest-to-toe mean 16 deg, crest 0.405 toe -0.072 h0, crest x -2.97
+  tau -2.73: steepest 22 deg, crest-to-toe mean 17 deg, crest 0.406 toe -0.072 h0, crest x -2.95
+  tau -2.70: steepest 23 deg, crest-to-toe mean 17 deg, crest 0.406 toe -0.071 h0, crest x -2.92
+  tau -2.68: steepest 23 deg, crest-to-toe mean 17 deg, crest 0.406 toe -0.071 h0, crest x -2.90
+  tau -2.65: steepest 23 deg, crest-to-toe mean 17 deg, crest 0.407 toe -0.070 h0, crest x -2.88
+  tau -2.63: steepest 23 deg, crest-to-toe mean 17 deg, crest 0.407 toe -0.070 h0, crest x -2.85
+  tau -2.60: steepest 24 deg, crest-to-toe mean 17 deg, crest 0.408 toe -0.070 h0, crest x -2.83
+  tau -2.58: steepest 24 deg, crest-to-toe mean 17 deg, crest 0.408 toe -0.070 h0, crest x -2.80
+  tau -2.55: steepest 24 deg, crest-to-toe mean 17 deg, crest 0.409 toe -0.070 h0, crest x -2.78
+  tau -2.53: steepest 24 deg, crest-to-toe mean 17 deg, crest 0.410 toe -0.069 h0, crest x -2.76
+  tau -2.50: steepest 24 deg, crest-to-toe mean 17 deg, crest 0.410 toe -0.068 h0, crest x -2.73
+  tau -2.48: steepest 25 deg, crest-to-toe mean 17 deg, crest 0.411 toe -0.069 h0, crest x -2.71
+  tau -2.45: steepest 24 deg, crest-to-toe mean 17 deg, crest 0.411 toe -0.068 h0, crest x -2.69
+  tau -2.43: steepest 25 deg, crest-to-toe mean 17 deg, crest 0.412 toe -0.068 h0, crest x -2.67
+  tau -2.40: steepest 25 deg, crest-to-toe mean 17 deg, crest 0.413 toe -0.067 h0, crest x -2.65
+  tau -2.38: steepest 25 deg, crest-to-toe mean 17 deg, crest 0.414 toe -0.068 h0, crest x -2.63
+  tau -2.35: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.414 toe -0.067 h0, crest x -2.60
+  tau -2.33: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.415 toe -0.068 h0, crest x -2.58
+  tau -2.30: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.415 toe -0.067 h0, crest x -2.55
+  tau -2.28: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.416 toe -0.066 h0, crest x -2.54
+  tau -2.25: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.417 toe -0.066 h0, crest x -2.52
+  tau -2.23: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.417 toe -0.065 h0, crest x -2.49
+  tau -2.20: steepest 24 deg, crest-to-toe mean 18 deg, crest 0.417 toe -0.066 h0, crest x -2.47
+  tau -2.18: steepest 27 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.066 h0, crest x -2.45
+  tau -2.15: steepest 27 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.066 h0, crest x -2.43
+  tau -2.13: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.066 h0, crest x -2.41
+  tau -2.10: steepest 26 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.066 h0, crest x -2.39
+  tau -2.08: steepest 27 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.067 h0, crest x -2.37
+  tau -2.05: steepest 28 deg, crest-to-toe mean 18 deg, crest 0.419 toe -0.067 h0, crest x -2.34
+  tau -2.03: steepest 28 deg, crest-to-toe mean 18 deg, crest 0.419 toe -0.066 h0, crest x -2.32
+  tau -2.00: steepest 28 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.066 h0, crest x -2.30
+  tau -1.98: steepest 28 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.066 h0, crest x -2.28
+  tau -1.95: steepest 28 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.067 h0, crest x -2.26
+  tau -1.93: steepest 27 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.067 h0, crest x -2.24
+  tau -1.90: steepest 29 deg, crest-to-toe mean 18 deg, crest 0.418 toe -0.067 h0, crest x -2.22
+  tau -1.88: steepest 29 deg, crest-to-toe mean 18 deg, crest 0.417 toe -0.067 h0, crest x -2.20
+  tau -1.85: steepest 29 deg, crest-to-toe mean 18 deg, crest 0.417 toe -0.067 h0, crest x -2.18
+  tau -1.83: steepest 29 deg, crest-to-toe mean 18 deg, crest 0.416 toe -0.067 h0, crest x -2.15
+  tau -1.80: steepest 30 deg, crest-to-toe mean 18 deg, crest 0.416 toe -0.067 h0, crest x -2.13
+  tau -1.78: steepest 28 deg, crest-to-toe mean 18 deg, crest 0.415 toe -0.068 h0, crest x -2.11
+  tau -1.75: steepest 30 deg, crest-to-toe mean 18 deg, crest 0.414 toe -0.068 h0, crest x -2.09
+  tau -1.73: steepest 31 deg, crest-to-toe mean 18 deg, crest 0.414 toe -0.069 h0, crest x -2.06
+  tau -1.70: steepest 31 deg, crest-to-toe mean 17 deg, crest 0.413 toe -0.069 h0, crest x -2.05
+  tau -1.68: steepest 31 deg, crest-to-toe mean 18 deg, crest 0.412 toe -0.069 h0, crest x -2.02
+  tau -1.65: steepest 32 deg, crest-to-toe mean 18 deg, crest 0.411 toe -0.069 h0, crest x -2.00
+  tau -1.63: steepest 32 deg, crest-to-toe mean 17 deg, crest 0.410 toe -0.070 h0, crest x -1.98
+  tau -1.60: steepest 32 deg, crest-to-toe mean 18 deg, crest 0.410 toe -0.069 h0, crest x -1.95
+  tau -1.58: steepest 31 deg, crest-to-toe mean 18 deg, crest 0.409 toe -0.069 h0, crest x -1.93
+  tau -1.55: steepest 32 deg, crest-to-toe mean 18 deg, crest 0.408 toe -0.070 h0, crest x -1.91
+  tau -1.53: steepest 33 deg, crest-to-toe mean 18 deg, crest 0.407 toe -0.070 h0, crest x -1.88
+  tau -1.50: steepest 34 deg, crest-to-toe mean 18 deg, crest 0.406 toe -0.070 h0, crest x -1.86
+  tau -1.48: steepest 34 deg, crest-to-toe mean 18 deg, crest 0.405 toe -0.070 h0, crest x -1.84
+  tau -1.45: steepest 34 deg, crest-to-toe mean 18 deg, crest 0.404 toe -0.070 h0, crest x -1.82
+  tau -1.43: steepest 35 deg, crest-to-toe mean 18 deg, crest 0.403 toe -0.070 h0, crest x -1.80
+  tau -1.40: steepest 35 deg, crest-to-toe mean 18 deg, crest 0.402 toe -0.070 h0, crest x -1.77
+  tau -1.38: steepest 36 deg, crest-to-toe mean 18 deg, crest 0.401 toe -0.070 h0, crest x -1.74
+  tau -1.35: steepest 36 deg, crest-to-toe mean 18 deg, crest 0.400 toe -0.070 h0, crest x -1.72
+  tau -1.33: steepest 37 deg, crest-to-toe mean 21 deg, crest 0.400 toe -0.070 h0, crest x -1.47
+  tau -1.30: steepest 37 deg, crest-to-toe mean 21 deg, crest 0.401 toe -0.070 h0, crest x -1.41
+  tau -1.28: steepest 34 deg, crest-to-toe mean 22 deg, crest 0.402 toe -0.070 h0, crest x -1.38
+  tau -1.25: steepest 38 deg, crest-to-toe mean 22 deg, crest 0.403 toe -0.070 h0, crest x -1.34
+  tau -1.23: steepest 39 deg, crest-to-toe mean 23 deg, crest 0.405 toe -0.069 h0, crest x -1.30
+  tau -1.20: steepest 39 deg, crest-to-toe mean 23 deg, crest 0.406 toe -0.069 h0, crest x -1.27
+  tau -1.18: steepest 40 deg, crest-to-toe mean 23 deg, crest 0.408 toe -0.068 h0, crest x -1.24
+  tau -1.15: steepest 40 deg, crest-to-toe mean 24 deg, crest 0.410 toe -0.068 h0, crest x -1.21
+  tau -1.13: steepest 41 deg, crest-to-toe mean 24 deg, crest 0.412 toe -0.068 h0, crest x -1.18
+  tau -1.10: steepest 42 deg, crest-to-toe mean 24 deg, crest 0.413 toe -0.067 h0, crest x -1.15
+  tau -1.08: steepest 42 deg, crest-to-toe mean 25 deg, crest 0.415 toe -0.068 h0, crest x -1.12
+  tau -1.05: steepest 42 deg, crest-to-toe mean 25 deg, crest 0.417 toe -0.068 h0, crest x -1.09
+  tau -1.03: steepest 43 deg, crest-to-toe mean 25 deg, crest 0.419 toe -0.067 h0, crest x -1.06
+  tau -1.00: steepest 44 deg, crest-to-toe mean 26 deg, crest 0.421 toe -0.067 h0, crest x -1.03
+  tau -0.98: steepest 45 deg, crest-to-toe mean 26 deg, crest 0.423 toe -0.066 h0, crest x -1.01
+  tau -0.95: steepest 45 deg, crest-to-toe mean 26 deg, crest 0.425 toe -0.066 h0, crest x -0.98
+  tau -0.93: steepest 46 deg, crest-to-toe mean 27 deg, crest 0.427 toe -0.065 h0, crest x -0.95
+  tau -0.90: steepest 47 deg, crest-to-toe mean 27 deg, crest 0.428 toe -0.064 h0, crest x -0.92
+  tau -0.88: steepest 47 deg, crest-to-toe mean 27 deg, crest 0.430 toe -0.064 h0, crest x -0.90
+  tau -0.85: steepest 48 deg, crest-to-toe mean 27 deg, crest 0.432 toe -0.063 h0, crest x -0.88
+  tau -0.83: steepest 48 deg, crest-to-toe mean 28 deg, crest 0.434 toe -0.062 h0, crest x -0.84
+  tau -0.80: steepest 49 deg, crest-to-toe mean 28 deg, crest 0.436 toe -0.063 h0, crest x -0.82
+  tau -0.78: steepest 50 deg, crest-to-toe mean 28 deg, crest 0.437 toe -0.062 h0, crest x -0.80
+  tau -0.75: steepest 50 deg, crest-to-toe mean 29 deg, crest 0.439 toe -0.061 h0, crest x -0.77
+  tau -0.73: steepest 51 deg, crest-to-toe mean 29 deg, crest 0.441 toe -0.060 h0, crest x -0.74
+  tau -0.70: steepest 53 deg, crest-to-toe mean 29 deg, crest 0.442 toe -0.061 h0, crest x -0.72
+  tau -0.68: steepest 53 deg, crest-to-toe mean 29 deg, crest 0.444 toe -0.060 h0, crest x -0.70
+  tau -0.65: steepest 46 deg, crest-to-toe mean 30 deg, crest 0.445 toe -0.060 h0, crest x -0.67
+  tau -0.63: steepest 54 deg, crest-to-toe mean 30 deg, crest 0.446 toe -0.060 h0, crest x -0.64
+  tau -0.60: steepest 55 deg, crest-to-toe mean 30 deg, crest 0.448 toe -0.059 h0, crest x -0.62
+  tau -0.58: steepest 56 deg, crest-to-toe mean 30 deg, crest 0.449 toe -0.059 h0, crest x -0.59
+  tau -0.55: steepest 52 deg, crest-to-toe mean 30 deg, crest 0.450 toe -0.059 h0, crest x -0.57
+  tau -0.53: steepest 52 deg, crest-to-toe mean 31 deg, crest 0.451 toe -0.058 h0, crest x -0.54
+  tau -0.50: steepest 56 deg, crest-to-toe mean 31 deg, crest 0.452 toe -0.058 h0, crest x -0.52
+  tau -0.48: steepest 60 deg, crest-to-toe mean 31 deg, crest 0.453 toe -0.057 h0, crest x -0.49
+  tau -0.45: steepest 61 deg, crest-to-toe mean 31 deg, crest 0.454 toe -0.056 h0, crest x -0.47
+  tau -0.43: steepest 58 deg, crest-to-toe mean 31 deg, crest 0.455 toe -0.056 h0, crest x -0.44
+  tau -0.40: steepest 56 deg, crest-to-toe mean 32 deg, crest 0.455 toe -0.056 h0, crest x -0.42
+  tau -0.38: steepest 62 deg, crest-to-toe mean 32 deg, crest 0.456 toe -0.055 h0, crest x -0.39
+  tau -0.35: steepest 64 deg, crest-to-toe mean 32 deg, crest 0.457 toe -0.056 h0, crest x -0.37
+  tau -0.33: steepest 66 deg, crest-to-toe mean 32 deg, crest 0.457 toe -0.056 h0, crest x -0.34
+  tau -0.30: steepest 68 deg, crest-to-toe mean 32 deg, crest 0.458 toe -0.056 h0, crest x -0.31
+  tau -0.28: steepest 58 deg, crest-to-toe mean 32 deg, crest 0.458 toe -0.056 h0, crest x -0.29
+  tau -0.25: steepest 60 deg, crest-to-toe mean 32 deg, crest 0.458 toe -0.057 h0, crest x -0.26
+  tau -0.23: steepest 69 deg, crest-to-toe mean 32 deg, crest 0.459 toe -0.057 h0, crest x -0.24
+  tau -0.20: steepest 74 deg, crest-to-toe mean 32 deg, crest 0.459 toe -0.057 h0, crest x -0.21
+  tau -0.18: steepest 63 deg, crest-to-toe mean 32 deg, crest 0.459 toe -0.057 h0, crest x -0.19
+  tau -0.15: steepest 78 deg, crest-to-toe mean 32 deg, crest 0.459 toe -0.057 h0, crest x -0.16
+  tau -0.13: steepest 81 deg, crest-to-toe mean 33 deg, crest 0.459 toe -0.058 h0, crest x -0.13
+  tau -0.10: steepest 83 deg, crest-to-toe mean 33 deg, crest 0.459 toe -0.058 h0, crest x -0.11
+  tau -0.08: steepest 74 deg, crest-to-toe mean 33 deg, crest 0.460 toe -0.058 h0, crest x -0.08
+  tau -0.05: steepest 89 deg, crest-to-toe mean 33 deg, crest 0.460 toe -0.057 h0, crest x -0.05
+  tau -0.03: steepest 92 deg (overturned), crest-to-toe mean 33 deg, crest 0.460 toe -0.058 h0, crest x -0.03
+  tau -0.00: steepest 95 deg (overturned), crest-to-toe mean 34 deg, crest 0.460 toe -0.058 h0, crest x -0.00
+  tau 0.02: steepest 99 deg (overturned), crest-to-toe mean 34 deg, crest 0.460 toe -0.059 h0, crest x 0.03
+  tau 0.05: steepest 104 deg (overturned), crest-to-toe mean 34 deg, crest 0.460 toe -0.059 h0, crest x 0.05
+  tau 0.07: steepest 104 deg (overturned), crest-to-toe mean 34 deg, crest 0.460 toe -0.060 h0, crest x 0.09
+  tau 0.10: steepest 112 deg (overturned), crest-to-toe mean 35 deg, crest 0.460 toe -0.059 h0, crest x 0.12
+  tau 0.12: steepest 113 deg (overturned), crest-to-toe mean 35 deg, crest 0.461 toe -0.059 h0, crest x 0.14
+  tau 0.15: steepest 126 deg (overturned), crest-to-toe mean 35 deg, crest 0.461 toe -0.060 h0, crest x 0.17
+  tau 0.17: steepest 133 deg (overturned), crest-to-toe mean 35 deg, crest 0.461 toe -0.059 h0, crest x 0.20
+  tau 0.20: steepest 138 deg (overturned), crest-to-toe mean 36 deg, crest 0.462 toe -0.060 h0, crest x 0.23
+  tau 0.22: steepest 145 deg (overturned), crest-to-toe mean 36 deg, crest 0.462 toe -0.059 h0, crest x 0.25
+  tau 0.25: steepest 150 deg (overturned), crest-to-toe mean 36 deg, crest 0.462 toe -0.060 h0, crest x 0.28
+  tau 0.27: steepest 158 deg (overturned), crest-to-toe mean 37 deg, crest 0.463 toe -0.060 h0, crest x 0.30
+  tau 0.30: steepest 163 deg (overturned), crest-to-toe mean 37 deg, crest 0.463 toe -0.060 h0, crest x 0.33
+  tau 0.32: steepest 177 deg (overturned), crest-to-toe mean 37 deg, crest 0.464 toe -0.060 h0, crest x 0.36
+  tau 0.35: steepest 172 deg (overturned), crest-to-toe mean 37 deg, crest 0.464 toe -0.061 h0, crest x 0.38
+  tau 0.37: steepest 178 deg (overturned), crest-to-toe mean 38 deg, crest 0.464 toe -0.060 h0, crest x 0.41
+  tau 0.40: steepest 180 deg (overturned), crest-to-toe mean 38 deg, crest 0.465 toe -0.061 h0, crest x 0.44
+  tau 0.42: steepest 173 deg (overturned), crest-to-toe mean 38 deg, crest 0.465 toe -0.061 h0, crest x 0.46
+  tau 0.45: steepest 177 deg (overturned), crest-to-toe mean 39 deg, crest 0.465 toe -0.060 h0, crest x 0.48
+  tau 0.47: steepest 168 deg (overturned), crest-to-toe mean 39 deg, crest 0.466 toe -0.061 h0, crest x 0.51
+  tau 0.50: steepest 169 deg (overturned), crest-to-toe mean 39 deg, crest 0.466 toe -0.061 h0, crest x 0.53
+  tau 0.52: steepest 178 deg (overturned), crest-to-toe mean 40 deg, crest 0.466 toe -0.060 h0, crest x 0.56
+  tau 0.55: steepest 175 deg (overturned), crest-to-toe mean 40 deg, crest 0.466 toe -0.061 h0, crest x 0.59
+  tau 0.57: steepest 177 deg (overturned), crest-to-toe mean 40 deg, crest 0.466 toe -0.061 h0, crest x 0.61
+  tau 0.60: steepest 177 deg (overturned), crest-to-toe mean 40 deg, crest 0.466 toe -0.060 h0, crest x 0.63

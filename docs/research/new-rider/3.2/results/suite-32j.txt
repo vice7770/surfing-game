@@ -1,0 +1,12 @@
+Merge checks, step 3.2j (branch claude/rider-new-32j @ 5e042242, on main 33e54dfe).
+Machine: this M1 with three Basilisk runs alongside the whole time, and the Canyon byte check running during the suite.
+
+== The suite: npx vitest run src --maxWorkers=3 --exclude SurfZoneSimulation.test.ts --exclude SurfZoneRunner.test.ts
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 351 passed | 37 skipped (389)
+      Tests  1 failed | 3425 passed | 23 expected fail | 43 skipped (3492)
+== The one failure, re-run alone with --testTimeout=300000 (the known 60 s flake on this loaded M1):
+   src/wave/barrel/poolBarrelPerf.test.ts, which timed out at 77.5 s in the suite
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Duration  55.48s (tests 97%, transform 2%, import 1%)

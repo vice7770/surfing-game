@@ -1,0 +1,27 @@
+# usage: mdtab.py <json>... ; the README's tables (markdown) from the probe's output. Forces in g of the whole system (N / (M g)); drag positive = slows.
+import json,sys
+G=9.81
+def rows(o):
+  W=(o['mass']['board']+o['mass']['rider'])*G
+  for b in o['bins']:
+    if b['v']<2.0 or b['planing']<0.5 or b['pelvisY']<0.1: break
+    yield b,(lambda k,b=b:b[k]/W)
+for p in sys.argv[1:]:
+  for o in json.load(open(p)):
+    m=o['marks']; mk=lambda d: f"{m[str(d)]['v']} m/s ({m[str(d)]['kept']}) at {m[str(d)]['t']} s" if str(d) in m else 'not reached'
+    print(f"\n### {p.split('/')[-1][:-5]}: {o['name']} (stick on at {o['v0']} m/s; 90°: {mk(90)}; 120°: {mk(120)}; 180°: {mk(180)}; ends {o['end'].split(' bank')[0]} at {o['turned']}°)\n")
+    print("Drag along the path, g:\n")
+    print("| t, s | turned | total | hull pressure | bottom friction | deck friction | fins, induced | fins, profile | legs | hands | rest of body | rails + waves | rule forces | not explained |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for b,g in rows(o):
+      prof=sum(b[f'fin_{n}_profile'] for n in ('left','right','centre'))/( (o['mass']['board']+o['mass']['rider'])*G)
+      fins=-g('finsAll_t'); legs=-(g('body_leftLeg_t')+g('body_rightLeg_t')); hands=-(g('body_handL_t')+g('body_handR_t'))
+      rest=-g('bodyWater_t')-legs-hands; rw=-(g('rails_t')+g('radiation_t')+g('addedMass_t')+g('buoyancy_t')+g('froth_t')+g('bed_t')); rule=-(g('assist_t')+g('carry_t')+g('leanOut_t'))
+      print(f"| {b['t1']:.1f} | {b['turned']:.0f}° | **{-g('measured_t'):.3f}** | {-g('pressure_t')-g('deckPressure_t'):.3f} | {-g('friction_t'):.3f} | {-g('deckFriction_t'):.3f} | {fins-prof:.3f} | {prof:.3f} | {legs:.3f} | {hands:.3f} | {rest:.3f} | {rw:.3f} | {rule:.3f} | {-(g('measured_t')-g('sum_t')):.3f} |")
+    print("\nTurning force (toward the centre), g, and the state:\n")
+    print("| t, s | speed | turning, total | by hull | by fins | by COMPRESS_PULL | yaw rate, °/s | body bank | rail (board roll) | trim (nose up) | attack to the path | load, bw | front-foot share | body behind mid, m | pressure centre, m | wetted length, m | wetted bottom, m² | wetted deck, m² | deck at rear foot, m | inside rail, m | pelvis above water, m | fin slip L / R / C |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for b,g in rows(o):
+      print(f"| {b['t1']:.1f} | {b['v']:.2f} | {g('measured_n'):.2f} | {g('pressure_n'):.2f} | {g('finsAll_n'):.2f} | {g('assist_n'):.2f} | {b['rate']:.0f} | {b['bank']:.0f}° | {b['roll']:.0f}° | {b['pitch']:.1f}° | {b['attack']:.1f}° | {b['load']:.2f} | {b['front']:.2f} | {-b['bodyZ']:.2f} | {b['cop']:+.2f} | {b['wetLen']:.2f} | {b['wetArea']:.2f} | {b['deckWet']:.2f} | {b['yDeckRear']:+.2f} | {b['yRailIn']:+.2f} | {b['pelvisY']:.2f} | {b['fin_left_attack']:+.0f}° / {b['fin_right_attack']:+.0f}° / {b['fin_centre_attack']:+.0f}° |")
+    if '90' in m:
+      w=m['90']['work']; print(f"\nWork from stick-on to 90°, J: hull pressure {w['b_pressure']}, hull friction {w['b_friction']}, fins {w['b_fins']}, rails {w['b_rails']}, wave-making {w['b_radiation']+w['b_addedMass']}, rider in the water {w['r_water']}, COMPRESS_PULL {w['r_assist']}, carry {w['r_carry']}; kinetic energy {w['ke']}, height {w['pe']}.")

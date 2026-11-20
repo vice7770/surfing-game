@@ -1,0 +1,254 @@
+# prone riders through the forming tube: pool straight Barrel, H 1.05 m at the feed, cases pool, switches {"tubeSeam":"blend"}
+tubeFace {"anchor":true,"union":true,"lag":true,"clockRate":1.25,"thrownEnds":true,"continuity":true,"distance":true,"contour":true,"wallFlow":true,"contact":true,"cap":true,"merge":true,"guard":false,"track":false,"inertia":true,"retire":true,"buoy":false,"drop":false,"formClock":false,"seam":{"tau":[-0.5,0],"band":0.25}}
+4 waves of riders after 50 s; measured 44.2 s; CPU 1/60 s; 223 s of wall time; take-off (84.4, -195.5), s 39.9; first throw there at 50.70 s; game start 18.0 m out
+
+## The clock (every front point, every step)
+before the throw: rate p50 1.124, p95 1.500, p99 1.500, max 1.500 (n 25382); on a rate bound 84.11 % of steps (0.5×: 40.04 %, 1.5×: 44.06 %) [bar: ≤ 1 %]
+on a bound by the clock's reading: τ to -1.5 s: 90.68 % of 2778; τ -1.5 to -1 s: 86.11 % of 7353; τ -1 to -0.5 s: 82.18 % of 7628; τ -0.5 to -0.25 s: 82.58 % of 3811; τ -0.25 to 0 s: 80.82 % of 3812
+|Δτ̇| a step, before the throw: p50 0.0000, p95 1.0000, p99 1.0000, max 1.0000 (n 25109) [bar: p99 ≤ 0.02]
+|Δτ̇| a step, every step (the throw and after it too): p50 0.0000, p95 0.7326, p99 1.0000, max 1.0000 (n 95164)
+the wall water's rate (tauRate), its change a step: p50 0.0000, p95 0.7330, p99 1.0000, max 1.2500 (n 94867); against the step the clock then took: p50 0.0000, p95 0.7365, p99 1.0000, max 1.2500 (n 94867)
+formation bar 7: each point's first clock less its case's τ_e: p5 0.008, p50 0.025, p95 2.868, p99 7.689, max 8.127 (n 292) s; within 0.1 s on 90.07 % of 292
+the contour throw: the crest's own distance to its contour as its clock crosses 0: p5 -0.82, p50 -0.06, p95 0.37 m, within 1 m on 95.63 % of 252; thrown before the solver broke it 60.71 %
+throws by reef column (n seaward of the reef line, less the take-off's 0.16 m): s 30: 0.16 (n 23); s 45: 2.08 (n 68); s 60: 4.83 (n 62); s 75: 5.80 (n 47); s 90: 5.61 (n 44); s 105: 4.72 (n 8)
+the surf meter over the measured time: {"typical":1.5969484428863712,"sets":1.6209055655322597,"waves":4}
+
+## The felt water at the board (attached riders, its change a step, m/s)
+every step: p50 0.010, p95 0.037, p99 0.114, max 1.424 (n 25862)
+in the case's water: p50 0.205, p95 0.567, p99 0.902, max 1.185 (n 178) [bar: p99 ≤ 0.2]
+for τ < −0.5 s (the nearest front point's clock): p50 0.019, p95 0.044, p99 0.056, max 0.238 (n 3577) [ruling 5's bar: p99 ≤ 0.1]
+jumps over 0.2 m/s a step: 126 of 25862 steps (0.49 %) [ruling 5's bar: ≤ 0.6 %]; where the case is not above the solver (hc ≤ 0.02 m): 36 (28.57 % of the jumps)
+the answering source (the case's wall water or the solver's): in the wall water on 317 steps; switches where hc ≤ 0.02 m: 35, with a jump over 0.2 m/s: 0 [ruling 5's bar: 0]; the felt water's change at those switches: p50 0.034, p95 0.079, p99 0.088, max 0.088 (n 35)
+
+## The seam (columns s 45 and s 60, every 0.1 s, the surface every 0.05 m along the ray; where the case leaves the solver's surface, hc crossing 1 mm)
+the front points' foot height there: p50 0.854, p95 0.935, p99 0.935, max 0.935 (n 660) m
+τ under -1 s: height step p50 0.000, p90 0.001, max 0.001 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.5, p90 1.3, max 1.9° [bar: ≤ 3]; flow across 0.25 m p50 0.16, p90 0.23, max 0.25 m/s [bar: ≤ 0.2] (n 67)
+τ -1 to -0.5 s: height step p50 0.000, p90 0.001, max 0.003 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.4, p90 1.5, max 4.0° [bar: ≤ 3]; flow across 0.25 m p50 0.23, p90 0.28, max 0.43 m/s [bar: ≤ 0.2] (n 103)
+τ -0.5 to 0 s: height step p50 0.000, p90 0.003, max 0.014 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.7, p90 4.1, max 46.4° [bar: ≤ 3]; flow across 0.25 m p50 0.23, p90 0.43, max 2.84 m/s [bar: ≤ 0.2] (n 249)
+τ 0 to 0.5 s: height step p50 0.000, p90 0.001, max 0.558 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.5, p90 3.5, max 68.2° [bar: ≤ 3]; flow across 0.25 m p50 0.18, p90 0.48, max 5.34 m/s [bar: ≤ 0.2] (n 407)
+τ 0.5 to on: height step p50 0.001, p90 0.006, max 0.505 m [bar: ≤ 0.01]; slope's turn less the solver's p50 0.4, p90 13.2, max 66.7° [bar: ≤ 3]; flow across 0.25 m p50 0.16, p90 0.57, max 4.83 m/s [bar: ≤ 0.2] (n 755)
+
+## Passive prone: fell 5 of 32 [bar: ≤ 3 of 32] (lost board 5); in the case's water as they fell 5; before the throw (τ < 0) 1 [ruling 5's bar: ≤ 3], after it (τ ≥ 0) 4, no slice by them 0
+  wave 0 s 40 3 m out: held
+  wave 0 s 40 12 m out: held
+  wave 0 s 55 0 m out: fell at 7.52 s (lost board; -0.1 m seaward of the take-off's line; in the case's water; τ 0.42 s)
+  wave 0 s 55 6 m out: held
+  wave 0 s 55 12 m out: held
+  wave 0 s 55 18 m out: held
+  wave 0 s 70 3 m out: held
+  wave 0 s 70 12 m out: held
+  wave 1 s 40 3 m out: fell at 5.12 s (lost board; 1.8 m seaward of the take-off's line; in the case's water; τ -0.14 s)
+  wave 1 s 40 12 m out: held
+  wave 1 s 55 0 m out: fell at 7.55 s (lost board; 0.4 m seaward of the take-off's line; in the case's water; τ 0.37 s)
+  wave 1 s 55 6 m out: held
+  wave 1 s 55 12 m out: held
+  wave 1 s 55 18 m out: held
+  wave 1 s 70 3 m out: held
+  wave 1 s 70 12 m out: held
+  wave 2 s 40 3 m out: held
+  wave 2 s 40 12 m out: held
+  wave 2 s 55 0 m out: fell at 7.65 s (lost board; 0.3 m seaward of the take-off's line; in the case's water; τ 0.53 s)
+  wave 2 s 55 6 m out: held
+  wave 2 s 55 12 m out: held
+  wave 2 s 55 18 m out: held
+  wave 2 s 70 3 m out: held
+  wave 2 s 70 12 m out: held
+  wave 3 s 40 3 m out: held
+  wave 3 s 40 12 m out: held
+  wave 3 s 55 0 m out: fell at 7.50 s (lost board; 0.8 m seaward of the take-off's line; in the case's water; τ 0.08 s)
+  wave 3 s 55 6 m out: held
+  wave 3 s 55 12 m out: held
+  wave 3 s 55 18 m out: held
+  wave 3 s 70 3 m out: held
+  wave 3 s 70 12 m out: held
+
+## Scripted rides: 24; popped up 22; stood 14; failed pop-ups 8 of 22 [ruling 4's bar: ≤ 2 of 16; ruling 5's: ≤ 8 of 22 and stood ≥ 14] (balance 6, lost board 2); fell after standing 14 (balance 12, lost board 2); fell paddling, before any pop-up 0 (none); never popped up and held 2
+  wave 0 18.0 m out steer 0: cue 3.65 s, up from 3.65 s; fell at 4.55 s (balance, landing); carried -9.2 m past the take-off
+  wave 0 18.0 m out steer -0.5: cue 3.65 s, up from 3.65 s; fell at 4.55 s (balance, landing); carried -9.2 m past the take-off
+  wave 0 15.0 m out steer 0: cue 3.73 s, up from 3.73 s, stood 4.93 s; fell at 6.37 s (balance, standing); carried -3.5 m past the take-off
+  wave 0 15.0 m out steer -0.5: cue 3.73 s, up from 3.73 s, stood 4.93 s; fell at 5.20 s (balance, standing); carried -5.2 m past the take-off
+  wave 0 12.0 m out steer 0: cue 3.97 s, up from 3.97 s, stood 5.17 s; fell at 6.60 s (balance, standing); carried 3.1 m past the take-off
+  wave 0 12.0 m out steer -0.5: cue 3.97 s, up from 3.97 s, stood 5.17 s; fell at 6.37 s (balance, standing); carried 2.1 m past the take-off
+  wave 1 18.0 m out steer 0: cue 3.62 s, up from 3.62 s; fell at 4.55 s (balance, landing); carried -8.9 m past the take-off
+  wave 1 18.0 m out steer -0.5: cue 3.62 s, up from 3.62 s; fell at 4.57 s (balance, landing); carried -8.8 m past the take-off
+  wave 1 15.0 m out steer 0: cue 3.67 s, up from 3.67 s, stood 4.87 s; fell at 5.65 s (balance, standing); carried -3.5 m past the take-off
+  wave 1 15.0 m out steer -0.5: cue 3.67 s, up from 3.67 s, stood 4.87 s; fell at 5.20 s (balance, standing); carried -4.4 m past the take-off
+  wave 1 12.0 m out steer 0: cue 3.85 s, up from 3.85 s, stood 5.05 s; fell at 5.40 s (lost board, standing, in the case's water); carried -0.7 m past the take-off
+  wave 1 12.0 m out steer -0.5: cue 3.85 s, up from 3.85 s, stood 5.05 s; fell at 5.47 s (lost board, standing, in the case's water); carried -0.6 m past the take-off
+  wave 2 18.0 m out steer 0: no cue; on the board to the end; carried 0.9 m past the take-off
+  wave 2 18.0 m out steer -0.5: no cue; on the board to the end; carried 0.9 m past the take-off
+  wave 2 15.0 m out steer 0: cue 3.80 s, up from 3.80 s, stood 5.00 s; fell at 6.22 s (balance, standing); carried -4.6 m past the take-off
+  wave 2 15.0 m out steer -0.5: cue 3.80 s, up from 3.80 s, stood 5.00 s; fell at 5.28 s (balance, standing); carried -5.9 m past the take-off
+  wave 2 12.0 m out steer 0: cue 4.12 s, up from 4.12 s, stood 5.32 s; fell at 6.62 s (balance, standing); carried 0.8 m past the take-off
+  wave 2 12.0 m out steer -0.5: cue 4.12 s, up from 4.12 s, stood 5.32 s; fell at 5.70 s (balance, standing); carried -1.1 m past the take-off
+  wave 3 18.0 m out steer 0: cue 4.23 s, up from 4.23 s; fell at 5.22 s (balance, landing); carried -7.8 m past the take-off
+  wave 3 18.0 m out steer -0.5: cue 4.23 s, up from 4.23 s; fell at 5.20 s (balance, landing); carried -7.8 m past the take-off
+  wave 3 15.0 m out steer 0: cue 4.23 s, up from 4.23 s, stood 5.43 s; fell at 6.17 s (balance, standing); carried -4.6 m past the take-off
+  wave 3 15.0 m out steer -0.5: cue 4.23 s, up from 4.23 s, stood 5.43 s; fell at 5.75 s (balance, standing); carried -5.3 m past the take-off
+  wave 3 12.0 m out steer 0: cue 4.30 s, up from 4.30 s; fell at 5.02 s (lost board, push); carried -4.1 m past the take-off
+  wave 3 12.0 m out steer -0.5: cue 4.30 s, up from 4.30 s; fell at 5.02 s (lost board, push); carried -4.1 m past the take-off
+
+## RULING 6: the felt water's jumps (> 0.2 m/s a step) by cause
+steps 25918; in the case (hc > 0.02) 178: wall branch 178, lip branch 0, sea 0; the model against the sample off by > 0.02 m/s on 0 steps
+in the case: |felt − sea's flow| p50 0.74, p95 3.45, p99 3.88, max 3.89 (n 178); wall branch: n_y p50 0.93, p95 0.99, p99 0.99, max 1.00 (n 178) (p5 0.74); nearest weight w p50 0.23, p95 0.52, p99 0.54, max 0.56 (n 178); depth along the normal p50 0.05, p95 0.05, p99 0.05, max 0.05 (n 178); |board − crest| along the ray p50 3.58, p95 6.15, p99 6.74, max 7.56 (n 178) m/s
+in the case: the wave speed c the wall water reads (wallSpeed): before the throw p50 7.87, p95 8.63, p99 8.74, max 8.79 (n 118); after p50 5.24, p95 7.01, p99 7.17, max 7.17 (n 60); its change a step p50 0.10, p95 0.80, p99 1.15, max 1.41 (n 178) m/s
+the board's acceleration (attached), m/s²: in the case p50 7.7, p95 38.6, p99 54.3, max 57.0 (n 178); on the sea p50 1.0, p95 4.3, p99 8.1, max 75.2 (n 25740) [ruling 4's bar: p99 ≤ 10 in the case]
+the wave's frame, every step with a frame: the field's own change p50 0.015, p95 0.129, p99 0.390, max 1.692 (n 6107); the board's move p50 0.029, p95 0.096, p99 0.221, max 0.724 (n 6107)
+the same, in the case: field p50 0.168, p95 0.518, p99 0.924, max 1.301 (n 178); move p50 0.117, p95 0.300, p99 0.620, max 0.633 (n 178)
+in the case before the throw: field p50 0.170, p95 0.454, p99 0.788, max 1.301 (n 118); move p50 0.105, p95 0.300, p99 0.620, max 0.633 (n 118)
+in the case after the throw: field p50 0.168, p95 0.641, p99 0.924, max 0.924 (n 60); move p50 0.126, p95 0.315, p99 0.392, max 0.392 (n 60)
+ALL | in the case | crest speed: n 30, sum 12.7, max 0.90
+ALL | in the case | normal turning: n 20, sum 7.0, max 0.65
+ALL | in the case | seam share α: n 41, sum 14.4, max 1.18
+ALL | on the sea | crest speed: n 1, sum 0.4, max 0.37
+ALL | on the sea | the sea (solver flow): n 34, sum 17.8, max 1.42
+BAND | in the case | 0≤τ<0.5 | crest speed: n 26, sum 11.4, max 0.90
+BAND | in the case | 0≤τ<0.5 | normal turning: n 2, sum 0.6, max 0.34
+BAND | in the case | τ<−0.5 | seam share α: n 2, sum 0.5, max 0.24
+BAND | in the case | τ≥0.5 | crest speed: n 2, sum 0.7, max 0.45
+BAND | in the case | −0.5≤τ<0 | crest speed: n 2, sum 0.6, max 0.42
+BAND | in the case | −0.5≤τ<0 | normal turning: n 18, sum 6.4, max 0.65
+BAND | in the case | −0.5≤τ<0 | seam share α: n 39, sum 13.9, max 1.18
+BAND | on the sea | 0≤τ<0.5 | crest speed: n 1, sum 0.4, max 0.37
+BAND | on the sea | 0≤τ<0.5 | the sea (solver flow): n 26, sum 15.3, max 1.42
+BAND | on the sea | −0.5≤τ<0 | the sea (solver flow): n 8, sum 2.5, max 0.49
+FIELD>0.2 | in the case | crest speed: n 25, sum 10.7, max 0.92
+FIELD>0.2 | in the case | normal turning: n 5, sum 2.7, max 0.79
+FIELD>0.2 | in the case | seam share α: n 40, sum 13.4, max 1.30
+FIELD>0.2 | on the sea | crest speed: n 1, sum 0.3, max 0.28
+FIELD>0.2 | on the sea | the sea (solver flow): n 29, sum 18.0, max 1.69
+MOVE>0.2 | in the case | normal turning: n 19, sum 5.7, max 0.62
+MOVE>0.2 | in the case | seam share α: n 4, sum 1.6, max 0.63
+MOVE>0.2 | in the case | the sea (solver flow): n 1, sum 0.4, max 0.39
+MOVE>0.2 | on the sea | the sea (solver flow): n 13, sum 4.8, max 0.72
+SPLIT | in the case | 0≤τ<0.5 | larger part: field: n 24, sum 10.8, max 0.90
+SPLIT | in the case | 0≤τ<0.5 | larger part: move: n 4, sum 1.2, max 0.44
+SPLIT | in the case | τ<−0.5 | larger part: field: n 2, sum 0.5, max 0.24
+SPLIT | in the case | τ≥0.5 | larger part: field: n 2, sum 0.7, max 0.45
+SPLIT | in the case | −0.5≤τ<0 | larger part: field: n 47, sum 17.1, max 1.18
+SPLIT | in the case | −0.5≤τ<0 | larger part: move: n 12, sum 3.9, max 0.48
+SPLIT | on the sea | 0≤τ<0.5 | larger part: field: n 27, sum 15.7, max 1.42
+SPLIT | on the sea | −0.5≤τ<0 | larger part: field: n 5, sum 1.5, max 0.39
+SPLIT | on the sea | −0.5≤τ<0 | larger part: move: n 3, sum 1.0, max 0.49
+
+## RULING 6: each fall, the jumps in its last 0.4 s
+  ride w0 18.0 m out steer 0: balance (landing) at 4.55 s, τ -1.39, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w0 18.0 m out steer -0.5: balance (landing) at 4.55 s, τ -1.39, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w0 15.0 m out steer -0.5: balance (standing) at 5.20 s, τ -0.59, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w0 15.0 m out steer 0: balance (standing) at 6.37 s, τ 0.44, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w0 12.0 m out steer -0.5: balance (standing) at 6.37 s, τ 0.29, hc 0.00, sea; jumps in the last 0.4 s: 1, sum 1.39, max 1.39; by cause: the sea (solver flow) 1.39
+  ride w0 12.0 m out steer 0: balance (standing) at 6.60 s, τ 0.53, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  passive w0 s 55 0 m out: lost board (prone) at 7.52 s, τ 0.42, hc 0.21, wall; jumps in the last 0.4 s: 7, sum 2.80, max 0.88; by cause: crest speed 2.46, normal turning 0.34
+  ride w1 18.0 m out steer 0: balance (landing) at 4.55 s, τ -1.28, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w1 18.0 m out steer -0.5: balance (landing) at 4.57 s, τ -1.26, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  passive w1 s 40 3 m out: lost board (prone) at 5.12 s, τ -0.14, hc 0.47, wall; jumps in the last 0.4 s: 18, sum 7.16, max 1.18; by cause: seam share α 4.12, normal turning 3.04
+  ride w1 15.0 m out steer -0.5: balance (standing) at 5.20 s, τ -0.45, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w1 12.0 m out steer 0: lost board (standing) at 5.40 s, τ -0.21, hc 0.61, wall; jumps in the last 0.4 s: 17, sum 5.67, max 0.57; by cause: seam share α 3.79, normal turning 1.65, crest speed 0.23
+  ride w1 12.0 m out steer -0.5: lost board (standing) at 5.47 s, τ -0.12, hc 0.69, wall; jumps in the last 0.4 s: 18, sum 6.42, max 0.65; by cause: seam share α 4.72, normal turning 1.70
+  ride w1 15.0 m out steer 0: balance (standing) at 5.65 s, τ -0.15, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  passive w1 s 55 0 m out: lost board (prone) at 7.55 s, τ 0.37, hc 0.32, wall; jumps in the last 0.4 s: 12, sum 5.04, max 0.90; by cause: crest speed 4.58, normal turning 0.24, seam share α 0.22
+  ride w2 15.0 m out steer -0.5: balance (standing) at 5.28 s, τ 0.00, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w2 12.0 m out steer -0.5: balance (standing) at 5.70 s, τ 0.24, hc 0.00, sea; jumps in the last 0.4 s: 1, sum 0.60, max 0.60; by cause: the sea (solver flow) 0.60
+  ride w2 15.0 m out steer 0: balance (standing) at 6.22 s, τ 0.76, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w2 12.0 m out steer 0: balance (standing) at 6.62 s, τ 1.04, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  passive w2 s 55 0 m out: lost board (prone) at 7.65 s, τ 0.53, hc 0.15, wall; jumps in the last 0.4 s: 11, sum 4.64, max 0.62; by cause: crest speed 4.64
+  ride w3 12.0 m out steer 0: lost board (push) at 5.02 s, τ -1.46, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w3 12.0 m out steer -0.5: lost board (push) at 5.02 s, τ -1.46, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w3 18.0 m out steer -0.5: balance (landing) at 5.20 s, τ -1.14, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w3 18.0 m out steer 0: balance (landing) at 5.22 s, τ -1.11, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w3 15.0 m out steer -0.5: balance (standing) at 5.75 s, τ -0.79, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  ride w3 15.0 m out steer 0: balance (standing) at 6.17 s, τ -0.50, hc 0.00, sea; jumps in the last 0.4 s: 0, sum 0.00, max 0.00; by cause: none
+  passive w3 s 55 0 m out: lost board (prone) at 7.50 s, τ 0.08, hc 0.05, wall; jumps in the last 0.4 s: 6, sum 2.20, max 0.49; by cause: crest speed 1.17, the sea (solver flow) 1.03
+
+## RULING 6: every jump in the case
+  passive w0 s 55 0 m out t 7.25 prone τ 0.14 hc 0.03 wall→wall Δ 0.31 [crest speed 0.21] field 0.20 [crest speed] move 0.15 [the sea (solver flow)] rel -5.11 ny 0.95 w 0.23 nd 0.05 seam 0.28 r -0.27 B 1.00 wt 1.00 C 6.44 surfV (5.62, 0.01) floor – ceil – flow (0.28, 1.56, 1.19) sea (0.33, 1.49, 1.06)
+  passive w0 s 55 0 m out t 7.33 prone τ 0.23 hc 0.05 wall→wall Δ 0.31 [crest speed 0.39] field 0.35 [crest speed] move 0.13 [normal turning] rel -4.20 ny 0.89 w 0.37 nd 0.04 seam 0.39 r -0.14 B 1.00 wt 1.00 C 4.51 surfV (5.20, -0.12) floor – ceil – flow (0.35, 1.99, 0.99) sea (0.17, 1.80, 1.44)
+  passive w0 s 55 0 m out t 7.35 prone τ 0.25 hc 0.06 wall→wall Δ 0.34 [crest speed 0.27] field 0.25 [crest speed] move 0.12 [normal turning] rel -3.04 ny 0.87 w 0.47 nd 0.04 seam 0.45 r -0.11 B 1.00 wt 1.00 C 5.11 surfV (5.57, -0.28) floor – ceil – flow (0.22, 2.12, 1.27) sea (0.14, 1.84, 1.51)
+  passive w0 s 55 0 m out t 7.38 prone τ 0.28 hc 0.11 wall→wall Δ 0.88 [crest speed 0.50] field 0.52 [crest speed] move 0.39 [the sea (solver flow)] rel -2.87 ny 0.80 w 0.51 nd 0.04 seam 0.63 r -0.04 B 1.00 wt 1.00 C 6.00 surfV (7.51, -0.66) floor – ceil – flow (0.01, 2.51, 2.22) sea (0.09, 1.92, 2.01)
+  passive w0 s 55 0 m out t 7.40 prone τ 0.30 hc 0.14 wall→wall Δ 0.34 [normal turning 0.24] field 0.17 [crest speed] move 0.39 [normal turning] rel -3.09 ny 0.76 w 0.50 nd 0.04 seam 0.76 r 0.01 B 1.00 wt 1.00 C 5.69 surfV (5.59, -0.33) floor – ceil – flow (0.10, 2.77, 2.41) sea (0.07, 1.95, 2.48)
+  passive w0 s 55 0 m out t 7.42 prone τ 0.32 hc 0.16 wall→wall Δ 0.24 [crest speed 0.34] field 0.40 [crest speed] move 0.23 [normal turning] rel -2.35 ny 0.74 w 0.50 nd 0.04 seam 0.79 r 0.03 B 1.00 wt 1.00 C 5.27 surfV (6.87, -1.08) floor – ceil – flow (0.19, 2.86, 2.20) sea (0.04, 1.97, 2.58)
+  passive w1 s 40 3 m out t 4.80 prone τ -0.47 hc 0.04 wall→wall Δ 0.26 [seam share α 0.25] field 0.09 [seam share α] move 0.18 [seam share α] rel -5.22 ny 0.89 w 0.17 nd 0.04 seam 0.19 r 0.36 B 0.85 wt 1.00 C 7.85 surfV (-3.29, 8.58) floor – ceil – flow (-0.58, 1.36, 2.44) sea (-0.41, 1.28, 2.06)
+  passive w1 s 40 3 m out t 4.83 prone τ -0.43 hc 0.08 wall→wall Δ 0.28 [seam share α 0.27] field 0.11 [seam share α] move 0.19 [seam share α] rel -5.01 ny 0.87 w 0.52 nd 0.04 seam 0.28 r 0.41 B 0.85 wt 1.00 C 7.80 surfV (-1.87, 7.94) floor – ceil – flow (-0.72, 1.43, 2.71) sea (-0.43, 1.25, 2.10)
+  passive w1 s 40 3 m out t 4.85 prone τ -0.41 hc 0.13 wall→wall Δ 0.45 [seam share α 0.34] field 0.26 [seam share α] move 0.21 [seam share α] rel -4.97 ny 0.84 w 0.49 nd 0.04 seam 0.41 r 0.45 B 0.85 wt 1.00 C 7.86 surfV (9.22, -1.87) floor – ceil – flow (-0.91, 1.54, 3.10) sea (-0.45, 1.23, 2.12)
+  passive w1 s 40 3 m out t 4.87 prone τ -0.40 hc 0.19 wall→wall Δ 0.36 [seam share α 0.24] field 0.26 [seam share α] move 0.13 [surface height (Bernoulli drop)] rel -4.87 ny 0.80 w 0.47 nd 0.04 seam 0.49 r 0.50 B 0.85 wt 1.00 C 7.90 surfV (-0.27, 7.30) floor – ceil – flow (-1.08, 1.62, 3.41) sea (-0.46, 1.21, 2.13)
+  passive w1 s 40 3 m out t 4.88 prone τ -0.38 hc 0.17 wall→wall Δ 0.32 [seam share α 0.30] field 0.44 [seam share α] move 0.14 [surface height (Bernoulli drop)] rel -4.82 ny 0.81 w 0.51 nd 0.04 seam 0.39 r 0.50 B 0.85 wt 1.00 C 8.05 surfV (5.36, 1.72) floor – ceil – flow (-0.90, 1.47, 3.18) sea (-0.47, 1.19, 2.15)
+  passive w1 s 40 3 m out t 4.90 prone τ -0.35 hc 0.24 wall→wall Δ 0.42 [seam share α 0.29] field 0.28 [seam share α] move 0.15 [normal turning] rel -4.82 ny 0.74 w 0.49 nd 0.04 seam 0.48 r 0.56 B 0.85 wt 1.00 C 7.99 surfV (6.30, 0.89) floor – ceil – flow (-1.07, 1.59, 3.54) sea (-0.47, 1.16, 2.16)
+  passive w1 s 40 3 m out t 4.92 prone τ -0.33 hc 0.32 wall→wall Δ 0.47 [seam share α 0.24] field 0.28 [seam share α] move 0.21 [normal turning] rel -4.61 ny 0.67 w 0.51 nd 0.03 seam 0.55 r 0.62 B 0.85 wt 1.00 C 8.03 surfV (10.39, -4.01) floor – ceil – flow (-1.26, 1.72, 3.95) sea (-0.47, 1.14, 2.17)
+  passive w1 s 40 3 m out t 4.93 prone τ -0.30 hc 0.40 wall→wall Δ 0.29 [normal turning 0.17] field 0.31 [seam share α] move 0.33 [normal turning] rel -4.36 ny 0.67 w 0.43 nd 0.04 seam 0.59 r 0.68 B 0.85 wt 1.00 C 8.14 surfV (9.11, -0.76) floor – ceil – flow (-1.31, 1.52, 4.16) sea (-0.47, 1.12, 2.17)
+  passive w1 s 40 3 m out t 4.95 prone τ -0.28 hc 0.46 wall→wall Δ 0.48 [normal turning 0.37] field 0.38 [seam share α] move 0.62 [normal turning] rel -4.31 ny 0.79 w 0.27 nd 0.05 seam 0.64 r 0.73 B 0.85 wt 1.00 C 8.23 surfV (8.01, 0.65) floor – ceil – flow (-1.34, 1.06, 4.28) sea (-0.47, 1.10, 2.18)
+  passive w1 s 40 3 m out t 4.97 prone τ -0.27 hc 0.50 wall→wall Δ 0.41 [normal turning 0.23] field 0.24 [seam share α] move 0.38 [normal turning] rel -4.37 ny 0.86 w 0.10 nd 0.05 seam 0.67 r 0.76 B 0.85 wt 1.00 C 8.31 surfV (8.16, 0.34) floor – ceil – flow (-1.41, 0.68, 4.41) sea (-0.47, 1.09, 2.18)
+  passive w1 s 40 3 m out t 4.98 prone τ -0.26 hc 0.52 wall→wall Δ 0.39 [normal turning 0.26] field 0.22 [seam share α] move 0.34 [normal turning] rel -4.39 ny 0.90 w 0.01 nd 0.05 seam 0.69 r 0.78 B 0.85 wt 1.00 C 8.41 surfV (8.40, 0.23) floor – ceil – flow (-1.49, 0.33, 4.55) sea (-0.47, 1.07, 2.19)
+  passive w1 s 40 3 m out t 5.00 prone τ -0.25 hc 0.53 wall→wall Δ 0.31 [normal turning 0.20] field 0.26 [seam share α] move 0.15 [normal turning] rel -4.32 ny 0.92 w 0.00 nd 0.05 seam 0.71 r 0.79 B 0.85 wt 1.00 C 8.52 surfV (8.52, 0.22) floor – ceil – flow (-1.59, 0.10, 4.73) sea (-0.47, 1.06, 2.19)
+  passive w1 s 40 3 m out t 5.02 prone τ -0.24 hc 0.53 wall→wall Δ 0.25 [normal turning 0.14] field 0.21 [seam share α] move 0.13 [normal turning] rel -4.06 ny 0.92 w 0.00 nd 0.05 seam 0.73 r 0.79 B 0.85 wt 1.00 C 8.62 surfV (8.62, 0.22) floor – ceil – flow (-1.66, -0.07, 4.90) sea (-0.47, 1.05, 2.20)
+  passive w1 s 40 3 m out t 5.03 prone τ -0.22 hc 0.41 wall→wall Δ 1.18 [seam share α 0.53] field 1.30 [seam share α] move 0.27 [normal turning] rel -4.42 ny 0.92 w 0.00 nd 0.05 seam 0.58 r 0.71 B 0.85 wt 1.00 C 8.17 surfV (8.17, 0.65) floor – ceil – flow (-1.22, 0.38, 3.90) sea (-0.47, 1.04, 2.20)
+  passive w1 s 40 3 m out t 5.05 prone τ -0.19 hc 0.45 wall→wall Δ 0.38 [seam share α 0.21] field 0.32 [seam share α] move 0.12 [normal turning] rel -3.78 ny 0.92 w 0.00 nd 0.05 seam 0.63 r 0.74 B 0.85 wt 1.00 C 8.24 surfV (8.24, 0.56) floor – ceil – flow (-1.37, 0.18, 4.19) sea (-0.48, 1.02, 2.21)
+  passive w1 s 40 3 m out t 5.07 prone τ -0.19 hc 0.46 wall→wall Δ 0.28 [normal turning 0.13] field 0.20 [seam share α] move 0.13 [normal turning] rel -3.47 ny 0.92 w 0.00 nd 0.05 seam 0.66 r 0.75 B 0.85 wt 1.00 C 8.35 surfV (8.35, 0.21) floor – ceil – flow (-1.48, 0.02, 4.39) sea (-0.48, 1.01, 2.22)
+  passive w1 s 40 3 m out t 5.08 prone τ -0.18 hc 0.48 wall→wall Δ 0.36 [normal turning 0.16] field 0.26 [crest speed] move 0.15 [normal turning] rel -3.13 ny 0.92 w 0.00 nd 0.05 seam 0.69 r 0.76 B 0.85 wt 1.00 C 8.58 surfV (8.59, 0.21) floor – ceil – flow (-1.55, -0.17, 4.68) sea (-0.48, 1.00, 2.22)
+  passive w1 s 40 3 m out t 5.10 prone τ -0.17 hc 0.47 wall→wall Δ 0.28 [normal turning 0.19] field 0.16 [seam share α] move 0.19 [normal turning] rel -2.89 ny 0.91 w 0.00 nd 0.05 seam 0.72 r 0.75 B 0.85 wt 1.00 C 8.59 surfV (8.59, 0.21) floor – ceil – flow (-1.63, -0.41, 4.81) sea (-0.48, 1.01, 2.23)
+  ride w1 12.0 m out steer 0 t 5.12 standing τ -0.54 hc 0.08 wall→wall Δ 0.24 [seam share α 0.18] field 0.26 [seam share α] move 0.04 [the sea (solver flow)] rel -3.41 ny 0.93 w 0.51 nd 0.05 seam 0.15 r 0.43 B 0.85 wt 1.00 C 7.80 surfV (-6.84, 12.69) floor – ceil – flow (-0.55, 1.21, 2.43) sea (-0.41, 1.21, 2.12)
+  ride w1 12.0 m out steer -0.5 t 5.12 standing τ -0.36 hc 0.09 wall→wall Δ 0.26 [seam share α 0.20] field 0.30 [seam share α] move 0.05 [the sea (solver flow)] rel -3.53 ny 0.92 w 0.52 nd 0.05 seam 0.17 r 0.43 B 0.85 wt 1.00 C 7.83 surfV (-11.23, 15.81) floor – ceil – flow (-0.57, 1.24, 2.47) sea (-0.41, 1.23, 2.12)
+  ride w1 12.0 m out steer 0 t 5.13 standing τ -0.52 hc 0.13 wall→wall Δ 0.22 [seam share α 0.17] field 0.20 [seam share α] move 0.05 [the sea (solver flow)] rel -3.28 ny 0.90 w 0.49 nd 0.05 seam 0.22 r 0.47 B 0.85 wt 1.00 C 7.86 surfV (-13.68, 16.31) floor – ceil – flow (-0.65, 1.24, 2.62) sea (-0.42, 1.22, 2.14)
+  ride w1 12.0 m out steer -0.5 t 5.13 standing τ -0.33 hc 0.15 wall→wall Δ 0.24 [seam share α 0.19] field 0.22 [seam share α] move 0.06 [the sea (solver flow)] rel -3.44 ny 0.90 w 0.47 nd 0.05 seam 0.25 r 0.48 B 0.85 wt 1.00 C 7.89 surfV (-7.26, 13.10) floor – ceil – flow (-0.68, 1.26, 2.69) sea (-0.42, 1.24, 2.14)
+  ride w1 12.0 m out steer 0 t 5.15 standing τ -0.49 hc 0.19 wall→wall Δ 0.22 [seam share α 0.18] field 0.21 [seam share α] move 0.08 [normal turning] rel -3.36 ny 0.87 w 0.48 nd 0.05 seam 0.29 r 0.52 B 0.85 wt 1.00 C 7.79 surfV (-3.40, 8.90) floor – ceil – flow (-0.75, 1.27, 2.82) sea (-0.43, 1.22, 2.15)
+  ride w1 12.0 m out steer -0.5 t 5.15 standing τ -0.49 hc 0.22 wall→wall Δ 0.23 [seam share α 0.19] field 0.25 [seam share α] move 0.13 [normal turning] rel -3.51 ny 0.87 w 0.43 nd 0.05 seam 0.32 r 0.53 B 0.85 wt 1.00 C 7.81 surfV (-4.76, 8.38) floor – ceil – flow (-0.78, 1.27, 2.89) sea (-0.42, 1.24, 2.15)
+  ride w1 12.0 m out steer 0 t 5.17 standing τ -0.48 hc 0.23 wall→wall Δ 0.21 [seam share α 0.13] field 0.19 [seam share α] move 0.10 [normal turning] rel -3.30 ny 0.86 w 0.41 nd 0.05 seam 0.34 r 0.55 B 0.85 wt 1.00 C 8.00 surfV (5.86, 2.62) floor – ceil – flow (-0.79, 1.24, 3.02) sea (-0.43, 1.22, 2.15)
+  ride w1 12.0 m out steer -0.5 t 5.17 standing τ -0.48 hc 0.26 wall→wall Δ 0.24 [seam share α 0.15] field 0.23 [seam share α] move 0.13 [normal turning] rel -3.44 ny 0.86 w 0.37 nd 0.05 seam 0.37 r 0.57 B 0.85 wt 1.00 C 8.04 surfV (5.61, 2.71) floor – ceil – flow (-0.84, 1.24, 3.13) sea (-0.42, 1.24, 2.15)
+  ride w1 12.0 m out steer 0 t 5.18 standing τ -0.47 hc 0.30 wall→wall Δ 0.30 [seam share α 0.22] field 0.29 [seam share α] move 0.19 [normal turning] rel -3.50 ny 0.88 w 0.23 nd 0.05 seam 0.42 r 0.60 B 0.85 wt 1.00 C 8.07 surfV (8.25, 0.43) floor – ceil – flow (-0.90, 1.11, 3.27) sea (-0.43, 1.22, 2.15)
+  ride w1 12.0 m out steer -0.5 t 5.18 standing τ -0.47 hc 0.33 wall→wall Δ 0.33 [seam share α 0.23] field 0.31 [seam share α] move 0.21 [normal turning] rel -3.57 ny 0.88 w 0.22 nd 0.05 seam 0.45 r 0.62 B 0.85 wt 1.00 C 8.11 surfV (7.94, 0.52) floor – ceil – flow (-0.95, 1.08, 3.39) sea (-0.43, 1.24, 2.15)
+  ride w1 12.0 m out steer 0 t 5.20 standing τ -0.45 hc 0.35 wall→wall Δ 0.26 [seam share α 0.19] field 0.26 [seam share α] move 0.21 [normal turning] rel -3.58 ny 0.84 w 0.20 nd 0.05 seam 0.48 r 0.64 B 0.85 wt 1.00 C 8.11 surfV (7.99, 0.45) floor – ceil – flow (-1.00, 1.00, 3.48) sea (-0.43, 1.23, 2.15)
+  ride w1 12.0 m out steer -0.5 t 5.20 standing τ -0.45 hc 0.38 wall→wall Δ 0.33 [seam share α 0.22] field 0.31 [seam share α] move 0.21 [normal turning] rel -3.50 ny 0.86 w 0.16 nd 0.05 seam 0.52 r 0.66 B 0.85 wt 1.00 C 8.15 surfV (7.00, 0.84) floor – ceil – flow (-1.07, 0.93, 3.65) sea (-0.43, 1.25, 2.15)
+  ride w1 12.0 m out steer 0 t 5.22 standing τ -0.42 hc 0.41 wall→wall Δ 0.37 [seam share α 0.24] field 0.32 [seam share α] move 0.19 [normal turning] rel -3.65 ny 0.86 w 0.12 nd 0.05 seam 0.55 r 0.68 B 0.85 wt 1.00 C 8.19 surfV (8.41, 0.50) floor – ceil – flow (-1.14, 0.82, 3.78) sea (-0.43, 1.23, 2.16)
+  ride w1 12.0 m out steer -0.5 t 5.22 standing τ -0.42 hc 0.44 wall→wall Δ 0.37 [seam share α 0.22] field 0.32 [seam share α] move 0.15 [normal turning] rel -3.43 ny 0.89 w 0.08 nd 0.05 seam 0.58 r 0.70 B 0.85 wt 1.00 C 8.23 surfV (8.41, 0.52) floor – ceil – flow (-1.21, 0.74, 3.94) sea (-0.43, 1.25, 2.15)
+  ride w1 12.0 m out steer 0 t 5.23 standing τ -0.40 hc 0.42 wall→wall Δ 0.28 [normal turning 0.18] field 0.14 [crest speed] move 0.30 [normal turning] rel -3.77 ny 0.91 w 0.03 nd 0.05 seam 0.56 r 0.70 B 0.85 wt 1.00 C 8.32 surfV (8.33, 0.28) floor – ceil – flow (-1.16, 0.58, 3.90) sea (-0.43, 1.23, 2.16)
+  ride w1 12.0 m out steer -0.5 t 5.23 standing τ -0.40 hc 0.44 wall→wall Δ 0.28 [normal turning 0.20] field 0.14 [crest speed] move 0.29 [normal turning] rel -3.43 ny 0.93 w 0.00 nd 0.05 seam 0.60 r 0.71 B 0.85 wt 1.00 C 8.37 surfV (8.37, 0.26) floor – ceil – flow (-1.22, 0.49, 4.06) sea (-0.43, 1.26, 2.16)
+  ride w1 12.0 m out steer 0 t 5.25 standing τ -0.38 hc 0.44 wall→wall Δ 0.29 [normal turning 0.13] field 0.21 [seam share α] move 0.14 [normal turning] rel -3.59 ny 0.94 w 0.00 nd 0.05 seam 0.60 r 0.71 B 0.85 wt 1.00 C 8.43 surfV (8.43, 0.25) floor – ceil – flow (-1.25, 0.39, 4.10) sea (-0.44, 1.24, 2.17)
+  ride w1 12.0 m out steer -0.5 t 5.25 standing τ -0.38 hc 0.46 wall→wall Δ 0.23 [normal turning 0.11] field 0.20 [seam share α] move 0.10 [normal turning] rel -3.28 ny 0.94 w 0.00 nd 0.05 seam 0.62 r 0.72 B 0.85 wt 1.00 C 8.47 surfV (8.47, 0.24) floor – ceil – flow (-1.31, 0.35, 4.22) sea (-0.43, 1.27, 2.16)
+  ride w1 12.0 m out steer 0 t 5.27 standing τ -0.36 hc 0.38 wall→wall Δ 0.57 [normal turning 0.27] field 0.72 [normal turning] move 0.19 [normal turning] rel -4.05 ny 0.93 w 0.10 nd 0.05 seam 0.53 r 0.68 B 0.85 wt 1.00 C 8.30 surfV (9.41, 0.24) floor – ceil – flow (-1.11, 0.83, 3.77) sea (-0.44, 1.24, 2.17)
+  ride w1 12.0 m out steer -0.5 t 5.27 standing τ -0.36 hc 0.39 wall→wall Δ 0.65 [normal turning 0.30] field 0.79 [normal turning] move 0.19 [normal turning] rel -3.85 ny 0.92 w 0.12 nd 0.05 seam 0.54 r 0.68 B 0.85 wt 1.00 C 8.33 surfV (9.51, 0.19) floor – ceil – flow (-1.14, 0.86, 3.85) sea (-0.44, 1.27, 2.17)
+  ride w1 12.0 m out steer 0 t 5.28 standing τ -0.33 hc 0.44 wall→wall Δ 0.53 [seam share α 0.28] field 0.39 [seam share α] move 0.29 [normal turning] rel -3.75 ny 0.96 w 0.00 nd 0.05 seam 0.60 r 0.72 B 0.85 wt 1.00 C 8.37 surfV (8.37, 0.68) floor – ceil – flow (-1.27, 0.46, 4.11) sea (-0.44, 1.22, 2.18)
+  ride w1 12.0 m out steer -0.5 t 5.28 standing τ -0.33 hc 0.45 wall→wall Δ 0.50 [seam share α 0.26] field 0.40 [seam share α] move 0.29 [normal turning] rel -3.73 ny 0.96 w 0.02 nd 0.05 seam 0.61 r 0.73 B 0.85 wt 1.00 C 8.38 surfV (8.36, 0.70) floor – ceil – flow (-1.29, 0.49, 4.15) sea (-0.44, 1.24, 2.17)
+  ride w1 12.0 m out steer 0 t 5.30 standing τ -0.32 hc 0.48 wall→wall Δ 0.45 [seam share α 0.25] field 0.40 [seam share α] move 0.12 [normal turning] rel -3.25 ny 0.96 w 0.00 nd 0.05 seam 0.66 r 0.75 B 0.85 wt 1.00 C 8.48 surfV (8.48, 0.54) floor – ceil – flow (-1.44, 0.23, 4.45) sea (-0.44, 1.20, 2.18)
+  ride w1 12.0 m out steer -0.5 t 5.30 standing τ -0.32 hc 0.49 wall→wall Δ 0.39 [seam share α 0.21] field 0.40 [seam share α] move 0.11 [normal turning] rel -3.73 ny 0.96 w 0.00 nd 0.05 seam 0.67 r 0.75 B 0.85 wt 1.00 C 8.48 surfV (8.48, 0.54) floor – ceil – flow (-1.43, 0.28, 4.45) sea (-0.44, 1.22, 2.18)
+  ride w1 12.0 m out steer 0 t 5.32 standing τ -0.31 hc 0.53 wall→wall Δ 0.47 [seam share α 0.25] field 0.41 [seam share α] move 0.11 [normal turning] rel -2.61 ny 0.96 w 0.00 nd 0.05 seam 0.72 r 0.78 B 0.85 wt 1.00 C 8.61 surfV (8.61, 0.49) floor – ceil – flow (-1.62, 0.00, 4.83) sea (-0.45, 1.20, 2.19)
+  ride w1 12.0 m out steer -0.5 t 5.32 standing τ -0.31 hc 0.52 wall→wall Δ 0.39 [seam share α 0.19] field 0.41 [seam share α] move 0.10 [normal turning] rel -3.38 ny 0.96 w 0.00 nd 0.05 seam 0.71 r 0.78 B 0.85 wt 1.00 C 8.59 surfV (8.59, 0.49) floor – ceil – flow (-1.59, 0.08, 4.75) sea (-0.44, 1.21, 2.18)
+  ride w1 12.0 m out steer 0 t 5.33 standing τ -0.29 hc 0.58 wall→wall Δ 0.52 [seam share α 0.30] field 0.46 [seam share α] move 0.09 [normal turning] rel -1.86 ny 0.95 w 0.00 nd 0.05 seam 0.79 r 0.81 B 0.85 wt 1.00 C 8.66 surfV (8.67, 0.59) floor – ceil – flow (-1.82, -0.23, 5.24) sea (-0.45, 1.22, 2.19)
+  ride w1 12.0 m out steer -0.5 t 5.33 standing τ -0.29 hc 0.57 wall→wall Δ 0.42 [seam share α 0.24] field 0.45 [seam share α] move 0.09 [normal turning] rel -3.03 ny 0.95 w 0.00 nd 0.05 seam 0.76 r 0.80 B 0.85 wt 1.00 C 8.63 surfV (8.63, 0.59) floor – ceil – flow (-1.75, -0.13, 5.08) sea (-0.44, 1.21, 2.19)
+  ride w1 12.0 m out steer 0 t 5.35 standing τ -0.28 hc 0.60 wall→wall Δ 0.23 [crest speed 0.09] field 0.17 [crest speed] move 0.09 [normal turning] rel -1.19 ny 0.94 w 0.00 nd 0.05 seam 0.80 r 0.82 B 0.85 wt 1.00 C 8.79 surfV (8.79, 0.23) floor – ceil – flow (-1.86, -0.31, 5.46) sea (-0.45, 1.25, 2.19)
+  ride w1 12.0 m out steer 0 t 5.37 standing τ -0.26 hc 0.60 wall→wall Δ 0.25 [normal turning 0.18] field 0.37 [normal turning] move 0.12 [normal turning] rel -0.86 ny 0.93 w 0.00 nd 0.05 seam 0.79 r 0.82 B 0.85 wt 1.00 C 8.74 surfV (8.74, 0.61) floor – ceil – flow (-1.82, -0.10, 5.32) sea (-0.44, 1.30, 2.19)
+  ride w1 12.0 m out steer -0.5 t 5.37 standing τ -0.26 hc 0.53 wall→wall Δ 0.55 [normal turning 0.26] field 0.49 [normal turning] move 0.11 [seam share α] rel -3.15 ny 0.92 w 0.00 nd 0.05 seam 0.71 r 0.78 B 0.85 wt 1.00 C 8.61 surfV (8.61, 0.63) floor – ceil – flow (-1.59, 0.15, 4.79) sea (-0.45, 1.23, 2.20)
+  ride w1 12.0 m out steer 0 t 5.38 standing τ -0.23 hc 0.61 wall→wall Δ 0.27 [normal turning 0.21] field 0.37 [normal turning] move 0.10 [normal turning] rel -1.32 ny 0.95 w 0.00 nd 0.05 seam 0.78 r 0.82 B 0.85 wt 1.00 C 8.70 surfV (8.70, 0.67) floor – ceil – flow (-1.80, 0.14, 5.21) sea (-0.44, 1.36, 2.17)
+  ride w1 12.0 m out steer -0.5 t 5.40 standing τ -0.21 hc 0.58 wall→wall Δ 0.41 [seam share α 0.24] field 0.42 [seam share α] move 0.11 [normal turning] rel -3.17 ny 0.96 w 0.00 nd 0.05 seam 0.76 r 0.81 B 0.85 wt 1.00 C 8.51 surfV (8.51, 0.66) floor – ceil – flow (-1.73, -0.02, 5.00) sea (-0.45, 0.92, 2.20)
+  ride w1 12.0 m out steer -0.5 t 5.42 standing τ -0.18 hc 0.62 wall→wall Δ 0.32 [seam share α 0.21] field 0.37 [seam share α] move 0.10 [normal turning] rel -2.84 ny 0.96 w 0.00 nd 0.05 seam 0.81 r 0.83 B 0.85 wt 1.00 C 8.49 surfV (8.49, 0.62) floor – ceil – flow (-1.87, -0.14, 5.26) sea (-0.45, 1.01, 2.19)
+  ride w1 12.0 m out steer -0.5 t 5.43 standing τ -0.16 hc 0.66 wall→wall Δ 0.28 [seam share α 0.20] field 0.32 [seam share α] move 0.08 [normal turning] rel -2.53 ny 0.96 w 0.00 nd 0.05 seam 0.85 r 0.86 B 0.85 wt 1.00 C 8.42 surfV (8.42, 0.59) floor – ceil – flow (-1.99, -0.24, 5.49) sea (-0.44, 1.09, 2.18)
+  passive w1 s 55 0 m out t 7.17 prone τ -0.03 hc 0.04 wall→wall Δ 0.22 [seam share α 0.11] field 0.02 [crest speed] move 0.20 [seam share α] rel -6.43 ny 0.97 w 0.17 nd 0.05 seam 0.32 r -0.43 B 1.00 wt 1.00 C 6.49 surfV (4.87, 0.04) floor – ceil – flow (0.42, 1.01, 0.63) sea (0.51, 0.79, 0.41)
+  passive w1 s 55 0 m out t 7.22 prone τ 0.01 hc 0.06 wall→wall Δ 0.33 [crest speed 0.26] field 0.22 [crest speed] move 0.12 [the sea (solver flow)] rel -6.25 ny 0.97 w 0.43 nd 0.05 seam 0.44 r -0.37 B 1.00 wt 1.00 C 7.00 surfV (7.70, -0.13) floor – ceil – flow (0.27, 1.18, 1.08) sea (0.46, 0.98, 0.60)
+  passive w1 s 55 0 m out t 7.25 prone τ 0.05 hc 0.08 wall→wall Δ 0.31 [crest speed 0.21] field 0.20 [crest speed] move 0.12 [the sea (solver flow)] rel -6.39 ny 0.96 w 0.51 nd 0.05 seam 0.54 r -0.33 B 1.00 wt 1.00 C 7.16 surfV (6.85, 0.02) floor – ceil – flow (0.17, 1.29, 1.38) sea (0.41, 1.11, 0.73)
+  passive w1 s 55 0 m out t 7.28 prone τ 0.09 hc 0.11 wall→wall Δ 0.44 [crest speed 0.22] field 0.24 [crest speed] move 0.24 [normal turning] rel -6.15 ny 0.95 w 0.54 nd 0.05 seam 0.65 r -0.27 B 1.00 wt 1.00 C 7.17 surfV (6.79, -0.28) floor – ceil – flow (0.05, 1.57, 1.71) sea (0.36, 1.24, 0.87)
+  passive w1 s 55 0 m out t 7.32 prone τ 0.13 hc 0.15 wall→wall Δ 0.24 [normal turning 0.20] field 0.11 [crest speed] move 0.32 [normal turning] rel -5.97 ny 0.91 w 0.54 nd 0.04 seam 0.77 r -0.21 B 1.00 wt 1.00 C 6.82 surfV (6.32, -0.14) floor – ceil – flow (-0.03, 1.96, 1.89) sea (0.31, 1.36, 1.01)
+  passive w1 s 55 0 m out t 7.33 prone τ 0.15 hc 0.16 wall→wall Δ 0.76 [crest speed 0.94] field 0.92 [crest speed] move 0.30 [normal turning] rel -5.70 ny 0.89 w 0.53 nd 0.04 seam 0.82 r -0.18 B 1.00 wt 1.00 C 5.68 surfV (5.64, -0.18) floor – ceil – flow (0.23, 2.14, 1.20) sea (0.28, 1.42, 1.08)
+  passive w1 s 55 0 m out t 7.35 prone τ 0.17 hc 0.17 wall→wall Δ 0.29 [crest speed 0.38] field 0.40 [crest speed] move 0.25 [normal turning] rel -4.49 ny 0.88 w 0.52 nd 0.04 seam 0.84 r -0.15 B 1.00 wt 1.00 C 5.22 surfV (5.72, -0.06) floor – ceil – flow (0.32, 2.27, 0.96) sea (0.25, 1.48, 1.15)
+  passive w1 s 55 0 m out t 7.40 prone τ 0.22 hc 0.23 wall→wall Δ 0.34 [crest speed 0.19] field 0.19 [crest speed] move 0.18 [the sea (solver flow)] rel -3.50 ny 0.83 w 0.52 nd 0.04 seam 0.96 r -0.05 B 1.00 wt 1.00 C 5.19 surfV (5.56, -0.12) floor – ceil – flow (0.27, 2.62, 1.36) sea (0.17, 1.66, 1.61)
+  passive w1 s 55 0 m out t 7.42 prone τ 0.23 hc 0.25 wall→wall Δ 0.29 [crest speed 0.34] field 0.34 [crest speed] move 0.20 [the sea (solver flow)] rel -3.62 ny 0.83 w 0.50 nd 0.04 seam 0.99 r -0.01 B 1.00 wt 1.00 C 4.84 surfV (4.17, 0.05) floor – ceil – flow (0.50, 2.62, 1.19) sea (0.16, 1.72, 2.10)
+  passive w1 s 55 0 m out t 7.45 prone τ 0.27 hc 0.28 wall→wall Δ 0.53 [crest speed 0.44] field 0.45 [crest speed] move 0.09 [normal turning] rel -2.24 ny 0.81 w 0.50 nd 0.04 seam 1.00 r 0.05 B 1.00 wt 1.00 C 5.09 surfV (4.83, -0.46) floor – ceil – flow (0.39, 2.66, 1.65) sea (0.05, 1.82, 2.52)
+  passive w1 s 55 0 m out t 7.47 prone τ 0.28 hc 0.29 wall→wall Δ 0.90 [crest speed 0.78] field 0.81 [crest speed] move 0.09 [normal turning] rel -1.79 ny 0.80 w 0.51 nd 0.04 seam 1.00 r 0.07 B 1.00 wt 1.00 C 5.87 surfV (6.36, -0.69) floor – ceil – flow (0.07, 2.68, 2.49) sea (0.01, 1.86, 2.63)
+  passive w1 s 55 0 m out t 7.48 prone τ 0.30 hc 0.30 wall→wall Δ 0.39 [crest speed 0.48] field 0.51 [crest speed] move 0.13 [normal turning] rel -2.07 ny 0.79 w 0.50 nd 0.04 seam 1.00 r 0.09 B 1.00 wt 1.00 C 5.39 surfV (6.37, -0.81) floor – ceil – flow (0.21, 2.72, 2.12) sea (-0.03, 1.89, 2.69)
+  passive w2 s 40 3 m out t 4.88 prone τ -0.44 hc 0.10 wall→wall Δ 0.20 [seam share α 0.16] field 0.17 [seam share α] move 0.10 [the sea (solver flow)] rel -5.08 ny 0.96 w 0.17 nd 0.05 seam 0.19 r 0.58 B 0.85 wt 1.00 C 7.80 surfV (6.77, 1.19) floor – ceil – flow (-0.69, 0.70, 2.53) sea (-0.51, 0.78, 2.07)
+  passive w2 s 40 3 m out t 4.90 prone τ -0.42 hc 0.14 wall→wall Δ 0.21 [seam share α 0.18] field 0.17 [seam share α] move 0.10 [the sea (solver flow)] rel -5.08 ny 0.96 w 0.04 nd 0.05 seam 0.26 r 0.61 B 0.85 wt 1.00 C 7.71 surfV (7.25, 0.63) floor – ceil – flow (-0.77, 0.59, 2.70) sea (-0.52, 0.76, 2.08)
+  passive w2 s 40 3 m out t 4.92 prone τ -0.39 hc 0.16 wall→wall Δ 0.22 [seam share α 0.15] field 0.17 [seam share α] move 0.09 [the sea (solver flow)] rel -4.93 ny 0.97 w 0.00 nd 0.05 seam 0.31 r 0.64 B 0.85 wt 1.00 C 7.82 surfV (7.83, 0.49) floor – ceil – flow (-0.81, 0.49, 2.89) sea (-0.53, 0.73, 2.10)
+  passive w2 s 40 3 m out t 4.93 prone τ -0.37 hc 0.17 wall→wall Δ 0.21 [seam share α 0.13] field 0.15 [seam share α] move 0.12 [normal turning] rel -4.99 ny 0.98 w 0.00 nd 0.05 seam 0.36 r 0.64 B 0.85 wt 1.00 C 7.85 surfV (7.86, 0.25) floor – ceil – flow (-0.87, 0.35, 3.03) sea (-0.54, 0.70, 2.11)
+  passive w2 s 40 3 m out t 5.07 prone τ -0.25 hc 0.04 wall→wall Δ 0.39 [seam share α 0.36] field 0.24 [seam share α] move 0.63 [seam share α] rel -5.37 ny 0.96 w 0.00 nd 0.05 seam 0.21 r 0.54 B 0.85 wt 1.00 C 8.12 surfV (8.16, 0.36) floor – ceil – flow (-0.77, 0.13, 2.69) sea (-0.57, 0.41, 2.18)
+  passive w2 s 40 3 m out t 5.08 prone τ -0.22 hc 0.01 wall→wall Δ 0.31 [seam share α 0.29] field 0.27 [seam share α] move 0.58 [seam share α] rel -5.45 ny 0.97 w 0.00 nd 0.05 seam 0.11 r 0.52 B 0.85 wt 1.00 C 8.12 surfV (8.19, 0.27) floor – ceil – flow (-0.67, 0.25, 2.42) sea (-0.57, 0.37, 2.18)
+  passive w2 s 55 0 m out t 7.40 prone τ 0.28 hc 0.03 wall→wall Δ 0.24 [crest speed 0.16] field 0.16 [crest speed] move 0.11 [the sea (solver flow)] rel -3.84 ny 0.93 w 0.25 nd 0.05 seam 0.30 r -0.22 B 1.00 wt 1.00 C 5.20 surfV (5.10, -0.22) floor – ceil – flow (0.31, 1.52, 0.67) sea (0.28, 1.35, 0.74)
+  passive w2 s 55 0 m out t 7.43 prone τ 0.31 hc 0.04 wall→wall Δ 0.21 [crest speed 0.12] field 0.10 [crest speed] move 0.12 [normal turning] rel -3.44 ny 0.91 w 0.36 nd 0.04 seam 0.37 r -0.17 B 1.00 wt 1.00 C 4.96 surfV (5.31, -0.50) floor – ceil – flow (0.29, 1.72, 0.74) sea (0.24, 1.47, 0.87)
+  passive w2 s 55 0 m out t 7.45 prone τ 0.33 hc 0.06 wall→wall Δ 0.44 [crest speed 0.35] field 0.33 [crest speed] move 0.14 [normal turning] rel -3.27 ny 0.89 w 0.48 nd 0.04 seam 0.44 r -0.15 B 1.00 wt 1.00 C 5.77 surfV (6.81, -0.28) floor – ceil – flow (0.14, 1.85, 1.13) sea (0.21, 1.52, 0.93)
+  passive w2 s 55 0 m out t 7.47 prone τ 0.35 hc 0.07 wall→wall Δ 0.58 [crest speed 0.69] field 0.64 [crest speed] move 0.17 [normal turning] rel -4.02 ny 0.87 w 0.52 nd 0.04 seam 0.49 r -0.12 B 1.00 wt 1.00 C 4.35 surfV (4.64, -0.28) floor – ceil – flow (0.33, 1.98, 0.60) sea (0.19, 1.57, 0.98)
+  passive w2 s 55 0 m out t 7.48 prone τ 0.36 hc 0.09 wall→wall Δ 0.62 [crest speed 0.51] field 0.49 [crest speed] move 0.15 [normal turning] rel -2.16 ny 0.85 w 0.52 nd 0.04 seam 0.58 r -0.09 B 1.00 wt 1.00 C 5.24 surfV (5.05, -0.19) floor – ceil – flow (0.12, 2.18, 1.14) sea (0.17, 1.61, 1.02)
+  passive w2 s 55 0 m out t 7.50 prone τ 0.38 hc 0.10 wall→wall Δ 0.53 [crest speed 0.60] field 0.61 [crest speed] move 0.16 [normal turning] rel -2.64 ny 0.84 w 0.52 nd 0.04 seam 0.59 r -0.07 B 1.00 wt 1.00 C 4.23 surfV (4.98, -0.51) floor – ceil – flow (0.31, 2.24, 0.64) sea (0.15, 1.65, 1.06)
+  passive w2 s 55 0 m out t 7.52 prone τ 0.40 hc 0.12 wall→wall Δ 0.60 [crest speed 0.49] field 0.52 [crest speed] move 0.09 [normal turning] rel -1.09 ny 0.81 w 0.51 nd 0.04 seam 0.66 r -0.05 B 1.00 wt 1.00 C 4.97 surfV (5.11, -0.54) floor – ceil – flow (0.10, 2.42, 1.17) sea (0.13, 1.68, 1.08)
+  passive w2 s 55 0 m out t 7.57 prone τ 0.45 hc 0.13 wall→wall Δ 0.48 [crest speed 0.38] field 0.42 [crest speed] move 0.08 [normal turning] rel -0.78 ny 0.78 w 0.51 nd 0.04 seam 0.71 r -0.01 B 1.00 wt 1.00 C 5.14 surfV (6.11, -0.64) floor – ceil – flow (-0.05, 2.60, 1.47) sea (0.08, 1.79, 1.14)
+  passive w2 s 55 0 m out t 7.58 prone τ 0.47 hc 0.14 wall→wall Δ 0.27 [crest speed 0.34] field 0.34 [crest speed] move 0.11 [normal turning] rel -1.21 ny 0.76 w 0.51 nd 0.04 seam 0.73 r -0.00 B 1.00 wt 1.00 C 4.68 surfV (5.45, -0.47) floor – ceil – flow (0.04, 2.66, 1.22) sea (0.07, 1.84, 1.15)
+  passive w2 s 55 0 m out t 7.62 prone τ 0.50 hc 0.14 wall→wall Δ 0.45 [crest speed 0.40] field 0.41 [crest speed] move 0.05 [normal turning] rel -0.63 ny 0.75 w 0.50 nd 0.04 seam 0.74 r 0.02 B 1.00 wt 1.00 C 5.02 surfV (5.27, -0.63) floor – ceil – flow (-0.10, 2.72, 1.55) sea (0.04, 1.85, 1.20)
+  passive w2 s 55 0 m out t 7.63 prone τ 0.52 hc 0.15 wall→wall Δ 0.21 [crest speed 0.27] field 0.29 [crest speed] move 0.11 [normal turning] rel -1.29 ny 0.74 w 0.50 nd 0.04 seam 0.76 r 0.03 B 1.00 wt 1.00 C 4.67 surfV (5.31, -0.78) floor – ceil – flow (-0.03, 2.77, 1.35) sea (0.02, 1.85, 1.21)
+  passive w3 s 55 0 m out t 7.40 prone τ -0.04 hc 0.03 wall→wall Δ 0.42 [crest speed 0.30] field 0.22 [crest speed] move 0.20 [the sea (solver flow)] rel -2.88 ny 0.83 w 0.15 nd 0.04 seam 0.28 r 0.06 B 1.00 wt 1.00 C 7.11 surfV (6.76, -0.24) floor – ceil – flow (-1.65, 2.62, 2.67) sea (-1.62, 2.64, 2.60)
+  passive w3 s 55 0 m out t 7.45 prone τ 0.03 hc 0.06 wall→wall Δ 0.41 [crest speed 0.31] field 0.29 [crest speed] move 0.13 [normal turning] rel -1.52 ny 0.75 w 0.37 nd 0.04 seam 0.43 r 0.12 B 1.00 wt 1.00 C 6.83 surfV (6.47, -0.62) floor – ceil – flow (-1.82, 2.84, 2.88) sea (-1.78, 2.80, 2.80)
+  passive w3 s 55 0 m out t 7.47 prone τ 0.04 hc 0.04 wall→wall Δ 0.35 [crest speed 0.30] field 0.45 [crest speed] move 0.11 [normal turning] rel -2.28 ny 0.77 w 0.24 nd 0.04 seam 0.37 r 0.12 B 1.00 wt 1.00 C 6.02 surfV (6.41, -0.67) floor – ceil – flow (-1.69, 2.79, 2.55) sea (-1.79, 2.79, 2.78)

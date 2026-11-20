@@ -1,0 +1,8 @@
+dx  -4.0: still standing                             top speed 12.52 m/s, riding 6.02 s, most lost in 0.1 s 0.60 m/s at 1.57 s
+dx  -2.9: still standing                             top speed 12.46 m/s, riding 5.97 s, most lost in 0.1 s 0.75 m/s at 1.57 s
+dx  -1.7: still standing                             top speed 12.37 m/s, riding 5.83 s, most lost in 0.1 s 0.64 m/s at 1.60 s
+dx  -0.6: still standing                             top speed 12.37 m/s, riding 5.68 s, most lost in 0.1 s 0.62 m/s at 1.60 s
+dx   0.6: fell popping up (balance)                  top speed 0.00 m/s, riding 0.00 s, most lost in 0.1 s 0.00 m/s at NaN s
+dx   1.7: still standing                             top speed 12.32 m/s, riding 5.85 s, most lost in 0.1 s 0.53 m/s at 1.62 s
+dx   2.9: still standing                             top speed 12.39 m/s, riding 5.97 s, most lost in 0.1 s 0.56 m/s at 1.62 s
+dx   4.0: still standing                             top speed 12.40 m/s, riding 6.02 s, most lost in 0.1 s 0.53 m/s at 1.62 s

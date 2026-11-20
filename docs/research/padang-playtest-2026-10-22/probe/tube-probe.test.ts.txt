@@ -1,0 +1,52 @@
+import { test } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { decodeCase } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/src/wave/barrel/profileFormat';
+import { ProfileLibrary, PROFILE_POINTS, LANDMARK } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/src/wave/barrel/ProfileLibrary';
+import { BARREL_CASES } from '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/src/wave/barrel/barrelLibraryIndex';
+
+const root = '/Users/vicentealmeida/Documents/ChatGPT/surfing-game/public/';
+function dist(ax: number, ay: number, bx: number, by: number) { return Math.hypot(ax - bx, ay - by); }
+function segDist(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
+  const dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy; let t = l > 0 ? ((px - ax) * dx + (py - ay) * dy) / l : 0; t = Math.max(0, Math.min(1, t));
+  return dist(px, py, ax + t * dx, ay + t * dy);
+}
+function measure(p: Float32Array) {
+  const x = (i: number) => p[2 * i], y = (i: number) => p[2 * i + 1];
+  const crestY = y(LANDMARK.crest), toeY = y(LANDMARK.toe);
+  let minY = Infinity; for (let i = LANDMARK.crest; i < PROFILE_POINTS; i++) minY = Math.min(minY, y(i));
+  const H = crestY - minY;
+  // lip thickness: for outer points 44..60, the min distance to the inner polyline 68..88; median
+  const th: number[] = [];
+  for (let i = 44; i <= 60; i++) { let m = Infinity; for (let j = 68; j < 88; j++) m = Math.min(m, segDist(x(i), y(i), x(j), y(j), x(j + 1), y(j + 1))); th.push(m); }
+  th.sort((a, b) => a - b);
+  // tip thickness: outer 58..60 to inner 68..72
+  let tip = Infinity; for (let i = 56; i <= 62; i++) for (let j = 66; j < 74; j++) tip = Math.min(tip, segDist(x(i), y(i), x(j), y(j), x(j + 1), y(j + 1)));
+  // void polygon 64..112 closed
+  let a = 0; for (let i = 64; i < 112; i++) a += x(i) * y(i + 1) - x(i + 1) * y(i); a += x(112) * y(64) - x(64) * y(112);
+  const area = Math.abs(a) / 2;
+  const reach = x(LANDMARK.lip) - x(LANDMARK.crest);
+  return { H, lipMedian: th[Math.floor(th.length / 2)], lipMax: th[th.length - 1], tip, area, reach, tipY: y(LANDMARK.lip) - toeY };
+}
+test('tube', () => {
+  const entries = BARREL_CASES.filter((e) => e.spot === 'padang');
+  const cases = entries.map((e) => decodeCase(new Uint8Array(readFileSync(root + e.asset))));
+  const bounded = new ProfileLibrary(cases, { geometry: 'bounded-C' });
+  const raw = new ProfileLibrary(cases, {});
+  const rows: string[] = [];
+  const out = new Float32Array(2 * PROFILE_POINTS);
+  for (const footHeight of [0.9, 1.4, 2.1, 3.1]) {
+    const query = { slope: 1 / 19, footHeight, footDepth: 7, seconds: 0 };
+    for (const [name, lib] of [['raw', raw], ['boundedC', bounded]] as const) {
+      const probe = lib.profileAt({ ...query, seconds: 0 }, out);
+      const td = probe.touchdownSeconds;
+      for (const f of [0.5, 0.8, 0.95]) {
+        try {
+          const l = lib.profileAt({ ...query, seconds: f * td, hold: 'drawing' }, out);
+          const m = measure(out);
+          rows.push(`${name} foot ${footHeight} case ${l.caseId}${l.clamped ? ' (clamped)' : ''} tau ${(f * td).toFixed(2)}/${td.toFixed(2)} s: H ${m.H.toFixed(2)} m, lip median ${m.lipMedian.toFixed(3)} m (${(m.lipMedian / m.H).toFixed(3)} H), lip max ${(m.lipMax / m.H).toFixed(3)} H, tip ${(m.tip / m.H).toFixed(3)} H, void(64..112) ${(m.area / (m.H * m.H)).toFixed(3)} H^2, tip reach ${(m.reach / m.H).toFixed(2)} H, tip above toe ${(m.tipY / m.H).toFixed(2)} H`);
+        } catch (e) { rows.push(`${name} ${footHeight} ${f}: ${(e as Error).message}`); }
+      }
+    }
+  }
+  writeFileSync('/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/probe/tube.txt', rows.join('\n'));
+});

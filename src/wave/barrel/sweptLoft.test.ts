@@ -4,7 +4,7 @@ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
+import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, endBlendLength, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
 import { lipCase, toyCase, tubeCase } from './toyCase';
 
 /** The y where the vertical line at (x, z) meets triangle (u, v, w) strictly inside it; undefined where it misses. */
@@ -215,13 +215,50 @@ describe('the swept loft', () => {
     }
   });
 
-  it('blends into the water over 2.5 m at each end, and masks 1 m past them', () => {
+  it('blends into the water over 1 m at each end, and masks 1 m past them (the advisor, 2026-10-22: no shards)', () => {
     const loft = loftOf(() => 0);
     const first = LOFT.extensionSamples + 32;
     // The extended end slice is the water, unmasked; the middle slice is masked.
     expect(loft.positions[3 * first + 1]).toBe(0.5);
     expect(loft.mask[first]).toBe(0);
     expect(loft.mask[Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES + first]).toBe(1);
+    // Half a metre in, the weight is the smoothstep's half; a metre in, the whole profile stands.
+    expect(LOFT.endBlend).toBe(1);
+    const sigmaOf = (s: number) => loft.sliceSigma[s] - loft.sliceSigma[0] - LOFT.extension;
+    let checked = 0;
+    for (let s = 0; s < loft.sliceCount; s += 1) {
+      const d = sigmaOf(s);
+      if (Math.abs(d - 0.5) < 1e-4) {
+        expect(loft.sliceWeight[s]).toBeCloseTo(0.5, 3);
+        checked += 1;
+      }
+      if (d >= 1 - 1e-4 && d <= 3) {
+        expect(loft.sliceWeight[s]).toBeCloseTo(1, 6);
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(2);
+  });
+
+  it('blends a young end, whose slice has not thrown, over its drawn height H; a thrown end over 1 m (the advisor, 2026-10-22)', () => {
+    // The +x end (σ 20) has not thrown (τ −0.2 s), the −x end (σ 0) has.
+    const tau = (k: number) => (k > 15 ? -0.2 : 0.2);
+    const loft = loftOf(tau);
+    const profile = new Float32Array(2 * PROFILE_POINTS);
+    const young = endBlendLength(library(), 0.05, 2.1, 7, -0.2, profile);
+    expect(young).toBeGreaterThan(2);
+    expect(endBlendLength(library(), 0.05, 2.1, 7, 0.2, profile)).toBe(LOFT.endBlend);
+    const sliceAtSigma = (sigma: number) => {
+      let best = 0;
+      for (let s = 1; s < loft.sliceCount; s += 1) if (Math.abs(loft.sliceSigma[s] - sigma) < Math.abs(loft.sliceSigma[best] - sigma)) best = s;
+      return best;
+    };
+    expect(loft.sliceWeight[sliceAtSigma(1)]).toBeCloseTo(1, 6);
+    expect(loft.sliceWeight[sliceAtSigma(19)]).toBeLessThan(0.5);
+    const mid = sliceAtSigma(20 - young / 2);
+    const u = (20 - loft.sliceSigma[mid]) / young;
+    expect(loft.sliceWeight[mid]).toBeCloseTo(u * u * (3 - 2 * u), 5);
+    expect(loft.sliceWeight[sliceAtSigma(20 - young - 0.5)]).toBeCloseTo(1, 6);
   });
 
   it('fades a slice into the water over its tube’s collapse after touchdown, drawing the touchdown frame (the advisor, 2026-09-30)', () => {
@@ -307,8 +344,11 @@ describe('the swept loft', () => {
     const times = library().profileTimes(query);
     expect(times).toEqual({
       scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds,
-      collapseSeconds: lookup.collapseSeconds,
+      collapseSeconds: lookup.collapseSeconds, startSeconds: times.startSeconds,
     });
+    // Its earliest frame (step 7's τ_e): the toy cases' first frame, −0.5 √(h0/g), at the slice's time scale.
+    const unit = lookup.frameSeconds / 0.25;
+    expect(times.startSeconds).toBeCloseTo(-0.5 * unit, 9);
   });
 });
 

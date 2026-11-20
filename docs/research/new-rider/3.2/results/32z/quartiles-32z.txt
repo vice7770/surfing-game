@@ -1,0 +1,34 @@
+Step 3.2z quartiles — the shipped new rider, 12 trim runs (2 stances x 6 entry speeds), the Canyon-matched
+FaceWater 1.4 m / 16 deg / 5.7 m/s, the stick at zero, 9 s each, falls at 0.77-1.70 s, `balance` all twelve.
+All `...AtSplit`/`...AtFall` split columns are read on the last frame whose halves still reconstruct the
+test own speedAcross (one frame before the separation frame): see Part 24 section 4.
+
+column                                         min / Q1 / median / Q3 / max
+across-speed at the fall, m/s                  0.754 / 0.910 / 0.968 / 1.075 / 1.406
+  — the BODY half, m/s                         0.715 / 0.828 / 1.068 / 1.167 / 1.272
+  — the FEET half, m/s                         -0.302 / -0.160 / -0.022 / 0.142 / 0.401
+the test own tolerance reachAcross x w0, m/s   0.788 / 0.815 / 0.855 / 1.137 / 1.733
+across-speed / that tolerance                  0.75 / 0.89 / 0.99 / 1.14 / 1.26
+the across reach itself, m                     0.175 / 0.188 / 0.232 / 0.357 / 0.396
+CoM across at the fall, m (half-width 0.130)   0.121 / 0.128 / 0.135 / 0.153 / 0.200
+the capture point across, m                    0.305 / 0.352 / 0.385 / 0.478 / 0.500
+the velocity term v/w0 ALONE, m                0.164 / 0.223 / 0.260 / 0.305 / 0.344
+pastX = |capture across| - 0.130, m            0.175 / 0.222 / 0.255 / 0.348 / 0.370
+the velocity term share of pastX               0.81 / 0.92 / 0.99 / 1.01 / 1.03
+base |across-accel| median over run, m/s2      1.17 / 1.39 / 1.42 / 1.74 / 3.00
+base |across-accel| peak, m/s2                 6.93 / 10.66 / 12.54 / 20.81 / 25.55
+body |across-accel| median, m/s2               1.65 / 1.77 / 1.90 / 2.05 / 2.56
+body |across-accel| peak, m/s2                 2.42 / 2.98 / 4.26 / 6.04 / 7.37
+base NET across rate, m/s2                     0.00 / 0.05 / 0.15 / 0.28 / 0.38
+body NET across rate, m/s2                     0.42 / 0.85 / 1.04 / 1.23 / 1.41
+felt vertical tilt across at the fall, deg     -15.9 / -12.9 / -10.8 / -9.6 / -7.4
+w0 at the fall, 1/s                            3.05 / 3.31 / 4.14 / 4.42 / 4.71
+body share of |across-speed|                   0.736 / 0.784 / 0.835 / 0.954 / 0.997
+
+CHECKS
+  the split reconstructs the test own speedAcross to, m/s (worst): 0.0000
+  reachAcross reconstruction vs CaptureState.reach, worst |gap|, m: 0.013956
+  frames where ALONG bound instead of across: 0 of 780
+  the base pushed the OPPOSITE way to the body in 7 of 12 runs
+  by stance — compress tolerance: 0.788 0.791 0.799 0.820 0.832 0.831
+              tall tolerance:     1.044 0.877 1.099 1.713 1.251 1.733

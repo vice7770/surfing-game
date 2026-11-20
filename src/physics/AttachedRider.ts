@@ -3,13 +3,18 @@ import type { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { LIP_CONTACT, LIP_QUERY_MARGIN, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import type { BoardShape } from './boardShape';
+import { armCarriagePlace, createArmCarriage, resetArmCarriage, stepArmCarriage, type ArmPlace } from './armCarriage';
+import { bankLedger } from './bankLedger';
 import { WATER } from './hullForces';
 import { RIDER_LEG } from './legSpring';
 import { MinimumJerkTrack } from './MinimumJerkTrack';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
 import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, riderPartVolumes, riderPose, stanceFeet, type PosePhase, type StanceName, type SupportRegion } from './riderPosture';
+import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
+import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, railPull, stanceAt, type CaptureOmega, type DesignWeights } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -29,8 +34,19 @@ const PRONE_FRICTION = 0.7;
  */
 const PRONE_GRIP = 0.6;
 const MAX_LOAD = 4;
+/**
+ * The legs' power limit (A-lite, the advisor's ruling 27, `legPower: 'cap'`; docs/research/board-in-water/a-lite): the
+ * standing contact's net positive power on the board and body together, W per kg of the rider, at any instant
+ * (LEG_POWER_PEAK, near a strong human's jump peak, about 4.4 kW at 73 kg) and over any LEG_POWER_WINDOW s
+ * (LEG_POWER_HELD, about 1.5 kW). Absorbing energy (negative power) is not limited [provisional].
+ */
+export const LEG_POWER_PEAK = 60;
+export const LEG_POWER_HELD = 20;
+export const LEG_POWER_WINDOW = 0.5;
 export const MAX_FLIGHT = 0.4;
 export const RECOVERABLE_ERROR = 0.25;
+/** The new surfer standing free (step 3.2): the board's substeps per frame (`standingSubsteps`); env override for the probes only. */
+export const NEW_STANDING_SUBSTEPS = 16;
 /** Share of the posture error closed per substep, and the fastest correction, m/s. */
 const CORRECTION = 0.2;
 const MAX_CORRECTION = 0.5;
@@ -78,6 +94,48 @@ const SPRINT_CYCLE = 1.0;
 const SPRINT_SLOPE = Math.tan((2 * Math.PI) / 180);
 const SPRINT_SLOPE_FULL = Math.tan((8 * Math.PI) / 180);
 const SPRINT_TIME = 0.4;
+/**
+ * The player's sprint paddle (the owner's choices of 2026-10-22: double-press the
+ * paddle and hold it; `RideSession`'s PaddleReserve allowing). The strokes go over
+ * to it over SPRINT_PADDLE_TIME, s, a quarter of a cruising stroke, and back as
+ * it stops:
+ * - each arm's cycle SPRINT_PADDLE_CYCLE, s: 70 strokes a minute a side (the
+ *   owner's figure, from the sprint paddling studies: Sheppard et al. 2013,
+ *   Nessler et al. 2019, Volschenk et al. 2021), from 50 cruising;
+ * - the pulls overlap: SPRINT_PADDLE_PULL of each arm's cycle spent pulling, from
+ *   PULL_SHARE's 0.28. Front-crawl swimmers go from catch-up toward superposition
+ *   of the arms' propulsive phases as they speed up (Chollet, Chalies and Chatard
+ *   2000, the index of coordination). Over the same 0.97 m the hand moves against
+ *   the board at about the cruise's speed and pulls for more of the time;
+ *   quickening alone, the hand ran so fast that the sprint settled at 2.4 m/s and
+ *   took longer than the cruise to come up to it;
+ * - a deeper catch: the hand SPRINT_PADDLE_DEPTH, m, down (HAND_DEPTH's 0.25),
+ *   the forearm upright under it and the upper arm in the water, their drag area
+ *   SPRINT_PADDLE_AREA times the hand's and forearm's (0.12 m², about a whole
+ *   arm's at C_d 0.8–0.9, with the added mass of an arm driven hard into the
+ *   catch, which quasi-steady drag leaves out): fitted to the top speed. It was
+ *   2.4 until canyon-catch (2026-10-29), fitted while the stroke's slow ends,
+ *   where the board outruns the hand, braked; with the hand feathering there
+ *   (FEATHER_DRAG), 1.8 gives the same 2.08 m/s on flat water;
+ * - the arm pulling all out: it gives way at SPRINT_PADDLE_LIMIT body weights,
+ *   not HAND_FORCE_LIMIT's 0.4 (a modelling value). Sprint paddling is limited by
+ *   pulling strength (Sheppard et al. 2012: relative pull-up strength predicted
+ *   the sprint's 5–15 m times from a standing start, r = 0.88–0.94).
+ * The arms pull at their limit for longer each cycle, so from rest the sprint has
+ * more force; through the hand's and the body's drag it settles near 2.1 m/s on
+ * flat water, against the cruise's 1.6 (the owner's "a third faster", reaching it
+ * sooner). Averaged over a stroke: 2.06 m/s; 1 m/s in 0.55 s against the cruise's
+ * 1.12; 90 % of its own top speed in 2.3 s against 2.4; the cruise's 90 % in 1.0
+ * s against 2.4. The catch's own quickening (SPRINT_CYCLE) stays, free.
+ */
+const SPRINT_PADDLE_TIME = 0.3;
+const SPRINT_PADDLE_CYCLE = 60 / 70;
+const SPRINT_PADDLE_PULL = 0.43;
+const SPRINT_PADDLE_DEPTH = 0.32;
+const SPRINT_PADDLE_AREA = 1.8;
+/** SPRINT_PADDLE_AREA as fitted before the hand feathered (the 'old' stroke, `AttachedRiderOptions.stroke`). */
+const SPRINT_PADDLE_AREA_BROADSIDE = 2.4;
+const SPRINT_PADDLE_LIMIT = 0.8;
 const REACH = 0.485;
 const HIP = -0.485;
 const HAND_DEPTH = 0.25;
@@ -98,6 +156,21 @@ const HAND_OUTSIDE_RAIL = 0.08;
  * bigger reach rolled it further and threw the rider. The roll also keeps the
  * line in a quartering swell: without it, at 50 strokes a minute, the board
  * wandered 9–12° over the strokes (2–5° with it).
+ *
+ * The balance comes first (the paddle-balance fix, 2026-10-22; the "posture
+ * first" principle of dual-task balance, Shumway-Cook and Woollacott: a body
+ * keeps its balance before a second task's movement). The hips level the board
+ * first, within their reach, and the stroke's swing takes only the reach the
+ * levelling leaves. The swing alone asks more than the hips have: its rate,
+ * 15° at 0.83 Hz, asks PRONE_ROLL_DAMPING × 1.37 rad/s, 0.22 m of the 0.1 m.
+ * Asked together, as the swing's tracking error, the hips were held by the
+ * swing whenever chop, a steering stroke or a face rolled the board the other
+ * way: in a probe, 0.03–0.08 m toward the low rail while the board rolled
+ * toward it at 50–70°/s. Past about 36° the hips' 0.1 m cannot right the board
+ * (its roll with the hips held there, on flat water), so it capsized and the
+ * rider slid off ('lost board'), in 8 of 55 paddling runs (chop, steering, a
+ * face lifting the board at 30°) and 18 of 72 chop runs. On flat water the
+ * board rocks as before (18.6° rail to rail).
  */
 const STROKE_ROLL = (15 * Math.PI) / 180;
 const STROKE_ROLL_LEAD = 0.35;
@@ -130,11 +203,40 @@ const HAND_DRAG_AREA = 0.066;
  */
 const HAND_FORCE_LIMIT = 0.4;
 /**
+ * A pulling hand the board outruns (canyon-catch, 2026-10-29): the stroke sweeps the hand back over the board on a fixed
+ * path at about 2.6–2.9 m/s on average (the sprint's and the cruise's), so once the board goes faster than that through
+ * the water, the hand's palm would meet the water head-on from in front and brake. A paddler cannot pull water that
+ * outruns the stroke and does not hold the palm against it: the hand slices in edge-on until the board slows, and the
+ * arm drives in no broadside blade. Edge-on, a flat hand's drag is about a fifth of its broadside drag (Berger, de Groot
+ * and Hollander 1995: the hand's drag coefficient falls from about 1.1 broadside to 0.2–0.3 at small pitch): its drag
+ * area is FEATHER_DRAG of the pulling hand's then. Without it the sprint settled down a 12° face at 3.0 m/s against the
+ * cruise's 3.9, slower the steeper the face (3.7 against 5.8 at 20°), and a paddler's sprint left Canyon waves behind
+ * that the cruise caught. Flat-water paddling never outruns its hands (1.6 and 2.1 m/s), and is unchanged.
+ */
+const FEATHER_DRAG = 0.2;
+/**
  * Steering lying down: paddling, the arm on the outside of the turn pulls
  * harder and the inside arm softer by this share; not paddling, the outside arm
  * sweeps alone. Board +x is its left, so turning left is a stronger right arm.
  */
 const STEER_STROKE = 0.6;
+/**
+ * The side paddle's fast mode: not paddling, past SWEEP_FAST_FROM of the stick the sweeping arm quickens to
+ * SWEEP_FAST_CADENCE times its strokes a second at full steer, and its pull reaches SWEEP_FAST_WIDE, m, further out from
+ * the rail (a wider sweep, a longer arm about the board). Small steer keeps the old stroke for precision. The turn still
+ * comes only from the hand's own drag, pulling water aft, so the glide is kept.
+ */
+const SWEEP_FAST_FROM = 0.5;
+const SWEEP_FAST_CADENCE = 1.8;
+const SWEEP_FAST_WIDE = 0.2;
+/**
+ * The fast sweep's shape (owner, 2026-11-09: "the arms look broken"): a long, flat pull through the water, SWEEP_FAST_PULL
+ * of the cycle (0.28 slow), and a low recovery, RECOVERY_HEIGHT scaled by SWEEP_FAST_LOW, the kayak sweep's. The fast share eases
+ * toward the stick over SWEEP_FAST_EASE, s, so stick noise never reshapes a stroke mid-way.
+ */
+const SWEEP_FAST_PULL = 0.45;
+const SWEEP_FAST_LOW = 0.4;
+const SWEEP_FAST_EASE = 0.25;
 /**
  * A paddler keeps its line: with no steering asked for, the arm on the side to
  * turn toward pulls softer and the other harder, in proportion to the heading
@@ -183,6 +285,20 @@ const PRONE_SHIFT = { x: 0.1, z: 0 };
  * capsizes (a board tipped 15° on flat water rolls over in about 2 s). A
  * paddler keeps it level by shifting toward the high rail: m of shift per rad
  * of roll and per rad/s of roll rate (a modelling choice).
+ *
+ * The level it keeps is the water's under the board, not the world's (the
+ * paddle-balance fix, 2026-10-22). Lying awash, the body moves with the surface
+ * water, and the vertical it feels is the surface's normal: the otoliths sense
+ * gravity less the head's acceleration (Angelaki and Cullen 2008), and for
+ * water moving under gravity that is normal to the free surface, a surface of
+ * equal pressure (Euler's equation: g − a = ∇p / ρ). The rate is the board's own
+ * (the semicircular canals sense rotation). Levelled to the world's horizontal
+ * across sloping water (chop, or a swell or a face crossed at an angle), the
+ * hips held the board against the water's own level and spent their reach on
+ * it: in a probe's chop (Hs 0.65–1.55 m at 2.2–4.2 s, `ChopWater`), with the
+ * balance first (STROKE_ROLL), 3 runs of 72 still capsized, all in seas too
+ * steep to stand unbroken (slopes to 23–28°); none level with the water. On
+ * flat water the two levels are one.
  */
 const PRONE_ROLL_SHIFT = 0.4;
 const PRONE_ROLL_DAMPING = 0.16;
@@ -291,6 +407,81 @@ const BANK_GAIN = 7.4;
 const BANK_RATE_GAIN = 3.6;
 const BALANCE_LAG = 0.01;
 const ANKLE_REST_RANGE = 0.25;
+/**
+ * **What ANKLE_REST_RANGE is made of** (step 3.3k), so that `ankleRange: 'load'` can read the same formula with the
+ * live numbers rather than invent a second constant. `rollModel.bankAuthority` derives the rest at which the feet's
+ * centre of pressure reaches the sole's edge as `footReach · m g / series`; ANKLE_REST_RANGE = 0.25 rad is that rest
+ * at **one body weight** on `footReach` = ANKLE_REST_REACH = 0.13 m, which is `riderPosture.ts`'s own standing support
+ * half-width (`feet: { xMin: −0.13, xMax: 0.13 }`), the 0.13 m `soleBound` and `predictiveBalance`'s `feetReach`
+ * already use, and a hull of about 730 N·m/rad. So the nominal sole moment the shipped 0.25 rad stands for is
+ * `m g × 0.13` — 95.7 N·m at 75 kg — and the live one is `soleBound()`.
+ */
+const ANKLE_REST_REACH = 0.13;
+/** `ankleRange: 'wide'`: the factor on ANKLE_REST_RANGE. 2, so the bound is ±28.65°, and no geometry pays for it (step 3.3k). */
+const ANKLE_RANGE_WIDE = 2;
+/**
+ * **The hip's trigger** (step 3.2x): the gain the hip's swing rotor is driven at on `HumanBalance.sensedCaptureHip` —
+ * the capture point past HIP_SHARE of the feet's half-width across, m, delayed BALANCE_DELAY — in N·m/m.
+ *
+ * **It is 0: measured, and not kept.** Step 3.2w measured the new rider falling **12 of 12 riding in trim with the
+ * stick never touched**, with the hip delivering 0-8 N·m and 0.3 degrees of swing, because it was fed only what the
+ * ankle's own command asked past HIP_SHARE x ANKLE_REST_RANGE (11.5 degrees of a rest the predictor asks 2.6-14.4 of)
+ * instead of the quantity this design names - "the hip once the feet's pressure passes HIP_SHARE of their reach".
+ * Step 3.2x wired it to that quantity and measured the ladder (`3.2/README.md` Part 22):
+ * - the trigger works. The hip now opens 0.22-1.17 s into every run and delivers **35-264 N.m and up to 68.8
+ *   degrees of swing**, and the board's rail peak falls - at 20 degrees of face slope from 13.8-34.4 to 5.9-24.4
+ *   degrees, 12 runs a cell. The sign is confirmed against its own reverse, which falls sooner;
+ * - and it does not stand him up. **12 of 12 fall at every gain from 500 to 8,000 N.m/m**, and across five face
+ *   slopes, 60 runs a gain paired run for run against the hip off: 2,000 N.m/m falls **sooner in 36 of 60**, 1,000 in
+ *   32 of 60, 500 in 18 of 60 and later in 33. The 16-degree acceptance cell is the one cell that flatters it
+ *   (11 later, 0 sooner at 2,000); its four neighbours do not, so that cell is not the population.
+ * This is step 3.2w's own ankle trade, measured again on the other limb: **whatever limb holds the roll adds across
+ * speed, and the capture point counts across speed at 1/omega0 ~ 0.29 m per m/s.** So the hip is wired and left off,
+ * and the signal and this switch are the apparatus the plant's own round needs; it is not a gain to be tuned.
+ */
+const HIP_CAPTURE_GAIN = 0;
+/**
+ * **And step 3.5i measured it once more, at the value its units derive, and once more did not keep it.**
+ * `HIP_CAPTURE_GAIN`'s unit is N·m per metre, and `m g × d` — **716 N·m/m** at 73 kg — is the rotor torque whose own
+ * angular momentum rate relieves the demanded centre of pressure by exactly `d` (the identity in
+ * `AttachedRiderOptions.bodyBank`), so it is the one value that is derived rather than swept. **With the contact's
+ * own missing term in place beside it** — which is what 3.2x could not have had — it still costs: on 90 Canyon
+ * riders turning on the owner's address, the contact term **alone** gives `tip` in 66 of 90 and a median ride of
+ * **1.083 s**, and the same term **with** this drive at 716 N·m/m gives `tip` in 76 of 90 and **0.917 s**. The drive
+ * alone, with no contact term, gives `tip` in **90 of 90** and 1.158 s. So the ordering is
+ * **term < term + drive < drive alone**, and 3.2x's *"the more the hip throws, the sooner he falls"* survives the
+ * correction that was supposed to pay for it — step 3.2z names the reason: `reachAcross` credits the fall test on the
+ * hip range **remaining**, so a rider who spends the range to move his weight is credited with nothing left to catch
+ * it. **Left at 0 for the third time, with the third measurement.**
+ */
+/**
+ * **The ankle rest's slew bound**, rad/s (step 3.2x, `HumanBalance.lagRest`): the most the commanded rest can travel
+ * per second.
+ *
+ * **It is Infinity - no bound: measured, and not kept.** Step 3.2w named the unbounded rest as the mechanism behind
+ * its gain-3 cell's 0.38-0.43 s falls (the rest slewed 0.29 rad in 0.2 s and threw the centre of mass across at
+ * 1.44 m/s). Step 3.2x bounded it and **that attribution does not survive**: on 3.2w's own gain-3 law, 12 runs a
+ * cell, a bound of 1.5 rad/s cuts the ankle's peak torque from 181-290 to **59-162 N.m** - into a human's own band,
+ * which is worth having on its own terms - and holds the rail to 3.5-8.0 degrees, and **the falls are unchanged at
+ * 0.38-0.45 s against 0.38-0.43**. On the shipped predictor it changes nothing at all (0.77-1.70 s at 0.5, 1.5, 4 and
+ * Infinity rad/s, the same twelve runs). At 0.5 rad/s with the hip on it is worse. A human ankle does have a bound and
+ * this is where it would go; it is off because nothing measured here turns on it (`3.2/README.md` Part 22 Section 4).
+ */
+const ANKLE_REST_RATE = Number.POSITIVE_INFINITY;
+/**
+ * **The deck's roll in the ankle's rest**, 0-1 (step 3.2x): the share of the board's own roll about the heading the
+ * ankle's rest carries, which is how a person stands plumb on a slope - the ankle opens by the slope's angle and the
+ * body stays over the middle of its feet.
+ *
+ * **It is 0: measured, and not kept.** Step 3.2w measured the new rider's ankle span at 0.3-1.6 degrees median on a
+ * deck rolled 8.8 degrees and climbing, against the old rider, whose body holds 0.8-3.3 degrees of the world vertical
+ * while the deck sits at the face's own tilt - so the new rider stands square to a capsizing deck. At 1 this does
+ * open the ankle (span median 3.8-7.8 degrees, peak 10.2-22.3) and does bring the body's bank peak down from
+ * 20.7-65.7 to **12.1-34.6 degrees**, 12 runs - and **12 of 12 still fall**, at 0.53-4.32 s, and with the hip's
+ * trigger at 2,000 N.m/m as well it is worse (0.48-1.68 s). It cannot carry a deck past ANKLE_REST_RANGE's own
+ * 14.3 degrees, which is where the capsize goes (`3.2/README.md` Part 22 Section 5).
+ */
+const ANKLE_PLUMB = 0;
 const RAIL_RANGE = (50 * Math.PI) / 180;
 const REFERENCE_TIME = 0.05;
 const REFERENCE_RATE = 5;
@@ -367,6 +558,103 @@ const TWIST_RANGE = (45 * Math.PI) / 180;
 const TWIST_FREQUENCY = 7;
 const TWIST_TORQUE = 120;
 const TWIST_GRIP_RADIUS = 0.15;
+/**
+ * The new surfer's twist as a body degree of freedom (step 3.2e, the advisor's ruling 29i; the split and the numbers are
+ * step 3.2c's, docs/research/new-rider/3.2 Part 3). The board's share of the rider's yaw inertia (the feet, shanks and
+ * knees; `stanceAt`'s `lower`, de Leva 1996) turns rigidly with the board through the planted feet. The upper body's
+ * share (pelvis, trunk, arms and head; `upper`, and TWIST_BODY_ARMS more with the arms out) turns on the legs' twist:
+ * their stiffness and damping (TWIST_STIFFNESS, TWIST_DAMPING: the trunk's axial stiffness, Kosmopoulos et al. 2012)
+ * and the active torque the balance sends, through the muscles' lag. The torque turns the board through the feet and
+ * the upper body the other way: a limb's force with its reaction. The active torque is at most TWIST_BODY_TORQUE, N·m
+ * (the hips' rotation, about 50 N·m a leg: McNabb et al. 2024) and what the feet's grip holds (FOOT_FRICTION times the
+ * leg's load at TWIST_GRIP_SPAN, m, half the feet's spacing); the twist's range is TWIST_BODY_RANGE, rad (the hips about
+ * 30° and the bent knees about 20°: Simoneau et al. 1998, Lorenz et al. 2015), past which the joints stop it
+ * (TWIST_STOP, N·m/rad, and TWIST_STOP_DAMPING: an end stop, not sourced).
+ */
+const TWIST_BODY_TORQUE = 100;
+const TWIST_BODY_RANGE = 0.87;
+const TWIST_BODY_ARMS = 0.87;
+const TWIST_GRIP_SPAN = 0.315;
+const TWIST_STOP = 2000;
+const TWIST_STOP_DAMPING = 50;
+/**
+ * How fast the new surfer sets the rail it is asked for, rad/s (step 3.2f, the advisor's ruling 29j): the lean asked
+ * moves toward the player's stick at no more than this. The old rider's REFERENCE_RATE is 5 rad/s, which reaches 44° in
+ * 0.15 s: that is not a human setting a rail, and the balance, predicting over its 0.1 s delay, cannot follow it.
+ * There is no measured roll rate for a rider setting a rail. What is sourced is the turn: a real bottom turn comes
+ * round 99° in 0.96 s (Forsyth et al. 2024, as `COMPRESS_PULL` cites it), and the roll-plant lab's 1.9 rad/s is a yaw
+ * rate on a 42° rail, not a roll rate. If the rail is set over about the first half of such a turn, 0.7 rad in 0.5 s is
+ * about 1.4 rad/s, which is the sourced upper end.
+ *
+ * **It was 0.5 rad/s, and that was wrong** (rulings 29p and 29q, step 3.2L). 0.5 was adopted off a ladder because the
+ * held-carve bar was longest there — but **that bar rewards leaning slowly**, since a rider who leans slowly spends
+ * longer leaning. At 0.5 a 45° rail takes 1.6 s and the owner rode it: *"the surfer is no longer able to turn sharply.
+ * Even in compress and snap the surfer barely turn... Now its too stiff barely turn in compress."* Measured, the new
+ * rider took **2.55 s to a 30° rail standing and never reached one in Compress**, against the old rider's 0.60 and
+ * 0.58 s. The held-carve bar is demoted to a report.
+ *
+ * **1.4 rad/s is also what the body's own limits give, which is why it is this and not a feel** (ruling 29q's steer:
+ * derive it, because a hand-set number will have to be re-picked when two-way coupling lands). The rider's lean is its
+ * mass turning about its feet: the inertia is m h² = 73 × 0.68² = 33.8 kg·m², and the **largest moment the feet can
+ * apply is the load times their half-width**, m g d = 716 N × 0.13 m = 93 N·m (the same bound that puts the ankle's
+ * authority at 11° of lean, step 3.2i). So the body's own angular acceleration is g d / h² = 9.81 × 0.13 / 0.68² =
+ * **2.76 rad/s²**, and over the half of a bottom turn in which the rail is set — about 0.5 s of Forsyth et al.'s 0.96 s
+ * — it reaches **1.38 rad/s**. Mass, centre-of-mass height, feet width and gravity: **no water in it, so the coupling
+ * cannot invalidate it.** The sourced turn geometry and the body's own torque bound agree to within 2 %.
+ *
+ * **In the measurements:** a 30° rail now comes in 0.85 s standing and
+ * 0.97 s in Compress, with peak turn rates of 94.7 and 60.8 °/s against the old rider's 76.4 and 79.8. It was chosen
+ * off a grid against SCHEDULE_RAIL_CAP, which 29p found had never been swept with it (`3.2/README.md` Part 11 §3):
+ * faster values turn no better in Compress and fall sooner, and **every cap over 8° loses the standing stance
+ * entirely** at these rates. The cost is on a held full stick, where the rider now falls at 1.4 s standing and 2.2 s in
+ * Compress instead of 2.85 and 2.98 — accepted, because ruling 29q puts playability before the bar: a rider nobody can
+ * turn produces no feedback.
+ */
+const LEAN_IN_RATE = 1.4;
+/**
+ * How far onto its rail the balance's schedule is trusted, degrees. The plant is measured at rails of 0 to 40°
+ * (`predictiveBalance.ts` RAIL_PLANT); past this cap the schedule holds its design there and the reference carries the
+ * rest.
+ *
+ * **It was 5°, and the reason it was 5° has been withdrawn** (ruling 29t, step 3.2m). 3.2f read the big-rail plant with
+ * each hold kept 0.6 s, which at a rail lands on the overshoot of the board's own heave, and concluded that past about
+ * 15° of rail the side force per sideslip has changed sign so hard that *no controller* can hold a carve. Re-measured
+ * with every hold held until it stops moving, the numbers are three to nine times smaller, and **a controller designed
+ * on the plant at the rail is positively damped at every rail to 40°, at every speed and stance** — 7 m/s at 40°, which
+ * 3.2f read as −1, is +0.49 (`3.2/results/predict-railmodel-32m.jsonl`). It also survives a frame of timing error, the
+ * only model gate, to 20° everywhere. So the structural argument was right all along: the controller should use the
+ * gains for the rail it is actually on.
+ *
+ * **12° is what the game measures** (`3.2/results/turn-capgrid-32m.jsonl`, the full-stick turn at 7.7 m/s both stances,
+ * and the turn pair at every cap). On the corrected plant:
+ * - **both stances come round 90° for the first time**: standing 1.73 s keeping 0.95 of the speed, Compress 2.02 s
+ *   keeping 0.88, against the old rider's 1.50 s / 0.94 and 1.67 s / 1.32. At the old cap of 5° Compress never came
+ *   round at all;
+ * - the held full stick survives **2.13 s standing and 2.17 s in Compress**, against 1.37 and 2.23 at the old cap on
+ *   the old table — so 3.2L's reason for refusing 12° ("it costs the standing stance altogether", which was a fall in
+ *   0.3–0.4 s) **no longer happens on this plant**;
+ * - **caps 9 to 13 are a plateau in which no turn-pair fall happens in the bottom turn at all**, and 12 is the middle
+ *   of it rather than its single best cell. Below 9 the falls come back into the bottom turn; at 20 the board spins out
+ *   (peak yaw 280–318°/s); at 25 and above the turn goes slow and the rider falls sooner.
+ *
+ * It stays a hand-set number and it will need re-checking when two-way coupling lands (digging the rail changes that
+ * plant). The whole grid is in the results file, so it can be moved on evidence.
+ */
+const SCHEDULE_RAIL_CAP = 12;
+/**
+ * **How fast the soles adapt to a steady load, s** (step 3.2p, ruling 29w item 1). The load sense the balance is given
+ * is the feet's own load less its own slow part, so a steady trim and a steady turn both read zero however hard the
+ * feet are pressed — which is where the model's heave states are zero, and which is also what the receptors do: skin
+ * pressure and muscle force senses adapt to a held load and report its changes (Johansson and Flanagan 2009 on the
+ * hand's; recalled, and not re-derived here).
+ *
+ * 2 s is chosen against the mode this sense is for, not tuned: a one-pole adaptation at 2 s passes 0.33 Hz at 0.97 of
+ * its size with 14° of phase lead, and the board's own mode — **measured in the game at about 1 to 1.5 Hz**
+ * (`boardmode.probe.ts`, step 3.2p; 3.2m's 0.33–0.74 Hz was the model's figure and is 30–60 % low) — at better than
+ * 0.99 with under 6°. So the mode arrives essentially whole and anything slower than about 0.08 Hz is gone.
+ * **A hand-set number, for the re-check when two-way coupling lands.**
+ */
+const LOAD_ADAPT = 2;
 /**
  * The compressed turn's assist (the movement-flow spec's Q4 and Q16, a
  * gameplay rule, not physics). Compress is the sharp turn's stance, and a real
@@ -477,6 +765,24 @@ const PULL_FULL_SPEED = 5;
  * 1.5 more rebounds fell, changing rails from the cutback's deeper lean.
  */
 const LEAN_OUT_PULL = 1;
+/**
+ * The leg drive (leg-drive, 2026-11-10; `legDrive: 'on'`, opt-in; docs/research/leg-drive-2026-11-10): the rail
+ * change's righting push made by the legs, in LEAN_OUT_PULL's place. The cause: LEAN_OUT_PULL pushes the body's centre
+ * of mass from outside, a force with no reaction; a rider leaning toward the wave is righted when the feet go under the
+ * body, the back leg driving the tail out, away from the new rail. So under LEAN_OUT_PULL's gate less Compress (the
+ * board planes, the rider steers, the body still leans the other way by more than UPRIGHT_BANK) the legs push the body
+ * toward the new rail, level and across the board's path, and the board takes the equal and opposite push at the back
+ * foot: nothing on the two together, and the push behind the board's centre is the yaw that goes with it. The limbs
+ * bound it three ways:
+ * - strength: LEG_SIDE_STRENGTH of the body's weight (the back leg's push sideways, as the agile legs'), by the steer;
+ * - grip: FOOT_FRICTION times the back foot's own load (an unloaded foot pushes nothing: unbounded, a body weight
+ *   threw the board from under every rider in 0.2 s);
+ * - reach: the push ends when the feet have gone as far from under the body, since it began, as the legs reach
+ *   sideways at this pelvis height: sqrt(straight² − pelvis²), the straight leg being the stance's pelvis height with
+ *   LEG_EXTENSION, so 0.41 m standing (pelvis 0.78 m) and 0.72 m in Compress's crouch (0.48 m).
+ * The two forces do not share a line, so they are also a couple (the push times the body's height over the back foot)
+ * that a real body takes at the hips; the point-mass body has nowhere to take it (the doc's open point).
+ */
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -566,6 +872,145 @@ const STEER_DEADBAND = 0.05;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
+ * Snap (the snap stance, the owner's decisions of 2026-11-03; docs/research/snap-stance-2026-11-03/README.md): held
+ * standing, the weight goes onto the tail for a sharp turn that sheds speed. Nothing here pushes the board: each term
+ * is the rider's own posture, and the turn and the speed it costs are the hull's and the fins' (`BoardBody`).
+ * - **The weight on the tail:** the balance holds the feet's pressure SNAP_PRESSURE of half the stance toward the back
+ *   foot, over the side fins (0.7: 85/15 on the back foot; Rapture's snap, 80/20 to 90/10), within SNAP_FREEDOM, m,
+ *   where the trim lets it wander TRIM_FREEDOM (the coaching's "commit to extreme back-foot loading"). The hull trims
+ *   nose up until its lift sits under the load (the Exploratorium's surfing physics; Savitsky 1964): the wetted length
+ *   shortens into the rockered tail, the nose leaves the water, the yaw it resisted goes, and the trim's drag slows the
+ *   board. The hips go over the back foot, not behind it: the upper body stays over them (no TRIM_SHIFT, which S keeps).
+ *   Round 2 (the owner's "the board moves by itself ... the rider falls after"): leaning the upper body back as full S
+ *   does on top of the pressure put the centre of mass 0.15 m behind the back foot. Under the board's braking the
+ *   balance then kept the pressure on the tail only by sitting further back, the nose rose 20–47°, and the board
+ *   pivoted about the rider at about 200°/s while the rider's own path turned at about 30°/s: its heading ran 60–70°
+ *   off its path, the fins stalled (attack 45–85°), the speed fell to 0.2 m/s, and let go, the fins weathervaned it
+ *   back 100° and the rider fell (flat water, 7 m/s). The drawn hips sat behind the back foot on a pitched board and
+ *   the crouch read half its depth. Over the back foot, the same turn keeps its fins (the heading within 25–30° of the
+ *   path) and the rider stays on (docs/research/snap-stance-2026-11-03/README.md, Round 2).
+ * - **The body loaded:** the legs come down SNAP_DEPTH of CROUCH_DEPTH (0.3 m, Compress's depth) as fast as Compress
+ *   takes them (no slower than the load falls, the legs only pushing), and let go they extend as Compress's do (the
+ *   projection). With the hips over the back foot the back knee closes past 90° and the front leg stays long (the
+ *   kick-out's and the top turn's sourced knees, the animation-realism plan §5.11, §5.15; round 2: the owner's "the
+ *   rider should load itself ready for the movement like the other stances", where 0.15 m read as standing). Opt-in,
+ *   `snapDepth: 'deep'` loads them to the tube tuck's depth (SNAP_DEPTH_DEEP; snap-carve, 2026-11-08).
+ * - **The shoulders turning first:** the upper body's twist (TWIST_RANGE, through the feet's grip) wound at once toward
+ *   where the turn ends (`snapAim`) and unwound as the board comes round under it (Rapture: the head and shoulders
+ *   rotate first; de Sousa 2022: the trunk rotates, the chest to the lip).
+ * - **The lean the turn can hold:** the rider leans for a turn of SNAP_RADIUS, m, in place of TURN_RADIUS: the tail's
+ *   rocker carves tighter than the whole rail, and real cutbacks and top turns run on a 2.2 m radius (Forsyth et al.
+ *   2024).
+ * Snap wins over the crouch, Compress and the trim held with it. The fins stall past FIN_STALL (`finForces`): pivoted
+ * hard enough, the tail slides.
+ */
+const SNAP_PRESSURE = 0.7;
+const SNAP_FREEDOM = 0.05;
+const SNAP_DEPTH = 1;
+/** A face tilted less than this, its slope's sine, has no fall line for Snap's aim (flat water, a swell's back). */
+const SNAP_FACE = Math.sin((5 * Math.PI) / 180);
+const SNAP_RADIUS = 2.2;
+/**
+ * Snap taken at full effort (snap-quick, the owner's research of 2026-11-05; docs/research/snap-quick-2026-11-05/README.md).
+ * From Compress, with the legs already loaded, a snap is set up and started in about 0.2–0.5 s: the head and shoulders
+ * turn first, abruptly, then the hips, and the weight is slammed onto the tail (surf coaching the owner gathered; Rapture:
+ * the head and shoulders rotate "as fast as possible", and that rotation sets the snap's speed). Here the shoulders took
+ * 0.55 s to 90 % of their wind and the weight 0.67 s to the tail (the drawn hips 0.85 s, all of it 1.3 s), at the
+ * balance's calm pace, which every other stance keeps. While Snap is held the body goes about as fast as it can, from
+ * Compress with the steer on: the shoulders 90 % in 0.35 s, the weight on the tail and the hips over it in 0.42 s.
+ * - SNAP_TWIST_FREQUENCY, rad/s: the shoulders' wind critically damped at this, within the hips' torque and the feet's
+ *   grip (TWIST_TORQUE, the grip at TWIST_GRIP_RADIUS). At 16 they took the 45° in 0.27 s, but the twist's reaction,
+ *   which first turns the board away from the turn, grew with it and cut the snap's turn (its peak 132°/s at 9 m/s
+ *   against 148).
+ * - SNAP_SHIFT_TIME, s, and SNAP_SHIFT_SPEED, m/s: the weight's shift along the board, critically damped at this within
+ *   an inverted pendulum's acceleration, g times how far the pressure can go ahead of the body (to the front foot, half
+ *   the stance) over the body's height above the feet (Winter 1995; Hof et al. 2005): about 4 m/s² crouched in Compress
+ *   against the calm 3 (STANDING_SHIFT_ACCELERATION). The speed is no tighter than that acceleration reaches over the
+ *   shift (about 1 m/s over Snap's 0.25 m). The body moving back that fast pushes the board on under it a moment (a few
+ *   tenths of a m/s), so Snap keeps a little more speed than at the calm pace (still water, 7 m/s: 5.0 m/s at 0.8 s
+ *   against 4.7), still more than a carve sheds, in time and per degree.
+ */
+/**
+ * Snap leaning for its own turn (snap-lean, the owner's pick of 2026-11-05, opt-in with `snapPivot: 'lean'`;
+ * docs/research/snap-fan-2026-11-05/README.md): a full steer under Snap asks for up to SNAP_RAIL_RANGE of bank, still no
+ * more than its SNAP_RADIUS turn holds at the board's speed, in place of the steer's RAIL_RANGE (50°). Top turns and
+ * cutbacks ride a 75 ± 3° rail, against 42 ± 3° in bottom turns (Forsyth et al. 2024, 214 waves, a board-mounted IMU).
+ * Measured headless (round 3): every Snap turns sharper (192–239°/s at the peak, against 151–237), and the still-water
+ * fan's apex doubles (2.3 m vacuum); on still water, past the rail's bite, the board bogs and the rider falls at the stall
+ * in 7 of 12 runs (2 by default). On a wave the face feeds the speed back; the owner rides it.
+ */
+const SNAP_RAIL_RANGE = MAX_BANK;
+/**
+ * Snap let go, the rider centres the weight and re-engages the fins (Rapture's snap: "centre the weight and re-engage the
+ * fins"; de Sousa 2022's re-entry): the hips go back over the stance's middle, the shift's own place before Snap, at the
+ * balance's pace, for up to RECENTRE_TIME, s, or until within RECENTRE_HOME, m; then the balance's band (TRIM_FREEDOM)
+ * again. Before (snap-recentre, 2026-11-06), let go riding straight the body stayed over the tail, the centre of mass
+ * 0.06–0.08 m ahead of the back foot against 0.30 before the snap: the pressure under it sat at the stance's middle, inside
+ * the balance's band (which moves the body only for a pressure past 0.2 m), so nothing brought it back, and the owner saw
+ * the surfer "stuck in snap stance" with the stance changed.
+ */
+const RECENTRE_TIME = 1;
+const RECENTRE_HOME = 0.02;
+/**
+ * Snap's stamp (snap-stamp, the owner's ask of 2026-11-08: "turn less or very sharply with snap", opt-in with
+ * `snapStamp: 'on'`; docs/research/snap-stamp-2026-11-08/README.md). The stick sets the sharpness. Under Snap a steer up
+ * to STAMP_STEER is Snap's rail carve, the fins holding, as before. Past it the rider stamps: the upper body slams back
+ * past the hips (already over the back foot) by up to STAMP_BACK, m, for STAMP_TIME, s, then comes back over the hips and
+ * the side fins (the coaching: "slam the weight onto the tail, then centre it"; Rapture's snap: the fins "momentarily
+ * lose grip", the tail slides, then the weight re-engages them). Nothing here turns the board: the weight behind the
+ * fins unloads the nose and lets the centre fin's attack pass FIN_STALL (`finForces`), so the tail slides and the hull
+ * pivots about the rider; back over the fins, they grip again. The cost is the speed the slide sheds.
+ * - STAMP_STEER: the last fifth of the stick's throw. The owner's "all the way" is the stick at its rim; a pad's stick
+ *   reads 0.8–1 there after its deadzone and the keys reach 1, while a held carve sits well inside it.
+ * - STAMP_SET, s: the stamp waits for Snap's set-up, the weight on the tail and the hips over it (snap-quick: 0.42 s at
+ *   full effort, the shoulders 90 % wound in 0.35 s). Stamped at once (round 3's lever), the lean came before the hips
+ *   were over the tail, and the turns were shorter than without it.
+ * - STAMP_BACK and STAMP_TIME: round 3's stamp (the whole TRIM_SHIFT, 0.25 m, for 0.3 s) turned the 150° climb at up to
+ *   305°/s but stalled the board. Here, measured on the 15° plane's climbs: 0.15 m for 0.25 s keeps every rider on (0 of
+ *   4 falls, today's Snap 1); 0.25 m turns more and falls as today does; 0.15 s turns less than 0.25 s.
+ * - STAMP_REARM: the steer must come back under STAMP_STEER − this before another stamp, so a held stick stamps once.
+ * - STAMP_RETURN, s: the lean's way back runs at the stamp's pace (Snap's own shift, SNAP_SHIFT_TIME) for this long.
+ */
+const STAMP_STEER = 0.8;
+const STAMP_REARM = 0.2;
+const STAMP_TIME = 0.25;
+const STAMP_RETURN = 0.4;
+const STAMP_SET = 0.3;
+const STAMP_BACK = 0.15;
+const SNAP_TWIST_FREQUENCY = 11;
+/**
+ * The agile legs (rider-agile, 2026-11-09, the owner: "surfers have incredible agility and balance and stretching
+ * abilities, right now the playable surfer is a bit static"; `agile: 'on'`, opt-in; docs/research/rider-agile-2026-11-09).
+ * The two feet act apart on the board, each force with its reaction on the body (no hidden motors):
+ * - the feet's couple about the deck's normal (one foot pushes across the deck one way, the other the other way) turns
+ *   the board, and its reaction turns the hips the other way (HIP_INERTIA, kg·m²: the pelvis, the thighs and the trunk's
+ *   lower half about the body's long axis, de Leva 1996's segments; HIP_RANGE, the hips' rotation on fixed feet, Neumann's
+ *   35–45° at each hip). Each foot pushes across the deck no harder than its grip (FOOT_FRICTION times its own load) and
+ *   the leg's strength sideways (LEG_SIDE_STRENGTH body weights, hip abduction and adduction, Bohannon 1997; to be
+ *   re-sourced), so the couple is at most the feet's span times the weaker foot's push;
+ * - the legs' split along the board (one leg presses, the other lightens) pitches the board under the feet, and its
+ *   reaction pitches the trunk the other way (TRUNK_INERTIA, kg·m², the trunk, head and arms about the hips' axis;
+ *   TRUNK_RANGE). Neither foot pulls: the split is at most what takes one foot's load to nothing (TRUNK_TORQUE at most).
+ * A full steer under Snap (STAMP_STEER, timed as the stamp is: once per press-and-turn, the stick's throw past the
+ * threshold its depth) launches the tail: the pressure goes forward off the fins (toward AGILE_PRESSURE), the trunk
+ * goes back, and the hips whip against the turn, their reaction throwing the board round under them; then the recovery
+ * for STAMP_RETURN, all three back (the hips square over the board, the pressure over the fins).
+ * AGILE_FREQUENCY, rad/s: how fast the hips and the trunk are asked to go, within those torques.
+ * HIP_RANGE and TRUNK_RANGE are the launch's, measured on the 15° plane's climbs, not the joints' (40° and more): the
+ * hips' 40° with the trunk's 20° reached 219–309°/s and threw every rider; 15° and 10° keep all four on, turning 48–87°
+ * in the 0.8 s after the launch against today's 39–84°, the fins never past their stall.
+ */
+const HIP_INERTIA = 2.5;
+const HIP_RANGE = (15 * Math.PI) / 180;
+const LEG_SIDE_STRENGTH = 0.35;
+const TRUNK_INERTIA = 8;
+const TRUNK_RANGE = (10 * Math.PI) / 180;
+const TRUNK_TORQUE = 150;
+const AGILE_PRESSURE = 0.2;
+const AGILE_FREQUENCY = 14;
+const SNAP_SHIFT_TIME = 0.09;
+const SNAP_SHIFT_SPEED = 1.2;
+/**
  * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
  * and, under a tube's curl, a deeper manual tuck. Compress shortens the leg by up
  * to CROUCH_DEPTH, m, and full manual crouch by CROUCH_SHARE of it (the pumping
@@ -584,6 +1029,19 @@ const TRIM_SHIFT = 0.25;
 export const CROUCH_DEPTH = 0.3;
 export const CROUCH_SHARE = 0.65;
 export const MANUAL_CROUCH_DEPTH = 0.45;
+/**
+ * Snap's deeper load (snap-carve, the owner's feedback of 2026-11-08, opt-in with `snapDepth: 'deep'`;
+ * docs/research/snap-carve-2026-11-08/README.md): Snap's legs come down to the tube tuck's depth (MANUAL_CROUCH_DEPTH),
+ * SNAP_DEPTH_DEEP of CROUCH_DEPTH. The cause: a loaded bottom turn and a full rail carve sit in the deepest surf crouch,
+ * the knees and the hips at 90° or less (de Sousa 2022's fundamental phase; Kerr read at the turn's base: knees about 80° or
+ * less, the lead hand at the water), as deep as the tuck the tube asks for. The owner's reference, Surf Analytica's "JJF and
+ * one perfect full rail carve": the hips near the board through the bottom turn. The leg model goes there already (the
+ * tuck's own travel), and within a 0.6 s Snap the legs reach 0.33–0.37 m (CROUCH_SPEED, the load). Measured headless
+ * (round 2's single moves): the turn by 1 s within ±4° of Compress's depth and the peak up to 29°/s higher, but on still
+ * water 5 of 12 riders fall after the release (2 at Compress's depth) and a snap taken deep turns less on a second snap; with
+ * `snapPivot: 'lean'` 11 of 12 fall at either depth. So it is opt-in, to ride.
+ */
+const SNAP_DEPTH_DEEP = MANUAL_CROUCH_DEPTH / CROUCH_DEPTH;
 const PUMPING_CROUCH_LIMIT = 0.6;
 const MAX_LEG_SPEED = 2.5;
 const CROUCH_SOFTENING = 0.5;
@@ -610,6 +1068,28 @@ const LEG_FREQUENCY = 12;
 const CROUCH_ACCELERATION = 6;
 const CROUCH_SPEED = 1.5;
 const EXTEND_ACCELERATION = 15;
+/**
+ * The projection's catch (compress-exit, 2026-10-29), m/s: letting Compress go, the legs extend no faster than the
+ * stance's spring can catch the body, g·√(m/k): 0.40 at the riding stance's 44 kN/m, 0.57 at Compress's softened 22 kN/m
+ * (the reference rider's 73 kg).
+ *
+ * The leg is a spring under the body (Blickhan 1989's spring-mass leg), sagging m g / k under its weight. A body moving
+ * up along it at v relative to the deck swings about that sag by v / ω (ω = √(k/m)); if the deck stops rising under the
+ * feet, or drops away, the spring runs out of sag and the feet leave it once v / ω > m g / k, that is v > g / ω: a
+ * jump's take-off, the push falling to zero with the body still rising (Linthorne 2001). Out of a compressed bottom turn
+ * on the Canyon's Big, the legs rose at up to 1.25 m/s (EXTEND_ACCELERATION's 1.5 g, a 2.5–3 body-weight push) and the
+ * body at 1.4 m/s off the deck. Where the board then came off the bottom and rolled out of the turn, the feet left
+ * it for about 0.4 s, the unloaded board turned and slowed under the rider, and 9 of 14 riders on one wave fell 1.9–2.5 s
+ * after standing. Coaches read the bottom turn's extension as progressive (De Sousa 2022), and the knees load 45–90 N·m
+ * through river-wave turns (Weiß et al. 2024), not a jump's push. Caught, 13 of 14 ride on.
+ *
+ * Only letting Compress go: the pumping crouch let go keeps its pace, as the pumps' tests and the stance map pin it.
+ * Compress's softening is the leg's own (CROUCH_SOFTENING), so the catch falls from 0.57 to 0.40 m/s as the leg stiffens
+ * toward the riding stance.
+ */
+function projectionCatch(mass: number, stiffness: number): number {
+  return WATER.gravity * Math.sqrt(mass / stiffness);
+}
 /**
  * While the feet brake the body's bank near their edges (the ankle's rest past
  * CROUCH_HOLD of ANKLE_REST_RANGE), the legs hold rather than drop, stopping at
@@ -651,6 +1131,70 @@ const COMPRESS_KEEP = 0.9;
  * the aim at once.
  */
 export const EXTENSION_TALL = 0.04;
+/**
+ * The carve's flexing legs (carve-flex, 2026-11-10; `carveFlex: 'on'`, opt-in; docs/research/carve-flex-2026-11-10): on
+ * a standing, stick-only carve the legs never bent (the turning-body study: the pelvis 0.77–0.78 m over the deck all
+ * the way round, a tall body folded at the hips), where a surfer's knees sink through the bottom of a turn as its load
+ * comes on and rise as it ends. So while the rider steers, the legs yield to the turn's load: the leg's rest comes down
+ * by the load along the leg over the rider's weight (1 / cos of the lean in a steady turn; nothing riding straight or
+ * across a face), reaching CARVE_FLEX of CROUCH_DEPTH at the load a full stick's lean carries (1 / cos RAIL_RANGE,
+ * 1.56 body weights), and never more than the stick's own share of it: no stick, no flex. The stick let go mid-turn, the
+ * legs sink no further and stand up as the board rolls back flat under them (its bank over RAIL_RANGE): standing up at
+ * once, or as the load eased, threw the slowed rider back into its lean (the exit probe: 27 and 15 falls of 45, to 5
+ * with straight legs and 7 this way). Either way the legs push the body up no faster than the stance's spring can catch
+ * it (`projectionCatch`).
+ *
+ * It is the leg's own rest length, the one the crouch and Compress move, so all it does to the board goes through the
+ * leg's spring at the feet: the board is unloaded while the body sinks and pressed while the legs push it back up.
+ * It drops as Compress does (no faster than the body falls onto the legs, the feet only pushing).
+ *
+ * CARVE_FLEX 0.4 is 0.12 m: the deep end of the surf stance's half-squat (knees flexed 30–80°), which the stance map
+ * reads at the pumping crouch's 0.117 m (knees 102–104° drawn). River-wave turns peak at 45–51° of knee flexion
+ * (Weiß et al. 2025, n = 7, 233 surf cycles on a standing river wave, IMUs + video; correct as cited), inside it.
+ * Compress (0.3 m) and the crouch stay the player's deeper stances: the deeper of them and the flex is the one the
+ * legs take.
+ *
+ * **The 30–80° is not Borgonovo-Santos et al. 2021, which this comment attributed it to until step 3.3f, and it has no
+ * population behind it.** The figure is **Everline 2007** (*Strength Cond J* 29(3):32–40), *quoted* by Borgonovo-Santos
+ * as their reference; Borgonovo-Santos measured a **pop-up landing** in a laboratory (n = 23) and **no riding stance at
+ * all**, and their own knee figures (front 99 ± 20°, rear 101 ± 14°) carry **no stated datum**, so they cannot be read
+ * as a depth either way. Everline is a practitioner review — its own title calls it a qualitative assessment — with no
+ * population, no protocol and no datum stated, and step 3.3e could not obtain it. de Sousa 2022's preparation phase
+ * (knees 90–110° included) is a **master's thesis observation tool validated by seven coaches with no surfers
+ * measured**, so it is a coaches' consensus and not a measurement; it was cited here as if it were one and that
+ * clause is removed. **So this constant's depth rests on an unsourced practitioner claim plus our own stance map, and
+ * the only measured surfing numbers near it are Weiß's.** See `docs/research/new-rider/3.3/stance-depth.md` §1.1.
+ */
+const CARVE_FLEX = 0.4;
+/**
+ * Snap's driving legs (snap-legs, 2026-11-10; `snapLegs: 'drive'`, opt-in; docs/research/snap-legs-2026-11-10): held,
+ * Snap kept the legs at its full depth, a tight ball over the tail for as long as the button was down (the turning-body
+ * study's cutback: the pelvis 0.47–0.55 m over the deck all the way round, drawn knees 51–100°), where a surfer comes
+ * into the turn low and drives the legs out through it (the stance map: the front knee "extending through the snap",
+ * de Sousa 2022; the turning-body study's cutback: knees 100–130° / 110–140°; Knox's cutback: low in the bottom turn, then pushing on
+ * the back foot with the body held more upright). So under Snap with the stick
+ * pushed, the legs load as before, and then extend as the board comes round under the wound shoulders: the leg's rest
+ * rises from Snap's depth toward SNAP_DRIVE_DEPTH of CROUCH_DEPTH by how far the board's heading has turned the
+ * stick's way since the furthest it went the other way (a Snap taken on the other rail first turns the old way for
+ * 0.25–0.5 s: the load), over SNAP_DRIVE_TURN, and by how far the stick is pushed (half a stick, half the move; no
+ * stick, Snap's held load as before). Once driven the legs stay out for that turn; the stick thrown the other way, or
+ * Snap taken again, loads them anew.
+ *
+ * It is the leg's own rest length, the one the crouch, Compress and Snap move, so all it does to the board goes through
+ * the leg's spring at the feet: the board is pressed while the legs push the body up. They rise no faster than the
+ * stance's spring can catch the body (`projectionCatch`, as Compress let go).
+ *
+ * - SNAP_DRIVE_TURN is TWIST_RANGE (45°): the shoulders lead the board by as much as the spine turns, and the legs are
+ *   out when the board has come round to where the shoulders pointed. Measured against 90° (the move half as big by the
+ *   time Snap is let go, nothing better), the body's lean come over to the new rail in its place (earlier, 0.16 s sooner
+ *   to fall), a 0.4 s clock from the rail change (as the heading, but a bare timer), and the twist unwinding (it never
+ *   unwinds on flat water or across a face: no move).
+ * - SNAP_DRIVE_DEPTH is CARVE_FLEX (0.4: 0.12 m, the pumping crouch's depth, the deep end of the surf stance's
+ *   half-squat): the pelvis 0.68–0.70 m over the deck. Standing all the way up (0) drew the knees 3–7° straighter
+ *   for a full-height body in a 2 m turn.
+ */
+const SNAP_DRIVE_DEPTH = CARVE_FLEX;
+const SNAP_DRIVE_TURN = TWIST_RANGE;
 const EXTENSION_SETTLE = 0.5;
 const TALL_FROM = 0.05;
 const TALL_START = 0.02;
@@ -675,6 +1219,13 @@ const ARM_LENGTH = 0.7;
 const ARM_ANGLE = (25 * Math.PI) / 180;
 const STANDING_HAND_DRAG = 1.1 * 0.013;
 /**
+ * The new surfer (step 3.2): the flat hand skimming the face is also a weak support, a plate's lift out of the water
+ * along the surface's normal: C_L HAND_LIFT on HAND_AREA, m² (a flat plate at 20–40° of attack: C_L about 0.8–1.2;
+ * Hoerner and Borst 1985, Fluid-Dynamic Lift, recalled), its share wet, with the drag at most HAND_FORCE_LIMIT.
+ */
+const HAND_LIFT = 1;
+const HAND_AREA = 0.013;
+/**
  * Compressing into a lean, the inside hand reaches for the water (de Sousa 2022:
  * the body leans into the curve until the inside hand nears the water): from
  * REACH_FROM of Compress and REACH_LEAN of bank, on the side the body leans
@@ -697,6 +1248,529 @@ export interface AttachedRiderOptions {
   mass?: number;
   stance?: StanceName;
   phase?: PosePhase;
+  /**
+   * How a pulling hand meets water outrunning it (`FEATHER_DRAG`): 'feather', the default, edge-on; 'old' broadside, as
+   * before canyon-catch (the `?stroke=old` dev switch, for A/Bs).
+   */
+  stroke?: 'feather' | 'old';
+  /**
+   * How the legs extend letting Compress go (`projectionCatch`): by default no faster than the stance's spring can
+   * catch the body; 'old' at the legs' full pace, as before compress-exit (the `?extension=old` dev switch, for A/Bs).
+   */
+  extension?: 'old';
+  /**
+   * Snap taken at full effort (snap-quick, 2026-11-05; SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME): by default the shoulders
+   * and the weight go as fast as the body can take them while Snap is held; 'old' at the balance's calm pace, as before
+   * (the `?snapQuick=old` dev switch, for A/Bs).
+   */
+  snapQuick?: 'old';
+  /**
+   * Snap's lean (snap-lean, 2026-11-05; SNAP_RAIL_RANGE), opt-in: 'lean' lets a full steer under Snap lean as far as its
+   * tight turn holds, up to MAX_BANK, in place of the steer's RAIL_RANGE (the `?snapPivot=lean` dev switch, to ride).
+   */
+  snapPivot?: 'lean';
+  /**
+   * After Snap (snap-recentre, 2026-11-06, the owner: "snap gets stuck in snap stance"; RECENTRE_TIME): by default the
+   * rider centres the weight again when Snap is let go; 'old' leaves it over the tail until the balance's band is crossed,
+   * as before (the `?snapRecentre=old` dev switch, for A/Bs).
+   */
+  snapRecentre?: 'old';
+  /**
+   * snap-upturn (2026-11-08, the owner: "I can't turn UP the wave"): with `snapPivot: 'lean'`, a Snap turning the board
+   * up the face asks for the steer's RAIL_RANGE, the top turn's lean kept for turns down it; 'old' leans every Snap (the
+   * `?snapUpturn=old` dev switch, for A/Bs).
+   */
+  snapUpturn?: 'old';
+  /**
+   * Snap's deeper load (snap-carve, 2026-11-08, the owner: "doesn't lower the center of gravity so much"; SNAP_DEPTH_DEEP),
+   * opt-in: 'deep' loads Snap's legs to the tube tuck's depth (MANUAL_CROUCH_DEPTH, 0.45 m) in place of Compress's 0.3 m
+   * (the `?snapDepth=deep` dev switch, to ride). By default as deep as Compress, as before.
+   */
+  snapDepth?: 'deep';
+  /**
+   * Snap's stamp (snap-stamp, 2026-11-08, the owner: "turn less or very sharply with snap"; STAMP_STEER), opt-in: 'on'
+   * makes a full steer under Snap slam the weight back past the tail for a moment, then over the fins again (the
+   * `?snapStamp=on` dev switch, to ride). A partial steer is today's Snap, as is every Snap by default.
+   */
+  snapStamp?: 'on';
+  /**
+   * The agile legs (rider-agile, 2026-11-09; HIP_INERTIA), opt-in: 'on' lets the two feet act apart on the board (the
+   * feet's couple against the hips, the legs' split against the trunk), and a full steer under Snap launches the tail
+   * with them in place of the stamp (the `?agile=on` dev switch, to ride). By default as before.
+   */
+  agile?: 'on';
+  /**
+   * The leg drive (leg-drive, 2026-11-10; LEAN_OUT_PULL's note), opt-in: 'on' makes the rail change's righting push a
+   * pair through the legs, on the body toward the new rail and the opposite on the board at the back foot, in
+   * LEAN_OUT_PULL's place and without Compress's gate (the `?legDrive=on` dev switch, to ride). By default as before.
+   *
+   * **'turn'** (step 3.2t, `?legDrive=turn`) is 'on' and one thing more: the same leg pair also **leads the lean into a
+   * compressed turn**, in COMPRESS_PULL's place, so the compressed turn's inward pull is paired too. See
+   * `legTurn`'s note for what that costs and why it cannot buy what COMPRESS_PULL bought.
+   */
+  legDrive?: 'on' | 'turn';
+  /**
+   * **The compressed turn's cheat, deleted** (step 3.2u, `?compressPull=off`, opt-in): `'off'` removes COMPRESS_PULL,
+   * the unpaired 0.19 g of sideways force on the body that the old rider's compressed turn rests on, and puts nothing
+   * in its place. It is the ablation the balance-redesign notes quote at 6 of 6 → 0 of 6 and step 3.2t did not
+   * reproduce; it is here so the shaped hull's grip (`BoardBody`'s `hull: 'rail'`) can be scored against the cheat's
+   * own score with the cheat actually gone, which is the only question step 3.2u is for. CARVE_CARRY and LEAN_OUT_PULL
+   * are untouched: this switch removes one force, not the gameplay rules around it.
+   */
+  compressPull?: 'off';
+  /**
+   * The carve's flexing legs (carve-flex, 2026-11-10; CARVE_FLEX), opt-in: 'on' lets a standing rider's legs yield to a
+   * steered turn's load, the knees sinking as it comes on and extending as it ends, to a moderate crouch at most (the
+   * `?carveFlex=on` dev switch, to ride). By default the stick alone never bends the legs, as before.
+   */
+  carveFlex?: 'on';
+  /**
+   * Snap's driving legs (snap-legs, 2026-11-10; SNAP_DRIVE_DEPTH), opt-in: 'drive' lets the legs of a rider turning
+   * under Snap extend as the board comes round, pressing it through the feet, in place of holding Snap's full depth for
+   * as long as it is held (the `?snapLegs=drive` dev switch, to ride). By default Snap holds its depth, as before.
+   */
+  snapLegs?: 'drive';
+  /**
+   * Snap's rail change (snap-cross, 2026-11-10), opt-in: 'on' has a Snap taken on the other rail keep the weight where
+   * it is until the body has come over the board, and has the back foot push the body across (the leg drive) meanwhile
+   * (the `?snapCross=on` dev switch, to ride). By default Snap puts the weight on the tail at once, as before.
+   */
+  snapCross?: 'on';
+  /**
+   * The legs' power limit (A-lite, the advisor's ruling 27; docs/research/board-in-water/a-lite), opt-in: 'cap' stops
+   * the standing contact making energy on steep water. When feet on a deck cannot give the push the coupled solve
+   * needs, the board takes no more than the legs transmit (the leg's own force along its line, not the pair's push),
+   * and the contact's net positive power stays within LEG_POWER_PEAK at any instant and LEG_POWER_HELD over any
+   * LEG_POWER_WINDOW (the `?legPower=cap` dev switch, to ride). By default as before.
+   */
+  legPower?: 'cap';
+  /**
+   * The new surfer (docs/research/new-rider/design.md, the advisor's ruling 29), opt-in: 'new' builds its steps behind
+   * the `?rider=new` dev switch. Step 3.1: standing, the body is free along the board as well (`StandingBody`, a ninth
+   * unknown in the board's solve), leaning with the face on its pitch ankle; the knees are softer, with a strength cap
+   * in place of MAX_LOAD; and the contact's power is A-lite's window (LEG_POWER_PEAK, LEG_POWER_HELD). Step 3.2: free
+   * across as well, with no drive left, balanced by a human's delayed moves (`HumanBalance`). Every other phase as
+   * before. By default the old rider.
+   */
+  rider?: 'new';
+  /**
+   * The felt vertical's low-pass **frame** (step 3.3c, the wave-shape advisor's second ruling of 2026-11-15), opt-in:
+   * 'deck' keeps the filter's state on the **deck's own axes** — `dG/dt = (A − G)/T` in the board's frame, which is what
+   * a body-fixed sensor does — in place of low-passing the pair's specific force in the **world** and only then
+   * projecting it onto the deck's current axes.
+   *
+   * By default (the world frame) a force locked exactly to the deck normal still reads an across component of order
+   * `Ω · T` the moment the deck rolls, so the felt vertical the balance stands on carries a rate-proportional tilt that
+   * is the instrument's and not the water's: measured at **0.084–0.132 ° of tilt per ° of roll in all seven cells** of
+   * step 3.3b, and `0.1 s × 130 °/s = 13°` one frame before a traced fall, where the real in-plane water force gives
+   * −6.5° and the test reads −15.5° (`docs/research/new-rider/3.3/README.md` Part 26 §1.4). It is not only a readout:
+   * `humanBalance`'s `px = offset.x − height · nx` puts the same filtered vertical into the capture point, so it moves
+   * the fall margin itself.
+   *
+   * The advisor's ruling is that the 0.1 s is defensible and its frame is not — the otolith is a body-fixed sensor and
+   * the brain's gravity estimate is built in egocentric coordinates (Laurens 2022, Front. Syst. Neurosci. 16:886284) — so
+   * in body coordinates the same lag costs `T · d(tilt)/dt` ≈ 0.65° on this trajectory against the world frame's 13°, a
+   * factor of twenty for the same time constant. The smoothing the filter exists for is kept; only its frame changes,
+   * and nothing in the water is touched. The `?feltFrame=deck` dev switch, to ride. By default as before.
+   */
+  feltFrame?: 'deck';
+  /**
+   * **Which depth the knees' own travel is read at** (step 3.3f; `'achieved'`, opt-in, off by default), the new surfer
+   * standing only.
+   *
+   * The design's stance-room table (`stanceRoom`) says what a stance leaves the balance, and the knees' entry is the
+   * travel they have left: **0.30 m at the riding stance, 0.05 m in Compress** [R]. By default that table is read at
+   * the depth **the player commands** (`heldDepth`), and `prepareLeg`'s own comment states the consequence — *"the
+   * balance's own knee drop is not counted: it spends the stance's travel."* So a **standing** rider whose balance has
+   * its knees all the way down (`HumanBalance.knees` = 1) rests its leg at `0 + 1 × 0.30` = **0.30 m**, which is
+   * `CROUCH_DEPTH` — *exactly* what Compress commands — while still being granted the tall stance's own room (±1.2 rad
+   * of hip, the arms free). The balance's correction therefore has the same authority as the player's button and pays
+   * none of its price, and pressing Compress on top of a saturated correction adds only
+   * `knees × stanceRoom(0.30).kneeTravel` = **0.05 m**.
+   *
+   * Measured on the Canyon-matched cell, paired tall → Compress over twelve cells, the hips drop **0.067–0.299 m** on
+   * `?rider=new` against **0.296–0.300 m in 12 of 12** on the default rider, and the loss tracks `knees` cell by cell:
+   * 0.285–0.299 m where `knees` ≤ 0.04, 0.067–0.168 m where it is ≥ 0.6 (step 3.3f §3). That is the owner's *"in
+   * Compress the surfer is not down enough"* — not a shallow stance (ours is already 0.48 m over the deck, a 114°
+   * knee, deeper than every measured surfing posture bar an elite pro's aerial landing, step 3.3e) but a stance that
+   * barely **changes** when the button is pressed.
+   *
+   * `'achieved'` reads the knees' travel at `max(heldDepth, the leg's own depth)` instead — the room a body has is the
+   * room its knees are actually in, whoever bent them — so the balance's drop pays for itself in the same currency
+   * every stance pays, and self-limits: with `knees` = 1 and nothing commanded the leg settles where
+   * `d = kneeTravel(d)`, about 0.17 m, instead of 0.30. **Nothing is deleted**: the drop stays, with 57 % of its
+   * travel, and Compress's own 0.30 m is on top of it as before. The hip's range and the arms are left on the
+   * commanded stance, so this switch moves exactly one quantity.
+   */
+  kneeRoom?: 'achieved';
+  /**
+   * **A deep crouch keeps its catching reach** (`stanceReach: 'keep'`, step 3.3h): the stance room's hip range and
+   * arms are read at the riding stance (±1.2 rad, arms free) whatever the leg's depth is, while the knees' travel
+   * stays the stance's own. The owner's ruling of 2026-11-16, in their words: *"Keep the reach in Compress — a deep
+   * crouch keeps its arms and hip swing."* Opt-in, off by default (the `?stanceReach=keep` dev switch).
+   *
+   * It moves the hip's **stop** as well as the fall test's credit — `humanSwingStep` clamps the swing to the same
+   * range — so the body can really swing that far and the arms really go out, raising `swingInertia` 6 → 10 kg·m² and
+   * the rider's yaw inertia by RIDER_YAW_ARMS_OUT with them. See `stanceRoom` for what the table's own limits are and
+   * which design bar this crosses.
+   */
+  stanceReach?: 'keep';
+  /**
+   * **The ankle's torque bounded by what the soles can transmit** (`ankleLimit: 'feet'`, step 3.3i): the ankle's
+   * spring–damper torque is clamped to `legLoad × the feet's half-width across`, which is the code's own derived
+   * bound — `LEAN_IN_RATE`'s note already states that *"the largest moment the feet can apply is the load times their
+   * half-width, m g d = 716 N × 0.13 m = 93 N·m"* — and which nothing enforced. Opt-in, off by default (the
+   * `?ankleLimit=feet` dev switch), pinned off in the online rooms.
+   *
+   * **It is a joint's own limit, not a cap on a number.** The clamp is on the torque the **joint** delivers, in the
+   * one place the joint's torque is set, and the board's share of it is carried where it always was: rows 0–5 of the
+   * coupled solve are the **pair's** momentum, so an internal joint torque belongs only in the joint's own row, and
+   * the board's roll comes out of that solve through `carried`, which while banking carries the body's own across
+   * offset. Step 3.3i measured the pairing at **|ankle − the roll ledger's own residual| = 0.95 N·m at the median on
+   * 780 unsteered frames and 4.24 on 1,118 full-stick ones, against columns of 16–33 N·m**. So clamping the joint
+   * clamps the moment the board feels, with no second force anywhere. Past the clamp the sole is on its own edge and
+   * the body is no longer held: it accelerates across, which is a topple and is what a sole on its edge does.
+   *
+   * **Why this bound and not a muscle's.** Both were sourced (step 3.3i): a young man's maximal isometric *sagittal*
+   * ankle torque — which is the axis here, because a surfer stands side-on — is **121.9–131.0 N·m plantarflexion and
+   * 39.5–41.9 N·m dorsiflexion per ankle** (Moraux et al. 2013, n = 345, 27 men aged 20–29, seated at 90°), so two
+   * ankles give about 250 N·m on the toes and 80 N·m on the heels. The geometric bound, 92 N·m at 1 g, sits **inside**
+   * that band on the heel side and far under it on the toe side, so **the sole's own geometry is the binding limit
+   * either way** and no second hand-picked constant is introduced. One honest note against it: on the heel side a
+   * human's muscle is about 13 % tighter than the geometry, and this switch is the geometry alone.
+   */
+  ankleLimit?: 'feet';
+  /**
+   * **The bound on the rest the balance may command at the ankle** (`ankleRange`, step 3.3k): `'load'` reads it off
+   * the live sole, `'wide'` doubles the shipped one. Opt-in, off by default (the `?ankleRange=load|wide` dev switch),
+   * pinned off in the online rooms.
+   *
+   * **What the shipped ±ANKLE_REST_RANGE = 0.25 rad = 14.32° is, read before it is moved** (step 3.3k's §1; the
+   * discipline step 3.3h set). It is not a tuning constant: it is `rollModel.bankAuthority`'s own `restRange`,
+   * `footReach · m g / series` with `series = k·K_hull/(k + K_hull)` — **the rest at which the feet's centre of
+   * pressure reaches the edge of the sole, under ONE body weight**, on `footReach` = 0.13 m (`riderPosture`'s standing
+   * support) and a hull of about 730 N·m/rad. Past it, says `ANKLE_STIFFNESS`'s own note, *"the feet's pressure
+   * reaches their edges and more only rolls the board away onto its rail"*.
+   *
+   * So the honest form of "widen it" is **not a bigger number: it is the same formula with the live numbers.**
+   * - `'load'`: `ANKLE_REST_RANGE × soleBound / (m g × 0.13)` — the live load through the legs and the live support's
+   *   own half-width in place of one body weight and 0.13 m. **At exactly one body weight on the standing support it
+   *   is the shipped 0.25 rad identically** (`ankleLedger.test.ts`'s own control), it is *wider* under load and
+   *   *narrower* when the feet go light, and it introduces no constant that was not already in the derivation.
+   * - `'wide'`: `2 × ANKLE_REST_RANGE`. This one is **not** paid for by any geometry and is here because step 3.3j's
+   *   §10 item 4 named a plain widening as the A/B, with the prediction stated before the read. Its licence is that
+   *   steps 3.3i and 3.3j already measured the ankle's **demand** at 0.22–27.10× the soles' own bound with the
+   *   shipped range in place, so the range is not in fact holding the centre of pressure inside the sole — it bounds
+   *   the command and not the moment, and `ankleLimit: 'feet'` is the switch that bounds the moment.
+   *
+   * **It moves one thing.** Only the bound on the commanded rest moves: the rail-bite easing's `room`, the clamp on
+   * the predictor's raw ankle command, and the `limits.ankle` the predictor is told (which is also what its own
+   * forward model is fed, so the two must agree). `HIP_SHARE × ANKLE_REST_RANGE`, which sets what the hip takes, and
+   * the `lagging` test's `ANKLE_REST_RANGE / BANK_GAIN` are **left at the shipped constant on purpose**, so the hip's
+   * demand is untouched and the A/B is one change. The old rider's `bankStep` is untouched.
+   */
+  ankleRange?: 'load' | 'wide';
+  /**
+   * **The 70° clamp on the MEASURED bank lifted** (`bankClamp: 'off'`, step 3.4i): the three sites in `frame` that
+   * write `bank.angle` stop clamping the reading to ±MAX_BANK. Opt-in, off by default (the `?bankClamp=off` dev
+   * switch), pinned off in the online rooms.
+   *
+   * **What the clamp is, read before it is moved.** `frame` measures the body's bank as *how far its centre of mass
+   * leans over the feet* and clamps that reading to ±70°. The reading is not a command: it is then the datum for the
+   * **ankle's own spring** (`HUMAN_ANKLE_STIFFNESS × (bank.angle − roll − ankleRest)`) and for the body's own frame
+   * (`StandingBody.frame`). So past 70° the spring pulls against a lean the body is not at, and the body's frame
+   * stops following its own centre of mass — *a force from a truncated reading.*
+   *
+   * **It is not offered as a fix.** Steps 3.3k and 3.3l both measured the clamp arriving **after** the fall is under
+   * way. This switch exists so the fall mix can be read on a rider whose bank column is not truncated, and so "does
+   * the clamp change the falls themselves" is a measurement rather than an assumption. Its counterpart `bankRaw` is
+   * recorded **always** and changes nothing, so the same mix can be re-read on the shipped rider byte for byte.
+   *
+   * It moves one thing: the three clamps in `frame`. Every other `MAX_BANK` — the steer's rail hold, `railPull`'s own
+   * fixed point, `CARVE_CARRY`'s tangent, `SNAP_RAIL_RANGE` — is left exactly as it ships, because each of those
+   * bounds a *force or a command* and not a reading, and moving them would make this two changes.
+   */
+  bankClamp?: 'off';
+  /**
+   * **The lean asked for capped at what the speed can hold, on the switch's own minimum radius** (`askCap`, step 3.5a,
+   * the owner's ruling of 2026-11-17: *"Yes — cap the ask"*): `'1.5' | '2' | '4' | '4.5' | '9'`, R_min in metres, so the
+   * bound on the **commanded** bank is `θ_max = atan(v² / (g R_min))` — 4.9° at 1.3 m/s, 25° at 3, 52° at 5 and 65°
+   * at 6.5 on the advisor's 2.0 m (`docs/research/water-physics/board-roll-stiffness.md` §7).
+   *
+   * **Read this before calling it new.** The cap already ships, at `TURN_RADIUS = 4.5 m`, and it already bounds
+   * **both** the balance's reference (`leanAsked`, the predictor's) and the steer's own request (`bankReference`) —
+   * the two the owner's ruling names. 4.5 m is *tighter* than 2.0 m, not looser (2.2° at 1.3 m/s against 4.9°,
+   * 29.5° at 5 against 52°), and shipped the cap is **0 off the plane**, i.e. below `PLANING_DROP = 3 m/s` the rider
+   * already asks to stand perfectly upright. So this switch does two separable things and `'4.5'` isolates the
+   * second: it **replaces R_min** and it **removes the planing gate**, applying the formula at every speed. At 1.5, 2
+   * and 4 m it therefore *loosens* what the rider may ask for and tightens nothing; `'9'`, double the shipped radius,
+   * is the one value that asks for less than the game does wherever the board planes.
+   *
+   * **R_min is the one unsourced number in it** — nobody has published a shortboard's minimum carved radius; 2.0 m is
+   * the advisor's judgement [I] from a 1.778 m board's rail line, 1.5 and 4 its own bracket, 9 step 3.5a's own
+   * tightening arm, and 4.5 the constant the game chose in 2026-10 from a Canyon ride report and Forsyth et al.
+   * 2024's 3.8 m bottom turns.
+   *
+   * **Not a hidden motor:** it bounds a *command* and adds no torque, damper, brake or yaw moment. The only thing it
+   * changes outside the two reference lines is the rail the gain schedule is read at, which is `leanAsked`'s own
+   * function already. Opt-in, off by default (the `?askCap` dev switch), pinned off in the online rooms.
+   */
+  askCap?: '1.5' | '2' | '4' | '4.5' | '9';
+  /**
+   * **The stance ladder's fourth rung read by the balance** (step 3.5b, built as `?stanceDeep=on`; **SHIPPING BY
+   * DEFAULT since step 3.5c and the owner's ruling D of 2026-11-17, "keep the row"**): `STANCE_TUCK`, the tube tuck's
+   * 0.45 m of leg depth, enters `stanceAt` and the gain schedule, so a leg deeper than Compress's 0.30 m stops being
+   * designed and coupled as Compress. Without it `stanceAt` clamps at 0.30, and the ACHIEVED depth already passes
+   * that in 0.28-0.95 of Compress's live ticks on `?rider=new` (step 3.3f's uncommanded knee drop, up to 0.044 m over
+   * the command), so the row **changes existing Compress ticks** as well as reaching the deep ones.
+   *
+   * The measured row is the correct pendulum (0.40 m against the clamp's 0.55, which was **37.5 % too long**), the
+   * correct body inertia (the clamp's was **1.89x** out) and the correct bank limit, so the owner ruled that it ships.
+   *
+   * `'off'` restores the three-row ladder and the 0.30 m clamp bit for bit, which is the only way to price a ride
+   * against this track's own pre-ruling history: **every ride time published before 2026-11-17 was measured on the
+   * clamped plant.** Omitted, or `'on'`, is the shipped fourth rung.
+   *
+   * It touches the balance's internal plant and the rider's yaw coupling (`coupleYaw`); no force, no hull law and
+   * nothing at all on the default rider.
+   */
+  stanceDeep?: 'on' | 'off';
+  /**
+   * **The deepen button** (step 3.5b, `?deepen=on`, ruling C's addition): full manual crouch reaches the tube tuck's
+   * depth (MANUAL_CROUCH_DEPTH, 0.45 m) **anywhere**, not only under a tube's curl, and Compress no longer fades that
+   * extra tuck away - so the owner's crouch key deepens whatever stance is held, which is the 35-50 %-of-standing
+   * spike band four of the five video references show at turn entry (`docs/research/new-rider/3.5/stance-frame.md`).
+   *
+   * **On the owner's input only**: no automatic dip, no clock, no timer, no fatigue and no stamina. The depth is a
+   * commanded leg length, so the dip lasts exactly as long as the key is held and the legs come back up when it is
+   * let go - see step 3.5b's README section for why nothing in the code can bring the rider up on its own.
+   *
+   * Opt-in, off by default and pinned off for online rooms. One existing posture target is ungated; no force and no
+   * new quantity. Anything else, the tuck under a curl only, as it ships.
+   */
+  deepen?: 'on';
+  /**
+   * **The arm carriage channel** (step 3.5g, `engine-target.md` rows 4, 5 and 15; the owner's "geometry rows first"
+   * of 2026-11-18). The drawn standing hands get a **height, a spread and a left/right of their own**, answering the
+   * player's own stick and **never leg depth** — four carriages reachable at any one leg position, with the lead hand
+   * down at the rail and the rear arm up and back at a turn's load, the rear arm overhead only on a hard ask, and
+   * both hands low and drawn in at rest (the single most common arm position in two of the three sharpest clips).
+   *
+   * - `'on'` — the whole channel: the rest carriage, the pairing, the overhead arm, and the carriage's own fast rise
+   *   and slow return (so the hand can arrive **before** the rail bites and **stay** after the ask drops).
+   * - `'rest'` — the rest carriage only, whatever the stick says: row 15 on its own, for an A/B against `'on'`.
+   *
+   * **Drawing only.** It moves no part mass, adds no force and changes no existing force: `partPosition`, the seven
+   * point masses, the CoM, `bodyInertiaAt`, `riderYawInertia` and `HumanBalance.arms` (the arms' only physical path,
+   * which is an inertia) are all untouched. It touches exactly one expression — the standing hand branch of
+   * `renderPoint`, which is the **drawn** point. No clock, no timer, no fatigue, no stamina and no self-release.
+   *
+   * Opt-in, off by default and pinned off for online rooms. Anything else, the shipped one-scalar spread.
+   */
+  armCarry?: 'on' | 'rest';
+  /**
+   * **The trunk's fold moves the body's mass** (step 3.5h, rows 1 and 2 of `docs/research/new-rider/3.5/engine-target.md`),
+   * opt-in: 'mass' turns the hip rotor's own parts - the torso, the head and both arms, which is what
+   * `HIP_PITCH_INERTIA`'s 8 kg.m2 is a model of - about the **physical pelvis** (part 0) by
+   * `StandingBody.hip.angle`, about the board frame's x, which is the very axis `StandingBody.couple` already pairs
+   * the rotor's torque on (`this.across`). So the centre of mass, the inertia tensor, the per-part water forces and
+   * the drawn body all read the trunk where the rotor has put it.
+   *
+   * **Geometry, not force.** No torque, no drive, no constant and no new quantity: the rotor's torque was already
+   * paired (`standingBody.ts:379-384`) and its power already booked (`:5076-5078`), and until now its angle was read
+   * in three places that never touched `this.parts`, so the mass model computed every one of those quantities from an
+   * **unfolded** trunk while the trunk folded. `postureRate` is deliberately left alone: the fold's own centre-of-mass
+   * motion must arrive through the pair, never as a kinematic drive.
+   *
+   * **One pivot, one owner of the translation.** The pelvis and both legs stay where the balance put them, so the
+   * posture's translation keeps its single owner and the fold has exactly one pivot. The drawn body's own
+   * compensation (`HumanoidRig.poseHinge`'s `backForMass`) is stood down by the matching rig switch, so the pelvis is
+   * never moved twice.
+   *
+   * The new surfer (`?rider=new`) standing free only - there is no hip rotor anywhere else. Off by default and pinned
+   * off for online rooms (the `?trunk=mass` dev switch, to ride).
+   */
+  trunk?: 'mass';
+  /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
+  standingSubsteps?: number;
+  /**
+   * The new surfer standing free (step 3.2b): a scale on the rider's own yaw inertia (`riderYawInertia`), which turns
+   * with the board through the planted feet. 1 by default; 0 is 3.2's point mass (for the probes' comparisons only).
+   */
+  yawInertiaScale?: number;
+  /** The new surfer standing free: the roll balance's gains in place of HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN and HUMAN_BANK_FORWARD (for the probes' sweeps only). */
+  humanGains?: { bank?: number; bankRate?: number; forward?: number };
+  /**
+   * The new surfer's balance by prediction (step 3.2e), for the probes' rounds only: the design's weights (over
+   * DEFAULT_WEIGHTS), the lean asked's pace (rad/s; REFERENCE_RATE by default), the reference's steady turn ('linear' by
+   * default since 3.2f, or 'linear'), and the bank rate's sense ('canal' by default: the body's own angular rate; or 'difference': the
+   * bank's change over a substep, 3.2's), and the legs' passive twist in the game (TWIST_STIFFNESS, TWIST_DAMPING: braced or
+   * relaxed for the yaw step's report; the internal model keeps its own).
+   */
+  balance?: { weights?: Partial<DesignWeights>; leanRate?: number; turn?: 'linear' | 'tan'; rateSense?: 'canal' | 'difference'; twist?: { stiffness?: number; damping?: number }; railCap?: number;
+    /** Step 3.2x: the hip's gain on the capture point past HIP_SHARE of the feet's half-width, N·m/m (HIP_CAPTURE_GAIN, 0, by default: measured and not kept). */
+    hipCapture?: number;
+    /** Step 3.2x: the ankle rest's slew bound, rad/s (ANKLE_REST_RATE, Infinity, by default: measured and not kept). */
+    ankleRestRate?: number;
+    /** Step 3.2x: the share of the deck's own roll the ankle's rest carries, 0–1 (ANKLE_PLUMB, 0, by default: measured and not kept). */
+    anklePlumb?: number;
+  };
+  /**
+   * **THE BODY BANKS WITH THE DECK** (`bodyBank: 'hip'`, step 3.5i; the spec's step 3.1 body lean). Opt-in, off by
+   * default (the `?bodyBank=hip` dev switch), pinned off in the online rooms.
+   *
+   * ## The mechanism it is aimed at, measured, not argued
+   *
+   * `3.5/board-slips-away.md`: turning on the owner's own spot the deck banks past 20° at 0.683 s, **the body does
+   * not bank with it**, the foot support is 0.260 m across in every stance (`riderPosture.ts:96`, one object for all
+   * standing poses) and the centre of mass sits a median 0.676 m over the deck — so **the body's lean and the deck's
+   * bank may differ by only 10.9° before `project` clamps the centre of pressure at the support's edge
+   * (`limit = 'tip'`, 90 of 90 riders turning)**, after which the contact can no longer put force where the body
+   * needs it. The mismatch that clamps is exactly the **ankle's own angle**, `bank.angle − roll`.
+   *
+   * ## Why the ankle cannot be the answer, and why the trunk rotor can
+   *
+   * The ankle's torque reaches the body as an across push of `τ/L` through row 7, and the contact must supply it:
+   * `project` constrains the contact force to **a line through the body's centre of mass**, so every newton across
+   * is paid for by a centre-of-pressure shift of `height/load` metres. At 0.676 m and one body weight the whole
+   * support buys `0.13 × 716 / 0.676 ≈ 138 N` — less than the `g·tan 20° × 73 = 261 N` a 20° bank needs. **That is
+   * the identity behind "the ankle's correction IS the roll" (3.5d: 45–56 % of the deck's roll acceleration), and
+   * nine rounds of moving its gain, range, bound and datum changed nothing.**
+   *
+   * **The trunk rotor is the one channel that is not bounded that way, and it is bounded that way today only because
+   * of a term `project` leaves out.** A body whose trunk is being accelerated has angular momentum of its own, and
+   * the ground reaction of such a body does **not** pass through its centre of mass:
+   *
+   *     p_x = com_x − height · F_x / N − (dH/dt)_roll / N
+   *
+   * — the moment balance about the centre of mass (the centre-of-pressure identity behind Hof, Gazendam and Sinke
+   * 2005's own capture point, and behind Vukobratović and Borovac 2004's zero-moment point; Herr and Popović 2008
+   * measure that walkers regulate exactly this `H`). `project`'s `freeX` is the first two terms and **the third is
+   * missing**, so the model's rider pays for his own hip strategy at the sole and can never profit from it. That is
+   * why step 3.2x's hip drive, measured on its own, *"falls sooner on 36 of 60 rides"*.
+   *
+   * ## What the switch does — ONE term, and it drives nothing
+   *
+   * `project`'s free centre of pressure gains the missing `(dH/dt)_roll / N`, as the `swing` rotor's own angular
+   * impulse about the roll axis resolved into the board's frame; the tangential force that realises a *clamped*
+   * centre of pressure gains the same term, so the unclamped case stays an identity. **That is the whole switch.**
+   *
+   * ⭐ **And it needs no drive, because the rotor was never torque-idle.** Step 3.5d's *"the swing carries 0.1–0.4 %
+   * of the traffic"* is about the **rest command** the hip takes over from the ankle, not about its torque:
+   * `humanSwingStep` adds the rotor's own return and damping term **outside** its ±SWING_TORQUE clamp, so on the
+   * SHIPPED rider `swingTorque` already reaches a per-rider median peak of **165 N·m and a maximum of 303 N·m**, and
+   * `project` was throwing every newton-metre of it away. Measured on 90 Canyon riders turning on the owner's own
+   * address: the term alone fires in **3 061 of 6 425 live frames with the hip gain at zero**.
+   *
+   * **This was built with a hip drive beside it and the measurement removed the drive** — see HIP_CAPTURE_GAIN's own
+   * note for the three-way ordering. The gain is still reachable through `balance.hipCapture` for the probes.
+   *
+   * **It adds no force and no moment.** Every newton still arrives through the ankle's spring, the leg's spring, the
+   * hip's own bounded torque and the water; what changes is the **bound** the contact is held to, from one that
+   * assumes the body has no angular momentum to the one a body with a trunk actually obeys.
+   *
+   * **What it is not.** It is not `uprightVelocity` and not #215: nothing prescribes the body's bank, nothing is
+   * realised by whatever force it takes, and no torque, gain, damper or brake is added anywhere. It is not option 2
+   * of `board-slips-away.md` either — the support's own ±0.130 m is untouched, and the term is exactly zero in every
+   * frame in which the trunk is not being turned.
+   *
+   * **Its measured costs, and one prediction of mine that it refuted.** I predicted the board's roll would get
+   * *worse*, since a body that banks into the turn must drive the rail down. **It got better** — per-rider median
+   * roll peak 65.7° → 52.4° and median roll rate 55.1 → 45.2 °/s on the 90-rider Canyon bench — because a contact
+   * that stays feasible lets the ankle's own counter-roll reach the board at all, where before the solve went apart.
+   * What really costs: the friction cone binds in **28 of 90 riders against 6 of 90**, two riders are released as
+   * `foot slip` where none was, and the median ride is **1.083 s against 1.333 s**. The relief is metres wide in a
+   * light-footed substep, which is correct (a hip strategy on unweighted feet buys nothing) and is handled by the
+   * clamp and the cone, not by a gate.
+   *
+   * The roll axis's second-order component about the board's own along axis (`sin(pitch)·sin(roll)`) is deliberately
+   * **not** corrected, so `freeZ` is left exactly as it ships: one change.
+   */
+  bodyBank?: 'hip';
+  /**
+   * **The water's own heel datum for the balance's internal model** (step 3.3p, `?waterHeel=tilt`): `'tilt'` reads
+   * the twelve captive derivatives' three heel coefficients at the board's heel **against the water** and hands the
+   * face's own tilt to the predictor as a measured input, instead of reading them at the board's roll from the
+   * **world's level**, which is what the lab did not measure. Opt-in, off by default, pinned off for online rooms.
+   *
+   * **Measured and not a fix**: it takes the model's own water roll moment from 2.06–3.59× the game's to
+   * 0.97–2.93× and the share of ticks whose roll-acceleration sign the model gets right from 0.190–0.462 to
+   * 0.390–0.825, and it makes both rows' magnitudes worse. `DesignWeights.waterHeel` has the rest.
+   *
+   * `'tilt'` carries the tilt through the forward prediction **and** the reference's own steady turn; `'predict'`
+   * through the forward prediction alone, leaving the reference the flat-water one that ships; `'ref'` (step 3.4e)
+   * is the 2×2's fourth cell — **the reference alone**, the forward prediction the flat-water one — so that 3.3p's
+   * own sentence *"the reference is the destabiliser"* can be read off one arm instead of inferred from the
+   * difference of two arms that differ in both halves. `DesignWeights.waterHeel` has the rest.
+   */
+  waterHeel?: 'tilt' | 'predict' | 'ref';
+  /**
+   * **The mount agreeing with itself** (step 3.4e, `?mountAgree=deck|felt|both`): two one-line halves of the moment
+   * the rider stands up, each opt-in, each off by default, both pinned off for online rooms.
+   *
+   * The shipped mount places the standing body **square to the deck** above `PLANING_SPEED` and **plumb to the
+   * world** below it, *"as a body balances on a board sliding freely down its face, where the felt vertical is the
+   * face's normal"* [R, `reset`] — and step 3.4d measured two disagreements inside that:
+   * 1. the felt vertical the body's own balance reads at frame 1 is the **world's** gravity (7.545° across the deck
+   *    where the deck's own tilt is 8.85°), reaching the face's normal only at **0.250 s**, 24 of 24 runs; and
+   * 2. on the owner's own low-speed cell the rule **flips at one metre a second** — nine of eighteen runs mount
+   *    plumb and nine square, an **8.37°** difference in where the body starts — while `planingStep` forces
+   *    `banked` true on the **next** frame for the new surfer whatever the speed, so the mount is the one frame of
+   *    the ride that disagrees with the rest of it.
+   *
+   * - `'deck'` — the body square to the deck at the mount at **any** entry speed, which is the rule the frame after
+   *   the mount already uses. An initial placement, not a force.
+   * - `'felt'` — the felt vertical's low pass seeded at the face's own normal: `g (n̂·ŷ) n̂`, the specific force of a
+   *   body sliding freely down a plane of normal `n̂`, which is the placement's own stated argument. An initial
+   *   condition of a first-order filter, not a force.
+   * - `'both'` — both.
+   */
+  mountAgree?: 'deck' | 'felt' | 'both';
+  /**
+   * **The two-body rider** (step 3.4a, `?riderBody=two`): the balance's own internal plant gives the rider's body an
+   * inertia of its own in the frontal plane instead of treating it as a point mass on a massless leg, so the board's
+   * roll, the body's bank, the turn and the sway are solved together and **the force at the feet is an outcome of the
+   * solve** rather than the substituted `τ / h − m g θ` the shipped plant writes down. Opt-in, off by default,
+   * pinned off for online rooms. It changes the **plant**, not the control law: `DesignWeights.riderBody` has the
+   * scope line, and `docs/research/new-rider/3.4/README.md` the measurement.
+   *
+   * `'control'` is the same assembly with the body's inertia at zero, which reproduces the shipped plant exactly; it
+   * ships so that the control can be ridden as well as tested.
+   */
+  riderBody?: 'two' | 'control' | 'symmetric';
+  /**
+   * **The cost function on the plant it is designed on** (step 3.4b, `?riderCost=point|fixed|plant`): it turns on the
+   * balance's own two optional costs — the bank's cost as **each stance's own limit** (`feetReach`, step 3.2n) and the
+   * **capture point's** rank-one cost (`captureScale`, step 3.2j), neither of which the shipped design has — and sets
+   * which plant's own lean divergence rate ω₀ the second one is built with.
+   *
+   * `'point'` is the point mass's `√(g/L)`, which is 3.2j's and 3.2n's own design and **the control that separates
+   * turning the weights on from correcting the constant**; `'fixed'` is the body's own inertia with its feet held;
+   * `'plant'` is the plant's own solved rate, which is the plant the design is actually built on. Opt-in, off by
+   * default, pinned off for online rooms, and meant to be ridden **alongside `?riderBody=two`**.
+   *
+   * `docs/research/new-rider/3.4/README.md` Part 2 has the measurement, including the column that says this switch
+   * cannot move the shipped rider.
+   */
+  riderCost?: 'point' | 'fixed' | 'plant';
+  /**
+   * **The balance's plant table read off a higher floor** (step 3.4m, `?plantFloor=4.5|5|6`): the lowest row of
+   * `PLANT_SPEEDS` the balance's internal model may be built on, m/s.
+   *
+   * Shipped, `labAt` clamps the lookup to the table's own first speed, so **every design at or below 4 m/s is built
+   * on row `'4'`** — the table's own **sign-turnover row**, measured at 46.4° of trim and 0.513 m of draft, where the
+   * yaw moment per radian of slip is +143.8 against +41.3, −28.6 and −161.0 at 4.5, 5 and 6, and the roll moment per
+   * radian of roll −37.2 against −98.0. The game's own board below 4 m/s rides at 16.0–17.3° of trim and
+   * 0.273–0.301 m of draft, whose nearest measured row is `'4.5'`. `'4.5'` is that row; `'5'` and `'6'` are the other
+   * two rows step 3.4k's sensitivity swapped in, kept so the bracket can be ridden. **No row is invented** (the
+   * captive rig has no equilibrium below planing: at 1.16–3 m/s the towed board stands on end and sinks through the
+   * lab's bed).
+   *
+   * It changes the **plant**, not the control law: `DesignWeights.plantFloor` has the scope line, and
+   * `docs/research/new-rider/3.4/README.md` Part 13 the measurement. Opt-in, off by default, pinned off for online
+   * rooms, and meant to be ridden with `?rider=new`.
+   */
+  plantFloor?: '4.5' | '5' | '6';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -725,6 +1799,19 @@ export const PUSH_TIME = 0.72;
 export const LANDING_TIME = 0.48;
 export const SETTLE_TIME = 0.8;
 export const RECOVER_TIME = 0.6;
+/**
+ * Climbing back on from the water (swim-back, 2026-10-29): the hands on the rails push the chest up out of the water
+ * and the body slides along onto the deck, from wherever the swimmer's parts were into the prone posture, over
+ * CLIMB_TIME, s. Provisional, by the pop-up's own two moves: the arms' push up (PUSH_TIME, 0.72 s, Borgonovo-Santos
+ * 2021) and a move of the whole body onto its support (LANDING_TIME, 0.48 s). The body comes across and along the
+ * board low, still floating, over the first CLIMB_ACROSS of the time, and rises onto it from CLIMB_RISE of it on: risen
+ * first beside the board, out of the water, its weight came onto the near rail and rolled the board over.
+ */
+export const CLIMB_TIME = 1.2;
+const CLIMB_ACROSS = 0.55;
+/** Climbing on, the drawn hands reach the rails over this share of the climb, from where the swimmer's arms were. */
+const CLIMB_HANDS = 0.25;
+const CLIMB_RISE = 0.15;
 /**
  * The duck-dive's timing (the wipeout spec): the arms straighten over
  * PRESS_TIME, s; the knee starts KNEE_DELAY s after the press began and lands
@@ -818,6 +1905,8 @@ export interface RiderWork {
   carry: number;
   /** Done by the rail change's lean-out pull (LEAN_OUT_PULL), a gameplay rule's. */
   leanOut: number;
+  /** Done on the body by the legs' drive at a rail change (`legDrive: 'on'`): the legs' own work, with the board's share in its ledger. */
+  legDrive: number;
 }
 
 type V3 = { x: number; y: number; z: number };
@@ -881,7 +1970,7 @@ export class AttachedRider {
    * touches down (the swept contact's `covered`). Only then does full manual crouch fold into the deep tuck.
    */
   covered = false;
-  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0 };
+  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0, legDrive: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
   /** The water's latest force on each stroking hand (left, right), N. */
@@ -911,6 +2000,12 @@ export class AttachedRider {
   crouch = 0;
   /** Standing, Compress: 0 (none) to 1 (full depth; the weight stays the trim's), taken alone or over the crouch. */
   compress = 0;
+  /** Standing, Snap (the snap stance): 0 (none) to 1 (held): the weight on the tail, the back knee deep, the shoulders turning toward the steer; it wins over the crouch, Compress and the trim. */
+  snap = 0;
+  /** Snap's aim, latched as it is taken: the side the turn goes (+1 the board's left), and where on the face it ends (level, unit; zero on flat water). */
+  private snapSide = 0;
+  private readonly snapTarget = new Vector3();
+  private snapHeld = false;
   /** Standing, the upper body's rotation asked for (`RideInput.rotate`), −1 to 1 toward the board's +x; NaN when none is (the body turns with the ride). */
   rotate = Number.NaN;
   /** Standing, the wave-side hand reaches for the water. */
@@ -972,13 +2067,72 @@ export class AttachedRider {
   /** How far through its cycle the left arm is (the right half a cycle on), 0–1; and the cycle now, s. */
   private strokePhase = 0;
   private strokeCycle = ARM_CYCLE;
+  /** The side paddle's fast share eased toward the stick's (SWEEP_FAST_EASE). */
+  private sweepEase = 0;
   /** Paddling, the sprint: 0 cruising to 1 at SPRINT_CYCLE (read only). */
   sprint = 0;
+  /** Lying down, the player's sprint paddle (SPRINT_PADDLE_CYCLE): asked for, with the reserve to give it (`RideSession`). */
+  paddleSprint = false;
+  /** How far the strokes have gone over to the player's sprint, 0 cruising to 1 (read only). */
+  paddleSprintShare = 0;
+  /** Sprinting, the pulling arm's drag area broadside to the stroke this substep, m² (SPRINT_PADDLE_AREA). */
+  private bladeArea = 0;
+  /** A hand is pulling this substep (`paddleStep`): one the board outruns feathers (`FEATHER_DRAG`), unless the stroke is 'old'. */
+  private pulling = false;
+  private readonly feathers: boolean;
+  /** Letting Compress go, the legs extend no faster than the stance's spring can catch the body (`projectionCatch`); false with `extension: 'old'`. */
+  private readonly catches: boolean;
+  /** Snap at full effort (SNAP_TWIST_FREQUENCY, SNAP_SHIFT_TIME); false with `snapQuick: 'old'`. */
+  private readonly quick: boolean;
+  /** Snap leans for its own turn (SNAP_RAIL_RANGE); only with `snapPivot: 'lean'`. */
+  private readonly snapLean: boolean;
+  /** Snap turning up the face asks for the steer's rail (snap-upturn); false with `snapUpturn: 'old'`. */
+  private readonly upturnKept: boolean;
+  /** Snap let go, the weight is centred again (RECENTRE_TIME); false with `snapRecentre: 'old'`. */
+  private readonly recentres: boolean;
+  /** Snap's load, of CROUCH_DEPTH (SNAP_DEPTH; SNAP_DEPTH_DEEP with `snapDepth: 'deep'`). */
+  private readonly snapDepth: number;
+  /** Snap's share the latest step, and how long the centring after it has run, s (NaN while none runs). */
+  private snapBefore = 0;
+  private recentreTime = Number.NaN;
+  /** Snap's stamp (STAMP_STEER); only with `snapStamp: 'on'`. */
+  private readonly stamps: boolean;
+  /** The stamp running: its time, s (NaN while none runs), its depth 0–1, and whether a new press-and-turn may start one. */
+  private stampTime = Number.NaN;
+  private stampDepth = 0;
+  private stampArmed = true;
+  private snapHeldTime = 0;
+  /** The agile legs (HIP_INERTIA); only with `agile: 'on'`. */
+  private readonly agile: boolean;
+  /** Agile: the hips' turn about the body's up against the board, rad (positive toward the board's left), and the trunk's pitch about the body's side axis (the board's +x on a level body; positive forward), with their rates. */
+  readonly hip = { angle: 0, rate: 0 };
+  readonly trunk = { angle: 0, rate: 0 };
+  /** Agile: the torques on the hips and the trunk this substep, N·m, and their axes in the world (the body's up square to the board's length, and across the body). */
+  private hipTorque = 0;
+  private trunkTorque = 0;
+  private readonly trunkAxis = new Vector3(1, 0, 0);
+  private readonly hipAxis = new Vector3(0, 1, 0);
+  /**
+   * The limbs' ledger this substep: what the body's contacts other than the line of force (each foot's push across and
+   * along the deck; later a hand on a rail) do to the board, as a force and a moment about its centre of mass, N and
+   * N·m in the world. The body takes the opposite. `limbs` lists each contact's point (board frame) and force (world).
+   */
+  private readonly limbForce = new Vector3();
+  private readonly limbTorque = new Vector3();
+  readonly limbs: { name: string; point: Vector3; force: Vector3 }[] = [];
+  private readonly footEntries = [{ name: 'front foot', point: new Vector3(), force: new Vector3() }, { name: 'back foot', point: new Vector3(), force: new Vector3() }];
+  /** Agile: the front foot's share from the line of force alone, before the legs' split. */
+  private lineShare = 0.5;
+  /** The sprint's blade area over the hand's (SPRINT_PADDLE_AREA, or the 'old' stroke's SPRINT_PADDLE_AREA_BROADSIDE). */
+  private readonly sprintArea: number;
   /** How much of the stroke's roll the prone balance asks for, 0–1, and how calm the water under the board is for it, 0–1. */
   private strokeRoll = 0;
   private waterCalm = 1;
   /** A posture transition: where it started (board frame), how far along it is and how long it takes, s. */
   private readonly fromParts: Float64Array;
+  /** The transition is a climb from the water (`climbFrom`): its path comes across low, then rises. */
+  private climbing = false;
+  private readonly handRail = new Vector3();
   private phaseTime = 0;
   private phaseDuration = 0;
   private readonly postureRate = new Vector3();
@@ -995,6 +2149,24 @@ export class AttachedRider {
   private readonly scratch = new Vector3();
   private readonly scratch2 = new Vector3();
   private readonly localScratch = new Vector3();
+  /**
+   * The new surfer's senses for its balance (step 3.2e), the model's order and signs. Nine since step 3.2p: the last
+   * two are the load through the feet and the board's nose-up pitch rate, read only by a design that carries the
+   * board's heave and pitch (`DesignWeights.heaveSense`).
+   */
+  private readonly senseScratch = new Array<number>(9).fill(0);
+  /**
+   * The slow part of the load through the feet, m/s² (step 3.2p): what the soles have adapted to. The sense the
+   * balance is given is the load **less** this, so it is zero in any steady trim and in any steady turn, whatever the
+   * bank, the face's slope or the apparent gravity — which is what the model's heave states are deviations from, and
+   * what a surfer actually feels. A real pressure sense adapts; this is that adaptation, one pole at LOAD_ADAPT.
+   */
+  private loadSlow = 0;
+  /** Whether the soles have felt anything yet (the adaptation starts from the first reading, not from nothing). */
+  private loadReady = false;
+  /** The load sense the balance was last given, m/s², and the board's pitch rate, rad/s (for the probes). */
+  loadSense = 0;
+  pitchRateSense = 0;
   private readonly spin = new Quaternion();
   private readonly heading = new Quaternion();
   private flex = 0;
@@ -1012,11 +2184,18 @@ export class AttachedRider {
   private loaded = false;
   /** Where the rider wants its centre of pressure, relative to the middle of the support: along the board, where W/S hold it (TRIM_PRESSURE). */
   readonly copTarget = { x: 0, z: 0 };
+  /** Pushing up, how far the arms let the body over the high rail as the board rolls under it, m, and its rate (`armsGiveStep`). */
+  private armsGive = 0;
+  private armsGiveRate = 0;
+  /** The prone posture's centre of mass over the deck, m: pushing up, the arms give for the lift above it. */
+  private readonly proneHeight: number;
   /** The steering lean of the upper body across the board, m, and its rate. */
   private readonly lean = new Vector3();
   private readonly leanRate = new Vector3();
   private stepImpulse = new Vector3();
   private stepLoad = 0;
+  /** The new surfer: the feet's load the latest substep, in body weights (the capture point's validity condition, step 3.2h). */
+  captureLoad = 0;
   /** The parts' centres (world) as the latest step began, for swept lip contact, and the parcels that have struck. */
   private readonly previousParts = new Float64Array(RIDER_PARTS.length * 3);
   private readonly struckBy = new Set<number>();
@@ -1050,6 +2229,239 @@ export class AttachedRider {
   private tallFrom = false;
   /** The leg was last brought down by Compress (not the crouch alone): letting it go is the projection. */
   private fromCompress = false;
+  /** The carve's flexing legs; only with `carveFlex: 'on'`. */
+  private readonly carveFlexes: boolean;
+  /** The leg was last brought down by the carve's flex: the load easing, it rises at the projection's catch. */
+  private fromFlex = false;
+  /**
+   * Snap's rail change (snap-cross, 2026-11-10; `snapCross: 'on'`, opt-in; docs/research/snap-rail-change-2026-11-10).
+   * Snap taken with the stick thrown against a carve put the weight on the tail within 0.3 s, the body still leaning
+   * 40° into the old turn: the old carve tightened (75 -> 110-155°/s the old way) for the 0.4-0.5 s the body takes to
+   * come over the board, and ran the heading 35° further the wrong way. A surfer comes out of the bottom turn with the
+   * weight even, the body crossing the board, and weights the tail on the new rail (the stance map: Knox's cutback,
+   * "weight more even" up the face; Hobgood: back on the tail into the snap). So while the body still leans against
+   * the stick's side under Snap (more than UPRIGHT_BANK, measured as Snap or the stick's side begins), Snap's weight
+   * shift waits (the balance holds where it was), and the back foot pushes the body across as the leg drive does
+   * (`legDriveStep`: the same push, grip and reach, with or without `legDrive: 'on'`). Once the body is over the board
+   * the weight goes back as before. A Snap taken upright, or on the rail it is already on, is unchanged.
+   */
+  private readonly snapCrosses: boolean;
+  /** The side the Snap's stick asks (+1 the board's left; 0 before it says), and whether the body has come over to it. */
+  private crossSide = 0;
+  private crossed = true;
+  /** The legs' power limit (LEG_POWER_PEAK, LEG_POWER_HELD); only with `legPower: 'cap'`. */
+  readonly capsLegs: boolean;
+  /** The new surfer (`rider: 'new'`); and the power window kept, with `legPower: 'cap'` or the new surfer. */
+  private readonly newRider: boolean;
+  /** The felt vertical's low pass held on the deck's own axes (`feltFrame: 'deck'`, step 3.3c) rather than in the world. */
+  private readonly deckFelt: boolean;
+  /**
+   * **Step 3.4e, `mountAgree`**: the mount's own two halves, each off by default.
+   * - `mountDeck` — the standing body is placed **square to the deck** at the mount whatever the entry speed, instead
+   *   of plumb to the world below `PLANING_SPEED`. For the new surfer the very next frame forces `banked` true
+   *   (`planingStep`), so with it off the mount is the one frame of the ride that disagrees with every other.
+   * - `mountFelt` — the felt vertical's low pass is **seeded at the face's own normal** instead of the world's
+   *   vertical, which is the vertical the placement's own argument names.
+   */
+  private readonly mountDeck: boolean;
+  private readonly mountFelt: boolean;
+  /** The knees' travel read at the depth the leg has reached rather than the one commanded (`kneeRoom: 'achieved'`, step 3.3f). */
+  private readonly kneeRoomAchieved: boolean;
+  /** Step 3.5b: the stance ladder's tuck row read by `stanceAt` and the gain schedule (`stanceDeep: 'on'`). */
+  private readonly stanceDeepRow: boolean;
+  /** Step 3.5b: full manual crouch reaches the tube tuck's depth anywhere, not only under a curl (`deepen: 'on'`). */
+  private readonly deepens: boolean;
+  /**
+   * Step 3.5g: the arm carriage channel (`armCarry`), **drawing only**. `'rest'` holds the rest carriage whatever the
+   * stick says. `carriage` is its state — how far into the pairing and **over which rail, in one signed number**, how
+   * far overhead, and the rail as a derived sign — advanced per substep beside `balanceMargin` and read only by
+   * `renderPoint`'s hand branch.
+   */
+  private readonly armCarry: 'on' | 'rest' | undefined;
+  private readonly carriage = createArmCarriage();
+  private readonly armPlace: ArmPlace = { out: 0, lift: 0, across: 0 };
+  private readonly armUp = new Vector3();
+  private readonly armAcross = new Vector3();
+  /** Step 3.5g: the arm carriage's own state, for the probes and the tests to read without naming a private. All zeros off the switch. */
+  get armCarriage(): { readonly reach: number; readonly over: number; readonly inside: number } {
+    return this.carriage;
+  }
+  /** Step 3.5h: the hip rotor's angle turns the mass model's own trunk, head and arms about the pelvis (`trunk: 'mass'`). */
+  private readonly trunkMass: boolean;
+  /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
+  private readonly stanceReach: 'keep' | undefined;
+  /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
+  private readonly ankleLimit: 'feet' | undefined;
+  /** The bound on the rest the balance may command, off the live sole or doubled (`ankleRange`, step 3.3k); undefined by default. */
+  private readonly ankleRange: 'load' | 'wide' | undefined;
+  /**
+   * Step 3.4i: the bound the three sites in `frame` clamp the MEASURED bank to, rad. `MAX_BANK` as it ships; `Math.PI`
+   * with `bankClamp: 'off'`, which is no bound at all, since `atan2` cannot return more.
+   */
+  private readonly bankMax: number;
+  /**
+   * Step 3.5a (`askCap`): the minimum carved radius the commanded lean is bounded by, m — `TURN_RADIUS` as it ships.
+   * `askUngated` is true only with the switch on, and is what lets the bound apply off the plane as well.
+   */
+  private readonly askRadius: number;
+  private readonly askUngated: boolean;
+  /**
+   * **Step 3.4i, a measurement and nothing else: the bank the geometry gives, BEFORE `bankMax` clamps it, rad.**
+   * Written at the same three sites in `frame` that write `bank.angle`, on the same expression, and **read by nothing
+   * in the game** — so it is recorded on the shipped rider byte for byte and the published fall classifier's 45°
+   * threshold can be read off a column that is not truncated. Equal to `bank.angle` wherever the clamp is not biting.
+   */
+  bankRaw = 0;
+  /** Step 3.3p: the internal model reads the water's derivatives at the heel against the water (`waterHeel`); false by default. */
+  private readonly waterHeel: boolean;
+  /** The face's own tilt under the board, rad, in the MODEL's own sign (the probe's reversed), 0 unless `waterHeel`. Read-only. */
+  schedTilt = 0;
+  /** rad, the range the latest bank step allowed the commanded rest — ANKLE_REST_RANGE unless `ankleRange` is set. Read-only, for the ledger. */
+  private ankleRoom = ANKLE_REST_RANGE;
+  /** rad, the same range after the rail's bite narrowed it (the bank step's own `room`). Read-only, for the ledger. */
+  private ankleBite = ANKLE_REST_RANGE;
+  private readonly newSubsteps: number;
+  private readonly yawScale: number;
+  private readonly bankGain: number;
+  private readonly bankRateGain: number;
+  private readonly bankForward: number;
+  /**
+   * The new surfer standing free (step 3.2b, `coupleYaw`): the body's own spin about its long axis, rad/s (world, about
+   * `up`), the inertia it turns with, kg·m², and whether it was coupled to the board's yaw through the feet this substep.
+   */
+  private yawSpin = 0;
+  yawInertia = 0;
+  private yawCoupled = false;
+  /**
+   * The new surfer standing free (step 3.2e): the twist as a body degree of freedom (`coupleYaw`, `finish`). `angle` the
+   * upper body's yaw less the board's, rad, and `rate` its rate, rad/s (about `up`, + to the board's left, as `twist`);
+   * `upper` the upper body's own spin, rad/s (world, about `up`); `active` the twist's active torque through the muscles'
+   * lag and `torque` the legs' whole torque on the board the latest substep, N·m (+ turns the board to its left; the
+   * upper body takes the other); the rest is the substep's implicit coupling, kept for `finish`.
+   */
+  readonly twistBody = { angle: 0, rate: 0, upper: 0, active: 0, torque: 0, coupled: false, inertia: 0, alpha: 0, beta: 0, gain: 0, spring: 0, turn: 0 };
+  /** The twist asked for (the pad's rotation or Snap's aim), rad: the balance's reference for the twist (step 3.2e). */
+  private twistAsked = 0;
+  /** The lean the player asks for (the steer and the hand), eased as `bankReference`, rad: the new surfer's balance's reference (step 3.2e). */
+  private leanAsked = 0;
+  /**
+   * The new surfer standing free (step 3.2e): balance by prediction (`PredictiveController`, `predictor`), on its own
+   * clock of simulated time (`controlDue`, s to its next tick), the commands held between its ticks (this file's signs):
+   * the ankle's command before the feet's reach (the hip takes the rest; the predictor is fed the reach's) and the twist's torque.
+   * Off with `humanGains` (3.2's delayed law, the probes' comparisons): the twist then is passive.
+   */
+  private readonly predictive: boolean;
+  readonly predictor: PredictiveController;
+  private readonly leanPace: number;
+  private readonly rateSense: 'canal' | 'difference';
+  /** The legs' passive twist, N·m/rad and N·m·s/rad (TWIST_STIFFNESS, TWIST_DAMPING unless a probe braces or relaxes it). */
+  private readonly twistStiffness: number;
+  private readonly twistDamping: number;
+  /** How far onto its rail the balance's schedule is trusted, rad (SCHEDULE_RAIL_CAP). */
+  private readonly railCap: number;
+  /** Step 3.2x: the hip's gain on its trigger, N·m/m, and the ankle rest's slew bound, rad/s. */
+  private readonly hipCapture: number;
+  private readonly ankleRestRate: number;
+  private readonly anklePlumb: number;
+  /** Step 3.5i (`bodyBank: 'hip'`): whether the trunk rotor's own angular momentum rate is counted in the contact's bound. */
+  private readonly banksBody: boolean;
+  /**
+   * Step 3.5i, **a read-out and nothing else**: how far the trunk rotor's own angular impulse about the roll axis
+   * moved the demanded centre of pressure this substep, m (board +x; signed). **0 in every substep off the switch,
+   * and 0 on the switch whenever the rotor's torque is 0**, so a probe that reads it non-zero on the default rider
+   * has found a bug and not a number.
+   */
+  copRelief = 0;
+  /**
+   * Step 3.5i, **the same read-out in torque units, N·m** — the rotor's own moment about the board's roll axis as
+   * `project` used it this substep. It is the term's own hard bound and the one a control can check without knowing
+   * the substep's normal: **`|copMoment| ≤ SWING_TORQUE` always**, because it is `swingTorque` resolved onto an axis.
+   * `copRelief` is the same quantity divided by the substep's normal impulse, so it is **large when the feet are
+   * light** — correctly, since a hip strategy on unweighted feet buys nothing — and the clamp and the friction cone,
+   * not this number, are what the solve then acts on.
+   */
+  copMoment = 0;
+  /**
+   * Step 3.2q's lean hold stood here and is **gone** (step 3.2t). It capped the lean the rider asks for at the lean his
+   * felt vertical would carry, which closed a loop — lean → rail → turn → felt vertical → lean — through `pairFelt`'s
+   * 0.1 s low-pass. 3.2q's own §9 named that as the one real risk and said what would confirm it: *"If the owner finds
+   * Compress worse than 3.2p, that is the cause."* The owner rode `?rider=new` twice on 2026-11-14 and found exactly
+   * that — *"the compress is still to slow and barely turns now, if turn a bit falls immediately"* — so the hold is
+   * removed rather than repaired. It is kept here only as the reason, so nobody rebuilds it from the README.
+   * `leanHeld` stays as a read-out at `Infinity` for the probes that print it (`yawsource.probe.ts`).
+   */
+  readonly leanHeld = Infinity;
+  private controlDue = 0;
+  private heldAnkleRaw = 0;
+  /** The rail the balance's schedule is reading, rad (step 3.2f; for the probes). */
+  schedRail = 0;
+  private heldTwist = 0;
+  /** The latest substep, s (`coupleYaw` has no step of its own). */
+  private substep = 0;
+  private readonly windowed: boolean;
+  /** The new surfer standing: the body's pitch on the board (`StandingBody`), and its forward axis (world). */
+  readonly standingBody = new StandingBody();
+  /**
+   * Step 3.5h: the trunk fold the **mass model** carries this substep, rad about `this.across` at the pelvis, forward
+   * (nose) +. It is `standingBody.hip.angle` where `trunk: 'mass'` folded the parts and **0 otherwise**, so the gap
+   * between this and `hip.angle` is row 1's own metric - the trunk the physics draws its mass from against the trunk
+   * the rotor is actually at - and its target is zero.
+   */
+  trunkFold = 0;
+  private readonly forward = new Vector3(0, 0, 1);
+  /** The new surfer: the body's own push through the feet, low-passed over SPECIFIC_FORCE_TIME, N (world): the pitch reference's slow trim. */
+  private readonly bodyPush = new Vector3(0, 1, 0);
+  /**
+   * The new surfer standing, step 3.2 (`HumanBalance`): the delayed balance across (the roll's rest, the hip across, the
+   * knees and arms), the capture point and the reserve; the friction and the knees' strength used, 0–1, the latest contact.
+   */
+  readonly human = new HumanBalance();
+  /** The new surfer: the hip across's lagged demand, N·m, and the leg depth the player's stance holds, m (`stanceDepth`). */
+  private swingLagged = 0;
+  private heldDepth = 0;
+  private frictionUsed = 0;
+  private kneeUsed = 0;
+  /** The new surfer: the capture point's scratch (`captureStep`). */
+  private readonly captureFeet = new Vector3();
+  private readonly captureOffset = new Vector3();
+  private readonly captureVelocity = new Vector3();
+  private readonly captureFelt = new Vector3();
+  private readonly captureScratch = new Vector3();
+  /**
+   * The pair's momentum the latest substep, kg·m/s, and its specific force low-passed, m/s²; fresh until the first.
+   * `pairFelt` is held in the **world** by default and on the **deck's own axes** with `feltFrame: 'deck'` (step 3.3c) —
+   * the one field whose frame the switch changes, and `pairScratch` is where the reading is rotated into them.
+   */
+  private readonly pairMomentum = new Vector3();
+  private readonly pairFelt = new Vector3(0, WATER.gravity, 0);
+  private readonly pairScratch = new Vector3();
+  private pairFresh = true;
+  /** The new surfer standing, the hand in the water: the water's support on it along its surface's normal, N (world), the latest substep. */
+  readonly handSupport = new Vector3();
+  private supporting = false;
+  /** The contact's net work this substep may still do, J (`legPower: 'cap'`), and the substeps' net works over the last LEG_POWER_WINDOW: their end times on the rider's clock, s, and works, J, a ring. */
+  private powerBudget = Infinity;
+  private powerClock = 0;
+  private powerEnds = new Float64Array(1024);
+  private powerWorks = new Float64Array(1024);
+  private powerHead = 0;
+  private powerCount = 0;
+  private powerSum = 0;
+  private readonly powerScratch = new Vector3();
+  private readonly powerScratch2 = new Vector3();
+  /** The back foot's push at a rail change: the leg drive, or Snap's rail change under Snap. */
+  private get drives(): boolean {
+    return this.legDrive || (this.snapCrosses && this.snapping > 0);
+  }
+  /** Snap's driving legs (SNAP_DRIVE_DEPTH); only with `snapLegs: 'drive'`. */
+  private readonly snapDrives: boolean;
+  /** The side Snap's turn goes while it is held (+1 the board's left; 0 before the stick says), and the board's level heading the latest step, rad. */
+  private snapDriveSide = 0;
+  private snapDriveYaw = 0;
+  /** How far the board's heading has turned that side since, rad; the furthest it went the other way first; and how far round it has come from there, of SNAP_DRIVE_TURN (0–1, never back). */
+  private snapDriveTurn = 0;
+  private snapDriveLow = 0;
+  private snapDriven = 0;
 
   private legFresh = true;
   private legDamping = 0;
@@ -1078,6 +2490,88 @@ export class AttachedRider {
   readonly swing = { angle: 0, rate: 0 };
   /** Standing, the upper body's twist about the leg (TWIST_RANGE), rad, positive toward the board's +x (its left), and its rate. */
   readonly twist = { angle: 0, rate: 0 };
+  /**
+   * **Read-only, for probes** (step 3.3f): what `prepareBank` computed for the lean this frame — `cap` the lean a turn of
+   * TURN_RADIUS (or SNAP_RADIUS) can hold at the board's speed through the water, rad; `ask` the lean the steer asked
+   * for after that cap (`leanAsked`, the new rider's reference); `speedThrough` the board's forward speed through the
+   * water the cap is built on, m/s; `planing` 1 while the board planes, and the cap is **0 off the plane**. Nothing in
+   * the game reads these; they exist because the cap and its speed are the two quantities step 3.3f's turn census is
+   * about and reconstructing them outside the class would re-derive `planing`'s own latch.
+   *
+   * **Step 3.5a adds three, and they are the measurement of the cap itself:** `want` the lean the steer and the hand
+   * asked for **before** the cap (the predictor's own line while `predictive`, the reference's otherwise), so
+   * `|want| > cap` is exactly a clip; `held` the formula's own value, `min(MAX_BANK, atan(v²/(g R)))`, **before** the
+   * planing gate turns it into 0; `radius` the R it was built on, m (TURN_RADIUS, blended toward SNAP_RADIUS under
+   * Snap, or the `askCap` switch's own). Read by nothing in the game.
+   */
+  readonly leanProbe = { cap: 0, ask: 0, speedThrough: 0, planing: 0, want: 0, held: 0, radius: 0 };
+  /**
+   * **Step 3.3i: the ankle's own ledger**, off unless `AttachedRider.ankleLedger` is set, and read by nothing in the
+   * game. Step 3.3h measured the board's roll residual at **+33.47 N·m** through the commanded turn and concluded that
+   * the full moment goes into a board with *"no joint to absorb it"*. The ankle it names is **already here** — the
+   * body's bank is the eighth unknown of the board's own solve and the ankle is a spring–damper on the joint's own
+   * angle (`prepareBank`, `humanBank`, `predictiveBank`) — so this is the instrument that says what it carries.
+   *
+   * **The datum, stated.** Every entry is about the board's **roll axis along the heading**, the same axis
+   * `ankleTorque` is computed on. `angle` is the joint's own angle **θ − φ**: the body's bank from the world vertical
+   * toward the board's **+x** side, less the board's roll about the heading in the same sense, so it is **positive when
+   * the body leans further toward +x than the deck is rolled**. `torque` is `ankleTorque` itself, N·m, in the sign the
+   * solve uses — `rhs[7] += … − h (τ_ankle + τ_swing) / L`, row 7 being the body's across rate on the leg. No probe
+   * sign is applied here; a probe that wants the run's own sense applies it itself, as `deck.ts` does for the roll
+   * ledger.
+   *
+   * **Means, not sums.** `torque`, `angle`, `rest`, `bound` and `load` are running means over the substeps of the step
+   * (the standing new rider takes 32 of them), so each is already per-substep and no caller divides by anything.
+   * `substeps` is how many were booked, `peak`/`anglePeak` are the largest absolute of the step, and `over` counts the
+   * substeps whose `|torque|` was past `bound`.
+   */
+  static ankleLedger = false;
+  readonly ankle = {
+    /** Substeps booked into this step's means (0 in any step the body did not bank). */
+    substeps: 0,
+    /** N·m, the mean over the step of the ankle's own torque as the solve got it (bounded, with `ankleLimit: 'feet'`). */
+    torque: 0,
+    /** N·m, the largest absolute delivered torque of any substep in the step. */
+    peak: 0,
+    /** N·m, the mean over the step of the torque the spring and damper ASKED for, before any bound. */
+    demand: 0,
+    /** N·m, the largest absolute demanded torque of any substep in the step. */
+    demandPeak: 0,
+    /** N·m, the mean over the step of what the bound took off the demand, `|demand| − |delivered|` (0 with the switch off). */
+    absorbed: 0,
+    /** rad, the mean over the step of the joint's own angle θ − φ. */
+    angle: 0,
+    /** rad, the largest absolute joint angle of any substep in the step. */
+    anglePeak: 0,
+    /** rad, the mean over the step of the rest the balance commanded (ANKLE_REST_RANGE bounds it at ±0.25). */
+    rest: 0,
+    /**
+     * N·m, the mean over the step of **the moment the soles can transmit**: the load through the legs along the body's
+     * own up (`legLoad`) times the feet's half-width across, read off the live support region. This is the code's own
+     * bound, derived in `LEAN_IN_RATE`'s note as *"the largest moment the feet can apply is the load times their
+     * half-width, m g d = 716 N × 0.13 m = 93 N·m"* — derived there, and enforced on nothing.
+     */
+    bound: 0,
+    /** N, the mean over the step of `legLoad`, which `bound` is built on. */
+    load: 0,
+    /**
+     * rad, the mean over the step of **the range the bank step allowed the commanded rest**, `restRange()` —
+     * ANKLE_REST_RANGE = 0.25 unless `ankleRange` is set, the live sole's own with `'load'`, doubled with `'wide'`.
+     * It is here so the A/B's own independent variable is read rather than assumed. It is the bound on the side that
+     * rolls the board OFF the rail it is on; `bite` is the other side's.
+     */
+    room: 0,
+    /**
+     * rad, the mean over the step of **the same range after the rail's bite has narrowed it** (the `room` local of the
+     * bank step: `restRange() × max(0, 1 − (|rail| − RAIL_BITE) / RAIL_EASE)`, zero at |rail| ≥ 52°). It bounds the
+     * rest on the side that would roll the board FURTHER onto the rail it is already on, which past the bite the feet
+     * are not allowed to do. Step 3.3k measures it because the rest the balance actually gets is bounded by this and
+     * not by `room` whenever the rail has bitten.
+     */
+    bite: 0,
+    /** Substeps of the step whose `|torque|` was past `bound`. */
+    over: 0,
+  };
   private readonly bodyFrame = new Quaternion();
   private readonly bankTurn = new Quaternion();
   private readonly swingTurn = new Quaternion();
@@ -1085,6 +2579,8 @@ export class AttachedRider {
   private readonly swingPivot = new Vector3();
   private readonly across = new Vector3();
   private readonly rollAxis = new Vector3();
+  /** Step 3.5i: the roll axis resolved into the board's own frame, inside `project` (its own, so no scratch is shared). */
+  private readonly rollLocal = new Vector3();
   /**
    * The body's speed across the leg relative to the feet, m/s, and after the
    * latest solve; the leg's length, m; the bank asked for, eased in, rad; the
@@ -1101,7 +2597,7 @@ export class AttachedRider {
   private ankleRest = 0;
   /** The board's roll into the water toward the lean asked for, PULL_LOOKAHEAD on at its present roll rate, rad (COMPRESS_PULL's bite). */
   private railAhead = 0;
-  /** The water's surface normal under the board (the world's up off the water): the level the rail's bite is read from (RAIL_BITE). */
+  /** The water's surface normal under the board (the world's up off the water): the level the rail's bite is read from (RAIL_BITE), and the level a prone body keeps (PRONE_ROLL_SHIFT). */
   private readonly waterUp = new Vector3(0, 1, 0);
   /** The water's own flow under the board, level, m/s: the compressed turn's rules read the board's motion through it. */
   private readonly waterFlow = { x: 0, z: 0 };
@@ -1115,12 +2611,142 @@ export class AttachedRider {
   private readonly carryForce = new Vector3();
   /** The rail change's lean-out pull on the body, N (world): LEAN_OUT_PULL. */
   private readonly leanOutForce = new Vector3();
+  /** The board whose hollow the part in hand stands over (`overHollow`), where along it, m, and the deck plane's height under the part, m. */
+  private hollowBoard?: BoardBody;
+  private hollowZ = 0;
+  private hollowY = 0;
+  /** The leg drive; with `legDrive: 'on'` or `'turn'`. */
+  private readonly legDrive: boolean;
+  /** COMPRESS_PULL deleted with nothing in its place (`compressPull: 'off'`, step 3.2u). */
+  private readonly compressPullOff: boolean;
+/**
+ * **The compressed turn's lead-in, made honest** (step 3.2t, `legDrive: 'turn'`, the `?legDrive=turn` dev switch;
+ * opt-in, so the default ride cannot move).
+ *
+ * COMPRESS_PULL is the old rider's larger hidden support: about 0.19 g of sideways force on the body with nothing
+ * pushing back, and it is load-bearing — without it the compressed old rider goes 6 of 6 across to 0 of 6 and its rail
+ * collapses from 7–39° to 0.1–3.3° [M, the balance-redesign notes]. Its own comment says what the body is really doing:
+ * *"leaning in first means pushing the feet out"*. So the honest version is the pair the legs already make at a rail
+ * change (`legDriveStep`): the legs push the body **toward the lean it is being asked for** while the body is still
+ * behind that lean, and the board takes the equal and opposite push at the back foot.
+ *
+ * **What it cannot do, stated before it is measured.** An internal pair is net zero on board and rider together, so it
+ * cannot supply COMPRESS_PULL's 0.19 g to the system — it can only move the body in and the board out, sooner. The
+ * system's turn still has to be bought from the water by the rail. The honest drive should therefore restore the
+ * **lean** (and with it the rail, and the rail's own side force) and not the free centripetal force; whether that is
+ * enough for the owner's test is the measurement, not an assumption [I].
+ *
+ * Bounded by the same three limbs bounds as the rail change's drive — the back leg's sideways strength
+ * (LEG_SIDE_STRENGTH, by the steer), the back foot's grip (FOOT_FRICTION times its own load), and the legs' sideways
+ * reach at this pelvis height — so it leads the lean in and then hands over to the hull, which is the order
+ * COMPRESS_PULL's own note describes. Nothing here is a new constant.
+ */
+  private readonly legTurn: boolean;
+  /** The leg drive on the body, N (world); the board takes the opposite at the back foot, `driveFoot` from its centre (world). */
+  private readonly driveForce = new Vector3();
+  private readonly driveFoot = new Vector3();
+  private readonly driveDirection = new Vector3();
+  private driveStep = 0;
+  private driveSide = 0;
+  private driveUsed = 0;
+  private driveReach = 0;
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
     this.mass = options.mass ?? REFERENCE_RIDER.mass;
     this.stance = options.stance ?? 'regular';
     this.phase = options.phase ?? 'prone';
+    this.feathers = (options.stroke ?? 'feather') === 'feather';
+    this.catches = options.extension !== 'old';
+    this.quick = options.snapQuick !== 'old';
+    this.snapLean = options.snapPivot === 'lean';
+    this.upturnKept = options.snapUpturn !== 'old';
+    this.recentres = options.snapRecentre !== 'old';
+    this.snapDepth = options.snapDepth === 'deep' ? SNAP_DEPTH_DEEP : SNAP_DEPTH;
+    this.agile = options.agile === 'on';
+    this.compressPullOff = options.compressPull === 'off';
+    this.legDrive = options.legDrive === 'on' || options.legDrive === 'turn';
+    this.legTurn = options.legDrive === 'turn';
+    this.carveFlexes = options.carveFlex === 'on';
+    this.snapDrives = options.snapLegs === 'drive';
+    this.snapCrosses = options.snapCross === 'on';
+    this.capsLegs = options.legPower === 'cap';
+    this.newRider = options.rider === 'new';
+    this.deckFelt = options.feltFrame === 'deck';
+    // Step 3.4e: the mount's own two halves, each reached by one value of `mountAgree` and both by `'both'`.
+    this.mountDeck = options.mountAgree === 'deck' || options.mountAgree === 'both';
+    this.mountFelt = options.mountAgree === 'felt' || options.mountAgree === 'both';
+    this.kneeRoomAchieved = options.kneeRoom === 'achieved';
+    this.stanceReach = options.stanceReach === 'keep' ? 'keep' : undefined;
+    this.ankleLimit = options.ankleLimit === 'feet' ? 'feet' : undefined;
+    this.ankleRange = options.ankleRange === 'load' || options.ankleRange === 'wide' ? options.ankleRange : undefined;
+    // Step 3.4i: `Math.PI` is no bound — `frame`'s own `atan2` reading cannot exceed it — so the branch is one value.
+    this.bankMax = options.bankClamp === 'off' ? Math.PI : MAX_BANK;
+    // Step 3.5a: the five values are matched as strings and never parsed (`Number(null) === 0`), and with the switch
+    // unset `askRadius` is TURN_RADIUS and `askUngated` false, so `prepareBank`'s expression is the shipped one.
+    this.askRadius = options.askCap === '1.5' ? 1.5 : options.askCap === '2' ? 2
+      : options.askCap === '4' ? 4 : options.askCap === '4.5' ? 4.5 : options.askCap === '9' ? 9 : TURN_RADIUS;
+    this.askUngated = options.askCap === '1.5' || options.askCap === '2' || options.askCap === '4'
+      || options.askCap === '4.5' || options.askCap === '9';
+    // Step 3.5c (ruling D, "keep the row"): the fourth rung SHIPS, so only an explicit `'off'` goes back to the
+    // three-row ladder and its 0.30 m clamp. Matched as a string and never parsed — `Number(null) === 0`.
+    this.stanceDeepRow = options.stanceDeep !== 'off';
+    this.deepens = options.deepen === 'on';
+    this.armCarry = options.armCarry === 'on' || options.armCarry === 'rest' ? options.armCarry : undefined;
+    this.trunkMass = options.trunk === 'mass';
+    this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
+    this.yawScale = options.yawInertiaScale ?? 1;
+    this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
+    this.bankRateGain = options.humanGains?.bankRate ?? HUMAN_BANK_RATE_GAIN;
+    this.bankForward = options.humanGains?.forward ?? HUMAN_BANK_FORWARD;
+    this.predictive = this.newRider && options.humanGains === undefined;
+    // Step 3.3p: `waterHeel: 'tilt'` is the same weights flag the explicit `balance.weights` route reaches, so the
+    // two cannot disagree and an explicit `waterHeel` in `balance.weights` still wins.
+    // Step 3.4e adds `'ref'`, which needs the tilt read for the same reason the other two do.
+    this.waterHeel = options.waterHeel === 'tilt' || options.waterHeel === 'predict' || options.waterHeel === 'ref';
+    const heelWeights: { waterHeel: 'both' | 'predict' | 'ref' } | undefined = options.waterHeel === 'tilt'
+      ? { waterHeel: 'both' } : options.waterHeel === 'predict' ? { waterHeel: 'predict' }
+        : options.waterHeel === 'ref' ? { waterHeel: 'ref' } : undefined;
+    // Step 3.4a: `riderBody` reaches the same weights route, so an explicit `riderBody` in `balance.weights` wins.
+    const bodyWeights: { riderBody: 'two' | 'control' | 'symmetric' } | undefined = options.riderBody
+      ? { riderBody: options.riderBody } : undefined;
+    // Step 3.4b: `riderCost` reaches the same weights route, so an explicit `feetReach`, `captureScale` or
+    // `captureOmega` in `balance.weights` still wins. Named exhaustively rather than passed through, so a value that
+    // is not one of the three cannot fall into the default arm silently (3.4a's own first build did).
+    const costs: { feetReach: number; captureScale: number; captureOmega: CaptureOmega } | undefined = options.riderCost === 'point'
+      || options.riderCost === 'fixed' || options.riderCost === 'plant' ? costWeights(options.riderCost) : undefined;
+    // Step 3.4m: `plantFloor` reaches the same weights route, so an explicit `plantFloor` in `balance.weights` wins.
+    // Named exhaustively, like 3.4b's costs, so a value that is not one of the three measured rows cannot fall into
+    // the default arm silently — and `Number(null) === 0`, so the three are matched as strings and never parsed.
+    const floorWeights: { plantFloor: number } | undefined = options.plantFloor === '4.5' ? { plantFloor: 4.5 }
+      : options.plantFloor === '5' ? { plantFloor: 5 } : options.plantFloor === '6' ? { plantFloor: 6 } : undefined;
+    // Step 3.5b: `stanceDeep` reaches the same weights route, so an explicit `stanceDeep` in `balance.weights` wins
+    // and the design cache's key carries it. The plant and the schedule's fourth knot both hang off this one flag.
+    // Step 3.5c (ruling D, "keep the row"): the row ships, so the ONLY thing this has to say is `false`, out loud,
+    // when the switch says `'off'`. Left `undefined` otherwise, so a rider built with no options at all still hands
+    // `PredictiveController` an undefined `weights` exactly as it always did — and both read sites now default that
+    // to the fourth rung (`DEFAULT_WEIGHTS.stanceDeep`, `blend`'s `?? true`).
+    const ladderWeights: { stanceDeep: boolean } | undefined = options.stanceDeep === 'off' ? { stanceDeep: false } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...options.balance?.weights }
+      : undefined;
+    this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
+    this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
+    this.rateSense = options.balance?.rateSense ?? 'canal';
+    this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
+    this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
+    this.railCap = ((options.balance?.railCap ?? SCHEDULE_RAIL_CAP) * Math.PI) / 180;
+    // Step 3.5i: `bodyBank: 'hip'` is the contact's missing term and NOTHING ELSE. It was built with a derived hip
+    // drive beside it (`m g` N·m per metre of trigger) and **the measurement took the drive away**: on 90 Canyon
+    // riders turning, the term alone took `tip` from 90 of 90 to 66 of 90 and the drive on top of it put the ride at
+    // 0.917 s against the term's own 1.083 s. The gain stays reachable through `balance.hipCapture` for the probes.
+    this.banksBody = options.bodyBank === 'hip';
+    this.hipCapture = options.balance?.hipCapture ?? HIP_CAPTURE_GAIN;
+    this.ankleRestRate = options.balance?.ankleRestRate ?? ANKLE_REST_RATE;
+    this.anklePlumb = options.balance?.anklePlumb ?? ANKLE_PLUMB;
+    this.windowed = this.capsLegs || this.newRider;
+    this.stamps = options.snapStamp === 'on' && !this.agile;
+    this.sprintArea = this.feathers ? SPRINT_PADDLE_AREA : SPRINT_PADDLE_AREA_BROADSIDE;
     this.partMasses = riderPartMasses(this.mass);
     this.partVolumes = riderPartVolumes(this.mass);
     this.feet = stanceFeet(shape);
@@ -1128,6 +2754,8 @@ export class AttachedRider {
     this.parts = pose.parts.slice();
     this.fromParts = pose.parts.slice();
     this.support = pose.support;
+    const lying = postureCenter(riderPose(shape, 'prone', this.stance).parts, this.partMasses);
+    this.proneHeight = lying.y - deckHeight(shape, lying.z);
     const ducks = (stance: StanceName) => {
       const press = duckPose(shape, 'duckPress', stance);
       const knee = duckPose(shape, 'duckKnee', stance);
@@ -1154,6 +2782,45 @@ export class AttachedRider {
     return this.upright && this.phase === 'standing' && this.banked;
   }
 
+  /**
+   * The new surfer standing (`rider: 'new'`, step 3.1): the body is free along the board too, its speed along its
+   * forward axis the ninth unknown of the board's solve (`StandingBody`). Step 3.2: free across as well with no drive
+   * left (no roll drive, shifts or sway), balanced by `HumanBalance`. Landing and every other phase as before.
+   */
+  get freeBody(): boolean {
+    return this.newRider && this.upright && this.phase === 'standing';
+  }
+
+  /**
+   * The board's substeps while this rider stands (`BoardBody.step`): the old rider's 32 (`STANDING_SUBSTEPS`, for its
+   * upright drive's one-substep lag, P4e's Mode A); the new surfer standing free, NEW_STANDING_SUBSTEPS (step 3.2: no
+   * drive is left, so the fewest that pass its bars).
+   */
+  get standingSubsteps(): number | undefined {
+    return this.freeBody ? this.newSubsteps : undefined;
+  }
+
+  /** The standing contact's power is capped: A-lite (`legPower: 'cap'`), or the new surfer standing (its window only; rule 1 is its own). */
+  get powerCapped(): boolean {
+    return this.capsLegs || this.freeBody;
+  }
+
+  /** Snap held, 0–1 (the snap stance): standing only; it wins over the crouch, Compress and the trim. The rig gates Snap's arms on it. */
+  get snapping(): number {
+    return this.upright && this.phase === 'standing' && this.snap > 0 ? Math.min(1, this.snap) : 0;
+  }
+
+  /** The crouch and Compress asked for, as the stance takes them: Snap held wins over both. */
+  private get crouchAsked(): number {
+    const snap = this.snapping;
+    return snap > 0 ? this.crouch * (1 - snap) : this.crouch;
+  }
+
+  private get compressAsked(): number {
+    const snap = this.snapping;
+    return snap > 0 ? this.compress * (1 - snap) : this.compress;
+  }
+
   get stanceSign(): number {
     return this.stance === 'regular' ? 1 : -1;
   }
@@ -1164,11 +2831,37 @@ export class AttachedRider {
    * then; otherwise the rider lies back down.
    */
   popUp(): boolean {
-    if (!this.attached || this.phase !== 'prone' || this.duck.press > DUCK_BUSY) return false;
+    if (!this.attached || this.phase !== 'prone' || this.climbing || this.duck.press > DUCK_BUSY) return false;
     this.beginTransition('push', PUSH_TIME);
     this.popUpTime = 0;
     Object.assign(this.popUpReport, { outcome: 'rising', duration: 0, landingPeak: 0, frontShare: 0, refusal: undefined });
     return true;
+  }
+
+  /**
+   * Climb back on from the water (swim-back, 2026-10-29): before the board takes the rider (`BoardBody.attach`), the
+   * transition into the prone posture starts from the swimmer's own parts, `parts` (world, x y z per part in
+   * `RIDER_PARTS` order), over CLIMB_TIME, coming across before it rises. The phase is 'prone' throughout (the drawn
+   * body follows the parts); climbing, it neither paddles, pops up nor shows the cue. The contact carries it as any
+   * posture change: if it cannot hold the body (a wave, a board torn away), the rider lets go into the water again.
+   */
+  climbFrom(parts: ArrayLike<number>, board: BoardBody): void {
+    this.beginTransition('prone', CLIMB_TIME);
+    // Lying, the body turns with the board, from the step it is mounted (duck-drawn): its own turn was the one it had
+    // when it last rode, before the fall or the dive, and the parts were drawn turned by it for the first step back on.
+    this.orientation.copy(board.orientation);
+    for (let i = 0; i < RIDER_PARTS.length; i += 1) {
+      board.toLocal(this.scratch.set(parts[i * 3], parts[i * 3 + 1], parts[i * 3 + 2]), this.scratch2);
+      this.fromParts[i * 3] = this.scratch2.x;
+      this.fromParts[i * 3 + 1] = this.scratch2.y;
+      this.fromParts[i * 3 + 2] = this.scratch2.z;
+    }
+    this.climbing = true;
+  }
+
+  /** Climbing back on from the water (`climbFrom`), until lying on the board. */
+  get climbingOn(): boolean {
+    return this.attached && this.climbing;
   }
 
   /** Lie back down from standing, when the player asks: the body goes back to the prone posture over RECOVER_TIME. */
@@ -1197,12 +2890,15 @@ export class AttachedRider {
     }
     if (board && upright !== this.upright) this.remap(this.fromParts, upright, board);
     if (upright && !this.upright) this.legFresh = true;
-    // The balance shift is folded into where the transition starts.
+    // The balance shift (and the arms' give) is folded into where the transition starts.
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
+    this.armsGive = 0;
+    this.armsGiveRate = 0;
     this.phase = phase;
     this.phaseTime = 0;
     this.phaseDuration = duration;
+    this.climbing = false;
   }
 
   /** Advance the phase clock; at a phase's end, move on (or check whether the rider can stand). */
@@ -1225,6 +2921,10 @@ export class AttachedRider {
     } else if (ended === 'recover') {
       this.fromParts.set(this.parts);
       this.phase = 'prone';
+    } else if (ended === 'prone') {
+      // On the board after a climb.
+      this.fromParts.set(this.parts);
+      this.climbing = false;
     }
   }
 
@@ -1285,10 +2985,13 @@ export class AttachedRider {
     this.pressTrack.reset();
     this.kneeTrack.reset();
     this.sprint = 0;
+    this.paddleSprintShare = 0;
     this.strokeRoll = 0;
     this.waterCalm = 1;
     this.balance.set(0, 0, 0);
     this.balanceRate.set(0, 0, 0);
+    this.armsGive = 0;
+    this.armsGiveRate = 0;
     // A new mount starts from the neutral stance, whatever the body was doing before (a relaunch mid-carve).
     this.lean.set(0, 0, 0);
     this.leanRate.set(0, 0, 0);
@@ -1318,6 +3021,29 @@ export class AttachedRider {
     this.swing.angle = 0;
     this.swing.rate = 0;
     this.resetTwist();
+    // The new surfer: nothing felt yet, and (standing) the body square to the deck (`frame`), in pitch and, on a planing
+    // board, across too: as a body balances on a board sliding freely down its face, where the felt vertical is the
+    // face's normal. Square in pitch alone, plumb across (step 3.1), a start across a face had its bank run uphill.
+    if (this.newRider) {
+      this.standingBody.reset();
+      this.human.reset();
+      this.yawCoupled = false;
+      this.resetBalance();
+      this.pairFresh = true;
+      this.swingLagged = 0;
+      this.heldDepth = 0;
+      this.frictionUsed = 0;
+      this.kneeUsed = 0;
+      if (this.upright && this.phase === 'standing' && board.velocity.length() > PLANING_SPEED) {
+        this.planing = true;
+        this.banked = true;
+      } else if (this.mountDeck && this.upright && this.phase === 'standing') {
+        // Step 3.4e (`mountAgree: 'deck'`): the body square to the deck at the mount whatever the entry speed. Only
+        // `banked` — the body's placement — is set; `planing` stays the board's own speed test, because the board is
+        // not planing and `planingStep` would flip a mounted `true` back on the next frame anyway.
+        this.banked = true;
+      }
+    }
     this.frame(board, false);
     this.position.copy(this.target);
     this.velocity.copy(this.drive.set(0, 0, 0)).add(board.velocityAt(this.target, this.scratch2));
@@ -1336,6 +3062,13 @@ export class AttachedRider {
     this.work.assist = 0;
     this.work.carry = 0;
     this.work.leanOut = 0;
+    this.work.legDrive = 0;
+    if (this.windowed) this.resetPower();
+    this.driveUsed = 0;
+    this.driveSide = 0;
+    this.driveForce.set(0, 0, 0);
+    this.crossSide = 0;
+    this.crossed = true;
     this.struckBy.clear();
     this.lastLipImpulse.set(0, 0, 0);
     this.sway.set(0, 0, 0);
@@ -1350,9 +3083,14 @@ export class AttachedRider {
     this.tallReached = false;
     this.tallFrom = false;
     this.fromCompress = false;
+    this.fromFlex = false;
+    this.snapDriveSide = 0;
+    this.snapDriven = 0;
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
+    // Step 3.5g: a new mount starts with the arms at rest and no rail chosen (drawing only).
+    resetArmCarriage(this.carriage);
     this.contact.weight = Number.NaN;
     this.standingLine = undefined;
     this.standingHold = 0;
@@ -1368,8 +3106,43 @@ export class AttachedRider {
    * threshold in `endStep`.
    */
   get balanceReserve(): number {
+    // The new surfer standing (step 3.2, design §6): the least of the capture point's margin, the grip left and the knees' strength left.
+    if (this.freeBody) return Math.max(0, Math.min(this.human.state.margin, 1 - this.frictionUsed, 1 - this.kneeUsed));
     if (this.upright) return this.balanceMargin;
     return Math.max(0, 1 - this.postureError / RECOVERABLE_ERROR);
+  }
+
+  /**
+   * **Which of the reserve's three limits is nearest, and the three themselves** (step 3.2v). `balanceReserve` above
+   * returns their minimum and the game then throws away which one it was — so the balance meter can say how close the
+   * rider is to going down and nothing at all about *why*, and neither the owner nor a probe could see it.
+   *
+   * - `margin` — the capture point's own margin: the weight's line past the feet, over the edge plus whatever the hip
+   *   swing can still catch. **`limit: 'margin'` is the only one of the three that can actually end a ride**: the fall
+   *   test standing free is `human.fallen`, which is the capture point alone (`endStep`). The other two narrow the
+   *   meter and re-label the separation; they never trip it.
+   * - `grip` — 1 − the feet's grip used against the push across the deck (`FOOT_FRICTION` times their load).
+   * - `knee` — 1 − the knees' strength used under the load (`kneeStrength` at this leg length).
+   *
+   * `across` says the weight left the feet **across** the board rather than along it, and `past` how far past the
+   * edge the capture point is, m, so a fall can be named by the shape the rider sees. Measured over 12 runs in trim
+   * with the stick untouched and 18 in the owner's acceptance turn, `margin` bound in **every** one and `across` was
+   * true in every one, with the grip 0.86–0.91 left (`../../docs/research/new-rider/3.2/README.md` Part 20).
+   *
+   * Lying down and for the old rider the reserve is a single number with no three terms behind it, so `limit` is
+   * `'posture'` and the three read the reserve itself.
+   */
+  get balanceLimits(): { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number } {
+    if (!this.freeBody) {
+      const reserve = this.balanceReserve;
+      return { limit: 'posture', margin: reserve, grip: reserve, knee: reserve, across: false, past: 0 };
+    }
+    const state = this.human.state;
+    const margin = Math.max(0, state.margin);
+    const grip = Math.max(0, 1 - this.frictionUsed);
+    const knee = Math.max(0, 1 - this.kneeUsed);
+    const limit = margin <= grip && margin <= knee ? 'margin' : grip <= knee ? 'grip' : 'knee';
+    return { limit, margin, grip, knee, across: state.past > 0 && Math.abs(state.pastAcross) >= state.past, past: state.past };
   }
 
   kineticEnergy(): number {
@@ -1410,10 +3183,18 @@ export class AttachedRider {
    * the rails, the feet on the deck while standing).
    */
   renderPoint(index: number, board: BoardBody, out: Vector3): Vector3 {
-    if (index < 3) return this.swung(index, this.partPosition(index, out), SWING_DRAWN_CHEST);
+    if (index < 3) return this.turned(this.swung(index, this.partPosition(index, out), SWING_DRAWN_CHEST));
     const upright = this.phase === 'landing' || this.phase === 'standing';
     if (index === 3 || index === 4) {
       const side = index === 3 ? 0 : 1;
+      if (this.climbing) {
+        // Climbing on: the hands go from where the swimmer's arms were to the rails beside the chest (within the board's
+        // length) over the climb's first CLIMB_HANDS, then hold them there.
+        const z = Math.max(-this.shape.length / 2 + 0.05, Math.min(this.shape.length / 2 - 0.05, this.parts[1 * 3 + 2]));
+        const rail = board.toWorld(this.localScratch.set((side === 0 ? 1 : -1) * this.halfWidth(z), deckHeight(this.shape, z), z), this.handRail);
+        const reach = minimumJerk(Math.min(1, this.phaseTime / (CLIMB_HANDS * this.phaseDuration)));
+        return this.partPosition(index, out).lerp(rail, reach);
+      }
       if (this.phase === 'prone') {
         const stroking = (this.paddle || this.sweeping) && this.strokeEffort(side) > 0;
         // Ducking, the hands hold the rails where the arms reach; otherwise beside the chest.
@@ -1430,8 +3211,24 @@ export class AttachedRider {
       if (this.handSide !== 0 && (index === 3) === (this.handSide > 0)) return out.copy(this.handPoint);
       this.partPosition(index, out);
       const spread = upright ? ARM_SPREAD + ARM_ALARM * (1 - this.balanceMargin) : ARM_SPREAD;
+      // Step 3.5g (`armCarry`, rows 4, 5 and 15): the arm carriage's own height, spread and across, **added on top of
+      // the shipped alarm spread, which is left exactly as it is** - the balance alarm does not gate the carriage, and
+      // `armCarriage.ts` has the measurement that decided that (this rider's margin sits near a half through a turn,
+      // so a margin-gated carriage would have been 7-13 % present in a median turn frame). **Drawing only**: the arm
+      // PART has not moved, so the CoM, the inertias and every force are exactly what they were.
+      if (this.armCarry && this.phase === 'standing') {
+        const lead = (index === 3) === (this.stance === 'regular');
+        const place = armCarriagePlace(this.carriage, lead, this.armPlace);
+        out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread + place.out - ARM_SPREAD));
+        out.addScaledVector(this.armUp.set(0, 1, 0).applyQuaternion(board.orientation), place.lift);
+        // `place.across` is already SIGNED in the board's own frame (the carriage's reach carries the rail in its
+        // sign), so it is added as it stands. It used to be a magnitude times a latched ±1 rail, which teleported the
+        // lead hand 0.44 m across the board in one substep when the stick changed sign with the reach still out.
+        out.addScaledVector(this.armAcross.set(1, 0, 0).applyQuaternion(board.orientation), place.across);
+        return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
+      }
       out.add(this.scratch2.copy(out).sub(this.partPosition(1, this.target)).multiplyScalar(spread));
-      return this.swung(index, out, SWING_DRAWN_CHEST);
+      return this.turned(this.swung(index, out, SWING_DRAWN_CHEST));
     }
     if (upright) {
       const front = (index === 5) === (this.stance === 'regular');
@@ -1460,8 +3257,32 @@ export class AttachedRider {
   private swung(index: number, out: Vector3, share: number): Vector3 {
     if (index === 0 || this.phase !== 'standing' || this.swing.angle === 0) return out;
     const pelvis = this.partPosition(0, this.swingPivot);
-    this.swingTurn.setFromAxisAngle(this.swingAxis.set(0, 0, 1).applyQuaternion(this.heading), share * this.swing.angle);
+    // The new surfer: about the body's own forward axis, which pitches with it.
+    this.swingTurn.setFromAxisAngle(this.swingAxis.set(0, 0, 1).applyQuaternion(this.freeBody ? this.bodyFrame : this.heading), share * this.swing.angle);
     return out.sub(pelvis).applyQuaternion(this.swingTurn).add(pelvis);
+  }
+
+  /**
+   * Agile: a drawn point of the body above the feet turned as the hips and the trunk are (`hip`, `trunk`): about the
+   * body's up and its side axis, through the pelvis (the hips turn on the legs; the trunk pitches from them).
+   */
+  private turned(out: Vector3): Vector3 {
+    if (!this.agile || this.phase !== 'standing' || (this.hip.angle === 0 && this.trunk.angle === 0)) return out;
+    const pelvis = this.partPosition(0, this.swingPivot);
+    this.swingTurn.setFromAxisAngle(this.trunkAxis, this.trunk.angle);
+    out.sub(pelvis).applyQuaternion(this.swingTurn);
+    this.swingTurn.setFromAxisAngle(this.hipAxis, this.hip.angle);
+    return out.applyQuaternion(this.swingTurn).add(pelvis);
+  }
+
+  /** Agile: the torques on the hips (about the body's up) and the trunk (about the body's side axis) the latest substep, N·m; the feet's forces in `limbs` are their reaction on the board. */
+  get legTorques(): { hip: number; trunk: number } {
+    return { hip: this.hipTorque, trunk: this.trunkTorque };
+  }
+
+  /** The upper body's turn against the board as the rig draws it, rad: the twist, and with the agile legs the hips' turn. */
+  get drawnTwist(): number {
+    return this.agile ? this.twist.angle + this.hip.angle : this.twist.angle;
   }
 
   private halfWidth(z: number): number {
@@ -1479,22 +3300,40 @@ export class AttachedRider {
     let height: number;
     let swing = 0;
     let along = 0;
-    if (phase < PULL_SHARE) {
-      const s = phase / PULL_SHARE;
+    const pull = this.pullShare;
+    if (phase < pull) {
+      const s = phase / pull;
       z = REACH + ((HIP - REACH) * (1 - Math.cos(Math.PI * s))) / 2;
-      height = -HAND_DEPTH;
-      along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * PULL_SHARE * this.strokeCycle);
+      height = -this.handDepth;
+      swing = SWEEP_FAST_WIDE * this.sweepEase * Math.sin(Math.PI * s);
+      along = ((HIP - REACH) * Math.PI * Math.sin(Math.PI * s)) / (2 * pull * this.strokeCycle);
     } else {
       // Out of the water at the hip, over it and out, and back in at the reach, rising and settling with no speed at
       // either end, so the drawn hand neither jumps nor jerks (the riding-body plan, step 8).
-      const s = (phase - PULL_SHARE) / (1 - PULL_SHARE);
+      const s = (phase - pull) / (1 - pull);
       z = HIP + ((REACH - HIP) * (1 - Math.cos(Math.PI * s))) / 2;
       const arc = (1 - Math.cos(2 * Math.PI * s)) / 2;
-      height = -HAND_DEPTH + (HAND_DEPTH + RECOVERY_HEIGHT) * arc;
+      height = -this.handDepth + (this.handDepth + RECOVERY_HEIGHT * (1 - (1 - SWEEP_FAST_LOW) * this.sweepEase)) * arc;
       swing = RECOVERY_SWING * arc;
     }
     out.set((side === 0 ? 1 : -1) * (this.halfWidth(z) + HAND_OUTSIDE_RAIL + swing), deckHeight(this.shape, z) + height, z);
     return along;
+  }
+
+  /** Sprint paddling now: asked for (`paddleSprint`), paddling, lying down, not ducking. Its reserve drains (`RideSession`). */
+  get sprintPaddling(): boolean {
+    return this.attached && this.paddleSprint && this.paddle && this.phase === 'prone' && !this.climbing && this.duck.press <= DUCK_BUSY;
+  }
+
+  /** The share of each arm's cycle spent pulling: more as the strokes go over to the player's sprint (SPRINT_PADDLE_PULL). */
+  private get pullShare(): number {
+    const base = PULL_SHARE + (SPRINT_PADDLE_PULL - PULL_SHARE) * this.paddleSprintShare;
+    return base + (SWEEP_FAST_PULL - base) * this.sweepEase;
+  }
+
+  /** How deep the pulling hand goes, m: deeper as the strokes go over to the player's sprint. */
+  private get handDepth(): number {
+    return HAND_DEPTH + (SPRINT_PADDLE_DEPTH - HAND_DEPTH) * this.paddleSprintShare;
   }
 
   /** How far through its cycle arm `side` (0 left, 1 right, half a cycle on) is, 0–1: pulling below PULL_SHARE. */
@@ -1518,7 +3357,11 @@ export class AttachedRider {
     const tilt = sample.outsideDomain ? 0 : Math.hypot(sample.slopeX, sample.slopeZ);
     this.waterCalm = 1 - Math.min(1, Math.max(0, (tilt - STROKE_ROLL_CALM) / (STROKE_ROLL_ROUGH - STROKE_ROLL_CALM)));
     this.sprint += (wanted - this.sprint) * Math.min(1, h / SPRINT_TIME);
-    this.strokeCycle = ARM_CYCLE + (SPRINT_CYCLE - ARM_CYCLE) * this.sprint;
+    const caught = ARM_CYCLE + (SPRINT_CYCLE - ARM_CYCLE) * this.sprint;
+    this.strokeCycle = caught + (Math.min(caught, SPRINT_PADDLE_CYCLE) - caught) * this.paddleSprintShare;
+    this.sweepEase += (this.sweepFast - this.sweepEase) * Math.min(1, h / SWEEP_FAST_EASE);
+    if (this.sweepEase < 1e-9) this.sweepEase = 0;
+    this.strokeCycle /= 1 + (SWEEP_FAST_CADENCE - 1) * this.sweepEase;
     this.strokePhase = (this.strokePhase + h / this.strokeCycle) % 1;
   }
 
@@ -1549,6 +3392,75 @@ export class AttachedRider {
     this.stepImpulse.set(0, 0, 0);
     this.stepLoad = 0;
     this.contact.feasible = true;
+    // Step 3.3i: the ankle's ledger is per step, as the board's roll ledger is (`BoardBody.step`).
+    if (AttachedRider.ankleLedger) for (const key of Object.keys(this.ankle) as (keyof AttachedRider['ankle'])[]) this.ankle[key] = 0;
+  }
+
+  /**
+   * **Step 3.3i, the ankle ledger's one booking site**, called from each of the three places `ankleTorque` is set,
+   * with the joint's own angle θ − φ. A pure observer: it reads `ankleTorque`, `ankleRest`, `legLoad` and the live
+   * support region and writes only into `ankle`. Running means, so the caller divides by nothing.
+   */
+  private bookAnkle(angle: number, demand: number): void {
+    if (!AttachedRider.ankleLedger) return;
+    const a = this.ankle;
+    const n = a.substeps + 1;
+    a.substeps = n;
+    const bound = this.soleBound();
+    const load = Math.max(0, this.legLoad);
+    a.torque += (this.ankleTorque - a.torque) / n;
+    a.demand += (demand - a.demand) / n;
+    a.absorbed += (Math.abs(demand) - Math.abs(this.ankleTorque) - a.absorbed) / n;
+    a.angle += (angle - a.angle) / n;
+    a.rest += (this.ankleRest - a.rest) / n;
+    a.bound += (bound - a.bound) / n;
+    a.load += (load - a.load) / n;
+    a.room += (this.ankleRoom - a.room) / n;
+    a.bite += (this.ankleBite - a.bite) / n;
+    a.peak = Math.max(a.peak, Math.abs(this.ankleTorque));
+    a.demandPeak = Math.max(a.demandPeak, Math.abs(demand));
+    a.anglePeak = Math.max(a.anglePeak, Math.abs(angle));
+    if (Math.abs(demand) > bound) a.over += 1;
+  }
+
+  /**
+   * **Step 3.3i: the moment the soles can transmit**, N·m — the load through the legs along the body's own up times
+   * the feet's half-width across, read off the live support region (0.13 m standing, `riderPosture.ts`). This is the
+   * bound `LEAN_IN_RATE`'s own note derives (`m g d` = 716 N × 0.13 m = 93 N·m) and `ankleLimit: 'feet'` is the switch
+   * that applies it. A sole cannot press further out than its own edge, so the moment it transmits cannot exceed its
+   * load times that arm, whatever the muscle behind it.
+   */
+  private soleBound(): number {
+    return Math.max(0, this.legLoad) * ((this.support.xMax - this.support.xMin) / 2);
+  }
+
+  /**
+   * **Step 3.3k: the bound on the rest the balance may command**, rad, before the rail's bite narrows it.
+   *
+   * Shipped (`ankleRange` unset): ANKLE_REST_RANGE, the constant, which is `bankAuthority`'s `restRange` at one body
+   * weight on a 0.13 m sole. `'load'`: the same quantity with the live sole moment, `ANKLE_REST_RANGE × soleBound() /
+   * (m g × ANKLE_REST_REACH)` — identically ANKLE_REST_RANGE when the load is one body weight on the standing support,
+   * which is this switch's own positive control. `'wide'`: ANKLE_RANGE_WIDE × ANKLE_REST_RANGE.
+   *
+   * `soleBound()` is zero until the contact ledger has run once (`legLoad` starts at 0), and on `'load'` a zero bound
+   * pins the rest at nothing for that step. That is the physics — unloaded feet shift no pressure — and it is left in
+   * rather than floored, because a floor would be a constant nothing measured. The probes print the first frame's
+   * bound so it can be seen rather than assumed.
+   */
+  private restRange(): number {
+    if (this.ankleRange === 'wide') return ANKLE_RANGE_WIDE * ANKLE_REST_RANGE;
+    if (this.ankleRange !== 'load') return ANKLE_REST_RANGE;
+    return (ANKLE_REST_RANGE * this.soleBound()) / (this.mass * WATER.gravity * ANKLE_REST_REACH);
+  }
+
+  /**
+   * **Step 3.3i: the ankle's torque, set in one place** — the spring and damper's demand, bounded by the soles' own
+   * moment with `ankleLimit: 'feet'` and unbounded by default, then booked into the ledger with the joint's own angle.
+   */
+  private setAnkle(demand: number, angle: number): void {
+    const bound = this.ankleLimit === 'feet' ? this.soleBound() : Number.POSITIVE_INFINITY;
+    this.ankleTorque = Math.max(-bound, Math.min(bound, demand));
+    this.bookAnkle(angle, demand);
   }
 
   private markParts(): void {
@@ -1602,8 +3514,9 @@ export class AttachedRider {
       const impulse = normal.multiplyScalar(strike);
       const before = this.scratch.copy(this.velocity);
       this.velocity.addScaledVector(impulse, 1 / this.mass);
-      if (this.upright) {
-        // Along the deck the push sways the body off its feet; into the deck the legs take it.
+      if (this.upright && !this.freeBody) {
+        // Along the deck the push sways the body off its feet; into the deck the legs take it (the new surfer standing:
+        // the push is already in the free body's velocity).
         const local = this.sweepEnd.copy(impulse).applyQuaternion(this.spin.copy(board.orientation).invert());
         this.swayRate.x += local.x / this.mass;
         this.swayRate.z += local.z / this.mass;
@@ -1625,7 +3538,7 @@ export class AttachedRider {
       this.popUpReport.landingPeak = this.stepLoad;
       this.popUpReport.frontShare = this.contact.frontShare;
     }
-    this.popUpCue = this.attached && this.phase === 'prone' && this.cue(board, water);
+    this.popUpCue = this.attached && this.phase === 'prone' && !this.climbing && this.cue(board, water);
     const { reaction, reactionAt } = this;
     for (let k = 0; k < RIDER_PARTS.length + 2; k += 1) {
       const jx = reaction[k * 3];
@@ -1659,6 +3572,7 @@ export class AttachedRider {
 
   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
   prepare(h: number, board: BoardBody, water: SurfWater): void {
+    this.substep = h;
     this.advancePhase(h, board, water);
     this.duckStep(h);
     this.planingStep(board, water);
@@ -1690,34 +3604,51 @@ export class AttachedRider {
     // singular as a carve changed its geometry, and the solve blew up. Standing, it is carried where
     // it is along the leg and across it.
     this.carried.subVectors(this.target, board.centerOfMass);
+    const free = this.freeBody;
     if (this.upright) {
       const off = this.scratch.subVectors(this.position, this.target);
       this.carried.addScaledVector(this.up, off.dot(this.up));
       if (this.banking) this.carried.addScaledVector(this.across, off.dot(this.across));
+      // The new surfer: along the board too (the ninth unknown).
+      if (free) this.carried.addScaledVector(this.forward, off.dot(this.forward));
     }
     // Drive: keeping the body's bank as the board rolls and pitches under the feet, the knees' flex, and a
     // bounded correction toward the posture.
     this.uprightVelocity(board, this.drive.set(0, 0, 0)).addScaledVector(this.up, this.flexRate);
-    // The balance shift moves the centre of mass across the board.
-    const shifted = this.shiftedShare();
-    this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
-    // A push's sway carries the centre of mass off its feet.
-    if (this.upright) this.drive.add(this.scratch.set(this.swayRate.x, 0, this.swayRate.z).applyQuaternion(board.orientation));
+    // The balance shift moves the centre of mass across the board. A push's sway carries the centre of mass off its feet.
+    // The new surfer standing (step 3.2): neither; the body is a free centre of mass, moved only by forces.
+    if (!free) {
+      const shifted = this.shiftedShare();
+      this.drive.add(this.scratch.set((this.balanceRate.x + this.leanRate.x + this.armsGiveRate) * shifted, 0, this.balanceRate.z * shifted).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
+      if (this.upright) this.drive.add(this.scratch.set(this.swayRate.x, 0, this.swayRate.z).applyQuaternion(board.orientation));
+    }
     // The posture's own motion (a pop-up) carries the centre of mass with it.
     this.drive.add(this.scratch.copy(this.postureRate).applyQuaternion(this.upright ? this.bodyFrame : board.orientation));
     const error = this.scratch.subVectors(this.target, this.position);
     // Standing, the leg holds the height and the ankles the bank; the correction only brings the body back along the board.
     if (this.upright) error.addScaledVector(this.up, -error.dot(this.up));
     if (this.banking) error.addScaledVector(this.across, -error.dot(this.across));
+    // The new surfer: nor along it, where the pitch ankle holds the body.
+    if (free) error.addScaledVector(this.forward, -error.dot(this.forward));
     const correction = Math.min(MAX_CORRECTION, (CORRECTION * error.length()) / h);
     if (error.lengthSq() > 0) this.drive.addScaledVector(error.normalize(), correction);
     this.gravity.set(0, -this.mass * WATER.gravity, 0);
     this.waterForces(h, board, water);
     this.compressAssist(board);
+    this.legDriveStep(h, board);
     this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce).add(this.carryForce).add(this.leanOutForce);
+    if (this.drives) this.external.add(this.driveForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
+      if (free) this.preparePitch(h);
+      else if (this.newRider) {
+        this.standingBody.idle();
+        this.human.reset();
+        this.swingLagged = 0;
+        this.resetBalance();
+      }
       this.twistStep(h);
+      if (this.agile) this.legsStep(h, board);
       if (this.banking) {
         this.prepareBank(h, board);
       } else {
@@ -1730,6 +3661,23 @@ export class AttachedRider {
         this.swing.rate = 0;
       }
     }
+    if (this.windowed) this.preparePower(h);
+  }
+
+  /**
+   * The new surfer standing (`freeBody`), before the solve: the pitch ankle's rest and torque (`StandingBody.prepare`),
+   * and the body's speed along its forward axis relative to where it is carried (the ninth unknown's).
+   */
+  private preparePitch(h: number): void {
+    this.legLength = Math.max(0.4, this.leg.height + this.leg.extension);
+    // Relative to the board's own motion at the centre of mass: the leg line's pitch rate on the deck.
+    const rigid = cross(this.boardSpin, this.carried, this.scratch2).add(this.boardVelocity);
+    const relative = this.localScratch.subVectors(this.velocity, rigid).dot(this.forward);
+    this.standingBody.speed = relative - this.drive.dot(this.forward);
+    // The feet's reach from the stance point to the toe and the heel (the support's ends), and the leg's depth (the hip's range).
+    const toe = this.support.zMax - this.base.z;
+    const heel = this.base.z - this.support.zMin;
+    this.standingBody.prepare(h, this.mass, this.legLength, this.legLoad, this.copTarget.z, relative / this.legLength, this.heading, this.waterUp, this.bodyPush, toe, heel, -this.leg.rest);
   }
 
   /** Whether the board planes: its speed through the water under it, over PLANING_SPEED and until under PLANING_DROP. */
@@ -1745,6 +3693,8 @@ export class AttachedRider {
     if (this.planing ? speed < PLANING_DROP : speed > PLANING_SPEED) this.planing = !this.planing;
     if (this.planing) this.banked = true;
     else if (Math.abs(this.bank.angle) < UPRIGHT_BANK && Math.abs(this.bank.rate) < UPRIGHT_RATE) this.banked = false;
+    // The new surfer standing (step 3.2): the body is free across whatever the board's speed; nothing carries it upright.
+    if (this.freeBody) this.banked = true;
   }
 
   /**
@@ -1770,10 +3720,46 @@ export class AttachedRider {
     // The bank asked for, no more than a turn at the board's speed through the water can hold, eased in.
     const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
     const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
-    const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * TURN_RADIUS))) : 0;
-    const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
+    // Snap: the lean a tail-weighted turn can hold (SNAP_RADIUS). Step 3.5a (`askCap`): `askRadius` is TURN_RADIUS as
+    // it ships and the switch's own R_min with it on, and the blend toward Snap's tighter turn is unchanged either way.
+    const radius = this.snapping > 0 ? this.askRadius + this.snapping * (SNAP_RADIUS - this.askRadius) : this.askRadius;
+    const held = Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius)));
+    // Shipped, a board that is not planing asks for no lean at all; with `askCap` the formula is the bound at every
+    // speed, which is what the owner was shown ("about 5° at walking pace") and what a 0 cannot be.
+    const most = this.askUngated || this.planing ? held : 0;
+    // `snapPivot: 'lean'`: under Snap the steer asks for as much lean as the tight turn holds (SNAP_RAIL_RANGE).
+    // snap-upturn: a Snap turning the board up the face (a bottom turn) asks for the steer's rail, not the top turn's.
+    const snapLeans = this.snapLean && this.snapping > 0 && !(this.upturnKept && this.turningUp());
+    const railRange = snapLeans ? RAIL_RANGE + this.snapping * (SNAP_RAIL_RANGE - RAIL_RANGE) : RAIL_RANGE;
+    const wantRef = this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK;
+    const asked = Math.max(-most, Math.min(most, wantRef));
     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
+    const wantOwn = this.steer * railRange + HAND_BEND * this.handBend * HOLD_BANK;
+    if (this.predictive) {
+      // The new surfer's balance by prediction (step 3.2e): the lean the player asks (the steer, the hand) is its
+      // reference, eased as the bank's. The line held on its own (`holdLine`, a heading loop of the old rider's) is left
+      // out: as a reference it rang with the board's yaw and grew (docs/research/new-rider/3.2 Part 5).
+      const own = Math.max(-most, Math.min(most, wantOwn));
+      // Step 3.2q's lean hold was applied here and is gone (see `leanHeld`'s note): the lean the player asks for is
+      // again the steer's own, eased at `leanPace`, as it was in 3.2p.
+      const towardOwn = (own - this.leanAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
+      this.leanAsked += Math.max(-this.leanPace * h, Math.min(this.leanPace * h, towardOwn));
+    }
+    // Read-only, for probes (step 3.3f): the cap, the lean asked after it, the speed it is built on and the plane.
+    this.leanProbe.cap = most;
+    this.leanProbe.ask = this.predictive ? this.leanAsked : this.bankReference;
+    this.leanProbe.speedThrough = speed;
+    this.leanProbe.planing = this.planing ? 1 : 0;
+    // Step 3.5a, read-only and nothing else: the request BEFORE the cap (the reference's own and the predictor's), the
+    // formula's value before the planing gate, and the radius it was built on, so "what the cap binds" is a column.
+    this.leanProbe.want = this.predictive ? wantOwn : wantRef;
+    this.leanProbe.held = held;
+    this.leanProbe.radius = radius;
+    if (this.freeBody) {
+      this.humanBank(h, roll, rail, rollRate);
+      return;
+    }
     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
     const wanted = BANK_GAIN * (this.bankReference - this.bank.angle) - BANK_RATE_GAIN * this.bank.rate;
     // Past the rail's bite the feet no longer roll the board further onto it.
@@ -1791,7 +3777,217 @@ export class AttachedRider {
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
-    this.ankleTorque = ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate);
+    this.setAnkle(ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (ANKLE_STIFFNESS * h + ANKLE_DAMPING) * (this.bank.rate - rollRate), this.bank.angle - roll);
+  }
+
+  /**
+   * The new surfer standing (step 3.2, `HumanBalance`): the bank's ankle and the hip across as a human's.
+   * - The ankle: `bankSpeed` is the body's speed across relative to the board under it (no drive carries it), so the
+   *   passive spring and damper (HUMAN_ANKLE_STIFFNESS, HUMAN_ANKLE_DAMPING) act on the ankle's own angle and rate,
+   *   implicitly in the solve, at once and with no lag (P4e's Mode A came from the old drive's one-substep lag).
+   * - Its rest: the bank law's form, δ = K_ref θ_ref − G θ − G_r θ̇, but on the body's own bank and bank rate as sensed
+   *   BALANCE_DELAY ago (the vestibular sense), the lean asked for not delayed (the rider's own), all through MOTOR_LAG;
+   *   within the feet's reach and the rail's bite as before. The gains (HUMAN_BANK_*) are the roll model's
+   *   (`rollModel.ts`, `humanRollModes`): any feedback on the bank's angle rings through the delay.
+   * - The hip across (the swing rotor) takes what the rest asks past HIP_SHARE of the feet's reach, within the
+   *   stance's hip range and with the arms' inertia (`HumanBalance.swingInertia`), through the same delay and lag.
+   * The old's "lagging" rule (the feet never counter-steer into a lean the body lags; the swing throws it) is kept in
+   * form; with no gain on the bank's angle it never acts.
+   */
+  private humanBank(h: number, roll: number, rail: number, rollRate: number): void {
+    if (this.predictive) {
+      this.predictiveBank(h, roll, rail, rollRate);
+      return;
+    }
+    const human = this.human;
+    const relative = this.bankSpeed / this.legLength;
+    human.sense(h, this.bank.angle);
+    this.bank.rate = human.bankRate;
+    const bank = human.sensedBank();
+    const wanted = this.bankForward * this.bankReference - this.bankGain * bank - this.bankRateGain * human.sensedBankRate() - this.anklePlumb * roll;
+    // Step 3.3k: the bound on the commanded rest, ANKLE_REST_RANGE unless `ankleRange` reads it off the live sole.
+    const range = this.restRange();
+    this.ankleRoom = range;
+    const room = range * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
+    this.ankleBite = room;
+    const reachRest = rail > 0 ? Math.max(-room, Math.min(range, wanted)) : Math.max(-range, Math.min(room, wanted));
+    const leanSide = Math.sign(this.bankReference);
+    this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
+    const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
+    const lagging = this.bankGain > 0 && Math.abs(this.bankReference - bank) > ANKLE_REST_RANGE / this.bankGain;
+    const projecting = this.extending && this.planing && Math.abs(this.steer) <= STEER_DEADBAND && !this.hand
+      && Math.abs(this.bank.angle) > UPRIGHT_BANK;
+    const lean = projecting ? 0 : reachRest * asking > 0 && lagging ? 0 : reachRest;
+    // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
+    const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
+    this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
+    this.setAnkle(HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative, this.bank.angle - roll);
+  }
+
+  /**
+   * **The hip's trigger** (step 3.2x): the swing rotor's demand from the capture point, N·m — HIP_CAPTURE_GAIN times
+   * how far past HIP_SHARE of the feet's half-width across the capture point was BALANCE_DELAY ago
+   * (`HumanBalance.sensedCaptureHip`, signed board +x).
+   *
+   * Its sign. A positive `swingTorque` turns the upper body toward +x about the heading and, by its own reaction
+   * through the feet, pushes the body's centre of mass toward −x (`solveStep`: `rhs[7] -= h × swingTorque / length`,
+   * row 7 being the body's across rate on the leg, and `rhs[3..5] -= h × swingTorque × rollAxis`, the board's share of
+   * the same couple). So a capture point gone to +x is answered by a positive torque. Nothing here is a new force:
+   * this is the rotor the hip already drove from the ankle's overflow, given the signal the design always named, and
+   * its reaction is booked on the board and in the work ledger exactly as before.
+   */
+  private hipDrive(human: HumanBalance): number {
+    return this.hipCapture !== 0 ? this.hipCapture * human.sensedCaptureHip : 0;
+  }
+
+  /**
+   * The new surfer standing free (step 3.2e, the advisor's ruling 29i): balance by prediction (`PredictiveController`,
+   * 3.2d's design). On its own clock (CONTROL_STEP of simulated time, whatever the frame or the substeps), the controller
+   * takes the senses (the body's own bank and its rate, the head's yaw rate, the twist and its rate, the ankle's own angle
+   * and rate; they reach it BALANCE_DELAY late, never the slip), the board's speed through the water and the leg's depth,
+   * and the bank and twist asked for, and sends two commands held until its next tick: the ankle's rest and the twist's
+   * torque. Its signs are the model's (x forward, y right): every angle and moment here is the other way.
+   * - The ankle as 3.2's: the rest within the feet's reach and the rail's bite, through the motor lag; the passive spring
+   *   and damper implicit in the solve. The hip across takes what the command asks past HIP_SHARE of the reach.
+   * - The twist's torque through the motor lag (`twistBody.active`), within the hips' strength and the feet's grip.
+   */
+  private predictiveBank(h: number, roll: number, rail: number, rollRate: number): void {
+    const human = this.human;
+    const relative = this.bankSpeed / this.legLength;
+    human.sense(h, this.bank.angle);
+    this.bank.rate = human.bankRate;
+    // Step 3.2p (ruling 29w item 1): the board's own heave and pitch, sensed the way a rider senses them. Both were
+    // already measured in the game and neither was connected to the balance.
+    // - The load through the feet: `captureLoad` is the water's push on the rider through the feet along the board's
+    //   up this substep, in body weights, straight off the contact ledger. In m/s² and less the slow part the soles
+    //   have adapted to, it is the deck's own vertical acceleration and it is zero in any steady trim and in any
+    //   steady turn, whatever the bank, the face's slope or the apparent gravity - which is where the model's heave
+    //   states are zero. A pressure sense that did not adapt would read a banked turn's own load as a sinking board.
+    // - The board's nose-up pitch rate, about the heading's forward crossed with the world's up. Absolute, not
+    //   relative to the water, because that is what the canals sense; the water's slope turns far slower than the
+    //   board's own mode, measured in the game at about 1 to 1.5 Hz (`boardmode.probe.ts`).
+    // Both go into the same sense line as the other seven, so both arrive BALANCE_DELAY late, as a rider's do.
+    const felt = (this.captureLoad - 1) * WATER.gravity;
+    if (!this.loadReady) {
+      // The soles adapt from what they first feel, not from nothing. Without this the first frame of a placed start
+      // hands the filter a −9.8 m/s² step (`captureLoad` is zero until the contact ledger has run once), the filter
+      // reads it as the board dropping away, and the rider is down in 0.22 s. Measured: it was.
+      this.loadSlow = felt;
+      this.loadReady = true;
+    } else {
+      this.loadSlow += (felt - this.loadSlow) * (1 - Math.exp(-h / LOAD_ADAPT));
+    }
+    // Unloaded feet sense no change in load, which is the same condition the capture point is read under (CAPTURE_LOAD).
+    this.loadSense = this.captureLoad > 0 ? felt - this.loadSlow : 0;
+    this.pitchRateSense = this.boardSpin.dot(this.scratch.set(-1, 0, 0).applyQuaternion(this.heading));
+    // Step 3.3k: the bound on the commanded rest, read once a frame so the predictor's own `limits.ankle` — which is
+    // also what its forward model is fed — and the clamp below cannot disagree. ANKLE_REST_RANGE unless `ankleRange`.
+    const range = this.restRange();
+    this.ankleRoom = range;
+    const tb = this.twistBody;
+    // Step 3.3p (`waterHeel: 'tilt'`): the face's own tilt under the board — the angle the measured `rail` is `roll`
+    // less, which is `atan2(waterUp · side, waterUp.y)`, read here because the block below shadows `rail` with the
+    // SCHEDULE's rail (the lean asked for). The model's `φ` is `−roll` [R, `sense[5] = −(bank.angle − roll)` below],
+    // so the heel the water's own terms must be read at is `−tilt` in the model's sign. Zero with the switch off,
+    // and then nothing in the controller reads it (`Design.gammaD` is undefined).
+    const faceTilt = this.waterHeel ? -(roll - rail) : 0;
+    if (this.controlDue <= 1e-9) {
+      this.controlDue += CONTROL_STEP;
+      const turn = this.up.dot(this.boardSpin);
+      const upper = tb.coupled ? tb.upper : turn + tb.rate;
+      const sense = this.senseScratch;
+      sense[0] = -this.bank.angle;
+      // The bank's rate as the canals sense it: the body's own angular rate (its rate on the board and the board's roll rate).
+      sense[1] = this.rateSense === 'difference' ? -this.bank.rate : -(relative + rollRate);
+      sense[2] = -upper;
+      sense[3] = -tb.angle;
+      sense[4] = -(upper - turn);
+      sense[5] = -(this.bank.angle - roll);
+      sense[6] = -relative;
+      // Step 3.2p: the load and the board's pitch rate. Both are + up and + nose up in the model's own sense, which is
+      // a physical direction and not an axis, so neither turns over as the angles across do.
+      sense[7] = this.loadSense;
+      sense[8] = this.pitchRateSense;
+      const forward = this.localScratch.set(0, 0, 1).applyQuaternion(this.heading);
+      const speed = this.boardVelocity.dot(forward) - this.waterFlow.x * forward.x - this.waterFlow.z * forward.z;
+      const grip = FOOT_FRICTION * Math.max(0, this.legLoad) * TWIST_GRIP_SPAN;
+      // The ankle's command is let past the feet's reach (the hip takes the rest); the predictor is fed what the ankle sent.
+      // Step 3.2f: the schedule's rail is the rail that holds the lean asked for. The turn's pull at a rail is
+      // `railPull` of what that rail's own lean would balance (0.76-0.88 measured), so the rail is a little more than
+      // the lean: tan(lean) = pull × tan(rail). Two passes, since the pull itself goes with the rail.
+      let rail = Math.abs(this.leanAsked);
+      for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
+      rail = Math.min(this.railCap, rail);
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt);
+      this.schedRail = rail;
+      this.schedTilt = faceTilt;
+      this.heldAnkleRaw = -this.predictor.raw[0];
+      this.heldTwist = -u[1];
+    }
+    this.controlDue -= h;
+    const wanted = this.heldAnkleRaw - this.anklePlumb * roll;
+    const room = range * Math.max(0, 1 - Math.max(0, Math.abs(rail) - RAIL_BITE) / RAIL_EASE);
+    this.ankleBite = room;
+    const lean = rail > 0 ? Math.max(-room, Math.min(range, wanted)) : Math.max(-range, Math.min(room, wanted));
+    const leanSide = Math.sign(this.bankReference);
+    this.railAhead = leanSide * rail + Math.max(0, leanSide * rollRate) * PULL_LOOKAHEAD;
+    // The hip across: what the command asks past HIP_SHARE of the feet's reach, within the stance's range.
+    const ankleShare = Math.max(-HIP_SHARE * ANKLE_REST_RANGE, Math.min(HIP_SHARE * ANKLE_REST_RANGE, lean));
+    this.humanSwingStep(h, -SWING_SERIES * (wanted - ankleShare) + this.hipDrive(human), stanceRoom(this.stanceDepth, this.stanceReach).hipRange, human.swingInertia);
+    this.ankleRest = human.lagRest(h, lean, this.ankleRestRate);
+    this.setAnkle(HUMAN_ANKLE_STIFFNESS * (this.bank.angle - roll - this.ankleRest) + (HUMAN_ANKLE_STIFFNESS * h + HUMAN_ANKLE_DAMPING) * relative, this.bank.angle - roll);
+    tb.active += (this.heldTwist - tb.active) * (1 - Math.exp(-h / MOTOR_LAG));
+  }
+
+  /** The new surfer's leg depth below the riding stance, m, as the posture holds it (the yaw inertia's split and the balance's schedule). */
+  private get yawDepth(): number {
+    return Math.max(0, -this.leg.rest);
+  }
+
+  /**
+   * The new surfer's leg depth below the riding stance the player holds (the crouch, Compress, Snap or tuck asked), m:
+   * the stance room's key (`stanceRoom`). The balance's own knee drop is not counted: it spends the stance's travel.
+   */
+  private get stanceDepth(): number {
+    return Math.max(0, this.heldDepth);
+  }
+
+  /**
+   * The new surfer's hip across (step 3.2): the swing rotor of `inertia` (the arms in or out), driven by `demand`, N·m
+   * (the hip's delayed share), through the motor lag, within ±`range`; pushed only while it can still be braked inside
+   * its range (a rotor holds no steady torque), and brought back upright once nothing is asked. As `swingStep`, its
+   * reaction turns the body on its feet and the board feels only the push at the feet.
+   */
+  private humanSwingStep(h: number, demand: number, range: number, inertia: number): void {
+    this.swingLagged += (demand - this.swingLagged) * (1 - Math.exp(-h / MOTOR_LAG));
+    let burst = Math.max(-SWING_TORQUE, Math.min(SWING_TORQUE, this.swingLagged));
+    // The upper body turns the other way to the body (its acceleration is −burst / inertia).
+    const outward = -burst * (this.swing.angle !== 0 ? Math.sign(this.swing.angle) : -Math.sign(burst)) > 0;
+    const braking = (this.swing.rate * Math.abs(this.swing.rate) * inertia) / (2 * SWING_TORQUE);
+    if (outward && Math.abs(this.swing.angle + braking) >= range) burst = 0;
+    const back = Math.max(0, 1 - Math.abs(this.swingLagged) / (0.1 * SWING_TORQUE));
+    this.swingTorque = burst + inertia * SWING_FREQUENCY * (back * SWING_FREQUENCY * this.swing.angle + 2 * this.swing.rate);
+    this.swing.rate -= (h * this.swingTorque) / inertia;
+    this.swing.angle += h * this.swing.rate;
+    if (Math.abs(this.swing.angle) > range) {
+      this.swing.angle = Math.sign(this.swing.angle) * range;
+      if (this.swing.rate * this.swing.angle > 0) this.swing.rate = 0;
+    }
+  }
+
+  /**
+   * snap-upturn: the turn asked for takes the board up the face, toward its fall line reversed (the steer's way, or
+   * unsteered Snap's latched side). On a face shallower than SNAP_FACE, false.
+   */
+  private turningUp(): boolean {
+    const side = Math.abs(this.steer) > STEER_DEADBAND ? Math.sign(this.steer) : this.snapHeld ? this.snapSide : 0;
+    const slope = Math.hypot(this.waterUp.x, this.waterUp.z);
+    if (side === 0 || !(slope > SNAP_FACE)) return false;
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
+    // Up the face is −waterUp's level part; the board's left (+) turns from +z toward +x, as in snapAim.
+    const across = forward.x * -this.waterUp.z - forward.z * -this.waterUp.x;
+    return (across < 0 ? 1 : -1) === side;
   }
 
   /**
@@ -1822,9 +4018,21 @@ export class AttachedRider {
    * the hips' torque no more than they give and the feet's grip holds.
    */
   private twistStep(h: number): void {
-    const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE : 0;
+    const snap = this.snapping;
+    if (!(snap > 0)) this.snapHeld = false;
+    const asked = this.phase === 'standing' && !Number.isNaN(this.rotate) ? Math.max(-1, Math.min(1, this.rotate)) * TWIST_RANGE
+      : snap > 0 ? snap * this.snapAim() : 0;
+    // The new surfer standing free (step 3.2e): the twist is a body degree of freedom balanced by prediction; what is
+    // asked for is its reference (`predictiveBank`), and the old rotor rests.
+    if (this.freeBody) {
+      this.twistAsked = Math.max(-TWIST_BODY_RANGE, Math.min(TWIST_BODY_RANGE, asked));
+      this.twistTorque = 0;
+      return;
+    }
     const most = Math.min(TWIST_TORQUE, FOOT_FRICTION * this.legLoad * TWIST_GRIP_RADIUS);
-    const wanted = TWIST_INERTIA * (TWIST_FREQUENCY * TWIST_FREQUENCY * (asked - this.twist.angle) - 2 * TWIST_FREQUENCY * this.twist.rate);
+    // Snap held, the shoulders turn as fast as the hips and the feet's grip take them (SNAP_TWIST_FREQUENCY).
+    const frequency = this.quick && snap > 0 ? TWIST_FREQUENCY + snap * (SNAP_TWIST_FREQUENCY - TWIST_FREQUENCY) : TWIST_FREQUENCY;
+    const wanted = TWIST_INERTIA * (frequency * frequency * (asked - this.twist.angle) - 2 * frequency * this.twist.rate);
     this.twistTorque = Math.max(-most, Math.min(most, wanted));
     this.twist.rate += (h * this.twistTorque) / TWIST_INERTIA;
     this.twist.angle += h * this.twist.rate;
@@ -1835,6 +4043,36 @@ export class AttachedRider {
   }
 
   /**
+   * Snap's aim, rad: the shoulders wound toward where the turn ends. Taken with Snap (and again when the steer changes
+   * side), the turn goes the steer's way (or, unsteered, the way to the face's fall line reversed) and ends on the fall
+   * line reversed: straight up the face from below, straight down it from above (the owner's two moves, the video's).
+   * The shoulders lead the board by as much as the spine turns (TWIST_RANGE) and unwind as the board comes round under
+   * them, the hips taking it round through the feet. On flat water the turn has no end: they lead by the whole range.
+   */
+  private snapAim(): number {
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
+    const steer = Math.abs(this.steer) > STEER_DEADBAND ? Math.sign(this.steer) : 0;
+    if (!this.snapHeld || (steer !== 0 && steer !== this.snapSide)) {
+      const downhill = this.scratch2.set(this.waterUp.x, 0, this.waterUp.z);
+      const slope = downhill.length();
+      if (!this.snapHeld) this.snapTarget.set(0, 0, 0);
+      if (slope > SNAP_FACE && (!this.snapHeld || this.snapTarget.lengthSq() === 0)) {
+        downhill.divideScalar(slope);
+        // The fall line the other way to the board's.
+        this.snapTarget.copy(downhill).multiplyScalar(forward.dot(downhill) > 0 ? -1 : 1);
+      }
+      const across = forward.x * this.snapTarget.z - forward.z * this.snapTarget.x;
+      this.snapSide = steer !== 0 ? steer : this.snapTarget.lengthSq() > 0 ? (across < 0 ? 1 : -1) : 0;
+      this.snapHeld = true;
+    }
+    if (this.snapTarget.lengthSq() === 0) return this.snapSide * TWIST_RANGE;
+    // How far the target lies round the turn's way, 0 to 2π (the board's left, +, turns from +z toward +x).
+    const toward = Math.atan2(this.snapTarget.x, this.snapTarget.z) - Math.atan2(forward.x, forward.z);
+    const round = ((this.snapSide * toward) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    return this.snapSide * Math.min(TWIST_RANGE, round > 1.5 * Math.PI ? 0 : round);
+  }
+
+  /**
    * COMPRESS_PULL: compressing into a turn, planing, the body is pulled in across the board's path by the lean asked
    * for; CARVE_CARRY pushes it along the path; LEAN_OUT_PULL pulls a body still leaning the other way toward the new rail.
    */
@@ -1842,9 +4080,11 @@ export class AttachedRider {
     this.assistForce.set(0, 0, 0);
     this.carryForce.set(0, 0, 0);
     this.leanOutForce.set(0, 0, 0);
+    // The new surfer (ruling 29, item 3): none of the three; they act on the body with no reaction on the board.
+    if (this.newRider) return;
     // Compress keeps its pumping-stance activation; a deeper manual tuck does not disable a pressed turn control.
-    const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
-    const compress = Math.max(0, Math.min(1, this.compress));
+    const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouchAsked));
+    const compress = Math.max(0, Math.min(1, this.compressAsked));
     if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
     // The board's path through the water: the carve's and the drag's (on moving water the path over the ground is off it).
     const along = this.scratch.set(board.velocity.x - this.waterFlow.x, 0, board.velocity.z - this.waterFlow.z);
@@ -1857,23 +4097,241 @@ export class AttachedRider {
     const speedFade = Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
     const bite = Math.max(0, Math.min(1, (RAIL_BITE - this.railAhead) / RAIL_EASE));
     const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade * bite;
-    this.assistForce.crossVectors(Y, along)
-      .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
-        * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));
+    // `legDrive: 'turn'` (step 3.2t): the legs make this lead-in as a pair instead (`legDriveStep`), never both.
+    // `compressPull: 'off'` (step 3.2u): nothing makes it, which is the ablation the hull's grip is scored against.
+    if (!this.legTurn && !this.compressPullOff) {
+      this.assistForce.crossVectors(Y, along)
+        .multiplyScalar(Math.sign(this.bankReference) * fade * compress * this.mass * WATER.gravity
+          * Math.min(COMPRESS_PULL * Math.tan(lean), Math.max(0, TURN_PULL_LIMIT - Math.tan(lean))));
+    }
     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
     this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
     // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.
+    // With the leg drive the legs make this push (`legDriveStep`), never both.
     const side = Math.sign(this.steer);
-    if (-this.bank.angle * side > UPRIGHT_BANK) {
+    // The new surfer (ruling 29): none, it has no reaction on the board (the "no hidden motors" rule).
+    if (!this.legDrive && !this.newRider && -this.bank.angle * side > UPRIGHT_BANK) {
       this.leanOutForce.crossVectors(Y, along)
         .multiplyScalar(side * Math.min(1, Math.abs(this.steer)) * speedFade * compress * LEAN_OUT_PULL * this.mass * WATER.gravity);
     }
+  }
+
+  /** The leg drive (LEG_SIDE_STRENGTH's push at a rail change): the legs' push on the body this substep, within their strength, the back foot's grip and their reach. */
+  private legDriveStep(h: number, board: BoardBody): void {
+    this.driveForce.set(0, 0, 0);
+    if (!this.drives) return;
+    const side = Math.sign(this.steer);
+    const steering = this.upright && this.banking && this.planing && Math.abs(this.steer) > STEER_DEADBAND;
+    // The rail change: the body still leans the old way, so the legs bring it over to the new rail.
+    const righting = steering && -this.bank.angle * side > UPRIGHT_BANK;
+    /**
+     * The compressed turn's lead-in (`legTurn`, `legDrive: 'turn'`): the body is **behind the lean it is being
+     * asked for** and compressing, so the legs push it the rest of the way in while the board takes the opposite.
+     * Compress's own gate, as COMPRESS_PULL has it (the stance deeper than the crouch), and the lean's own side rather
+     * than the steer's, because it is the lean that is being led — they agree except in the moment the stick crosses,
+     * where the rail change above already owns the push.
+     */
+    const crouchShare = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouchAsked));
+    const compressNow = Math.max(0, Math.min(1, this.compressAsked));
+    const leanSide = Math.sign(this.bankReference);
+    const behind = leanSide * (this.bankReference - this.bank.angle);
+    const leading = this.legTurn && steering && compressNow > crouchShare && leanSide !== 0
+      && Math.abs(this.bankReference) > UPRIGHT_BANK && behind > UPRIGHT_BANK;
+    const open = righting || leading;
+    // The push's side: the rail change's is the steer's, the lead-in's is the lean's; they are the same in a turn.
+    const pushSide = righting ? side : leanSide;
+    if (!open || pushSide !== this.driveSide) {
+      this.driveUsed = 0;
+      this.driveSide = open ? pushSide : 0;
+    }
+    if (!open) return;
+    const along = this.scratch.set(board.velocity.x - this.waterFlow.x, 0, board.velocity.z - this.waterFlow.z);
+    if (along.lengthSq() < 1e-6) return;
+    along.normalize();
+    const direction = this.driveDirection.crossVectors(Y, along).multiplyScalar(pushSide);
+    const stance = this.parts[1] - this.base.y;
+    const pelvis = stance + this.scratch2.subVectors(this.position, this.target).dot(this.up);
+    const straight = stance + LEG_EXTENSION;
+    this.driveReach = Math.sqrt(Math.max(0, straight * straight - pelvis * pelvis));
+    const foot = board.toWorld(this.localScratch.set(0, deckHeight(this.shape, this.feet.rear), this.feet.rear), this.driveFoot).sub(board.centerOfMass);
+    const slide = cross(board.angularVelocity, foot, this.scratch2).add(board.velocity).sub(this.velocity);
+    this.driveUsed = Math.max(0, this.driveUsed - h * slide.dot(direction));
+    if (this.driveUsed >= this.driveReach) return;
+    const share = Number.isFinite(this.contact.frontShare) ? this.contact.frontShare : 0.5;
+    const strength = LEG_SIDE_STRENGTH * this.mass * WATER.gravity * Math.min(1, Math.abs(this.steer));
+    const grip = FOOT_FRICTION * this.legLoad * (1 - share);
+    /**
+     * The same three limb bounds as the rail change's righting push, and **nothing else**: two tighter bounds were
+     * built and measured this round and neither helped, so neither shipped (Part 18 §3). Easing the push off in
+     * proportion to how far behind its lean the body still is is inert, because early in a turn the body is always more
+     * than the feet's own reach behind it. And capping it at COMPRESS_PULL's own magnitude — so the *only* difference
+     * from the unpaired pull is the reaction on the board — still falls at full stick in **0.65–0.73 s** and still
+     * scores **0 of 6**. The strength is not what COMPRESS_PULL's 6 of 6 rests on; the missing reaction is.
+     */
+    this.driveForce.copy(direction).multiplyScalar(Math.min(strength, grip));
+  }
+
+  /**
+   * The leg drive's state the latest substep: the push on the body, N (world; the board takes the opposite at `foot`,
+   * the back foot from the board's centre of mass, world), how far the feet have gone from under the body since the
+   * push began and the legs' sideways reach at this pelvis height, m. For the rig: the pelvis `used` off the feet's line.
+   */
+  get legPush(): { force: Readonly<Vector3>; foot: Readonly<Vector3>; used: number; reach: number } {
+    return { force: this.driveForce, foot: this.driveFoot, used: this.driveUsed, reach: this.driveReach };
   }
 
   private resetTwist(): void {
     this.twist.angle = 0;
     this.twist.rate = 0;
     this.twistTorque = 0;
+    this.resetTwistBody();
+    this.hip.angle = 0;
+    this.hip.rate = 0;
+    this.trunk.angle = 0;
+    this.trunk.rate = 0;
+    this.hipTorque = 0;
+    this.trunkTorque = 0;
+    this.limbForce.set(0, 0, 0);
+    this.limbTorque.set(0, 0, 0);
+    this.limbs.length = 0;
+  }
+  /** The new surfer's twist body (step 3.2e): back square with the board, at rest. */
+  private resetTwistBody(): void {
+    const tb = this.twistBody;
+    tb.angle = 0;
+    tb.rate = 0;
+    tb.upper = 0;
+    tb.active = 0;
+    tb.torque = 0;
+    tb.coupled = false;
+  }
+
+  /** The new surfer's balance by prediction (step 3.2e): nothing sensed, nothing sent, the clock to tick at once. */
+  private resetBalance(): void {
+    this.predictor.reset();
+    this.controlDue = 0;
+    this.heldAnkleRaw = 0;
+    this.heldTwist = 0;
+    // Step 3.2p: the soles start adapted to one body weight, which is what a trimmed board gives them, so a steady
+    // start reads zero from its first frame and there is no transient of this sense's own making.
+    this.loadSlow = 0;
+    this.loadReady = false;
+    this.loadSense = 0;
+    this.pitchRateSense = 0;
+    this.twistAsked = 0;
+    this.leanAsked = 0;
+    this.resetTwistBody();
+  }
+
+
+  /** Agile, a launch running (`stampStep`'s clock): 1 while the tail is thrown, 0 in the recovery and otherwise. */
+  private get launching(): number {
+    if (!this.agile || !(this.stampTime >= 0)) return 0;
+    return this.stampTime <= STAMP_TIME * (0.5 + 0.5 * this.stampDepth) ? this.stampDepth : 0;
+  }
+
+  /**
+   * The agile legs (HIP_INERTIA) before the board's solve: the trunk's pitch and the hips' turn toward where the launch
+   * or its recovery asks, each by a torque the legs can give, and the feet's forces on the board that make them (the
+   * limbs' ledger). The trunk first: its split sets each foot's load, which bounds the feet's couple.
+   */
+  private legsStep(h: number, board: BoardBody): void {
+    const launch = this.launching;
+    const span = this.feet.front - this.feet.rear;
+    const load = this.legLoad;
+    const share = this.lineShare;
+    // The trunk back for the launch: the front leg presses and the back leg lightens, neither past nothing.
+    const trunkAsked = -launch * TRUNK_RANGE;
+    let wanted = TRUNK_INERTIA * (AGILE_FREQUENCY * AGILE_FREQUENCY * (trunkAsked - this.trunk.angle) - 2 * AGILE_FREQUENCY * this.trunk.rate);
+    this.trunkTorque = Math.max(-Math.min(TRUNK_TORQUE, (1 - share) * span * load), Math.min(Math.min(TRUNK_TORQUE, share * span * load), wanted));
+    this.trunk.rate += (h * this.trunkTorque) / TRUNK_INERTIA;
+    this.trunk.angle += h * this.trunk.rate;
+    if (Math.abs(this.trunk.angle) > TRUNK_RANGE) {
+      this.trunk.angle = Math.sign(this.trunk.angle) * TRUNK_RANGE;
+      if (this.trunk.rate * this.trunk.angle > 0) this.trunk.rate = 0;
+    }
+    // The feet's loads with the split, and the couple the weaker foot's push across the deck allows.
+    const front = load * Math.min(1, Math.max(0, share - this.trunkTorque / Math.max(1e-6, span * load)));
+    const strength = LEG_SIDE_STRENGTH * this.mass * WATER.gravity;
+    const most = span * Math.min(strength, FOOT_FRICTION * front, FOOT_FRICTION * (load - front));
+    // The hips against the turn for the launch (the board comes round under them), square again after.
+    const hipAsked = -launch * this.snapSide * HIP_RANGE;
+    wanted = HIP_INERTIA * (AGILE_FREQUENCY * AGILE_FREQUENCY * (hipAsked - this.hip.angle) - 2 * AGILE_FREQUENCY * this.hip.rate);
+    this.hipTorque = Math.max(-most, Math.min(most, wanted));
+    this.hip.rate += (h * this.hipTorque) / HIP_INERTIA;
+    this.hip.angle += h * this.hip.rate;
+    if (Math.abs(this.hip.angle) > HIP_RANGE) {
+      this.hip.angle = Math.sign(this.hip.angle) * HIP_RANGE;
+      if (this.hip.rate * this.hip.angle > 0) this.hip.rate = 0;
+    }
+    // The ledger: each foot's push on the board (the hips' couple across the body, the trunk's along its up),
+    // equal and opposite at the two feet, so their sum is no force and their moment is the torques' reaction.
+    // The axes: across the body (its up crossed with the board's length), and the body's up square to the board's length.
+    const along = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
+    const side = this.trunkAxis.crossVectors(this.up, along).normalize();
+    const up = this.hipAxis.crossVectors(along, side);
+    this.limbForce.set(0, 0, 0);
+    this.limbTorque.set(0, 0, 0);
+    this.limbs.length = 0;
+    for (let foot = 0; foot < 2; foot += 1) {
+      const sign = foot === 0 ? 1 : -1;
+      const entry = this.footEntries[foot];
+      entry.point.set(0, 0, foot === 0 ? this.feet.front : this.feet.rear);
+      // About the up: the front foot pushes the board across, −torque / span; about the side axis: it presses down, torque / span.
+      entry.force.copy(side).multiplyScalar((-sign * this.hipTorque) / span).addScaledVector(up, (sign * this.trunkTorque) / span);
+      this.limbs.push(entry);
+      this.limbForce.add(entry.force);
+    }
+    this.limbTorque.copy(up).multiplyScalar(-this.hipTorque).addScaledVector(side, -this.trunkTorque);
+  }
+
+  /**
+   * The carve's flex asked of the legs, of CROUCH_DEPTH (CARVE_FLEX): the load along the leg over the rider's weight, of
+   * what a full stick's lean carries, and no more than the stick's share.
+   */
+  private carveFlex(): number {
+    const stick = Math.abs(this.steer) > STEER_DEADBAND ? Math.abs(this.steer) : 0;
+    const depth = CARVE_FLEX * CROUCH_DEPTH;
+    // The stick let go mid-turn: the legs sink no further, and stand up as the board rolls back flat under them.
+    if (stick === 0) {
+      if (!this.fromFlex) return 0;
+      return CARVE_FLEX * Math.max(0, Math.min(1, -this.leg.rest / depth, Math.abs(this.bank.angle) / RAIL_RANGE));
+    }
+    const over = this.legLoad / (this.mass * WATER.gravity) - 1;
+    return CARVE_FLEX * Math.max(0, Math.min(1, stick, over / (1 / Math.cos(RAIL_RANGE) - 1)));
+  }
+
+  /**
+   * Snap's load on the legs now, of CROUCH_DEPTH, with `snapLegs: 'drive'` (SNAP_DRIVE_DEPTH): Snap's own depth until
+   * the board turns the stick's way, then let out toward the drive's depth by how far the board has come round from
+   * the furthest it went the other way (of SNAP_DRIVE_TURN, never back), as far as the stick is pushed.
+   */
+  private snapLoad(snap: number): number {
+    if (!(snap > 0)) {
+      this.snapDriveSide = 0;
+      this.snapDriven = 0;
+      return this.snapDepth;
+    }
+    const forward = this.scratch.set(0, 0, 1).applyQuaternion(this.heading);
+    const yaw = Math.atan2(forward.x, forward.z);
+    const stick = Math.abs(this.steer) > STEER_DEADBAND ? Math.min(1, Math.abs(this.steer)) : 0;
+    const side = stick > 0 ? Math.sign(this.steer) : this.snapDriveSide;
+    if (side !== this.snapDriveSide) {
+      // Snap taken with the stick, or the stick thrown the other way under it: a new turn, loaded again.
+      this.snapDriveSide = side;
+      this.snapDriveTurn = 0;
+      this.snapDriveLow = 0;
+      this.snapDriven = 0;
+    } else if (side !== 0) {
+      // The board's left (+) turns from +z toward +x, as in `snapAim`.
+      const by = yaw - this.snapDriveYaw;
+      this.snapDriveTurn += side * Math.atan2(Math.sin(by), Math.cos(by));
+      this.snapDriveLow = Math.min(this.snapDriveLow, this.snapDriveTurn);
+      this.snapDriven = Math.max(this.snapDriven, Math.min(1, (this.snapDriveTurn - this.snapDriveLow) / SNAP_DRIVE_TURN));
+    }
+    this.snapDriveYaw = yaw;
+    const drive = Math.min(this.snapDepth, SNAP_DRIVE_DEPTH);
+    return this.snapDepth - stick * this.snapDriven * (this.snapDepth - drive);
   }
 
   /** Standing: the leg's state and load before the board's solve. */
@@ -1887,6 +4345,9 @@ export class AttachedRider {
       const under = water.sampleAt(board.position.x, board.position.y, board.position.z, this.sample);
       const floating = under.wet && !under.outsideDomain && board.lowestPoint() < under.surfaceY;
       this.specificForce.set(0, floating ? WATER.gravity : 0, 0);
+      // The new surfer: as a board sliding on its face feels it, along the face's normal (the pitch's reference).
+      if (floating && this.freeBody) this.specificForce.copy(this.waterUp).multiplyScalar(WATER.gravity * this.waterUp.y);
+      if (this.newRider) this.bodyPush.copy(this.specificForce).multiplyScalar(this.mass);
     }
     const blend = 1 - Math.exp(-h / SPECIFIC_FORCE_TIME);
     this.specificForce.x += ((stance.x - this.stanceVelocity.x) / h - this.specificForce.x) * blend;
@@ -1898,12 +4359,40 @@ export class AttachedRider {
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
     // Under a tube's curl full manual crouch folds into the deep tuck; anywhere else it is the pumping crouch.
-    const crouch = this.covered ? manualCrouchShare(this.crouch, this.compress) : CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
-    const compress = Math.max(0, Math.min(1, this.compress));
-    const asked = -Math.max(crouch, compress) * CROUCH_DEPTH;
+    const crouchAsked = this.crouchAsked;
+    // Step 3.5b's deepen button (`deepen: 'on'`): the tuck's depth is reachable anywhere, and Compress does not fade
+    // it, so the crouch key deepens whatever stance is held. Off, the tuck is a tube's clearance only, as it ships.
+    const crouch = this.deepens ? manualCrouchShare(crouchAsked, 0)
+      : this.covered ? manualCrouchShare(crouchAsked, this.compressAsked) : CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked));
+    const compress = Math.max(0, Math.min(1, this.compressAsked));
+    const snap = this.snapping;
+    // Snap's driving legs (`snapLegs: 'drive'`): its load let out as the board comes round (SNAP_DRIVE_DEPTH).
+    const snapLoad = this.snapDrives ? this.snapLoad(snap) : this.snapDepth;
+    const held = snap > 0 ? Math.max(crouch, compress, snap * snapLoad) : Math.max(crouch, compress);
+    // The carve's flex (CARVE_FLEX): steering, the legs yield to the turn's load, as far as the stick asks at most.
+    const flex = this.carveFlexes ? this.carveFlex() : 0;
+    const flexing = flex > held;
+    if (flexing) this.fromFlex = true;
+    else if (held > 0) this.fromFlex = false;
+    let asked = -(flexing ? flex : held) * CROUCH_DEPTH;
+    // The new surfer standing (step 3.2): the stance held keys the balance's room; the balance's own knee drop
+    // (`HumanBalance.strategies`) lowers the leg's rest within that stance's travel, at the crouch's pace.
+    if (this.freeBody) {
+      this.heldDepth = -asked;
+      const room = stanceRoom(this.heldDepth, this.stanceReach);
+      // The hip near its range: across (the swing) or in pitch (`StandingBody`'s hip), whichever is nearer.
+      this.human.strategies(h, Math.max(Math.abs(this.swing.angle), Math.abs(this.standingBody.hip.angle)), room);
+      // `kneeRoom: 'achieved'` (step 3.3f, opt-in): the knees' travel left is read at the depth the leg has actually
+      // reached, not at the one the player commands, so the balance's own drop spends the travel it is using and the
+      // drop self-limits at about 0.17 m instead of reaching CROUCH_DEPTH itself. The hip's range and the arms above
+      // are deliberately left on the commanded stance, so the switch moves one quantity. See `kneeRoom`'s note.
+      const travel = this.kneeRoomAchieved
+        ? stanceRoom(Math.max(this.heldDepth, this.yawDepth), this.stanceReach).kneeTravel : room.kneeTravel;
+      asked = Math.min(asked, -(this.heldDepth + this.human.knees * travel));
+    }
     // The projection rises tall (EXTENSION_TALL): Compress let go while planing, it rises to the riding stance as
     // before, then on over it, and settles back once there. The pumping crouch let go stands no taller than before.
-    if (compress > 0) this.fromCompress = true;
+    if (compress > 0 || snap > 0) this.fromCompress = true;
     else if (asked < 0) this.fromCompress = false;
     if (asked < 0 || !this.fromCompress || this.phase !== 'standing' || !this.planing) {
       this.tall = 0;
@@ -1919,10 +4408,14 @@ export class AttachedRider {
     if (this.tallReached) this.tall = Math.max(0, this.tall - h / EXTENSION_SETTLE);
     const rest = asked + (this.tallFrom ? EXTENSION_TALL * this.tall : 0);
     const down = rest < this.leg.rest;
-    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
+    // Snap loads as Compress does: down at least as fast as the load, the legs only pushing.
+    // The flex yields to the load as Compress does.
+    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, crouchAsked)) || snap * this.snapDepth > crouch || flexing;
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
-    const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
+    // Letting Compress go, the legs rise no faster than the stance's spring can catch the body (`projectionCatch`).
+    const caught = (this.catches && !down && this.fromCompress) || (!down && this.fromFlex) ? projectionCatch(this.mass, this.legStiffness) : Infinity;
+    const speedLimit = down ? CROUCH_SPEED : Math.min(MAX_LEG_SPEED, caught);
     // While the feet brake the body's bank near their edges, the crouch's legs hold rather than drop (CROUCH_HOLD).
     const hold = this.banking && !compressing
       ? Math.max(0, Math.min(1, (Math.abs(this.ankleRest) / ANKLE_REST_RANGE - CROUCH_HOLD) / (1 - CROUCH_HOLD))) : 0;
@@ -1938,14 +4431,22 @@ export class AttachedRider {
     // Feet on a deck only push: compressing, the legs fold no faster than the body falls onto them, so a board
     // dropping or rolling away from under the rider unloads the feet rather than being pulled up by them.
     const slack = this.leg.extension - this.legLoad / this.legStiffness;
-    if (compressing && this.leg.rest < slack) {
+    // The new surfer's balance lowers the knees too (`human.knees`, the capture point off the feet or the hip near its
+    // range), and the rule is the same for that drop: a foot on a deck has nothing to pull against, so the leg cannot
+    // drag the body down onto a board that is falling away from under it. Without this the balance's knee drop in a
+    // chop's trough left the rest 0.18 m under the body and the spring pulled it down with 3.6 kN — 5 body weights,
+    // on a rider the water was carrying nothing of — and the body went 0.26 m off its posture and was separated by
+    // RECOVERABLE_ERROR. (Step 3.2h; the trace is `3.2/README.md` Part 8 §3.)
+    if ((compressing || (this.freeBody && this.human.knees > 0)) && this.leg.rest < slack) {
       this.leg.rest = Math.min(0, slack);
       this.restRate = Math.max(this.restRate, this.leg.rate);
     }
     if ((this.leg.rest === tallest && this.restRate > 0) || this.leg.rest === -deepest) this.restRate = 0;
     this.extending = this.restRate > 0 && this.leg.rest < rest;
     // The deeper tuck keeps the current bent-leg stiffness rather than softening below it; standing tall, the riding stance's.
-    this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * Math.min(CROUCH_DEPTH, Math.max(0, -this.leg.rest))) / CROUCH_DEPTH);
+    // The new surfer: the softer knees (KNEE_STIFFNESS), their strength capped in `project` (`kneeStrength`).
+    this.legStiffness = this.freeBody ? KNEE_STIFFNESS
+      : LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * Math.min(CROUCH_DEPTH, Math.max(0, -this.leg.rest))) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
     this.leg.height = this.localCenter.y - this.base.y;
     // Where the centre of mass is along the leg, and how fast it moves along it relative to where it is carried.
@@ -1976,17 +4477,24 @@ export class AttachedRider {
       const radius = Math.cbrt((3 * this.partVolumes[i]) / (4 * Math.PI));
       // Lying on the board, the part of a body sphere inside the board is board, not wet body.
       const z = this.parts[i * 3 + 2];
-      const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2;
+      // Climbing on, a part beside the board (past its rail) is in the water, not over the deck (swim-back: its
+      // buoyancy cut there put the swimmer's weight on the near rail and rolled the board over).
+      const onDeck = !this.upright && Math.abs(z) < this.shape.length / 2 && (!this.climbing || Math.abs(this.parts[i * 3]) <= this.halfWidth(z));
       const deckY = onDeck ? board.toWorld(this.localScratch.set(this.parts[i * 3], deckHeight(this.shape, z), z), this.scratch2).y : -Infinity;
       const inWake = !this.upright && z < -this.shape.length / 2;
+      this.hollowBoard = undefined;
+      if (this.upright && board.hollowOpen) this.overHollow(board);
       this.applyWater(i, water, radius, this.partVolumes[i], Math.PI * radius * radius * PART_DRAG, h, inWake ? shelter * WAKE_SHELTER : shelter, deckY);
+      this.hollowBoard = undefined;
     }
     this.stroking = false;
     this.handLoad[0] = 0;
     this.handLoad[1] = 0;
     this.handYaw = 0;
     if (this.upright && this.handSide !== 0) this.standingHand(h, board, water);
-    if (this.phase !== 'prone' || (!this.paddle && !this.sweeping)) {
+    // The player's sprint comes in over SPRINT_PADDLE_TIME while paddling lying down, and goes as it stops.
+    this.paddleSprintShare += ((this.sprintPaddling ? 1 : 0) - this.paddleSprintShare) * Math.min(1, h / SPRINT_PADDLE_TIME);
+    if (this.phase !== 'prone' || this.climbing || (!this.paddle && !this.sweeping)) {
       this.line = undefined;
       this.hold = 0;
       return;
@@ -1996,12 +4504,17 @@ export class AttachedRider {
     for (let side = 0; side < 2; side += 1) {
       const effort = this.strokeEffort(side);
       if (!(effort > 0)) continue;
-      if (this.armPhase(side) >= PULL_SHARE) continue;
+      if (this.armPhase(side) >= this.pullShare) continue;
       // Pull: the hand sweeps from reach to hip beside the rail, fastest mid-stroke.
       const along = this.handLocal(side, this.localScratch);
       board.toWorld(this.localScratch, this.partWorld);
       board.velocityAt(this.partWorld, this.partVelocity).add(this.scratch.set(0, 0, along).applyQuaternion(board.orientation));
+      // Sprinting, the arm deeper in the catch pushes broadside along the stroke (SPRINT_PADDLE_AREA).
+      this.bladeArea = HAND_DRAG_AREA * (this.sprintArea - 1) * this.paddleSprintShare * effort;
+      this.pulling = this.feathers;
       this.applyWater(RIDER_PARTS.length + side, water, HAND_RADIUS, 0, HAND_DRAG_AREA * effort, h, 1);
+      this.pulling = false;
+      this.bladeArea = 0;
     }
   }
 
@@ -2023,13 +4536,23 @@ export class AttachedRider {
     this.partWorld.copy(hand);
     this.partVelocity.copy(cross(this.angularVelocity, this.localScratch.subVectors(hand, this.position), this.scratch)).add(this.velocity);
     const moment = this.waterMoment.y;
+    // The new surfer standing (step 3.2, ruling 29 item 4): the hand also leans on the water it skims (HAND_LIFT).
+    this.supporting = this.freeBody;
+    this.handSupport.set(0, 0, 0);
     this.applyWater(RIDER_PARTS.length + (this.handSide > 0 ? 0 : 1), water, HAND_RADIUS, 0, STANDING_HAND_DRAG, h, 1);
+    this.supporting = false;
     this.handYaw = this.waterMoment.y - moment;
   }
 
   /** The hand in the face bends the body toward it; the hand reaching in a turn follows the lean and bends none. */
   private get handBend(): number {
     return this.hand ? this.handSide : 0;
+  }
+
+  /** The side paddle's fast share, 0–1: steering without paddling, from SWEEP_FAST_FROM of the stick to full. */
+  private get sweepFast(): number {
+    if (this.paddle) return 0;
+    return Math.min(1, Math.max(0, (Math.abs(this.steer) - SWEEP_FAST_FROM) / (1 - SWEEP_FAST_FROM)));
   }
 
   /** Steering without paddling: one arm sweeps. */
@@ -2067,6 +4590,22 @@ export class AttachedRider {
     this.hold = Math.max(-1, Math.min(1, -(this.lineError + HOLD_RATE_TIME * this.lineRate) / HOLD_ANGLE));
   }
 
+  /**
+   * The hollow over a banked planing deck (deck-hollow, 2026-11-10; `HOLLOW`'s note; only on a board with
+   * `deckHollow: 'on'`): whether the standing rider's part at `partWorld` is over the deck, inside its planform (a part
+   * outboard of the rail is in the water), and if so the deck plane's height straight under it, for `applyWater`.
+   */
+  private overHollow(board: BoardBody): void {
+    const p = this.partWorld;
+    const local = board.toLocal(p, this.localScratch);
+    if (Math.abs(local.z) >= this.shape.length / 2 || Math.abs(local.x) > this.halfWidth(local.z)) return;
+    this.hollowZ = local.z;
+    const up = this.scratch.set(0, 1, 0).applyQuaternion(board.orientation);
+    const deck = board.toWorld(local.setY(deckHeight(this.shape, local.z)), this.scratch2);
+    this.hollowY = deck.y - ((p.x - deck.x) * up.x + (p.z - deck.z) * up.z) / up.y;
+    this.hollowBoard = board;
+  }
+
   /** Water on one body point at `partWorld` moving at `partVelocity`: buoyancy of `volume` and drag over `dragArea`. */
   private applyWater(slot: number, water: SurfWater, radius: number, volume: number, dragArea: number, h: number, shelter: number, deckY = -Infinity): void {
     const p = this.partWorld;
@@ -2076,7 +4615,13 @@ export class AttachedRider {
     // Wet between the surface and what lies under the part: the deck it rests on, or the curl's underside where the
     // part is in the curl's water (the swept barrel, the Padang Padang spec, Part B, PR 4).
     const bottom = Math.min(sample.surfaceY, Math.max(deckY, sample.waterFloorY ?? -Infinity));
-    const wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(bottom) ? submergedFraction(bottom - p.y, radius) : 0);
+    let wet = submergedFraction(sample.surfaceY - p.y, radius) - (Number.isFinite(bottom) ? submergedFraction(bottom - p.y, radius) : 0);
+    // Over a planing board's open hollow the part is dry from the surface line down to the deck plane, by the hollow's
+    // open share: no water there to float it or drag it (`overHollow`).
+    if (this.hollowBoard && wet > 0 && sample.surfaceY > this.hollowY) {
+      const share = this.hollowBoard.hollowWetAt(this.hollowZ, sample.surfaceY - this.hollowY, sample);
+      if (share < 1) wet = share * wet + (1 - share) * submergedFraction(this.hollowY - p.y, radius);
+    }
     // The curl's water is a falling jet, its pressure near the air's: it drags and does not float (the advisor, 2026-09-30).
     if (wet > 0) this.wetForce(slot, sample, wet, volume, dragArea, h, shelter, sample.waterFloorY === undefined);
     // A part in the tube's air whose sphere reaches the curl's underside feels the lip: its share between the underside
@@ -2103,7 +4648,9 @@ export class AttachedRider {
     const force = this.partForce.set(-support * sample.slopeX, support, -support * sample.slopeZ);
     this.buoyancy.add(force);
     const relative = this.flow.set(sample.flowX, sample.flowY, sample.flowZ).sub(this.partVelocity);
-    const drag = 0.5 * mixture * dragArea * wet * relative.length();
+    // A pulling hand the board outruns slices in edge-on (`FEATHER_DRAG`): the water meets it from in front.
+    const outrun = this.pulling && slot >= RIDER_PARTS.length && relative.dot(this.bodyAxis) < 0;
+    const drag = 0.5 * mixture * dragArea * wet * relative.length() * (outrun ? FEATHER_DRAG : 1);
     // Inside a roller lens (the Canyon roller lens, S3; the advisor's ruling of 2026-10-06, provisional): the shelter
     // models streamlined ambient flow along a paddling body, but a roller overruns a prone rider from behind and strikes
     // its feet, legs and tail as bluff bodies. Where the lens's own flow is (its share, S(ζ)·g), none of it is sheltered;
@@ -2111,8 +4658,21 @@ export class AttachedRider {
     const lens = sample.lensShare;
     const along = lens !== undefined && lens > 0 ? shelter + (1 - shelter) * lens : shelter;
     force.addScaledVector(relative, drag).addScaledVector(this.bodyAxis, -drag * (1 - along) * relative.dot(this.bodyAxis));
+    if (this.bladeArea > 0 && slot >= RIDER_PARTS.length && !outrun) {
+      // A plate's drag acts along its normal: the arm broadside to the stroke pushes only along the board.
+      const normal = relative.dot(this.bodyAxis);
+      force.addScaledVector(this.bodyAxis, 0.5 * mixture * this.bladeArea * wet * normal * Math.abs(normal));
+    }
+    if (this.supporting && slot >= RIDER_PARTS.length) {
+      // The flat hand skimming the face leans on it: a plate's lift, ½ ρ C_L A v², out of the water along its surface's
+      // normal, capped with the drag at HAND_FORCE_LIMIT below.
+      const lift = 0.5 * mixture * HAND_LIFT * HAND_AREA * wet * relative.lengthSq();
+      this.handSupport.set(sample.normalX, sample.normalY, sample.normalZ).multiplyScalar(lift);
+      force.add(this.handSupport);
+    }
     if (slot >= RIDER_PARTS.length) {
-      const limit = HAND_FORCE_LIMIT * this.mass * WATER.gravity;
+      const prone = this.phase === 'prone' ? this.paddleSprintShare : 0;
+      const limit = (HAND_FORCE_LIMIT + (SPRINT_PADDLE_LIMIT - HAND_FORCE_LIMIT) * prone) * this.mass * WATER.gravity;
       const magnitude = force.length();
       if (magnitude > limit) force.multiplyScalar(limit / magnitude);
       this.handLoad[slot - RIDER_PARTS.length] = Math.min(magnitude, limit);
@@ -2210,6 +4770,65 @@ export class AttachedRider {
   }
 
   /**
+   * The new surfer standing free: the rider's own yaw inertia turns with the board through the planted feet (step 3.2b,
+   * the advisor's ruling 29f), now split (step 3.2e, ruling 29i). The point mass carries the body's translation; about its
+   * long axis (`up`, the leg line):
+   * - the board's share (`stanceAt`'s `lower`: the feet, shanks and knees) is held rigid to the board's turn while the feet
+   *   are on the deck: I_L n nᵀ on the rotation and its own spin's momentum on the right-hand side, as 3.2b's whole was;
+   * - the upper body's share (`upper`, and TWIST_BODY_ARMS with the arms out) turns on the legs' twist θ_t (the upper body's
+   *   yaw less the board's), which puts τ_b = τ_a + k θ_t + c θ̇_t on the board and −τ_b on the upper body (TWIST_STIFFNESS,
+   *   TWIST_DAMPING, the active torque τ_a; an end stop past TWIST_BODY_RANGE). Backward Euler over the substep, the upper
+   *   body's spin eliminated: with α = h (k h + c), the board meets β n nᵀ, β = I_U α / (I_U + α), and on the right-hand
+   *   side n [β (ω_u − Ω) + I_U / (I_U + α) h (τ_a + k θ_t)], Ω its own turn now. `finish` moves the twist on.
+   * So the standing solve and the solves apart all carry it; no force but the legs' with its reaction. In flight the
+   * lower body keeps its spin and the twist its angle and rate; back on the deck the coupling starts from the board's own
+   * turn (no impulse).
+   */
+  coupleYaw(system: Float64Array, rhs: Float64Array, board: BoardBody): void {
+    const active = this.freeBody && this.inContact && this.yawScale > 0;
+    const tb = this.twistBody;
+    if (!active) {
+      this.yawCoupled = false;
+      this.yawInertia = 0;
+      tb.coupled = false;
+      return;
+    }
+    const n = this.up;
+    const w = board.angularVelocity;
+    const turn = n.x * w.x + n.y * w.y + n.z * w.z;
+    if (!this.yawCoupled) this.yawSpin = turn;
+    const stance = stanceAt(this.yawDepth, this.stanceDeepRow);
+    const lower = this.yawScale * stance.lower;
+    const upper = this.yawScale * (stance.upper + TWIST_BODY_ARMS * Math.max(0, Math.min(1, this.human.arms)));
+    if (!tb.coupled) tb.upper = turn + tb.rate;
+    const h = this.substep;
+    const over = Math.abs(tb.angle) - TWIST_BODY_RANGE;
+    const stiffness = this.twistStiffness + (over > 0 ? TWIST_STOP : 0);
+    const damping = this.twistDamping + (over > 0 ? TWIST_STOP_DAMPING : 0);
+    const alpha = h * (stiffness * h + damping);
+    const beta = (upper * alpha) / (upper + alpha);
+    const gain = upper / (upper + alpha);
+    tb.inertia = upper;
+    tb.alpha = alpha;
+    tb.beta = beta;
+    tb.gain = gain;
+    tb.turn = turn;
+    tb.spring = tb.active + this.twistStiffness * tb.angle + (over > 0 ? TWIST_STOP * Math.sign(tb.angle) * over : 0);
+    const inertia = lower + beta;
+    this.yawInertia = inertia;
+    const kick = lower * (this.yawSpin - turn) + beta * (tb.upper - turn) + gain * h * tb.spring;
+    const nv = [n.x, n.y, n.z];
+    for (let i = 0; i < 3; i += 1) {
+      for (let j = 0; j < 3; j += 1) system[(3 + i) * 6 + 3 + j] += inertia * nv[i] * nv[j];
+      rhs[3 + i] += kick * nv[i];
+    }
+    // Step 3.3l, the bank ledger (read-only): the kick on the board's own rows, as a named source.
+    if (bankLedger.on) bankLedger.bookTorque('yawCouple', kick * n.x, kick * n.y, kick * n.z);
+    this.yawCoupled = true;
+    tb.coupled = true;
+  }
+
+  /**
    * Standing: `couple` on an 8 x 8 system over (v, w, s', u'), the seventh unknown
    * the leg's rate and the eighth the bank's, the body's speed across the leg.
    * The rider moves at v + w x carried + drive + up s' + across u' and pushes
@@ -2220,7 +4839,9 @@ export class AttachedRider {
    * ankle's stretch to u' alone.
    */
   coupleStanding(system: Float64Array, rhs: Float64Array, h: number): void {
-    const N = 8;
+    // The new surfer standing: a 9 x 9 system, the ninth unknown the body's speed along its forward axis (`StandingBody`).
+    const free = this.freeBody;
+    const N = free ? 9 : 8;
     const m = this.mass;
     const a = this.arm;
     const b = this.carried;
@@ -2266,11 +4887,35 @@ export class AttachedRider {
     system[6 * N + 6] += m + h * this.legDamping + h * h * this.legStiffness;
     const length = this.legLength;
     // Landing, the bank's unknown is held at nothing: the body is carried upright.
-    system[7 * N + 7] += this.banking ? m + (h * (ANKLE_STIFFNESS * h + ANKLE_DAMPING)) / (length * length) : 1;
+    // The new surfer standing: its own ankle across (`humanBank`).
+    const ankleK = free ? HUMAN_ANKLE_STIFFNESS : ANKLE_STIFFNESS;
+    const ankleC = free ? HUMAN_ANKLE_DAMPING : ANKLE_DAMPING;
+    system[7 * N + 7] += this.banking ? m + (h * (ankleK * h + ankleC)) / (length * length) : 1;
     // The momentum the constraint must supply: v_rider' = v' + w' x carried + drive + up s'' + across u'.
     const mismatch = cross(this.boardSpin, b, this.scratch).add(this.boardVelocity).add(this.drive)
-      .addScaledVector(n, this.leg.rate).addScaledVector(t, this.bankSpeed).sub(this.velocity);
+      .addScaledVector(n, this.leg.rate).addScaledVector(t, this.bankSpeed);
+    if (free) mismatch.addScaledVector(this.forward, this.standingBody.speed);
+    mismatch.sub(this.velocity);
     const f = this.scratch2.copy(this.external).multiplyScalar(h).addScaledVector(mismatch, -m);
+    if (bankLedger.on) {
+      // **Step 3.3l, the bank ledger (read-only)**: `f`'s four named parts, each spread over the same rows the lines
+      // below spread `f` over. `external` is `gravity + waterForce + assistForce + carryForce + leanOutForce
+      // (+ driveForce)`, and the last four are identically zero for the new surfer (`compressAssist` returns at once
+      // on `newRider`); `assist` is booked anyway so the partition is read rather than assumed. The bookings are
+      // recomputed beside the shipped lines and never through them, so the arithmetic below is untouched.
+      const w = this.forward;
+      const banking = this.banking;
+      const g = this.gravity;
+      const wf = this.waterForce;
+      const ax = this.assistForce.x + this.carryForce.x + this.leanOutForce.x + (this.drives ? this.driveForce.x : 0);
+      const ay = this.assistForce.y + this.carryForce.y + this.leanOutForce.y + (this.drives ? this.driveForce.y : 0);
+      const az = this.assistForce.z + this.carryForce.z + this.leanOutForce.z + (this.drives ? this.driveForce.z : 0);
+      bankLedger.bookBody('gravity', h * g.x, h * g.y, h * g.z, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+      bankLedger.bookBody('riderWater', h * wf.x, h * wf.y, h * wf.z, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+      bankLedger.bookBody('assist', h * ax, h * ay, h * az, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+      bankLedger.bookBody('carry', -m * mismatch.x, -m * mismatch.y, -m * mismatch.z, a.x, a.y, a.z, n.x, n.y, n.z, t.x, t.y, t.z, w.x, w.y, w.z, banking, free);
+    }
+    if (free) this.standingBody.couple(system, rhs, N, h, m, this.forward, a, b, f, this.legLength, this.across);
     rhs[0] += f.x;
     rhs[1] += f.y;
     rhs[2] += f.z;
@@ -2282,6 +4927,8 @@ export class AttachedRider {
     rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
     // The ankle pushes the body back across the leg by its torque over the leg's length.
     if (this.banking) rhs[7] += t.dot(f) - (h * (this.ankleTorque + this.swingTorque)) / length;
+    this.driveStep = h;
+    if (this.drives) this.pushDrive(rhs);
     // The upper body's swing turns the body on its feet; the board feels only the push at the feet, not its couple.
     rhs[3] -= h * this.swingTorque * this.rollAxis.x;
     rhs[4] -= h * this.swingTorque * this.rollAxis.y;
@@ -2290,6 +4937,53 @@ export class AttachedRider {
     rhs[3] -= h * this.twistTorque * n.x;
     rhs[4] -= h * this.twistTorque * n.y;
     rhs[5] -= h * this.twistTorque * n.z;
+    if (this.agile) {
+      // The limbs' ledger: the feet's forces on the board (and so on the two together, nothing: the body takes the
+      // opposite). Rows 0–2 and 3–5 are the pair's momentum, so only the body's own rows and its arm's share see a net force.
+      const force = this.limbForce;
+      const lever = cross(a, force, this.scratch);
+      rhs[3] += h * (this.limbTorque.x - lever.x);
+      rhs[4] += h * (this.limbTorque.y - lever.y);
+      rhs[5] += h * (this.limbTorque.z - lever.z);
+      rhs[6] -= h * n.dot(force);
+      if (this.banking) rhs[7] -= h * t.dot(force);
+      if (free) rhs[8] -= h * this.forward.dot(force);
+    }
+    if (bankLedger.on) {
+      // **Step 3.3l**: the joints' own entries, then the substep's attribution — `A` and `b` as the game has them,
+      // before `solveLinear` destroys either. Read-only throughout.
+      bankLedger.bookRow('leg', 6, h * (this.leg.force - h * this.legStiffness * this.leg.rate));
+      if (this.banking) {
+        bankLedger.bookRow('ankle', 7, -(h * this.ankleTorque) / length);
+        bankLedger.bookRow('swing', 7, -(h * this.swingTorque) / length);
+      }
+      const ra = this.rollAxis;
+      bankLedger.bookTorque('swing', -h * this.swingTorque * ra.x, -h * this.swingTorque * ra.y, -h * this.swingTorque * ra.z);
+      bankLedger.bookTorque('twist', -h * this.twistTorque * n.x, -h * this.twistTorque * n.y, -h * this.twistTorque * n.z);
+      bankLedger.bookRow('hand', 4, h * this.handYaw);
+      if (free) {
+        const sb = this.standingBody;
+        bankLedger.bookRow('pitch', 8, -(h * (sb.torque + sb.hip.torque)) / length);
+        if (sb.hip.torque !== 0) bankLedger.bookTorque('pitch', -h * sb.hip.torque * t.x, -h * sb.hip.torque * t.y, -h * sb.hip.torque * t.z);
+      }
+      if (this.drives) {
+        const d = this.driveForce;
+        const dt = cross(this.driveFoot, d, this.localScratch);
+        bankLedger.bookBoard('drive', -h * d.x, -h * d.y, -h * d.z, -h * dt.x, -h * dt.y, -h * dt.z);
+      }
+      if (this.agile) {
+        const force = this.limbForce;
+        const lever = cross(a, force, this.localScratch);
+        bankLedger.bookTorque('limbs', h * (this.limbTorque.x - lever.x), h * (this.limbTorque.y - lever.y), h * (this.limbTorque.z - lever.z));
+        bankLedger.bookRow('limbs', 6, -h * n.dot(force));
+        if (this.banking) bankLedger.bookRow('limbs', 7, -h * t.dot(force));
+        if (free) bankLedger.bookRow('limbs', 8, -h * this.forward.dot(force));
+      }
+      // Step 3.3p: the body's own `across` and `up` as well, for the lateral unit reads (the effective sway mass, the
+      // roll–sway cross terms and the yaw inertia the solve meets). Read-only, as every other argument here.
+      bankLedger.solve(system, rhs, N, length, this.rollAxis.x, this.rollAxis.y, this.rollAxis.z, this.banking,
+        t.x, t.y, t.z, n.x, n.y, n.z);
+    }
   }
 
   /** Standing, after the 8 x 8 solve: the contact impulse the motion needs, and whether feet on a deck can give it (as `settle`). */
@@ -2299,6 +4993,10 @@ export class AttachedRider {
     this.bankSpeedAfter = this.bankSpeed + x[7];
     const velocity = cross(spin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive)
       .addScaledVector(this.up, this.legRateAfter).addScaledVector(this.across, this.bankSpeedAfter);
+    if (this.freeBody) {
+      this.standingBody.speedAfter = this.standingBody.speed + x[8];
+      velocity.addScaledVector(this.forward, this.standingBody.speedAfter);
+    }
     velocity.x += x[0];
     velocity.y += x[1];
     velocity.z += x[2];
@@ -2318,21 +5016,221 @@ export class AttachedRider {
     rhs[3] -= torque.x;
     rhs[4] -= torque.y;
     rhs[5] -= torque.z;
+    if (this.drives && this.upright) this.pushDrive(rhs);
+  }
+
+  /** The leg drive's reaction on the board alone, as `pushBoard` adds it (`legPower: 'cap'`: the board under no push from the feet). */
+  pushDrives(rhs: Float64Array): void {
+    if (this.drives && this.upright) this.pushDrive(rhs);
+  }
+
+  /** `legPower: 'cap'`: an empty power window (a new mount). */
+  private resetPower(): void {
+    this.powerBudget = Infinity;
+    this.powerClock = 0;
+    this.powerHead = 0;
+    this.powerCount = 0;
+    this.powerSum = 0;
+  }
+
+  /**
+   * `legPower: 'cap'`, before the solve: the net work the contact may still do over the substep of `h`, the least of
+   * LEG_POWER_PEAK over it and LEG_POWER_HELD over the LEG_POWER_WINDOW it closes (the works of the substeps still in
+   * it counted whole, absorbing ones too); standing only.
+   */
+  private preparePower(h: number): void {
+    const end = this.powerClock + h;
+    const capacity = this.powerEnds.length;
+    while (this.powerCount > 0 && this.powerEnds[this.powerHead] <= end - LEG_POWER_WINDOW) {
+      this.powerSum -= this.powerWorks[this.powerHead];
+      this.powerHead = (this.powerHead + 1) % capacity;
+      this.powerCount -= 1;
+    }
+    if (this.powerCount === 0) this.powerSum = 0;
+    this.powerBudget = this.upright
+      ? Math.max(0, Math.min(LEG_POWER_PEAK * this.mass * h, LEG_POWER_HELD * this.mass * LEG_POWER_WINDOW - this.powerSum)) : Infinity;
+  }
+
+  /** `legPower: 'cap'`, after the substep of `h`: its net contact work, J, into the power window (nothing while not standing). */
+  private recordPower(h: number, work: number): void {
+    this.powerClock += h;
+    let capacity = this.powerEnds.length;
+    if (this.powerCount === capacity) {
+      const ends = new Float64Array(capacity * 2);
+      const works = new Float64Array(capacity * 2);
+      for (let i = 0; i < capacity; i += 1) {
+        ends[i] = this.powerEnds[(this.powerHead + i) % capacity];
+        works[i] = this.powerWorks[(this.powerHead + i) % capacity];
+      }
+      this.powerEnds = ends;
+      this.powerWorks = works;
+      this.powerHead = 0;
+      capacity *= 2;
+    }
+    const at = (this.powerHead + this.powerCount) % capacity;
+    this.powerEnds[at] = this.powerClock;
+    this.powerWorks[at] = this.upright ? work : 0;
+    this.powerSum += this.powerWorks[at];
+    this.powerCount += 1;
+  }
+
+  /**
+   * `legPower: 'cap'`, standing, after the coupled solve met the contact (`settleStanding`, `x` its solution): whether
+   * the contact's net work in it, on the body and the board together (the push along the line of force, and the swing's,
+   * the twist's and the agile legs' couples, as `finish` books them), is more than the legs may do this substep. If so,
+   * the two are solved apart (`pushCapped`) from the impulse the solve asked for.
+   */
+  overPower(x: Float64Array, h: number): boolean {
+    if (!this.upright) return false;
+    const m = this.mass;
+    const a = this.arm;
+    const j = this.impulse;
+    const ws = this.boardSpin;
+    // The body's mean velocity over the substep less the board's at the line of force.
+    const change = cross(this.powerScratch.set(x[3], x[4], x[5]), a, this.powerScratch);
+    const board = cross(ws, a, this.powerScratch2).add(this.boardVelocity);
+    let work = j.x * (this.velocity.x + (j.x + this.external.x * h) / (2 * m) - board.x - (x[0] + change.x) / 2)
+      + j.y * (this.velocity.y + (j.y + this.external.y * h) / (2 * m) - board.y - (x[1] + change.y) / 2)
+      + j.z * (this.velocity.z + (j.z + this.external.z * h) / (2 * m) - board.z - (x[2] + change.z) / 2);
+    // The couples' work on the board at its mean spin, as `finish` books them.
+    const sx = ws.x + x[3] / 2;
+    const sy = ws.y + x[4] / 2;
+    const sz = ws.z + x[5] / 2;
+    if (this.swingTorque !== 0) work -= h * this.swingTorque * (this.rollAxis.x * sx + this.rollAxis.y * sy + this.rollAxis.z * sz);
+    if (this.twistTorque !== 0) work -= h * this.twistTorque * (this.up.x * sx + this.up.y * sy + this.up.z * sz);
+    // The new surfer's twist (step 3.2e): the legs' twist impulse on the board this substep, against the twist's rate.
+    const tb = this.twistBody;
+    if (tb.coupled && tb.inertia > 0) {
+      const impulse = tb.beta * (tb.upper - tb.turn - (this.up.x * x[3] + this.up.y * x[4] + this.up.z * x[5])) + tb.gain * h * tb.spring;
+      work += impulse * (this.up.x * sx + this.up.y * sy + this.up.z * sz - (tb.upper - impulse / (2 * tb.inertia)));
+    }
+    // The new surfer's hip in pitch: its couple on the pair, about the pitch axis.
+    const hip = this.freeBody ? this.standingBody.hip.torque : 0;
+    if (hip !== 0) work -= h * hip * (this.across.x * sx + this.across.y * sy + this.across.z * sz);
+    if (this.agile && (this.hipTorque !== 0 || this.trunkTorque !== 0)) work += h * (this.limbTorque.x * sx + this.limbTorque.y * sy + this.limbTorque.z * sz);
+    if (!(work > this.powerBudget)) return false;
+    this.feasible = false;
+    this.projected.copy(this.impulse);
+    return true;
+  }
+
+  /**
+   * `legPower: 'cap'`, the two solved apart: the body's velocity at its mean over the substep with no push from the
+   * feet, less the board's at the line of force with its velocity change `x` (6), into `out`. The contact's net work
+   * with the projected impulse j scaled by s is then W(s) = a s + b s², a = j·rel(base), b = j·j / 2m + j·rel(full) − a.
+   */
+  private apartRelative(x: Float64Array, h: number, out: Vector3): Vector3 {
+    const m = this.mass;
+    const change = cross(this.powerScratch.set(x[3], x[4], x[5]), this.arm, this.powerScratch);
+    const board = cross(this.boardSpin, this.arm, out).add(this.boardVelocity);
+    return out.set(
+      this.velocity.x + (this.external.x * h) / (2 * m) - board.x - (x[0] + change.x) / 2,
+      this.velocity.y + (this.external.y * h) / (2 * m) - board.y - (x[1] + change.y) / 2,
+      this.velocity.z + (this.external.z * h) / (2 * m) - board.z - (x[2] + change.z) / 2,
+    );
+  }
+
+  /** `legPower: 'cap'`, standing, the share of the projected push the leg's own force gives along the leg (its load, spring and damper, `prepareLeg`; feet only push). */
+  private legShare(h: number): number {
+    // The new surfer: the push is the legs' and ankles' own forces already (rule 1 is automatic), only its power capped.
+    if (this.freeBody) return 1;
+    const along = this.projected.dot(this.up);
+    const most = h * Math.max(0, this.leg.force);
+    return along > most ? most / along : 1;
+  }
+
+  /**
+   * `legPower: 'cap'`, the two solved apart, `full` the board's velocity change under the whole projected push: whether
+   * it stands as it is, making no energy (W(1) ≤ 0), or within both the leg's force and the legs' power.
+   */
+  pushKept(full: Float64Array, h: number): boolean {
+    if (!this.upright) return true;
+    const j = this.projected;
+    const work = j.dot(this.apartRelative(full, h, this.powerScratch2)) + j.lengthSq() / (2 * this.mass);
+    return !(work > 0) || (this.legShare(h) >= 1 && !(work > this.powerBudget));
+  }
+
+  /**
+   * `legPower: 'cap'`, standing, the two solved apart (ruling 27's A-lite), from the board's velocity change with none
+   * of the projected push (`base`) and with all of it (`full`; the solve is linear in the push). Rule 1: the feet resist
+   * as hard as the push asks while that makes no energy (the share s₀ with W(s₀) ≤ 0: holding and absorbing cost the
+   * legs nothing), and push beyond it only with the leg's own force, not the push the coupled solve sized for board and
+   * body together. Rule 2: no more of that than keeps the net work within what the legs may still do this substep
+   * (LEG_POWER_PEAK, LEG_POWER_HELD). The impulse keeps its line, so its centre of pressure and friction cone hold. Scales
+   * the projected impulse and returns the share.
+   */
+  limitPush(base: Float64Array, full: Float64Array, h: number): number {
+    const j = this.projected;
+    const a = j.dot(this.apartRelative(base, h, this.powerScratch2));
+    const b = j.lengthSq() / (2 * this.mass) + j.dot(this.apartRelative(full, h, this.powerScratch2)) - a;
+    const free = a < 0 ? (b > 0 ? Math.min(1, -a / b) : 1) : 0;
+    let s = Math.max(free, this.legShare(h));
+    const budget = Math.max(0, this.powerBudget);
+    if (a * s + b * s * s > budget) {
+      // W(free) ≤ 0 ≤ budget, so the root lies past `free` (W convex for b > 0; linear or concave otherwise).
+      if (b > 1e-12) s = (-a + Math.sqrt(Math.max(0, a * a + 4 * b * budget))) / (2 * b);
+      else s = a > 0 ? budget / a : s;
+      s = Math.max(free, Math.min(1, s));
+    }
+    this.projected.multiplyScalar(s);
+    return s;
+  }
+
+  /** The leg drive's reaction on the board: the opposite push at the back foot, so the pair is nothing on the two together. */
+  private pushDrive(rhs: Float64Array): void {
+    const h = this.driveStep;
+    const force = this.driveForce;
+    const torque = cross(this.driveFoot, force, this.localScratch);
+    rhs[0] -= h * force.x;
+    rhs[1] -= h * force.y;
+    rhs[2] -= h * force.z;
+    rhs[3] -= h * torque.x;
+    rhs[4] -= h * torque.y;
+    rhs[5] -= h * torque.z;
   }
 
   /** After the board has moved: the rider's own motion and ledgers. */
   finish(h: number, board: BoardBody): void {
+    // The new surfer standing free (`coupleYaw`): the body's spin turned with the board through the feet this substep.
+    if (this.yawCoupled) this.yawSpin = this.up.dot(board.angularVelocity);
+    // The new surfer standing free (step 3.2e): the twist moved on with the board's turn after the solve (`coupleYaw`).
+    const tb = this.twistBody;
+    let twistWork = 0;
+    if (tb.coupled && tb.inertia > 0) {
+      const turned = this.up.dot(board.angularVelocity);
+      const before = tb.upper;
+      tb.upper = (tb.inertia * tb.upper - h * tb.spring + tb.alpha * turned) / (tb.inertia + tb.alpha);
+      tb.rate = tb.upper - turned;
+      tb.angle += h * tb.rate;
+      tb.torque = (tb.inertia * (before - tb.upper)) / h;
+      // The legs' twist work: on the board at its mean turn, on the upper body the other way at its mean spin.
+      twistWork = h * tb.torque * ((tb.turn + turned) / 2 - (before + tb.upper) / 2);
+      this.twist.angle = tb.angle;
+      this.twist.rate = tb.rate;
+    }
+    // `legPower: 'cap'`: the contact's net work this substep, the leg drive's board share left out (`recordPower`).
+    const ledger = this.windowed ? board.work.rider + this.work.contact : 0;
+    let driveShare = 0;
     const before = this.scratch.copy(this.velocity);
     // Power of the contact on the board is the same at any point of its line; use the centre of mass.
     const boardBefore = cross(this.boardSpin, this.arm, this.localScratch).add(this.boardVelocity);
     const boardAfter = cross(board.angularVelocity, this.arm, this.target).add(board.velocity);
     const contact = this.impulse;
+    const free = this.freeBody;
     if (this.feasible) {
       this.velocity.copy(cross(board.angularVelocity, this.carried, this.scratch2).add(board.velocity).add(this.drive));
       if (this.upright) this.velocity.addScaledVector(this.up, this.legRateAfter).addScaledVector(this.across, this.bankSpeedAfter);
+      if (free) this.velocity.addScaledVector(this.forward, this.standingBody.speedAfter);
       contact.copy(this.velocity).sub(before).multiplyScalar(this.mass).addScaledVector(this.external, -h);
       if (this.upright) {
         this.angularVelocity.set(0, board.angularVelocity.y, 0).addScaledVector(this.rollAxis, this.bankSpeedAfter / this.legLength);
+        // The new surfer (step 3.2): the bank's speed is the body's relative to the board, so its own bank rate adds the board's roll.
+        if (free) this.angularVelocity.addScaledVector(this.rollAxis, board.angularVelocity.dot(this.rollAxis));
+        if (free) {
+          // The body pitching on its ankle: its rate on the deck after the solve, plus the board's own about the same axis.
+          const pitched = (this.standingBody.speedAfter + this.drive.dot(this.forward)) / this.legLength + board.angularVelocity.dot(this.across);
+          this.angularVelocity.addScaledVector(this.across, pitched);
+        }
       } else {
         this.angularImpulseWork(board);
         this.angularVelocity.copy(board.angularVelocity);
@@ -2348,7 +5246,15 @@ export class AttachedRider {
       this.contact.feasible = false;
     }
     this.balanceMargin = this.upright ? this.balanceMargin + (this.rawMargin - this.balanceMargin) * (1 - Math.exp(-h / MARGIN_TIME)) : 1;
+    // Step 3.5g: the arm carriage follows the player's own stick (`armCarry`), fast up and slow back. **Drawing only**:
+    // nothing below this line reads `carriage`, no part mass moves and no force is added. Off the switch it does not run.
+    if (this.armCarry) stepArmCarriage(this.carriage, h, this.steer, this.phase === 'standing' && this.attached, this.armCarry === 'rest');
     const felt = this.contact;
+    if (this.agile) {
+      // The legs' split moves the feet's shares past the line of force's.
+      this.lineShare = felt.frontShare;
+      if (this.upright && this.legLoad > 0) felt.frontShare = Math.min(1, Math.max(0, felt.frontShare - this.trunkTorque / ((this.feet.front - this.feet.rear) * this.legLoad)));
+    }
     felt.weight = !this.upright ? Number.NaN
       : Number.isNaN(felt.weight) ? felt.frontShare : felt.weight + (felt.frontShare - felt.weight) * (1 - Math.exp(-h / WEIGHT_TIME));
     const mean = before.add(this.velocity).multiplyScalar(0.5);
@@ -2357,13 +5263,28 @@ export class AttachedRider {
     this.work.assist += h * this.assistForce.dot(mean);
     this.work.carry += h * this.carryForce.dot(mean);
     this.work.leanOut += h * this.leanOutForce.dot(mean);
+    if (this.drives && this.driveForce.lengthSq() > 0) {
+      this.work.legDrive += h * this.driveForce.dot(mean);
+      const footBefore = cross(this.boardSpin, this.driveFoot, this.scratch2).add(this.boardVelocity);
+      const footAfter = cross(board.angularVelocity, this.driveFoot, this.localScratch).add(board.velocity);
+      board.work.rider -= (h * this.driveForce.dot(footBefore.add(footAfter))) / 2;
+      if (this.windowed) driveShare = -(h * this.driveForce.dot(footBefore)) / 2;
+    }
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
       board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
     }
+    if (free && this.feasible && this.standingBody.hip.torque !== 0) {
+      // The new surfer's hip in pitch: the trunk's couple, which the pair took about the pitch axis.
+      board.work.rider -= (h * this.standingBody.hip.torque * this.across.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
+    }
     if (this.upright && this.feasible && this.twistTorque !== 0) {
       // The twist's reaction, which turned the board through the feet.
       board.work.rider -= (h * this.twistTorque * this.up.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
+    }
+    if (this.agile && this.upright && this.feasible && (this.hipTorque !== 0 || this.trunkTorque !== 0)) {
+      // The agile legs' couples, which turned and pitched the board through the feet.
+      board.work.rider += (h * this.limbTorque.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;
     }
     if (this.upright && this.feasible && this.handYaw !== 0) {
       // The hand's moment turned the board through the feet.
@@ -2376,9 +5297,17 @@ export class AttachedRider {
     }
     this.work.contact += contact.dot(mean);
     board.work.rider -= contact.dot(boardBefore.add(boardAfter).multiplyScalar(0.5));
+    if (twistWork !== 0) this.work.contact += twistWork;
+    if (this.windowed) this.recordPower(h, board.work.rider + this.work.contact - ledger - driveShare);
     this.stepImpulse.add(contact);
+    // The new surfer: the body's own push through the feet (the soles' sense), for the pitch reference's slow trim.
+    if (this.newRider && this.upright) this.bodyPush.addScaledVector(this.scratch2.copy(contact).divideScalar(h).sub(this.bodyPush), 1 - Math.exp(-h / SPECIFIC_FORCE_TIME));
     this.up.set(0, 1, 0).applyQuaternion(board.orientation);
-    this.stepLoad = Math.max(this.stepLoad, contact.dot(this.up) / (h * this.mass * WATER.gravity));
+    const substepLoad = contact.dot(this.up) / (h * this.mass * WATER.gravity);
+    this.stepLoad = Math.max(this.stepLoad, substepLoad);
+    // The new surfer: the feet's own load this substep, in body weights, for the capture point's validity condition
+    // (`humanBalance.ts` CAPTURE_LOAD, step 3.2h). A read-out for the probes as well.
+    if (free) this.captureLoad = substepLoad;
     this.position.addScaledVector(this.velocity, h);
     this.frame(board);
     if (this.inContact) {
@@ -2401,10 +5330,85 @@ export class AttachedRider {
     for (const limit of Object.keys(this.limitTime) as (keyof typeof this.limitTime)[]) {
       this.limitTime[limit] = this.limitTime[limit] * decay + (this.limit === limit ? h : 0);
     }
+    // The new surfer standing (step 3.2): the capture point against the feet (`HumanBalance`), which replaces the sway's
+    // RECOVERABLE_ERROR as the balance's fall test. Step 3.2h gives it its validity condition: it is read only while the
+    // feet carry the body (CAPTURE_LOAD), and while they do not, `RECOVERABLE_ERROR` below (the leg past its travel, the
+    // lean past MAX_BANK or MAX_PITCH) and MAX_FLIGHT carry the window.
+    if (free) this.captureStep(h, board, substepLoad);
+    else this.pairFresh = true;
     // Pushed too far off the posture, swayed past recovery, or airborne too long: the rider lets go of the board.
     if (this.flightTime > MAX_FLIGHT) this.separate('lost board');
+    else if (free && this.human.fallen) this.separate(this.limit === 'slip' ? 'foot slip' : 'balance');
     else if (this.upright && Math.hypot(this.sway.x, this.sway.z) > RECOVERABLE_ERROR) this.separate('balance');
     else if (this.postureError > RECOVERABLE_ERROR && this.limit !== 'none') this.separate(SEPARATION[this.dominantLimit()]);
+  }
+
+  /**
+   * The new surfer standing (step 3.2): the capture point against the feet (`HumanBalance.capture`), in the board's
+   * frame: the centre of mass from the feet's middle, its velocity relative to the feet there, the felt vertical (the
+   * feet's specific force, low-passed SPECIFIC_FORCE_TIME), the feet's extent (the support), and what the room left can
+   * still catch past the edge: the rotor's angular impulse to its range (`rotorImpulse`) as a capture-point distance,
+   * the hip across (the swing) across and the hip in pitch along. `load` is the feet's own load this substep, in body
+   * weights: the test's validity condition (step 3.2h, `humanBalance.ts` CAPTURE_LOAD). The felt vertical's low pass
+   * keeps running through a light window, so the test resumes on a current reading.
+   */
+  private captureStep(h: number, board: BoardBody, load: number): void {
+    const support = this.support;
+    const midX = (support.xMin + support.xMax) / 2;
+    const midZ = (support.zMin + support.zMax) / 2;
+    const feet = board.toWorld(this.localScratch.set(midX, deckHeight(this.shape, midZ), midZ), this.captureFeet);
+    const inverse = this.spin.copy(board.orientation).invert();
+    const offset = this.captureOffset.subVectors(this.position, feet).applyQuaternion(inverse);
+    const velocity = this.captureVelocity.subVectors(this.velocity, board.velocityAt(feet, this.scratch)).applyQuaternion(inverse);
+    // The felt vertical: the pair's (board and body together) specific force, low-passed SPECIFIC_FORCE_TIME. Only the
+    // water and gravity move the pair's centre of mass, so the feet's own pushes on the light board (the balance's moves)
+    // do not tilt it; the turn's pull and the drag do. (The feet's own specific force swung by a g and more as the body
+    // pushed the 2.5 kg board, and the capture point read a fall in 0.07 s of a lean begun: the don't-retry list.)
+    const momentum = this.captureScratch.copy(board.velocity).multiplyScalar(board.mass).addScaledVector(this.velocity, this.mass);
+    const total = board.mass + this.mass;
+    // `feltFrame: 'deck'` (step 3.3c): the filter's own state is kept on the DECK's axes, which is what a body-fixed
+    // sensor does — `dG/dt = (A − G)/T` in the board's frame — so the 0.1 s costs `T · d(tilt)/dt` and not `Ω · T`. The
+    // time constant, the reading and the smoothing are the same; only the frame the state is held in changes, and
+    // nothing in the water is touched. Step 3.3b measured the world frame's rate-proportional cost at 0.084–0.132° of
+    // tilt per degree of roll in all seven of its cells, over roll rates of 65–330 °/s.
+    if (this.pairFresh) {
+      // Step 3.4e (`mountAgree: 'felt'`): the seed is the **face's own normal** — `g (n̂·ŷ) n̂`, the specific force of
+      // a body sliding freely down a plane of normal `n̂`, which is the vertical the mount's own placement argument
+      // names [R, `reset`]. `waterUp` is the water's own normal under the board, set by `planingStep` in `prepare`
+      // before the board's solve and so before this substep, and (0, 1, 0) off the water, where the two seeds are the
+      // same vector. Off, it is the world's vertical, byte for byte the line that ships.
+      if (this.mountFelt) {
+        this.pairFelt.copy(this.waterUp).normalize();
+        this.pairFelt.multiplyScalar(WATER.gravity * this.pairFelt.y);
+      } else this.pairFelt.set(0, WATER.gravity, 0);
+      // The mount's reading is the same vector either way: the world vertical, rotated into the deck's axes when that is
+      // where the state lives, so the switch changes nothing on the first loaded substep.
+      if (this.deckFelt) this.pairFelt.applyQuaternion(inverse);
+      this.pairFresh = false;
+    } else {
+      const ax = (momentum.x - this.pairMomentum.x) / (h * total);
+      const ay = (momentum.y - this.pairMomentum.y) / (h * total) + WATER.gravity;
+      const az = (momentum.z - this.pairMomentum.z) / (h * total);
+      const blend = 1 - Math.exp(-h / SPECIFIC_FORCE_TIME);
+      // The reading on the state's own axes. `inverse` is the board's orientation inverted, built above.
+      const a = this.deckFelt ? this.pairScratch.set(ax, ay, az).applyQuaternion(inverse) : this.pairScratch.set(ax, ay, az);
+      this.pairFelt.x += (a.x - this.pairFelt.x) * blend;
+      this.pairFelt.y += (a.y - this.pairFelt.y) * blend;
+      this.pairFelt.z += (a.z - this.pairFelt.z) * blend;
+    }
+    this.pairMomentum.copy(momentum);
+    // Already on the deck's axes with `feltFrame: 'deck'`; otherwise rotated into them here, as before.
+    const felt = this.deckFelt ? this.captureFelt.copy(this.pairFelt) : this.captureFelt.copy(this.pairFelt).applyQuaternion(inverse);
+    const height = Math.max(0.2, offset.length());
+    const omega = Math.sqrt(Math.max(0.5, this.pairFelt.length()) / height);
+    const room = stanceRoom(this.stanceDepth, this.stanceReach);
+    // Step 3.2i measured `rotorReach`'s horizon cap here and did not keep it: it buys nothing on the chop (the cap does
+    // not bind with the arms in, where the hip's inertia is 6 kg·m²) and costs the push bar 44 % of its saved shove,
+    // because under a shove ω₀ is read from a felt gravity the impulse itself inflates to 13–19 m/s², so the horizon
+    // 1/ω₀ is artificially short exactly where the felt gravity is least trustworthy (`3.2/README.md` Part 9 §3).
+    const across = rotorImpulse(this.human.swingInertia, SWING_TORQUE, room.hipRange - Math.abs(this.swing.angle)) / (this.mass * height * omega);
+    const along = rotorImpulse(HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, room.hipRange - Math.abs(this.standingBody.hip.angle)) / (this.mass * height * omega);
+    this.human.capture(offset, velocity, felt, (support.xMax - support.xMin) / 2, support.zMax - midZ, midZ - support.zMin, across, along, load, h);
   }
 
   /** The limit that bound the contact most in the recent past. */
@@ -2423,6 +5427,7 @@ export class AttachedRider {
 
   private separate(cause: RiderSeparation): void {
     this.attached = false;
+    this.climbing = false;
     this.inContact = false;
     this.separation = cause;
   }
@@ -2436,17 +5441,57 @@ export class AttachedRider {
   private frame(board: BoardBody, measure = true): void {
     const forward = this.scratch2.set(0, 0, 1).applyQuaternion(board.orientation);
     if (forward.x * forward.x + forward.z * forward.z > 1e-6) this.heading.setFromAxisAngle(Y, Math.atan2(forward.x, forward.z));
-    if (this.upright) {
+    if (this.upright && this.freeBody) {
+      // The new surfer standing (`StandingBody`): the heading, then the leg line's pitch (square to the deck on a new
+      // mount), then its bank; the body's forward axis is the ninth unknown's.
+      board.toWorld(this.base, this.baseWorld);
+      const sway = this.localScratch.set(this.sway.x, 0, this.sway.z).applyQuaternion(board.orientation);
+      const cx = this.localCenter.x - this.base.x;
+      const cy = this.localCenter.y - this.base.y;
+      const cz = this.localCenter.z - this.base.z;
+      const boardUp = this.scratch.set(0, 1, 0).applyQuaternion(board.orientation);
+      if (measure) {
+        const lean = this.scratch2.subVectors(this.position, this.baseWorld).sub(sway);
+        this.standingBody.measure(this.heading, boardUp, Math.atan2(cz, cy), lean);
+        if (this.banking) {
+          const angle = this.standingBody.bankOf(this.heading, lean) - Math.atan2(cx, Math.hypot(cy, cz));
+          // Step 3.4i: the reading, then the bound. `bankRaw` is the reading itself, recorded always and read by
+          // nothing in the game; `bankMax` is MAX_BANK as it ships and Math.PI — no bound — with `bankClamp: 'off'`.
+          this.bankRaw = angle;
+          this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
+        }
+      } else {
+        this.standingBody.measure(this.heading, boardUp, Math.atan2(cz, cy));
+        // A new mount on a planing board: square to the deck across as well (`mount`).
+        if (this.banking) {
+          const angle = this.standingBody.bankOf(this.heading, boardUp) - Math.atan2(cx, Math.hypot(cy, cz));
+          this.bankRaw = angle;
+          this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
+        }
+      }
+      if (!this.banking) {
+        this.bank.angle = 0;
+        this.bank.rate = 0;
+        this.bankRaw = 0;
+      }
+      this.standingBody.frame(this.heading, this.bank.angle, this.bodyFrame);
+      this.up.copy(Y).applyQuaternion(this.bodyFrame);
+      this.across.copy(X).applyQuaternion(this.bodyFrame);
+      this.forward.copy(Z).applyQuaternion(this.bodyFrame);
+      this.target.copy(this.localCenter).sub(this.base).applyQuaternion(this.bodyFrame).add(this.baseWorld).add(sway);
+    } else if (this.upright) {
       board.toWorld(this.base, this.baseWorld);
       const sway = this.localScratch.set(this.sway.x, 0, this.sway.z).applyQuaternion(board.orientation);
       if (measure && this.banking) {
         const lean = this.scratch2.subVectors(this.position, this.baseWorld).sub(sway);
         const side = this.scratch.copy(X).applyQuaternion(this.heading);
         const angle = Math.atan2(lean.dot(side), lean.y) - Math.atan2(this.localCenter.x - this.base.x, this.localCenter.y - this.base.y);
-        this.bank.angle = Math.max(-MAX_BANK, Math.min(MAX_BANK, angle));
+        this.bankRaw = angle;
+        this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
       } else if (!this.banking) {
         this.bank.angle = 0;
         this.bank.rate = 0;
+        this.bankRaw = 0;
       }
       this.bodyFrame.copy(this.heading).multiply(this.bankTurn.setFromAxisAngle(Z, -this.bank.angle));
       this.up.copy(Y).applyQuaternion(this.bodyFrame);
@@ -2455,6 +5500,7 @@ export class AttachedRider {
     } else {
       this.bank.angle = 0;
       this.bank.rate = 0;
+      this.bankRaw = 0;
       this.swing.angle = 0;
       this.swing.rate = 0;
       this.swingTorque = 0;
@@ -2469,6 +5515,8 @@ export class AttachedRider {
   private uprightVelocity(board: BoardBody, out: Vector3): Vector3 {
     if (!this.upright) return out;
     const offset = this.scratch2.addVectors(this.carried, board.centerOfMass).sub(this.baseWorld);
+    // The new surfer standing (step 3.2): none; the body keeps its bank by its own inertia and the ankle's forces.
+    if (this.freeBody) return out;
     const w = this.scratch.set(-board.angularVelocity.x, 0, -board.angularVelocity.z);
     return out.add(cross(w, offset, this.localScratch));
   }
@@ -2500,19 +5548,50 @@ export class AttachedRider {
     const height = local.y - deckHeight(this.shape, local.z);
     if (!this.upright) return this.projectHold(j, h, local, out.set(0, 0, 0), q);
     if (!(j.y > 0) || !(height > 0)) {
+      this.frictionUsed = 0;
+      this.kneeUsed = 0;
       this.contact.centreOfPressure.set(local.x, local.y - height, local.z);
       this.rawMargin = 0;
       this.limit = 'flight';
       this.loaded = false;
+      // Step 3.5i: a read-out only, cleared here so it can never be read stale through a flight substep.
+      this.copRelief = 0;
+      this.copMoment = 0;
       return out.set(0, 0, 0);
     }
-    const cap = MAX_LOAD * this.mass * WATER.gravity * h;
+    // The new surfer standing: the knees' strength (`kneeStrength`) at the leg's length now, in MAX_LOAD's place.
+    const cap = (this.freeBody ? kneeStrength(this.parts[1] - this.base.y + this.leg.extension - ANKLE_HEIGHT) : MAX_LOAD * this.mass * WATER.gravity) * h;
     const normal = Math.min(j.y, cap);
     let limit: ContactLimit = j.y > cap ? 'impact' : 'none';
     // Centre of pressure where the line of action meets the deck, kept inside the support.
     const support = this.support;
-    const freeX = local.x - (height * j.x) / j.y;
+    /**
+     * **Step 3.5i (`bodyBank: 'hip'`): the trunk rotor's own angular impulse, which the line below leaves out.**
+     *
+     * The moment balance about the body's own centre of mass, resolved about the board's local **−z** (the roll axis
+     * the `swing` rotor turns on), is `(p_x − com_x)·N + height·F_x = −(dH/dt)_roll`, so
+     *
+     *     p_x = com_x − height·F_x/N − (dH/dt)_roll / N
+     *
+     * and `freeX` below is the first two terms: it asserts `dH/dt = 0`, i.e. that the contact force must pass through
+     * the centre of mass. That is true of a point mass and false of a body with a trunk, and it is why a hip strategy
+     * costs this rider sole pressure instead of buying it (see `AttachedRiderOptions.bodyBank`).
+     *
+     * `swingTorque` is the rotor's torque this substep, and `d(H_rotor · rollAxis)/dt = +swingTorque` — the drawn
+     * swing turns about `+z` of the body frame while `rollAxis` is `−z` of the heading, and `humanSwingStep` writes
+     * `swing.rate -= h·swingTorque/I`, so the two signs compose to `+`. `rollAxis` is resolved into the board's own
+     * frame (`this.spin` holds `q⁻¹` from the line above) and its `−z` component taken, so the term is exact at any
+     * roll and pitch rather than assuming the heading's axis is the board's.
+     *
+     * **Zero is the shipped expression, verbatim**, so with the switch off — or with the rotor's torque at 0 — not one
+     * extra floating-point operation runs and the arithmetic cannot differ.
+     */
+    const moment = this.banksBody && this.swingTorque !== 0
+      ? -h * this.swingTorque * this.rollLocal.copy(this.rollAxis).applyQuaternion(this.spin).z : 0;
+    const freeX = moment === 0 ? local.x - (height * j.x) / j.y : local.x - (height * j.x + moment) / j.y;
     const freeZ = local.z - (height * j.z) / j.y;
+    this.copRelief = moment === 0 ? 0 : -moment / j.y;
+    this.copMoment = moment === 0 ? 0 : -moment / h;
     this.loaded = j.y > BALANCE_LOAD * this.mass * WATER.gravity * h;
     if (this.loaded) {
       this.desiredCop.x = freeX;
@@ -2521,10 +5600,14 @@ export class AttachedRider {
     const copX = Math.min(support.xMax, Math.max(support.xMin, freeX));
     const copZ = Math.min(support.zMax, Math.max(support.zMin, freeZ));
     if (limit === 'none' && (copX !== freeX || copZ !== freeZ)) limit = 'tip';
-    let tx = ((local.x - copX) * normal) / height;
+    // Step 3.5i: the same term inverted, so the tangential that realises a clamped centre of pressure carries the
+    // rotor's moment too. Unclamped (`copX === freeX`) this returns `j.x` exactly, as it does off the switch.
+    let tx = moment === 0 ? ((local.x - copX) * normal) / height : ((local.x - copX) * normal - moment) / height;
     let tz = ((local.z - copZ) * normal) / height;
     const friction = FOOT_FRICTION * normal;
     const tangential = Math.hypot(tx, tz);
+    this.frictionUsed = friction > 0 ? Math.min(1, tangential / friction) : 1;
+    this.kneeUsed = Math.min(1, j.y / cap);
     if (tangential > friction) {
       tx *= friction / tangential;
       tz *= friction / tangential;
@@ -2618,7 +5701,23 @@ export class AttachedRider {
   private updatePosture(): void {
     const pose = riderPose(this.shape, this.posePhase(), this.stance);
     this.postureRate.set(0, 0, 0);
-    if (this.phaseDuration > 0) {
+    if (this.phaseDuration > 0 && this.climbing) {
+      // Climbing on: across and along the board on a minimum-jerk path over the first CLIMB_ACROSS of the time, up (the
+      // board's y) over the time from CLIMB_RISE on.
+      const s = Math.min(1, this.phaseTime / this.phaseDuration);
+      const slide = Math.min(1, s / CLIMB_ACROSS);
+      const up = Math.max(0, (s - CLIMB_RISE) / (1 - CLIMB_RISE));
+      const rise = minimumJerk(up);
+      const across = minimumJerk(slide);
+      const riseRate = s > CLIMB_RISE ? minimumJerkRate(up) / ((1 - CLIMB_RISE) * this.phaseDuration) : 0;
+      const acrossRate = s < CLIMB_ACROSS ? minimumJerkRate(slide) / (CLIMB_ACROSS * this.phaseDuration) : 0;
+      const from = postureCenter(this.fromParts, this.partMasses);
+      const to = postureCenter(pose.parts, this.partMasses);
+      this.postureRate.set((to.x - from.x) * acrossRate, (to.y - from.y) * riseRate, (to.z - from.z) * acrossRate);
+      for (let k = 0; k < this.parts.length; k += 1) {
+        this.parts[k] = this.fromParts[k] + (pose.parts[k] - this.fromParts[k]) * (k % 3 === 1 ? rise : across);
+      }
+    } else if (this.phaseDuration > 0) {
       // A minimum-jerk path from where the transition began to the phase's pose.
       const s = Math.min(1, this.phaseTime / this.phaseDuration);
       const blend = minimumJerk(s);
@@ -2645,11 +5744,76 @@ export class AttachedRider {
     this.base.set(pose.base.x, pose.base.y, pose.base.z);
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       if (!this.shifts(i)) continue;
-      this.parts[i * 3] += this.balance.x + this.lean.x;
+      this.parts[i * 3] += this.balance.x + this.lean.x + this.armsGive;
       this.parts[i * 3 + 2] += this.balance.z + this.lean.z;
     }
+    this.foldTrunk();
     const center = postureCenter(this.parts, this.partMasses);
     this.localCenter.set(center.x, center.y, center.z);
+  }
+
+  /**
+   * **The trunk's fold in the mass model** (`trunk: 'mass'`, step 3.5h; rows 1 and 2 of
+   * `docs/research/new-rider/3.5/engine-target.md`). The hip rotor's own parts - the torso, the head and both arms,
+   * which is what `HIP_PITCH_INERTIA` is a model of - turn about the **physical pelvis** (part 0) by
+   * `StandingBody.hip.angle`, in `this.parts`' own board-local frame.
+   *
+   * **The axis and the sign, stated rather than inferred.** `this.parts` are board-local and the whole posture is
+   * carried into the world by `bodyFrame` (`frame()`, and `partPosition`), whose x axis **is** `this.across` - the
+   * axis `StandingBody.couple` already puts the rotor's couple on (`rhs[3..5] -= h * hip.torque * across`). So a
+   * right-handed rotation about local **+x** here is a rotation about `across` in the world, in every stance and at
+   * every bank, with no frame correction: the bank is in `bodyFrame`, not in `parts`. Right-handed about +x takes +y
+   * to +z, and +z is the heading, so a **positive** `hip.angle` pitches the trunk toward the **nose** - which is the
+   * sense `hip.angle` is written in (`pitchOf` is `atan2(local.z, local.y)`, forward +) and the sense that pairs: the
+   * same positive torque subtracts from `rhs[8]`, pushing the rest of the body **aft** along `forward`.
+   *
+   * Standing, every part of the posture sits on the stringer (x = 0, `riderPosture.regularPlaces`) and the goofy
+   * mirror only swaps parts across it, so **regular and goofy fold identically** and the pivot is the same point.
+   *
+   * **No force and no drive.** The torque was already paired and already booked; this only states where the mass it
+   * carries is. `postureRate` is left at 0 on purpose - the fold's own centre-of-mass motion arrives through the pair,
+   * and feeding it to `this.drive` would be a hidden kinematic motor.
+   */
+  private foldTrunk(): void {
+    this.trunkFold = 0;
+    if (!this.trunkMass || !this.freeBody) return;
+    const angle = this.standingBody.hip.angle;
+    // Nothing asked, or a rotor that has gone non-finite: the posture stays as the balance left it. The finiteness
+    // test is not decoration - a NaN here would turn every rotor part into NaN and take the whole body with it.
+    if (!Number.isFinite(angle) || angle === 0) return;
+    this.trunkFold = angle;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const pivotY = this.parts[1];
+    const pivotZ = this.parts[2];
+    for (let i = 1; i < RIDER_PARTS.length; i += 1) {
+      // The rotor is the trunk, the head and the arms: the legs stand on the deck and the pelvis is the pivot.
+      if (!this.shifts(i)) continue;
+      const y = this.parts[i * 3 + 1] - pivotY;
+      const z = this.parts[i * 3 + 2] - pivotZ;
+      this.parts[i * 3 + 1] = pivotY + y * cos - z * sin;
+      this.parts[i * 3 + 2] = pivotZ + y * sin + z * cos;
+    }
+  }
+
+  /**
+   * Snap's weight as its rail change lets it through (`snapCross: 'on'`): none while the body still leans against the
+   * stick's side, as it did when Snap or that side began; all of it once it has come over, and for the rest of that Snap.
+   */
+  private crossStep(snap: number): number {
+    if (!(snap > 0)) {
+      this.crossSide = 0;
+      this.crossed = true;
+      return snap;
+    }
+    const side = Math.abs(this.steer) > STEER_DEADBAND ? Math.sign(this.steer) : this.crossSide;
+    const against = this.banking ? -this.bank.angle * side : 0;
+    if (side !== this.crossSide) {
+      this.crossSide = side;
+      this.crossed = false;
+    }
+    if (against <= UPRIGHT_BANK) this.crossed = true;
+    return this.crossed ? snap : 0;
   }
 
   /** Standing, the feet stay put and the upper body shifts; lying down, the whole body does. */
@@ -2667,32 +5831,62 @@ export class AttachedRider {
   private balanceStep(h: number, board: BoardBody): void {
     const reach = this.upright ? STANDING_SHIFT : PRONE_SHIFT;
     const support = this.support;
+    const free = this.freeBody;
     this.copTarget.x = 0;
     // Standing, W/S set the pressure the rider holds along the board (TRIM_PRESSURE); landing and lying, the middle.
     this.copTarget.z = this.upright && this.phase === 'standing'
       ? (Math.max(-1, Math.min(1, this.trim)) * TRIM_PRESSURE * (this.feet.front - this.feet.rear)) / 2 : 0;
+    // Snap: the pressure onto the back foot, over the fins (SNAP_PRESSURE), held closer (SNAP_FREEDOM).
+    const snap = this.snapping;
+    // Snap's rail change (`snapCross: 'on'`): the weight waits until the body is over the board.
+    const weighted = this.snapCrosses ? this.crossStep(snap) : snap;
+    if (weighted > 0) this.copTarget.z += weighted * ((-SNAP_PRESSURE * (this.feet.front - this.feet.rear)) / 2 - this.copTarget.z);
+    // Snap's stamp (`snapStamp: 'on'`): a full steer slams the weight past the tail for STAMP_TIME, then back over the fins.
+    const stamp = this.stamps ? this.stampStep(h, snap) : 0;
+    // The agile launch (`agile: 'on'`, in the stamp's place and on its clock): the pressure forward off the fins while the tail is thrown.
+    if (this.agile) {
+      this.stampStep(h, snap);
+      const span = this.feet.front - this.feet.rear;
+      this.copTarget.z += snap * this.launching * ((-AGILE_PRESSURE * span) / 2 - this.copTarget.z);
+    }
+    // Snap let go standing, the weight is centred again, held as close as Snap held it, for up to RECENTRE_TIME.
+    if (this.recentres) {
+      if (snap > 0 || !this.upright || this.phase !== 'standing') this.recentreTime = Number.NaN;
+      else if (this.snapBefore > 0) this.recentreTime = 0;
+      else if (this.recentreTime >= 0) this.recentreTime += h;
+      if (this.recentreTime > RECENTRE_TIME) this.recentreTime = Number.NaN;
+      this.snapBefore = snap;
+    }
+    const recentring = this.recentreTime >= 0;
+    const freedom = weighted > 0 ? TRIM_FREEDOM + weighted * (SNAP_FREEDOM - TRIM_FREEDOM) : TRIM_FREEDOM;
     const wantX = (support.xMin + support.xMax) / 2;
     const wantZ = (support.zMin + support.zMax) / 2 + this.copTarget.z;
     if (!this.upright && this.inContact) {
-      // Toward the high rail (board +x is its left): the roll, positive with the left rail up, and its rate about the board's length.
+      // Toward the high rail (board +x is its left): the roll from the water's level (PRONE_ROLL_SHIFT), positive with
+      // the left rail up, and its rate about the board's length.
       const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation);
-      const roll = Math.asin(Math.max(-1, Math.min(1, side.y)));
+      const roll = Math.asin(Math.max(-1, Math.min(1, side.dot(this.waterUp))));
       const rate = this.scratch2.copy(board.angularVelocity).applyQuaternion(this.spin.copy(board.orientation).invert()).z;
       const ducking = this.duck.press > DUCK_BUSY;
-      // Pushing up (the pop-up), the hands hold the rails as they do ducking, the body up over them on its arms: it
-      // levels a board the stroke left rolling (from mid-roll the prone hips let it capsize under the rising body).
-      const onRails = ducking || this.phase === 'push';
+      const onRails = ducking;
       const reachX = onRails ? DUCK_SHIFT : reach.x;
+      this.armsGiveStep(roll, h);
       // Paddling, the level kept swings toward each arm as it pulls (board +x, the left arm's side, down is a negative
       // roll); pushing up, at once level.
-      const rolling = this.paddle && !ducking && this.phase === 'prone' ? Math.min(1, board.velocity.length() / STROKE_ROLL_SPEED) * this.waterCalm : 0;
+      const rolling = this.paddle && !ducking && this.phase === 'prone' && !this.climbing ? Math.min(1, board.velocity.length() / STROKE_ROLL_SPEED) * this.waterCalm : 0;
       this.strokeRoll = this.phase === 'prone' ? this.strokeRoll + (rolling - this.strokeRoll) * Math.min(1, h / STROKE_ROLL_TIME) : 0;
-      const swing = 2 * Math.PI * (this.strokePhase - PULL_SHARE / 2 + STROKE_ROLL_LEAD);
+      const swing = 2 * Math.PI * (this.strokePhase - this.pullShare / 2 + STROKE_ROLL_LEAD);
       const rollTo = -STROKE_ROLL * this.strokeRoll * Math.cos(swing);
       const rollRate = ((STROKE_ROLL * this.strokeRoll * 2 * Math.PI) / this.strokeCycle) * Math.sin(swing);
-      const wanted = onRails
-        ? DUCK_ROLL_SHIFT * roll + DUCK_ROLL_DAMPING * rate
-        : PRONE_ROLL_SHIFT * (roll - rollTo) + PRONE_ROLL_DAMPING * (rate - rollRate);
+      let wanted: number;
+      if (onRails) {
+        wanted = DUCK_ROLL_SHIFT * roll + DUCK_ROLL_DAMPING * rate;
+      } else {
+        // The balance first: the hips level the board within their reach, and the stroke's swing has what is left.
+        const level = Math.min(reachX, Math.max(-reachX, PRONE_ROLL_SHIFT * roll + PRONE_ROLL_DAMPING * rate));
+        const spare = reachX - Math.abs(level);
+        wanted = level + Math.min(spare, Math.max(-spare, -(PRONE_ROLL_SHIFT * rollTo + PRONE_ROLL_DAMPING * rollRate)));
+      }
       const targetX = Math.min(reachX, Math.max(-reachX, wanted));
       this.shiftAxis('x', targetX, reachX, h);
       this.shiftAxis('z', 0, reach.z, h);
@@ -2704,19 +5898,94 @@ export class AttachedRider {
       // Standing, the bank balances across the board (`prepareBank`); landing, as along it, balance only keeps the load clear of the feet's edges.
       const keepX = this.upright ? Math.min(wantX + LATERAL_FREEDOM, Math.max(wantX - LATERAL_FREEDOM, this.smoothedCop.x)) : wantX;
       const targetX = this.banking ? 0 : Math.min(reach.x, Math.max(-reach.x, this.balance.x + (keepX - this.smoothedCop.x) / share));
-      const keepZ = Math.min(wantZ + TRIM_FREEDOM, Math.max(wantZ - TRIM_FREEDOM, this.smoothedCop.z));
-      const targetZ = Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
+      const keepZ = Math.min(wantZ + freedom, Math.max(wantZ - freedom, this.smoothedCop.z));
+      // After Snap the hips go back over the stance's middle (the posture's own place); there, the balance's band again.
+      if (recentring && Math.abs(this.balance.z) <= RECENTRE_HOME) this.recentreTime = Number.NaN;
+      // The new surfer standing: along the board the body is its own (`StandingBody`): the pitch ankle's rest puts the
+      // pressure at the trim's target, so the upper body does not shift along it.
+      const targetZ = recentring || free ? 0 : Math.min(reach.z, Math.max(-reach.z, this.balance.z + (keepZ - this.smoothedCop.z) / share));
       this.shiftAxis('x', targetX, reach.x, h);
       this.shiftAxis('z', targetZ, reach.z, h);
     } else {
       this.shiftAxis('x', this.banking ? 0 : this.balance.x, reach.x, h);
-      this.shiftAxis('z', this.balance.z, reach.z, h);
+      this.shiftAxis('z', free ? 0 : this.balance.z, reach.z, h);
     }
     // Carried upright, the steering lean (with the heading hold and the hand); banked, steering is the bank. The trim, standing only.
     const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handBend)) * MAX_LEAN : 0;
-    const trim = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    const level = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+    // Snap: the upper body over the hips, which the pressure has put over the back foot (no lean back past it).
+    // The new surfer: no shift along the board (the trim is the pitch ankle's rest).
+    const trim = free ? 0 : snap > 0 ? level * (1 - snap) - snap * stamp * STAMP_BACK : level;
     this.leanAxis('x', lean, h);
-    this.leanAxis('z', trim, h);
+    // The stamp and its return at Snap's full-effort pace (SNAP_SHIFT_TIME), the weight's own shift.
+    if (this.stamps && snap > 0 && this.stampTime >= 0 && this.quick) this.leanAxis('z', trim, h, snap);
+    else this.leanAxis('z', trim, h);
+  }
+
+  /**
+   * Snap's stamp (snap-stamp; STAMP_STEER): returns how far the upper body is asked back past the hips now, 0–1. It starts
+   * once per press-and-turn, when the steer passes STAMP_STEER with Snap held at least STAMP_SET; its depth is the steer
+   * past the threshold, and it lasts STAMP_TIME (half of it for a steer just past). Then the return runs at the same pace
+   * for STAMP_RETURN, the body back over the hips and the fins.
+   */
+  private stampStep(h: number, snap: number): number {
+    if (snap <= 0) {
+      this.snapHeldTime = 0;
+      this.stampArmed = true;
+      this.stampTime = Number.NaN;
+      return 0;
+    }
+    this.snapHeldTime += h;
+    const steer = Math.abs(this.steer);
+    if (steer < STAMP_STEER - STAMP_REARM) this.stampArmed = true;
+    if (this.stampArmed && steer > STAMP_STEER && this.snapHeldTime >= STAMP_SET) {
+      this.stampArmed = false;
+      this.stampTime = 0;
+      this.stampDepth = Math.min(1, (steer - STAMP_STEER) / (1 - STAMP_STEER));
+    }
+    if (!(this.stampTime >= 0)) return 0;
+    this.stampTime += h;
+    const length = STAMP_TIME * (0.5 + 0.5 * this.stampDepth);
+    if (this.stampTime > length + STAMP_RETURN) {
+      this.stampTime = Number.NaN;
+      return 0;
+    }
+    return this.stampTime <= length ? this.stampDepth : 0;
+  }
+
+
+  /**
+   * Pushing up (the pop-up; the paddle-balance fix, 2026-10-22), the hips keep the
+   * prone balance (PRONE_ROLL_SHIFT within PRONE_SHIFT) and the arms give. As the
+   * chest leaves the deck the body rises on its hands, which hold the rails, and
+   * the board rolls under them while the body's centre of mass stays over the
+   * board's middle: the body shifts toward the high rail by its lift over the
+   * prone posture times tan of the roll, within the hands' span on the rails
+   * (DUCK_SHIFT). Carried rigidly with the deck, the rising body (its centre of
+   * mass from 0.19 m to 0.45 m over it) swung across by its height for every
+   * radian of roll; the hips' 0.1 m levels that only to 13°.
+   *
+   * The duck-dive's hold, which batch C gave the push (the hands on the rails,
+   * DUCK_ROLL_SHIFT 1.0 m per rad), is made for a board under water, with no
+   * waterplane and slow to roll. On a floating or planing board the body's shift,
+   * critically damped over BALANCE_TIME, came a quarter cycle or more behind the
+   * board's roll and drove it: in a probe on a static 15° face, popping up at
+   * each tenth of a second through a stroke, the board rolled 22–79° in the rise
+   * and the rider fell in 11 of 12 (none, the board within 18°, with the hips'
+   * balance and the arms' give); popping up on a face catching the paddler, 17 of
+   * 20, 12 in the rise (4 and 3 with this, the 3 nose-diving at the foot of an
+   * 18° face).
+   */
+  private armsGiveStep(roll: number, h: number): void {
+    if (this.phase !== 'push') {
+      this.armsGive = 0;
+      this.armsGiveRate = 0;
+      return;
+    }
+    const lift = Math.max(0, this.localCenter.y - deckHeight(this.shape, this.localCenter.z) - this.proneHeight);
+    const give = Math.max(-DUCK_SHIFT, Math.min(DUCK_SHIFT, lift * Math.tan(roll)));
+    this.armsGiveRate = (give - this.armsGive) / h;
+    this.armsGive = give;
   }
 
   /**
@@ -2727,7 +5996,7 @@ export class AttachedRider {
     this.handSide = 0;
     if (this.phase !== 'standing' || !this.attached) return;
     if (!this.hand) {
-      if (this.compress >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
+      if (this.compressAsked >= REACH_FROM && Math.abs(this.bank.angle) >= REACH_LEAN) this.handSide = Math.sign(this.bank.angle);
       return;
     }
     const side = this.scratch.set(1, 0, 0).applyQuaternion(board.orientation).setY(0);
@@ -2740,11 +6009,21 @@ export class AttachedRider {
   }
 
   /** Critically damped motion of the lean toward `target` along one axis, within the shift's speed and acceleration. */
-  private leanAxis(axis: 'x' | 'z', target: number, h: number): void {
-    const frequency = 1 / BALANCE_TIME;
-    const acceleration = Math.min(MAX_SHIFT_ACCELERATION, Math.max(-MAX_SHIFT_ACCELERATION,
+  private leanAxis(axis: 'x' | 'z', target: number, h: number, quick = 0): void {
+    let frequency = 1 / BALANCE_TIME;
+    let maxAcceleration = MAX_SHIFT_ACCELERATION;
+    let maxSpeed = MAX_SHIFT_SPEED;
+    if (quick > 0) {
+      // Snap's stamp: as fast as Snap's own shift (`shiftAxis`): SNAP_SHIFT_TIME within the inverted pendulum's acceleration.
+      const height = Math.max(0.4, this.leg.height + this.leg.extension);
+      const pendulum = (WATER.gravity * (this.feet.front - this.feet.rear)) / 2 / height;
+      frequency += quick * (1 / SNAP_SHIFT_TIME - frequency);
+      maxAcceleration += quick * (Math.max(maxAcceleration, pendulum) - maxAcceleration);
+      maxSpeed += quick * (Math.max(maxSpeed, SNAP_SHIFT_SPEED) - maxSpeed);
+    }
+    const acceleration = Math.min(maxAcceleration, Math.max(-maxAcceleration,
       frequency * frequency * (target - this.lean[axis]) - 2 * frequency * this.leanRate[axis]));
-    this.leanRate[axis] = Math.min(MAX_SHIFT_SPEED, Math.max(-MAX_SHIFT_SPEED, this.leanRate[axis] + acceleration * h));
+    this.leanRate[axis] = Math.min(maxSpeed, Math.max(-maxSpeed, this.leanRate[axis] + acceleration * h));
     this.lean[axis] += this.leanRate[axis] * h;
   }
 
@@ -2808,9 +6087,19 @@ export class AttachedRider {
   /** Critically damped motion of the balance shift toward `target`, within speed, acceleration and reach limits. */
   private shiftAxis(axis: 'x' | 'z', target: number, reach: number, h: number): void {
     // Standing, the whole body leans quickly into a turn; lying down, the hips shift gently.
-    const frequency = 1 / (this.upright ? STANDING_BALANCE_TIME : BALANCE_TIME);
-    const maxAcceleration = this.upright ? STANDING_SHIFT_ACCELERATION : MAX_SHIFT_ACCELERATION;
-    const maxSpeed = this.upright ? STANDING_SHIFT_SPEED : MAX_SHIFT_SPEED;
+    let frequency = 1 / (this.upright ? STANDING_BALANCE_TIME : BALANCE_TIME);
+    let maxAcceleration = this.upright ? STANDING_SHIFT_ACCELERATION : MAX_SHIFT_ACCELERATION;
+    let maxSpeed = this.upright ? STANDING_SHIFT_SPEED : MAX_SHIFT_SPEED;
+    const snap = axis === 'z' && this.quick ? this.snapping : 0;
+    if (snap > 0) {
+      // Snap held, the weight goes onto the tail as fast as the body can take it: the inverted pendulum's acceleration,
+      // the pressure at the front foot ahead of the body over its height above the feet (SNAP_SHIFT_TIME).
+      const height = Math.max(0.4, this.leg.height + this.leg.extension);
+      const pendulum = (WATER.gravity * (this.feet.front - this.feet.rear)) / 2 / height;
+      frequency += snap * (1 / SNAP_SHIFT_TIME - frequency);
+      maxAcceleration += snap * (Math.max(maxAcceleration, pendulum) - maxAcceleration);
+      maxSpeed += snap * (SNAP_SHIFT_SPEED - maxSpeed);
+    }
     const acceleration = Math.min(maxAcceleration, Math.max(-maxAcceleration,
       frequency * frequency * (target - this.balance[axis]) - 2 * frequency * this.balanceRate[axis]));
     const rate = Math.min(maxSpeed, Math.max(-maxSpeed, this.balanceRate[axis] + acceleration * h));

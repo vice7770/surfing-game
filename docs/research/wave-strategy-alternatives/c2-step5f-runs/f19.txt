@@ -1,0 +1,15 @@
+cases 19, stored depths 2; lanes 153; from 40 to 130 s; parts F
+
+## F. The hand-over's height bar, with 19 cases (1273 slices, 9 with no sea crest within 3 m)
+  the case's H over the sea's (bar 0.95–1.05): median 1.045, 90 % 1.356, 99 % 2.210, most 5.885 (1264); outside the bar 54.5 %
+  on the field's whole lanes: median 1.050, 90 % 1.358, 99 % 2.215, most 5.885 (1173), outside 55.7 %
+  with no τ clamp over 5 % of the weight: median 0.996, 90 % 1.075, 99 % 1.154, most 1.301 (471), outside 34.0 %
+  with no clamp at all: median 0.978, 90 % 1.028, 99 % 1.039, most 1.039 (57), outside 12.3 %
+  the crest's place against the sea's, m (bar 0.25): median 0.044, 90 % 0.195, 99 % 0.389, most 0.443 (1264); over 0.25 8.8 %
+  clamped: τ 811, slope 336, A0 717, HS/h0 336 of 1273
+  per case (slices that blend it; τ clamped low/high; the low clamp's share of its weight): b1-a0 56: low 36 (0.67), high 0; b1-a1 571: low 483 (0.85), high 0; b1-a2 560: low 549 (0.97), high 0; b15-a2 821: low 384 (0.49), high 0; b15-a3 148: low 147 (1.00), high 0; b2-a1 122: low 4 (0.00), high 0; b2-a2 322: low 117 (0.31), high 0; b2-a3 210: low 24 (0.01), high 0; b25-a2 116: low 0 (0.00), high 0; b25-a3 116: low 0 (0.00), high 0; b3-a1 31: low 0 (0.00), high 0; b3-a2 336: low 0 (0.00), high 0; b3-a3 305: low 0 (0.00), high 0
+
+the sea's crest lost on a step, over the whole run: 0
+
+ran 425 s wall; slices made 1833 (slope clamped 497, A0 clamped 966, some τ clamped 1121, at the toe 676); tracker {"raws":2261,"fitted":1833,"borrowed":13,"atToe":835,"rejected":41}
+EXIT19=0

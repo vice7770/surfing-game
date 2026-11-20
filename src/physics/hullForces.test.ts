@@ -174,6 +174,84 @@ describe('hull patch forces', () => {
   });
 });
 
+/**
+ * Step 3.3d, `buoyFrame: 'hull'` (`?buoyFrame=hull`), opt-in and off by default: the hydrostatic support resolved along
+ * the **hull** normal where the deck is dry and the patch planes, blending back to the water-surface normal as it
+ * floats or submerges. Savitsky's own convention for a bottom wetted on one side (`HULL_BUOYANCY`'s note).
+ */
+describe('a hull patch whose hydrostatic support points along the hull', () => {
+  /** A patch rolled and trimmed off the vertical, 0.1 m² and 5 cm thick, its bottom face at `y`. */
+  const slant = Math.hypot(0.3, 0.9, 0.3);
+  const tilted = (y: number): WorldPatch => ({
+    position: { x: 0, y, z: 0 }, normal: { x: -0.3 / slant, y: -0.9 / slant, z: 0.3 / slant }, area: 0.1, thickness: 0.05,
+  });
+  const planing = { x: 0, y: 0, z: 7.5 };
+  const magnitude = (f: { x: number; y: number; z: number }) => Math.hypot(f.x, f.y, f.z);
+  const offHull = (patch: WorldPatch, f: { x: number; y: number; z: number }) => {
+    const cos = (f.x * -patch.normal.x + f.y * -patch.normal.y + f.z * -patch.normal.z) / magnitude(f);
+    return (Math.acos(Math.min(1, cos)) * 180) / Math.PI;
+  };
+
+  it('leaves the default alone, bit for bit, and reports no hull share', () => {
+    const patch = tilted(-0.02);
+    const shipped = patchForce(patch, still(), planing, 1.5, createPatchForce());
+    const off = patchForce(patch, still(), planing, 1.5, createPatchForce(), 1, 0, 1, 0);
+    expect([off.buoyancy.x, off.buoyancy.y, off.buoyancy.z]).toEqual([shipped.buoyancy.x, shipped.buoyancy.y, shipped.buoyancy.z]);
+    expect([shipped.hullShare, off.hullShare]).toEqual([0, 0]);
+    // The shipped direction is the water's — straight up on flat water, whatever the hull is doing.
+    expect([Math.abs(shipped.buoyancy.x), Math.abs(shipped.buoyancy.z)]).toEqual([0, 0]);
+  });
+
+  it('turns the support onto the hull normal while the deck is dry and it planes, at the same magnitude', () => {
+    const patch = tilted(-0.02);
+    const mag = magnitude(patchForce(patch, still(), planing, 1.5, createPatchForce()).buoyancy);
+    // Far past planing, so the blend's Froude term is 1 to within 1e-12 and the limit is exact.
+    const hull = patchForce(patch, still(), { x: 0, y: 0, z: 1e5 }, 1.5, createPatchForce(), 1, 0, 1, 1);
+    expect(hull.hullShare).toBeCloseTo(1, 9);
+    expect(magnitude(hull.buoyancy)).toBeCloseTo(mag, 9);
+    expect(hull.buoyancy.x).toBeCloseTo(-patch.normal.x * mag, 7);
+    expect(hull.buoyancy.y).toBeCloseTo(-patch.normal.y * mag, 7);
+    expect(hull.buoyancy.z).toBeCloseTo(-patch.normal.z * mag, 7);
+    // At the ride's own speed it is all but there: the Froude term is 0.9965 at 7.5 m/s and 2 cm of immersion.
+    const ride = patchForce(patch, still(), planing, 1.5, createPatchForce(), 1, 0, 1, 1);
+    expect(ride.hullShare).toBeCloseTo(56.25 / (56.25 + WATER.gravity * 0.02), 9);
+    expect(offHull(patch, ride.buoyancy)).toBeLessThan(0.2);
+    expect(magnitude(ride.buoyancy)).toBeCloseTo(mag, 9);
+  });
+
+  it('keeps the water-surface normal where the board floats rather than planes', () => {
+    const patch = tilted(-0.02);
+    const shipped = patchForce(patch, still(), { x: 0, y: 0, z: 0 }, 1.5, createPatchForce());
+    const hull = patchForce(patch, still(), { x: 0, y: 0, z: 0 }, 1.5, createPatchForce(), 1, 0, 1, 1);
+    expect(hull.hullShare).toBe(0);
+    expect([hull.buoyancy.x, hull.buoyancy.y, hull.buoyancy.z]).toEqual([shipped.buoyancy.x, shipped.buoyancy.y, shipped.buoyancy.z]);
+  });
+
+  it('keeps the water-surface normal under a wetted deck, so a capsized patch is never pushed under by its own buoyancy', () => {
+    // Upside down: the bottom faces up at y = 0.03 and the deck is 2 cm under, so the slab is closed above and the
+    // hull's own normal points straight DOWN. The switch must not follow it.
+    const patch: WorldPatch = { position: { x: 0, y: 0.03, z: 0 }, normal: { x: 0, y: 1, z: 0 }, area: 0.1, thickness: 0.05 };
+    const hull = patchForce(patch, still(), { x: 0, y: -1, z: 6 }, 1.5, createPatchForce(), 1, 0, 1, 1);
+    expect(hull.hullShare).toBe(0);
+    expect(hull.buoyancy.y).toBeCloseTo(WATER.density * WATER.gravity * 0.1 * 0.02, 9);
+  });
+
+  it('blends by the deck\'s own dry share, and never changes the magnitude on the way', () => {
+    // The deck exactly on the surface line, so `wettedShare` reads 0.5 and the blend is half the planing share.
+    const deep = (0.9 / slant) * 0.05;
+    const patch = tilted(-deep);
+    const shipped = patchForce(patch, still(), planing, 1.5, createPatchForce());
+    const mag = magnitude(shipped.buoyancy);
+    const offShipped = offHull(patch, shipped.buoyancy);
+    const half = patchForce(patch, still(), planing, 1.5, createPatchForce(), 1, 0, 1, 1);
+    expect(half.hullShare).toBeCloseTo(0.5 * (56.25 / (56.25 + WATER.gravity * deep)), 9);
+    expect(magnitude(half.buoyancy)).toBeCloseTo(mag, 9);
+    // Half way over: off the water's normal, not yet onto the hull's.
+    expect(offHull(patch, half.buoyancy)).toBeGreaterThan(5);
+    expect(offHull(patch, half.buoyancy)).toBeLessThan(offShipped);
+  });
+});
+
 // The wipeout spec, Part B: a hull in aerated water floats and drags in a lighter mixture.
 describe('a hull patch in aerated water', () => {
   it('scales its buoyancy, pressure and friction by the share of the water that is water', () => {

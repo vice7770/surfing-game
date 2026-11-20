@@ -1,0 +1,28 @@
+C2 step 5j: the suites. Step 5i's own thirteen files, plus EdgeBand.test.ts -- the one other place that rewrites
+vWaterAir in the Rich vertex, the varying this round's layer count reads.
+
+$ npx vitest run \
+    src/scene/waterLooks.test.ts src/scene/water/foamAlbedo.test.ts src/scene/water/foamLook.test.ts \
+    src/scene/water/foamFreshness.test.ts src/scene/water/rollerLook.test.ts src/scene/water/skyReflection.test.ts \
+    src/scene/water/specular.test.ts src/scene/RollerFrontMesh.test.ts src/scene/barrel/brokenCrest.test.ts \
+    src/scene/barrel/SweptBarrelMesh.test.ts src/scene/EdgeBand.test.ts src/wave/SprayCloud.test.ts \
+    src/wave/PlungingLip.test.ts src/game/PhysicalMode.test.ts
+
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/surfing-game-worktrees/c2-step5j
+
+
+ Test Files  14 passed (14)
+      Tests  374 passed (374)
+   Start at  05:42:18
+   Duration  7.90s (tests 51%, transform 30%, import 19%)
+
+  Transform  transforming modules took 7.49s · 30% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+SUITE EXIT 0
+
+Vitest's default reporter lists no file names when every file passes, so the fourteen are named above.
+git status lists no change to src/scene/__snapshots__/waterLooks.test.ts.snap, so the shader snapshots passed
+unmodified.

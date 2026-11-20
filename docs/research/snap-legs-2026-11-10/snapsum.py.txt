@@ -1,0 +1,28 @@
+# python3 snapsum.py <json>... : one row per run of the turning-body probe's cutback / standcut plans (snap-legs, 2026-11-10).
+# All columns are read while Snap is held (the last 0.3 s before a fall left out of knees and pelvis). The new way is the Snap's stick's.
+# knees = the drawn front/rear knee, included angle (180 straight): the smallest of the hold -> at mid-turn (the board's fastest turn the new way) -> as Snap is let go (or 0.3 s before the fall).
+# pelvis = the physics' pelvis over the deck, m, at the same three moments. rest = the leg's rest length, m (0 = the riding stance), lowest -> at the end.
+# roll = the board's largest roll onto the new rail; yaw = its fastest turn the new way, deg/s; old way = how long after Snap the board still turns the old way, s;
+# flat = how long the board's roll is within 10 deg of flat on the way over; turned = heading come round the new way from its extreme, by the end of the hold;
+# v = speed as Snap is taken -> as it is let go (or at the fall); end = the fall's time from the run's start (and from Snap), or 'rides'.
+import json, sys
+print('| run | knees F/R low -> mid -> exit | pelvis low -> mid -> exit | rest low -> exit | roll new rail | peak yaw | old way s | flat s | turned | v in -> out | end |')
+print('|' + ' --- |' * 11)
+for path in sys.argv[1:]:
+    for run in json.load(open(path)):
+        fr = run['frames']; tag = path.split('/')[-1].replace('.json', '')
+        snap = [f for f in fr if f['phase'] == 'snap']
+        if not snap: print(f"| {tag} {run['name']} | fell before Snap ({run['fell']}) |"); continue
+        s = -run['dir']  # the new way: + = the board's left
+        t0 = snap[0]['t']
+        body = [f for f in snap if not (run['fell'] and f['t'] > run['fell'] - 0.3)] or snap
+        mid = max(snap, key=lambda f: s * f['yaw'])
+        ex = body[-1]
+        kn = lambda f: f"{f['d']['kneeF']:.0f}/{f['d']['kneeR']:.0f}"
+        lowF = min(f['d']['kneeF'] for f in body); lowR = min(f['d']['kneeR'] for f in body)
+        pel = lambda f: f"{f['p']['pelvisDeck']:.2f}"
+        old = next((f['t'] - t0 for f in snap if s * f['yaw'] > 0), None)
+        flat = sum(1 for f in snap if abs(f['roll']) < 10) / 60
+        ext = min(s * f['turned'] for f in snap); turned = s * snap[-1]['turned'] - ext
+        end = f"falls {run['fell']:.2f} s ({run['fell'] - t0:.2f} after Snap, {run['cause']})" if run['fell'] else 'rides'
+        print(f"| {tag} {run['name']} | {lowF:.0f}/{lowR:.0f} -> {kn(mid)} -> {kn(ex)} | {min(f['p']['pelvisDeck'] for f in body):.2f} -> {pel(mid)} -> {pel(ex)} | {min(f['legRest'] for f in snap):.2f} -> {ex['legRest']:.2f} | {max(s * f['roll'] for f in snap):.0f} | {s * mid['yaw']:.0f} | {('%.2f' % old) if old is not None else 'never'} | {flat:.2f} | {turned:.0f} | {snap[0]['v']:.1f} -> {snap[-1]['v']:.1f} | {end} |")

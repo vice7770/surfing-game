@@ -1,0 +1,6 @@
+# usage: pairtab.py <json>... ; one line per run of the pair plan
+import json,sys
+for p in sys.argv[1:]:
+  for o in json.load(open(p))['out']:
+    ev=' '.join(f"{e['step'][0]}@{e['t']}(v{e['v']} f{e['frac']} h{e['ff']})" for e in o['events'])
+    print(f"{o['name'][5:]:38s} {o['kind'][:24]:24s} fell {o['fell']} in {o['fellIn']:5s} ups {o['ups']} high {o['high']} aheadMax {o['aheadMax']} | {o['fellAt']}\n      {ev}")

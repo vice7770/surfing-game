@@ -548,7 +548,7 @@ const IMAGES: SheetImage[] = [
         gaps: ['leash.reeling is in the snapshot: drawn only from it'],
       },
       {
-        title: 'Climbing back on', missing: 'No climb: the grab pulls the ragdoll on, then it snaps to prone (here holding the board, 6 s after the fall).',
+        title: 'Climbing back on', missing: 'This tile reads the old grab (`swim: \'old\'`: the ragdoll pulled on, then snapped to prone; here holding the board, 6 s after the fall). Since swim-back the physics climbs the body on from the water over 1.2 s, its hands on the rails, and the drawing follows it.',
         today: recipe('climb-grab'), shot: BODY,
         target: {
           board: { level: true },

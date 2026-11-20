@@ -24,17 +24,22 @@ describe('sticks (C1)', () => {
     expect(padSticks(pad, DEFAULT_STICK).steer).toBeCloseTo((0.5 - 0.15) / 0.85, 6);
     expect(padSticks(pad, DEFAULT_STICK).trim).toBeCloseTo((0.6 - 0.15) / 0.85, 6);
     expect(padSticks(pad, { ...DEFAULT_STICK, trimStick: 'left' }).trim).toBeCloseTo((0.9 - 0.15) / 0.85, 6);
-    expect(padSticks(undefined, DEFAULT_STICK)).toEqual({ steer: 0, trim: 0, rotate: 0 });
+    expect(padSticks(undefined, DEFAULT_STICK)).toEqual({ steer: 0, trim: 0, swing: 0 });
   });
 
-  // The movement-flow spec: the right stick across turns the upper body, positive right, whichever stick trims;
-  // a stick resting just off centre rotates nothing (Review Focus 2).
-  it('rotates the upper body with the right stick across, past its dead zone', () => {
+  // The owner, 2026-10-22: the right stick across swings the camera, positive right, whichever stick trims; a stick
+  // resting just off centre swings nothing. It no longer turns the upper body: the sticks give no rotation at all.
+  it('swings the camera with the right stick across, past its dead zone and through its response, whichever stick trims', () => {
     const pad: PadState = { kind: 'standard', buttons: [], axes: [0, 0, 0.8, -0.6] };
-    expect(padSticks(pad, DEFAULT_STICK).rotate).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
-    expect(padSticks(pad, { ...DEFAULT_STICK, trimStick: 'left' }).rotate).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
-    expect(padSticks({ ...pad, axes: [0, 0, -0.1, 0] }, DEFAULT_STICK).rotate).toBe(0);
-    expect(padSticks({ ...pad, axes: [0, 0, -1, 0] }, DEFAULT_STICK).rotate).toBe(-1);
+    expect(padSticks(pad, DEFAULT_STICK).swing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+    expect(padSticks(pad, { ...DEFAULT_STICK, trimStick: 'left' }).swing).toBeCloseTo((0.8 - 0.15) / 0.85, 6);
+    expect(padSticks(pad, { ...DEFAULT_STICK, stickResponse: 'precise' }).swing).toBeCloseTo(shapeAxis(0.8, 0.15, 'precise'), 9);
+    expect(padSticks({ ...pad, kind: 'steam' }, DEFAULT_STICK).swing).toBeCloseTo((0.8 - 0.05) / 0.95, 6);
+    expect(padSticks({ ...pad, axes: [0, 0, -0.1, 0] }, DEFAULT_STICK).swing).toBe(0);
+    expect(padSticks({ ...pad, axes: [0, 0, -1, 0] }, DEFAULT_STICK).swing).toBe(-1);
+    // With trim on the left stick, the right stick's up and down do nothing, and its across still swings.
+    expect(padSticks({ ...pad, axes: [0, 0, 0, -0.9] }, { ...DEFAULT_STICK, trimStick: 'left' })).toEqual({ steer: 0, trim: 0, swing: 0 });
+    expect(padSticks(pad, DEFAULT_STICK)).not.toHaveProperty('rotate');
   });
 
   it('gives the Steam Controller its own, smaller dead zone', () => {

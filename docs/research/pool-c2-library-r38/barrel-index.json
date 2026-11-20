@@ -1,0 +1,42 @@
+[
+  {
+    "id": "periodic-pool-c2-b15-a0-l12",
+    "spot": "pool",
+    "slope": 0.055,
+    "nonlinearity": 0.1271,
+    "flatDepth": 0.199,
+    "asset": "barrels/periodic-pool-c2-b15-a0-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b25-a0-l12",
+    "spot": "pool",
+    "slope": 0.085,
+    "nonlinearity": 0.1289,
+    "flatDepth": 0.249,
+    "asset": "barrels/periodic-pool-c2-b25-a0-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b3s-a0-l12",
+    "spot": "pool",
+    "slope": 0.105,
+    "nonlinearity": 0.1301,
+    "flatDepth": 0.2,
+    "asset": "barrels/periodic-pool-c2-b3s-a0-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b15-a1-l12",
+    "spot": "pool",
+    "slope": 0.055,
+    "nonlinearity": 0.1512,
+    "flatDepth": 0.199,
+    "asset": "barrels/periodic-pool-c2-b15-a1-l12.bin"
+  },
+  {
+    "id": "periodic-pool-c2-b25-a1-l12",
+    "spot": "pool",
+    "slope": 0.085,
+    "nonlinearity": 0.1532,
+    "flatDepth": 0.249,
+    "asset": "barrels/periodic-pool-c2-b25-a1-l12.bin"
+  }
+]

@@ -1,0 +1,37 @@
+diff --git a/src/physics/AttachedRider.ts b/src/physics/AttachedRider.ts
+index 22eb1a25..d05c7733 100644
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -2080,7 +2080,10 @@ export class AttachedRider {
+     // Snap: the lean a tail-weighted turn can hold (SNAP_RADIUS).
+     const radius = this.snapping > 0 ? TURN_RADIUS + this.snapping * (SNAP_RADIUS - TURN_RADIUS) : TURN_RADIUS;
+     const most = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius))) : 0;
+-    const asked = Math.max(-most, Math.min(most, this.steer * RAIL_RANGE + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
++    const PROBE = (globalThis as unknown as { __snapProbe?: Record<string, number> }).__snapProbe ?? {};
++    const railRange = RAIL_RANGE + this.snapping * (((PROBE.rail ?? 50) * Math.PI) / 180 - RAIL_RANGE);
++    const mostSnap = this.planing ? Math.min(MAX_BANK, Math.atan((speed * speed) / (WATER.gravity * radius))) : 0;
++    const asked = Math.max(-mostSnap, Math.min(mostSnap, this.steer * railRange + (this.standingHold + HAND_BEND * this.handBend) * HOLD_BANK));
+     const toward = (asked - this.bankReference) * (1 - Math.exp(-h / REFERENCE_TIME));
+     this.bankReference += Math.max(-REFERENCE_RATE * h, Math.min(REFERENCE_RATE * h, toward));
+     // The rest the balance wants, within what the feet can give; the upper body swings for the rest of it.
+@@ -3109,7 +3112,19 @@ export class AttachedRider {
+     const lean = this.upright && !this.banking ? Math.max(-1, Math.min(1, this.steer + this.standingHold + HAND_BEND * this.handBend)) * MAX_LEAN : 0;
+     const level = this.upright ? Math.max(-1, Math.min(1, this.trim)) * TRIM_SHIFT : 0;
+     // Snap: the upper body over the hips, which the pressure has put over the back foot (no lean back past it).
+-    const trim = snap > 0 ? level * (1 - snap) : level;
++    const PROBE = (globalThis as unknown as { __snapProbe?: Record<string, number> }).__snapProbe ?? {};
++    const self = this as unknown as { probeSnapTime?: number };
++    self.probeSnapTime = snap > 0 ? (self.probeSnapTime ?? 0) + h : 0;
++    const stamping = PROBE.stamp === undefined || (self.probeSnapTime ?? 0) < PROBE.stamp;
++    const trim = snap > 0 ? level * (1 - snap) - snap * (stamping ? PROBE.back ?? 0 : 0) * TRIM_SHIFT : level;
++    if (PROBE.quickLean && snap > 0) {
++      const frequency = 1 / SNAP_SHIFT_TIME;
++      const acceleration = Math.min(4, Math.max(-4, frequency * frequency * (trim - this.lean.z) - 2 * frequency * this.leanRate.z));
++      this.leanRate.z = Math.min(SNAP_SHIFT_SPEED, Math.max(-SNAP_SHIFT_SPEED, this.leanRate.z + acceleration * h));
++      this.lean.z += this.leanRate.z * h;
++      this.leanAxis('x', lean, h);
++      return;
++    }
+     this.leanAxis('x', lean, h);
+     this.leanAxis('z', trim, h);
+   }

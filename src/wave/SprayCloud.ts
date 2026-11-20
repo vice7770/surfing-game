@@ -25,6 +25,11 @@ export interface LipImpact {
    * since the solver's water there is the hump under the drawn tube. Every other landing's spray rises from the water.
    */
   y?: number;
+  /**
+   * The height of the wave the parcel fell from, m (C2 step 5g): the veil's own ruler — how far back over the water it
+   * spreads, how far up the air carries it, and how wide its patch of air reaches, are all in wave heights.
+   */
+  height?: number;
 }
 
 /** Which water look the spray is for: Classic keeps its spray as it was before G9, Rich follows the splash-up. */
@@ -69,6 +74,69 @@ export const TOE_SPRAY = {
   minScale: 0.5, at: 0.9, lift: 0.13,
 } as const;
 
+/**
+ * A planing board's spray sheet this step (board-spray, 2026-10-29; `hullSpraySheets` in `physics/boardSpray.ts`): where
+ * the water leaves the hull, as a line from (x, y, z) `length` m along (alongX, alongZ); the sheet's launch velocity,
+ * m/s (world); the water it throws, kg/s; the spread of its drops' velocities, m/s; their fall speed, m/s; and the share
+ * drawn as mist. Drawn only.
+ */
+export interface BoardSpraySheet {
+  x: number;
+  y: number;
+  z: number;
+  alongX: number;
+  alongZ: number;
+  length: number;
+  vx: number;
+  vy: number;
+  vz: number;
+  flux: number;
+  spread: number;
+  fall: number;
+  mist: number;
+  /**
+   * The sheet as a curtain of water (spray-sheet, 2026-10-30): the hull's velocity where it leaves (world, m/s), its
+   * thickness there (m), the half-angle it fans out at (rad), and how long it flies before it tears into drops (s; 0:
+   * drops at once). With the curtain drawn, its drops are thrown from where it tears.
+   */
+  boardX: number;
+  boardY: number;
+  boardZ: number;
+  thickness: number;
+  fan: number;
+  breakup: number;
+  /**
+   * When it first sheds drops (s, turbulent: before it tears), which side of its board it leaves (−1 its −x side, +1
+   * its +x), and whose board (0 the player's, else another player's id + 1); where it tears (the tear line from (tearX,
+   * tearY, tearZ), tearLength m along (tearAlongX, tearAlongZ)) and its water's velocity there (world).
+   */
+  onset: number;
+  side: number;
+  source: number;
+  tearX: number;
+  tearY: number;
+  tearZ: number;
+  tearAlongX: number;
+  tearAlongZ: number;
+  tearLength: number;
+  tearVX: number;
+  tearVY: number;
+  tearVZ: number;
+  /**
+   * Its launch along the root (spray-rework, 2026-10-31; the water-physics advisor: the per-side mean hides the tail's
+   * faster jet): the water-weighted straight-line fit of each station's launch velocity against its place along the
+   * root, at the root's aft end and its fore end (world, m/s); and where along the root its water leaves on average, as a
+   * share of the root from its aft end (0.5 when even).
+   */
+  aftVX: number;
+  aftVY: number;
+  aftVZ: number;
+  foreVX: number;
+  foreVY: number;
+  foreVZ: number;
+  fluxMean: number;
+}
+
 /** What the spray needs from a surf zone: its grid and water, bore foam, the latest lip impacts and paddle strokes, and the wind. */
 export interface SprayScene {
   readonly solver: {
@@ -98,6 +166,8 @@ export interface SprayScene {
   readonly windSpeed: number;
   /** The rider's hands pulling through the water this step. */
   readonly strokes?: readonly StrokeSplash[];
+  /** The boards' spray sheets this step (board-spray): the local board's, and other players' from their poses. */
+  readonly boardSheets?: readonly BoardSpraySheet[];
   /** This step's spits, eruptions and foam balls from closing tubes (G9). */
   readonly spits?: readonly TubeSpit[];
   readonly eruptions?: readonly TubeEruption[];
@@ -123,6 +193,21 @@ const SPRAY_PER_FOAM = 0.6;
 const FEATHER_RATE = 0.05;
 /** Drawn spray and mist per m³ of air a closing tube blows out (G9, s_a; docs/research/whitewater-sources.md, provisional). */
 export const SPRAY_PER_AIR = 40;
+/**
+ * Drawn particles per kilogram of water a board's sheet throws (board-spray; the water-physics advisor, 2026-10-29: 6–8
+ * keeps a hard Compress bottom turn's fan to a few hundred live), and its drops' fall speeds either way of the sheet's.
+ */
+export const BOARD_SPRAY_PER_KG = 7;
+const BOARD_FALL_SPREAD = 1;
+/**
+ * The curtain's water (spray-sheet; the water-physics advisor, 2026-10-30): a fifth to a quarter of it sheds as finer
+ * drops before it tears, with more mist; the tear's drops are about 5 mm and more, falling at 9 m/s (Gunn & Kinzer),
+ * where the air lets drops so large (12σ/ρ_a U² over 5 mm: up to about 12 m/s).
+ */
+const BOARD_SHED = 0.22;
+const BOARD_SHED_MIST = 0.1;
+const TEAR_FALL = 9;
+const TEAR_LARGE_SPEED = 12;
 /** The share of a spit's and of an eruption's particles that are mist (provisional). */
 const SPIT_MIST = 0.5;
 const ERUPTION_MIST = 0.3;
@@ -150,6 +235,194 @@ export function splashLaunch(downSpeed: number, random: number): { up: number; f
   const spread = 0.8 + 0.4 * random;
   return { up: downSpeed * SPLASH_UP.vertical * spread, forward: SPLASH_UP.horizontal * (1.2 - 0.4 * random) };
 }
+
+/**
+ * A plunging lip's veil (C2 step 5g, `?lipVeil=on`, opt-in; the water-physics advisor, 2026-11-14). Erinin, Liu, Wang,
+ * Liu & Duncan 2023 (*JFM* 967 A36) measured **every droplet d ≥ 100 µm** crossing a plane above the crest of three
+ * laboratory plungers (λ₀ = 1.18 m, H ≈ 0.09 m, still air), and found every one of them made **after** the jet lands:
+ *
+ * - **region I-A**, the closure of the indentation between the jet and the splash it throws, at the curl: **32 %** of
+ *   the count, mean direction **81°** from horizontal; and **region I-B**, the bursting of the large bubbles entrapped
+ *   at impact and the splashing over the turbulent zone behind it: **46 %** at **56°**. Both means lie 9° and 34°
+ *   *downstream* of vertical, along the jet's own run. (Their region II, the foam wake's small bursting bubbles,
+ *   "does not travel vertically more than a few centimetres" and is the bore spray `boreSpray` already draws.)
+ * - their speed is **0.32–0.44 of the jet's impact speed** on the mean, with a tail to twice it; Mostert, Popinet &
+ *   Deike 2022 (*JFM* 942 A27) find the same in DNS — most droplets at one phase speed, the fastest at three or four —
+ *   and fit a skewed law. Drawn here from an exponential with that mean, which gives the mean and a tail that passes
+ *   twice the impact speed about one time in two hundred. `SPLASH_UP.vertical` throws every drop at 0.6 of it: about
+ *   1.5 times the measured mean, and with no tail at all.
+ * - the drawn classes take their shares of the droplets' **optical area**, not of their count, because a drawn sprite
+ *   stands for a patch of veil and not for one drop. Integrating Erinin's measured spectrum (N ∝ d^−2.1 below
+ *   d_i = 1.14 mm, d^−5.8 above) puts **8 %** of the optical area under 0.2 mm, **57 %** in 0.2–1 mm and **35 %** over
+ *   1 mm. The middle band is the veil, and the game had no class for it: `SPRAY_FALL` is 1–3 mm drops and `MIST_FALL`
+ *   0.1–0.2 mm.
+ */
+export const LIP_VEIL = {
+  /** Region I-A's share of the two regions' count (32 of 32 + 46), and the two mean directions from horizontal, rad. */
+  curlShare: 32 / 78,
+  curlAngle: (81 * Math.PI) / 180,
+  wakeAngle: (56 * Math.PI) / 180,
+  /** The spread either way of the mean direction, rad (the measured distributions are broad; this is a render value). */
+  spread: Math.PI / 6,
+  /** The speed law over the jet's impact speed: an exponential of this mean, floored and capped. */
+  speedMean: 0.38,
+  speedFloor: 0.1,
+  speedMax: 2.2,
+  /** How far back over the water the jet has just hit region I-B is spread, in wave heights. */
+  wakeReach: 0.5,
+  /**
+   * The classes by their share of the droplets' optical **area** — how many sprites each band is drawn with, since a
+   * sprite stands for a patch of veil: over 1 mm, under 0.2 mm, and the 0.2–1 mm veil between.
+   *
+   * C2 step 5h, the advisor's correction: 5g's 35 / 10 / 55 came from integrating a **mixed** triple (the moderate
+   * breaker's exponents with the strong breaker's d_max). Each of Erinin's three breakers integrated on its own
+   * consistent (α, β, d_i, d_max) gives area shares of 6 / 17 / 77 % (weak), 31 / 9 / 60 % (moderate) and
+   * **54 / 5 / 42 % (strong)**. A 2 m pool plunger is the strong column. The over-1 mm band is the least certain
+   * quantity in the chain — it rests on d_max, inside the dashed part of Erinin's own fit.
+   */
+  sprayShare: 0.535,
+  mistShare: 0.046,
+  /** The veil class: 0.2–1 mm drops fall at these terminal speeds (Gunn & Kinzer 1949), drawn this wide, m. */
+  veilFall: { min: 0.8, max: 2.5 },
+  veilSize: { min: 0.3, max: 0.55 },
+  /**
+   * **Fallout** (C2 step 5h, the advisor's §3.4): how long an over-1 mm sprite is drawn, s. At the Gunn & Kinzer
+   * terminal speed of a d₃₂ = 1.5 mm drop — 4.9 m/s — that band clears the veil's own 1.2 m depth in about a
+   * quarter of a second, where the two lighter bands are held by the air for seconds. The water is gone from the
+   * veil long before the sprite would have finished its three seconds, and the sprite should go with it.
+   *
+   * It matters more with the corrected area shares than it did at 5g's, because the over-1 mm band went from 35 %
+   * of the sprites to 54 % of them: at 5g's three-second life those are the drops on the speed law's tail that
+   * 5g §5.1 measured overshooting to 3.5–4.7 m, half as high again as anything in the owner's photograph. They
+   * taper out rather than vanish (`VEIL_OPTICS.taper`).
+   */
+  sprayLife: { min: 0.25, max: 0.45 },
+} as const;
+
+/**
+ * The veil's **opacity, from an optical depth** (C2 step 5h, `?lipVeil=on`; the water-physics advisor, 2026-11-15).
+ *
+ * Before this, a sprite's alpha was a constant per kind — 0.8 for a drop cluster, 0.25 for mist — so a 6–14 cm disc
+ * carrying a thimble of water painted as hard as a metre of cloud, and the veil read as a scatter of dots with sky
+ * between them (c2-step5g.md §6). Here a sprite carries the **water it stands for** and its alpha follows it:
+ *
+ * - a sprite's drops have a total geometric cross-section **A_x = 1.5 w / d₃₂**, exact when d₃₂ is the **Sauter mean**
+ *   Σd³/Σd² of its band — which is also, identically, the cross-section-weighted mean. The count-mean is 45 % smaller
+ *   in the 0.2–1 mm band and would lose that much area.
+ * - its optical depth across its own drawn disc is **τ = Q·A_x / (πD²/4)**, and its alpha is **1 − e^(−τ)**. Alpha
+ *   blending then composites correctly: Π(1 − αᵢ) = e^(−Στᵢ), so sprites that overlap add optical depth, which is
+ *   what makes a veil out of them rather than a pile of discs.
+ * - **A_x is conserved** as the sprite spreads, so a mist or veil patch that grows thins as 1/D². That is the fade,
+ *   and it is dilution rather than a curve. The over-1 mm class does not spread, so conserving its A_x is right for
+ *   it too (the advisor's caution about fallout applies to a spreading patch).
+ *
+ * **Q, and why it is not 2.** Mie extinction for drops this size is Q_ext = 2.00 flat (size parameter 570–5700, the
+ * extinction paradox) — but exactly half of it is forward diffraction into a cone of half-angle 1.22λ/d, which at
+ * 0.5–1 mm is **0.8–1.6 px** of a 1280-px, 55° frame. Against an *extended* background that light is not removed from
+ * the image, it is replaced by light from the neighbouring direction, which is similarity (δ-) scaling:
+ * dτ̃ = (1 − ω₀f)dτ with f the unresolved forward share (Stephens AT721 §8.1.1; Joseph, Wiscombe & Weinman 1976).
+ * With ω₀ = 1 (water drops are non-absorbing in the visible) and f = 0.5, **Q_eff = 1** for the two larger classes.
+ * The under-0.2 mm class's cone spans 4–8 px and does leave the pixel, so it keeps **Q_eff ≈ 1.5**.
+ */
+export const VEIL_OPTICS = {
+  /**
+   * **φ, the share of the splash-up's water that leaves as airborne droplets. Provisional and calibrated** — the one
+   * knob in this chain, and the only one with an order of licence.
+   *
+   * Nobody has published a droplet **volume** for a breaking wave at any scale: Erinin et al. 2023 and Mostert et al.
+   * 2022 both report counts only. Integrating Erinin's measured spectrum against their measured counts gives
+   * 13.1 / 44.3 / 142.9 mm³ per metre of crest per event for their weak / moderate / strong plungers, which against a
+   * splash-up of σ = 0.3 of the jet is **φ_sourced ≈ 3 × 10⁻⁴, good to one order and no better** (the volume lives in
+   * the large-diameter tail, which is where their own fit is drawn dashed). `airborneSourced` carries that figure.
+   *
+   * The value actually drawn is **40 times it**, and it is a fit, not a measurement: it puts the veil's standing
+   * airborne water near the 2 × 10⁻⁴ m³ per metre of breaking crest that the owner's photograph's own optical depth
+   * asks for at d₃₂ = 590 µm (c2-step5h.md §2). So the shape of this law is sourced and its level is not. If the veil
+   * comes out thin or thick on a ride, **this is the number to move**, and the gap to `airborneSourced` is the honest
+   * measure of how far the only published droplet measurement is from the photograph.
+   */
+  airborne: 0.012,
+  airborneSourced: 3e-4,
+  /**
+   * The Sauter mean diameter d₃₂ of each class, m, from Erinin's spectrum integrated band by band on the strong
+   * plunger's own triple: under 0.2 mm (±5 µm — the flattest number in the chain), 0.2–1 mm (±15 %), over 1 mm
+   * (±40 %, set by d_max alone). Count-means, which must **not** be used here, are 139 / 411 / 1388 µm.
+   */
+  sauter: { mist: 150e-6, veil: 590e-6, spray: 1500e-6 },
+  /**
+   * Each class's share of the airborne **water** (the strong plunger's column; weak and moderate are 4.9 / 81.6 /
+   * 13.6 % and 1.7 / 45.9 / 52.4 %). Note this is the water, where `LIP_VEIL`'s shares are the optical area: a sprite
+   * of a class carries that class's water divided by that class's own sprite count, so the class's total
+   * cross-section comes out independent of how many sprites were chosen to draw it.
+   */
+  water: { mist: 0.006, veil: 0.231, spray: 0.763 },
+  /** Q_eff per class, from the similarity scaling above: 1 against an extended background, 1.5 for the finest class. */
+  extinction: { mist: 1.5, veil: 1, spray: 1 },
+  /**
+   * The last share of a sprite's life over which its drawn alpha tapers to nothing. A drop does not vanish; `life` is
+   * a render cap, so this is render hygiene and not physics — without it a sprite whose disc never grows would pop.
+   */
+  taper: 0.25,
+} as const;
+
+/**
+ * Per class, the effective extinction cross-section a sprite carries for each m³ of airborne droplet water the
+ * landing divided among its sprites, 1/m: **Q_eff · 1.5 · (that class's share of the water) / (d₃₂ · that class's
+ * share of the sprites)**. The two shares are different quantities — `VEIL_OPTICS.water` is the water, `LIP_VEIL`'s
+ * are the optical area — and dividing by the sprite share is what makes a class's **total** cross-section come out
+ * independent of how many sprites were drawn for it. The three land within 2 % of each other at the shipped shares,
+ * which is not an accident: the area shares are the water shares divided by d₃₂, to within the rounding.
+ */
+export const VEIL_CROSS = {
+  spray: (VEIL_OPTICS.extinction.spray * 1.5 * VEIL_OPTICS.water.spray) / (VEIL_OPTICS.sauter.spray * LIP_VEIL.sprayShare),
+  mist: (VEIL_OPTICS.extinction.mist * 1.5 * VEIL_OPTICS.water.mist) / (VEIL_OPTICS.sauter.mist * LIP_VEIL.mistShare),
+  veil: (VEIL_OPTICS.extinction.veil * 1.5 * VEIL_OPTICS.water.veil)
+    / (VEIL_OPTICS.sauter.veil * (1 - LIP_VEIL.sprayShare - LIP_VEIL.mistShare)),
+} as const;
+
+/**
+ * The air that carries the veil (C2 step 5g, `?lipVeil=on`). **Provisional and calibrated, not sourced** — a
+ * mechanism with its scale fitted to the owner's own photograph, and nothing more.
+ *
+ * Thrown drops cannot reach the veil's measured top: a 0.45 mm drop launched at even twice the jet's impact speed
+ * rises 0.67 m against quadratic drag, where the owner's side-on photograph of Surf Abu Dhabi
+ * (`docs/research/tube-spray-reference-2026-11-14/`) puts the veil's top **0.55–0.70 of a wave height above the
+ * crest**, about 1.1–1.4 m of air over a 2 m wave. Erinin's own still-air back-tracking of their measured droplets
+ * placed 40 % of 2158 of them on the smooth water ahead of the breaker, which they call nonphysical and "an
+ * indication of the need for including the temporally evolving breaker-generated air flow field". So the air is the
+ * carrier — and **nobody has measured that field over a plunging breaker's crest** (the wind-wave-tank work is a
+ * different flow). What stands behind the numbers here is a mechanism (the peel pumps the tube's air out at about
+ * A_void × V_peel, and in the wave's frame the air separates over the breaking crest) and the photograph's geometry.
+ *
+ * A patch of it is seeded where a jet lands, and it lifts a drop in proportion to how light the drop is: the quadratic
+ * drag carries a 0.2 mm mist almost at the air's own speed, a 0.45 mm veil drop at the difference, and a millimetre
+ * drop not at all, so the big drops stay ballistic without a rule saying so.
+ */
+export const VEIL_AIR = {
+  /** The updraft at the water, as a share of √(gH): 0.9 gives 4.0 m/s on a 2 m wave, in the advisor's 3–5 m/s band. */
+  speed: 0.9,
+  /** Its patch's radius, in wave heights (Gaussian in the distance, cut off at twice it). */
+  reach: 2,
+  /**
+   * It does not start until this long after the landing, s. Erinin's first droplets cross their plane 110.8 ms after
+   * impact and were made 25–70 ms earlier; Froude-scaled to a 2 m wave that is 0.19–0.52 s. It is also the guard that
+   * keeps the veil 1–4 m **behind** the curl's tip at a peeling 7 m/s, so it never fogs the barrel's mouth.
+   */
+  onset: 0.25,
+  /** How long it blows, s, counted from the landing (so it lofts for `life − onset`). */
+  life: 1.4,
+  /**
+   * How far over the landing's own water it still blows, in **the breaking wave's own height** (`waveHeight`, what
+   * the lip reports, not the crest's stand over still water): it falls linearly to nothing there, so a drop stops
+   * where the air no longer beats its fall speed and no class can climb a chimney. The figure is a ceiling, not the
+   * veil's top — the drops stop well under it — and it was set to put the veil's body in the band the reference's
+   * ratio asks for, which c2-step5g.md §5.1 measures it doing (2.40 m against 2.2–2.4 m).
+   */
+  lift: 1.6,
+  /** A landing within this share of a patch's radius refreshes it instead of adding one, and this many are kept. */
+  merge: 0.5,
+  patches: 32,
+} as const;
 const WET = 0.05;
 const WATER_DENSITY = 1025;
 /**
@@ -161,6 +434,8 @@ export const SPRAY_STRIDE = 6;
 /** The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. */
 export const SPRAY_CAPACITY = 4096;
 export const WHITEWATER_CAPACITY = 1024;
+/** The boards' spray has a pool of its own beside them (board-spray): the sea's spray fills its pool on busy Reef steps. */
+export const BOARD_SPRAY_CAPACITY = 512;
 
 type Kind = 0 | 1 | 2 | 3 | 4;
 const SPRAY: Kind = 0;
@@ -194,14 +469,24 @@ export class SprayCloud {
   count = 0;
   /** How many of them are a closing tube's whitewater. */
   whitewaterCount = 0;
+  /** How many of them are the boards' spray, and how many the boards' sheets have spawned so far (board-spray). */
+  boardCount = 0;
+  boardSpawns = 0;
   /** The look the spray is drawn in: Classic's lip-impact drops are as they were before G9. */
   look: SprayLook = 'rich';
+  /**
+   * C2 step 5g (`?lipVeil=on`, opt-in): a plunging lip throws Erinin's two post-impact regions in three size classes
+   * (`LIP_VEIL`), and the air it drives carries them (`VEIL_AIR`). Off, every landing throws the splash-up's drops as
+   * before and no air blows, so the default game is untouched.
+   */
+  veil = false;
   /** The Particles setting (`setLevel`): High is the spray as it always was. */
   private particleLevel: ParticleLevel = 'high';
   private budget: Readonly<ParticleBudget> = PARTICLE_BUDGETS.high;
   /** The pools in use at that budget: spray and mist, and a tube's whitewater. */
   private sprayRoom: number;
   private whitewaterRoom: number;
+  private boardRoom: number;
   private readonly x: Float64Array;
   private readonly y: Float64Array;
   private readonly z: Float64Array;
@@ -213,7 +498,16 @@ export class SprayCloud {
   /** g / v_t², 1/m: the quadratic drag giving each particle its terminal speed. */
   private readonly drag: Float64Array;
   private readonly size: Float64Array;
+  /**
+   * The veil's own: the sprite's **effective extinction cross-section**, m² — Q_eff × the total geometric
+   * cross-section of the drops it stands for (`VEIL_OPTICS`). Conserved over its life, so its alpha follows its own
+   * dilution. Zero on every particle the veil did not throw, which is every particle with the switch off, and those
+   * keep the constant alphas they always had.
+   */
+  private readonly cross: Float64Array;
   private readonly kind: Uint8Array;
+  /** Whether a particle is a board's spray (its own pool). */
+  private readonly fromBoard: Uint8Array;
   /** A foam-ball sprite's roller, and where it sits in it: its distance from the axis, angle round it, and offset along it. */
   private readonly owner: Float64Array;
   private readonly radial: Float64Array;
@@ -222,23 +516,41 @@ export class SprayCloud {
   private readonly random: () => number;
   /** The roller front's toe spray draws on its own stream, so every other drop's stays as it was. */
   private readonly toeRandom: () => number;
+  /** So does the boards' spray (board-spray). */
+  private readonly boardRandom: () => number;
   /** Scratch for `roll`: each roller's sprites, and the rollers by id. */
   private readonly held = new Map<number, number>();
   private readonly rollerById = new Map<number, TubeRoller>();
+  /**
+   * The veil's patches of breaker-driven air (`VEIL_AIR`), one per jet landing: where it blows from (x, z and the
+   * water's own surface there), the wave's height, its speed at the water and its age. Only live with `veil` on.
+   */
+  private readonly airX = new Float64Array(VEIL_AIR.patches);
+  private readonly airY = new Float64Array(VEIL_AIR.patches);
+  private readonly airZ = new Float64Array(VEIL_AIR.patches);
+  private readonly airHeight = new Float64Array(VEIL_AIR.patches);
+  private readonly airSpeed = new Float64Array(VEIL_AIR.patches);
+  private readonly airAge = new Float64Array(VEIL_AIR.patches);
+  private airCount = 0;
 
-  constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
+  constructor(
+    seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4), readonly boardCapacity = 0,
+  ) {
     this.random = seededRandom(seed, 0x5b1a54);
     this.toeRandom = seededRandom(seed, 0x70e5f7);
-    const total = capacity + whitewaterCapacity;
+    this.boardRandom = seededRandom(seed, 0xb0a5d5);
+    const total = capacity + whitewaterCapacity + boardCapacity;
     const make = () => new Float64Array(total);
     this.x = make(); this.y = make(); this.z = make();
     this.vx = make(); this.vy = make(); this.vz = make();
-    this.age = make(); this.life = make(); this.drag = make(); this.size = make();
+    this.age = make(); this.life = make(); this.drag = make(); this.size = make(); this.cross = make();
     this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(total);
+    this.fromBoard = new Uint8Array(total);
     this.packedParticles = new Float32Array(total * SPRAY_STRIDE);
     this.sprayRoom = capacity;
     this.whitewaterRoom = whitewaterCapacity;
+    this.boardRoom = boardCapacity;
   }
 
   /**
@@ -250,6 +562,7 @@ export class SprayCloud {
     this.budget = particleBudget(level);
     this.sprayRoom = poolSize(this.capacity, this.budget);
     this.whitewaterRoom = poolSize(this.whitewaterCapacity, this.budget);
+    this.boardRoom = poolSize(this.boardCapacity, this.budget);
   }
 
   get level(): ParticleLevel {
@@ -267,11 +580,12 @@ export class SprayCloud {
 
   /** Whether there is room for another particle of spray and mist, or of a tube's whitewater. */
   private room(whitewater: boolean): boolean {
-    return whitewater ? this.whitewaterCount < this.whitewaterRoom : this.count - this.whitewaterCount < this.sprayRoom;
+    return whitewater ? this.whitewaterCount < this.whitewaterRoom : this.count - this.whitewaterCount - this.boardCount < this.sprayRoom;
   }
 
   update(scene: SprayScene, dt: number): void {
     if (!(dt > 0)) return;
+    if (this.veil) this.ageAir(dt);
     this.fly(scene, dt);
     this.roll(scene.rollers ?? [], dt);
     for (const spit of scene.spits ?? []) {
@@ -283,6 +597,7 @@ export class SprayCloud {
     for (const impact of scene.lipImpacts) this.splash(scene, impact);
     for (const impact of scene.drawnImpacts ?? []) this.splash(scene, impact);
     for (const stroke of scene.strokes ?? []) this.strokeSplash(scene, stroke);
+    for (const sheet of scene.boardSheets ?? []) this.boardSpray(sheet, dt);
     this.boreSpray(scene, dt);
     this.toeSpray(scene, dt);
     this.feather(scene, dt);
@@ -293,7 +608,79 @@ export class SprayCloud {
   clear(): void {
     this.count = 0;
     this.whitewaterCount = 0;
+    this.boardCount = 0;
+    this.airCount = 0;
     this.particlesDirty = false;
+  }
+
+  /** The veil's air (`VEIL_AIR`): every patch a step older, and the ones past their life dropped. */
+  private ageAir(dt: number): void {
+    for (let p = 0; p < this.airCount; p += 1) {
+      this.airAge[p] += dt;
+      if (this.airAge[p] <= VEIL_AIR.life) continue;
+      this.airCount -= 1;
+      const last = this.airCount;
+      this.airX[p] = this.airX[last];
+      this.airY[p] = this.airY[last];
+      this.airZ[p] = this.airZ[last];
+      this.airHeight[p] = this.airHeight[last];
+      this.airSpeed[p] = this.airSpeed[last];
+      this.airAge[p] = this.airAge[last];
+      p -= 1;
+    }
+  }
+
+  /**
+   * A patch of the veil's air where a jet has landed (`VEIL_AIR`): a landing inside a live patch refreshes it, so a
+   * peeling crest keeps one patch moving along it rather than a hundred stacked on it. Past the cap the oldest goes.
+   */
+  private seedAir(impact: LipImpact, surface: number): void {
+    const height = impact.height && impact.height > 0 ? impact.height : 1;
+    const reach = VEIL_AIR.merge * VEIL_AIR.reach * height;
+    for (let p = 0; p < this.airCount; p += 1) {
+      const dx = impact.x - this.airX[p];
+      const dz = impact.z - this.airZ[p];
+      if (dx * dx + dz * dz < reach * reach) {
+        this.airAge[p] = 0;
+        return;
+      }
+    }
+    let p = this.airCount;
+    if (p < VEIL_AIR.patches) this.airCount += 1;
+    else {
+      p = 0;
+      for (let q = 1; q < this.airCount; q += 1) if (this.airAge[q] > this.airAge[p]) p = q;
+    }
+    this.airX[p] = impact.x;
+    this.airY[p] = surface;
+    this.airZ[p] = impact.z;
+    this.airHeight[p] = height;
+    this.airSpeed[p] = VEIL_AIR.speed * Math.sqrt(GRAVITY * height);
+    this.airAge[p] = 0;
+  }
+
+  /**
+   * The veil's updraft at a point, m/s (`VEIL_AIR`): the strongest patch covering it, Gaussian in the distance and
+   * falling linearly to nothing `lift` wave heights over the water it was seeded on. The strongest, not the sum, so a
+   * crest with a dozen landings on it blows no harder than one.
+   */
+  private airAt(x: number, y: number, z: number): number {
+    let best = 0;
+    for (let p = 0; p < this.airCount; p += 1) {
+      if (this.airAge[p] < VEIL_AIR.onset) continue;
+      const height = this.airHeight[p];
+      const over = y - this.airY[p];
+      const lift = VEIL_AIR.lift * height;
+      if (over > lift) continue;
+      const reach = VEIL_AIR.reach * height;
+      const dx = x - this.airX[p];
+      const dz = z - this.airZ[p];
+      const r2 = (dx * dx + dz * dz) / (reach * reach);
+      if (r2 > 4) continue;
+      const w = this.airSpeed[p] * Math.exp(-r2) * (over <= 0 ? 1 : 1 - over / lift);
+      if (w > best) best = w;
+    }
+    return best;
   }
 
   private fly(scene: SprayScene, dt: number): void {
@@ -307,14 +694,17 @@ export class SprayCloud {
         if (this.age[k] > this.life[k]) this.remove(k--);
         continue;
       }
-      // Quadratic drag toward the wind (implicit in the drag's size, so light mist cannot overshoot it).
+      // Quadratic drag toward the air (implicit in the drag's size, so light mist cannot overshoot it): the wind along
+      // z as ever, and with `?lipVeil=on` the breaker's own updraft where a lip has just landed (`VEIL_AIR`). A drop
+      // follows it in proportion to how light it is, so the millimetre drops stay ballistic on their own.
+      const lift = this.veil ? this.airAt(this.x[k], this.y[k], this.z[k]) : 0;
       const rx = this.vx[k];
-      const ry = this.vy[k];
+      const ry = this.vy[k] - lift;
       const rz = this.vz[k] - windSpeed;
       const speed = Math.hypot(rx, ry, rz);
       const damping = 1 / (1 + dt * this.drag[k] * speed);
       this.vx[k] = rx * damping;
-      this.vy[k] = ry * damping - GRAVITY * dt;
+      this.vy[k] = ry * damping - GRAVITY * dt + lift;
       this.vz[k] = rz * damping + windSpeed;
       this.x[k] += this.vx[k] * dt;
       this.y[k] += this.vy[k] * dt;
@@ -329,6 +719,10 @@ export class SprayCloud {
 
   /** Splash-up where a lip parcel lands: drops launched up and on with its momentum, in proportion to its kinetic energy. */
   private splash(scene: SprayScene, impact: LipImpact): void {
+    if (this.veil) {
+      this.veilSplash(scene, impact);
+      return;
+    }
     if (this.look === 'classic') {
       this.classicSplash(scene, impact);
       return;
@@ -347,6 +741,71 @@ export class SprayCloud {
         impact.x + (this.random() - 0.5) * 0.8, surface + 0.05, impact.z + (this.random() - 0.5) * 0.8,
         impact.vx * forward + (this.random() - 0.5) * spread, up, impact.vz * forward + (this.random() - 0.5) * spread,
       );
+    }
+  }
+
+  /**
+   * A plunging lip's veil (C2 step 5g, `?lipVeil=on`): the drops of Erinin's two post-impact regions, at their
+   * measured shares and mean directions, with the measured speed law and in the three size classes (`LIP_VEIL`), all
+   * of them over the water the jet has just hit. A jet landing also seeds the patch of air that carries them
+   * (`VEIL_AIR`); a splash-up's own landing throws drops but seeds no air, since the air comes from the jet.
+   *
+   * It keeps the count law it replaces (`SPRAY_PER_JOULE` per joule of the landing's kinetic energy): the advisor's
+   * reading of the reference photograph is that the veil there is optically thin, so what the game was missing was
+   * the height, the fall speeds and the opacity, not the number of sprites. The veil's drops do nonetheless fill the
+   * spray pool, because the air holds them up several times as long (c2-step5g.md §5.4). That is bounded by the pool
+   * itself, and `update` throws a landing's drops **before** `boreSpray` fills what is left, so what a full pool
+   * costs is the strewn bore haze and not the break's own spray.
+   */
+  private veilSplash(scene: SprayScene, impact: LipImpact): void {
+    const speed = Math.hypot(impact.vx, impact.vy, impact.vz);
+    if (!(speed > 0)) return;
+    const energy = 0.5 * WATER_DENSITY * impact.volume * speed * speed;
+    const expected = energy * SPRAY_PER_JOULE * this.budget.spawn;
+    let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
+    const surface = impact.y ?? this.waterAt(scene, impact);
+    if ((impact.kind ?? 0) === 0) this.seedAir(impact, surface);
+    // Downstream is along the jet's own horizontal run; the regions lean that way and region I-B lies back along it.
+    const run = Math.hypot(impact.vx, impact.vz);
+    const runX = run > 0 ? impact.vx / run : 0;
+    const runZ = run > 0 ? impact.vz / run : 0;
+    const height = impact.height && impact.height > 0 ? impact.height : 1;
+    // C2 step 5h: the airborne droplet water this landing throws, m³ — φ of the splash-up, which is σ of the jet's
+    // whole water (`SPLASH_UP.share`; `volume` is only the part that stays). Divided by the sprites it is drawn with,
+    // so each carries the water it stands for. The divisor is the number the count law asked for, not the number the
+    // pool had room for: a full pool therefore draws a thinner veil rather than the same veil in fewer, denser discs.
+    const airborne = VEIL_OPTICS.airborne * SPLASH_UP.share * (impact.whole ?? impact.volume);
+    const perSprite = spawns > 0 ? airborne / spawns : 0;
+    for (; spawns > 0 && this.room(false); spawns -= 1) {
+      const curl = this.random() < LIP_VEIL.curlShare;
+      const angle = (curl ? LIP_VEIL.curlAngle : LIP_VEIL.wakeAngle) + (this.random() - 0.5) * LIP_VEIL.spread;
+      // An exponential of the measured mean: the mean is 0.38 of the impact's speed and about one drop in two
+      // hundred passes twice it, which is the measured tail.
+      const launch = speed * Math.min(LIP_VEIL.speedMax, Math.max(LIP_VEIL.speedFloor, -LIP_VEIL.speedMean * Math.log(1 - this.random())));
+      const forward = launch * Math.cos(angle);
+      const up = launch * Math.sin(angle);
+      // Region I-A sits at the curl; region I-B is spread back over the turbulent zone the jet has just ploughed.
+      const back = curl ? 0 : LIP_VEIL.wakeReach * height * this.random();
+      const across = (this.random() - 0.5) * 0.4 * height;
+      const k = this.count;
+      const pick = this.random();
+      this.spawn(
+        pick < LIP_VEIL.sprayShare ? SPRAY : MIST,
+        impact.x - runX * back - runZ * across, surface + 0.05, impact.z - runZ * back + runX * across,
+        runX * forward, up, runZ * forward,
+      );
+      // The 0.2–1 mm band, which carries most of the veil's optical area and which the game had no class for: drawn
+      // as mist is, since that is the soft translucent sprite, but falling at its own drops' speed.
+      const veilClass = pick >= LIP_VEIL.sprayShare + LIP_VEIL.mistShare;
+      if (veilClass) {
+        const fall = this.between(LIP_VEIL.veilFall);
+        this.drag[k] = GRAVITY / (fall * fall);
+        this.size[k] = this.between(LIP_VEIL.veilSize);
+      } else if (pick < LIP_VEIL.sprayShare) {
+        // The over-1 mm band falls out of the veil in a quarter of a second (`LIP_VEIL.sprayLife`).
+        this.life[k] = this.between(LIP_VEIL.sprayLife);
+      }
+      this.cross[k] = perSprite * (veilClass ? VEIL_CROSS.veil : pick < LIP_VEIL.sprayShare ? VEIL_CROSS.spray : VEIL_CROSS.mist);
     }
   }
 
@@ -401,6 +860,79 @@ export class SprayCloud {
         backX * back + (this.random() - 0.5) * spread, up, backZ * back + (this.random() - 0.5) * spread,
       );
     }
+  }
+
+  /**
+   * A board's spray sheet (board-spray, 2026-10-29): BOARD_SPRAY_PER_KG drawn particles per kilogram of the water it
+   * throws, from along its root, at its launch velocity a fifth either way and its spread, BOARD_MIST of them mist. On
+   * its own random stream, so every other source's drops stay as they were.
+   */
+  private boardSpray(sheet: BoardSpraySheet, dt: number): void {
+    if (!(sheet.flux > 0)) return;
+    const random = this.boardRandom;
+    const expected = sheet.flux * dt * BOARD_SPRAY_PER_KG * this.budget.spawn;
+    let spawns = Math.floor(expected) + (random() < expected - Math.floor(expected) ? 1 : 0);
+    const torn = sheet.breakup > 0;
+    for (; spawns > 0 && this.boardCount < this.boardRoom; spawns -= 1) {
+      const across = random();
+      const pace = 0.8 + 0.4 * random();
+      const k = this.count;
+      if (!torn) {
+        // As drops at once, from along the root (board-spray; the spray-sheet's `?spraySheet=off`).
+        this.spawn(
+          random() < sheet.mist ? MIST : SPRAY,
+          sheet.x + sheet.alongX * across * sheet.length, sheet.y, sheet.z + sheet.alongZ * across * sheet.length,
+          sheet.vx * pace + (random() - 0.5) * 2 * sheet.spread, sheet.vy * pace + (random() - 0.5) * 2 * sheet.spread,
+          sheet.vz * pace + (random() - 0.5) * 2 * sheet.spread,
+          random,
+        );
+        this.boardDrops(k, sheet.fall, random);
+        continue;
+      }
+      // The curtain's water (spray-sheet): BOARD_SHED of it shed as finer drops along the sheet between its first drops
+      // (`onset`) and its tear, the rest from the ragged tear line, a sixth of the flight either side of it.
+      const rootX = sheet.x + sheet.alongX * across * sheet.length;
+      const rootZ = sheet.z + sheet.alongZ * across * sheet.length;
+      const tearX = sheet.tearX + sheet.tearAlongX * across * sheet.tearLength;
+      const tearZ = sheet.tearZ + sheet.tearAlongZ * across * sheet.tearLength;
+      if (random() < BOARD_SHED) {
+        const age = sheet.onset + (sheet.breakup - sheet.onset) * random();
+        const f = age / sheet.breakup;
+        // On the chord from the root to the tear, lifted by gravity's bulge between them.
+        const bulge = 0.5 * GRAVITY * age * (sheet.breakup - age);
+        this.spawn(
+          random() < Math.min(1, sheet.mist + BOARD_SHED_MIST) ? MIST : SPRAY,
+          rootX + (tearX - rootX) * f, sheet.y + (sheet.tearY - sheet.y) * f + bulge, rootZ + (tearZ - rootZ) * f,
+          (sheet.vx + (sheet.tearVX - sheet.vx) * f) * pace + (random() - 0.5) * 2 * sheet.spread,
+          (sheet.vy + (sheet.tearVY - sheet.vy) * f) * pace + (random() - 0.5) * 2 * sheet.spread,
+          (sheet.vz + (sheet.tearVZ - sheet.vz) * f) * pace + (random() - 0.5) * 2 * sheet.spread,
+          random,
+        );
+        this.boardDrops(k, sheet.fall - 1, random);
+        continue;
+      }
+      const ragged = (random() - 0.5) * 0.3 * sheet.breakup;
+      this.spawn(
+        random() < sheet.mist ? MIST : SPRAY,
+        tearX + sheet.tearVX * ragged, sheet.tearY + sheet.tearVY * ragged, tearZ + sheet.tearVZ * ragged,
+        sheet.tearVX * pace + (random() - 0.5) * 2 * sheet.spread, sheet.tearVY * pace + (random() - 0.5) * 2 * sheet.spread,
+        sheet.tearVZ * pace + (random() - 0.5) * 2 * sheet.spread,
+        random,
+      );
+      // The tear's drops are the bigger: about 5 mm and more, falling at 9 m/s, where the air lets them be so large.
+      this.boardDrops(k, Math.hypot(sheet.tearVX, sheet.tearVY, sheet.tearVZ) <= TEAR_LARGE_SPEED ? TEAR_FALL : sheet.fall, random);
+    }
+  }
+
+  /** A board's drop just spawned at `k`: its own pool, and its fall speed (`fall` a metre either way; the mist as mist). */
+  private boardDrops(k: number, fall: number, random: () => number): void {
+    if (this.kind[k] === SPRAY) {
+      const speed = Math.max(1, fall + (random() - 0.5) * 2 * BOARD_FALL_SPREAD);
+      this.drag[k] = GRAVITY / (speed * speed);
+    }
+    this.fromBoard[k] = 1;
+    this.boardCount += 1;
+    this.boardSpawns += 1;
   }
 
   /**
@@ -582,7 +1114,7 @@ export class SprayCloud {
     }
   }
 
-  private spawn(kind: Kind, x: number, y: number, z: number, vx: number, vy: number, vz: number): void {
+  private spawn(kind: Kind, x: number, y: number, z: number, vx: number, vy: number, vz: number, random = this.random): void {
     const k = this.count;
     this.x[k] = x;
     this.y[k] = y;
@@ -592,23 +1124,26 @@ export class SprayCloud {
     this.vz[k] = vz;
     this.age[k] = 0;
     this.kind[k] = kind;
+    this.fromBoard[k] = 0;
+    this.cross[k] = 0;
     this.count += 1;
     if (isWhitewater(kind)) this.whitewaterCount += 1;
     if (kind === FOAM_BALL) {
       this.drag[k] = 0;
       this.life[k] = FOAM_BALL_LINGER;
-      this.size[k] = this.between(FOAM_BALL_SIZE);
+      this.size[k] = this.between(FOAM_BALL_SIZE, random);
       return;
     }
     const mist = isMist(kind);
-    const fall = mist ? this.between(MIST_FALL) : this.between(SPRAY_FALL);
+    const fall = mist ? this.between(MIST_FALL, random) : this.between(SPRAY_FALL, random);
     this.drag[k] = GRAVITY / (fall * fall);
-    this.life[k] = (mist ? MIST_LIFE : SPRAY_LIFE) * (0.6 + 0.4 * this.random());
-    this.size[k] = mist ? 0.35 + 0.45 * this.random() : 0.06 + 0.08 * this.random();
+    this.life[k] = (mist ? MIST_LIFE : SPRAY_LIFE) * (0.6 + 0.4 * random());
+    this.size[k] = mist ? 0.35 + 0.45 * random() : 0.06 + 0.08 * random();
   }
 
   private remove(k: number): void {
     if (isWhitewater(this.kind[k])) this.whitewaterCount -= 1;
+    if (this.fromBoard[k]) this.boardCount -= 1;
     this.count -= 1;
     const last = this.count;
     this.x[k] = this.x[last];
@@ -621,7 +1156,9 @@ export class SprayCloud {
     this.life[k] = this.life[last];
     this.drag[k] = this.drag[last];
     this.size[k] = this.size[last];
+    this.cross[k] = this.cross[last];
     this.kind[k] = this.kind[last];
+    this.fromBoard[k] = this.fromBoard[last];
     this.owner[k] = this.owner[last];
     this.radial[k] = this.radial[last];
     this.spin[k] = this.spin[last];
@@ -635,20 +1172,26 @@ export class SprayCloud {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
       const mist = isMist(this.kind[k]);
+      const width = this.size[k] * (mist ? (1 + t) * mistSize : 1);
       particles[o] = this.x[k];
       particles[o + 1] = this.y[k];
       particles[o + 2] = this.z[k];
-      particles[o + 3] = this.size[k] * (mist ? (1 + t) * mistSize : 1);
-      // A foam ball holds until its roller is gone, then fades over the time it lingers.
-      particles[o + 4] = this.kind[k] === FOAM_BALL
-        ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
-        : (mist ? 0.25 : 0.8) * (1 - t * t);
+      particles[o + 3] = width;
+      // The veil's drops (C2 step 5h): alpha from the optical depth across the sprite's own disc, τ = Q·A_x/(πD²/4),
+      // with A_x conserved — so a patch that spreads thins as 1/D², which is the fade, and sprites that overlap add
+      // optical depth. Everything else keeps the constant alpha per kind it always had; a foam ball holds until its
+      // roller is gone, then fades over the time it lingers.
+      particles[o + 4] = this.cross[k] > 0
+        ? (1 - Math.exp(-(4 * this.cross[k]) / (Math.PI * width * width))) * Math.min(1, (1 - t) / VEIL_OPTICS.taper)
+        : this.kind[k] === FOAM_BALL
+          ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
+          : (mist ? 0.25 : 0.8) * (1 - t * t);
       particles[o + 5] = this.kind[k];
     }
   }
 
-  private between(range: { min: number; max: number }): number {
-    return range.min + (range.max - range.min) * this.random();
+  private between(range: { min: number; max: number }, random = this.random): number {
+    return range.min + (range.max - range.min) * random();
   }
 
   /** The water's surface in the cell a lip impact lands in, m. */

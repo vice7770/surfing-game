@@ -19,6 +19,9 @@ export interface EndCardModel {
 const TITLES: Record<RideResult['outcome'], StringKey> = { wipeout: 'end.wipeout', complete: 'end.complete', ended: 'end.ended' };
 export const MANEUVER_LABELS: Record<ManeuverKind, StringKey> = {
   'bottom turn': 'maneuver.bottomTurn', 'top turn': 'maneuver.topTurn', snap: 'maneuver.snap', cutback: 'maneuver.cutback',
+  // A turn the analyzer measured and refused to name (2026-11-19). The card still lists it, so a run the player felt
+  // is never missing from the readout; it is simply not called a manoeuvre.
+  unjudged: 'maneuver.unjudged',
 };
 
 /**
@@ -49,6 +52,17 @@ export function endCardModel(result: RideResult, records: readonly BestKind[], u
   };
 }
 
+/**
+ * Whether a finished ride gets the end card: never (owner, 2026-10-31: "the popup to start
+ * a new wave or change beach is still there; remove it"). Play carries on after every ride,
+ * the rider swims back or paddles out, and the pause menu keeps Replay, New wave and the
+ * menu. The ride is still logged and a new best still chimes. The card's code is kept,
+ * unused, should a summary come back.
+ */
+export function showsEndCard(_result: RideResult): boolean {
+  return false;
+}
+
 export interface EndCardHandlers {
   replay(): void;
   newWave(): void;
@@ -57,8 +71,8 @@ export interface EndCardHandlers {
 }
 
 /**
- * The card at the foot of the screen after a ride. It is not modal: the waves run
- * on and a fallen rider can swim back, so it takes no focus.
+ * The card at the foot of the screen after a ride that did not end in a wipeout.
+ * It is not modal: the waves run on, so it takes no focus.
  */
 export function createRideEndCard(model: EndCardModel, handlers: EndCardHandlers, retryKey: string): HTMLElement {
   const button = (label: string, action: () => void, primary = false) =>

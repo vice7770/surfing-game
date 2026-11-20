@@ -481,6 +481,31 @@ describe('Boussinesq breaking', () => {
     }
   }, 120_000);
 
+  // The onset over the bed (canyon-beach-break, `KennedyOptions.onsetAt`): where it equals the solver's onset every cell
+  // breaks exactly as without it; where it is lower the wave starts breaking seaward, deeper, on a gentler face.
+  it('breaks exactly as before where the onset over the bed agrees, and further out where it is lower', () => {
+    const run = (onsetAt?: (x: number, z: number) => number) => {
+      const depthAt = (_x: number, z: number) => (z < 60 ? 5 : 5 - (z - 60) / 40);
+      const solver = new BoussinesqSolver(
+        { nx: 2, xMin: 0, dx: 1, zEdges: uniformEdges(0, 280, 560), xBoundary: 'periodic' }, depthAt, { breaking: { onset: 0.65, ...(onsetAt ? { onsetAt } : {}) } },
+      );
+      solver.addRelaxationZone({ weights: solver.zoneWeightsAlongZ(50, 0), target: airyTarget(0.3, 10, 5) });
+      let outer = Infinity;
+      while (solver.time < 120) {
+        solver.step(0.05);
+        if (solver.time < 80) continue;
+        for (let iz = 0; iz < solver.nz; iz += 1) if (solver.breakingStrength[iz * solver.nx] > 0.3 && solver.zCenters[iz] > 60) outer = Math.min(outer, solver.zCenters[iz]);
+      }
+      return { solver, outer };
+    };
+    const plain = run();
+    const same = run(() => 0.65);
+    expect(Array.from(same.solver.h)).toEqual(Array.from(plain.solver.h));
+    expect(Array.from(same.solver.breakingStrength)).toEqual(Array.from(plain.solver.breakingStrength));
+    const lower = run(() => 0.45);
+    expect(lower.outer).toBeLessThan(plain.outer - 5);
+  }, 120_000);
+
   // A long straight crest breaks along its whole length at once, oblique or not: its parents behind the face carry the
   // same age as the cells beside it, so carrying the age from behind the face (breakingAge.ts) leaves it as it was.
   for (const degrees of [20, 40]) {

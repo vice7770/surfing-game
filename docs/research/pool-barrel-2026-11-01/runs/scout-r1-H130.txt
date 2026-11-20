@@ -1,0 +1,23 @@
+pool barrel H 1.3 (8 periods after 50 s, 209 s wall); {"platformDepth":3.25,"gradient":0.10526315789473684,"tipGradient":0.06666666666666667,"tipEase":15,"crestDepth":1,"armCrestDepth":0.9,"crestEase":25,"kneeRounding":3,"flatWidth":6,"lagoonSlope":0.05555555555555555,"lagoonDepth":1.8,"armLength":45,"taperWidth":25}
+surf meter {"typical":1.7403914668827376,"sets":1.7499964763996663,"waves":12}; platform at the take-off's knee (z -239, 3.25 m): H 1.94 m, H/h 0.60; least water on the top 0.08 m; fastest 5.48 m/s
+tip onsets: 
+onsets deeper than 2.6 m: 583 (t 50.1 x -33 z -198 d 2.69, t 50.1 x -32 z -199 d 2.64, t 50.1 x 31 z -199 d 2.64, t 50.1 x 32 z -198 d 2.69, t 50.1 x 33 z -197 d 2.74, t 53.5 x 55 z -122 d 2.86, t 53.8 x -56 z -175 d 3.25, t 53.8 x 55 z -175 d 3.25)
+|x|  0–5: R onsets 0 d — face —, jets 13 X 19.1 Y 2.06 ξ 0.65 H 1.92 W 0.93 L 2.22 d 1.94 ; L onsets 1 d 1.05 face 1.37, jets 15 X 20.2 Y 2.13 ξ 0.65 H 1.94 W 0.87 L 2.17 d 1.94
+|x|  5–10: R onsets 6 d 0.98 face 1.35, jets 33 X 18.1 Y 2.00 ξ 0.67 H 1.90 W 0.90 L 2.14 d 1.92 ; L onsets 5 d 0.98 face 1.34, jets 32 X 19.1 Y 2.07 ξ 0.69 H 1.90 W 0.90 L 2.17 d 1.96
+|x| 10–15: R onsets 6 d 1.16 face 1.36, jets 45 X 23.3 Y 2.33 ξ 0.78 H 1.80 W 0.71 L 1.97 d 2.11 ; L onsets 8 d 1.16 face 1.38, jets 44 X 23.1 Y 2.32 ξ 0.78 H 1.79 W 0.71 L 1.96 d 2.11
+|x| 15–20: R onsets 5 d 1.48 face 1.39, jets 50 X 24.2 Y 2.39 ξ 0.74 H 1.69 W 0.64 L 1.84 d 2.24 ; L onsets 5 d 1.40 face 1.38, jets 50 X 24.2 Y 2.39 ξ 0.74 H 1.67 W 0.64 L 1.83 d 2.24
+|x| 20–25: R onsets 5 d 1.89 face 1.43, jets 50 X 25.2 Y 2.46 ξ 0.81 H 1.56 W 0.55 L 1.68 d 2.41 ; L onsets 5 d 1.80 face 1.44, jets 50 X 25.6 Y 2.48 ξ 0.81 H 1.53 W 0.53 L 1.66 d 2.41
+|x| 25–30: R onsets 5 d 2.28 face 1.47, jets 50 X 26.8 Y 2.56 ξ 0.82 H 1.46 W 0.50 L 1.58 d 2.62 ; L onsets 5 d 2.23 face 1.47, jets 50 X 26.8 Y 2.56 ξ 0.82 H 1.50 W 0.50 L 1.59 d 2.62
+|x| 30–35: R onsets 5 d 2.64 face 1.58, jets 51 X 26.4 Y 2.54 ξ 0.82 H 1.45 W 0.50 L 1.56 d 2.86 ; L onsets 5 d 2.58 face 1.59, jets 51 X 26.6 Y 2.55 ξ 0.82 H 1.46 W 0.50 L 1.56 d 2.86
+|x| 35–40: R onsets 5 d 1.13 face 1.10, jets 30 X 24.0 Y 2.38 ξ 0.77 H 1.41 W 0.54 L 1.55 d 3.11 ; L onsets 5 d 1.03 face 1.09, jets 30 X 24.0 Y 2.38 ξ 0.77 H 1.41 W 0.54 L 1.55 d 3.11
+|x| 40–45: R onsets 5 d 1.63 face 1.14, jets 8 X 20.0 Y 2.12 ξ 1.20 H 1.25 W 0.57 L 1.41 d 2.16 ; L onsets 5 d 1.52 face 1.14, jets 8 X 20.2 Y 2.13 ξ 1.19 H 1.23 W 0.55 L 1.39 d 2.12
+|x| 45–50: R onsets 12 d 3.25 face 1.43, jets 40 X 23.3 Y 2.33 ξ 1.27 H 1.26 W 0.48 L 1.34 d 2.23 ; L onsets 7 d 1.91 face 1.14, jets 38 X 20.0 Y 2.12 ξ 1.20 H 1.20 W 0.53 L 1.30 d 2.30
+|x| 50–55: R onsets 6 d 3.25 face 1.45, jets 32 X 15.7 Y 1.84 ξ 0.77 H 1.11 W 0.56 L 1.25 d 2.04 ; L onsets 16 d 3.25 face 1.41, jets 28 X 14.3 Y 1.75 ξ 0.77 H 1.07 W 0.55 L 1.23 d 1.94
+|x| 55–60: R onsets 11 d 3.25 face 1.48, jets 33 X — Y — ξ 0.91 H 0.87 W 0.46 L 1.03 d 2.44 ; L onsets 6 d 3.25 face 1.54, jets 31 X — Y — ξ 0.80 H 0.86 W 0.45 L 1.02 d 2.44
+|x| 60–65: R onsets 11 d 3.25 face 1.55, jets 17 X — Y — ξ 1.27 H 1.11 W 0.58 L 1.31 d 1.94 ; L onsets 12 d 3.25 face 1.54, jets 16 X — Y — ξ 1.27 H 1.10 W 0.58 L 1.30 d 1.94
+|x| 65–70: R onsets 3 d 3.25 face 1.47, jets 0 X — Y — ξ — H — W — L — d — ; L onsets 1 d 3.25 face 1.45, jets 0 X — Y — ξ — H — W — L — d —
+|x| 70–75: R onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d — ; L onsets 0 d — face —, jets 0 X — Y — ξ — H — W — L — d —
+x 27: t 50.1 z -199 d 2.28 f 1.47
+x 45: 
+x -27: t 50.1 z -200 d 2.23 f 1.47
+x -45: t 50.1 z -142 d 1.85 f 1.14

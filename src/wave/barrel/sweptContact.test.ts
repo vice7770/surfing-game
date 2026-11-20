@@ -113,10 +113,14 @@ describe('ordinary bounded-C approach answers', () => {
     } finally { spy.mockRestore(); }
   });
 
-  it('leaves raw contact and invalid requests without a C guide', () => {
+  it('guides to the cases’ own mature mouths (any tube shape since 2026-10-22), and never on an invalid request', () => {
     const contact = contactAt(0.1);
     const request: TubeApproachRequest = { x: 10.3, z: -93, seaTime: 0, bodyHeight: 1, halfWidth: 0.2, halfDepth: 0.15, body: [] };
-    expect(contact.approachNear(request)).toBeUndefined();
+    const observation = createTubeApproachObservation(request, 0);
+    const cue = contact.approachNear(request, observation);
+    expect(observation.outcome).not.toBe('not-bounded-c');
+    expect(observation.eligibleMaturePairs).toBeGreaterThan(0);
+    if (cue) expect(observation.outcome).toBe('accepted');
     expect(contact.approachNear({ ...request, bodyHeight: Infinity })).toBeUndefined();
   });
 });

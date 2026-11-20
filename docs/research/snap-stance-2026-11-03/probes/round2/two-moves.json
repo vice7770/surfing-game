@@ -1,0 +1,202 @@
+[
+ {
+  "case": "plane 15°, 8: steer → S",
+  "up": "-42° in 1 s, peak 105°/s, kept 0.71, shoulders 0°, legs 0 m",
+  "highest": 142,
+  "down": "—",
+  "lowest": 180,
+  "fell": 1.17,
+  "cause": "balance",
+  "atFall": "gap, bank -70°, 3.9 m/s, 143° from the fall line"
+ },
+ {
+  "case": "plane 15°, 8: compress → S",
+  "up": "-56° in 1 s, peak 127°/s, kept 0.59, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-10° in — s, peak 51°/s, kept —, shoulders 0°, legs 0.21 m",
+  "lowest": 152,
+  "fell": 1.4,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.1 m/s, 161° from the fall line"
+ },
+ {
+  "case": "plane 15°, 8: compress → snap",
+  "up": "-56° in 1 s, peak 127°/s, kept 0.59, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-15° in — s, peak 58°/s, kept —, shoulders 27°, legs 0.22 m",
+  "lowest": 152,
+  "fell": 1.47,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.2 m/s, 167° from the fall line"
+ },
+ {
+  "case": "plane 15°, 8: snap → snap",
+  "up": "-68° in 0.72 s, peak 245°/s, kept 0.63, shoulders 43°, legs 0.3 m",
+  "highest": 179,
+  "down": "120° in 0.75 s, peak 390°/s, kept 0.75, shoulders 43°, legs 0.3 m",
+  "lowest": 19,
+  "fell": 1.78,
+  "cause": "lost board",
+  "atFall": "after, bank -6°, 1.7 m/s, 17° from the fall line"
+ },
+ {
+  "case": "plane 15°, 9: steer → S",
+  "up": "-41° in 1 s, peak 109°/s, kept 0.8, shoulders 0°, legs 0 m",
+  "highest": 146,
+  "down": "-19° in — s, peak 149°/s, kept —, shoulders 0°, legs 0 m",
+  "lowest": 148,
+  "fell": 1.32,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 4.2 m/s, 166° from the fall line"
+ },
+ {
+  "case": "plane 15°, 9: compress → S",
+  "up": "-53° in 1 s, peak 125°/s, kept 0.69, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-23° in — s, peak 77°/s, kept —, shoulders 0°, legs 0.21 m",
+  "lowest": 152,
+  "fell": 1.52,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.9 m/s, 175° from the fall line"
+ },
+ {
+  "case": "plane 15°, 9: compress → snap",
+  "up": "-53° in 1 s, peak 125°/s, kept 0.69, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-30° in — s, peak 92°/s, kept —, shoulders 33°, legs 0.25 m",
+  "lowest": 152,
+  "fell": 1.55,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.9 m/s, 178° from the fall line"
+ },
+ {
+  "case": "plane 15°, 9: snap → snap",
+  "up": "-64° in 0.67 s, peak 243°/s, kept 0.63, shoulders 42°, legs 0.29 m",
+  "highest": 171,
+  "down": "77° in — s, peak 393°/s, kept —, shoulders 38°, legs 0.24 m",
+  "lowest": 95,
+  "fell": 1.37,
+  "cause": "balance",
+  "atFall": "m2, bank 70°, 4.0 m/s, 94° from the fall line"
+ },
+ {
+  "case": "plane 15°, 10: steer → S",
+  "up": "-40° in 1 s, peak 89°/s, kept 0.74, shoulders 0°, legs 0 m",
+  "highest": 137,
+  "down": "-22° in — s, peak 144°/s, kept —, shoulders 0°, legs 0 m",
+  "lowest": 138,
+  "fell": 1.42,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 5.1 m/s, 161° from the fall line"
+ },
+ {
+  "case": "plane 15°, 10: compress → S",
+  "up": "-53° in 1 s, peak 137°/s, kept 0.77, shoulders 0°, legs 0.3 m",
+  "highest": 147,
+  "down": "-48° in — s, peak 109°/s, kept —, shoulders 0°, legs 0.21 m",
+  "lowest": 148,
+  "fell": 1.77,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 3.7 m/s, 163° from the fall line"
+ },
+ {
+  "case": "plane 15°, 10: compress → snap",
+  "up": "-53° in 1 s, peak 137°/s, kept 0.77, shoulders 0°, legs 0.3 m",
+  "highest": 147,
+  "down": "-66° in — s, peak 170°/s, kept —, shoulders 41°, legs 0.3 m",
+  "lowest": 147,
+  "fell": 1.77,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 3.4 m/s, 145° from the fall line"
+ },
+ {
+  "case": "plane 15°, 10: snap → snap",
+  "up": "-22° in 1 s, peak 170°/s, kept 0.66, shoulders 45°, legs 0.3 m",
+  "highest": 128,
+  "down": "1° in — s, peak 36°/s, kept —, shoulders 28°, legs 0.21 m",
+  "lowest": 98,
+  "fell": 1.22,
+  "cause": "balance",
+  "atFall": "m2, bank 70°, 5.9 m/s, 98° from the fall line"
+ },
+ {
+  "case": "moving 15°, 8: steer → S",
+  "up": "-42° in 1 s, peak 105°/s, kept 0.71, shoulders 0°, legs 0 m",
+  "highest": 142,
+  "down": "—",
+  "lowest": 180,
+  "fell": 1.17,
+  "cause": "balance",
+  "atFall": "gap, bank -70°, 3.9 m/s, 143° from the fall line"
+ },
+ {
+  "case": "moving 15°, 8: compress → S",
+  "up": "-56° in 1 s, peak 127°/s, kept 0.59, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-10° in — s, peak 51°/s, kept —, shoulders 0°, legs 0.21 m",
+  "lowest": 152,
+  "fell": 1.4,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.1 m/s, 161° from the fall line"
+ },
+ {
+  "case": "moving 15°, 8: compress → snap",
+  "up": "-56° in 1 s, peak 127°/s, kept 0.59, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-15° in — s, peak 58°/s, kept —, shoulders 27°, legs 0.22 m",
+  "lowest": 152,
+  "fell": 1.47,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.2 m/s, 167° from the fall line"
+ },
+ {
+  "case": "moving 15°, 8: snap → snap",
+  "up": "-68° in 0.72 s, peak 245°/s, kept 0.63, shoulders 43°, legs 0.3 m",
+  "highest": 179,
+  "down": "119° in 0.75 s, peak 412°/s, kept 0.77, shoulders 43°, legs 0.3 m",
+  "lowest": 18,
+  "fell": 1.78,
+  "cause": "lost board",
+  "atFall": "after, bank -5°, 1.8 m/s, 16° from the fall line"
+ },
+ {
+  "case": "moving 15°, 9: steer → S",
+  "up": "-41° in 1 s, peak 109°/s, kept 0.8, shoulders 0°, legs 0 m",
+  "highest": 146,
+  "down": "-19° in — s, peak 149°/s, kept —, shoulders 0°, legs 0 m",
+  "lowest": 148,
+  "fell": 1.32,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 4.2 m/s, 166° from the fall line"
+ },
+ {
+  "case": "moving 15°, 9: compress → S",
+  "up": "-53° in 1 s, peak 125°/s, kept 0.69, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-23° in — s, peak 77°/s, kept —, shoulders 0°, legs 0.21 m",
+  "lowest": 152,
+  "fell": 1.52,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.9 m/s, 175° from the fall line"
+ },
+ {
+  "case": "moving 15°, 9: compress → snap",
+  "up": "-53° in 1 s, peak 125°/s, kept 0.69, shoulders 0°, legs 0.3 m",
+  "highest": 151,
+  "down": "-30° in — s, peak 92°/s, kept —, shoulders 33°, legs 0.25 m",
+  "lowest": 152,
+  "fell": 1.55,
+  "cause": "balance",
+  "atFall": "m2, bank -70°, 2.9 m/s, 178° from the fall line"
+ },
+ {
+  "case": "moving 15°, 9: snap → snap",
+  "up": "-64° in 0.67 s, peak 243°/s, kept 0.63, shoulders 42°, legs 0.29 m",
+  "highest": 171,
+  "down": "77° in — s, peak 393°/s, kept —, shoulders 38°, legs 0.24 m",
+  "lowest": 95,
+  "fell": 1.37,
+  "cause": "balance",
+  "atFall": "m2, bank 70°, 4.0 m/s, 94° from the fall line"
+ }
+]

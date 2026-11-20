@@ -1,0 +1,45 @@
+foot height 1.26 m, foot depth 4.88 m, scale 4.06
+clock -1.6..-0.6 s, 60 frames, each left out and rebuilt from its two neighbours (0.032 s apart); the rebuilt curve off the real frame, crest to toe, both ways:
+   point by point (today): median 0.0061, 90 % 0.0245, most 0.0953 m
+   each frame spaced by arc first, lip at the throw share: median 0.0112, 90 % 0.0179, most 0.1045 m
+   arc, the lip share interpolated: median 0.0112, 90 % 0.0185, most 0.1048 m
+clock -0.6..0 s, 35 frames, each left out and rebuilt from its two neighbours (0.032 s apart); the rebuilt curve off the real frame, crest to toe, both ways:
+   point by point (today): median 0.0323, 90 % 0.0974, most 0.1093 m
+   each frame spaced by arc first, lip at the throw share: median 0.0161, 90 % 0.0163, most 0.0558 m
+   arc, the lip share interpolated: median 0.0161, 90 % 0.0163, most 0.0559 m
+-0.579: lip shares 0.30 0.09 0.05; the join of frames k-1 and k+1 off the real frame k: point by point 0.0320, arc first 0.0163, arc with the share interpolated 0.0163 m
+-0.563: lip shares 0.09 0.05 0.08; the join of frames k-1 and k+1 off the real frame k: point by point 0.0082, arc first 0.0082, arc with the share interpolated 0.0082 m
+-0.547: lip shares 0.05 0.08 0.11; the join of frames k-1 and k+1 off the real frame k: point by point 0.0001, arc first 0.0078, arc with the share interpolated 0.0080 m
+-0.531: lip shares 0.08 0.11 0.28; the join of frames k-1 and k+1 off the real frame k: point by point 0.0554, arc first 0.0293, arc with the share interpolated 0.0295 m
+-0.515: lip shares 0.11 0.28 0.44; the join of frames k-1 and k+1 off the real frame k: point by point 0.0001, arc first 0.0558, arc with the share interpolated 0.0559 m
+-0.499: lip shares 0.28 0.44 0.33; the join of frames k-1 and k+1 off the real frame k: point by point 0.0308, arc first 0.0283, arc with the share interpolated 0.0282 m
+-0.483: lip shares 0.44 0.33 0.06; the join of frames k-1 and k+1 off the real frame k: point by point 0.0704, arc first 0.0163, arc with the share interpolated 0.0163 m
+-0.467: lip shares 0.33 0.06 0.02; the join of frames k-1 and k+1 off the real frame k: point by point 0.0737, arc first 0.0163, arc with the share interpolated 0.0163 m
+-0.451: lip shares 0.06 0.02 0.06; the join of frames k-1 and k+1 off the real frame k: point by point 0.0161, arc first 0.0161, arc with the share interpolated 0.0161 m
+-0.434: lip shares 0.02 0.06 0.05; the join of frames k-1 and k+1 off the real frame k: point by point 0.0161, arc first 0.0161, arc with the share interpolated 0.0161 m
+-0.418: lip shares 0.06 0.05 0.34; the join of frames k-1 and k+1 off the real frame k: point by point 0.0817, arc first 0.0163, arc with the share interpolated 0.0163 m
+-0.402: lip shares 0.05 0.34 0.29; the join of frames k-1 and k+1 off the real frame k: point by point 0.0698, arc first 0.0163, arc with the share interpolated 0.0163 m
+-0.386: lip shares 0.34 0.29 0.28; the join of frames k-1 and k+1 off the real frame k: point by point 0.0163, arc first 0.0163, arc with the share interpolated 0.0163 m
+-0.370: lip shares 0.29 0.28 0.08; the join of frames k-1 and k+1 off the real frame k: point by point 0.0597, arc first 0.0163, arc with the share interpolated 0.0163 m
+-0.354: lip shares 0.28 0.08 0.29; the join of frames k-1 and k+1 off the real frame k: point by point 0.0160, arc first 0.0160, arc with the share interpolated 0.0160 m
+-0.338: lip shares 0.08 0.29 0.38; the join of frames k-1 and k+1 off the real frame k: point by point 0.0974, arc first 0.0161, arc with the share interpolated 0.0161 m
+-0.322: lip shares 0.29 0.38 0.05; the join of frames k-1 and k+1 off the real frame k: point by point 0.0757, arc first 0.0160, arc with the share interpolated 0.0160 m
+-0.306: lip shares 0.38 0.05 0.25; the join of frames k-1 and k+1 off the real frame k: point by point 0.0175, arc first 0.0160, arc with the share interpolated 0.0160 m
+-0.290: lip shares 0.05 0.25 0.21; the join of frames k-1 and k+1 off the real frame k: point by point 0.0565, arc first 0.0161, arc with the share interpolated 0.0161 m
+-0.274: lip shares 0.25 0.21 0.14; the join of frames k-1 and k+1 off the real frame k: point by point 0.0160, arc first 0.0160, arc with the share interpolated 0.0160 m
+-0.257: lip shares 0.21 0.14 0.41; the join of frames k-1 and k+1 off the real frame k: point by point 0.0335, arc first 0.0160, arc with the share interpolated 0.0160 m
+-0.241: lip shares 0.14 0.41 0.26; the join of frames k-1 and k+1 off the real frame k: point by point 0.0323, arc first 0.0162, arc with the share interpolated 0.0162 m
+-0.225: lip shares 0.41 0.26 0.05; the join of frames k-1 and k+1 off the real frame k: point by point 0.1093, arc first 0.0158, arc with the share interpolated 0.0158 m
+-0.209: lip shares 0.26 0.05 0.13; the join of frames k-1 and k+1 off the real frame k: point by point 0.0312, arc first 0.0156, arc with the share interpolated 0.0156 m
+-0.193: lip shares 0.05 0.13 0.23; the join of frames k-1 and k+1 off the real frame k: point by point 0.0807, arc first 0.0160, arc with the share interpolated 0.0160 m
+-0.177: lip shares 0.13 0.23 0.12; the join of frames k-1 and k+1 off the real frame k: point by point 0.0162, arc first 0.0162, arc with the share interpolated 0.0162 m
+-0.161: lip shares 0.23 0.12 0.39; the join of frames k-1 and k+1 off the real frame k: point by point 0.0271, arc first 0.0048, arc with the share interpolated 0.0050 m
+-0.145: lip shares 0.12 0.39 0.22; the join of frames k-1 and k+1 off the real frame k: point by point 0.0393, arc first 0.0160, arc with the share interpolated 0.0160 m
+-0.129: lip shares 0.39 0.22 0.30; the join of frames k-1 and k+1 off the real frame k: point by point 0.0162, arc first 0.0162, arc with the share interpolated 0.0162 m
+-0.113: lip shares 0.22 0.30 0.22; the join of frames k-1 and k+1 off the real frame k: point by point 0.0156, arc first 0.0156, arc with the share interpolated 0.0156 m
+-0.097: lip shares 0.30 0.22 0.07; the join of frames k-1 and k+1 off the real frame k: point by point 0.1080, arc first 0.0156, arc with the share interpolated 0.0156 m
+-0.080: lip shares 0.22 0.07 0.05; the join of frames k-1 and k+1 off the real frame k: point by point 0.0845, arc first 0.0159, arc with the share interpolated 0.0159 m
+-0.064: lip shares 0.07 0.05 0.22; the join of frames k-1 and k+1 off the real frame k: point by point 0.0834, arc first 0.0162, arc with the share interpolated 0.0162 m
+-0.048: lip shares 0.05 0.22 0.22; the join of frames k-1 and k+1 off the real frame k: point by point 0.1077, arc first 0.0156, arc with the share interpolated 0.0156 m
+-0.032: lip shares 0.22 0.22 0.22; the join of frames k-1 and k+1 off the real frame k: point by point 0.0160, arc first 0.0160, arc with the share interpolated 0.0160 m
+

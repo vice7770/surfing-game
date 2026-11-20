@@ -625,7 +625,7 @@ Agreed with the user on 2026-09-30 ([spec](docs/superpowers/specs/2026-09-30-mov
 - [x] **Step 1 · Compress** ([plan](docs/superpowers/plans/2026-09-30-compress-ladder.md)):
   - the height ladder: the crouch reaches about two thirds of the depth, Compress all of it, as fast;
   - the weight stays on W/S;
-  - the pad's right stick twists the upper body;
+  - the pad's right stick twists the upper body (2026-10-22, the owner: the right stick across swings the camera around the rider instead, in every stage; the twist stays in the physics, unbound);
   - a HUD stance readout;
   - a compressed turn comes round 90° in about 1 s. This is a gameplay assist: physics alone left every stance at about 1.45 s.
 - [x] **Step 2 · the Wave Pool** (`src/wave/pool.ts`; [the sweep](docs/research/wave-pool-bed.md)): a default spot, an A-frame peeling both ways, faces of 1.0 / 1.25 / 1.5 m on the surf meter, and the Surf School on it.

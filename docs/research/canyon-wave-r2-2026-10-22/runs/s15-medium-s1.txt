@@ -1,0 +1,26 @@
+seed 1: medium Hs 1.4 m Tp 11 s s 150; c_b 4.69 m/s, h_b 2.25 m; take-off (-9, -142); tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+Wrote /tmp/claude-501/r2/s15-medium-s1.json.
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; layout reef, window 240 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-17,"peakZ":-120,"angle":70,"takeOffX":-9,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":0,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":240,"peelReach":10,"runOn":1,"bendX":-4,"bendLength":20,"downSlope":0.0666667,"downAngle":70}
+tracker: 8 samples, 8 clean; toward +x 7 of 8; median angle 58°, median peel speed 5.6 m/s; readout: left (+x) 7, right (−x) 1
+crests: 8; starts median x -19, 10–90 % -20…-11, within ±10 m 8 of 8; start z median -141, depth median 1.77 m, seaward of the line median 18 m
+  starts by bed part: arm end 6, arm face 2; on the arm (face or end) 8 of 8
+  close-outs (≥ 40 m within 2 s): 0; spans median 11 m, 90th 24 m
+  upcoast (> 2 onsets over 5 m within 3 s): 0; reach median 3 m, 90th 7 m, most 7 m
+  off the beach face (the flanks' shore break left out): close-outs 0; spans median 11 m, 90th 24 m; upcoast 0; reach median 3 m, 90th 7 m, most 7 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 8; toward +x 8; median 44°, speed 7.9 m/s
+onsets: 922; by bed part: beach face 626, arm face 229, arm top 37, arm end 30; depth median 1.47 m, 10–90 % 1.15…2.00 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 29.42°): 70 reads; closes out 2 (3 %), left (+x) 66 (94 %), right (−x) 2 (3 %), mixed 0 (0 %); clean toward +x 68 of 70; median angle 61°, angle of the +x reads ≥ 27°: median 64°
+health seed 1: fastest 8.33 m/s, Froude caps 0 (0 in water), volume -0.10 %, finite true; onsets per 100 s 922
+medium (s15-medium-s1.json): 7 crests; ride along shore median 14 m, 75th 21, 90th 38; along its breaks median 55 m, 90th 129; duration median 10.3 s, 75th 11.9, 90th 20.8; ≥ 10 s 5 of 7; peel over the ride median 71°; upcoast within 3 s median 3 m, 90th 7 m; breaking down the reef whatever its peel (gaps under 8 m along shore): along shore median 31 m, 90th 40; duration median 13.7 s, 90th 20.8; ≥ 10 s 5 of 7
+  faces down the line (along the break line from the peak; s = 0 ±15, then ±7.5 m): per crest, face / its own peak's at 30 m 0.61 (25–75 % 0.59–0.69; 5 crests), 60 m 0.44 (25–75 % 0.37–0.45; 5 crests), 90 m 0.40 (25–75 % 0.29–0.47; 5 crests); peak face median 2.14 m | the sets' faces (top third of the breaks in each bin): peak 2.34 m, 30 m 1.59 (0.68), 60 m 1.02 (0.44), 90 m 0.84 (0.36); breaks per bin 55/21/21/27
+medium: Hs 1.4 m, Tp 11 s; layout reef; canyon pathSlope 1:23.0, hinge 2.2 m, fan 0°; 922 onsets, 259 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -22 ±5 |   30 1.90  2.11  1:168  0.06 0.07 |   10  1.96  2.34  1: 23  0.37 0.46  2.3 | 7 %, 0 %
+   -12 ±5 |   56 2.04  1.51  1: 23  0.47 0.46 |   19  2.39  2.19  1: 23  0.40 0.44  2.3 | 75 %, 53 %
+    -2 ±5 |   54 1.50  0.91  1: 23  0.59 0.52 |   18  1.73  1.24  1: 23  0.54 0.51  2.3 | 70 %, 78 %
+     8 ±5 |   65 1.69  0.73  1: 18  0.92 0.63 |   22  1.87  0.84  1: 17  0.90 0.62  1.9 | 77 %, 86 %
+    18 ±5 |   54 1.65  0.60  1: 15  1.03 0.78 |   18  1.90  0.83  1: 15  1.01 0.71  1.8 | 98 %, 94 %
+  whole arm: ξb median 0.59 (10–90 % 0.11…1.19); sets 0.54; ξb ≥ 0.4: 71 % of onsets, 69 % of the sets'; ξγ median 0.53, sets 0.51
+take-off column x -9 ± 4 m: 8 waves; start depth 10 / 50 / 90 % 1.09 / 2.39 / 2.67 m (the take-off is fitted to the 90th); start z median -128, faces median 1.48 m

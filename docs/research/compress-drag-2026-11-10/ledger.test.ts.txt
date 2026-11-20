@@ -1,0 +1,100 @@
+// The Compress-drag ledger probe on flat water (2026-11-10; not part of the suite). Needs the scratch `dbg` fields (scratch-ledger.diff.txt).
+// One arc: the rider settles 0.2 s, then the stick is held one way until ARC deg, the turn dies, a fall, or 8 s. STANCE compress | stand. CARRY=0 by the scratch override.
+// Every BIN seconds from stick-on: the mean force along the path by source (N), the measured d(momentum)/dt along the path, and the board's state at the bin's end.
+import { writeFileSync } from 'node:fs';
+import { Vector3 } from 'three';
+import { it } from 'vitest';
+import { AttachedRider } from './AttachedRider';
+import { BoardBody } from './BoardBody';
+import { PlaneWater } from './PlaneWater';
+import { deckHeight, RIDER_PARTS } from './riderPosture';
+import { DEG, STEP, diff, onWater } from './zz-r2Lab';
+
+const OUT = process.env.OUT ?? '/dev/null';
+const num = (k: string, d: string) => (process.env[k] ?? d).split(',').map(Number);
+const SPEEDS = num('SPEEDS', '6,7.5'); const STEERS = num('STEERS', '0.5,1'); const STANCES = (process.env.STANCE ?? 'compress').split(',');
+const ARC = Number(process.env.ARC ?? 180); const BIN = Number(process.env.BIN ?? 0.2); const SECONDS = Number(process.env.SECONDS ?? 8);
+const G = 9.81;
+const NAMES = [...RIDER_PARTS, 'handL', 'handR'];
+
+it('probe', () => {
+  const out: unknown[] = [];
+  for (const stance of STANCES) for (const speed of SPEEDS) for (const steer of STEERS) {
+    const water = new PlaneWater({ depth: 3 });
+    const rig = onWater(water, 0, 0, 0, speed); const board = rig.board as BoardBody; const rider = rig.rider as AttachedRider; const q = rider as any; const b = board as any;
+    const mb = board.mass; const mr = q.mass as number; const M = mb + mr; const W = M * G;
+    const foils = b.foils as { kind: string; fin?: { name: string } }[];
+    const BD = b.dbg; const RD = q.dbg;
+    const zero = () => { BD.foil.fill(0); BD.finDrag.fill(0); BD.finLift.fill(0); BD.finProfile.fill(0); BD.deckFriction.set(0, 0, 0); BD.deckPressure.set(0, 0, 0); BD.normalImpulse = 0;
+      RD.part.fill(0); RD.wet.fill(0); RD.assist.set(0, 0, 0); RD.carry.set(0, 0, 0); RD.leanOut.set(0, 0, 0); RD.water.set(0, 0, 0); RD.contact.set(0, 0, 0); };
+    const name = `${stance} ${speed} ${steer}`;
+    let last = rig.heading; let turned = 0; let end = 'time up'; let slowFor = 0; let phase = 'pre';
+    const bins: any[] = []; let acc: Record<string, number> = {}; let accN = 0; let binStart = 0;
+    const add = (k: string, x: number) => { acc[k] = (acc[k] ?? 0) + x; };
+    const marks: any = {}; let v0 = 0; const w0: any = {};
+    const workNow = () => ({ ...Object.fromEntries(Object.entries(board.work).map(([k, x]) => ['b_' + k, x])), ...Object.fromEntries(Object.entries(rider.work).map(([k, x]) => ['r_' + k, x])), ke: board.kineticEnergy() + 0.5 * mr * rider.velocity.lengthSq(), pe: mb * G * board.centerOfMass.y + mr * G * rider.position.y });
+    for (let n = 0; n < Math.round(SECONDS / STEP); n += 1) {
+      const t = n * STEP;
+      if (phase === 'pre' && t >= 0.2) { phase = 'turn'; binStart = t; acc = {}; accN = 0; v0 = Math.hypot(board.velocity.x, board.velocity.z); Object.assign(w0, workNow()); }
+      else if (phase === 'turn' && (Math.abs(turned) >= ARC || slowFor > 0.5)) { end = Math.abs(turned) >= ARC ? 'done' : 'turn died'; break; }
+      rider.trim = phase === 'turn' ? Number(process.env.TRIM ?? 0) : 0; rider.snap = 0; rider.steer = phase === 'turn' ? steer : 0;
+      const c = stance === 'compress' ? 1 : 0; rider.compress = c; rider.crouch = c ? 0.6 : 0;
+      zero();
+      const pb = new Vector3().copy(board.velocity).multiplyScalar(mb).addScaledVector(rider.velocity, mr);
+      board.step(STEP, water);
+      const pa = new Vector3().copy(board.velocity).multiplyScalar(mb).addScaledVector(rider.velocity, mr);
+      const d = diff(rig.heading * DEG, last * DEG); last = rig.heading; turned += d;
+      const vb = Math.hypot(board.velocity.x, board.velocity.z);
+      slowFor = Math.abs(d / STEP) < 5 && phase === 'turn' ? slowFor + STEP : 0;
+      for (const deg of [45, 90, 120, 180]) if (phase === 'turn' && marks[deg] === undefined && Math.abs(turned) >= deg) marks[deg] = { t: +(t + STEP - 0.2).toFixed(2), v: +vb.toFixed(2), kept: +(vb / v0).toFixed(3), work: Object.fromEntries(Object.entries(workNow()).map(([k, x]) => [k, Math.round((x as number) - w0[k])])) };
+      if (phase === 'turn') {
+        // The path: the level direction of the system's mean velocity this step; `in`: level, toward the turn's centre.
+        const mean = pb.clone().add(pa).multiplyScalar(0.5 / M); const path = new Vector3(mean.x, 0, mean.z).normalize();
+        const inward = new Vector3(0, 1, 0).cross(path).multiplyScalar(Math.sign(steer));   // the board's left (+x) for steer > 0
+        const put = (k: string, f: Vector3) => { add(k + '_t', f.dot(path)); add(k + '_n', f.dot(inward)); add(k + '_y', f.y); };
+        const meas = pa.clone().sub(pb).multiplyScalar(1 / STEP); put('measured', meas);
+        const F = board.forces; const sum = new Vector3();
+        const inv = 1 / STEP;
+        const deckP = BD.deckPressure.clone().multiplyScalar(inv); const deckF = BD.deckFriction.clone().multiplyScalar(inv);
+        put('pressure', F.pressure.clone().sub(deckP)); put('deckPressure', deckP); put('friction', F.friction.clone().sub(deckF)); put('deckFriction', deckF);
+        put('buoyancy', F.buoyancy); put('addedMass', F.addedMass); put('radiation', F.radiation); put('rails', F.rails); put('froth', F.froth); put('bed', F.bed);
+        put('finsAll', F.fins);
+        for (const f of Object.values(F)) sum.add(f);
+        foils.forEach((foil, k) => { if (foil.kind !== 'fin') return; const nm = 'fin_' + foil.fin!.name; put(nm, new Vector3(BD.foil[k * 3], BD.foil[k * 3 + 1], BD.foil[k * 3 + 2]).multiplyScalar(inv)); add(nm + '_profile', BD.finProfile[k] * inv); add(nm + '_drag', BD.finDrag[k] * inv); add(nm + '_lift', BD.finLift[k] * inv); add(nm + '_attack', BD.finAttack[k] * DEG); add(nm + '_imm', BD.finImm[k]); });
+        NAMES.forEach((nm, i) => { put('body_' + nm, new Vector3(RD.part[i * 3], RD.part[i * 3 + 1], RD.part[i * 3 + 2]).multiplyScalar(inv)); add('wet_' + nm, RD.wet[i] * inv); });
+        const rw = RD.water.clone().multiplyScalar(inv); put('bodyWater', rw); sum.add(rw);
+        for (const k of ['assist', 'carry', 'leanOut'] as const) { const f = RD[k].clone().multiplyScalar(inv); put(k, f); sum.add(f); }
+        sum.y -= W; put('sum', sum);
+        put('contact', RD.contact.clone().multiplyScalar(inv));   // the feet's push on the body
+        add('normalForce', BD.normalImpulse * inv);
+        // State (means over the bin).
+        const fwd = new Vector3(0, 0, 1).applyQuaternion(board.orientation); const up = new Vector3(0, 1, 0).applyQuaternion(board.orientation); const left = new Vector3(1, 0, 0).applyQuaternion(board.orientation);
+        const vl = board.velocity.clone().applyQuaternion(board.orientation.clone().invert());
+        const fh = new Vector3(fwd.x, 0, fwd.z).normalize(); const side = new Vector3(0, 1, 0).cross(fh);
+        add('v', vb); add('vsys', Math.hypot(mean.x, mean.z)); add('rate', Math.abs(d / STEP)); add('bank', Math.abs(rider.bank.angle) * DEG); add('bankRef', Math.abs(q.bankReference) * DEG);
+        add('roll', Math.atan2(up.dot(side), up.y) * DEG * Math.sign(steer)); add('pitch', Math.asin(fwd.y) * DEG);
+        add('attack', Math.asin(-vl.y / vl.length()) * DEG); add('trimPath', Math.atan2(-vl.y, vl.z) * DEG); add('leeway', Math.atan2(vl.x, vl.z) * DEG * Math.sign(steer));
+        add('slip', diff(rig.heading * DEG, Math.atan2(board.velocity.x, board.velocity.z) * DEG) * Math.sign(steer));
+        add('heave', board.position.y); add('load', rider.contact.load); add('front', rider.contact.frontShare); add('legExt', rider.leg.extension); add('legRest', rider.leg.rest);
+        add('wetLen', BD.wetLen); add('wetMin', BD.wetMin); add('wetMax', BD.wetMax); add('wetArea', board.wettedArea); add('deckWet', BD.deckWet); add('sub', board.submergedVolume);
+        add('wetX0', BD.xMin); add('wetX1', BD.xMax); add('cop', BD.copW > 0 ? BD.cop / BD.copW : 0); add('copX', BD.copW > 0 ? BD.copX / BD.copW : 0);
+        const rl = board.toLocal(rider.position, new Vector3()); add('bodyZ', rl.z); add('bodyX', rl.x); add('bodyY', rl.y); add('pelvisY', rider.position.y);
+        const L = board.shape.length; const Wd = board.shape.maxWidth; const pt = (x: number, y: number, z: number) => board.toWorld({ x, y, z }, new Vector3()).y;
+        add('yTail', pt(0, board.shape.curves.rocker(0), -L / 2)); add('yNose', pt(0, board.shape.curves.rocker(1), L / 2)); add('yMid', pt(0, 0, -0.03 * L));
+        const sgn = Math.sign(steer); add('yRailIn', pt(sgn * Wd / 2, 0.02, -0.03 * L)); add('yRailOut', pt(-sgn * Wd / 2, 0.02, -0.03 * L));
+        const feet = q.feet as { rear: number; front: number }; add('yDeckRear', pt(0, deckHeight(board.shape, feet.rear), feet.rear)); add('yDeckFront', pt(0, deckHeight(board.shape, feet.front), feet.front));
+        add('yDeckRearIn', pt(sgn * 0.15, deckHeight(board.shape, feet.rear), feet.rear));
+        add('planing', q.planing ? 1 : 0); add('hand', Math.abs(q.handSide)); add('yaw', board.angularVelocity.y * DEG * sgn);
+        accN += 1;
+        if (t + STEP - binStart >= BIN - 1e-9 || !rider.attached) {
+          const row: any = { t0: +(binStart - 0.2).toFixed(2), t1: +(t + STEP - 0.2).toFixed(2), turned: +Math.abs(turned).toFixed(1), vEnd: +vb.toFixed(2) };
+          for (const [k, x] of Object.entries(acc)) row[k] = +(x / accN).toFixed(4);
+          bins.push(row); acc = {}; accN = 0; binStart = t + STEP;
+        }
+      }
+      if (!rider.attached) { end = `fall (${String(rider.separation)}) bank ${Math.round(rider.bank.angle * DEG)} v ${vb.toFixed(1)}`; break; }
+    }
+    out.push({ name, stance, speed, steer, end, turned: Math.round(Math.abs(turned)), v0: +v0.toFixed(2), mass: { board: mb, rider: mr }, shape: { length: board.shape.length, width: board.shape.maxWidth }, marks, bins });
+  }
+  writeFileSync(OUT, JSON.stringify(out));
+});

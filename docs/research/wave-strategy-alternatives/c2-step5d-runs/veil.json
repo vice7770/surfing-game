@@ -1,0 +1,234 @@
+{
+  "seconds": 72,
+  "search": "?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&compute=gpu&receiver=http://localhost:5298",
+  "views": {
+    "bore-above": {
+      "shot": "bore-above",
+      "look": "rich",
+      "time": "midday",
+      "sat": 0.18,
+      "band": [
+        0.3,
+        0.82
+      ],
+      "mesh": "library zone",
+      "grey": {
+        "pixels": 1875,
+        "share": 0.002,
+        "rgb": [
+          166,
+          193,
+          198
+        ]
+      },
+      "greyOnBarrel": 0,
+      "greyBarrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "barrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "water": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          140,
+          218,
+          239
+        ]
+      },
+      "frame": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          140,
+          218,
+          239
+        ]
+      }
+    },
+    "bore-line": {
+      "shot": "bore-line",
+      "look": "rich",
+      "time": "midday",
+      "sat": 0.18,
+      "band": [
+        0.3,
+        0.82
+      ],
+      "mesh": "library zone",
+      "grey": {
+        "pixels": 88239,
+        "share": 0.0957,
+        "rgb": [
+          171,
+          177,
+          190
+        ]
+      },
+      "greyOnBarrel": 0,
+      "greyBarrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "barrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "water": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          176,
+          210,
+          226
+        ]
+      },
+      "frame": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          176,
+          210,
+          226
+        ]
+      }
+    },
+    "bore-face": {
+      "shot": "bore-face",
+      "look": "rich",
+      "time": "midday",
+      "sat": 0.18,
+      "band": [
+        0.3,
+        0.82
+      ],
+      "mesh": "library zone",
+      "grey": {
+        "pixels": 135608,
+        "share": 0.1471,
+        "rgb": [
+          166,
+          173,
+          186
+        ]
+      },
+      "greyOnBarrel": 0,
+      "greyBarrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "barrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "water": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          160,
+          203,
+          220
+        ]
+      },
+      "frame": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          160,
+          203,
+          220
+        ]
+      }
+    },
+    "curl-ride": {
+      "shot": "curl-ride",
+      "look": "rich",
+      "time": "midday",
+      "sat": 0.18,
+      "band": [
+        0.3,
+        0.82
+      ],
+      "mesh": "library zone",
+      "grey": {
+        "pixels": 169757,
+        "share": 0.1842,
+        "rgb": [
+          152,
+          154,
+          168
+        ]
+      },
+      "greyOnBarrel": 0,
+      "greyBarrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "barrel": {
+        "pixels": 0,
+        "share": 0,
+        "rgb": [
+          0,
+          0,
+          0
+        ]
+      },
+      "water": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          105,
+          152,
+          180
+        ]
+      },
+      "frame": {
+        "pixels": 921600,
+        "share": 1,
+        "rgb": [
+          105,
+          152,
+          180
+        ]
+      }
+    }
+  }
+}

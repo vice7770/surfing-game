@@ -1,0 +1,13 @@
+##### step 3.4h, FRESH spin-up, Canyon B (?canyonWaves=true), this branch (bc63d94a8881d4104e36db2897bc907f47c00353)
+spun up on the CPU in 58.3 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/34h/bench/H-b.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.37/1.81, roller 0.75/0.96, front 0.00/0.00, lip 0.03/0.04, foam 2.84/4.01, airSources 0.06/0.08, aeration 1.45/2.17, contact 0.00/0.00, board 0.74/1.21, bubbles 0.17/0.26, spray 0.28/0.44, sounds 0.00/0.00, snapshotFields 4.56/6.16, snapshot 5.17/6.93, summary 0.46/0.61
+  CPU stages per step (step − water + snapshot + summary): 13.74/18.80; water (CPU solver, not timed on the device) 88.4
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+
+##### step 3.4h, FRESH spin-up, the default Canyon, this branch (bc63d94a8881d4104e36db2897bc907f47c00353)
+spun up on the CPU in 54.3 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/34h/bench/H-d.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.30/2.02, roller 0.46/0.59, front 0.00/0.00, lip 0.03/0.04, foam 3.69/9.19, airSources 0.06/0.07, aeration 1.95/3.16, contact 0.00/0.00, board 0.65/1.55, bubbles 0.18/0.26, spray 0.18/0.30, sounds 0.00/0.00, snapshotFields 4.42/10.10, snapshot 4.93/11.33, summary 0.42/0.68
+  CPU stages per step (step − water + snapshot + summary): 14.13/31.90; water (CPU solver, not timed on the device) 84.3
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96

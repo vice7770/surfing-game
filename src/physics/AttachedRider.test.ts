@@ -7,10 +7,13 @@ import { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
 import { WATER } from './hullForces';
 import { PlaneWater } from './PlaneWater';
+import { RideSession, type RideInput } from './RideSession';
 import { deckHeight, stanceFeet } from './riderPosture';
 import { SwellWater } from './SwellWater';
 import type { SurfWater, WaterSample } from './SurfWater';
+import { ChopWater } from './testing/ChopWater';
 import { CoveredWater } from './testing/CoveredWater';
+import { FaceWater } from './testing/FaceWater';
 
 const STEP = 1 / 60;
 /**
@@ -584,6 +587,9 @@ describe('standing on the leg', () => {
   });
 });
 
+/** The forward speed a 1.5 m/s glide keeps after 2 s of full-steer sweeping, m/s: the old stroke's, measured (1.52; it was 1.47 at the start, 0.86 coasting straight). */
+const MOMENTUM_FLOOR = 1.51;
+
 describe('steering while lying down', () => {
   const heading = (board: BoardBody) => {
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
@@ -642,6 +648,89 @@ describe('steering while lying down', () => {
     expect(left.heading).toBeGreaterThan(0.2);
     expect(right.heading).toBeLessThan(-0.2);
     expect(turn(0, false).heading).toBeCloseTo(0, 6);
+  });
+
+  /** Heading turned, rad/s, over `seconds` of steering from still water without paddling. */
+  const stillRate = (steer: number, seconds: number) => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 2);
+    const start = heading(board);
+    rider.steer = steer;
+    run(board, water, seconds);
+    rider.steer = 0;
+    run(board, water, 1);
+    return heading(board) - start;
+  };
+
+  /** Forward speed, m/s, after paddling up to a glide and then steering `steer` for 2 s without paddling. */
+  const glide = (steer: number) => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 2);
+    rider.paddle = true;
+    run(board, water, 6);
+    rider.paddle = false;
+    const before = new Vector3(0, 0, 1).applyQuaternion(board.orientation).dot(board.velocity);
+    rider.steer = steer;
+    run(board, water, 2);
+    const after = new Vector3(0, 0, 1).applyQuaternion(board.orientation).dot(board.velocity);
+    return { before, after };
+  };
+
+  // The side paddle's fast mode (owner, 2026-11-09): small steer is the old stroke, full steer strokes about twice as
+  // often with a wider sweep; the turn is the hand's own drag, pulling water aft, so the glide is not braked.
+  it('turns faster at full steer than at half without paddling, half no faster than the old stroke', () => {
+    const quarter = stillRate(0.25, 3) / 3;
+    const half = stillRate(0.5, 3) / 3;
+    const full = stillRate(1, 3) / 3;
+    if (process.env.SWEEP_LOG) process.stderr.write(JSON.stringify([[quarter, half, full].map((r) => (r * 180) / Math.PI), 'tap', (stillRate(1, 0.15) * 180) / Math.PI]) + '\n');
+    expect(full).toBeGreaterThan(half * 1.5);
+    expect(full).toBeGreaterThan((30 * Math.PI) / 180);
+    expect(half).toBeLessThan((20 * Math.PI) / 180);
+  });
+
+  // The fast sweep is one smooth stroke (owner, 2026-11-09: "the arms look broken"): the drawn hand, in the board's frame
+  // at 120 Hz over 3 s of full steer, peaks near 5.1 m/s (#216's flick: 11.3), no step spikes past twice the median
+  // (#216: 2.6), and its height path has no jump where the pull meets the recovery. Under 3 m/s the pull's hand would
+  // be slower than the glide and brake it (measured: 1.09 m/s kept), so the glide sets the floor on the hand's speed.
+  it('draws the full-steer sweep as a smooth stroke', () => {
+    const { board, rider } = mounted('prone');
+    const water = new PlaneWater();
+    run(board, water, 2);
+    rider.steer = 1;
+    const h = 1 / 120;
+    const inverse = new Quaternion();
+    const point = new Vector3();
+    const local = (index: number) => {
+      rider.renderPoint(index, board, point).sub(board.position);
+      return point.applyQuaternion(inverse.copy(board.orientation).invert()).clone();
+    };
+    const paths: Vector3[][] = [[], []];
+    for (let i = 0; i < 3 / h; i += 1) {
+      board.step(h, water);
+      paths[0].push(local(3));
+      paths[1].push(local(4));
+    }
+    const worst = paths.map((path) => {
+      const steps = path.slice(1).map((p, i) => p.distanceTo(path[i]));
+      const heights = path.slice(1).map((p, i) => Math.abs(p.y - path[i].y));
+      const sorted = [...steps].sort((a, b) => a - b);
+      return { peak: Math.max(...steps) / h, spike: Math.max(...steps) / sorted[sorted.length >> 1], rise: Math.max(...heights) / h };
+    });
+    if (process.env.SWEEP_LOG) process.stderr.write(JSON.stringify(worst) + '\n');
+    const sweeping = worst[0].peak > worst[1].peak ? worst[0] : worst[1];
+    expect(sweeping.peak).toBeLessThan(5.5);
+    expect(sweeping.spike).toBeLessThan(2);
+    expect(sweeping.rise).toBeLessThan(3);
+  });
+
+  it('keeps the glide from paddling while sweeping hard', () => {
+    const fast = glide(1);
+    const coast = glide(0);
+    if (process.env.SWEEP_LOG) process.stderr.write(JSON.stringify({ fast, coast }) + '\n');
+    expect(fast.before).toBeGreaterThan(1.2);
+    expect(fast.after).toBeGreaterThan(MOMENTUM_FLOOR);
   });
 });
 
@@ -1974,19 +2063,30 @@ describe('prone balance', () => {
     expect(Math.abs(roll(board))).toBeLessThan((5 * Math.PI) / 180);
   });
 
-  it('never pushes a hand harder than an arm can, however fast the board runs', () => {
-    const { board, rider } = mounted('prone');
-    board.velocity.z = 5;
-    rider.velocity.z = 5;
-    rider.paddle = true;
-    let hardest = 0;
-    run(board, new PlaneWater({ level: 0.3 }), 3, () => {
-      hardest = Math.max(hardest, rider.handLoad[0], rider.handLoad[1]);
-    });
-    const weight = rider.mass * WATER.gravity;
-    expect(hardest).toBeGreaterThan(0.3 * weight);
-    expect(hardest).toBeLessThanOrEqual(0.4 * weight + 1e-9);
-    expect(rider.attached).toBe(true);
+  // canyon-catch (2026-10-29): a hand the board outruns slices in edge-on (FEATHER_DRAG) rather than braking broadside;
+  // the 'old' stroke (`?stroke=old`) still meets the water broadside, held to the arm's limit.
+  it('never pushes a hand harder than an arm can, however fast the board runs, and feathers a hand the board outruns', () => {
+    const hardest = (stroke: 'feather' | 'old') => {
+      const board = new BoardBody();
+      board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
+      const rider = new AttachedRider(board.shape, { phase: 'prone', stroke });
+      board.attach(rider);
+      board.velocity.z = 5;
+      rider.velocity.z = 5;
+      rider.paddle = true;
+      let most = 0;
+      run(board, new PlaneWater({ level: 0.3 }), 3, () => {
+        most = Math.max(most, rider.handLoad[0], rider.handLoad[1]);
+      });
+      expect(rider.attached).toBe(true);
+      return { most, weight: rider.mass * WATER.gravity };
+    };
+    const old = hardest('old');
+    expect(old.most).toBeGreaterThan(0.3 * old.weight);
+    expect(old.most).toBeLessThanOrEqual(0.4 * old.weight + 1e-9);
+    const feathered = hardest('feather');
+    expect(feathered.most).toBeLessThanOrEqual(0.4 * feathered.weight + 1e-9);
+    expect(feathered.most).toBeLessThan(0.6 * old.most);
   });
 
   it('records each pulling hand’s stroke for the spray: beside a rail, pushed forward by the water', () => {
@@ -2081,6 +2181,181 @@ describe('the stroke (the phase 5 physics plan, item 2.8)', () => {
     const { rider, steps } = paddleOn(new PlaneWater({ slopeZ: -Math.tan((10 * Math.PI) / 180) }), 3, 3);
     expect(rider.sprint).toBeGreaterThan(0.95);
     expect(perMinute(steps.map((step) => step.left), 3)).toBeGreaterThan(55);
+  });
+});
+
+// The paddle-balance fix (2026-10-22, the owner's ride after phase 5): lying down and paddling, the rider lost its balance
+// and fell off. The balance comes first, levels the board to the water it lies on (`AttachedRider`'s STROKE_ROLL and
+// PRONE_ROLL_SHIFT), and pushing up the arms give (`armsGiveStep`). Before, these runs threw the rider ('lost board').
+describe('the paddle\'s balance (the paddle-balance fix)', () => {
+  /** Paddling from rest on `water` for `seconds` with `input` at each moment: whether the rider stayed on, and the board's largest roll, deg. */
+  const paddleOn = (water: SurfWater & { advance?(dt: number): void }, seconds: number, input: (time: number) => Partial<RideInput>, heading = 0) => {
+    const session = new RideSession();
+    session.reset(new Vector3(), heading, water);
+    let worst = 0;
+    for (let i = 0; i < Math.round(seconds / STEP) && session.rider.attached; i += 1) {
+      session.step(STEP, water, { paddle: true, popUp: false, steer: 0, ...input(i * STEP) });
+      water.advance?.(STEP);
+      worst = Math.max(worst, Math.abs(roll(session.board)));
+    }
+    return { attached: session.rider.attached, worst: (worst * 180) / Math.PI };
+  };
+  /** Full steer one way for 2 s, none for 2 s, the other way, none. */
+  const weaving = (time: number) => {
+    const quarter = Math.floor(time / 2) % 4;
+    return { steer: quarter === 0 ? 1 : quarter === 2 ? -1 : 0 };
+  };
+
+  it('paddles through a choppy sea, straight and steering, and stays on', () => {
+    // Hs about 0.7 m of 2–4 s waves, the surface sloped up to 8–12°: three of these four runs threw the rider, 4.8–12.3 s in.
+    for (const seed of [4, 11]) {
+      for (const steering of [false, true]) {
+        const { attached, worst } = paddleOn(new ChopWater(1, seed), 20, steering ? weaving : () => ({}));
+        expect(attached, `seed ${seed}${steering ? ', steering' : ''}`).toBe(true);
+        expect(worst, `seed ${seed}${steering ? ', steering' : ''}`).toBeLessThan(35);
+      }
+    }
+  });
+
+  it('stays on as a wave\'s face lifts the board, paddling 30° across it', () => {
+    // A 1.4 m face at 12° running up behind the paddler: across it either way, the board capsized 9.5–10.3 s in.
+    for (const across of [30, -30]) {
+      const { attached } = paddleOn(new FaceWater({ depth: 2.5, height: 1.4, slope: 12, crestZ: -25 }), 12, () => ({}), (across * Math.PI) / 180);
+      expect(attached, `${across}°`).toBe(true);
+    }
+  });
+
+  it('pops up at any point of the stroke on a 15° slope, the board within 20° as the body rises, and stands', () => {
+    // Pushing up on the duck-dive's hold, the board rolled 22–79° in the rise and 11 of 12 such pop-ups threw the rider.
+    for (const at of [3, 3.2, 3.4, 3.6, 3.8, 4]) {
+      const water = new PlaneWater({ slopeZ: -Math.tan((15 * Math.PI) / 180) });
+      const session = new RideSession();
+      session.reset(new Vector3(), 0, water);
+      const { rider, board } = session;
+      let rising = 0;
+      let standing = 0;
+      let margin = 1;
+      for (let i = 0; i < Math.round((at + 3) / STEP) && rider.attached; i += 1) {
+        const time = i * STEP;
+        session.step(STEP, water, { paddle: time < at, popUp: Math.abs(time - at) < STEP / 2, steer: 0 });
+        if (rider.phase === 'push' || rider.phase === 'landing') rising = Math.max(rising, Math.abs(roll(board)));
+        if (rider.phase === 'standing') {
+          standing += STEP;
+          margin = Math.min(margin, rider.balanceMargin);
+        }
+      }
+      expect(rider.attached, `popped at ${at} s`).toBe(true);
+      expect(standing, `popped at ${at} s`).toBeGreaterThan(1.5);
+      expect((rising * 180) / Math.PI, `popped at ${at} s`).toBeLessThan(20);
+      expect(margin, `popped at ${at} s`).toBeGreaterThan(0.5);
+    }
+  });
+});
+
+// The sprint paddle (the owner's choices of 2026-10-22): double-press the paddle and hold it; about a third faster than
+// cruising, coming up to speed sooner, for 8 s of a reserve that refills in 15 s.
+describe('the sprint paddle', () => {
+  /** Paddling from rest on flat water, sprint asked for or not, with the reserve kept full: each step's speed. */
+  const speeds = (sprint: boolean, seconds: number) => {
+    const water = new PlaneWater();
+    const session = new RideSession();
+    session.reset(new Vector3(), 0, water);
+    const out: number[] = [];
+    for (let i = 0; i < Math.round(seconds / STEP); i += 1) {
+      session.reserve.level = 1;
+      session.step(STEP, water, { paddle: true, sprint, popUp: false, steer: 0 });
+      out.push(session.board.velocity.z);
+    }
+    return out;
+  };
+  /** The speed averaged over a stroke centred on each step, and the time it first reaches `speed`. */
+  const reach = (trace: number[], cycle: number, speed: number) => {
+    const n = Math.round(cycle / STEP);
+    for (let i = 0; i + n <= trace.length; i += 1) {
+      const mean = trace.slice(i, i + n).reduce((a, b) => a + b, 0) / n;
+      if (mean >= speed) return (i + n / 2) * STEP;
+    }
+    return Infinity;
+  };
+  const top = (trace: number[]) => trace.slice(-240).reduce((a, b) => a + b, 0) / 240;
+
+  it('settles about a third faster than cruising on flat water, and comes up to it sooner', () => {
+    const cruise = speeds(false, 16);
+    const sprint = speeds(true, 16);
+    expect(top(cruise)).toBeGreaterThan(1.5);
+    expect(top(cruise)).toBeLessThan(1.7);
+    expect(top(sprint)).toBeGreaterThan(1.95);
+    expect(top(sprint)).toBeLessThan(2.2);
+    // More force from rest: 1 m/s in about half the cruise's time, and its own 90 % sooner than the cruise reaches its own.
+    expect(reach(sprint, 60 / 70, 1)).toBeLessThan(0.6 * reach(cruise, 1.2, 1));
+    expect(reach(sprint, 60 / 70, 0.9 * top(sprint))).toBeLessThan(reach(cruise, 1.2, 0.9 * top(cruise)));
+  });
+
+  // canyon-catch (2026-10-29): down a face the board soon outruns the stroke's hand. Broadside, the sprint's deep hand
+  // braked it, so a sprint down a 12° face settled near 3 m/s, slower than cruising (3.9) and short of a 4.5 m/s
+  // crest; feathered (FEATHER_DRAG), the sprint keeps the face's speed.
+  it('sprints down a 12° face faster than it did with its hand broadside to water outrunning it', () => {
+    const down = (stroke: 'feather' | 'old', sprint: boolean) => {
+      const water = new PlaneWater({ slopeZ: -Math.tan((12 * Math.PI) / 180), depth: 4 });
+      const session = new RideSession({ stroke });
+      session.place({ x: 0, z: 0, heading: 0, speed: 0, phase: 'prone' }, water);
+      for (let i = 0; i < Math.round(7 / STEP); i += 1) {
+        session.reserve.level = 1;
+        session.step(STEP, water, { paddle: true, sprint, popUp: false, steer: 0 });
+      }
+      return Math.hypot(session.board.velocity.x, session.board.velocity.z);
+    };
+    const feathered = down('feather', true);
+    const broadside = down('old', true);
+    expect(broadside).toBeLessThan(3.3);
+    expect(broadside).toBeLessThan(down('old', false) - 0.5);
+    expect(feathered).toBeGreaterThan(3.9);
+    expect(feathered).toBeGreaterThan(broadside + 0.8);
+  });
+
+  it('strokes 70 times a minute a side, the hand deeper, as the drawn arms show', () => {
+    const water = new PlaneWater();
+    const session = new RideSession();
+    session.reset(new Vector3(), 0, water);
+    const pulls: boolean[] = [];
+    const deepest = { cruise: 0, sprint: 0 };
+    const hand = new Vector3();
+    for (let i = 0; i < Math.round(16 / STEP); i += 1) {
+      const sprint = i * STEP >= 8;
+      session.reserve.level = 1;
+      session.step(STEP, water, { paddle: true, sprint, popUp: false, steer: 0 });
+      if (i * STEP < 4) continue;
+      // The drawn left hand, below the deck: the physics' stroke draws it.
+      const depth = -session.board.toLocal(session.rider.renderPoint(3, session.board, hand), hand).y;
+      if (sprint) deepest.sprint = Math.max(deepest.sprint, depth);
+      else deepest.cruise = Math.max(deepest.cruise, depth);
+      if (i * STEP >= 10) pulls.push(session.rider.handLoad[0] > 0);
+    }
+    const perMinute = (60 * pulls.filter((on, k) => on && !pulls[k - 1]).length) / 6;
+    expect(perMinute).toBeGreaterThan(65);
+    expect(perMinute).toBeLessThan(75);
+    expect(deepest.sprint).toBeGreaterThan(deepest.cruise + 0.05);
+  });
+
+  it('runs out after about 8 s held, cruises until a quarter is back, then sprints again; a new placement is full', () => {
+    const water = new PlaneWater();
+    const session = new RideSession();
+    session.reset(new Vector3(), 0, water);
+    let out = Infinity;
+    let back = Infinity;
+    for (let i = 0; i < Math.round(14 / STEP); i += 1) {
+      const time = i * STEP;
+      session.step(STEP, water, { paddle: true, sprint: true, popUp: false, steer: 0 });
+      if (out === Infinity && !session.rider.sprintPaddling) out = time;
+      if (out < Infinity && back === Infinity && session.rider.sprintPaddling) back = time;
+    }
+    expect(out).toBeGreaterThan(7.9);
+    expect(out).toBeLessThan(8.2);
+    // A quarter of 15 s: 3.75 s.
+    expect(back - out).toBeGreaterThan(3.6);
+    expect(back - out).toBeLessThan(3.9);
+    session.reset(new Vector3(), 0, water);
+    expect(session.reserve.level).toBe(1);
   });
 });
 

@@ -1,0 +1,59 @@
+Canyon byte check, step 3.2w (claude/rider-new-32w on origin/main b3ed7397): the same command and the same reference as C2 step 5f's, 3.2t's, 3.2u's and 3.2v's
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 54.9 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyon-b32w.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.53/2.18, roller 0.84/1.25, front 0.00/0.00, lip 0.03/0.05, foam 3.31/5.77, airSources 0.07/0.12, aeration 1.77/2.60, contact 0.00/0.00, board 0.84/1.78, bubbles 0.21/0.28, spray 0.33/0.60, sounds 0.00/0.00, snapshotFields 5.20/9.37, snapshot 5.86/10.56, summary 0.52/0.72
+  CPU stages per step (step − water + snapshot + summary): 15.64/30.28; water (CPU solver, not timed on the device) 106.1
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== default Canyon
+spun up on the CPU in 66.0 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyon-c32w.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.27/1.75, roller 0.40/0.66, front 0.00/0.00, lip 0.03/0.03, foam 3.69/4.88, airSources 0.05/0.09, aeration 1.93/2.59, contact 0.00/0.00, board 0.64/1.02, bubbles 0.17/0.24, spray 0.17/0.33, sounds 0.00/0.00, snapshotFields 4.28/6.03, snapshot 4.79/6.74, summary 0.42/0.55
+  CPU stages per step (step − water + snapshot + summary): 13.89/19.43; water (CPU solver, not timed on the device) 84.6
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+BYTEDONE
+
+Against the baseline the coordinator measured on merged main (30b2accb), and C2 step 5f's, 3.2t's, 3.2u's
+and 3.2v's own runs -- the same command on the same machine:
+  Canyon B        got a367d938f15fa934 9e5831f80e38abd9   want a367d938f15fa934 9e5831f80e38abd9
+  default Canyon  got ea3d57a4d49f4b48 a1a2555739210f96   want ea3d57a4d49f4b48 a1a2555739210f96
+  ALL FOUR IDENTICAL.
+
+This round changes no source file at all -- `git diff --stat origin/main HEAD -- src/` is empty -- so this is
+the only possible result, and it is run anyway because that is what a seatbelt is for. The one source edit the
+round made (the plumb mount in `AttachedRider.frame`, MOUNT_PLUMB) was a probe-only trial, measured in README
+Part 21 section 3, and reverted before the first commit.
+A wave-track agent shared the machine throughout, so the per-step milliseconds above are a loaded machine's --
+and they are lower than 3.2v's for that reason and no other. The hashes are the claim; the milliseconds are not.
+
+================================================================
+RE-RUN on the rebased tree (origin/main f7f08766, which carries the wave track's C2 step 5h SprayCloud change):
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 95.9 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyon-b32w2.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.19/1.53, roller 0.66/0.84, front 0.00/0.00, lip 0.03/0.03, foam 2.51/3.33, airSources 0.06/0.07, aeration 1.32/1.81, contact 0.00/0.00, board 0.65/1.03, bubbles 0.15/0.21, spray 0.26/0.38, sounds 0.00/0.00, snapshotFields 3.93/5.20, snapshot 4.43/5.87, summary 0.40/0.51
+  CPU stages per step (step − water + snapshot + summary): 11.86/15.75; water (CPU solver, not timed on the device) 78.0
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== default Canyon
+spun up on the CPU in 55.3 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyon-c32w2.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.39/2.17, roller 0.48/0.77, front 0.00/0.00, lip 0.03/0.04, foam 4.04/6.20, airSources 0.06/0.10, aeration 2.06/3.23, contact 0.00/0.00, board 0.73/1.26, bubbles 0.19/0.27, spray 0.19/0.33, sounds 0.00/0.00, snapshotFields 4.70/6.99, snapshot 5.25/7.81, summary 0.47/0.67
+  CPU stages per step (step − water + snapshot + summary): 15.07/23.27; water (CPU solver, not timed on the device) 91.9
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+BYTEDONE2
+
+Against the same reference:
+  Canyon B        got a367d938f15fa934 9e5831f80e38abd9   want a367d938f15fa934 9e5831f80e38abd9
+  default Canyon  got ea3d57a4d49f4b48 a1a2555739210f96   want ea3d57a4d49f4b48 a1a2555739210f96
+  ALL FOUR IDENTICAL on the rebased tree too.
+
+WHY THIS SECOND SET EXISTS, AND WHY THE FIRST ONE COULD NOT STAND ON ITS OWN.
+The four hashes above the line were measured on b3ed7397. While this round ran, the wave track merged C2
+step 5h as origin/main f7f08766, which changes `src/wave/SprayCloud.ts` (+148) and its test (+124) -- a
+SOURCE file in the Canyon path. 3.2v's rebase could inherit its hashes because `git show --stat` of the
+commit it rebased onto was one documentation file; this one cannot, so the whole check was re-run from
+fresh spin-ups on the rebased tree, and this second set is the one that belongs to the tree that merges.
+The wave track's own leg A on the same tree reads the same default-Canyon pair independently
+(`docs/research/wave-strategy-alternatives/c2-step5h-runs/canyon-bytes.txt`), which is a second, separate
+confirmation of half of it. `tsc -p .`, `tsc -p server/tsconfig.json` and the test suite were re-run on the
+rebased tree as well: exit 0, exit 0, and 58 files / 783 passed / 21 expected fail / exit 0.

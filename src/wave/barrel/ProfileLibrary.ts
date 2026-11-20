@@ -199,9 +199,10 @@ function voidHeightAt(frames: Float32Array, f: number): number {
  * A case's held frame (the advisor, 2026-09-30): the last frame, at or before one frame before touchdown, whose tip
  * stands `CLEAR.gap` over the lower surface beneath it (the jet off the face) and `CLEAR.gap` ahead of its throat (the
  * void open, not collapsed onto the face as pad19-a30-l12's last two frames are); its void's height there. With none
- * such, the frame before touchdown, unclear.
+ * such, the frame before touchdown, unclear. `refuse`: one more test a frame must not fail (frames, frame index), for
+ * `heldFrameJetStep` (heldJetStep.ts, the reference pool's); without it, the rule as it has always been.
  */
-export function heldFrame(c: BarrelCase): HeldFrame {
+export function heldFrame(c: BarrelCase, refuse?: (frames: Float32Array, frame: number) => boolean): HeldFrame {
   const count = c.frames.length / FLOATS;
   const last = Math.min(count - 1, Math.floor((c.touchdown - c.tauStart) / c.tauStep + 1e-6) - 1);
   for (let f = last; f >= 0; f -= 1) {
@@ -210,6 +211,7 @@ export function heldFrame(c: BarrelCase): HeldFrame {
     const tipY = c.frames[o + 2 * LANDMARK.lip + 1];
     if (tipX - c.frames[o + 2 * LANDMARK.throat] < CLEAR.gap) continue;
     if (!(tipY - surfaceBeneath(c.frames, f, tipX, tipY) >= CLEAR.gap)) continue;
+    if (refuse?.(c.frames, f)) continue;
     return { tau: c.tauStart + f * c.tauStep, voidHeight: voidHeightAt(c.frames, f), clear: true };
   }
   const f = Math.max(0, last);
@@ -261,7 +263,66 @@ export class NumberKeyCache<V> {
   }
 }
 
+/**
+ * The farthest apart, in profile points, two segments of a frame may be for their crossing to count as a tip or throat
+ * loop (`removeLoops`): the loops the level-12 cases carry span 2–9 points (the advisor, 2026-10-22).
+ */
+export const LOOP_SPAN = 10;
+/** Where a blended profile's folds are looked for, profile points: the lip's tip to the throat's (the only place they formed). */
+const BLEND_LOOPS = [56, 100] as const;
+
+/**
+ * Removes a frame's small self-crossings in place (the advisor's ruling, 2026-10-22; the tube from Basilisk): where
+ * segment i–i+1 crosses segment j–j+1 with j − i ≤ LOOP_SPAN, the points between (i+1 to j) move to the crossing, so the
+ * loop closes to a point and every index keeps its place. The level-12 runs resolve the lip with 2–4 cells, and their
+ * 128-point resampling leaves cm-wide folds at the tip (points 59–74) or the throat (86–88) of a few open frames
+ * (padang19s 4, pad19-a20 2). Returns how many points moved. Only + − × ÷.
+ */
+export function removeLoops(frames: Float32Array, from = 0, to = PROFILE_POINTS - 1): number {
+  let moved = 0;
+  for (let o = 0; o < frames.length; o += FLOATS) {
+    let i = from;
+    while (i < to) {
+      const ax = frames[o + 2 * i];
+      const ay = frames[o + 2 * i + 1];
+      const ex = frames[o + 2 * i + 2] - ax;
+      const ey = frames[o + 2 * i + 3] - ay;
+      let crossed = false;
+      for (let j = i + 2; j <= Math.min(i + LOOP_SPAN, to - 1); j += 1) {
+        const bx = frames[o + 2 * j];
+        const by = frames[o + 2 * j + 1];
+        const fx = frames[o + 2 * j + 2] - bx;
+        const fy = frames[o + 2 * j + 3] - by;
+        const den = ex * fy - ey * fx;
+        if (den === 0) continue;
+        // Where the two segments meet, as shares along each: both strictly inside is a crossing.
+        const t = ((bx - ax) * fy - (by - ay) * fx) / den;
+        const u = ((bx - ax) * ey - (by - ay) * ex) / den;
+        if (!(t > 0 && t < 1 && u > 0 && u < 1)) continue;
+        const x = ax + t * ex;
+        const y = ay + t * ey;
+        for (let k = i + 1; k <= j; k += 1) {
+          frames[o + 2 * k] = x;
+          frames[o + 2 * k + 1] = y;
+        }
+        moved += j - i;
+        crossed = true;
+        break;
+      }
+      // After a loop closes, the same segment is looked at again: a second loop may start from it.
+      if (!crossed) i += 1;
+    }
+  }
+  return moved;
+}
+
 export class ProfileLibrary {
+  /** The cases as the library draws them: each case's own frames, with their small loops closed (`removeLoops`). */
+  readonly cases: readonly BarrelCase[];
+  /** How many frame points `removeLoops` moved when the library loaded (none with the bounded-C). */
+  readonly loopPoints: number;
+  /** How many points blended profiles have had moved by `removeLoops` since the library loaded (a diagnostic). */
+  blendLoops = 0;
   private readonly bySlope: BarrelCase[][];
   private readonly held = new Map<BarrelCase, HeldFrame>();
   private readonly scratch = new Float32Array(FLOATS);
@@ -281,11 +342,23 @@ export class ProfileLibrary {
    */
   private readonly analyticClocks = new NumberKeyCache<{ impact: number; retired: number; clear: number; event: BoundedCEvent }>(ANALYTIC_CLOCK_CAPACITY);
 
-  constructor(readonly cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
+  /** `options.heldFrame`: each case's held frame by another rule (`heldFrameJetStep`); without it, `heldFrame`. */
+  constructor(cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C'; heldFrame?: (c: BarrelCase) => HeldFrame } = {}) {
+    // The raw path draws and collides the frames themselves, so their loops close once, here, for both. The bounded-C
+    // reads only the crest, toe and their tangents, and stays byte for byte as it was (the `?tubeShape=c` A/B).
+    let moved = 0;
+    this.cases = options.geometry === 'bounded-C' ? cases : cases.map((c) => {
+      const frames = c.frames.slice();
+      const points = removeLoops(frames);
+      moved += points;
+      return points > 0 ? { ...c, frames } : c;
+    });
+    this.loopPoints = moved;
+    cases = this.cases;
     const groups = new Map<number, BarrelCase[]>();
     for (const c of cases) groups.set(c.slope, [...(groups.get(c.slope) ?? []), c]);
     this.bySlope = [...groups.values()].map((group) => [...group].sort((a, b) => a.nonlinearity - b.nonlinearity));
-    for (const c of cases) this.held.set(c, heldFrame(c));
+    for (const c of cases) this.held.set(c, (options.heldFrame ?? heldFrame)(c));
   }
 
   /** The profile for a slice, in metres, into `out` (PROFILE_POINTS (x, y) pairs). */
@@ -298,6 +371,8 @@ export class ProfileLibrary {
     if (b.upper !== b.lower) {
       this.frameAt(b.upper, times[1], this.scratch);
       for (let i = 0; i < FLOATS; i += 1) out[i] += b.weight * (this.scratch[i] - out[i]);
+      // Two loop-free frames can still blend into a cm-wide fold under the tip (7 of 6,085 Padang queries): closed the same way.
+      this.blendLoops += removeLoops(out, BLEND_LOOPS[0], BLEND_LOOPS[1]);
     }
     for (let i = 0; i < FLOATS; i += 1) out[i] *= b.scale;
     const tip = this.tipLower;
@@ -389,21 +464,24 @@ export class ProfileLibrary {
   /** A slice's scale and times, s, as `profileAt` finds them, without building its profile (the loft's refinement and budget). */
   profileTimes(query: Omit<ProfileQuery, 'seconds'>): {
     scale: number; clamped: boolean; touchdownSeconds: number; frameSeconds: number; clearSeconds: number; collapseSeconds: number;
+    /** The blended cases' earliest frame, s (the later of the two's first frames: before it, one is held at its first). */
+    startSeconds: number;
   } {
     const b = this.bracket(query);
+    const startSeconds = Math.max(b.lower.tauStart, b.upper.tauStart) * b.unit;
     if (this.options.geometry === 'bounded-C') {
       const clock = this.analyticClock(query, b);
-      return { scale: b.scale, clamped: b.clamped, touchdownSeconds: clock.impact * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: clock.clear * b.unit, collapseSeconds: (clock.retired - clock.impact) * b.unit };
+      return { scale: b.scale, clamped: b.clamped, touchdownSeconds: clock.impact * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: clock.clear * b.unit, collapseSeconds: (clock.retired - clock.impact) * b.unit, startSeconds };
     }
     return {
       scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: b.clear * b.unit,
-      collapseSeconds: b.collapse,
+      collapseSeconds: b.collapse, startSeconds,
     };
   }
 
   /** Raw authored case evidence only. Analytic query lifecycle/void comes from profileAt, not this per-case helper. */
   heldFrameOf(c: BarrelCase): HeldFrame {
-    return this.held.get(c) ?? heldFrame(c);
+    return this.held.get(c) ?? (this.options.heldFrame ?? heldFrame)(c);
   }
 
   /** The cases a slice blends and by how much, and its scale, as `profileAt` blends and scales them (the crash's held overturn, PR 5). */

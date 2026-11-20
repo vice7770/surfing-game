@@ -1,0 +1,12 @@
+import json,sys
+tot=0;falls=0;rs=0;rsf=0;rounds=[]
+for p in sys.argv[1:]:
+  d=json.load(open(p))
+  for o in d['out']:
+    tot+=1; f=o['fell'] is not None
+    falls+=f
+    if o['control'] in('release','steer'): rs+=1; rsf+=f
+    if o['round'] is not None: rounds.append((o['control'],o['round'],o['turned'],o['peak'],'FELL' if f else 'on'))
+print(f'falls {falls}/{tot}  release+steer falls {rsf}/{rs}  round {len(rounds)}')
+if '-v' in sys.argv or True:
+  for r in rounds: print('  ',r)

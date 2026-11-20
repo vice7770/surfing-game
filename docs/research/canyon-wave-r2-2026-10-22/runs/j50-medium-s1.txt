@@ -1,0 +1,27 @@
+seed 1: medium Hs 1.4 m Tp 11 s s 150; c_b 4.69 m/s, h_b 2.25 m; take-off (-9, -142); tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+Wrote /tmp/claude-501/r2/j50-medium-s1.json.
+
+medium: Hs 1.4 m, Tp 11 s, s 150; 1 seed(s) × 8 periods; c_b 4.69 m/s; layout reef, window 240 m; canyon {"shelfDepth":6,"shoreSlope":0.06666666666666667,"crestDepth":1,"pathSlope":0.043478260869565216,"endSlope":0.25,"peakX":-17,"peakZ":-120,"angle":70,"takeOffX":-9,"zoneInner":-390,"blendLength":60,"edgeDepth":7.9,"zoneLength":90,"fan":0,"hingeDepth":2.2,"hingeRounding":8,"endTaper":12,"flatWidth":10,"lagoonDepth":2,"alongShore":240,"peelReach":10,"runOn":1,"bendX":-4,"bendLength":20,"downSlope":0.043478260869565216,"downAngle":70,"ageJoin":0.5}
+tracker: 7 samples, 7 clean; toward +x 7 of 7; median angle 61°, median peel speed 5.4 m/s; readout: left (+x) 7
+crests: 8; starts median x -19, 10–90 % -22…-6, within ±10 m 7 of 8; start z median -136, depth median 1.63 m, seaward of the line median 12 m
+  starts by bed part: arm end 7, arm face 1; on the arm (face or end) 8 of 8
+  close-outs (≥ 40 m within 2 s): 0; spans median 6 m, 90th 11 m
+  upcoast (> 2 onsets over 5 m within 3 s): 0; reach median 2 m, 90th 2 m, most 2 m
+  off the beach face (the flanks' shore break left out): close-outs 0; spans median 6 m, 90th 11 m; upcoast 0; reach median 2 m, 90th 2 m, most 2 m
+  own fits (r² ≥ 0.3, ≥ 8 onsets on the arm): 8; toward +x 8; median 54°, speed 6.6 m/s
+onsets: 759; by bed part: beach face 502, arm face 205, arm end 27, arm top 25; depth median 1.37 m, 10–90 % 1.10…1.88 m
+readout every 1 s (the tracker replayed; largest error against the run's samples 28.66°): 69 reads; closes out 2 (3 %), left (+x) 67 (97 %), right (−x) 0 (0 %), mixed 0 (0 %); clean toward +x 69 of 69; median angle 58°, angle of the +x reads ≥ 27°: median 58°
+health seed 1: fastest 7.52 m/s, Froude caps 0 (0 in water), volume -0.09 %, finite true; onsets per 100 s 759
+medium (j50-medium-s1.json): 8 crests; ride along shore median 27 m, 75th 36, 90th 38; along its breaks median 79 m, 90th 122; duration median 16.0 s, 75th 20.0, 90th 21.0; ≥ 10 s 6 of 8; peel over the ride median 73°; upcoast within 3 s median 2 m, 90th 2 m; breaking down the reef whatever its peel (gaps under 8 m along shore): along shore median 27 m, 90th 43; duration median 16.0 s, 90th 21.0; ≥ 10 s 6 of 8
+  faces down the line (along the break line from the peak; s = 0 ±15, then ±7.5 m): per crest, face / its own peak's at 30 m 0.64 (25–75 % 0.40–0.67; 6 crests), 60 m 0.44 (25–75 % 0.42–0.52; 4 crests), 90 m 0.32 (25–75 % 0.29–0.38; 5 crests); peak face median 2.19 m | the sets' faces (top third of the breaks in each bin): peak 2.36 m, 30 m 1.89 (0.80), 60 m 1.04 (0.44), 90 m 0.83 (0.35); breaks per bin 48/23/26/15
+medium: Hs 1.4 m, Tp 11 s; layout reef; canyon pathSlope 1:23.0, hinge 2.2 m, fan 0°; 759 onsets, 232 on the arm's face or end
+ξb along the arm (each onset: slope along +z across its depth ± 0.4 m, its face, L0 at Tp); all onsets | the sets (top third by face)
+  x bin   | n    depth  face  slope   ξb   ξγ   | sets: n   depth  face  slope   ξb   ξγ   VR   | ξb ≥ 0.4 (all, sets)
+   -22 ±5 |   27 1.84  2.10  1:165  0.06 0.07 |    9  1.88  2.31  1:171  0.05 0.07  11.9 | 11 %, 0 %
+   -12 ±5 |   61 1.62  1.58  1: 23  0.41 0.46 |   21  2.26  2.19  1: 23  0.40 0.45  2.3 | 59 %, 62 %
+    -2 ±5 |   53 1.48  1.04  1: 23  0.54 0.53 |   18  1.54  1.26  1: 23  0.46 0.50  2.3 | 70 %, 78 %
+     8 ±5 |   56 1.43  0.62  1: 23  0.54 0.51 |   19  1.30  0.94  1: 58  0.25 0.24  4.6 | 54 %, 37 %
+    18 ±5 |   34 1.47  0.56  1: 23  0.78 0.54 |   12  1.30  0.79  1: 23  0.61 0.55  2.3 | 91 %, 75 %
+    28 ±5 |    1 1.95  0.62  1: 21  0.85 0.54 |    1  1.95  0.62  1: 21  0.85 0.54  2.2 | 100 %, 100 %
+  whole arm: ξb median 0.45 (10–90 % 0.08…0.86); sets 0.40; ξb ≥ 0.4: 59 % of onsets, 55 % of the sets'; ξγ median 0.48, sets 0.45
+take-off column x -9 ± 4 m: 8 waves; start depth 10 / 50 / 90 % 1.00 / 1.56 / 2.43 m (the take-off is fitted to the 90th); start z median -118, faces median 1.58 m

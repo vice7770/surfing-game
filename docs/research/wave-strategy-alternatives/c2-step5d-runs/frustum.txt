@@ -1,0 +1,86 @@
+# C2 step 5d: the bore foam's nodes projected into every shot camera (ruling 39 item 1)
+# legA = the branch as it stands; legB = the same build with the aired block of WaveZone.applySnapshot/applyAeration off.
+# Both at t 72 s of the 2 m pool, compute=gpu, the owner's ride address. The two legs' height fields are identical to the bit.
+
+{
+ "legs": {
+  "a": {
+   "file": "/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s5d/onA/probe-at72s.json",
+   "seconds": 72,
+   "compute": "gpu"
+  },
+  "b": {
+   "file": "/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s5d/legB/probe-at72s.json",
+   "seconds": 72,
+   "compute": "gpu"
+  }
+ },
+ "grid": {
+  "xMin": -155.5,
+  "zMin": -479.9681440827902,
+  "spacing": 1,
+  "nx": 312,
+  "nz": 511
+ },
+ "camera": {
+  "fov": 55,
+  "width": 1280,
+  "height": 720,
+  "near": 0.1,
+  "far": 3000
+ },
+ "field": {
+  "nodes": 159432,
+  "foamChangedOver": 0.02,
+  "changedNodes": 149,
+  "heightChangedNodes": 0,
+  "meanChange": 0.1436,
+  "maxChange": 0.8292,
+  "foamAmean": 0.5228,
+  "foamBmean": 0.3792,
+  "mask": {
+   "active": true,
+   "set": 525,
+   "full": 382,
+   "nodes": 159432,
+   "grid": {
+    "xMin": -155.5,
+    "zMin": -479.9681440827902,
+    "spacing": 1,
+    "nx": 312,
+    "nz": 511
+   },
+   "changedUnderFullMask": 24,
+   "changedUnderAnyMask": 32,
+   "changedClearOfMask": 117,
+   "meanMaskOnChanged": 48.7
+  },
+  "bounds": {
+   "x": [
+    -54.5,
+    47.5
+   ],
+   "z": [
+    -155.96814408279022,
+    -48.96814408279022
+   ],
+   "y": [
+    -0.462,
+    1.429
+   ]
+  }
+ }
+}
+
+lineup {"eye": [93.6876, 1.2306, -222.5], "target": [123.6876, -0.3694, -226.5], "changedInFront": 0, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}
+curl-channel {"eye": [88.7987, 0.8367, -196.8708], "target": [103.7244, 0.3813, -193.6926], "changedInFront": 0, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}
+curl-close {"eye": [96.2404, 1.0367, -195.2521], "target": [103.7244, 0.3813, -193.6926], "changedInFront": 0, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}
+curl-front {"eye": [96.8601, 0.8367, -187.5053], "target": [103.7244, 0.3813, -193.6926], "changedInFront": 0, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}
+curl-behind {"eye": [106.6028, 4.3367, -206.3488], "target": [103.6822, 0.6523, -193.6333], "changedInFront": 149, "changedInsideFrustum": 149, "changedVisible": 50, "strongInsideFrustum": 50, "strongVisible": 20, "visibleAndDrawable": 40, "visibleAndClearOfMask": 38, "nearest": 62.2}
+curl-inside {"eye": [103.5893, -0.0987, -193.503], "target": [97.074, -0.0987, -198.1453], "changedInFront": 149, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}
+curl-ride {"eye": [95.0401, 1.0807, -195.2907], "target": [103.7244, 0.3813, -193.6926], "changedInFront": 0, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}
+bore-face {"eye": [-21.745, 2.8368, -94.4308], "target": [-17.81, 0.0619, -103.6241], "changedInFront": 122, "changedInsideFrustum": 122, "changedVisible": 106, "strongInsideFrustum": 39, "strongVisible": 36, "visibleAndDrawable": 86, "visibleAndClearOfMask": 80, "nearest": 7.8}
+bore-line {"eye": [-9.0253, 1.9368, -93.6521], "target": [-17.81, 0.0619, -103.6241], "changedInFront": 140, "changedInsideFrustum": 65, "changedVisible": 65, "strongInsideFrustum": 31, "strongVisible": 31, "visibleAndDrawable": 50, "visibleAndClearOfMask": 45, "nearest": 6.6}
+bore-above {"eye": [-10.9848, 8.3368, -109.4047], "target": [-17.81, 0.0619, -103.6241], "changedInFront": 92, "changedInsideFrustum": 64, "changedVisible": 64, "strongInsideFrustum": 31, "strongVisible": 31, "visibleAndDrawable": 49, "visibleAndClearOfMask": 44, "nearest": 7.3}
+horizon {"eye": [93.6876, 14, -197.5], "target": [93.6876, 0, -397.5], "changedInFront": 0, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}
+below {"eye": [93.6876, -1.5694, -222.5], "target": [93.6876, 2.0703, -232.5], "changedInFront": 0, "changedInsideFrustum": 0, "changedVisible": 0, "strongInsideFrustum": 0, "strongVisible": 0, "visibleAndDrawable": 0, "visibleAndClearOfMask": 0, "nearest": null}

@@ -1,0 +1,41 @@
+Canyon byte check, step 3.2v (claude/rider-new-32v on origin/main 30b2accb): the same command and the same reference as C2 step 5f's, step 3.2t's and step 3.2u's
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 196.9 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyon-b32v.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 2.00/4.98, roller 1.13/2.53, front 0.00/0.00, lip 0.04/0.09, foam 4.43/10.01, airSources 0.09/0.28, aeration 2.30/5.23, contact 0.00/0.00, board 1.07/2.96, bubbles 0.26/0.47, spray 0.44/1.00, sounds 0.00/0.01, snapshotFields 6.93/15.07, snapshot 7.82/16.62, summary 0.69/1.34
+  CPU stages per step (step − water + snapshot + summary): 21.58/44.34; water (CPU solver, not timed on the device) 152.2
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== default Canyon
+spun up on the CPU in 98.2 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/out/canyon-c32v.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 2.00/3.23, roller 0.68/0.99, front 0.00/0.00, lip 0.04/0.07, foam 6.00/9.11, airSources 0.08/0.18, aeration 3.14/5.02, contact 0.00/0.00, board 0.99/1.92, bubbles 0.27/0.37, spray 0.28/0.53, sounds 0.00/0.00, snapshotFields 7.10/10.74, snapshot 7.90/11.98, summary 0.67/0.95
+  CPU stages per step (step − water + snapshot + summary): 22.80/33.08; water (CPU solver, not timed on the device) 142.0
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+BYTEDONE
+
+Against the baseline the coordinator measured on merged main (30b2accb), and C2 step 5f's, 3.2t's and 3.2u's
+own runs -- the same command on the same machine:
+  Canyon B        got a367d938f15fa934 9e5831f80e38abd9   want a367d938f15fa934 9e5831f80e38abd9
+  default Canyon  got ea3d57a4d49f4b48 a1a2555739210f96   want ea3d57a4d49f4b48 a1a2555739210f96
+  ALL FOUR IDENTICAL.
+
+Every change this round is a readout, a measurement tool, a probe-only diagnostic, or a fix to a tool whose
+own switch (BoardBody.yawLedger) is off in the game -- so this is the expected result and not a surprise.
+The default board was also checked bit for bit against main as raw IEEE patterns, which is a tighter check on
+the board path than the hash: results/32v/shapebits-32v.txt, diff clean.
+A wave-track agent ran its own three-leg Canyon bench alongside this one throughout, so the per-step
+milliseconds here are a loaded machine's. The hashes are the claim; the milliseconds are not.
+
+THE REBASE, AND WHY THE HASHES ABOVE STILL STAND WITHOUT A RE-RUN.
+The deletions check caught it, which is the third round running it has earned its place. After these hashes were
+measured, `git diff --numstat origin/main` showed 16 deletions in docs/research/wave-strategy-alternatives/c2-step5g.md
+-- the wave track had merged 89af1077 ("C2 step 5g: close the one test file that would not run, by reading it") while
+this round ran, and the branch, being behind, would have reverted it. Rebased onto 89af1077; no conflict, and the
+column is back to 9 deletions, every one a line of mine that another line of mine replaced.
+
+Step 3.2u had to state an unverified caveat at exactly this point. This round does not need one, and the reason is
+checkable rather than argued: `git show --stat 89af1077` is **one documentation file, +16/-1**
+(docs/research/wave-strategy-alternatives/c2-step5g.md) and **no source file at all**. The solver, the board, the rider
+and every switch are byte-identical across the rebase, so the four hashes above are the rebased tree's own. `tsc -p .`
+and `tsc -p server/tsconfig.json` were both re-run on the rebased tree (exit 0 each, read from tsc's own status), and
+so was the 25-file rider/board/HUD/runner suite.

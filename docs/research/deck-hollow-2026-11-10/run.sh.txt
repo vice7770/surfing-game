@@ -1,0 +1,24 @@
+# Deck hollow study: every run of ../carve-carry-2026-11-10/run.sh.txt, once with the switch off and once on (HOLLOW is a scratch env override in BoardBody).
+T=$1
+for h in off on; do
+for c in 0 0.2 0.4; do
+  export CARRY=$c HOLLOW=$h
+  pair() { DRIVES=off CLIMBS=hold npx vitest run src/physics/zz-turnpair.test.ts >/dev/null 2>&1; }
+  flat() { npx vitest run src/physics/zz-carryflat.test.ts >/dev/null 2>&1; }
+  for d in 20 35; do SECONDS=16 WAIT=1 LOW=0.25 DROP=$d TOPS=60/0.5,60/0.7 OUT=$T/pairB-$d-c$c-$h.json pair; done
+  SECONDS=16 WAIT=1 LOW=0.25 DROP=20 TOPS=60/0.3,45/0.3 OUT=$T/pairC-c$c-$h.json pair
+  PLAN=cutback CUTS=150,180 ATS=0.5,0.75 OUT=$T/cut-c$c-$h.json pair
+  PLAN=cutback CUTS=90,120 OUT=$T/cut2-c$c-$h.json pair
+  PLAN=arc OUT=$T/arc-c$c-$h.json flat; PLAN=arc SPEEDS=9 OUT=$T/arc9-c$c-$h.json flat
+  PLAN=trim SPEEDS=0,1.5 OUT=$T/trim-c$c-$h.json flat
+  echo done $h $c
+done; done
+
+# The flat-water ledger (probe: ../compress-drag-2026-11-10/ledger.test.ts.txt as src/physics/zz-ledger.test.ts), carry 0:
+#   CARRY=0 SPEEDS=6,7.5,9 OUT=$T/compress-off.json npx vitest run src/physics/zz-ledger.test.ts
+#   CARRY=0 HOLLOW=on SPEEDS=6,7.5,9 OUT=$T/compress-on.json npx vitest run src/physics/zz-ledger.test.ts
+#   the same with STANCE=stand for stand-off.json / stand-on.json
+# Probes used unchanged: ../turn-pair-2026-11-10/turnpair.test.ts.txt (zz-turnpair.test.ts), ../face-hold-2026-11-10/r2Lab.ts.txt (zz-r2Lab.ts),
+# ../carve-carry-2026-11-10/carryflat.test.ts.txt (zz-carryflat.test.ts). scratch.diff.txt is the scratch on top of this branch
+# (ledger counters, the CARRY override, the HOLLOW env switch); none of it is committed in src/.
+# tables: python3 ledgertab.py.txt off.json on.json; python3 sum.py.txt <json>...; ../carve-carry-2026-11-10/carrysum.py.txt and flattab.py.txt

@@ -13,7 +13,7 @@
  * | 10 | i16 ×4 quaternion ×32767 |
  * | 18 | i16 ×21 rider points relative to the board: mm with flag 64, else cm (the bots' recorded tracks, and a swimmer beyond 32 m of a lost board) |
  * | 60 | u8 phase (255 = no rider) |
- * | 61 | u8 flags: 1 rider present, 2 board present, 4 paddling, 8 leash snapped, 16 duck-diving, 32 diving (the wipeout spec; older readers ignore them), 64 the points in mm (the riding-body plan, step 7: centimetres tilted a drawn chest 1.7° a step), 128 recovering: in the water reeling the leash in or holding the board (the animation-realism plan, phase 4; the owner's call Q20) |
+ * | 61 | u8 flags: 1 rider present, 2 board present, 4 paddling, 8 leash snapped, 16 duck-diving (the two-body dive since duck-drawn: the points the swimmer's own parts), 32 diving (the wipeout spec; older readers ignore them), 64 the points in mm (the riding-body plan, step 7: centimetres tilted a drawn chest 1.7° a step), 128 recovering: in the water reeling the leash in or holding the board (the animation-realism plan, phase 4; the owner's call Q20) |
  * | 62 | i16 heading ×10000 |
  * | 64 | i16 ×2 reaction point x, z (cm) |
  * | 68 | f32 ×2 reaction impulse x, z (N·s) |

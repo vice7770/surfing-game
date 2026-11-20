@@ -1,5 +1,6 @@
 import { LANDMARK, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import type { TubeFace } from './faceAnchor';
 import type { OwnedPlainSurface, PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
 import { createTubeApproachObservation, resetTubeRouteObservation, routeForStrip, validTubeApproachRequest,
   type TubeApproachCue, type TubeApproachRequest, type TubeApproachObservation, type TubeCapProjectionObservation,
@@ -32,6 +33,12 @@ export interface OrdinaryContactOwner {
   updateFromPlainSurface(records: Float32Array, count: number, stillLevel: number, water: PhysicalSurfWater): void;
 }
 const ORDINARY_QUERY_NORMALS = Symbol('ordinary query normals');
+/** The worker's face-ruling contact (`SweptContact.forFaceWorker`): its rows' heights and normals found on demand. */
+const FACE_QUERY_ROWS = Symbol('face query rows');
+/** C2 step 3's contact (`SweptContact.forLoft`): over a loft built elsewhere (`LibraryLoft`), no library of its own. */
+const PROVIDED_LOFT = Symbol('provided loft');
+/** C2 step 3b: the seam mask a provided loft's crossing needs to answer (`SweptContact.maskRule`): whole. */
+export const MASK_ON = 0.999;
 
 /**
  * The contact's constants (the Padang Padang spec, Part B, PR 4):
@@ -46,6 +53,8 @@ export const CONTACT = { cell: 2, closing: 0.8, crossings: 16, bucket: 0.5 } as 
 export interface ContactOptions {
   /** The quads' bucket along the ray, m (`CONTACT.bucket`); Infinity scans every quad of a strip. */
   bucket?: number;
+  /** The step 3 ruling's tube (`LoftOptions.face`): the contact's loft is built as the drawing's. */
+  face?: TubeFace;
 }
 
 export type TubeState = 'open' | 'closing' | 'closed';
@@ -87,15 +96,68 @@ export interface ContactHit {
   tangentZ: number;
   /** τ over touchdown where the tube has thrown (NaN before). */
   life: number;
+  /**
+   * Step 7's wall water (`LoftResult.wall`, `TubeFace.wallFlow`), in the swept surface's water (NaN otherwise, and without
+   * it): the surface's own velocity at its crossing above the point, along the ray and up, m/s; the anchor's and the crest's
+   * heights, m; the drawn crest's speed C, m/s; B at the crest; and the slices' weight there.
+   */
+  wallAlong: number;
+  wallUp: number;
+  wallLow: number;
+  wallTop: number;
+  wallSpeed: number;
+  wallB: number;
+  wallWeight: number;
+  /**
+   * The step 7 follow-up's nearest surface (`TubeFace.contact`; the advisor's 2026-11-05 ruling §1), in the case's water
+   * with no water floor (the wall), NaN otherwise and without it. The crossing above answers as before (`surfaceY`, the
+   * normal, `wallAlong`, `wallUp`); beside it, the first crossing of a horizontal cast shoreward along the ray from the point,
+   * within `NEAREST.reach`: its depth along its own normal (m), that normal, its surface's velocity along the ray and up
+   * (m/s), and where it is (x, z, m). `verticalDepth` is the crossing above's depth along its normal, d_v |n_y| (m), and
+   * `aheadWeight` the face ahead's share, 0–1 (0: none, or the crossing above nearer by `NEAREST.blend`; 1: the face ahead
+   * nearer by it; smoothstep between). `normalDepth` is the two blended by it, m.
+   */
+  normalDepth: number;
+  verticalDepth: number;
+  aheadWeight: number;
+  aheadDepth: number;
+  aheadNormalX: number;
+  aheadNormalY: number;
+  aheadNormalZ: number;
+  aheadAlong: number;
+  aheadUp: number;
+  aheadX: number;
+  aheadZ: number;
+  /**
+   * Ruling 5's seam blend (`TubeFace.seam`, `WallWater.seam`; absent without it): the case's share α at the crossing above
+   * the point, 0 where its surface is the solver's (NaN out of its water), and at the face ahead (`aheadAlong`'s place).
+   */
+  seam?: number;
+  aheadSeam?: number;
+  /**
+   * Ruling 21's dug foot (`TubeFace.dug`, `WallWater.dug`; absent without it): the case's share α at the lowest crossing
+   * of the point's vertical line (`floorY`), over 0 where that floor is the case's own front also under the solver's sea.
+   */
+  dug?: number;
 }
 
 export function createContactHit(): ContactHit {
   return {
     inWater: false, surfaceY: Number.NaN, normalX: 0, normalY: 1, normalZ: 0, floorY: Number.NaN, waterFloorY: Number.NaN,
     ceilingY: Number.NaN, ceilingTopY: Number.NaN, lipShare: 0, lipVX: 0, lipVY: 0, lipVZ: 0, lipWeight: 0, tangentX: 1, tangentZ: 0,
-    life: Number.NaN,
+    life: Number.NaN, wallAlong: Number.NaN, wallUp: Number.NaN, wallLow: Number.NaN, wallTop: Number.NaN, wallSpeed: Number.NaN,
+    wallB: Number.NaN, wallWeight: 0, normalDepth: Number.NaN, verticalDepth: Number.NaN, aheadWeight: 0, aheadDepth: Number.NaN,
+    aheadNormalX: 0, aheadNormalY: 1, aheadNormalZ: 0, aheadAlong: Number.NaN, aheadUp: Number.NaN, aheadX: Number.NaN, aheadZ: Number.NaN,
   };
 }
+
+/**
+ * The nearest surface's constants (`TubeFace.contact`; the advisor's 2026-11-05 ruling §1): the horizontal cast's reach
+ * shoreward along the ray, m (1), and the band over which the crossing above and the face ahead are blended by their depths
+ * along their own normals, m (within 0.05 m of each other), so the force on a body does not flip between them. *(Built so)*
+ * the face ahead also fades out over the cast's last `fade` m (0.1), so its answer never steps where it leaves the reach.
+ */
+export const NEAREST = { reach: 1, blend: 0.05, fade: 0.1 } as const;
 
 const S = LOFT_SAMPLES;
 /** Quads a strip has: one fewer than a slice's samples. */
@@ -186,16 +248,56 @@ export class SweptContact {
   private sideA = 0;
   private sideB = 0;
   private found = 0;
+  /** `TubeFace.contact`: the nearest surface in the wall (a horizontal cast ahead beside the crossing above). */
+  private readonly nearest: boolean;
+  /** Its rows' heights and normals are found as its queries need them (`forFaceWorker`, `forOrdinaryWorker`). */
+  readonly rowsOnDemand: boolean;
+  /**
+   * C2 step 3b (`forLoft`): the loft answers only where its crossing's own seam mask is on (by its triangle's weights,
+   * at least `MASK_ON`); elsewhere the water's nodes answer, as they are drawn there. Off for the probes' drawn floor.
+   */
+  maskRule: boolean;
 
-  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS) {
-    if (internal === ORDINARY_QUERY_NORMALS) {
-      const queryLoft = SweptLoft.forContactQueries(library, slope);
+  constructor(
+    library: ProfileLibrary | undefined, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS | typeof FACE_QUERY_ROWS | typeof PROVIDED_LOFT,
+    provided?: Pick<SweptLoft, 'build'>,
+  ) {
+    if (internal === PROVIDED_LOFT) this.loft = provided!;
+    else if (!library) throw new Error('SweptContact: no library');
+    else if (internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS) {
+      const queryLoft = SweptLoft.forContactQueries(library, slope, internal === FACE_QUERY_ROWS ? options.face : undefined);
       this.loft = queryLoft;
       this.prepareRow = queryLoft.prepareRow;
       this.prepareNormal = queryLoft.prepareNormal;
-    } else this.loft = new SweptLoft(library, slope, { contact: true });
+    } else this.loft = new SweptLoft(library, slope, { contact: true, ...(options.face ? { face: options.face } : {}) });
     this.bucket = options.bucket ?? CONTACT.bucket;
-    this.boundedC = library.options.geometry === 'bounded-C';
+    this.boundedC = library?.options.geometry === 'bounded-C';
+    this.nearest = options.face?.contact === true;
+    this.rowsOnDemand = internal === ORDINARY_QUERY_NORMALS || internal === FACE_QUERY_ROWS;
+    this.maskRule = internal === PROVIDED_LOFT;
+  }
+
+  /**
+   * The worker's contact under the face ruling (the pool's straight Barrel; pool-barrel-perf, 2026-11-06): the same loft,
+   * crossings, normals and answers as `new SweptContact(library, slope, { face })`, but each row's heights (with the
+   * floor's rule) and each vertex's normal are found when a query first needs them, as Padang's ordinary worker contact
+   * finds them (`forOrdinaryWorker`), from the same `heightAt`. Every query of a step comes before its water changes again
+   * (the bodies push only discharge; the next update starts a new generation), so the heights read later are the same.
+   * Its `last` loft carries those rows only once queried (the rest stand at the previous build's, `sliceTipY` NaN): the
+   * game reads it only through the queries. Its `heightAt` must answer the same through the generation: the runner gives
+   * it the water's heights through a cache of their own (`PhysicalSurfWater.createCachedPlainSurface`), emptied at each
+   * update, as some queries come outside any cache scope. `?contactRows=old` builds every row at the update, as before.
+   */
+  static forFaceWorker(library: ProfileLibrary, slope: number, face: TubeFace): SweptContact {
+    return new SweptContact(library, slope, { face }, FACE_QUERY_ROWS);
+  }
+
+  /**
+   * C2 step 3 (`?wave=library`): the contact over the library zone's overturn, a loft built elsewhere each step
+   * (`LibraryLoft`) that `build` hands over; `update`'s records and heights are not read. The same crossings and answers.
+   */
+  static forLoft(build: () => LoftResult): SweptContact {
+    return new SweptContact(undefined, 0, {}, PROVIDED_LOFT, { build });
   }
 
   /** Internal worker construction, never a posted option or public lazy-output mode. */
@@ -224,8 +326,9 @@ export class SweptContact {
   }
 
   /** Loft the fronts over the water (`heightAt`, uncarved) and index the strips for this step's queries. */
-  update(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): void {
-    const loft = this.loft.build(records, count, stillLevel, heightAt);
+  update(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number,
+    bedAt?: (x: number, z: number) => number): void {
+    const loft = this.loft.build(records, count, stillLevel, heightAt, bedAt);
     this.last = loft;
     this.geometryStep += 1;
     const { positions: p, sliceCount } = loft;
@@ -287,6 +390,13 @@ export class SweptContact {
     const below = n - above;
     hit.inWater = (above & 1) === 1;
     hit.floorY = ys[0];
+    const marks = loft.wall?.dug;
+    if (marks) {
+      // Ruling 21 (`TubeFace.dug`): the dug share at the lowest crossing, by its triangle's weights.
+      let dug = 0;
+      for (let m = 0; m < 3; m += 1) dug += this.weights[m] * marks[this.at[m]];
+      hit.dug = dug;
+    }
     hit.waterFloorY = Number.NaN;
     hit.ceilingY = Number.NaN;
     hit.ceilingTopY = Number.NaN;
@@ -334,8 +444,140 @@ export class SweptContact {
       hit.lipVY = loft.sliceTipUp[strip] + f * (loft.sliceTipUp[next] - loft.sliceTipUp[strip]);
       hit.lipWeight = loft.sliceWeight[strip] + f * (loft.sliceWeight[next] - loft.sliceWeight[strip]);
     }
+    const { wall } = loft;
+    if (wall && hit.inWater) {
+      // The wall water: the surface's own velocity at its crossing above, by its triangle's weights; the rest across the strip.
+      let along = 0;
+      let up = 0;
+      for (let m = 0; m < 3; m += 1) {
+        const v = this.at[3 * surface + m];
+        const w = this.weights[3 * surface + m];
+        along += w * wall.along[v];
+        up += w * wall.up[v];
+      }
+      hit.wallAlong = along;
+      hit.wallUp = up;
+      if (wall.seam) {
+        let seam = 0;
+        for (let m = 0; m < 3; m += 1) seam += this.weights[3 * surface + m] * wall.seam[this.at[3 * surface + m]];
+        hit.seam = seam;
+      }
+      hit.wallLow = wall.low[strip] + f * (wall.low[next] - wall.low[strip]);
+      hit.wallTop = wall.top[strip] + f * (wall.top[next] - wall.top[strip]);
+      hit.wallSpeed = wall.speed[strip] + f * (wall.speed[next] - wall.speed[strip]);
+      hit.wallB = wall.b[strip] + f * (wall.b[next] - wall.b[strip]);
+      hit.wallWeight = loft.sliceWeight[strip] + f * (loft.sliceWeight[next] - loft.sliceWeight[strip]);
+    } else {
+      hit.wallSpeed = Number.NaN;
+      hit.wallWeight = 0;
+      if (wall?.seam) hit.seam = Number.NaN;
+    }
+    hit.normalDepth = Number.NaN;
+    hit.verticalDepth = Number.NaN;
+    hit.aheadWeight = 0;
+    if (this.nearest && hit.inWater && below === 0) this.nearestSurface(loft, strip, x, y, z, rayX / length, rayZ / length, hit);
     this.stats.hits += 1;
     return true;
+  }
+
+  /**
+   * The step 7 follow-up's nearest surface (`TubeFace.contact`; the advisor's 2026-11-05 ruling §1) at a point in the wall
+   * (in the case's water, no water floor), `hit` holding the crossing above (crossing 0): a body there takes the surface
+   * nearest it along its own normal, not the one its vertical line meets. Each strip is a 2D profile in the ray–vertical
+   * plane, so a horizontal cast shoreward along the ray (rx, rz) at the point's height, within `NEAREST.reach`, through the
+   * strip's buckets, finds the face just ahead; of it and the crossing above, the nearer by depth along its own normal
+   * answers (d_h |n_a| against d_v |n_y|), blended within `NEAREST.blend` (smoothstep). Only + − × ÷ and √.
+   */
+  private nearestSurface(loft: LoftResult, strip: number, x: number, y: number, z: number, rx: number, rz: number, hit: ContactHit): void {
+    hit.verticalDepth = (hit.surfaceY - y) * Math.abs(hit.normalY);
+    hit.normalDepth = hit.verticalDepth;
+    hit.aheadDepth = Number.NaN;
+    const p = loft.positions;
+    const o = strip * S;
+    // Along slice s's ray, as the vertical crossings (`crossings`) bucket it.
+    const q = (x - p[3 * o]) * loft.sliceRayX[strip] + (z - p[3 * o + 2]) * loft.sliceRayZ[strip];
+    const reach = NEAREST.reach;
+    const from = Math.max(0, Math.floor((q - this.stripLow[strip]) / this.bucket));
+    const to = Math.min(this.stripBuckets[strip] - 1, Math.floor((q + reach - this.stripLow[strip]) / this.bucket));
+    let best: number = reach;
+    let found = -1;
+    let bu = 0;
+    let bv = 0;
+    const base = strip * Q;
+    const indices = loft.indices;
+    for (let b = from; b <= to; b += 1) {
+      const k = this.stripFirst[strip] + b;
+      for (let e = this.bucketStart[k]; e < this.bucketStart[k + 1]; e += 1) {
+        const j = this.bucketQuads[e];
+        if (this.quadHigh[base + j] < q || this.quadLow[base + j] > q + reach) continue;
+        const t = this.stripIndex[strip] + 6 * j;
+        for (let m = 0; m < 6; m += 3) {
+          const a = indices[t + m];
+          const bb = indices[t + m + 1];
+          const c = indices[t + m + 2];
+          // Möller–Trumbore along (rx, 0, rz) from (x, y, z): E1 = B − A, E2 = C − A, P = D × E2.
+          const e1x = p[3 * bb] - p[3 * a];
+          const e1y = p[3 * bb + 1] - p[3 * a + 1];
+          const e1z = p[3 * bb + 2] - p[3 * a + 2];
+          const e2x = p[3 * c] - p[3 * a];
+          const e2y = p[3 * c + 1] - p[3 * a + 1];
+          const e2z = p[3 * c + 2] - p[3 * a + 2];
+          const px = -rz * e2y;
+          const py = rz * e2x - rx * e2z;
+          const pz = rx * e2y;
+          const det = e1x * px + e1y * py + e1z * pz;
+          if (det === 0) continue;
+          const tx = x - p[3 * a];
+          const ty = y - p[3 * a + 1];
+          const tz = z - p[3 * a + 2];
+          const u = (tx * px + ty * py + tz * pz) / det;
+          if (u < 0 || u > 1) continue;
+          const qx = ty * e1z - tz * e1y;
+          const qy = tz * e1x - tx * e1z;
+          const qz = tx * e1y - ty * e1x;
+          const v = (rx * qx + rz * qz) / det;
+          if (v < 0 || u + v > 1) continue;
+          const along = (e2x * qx + e2y * qy + e2z * qz) / det;
+          if (!(along > 0) || !(along < best)) continue;
+          best = along;
+          found = t + m;
+          bu = u;
+          bv = v;
+        }
+      }
+    }
+    if (found < 0) return;
+    const a = indices[found];
+    const b = indices[found + 1];
+    const c = indices[found + 2];
+    const wa = 1 - bu - bv;
+    this.prepareNormal?.(a);
+    this.prepareNormal?.(b);
+    this.prepareNormal?.(c);
+    const n = loft.normals;
+    let nx = wa * n[3 * a] + bu * n[3 * b] + bv * n[3 * c];
+    let ny = wa * n[3 * a + 1] + bu * n[3 * b + 1] + bv * n[3 * c + 1];
+    let nz = wa * n[3 * a + 2] + bu * n[3 * b + 2] + bv * n[3 * c + 2];
+    const size = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (!(size > 1e-12)) return;
+    nx /= size;
+    ny /= size;
+    nz /= size;
+    hit.aheadNormalX = nx;
+    hit.aheadNormalY = ny;
+    hit.aheadNormalZ = nz;
+    hit.aheadDepth = best * Math.abs(nx * rx + nz * rz);
+    hit.aheadX = x + best * rx;
+    hit.aheadZ = z + best * rz;
+    const { wall } = loft;
+    hit.aheadAlong = wall ? wa * wall.along[a] + bu * wall.along[b] + bv * wall.along[c] : Number.NaN;
+    hit.aheadUp = wall ? wa * wall.up[a] + bu * wall.up[b] + bv * wall.up[c] : Number.NaN;
+    if (wall?.seam) hit.aheadSeam = wa * wall.seam[a] + bu * wall.seam[b] + bv * wall.seam[c];
+    // The face ahead's share: 1 where it is nearer by the blend, 0 where the crossing above is, smoothstep between.
+    const share = Math.min(1, Math.max(0, 0.5 + (hit.verticalDepth - hit.aheadDepth) / (2 * NEAREST.blend)));
+    const near = Math.min(1, (reach - best) / NEAREST.fade);
+    hit.aheadWeight = share * share * (3 - 2 * share) * near * near * (3 - 2 * near);
+    hit.normalDepth = hit.verticalDepth + hit.aheadWeight * (hit.aheadDepth - hit.verticalDepth);
   }
 
   /** The lowest crossing at (x, z): the face; NaN where the loft is not. */
@@ -343,16 +585,33 @@ export class SweptContact {
     return this.strip(x, z) < 0 ? Number.NaN : this.ys[0];
   }
 
+  /** The loft's floor at (x, z) whatever its seam mask (a probe's drawn loft; `maskRule` set aside). */
+  floorAtUnmasked(x: number, z: number): number {
+    const rule = this.maskRule;
+    this.maskRule = false;
+    const floor = this.floorAt(x, z);
+    this.maskRule = rule;
+    return floor;
+  }
+
+  /** The seam mask at the lowest crossing, by its triangle's weights (`maskRule`). */
+  private floorMask(loft: LoftResult): number {
+    let mask = 0;
+    for (let m = 0; m < 3; m += 1) mask += this.weights[m] * loft.mask[this.at[m]];
+    return mask;
+  }
+
   /**
-   * Answers-only ordinary guide: the nearest geometrically reachable mature C mouth, preserving a preferred front
+   * Answers-only ordinary guide: the nearest geometrically reachable mature mouth, preserving a preferred front
    * while one remains usable. The private loft never escapes; returned points/scalars belong to this generation.
    * Calling this is opt-in. Physics queries and their normal/bucket preparation are unchanged.
    */
   approachNear(request: TubeApproachRequest, observation?: TubeApproachObservation): TubeApproachCue | undefined {
     const loft = this.last;
     if (observation) Object.assign(observation, createTubeApproachObservation(request, this.geometryStep));
-    if (!this.boundedC || !loft || !validTubeApproachRequest(request)) {
-      if (observation) observation.outcome = !this.boundedC ? 'not-bounded-c' : !loft ? 'no-contact-loft' : 'invalid-request';
+    // Any tube shape (the cases' own frames since 2026-10-22, or the `?tubeShape=c` A/B): the mouth is the lip landmark.
+    if (!loft || !validTubeApproachRequest(request)) {
+      if (observation) observation.outcome = !loft ? 'no-contact-loft' : 'invalid-request';
       return undefined;
     }
     const p = loft.positions, candidates: { strip: number; fraction: number; distance: number; preferred: boolean;
@@ -479,6 +738,7 @@ export class SweptContact {
       // triangles' ties may take them: step a nanometre into the strip, along its tangent, so its own triangles do.
       const nudge = sideA === 0 ? NUDGE : 0;
       if (this.crossings(loft, s, x + nudge * loft.sliceRayZ[s], z - nudge * loft.sliceRayX[s]) > 0) {
+        if (this.maskRule && this.floorMask(loft) < MASK_ON) continue;
         this.sideA = sideA;
         this.sideB = sideB;
         this.found = k;

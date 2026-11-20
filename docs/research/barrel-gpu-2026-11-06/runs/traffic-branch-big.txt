@@ -1,0 +1,27 @@
+Wave Pool Barrel device traffic, big, 600 steps per arm after 30 warm, Node v22.17.0: p50 / p95 / max (mean); bytes a step
+waterBytes   a38: 6768 / 40380 / 50484 (10991.5) | pool: 6768 / 37032 / 53808 (11381.2) | aframe: 7452 / 56592 / 93840 (15811.2) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 174456 / 1256640 / 1256640 (243634.2)
+waterWrites  a38: 6 / 9 / 12 (5.8) | pool: 6 / 9 / 12 (5.9) | aframe: 6 / 9 / 9 (5.3) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 3 / 3 / 3 (2.8)
+fullWater    a38: 0 / 0 / 0 (0.0) | pool: 0 / 0 / 0 (0.0) | aframe: 0 / 0 / 0 (0.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 0 / 1 / 1 (0.1)
+holdBytes    a38: 4 / 4480 / 11168 (632.1) | pool: 4 / 4480 / 7852 (541.9) | aframe: 152 / 12068 / 17880 (2395.4) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 418880 / 418880 / 418880 (257611.2)
+layoutBytes  a38: 0 / 0 / 0 (0.0) | pool: 0 / 0 / 0 (0.0) | aframe: 0 / 0 / 0 (0.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 0 / 0 / 0 (0.0)
+otherBytes   a38: 288 / 288 / 288 (288.0) | pool: 288 / 288 / 288 (288.0) | aframe: 288 / 288 / 288 (288.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 288 / 288 / 288 (288.0)
+writes       a38: 9 / 12 / 15 (8.6) | pool: 9 / 12 / 15 (8.6) | aframe: 9 / 13 / 15 (8.5) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 6 / 6 / 6 (5.4)
+copyBytes    a38: 3769920 / 3769920 / 3769920 (3769920.0) | pool: 3769920 / 3769920 / 3769920 (3769920.0) | aframe: 3769920 / 3769920 / 3769920 (3769920.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 3769920 / 3769920 / 3769920 (3769920.0)
+maps         a38: 1 / 1 / 1 (1.0) | pool: 1 / 1 / 1 (1.0) | aframe: 1 / 1 / 1 (1.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 1 / 1 / 1 (1.0)
+mappedBytes  a38: 3769920 / 3769920 / 3769920 (3769920.0) | pool: 3769920 / 3769920 / 3769920 (3769920.0) | aframe: 3769920 / 3769920 / 3769920 (3769920.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 3769920 / 3769920 / 3769920 (3769920.0)
+submits      a38: 1 / 1 / 1 (1.0) | pool: 1 / 1 / 1 (1.0) | aframe: 1 / 1 / 1 (1.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 1 / 1 / 1 (1.0)
+changed      a38: 9 / 14 / 19 (9.3) | pool: 9 / 15 / 22 (9.3) | aframe: 9 / 35 / 87 (13.2) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 9 / 14 / 19 (9.3)
+span         a38: 13979 / 18715 / 19554 (12546.9) | pool: 14542 / 19277 / 21509 (13066.7) | aframe: 7281 / 59454 / 60057 (19127.2) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 13978 / 18715 / 19554 (12384.8)
+all          a38: 0 / 0 / 0 (0.0) | pool: 0 / 0 / 0 (0.0) | aframe: 0 / 0 / 0 (0.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 0 / 1 / 1 (0.1)
+listed       a38: 9 / 18 / 25 (9.6) | pool: 9 / 19 / 27 (9.7) | aframe: 9 / 42 / 175 (15.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 8 / 11 / 14 (8.1)
+plungeFlips  a38: 1 / 5 / 11 (1.3) | pool: 1 / 5 / 12 (1.2) | aframe: 2 / 26 / 67 (5.8) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 1 / 5 / 11 (1.3)
+discards     a38: 0 / 0 / 0 (0.0) | pool: 0 / 0 / 0 (0.0) | aframe: 0 / 0 / 0 (0.0) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 0 / 0 / 0 (0.0)
+launches     a38: 0 / 1 / 1 (0.1) | pool: 0 / 1 / 1 (0.1) | aframe: 0 / 2 / 11 (0.3) | a38=deviceWater:old+launchWater:old+devicePlunge:old: 0 / 1 / 1 (0.1)
+total a38: upload 11.6 kB a step mean (p50 8.0, p95 39.7, max 54); readback 3682 kB a step; maps 1.00, submits 1.00, writes 8.6 a step; full water uploads 0.0 / 100 steps; whole plunge zone 0.0 / 100; layout 0.0 / 100; discarded prefetches 0.0 / 100; launches 5.1 a second
+total pool: upload 11.9 kB a step mean (p50 8.0, p95 36.4, max 53); readback 3682 kB a step; maps 1.00, submits 1.00, writes 8.6 a step; full water uploads 0.0 / 100 steps; whole plunge zone 0.0 / 100; layout 0.0 / 100; discarded prefetches 0.0 / 100; launches 5.6 a second
+total aframe: upload 18.1 kB a step mean (p50 10.4, p95 57.3, max 100); readback 3682 kB a step; maps 1.00, submits 1.00, writes 8.5 a step; full water uploads 0.0 / 100 steps; whole plunge zone 0.0 / 100; layout 0.0 / 100; discarded prefetches 0.0 / 100; launches 17.3 a second
+total a38=deviceWater:old+launchWater:old+devicePlunge:old: upload 489.8 kB a step mean (p50 547.1, p95 1636.5, max 1637); readback 3682 kB a step; maps 1.00, submits 1.00, writes 5.4 a step; full water uploads 8.5 / 100 steps; whole plunge zone 61.5 / 100; layout 0.0 / 100; discarded prefetches 0.0 / 100; launches 5.1 a second
+hashes a38: {"water":"cfc54429ba47ec78","snapshot":"7c4912a533bace70","device":"39d3aa7293b57f1e"}
+hashes pool: {"water":"dfea71c24658273f","snapshot":"02ca0f10f4bbdc42","device":"51d7bb3e106ffb5b"}
+hashes aframe: {"water":"72652bc2ac50a34d","snapshot":"598e958ce5aed804","device":"cb790bd92486f6ef"}
+hashes a38=deviceWater:old+launchWater:old+devicePlunge:old: {"water":"cfc54429ba47ec78","snapshot":"7c4912a533bace70","device":"39d3aa7293b57f1e"}

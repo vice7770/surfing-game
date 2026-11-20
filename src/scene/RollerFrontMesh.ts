@@ -146,6 +146,36 @@ export const ROLLER_FRONT = {
   nearPixels: 6,
 } as const;
 
+/**
+ * The toe from water level (canyon-curl-front, 2026-10-23; the advisor's knowledge base, roller.md and roller-build.md):
+ * a bore's toe is an aerated, ragged, forward-leaning edge, "a fingered toe with dark holes, up to a solid white band at
+ * the crest", never a step. The first build drew its nose as a rounded white wall standing on the water, a ledge from
+ * water level, and a rim round the aged inside bores' mats. `?rollerToe=old` (`window.waterRollerFrontToe('old')`) draws
+ * it as before.
+ * - `lean`: the nose leans forward, its upper half sheared ahead by this share of its height over its centre (P): it
+ *   meets the water under an overhang rather than as a vertical wall.
+ * - `sink`: its centre this share of its radius under the water (P; the first build's `noseLift` 0): it stands lower and
+ *   meets the water at about 20° up its arc, leaning forward; the face's last third rises that much less to it.
+ * - `air`: the opacity it keeps at the waterline (P): aerated water, the gaps "bubbly green-cyan", not a white wall's foot.
+ * - `cut`: its fingers: the churn's clumps (0.75 m domes, carried with the tumbling) cut its edge, under a threshold that
+ *   rises from none at the nose's top to `cut` at the waterline, so only the clumps' tops reach the water (P).
+ * - `holes`: once aged (by the time since its curl landed, the fresh gain's φ), its toe half (ξ 0.5 → the nose) opens in
+ *   holes the same way, to this threshold, as the band's toe half does (from ξ 0.5, Wüthrich et al. 2022): aged inside
+ *   bores read as broken foam, not a mat (P).
+ * - `shed`: once old (its curl landed `shed` s ago, from the first to the second), it fades with the drawn scale as the band
+ *   does (its cover g × band), where the first build's opacity and nose were full from g 0.5: a roller being shed (its
+ *   scale falling as the bore stops breaking) fades with the band beneath, not as an opaque mat with a rim (an inside run
+ *   21 s old at g 0.4 drew one). While young its lens's scale is still growing (over 6.5 breaker depths of travel, 3–4 s),
+ *   so it keeps the first build's fade (P). Where it fades (its run's ends, its rear, a shed roller), the same clumps cut
+ *   it, to `cut` where it has faded out: broken foam.
+ * - The toe line takes the band's long lobes only (7.5 h₁): its short octave, sampled by the half-metre sub-columns,
+ *   stepped the toe in plan; the fingers are the clumps' now, per pixel.
+ */
+export const ROLLER_TOE = { lean: 0.5, sink: 0.35, air: 0.75, cut: 0.7, holes: 0.5, shed: [4, 8] } as const;
+
+/** `?rollerToe=old`, or `window.waterRollerFrontToe('old')`: the toe as the first build drew it (a rounded nose standing on the water). */
+export const rollerToeMode = { old: devParam('rollerToe') === 'old' };
+
 /** Sub-columns per patch's side and points across its section. */
 export const SECTION = 20;
 const COLUMNS_PER_PATCH = ROLLER_FRONT.subColumns + 1;
@@ -289,7 +319,7 @@ const F = ROLLER_FRONT;
 const H_REF = ROLLER_LOOK.referenceDepth;
 const PERIOD = 2 * F.life;
 
-const frontVertexPars = /* glsl */ `
+const frontVertexPars = (old: boolean) => /* glsl */ `
 ${waterHeightPars}
 ${waterCubicPars}
 uniform float waterTime;
@@ -384,13 +414,21 @@ float rfSmoothSlope( float e0, float e1, float x ) {
   float t = clamp( ( x - e0 ) / ( e1 - e0 ), 0.0, 1.0 );
   return 6.0 * t * ( 1.0 - t ) / ( e1 - e0 );
 }
-`;
+${old ? '' : `varying float vRfToe;
+// The band's toe line's long lobes alone (\`waterRollerToe\`'s second octave, ROLLER_TOE): the nose follows them; its
+// fingers are the fragments'.
+float rfToeLobes( float x, float time, float roughness ) {
+  float t = time * ${f(ROLLER_LOOK.toeRate)} / ${f(ROLLER_LOOK.fingerLife)};
+  float n = ${f(ROLLER_LOOK.toeLongWeight)} * waterRollerNoise2( vec2( x / ${f(ROLLER_LOOK.toeLong * ROLLER_LOOK.referenceDepth)}, t ), 2 );
+  return ${f(ROLLER_LOOK.toeAmplitude)} * roughness * n / ${f(ROLLER_LOOK.toeNoiseSpread)};
+}
+`}`;
 
 /**
  * The front's vertex (replaces `<beginnormal_vertex>`; `<begin_vertex>` takes `rfPosition`): its patch's columns mixed at
  * its sub-column, its point on the section, its lumps, and its normal from the section's and the lumps' slopes.
  */
-const frontBeginNormal = /* glsl */ `
+const frontBeginNormal = (old: boolean) => /* glsl */ `
 float rfTx = position.x;
 float rfK = position.y;
 // Its slot and columns i and i + 1 in the drawn table (the water's roller texture, as the band reads it) and the look
@@ -407,7 +445,8 @@ vec3 rfPosition = vec3( 0.0, -1.0e4, 0.0 );
 vRfWorld = rfPosition;
 vRfAlong = vec4( 0.0, 0.0, 1.0, 0.0 );
 vRfSection = vec4( 0.0 );
-vRfShade = vec4( 0.0, 0.0, 1.0, 0.0 );
+vRfShade = vec4( 0.0, 0.0, 1.0, 0.0 );${old ? '' : `
+vRfToe = 0.0;`}
 if ( rfLive0 || rfLive1 ) {
 vec4 rfB0 = texelFetch( waterRoller, ivec2( 2 * rfColumn + 1, rfSlot ), 0 );
 vec4 rfB1 = texelFetch( waterRoller, ivec2( 2 * rfColumn + 3, rfSlot ), 0 );
@@ -439,10 +478,13 @@ float rfDCrest = mix( rfD.x, rfD.y, rfTx );
 float rfDLen = mix( rfD.z, rfD.w, rfTx );
 float rfCel = length( rfB.xy );
 // The nose: at the band's wandering toe, its radius 0.1 H (no more than a share of a young band's length), fading with g.
-float rfFront = clamp( ${f(F.noseAt)} + waterRollerToe( rfX, waterTime, rfB.w ) / rfLen, 0.5, 1.4 );
-float rfR = min( ${f(F.nose)} * rfTune.z * rfH, ${f(F.noseOfLength)} * rfLen ) * smoothstep( 0.0, 0.5, rfG );
+float rfFront = clamp( ${f(F.noseAt)} + ${old ? 'waterRollerToe' : 'rfToeLobes'}( rfX, waterTime, rfB.w ) / rfLen, 0.5, 1.4 );
+${old ? '' : `// Its fade with the drawn scale (ROLLER_TOE.shed): full from g 0.5 while young (its lens's scale still growing), as g
+// once old (a falling scale: the roller being shed).
+float rfFade = mix( smoothstep( 0.0, 0.5, rfG ), rfG, smoothstep( ${f(ROLLER_TOE.shed[0])}, ${f(ROLLER_TOE.shed[1])}, rfSince ) );
+`}float rfR = min( ${f(F.nose)} * rfTune.z * rfH, ${f(F.noseOfLength)} * rfLen ) * ${old ? 'smoothstep( 0.0, 0.5, rfG )' : 'rfFade'};
 float rfTop = rfFront - rfR / rfLen;
-float rfCenterLift = ${f(F.noseLift)} * rfR;
+float rfCenterLift = ${f(old ? F.noseLift : -ROLLER_TOE.sink)} * rfR;
 float rfRho0 = ${f(F.noseBase)} * rfR;
 bool rfNose = rfK > ${f(NOSE_FROM)};
 float rfXi = rfNose ? rfTop : ( rfK <= ${f(REAR)} ? mix( -${f(F.rear)}, 0.0, rfK / ${f(REAR)} ) : rfTop * ${knots(FACE_KNOTS, `( rfK - ${f(REAR)} )`)} );
@@ -489,7 +531,11 @@ if ( rfNose ) {
   rfSlopeA = rfLumpS * sn - ratio * cs;
   rfSlopeBz = rfLumpS * cs + ratio * sn;
   rfSlopeC = rfDzDx + rfLumpX * cs;
-  rfSlopeB = rfWater.y + rfWater.z * rfDzDx + rfLumpX * sn;
+  rfSlopeB = rfWater.y + rfWater.z * rfDzDx + rfLumpX * sn;${old ? '' : `
+  // Leaning forward: its height over its centre sheared ahead (ROLLER_TOE.lean), so it meets the water under an overhang.
+  rfPosition.z += ${f(ROLLER_TOE.lean)} * rho * sn;
+  rfSlopeBz += ${f(ROLLER_TOE.lean)} * rfSlopeA;
+  rfSlopeC += ${f(ROLLER_TOE.lean)} * rfLumpX * sn;`}
 } else {
   // The base: buried at the rear, over the felt top down the face, rising to the nose's top.
   float ramp = 0.67 * rfTop;
@@ -512,13 +558,15 @@ vRfAlong = vec4( normalize( vec3( 0.0, rfSlopeA, rfSlopeBz ) ), rfMature );
 vRfSection = vec4( rfX, rfS, ( ${f(F.creep)} + ${f(F.tumble - F.creep)} * rfWeightNose ) * rfCel, 1.0 - clamp( rfXi, 0.0, 1.0 ) );
 // Fades: into the band at its rear, at its run's ends (its scale), and in with the landing's flash. The lumps' share of
 // their height (creases), the fresh white's gain, the detail kept at distance, and how near the crest (the band's wrap).
-float rfAlpha = smoothstep( 0.0, 0.5, rfG ) * ( rfNose ? 1.0 : smoothstep( -${f(F.rear)}, ${f(F.rearFade)}, rfXi ) );
+float rfAlpha = ${old ? 'smoothstep( 0.0, 0.5, rfG )' : 'rfFade'} * ( rfNose ? 1.0 : smoothstep( -${f(F.rear)}, ${f(F.rearFade)}, rfXi ) );
 vRfShade = vec4( rfAlpha, rfLift / max( 1e-3, min( rfSigma, rfCap ) ), exp( -max( 0.0, rfSince ) / ${f(F.freshDecay)} ),
-  rfNear );
+  rfNear );${old ? '' : `
+// How far down the nose toward the water, 0 at its top … 1 from about 20° up its arc (where it meets the water) on.
+vRfToe = rfNose ? clamp( ( 1.5707963 - rfPhi ) / 1.22, 0.0, 1.0 ) : 0.0;`}
 }
 `;
 
-const frontFragmentPars = /* glsl */ `
+const frontFragmentPars = (old: boolean) => /* glsl */ `
 uniform vec4 rfTune;
 uniform vec4 rfTune2;
 uniform float waterTime;
@@ -530,7 +578,8 @@ ${waterChurnPars}
 varying vec3 vRfWorld;
 varying vec4 vRfAlong;
 varying vec4 vRfSection;
-varying vec4 vRfShade;
+varying vec4 vRfShade;${old ? '' : `
+varying float vRfToe;`}
 // The churn's clumps on the section, carried along the arc at its pace in two flow-map phases a lump's lifetime apart.
 vec2 rfChurnAt( vec2 p ) {
   float a = fract( waterTime / ${f(PERIOD)} );
@@ -542,7 +591,7 @@ vec2 rfChurnAt( vec2 p ) {
 `;
 
 /** The foam colour, creased between lumps and between the churn's clumps (both fading with the detail at distance). */
-const FRONT_COLOR = /* glsl */ `
+const frontColor = (old: boolean) => /* glsl */ `
 vec2 rfChurn = rfChurnAt( vRfSection.xy );
 // The creases, once aged: fresh foam (its gain over 1, as a share of the most) fills them.
 float rfAged = 1.0 - ${f(F.freshFill)} * vRfShade.z;
@@ -551,7 +600,15 @@ float rfDetail = vRfShade.w * mix( 1.0, ${f(F.matureDetail)}, vRfAlong.w );
 float rfCrease = mix( 1.0, mix( ${f(F.crease)} * rfTune2.x, 1.0, smoothstep( 0.05, 0.6, vRfShade.y ) )
   * mix( ${f(F.churnShade)} * rfTune2.y, 1.0, smoothstep( 0.1, 0.7, rfChurn.y ) ), rfDetail * rfAged );
 diffuseColor.rgb = waterFoamColor * rfCrease;
-diffuseColor.a *= vRfShade.x;
+diffuseColor.a *= vRfShade.x;${old ? '' : `
+// The toe (ROLLER_TOE): fingers and holes cut by the churn's clumps, under a threshold rising down the nose to the water
+// and, once aged, over the toe half; aerated toward the waterline. At distance it fades to its mean cover.
+{
+  float rfThreshold = max( max( ${f(ROLLER_TOE.cut)} * vRfToe, ${f(ROLLER_TOE.holes)} * ( 1.0 - vRfShade.z ) * smoothstep( 0.5, 0.95, 1.0 - vRfSection.w ) ),
+    ${f(ROLLER_TOE.cut)} * ( 1.0 - vRfShade.x ) );
+  float rfKept = mix( 1.0, smoothstep( rfThreshold - 0.1, rfThreshold + 0.1, rfChurn.y ), smoothstep( 0.0, 0.15, rfThreshold ) );
+  diffuseColor.a *= mix( 1.0 - 0.6 * rfThreshold, rfKept, vRfShade.w ) * mix( 1.0, ${f(ROLLER_TOE.air)}, vRfToe );
+}`}
 `;
 
 /**
@@ -654,13 +711,14 @@ export class RollerFrontMesh {
     material.onBeforeCompile = (shader) => {
       Object.assign(shader.uniforms, uniforms, { rfPixelScale: this.pixelScale, rfLook: this.look, rfTune: rollerFrontTune.lumps,
         rfTune2: rollerFrontTune.shade });
+      const old = this.toeCompiled;
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', `#include <common>\n${frontVertexPars}`)
-        .replace('#include <beginnormal_vertex>', frontBeginNormal)
+        .replace('#include <common>', `#include <common>\n${frontVertexPars(old)}`)
+        .replace('#include <beginnormal_vertex>', frontBeginNormal(old))
         .replace('#include <begin_vertex>', 'vec3 transformed = rfPosition;');
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', `#include <common>\n${frontFragmentPars}`)
-        .replace('#include <color_fragment>', `#include <color_fragment>\n${FRONT_COLOR}`)
+        .replace('#include <common>', `#include <common>\n${frontFragmentPars(old)}`)
+        .replace('#include <color_fragment>', `#include <color_fragment>\n${frontColor(old)}`)
         .replace('#include <normal_fragment_maps>', FRONT_NORMAL)
         .replace('#include <emissivemap_fragment>', frontVolume(foamLookMode.warmth))
         .replace('#include <opaque_fragment>', FRONT_GAIN);
@@ -670,7 +728,7 @@ export class RollerFrontMesh {
         withHazeLand(shader, { route: haze, pixelToward: VIEW_TOWARD });
       }
     };
-    material.customProgramCacheKey = () => `breakline-roller-front-${foamLookMode.warmth}${hazeLandKey(hazeLandRoute('front', 'rich'))}`;
+    material.customProgramCacheKey = () => `breakline-roller-front-${foamLookMode.warmth}${hazeLandKey(hazeLandRoute('front', 'rich'))}${this.toeCompiled ? '-toe-old' : ''}`;
     onHazeLandChange(() => {
       material.needsUpdate = true;
     });
@@ -679,8 +737,18 @@ export class RollerFrontMesh {
     this.mesh.visible = false;
     // Drawn before the curl, which blends over it where it collapses into its landing.
     this.mesh.renderOrder = -1;
-    this.mesh.onBeforeRender = (renderer, _scene, camera) => this.setView(camera, viewHeight(renderer));
+    this.mesh.onBeforeRender = (renderer, _scene, camera) => {
+      this.setView(camera, viewHeight(renderer));
+      // The toe's A/B (`rollerToeMode`): the program follows.
+      if (rollerToeMode.old !== this.toeCompiled) {
+        this.toeCompiled = rollerToeMode.old;
+        material.needsUpdate = true;
+      }
+    };
   }
+
+  /** The toe the program was compiled for: the first build's (`?rollerToe=old`) or today's. */
+  private toeCompiled = rollerToeMode.old;
 
   /** The camera and view height (px) the front is drawn for next: an orthographic view keeps its detail. */
   setView(camera: Camera, heightPixels: number): void {
@@ -762,6 +830,7 @@ function viewHeight(renderer: WebGLRenderer): number {
 if (DEV_TOOLS && typeof window !== 'undefined') {
   Object.assign(window, {
     waterRollerFront: (on: boolean) => { rollerFrontMode.on = on; },
+    waterRollerFrontToe: (toe: 'old' | 'new') => { rollerToeMode.old = toe === 'old'; },
     waterRollerFrontTune: (lumps?: number[], shade?: number[]) => {
       if (lumps) rollerFrontTune.lumps.value.fromArray(lumps);
       if (shade) rollerFrontTune.shade.value.fromArray(shade);

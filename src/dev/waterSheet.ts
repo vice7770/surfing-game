@@ -12,7 +12,7 @@
  */
 import { PerspectiveCamera, Vector3, type Color } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
-import { swellChoice, type TimeOfDay } from '../game/SurfConditions';
+import { physicalSettingsFor, swellChoice, type TimeOfDay } from '../game/SurfConditions';
 import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
@@ -22,6 +22,7 @@ import { CURL_FIELD, CURL_STRIDE, impactTime } from '../wave/SpillingCurl';
 import { ROLLER_FIELD, ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
 import { LANDMARK } from '../wave/barrel/ProfileLibrary';
 import { LOFT, LOFT_SAMPLES } from '../wave/barrel/sweptLoft';
+import { LIFT } from '../wave/library/libraryLoft';
 import { TUBE_STRIDE } from '../wave/tubeTable';
 import { advance, breathe } from './devStepping';
 
@@ -85,8 +86,11 @@ const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARA
 const BUOY = { height: Number(PARAMETERS.get('height')) || undefined, period: Number(PARAMETERS.get('period')) || undefined };
 /** Reef breaks: the sheet holds them on an open tube. */
 const TUBE_SPOT = SPOT === 'reef' || SPOT === 'padang';
-/** Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube. */
-const SWEPT_SPOT = SPOT === 'padang';
+/**
+ * Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube; so does the
+ * Wave Pool's straight Barrel (`&spot=pool&waves=barrel`, pool-barrel-drawing).
+ */
+const SWEPT_SPOT = SPOT === 'padang' || (SPOT === 'pool' && PARAMETERS.get('waves') === 'barrel' && PARAMETERS.get('poolBarrel') !== 'aframe');
 /** `&whitewater` (G9): hold on a collapsing tube's foam ball, and shoot its whitewater in place of the face and bore. */
 const WHITEWATER = PARAMETERS.has('whitewater');
 /** `&compute=gpu|auto`: the sea steps in the game's worker, on its GPU tier (main.ts leaves `inpage` for it); `cpu` in the page. */
@@ -194,6 +198,59 @@ function curlShots(mode: PhysicalMode, curl: OpenCurl): Shot[] {
     { name: 'curl-front', eye: new Vector3(crest.x + rx * 12 + sx * 2, crest.y - 0.5, crest.z + rz * 12 + sz * 2), target: mouth },
     { name: 'curl-behind', eye: new Vector3(crest.x - rx * 9 + sx * 5, crest.y + 3, crest.z - rz * 9 + sz * 5), target: tip },
     { name: 'curl-inside', eye: inside, target: new Vector3(inside.x + sx * 8, inside.y, inside.z + sz * 8) },
+    // The ride camera's view (the tube from Basilisk, 2026-10-22): a rider's eye 8 m down the line toward the shoulder,
+    // 3 m in front of the toe (on the water ahead of the face, not inside the shoulder's) and 1.8 m over it, looking into
+    // the mouth.
+    { name: 'curl-ride', eye: new Vector3(toe.x + sx * 8 + rx * 3, toe.y + 1.8, toe.z + sz * 8 + rz * 3), target: mouth },
+  ];
+}
+
+/**
+ * C2 step 5d: the already-landed bore behind the held curl — a slice of the drawn loft past its own touchdown, which is
+ * where a broken wave's whitewater is and where the library writes its bore foam (`boreFoam.ts`). The curl shots all
+ * sit within 20 m of the open mouth and look into it; the bore runs on shoreward from where each slice landed, so by
+ * the time its white is a second old it is tens of metres away down the peel and no curl camera covers it (ruling 39's
+ * question, settled in `c2-step5d.md`).
+ *
+ * The slice wanted is the one whose white is `BORE_AGE` s old: fresh enough to be at its brightest (Koepke's ageing
+ * starts at 1 and is down to 0.75 by a second), old enough that the loft has let go of the tube over it
+ * (`LIFT.collapse`, 0.6 s) and the bore is the render nodes' own.
+ */
+const BORE_AGE = 1.5;
+
+/** The drawn loft's slice whose touchdown is nearest `BORE_AGE` s ago; undefined with no landed slice. */
+function boreSlice(mode: PhysicalMode): number | undefined {
+  const loft = mode.barrelLoft;
+  if (!loft) return undefined;
+  let best: { slice: number; off: number } | undefined;
+  for (let s = 0; s < loft.sliceCount; s += 1) {
+    if (loft.slicePhase[s] !== 2) continue;
+    const after = loft.sliceAfter[s];
+    if (!(after > LIFT.collapse)) continue;
+    const off = Math.abs(after - BORE_AGE);
+    if (!best || off < best.off) best = { slice: s, off };
+  }
+  return best?.slice;
+}
+
+/**
+ * Shots of that bore: square on from the water ahead of the pile, down the line along the broken crest with the pile
+ * across the frame, and from above and behind it. The pile runs from the slice's crest landmark to its toe, which is
+ * the stretch the bore foam covers.
+ */
+function boreShots(mode: PhysicalMode, slice: number): Shot[] {
+  const loft = mode.barrelLoft!;
+  const [rx, rz] = [loft.sliceRayX[slice], loft.sliceRayZ[slice]];
+  // Along the crest: the lane's ray turned a right angle (either way shows the bore; +1 is the peel's own hand).
+  const [sx, sz] = [rz, -rx];
+  const crest = landmark(mode, slice, LANDMARK.crest);
+  const toe = landmark(mode, slice, LANDMARK.toe);
+  const pile = crest.clone().add(toe).multiplyScalar(0.5);
+  const top = Math.max(crest.y, toe.y);
+  return [
+    { name: 'bore-face', eye: new Vector3(pile.x + rx * 10, top + 2.5, pile.z + rz * 10), target: pile.clone() },
+    { name: 'bore-line', eye: new Vector3(crest.x + sx * 12 + rx * 7, top + 1.6, crest.z + sz * 12 + rz * 7), target: pile.clone() },
+    { name: 'bore-above', eye: new Vector3(pile.x - rx * 8 + sx * 4, top + 8, pile.z - rz * 8 + sz * 4), target: pile.clone() },
   ];
 }
 
@@ -301,7 +358,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.textContent = 'Water sheet: settling the sea…';
   document.body.append(status);
   const compute = COMPUTE === 'cpu' ? 'cpu' : 'auto';
-  const settings: PhysicalSettings = SWELL
+  // The Wave Pool's sizes are its machine's (`&waves=barrel`: its Barrel floor and sizes, Small 1.5 m and Big 1.8 m).
+  const settings: PhysicalSettings = SWELL && SPOT === 'pool'
+    ? physicalSettingsFor('pool', { swell: SWELL, tide: 'mid', wind: 'calm', time: 'midday', ...(PARAMETERS.get('waves') === 'barrel' ? { waves: 'barrel' as const } : {}) }, { stage: 2, compute })
+    : SWELL
     ? { ...DEFAULT_PHYSICAL_SETTINGS, ...swellChoice(SPOT, SWELL), spot: SPOT, source: 'buoy', compute }
     : BUOY.height || BUOY.period
       ? {
@@ -342,7 +402,10 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       if (shot.name === 'face') {
         // Padang Padang's swept curl, when one is open at the hold (beside the whitewater's, with `&whitewater`).
         const curlOnes = curl ? curlShots(hooks.mode, curl) : [];
-        return [...(ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : curl ? [] : [shot]), ...curlOnes];
+        // C2 step 5d: the landed bore behind the curl, which no curl camera covers.
+        const bore = curl ? boreSlice(hooks.mode) : undefined;
+        const boreOnes = bore !== undefined ? boreShots(hooks.mode, bore) : [];
+        return [...(ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : curl ? [] : [shot]), ...curlOnes, ...boreOnes];
       }
       return (tube || ball || curl) && shot.name === 'bore' ? [] : [shot];
     });
@@ -385,6 +448,32 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.textContent = `Water sheet: ${SPOT} ${swellLabel}${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
   const face = steepestFace(hooks.water, hooks.mode.focus);
   status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
+  // The drawn band's table as the sea holds it (in-page seas only): what a still should show, said in numbers.
+  const sea = (hooks.mode.host as { runner?: { simulation?: SurfZoneSimulation } } | undefined)?.runner?.simulation;
+  if (sea && sea.rollerColumns > 0) {
+    const nx = sea.solver.nx;
+    const table = new Float32Array(ROLLER_SLOTS * nx * ROLLER_STRIDE);
+    sea.writeRoller(table);
+    const runs: string[] = [];
+    for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
+      let from = -1;
+      for (let c = 0; c <= nx; c += 1) {
+        const o = (slot * nx + c) * ROLLER_STRIDE;
+        const live = c < nx && table[o + ROLLER_FIELD.scale] > 0.1;
+        if (live && from < 0) from = c;
+        if (!live && from >= 0) {
+          const a = (slot * nx + from) * ROLLER_STRIDE;
+          const b = (slot * nx + c - 1) * ROLLER_STRIDE;
+          runs.push(`slot ${slot} x ${sea.solver.xCenters[from].toFixed(1)}..${sea.solver.xCenters[c - 1].toFixed(1)} crest z ${table[a + ROLLER_FIELD.crest].toFixed(1)}..${table[b + ROLLER_FIELD.crest].toFixed(1)} length ${table[a + ROLLER_FIELD.length].toFixed(1)}..${table[b + ROLLER_FIELD.length].toFixed(1)}`);
+          from = -1;
+        }
+      }
+    }
+    status.textContent += ` · band (scale over 0.1): ${runs.length > 0 ? runs.join('; ') : 'none'}`;
+    const points = (sea as unknown as { front?: { points: readonly { x: number; z: number; crashedAt?: number }[] } }).front?.points ?? [];
+    const crashed = points.filter((q) => q.crashedAt !== undefined);
+    if (crashed.length > 0) status.textContent += ` · crashed points ${crashed.length}: ${crashed.slice(0, 12).map((q) => `(${q.x.toFixed(1)}, ${q.z.toFixed(1)}, ${(sea.solver.time - q.crashedAt!).toFixed(1)} s)`).join(' ')}`;
+  }
   /** One shot at full size, posted as water-shot.png: for close checks from the console once the sheet is done. */
   const closeUp = document.createElement('canvas');
   closeUp.width = RENDER.width;
@@ -641,7 +730,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     await settle(seconds);
     held = heldShots();
     shots = held.shots;
-    Object.assign(window, { waterSheetShots: shots });
+    Object.assign(window, { waterSheetShots: shots, waterSheetSeconds: simulated });
     return shots.map((shot) => shot.name);
   };
   /** Steps the sea on by `seconds` exactly, with no hold (for shooting a sequence, e.g. a spilling wave's peel). */
@@ -820,6 +909,162 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     return {
       pixels: lumas.length, p10: +at(0.1).toFixed(4), p50: +at(0.5).toFixed(4), p90: +at(0.9).toFixed(4),
       spread: +(at(0.9) / Math.max(at(0.1), 1e-4)).toFixed(3), rgb: rgb.map((c) => +c.toFixed(4)), redOverBlue: +(rgb[0] / rgb[2]).toFixed(3),
+    };
+  };
+  /**
+   * The foam's light against the water's own, in one view, under one sun (C2 step 5c, ruling 38's branch 2:
+   * `docs/research/wave-strategy-alternatives/c2-step5c.md`). `waterSheetFoamLight` gives the foam's pixels alone; this
+   * one gives the water beside them in the same frame, which is the comparison that says whether white can read at all.
+   *
+   * Three passes from the view's own camera: as drawn, with the foam colour set magenta, and with the water mesh hidden.
+   * A pixel is water where hiding the mesh changed it; its foam share is how far the magenta pass pulled its green down.
+   * `foam` is a pull of 120 or more (the foam colour dominates the pixel) and `clear` is under 10 (no foam in it at
+   * all) — the band between is in neither, so neither figure is diluted by the other. The foam colour also tints the
+   * underwater plume (`richWaterGlsl.ts`), which is why the strong band, not any pull at all, is the foam's figure.
+   *
+   * The ratio that matters is `foamOverClearP90`: the foam's median over the clear water's 90th percentile. White reads
+   * as white only where it stands above the brightest water around it, and the lip-contrast tool's own target for a
+   * white that reads is 1.5–2×.
+   */
+  const waterSheetFoamAgainstWater = async (name: string | View, look: WaterLook, time: TimeOfDay) => {
+    const shot = viewOf(name);
+    const gl = hooks.canvas.getContext('webgl2');
+    if (!shot || !gl) return undefined;
+    fit();
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const { width, height } = hooks.canvas;
+    const count = width * height;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(count * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    const drawn = frame();
+    const colour = hooks.water.materialUniforms.waterFoamColor.value as Color;
+    const was = colour.clone();
+    colour.setRGB(1, 0, 1);
+    const magenta = frame();
+    colour.copy(was);
+    hooks.water.mesh.visible = false;
+    const dry = frame();
+    hooks.water.mesh.visible = true;
+    hooks.renderView(camera);
+    const linear = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const pull = (p: number) => drawn[4 * p + 1] - magenta[4 * p + 1];
+    const isWater = (p: number) => {
+      const k = 4 * p;
+      return drawn[k] !== dry[k] || drawn[k + 1] !== dry[k + 1] || drawn[k + 2] !== dry[k + 2];
+    };
+    const stats = (keep: (p: number) => boolean) => {
+      const lumas: number[] = [];
+      const sum = [0, 0, 0];
+      for (let p = 0; p < count; p += 1) {
+        if (!keep(p)) continue;
+        const k = 4 * p;
+        const [r, g, b] = [linear(drawn[k]), linear(drawn[k + 1]), linear(drawn[k + 2])];
+        lumas.push(0.2126 * r + 0.7152 * g + 0.0722 * b);
+        sum[0] += r;
+        sum[1] += g;
+        sum[2] += b;
+      }
+      if (!lumas.length) return { pixels: 0 };
+      lumas.sort((a, b) => a - b);
+      const at = (q: number) => +lumas[Math.floor(q * (lumas.length - 1))].toFixed(4);
+      return {
+        pixels: lumas.length, share: +(lumas.length / count).toFixed(4),
+        p10: at(0.1), p50: at(0.5), p90: at(0.9), p99: at(0.99),
+        rgb: sum.map((c) => +(c / lumas.length).toFixed(4)),
+      };
+    };
+    const foam = stats((p) => pull(p) >= 120);
+    const clear = stats((p) => isWater(p) && pull(p) < 10);
+    const ratio = (a?: number, b?: number) => (a !== undefined && b ? +(a / b).toFixed(3) : null);
+    return {
+      shot: shot.name, look, time,
+      frame: stats(() => true), waterAll: stats(isWater), foam, foamAny: stats((p) => pull(p) >= 40), clear,
+      foamOverClearP90: ratio(foam.p50, clear.p90), foamOverClearP50: ratio(foam.p50, clear.p50),
+    };
+  };
+  /**
+   * C2 step 5d (ruling 39's lead 1, "one measured look before anyone repaints"): the grey-brown veils that lie over the
+   * broken water where the owner's reference photo has a white pile. Which surface draws them — the water, or the loft
+   * and the lip sheets it carries?
+   *
+   * Two passes from the view's own camera, as drawn and with the swept barrel's mesh hidden. A pixel is the **barrel's**
+   * where hiding that mesh changed it. A pixel is **grey** where what is drawn has little colour in it: saturation under
+   * `GREY_SAT` with its brightest channel in the mid band, which is what a desaturated veil over white or over blue
+   * water looks like and what neither clean water (blue) nor foam (near-white) is.
+   *
+   * The figure that matters is `greyOnBarrel`: the share of the grey pixels that the barrel's own mesh draws. Near 1
+   * the veils are the loft and its sheets; near 0 they are the water's own.
+   */
+  const waterSheetVeil = async (name: string | View, look: WaterLook, time: TimeOfDay, options: { sat?: number; low?: number; high?: number } = {}) => {
+    const shot = viewOf(name);
+    const gl = hooks.canvas.getContext('webgl2');
+    // Under `?wave=library` the drawn loft is the library's zone mesh, not the swept barrel's: `drawBarrel` routes to
+    // `libraryZone.draw` and never touches `sweptBarrel`, so hiding the swept one alone changes no pixel at all.
+    const zone = (hooks.mode as unknown as { libraryZone?: { mesh: { mesh: { visible: boolean } } } }).libraryZone;
+    const drawnMesh = zone ? zone.mesh.mesh : hooks.mode.barrelMesh?.mesh;
+    if (!shot || !gl || !drawnMesh) return undefined;
+    const sat = options.sat ?? 0.18;
+    const [low, high] = [options.low ?? 0.3, options.high ?? 0.82];
+    fit();
+    await hooks.setTimeOfDay(time);
+    hooks.setWaterLook(look);
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const { width, height } = hooks.canvas;
+    const count = width * height;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(count * 4);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    const drawn = frame();
+    drawnMesh.visible = false;
+    const without = frame();
+    drawnMesh.visible = true;
+    hooks.renderView(camera);
+    const isBarrel = (p: number) => {
+      const k = 4 * p;
+      return drawn[k] !== without[k] || drawn[k + 1] !== without[k + 1] || drawn[k + 2] !== without[k + 2];
+    };
+    const isGrey = (p: number) => {
+      const k = 4 * p;
+      const [r, g, b] = [drawn[k] / 255, drawn[k + 1] / 255, drawn[k + 2] / 255];
+      const top = Math.max(r, g, b);
+      const bottom = Math.min(r, g, b);
+      return top >= low && top <= high && top > 0 && (top - bottom) / top < sat;
+    };
+    const stats = (keep: (p: number) => boolean) => {
+      const sum = [0, 0, 0];
+      let n = 0;
+      for (let p = 0; p < count; p += 1) {
+        if (!keep(p)) continue;
+        const k = 4 * p;
+        sum[0] += drawn[k];
+        sum[1] += drawn[k + 1];
+        sum[2] += drawn[k + 2];
+        n += 1;
+      }
+      return { pixels: n, share: +(n / count).toFixed(4), rgb: n ? sum.map((c) => Math.round(c / n)) : [0, 0, 0] };
+    };
+    const grey = stats(isGrey);
+    const greyBarrel = stats((p) => isGrey(p) && isBarrel(p));
+    return {
+      shot: shot.name, look, time, sat, band: [low, high], mesh: zone ? 'library zone' : 'swept barrel',
+      grey, greyOnBarrel: grey.pixels ? +(greyBarrel.pixels / grey.pixels).toFixed(3) : null, greyBarrel,
+      barrel: stats(isBarrel), water: stats((p) => !isBarrel(p)), frame: stats(() => true),
     };
   };
   /**
@@ -1137,7 +1382,13 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
       vsFirst: k === 0 ? 0 : at(times[k].map((t, cycle) => t - times[0][cycle]), 0.5),
     }]));
   };
-  Object.assign(window, { waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
+  /** The curl drawn as another tube shape on the same held sea (`?tubeShape=c`'s bounded-C against the cases' own frames). */
+  const waterSheetTubeShape = async (shape: 'basilisk' | 'bounded-C') => {
+    const done = await hooks.mode.setDrawnTubeShape(shape);
+    hooks.render(0);
+    return done;
+  };
+  Object.assign(window, { waterSheetVeil, waterSheetTubeShape, waterSheetGrid, waterSheetLipContrast, waterSheetFoamLight, waterSheetFoamAgainstWater, waterSheetGpuAB, waterSheetGpuTime, waterSheetPair, waterSheetStrip, waterSheetGlow, waterSheetSkyFromPhoto, waterSheetLuma, waterSheetStep, waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh, waterSheetMode: hooks.mode });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

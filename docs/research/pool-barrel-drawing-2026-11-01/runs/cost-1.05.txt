@@ -1,0 +1,1 @@
+pool straight, H 1.05 m, the CPU step (ms, p10 / p50 / p90): with its swept tube 99.74 / 109.13 / 193.23 (n 300), without (?poolTube=off) 94.29 / 105.84 / 187.91 (n 300); the front's own 2.64 / 2.64 / 2.64 (n 1)

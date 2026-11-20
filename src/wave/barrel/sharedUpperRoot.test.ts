@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { boundedCParameters, blendBoundedCParameters, sampleBoundedC, type BoundedCParameters } from './boundedCProfile';
 import { pairInnerSheet, roofEnvelopeDifference, roofHeight } from './sharedUpperRoot';
 import { readBarrelCases } from './nodeBarrelCases';
+import { BOUNDED_C_CASES } from './barrelLibrary';
 import { decodeCase } from './profileFormat';
 import { ProfileLibrary } from './ProfileLibrary';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LOFT, LOFT_SAMPLES, SweptLoft } from './sweptLoft';
 
-const cases = readBarrelCases().map(decodeCase);
+const cases = readBarrelCases(undefined, BOUNDED_C_CASES).map(decodeCase);
 const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
 const frame = (c: typeof cases[number], f: number) => c.frames.slice(256 * f, 256 * (f + 1));
 const blend = (a: Float32Array, b: Float32Array, t: number) => Float32Array.from(a, (v, i) => v + t * (b[i] - v));
@@ -170,5 +171,5 @@ describe('shared inner-sheet sampling', () => {
       }
     }
     expect(pairedCells).toBeGreaterThan(1000);
-  }, 30000);
+  }, 120_000); // About 9 s alone; it passed 30 s once on a loaded M1 (2026-10-22), so a wider margin.
 });

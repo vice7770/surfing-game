@@ -15,10 +15,54 @@ export function showsBalanceMeter(setting: GameplaySettings['balanceMeter'], swe
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
 }
 
+/**
+ * **Which of the balance's three limits to name under the meter** (step 3.2v). `ride.balance` has always been the
+ * minimum of the capture point's margin, the feet's grip left and the knees' strength left, so the meter could say how
+ * close the rider was to going down and nothing at all about why. This names it: while standing, the limit that is
+ * nearest; off the board, the one that let go and the speed it let go at, held until the rider is back up.
+ *
+ * It is worth naming rather than only metering because the three are three different falls, and the owner's own fall
+ * taxonomy turns on telling them apart: the weight going off the side is a washout, the feet losing grip is a slide,
+ * the knees giving is a landing. Measured over 30 runs on the Canyon-matched face, `margin` bound in every one and the
+ * weight left the feet **across** the board in every one, with the feet still holding 86–91 % of their grip
+ * (`docs/research/new-rider/3.2/README.md` Part 20) — so these are not the same fall, and the HUD could not say so.
+ *
+ * Returns the empty string when there is nothing to say, which hides the line.
+ */
+export function balanceLimitLabel(
+  ride: { phase: string; balanceLimit?: { limit: BalanceLimitName }; broke?: { limit: BalanceLimitName; across: boolean; speed: number } } | undefined,
+  units: Units,
+): string {
+  const standing = ride?.phase === 'standing' || ride?.phase === 'recover';
+  if (!standing && ride?.broke) {
+    const { value, unit } = speedParts(ride.broke.speed, units);
+    return t(ride.broke.across ? 'hud.balance.brokeAcross' : 'hud.balance.broke', {
+      limit: t(`hud.balance.${ride.broke.limit}`),
+      speed: `${value}${unit}`,
+    });
+  }
+  if (standing && ride?.balanceLimit) return t(`hud.balance.${ride.balanceLimit.limit}`);
+  return '';
+}
+
+/** The three limits `balanceReserve` takes the least of, plus the single number the old rider and a prone one have. */
+export type BalanceLimitName = 'margin' | 'grip' | 'knee' | 'posture';
+
 /** Whether the breath meter shows after a wipeout (the wipeout spec, Part B): by the balance meter's rule. */
 export function showsBreathMeter(setting: GameplaySettings['breathMeter'], swell: SurfConditions['swell']): boolean {
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
 }
+
+/**
+ * Whether the sprint paddle's bar shows (the owner's choices of 2026-10-22): while the rider paddles lying down and
+ * the reserve is below full; it fades out once full, and whenever the paddling stops.
+ */
+export function showsSprintBar(sprint: NonNullable<SurfZoneStatus['ride']>['sprint'] | undefined): boolean {
+  return !!sprint && sprint.paddling && sprint.reserve < SPRINT_FULL;
+}
+
+/** The sprint reserve reads full at this. */
+const SPRINT_FULL = 0.999;
 
 /** The screen's edges darken as the breath falls below half, to MAX_VIGNETTE at none (Part B). */
 const MAX_VIGNETTE = 0.85;
@@ -39,26 +83,33 @@ export function edgeNotice(holds: number, seen: number): { seen: number; text?: 
 /**
  * The callout for the ride's latest manoeuvre (P9): its name, the first time it is
  * seen (`key` names the one shown last); nothing between rides, which forgets it.
+ *
+ * An `'unjudged'` run is **not** called out (2026-11-19): the analyzer measured a turn and refused to name it, so
+ * there is nothing to shout at the player mid-ride. It is still taken as the latest run, so the key moves on and the
+ * manoeuvre after it is called out as its own. The end card and the readout still list it.
  */
 export function maneuverCallout(live: Maneuver | undefined, shown: string): { key: string; text?: string } {
   if (!live) return { key: '' };
   const key = `${live.kind}@${live.start.toFixed(2)}`;
+  if (live.kind === 'unjudged') return { key };
   return key === shown ? { key } : { key, text: t(MANEUVER_LABELS[live.kind]).toUpperCase() };
 }
 
-/** The stance readout's height: Compress past half its travel, the crouch past CROUCH_SHOWN, else normal. */
+/** The stance readout's height: Snap past half its travel (it wins), Compress past half, the crouch past CROUCH_SHOWN, else normal. */
 const CROUCH_SHOWN = 0.3;
-export type StanceLevel = 'normal' | 'crouch' | 'compress';
+export type StanceLevel = 'normal' | 'crouch' | 'compress' | 'snap';
 
 /**
  * What the stance readout shows (the movement-flow spec): the height asked for, the weight (−1 back to 1 forward)
  * and the rotation (−1 left to 1 right, as the stick is pushed; undefined when the body turns by itself). Inputs
  * only: it names no manoeuvre.
  */
-export function stanceReadout(input: Pick<RideInput, 'crouch' | 'compress' | 'trim' | 'rotate'>): { level: StanceLevel; weight: number; rotate?: number } {
-  const level = (input.compress ?? 0) >= 0.5 ? 'compress' : (input.crouch ?? 0) >= CROUCH_SHOWN ? 'crouch' : 'normal';
+export function stanceReadout(input: Pick<RideInput, 'crouch' | 'compress' | 'snap' | 'trim' | 'rotate'>): { level: StanceLevel; weight: number; rotate?: number } {
+  const snapping = (input.snap ?? 0) >= 0.5;
+  const level = snapping ? 'snap' : (input.compress ?? 0) >= 0.5 ? 'compress' : (input.crouch ?? 0) >= CROUCH_SHOWN ? 'crouch' : 'normal';
   const clamp = (x: number) => Math.max(-1, Math.min(1, x));
-  return { level, weight: clamp(input.trim ?? 0), ...(input.rotate === undefined ? {} : { rotate: clamp(input.rotate) }) };
+  // Snap's weight is on the tail, whatever the trim says.
+  return { level, weight: snapping ? -1 : clamp(input.trim ?? 0), ...(input.rotate === undefined ? {} : { rotate: clamp(input.rotate) }) };
 }
 
 /** The balance meter turns to the accent colour below this reserve. */
@@ -81,6 +132,14 @@ export class RideHud {
   private readonly speedUnit = el('small');
   private readonly balance = el('div', { class: 'hud-balance', attrs: { role: 'meter', 'aria-label': t('hud.balance'), 'aria-valuemin': '0', 'aria-valuemax': '100' } });
   private readonly balanceFill = el('div', { class: 'hud-balance-fill' });
+  /**
+   * Step 3.2v: **which** of the balance's three limits is nearest, under the meter, and on a fall the one that let go
+   * with the speed it let go at. The meter has always drawn only the minimum of the three, so it could say how close
+   * the rider was and nothing about why; this makes every wave the owner rides a labelled data point. Behind the same
+   * `balanceMeter` setting as the meter — no new switch.
+   */
+  private readonly balanceLimit = el('small', { class: 'hud-balance-limit' });
+  private balanceLimitText = '';
   private readonly hints = el('div', { class: 'hud-hints' });
   private hintKeys = '';
   /** A brief callout of each manoeuvre (P9), and the one shown last. */
@@ -92,6 +151,9 @@ export class RideHud {
   private readonly breath = el('div', { class: 'hud-balance hud-breath', attrs: { role: 'meter', 'aria-label': t('hud.breath'), 'aria-valuemin': '0', 'aria-valuemax': '100' } });
   private readonly breathFill = el('div', { class: 'hud-balance-fill' });
   private readonly vignette = el('div', { class: 'hud-vignette', attrs: { 'aria-hidden': 'true' } });
+  /** The sprint paddle's reserve (the owner's choices of 2026-10-22): a small bar at the bottom centre, fading out when full. */
+  private readonly sprint = el('div', { class: 'hud-sprint', attrs: { role: 'meter', 'aria-label': t('hud.sprint'), 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-hidden': 'true' } });
+  private readonly sprintFill = el('div', { class: 'hud-sprint-fill' });
   private rescuesSeen = -1;
   private edgeHoldsSeen = -1;
   /** The stance readout (the movement-flow spec): the height, and the weight and rotation as a dot on a track. */
@@ -105,6 +167,7 @@ export class RideHud {
   constructor(onPause: () => void) {
     this.balance.append(this.balanceFill);
     this.breath.append(this.breathFill);
+    this.sprint.append(this.sprintFill);
     this.rotateRow.append(el('small', { text: t('hud.stance.rotation') }), el('span', { class: 'hud-track' }, this.rotateDot));
     this.stance.append(this.stanceLevel,
       el('div', { class: 'hud-stance-row' }, el('small', { text: t('hud.stance.weight') }), el('span', { class: 'hud-track' }, this.weightDot)),
@@ -115,12 +178,26 @@ export class RideHud {
       this.callout,
       this.coach,
       el('div', { class: 'hud-readout' },
-        this.balance,
+        el('div', { class: 'hud-balance-group' }, this.balance, this.balanceLimit),
         this.breath,
         el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit),
         this.stance),
+      this.sprint,
       el('button', { class: 'hud-pause', attrs: { type: 'button', 'aria-label': t('hud.pause') }, on: { click: onPause } }, icon(ICONS.pause)),
       this.hints);
+  }
+
+  /** The sprint paddle's bar: shown while paddling below full (`showsSprintBar`), its fill the reserve; spent, in the accent colour. */
+  private updateSprint(sprint: NonNullable<SurfZoneStatus['ride']>['sprint'] | undefined): void {
+    const shown = showsSprintBar(sprint);
+    this.sprint.classList.toggle('is-shown', shown);
+    this.sprint.setAttribute('aria-hidden', shown ? 'false' : 'true');
+    if (!sprint) return;
+    const reserve = Math.max(0, Math.min(1, sprint.reserve));
+    this.sprintFill.style.transform = `scaleX(${reserve.toFixed(3)})`;
+    this.sprint.classList.toggle('is-spent', sprint.spent);
+    this.sprint.classList.toggle('is-sprinting', sprint.sprinting);
+    this.sprint.setAttribute('aria-valuenow', Math.round(reserve * 100).toString());
   }
 
   /** The stance readout, while standing and shown: the height asked for, the weight, and the pad's rotation. */
@@ -178,6 +255,15 @@ export class RideHud {
       this.balance.classList.toggle('is-low', reserve < LOW_BALANCE);
       this.balance.setAttribute('aria-valuenow', Math.round(reserve * 100).toString());
     }
+    // Step 3.2v: the limit's name under the meter while standing, and the one that let go for as long as the rider is
+    // off the board. Written only when it changes, as the rest of the HUD is.
+    const limitText = showBalance ? balanceLimitLabel(ride, units) : '';
+    this.balanceLimit.hidden = limitText === '';
+    if (limitText !== this.balanceLimitText) {
+      this.balanceLimitText = limitText;
+      this.balanceLimit.textContent = limitText;
+    }
+    this.balanceLimit.classList.toggle('is-broken', !standing && !!ride?.broke);
     const breath = ride?.breath ?? 1;
     this.breath.hidden = !showBreath || ride?.phase !== 'fallen' || breath >= 0.999;
     if (!this.breath.hidden) {
@@ -185,6 +271,7 @@ export class RideHud {
       this.breath.classList.toggle('is-low', breath < LOW_BALANCE);
       this.breath.setAttribute('aria-valuenow', Math.round(Math.max(0, breath) * 100).toString());
     }
+    this.updateSprint(ride?.sprint);
     const dark = breathVignette(breath).toFixed(2);
     if (this.vignette.style.opacity !== dark) this.vignette.style.opacity = dark;
     this.hints.hidden = !showHints;

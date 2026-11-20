@@ -1,0 +1,21 @@
+Step 3.3a, a few more per-cell spans, all 12 runs a cell. A dash is a column with no value for that rider.
+feltOwnMed  = the probe's OWN un-lagged felt tilt from the world vertical, median over the run, deg.
+feltOverRoll@fall = that gain as a plain ratio at the fall (no fit, no window); 0 on the old rider is the
+  constructed zero, not a measurement. relAcross@fall = the across-speed the fall test acted on, m/s.
+latAbs800 = latPair at an absolute 0.8 s, m/s^2. leanAsked peak = the lean the stick asked for, deg
+  (RAIL_RANGE is 50 deg; the cap is most = atan(v^2/(g*4.5))). The old rider does not use leanAsked.
+
+new_0       feltOwnMed 9.7–15.7      | feltOverRoll@fall 0.446–0.836     | relAcross@fall 0.754–1.406     | relRate 0.54–1.43   | latAbs800 1.57–5.02     | leanAsked peak 0.0–0.0
+new_0.25    feltOwnMed 7.3–20.6      | feltOverRoll@fall -1.047–4.794    | relAcross@fall -2.015–2.626    | relRate 0.21–1.10   | latAbs800 1.31–4.49     | leanAsked peak 12.5–12.5
+new_0.5     feltOwnMed 10.3–24.5     | feltOverRoll@fall -1.382–0.818    | relAcross@fall 0.438–1.300     | relRate 0.16–1.13   | latAbs800 1.71–4.87     | leanAsked peak 25.0–25.0
+new_1       feltOwnMed 10.6–24.2     | feltOverRoll@fall 0.482–0.859     | relAcross@fall 0.671–1.432     | relRate 0.34–1.07   | latAbs800 1.66–4.74     | leanAsked peak 35.7–50.0
+new_-0.25   feltOwnMed -3.9–11.8     | feltOverRoll@fall 0.350–2.189     | relAcross@fall -2.351–-0.740   | relRate 0.20–1.52   | latAbs800 0.52–2.12     | leanAsked peak 12.5–12.5
+new_-0.5    feltOwnMed -4.8–11.4     | feltOverRoll@fall 0.113–1.780     | relAcross@fall -1.361–-0.424   | relRate 0.14–0.72   | latAbs800 0.39–1.97     | leanAsked peak 25.0–25.0
+new_-1      feltOwnMed -5.7–8.7      | feltOverRoll@fall 0.072–2.074     | relAcross@fall -1.709–-0.566   | relRate 0.16–0.83   | latAbs800 0.36–1.95     | leanAsked peak 38.6–50.0
+old_0       feltOwnMed 0.3–2.1       | feltOverRoll@fall 0.000–0.000     | relAcross@fall –               | relRate –           | latAbs800 -0.07–0.68    | leanAsked peak 0.0–0.0
+old_0.5     feltOwnMed -24.8–29.4    | feltOverRoll@fall 0.000–0.000     | relAcross@fall –               | relRate –           | latAbs800 -4.59–4.76    | leanAsked peak 0.0–0.0
+old_1       feltOwnMed -21.0–42.2    | feltOverRoll@fall 0.000–0.000     | relAcross@fall –               | relRate –           | latAbs800 -5.01–7.14    | leanAsked peak 0.0–0.0
+old_-0.5    feltOwnMed -21.9–28.7    | feltOverRoll@fall 0.000–0.000     | relAcross@fall –               | relRate –           | latAbs800 -5.51–4.28    | leanAsked peak 0.0–0.0
+rail_0      feltOwnMed 8.4–10.8      | feltOverRoll@fall 0.451–0.620     | relAcross@fall 0.830–1.089     | relRate 1.02–1.73   | latAbs800 1.81–3.28     | leanAsked peak 0.0–0.0
+rail_1      feltOwnMed 8.6–21.5      | feltOverRoll@fall 0.430–0.795     | relAcross@fall 0.709–1.525     | relRate 0.66–1.73   | latAbs800 1.43–3.71     | leanAsked peak 19.3–50.0
+rail_-0.5   feltOwnMed -3.2–18.7     | feltOverRoll@fall 0.383–1.502     | relAcross@fall -1.348–1.151    | relRate 0.19–1.73   | latAbs800 0.44–5.81     | leanAsked peak 24.6–25.0

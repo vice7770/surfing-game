@@ -1,0 +1,36 @@
+{
+ "run": "/Users/vicentealmeida/Documents/Codex/surfing-game-canyon-tubes/tools/basilisk/runs/periodic_canyon23f74_a38_L13",
+ "t_vertical": 34.95,
+ "t_touchdown": 36.3,
+ "at_vertical": {
+  "crest_m": 2.737146,
+  "x_m": 276.864,
+  "trough_m": -0.60396,
+  "H_m": 3.341106
+ },
+ "pre_touchdown": {
+  "t": 36.275,
+  "crest_m": 2.431746,
+  "trough_m": -0.635064,
+  "H_m": 3.0668100000000003,
+  "jet_m2": 1.493301681412504,
+  "tube_m2": 1.9689085301863543,
+  "tube_L_m": 2.732202584104263,
+  "tube_W_m": 1.1351077368286653,
+  "L/W": 2.406998468478121,
+  "tilt_deg": 41.01340616163337,
+  "lip_m": 0.5465559875026889,
+  "lip_cells": 10.973986886328499,
+  "per H at touchdown": {
+   "jet": 0.15877196242425448,
+   "tube": 0.20933979721756468,
+   "lip": 0.178216448851637
+  },
+  "per H at vertical": {
+   "jet": 0.1337725622454566,
+   "tube": 0.17637825108509192,
+   "lip": 0.16358534793648838
+  },
+  "open_s": 1.055783547457792
+ }
+}

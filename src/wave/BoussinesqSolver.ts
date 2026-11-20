@@ -1,6 +1,6 @@
 import { GRAVITY } from './dispersion';
 import { inheritedAge } from './breakingAge';
-import { OPEN, PERIODIC, ShallowWaterSolver, WALL, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
+import { OPEN, PERIODIC, ShallowWaterSolver, WALL, WATER_LIST, type DepthFunction, type RelaxationZone, type SolverGrid, type SolverOptions } from './ShallowWaterSolver';
 
 /** Madsen & Sørensen (1992) dispersion coefficient: the [2,2] Padé fit to Airy. */
 export const MADSEN_SORENSEN_B = 1 / 15;
@@ -30,6 +30,7 @@ const SWITCH_FROUDE = 2;
  * number falls below 1.3 (Tissier et al. 2012). Advice from the water-physics advisor (the wave-shape-advisor note).
  */
 const PLUNGE = { behind: 0.5, ahead: 1.5, hold: 5 } as const;
+const NO_CELLS = new Int32Array(0);
 /**
  * FUNWAVE-TVD's Froude cap (`capFroude`): the largest Froude number a wet cell keeps, the depth under which it is
  * left alone (FUNWAVE's wet depth, MinDepth), and the depth above which a capped cell counts as water, m.
@@ -69,6 +70,22 @@ export interface KennedyOptions {
   end?: number;
   transition?: number;
   delta?: number;
+  /**
+   * A diagonal parent behind the face passes its breaking age only where the cell's own surface rises at least this × √(g h)
+   * (`inheritedAge`'s `diagonals`); 0, the default: always (rule A). The Canyon's `CANYON.ageJoin` (canyon-wave-r2).
+   */
+  diagonalJoin?: number;
+  /**
+   * The onset where it varies over the bed (the Canyon's beach peaks, canyon-beach-break): its fraction of √(g h) at
+   * (x, z), in place of `onset` there. Each cell takes it at its centre, again after a window shift; a cell where it
+   * equals `onset` breaks exactly as without it. Absent: `onset` everywhere.
+   */
+  onsetAt?: (x: number, z: number) => number;
+  /**
+   * The diagonal join where it varies along the bed (the Canyon's beach peaks, canyon-beach-break): its value at (x, z), in
+   * place of `diagonalJoin` there, taken at each cell's centre as `onsetAt`. Absent: `diagonalJoin` everywhere.
+   */
+  joinAt?: (x: number, z: number) => number;
 }
 
 export interface BoussinesqOptions extends SolverOptions {
@@ -87,7 +104,13 @@ export interface BoussinesqDeviceLayout {
   xBoundary: number;
   dispersive: boolean;
   /** Kennedy breaking with the onset already scaled by the wind; absent when waves do not break. */
-  breaking?: { onset: number; end: number; transition: number; mixing: number };
+  breaking?: {
+    onset: number; end: number; transition: number; mixing: number; diagonalJoin?: number;
+    /** Each cell's onset over `onset` (`KennedyOptions.onsetAt`): exactly 1 where the two agree; absent, 1 everywhere. */
+    onsetFactor?: Float64Array;
+    /** Each cell's diagonal join (`KennedyOptions.joinAt`); absent, `diagonalJoin` everywhere. */
+    joinField?: Float64Array;
+  };
   /** Still depth and its slopes along x and z. */
   still: Float64Array;
   slopeX: Float64Array;
@@ -144,7 +167,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   readonly viscosity: Float64Array;
   /** Multiplies the breaking onset; the local wind shifts it (plan Q23). */
   onsetScale = 1;
-  private readonly kennedy?: Required<KennedyOptions>;
+  private readonly kennedy?: Required<Omit<KennedyOptions, 'onsetAt' | 'joinAt'>> & Pick<KennedyOptions, 'onsetAt' | 'joinAt'>;
 
   /** Whether waves break inside the step (Kennedy eddy viscosity). */
   get breaks(): boolean {
@@ -157,6 +180,10 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   private viscosityPeak = 0;
   /** The still depth and its slopes follow the bed; recomputed when the window shifts. */
   private depthDirty = true;
+  /** Each cell's onset over `kennedy.onset` where it varies over the bed (`KennedyOptions.onsetAt`). */
+  private readonly onsetFactor?: Float64Array;
+  /** Each cell's diagonal join where it varies along the bed (`KennedyOptions.joinAt`). */
+  private readonly joinField?: Float64Array;
   private layoutVersion = 0;
   /** Column solves, all columns at once row by row: the eliminated upper band and right side. */
   private readonly columnUpper: Float64Array;
@@ -169,6 +196,15 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   readonly plungeHold: Float64Array;
   /** Changes whenever a cell enters or leaves the plunge zone: a device uploads the zone again. */
   plungeVersion = 0;
+  /**
+   * The cells that entered or left the plunge zone since a device last took it (`plungeHeld`), once each
+   * (barrel-gpu, 2026-11-06): a device sends only those. Past WATER_LIST cells, `plungeChangedOverflow`: it sends
+   * the zone whole.
+   */
+  plungeChangedCount = 0;
+  plungeChangedOverflow = false;
+  private plungeList?: Int32Array;
+  private plungeListed?: Uint8Array;
   /** Cells the Froude cap has slowed so far, and those among them deeper than 5 cm (a health metric). */
   froudeCaps = 0;
   froudeCapsInWater = 0;
@@ -202,9 +238,11 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   constructor(grid: SolverGrid, depthAt: DepthFunction, options: BoussinesqOptions = {}) {
     super(grid, depthAt, options);
     this.dispersive = options.dispersion ?? true;
-    if (options.breaking) this.kennedy = { end: 0.15, transition: 5, delta: 1.2, ...options.breaking };
+    if (options.breaking) this.kennedy = { end: 0.15, transition: 5, delta: 1.2, diagonalJoin: 0, ...options.breaking };
     const size = this.nx * this.nz;
     const make = () => new Float64Array(size);
+    if (options.breaking && options.breaking.onsetAt) this.onsetFactor = make();
+    if (options.breaking && options.breaking.joinAt) this.joinField = make();
     this.breakingStrength = make(); this.breakingAge = make(); this.riseRate = make(); this.viscosity = make();
     this.nextStrength = make(); this.nextAge = make(); this.viscousX = make(); this.viscousZ = make();
     this.columnUpper = make(); this.columnRight = make();
@@ -269,7 +307,7 @@ export class BoussinesqSolver extends ShallowWaterSolver {
         if (Math.hypot(along - s * ux, across - s * uz) > dx + 1e-9) continue;
         const i = iz * nx + ix;
         const hold = PLUNGE.hold * Math.sqrt(Math.max(DISPERSIVE_DEPTH, still[i]) / g);
-        if (!(plungeHold[i] > 0)) this.plungeVersion += 1;
+        if (!(plungeHold[i] > 0)) this.plungeChanged(i);
         if (hold > plungeHold[i]) plungeHold[i] = hold;
       }
     }
@@ -282,8 +320,35 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     for (let i = 0; i < plungeHold.length; i += 1) {
       if (!(plungeHold[i] > 0)) continue;
       plungeHold[i] = Math.max(0, plungeHold[i] - dt);
-      if (plungeHold[i] === 0) this.plungeVersion += 1;
+      if (plungeHold[i] === 0) this.plungeChanged(i);
     }
+  }
+
+  /** Cell `cell` entered or left the plunge zone (`plungeVersion`, `plungeChangedCells`). */
+  private plungeChanged(cell: number): void {
+    this.plungeVersion += 1;
+    if (this.plungeChangedOverflow) return;
+    const listed = (this.plungeListed ??= new Uint8Array(this.nx * this.nz));
+    if (listed[cell]) return;
+    listed[cell] = 1;
+    if (this.plungeChangedCount < WATER_LIST) (this.plungeList ??= new Int32Array(WATER_LIST))[this.plungeChangedCount++] = cell;
+    else this.plungeChangedOverflow = true;
+  }
+
+  /** The cells that entered or left the plunge zone since a device last took it (a view, not a copy). */
+  get plungeChangedCells(): Int32Array {
+    return (this.plungeList ?? NO_CELLS).subarray(0, this.plungeChangedCount);
+  }
+
+  /** A device now holds the plunge zone: whole, or the cells that entered or left it since. */
+  plungeHeld(): void {
+    const listed = this.plungeListed;
+    if (listed) {
+      if (this.plungeChangedOverflow) listed.fill(0);
+      else for (let k = 0; k < this.plungeChangedCount; k += 1) listed[this.plungeList![k]] = 0;
+    }
+    this.plungeChangedCount = 0;
+    this.plungeChangedOverflow = false;
   }
 
   protected override advance(dt: number): void {
@@ -375,6 +440,8 @@ export class BoussinesqSolver extends ShallowWaterSolver {
       dispersive: this.dispersive,
       breaking: kennedy && {
         onset: kennedy.onset * this.onsetScale, end: kennedy.end, transition: kennedy.transition, mixing: kennedy.delta * kennedy.delta,
+        diagonalJoin: kennedy.diagonalJoin, ...(this.onsetFactor ? { onsetFactor: this.onsetFactor } : {}),
+        ...(this.joinField ? { joinField: this.joinField } : {}),
       },
       still: this.still,
       slopeX: this.dX,
@@ -423,6 +490,9 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     const { nx, nz, h, rateH, breakingStrength: strength, breakingAge: age, nextStrength, nextAge, riseRate, viscosity: nu, gravity: g } = this;
     const onset = kennedy.onset * this.onsetScale;
     const mixing = kennedy.delta * kennedy.delta;
+    const join = kennedy.diagonalJoin;
+    const factor = this.onsetFactor;
+    const joins = this.joinField;
     // The front faces' slopes, from the half-step surface the dispersive terms use (the device's HALF field): a breaking
     // event's age comes only from behind its face (`inheritedAge`).
     const { halfEta, f1: slopeX, f2: slopeZ } = this;
@@ -441,11 +511,14 @@ export class BoussinesqSolver extends ShallowWaterSolver {
           nu[i] = 0;
           continue;
         }
-        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX[i], slopeZ[i], strength, age);
         // Thresholds scale with the still depth (Kennedy et al. 2000); the mixing acts over the whole column.
         const still = Math.max(BREAKING_DEPTH, this.still[i]);
+        const joinHere = joins ? joins[i] : join;
+        const diagonals = !(joinHere > 0) || rise >= joinHere * Math.sqrt(g * still);
+        const inherited = inheritedAge(i, ix, iz, nx, nz, slopeX[i], slopeZ[i], strength, age, diagonals);
         const ramp = Math.min(1, inherited / (kennedy.transition * Math.sqrt(still / g)));
-        const threshold = Math.sqrt(g * still) * (onset + (kennedy.end - onset) * ramp);
+        const onsetHere = factor ? onset * factor[i] : onset;
+        const threshold = Math.sqrt(g * still) * (onsetHere + (kennedy.end - onsetHere) * ramp);
         const breaking = Math.min(1, Math.max(0, rise / threshold - 1));
         nextStrength[i] = breaking;
         nextAge[i] = breaking > 0 ? inherited + dt : 0;
@@ -532,6 +605,25 @@ export class BoussinesqSolver extends ShallowWaterSolver {
     if (!this.depthDirty) return;
     const { bed, restLevel, still } = this;
     for (let i = 0; i < still.length; i += 1) still[i] = Math.max(0, restLevel - bed[i]);
+    // Each cell's onset over the solver's (`KennedyOptions.onsetAt`), at its centre where the window now stands.
+    const joinField = this.joinField;
+    const joinAt = this.kennedy?.joinAt;
+    if (joinField && joinAt) {
+      const { nx, nz, xCenters, zCenters } = this;
+      for (let iz = 0; iz < nz; iz += 1) for (let ix = 0; ix < nx; ix += 1) joinField[iz * nx + ix] = joinAt(xCenters[ix], zCenters[iz]);
+    }
+    const factor = this.onsetFactor;
+    const onsetAt = this.kennedy?.onsetAt;
+    if (factor && onsetAt) {
+      const { nx, nz, xCenters, zCenters } = this;
+      const onset = this.kennedy!.onset;
+      for (let iz = 0; iz < nz; iz += 1) {
+        for (let ix = 0; ix < nx; ix += 1) {
+          const here = onsetAt(xCenters[ix], zCenters[iz]);
+          factor[iz * nx + ix] = here === onset ? 1 : here / onset;
+        }
+      }
+    }
     this.derivativeX(still, this.dX, false);
     this.derivativeZ(still, this.dZ, false);
     this.depthDirty = false;

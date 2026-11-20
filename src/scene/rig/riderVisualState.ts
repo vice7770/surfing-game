@@ -5,7 +5,7 @@ import { LEASH_BITS, RIDER_PHASES, RIDER_SNAPSHOT, SWIM_BITS } from '../../wave/
 
 export type RiderPhase = (typeof RIDER_PHASES)[number];
 
-/** The snapshot's point order: trunk centres, then hand and foot tips (limb centres once fallen). */
+/** The snapshot's point order: trunk centres, then hand and foot tips (limb centres once fallen, and in the two-body duck-dive). */
 export const POINT = { pelvis: 0, torso: 1, head: 2, leftHand: 3, rightHand: 4, leftFoot: 5, rightFoot: 6 } as const;
 
 /** What the drawn rider is solved from: the physics' seven points, phase and heading, and the board's pose. */
@@ -57,9 +57,11 @@ export interface RiderVisualState {
    * recovery's grab: turning it deck-up, then pulling the body on). The snapshot
    * does not carry the hold: the page reads it from what it asked and what the
    * ride's status says (`HoldReading`), another player's from the pose's
-   * recovering flag (wire flag 128) with the swimmer by the board.
+   * recovering flag (wire flag 128) with the swimmer by the board. `climbing`: on the board again, still climbing on
+   * from the water (the snapshot's bit; local only). `ducking`: in the two-body duck-dive, the points the swimmer's own
+   * parts (the snapshot's bit; another player's from the pose's duck-diving flag, wire flag 16).
    */
-  readonly swim: { stroking: boolean; diving: boolean; under: boolean; holding: boolean };
+  readonly swim: { stroking: boolean; diving: boolean; under: boolean; holding: boolean; climbing: boolean; ducking: boolean };
   /**
    * Why the rider fell, as the session named it (`RideSession.separation`:
    * balance, foot slip, lost board, impact, reef): the drawn fall's shape reads
@@ -67,6 +69,12 @@ export interface RiderVisualState {
    * another player's fall is read from its motion. Undefined riding, or unknown.
    */
   separation: RiderSeparation | undefined;
+  /**
+   * The player's stick, −1 to 1 (+ turns the board toward its left, the heading growing), as the page last sent it to
+   * the ride (`RIG_SWITCHES.turnLead`: the body turns into the turn before the board does). Local only: it is not in
+   * the snapshot nor on the wire, so another player's is 0 and their body waits on the board as before.
+   */
+  steer: number;
   /** The rider's stance where the drawing knows it (the player's own setting); undefined, the rig reads it from the feet. */
   stance: StanceName | undefined;
   /** A running clock, s, for the code-driven cycles (the swimmer's crawl and kick). */
@@ -83,6 +91,12 @@ export interface RiderVisualState {
    * the wire, and nothing drawn reads it).
    */
   weight: number;
+  /**
+   * Snap held, 0–1 (the physics' `snapping`; snap-arms-gate): Snap's arms are drawn only on it, as Compress's
+   * tail-heavy, twisted turns read as Snap from the pose alone. NaN where unknown (another player's: not on the wire),
+   * and the rig infers Snap from the pose (`snapShare`).
+   */
+  snap: number;
 }
 
 export function createRiderVisualState(): RiderVisualState {
@@ -103,13 +117,15 @@ export function createRiderVisualState(): RiderVisualState {
     standingBlend: 1,
     duck: 0,
     leash: { plug: new Vector3(), worn: true, snapped: false, reeling: false, grip: new Vector3(), gripped: false },
-    swim: { stroking: false, diving: false, under: false, holding: false },
+    swim: { stroking: false, diving: false, under: false, holding: false, climbing: false, ducking: false },
     separation: undefined,
+    steer: 0,
     stance: undefined,
     clock: 0,
     breath: 1,
     twist: 0,
     weight: Number.NaN,
+    snap: Number.NaN,
   };
 }
 
@@ -133,10 +149,13 @@ export function readRiderSnapshot(rider: ArrayLike<number>, board: ArrayLike<num
   out.breath = rider[RIDER_SNAPSHOT.breath] ?? 1;
   out.twist = rider[RIDER_SNAPSHOT.twist] ?? 0;
   out.weight = rider[RIDER_SNAPSHOT.weight] ?? Number.NaN;
+  out.snap = rider[RIDER_SNAPSHOT.snap] ?? Number.NaN;
   const swim = rider[RIDER_SNAPSHOT.swim] ?? 0;
   out.swim.stroking = (swim & SWIM_BITS.stroking) !== 0;
   out.swim.diving = (swim & SWIM_BITS.diving) !== 0;
   out.swim.under = (swim & SWIM_BITS.under) !== 0;
+  out.swim.climbing = (swim & SWIM_BITS.climbing) !== 0;
+  out.swim.ducking = (swim & SWIM_BITS.ducking) !== 0;
   // Not in the snapshot: whoever draws sets them after (the page, from its status and input; a remote pose's flag).
   out.swim.holding = false;
   out.separation = undefined;

@@ -10,6 +10,18 @@ describe('roomSurfZoneConfig', () => {
     });
   });
 
+  // The pool-barrel decisions (2026-10-31): every player builds the room's Wave Pool floor; a room without waves runs Training.
+  it("builds the Wave Pool's Barrel floor for a Barrel room, and Training for a room without waves", () => {
+    const conditions = { swell: 'big', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    const training = roomSurfZoneConfig({ spot: 'pool', conditions, seed: 3 }, 0, 'cpu');
+    expect(training.poolWaves).toBeUndefined();
+    expect(roomSurfZoneConfig({ spot: 'pool', conditions: { ...conditions, waves: 'training' }, seed: 3 }, 0, 'cpu')).toEqual(training);
+    const barrel = roomSurfZoneConfig({ spot: 'pool', conditions: { ...conditions, waves: 'barrel' }, seed: 3 }, 0, 'cpu');
+    expect(barrel).toMatchObject({ spot: 'pool', poolWaves: 'barrel', peakPeriod: training.peakPeriod });
+    expect(barrel.significantHeight).toBeGreaterThan(training.significantHeight);
+    expect(roomSurfZoneConfig({ spot: 'reef', conditions: { ...conditions, waves: 'barrel' }, seed: 3 }, 0, 'cpu').poolWaves).toBeUndefined();
+  });
+
   it('ignores the time of day, which only lights the scene', () => {
     const dawn = roomSurfZoneConfig({ spot: 'point', conditions: { swell: 'small', tide: 'low', wind: 'offshore', time: 'dawn' }, seed: 1 }, 0);
     const dusk = roomSurfZoneConfig({ spot: 'point', conditions: { swell: 'small', tide: 'low', wind: 'offshore', time: 'sunset' }, seed: 1 }, 0);

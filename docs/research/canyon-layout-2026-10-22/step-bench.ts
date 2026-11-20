@@ -1,0 +1,38 @@
+/**
+ * The Canyon's CPU step on this machine, today's layout against the one before it (canyon-layout, 2026-10-22): the game's
+ * own sea at a size (`surfZoneConfigFor`, the GPU tier's 64 components, stage 2 on the CPU), spun up, then `--steps`
+ * solver steps of 1/30 s timed one by one (the whole `SurfZoneSimulation.step`: the solver, breaking, foam, the front,
+ * roller and curl). Prints the cells and the step's p50, mean and p95, ms.
+ *
+ *   rolldown docs/research/canyon-layout-2026-10-22/step-bench.ts -o dist/scripts/step-bench.mjs --format esm --platform node \
+ *     && node dist/scripts/step-bench.mjs --size medium --steps 300 [--bed old]
+ */
+import { performance } from 'node:perf_hooks';
+import { surfZoneConfigFor } from '../../../src/game/PhysicalMode';
+import { physicalSettingsFor, type SwellSize } from '../../../src/game/SurfConditions';
+import { SurfZoneSimulation, type SurfZoneConfig } from '../../../src/wave/SurfZoneSimulation';
+
+const option = (name: string) => {
+  const at = process.argv.indexOf(`--${name}`);
+  return at < 0 ? undefined : process.argv[at + 1];
+};
+const size = (option('size') ?? 'medium') as SwellSize;
+const steps = Number(option('steps') ?? 300);
+const bed = option('bed') === 'old' ? 'old' as const : undefined;
+const settings = physicalSettingsFor('canyon', { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+const config: SurfZoneConfig = { ...surfZoneConfigFor(settings, 1, true), compute: 'cpu', ...(bed ? { canyonBed: bed } : {}) };
+const built = performance.now();
+const simulation = new SurfZoneSimulation(config);
+const { solver } = simulation;
+console.log(`canyon ${size} (${bed ?? 'today'}): ${solver.nx} × ${solver.nz} = ${solver.nx * solver.nz} cells, ${config.componentCount} components; spun up in ${((performance.now() - built) / 1000).toFixed(1)} s`);
+for (let i = 0; i < 30; i += 1) simulation.step(1 / 30);
+const times: number[] = [];
+for (let i = 0; i < steps; i += 1) {
+  const t0 = performance.now();
+  simulation.step(1 / 30);
+  times.push(performance.now() - t0);
+}
+times.sort((a, b) => a - b);
+const q = (p: number) => times[Math.min(times.length - 1, Math.floor(p * times.length))];
+console.log(`step (1/30 s), ${steps} steps: p50 ${q(0.5).toFixed(2)} ms, mean ${(times.reduce((a, b) => a + b, 0) / times.length).toFixed(2)} ms, p95 ${q(0.95).toFixed(2)} ms; `
+  + `${((q(0.5) * 1000) / (solver.nx * solver.nz)).toFixed(3)} µs a cell (p50)`);

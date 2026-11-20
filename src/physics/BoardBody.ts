@@ -1,11 +1,15 @@
 import { Quaternion, Vector3 } from 'three';
 import type { AttachedRider } from './AttachedRider';
 import type { BoardContactBody } from './DetachedSurfer';
-import { buildBoardShape, type BoardShape } from './boardShape';
+import { RAIL_BAND, buildBoardShape, type BoardShape } from './boardShape';
 import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
-import { WATER, WET_RAMP, createPatchForce, patchForce, planingScales, wettedShare, type WorldPatch } from './hullForces';
+import { hollowWetShare, railDepth } from './deckHollow';
+import { RAIL_SUCTION, WATER, WET_RAMP, createPatchForce, patchForce, planingScales, submergedShare, wettedShare, type WorldPatch } from './hullForces';
+import { bankLedger } from './bankLedger';
 import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
+import type { BoardSpraySheet } from '../wave/SprayCloud';
+import { createHullSprayBuffers, hullSpraySheets, type HullSprayBuffers } from './boardSpray';
 
 interface Vec { x: number; y: number; z: number }
 
@@ -32,6 +36,8 @@ export interface BoardWork {
   rails: number;
   /** Done by a roller's froth on the hull (the Canyon roller lens, S3): a stand-in for its turbulence; 0 elsewhere. */
   froth: number;
+  /** Done by the buried rail band's suction (`hull: 'rail'`, step 3.2u); 0 on a flat-bottomed board. */
+  suction: number;
 }
 
 /**
@@ -41,6 +47,17 @@ export interface BoardWork {
  */
 const FROTH_DRAG = 500;
 
+/**
+ * The froth's stress on a patch of hull in a roller lens's footprint where the lens reaches (bottom-stop, 2026-10-29),
+ * Pa, along the roller's own direction: FROTH_DRAG·g on the speed `ahead` (m/s) by which the patch outruns the roller's
+ * water, on the share of the patch's depth under the surface, `immersion` (m), that the lens's thickness covers, and
+ * never more than the roller's grip on the face there (`WaterSample.lensGrip`). Needs the sample's lens fields.
+ */
+export function frothStress(sample: WaterSample, ahead: number, immersion: number): number {
+  const inLens = sample.lensThickness === undefined || !(immersion > sample.lensThickness) ? 1 : sample.lensThickness / immersion;
+  return Math.min(FROTH_DRAG * sample.lensScale! * ahead * inLens, sample.lensGrip!);
+}
+
 export interface BoardBodyOptions {
   shape?: BoardShape;
   payloads?: BoardPayload[];
@@ -48,6 +65,45 @@ export interface BoardBodyOptions {
   substeps?: number;
   /** The fin set; the reference thruster by default, none with []. */
   fins?: readonly FinSpec[];
+  /**
+   * Under water (duck-two-body, 2026-10-31): `'plate'` (the default) meets the water as a submerged plate once its deck
+   * is under, with a plate's cross-flow drag, added mass and roll inertia (`SUBMERGED`); `'old'` as before, the planing
+   * hull's one-sided law at any depth (`?duckBody=old`).
+   */
+  submerged?: 'plate' | 'old';
+  /**
+   * The hollow over a banked planing deck (deck-hollow, 2026-11-10; `HOLLOW`'s note), opt-in: 'on' keeps the deck, and
+   * an upright rider's parts over it, dry below the surface line while the hollow behind the low rail's entry is open
+   * (the `?deckHollow=on` dev switch, to ride). By default as before: wet wherever the sampled surface is above them.
+   */
+  deckHollow?: 'on';
+  /**
+   * The hull's cross-section (step 3.2u, `?hull=rail`), opt-in: `'rail'` gives the board a real rail band with its own
+   * normals and the band's suction (`BoardShape`'s `RAIL_BAND`, `hullForces`' `RAIL_SUCTION`), in place of the single
+   * flat-bottom normal every patch has carried until now. By default as before: a flat sheet with a knife edge.
+   */
+  hull?: 'rail';
+  /**
+   * Where the hydrostatic support points (step 3.3d, `?buoyFrame=hull`), opt-in: `'hull'` resolves it along the **hull**
+   * normal where the deck is dry and the patch planes, blending back to the water-surface normal as it floats or
+   * submerges (`hullForces`' `HULL_BUOYANCY`, the wave-shape advisor's item 2, logged in
+   * `docs/research/water-physics/consult-log.md`). By default as before: along the water-surface normal everywhere.
+   */
+  buoyFrame?: 'hull';
+  /**
+   * The band's suction, separately from its geometry, so the round can tell the section's own effect from the grip's
+   * (the advisor's ruling was to build both, and its own prediction was that the section alone measures the same):
+   * `'off'` builds the section and makes no suction. Ignored without `hull: 'rail'`.
+   */
+  railSuction?: 'off';
+  /**
+   * The rail side-face foils, which `hull: 'rail'` drops because the band's own facets carry that surface and keeping
+   * both counts the rail twice (step 3.2u). `'on'` keeps them **alongside** the band — a diagnostic, and one of the two
+   * flags Part 19 §5 named to settle why the section makes the rider lean at all, since the dropped side faces are one
+   * of the three unseparated causes. Deliberately double-counts the rail, so it is for probes only and reaches no
+   * switch; ignored without `hull: 'rail'`, where the side faces are on already.
+   */
+  railFaces?: 'on';
 }
 
 /**
@@ -56,6 +112,30 @@ export interface BoardBodyOptions {
  * choice. It wets over its own height.
  */
 const RAIL_PRESSURE = 1;
+
+/**
+ * When a buried rail ventilates and lets go (step 3.2u; the water-physics advisor's latch of 2026-11-14, from Breslin &
+ * Skalak 1959 and Aguiar Ferreira et al. 2026). The owner's bar for the shaped rail was that **the turn should end when
+ * the rail ventilates — a spin-out — rather than when the force law runs out of surface**, so this is the part of the
+ * round that is for the feel rather than for the force.
+ *
+ * - `arcMin`/`arcFull`: the band's **wetted leeward arc** — how far past separation the flow has turned on this rail —
+ *   below which it sheds instead of wrapping, so there is no suction. A hard 30° tucked edge never reaches it, which is
+ *   why the tail third of this section makes no suction and the round forward rail does [I, the advisor].
+ * - `inception`: the leeward turn past which ventilation can start at all, read as a strut's incidence. Breslin
+ *   measured spontaneous inception over 22–26° for the rounded NACA 4412 and 15–18° for the sharp-edged arc; Aguiar
+ *   Ferreira et al. agree, 15° at Fr 0.5 rising past 25° by Fr 1.0–1.5 [M]. Ours is the round one. Mapping a rail
+ *   band's wrap onto a strut's chord incidence is [I].
+ * - It is the **enabling** condition, not the trigger: our leeward arc is past inception from the first frame, so an
+ *   angle-only latch would ventilate permanently. What triggers it is the loading passing Breslin's own measured line
+ *   (`RAIL_SUCTION.cap`, 2.5 ρ g h): **the rail lets go when it comes shallow or the cross-flow spikes, and the rider
+ *   gets it back by unloading**, which is the owner's bar from a measured line rather than from a feel.
+ * - `lag`: one convective time, so the cavity takes about 3.5 of them to establish (Aguiar Ferreira et al. measure
+ *   3.5 c/u for the nose type, which is 0.47–0.65 s at our wetted lengths and speeds) [M]. Not a hard switch: the
+ *   suction's roll moment increases the roll, and switched instantly against the board's small roll inertia it rings at
+ *   four substeps. Re-wetting with the same lag is [I] — no source for an asymmetry.
+ */
+const RAIL_LATCH = { arcMin: (15 * Math.PI) / 180, arcFull: (20 * Math.PI) / 180, inception: (24 * Math.PI) / 180, lag: 0.15 } as const;
 
 /** A fin or a rail face in the board frame, relative to the centre of mass. */
 interface Foil {
@@ -76,6 +156,50 @@ interface Foil {
  * inelastically, sharing its normal momentum (von Kármán's water-entry model).
  */
 const ADDED_MASS_PER_AREA = Math.PI / 8;
+/**
+ * A submerged plate's added mass per unit length (duck-two-body; Newman 1977, *Marine Hydrodynamics*, §4.13, a flat
+ * plate of half-width a): ρπa² for motion normal to it, water on both faces, twice the planing strip's one-sided ρπb²/8
+ * (`ADDED_MASS_PER_AREA`, a = b/2). Going under, each station gains the other side's ρπb²/8 along the board's normal at
+ * its centre, by its share under. Its roll is left to the strip's spread: spread evenly across the beam, the one-sided
+ * added mass gives ρπb⁴/96 a metre about the long axis, already more than the deep plate's own ρπa⁴/8 = ρπb⁴/128 (and
+ * 2.7 times the one-sided plate's), so nothing is added.
+ */
+const PLATE_ADDED_MASS = Math.PI / 8;
+/**
+ * A body moving under the surface radiates waves with an amplitude falling as e^(−kd) with its depth d, their energy as
+ * e^(−2kd), k = ω²/g for its motion's frequency ω (Newman 1977, *Marine Hydrodynamics*, §6.17). For a board heaving and
+ * rolling over a second and a half or so, k is about 1.8 /m: a third left at 30 cm, a sixth at half a metre. The free
+ * board's (as the plate): with the rigid rider on it the hull law stands as calibrated.
+ */
+const RADIATED_WAVENUMBER = (2 * Math.PI / 1.5) ** 2 / 9.81;
+/**
+ * The water's own acceleration on the added mass (ruling 3, the water-physics advisor's advisor-ruling-3.md §2; the Wave
+ * Pool's straight Barrel only, `WaterSample.wallWater`). In a fluid that accelerates, a body also feels that acceleration
+ * acting on its added mass, not only on the mass it displaces (Maxey & Riley 1983; Auton, Hunt & Prud'homme 1988): the
+ * hull law left the water's acceleration to the hydrostatic slope force, which covers only the displaced mass, and a flat
+ * board's added mass (100–180 kg) dominates its own 2.54 kg. So each wetted patch in the case's wall water takes its added
+ * mass times the water's acceleration along the surface's normal ν, m_a (Du/Dt·ν) ν, and a submerged plate's stations the
+ * same on their other side along the board's normal. Du/Dt is the change of the water sampled along the patch's path,
+ * smoothed over `smoothing` s (about three 1/60 s steps: the sea and the case change at steps) and capped at `cap` m/s²
+ * (5 g, just above the 4.7 g computed in overturning faces, Peregrine, Cokelet & McIver 1980). Provisional. Only in the
+ * wall water: anywhere else it would change the hull law riders are tuned on, the owner's call (not made).
+ *
+ * Two rules for Du/Dt (`WaterSample.wallFollow`, step 2 of the surfer track, docs/research/board-in-water/b-wall):
+ * - along the patch's path (the first rule, `?tubeInertia=path`, and without `?wallBody=stream`): the flow sampled where
+ *   the patch is now against the flow where it was a substep before, (u(x, t) − u(x − v h, t − h)) / h = ∂u/∂t + (v·∇)u.
+ *   A fast board crossing a step in the flow reads the step as an acceleration of the water;
+ * - following the water (`wallFollow`, the default with `?wallBody=stream`): the flow where the patch's last water has
+ *   moved to, x_last + u_last h, against u_last, (u(x_last + u_last h, t) − u(x_last, t − h)) / h = ∂u/∂t + (u·∇)u, the
+ *   water's own material acceleration (one more flow sample a wall patch a substep). The board's speed is not in it.
+ *
+ * A water that knows its own Du/Dt says so (`WaterSample.flowAccel`, C2's ruling 28, decision 8): C2's library zone
+ * reads it from the Basilisk case's own frames (step 4). Then neither rule differences anything: the sample's
+ * acceleration is taken as it comes, smoothed and capped the same way, and it is the water that pushes the added mass,
+ * wherever the library's water is (its own wall is the case's wall). Without the field, the two rules above.
+ */
+const WATER_INERTIA = { smoothing: 3 / 60, cap: 5 * 9.81 } as const;
+/** A submerged plate lies under a plain surface: one whose normal is within 45° of straight up. */
+const PLATE_SURFACE_NORMAL = Math.SQRT1_2;
 /**
  * Wave radiation damping of motion into the surface at each wetted patch, as a share of the
  * critical heave damping of a floating strip with that added mass: a modelling
@@ -206,13 +330,51 @@ export class BoardBody implements BoardContactBody {
   readonly velocity = new Vector3();
   /** World frame, rad/s. */
   readonly angularVelocity = new Vector3();
-  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0, fins: 0, rails: 0, froth: 0 };
+  readonly work: BoardWork = { gravity: 0, buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, rider: 0, fins: 0, rails: 0, froth: 0, suction: 0 };
   /** The rider standing or lying on the board, coupled through its contacts. */
   rider?: AttachedRider;
   /** Mean forces over the latest step, N. */
   readonly forces = {
     buoyancy: new Vector3(), pressure: new Vector3(), addedMass: new Vector3(), radiation: new Vector3(), friction: new Vector3(), bed: new Vector3(),
-    fins: new Vector3(), rails: new Vector3(), froth: new Vector3(),
+    fins: new Vector3(), rails: new Vector3(), froth: new Vector3(), suction: new Vector3(),
+  };
+  /**
+   * The yaw ledger (step 3.2q, a measurement tool and not part of the sim): who twisted the board about the world's up
+   * over the latest step. Each entry is a mean torque, N·m, positive turning the nose toward the board's left; `total`
+   * is the board's own I·Δω about that axis, and `rider` the residual — everything the rider's coupling carries,
+   * its own yaw inertia resisting the turn as well as what its feet push. Only filled while `yawLedger` is on, so the
+   * default game pays one branch per substep and nothing else.
+   */
+  static yawLedger = false;
+  readonly yaw = {
+    buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, suction: 0, gyro: 0, rider: 0, total: 0,
+  };
+  /**
+   * **The roll ledger (step 3.3h, a measurement tool and not part of the sim): who ROLLS the board, per source, in
+   * N·m.** The yaw ledger's exact twin, one axis over. Step 3.3g measured the deck at **63.7–91.4° of roll at the
+   * fall in 12 of 12 full-stick runs** against a largest commandable lean of 40.8–50.0°, and said plainly that it had
+   * measured the in-plane *force* and not the roll *moment*, which are not the same thing. This is that instrument.
+   *
+   * **The datum, stated, because every angle on this track must carry one.** Each entry is a mean torque over the
+   * latest step, N·m, about **the board's own long axis** — the board frame's +z, the axis a surfboard rolls about —
+   * taken as the world vector `(rotation[2], rotation[5], rotation[8])` at the substep that books it, which is the
+   * same axis and the same expression `bandLedger.rollMoment` has used since step 3.2u. **Positive is the right-hand
+   * sense about board +z, which lifts the board's +x rail** (and so pushes the board over onto its −x rail). The
+   * axis is the *instantaneous* one: torque balance holds instantly, so projecting every source and the board's own
+   * angular impulse on the same axis is exact, and at the fastest roll this track has measured (354 °/s) the axis
+   * itself moves 0.37° across a 1/960 s substep.
+   *
+   * `total` is the board's own `I·Δω` projected on that axis — the angular impulse it actually took, divided by the
+   * step — and `rider` is the residual, `total` less every water entry and the gyroscopic term: **everything the
+   * rider's coupling carries**, the feet's push on the deck and the pair's own inertia resisting the roll together,
+   * exactly as the yaw ledger's `rider` is defined. It is a residual and is reported as one, never as a measured
+   * contact torque.
+   *
+   * Only filled while `rollLedger` is on, so the default game pays one branch per substep and nothing else.
+   */
+  static rollLedger = false;
+  readonly roll = {
+    buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, suction: 0, gyro: 0, rider: 0, total: 0,
   };
   /** Hull volume under water and wetted bottom area at the latest substep. */
   submergedVolume = 0;
@@ -222,7 +384,51 @@ export class BoardBody implements BoardContactBody {
   /** Substeps taken in the latest step, with water-entry refinement. */
   substepsTaken = 0;
 
+  /**
+   * The hollow over the deck at the latest substep (`deckHollow: 'on'`; `placeHollow`): whether one can stand, where
+   * along the board the low rail goes under (board frame z, m), the water's speed along the board, m/s, and each
+   * station's air path (its low rail's deck edge under the surface, its high rail's above).
+   */
+  hollowOpen = false;
+  private readonly hollow: boolean;
+  private hollowEntry = 0;
+  private hollowSpeed = 0;
+  private readonly hollowVent: Uint8Array;
+  /**
+   * The rail band (`hull: 'rail'`, step 3.2u). `bandTurn` is each patch's own turn angle around the band (rad, unsigned,
+   * datum the flat bottom's tangent; 0 on a flat patch), `bandSide` its rail (+1 the board's +x, −1 the other, 0 off the
+   * band), `bandFace` its true area and `localUp` its station's deck direction in the board frame. `bandGate` is the
+   * suction's own gate this substep, 0 to 1 (`placeBand`), and `vented` the ventilated share per station, latched and
+   * lagged. `bandStation` lists each station's band patches.
+   */
+  private readonly band: boolean;
+  private readonly suctionOn: boolean;
+  private readonly bandTurn: Float64Array;
+  private readonly bandSide: Int8Array;
+  private readonly bandFace: Float64Array;
+  private readonly bandSweep: Float64Array;
+  private readonly localUp: Float64Array;
+  private readonly bandGate: Float64Array;
+  private readonly vented: Float64Array;
+  private readonly ventLatched: Uint8Array;
+  private readonly bandStation: Int32Array[];
+  private readonly bandPatch: { faceArea: number; up: Vec; tangent: Vec; gate: number } = { faceArea: 0, up: { x: 0, y: 0, z: 0 }, tangent: { x: 0, y: 0, z: 1 }, gate: 0 };
+  /**
+   * The band's own ledger at the latest substep, for the probes (`hull.probe.ts`, `libturn.ts`): the band's suction and
+   * pressure as world vectors (N), its wetted facets and wetted **planform** area, the largest |normal.x| over wetted
+   * patches (0 on a flat board, by construction — the advisor's build check), the share of band facets sitting at the
+   * suction's cap, the mean suction pressure and cap (Pa), and the ventilated share over the stations with a buried rail.
+   */
+  readonly bandLedger = {
+    suction: new Vector3(), pressure: new Vector3(), wetFacets: 0, wetArea: 0, maxNormalX: 0,
+    cappedShare: 0, pressurePa: 0, capPa: 0, ventedShare: 0, rollMoment: 0,
+  };
+  /** The wetted patches' mean flow along the board, m/s (positive: the water meets the nose first). */
+  private alongFlow = 0;
   private readonly substeps: number;
+  /** This step's length and the time into it the next substep starts, s: when its samples are taken (`setSampleTime`). */
+  private stepSpan = 0;
+  private stepElapsed = 0;
   private readonly count: number;
   private readonly bodyInertia: number[];
   private readonly bodyInverseInertia: number[];
@@ -258,6 +464,47 @@ export class BoardBody implements BoardContactBody {
   private readonly foilPoint = new Vector3();
   /** Patch indices of each strip along the board, tail to nose, and each patch's planing pressure scale. */
   private readonly strips: Int32Array[];
+  /** Under water as a plate (`BoardBodyOptions.submerged`), and how: each patch's share of it this substep, the stations. */
+  private readonly plate: boolean;
+  private readonly plateShare: Float64Array;
+  /**
+   * Step 3.3d (`BoardBodyOptions.buoyFrame`): 1 to resolve the hydrostatic support along the hull normal where the deck
+   * is dry and the patch planes, 0 — the default — to leave it on the water-surface normal everywhere, as before.
+   */
+  private readonly buoyHull: number;
+  /**
+   * Whether it may meet the water as a submerged plate now (duck-two-body): its owner's say. A board a swimmer holds keeps
+   * the hull law the hold and the climb were calibrated on, as one with the rigid rider on it does.
+   */
+  plateAllowed = true;
+  /** The board's share of a submerged plate this substep (`plateDepth`), and what of its wave radiation reaches the surface. */
+  private plateShareNow = 0;
+  private radiationDepth = 1;
+  /** Each station's patches, its beam and its mid-thickness centre (board frame, about the centre of mass). */
+  private readonly stationPatches: Int32Array[];
+  private readonly stationBeam: Float64Array;
+  private readonly stationLocal: Float64Array;
+  /** This substep: each station's plate added mass along the board's normal, and its arm (world). */
+  private readonly stationHeave: Float64Array;
+  private readonly stationArm: Float64Array;
+  /**
+   * The water's acceleration on the added mass (`WATER_INERTIA`), by patch: whether it was in the wall water at its last
+   * sample, the water's velocity there, its smoothed acceleration, and this substep's impulse along ν (N·s); and whether any
+   * patch is in the wall water this substep, and the plate's share of the impulse (force and torque).
+   */
+  private readonly wallSeen: Uint8Array;
+  private readonly wallFlow: Float64Array;
+  private readonly wallAccel: Float64Array;
+  private readonly wallPush: Float64Array;
+  /** Following the water (`WaterSample.wallFollow`): each patch's place at its last wall sample, and the substep span since. */
+  private readonly wallPoint: Float64Array;
+  private readonly wallScratch = createWaterSample();
+  private lastSpan = 0;
+  private wallAny = false;
+  /** This substep's length, s (the plate's share of `WATER_INERTIA`'s impulse). */
+  private substepSpan = 0;
+  private readonly plateWall = new Float64Array(6);
+
   private readonly pressureScale: Float64Array;
   private readonly stripShares: Float64Array;
   private readonly stripBeams: Float64Array;
@@ -284,6 +531,9 @@ export class BoardBody implements BoardContactBody {
   /** A standing rider joins with its leg's rate as a seventh unknown (spec P9) and its bank's as an eighth (the turn redesign). */
   private readonly system8 = new Float64Array(64);
   private readonly rhs8 = new Float64Array(8);
+  /** The new surfer standing (`AttachedRider.freeBody`): the 9 × 9 system and its right-hand side. */
+  private readonly system9 = new Float64Array(81);
+  private readonly rhs9 = new Float64Array(9);
   private readonly lastPosition = new Vector3();
   private readonly patch: WorldPatch = { position: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 0, z: 0 }, area: 0, thickness: 0 };
   private readonly force = createPatchForce();
@@ -292,15 +542,19 @@ export class BoardBody implements BoardContactBody {
   private readonly scratch = new Vector3();
   private readonly armScratch = new Vector3();
   private readonly normalScratch = new Vector3();
+  private readonly upScratch = new Vector3();
   private readonly relative = { x: 0, y: 0, z: 0 };
   private readonly direction = new Float64Array(6);
   private readonly tensorScratch = new Array<number>(9).fill(0);
 
   constructor(options: BoardBodyOptions = {}) {
-    const shape = options.shape ?? buildBoardShape();
+    const shape = options.shape ?? buildBoardShape(undefined, undefined, undefined, options.hull === 'rail' ? 'rail' : 'flat');
     const payloads = options.payloads ?? [];
     this.shape = shape;
     this.substeps = options.substeps ?? 4;
+    this.plate = options.submerged !== 'old';
+    this.hollow = options.deckHollow === 'on';
+    this.buoyHull = options.buoyFrame === 'hull' ? 1 : 0;
     this.mass = shape.mass + payloads.reduce((sum, payload) => sum + payload.mass, 0);
     this.inverseMass = 1 / this.mass;
     const maxThickness = Math.max(...shape.patches.map((patch) => patch.thickness));
@@ -343,6 +597,22 @@ export class BoardBody implements BoardContactBody {
       this.thickness[k] = patch.thickness;
       this.alongBoard[k] = patch.position.z;
     });
+    this.band = shape.section === 'rail';
+    this.suctionOn = this.band && options.railSuction !== 'off';
+    this.bandTurn = new Float64Array(count);
+    this.bandSide = new Int8Array(count);
+    this.bandFace = Float64Array.from(shape.patches, (patch) => patch.band?.faceArea ?? patch.area);
+    this.bandSweep = new Float64Array(count);
+    this.localUp = new Float64Array(count * 3);
+    this.bandGate = new Float64Array(count);
+    shape.patches.forEach((patch, k) => {
+      const up = patch.band ? patch.band.up : { x: -patch.normal.x, y: -patch.normal.y, z: -patch.normal.z };
+      this.localUp.set([up.x, up.y, up.z], k * 3);
+      if (!patch.band) return;
+      this.bandTurn[k] = patch.band.turn;
+      this.bandSide[k] = patch.band.side;
+      this.bandSweep[k] = patch.band.sweep;
+    });
     this.stationLength = shape.patches[0].length;
     // Each station's beam: its patches' planform over the station length.
     const beam = new Map<number, number>();
@@ -355,6 +625,32 @@ export class BoardBody implements BoardContactBody {
       this.radiationPerArea[k] = WATER.density * 2 * RADIATION_DAMPING * Math.sqrt((WATER.gravity * Math.PI * b) / 8);
     });
     this.addedMass = new Float64Array(count);
+    this.wallSeen = new Uint8Array(count);
+    this.wallFlow = new Float64Array(3 * count);
+    this.wallAccel = new Float64Array(3 * count);
+    this.wallPush = new Float64Array(count);
+    this.wallPoint = new Float64Array(3 * count);
+    this.plateShare = new Float64Array(count);
+    // The stations, tail to nose: each one's patches, its beam and its centre at mid-thickness, area-weighted.
+    const stationZs = [...beam.keys()].sort((a, b) => a - b);
+    this.stationPatches = stationZs.map((z) => Int32Array.from(shape.patches.flatMap((patch, k) => (patch.position.z === z ? [k] : []))));
+    this.stationBeam = Float64Array.from(stationZs, (z) => beam.get(z) ?? 0);
+    this.stationLocal = new Float64Array(stationZs.length * 3);
+    this.stationPatches.forEach((list, i) => {
+      let weight = 0;
+      for (const k of list) {
+        const a = this.area[k];
+        weight += a;
+        for (let d = 0; d < 3; d += 1) this.stationLocal[i * 3 + d] += a * (this.local[k * 3 + d] - (this.localNormal[k * 3 + d] * this.thickness[k]) / 2);
+      }
+      for (let d = 0; d < 3; d += 1) this.stationLocal[i * 3 + d] /= weight || 1;
+    });
+    this.hollowVent = new Uint8Array(stationZs.length);
+    this.vented = new Float64Array(stationZs.length * 2);
+    this.ventLatched = new Uint8Array(stationZs.length * 2);
+    this.bandStation = stationZs.map((z) => Int32Array.from(shape.patches.flatMap((patch, k) => (patch.position.z === z && patch.band ? [k] : []))));
+    this.stationHeave = new Float64Array(stationZs.length);
+    this.stationArm = new Float64Array(stationZs.length * 3);
     this.entrained = new Float64Array(count);
     this.previousAddedMass = new Float64Array(count);
     this.radiation = new Float64Array(count);
@@ -382,7 +678,7 @@ export class BoardBody implements BoardContactBody {
     this.reaction = new Float64Array(count * 3);
     this.meanPosition = new Float64Array(count * 2);
     this.bedImpulse = new Float64Array(count * 2 * 3);
-    this.foils = this.buildFoils(options.fins ?? THRUSTER, center, shape.taper);
+    this.foils = this.buildFoils(options.fins ?? THRUSTER, center, shape.taper, options.railFaces === 'on');
     const foilCount = this.foils.length;
     this.foilArm = new Float64Array(foilCount * 3);
     this.foilNormal = new Float64Array(foilCount * 3);
@@ -392,8 +688,13 @@ export class BoardBody implements BoardContactBody {
     this.place(new Vector3());
   }
 
-  /** Fins at their roots on the bottom, and a side face at each station of each rail. */
-  private buildFoils(fins: readonly FinSpec[], center: Vec, railTaper: number): Foil[] {
+  /**
+   * Fins at their roots on the bottom, and a side face at each station of each rail — **except** with the rail section
+   * (step 3.2u), where the band's own facets carry that surface and the bluff side faces would count the rail twice.
+   * Dropping them also means `shape.taper` no longer reaches anything that moves (the advisor's trap 3: it feeds this
+   * function, and only the rail faces' height used it; the fins never did).
+   */
+  private buildFoils(fins: readonly FinSpec[], center: Vec, railTaper: number, keepRailFaces = false): Foil[] {
     const { shape } = this;
     const foils: Foil[] = [];
     const s = (z: number) => Math.min(1, Math.max(0, z / shape.length + 0.5));
@@ -403,7 +704,7 @@ export class BoardBody implements BoardContactBody {
       const x = fin.side === 0 ? 0 : fin.side * (half - fin.fromRail);
       foils.push({ kind: 'fin', local: { x: x - center.x, y: shape.curves.rocker(s(z)) - center.y, z: z - center.z }, normal: { x: 1, y: 0, z: 0 }, fin, area: fin.area, height: fin.depth });
     }
-    const stations = [...new Set(shape.patches.map((patch) => patch.position.z))].sort((a, b) => a - b);
+    const stations = shape.section === 'rail' && !keepRailFaces ? [] : [...new Set(shape.patches.map((patch) => patch.position.z))].sort((a, b) => a - b);
     for (const z of stations) {
       const half = shape.curves.width(s(z)) / 2;
       const height = shape.curves.thickness(s(z)) * (1 - railTaper);
@@ -501,22 +802,93 @@ export class BoardBody implements BoardContactBody {
     this.impulseAt(worldPoint.x - this.centerOfMass.x, worldPoint.y - this.centerOfMass.y, worldPoint.z - this.centerOfMass.z, impulse.x, impulse.y, impulse.z);
   }
 
+  /**
+   * The sheets of spray the hull throws now (board-spray, 2026-10-29; `boardSpray.ts`), into `out`: how many. Drawn only:
+   * nothing here changes the board. `exits` 'old': a steep jet's exit placed as before snap-fan (`HullSprayState.exits`).
+   */
+  spraySheets(out: BoardSpraySheet[], wind = 0, exits?: 'old'): number {
+    const lanes = this.strips.length;
+    const stations = this.strips[0].length;
+    const spray = this.sprayState ??= createHullSprayBuffers(stations, lanes, this.stationLength);
+    const { width, across, along, point, depth, water, hull, sea, axisX, axisY, axisZ } = spray;
+    // What the water holds up, N (the step's mean pressure and buoyancy): the flat board's blister turns its momentum.
+    spray.lift = Math.max(0, this.forces.pressure.y + this.forces.buoyancy.y);
+    spray.wind = wind;
+    spray.exits = exits;
+    const r = this.rotation;
+    axisX[0] = r[0]; axisX[1] = r[3]; axisX[2] = r[6];
+    axisY[0] = r[1]; axisY[1] = r[4]; axisY[2] = r[7];
+    axisZ[0] = r[2]; axisZ[1] = r[5]; axisZ[2] = r[8];
+    const { velocity: v, angularVelocity: w } = this;
+    for (let j = 0; j < lanes; j += 1) {
+      const strip = this.strips[j];
+      for (let i = 0; i < stations; i += 1) {
+        const k = strip[i];
+        const o = i * lanes + j;
+        const sample = this.samples[k];
+        width[o] = this.area[k] / this.stationLength;
+        across[o] = this.local[k * 3];
+        along[o] = this.local[k * 3 + 2];
+        point[o * 3] = this.point[k * 3];
+        point[o * 3 + 1] = this.point[k * 3 + 1];
+        point[o * 3 + 2] = this.point[k * 3 + 2];
+        depth[o] = sample.surfaceY - this.point[k * 3 + 1];
+        water[o * 3] = sample.flowX;
+        water[o * 3 + 1] = sample.flowY;
+        water[o * 3 + 2] = sample.flowZ;
+        const rx = this.arm[k * 3];
+        const ry = this.arm[k * 3 + 1];
+        const rz = this.arm[k * 3 + 2];
+        hull[o * 3] = v.x + w.y * rz - w.z * ry;
+        hull[o * 3 + 1] = v.y + w.z * rx - w.x * rz;
+        hull[o * 3 + 2] = v.z + w.x * ry - w.y * rx;
+        sea[o] = sample.wet && !sample.outsideDomain ? 1 : 0;
+      }
+    }
+    return hullSpraySheets(spray, out);
+  }
+
+  /** `spraySheets`'s hull state, made on first use. */
+  private sprayState?: HullSprayBuffers;
+
   /** Advance by `dt` on `water`, then hand the water its reactions. */
   step(dt: number, water: SurfWater): void {
     // A contact solver may have moved the board between steps.
     this.centerOfMass.add(this.scratch.subVectors(this.position, this.lastPosition));
-    const substeps = this.rider?.attached && this.rider.upright ? Math.max(this.substeps, STANDING_SUBSTEPS) : this.substeps;
+    // The new surfer standing free (step 3.2) asks for its own count (`AttachedRider.standingSubsteps`).
+    const substeps = this.rider?.attached && this.rider.upright ? Math.max(this.substeps, this.rider.standingSubsteps ?? STANDING_SUBSTEPS) : this.substeps;
     const h = dt / substeps;
     this.reaction.fill(0);
     this.meanPosition.fill(0);
     this.foilReaction.fill(0);
     this.foilMean.fill(0);
     for (const force of Object.values(this.forces)) force.set(0, 0, 0);
+    if (BoardBody.yawLedger) for (const key of Object.keys(this.yaw) as (keyof BoardBody['yaw'])[]) this.yaw[key] = 0;
+    if (BoardBody.rollLedger) for (const key of Object.keys(this.roll) as (keyof BoardBody['roll'])[]) this.roll[key] = 0;
+    if (bankLedger.on) bankLedger.begin();
     this.rider?.beginStep();
     this.substepsTaken = 0;
+    this.stepSpan = dt;
+    this.stepElapsed = 0;
     for (let s = 0; s < substeps; s += 1) this.advance(h, water, 0);
+    // Back to the water's own time for whatever samples it next (the rider's cue, other bodies).
+    water.setSampleTime?.(0);
     const inverseDt = 1 / dt;
     for (const force of Object.values(this.forces)) force.multiplyScalar(inverseDt);
+    if (BoardBody.yawLedger) {
+      const y = this.yaw;
+      y.rider = y.total - (y.buoyancy + y.pressure + y.addedMass + y.radiation + y.friction + y.bed + y.fins + y.rails + y.froth + y.gyro);
+      for (const key of Object.keys(y) as (keyof BoardBody['yaw'])[]) y[key] *= inverseDt;
+    }
+    if (BoardBody.rollLedger) {
+      const q = this.roll;
+      // `suction` is inside the sum here where the yaw ledger leaves it out: it is booked as an angular impulse like
+      // every other entry, and it measures 0.0 N·m on every cell this track rides (Part 19 §1 item 2), so including it
+      // moves no published number and makes the residual honest if a case ever turns it on.
+      q.rider = q.total - (q.buoyancy + q.pressure + q.addedMass + q.radiation + q.friction + q.bed + q.fins + q.rails + q.froth + q.suction + q.gyro);
+      for (const key of Object.keys(q) as (keyof BoardBody['roll'])[]) q[key] *= inverseDt;
+    }
+    if (bankLedger.on) bankLedger.close(dt);
     this.rider?.endStep(dt, water, this);
     for (let k = 0; k < this.count; k += 1) {
       const jx = this.reaction[k * 3];
@@ -661,6 +1033,7 @@ export class BoardBody implements BoardContactBody {
       force.x += h * ft[b];
       force.y += h * ft[b + 1];
       force.z += h * ft[b + 2];
+      // The explicit yaw is booked with the rest of the right-hand side, in `substep`.
       if (kind === 0) this.work.fins += work;
       else this.work.rails += work;
     }
@@ -686,6 +1059,15 @@ export class BoardBody implements BoardContactBody {
       force.x += impulse * nx;
       force.y += impulse * ny;
       force.z += impulse * nz;
+      if (BoardBody.yawLedger) {
+        if (fin) this.yaw.fins += impulse * cy;
+        else this.yaw.rails += impulse * cy;
+      }
+      if (BoardBody.rollLedger) {
+        const about = impulse * this.rollOf(cx, cy, cz);
+        if (fin) this.roll.fins += about;
+        else this.roll.rails += about;
+      }
       this.foilReaction[k * 3] += impulse * nx;
       this.foilReaction[k * 3 + 1] += impulse * ny;
       this.foilReaction[k * 3 + 2] += impulse * nz;
@@ -698,7 +1080,10 @@ export class BoardBody implements BoardContactBody {
       this.advance(h / 2, water, depth + 1);
     } else {
       this.substepsTaken += 1;
+      // The water's state is the step's end: this substep samples it as it was at its start.
+      water.setSampleTime?.(this.stepElapsed - this.stepSpan);
       this.substep(h, water);
+      this.stepElapsed += h;
     }
   }
 
@@ -732,7 +1117,18 @@ export class BoardBody implements BoardContactBody {
     return false;
   }
 
+  /**
+   * A world torque (or angular impulse) resolved about the board's own long axis — the roll ledger's datum (`roll`):
+   * board frame +z in the world, `(rotation[2], rotation[5], rotation[8])`, positive in the right-hand sense, which
+   * lifts the +x rail. Valid after `updateRotation`, which every caller is downstream of.
+   */
+  private rollOf(tx: number, ty: number, tz: number): number {
+    return tx * this.rotation[2] + ty * this.rotation[5] + tz * this.rotation[8];
+  }
+
   private substep(h: number, water: SurfWater): void {
+    this.lastSpan = this.substepSpan;
+    this.substepSpan = h;
     this.updateRotation();
     const { count, arm, normal, point, samples, centerOfMass: c, velocity: v, angularVelocity: w } = this;
     let wetMin = Infinity;
@@ -753,11 +1149,26 @@ export class BoardBody implements BoardContactBody {
     }
     const wettedLength = wetMax >= wetMin ? wetMax - wetMin + this.stationLength : this.stationLength;
     this.placePressure();
+    if (this.hollow) this.placeHollow();
+    this.placeBand(h, wettedLength);
+    // With the rigid rider on it (lying, climbing on, standing) the board keeps the hull law the rider was calibrated on:
+    // a rigid body perched on a deep board is no physical pair (it is top-heavy; a real one moves), and its climb back
+    // on leaned on that law's damping. The plate is the free board's, and the ducking board's under the two-body dive.
+    const plateDepth = this.plate && this.plateAllowed && !this.rider?.attached ? this.plateDepth() : -Infinity;
+    this.plateShareNow = submergedShare(plateDepth);
+    this.radiationDepth = plateDepth > 0 ? Math.exp(-2 * RADIATED_WAVENUMBER * plateDepth) : 1;
 
     // Forces, torques about the centre of mass, and the implicit pressure matrix.
     const { system, rhs, force, patch } = this;
     system.fill(0);
-    const totals = { bx: 0, by: 0, bz: 0, btx: 0, bty: 0, btz: 0, px: 0, py: 0, pz: 0, ptx: 0, pty: 0, ptz: 0, fx: 0, fy: 0, fz: 0, ftx: 0, fty: 0, ftz: 0 };
+    const totals = { bx: 0, by: 0, bz: 0, btx: 0, bty: 0, btz: 0, px: 0, py: 0, pz: 0, ptx: 0, pty: 0, ptz: 0, fx: 0, fy: 0, fz: 0, ftx: 0, fty: 0, ftz: 0, sx: 0, sy: 0, sz: 0, stx: 0, sty: 0, stz: 0 };
+    // The band's own ledger this substep (`bandLedger`), so the round can read the suction and the band's share apart.
+    const ledger = this.bandLedger;
+    ledger.suction.set(0, 0, 0);
+    ledger.pressure.set(0, 0, 0);
+    ledger.wetFacets = 0;
+    ledger.wetArea = 0;
+    ledger.rollMoment = 0;
     // A roller's froth on the hull (below): its own ledger, 0 outside a lens.
     let frothX = 0;
     let frothZ = 0;
@@ -772,6 +1183,7 @@ export class BoardBody implements BoardContactBody {
     let waterTx = 0;
     let waterTy = 0;
     let waterTz = 0;
+    this.wallAny = false;
     for (let k = 0; k < count; k += 1) {
       const rx = arm[k * 3];
       const ry = arm[k * 3 + 1];
@@ -788,11 +1200,29 @@ export class BoardBody implements BoardContactBody {
       patch.normal.z = nz;
       patch.area = this.area[k];
       patch.thickness = this.thickness[k];
+      if (this.bandSide[k] !== 0) {
+        const up = this.rotateArray(this.localUp, k, this.upScratch);
+        const band = this.bandPatch;
+        band.faceArea = this.bandFace[k];
+        band.up.x = up.x;
+        band.up.y = up.y;
+        band.up.z = up.z;
+        band.tangent.x = this.rotation[2];
+        band.tangent.y = this.rotation[5];
+        band.tangent.z = this.rotation[8];
+        band.gate = this.bandGate[k];
+        patch.band = band;
+      } else patch.band = undefined;
       const { relative } = this;
       relative.x = v.x + w.y * rz - w.z * ry - sample.flowX;
       relative.y = v.y + w.z * rx - w.x * rz - sample.flowY;
       relative.z = v.z + w.x * ry - w.y * rx - sample.flowZ;
-      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k]);
+      // Under water (duck-two-body): the whole board is a submerged plate as far as its shallowest face is under
+      // (`plateDepth`, from the patches sampled above), never a buried rail or a deep tail of a board still in the surface.
+      const share = this.plateShareNow;
+      this.plateShare[k] = share;
+      const deckWet = this.hollowOpen ? this.hollowWetAt(this.alongBoard[k], sample.surfaceY - (patch.position.y - ny * patch.thickness), sample) : 1;
+      patchForce(patch, sample, relative, wettedLength, force, this.pressureScale[k], share, deckWet, this.buoyHull);
       submerged += force.submerged * patch.area * patch.thickness;
       wetted += force.wettedArea;
       const b = force.buoyancy;
@@ -812,6 +1242,27 @@ export class BoardBody implements BoardContactBody {
       totals.ptx += ry * p.z - rz * p.y;
       totals.pty += rz * p.x - rx * p.z;
       totals.ptz += rx * p.y - ry * p.x;
+      const q = force.suction;
+      if (q.x !== 0 || q.y !== 0 || q.z !== 0) {
+        totals.sx += q.x;
+        totals.sy += q.y;
+        totals.sz += q.z;
+        totals.stx += ry * q.z - rz * q.y;
+        totals.sty += rz * q.x - rx * q.z;
+        totals.stz += rx * q.y - ry * q.x;
+        ledger.suction.x += q.x;
+        ledger.suction.y += q.y;
+        ledger.suction.z += q.z;
+        // Positive meaning the suction is taking the board further over onto the buried rail, about the board's own axis.
+        ledger.rollMoment += (ry * q.z - rz * q.y) * this.rotation[2] + (rz * q.x - rx * q.z) * this.rotation[5] + (rx * q.y - ry * q.x) * this.rotation[8];
+      }
+      if (this.bandSide[k] !== 0 && force.wettedArea > 0) {
+        ledger.wetFacets += 1;
+        ledger.wetArea += force.wettedArea;
+        ledger.pressure.x += p.x;
+        ledger.pressure.y += p.y;
+        ledger.pressure.z += p.z;
+      }
       const f = force.friction;
       totals.fx += f.x;
       totals.fy += f.y;
@@ -819,9 +1270,9 @@ export class BoardBody implements BoardContactBody {
       totals.ftx += ry * f.z - rz * f.y;
       totals.fty += rz * f.x - rx * f.z;
       totals.ftz += rx * f.y - ry * f.x;
-      this.reaction[k * 3] += (b.x + p.x + f.x) * h;
-      this.reaction[k * 3 + 1] += (b.y + p.y + f.y) * h;
-      this.reaction[k * 3 + 2] += (b.z + p.z + f.z) * h;
+      this.reaction[k * 3] += (b.x + p.x + f.x + q.x) * h;
+      this.reaction[k * 3 + 1] += (b.y + p.y + f.y + q.y) * h;
+      this.reaction[k * 3 + 2] += (b.z + p.z + f.z + q.z) * h;
       // Froth drag, its own ledger (`forces.froth`, `work.froth`): in a roller lens's footprint only (the Canyon roller
       // lens, S3; the owner's decision of 2026-10-07, option B; provisional). A stand-in for the turbulence the thin lens
       // cannot represent: a board in whitewater is surrounded by turbulent, aerated water travelling with the bore, and
@@ -829,15 +1280,40 @@ export class BoardBody implements BoardContactBody {
       // roller's water is already pushed by the lens's unsheltered flow on the body and by the hull's forces, so a
       // symmetric drag would count that push twice. So only the board's speed past the lens's water, along its flow, is
       // dragged, linearly, scaled by the lens's development and the wetted hull. Nothing outside a lens.
-      if (sample.lensScale !== undefined && sample.lensScale > 0) {
+      // Where it holds froth (bottom-stop, 2026-10-29, after the water-physics advisor's ruling of that day), with the
+      // lens's fields (`?froth=old`, or a water that leaves them out: as before, in full anywhere in the footprint):
+      // - a young roller reaches only so far down the face, the further the more developed (ξ ≤ g; spillers' rollers
+      //   grow to their full length over 5–8 breaker depths, Svendsen 1984; Duncan's steady ones cover ~60 % of the face);
+      // - the board is held back only past the roller's own water, c·n̂ (not the g-blended flow, slower in a young lens);
+      // - never harder than the roller's grip on the face there, ρ(1 − ᾱ)·g·t·sin θ (Duncan's shear, Martins et al. 2018
+      //   eq. 1), a few tens to a hundred Pa where it is thin;
+      // - and only on the share of the patch's depth the lens covers (a hull below it runs in green water).
+      // Dragged in full down to a young lens's toe, past its g-blended flow and without a cap, a straight-in rider on the
+      // lower half of a Big face was braked at 0.3–0.55 body weights by froth that is not drawn there, and thrown; the
+      // bare board then stopped dead (about 11 g).
+      const reached = sample.lensReach === undefined || sample.lensScale === undefined || sample.lensReach <= sample.lensScale;
+      if (sample.lensScale !== undefined && sample.lensScale > 0 && reached) {
         const wettedHere = force.wettedArea + force.deckWettedArea;
-        const flow = Math.sqrt(sample.lensFlowX! * sample.lensFlowX! + sample.lensFlowZ! * sample.lensFlowZ!);
-        const ex = flow > 0 ? sample.lensFlowX! / flow : 0;
-        const ez = flow > 0 ? sample.lensFlowZ! / flow : 0;
-        const ahead = Math.max(0, (relative.x + sample.flowX - sample.lensFlowX!) * ex + (relative.z + sample.flowZ - sample.lensFlowZ!) * ez);
-        const dx = ahead * ex;
-        const dz = ahead * ez;
-        const drag = FROTH_DRAG * sample.lensScale * wettedHere;
+        const ownX = sample.lensSpeedX ?? sample.lensFlowX!;
+        const ownZ = sample.lensSpeedZ ?? sample.lensFlowZ!;
+        const flow = Math.sqrt(ownX * ownX + ownZ * ownZ);
+        const ex = flow > 0 ? ownX / flow : 0;
+        const ez = flow > 0 ? ownZ / flow : 0;
+        const ahead = Math.max(0, (relative.x + sample.flowX - ownX) * ex + (relative.z + sample.flowZ - ownZ) * ez);
+        let drag: number;
+        let dx: number;
+        let dz: number;
+        if (sample.lensGrip === undefined) {
+          // As before: N·s/m on the speed past the lens's water.
+          drag = FROTH_DRAG * sample.lensScale * wettedHere;
+          dx = ahead * ex;
+          dz = ahead * ez;
+        } else {
+          // N, along the roller's own direction.
+          drag = frothStress(sample, ahead, sample.surfaceY - point[k * 3 + 1]) * wettedHere;
+          dx = ex;
+          dz = ez;
+        }
         if (drag > 0 && ahead > 0) {
           const fx = -drag * dx;
           const fz = -drag * dz;
@@ -886,10 +1362,12 @@ export class BoardBody implements BoardContactBody {
       // hull enters. Anywhere else, as before.
       const entryLens = sample.lensScale !== undefined;
       const froth = entryLens ? 1 - (sample.voidFraction ?? 0) : 1;
+      // The strip's one-sided added mass, at any depth; under water the plate's other side is added below (`plateInertia`).
       const addedMass = entryLens
         ? froth * this.addedMassPerArea[k] * (force.wettedArea + force.deckWettedArea) * projection
         : this.addedMassPerArea[k] * (force.wettedArea + force.deckWettedArea) * projection;
-      const radiation = entryLens ? froth * this.radiationPerArea[k] * force.wettedArea * projection : this.radiationPerArea[k] * force.wettedArea * projection;
+      // Its waves are radiated from below the surface: weaker the deeper, as e^(−2kd) (`RADIATED_WAVENUMBER`).
+      const radiation = this.radiationDepth * (entryLens ? froth * this.radiationPerArea[k] * force.wettedArea * projection : this.radiationPerArea[k] * force.wettedArea * projection);
       const intoSurface = entryLens
         ? (relative.x + sample.flowX - sample.lensFlowX!) * ux + (relative.y + sample.lensScale! * sample.flowY) * uy
           + (relative.z + sample.flowZ - sample.lensFlowZ!) * uz
@@ -922,9 +1400,43 @@ export class BoardBody implements BoardContactBody {
         a[5] = cz;
         for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += inertia * a[i] * a[j];
       }
+      // Ruling 3 (`WATER_INERTIA`): in the case's wall water, the water's own acceleration on the added mass, along ν.
+      if (sample.wallWater || sample.flowAccelX !== undefined) {
+        const push = (sample.flowAccelX !== undefined
+          ? this.waterAccel(k, sample, h, ux, uy, uz)
+          : sample.wallFollow ? this.wallFollowing(k, sample, water, ux, uy, uz) : this.wallInertia(k, sample, h, ux, uy, uz)) * addedMass * h;
+        this.wallPush[k] = push;
+        waterX += push * ux;
+        waterY += push * uy;
+        waterZ += push * uz;
+        waterTx += push * cx;
+        waterTy += push * cy;
+        waterTz += push * cz;
+        // Ruling 3's wall push is the one `waterT` entry with no settle-loop twin, so the roll ledger books it here.
+        if (BoardBody.rollLedger) this.roll.addedMass += push * this.rollOf(cx, cy, cz);
+        this.reaction[k * 3] += push * ux;
+        this.reaction[k * 3 + 1] += push * uy;
+        this.reaction[k * 3 + 2] += push * uz;
+      } else if (this.wallSeen[k] !== 0) {
+        this.wallSeen[k] = 0;
+        this.wallPush[k] = 0;
+        this.wallAccel[3 * k] = 0;
+        this.wallAccel[3 * k + 1] = 0;
+        this.wallAccel[3 * k + 2] = 0;
+      }
     }
     this.submergedVolume = submerged;
     this.wettedArea = wetted;
+    this.plateInertia(system);
+    if (this.wallAny) {
+      waterX += this.plateWall[0];
+      waterY += this.plateWall[1];
+      waterZ += this.plateWall[2];
+      waterTx += this.plateWall[3];
+      waterTy += this.plateWall[4];
+      waterTz += this.plateWall[5];
+      if (BoardBody.rollLedger) this.roll.addedMass += this.rollOf(this.plateWall[3], this.plateWall[4], this.plateWall[5]);
+    }
     this.applyFoils(h, water, system);
     const ft = this.foilTotals;
 
@@ -932,18 +1444,63 @@ export class BoardBody implements BoardContactBody {
     const Iw = [I[0] * w.x + I[1] * w.y + I[2] * w.z, I[3] * w.x + I[4] * w.y + I[5] * w.z, I[6] * w.x + I[7] * w.y + I[8] * w.z];
     const gyro = [w.y * Iw[2] - w.z * Iw[1], w.z * Iw[0] - w.x * Iw[2], w.x * Iw[1] - w.y * Iw[0]];
     const weight = -this.mass * WATER.gravity;
-    rhs[0] = h * (totals.bx + totals.px + totals.fx + ft[0] + ft[6]) + waterX;
-    rhs[1] = h * (weight + totals.by + totals.py + totals.fy + ft[1] + ft[7]) + waterY;
-    rhs[2] = h * (totals.bz + totals.pz + totals.fz + ft[2] + ft[8]) + waterZ;
-    rhs[3] = h * (totals.btx + totals.ptx + totals.ftx + ft[3] + ft[9] - gyro[0]) + waterTx;
-    rhs[4] = h * (totals.bty + totals.pty + totals.fty + ft[4] + ft[10] - gyro[1]) + waterTy;
-    rhs[5] = h * (totals.btz + totals.ptz + totals.ftz + ft[5] + ft[11] - gyro[2]) + waterTz;
+    rhs[0] = h * (totals.bx + totals.px + totals.sx + totals.fx + ft[0] + ft[6]) + waterX;
+    rhs[1] = h * (weight + totals.by + totals.py + totals.sy + totals.fy + ft[1] + ft[7]) + waterY;
+    rhs[2] = h * (totals.bz + totals.pz + totals.sz + totals.fz + ft[2] + ft[8]) + waterZ;
+    rhs[3] = h * (totals.btx + totals.ptx + totals.stx + totals.ftx + ft[3] + ft[9] - gyro[0]) + waterTx;
+    rhs[4] = h * (totals.bty + totals.pty + totals.sty + totals.fty + ft[4] + ft[10] - gyro[1]) + waterTy;
+    rhs[5] = h * (totals.btz + totals.ptz + totals.stz + totals.ftz + ft[5] + ft[11] - gyro[2]) + waterTz;
     if (frothX !== 0 || frothZ !== 0) {
       rhs[0] += h * frothX;
       rhs[2] += h * frothZ;
       rhs[3] += h * frothTx;
       rhs[4] += h * frothTy;
       rhs[5] += h * frothTz;
+    }
+    if (bankLedger.on) {
+      // **Step 3.3l, the bank ledger**: the board's own rows of `b`, split by source, exactly as the six lines above
+      // sum them. Recomputed rather than threaded through those lines, so the shipped arithmetic above is untouched
+      // and its floating-point order is the same with the ledger on and off (`bankLedger.test.ts`).
+      bankLedger.beginSubstep();
+      bankLedger.bookBoard('weight', 0, h * weight, 0, 0, 0, 0);
+      bankLedger.bookBoard('buoyancy', h * totals.bx, h * totals.by, h * totals.bz, h * totals.btx, h * totals.bty, h * totals.btz);
+      bankLedger.bookBoard('pressure', h * totals.px, h * totals.py, h * totals.pz, h * totals.ptx, h * totals.pty, h * totals.ptz);
+      bankLedger.bookBoard('suction', h * totals.sx, h * totals.sy, h * totals.sz, h * totals.stx, h * totals.sty, h * totals.stz);
+      bankLedger.bookBoard('friction', h * totals.fx, h * totals.fy, h * totals.fz, h * totals.ftx, h * totals.fty, h * totals.ftz);
+      bankLedger.bookBoard('fins', h * ft[0], h * ft[1], h * ft[2], h * ft[3], h * ft[4], h * ft[5]);
+      bankLedger.bookBoard('rails', h * ft[6], h * ft[7], h * ft[8], h * ft[9], h * ft[10], h * ft[11]);
+      bankLedger.bookBoard('gyro', 0, 0, 0, -h * gyro[0], -h * gyro[1], -h * gyro[2]);
+      bankLedger.bookBoard('addedMass', waterX, waterY, waterZ, waterTx, waterTy, waterTz);
+      if (frothX !== 0 || frothZ !== 0) bankLedger.bookBoard('froth', h * frothX, 0, h * frothZ, h * frothTx, h * frothTy, h * frothTz);
+    }
+    if (BoardBody.yawLedger) {
+      const y = this.yaw;
+      y.buoyancy += h * totals.bty;
+      y.pressure += h * totals.pty;
+      y.friction += h * totals.fty;
+      y.fins += h * ft[4];
+      y.rails += h * ft[10];
+      y.addedMass += waterTy;
+      y.froth += h * frothTy;
+      y.gyro -= h * gyro[1];
+    }
+    if (BoardBody.rollLedger) {
+      const q = this.roll;
+      q.buoyancy += h * this.rollOf(totals.btx, totals.bty, totals.btz);
+      q.pressure += h * this.rollOf(totals.ptx, totals.pty, totals.ptz);
+      q.friction += h * this.rollOf(totals.ftx, totals.fty, totals.ftz);
+      q.fins += h * this.rollOf(ft[3], ft[4], ft[5]);
+      q.rails += h * this.rollOf(ft[9], ft[10], ft[11]);
+      q.froth += h * this.rollOf(frothTx, frothTy, frothTz);
+      q.gyro -= h * this.rollOf(gyro[0], gyro[1], gyro[2]);
+      // **`waterT` is deliberately NOT booked here, and this is where the roll ledger departs from the yaw ledger.**
+      // `waterT` holds the explicit half of the surface-normal push, `−(h·radiation + entrained)·intoSurface`, and the
+      // settle loop's `radiated` and `inertia` already carry that same half: `radiated + inertia` works out to
+      // `push − (D·Δu)_surface`, so booking `waterT` as well counts `push` twice. The yaw ledger does exactly that
+      // (`y.addedMass += waterTy` beside its settle entries), and it is why its `rider` residual cannot close. Measured
+      // here: a bare board heeled 20° in still water books `rider` = **0.086 N·m on a total of 0.463** with `waterT`
+      // in, and **0.0000 on 0.463** with it out (step 3.3h's positive control, `rollLedger.test.ts`). The two `waterT`
+      // entries that have no settle twin — ruling 3's wall push and `plateWall` — are booked at their own sites above.
     }
     for (let i = 0; i < 3; i += 1) {
       system[i * 6 + i] += this.mass;
@@ -953,19 +1510,32 @@ export class BoardBody implements BoardContactBody {
     // impulse that needs, the two are solved apart with the impulse it can give.
     const { rider } = this;
     if (rider?.attached) rider.prepare(h, this, water);
+    // The new surfer standing free: its own yaw inertia turns with the board through the feet (step 3.2b; nothing otherwise).
+    if (rider?.attached) rider.coupleYaw(system, rhs, this);
     if (rider?.attached && rider.upright) {
-      // Standing, the leg's rate is a seventh unknown and the bank's an eighth.
-      const s8 = this.system8.fill(0);
-      const r8 = this.rhs8.fill(0);
+      // Standing, the leg's rate is a seventh unknown and the bank's an eighth; the new surfer standing
+      // (`rider: 'new'`), the body's speed along its forward axis a ninth (`StandingBody`).
+      const n = rider.freeBody ? 9 : 8;
+      const s8 = (n === 9 ? this.system9 : this.system8).fill(0);
+      const r8 = (n === 9 ? this.rhs9 : this.rhs8).fill(0);
       for (let i = 0; i < 6; i += 1) {
-        for (let j = 0; j < 6; j += 1) s8[i * 8 + j] = system[i * 6 + j];
+        for (let j = 0; j < 6; j += 1) s8[i * n + j] = system[i * 6 + j];
         r8[i] = rhs[i];
       }
       rider.coupleStanding(s8, r8, h);
-      solveLinear(s8, r8, 8);
-      if (rider.settleStanding(r8, h, this)) {
+      solveLinear(s8, r8, n);
+      // Step 3.3l: this file's own answer against the game's, on the rows the bank ledger reads (read-only).
+      if (bankLedger.on) bankLedger.verify(r8);
+      // `legPower: 'cap'` (ruling 27's A-lite), or the new surfer standing (its power window): a met contact over the
+      // legs' power is solved apart too, and apart the board takes only what the legs transmit, within their power (`pushCapped`).
+      if (rider.settleStanding(r8, h, this) && !(rider.powerCapped && rider.overPower(r8, h))) {
         for (let i = 0; i < 6; i += 1) rhs[i] = r8[i];
+      } else if (rider.powerCapped) {
+        // Step 3.3l: the standing system did not decide this substep, so its attribution does not describe it.
+        if (bankLedger.on) bankLedger.apart += 1;
+        this.pushCapped(system, rhs, rider, h);
       } else {
+        if (bankLedger.on) bankLedger.apart += 1;
         rider.pushBoard(rhs);
         solve6(system, rhs);
       }
@@ -1025,6 +1595,14 @@ export class BoardBody implements BoardContactBody {
       this.work.pressure += pressure * mean;
       this.work.radiation += radiated * surfaceMean;
       this.work.addedMass += inertia * surfaceMean;
+      if (this.wallAny && this.samples[k].wallWater) {
+        // Ruling 3's push (`WATER_INERTIA`), already in the solve and the water's reaction: its ledgers.
+        const push = this.wallPush[k];
+        this.work.addedMass += push * surfaceMean;
+        this.forces.addedMass.x += push * ux;
+        this.forces.addedMass.y += push * uy;
+        this.forces.addedMass.z += push * uz;
+      }
       this.forces.pressure.x += pressure * nx;
       this.forces.pressure.y += pressure * ny;
       this.forces.pressure.z += pressure * nz;
@@ -1034,11 +1612,22 @@ export class BoardBody implements BoardContactBody {
       this.forces.addedMass.x += inertia * ux;
       this.forces.addedMass.y += inertia * uy;
       this.forces.addedMass.z += inertia * uz;
+      if (BoardBody.yawLedger) {
+        this.yaw.pressure += pressure * cy;
+        this.yaw.radiation += radiated * sy;
+        this.yaw.addedMass += inertia * sy;
+      }
+      if (BoardBody.rollLedger) {
+        this.roll.pressure += pressure * this.rollOf(cx, cy, cz);
+        this.roll.radiation += radiated * this.rollOf(sx, sy, sz);
+        this.roll.addedMass += inertia * this.rollOf(sx, sy, sz);
+      }
       this.reaction[k * 3] += pressure * nx + water * ux;
       this.reaction[k * 3 + 1] += pressure * ny + water * uy;
       this.reaction[k * 3 + 2] += pressure * nz + water * uz;
     }
 
+    this.settlePlate(dvx, dvy, dvz, dwx, dwy, dwz, avx, avy, avz, awx, awy, awz);
     this.settleFoils(h, rhs, avx, avy, avz, awx, awy, awz);
     this.work.gravity += h * weight * avy;
     this.work.buoyancy += h * (totals.bx * avx + totals.by * avy + totals.bz * avz + totals.btx * awx + totals.bty * awy + totals.btz * awz);
@@ -1053,10 +1642,30 @@ export class BoardBody implements BoardContactBody {
     this.forces.friction.x += h * totals.fx;
     this.forces.friction.y += h * totals.fy;
     this.forces.friction.z += h * totals.fz;
+    if (totals.sx !== 0 || totals.sy !== 0 || totals.sz !== 0) {
+      this.work.suction += h * (totals.sx * avx + totals.sy * avy + totals.sz * avz + totals.stx * awx + totals.sty * awy + totals.stz * awz);
+      this.forces.suction.x += h * totals.sx;
+      this.forces.suction.y += h * totals.sy;
+      this.forces.suction.z += h * totals.sz;
+      // `h *` as every other entry has it (step 3.2v): without it this one entry accumulates a torque rather than an
+      // angular impulse and the `/ dt` below leaves it a factor `substeps` too large. Ledger only — `yawLedger` is off
+      // in the game — and it never showed because the suction measures 0.0 N through every ride (Part 19 §1 item 2).
+      if (BoardBody.yawLedger) this.yaw.suction += h * totals.sty;
+      if (BoardBody.rollLedger) this.roll.suction += h * this.rollOf(totals.stx, totals.sty, totals.stz);
+    }
     if (frothX !== 0 || frothZ !== 0) {
       this.work.froth += h * (frothX * avx + frothZ * avz + frothTx * awx + frothTy * awy + frothTz * awz);
       this.forces.froth.x += h * frothX;
       this.forces.froth.z += h * frothZ;
+    }
+    if (BoardBody.yawLedger) this.yaw.total += I[3] * dwx + I[4] * dwy + I[5] * dwz;
+    // The board's own angular impulse about its long axis: (I·Δω) resolved on the roll ledger's datum.
+    if (BoardBody.rollLedger) {
+      this.roll.total += this.rollOf(
+        I[0] * dwx + I[1] * dwy + I[2] * dwz,
+        I[3] * dwx + I[4] * dwy + I[5] * dwz,
+        I[6] * dwx + I[7] * dwy + I[8] * dwz,
+      );
     }
     v.x += dvx;
     v.y += dvy;
@@ -1077,6 +1686,26 @@ export class BoardBody implements BoardContactBody {
   }
 
   /**
+   * `legPower: 'cap'` (ruling 27's A-lite), the standing rider and the board solved apart: the board keeps its own water
+   * forces and takes from the feet only what the legs give, resisting freely but pushing only with the leg's own force
+   * and within the legs' power (`AttachedRider.limitPush`). The solve is linear in the push, so the board's response to a
+   * share of it is the same share between its responses to none of it and to all of it.
+   */
+  private pushCapped(system: Float64Array, rhs: Float64Array, rider: AttachedRider, h: number): void {
+    this.systemCopy.set(system);
+    this.rhsCopy.set(rhs);
+    rider.pushBoard(rhs);
+    solve6(system, rhs);
+    if (rider.pushKept(rhs, h)) return;
+    const base = this.rhsCopy;
+    system.set(this.systemCopy);
+    rider.pushDrives(base);
+    solve6(system, base);
+    const share = rider.limitPush(base, rhs, h);
+    for (let i = 0; i < 6; i += 1) rhs[i] = base[i] + share * (rhs[i] - base[i]);
+  }
+
+  /**
    * Where each patch sits in the planing pressure distribution: along each strip,
    * from the end the flow meets first, behind its spray root (`planingScales`).
    */
@@ -1085,10 +1714,12 @@ export class BoardBody implements BoardContactBody {
     let flowX = 0;
     let flowY = 0;
     let flowZ = 0;
+    let shares = 0;
     for (let k = 0; k < this.count; k += 1) {
       const sample = samples[k];
       const share = sample.wet && !sample.outsideDomain ? wettedShare(sample.surfaceY - point[k * 3 + 1]) : 0;
       if (!(share > 0)) continue;
+      shares += share;
       const rx = arm[k * 3];
       const ry = arm[k * 3 + 1];
       const rz = arm[k * 3 + 2];
@@ -1098,9 +1729,11 @@ export class BoardBody implements BoardContactBody {
     }
     this.pressureScale.fill(1);
     const speed = Math.hypot(flowX, flowY, flowZ);
+    this.alongFlow = 0;
     if (!(speed > 0)) return;
     // The board's long axis is the rotation's third column.
     const along = (flowX * r[2] + flowY * r[5] + flowZ * r[8]) / speed;
+    this.alongFlow = (along * speed) / shares;
     const noseFirst = along > 0;
     for (const strip of this.strips) {
       const n = strip.length;
@@ -1113,6 +1746,176 @@ export class BoardBody implements BoardContactBody {
       planingScales(this.stripShares, this.stationLength, this.stripBeams, along * along, this.stripScales);
       for (let i = 0; i < n; i += 1) this.pressureScale[strip[noseFirst ? n - 1 - i : i]] = this.stripScales[i];
     }
+  }
+
+  /**
+   * The rail band's suction gate this substep, per station and per rail (step 3.2u; `RAIL_SUCTION` and `RAIL_LATCH`).
+   * Walking each station's band facets:
+   * - a facet is **leeward** where the flow has turned past it, `v_rel · n < 0`; the station's wetted leeward arc is
+   *   the sweep's share those facets hold, and the gate opens over `arcMin`…`arcFull` of it;
+   * - the **air path** is this rail buried while the other one's band is out of the water — the same test
+   *   `placeHollow` makes for the deck, taken on the band itself so it does not need `deckHollow: 'on'`;
+   * - **Taylor's condition**, that the body-driven downward acceleration u²/c beat g, which for our wetted lengths is
+   *   satisfied above about 3 m/s: it gates a slow drift, not surfing;
+   * - the **latch**: the rail ventilates when the suction the flow asks for passes Breslin's sustainable line
+   *   (`RAIL_SUCTION.cap`) with the arc past inception and an air path, and re-wets when it falls back under, both
+   *   through a first-order lag of `RAIL_LATCH.lag`.
+   * `bandLedger.maxNormalX` is filled whether or not the suction is on: it is 0 on a flat board by construction, so it
+   * is the advisor's own build check — below 0.5 the band is not wetted or not resolved, which is a bug and not physics.
+   */
+  private placeBand(h: number, wettedLength: number): void {
+    const L = this.bandLedger;
+    L.maxNormalX = 0;
+    L.wetFacets = 0;
+    L.wetArea = 0;
+    L.cappedShare = 0;
+    L.pressurePa = 0;
+    L.capPa = 0;
+    L.ventedShare = 0;
+    if (!this.band) return;
+    const { samples, point, arm, normal, velocity: v, angularVelocity: w, rotation: r } = this;
+    for (let k = 0; k < this.count; k += 1) {
+      const sample = samples[k];
+      if (!sample.wet || sample.outsideDomain) continue;
+      if (wettedShare(sample.surfaceY - point[k * 3 + 1]) > 0) L.maxNormalX = Math.max(L.maxNormalX, Math.abs(normal[k * 3]));
+    }
+    this.bandGate.fill(0);
+    if (!this.suctionOn) return;
+    // The board's long axis, the rotation's third column: the rail's own direction, which fixes the cross-plane.
+    const tx = r[2];
+    const ty = r[5];
+    const tz = r[8];
+    const taylor = Math.sqrt(WATER.gravity * Math.max(0.2, wettedLength));
+    const gate = [0, 0];
+    let sides = 0;
+    let ventedSum = 0;
+    let capped = 0;
+    let facets = 0;
+    let pressureSum = 0;
+    let capSum = 0;
+    for (let st = 0; st < this.bandStation.length; st += 1) {
+      const list = this.bandStation[st];
+      if (list.length === 0) continue;
+      const wet = [0, 0];
+      const lee = [0, 0];
+      const dry = [0, 0];
+      const asked = [0, 0];
+      const limit = [0, 0];
+      const fastest = [0, 0];
+      let sweep = 0;
+      for (const k of list) {
+        const side = this.bandSide[k] > 0 ? 1 : 0;
+        sweep = this.bandSweep[k];
+        const sample = samples[k];
+        const depth = sample.wet && !sample.outsideDomain ? sample.surfaceY - point[k * 3 + 1] : -Infinity;
+        if (!(wettedShare(depth) > 0)) {
+          dry[side] += 1;
+          continue;
+        }
+        wet[side] += 1;
+        const rx = arm[k * 3];
+        const ry = arm[k * 3 + 1];
+        const rz = arm[k * 3 + 2];
+        const ux = v.x + w.y * rz - w.z * ry - sample.flowX;
+        const uy = v.y + w.z * rx - w.x * rz - sample.flowY;
+        const uz = v.z + w.x * ry - w.y * rx - sample.flowZ;
+        if (ux * normal[k * 3] + uy * normal[k * 3 + 1] + uz * normal[k * 3 + 2] >= 0) continue;
+        lee[side] += 1;
+        const speed = Math.hypot(ux, uy, uz);
+        const along = ux * tx + uy * ty + uz * tz;
+        const cross = Math.min(Math.hypot(ux - along * tx, uy - along * ty, uz - along * tz), RAIL_SUCTION.crossCap * speed);
+        asked[side] = Math.max(asked[side], 0.5 * WATER.density * RAIL_SUCTION.coefficient * cross * cross);
+        limit[side] = Math.max(limit[side], RAIL_SUCTION.cap * WATER.density * WATER.gravity * Math.min(RAIL_SUCTION.depthCap, depth));
+        fastest[side] = Math.max(fastest[side], speed);
+      }
+      for (let side = 0; side < 2; side += 1) {
+        const arc = (sweep * lee[side]) / RAIL_BAND.facets;
+        const open = Math.min(1, Math.max(0, (arc - RAIL_LATCH.arcMin) / (RAIL_LATCH.arcFull - RAIL_LATCH.arcMin)));
+        const i = st * 2 + side;
+        const path = dry[1 - side] > 0;
+        if (this.ventLatched[i]) {
+          if (!(asked[side] > limit[side])) this.ventLatched[i] = 0;
+        } else if (asked[side] > limit[side] && arc > RAIL_LATCH.inception && path && fastest[side] > taylor) {
+          this.ventLatched[i] = 1;
+        }
+        const target = this.ventLatched[i] ? 1 : 0;
+        this.vented[i] += (target - this.vented[i]) * (1 - Math.exp(-h / RAIL_LATCH.lag));
+        gate[side] = open * (1 - this.vented[i]);
+        if (wet[side] > 0) {
+          sides += 1;
+          ventedSum += this.vented[i];
+        }
+        if (lee[side] > 0) {
+          facets += lee[side];
+          pressureSum += lee[side] * Math.min(asked[side], limit[side]);
+          capSum += lee[side] * limit[side];
+          if (asked[side] > limit[side]) capped += lee[side];
+        }
+      }
+      for (const k of list) this.bandGate[k] = gate[this.bandSide[k] > 0 ? 1 : 0];
+    }
+    L.ventedShare = sides > 0 ? ventedSum / sides : 0;
+    L.cappedShare = facets > 0 ? capped / facets : 0;
+    L.pressurePa = facets > 0 ? pressureSum / facets : 0;
+    L.capPa = facets > 0 ? capSum / facets : 0;
+  }
+
+  /**
+   * The hollow over the deck this substep (`HOLLOW`'s note), from the patches' samples. One can stand only under an
+   * upright rider (never lying, climbing on or duck-diving: those bodies and their board are in the water) on a board
+   * the right way up with water running along it. Walking the stations from the end the flow meets first:
+   * - each rail's deck edge is placed against the surface sampled at its own patches (`railDepth`);
+   * - the hollow opens where the lower one first goes under, between that station and the one ahead of it (the board's
+   *   end, if the first station is already under);
+   * - a station has its air path while its low rail is under and its high rail is out. Both under: no vent, wet.
+   */
+  private placeHollow(): void {
+    this.hollowOpen = false;
+    const { rider, stationPatches, stationLength, rotation } = this;
+    if (!rider?.attached || !rider.upright || !(rotation[4] > 0) || this.alongFlow === 0) return;
+    const noseFirst = this.alongFlow > 0;
+    const lead = noseFirst ? 1 : -1;
+    const n = stationPatches.length;
+    let entry = Number.NaN;
+    let before = 0;
+    for (let i = 0; i < n; i += 1) {
+      const s = noseFirst ? n - 1 - i : i;
+      const list = stationPatches[s];
+      const last = list.length - 1;
+      const left = railDepth(this.deckDepth(list[0]), this.deckDepth(list[Math.min(1, last)]));
+      const right = railDepth(this.deckDepth(list[last]), this.deckDepth(list[Math.max(0, last - 1)]));
+      const low = Math.max(left, right);
+      this.hollowVent[s] = low > 0 && Math.min(left, right) < 0 ? 1 : 0;
+      if (Number.isNaN(entry) && low > 0) {
+        const z = this.alongBoard[list[0]];
+        entry = i === 0 || !Number.isFinite(before) ? z + (lead * stationLength) / 2 : z + (lead * stationLength * low) / (low - before);
+      }
+      before = low;
+    }
+    if (Number.isNaN(entry)) return;
+    this.hollowEntry = entry;
+    this.hollowSpeed = Math.abs(this.alongFlow);
+    this.hollowOpen = true;
+  }
+
+  /** How far patch `k`'s deck lies under the surface sampled at the patch, m (−∞ out of the water). */
+  private deckDepth(k: number): number {
+    const sample = this.samples[k];
+    if (!sample.wet || sample.outsideDomain) return -Infinity;
+    return sample.surfaceY - (this.point[k * 3 + 1] - this.normal[k * 3 + 1] * this.thickness[k]);
+  }
+
+  /**
+   * The wet share (`hollowWetShare`) of what stands over the deck at `z` along the board (board frame, m), the deck
+   * there `depth` m under the surface of `sample`, taken at the thing itself: a deck patch, or an upright rider's part
+   * inside the planform. 1 (wet as the surface line says) with no hollow, at a station without an air path, and under
+   * a lip or in a tube, whose water covers it from above. Broken water is the plume's air or a roller lens's own flow.
+   */
+  hollowWetAt(z: number, depth: number, sample: WaterSample): number {
+    if (!this.hollowOpen || sample.covered || sample.waterFloorY !== undefined || sample.ceilingY !== undefined) return 1;
+    const station = Math.min(this.hollowVent.length - 1, Math.max(0, Math.floor((z + this.shape.length / 2) / this.stationLength)));
+    if (!this.hollowVent[station]) return 1;
+    return hollowWetShare((this.hollowEntry - z) * Math.sign(this.alongFlow), this.hollowSpeed, depth, Math.max(sample.voidFraction ?? 0, sample.lensShare ?? 0));
   }
 
   /**
@@ -1206,6 +2009,17 @@ export class BoardBody implements BoardContactBody {
     this.forces.bed.x += ix;
     this.forces.bed.y += iy;
     this.forces.bed.z += iz;
+    // A bed impulse is applied outside the solve, and `impulseAt` turns it into exactly I⁻¹ (r × J), so its angular
+    // impulse goes into the total as well as into its own entry.
+    if (BoardBody.yawLedger) {
+      this.yaw.bed += rz * ix - rx * iz;
+      this.yaw.total += rz * ix - rx * iz;
+    }
+    if (BoardBody.rollLedger) {
+      const about = this.rollOf(ry * iz - rz * iy, rz * ix - rx * iz, rx * iy - ry * ix);
+      this.roll.bed += about;
+      this.roll.total += about;
+    }
   }
 
   private impulseAt(rx: number, ry: number, rz: number, ix: number, iy: number, iz: number): void {
@@ -1227,6 +2041,200 @@ export class BoardBody implements BoardContactBody {
     const cz = rx * ny - ry * nx;
     const J = this.worldInverseInertia;
     return this.inverseMass + cx * (J[0] * cx + J[1] * cy + J[2] * cz) + cy * (J[3] * cx + J[4] * cy + J[5] * cz) + cz * (J[6] * cx + J[7] * cy + J[8] * cz);
+  }
+
+  /**
+   * How deep the board's shallowest face is under the surface, m (negative: some of it is out): its patches' upper faces
+   * (the deck, or the bottom of a capsized board), each against the water sampled over it. Outside the water: −∞.
+   */
+  private plateDepth(): number {
+    let shallowest = Infinity;
+    for (let k = 0; k < this.count; k += 1) {
+      const sample = this.samples[k];
+      if (!sample.wet || sample.outsideDomain) return -Infinity;
+      // Under a plain surface only: in a fold, under an overhang or against a steep face (the curl, a tube's water) the
+      // water over the board is no free surface it is deep beneath. Both its sampled normal and its height graph's slope
+      // must say so (the normal's sign alone is no outward convention in a fold).
+      if (!(sample.normalY >= PLATE_SURFACE_NORMAL) || sample.slopeX * sample.slopeX + sample.slopeZ * sample.slopeZ > 1) return -Infinity;
+      const y = this.point[k * 3 + 1];
+      const upper = Math.max(y, y - this.normal[k * 3 + 1] * this.thickness[k]);
+      shallowest = Math.min(shallowest, sample.surfaceY - upper);
+    }
+    return shallowest;
+  }
+
+  /**
+   * The submerged plate's water inertia (duck-two-body), station by station, into the implicit system: each station's
+   * other side's added mass along the board's normal at its centre (heave, and pitch through its arm), scaled by how far
+   * the board is under (`plateShare`), in the water's density there.
+   */
+  private plateInertia(system: Float64Array): void {
+    const { stationPatches, stationBeam, stationLocal, stationHeave, stationArm, rotation: r } = this;
+    stationHeave.fill(0);
+    if (this.wallAny) this.plateWall.fill(0);
+    if (!this.plate) return;
+    // The board's normal (its y axis), world.
+    const nx = r[1]; const ny = r[4]; const nz = r[7];
+    const a = this.direction;
+    for (let i = 0; i < stationPatches.length; i += 1) {
+      const list = stationPatches[i];
+      let share = 0;
+      let density = 0;
+      for (const k of list) {
+        share += this.plateShare[k];
+        density += WATER.density * (1 - (this.samples[k].voidFraction ?? 0));
+      }
+      share /= list.length;
+      density /= list.length;
+      if (!(share > 0)) continue;
+      const beam = stationBeam[i];
+      const heave = share * density * PLATE_ADDED_MASS * beam * beam * this.stationLength;
+      stationHeave[i] = heave;
+      const lx = stationLocal[i * 3]; const ly = stationLocal[i * 3 + 1]; const lz = stationLocal[i * 3 + 2];
+      const rx = r[0] * lx + r[1] * ly + r[2] * lz;
+      const ry = r[3] * lx + r[4] * ly + r[5] * lz;
+      const rz = r[6] * lx + r[7] * ly + r[8] * lz;
+      stationArm[i * 3] = rx; stationArm[i * 3 + 1] = ry; stationArm[i * 3 + 2] = rz;
+      a[0] = nx; a[1] = ny; a[2] = nz;
+      a[3] = ry * nz - rz * ny; a[4] = rz * nx - rx * nz; a[5] = rx * ny - ry * nx;
+      for (let p = 0; p < 6; p += 1) for (let q = 0; q < 6; q += 1) system[p * 6 + q] += heave * a[p] * a[q];
+      if (this.wallAny) {
+        // Ruling 3 (`WATER_INERTIA`): the other side's added mass takes the wall water's acceleration along the board's
+        // normal, from the station's patches in it (their smoothed accelerations, by their share of the station).
+        let along = 0;
+        for (const k of list) if (this.samples[k].wallWater) along += this.wallAccel[3 * k] * nx + this.wallAccel[3 * k + 1] * ny + this.wallAccel[3 * k + 2] * nz;
+        const push = (heave * along * this.substepSpan) / list.length;
+        for (let d = 0; d < 6; d += 1) this.plateWall[d] += push * a[d];
+      }
+    }
+  }
+
+  /**
+   * C2's ruling 28, decision 8 (`WaterSample.flowAccel`): patch k takes the water's own material acceleration, as the
+   * water reports it, along the surface's normal (ux, uy, uz), m/s². Nothing is differenced; the smoothing and the cap
+   * are the other rules' (`WATER_INERTIA`), and the state is kept the same way, so a patch that crosses between a water
+   * that reports its acceleration and one that does not keeps one smoothed history.
+   */
+  private waterAccel(k: number, sample: WaterSample, h: number, ux: number, uy: number, uz: number): number {
+    const o = 3 * k;
+    const acc = this.wallAccel;
+    const flow = this.wallFlow;
+    const share = this.wallSeen[k] !== 0 && h > 0 ? Math.min(1, h / WATER_INERTIA.smoothing) : 1;
+    acc[o] += ((sample.flowAccelX ?? 0) - acc[o]) * share;
+    acc[o + 1] += ((sample.flowAccelY ?? 0) - acc[o + 1]) * share;
+    acc[o + 2] += ((sample.flowAccelZ ?? 0) - acc[o + 2]) * share;
+    const size = Math.sqrt(acc[o] * acc[o] + acc[o + 1] * acc[o + 1] + acc[o + 2] * acc[o + 2]);
+    if (size > WATER_INERTIA.cap) {
+      const scale = WATER_INERTIA.cap / size;
+      acc[o] *= scale;
+      acc[o + 1] *= scale;
+      acc[o + 2] *= scale;
+    }
+    this.wallSeen[k] = 1;
+    this.wallAny = true;
+    flow[o] = sample.flowX;
+    flow[o + 1] = sample.flowY;
+    flow[o + 2] = sample.flowZ;
+    const at = this.wallPoint;
+    at[o] = this.point[o];
+    at[o + 1] = this.point[o + 1];
+    at[o + 2] = this.point[o + 2];
+    return acc[o] * ux + acc[o + 1] * uy + acc[o + 2] * uz;
+  }
+
+  /**
+   * Ruling 3 (`WATER_INERTIA`): patch k's wall water's smoothed acceleration along the surface's normal (ux, uy, uz), m/s²,
+   * from its sample this substep of length `h`; its state kept for the next.
+   */
+  private wallInertia(k: number, sample: WaterSample, h: number, ux: number, uy: number, uz: number): number {
+    const o = 3 * k;
+    const acc = this.wallAccel;
+    const flow = this.wallFlow;
+    if (this.wallSeen[k] !== 0 && h > 0) {
+      const share = Math.min(1, h / WATER_INERTIA.smoothing);
+      acc[o] += ((sample.flowX - flow[o]) / h - acc[o]) * share;
+      acc[o + 1] += ((sample.flowY - flow[o + 1]) / h - acc[o + 1]) * share;
+      acc[o + 2] += ((sample.flowZ - flow[o + 2]) / h - acc[o + 2]) * share;
+      const size = Math.sqrt(acc[o] * acc[o] + acc[o + 1] * acc[o + 1] + acc[o + 2] * acc[o + 2]);
+      if (size > WATER_INERTIA.cap) {
+        const scale = WATER_INERTIA.cap / size;
+        acc[o] *= scale;
+        acc[o + 1] *= scale;
+        acc[o + 2] *= scale;
+      }
+    }
+    this.wallSeen[k] = 1;
+    this.wallAny = true;
+    flow[o] = sample.flowX;
+    flow[o + 1] = sample.flowY;
+    flow[o + 2] = sample.flowZ;
+    return acc[o] * ux + acc[o + 1] * uy + acc[o + 2] * uz;
+  }
+
+  /**
+   * Ruling 3 (`WATER_INERTIA`), following the water (`WaterSample.wallFollow`): patch k's wall water's smoothed material
+   * acceleration along the surface's normal (ux, uy, uz), m/s². Its last sample's water, at x_last with u_last a substep
+   * (`lastSpan`) ago, has moved to x_last + u_last·lastSpan: the flow there now, less u_last, over lastSpan, is Du/Dt. The
+   * smoothing and the cap are the path rule's (`wallInertia`); its state kept for the next.
+   */
+  private wallFollowing(k: number, sample: WaterSample, water: SurfWater, ux: number, uy: number, uz: number): number {
+    const o = 3 * k;
+    const acc = this.wallAccel;
+    const flow = this.wallFlow;
+    const at = this.wallPoint;
+    const span = this.lastSpan;
+    if (this.wallSeen[k] !== 0 && span > 0) {
+      const moved = water.sampleAt(at[o] + flow[o] * span, at[o + 1] + flow[o + 1] * span, at[o + 2] + flow[o + 2] * span, this.wallScratch);
+      const share = Math.min(1, span / WATER_INERTIA.smoothing);
+      acc[o] += ((moved.flowX - flow[o]) / span - acc[o]) * share;
+      acc[o + 1] += ((moved.flowY - flow[o + 1]) / span - acc[o + 1]) * share;
+      acc[o + 2] += ((moved.flowZ - flow[o + 2]) / span - acc[o + 2]) * share;
+      const size = Math.sqrt(acc[o] * acc[o] + acc[o + 1] * acc[o + 1] + acc[o + 2] * acc[o + 2]);
+      if (size > WATER_INERTIA.cap) {
+        const scale = WATER_INERTIA.cap / size;
+        acc[o] *= scale;
+        acc[o + 1] *= scale;
+        acc[o + 2] *= scale;
+      }
+    }
+    this.wallSeen[k] = 1;
+    this.wallAny = true;
+    flow[o] = sample.flowX;
+    flow[o + 1] = sample.flowY;
+    flow[o + 2] = sample.flowZ;
+    at[o] = this.point[o];
+    at[o + 1] = this.point[o + 1];
+    at[o + 2] = this.point[o + 2];
+    return acc[o] * ux + acc[o + 1] * uy + acc[o + 2] * uz;
+  }
+
+  /** The submerged plate's inertia impulses this substep: the ledgers, and the water's reaction, spread over each station. */
+  private settlePlate(dvx: number, dvy: number, dvz: number, dwx: number, dwy: number, dwz: number, avx: number, avy: number, avz: number, awx: number, awy: number, awz: number): void {
+    if (!this.plate) return;
+    const { stationPatches, stationHeave, stationArm, rotation: r } = this;
+    const nx = r[1]; const ny = r[4]; const nz = r[7];
+    for (let i = 0; i < stationPatches.length; i += 1) {
+      const heave = stationHeave[i];
+      if (!(heave > 0)) continue;
+      const rx = stationArm[i * 3]; const ry = stationArm[i * 3 + 1]; const rz = stationArm[i * 3 + 2];
+      const cx = ry * nz - rz * ny; const cy = rz * nx - rx * nz; const cz = rx * ny - ry * nx;
+      const change = dvx * nx + dvy * ny + dvz * nz + dwx * cx + dwy * cy + dwz * cz;
+      const mean = avx * nx + avy * ny + avz * nz + awx * cx + awy * cy + awz * cz;
+      const inertia = -heave * change;
+      this.work.addedMass += inertia * mean;
+      this.forces.addedMass.x += inertia * nx;
+      this.forces.addedMass.y += inertia * ny;
+      this.forces.addedMass.z += inertia * nz;
+      if (BoardBody.yawLedger) this.yaw.addedMass += inertia * cy;
+      if (BoardBody.rollLedger) this.roll.addedMass += inertia * this.rollOf(cx, cy, cz);
+      // The water takes the heave's impulse back, shared by the station's patches.
+      const list = stationPatches[i];
+      for (const k of list) {
+        this.reaction[k * 3] += (inertia * nx) / list.length;
+        this.reaction[k * 3 + 1] += (inertia * ny) / list.length;
+        this.reaction[k * 3 + 2] += (inertia * nz) / list.length;
+      }
+    }
   }
 
   private updateRotation(): void {

@@ -13,6 +13,7 @@
  *   npm run report:duckdive -- --seeds 2 --minutes 3
  *   npm run report:duckdive -- --spot beach --inside 20
  *   npm run report:duckdive -- --hold 3 --out /tmp/held.md   (a longer press)
+ *   npm run report:duckdive -- --seeds 1 --seed-from 3 --json /tmp/seed3.json   (one seed of several run side by side)
  */
 import { writeFileSync } from 'node:fs';
 import { Vector3 } from 'three';
@@ -30,6 +31,9 @@ const option = (name: string): string | undefined => {
 };
 const argument = (name: string, fallback: number): number => Number(option(name) ?? fallback);
 const seedCount = argument('seeds', 2);
+/** The first seed (`--seed-from`), so seeds can run as parallel processes; `--json <path>` also writes each result. */
+const seedFrom = argument('seed-from', 1);
+const jsonOut = option('json');
 const minutes = argument('minutes', 3);
 const spot = (option('spot') ?? 'canyon') as SpotName;
 /** How far inside the break point the paddlers start, m (along the wave's travel). */
@@ -190,7 +194,7 @@ function runSeed(seed: number): void {
 }
 
 const started = performance.now();
-for (let seed = 1; seed <= seedCount; seed += 1) runSeed(seed);
+for (let seed = seedFrom; seed < seedFrom + seedCount; seed += 1) runSeed(seed);
 const wall = (performance.now() - started) / 1000;
 
 const fixed = (value: number, digits = 1) => (Number.isFinite(value) ? value.toFixed(digits) : '—');
@@ -247,4 +251,5 @@ ${VARIANTS.map((variant) => `- ${variant.name}: ${falls(variant.name)}`).join('\
 A check that is not met is investigated, never tuned into passing (the gameplay spec's principle 3).
 `;
 writeFileSync(output, report);
+if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ hold: HOLD, inside, seeds: [seedFrom, seedFrom + seedCount - 1], minutes, episodes, abandoned, results: Object.fromEntries(results) }));
 console.log(report);

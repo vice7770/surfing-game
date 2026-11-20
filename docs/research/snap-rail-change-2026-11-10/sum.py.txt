@@ -1,0 +1,25 @@
+# python3 sum.py [--runs] <tag>=<json>,<json>... : one row a setting over the rail-change probe's runs (all angles in the NEW turn's frame).
+# old = time after Snap until the board first turns the new way (1.5 if never); oldT = total time turning the old way in Snap's first second;
+# run-on = heading run on the old way after Snap, deg; h0.5 / h1.0 = net heading 0.5 s / 1.0 s after Snap against the heading at Snap (+ = the new way; last value if the rider fell sooner);
+# cross = time until the body's lean is on the new side (1.5 if never); roll = most roll on the new rail in the hold; yaw = peak new-way yaw rate;
+# kept = speed at Snap's end / at its start; crossed = runs whose body got to the new side; falls in the hold / in all; to fall = mean Snap->fall (riders that stay on: 3 s).
+import json, sys
+per = '--runs' in sys.argv
+args = [a for a in sys.argv[1:] if a != '--runs']
+print('| setting | runs | old s | oldT s | run-on | h0.5 | h1.0 | cross s | roll new | peak yaw | kept | crossed | falls hold | falls all | to fall s |')
+print('|' + ' --- |' * 15)
+for arg in args:
+    tag, files = arg.split('='); rows = []; n = 0
+    for path in files.split(','):
+        for run in json.load(open(path)):
+            n += 1; fr = run['frames']; snap = [f for f in fr if f['phase'] == 'snap']
+            t0 = snap[0]['t'] - 1/60; h0 = snap[0]['turned']
+            first = lambda k, d=1.5: next((f['t'] - t0 for f in snap if f[k] > 0), d)
+            at = lambda T: ([f for f in snap if f['t'] - t0 <= T + 1e-6][-1]['turned']) - h0
+            row = dict(name=run['name'], old=first('yaw'), oldT=sum(1/60 for f in snap if f['t'] - t0 <= 1.0 and f['yaw'] < 0), over=h0 - min(f['turned'] for f in snap), h5=at(0.5), h10=at(1.0),
+                cross=first('bank'), roll=max(f['roll'] for f in snap), yaw=max(f['yaw'] for f in snap), kept=snap[-1]['v'] / snap[0]['v'], crossed=any(f['bank'] > 2 for f in snap),
+                inhold=bool(run['fell']) and fr[-1]['phase'] == 'snap', fell=bool(run['fell']), tofall=(run['fell'] - t0) if run['fell'] else 3.0)
+            rows.append(row)
+            if per: print(f"| {tag} {row['name']} | | {row['old']:.2f} | {row['oldT']:.2f} | {row['over']:.0f} | {row['h5']:.0f} | {row['h10']:.0f} | {row['cross']:.2f} | {row['roll']:.0f} | {row['yaw']:.0f} | {row['kept']:.2f} | {'y' if row['crossed'] else 'n'} | {'hold' if row['inhold'] else ''} | {'fell' if row['fell'] else 'rides'} | {row['tofall']:.2f} |")
+    m = lambda k: sum(r[k] for r in rows) / len(rows)
+    print(f"| {tag} | {n} | {m('old'):.2f} | {m('oldT'):.2f} | {m('over'):.0f} | {m('h5'):.0f} | {m('h10'):.0f} | {m('cross'):.2f} | {m('roll'):.0f} | {m('yaw'):.0f} | {m('kept'):.2f} | {sum(r['crossed'] for r in rows)} | {sum(r['inhold'] for r in rows)} | {sum(r['fell'] for r in rows)} | {m('tofall'):.2f} |")

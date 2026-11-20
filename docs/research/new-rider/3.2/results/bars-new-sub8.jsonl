@@ -1,0 +1,24 @@
+{"bar":"glide","rider":"new","water":"plane","faceDeg":13.4,"v":5,"fell":"","heldS":3,"speedEnd":6.18,"draftCm":11.6,"minReserve":0.64,"pressureShare":[-0.11,0.12]}
+{"bar":"glide","rider":"new","water":"plane","faceDeg":11,"v":7,"fell":"","heldS":3,"speedEnd":7.11,"draftCm":8.5,"minReserve":0.64,"pressureShare":[-0.07,0.06]}
+{"bar":"glide","rider":"new","water":"plane","faceDeg":10.4,"v":9,"fell":"","heldS":3,"speedEnd":8.84,"draftCm":5.3,"minReserve":0.65,"pressureShare":[-0.03,0.07]}
+{"bar":"glide","rider":"new","water":"plane","faceDeg":11.1,"v":12,"fell":"","heldS":3,"speedEnd":11.78,"draftCm":2.7,"minReserve":0.66,"pressureShare":[-0.03,0.01]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":13.4,"v":5,"fell":"settling: balance","heldS":0,"speedEnd":5.94,"draftCm":24.2,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":11,"v":7,"fell":"balance","heldS":2.35,"speedEnd":4.09,"draftCm":31,"minReserve":0,"pressureShare":[-0.21,0.33]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":10.4,"v":9,"fell":"balance","heldS":1.35,"speedEnd":7.44,"draftCm":8.4,"minReserve":0,"pressureShare":[-0.14,0.12]}
+{"bar":"glide","rider":"new","water":"chop 1","faceDeg":11.1,"v":12,"fell":"settling: balance","heldS":0,"speedEnd":9.76,"draftCm":0.1,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":13.4,"v":5,"fell":"balance","heldS":0.32,"speedEnd":5.32,"draftCm":25.5,"minReserve":0.03,"pressureShare":[-0.24,0.08]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":11,"v":7,"fell":"settling: balance","heldS":0,"speedEnd":5.54,"draftCm":1.9,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":10.4,"v":9,"fell":"settling: balance","heldS":0,"speedEnd":7.12,"draftCm":6.5,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 2","faceDeg":11.1,"v":12,"fell":"settling: balance","heldS":0,"speedEnd":9.74,"draftCm":3.9,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":13.4,"v":5,"fell":"settling: balance","heldS":0,"speedEnd":6.64,"draftCm":17.7,"minReserve":1,"pressureShare":[null,null]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":11,"v":7,"fell":"","heldS":3,"speedEnd":5.52,"draftCm":15.9,"minReserve":0.04,"pressureShare":[-0.18,0.19]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":10.4,"v":9,"fell":"","heldS":3,"speedEnd":7.05,"draftCm":13.9,"minReserve":0.1,"pressureShare":[-0.18,0.23]}
+{"bar":"glide","rider":"new","water":"chop 3","faceDeg":11.1,"v":12,"fell":"balance","heldS":2.8,"speedEnd":10.39,"draftCm":6.2,"minReserve":0,"pressureShare":[-0.16,0.27]}
+{"bar":"rise","rider":"new","rate":1,"peakLoad":1.82,"kneesCm":23.9,"fell":"","fellAfter":null}
+{"bar":"rise","rider":"new","rate":2,"peakLoad":2.62,"kneesCm":2.7,"fell":"balance","fellAfter":0.42}
+{"bar":"rise","rider":"new","rate":4,"peakLoad":2.98,"kneesCm":8.9,"fell":"balance","fellAfter":0.4}
+{"bar":"held carve","rider":"new","stance":"tall","heldS":0.4,"fell":"balance","speedEnd":7.51,"bankEnd":11.5,"bankMax":11.5,"modeB":null,"modeA":null}
+{"bar":"held carve","rider":"new","stance":"compress","heldS":1.22,"fell":"balance","speedEnd":9.42,"bankEnd":48.8,"bankMax":48.8,"modeB":0.007,"modeA":0}
+{"bar":"Mode B kick","rider":"new","speed":5,"fell":"","frequencyHz":1.17,"damping":-0.107,"rollDecayPerCycle":2.919,"modeB":0.014,"modeA":0}
+{"bar":"Mode B kick","rider":"new","speed":7,"fell":"","frequencyHz":1.05,"damping":-0.079,"rollDecayPerCycle":1.858,"modeB":0.001,"modeA":0}
+{"bar":"Mode B kick","rider":"new","speed":9,"fell":"","frequencyHz":1.43,"damping":-0.133,"rollDecayPerCycle":2.694,"modeB":0.005,"modeA":0}

@@ -1,0 +1,12 @@
+pool training medium (Hs 1.146): 280 × 359 = 100520 cells; spun up in 18.8 s
+step p50 43.3 ms, mean 43.3 ms, p95 43.7 ms over 200 steps; lip jets 497
+pool barrel small (Hs 1.400): 280 × 374 = 104720 cells; spun up in 19.5 s
+step p50 44.3 ms, mean 44.3 ms, p95 44.6 ms over 200 steps; lip jets 460
+pool barrel big (Hs 1.754): 280 × 374 = 104720 cells; spun up in 20.9 s
+step p50 44.6 ms, mean 44.6 ms, p95 45.0 ms over 200 steps; lip jets 518
+pool training big (Hs 1.485): 280 × 359 = 100520 cells; spun up in 20.5 s
+step p50 43.5 ms, mean 43.5 ms, p95 44.0 ms over 200 steps; lip jets 365
+pool barrel small (Hs 1.400): 280 × 374 = 104720 cells; spun up in 19.6 s
+step p50 44.3 ms, mean 44.3 ms, p95 44.7 ms over 200 steps; lip jets 460
+pool training medium (Hs 1.146): 280 × 359 = 100520 cells; spun up in 18.8 s
+step p50 43.3 ms, mean 43.3 ms, p95 43.6 ms over 200 steps; lip jets 497

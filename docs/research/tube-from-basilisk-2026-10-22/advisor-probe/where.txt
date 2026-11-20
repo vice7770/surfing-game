@@ -1,0 +1,28 @@
+periodic-padang19s-l12 frame 145 tau 0.225 (td 0.9750000000000014): 86-88
+periodic-padang19s-l12 frame 153 tau 0.425 (td 0.9750000000000014): 62-71
+periodic-padang19s-l12 frame 160 tau 0.600 (td 0.9750000000000014): 63-65
+periodic-padang19s-l12 frame 168 tau 0.800 (td 0.9750000000000014): 59-61
+pad19-a20-l12 frame 131 tau 0.374 (td 0.6985294140598448): 70-74
+pad19-a20-l12 frame 133 tau 0.424 (td 0.6985294140598448): 68-71
+periodic-canyon23-a29-l13 frame 180 tau 1.500 (td 2.2250000000000014): 85-89
+periodic-canyon23-a29-l13 frame 182 tau 1.550 (td 2.2250000000000014): 83-88
+periodic-canyon23-a29-l13 frame 183 tau 1.575 (td 2.2250000000000014): 84-88
+periodic-canyon23-a29-l13 frame 185 tau 1.625 (td 2.2250000000000014): 85-89 86-90 88-91
+periodic-canyon23-a29-l13 frame 186 tau 1.650 (td 2.2250000000000014): 80-94
+periodic-canyon23-a29-l13 frame 187 tau 1.675 (td 2.2250000000000014): 82-89
+periodic-canyon23-a29-l13 frame 192 tau 1.800 (td 2.2250000000000014): 72-100 93-95 101-104
+periodic-canyon23-a29-l13 frame 197 tau 1.925 (td 2.2250000000000014): 95-103 96-102 97-101 97-102
+periodic-canyon23-a29-l13 frame 199 tau 1.975 (td 2.2250000000000014): 102-104 108-112 109-112 115-117
+periodic-canyon23-a29-l13 frame 201 tau 2.025 (td 2.2250000000000014): 107-110 113-115
+periodic-canyon23-a29-l13 frame 202 tau 2.050 (td 2.2250000000000014): 113-115
+periodic-canyon23-a29-l13 frame 204 tau 2.100 (td 2.2250000000000014): 85-88 115-117
+periodic-canyon23-a29-l13 frame 206 tau 2.150 (td 2.2250000000000014): 105-109
+periodic-canyon23-a29-l13 frame 208 tau 2.200 (td 2.2250000000000014): 101-108
+periodic-canyon23-a29-l13 frame 209 tau 2.225 (td 2.2250000000000014): 116-119 116-120 117-121
+periodic-canyon23-a49-l13 frame 146 tau 0.650 (td 1.1000000000000014): 80-82
+periodic-canyon23-a49-l13 frame 151 tau 0.775 (td 1.1000000000000014): 69-71
+blend foot 0.81 s 0.32 case periodic-padang19s-l12: 63-70
+blend foot 1.26 s 0.32 case pad19-a20-l12: 71-73 71-74 72-74
+blend foot 1.31 s 0.32 case pad19-a20-l12: 71-73 71-74
+blend foot 1.01 s 0.68 case periodic-padang19s-l12: 59-61
+blend foot 1.51 s 0.36 case pad19-a20-l12: 68-71

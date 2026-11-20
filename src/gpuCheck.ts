@@ -450,7 +450,7 @@ async function pipeline(): Promise<void> {
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const tier = params.get('tier') !== '0' && await webGpuAvailable();
   const config = surfZoneConfigFor(settings, seed, tier);
-  const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
+  const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot, config.poolTubeCase) : undefined;
   const result: Record<string, unknown> = { spot, size, tier, hop, seed, gpuLoad, rider, particles, arms: armNames, phase: 'spinning up' };
   (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
   say(`${spot} ${size}, ${config.componentCount ?? 24} components, ${rider ? 'ridden' : 'riderless'}, ${particles} particles, seed ${seed}, ${armNames.join(' and ')}: spinning up…`);
@@ -581,7 +581,7 @@ async function replay(): Promise<void> {
   const settings = physicalSettingsFor(spot, { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'auto' });
   const tier = params.get('tier') !== '0' && await webGpuAvailable();
   const config = surfZoneConfigFor(settings, seed, tier);
-  const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot) : undefined;
+  const barrelCases = sweptBarrelOn(config) ? await barrelCaseBytes(config.spot, config.poolTubeCase) : undefined;
   const result: Record<string, unknown> = { spot, size, tier, seed, frames, prefetch, fill, phase: 'spinning up' };
   (window as unknown as { gpuCheck: unknown }).gpuCheck = result;
   say(`replay ${spot} ${size}, ${config.componentCount ?? 24} components, seed ${seed}, ${frames} frames${prefetch ? ', prefetched' : ''}${fill ? ', filled' : ''}: spinning up…`);

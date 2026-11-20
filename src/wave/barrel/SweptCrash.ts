@@ -5,6 +5,7 @@ import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
 import type { CrestRayPlan } from './crestRays';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
+import type { TroughWave, TubeFace } from './faceAnchor';
 import type { ProfileLibrary } from './ProfileLibrary';
 import { CarrierSupport, geometricPaceActive } from './carrierSupport';
 
@@ -80,6 +81,11 @@ export interface CrashCounts {
   paceUnmeasured: number;
   /** Cells whose breaking the whitewater waited on, summed over steps. */
   gated: number;
+  /**
+   * The step 7 follow-up's guard (`TubeFace.guard`): held jets returned to their crests, their points retired unbroken by
+   * their touchdown (`PlungingLip.returnJet`). Absent without it.
+   */
+  returned?: number;
 }
 
 /** A throw this step (a diagnostic): its point, the solver's crest z it stood on, which its jet's water leaves (#86), and the ray's z part its pace was turned by. */
@@ -171,8 +177,34 @@ export class SweptCrash {
   private readonly observedVoids = new Set<number>();
   private readonly presentVoids = new Set<number>();
 
-  constructor(library: ProfileLibrary, slope: number) {
-    this.geometry = new CrashCurve(library, slope);
+  /** Per point, its smoothed shift under the face ruling (`CrashCurve.prepareShifts`); NaN without it. */
+  private shifts = new Float64Array(0);
+
+  /** `face`: the step 3 ruling's tube (`TubeFace`), its slices anchored and their ends blended as the loft's. */
+  /** Step 7's anchors kept on the points (`CrashCurve.prepareAnchors`): with the face anchor and its continuity or wall flow. */
+  private readonly anchoring: boolean;
+  /** The step 7 follow-up's guard (`TubeFace.guard`): a point retired unbroken by its touchdown returns its jet. */
+  private readonly guard: boolean;
+  /** Ruling 3's read of the solver's trough (`TubeFace.track`): the sea's period and still depth, made once per sea. */
+  private troughOf?: { sea: CrashSea; wave: TroughWave };
+  private readonly track: boolean;
+
+  /** Ruling 3's (`TubeFace.track`): the sea's peak period, and its still depth at (x, z) from the solver's bed, m. */
+  private troughWave(sea: CrashSea): TroughWave | undefined {
+    if (!this.track) return undefined;
+    if (this.troughOf?.sea !== sea) {
+      const { solver } = sea;
+      this.troughOf = { sea, wave: { period: sea.period, depthAt: (x, z) => sea.stillLevel - solver.sampleCentered(solver.bed, x, z) } };
+    }
+    return this.troughOf.wave;
+  }
+
+  constructor(library: ProfileLibrary, slope: number, face?: TubeFace) {
+    this.track = face?.track === true;
+    this.geometry = new CrashCurve(library, slope, face);
+    this.anchoring = face !== undefined && face.anchor && (face.continuity || face.wallFlow) && library.options.geometry !== 'bounded-C';
+    this.guard = face?.guard === true && library.options.geometry !== 'bounded-C';
+    if (this.guard) this.counts.returned = 0;
     this.columnSections = library.options.geometry === 'bounded-C';
     this.carrier = this.columnSections ? new CarrierSupport(library, slope) : undefined;
   }
@@ -272,8 +304,11 @@ export class SweptCrash {
       this.measureArc(points);
       for (let r = 0; r < runs.length; r += 2) this.geometry.prepareRays(points, runs[r], runs[r + 1], this.rayPlans[r / 2]);
     }
-    // Each live point as drawn, and its footprint.
+    // Each live point as drawn, and its footprint; under the face ruling its anchor's shift first, along its run.
     for (let r = 0; r < runs.length; r += 2) {
+      // Step 7: each point's anchor kept step to step on the point (`TubeFace.continuity`, `.wallFlow`), else as before.
+      if (this.anchoring) this.geometry.prepareAnchors(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], solver.time, this.shifts, this.troughWave(sea));
+      else this.geometry.prepareShifts(points, runs[r], runs[r + 1], heightAt, this.rayPlans[r / 2], this.shifts);
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         const p = points[k];
         if (!this.live[k]) {
@@ -284,7 +319,7 @@ export class SweptCrash {
           }
           continue;
         }
-        this.footprint(k, this.geometry.slice(points, runs[r], runs[r + 1], k, sea.stillLevel, heightAt, this.slices[k], {}, this.rayPlans[r / 2]));
+        this.footprint(k, this.geometry.slice(points, runs[r], runs[r + 1], k, sea.stillLevel, heightAt, this.slices[k], { shift: this.shifts[k] }, this.rayPlans[r / 2]));
       }
     }
     this.dropOverlaps(runs);
@@ -309,8 +344,15 @@ export class SweptCrash {
     for (const p of points) {
       if (p.jetStrip === undefined || p.jetStrip < 0 || p.crashedAt !== undefined) continue;
       if (p.tau < this.geometry.times(p).touchdownSeconds) continue;
-      lip.closeJet(p.jetStrip);
       p.crashedAt = sea.solver.time;
+      if (this.guard && p.unbroken) {
+        // The guard here too (the step 7 follow-up): unbroken at its touchdown, its jet goes back to its crest.
+        lip.returnJet(p.jetStrip, p.x, p.z);
+        p.jetReturned = true;
+        this.counts.returned! += 1;
+        continue;
+      }
+      lip.closeJet(p.jetStrip);
       this.counts.foreseen += 1;
     }
     this.updateMs += performance.now() - started;
@@ -340,7 +382,16 @@ export class SweptCrash {
       }
     }
     const strip = p.jetStrip ?? -1;
-    if (strip >= 0 && s.analytic) {
+    if (this.guard && strip >= 0 && p.crashedAt === undefined && p.unbroken && ((p.retire ?? 0) >= 1 || p.tau >= s.touchdown)) {
+      // The guard (the step 7 follow-up): the solver never broke this crest by its touchdown, so its lip never plunged and
+      // its slice has faded out (`GUARD`: whole by then); its held jet goes back to the crest it left, and nothing lands on
+      // the clear water ahead.
+      sea.lip.returnJet(strip, p.x, p.z);
+      p.crashedAt = sea.solver.time;
+      p.jetReturned = true;
+      this.counts.returned! += 1;
+    }
+    if (strip >= 0 && s.analytic && !p.jetReturned) {
       this.analyticVoids.add(strip);
       this.observedVoids.add(strip);
       sea.lip.setSweptVoid(strip, {
@@ -355,7 +406,7 @@ export class SweptCrash {
       this.counts.crashes += 1;
       if (throwing) this.counts.late += 1;
     }
-    if (strip >= 0 && p.crashedAt !== undefined && p.tau < s.touchdown + s.collapse) {
+    if (strip >= 0 && p.crashedAt !== undefined && !p.jetReturned && p.tau < s.touchdown + s.collapse) {
       sea.lip.movePour(strip, s.landX, s.landY, s.landZ);
       this.pour(p, s);
     }
@@ -485,7 +536,7 @@ export class SweptCrash {
     }
     // Where it will land, foreseen: the slice at its touchdown, on the anchor's own rule there with the paced z then.
     const tau = Math.max(p.tau, s.touchdown);
-    const f = this.geometry.slice(points, start, end, k, sea.stillLevel, heightAt, this.foreseen, { tau, z: p.jetBase! + p.jetPace! * tau }, rays);
+    const f = this.geometry.slice(points, start, end, k, sea.stillLevel, heightAt, this.foreseen, { tau, z: p.jetBase! + p.jetPace! * tau, shift: this.shifts[k] }, rays);
     const { strip, thrown } = sea.lip.holdJet({
       cell, velocityX: motion.tipAlong * s.rayX, velocityZ: motion.tipAlong * s.rayZ, volume, waveHeight,
       launchX: s.crestX, launchY: s.crestY, launchZ: s.crestZ,
@@ -493,7 +544,7 @@ export class SweptCrash {
       voidLength: s.voidLength, axisX: s.axisX, axisY: s.axisY, voidHeight: s.voidHeight, voidArea: s.voidArea,
       span: s.width * (s.analytic ? 1 : s.endWeight),
       dirX: s.rayX, dirZ: s.rayZ, crestSpeed: motion.crestSpeed, relativeSpeed: motion.tipAlong - motion.crestSpeed,
-    });
+    }, this.guard);
     p.jetStrip = strip;
     this.counts.asked += volume;
     if (strip >= 0) {
@@ -541,6 +592,7 @@ export class SweptCrash {
       this.throwHeight = new Float64Array(size);
       this.corners = new Float64Array(8 * size);
       this.boxes = new Float64Array(4 * size);
+      this.shifts = new Float64Array(size);
     }
     this.live.fill(0, 0, count);
     this.covered.fill(0, 0, count);

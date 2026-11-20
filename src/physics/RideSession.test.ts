@@ -258,7 +258,10 @@ describe('the duck-dive in a ride', () => {
     const water = new PlaneWater();
     session.reset(new Vector3(0, 0, 0), 0, water);
     for (let i = 0; i < 12; i += 1) session.step(STEP, water, { ...idle, duckDive: 1 });
-    expect(session.rider.duck.press).toBeGreaterThan(0.5);
+    // The two-body dive's arms (duck-two-body), still counted on the board.
+    expect(session.duckPress).toBeGreaterThan(0.5);
+    expect(session.ducking).toBe(true);
+    expect(session.rider.attached).toBe(true);
   });
 });
 
@@ -305,16 +308,49 @@ describe('the leash in a ride', () => {
   });
 
   it('holding the pop-up key reels the board in and climbs back on', () => {
-    const { session, water } = fallen();
-    session.board.velocity.set(0, 0, 3);
-    for (let i = 0; i < 90; i += 1) session.step(STEP, water, idle);
-    let climbed = -1;
-    for (let i = 0; i < 900 && climbed < 0; i += 1) {
-      session.step(STEP, water, { ...idle, reel: true });
-      if (session.rider.attached) climbed = i;
+    for (const swim of [undefined, 'old'] as const) {
+      const session = new RideSession(swim ? { swim } : {});
+      const water = new PlaneWater();
+      session.reset(new Vector3(0, 0, 0), 0, water);
+      session.separate('balance');
+      session.step(STEP, water, idle);
+      session.board.velocity.set(0, 0, 3);
+      for (let i = 0; i < 90; i += 1) session.step(STEP, water, idle);
+      let climbed = -1;
+      for (let i = 0; i < 900 && climbed < 0; i += 1) {
+        session.step(STEP, water, { ...idle, reel: true });
+        if (session.rider.attached) climbed = i;
+      }
+      expect(climbed, swim).toBeGreaterThanOrEqual(0);
+      expect(session.phase, swim).toBe('prone');
+      // Climbing on, then lying on it.
+      for (let i = 0; i < 120 && session.rider.climbingOn; i += 1) session.step(STEP, water, { ...idle, reel: true });
+      expect(session.rider.attached, swim).toBe(true);
+      expect(session.rider.climbingOn, swim).toBe(false);
+      expect(session.phase, swim).toBe('prone');
     }
-    expect(climbed).toBeGreaterThan(0);
-    expect(session.phase).toBe('prone');
+  });
+
+  // swim-back (2026-10-29): hand over hand, the cord comes in through the hand nearer the board, so its tail comes to the
+  // hand (`LEASH.handReach`), not to the feet 0.8 m off with the chest a body's length from it.
+  it('reels the board\'s tail to the hand nearer it, and the drawn cord with it', () => {
+    const { session, water } = fallen();
+    // Out of reach: no grab, the reel alone.
+    for (let i = 0; i < 180; i += 1) session.step(STEP, water, idle);
+    const torso = session.surfer.getPartPosition('torso', new Vector3());
+    session.board.place(new Vector3(torso.x, session.board.position.y, torso.z + 2.4), session.board.orientation.clone());
+    let reeled = false;
+    for (let i = 0; i < 300 && session.recovery.state === 'free' && !session.rider.attached; i += 1) {
+      session.step(STEP, water, { ...idle, reel: true });
+      if (session.leash.reeling) reeled = true;
+      if (session.leash.reeling) expect(session.leash.end).toBe('hand');
+    }
+    expect(reeled).toBe(true);
+    // The board came to the hands: grabbed (and climbing or held), not stopped at the feet.
+    expect(session.recovery.state !== 'free' || session.rider.attached).toBe(true);
+    // Let go, the cord is back on the ankle at its length.
+    session.step(STEP, water, idle);
+    expect(session.leash.end).toBe('ankle');
   });
 
   // Review Focus 2: the pop-up is a press, not a hold.
@@ -352,13 +388,22 @@ describe('the leash in a ride', () => {
 
 // The wipeout spec, Part B: breath.
 describe('breath in a ride', () => {
-  it('never drains lying on the board, even with the deck under water', () => {
+  it('never drains lying on the board, even with the deck under water; a duck-dive holds it a little, the body under', () => {
     const session = new RideSession();
     const water = new PlaneWater();
     session.reset(new Vector3(0, 0, 0), 0, water);
-    for (let i = 0; i < 270; i += 1) session.step(STEP, water, { ...idle, duckDive: i < 90 ? 1 : 0 });
+    for (let i = 0; i < 270; i += 1) session.step(STEP, water, idle);
     expect(session.rider.attached).toBe(true);
     expect(session.breath.level).toBe(1);
+    // The two-body dive takes the body under with the board (duck-two-body): held breath, working, a sixth of it at most.
+    let least = 1;
+    for (let i = 0; i < 270; i += 1) {
+      session.step(STEP, water, { ...idle, duckDive: i < 90 ? 1 : 0 });
+      least = Math.min(least, session.breath.level);
+    }
+    expect(session.rider.attached).toBe(true);
+    expect(least).toBeLessThan(1);
+    expect(least).toBeGreaterThan(0.8);
   });
 
   it('drains while the fallen surfer is held under, faster diving than relaxed', () => {

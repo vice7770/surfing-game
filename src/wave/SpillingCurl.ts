@@ -117,13 +117,13 @@ export function landingShare(psiMax: number): number {
 }
 
 /**
- * The span's steep end before the reef bed (2026-10-22): 1:30 under H0/h0 0.28 (curls to 0.33 H, landing 0.60 H ahead), the
- * old bed's face below its hinge. Drawn with the old bed (`SurfZoneConfig.canyonBed` 'old', the `?canyonBed=old` dev switch).
+ * The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, ten waves at once. 56 until
+ * canyon-beach-look (2026-10-28): with the beach peaks' arms curling too, Medium wrote 24 at the median and 49 at the
+ * 90th percentile, and filled 56 in 5 % of frames (Big 13 %); 72 keeps the curl mesh within its 1.5k-vertex budget.
  */
-export const SPILLING_CURL_OLD_PSI_MAX = overturnParameter(1 / 30, 0.28);
-
-/** The most curl slices a snapshot carries (`writeCurls`): about seven columns per wave, eight waves at once. */
-export const CURL_CAPACITY = 56;
+export const CURL_CAPACITY = 72;
+/** A swept tube's crest this close across shore to a column's curl crest is that wave's, m (the Canyon's tube regime) [inferred]. */
+const TUBE_MATCH = 5;
 /** Floats per curl slice. */
 export const CURL_STRIDE = 13;
 /** Where each value sits in a curl slice (`writeCurls`). */
@@ -231,7 +231,25 @@ export interface SpillingCurlOptions {
   nonlinearity: number;
   /** The span's steep end, ψ0, and so where the lip lands (`landingShare`): `SPILLING_CURL.psi.max` unless given. */
   psiMax?: number;
+  /**
+   * Where a column's wave has no H of its own (no lens, no section; a bridged gap in the band), it takes the local wave's
+   * (`LOCAL_REACH`) rather than the nominal take-off H (canyon-curl-front, 2026-10-23): true unless given false
+   * (`?curlLocal=off`, the before).
+   */
+  local?: boolean;
+  /**
+   * The still depth a column's waves break in, m, at along-shore position x, where it differs from the sea's
+   * (`breakerDepth`): the Canyon's reef bowl (canyon-b), whose platform carries the waves unbroken to its face, so even
+   * Big's break on the face, not on the bar seaward of it. The sea's everywhere unless given.
+   */
+  breakerDepthAt?: (x: number) => number;
 }
+
+/**
+ * A column with no H of its own takes its wave's from the nearest columns that have one this step, within this many
+ * columns either side (linear between the two nearest, else the nearer): the local wave down the line, not the take-off's.
+ */
+export const LOCAL_REACH = 6;
 
 /** No wave in a column. */
 const NONE = -1;
@@ -269,6 +287,8 @@ export class SpillingCurl implements SpillingDrawnLook {
    * reached each column (NaN: no wave of the front's), for its fray's peel-side end (`frayBand`'s `PeelEnd`).
    */
   readonly bandAge: Float64Array;
+  /** The band's entries' waves' peel directions at the last `drawBand` (slot-major), for the fray's peel side. */
+  readonly bandDirection: Int8Array;
   /**
    * Per cell, the share of its air drawn after the shoulder's clearing (`clearShoulder`): 1 off the shoulder, less on its
    * band, where the drawn whitewater is held back (round 5). The solver may break there before any onset joins it to a
@@ -276,6 +296,21 @@ export class SpillingCurl implements SpillingDrawnLook {
    * clean face ahead of the lip.
    */
   readonly shoulderAir: Float32Array;
+  /** Per column, 1 where a swept tube draws this wave's crest at the last update (`update`'s `tube`): no curl drawn there. */
+  readonly tube: Uint8Array;
+  /**
+   * Per column with a tube, how much later its white comes than the curl's own landing would bring it, s: the swept
+   * tube's clock against the spilling front's (the advisor asked for it, 2026-10-22); NaN elsewhere.
+   */
+  readonly tubeHold: Float64Array;
+  /** Per column at the last update: its wave's H as its lens or section measured it (NaN: neither), and its lens's length. */
+  private readonly measured: Float64Array;
+  private readonly measuredLength: Float64Array;
+  /** `SpillingCurlOptions.local`. */
+  readonly local: boolean;
+  /** `drawBand`'s scratch, one slot's columns: each entry's lens H (NaN: none) and its wave (−1: no entry). */
+  private readonly lookHeight: Float64Array;
+  private readonly lookWave: Int32Array;
   private readonly first: number;
   private readonly last: number;
   private readonly view = createLensView();
@@ -307,13 +342,21 @@ export class SpillingCurl implements SpillingDrawnLook {
     this.normalZ = new Float64Array(nx).fill(1);
     this.gradient = new Float64Array(nx);
     this.bandAge = new Float64Array(ROLLER_SLOTS * nx).fill(Number.NaN);
+    this.bandDirection = new Int8Array(ROLLER_SLOTS * nx).fill(1);
     this.shoulderAir = new Float32Array(nx * nz).fill(1);
+    this.measured = new Float64Array(nx).fill(Number.NaN);
+    this.measuredLength = new Float64Array(nx).fill(Number.NaN);
+    this.local = options.local !== false;
+    this.lookHeight = new Float64Array(nx);
+    this.lookWave = new Int32Array(nx);
+    this.tube = new Uint8Array(nx);
+    this.tubeHold = new Float64Array(nx).fill(Number.NaN);
     this.shapes = [];
     // Each column's bed along the waves' path (+z, the Canyon's straight crests) at the breaker depth: the gradient it
     // climbs (Mead & Black's band, as the reef break's), its overturn held to the span the advisor gave for the fan face.
-    const hb = options.breakerDepth;
     for (let column = 0; column < nx; column += 1) {
       const x = xCenters[column];
+      const hb = options.breakerDepthAt?.(x) ?? options.breakerDepth;
       let row = 0;
       while (row < nz - 1 && restLevel - bed[row * nx + column] > hb) row += 1;
       const z = zCenters[row];
@@ -351,12 +394,17 @@ export class SpillingCurl implements SpillingDrawnLook {
    * height, normal, landing line and foot, from its roller lens there or, without one, a section of the solver's surface
    * at its S2 crest. It keeps nothing from step to step: a sea taken over rebuilds it from its front and lenses.
    */
-  update(time: number, dt: number, front: SpillingFront, roller: SpillingRoller | undefined, strength: ArrayLike<number>): void {
+  update(
+    time: number, dt: number, front: SpillingFront, roller: SpillingRoller | undefined, strength: ArrayLike<number>,
+    tube?: { readonly touchdown: ArrayLike<number>; readonly z: ArrayLike<number> },
+  ): void {
     const { grid, first, last, view, section } = this;
     const { age, wave } = this;
     this.splashes.length = 0;
     age.fill(Number.NaN);
     wave.fill(NONE);
+    this.tube.fill(0);
+    this.tubeHold.fill(Number.NaN);
     const waves = front.waves;
     for (let k = 0; k < waves.length; k += 1) {
       const { reached, joinedAt } = waves[k];
@@ -371,8 +419,11 @@ export class SpillingCurl implements SpillingDrawnLook {
         wave[column] = k;
       }
     }
+    // Each column's crest, H, lens length and normal: from its lens, or a section of the surface at its S2 crest.
+    const { measured, measuredLength } = this;
     for (let column = first; column < last; column += 1) {
       const k = wave[column];
+      measured[column] = Number.NaN;
       if (k === NONE) continue;
       const id = waves[k].id;
       let crest = Number.NaN;
@@ -394,7 +445,6 @@ export class SpillingCurl implements SpillingDrawnLook {
           length = section.toe - section.crest;
         }
       }
-      const h = height > 0 ? height : this.nominal;
       // The curl falls down the face toward the beach: a lens's normal, fitted over a few columns, swings along shore
       // where a crest kinks or breaks again, so it is held within `maxTurn` of +z.
       const turn = Math.atan2(nx, nz > 0 ? nz : 0);
@@ -402,15 +452,35 @@ export class SpillingCurl implements SpillingDrawnLook {
       this.crest[column] = crest;
       this.normalX[column] = Math.sin(held);
       this.normalZ[column] = Math.cos(held);
+      measured[column] = height > 0 ? height : Number.NaN;
+      measuredLength[column] = length;
+    }
+    for (let column = first; column < last; column += 1) {
+      const k = wave[column];
+      if (k === NONE) continue;
+      const crest = this.crest[column];
+      const length = measuredLength[column];
+      // Its H: as measured; where neither a lens nor a section has it, the local wave's (`localHeight`), else the nominal.
+      const height = measured[column] === measured[column] ? measured[column] : this.local ? this.localHeight(column, k) : Number.NaN;
+      const h = height > 0 ? height : this.nominal;
       this.height[column] = h;
       this.impact[column] = impactTime(h);
+      // A swept tube on this wave's crest here (the Canyon's tube regime): the tube draws, not this curl, and its white
+      // waits for the tube's own touchdown, its landing no splash of this curl's (the advisor, 2026-10-22).
+      const touchdown = tube ? tube.touchdown[column] : Number.NaN;
+      if (touchdown === touchdown && crest === crest && Math.abs(tube!.z[column] - crest) <= TUBE_MATCH) {
+        this.tube[column] = 1;
+        const own = this.impact[column];
+        this.impact[column] = Math.max(0, age[column] + touchdown - time);
+        this.tubeHold[column] = this.impact[column] - own;
+      }
       this.landing[column] = this.size(column, h).ahead;
       // The face's foot: the lens's toe, its length L_r, or, unset, the stage's at birth (H / tan θ_s, Martins et al. 2018).
       const toe = length > 0 ? length : h / ROLLER_DEFAULTS.tanBirth;
       this.foot[column] = Math.max(this.landing[column] + SPILLING_CURL.soft, toe);
       // Touched down this step: its splash, the share of its jet that splashes up, on at the breaker celerity.
       const since = age[column] - this.impact[column];
-      if (dt > 0 && crest === crest && since >= 0 && since < dt) {
+      if (dt > 0 && crest === crest && since >= 0 && since < dt && this.tube[column] === 0) {
         const shape = this.shapes[column];
         const celerity = Math.sqrt(GRAVITY * this.options.breakerDepth);
         const volume = SPILLING_CURL.splashShare * shape.jetArea * h * h * grid.dx;
@@ -421,6 +491,25 @@ export class SpillingCurl implements SpillingDrawnLook {
         });
       }
     }
+  }
+
+  /**
+   * The local wave's H at `column` for wave index `k` (this update's front), where the column has none of its own: from
+   * the nearest columns of the same wave whose lens or section measured one this step, within `LOCAL_REACH` either side,
+   * linear between the two nearest (the one nearer alone); NaN where none is in reach.
+   */
+  private localHeight(column: number, k: number): number {
+    const { measured, wave, first, last } = this;
+    let left = -1;
+    let right = -1;
+    for (let d = 1; d <= LOCAL_REACH && (left < 0 || right < 0); d += 1) {
+      const l = column - d;
+      const r = column + d;
+      if (left < 0 && l >= first && wave[l] === k && measured[l] === measured[l]) left = l;
+      if (right < 0 && r < last && wave[r] === k && measured[r] === measured[r]) right = r;
+    }
+    if (left >= 0 && right >= 0) return measured[left] + ((measured[right] - measured[left]) * (column - left)) / (right - left);
+    return left >= 0 ? measured[left] : right >= 0 ? measured[right] : Number.NaN;
   }
 
   /**
@@ -455,6 +544,8 @@ export class SpillingCurl implements SpillingDrawnLook {
     const reach = this.reach;
     const view = this.view;
     this.bandAge.fill(Number.NaN);
+    this.bandDirection.fill(1);
+    const { lookHeight, lookWave } = this;
     for (let slot = 0; slot < ROLLER_SLOTS; slot += 1) {
       for (let column = 0; column < nx; column += 1) {
         const o = (slot * nx + column) * ROLLER_STRIDE;
@@ -463,10 +554,16 @@ export class SpillingCurl implements SpillingDrawnLook {
           look[l + BAND_LOOK_FIELD.since] = BAND_LOOK_OLD;
           look[l + BAND_LOOK_FIELD.height] = 0;
         }
+        lookWave[column] = -1;
         if (!(table[o + ROLLER_FIELD.scale] > 0)) continue;
         const id = roller.tableWave(column, slot);
-        // Its wave's H at this column (its lens's section), else the nominal height (a gap the table's run bridged).
-        if (look) look[l + BAND_LOOK_FIELD.height] = id >= 0 && roller.lensOf(column, id, view) && view.height > 0 ? view.height : this.nominal;
+        // Its wave's H at this column (its lens's section); a gap the table's run bridged has none (filled below).
+        const lensHeight = id >= 0 && (look || !this.ownWave(waves, column, id)) && roller.lensOf(column, id, view) && view.height > 0 ? view.height : Number.NaN;
+        if (look) {
+          look[l + BAND_LOOK_FIELD.height] = lensHeight === lensHeight ? lensHeight : this.nominal;
+          lookHeight[column] = lensHeight;
+          lookWave[column] = id;
+        }
         if (id < 0) continue;
         let k = waves.length - 1;
         while (k >= 0 && waves[k].id !== id) k -= 1;
@@ -476,8 +573,11 @@ export class SpillingCurl implements SpillingDrawnLook {
         if (!(r === r)) continue;
         const age = time - (j === j && j > r ? j : r);
         this.bandAge[slot * nx + column] = age;
-        const own = this.wave[column] !== NONE && waves[this.wave[column]].id === id;
-        const impact = own ? this.impact[column] : impactTime(this.nominal);
+        this.bandDirection[slot * nx + column] = waves[k].direction;
+        const own = this.ownWave(waves, column, id);
+        // Another wave's band than the column's curl: its H here, its lens's (the local wave's), else the nominal.
+        const other = own ? 0 : this.local && lensHeight > 0 ? lensHeight : this.nominal;
+        const impact = own ? this.impact[column] : impactTime(other);
         const since = age - impact;
         if (look) look[l + BAND_LOOK_FIELD.since] = Math.min(BAND_LOOK_OLD, since);
         if (!(age < this.span)) continue;
@@ -489,7 +589,7 @@ export class SpillingCurl implements SpillingDrawnLook {
         if (table[o + ROLLER_FIELD.scale] < flash) table[o + ROLLER_FIELD.scale] = flash;
         if (since >= SPILLING_CURL.toeSeconds + SPILLING_CURL.tailSeconds) continue;
         const length = table[o + ROLLER_FIELD.length];
-        const landing = own ? this.landing[column] : this.size(column, this.nominal).ahead;
+        const landing = own ? this.landing[column] : this.size(column, other).ahead;
         drawnReach(since, landing, length, reach);
         const top = reach.top > 0 ? reach.top : 0;
         const bottom = Math.min(length, reach.bottom);
@@ -500,7 +600,31 @@ export class SpillingCurl implements SpillingDrawnLook {
         table[o + ROLLER_FIELD.crest] += top;
         table[o + ROLLER_FIELD.length] = bottom - top;
       }
+      // A gap the table's run bridged draws its wave's local H: its run's nearest lenses' (`LOCAL_REACH`), not the nominal.
+      if (look && this.local) {
+        for (let column = 0; column < nx; column += 1) {
+          const id = lookWave[column];
+          if (id < 0 || lookHeight[column] === lookHeight[column]) continue;
+          let left = -1;
+          let right = -1;
+          for (let d = 1; d <= LOCAL_REACH && (left < 0 || right < 0); d += 1) {
+            const p = column - d;
+            const q = column + d;
+            if (left < 0 && p >= 0 && lookWave[p] === id && lookHeight[p] === lookHeight[p]) left = p;
+            if (right < 0 && q < nx && lookWave[q] === id && lookHeight[q] === lookHeight[q]) right = q;
+          }
+          if (left < 0 && right < 0) continue;
+          const height = left >= 0 && right >= 0 ? lookHeight[left] + ((lookHeight[right] - lookHeight[left]) * (column - left)) / (right - left)
+            : lookHeight[left >= 0 ? left : right];
+          look[(slot * nx + column) * BAND_LOOK_STRIDE + BAND_LOOK_FIELD.height] = height;
+        }
+      }
     }
+  }
+
+  /** Whether `column`'s curl at the last update is wave `id`'s (its youngest wave behind its front; `waves` the front's). */
+  private ownWave(waves: SpillingFront['waves'], column: number, id: number): boolean {
+    return this.wave[column] !== NONE && waves[this.wave[column]].id === id;
   }
 
   /**
@@ -537,7 +661,7 @@ export class SpillingCurl implements SpillingDrawnLook {
       // The column nearest the wave's front among its standing curl's, for the start's frame.
       let nearest = NONE;
       for (let column = first; column < last && count < capacity; column += 1) {
-        if (this.wave[column] !== k) continue;
+        if (this.wave[column] !== k || this.tube[column] === 1) continue;
         const crest = this.crest[column];
         const age = this.age[column];
         const impact = this.impact[column];
@@ -577,7 +701,6 @@ export class SpillingCurl implements SpillingDrawnLook {
     const ahead = Math.max(curl.shoulderAhead, curl.shoulderAheadHeights * height);
     const fade = curl.shoulderFade;
     const clear = 1 - Math.exp(-dt / curl.shoulderClear);
-    const direction = front.options.direction;
     const reach = Math.round(curl.shoulderReach / dx);
     // The first row at or past z (a binary search: the rows stretch offshore).
     const rowOf = (z: number) => {
@@ -607,6 +730,10 @@ export class SpillingCurl implements SpillingDrawnLook {
       return { z: at, level: best };
     };
     for (const wave of front.waves) {
+      // Each wave clears the shoulder ahead of its own front, the way it peels (an A-frame's arms apart), within its
+      // group's span (a beach arm's own, never on into the rip and the reef beyond it).
+      const direction = wave.direction ?? front.options.direction;
+      const span = wave.group > 0 ? front.groupOf(wave.group).span : undefined;
       // The crest at the front: the wave's own crest in the last columns it has reached, the highest water near it.
       const frontColumn = Math.round((wave.frontX - xCenters[0]) / dx);
       let crestZ = Number.NaN;
@@ -624,6 +751,7 @@ export class SpillingCurl implements SpillingDrawnLook {
       for (let d = 1; d <= reach; d += 1) {
         const c = frontColumn + direction * d;
         if (c < first || c >= last) break;
+        if (span && (xCenters[c] < span.from || xCenters[c] > span.to)) break;
         const crest = highest(c, crestZ, curl.shoulderTrack);
         if (!(crest.level - restLevel >= crestLevel)) break;
         crestZ = crest.z;
@@ -655,7 +783,12 @@ export class SpillingCurl implements SpillingDrawnLook {
    * as far as its whitewater is drawn (`shoulderAir`); elsewhere all of it, so a developed bore draws its air as before.
    */
   airShare(cell: number, foam: number): number {
-    const age = this.age[cell % this.grid.nx];
+    return this.airShareAt(cell % this.grid.nx, cell, foam);
+  }
+
+  /** `airShare` with the cell's column already known (the snapshot's pass over the cells, row by row). */
+  airShareAt(column: number, cell: number, foam: number): number {
+    const age = this.age[column];
     const shoulder = this.shoulderAir[cell];
     if (!(age === age)) return shoulder;
     return Math.min(shoulder, Math.max(0, foam / SPILLING_CURL.airFoam));

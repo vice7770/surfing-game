@@ -1,0 +1,117 @@
+diff --git a/src/physics/PhysicalSurfWater.ts b/src/physics/PhysicalSurfWater.ts
+index 013f8ce3..d25332da 100644
+--- a/src/physics/PhysicalSurfWater.ts
++++ b/src/physics/PhysicalSurfWater.ts
+@@ -468,6 +468,8 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
+   private inWall = false;
+   /** The solver's surface at this sample (`unionContact`), m: the wall water's blend (`sweptBlend`) reads it. */
+   private plainY = Number.NaN;
++  /** RULING-6 PROBE (not for commit): the wall water's inputs at the last sample. */
++  debug: Record<string, number> | null = null;
+ 
+   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
+     super(solver, options.nodeSpacing ?? 1, options);
+@@ -566,6 +568,7 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
+     out.wet = depth > WET;
+     this.surface(x, z, out);
+     const contact = swept !== undefined && swept.query(x, y, z, this.hit);
++    if (this.debug) { this.debug.near = 0; this.debug.w = 0; }
+     this.inWall = false;
+     // The surface's rise rate (continuity), m/s: found here when the sample's time needs it, else with the flow below.
+     let rise = Number.NaN;
+@@ -628,6 +631,18 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
+     out.flowZ = w * horizontal;
+     out.flowY = rise * vertical;
+     if (roller && roller.lensAt(x, z, this.lens)) applyLens(out, y, this.lens, roller.options.voidMean, u, w, this.options.froth !== 'old');
++    if (this.debug) {
++      const d = this.debug;
++      const k = this.hit;
++      d.bx = out.flowX; d.by = out.flowY; d.bz = out.flowZ; d.y = y; d.plainY = this.plainY; d.sy = out.surfaceY;
++      d.branch = contact && out.waterFloorY !== undefined ? 2 : this.inWall ? 1 : 0;
++      d.contact = contact ? 1 : 0; d.inWater = contact && k.inWater ? 1 : 0;
++      d.floorY = out.waterFloorY ?? Number.NaN; d.ceilY = out.ceilingY ?? Number.NaN; d.hitY = contact ? k.surfaceY : Number.NaN;
++      d.nx = k.normalX; d.ny = k.normalY; d.nz = k.normalZ; d.al = k.wallAlong; d.up = k.wallUp; d.seam = k.seam ?? Number.NaN;
++      d.tx = k.tangentX; d.tz = k.tangentZ; d.low = k.wallLow; d.top = k.wallTop; d.speed = k.wallSpeed; d.b = k.wallB; d.weight = k.wallWeight;
++      d.nd = k.normalDepth; d.life = k.life;
++      d.lipShare = k.lipShare; d.lipWeight = k.lipWeight; d.lvx = k.lipVX; d.lvy = k.lipVY; d.lvz = k.lipVZ;
++    }
+     if (contact && out.waterFloorY !== undefined) this.lipFlow(out);
+     else if (this.inWall) this.wallFlow(out, y);
+     if (this.options.sweptInertia && this.inWall) out.wallWater = true;
+@@ -859,6 +874,12 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
+       const clear = y - this.plainAtSampleTime(hit.aheadX, hit.aheadZ);
+       w *= Math.min(1, Math.max(0, clear / NEAREST.blend));
+     }
++    if (this.debug) {
++      const d = this.debug;
++      d.near = 1; d.w = w; d.pnx = hit.normalX; d.pny = hit.normalY; d.pnz = hit.normalZ; d.pal = hit.wallAlong; d.pup = hit.wallUp;
++      d.pseam = hit.seam ?? Number.NaN; d.anx = hit.aheadNormalX; d.any = hit.aheadNormalY; d.anz = hit.aheadNormalZ; d.aal = hit.aheadAlong;
++      d.aup = hit.aheadUp; d.aseam = hit.aheadSeam ?? Number.NaN; d.vd = hit.verticalDepth; d.ad = hit.aheadDepth;
++    }
+     let nx = hit.normalX + w * (hit.aheadNormalX - hit.normalX);
+     let ny = hit.normalY + w * (hit.aheadNormalY - hit.normalY);
+     let nz = hit.normalZ + w * (hit.aheadNormalZ - hit.normalZ);
+@@ -927,6 +948,11 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
+       seam = Math.min(1, h.seam);
+       if (!(seam > 0)) return;
+     }
++    // RULING-6 PROTOTYPE (not for commit): the streamline flow in place of the kinematic + along-ray target.
++    if (R6_STREAM) {
++      streamWallFlow(out, out.surfaceY, h, seam);
++      return;
++    }
+     if (!this.options.sweptBlend) {
+       wallWaterFlow(out, y, h, seam);
+       return;
+@@ -1064,6 +1090,37 @@ export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
+  */
+ export const WALL_WATER = { steepest: 0.2, fade: [0.3, 0.6], blend: 0.25, facing: [0.5, 0.8] } as const;
+ 
++const R6_STREAM = typeof process !== 'undefined' && process.env?.R6 === 'stream';
++
++/**
++ * RULING-6 PROTOTYPE: in the frame moving with the wave (c along the ray) the surface is a streamline and
++ * q² = q_c² + 2 g (y_top − y_surface), q_c = (1 − B) c at the crest; the lab flow is c r̂ + q t̂, t̂ = (−n_y, n_a) (back
++ * over the crest, up the face, forward along a roof): along = c − q n_y, up = q n_a.
++ */
++export function streamWallFlow(
++  out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, surfaceY: number,
++  wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>,
++  share = 1,
++): void {
++  const rx = -wall.tangentZ;
++  const rz = wall.tangentX;
++  const along = out.flowX * rx + out.flowZ * rz;
++  let na = wall.normalX * rx + wall.normalZ * rz;
++  let ny = wall.normalY;
++  const length = Math.sqrt(na * na + ny * ny);
++  if (!(length > 1e-9)) return;
++  na /= length;
++  ny /= length;
++  const c = wall.wallSpeed;
++  const qc = (1 - wall.wallB) * c;
++  const q = Math.sqrt(qc * qc + 2 * 9.81 * Math.max(0, wall.wallTop - surfaceY));
++  const w = Math.min(1, Math.max(0, wall.wallWeight)) * share;
++  const change = w * (c - q * ny - along);
++  out.flowX += change * rx;
++  out.flowZ += change * rz;
++  out.flowY += w * (q * na - out.flowY);
++}
++
+ export function wallWaterFlow(
+   out: Pick<WaterSample, 'flowX' | 'flowY' | 'flowZ'>, y: number,
+   wall: Pick<ContactHit, 'normalX' | 'normalY' | 'normalZ' | 'tangentX' | 'tangentZ' | 'wallAlong' | 'wallUp' | 'wallLow' | 'wallTop' | 'wallSpeed' | 'wallB' | 'wallWeight'>
+diff --git a/src/wave/barrel/crashCurve.ts b/src/wave/barrel/crashCurve.ts
+index cc08db4e..415b084b 100644
+--- a/src/wave/barrel/crashCurve.ts
++++ b/src/wave/barrel/crashCurve.ts
+@@ -471,7 +471,8 @@ export class CrashCurve {
+       // The drawn crest's speed along its ray (its case's crest's place, W = S·n + δ, step to step), and the ray. Under the
+       // tracker (ruling 3, §1) its rate is the tracker's estimate (`trackAnchor`), not W's change in one step, which carried
+       // the read's noise into the wall water: 0.12 m a step of jitter is a 7.2 m/s change in that rate.
+-      p.wallSpeed = p.anchorRate ?? celerity;
++      // RULING-6 PROTOTYPE (not for commit): R6C=pace, the wave's own advance, not the drawn crest's step-to-step rate.
++      p.wallSpeed = process.env?.R6C === 'pace' ? celerity : p.anchorRate ?? celerity;
+       p.anchorRayX = this.faceRayX[i];
+       p.anchorRayZ = this.faceRayZ[i];
+       if (!continuity) continue;

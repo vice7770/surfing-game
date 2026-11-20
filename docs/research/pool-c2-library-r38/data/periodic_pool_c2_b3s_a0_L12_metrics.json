@@ -1,0 +1,37 @@
+{
+ "run": "/private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/c2runs2/tools/basilisk/runs/c2/periodic_pool_c2_b3s_a0_L12",
+ "t_vertical": 27.075,
+ "t_impact": 27.85,
+ "timing": "plunge_measure.py: the local trough as the water level, the crest looked for at x >= XMIN, touchdown = first enclosed tube, the frame before it with the jet >= 3 cells off the face",
+ "at_vertical": {
+  "crest_m": 0.6968399999999999,
+  "x_m": 169.6095,
+  "trough_m": -0.58475,
+  "H_m": 1.28159
+ },
+ "pre_touchdown": {
+  "t": 27.8,
+  "crest_m": 0.783115,
+  "trough_m": -0.4659095,
+  "H_m": 1.2490245,
+  "jet_m2": 0.27257393524049434,
+  "tube_m2": 0.17154320099996845,
+  "tube_L_m": 0.8514296209084233,
+  "tube_W_m": 0.357472849811451,
+  "L/W": 2.3818022022022367,
+  "tilt_deg": 50.94126901876841,
+  "lip_m": 0.32013677765835136,
+  "lip_cells": 4.097750754026897,
+  "per H at touchdown": {
+   "jet": 0.1747199149885811,
+   "tube": 0.10995920600089294,
+   "lip": 0.2563094460183538
+  },
+  "per H at vertical": {
+   "jet": 0.16595338076945096,
+   "tube": 0.10444202644996305,
+   "lip": 0.2497965633770171
+  },
+  "open_s": 0.553289210134239
+ }
+}

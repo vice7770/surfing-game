@@ -1,0 +1,10 @@
+periodic-pool-c2-b1-a1-l12: worst relative 0.00046, worst absolute 0.000469
+periodic-pool-c2-b1-a2-l12: worst relative 0.00047, worst absolute 0.000484
+periodic-pool-c2-b1-a3-l12: worst relative 0.00047, worst absolute 0.000484
+periodic-pool-c2-b2-a1-l12: worst relative 0.00046, worst absolute 0.000461
+periodic-pool-c2-b2-a2-l12: worst relative 0.00047, worst absolute 0.000484
+periodic-pool-c2-b2-a3-l12: worst relative 0.00047, worst absolute 0.000938
+periodic-pool-c2-b3-a1-l12: worst relative 0.00046, worst absolute 0.000477
+periodic-pool-c2-b3-a2-l12: worst relative 0.00047, worst absolute 0.000484
+periodic-pool-c2-b3-a3-l12: worst relative 0.00047, worst absolute 0.000484
+ALL: pairs 277566, worst relative 0.00047 (periodic-pool-c2-b1-a2-l12), worst absolute 0.000938 sqrt(g h0), NaN mismatches 0

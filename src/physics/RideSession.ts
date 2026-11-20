@@ -1,10 +1,13 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { AttachedRider, type RiderPhase, type RiderSeparation } from './AttachedRider';
 import { BoardBody } from './BoardBody';
+import type { BoardShape } from './boardShape';
 import { BoardRecovery } from './BoardRecovery';
 import { DetachedSurfer, type LipParcelSource } from './DetachedSurfer';
+import { DuckingBody } from './duckingBody';
 import { BREATH, Breath } from './Breath';
 import { Leash } from './Leash';
+import { PaddleReserve } from './PaddleReserve';
 import { boundsPush, type RiderBounds } from './riderBounds';
 import { RIDER_PARTS, deckHeight, type StanceName } from './riderPosture';
 import { createWaterSample, type SurfWater } from './SurfWater';
@@ -19,6 +22,11 @@ export const REEF_STRIKE_WINDOW = 0.6;
 
 export interface RideInput {
   paddle: boolean;
+  /**
+   * Lying down, the sprint paddle: the paddle double-pressed and held (`SprintPress`, the owner's choice of
+   * 2026-10-22). It sprints while the reserve allows (`PaddleReserve`); otherwise, and without it, the paddle cruises.
+   */
+  sprint?: boolean;
   popUp: boolean;
   /** −1 (right) to 1 (left). Lying down it turns the swimmer; standing it shifts weight onto a rail. */
   steer: number;
@@ -28,11 +36,17 @@ export interface RideInput {
   crouch?: number;
   /** Standing, Compress selects the sharp-turn stance, easing out a deeper tube tuck; weight stays the trim's. */
   compress?: number;
+  /**
+   * Standing, Snap (the snap stance, 2026-11-03): 0 to 1, held. The weight on the tail, the back knee deep, the shoulders
+   * turning toward the steer: with a full steer, the snap off the top. It wins over the crouch, Compress and the trim.
+   */
+  snap?: number;
   /** Standing, the wave-side hand in the water. */
   hand?: boolean;
   /**
    * Standing, the upper body's rotation asked for (the movement-flow spec): −1 (right) to 1 (left), as `steer`,
-   * the way the rider looks. Undefined, the body turns with the ride by itself (the keyboard and touch).
+   * the way the rider looks. Undefined, the body turns with the ride by itself: every device since the pad's right
+   * stick across went to the camera (the owner, 2026-10-22); kept for the twist's next input.
    */
   rotate?: number;
   /** Lying down or swimming, the Duck-dive action: 0 to 1 (analog). */
@@ -71,7 +85,165 @@ export interface RiderPlacement {
 
 export interface RideSessionOptions {
   stance?: StanceName;
+  /** How the paddler's hands meet water outrunning them (`AttachedRiderOptions.stroke`; 'old': the `?stroke=old` dev switch). */
+  stroke?: 'feather' | 'old';
+  /**
+   * Back to the board after a wipeout (swim-back, 2026-10-29): by default the reel brings the board's tail to the hand
+   * and the swimmer climbs on from where the body is (`BoardRecovery`, `AttachedRider.climbFrom`); 'old' (the
+   * `?swim=old` dev switch): the reel to the ankle and the springs' pull, as before.
+   */
+  swim?: 'old';
+  /**
+   * Letting Compress go (compress-exit, 2026-10-29): by default the legs extend no faster than the stance's spring can
+   * catch the body (`AttachedRiderOptions.extension`); 'old' (the `?extension=old` dev switch): at their full pace.
+   */
+  extension?: 'old';
+  /**
+   * The duck-dive's two bodies (duck-two-body, 2026-10-31; `docs/research/duck-dive-2026-10-31/two-body-plan.md`): by
+   * default the board meets the water as a submerged plate under water (`BoardBodyOptions.submerged`), and the ducking
+   * rider is the swimmer's own body held to the rails; 'old' (the `?duckBody=old` dev switch): as before.
+   */
+  duckBody?: 'old';
+  /**
+   * The snap stance (2026-11-03): 'off' (the `?snap=off` dev switch, for A/Bs) ignores Snap's input, so the rider rides as
+   * before it.
+   */
+  snap?: 'off';
+  /**
+   * Snap at full effort (snap-quick, 2026-11-05; `AttachedRiderOptions.snapQuick`): by default the shoulders and the weight
+   * go onto the tail as fast as the body can take them while Snap is held; 'old' (the `?snapQuick=old` dev switch) at the
+   * balance's calm pace, as before.
+   */
+  snapQuick?: 'old';
+  /**
+   * Snap leaning for its own turn (snap-lean, 2026-11-05; `AttachedRiderOptions.snapPivot`), opt-in: 'lean' (the
+   * `?snapPivot=lean` dev switch) lets a full steer under Snap lean up to 70°; by default the steer's 50°, as before.
+   */
+  snapPivot?: 'lean';
+  /**
+   * After Snap (snap-recentre, 2026-11-06; `AttachedRiderOptions.snapRecentre`): by default the weight is centred again
+   * when Snap is let go; 'old' (the `?snapRecentre=old` dev switch) leaves it over the tail, as before.
+   */
+  snapRecentre?: 'old';
+  /**
+   * Snap turning up the face (snap-upturn, 2026-11-08; `AttachedRiderOptions.snapUpturn`): with `snapPivot: 'lean'`, by
+   * default it asks for the steer's rail; 'old' (the `?snapUpturn=old` dev switch) leans as far as a top turn, as before.
+   */
+  snapUpturn?: 'old';
+  /**
+   * Snap's deeper load (snap-carve, 2026-11-08; `AttachedRiderOptions.snapDepth`): 'deep' (the `?snapDepth=deep` dev
+   * switch) loads Snap's legs to the tube tuck's 0.45 m; by default as deep as Compress, as before.
+   */
+  snapDepth?: 'deep';
+  /**
+   * Snap's stamp (snap-stamp, 2026-11-08; `AttachedRiderOptions.snapStamp`): 'on' (the `?snapStamp=on` dev switch) makes
+   * a full steer under Snap stamp the weight past the tail for a moment, then back over the fins; by default as before.
+   */
+  snapStamp?: 'on';
+  /** The agile legs (rider-agile, 2026-11-09; `AttachedRiderOptions.agile`): 'on' (the `?agile=on` dev switch); by default as before. */
+  agile?: 'on';
+  /** The leg drive (leg-drive, 2026-11-10; `AttachedRiderOptions.legDrive`): 'on' (the `?legDrive=on` dev switch), or 'turn', which adds the compressed turn's lead-in (step 3.2t, `?legDrive=turn`); by default as before. */
+  legDrive?: 'on' | 'turn';
+  /** The hull's cross-section (step 3.2u; `BoardBodyOptions.hull`): 'rail' gives the board a real rail band and its suction (the `?hull=rail` dev switch). */
+  hull?: 'rail';
+  /** The band's suction alone, off (step 3.2u; `BoardBodyOptions.railSuction`): the section's geometry without the grip (`?railSuction=off`). */
+  railSuction?: 'off';
+  /** COMPRESS_PULL deleted (step 3.2u; `AttachedRiderOptions.compressPull`): the compressed turn's unpaired pull, gone, with nothing in its place (`?compressPull=off`). */
+  compressPull?: 'off';
+  /** The carve's flexing legs (carve-flex, 2026-11-10; `AttachedRiderOptions.carveFlex`): 'on' (the `?carveFlex=on` dev switch); by default as before. */
+  carveFlex?: 'on';
+  /** Snap's driving legs (snap-legs, 2026-11-10; `AttachedRiderOptions.snapLegs`): 'drive' (the `?snapLegs=drive` dev switch); by default as before. */
+  snapLegs?: 'drive';
+  /** Snap's rail change (snap-cross, 2026-11-10; `AttachedRiderOptions.snapCross`): 'on' (the `?snapCross=on` dev switch); by default as before. */
+  snapCross?: 'on';
+  /** The legs' power limit (ruling 27's A-lite, 2026-11-12; `AttachedRiderOptions.legPower`): 'cap' (the `?legPower=cap` dev switch); by default as before. */
+  legPower?: 'cap';
+  /** The new surfer (docs/research/new-rider; `AttachedRiderOptions.rider`): 'new' (the `?rider=new` dev switch); by default the old rider. */
+  rider?: 'new';
+  /** The felt vertical's low-pass frame (step 3.3c; `AttachedRiderOptions.feltFrame`): 'deck' (the `?feltFrame=deck` dev switch); by default the world. */
+  feltFrame?: 'deck';
+  /** Which depth the knees' travel is read at (step 3.3f; `AttachedRiderOptions.kneeRoom`): 'achieved' (the `?kneeRoom=achieved` dev switch); by default the depth commanded. */
+  kneeRoom?: 'achieved';
+  /** A deep crouch keeps the riding stance's hip range and free arms (step 3.3h; `AttachedRiderOptions.stanceReach`): 'keep' (the `?stanceReach=keep` dev switch); by default the stance's own. */
+  stanceReach?: 'keep';
+  /** The ankle's torque bounded by the moment the soles can transmit (step 3.3i; `AttachedRiderOptions.ankleLimit`): 'feet' (the `?ankleLimit=feet` dev switch); by default unbounded, as it always was. */
+  ankleLimit?: 'feet';
+  /** The bound on the rest the balance may command at the ankle (step 3.3k; `AttachedRiderOptions.ankleRange`): 'load' off the live sole or 'wide' doubled (the `?ankleRange=load|wide` dev switch); by default ANKLE_REST_RANGE's own 14.32°. */
+  ankleRange?: 'load' | 'wide';
+  /** Step 3.4i: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (`AttachedRiderOptions.bankClamp`): 'off' (the `?bankClamp=off` dev switch); by default MAX_BANK, as it always was. */
+  bankClamp?: 'off';
+  /** Step 3.5i: THE BODY BANKS WITH THE DECK (`AttachedRiderOptions.bodyBank`) — the hips throw the trunk on the capture point's own trigger and the contact's bound gains the rotor's angular momentum rate: 'hip' (the `?bodyBank=hip` dev switch); by default the contact's bound as it ships. */
+  bodyBank?: 'hip';
+  /** Step 3.5b, shipped by default since 3.5c (the owner's ruling D, "keep the row"): the stance ladder's fourth rung, the tube tuck's 0.45 m, read by the balance's plant and its gain schedule (`AttachedRiderOptions.stanceDeep`). 'off' (the `?stanceDeep=off` dev switch) is the old three-row ladder and `stanceAt`'s 0.30 m clamp. */
+  stanceDeep?: 'on' | 'off';
+  /** Step 3.5b: the deepen button — full manual crouch reaches the tuck's 0.45 m anywhere and Compress does not fade it (`AttachedRiderOptions.deepen`): 'on' (the `?deepen=on` dev switch); by default the tuck under a tube's curl only, as it always was. */
+  deepen?: 'on';
+  /** Step 3.5g: the arm carriage channel — the drawn standing hands get a height, a spread and a left/right of their own, answering the stick and never leg depth (`AttachedRiderOptions.armCarry`): 'on' the whole channel, 'rest' the rest carriage only (the `?armCarry=on|rest` dev switch). Drawing only; by default the shipped one-scalar spread. */
+  armCarry?: 'on' | 'rest';
+  /** Step 3.5h: the hip rotor folds the mass model's trunk and the rig draws that one trunk (`AttachedRiderOptions.trunk`): 'mass' (the `?trunk=mass` dev switch, with `?rider=new`); by default the mass model never folds. */
+  trunk?: 'mass';
+  /**
+   * Step 3.5a: the minimum carved radius the COMMANDED lean is bounded by, m (`AttachedRiderOptions.askCap`): '1.5',
+   * '2', '4', '4.5' or '9' — the `?askCap` dev switch — so the bound on both reference lines is `atan(v²/(g R_min))` at
+   * every speed. By default `TURN_RADIUS = 4.5 m` and **0 off the plane**, the cap the game has shipped since 2026-10.
+   */
+  askCap?: '1.5' | '2' | '4' | '4.5' | '9';
+  /**
+   * The water's own heel datum for the balance's internal model (step 3.3p; `AttachedRiderOptions.waterHeel`):
+   * 'tilt' reads the twelve captive derivatives' three heel coefficients at the board's heel against the **water**
+   * and hands the face's own tilt to the predictor as a measured input (the `?waterHeel=tilt` dev switch); by default
+   * they are read at the board's roll from the world's level, which is the angle the lab never measured.
+   */
+  waterHeel?: 'tilt' | 'predict' | 'ref';
+  /**
+   * The mount made to agree with its own argument (step 3.4e; `AttachedRiderOptions.mountAgree`): 'deck' places the
+   * standing body square to the deck at any entry speed instead of plumb to the world below `PLANING_SPEED`, 'felt'
+   * seeds the felt vertical's low pass at the face's own normal instead of the world's vertical, 'both' does both
+   * (the `?mountAgree` dev switch); by default the mount is the one that ships.
+   */
+  mountAgree?: 'deck' | 'felt' | 'both';
+  /**
+   * The two-body rider (step 3.4a; `AttachedRiderOptions.riderBody`): 'two' gives the rider's body an inertia of its
+   * own in the balance's internal plant, so the lateral accelerations are solved together and the force at the feet is
+   * an outcome rather than a substitution (the `?riderBody=two` dev switch); 'control' is the same assembly with that
+   * inertia at zero, which reproduces the shipped plant. By default the body is a point mass on a massless leg.
+   */
+  riderBody?: 'two' | 'control' | 'symmetric';
+  /**
+   * The cost function on the plant it is designed on (step 3.4b; `AttachedRiderOptions.riderCost`): it turns on the
+   * balance's two optional costs — the bank's cost as each stance's own limit and the capture point's rank-one cost,
+   * neither of which the shipped design has — with ω₀ the point mass's ('point', the control), the body's own with its
+   * feet held ('fixed') or the plant's own ('plant'); the `?riderCost` dev switch. By default neither cost exists.
+   */
+  riderCost?: 'point' | 'fixed' | 'plant';
+  /**
+   * The lowest row of the balance's plant table the design may be built on, m/s (step 3.4m;
+   * `AttachedRiderOptions.plantFloor`): '4.5', '5' or '6', each a row the lab measured — the `?plantFloor` dev switch.
+   * By default the table's own first speed, 4, so every design at or below 4 m/s reads row '4', the table's own
+   * sign-turnover row.
+   */
+  plantFloor?: '4.5' | '5' | '6';
+  /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
+  buoyFrame?: 'hull';
+  /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
+  deckHollow?: 'on';
+  /** The board's shape (the reference board by default; tests dive bigger boards). */
+  shape?: BoardShape;
 }
+
+/**
+ * After a two-body duck-dive, the rider lies back on the board (`climbFrom`, from where the body is) once the deck is
+ * within DUCK_BACK_DEPTH m of the surface (the body on it holds the pair deeper than the rigid prone rider's 13 cm), its
+ * normal within about 35° of up (DUCK_BACK_UP), turning slowly, and the chest over it, within DUCK_BACK_CHEST
+ * m above the deck; not so within DUCK_SURFACE_WAIT s of letting go, the swimmer holds the board as after a fall
+ * (provisional).
+ */
+const DUCK_BACK_DEPTH = 0.45;
+const DUCK_BACK_CHEST = 0.45;
+const DUCK_BACK_UP = 0.82;
+/** ...and turning slower than this, rad/s: lain on rolling fast, the pair kept rolling. */
+const DUCK_BACK_RATE = 1.5;
+const DUCK_SURFACE_WAIT = 6;
 
 /**
  * One board and its rider through a ride and its aftermath (board plan B2, surfer
@@ -83,17 +255,21 @@ export interface RideSessionOptions {
  * detached surfer (sample, integrate, board contact).
  */
 export class RideSession {
-  readonly board = new BoardBody();
+  readonly board: BoardBody;
   readonly rider: AttachedRider;
   readonly surfer = new DetachedSurfer();
   /** The fallen surfer's grab on the board, pulling them back onto it (surfer plan S3). */
-  readonly recovery = new BoardRecovery(this.surfer);
+  readonly recovery: BoardRecovery;
+  /** 'old': back on the board as before swim-back (`RideSessionOptions.swim`). */
+  private readonly swimOld: boolean;
   /** The latest climb back on: the swimmer's and board's linear momentum just before, the mounted pair's after (N·s), and how many so far. */
   readonly remount = { before: new Vector3(), after: new Vector3(), count: 0 };
   /** The leash, from the back-foot ankle to the tail plug; a new one at each placement. */
   readonly leash = new Leash();
   /** The breath the surfer holds under water (the wipeout spec, Part B); a new one at each placement. */
   readonly breath = new Breath();
+  /** The sprint paddle's reserve (`PaddleReserve`): the surfer's own, kept through falls; a full one at each placement (a new session, a retry). */
+  readonly reserve = new PaddleReserve();
   private readonly plugLocal = new Vector3();
   private readonly ankle = new Vector3();
   private readonly plug = new Vector3();
@@ -102,12 +278,23 @@ export class RideSession {
   private readonly held = { x: 0, z: 0 };
   private readonly heldCenter = new Vector3();
   private readonly heldMomentum = new Vector3();
+  private readonly climbParts = new Float64Array(RIDER_PARTS.length * 3);
   private readonly sample = createWaterSample();
   /** The state the fall body started from, at the latest separation: the rider's centre of mass, frame, motion and parts. */
   readonly handoff = {
     center: new Vector3(), orientation: new Quaternion(), velocity: new Vector3(), angularVelocity: new Vector3(),
     parts: new Float64Array(RIDER_PARTS.length * 3),
   };
+  /**
+   * In the two-body duck-dive (duck-two-body, `DuckingBody`): the rider is the swimmer's own body held to the board's
+   * rails (`surfer`), the rigid rider set aside, still counted on the board (`rider.attached`, prone).
+   */
+  ducking = false;
+  readonly duckBody = new DuckingBody();
+  /** 'old' (`?duckBody=old`): the duck-dive is the rigid rider's posture, as before. */
+  private readonly duckOld: boolean;
+  /** 'off' (`?snap=off`): Snap's input is ignored. */
+  private readonly snapOff: boolean;
   /** The fall body's linear momentum and centre of mass as it started, for continuity checks. */
   readonly started = { momentum: new Vector3(), center: new Vector3() };
   private field?: SurfWaterBodyField;
@@ -116,7 +303,49 @@ export class RideSession {
   private fieldWater?: SurfWater;
 
   constructor(options: RideSessionOptions = {}) {
-    this.rider = new AttachedRider(this.board.shape, { stance: options.stance });
+    this.board = new BoardBody({
+      ...(options.shape ? { shape: options.shape } : {}), ...(options.duckBody === 'old' ? { submerged: 'old' as const } : {}),
+      ...(options.deckHollow ? { deckHollow: options.deckHollow } : {}),
+      ...(options.hull ? { hull: options.hull } : {}), ...(options.railSuction ? { railSuction: options.railSuction } : {}),
+      ...(options.buoyFrame ? { buoyFrame: options.buoyFrame } : {}),
+    });
+    this.duckOld = options.duckBody === 'old';
+    this.snapOff = options.snap === 'off';
+    this.rider = new AttachedRider(this.board.shape, {
+      stance: options.stance, ...(options.stroke ? { stroke: options.stroke } : {}), ...(options.extension ? { extension: options.extension } : {}),
+      ...(options.snapQuick ? { snapQuick: options.snapQuick } : {}), ...(options.snapPivot ? { snapPivot: options.snapPivot } : {}),
+      ...(options.snapRecentre ? { snapRecentre: options.snapRecentre } : {}), ...(options.snapDepth ? { snapDepth: options.snapDepth } : {}),
+      ...(options.snapStamp ? { snapStamp: options.snapStamp } : {}),
+      ...(options.agile ? { agile: options.agile } : {}),
+      ...(options.legDrive ? { legDrive: options.legDrive } : {}),
+      ...(options.compressPull ? { compressPull: options.compressPull } : {}),
+      ...(options.carveFlex ? { carveFlex: options.carveFlex } : {}),
+      ...(options.snapLegs ? { snapLegs: options.snapLegs } : {}),
+      ...(options.snapCross ? { snapCross: options.snapCross } : {}),
+      ...(options.legPower ? { legPower: options.legPower } : {}),
+      ...(options.rider ? { rider: options.rider } : {}),
+      ...(options.feltFrame ? { feltFrame: options.feltFrame } : {}),
+      ...(options.kneeRoom ? { kneeRoom: options.kneeRoom } : {}),
+      ...(options.stanceReach ? { stanceReach: options.stanceReach } : {}),
+      ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
+      ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
+      ...(options.bankClamp ? { bankClamp: options.bankClamp } : {}),
+      ...(options.bodyBank ? { bodyBank: options.bodyBank } : {}),
+      ...(options.askCap ? { askCap: options.askCap } : {}),
+      ...(options.stanceDeep ? { stanceDeep: options.stanceDeep } : {}),
+      ...(options.deepen ? { deepen: options.deepen } : {}),
+      ...(options.armCarry ? { armCarry: options.armCarry } : {}),
+      ...(options.trunk ? { trunk: options.trunk } : {}),
+      ...(options.waterHeel ? { waterHeel: options.waterHeel } : {}),
+      ...(options.mountAgree ? { mountAgree: options.mountAgree } : {}),
+      ...(options.riderBody ? { riderBody: options.riderBody } : {}),
+      ...(options.riderCost ? { riderCost: options.riderCost } : {}),
+      ...(options.plantFloor ? { plantFloor: options.plantFloor } : {}),
+      ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
+    });
+    this.swimOld = options.swim === 'old';
+    this.recovery = new BoardRecovery(this.surfer, this.swimOld ? { swim: 'old' } : {});
+    this.surfer.crawlAtSurface = !this.swimOld;
     const tail = -this.board.shape.length / 2 + PLUG_FROM_TAIL;
     this.plugLocal.set(0, deckHeight(this.board.shape, tail), tail);
   }
@@ -136,6 +365,12 @@ export class RideSession {
 
   get phase(): RiderPhase | 'fallen' {
     return this.rider.attached ? this.rider.phase : 'fallen';
+  }
+
+  /** The duck-dive's press, 0–1: the two-body dive's arms, or the rigid rider's posture (`?duckBody=old`); 0 off the board. */
+  get duckPress(): number {
+    if (this.ducking) return this.duckBody.press.value;
+    return this.rider.attached ? this.rider.duck.press : 0;
   }
 
   get separation(): RiderSeparation | undefined {
@@ -176,16 +411,18 @@ export class RideSession {
     }
     this.board.place(new Vector3(at.x, surface + this.board.shape.centerOfMass.y - 0.05, at.z), orientation, velocity);
     this.rider.phase = placement.phase;
+    this.ducking = false;
     this.board.attach(this.rider);
     this.surfer.active = false;
     this.recovery.release();
     this.leash.reset();
     this.breath.reset();
+    this.reserve.reset();
   }
 
   /** The drawn body's seven points (pelvis, torso, head, hands, feet), riding or fallen. */
   renderPoint(index: number, out: Vector3): Vector3 {
-    return this.rider.attached ? this.rider.renderPoint(index, this.board, out) : this.surfer.getPartPosition(RIDER_PARTS[index], out);
+    return this.rider.attached && !this.ducking ? this.rider.renderPoint(index, this.board, out) : this.surfer.getPartPosition(RIDER_PARTS[index], out);
   }
 
   /** Which way the body faces, radians from +z toward +x. */
@@ -212,18 +449,33 @@ export class RideSession {
     const wasAttached = rider.attached;
     if (rider.attached) {
       rider.paddle = input.paddle;
+      rider.paddleSprint = (input.sprint ?? false) && this.reserve.available;
       rider.steer = input.steer;
       rider.trim = input.trim ?? 0;
       rider.crouch = input.crouch ?? 0;
       rider.compress = input.compress ?? 0;
+      rider.snap = this.snapOff ? 0 : input.snap ?? 0;
       rider.rotate = input.rotate ?? Number.NaN;
       rider.hand = input.hand ?? false;
       rider.duckDive = input.duckDive ?? 0;
       // The pop-up key stands the rider up, or lies it back down (the playtest: only the player lies it down).
       if (input.popUp && !(rider.phase === 'standing' && rider.lieDown(board))) rider.popUp();
     }
+    // The two-body duck-dive begins lying on the board (not mid-climb): the body becomes its own, held to the rails.
+    if (!this.duckOld && !this.ducking && rider.attached && rider.phase === 'prone' && !rider.climbingOn && (input.duckDive ?? 0) > 0.3) {
+      this.beginDucking();
+    }
+    const sprinting = rider.sprintPaddling;
+    // The board meets the water as a submerged plate only in the two-body duck-dive (`BoardBody.plateAllowed`): a free board
+    // after a fall, one the swimmer holds and one with the rigid rider on it keep the hull law their falls, holds and
+    // climbs were calibrated on.
+    board.plateAllowed = this.ducking;
     board.step(dt, water);
-    if (rider.attached) {
+    // The reserve drains while the rider sprint-paddles, and refills at anything else, on the board or off it.
+    this.reserve.step(dt, sprinting);
+    if (this.ducking) {
+      this.stepDucking(dt, water, input);
+    } else if (rider.attached) {
       // On the board the breath comes back, and the cord hangs slack.
       this.breath.step(dt, false, BREATH.relaxed);
       this.leash.tension = 0;
@@ -234,7 +486,7 @@ export class RideSession {
       surfer.linearMomentum(this.started.momentum);
       surfer.centerOfMass(this.started.center);
     }
-    if (surfer.active) {
+    if (surfer.active && !this.ducking) {
       // Diving lets go of a held board (the leash keeps it).
       if ((input.duckDive ?? 0) > 0.3 && this.recovery.state !== 'free') this.recovery.release();
       surfer.step(dt, this.bodyField(water), { stroke: input.paddle, steer: input.steer, dive: input.duckDive ?? 0 });
@@ -243,13 +495,98 @@ export class RideSession {
       this.breath.step(dt, surfer.underwater, working ? BREATH.working : BREATH.relaxed);
       surfer.resolveBoardContact(board);
       const back = surfer.nodes[this.rider.stance === 'regular' ? 6 : 5];
-      this.leash.step(dt, this.leashAnkle(this.ankle), back, this.leashPlug(this.plug), board, input.reel ?? false);
+      this.leashPlug(this.plug);
+      if (!this.swimOld && (input.reel ?? false) && this.recovery.state === 'free') {
+        // Hand over hand, the cord comes in through the hand nearer the board: its tail comes to the hand.
+        const hand = this.reelingHand(this.plug);
+        this.leash.step(dt, hand.position, hand, this.plug, board, true, 'hand');
+      } else {
+        this.leash.step(dt, this.leashAnkle(this.ankle), back, this.plug, board, this.swimOld ? (input.reel ?? false) : false);
+      }
       // In the water, the pop-up input reaches for the board, and holding it reels the leash in; within reach
       // the grab pulls the body onto it.
       if ((input.popUp || input.reel) && this.recovery.state === 'free') this.recovery.tryGrab(board);
-      if (this.recovery.state !== 'free' && this.recovery.step(dt, board) === 'prone-ready') this.climbOn();
+      const recovered = this.recovery.state !== 'free' ? this.recovery.step(dt, board) : 'free';
+      if (recovered === 'prone-ready') this.climbOn();
+      else if (recovered === 'climb-ready') this.climbOn(true);
     }
     if (wasAttached && !rider.attached) this.reefCause();
+  }
+
+  /**
+   * Into the two-body duck-dive: the swimmer's body starts from the rigid rider's, its parts where they are, moving as
+   * they were (the fall's own hand-over, `handoffState`), the board left to the water and the hands.
+   */
+  private beginDucking(): void {
+    const { rider, board, surfer } = this;
+    surfer.start(rider.handoffState(this.handoff));
+    surfer.linearMomentum(this.started.momentum);
+    surfer.centerOfMass(this.started.center);
+    board.rider = undefined;
+    this.recovery.release();
+    this.duckBody.start();
+    this.ducking = true;
+  }
+
+  /**
+   * A step of the two-body duck-dive, after the board's: the body steps in the water and against the board, then the
+   * hands, arms and knee act between them (`DuckingBody`). It ends three ways: the hands lose the board (a fall, the body
+   * swimming on the leash); let go and come back up with the body over the deck and the board near the surface, the
+   * rider climbs back on from where the body is (`AttachedRider.climbFrom`, as after a swim); or let go and not up in
+   * `DUCK_SURFACE_WAIT` s, the swimmer holds the board as after a fall (`BoardRecovery`), to climb on when it can.
+   */
+  private stepDucking(dt: number, water: SurfWater, input: RideInput): void {
+    const { surfer, board, rider } = this;
+    surfer.step(dt, this.bodyField(water), { stroke: false, steer: 0, dive: 0 });
+    this.breath.step(dt, surfer.underwater, BREATH.working);
+    surfer.resolveBoardContact(board);
+    this.leash.tension = 0;
+    this.leash.reeling = false;
+    const back = rider.stance === 'regular' ? 6 : 5;
+    const lost = this.duckBody.step(dt, input.duckDive ?? 0, surfer, board, back);
+    if (lost) {
+      this.endDucking();
+      rider.release('balance');
+      return;
+    }
+    const { duckBody } = this;
+    if (duckBody.released <= 0 || duckBody.press.value > 0.05 || duckBody.knee.value > 0.05) return;
+    if (this.backOver(water)) {
+      this.endDucking();
+      this.climbOn(true);
+      return;
+    }
+    if (duckBody.released > DUCK_SURFACE_WAIT) {
+      this.endDucking();
+      rider.release('balance');
+      this.recovery.tryGrab(board);
+    }
+  }
+
+  private endDucking(): void {
+    this.ducking = false;
+    this.board.rider = this.rider;
+  }
+
+  /**
+   * Back over the board after a dive: its deck near the surface (within `DUCK_BACK_DEPTH` m at its middle), deck up,
+   * and the chest over it (above the deck, within its rails).
+   */
+  private backOver(water: SurfWater): boolean {
+    const { board, surfer } = this;
+    const deck = board.toWorld({ x: 0, y: deckHeight(board.shape, 0), z: 0 }, this.pelvis);
+    if (water.surfaceAt(deck.x, deck.z) - deck.y > DUCK_BACK_DEPTH) return false;
+    if (new Vector3(0, 1, 0).applyQuaternion(board.orientation).y < DUCK_BACK_UP || board.angularVelocity.length() > DUCK_BACK_RATE) return false;
+    const chest = board.toLocal(surfer.getPartPosition('torso', this.spinPart), this.heldCenter);
+    const above = chest.y - deckHeight(board.shape, chest.z);
+    return above > -0.05 && above < DUCK_BACK_CHEST && Math.abs(chest.x) < board.shape.maxWidth / 2 + 0.1
+      && Math.abs(chest.z) < board.shape.length / 2;
+  }
+
+  /** The swimmer's arm nearer the board's plug: the hand the cord comes in through. */
+  private reelingHand(plug: Vector3): (typeof this.surfer.nodes)[number] {
+    const [, , , left, right] = this.surfer.nodes;
+    return left.position.distanceToSquared(plug) <= right.position.distanceToSquared(plug) ? left : right;
   }
 
   /**
@@ -284,10 +621,19 @@ export class RideSession {
    * the pair moves on with the linear momentum the swimmer and board had
    * together (an inelastic join, like the fall's handoff in reverse).
    */
-  private climbOn(): void {
+  private climbOn(fromWater = false): void {
     const { board, rider, surfer, remount } = this;
     surfer.linearMomentum(remount.before).addScaledVector(board.velocity, board.mass);
-    rider.phase = 'prone';
+    if (fromWater) {
+      // Climbing on from where the body is (swim-back): the parts in `RIDER_PARTS` order, the fall body's own. Joined
+      // rigidly, the pair turns as the swimmer did: the light board's spin is a few hundredths of the pair's angular
+      // momentum (its own kept, it swung the heavy body round with it at the join).
+      for (let i = 0; i < RIDER_PARTS.length; i += 1) surfer.getPartPosition(RIDER_PARTS[i], this.pelvis).toArray(this.climbParts, i * 3);
+      rider.climbFrom(this.climbParts, board);
+      surfer.spin(board.angularVelocity);
+    } else {
+      rider.phase = 'prone';
+    }
     board.attach(rider);
     // Mounted, the body moves with the deck under it, spin included: share the momentum around that.
     const spin = this.spinPart.subVectors(rider.velocity, board.velocity);

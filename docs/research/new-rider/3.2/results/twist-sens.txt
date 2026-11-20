@@ -1,0 +1,21 @@
+The one law over 7-9 m/s (opt-79 in twist-search.jsonl): ankle 0.007, -0.021 s; twist bank 51.6 N·m/rad, bank rate 8.4,
+head yaw rate -7.2, twist -15 N·m/rad, twist rate +9.0 N·m·s/rad. Least damping, worst over tall and Compress, the
+roll inertia 0.03 and 0.3, gains x0.75 / x1 / x1.33, delay 0.1 / 0.125 / 0.15 s, by speed, against the twist's own
+stiffness KT (N·m/rad) and damping CT (N·m·s/rad). -1: a static divergence (the twist drifts: KT + the law's -15 < 0).
+PART=margins KT=.. CT=.. ANKLE=0.007,-0.021 LAW=51.563,8.438,-7.188,-15,8.999
+
+kt 5 ct 1 {5: -1, 7: -1, 9: -1}
+kt 5 ct 3 {5: -1, 7: -1, 9: -1}
+kt 5 ct 8 {5: -1, 7: -1, 9: -1}
+kt 10 ct 1 {5: -1, 7: -1, 9: -1}
+kt 10 ct 3 {5: -1, 7: -1, 9: -1}
+kt 10 ct 8 {5: -1, 7: -1, 9: -1}
+kt 20 ct 1 {5: -0.487, 7: -0.086, 9: -0.092}
+kt 20 ct 3 {5: -0.546, 7: 0.012, 9: 0.02}
+kt 20 ct 8 {5: -0.629, 7: -0.29, 9: 0.078}
+kt 40 ct 1 {5: -0.575, 7: -0.457, 9: -0.214}
+kt 40 ct 3 {5: -0.605, 7: -0.456, 9: -0.197}
+kt 40 ct 8 {5: -0.651, 7: -0.472, 9: -0.177}
+kt 80 ct 1 {5: -0.674, 7: -0.599, 9: -0.402}
+kt 80 ct 3 {5: -0.679, 7: -0.6, 9: -0.399}
+kt 80 ct 8 {5: -0.691, 7: -0.605, 9: -0.394}

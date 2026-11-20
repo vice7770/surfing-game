@@ -1,0 +1,21 @@
+Step 3.3b, the gain deficit split by source. One row a cell, twelve runs a cell, the whole pool of frames.
+Every number is a POOLED least-squares slope over every frame of the twelve runs in that cell: d(the deck-frame
+tilt)/d(the deck's roll), in degrees of tilt per degree of roll, so they add. 'measured' is the test's own
+tiltAcross on the roll; 'force' is the instantaneous in-plane water force's share; 'lag' is the rest, which is
+the 0.1 s low pass of the felt vertical against a rolling deck and is not a force at all.
+
+| cell                   | frames | measured |  force |    lag |   buoy |  press |   addM |   radn |   fins |  rails |    sum |
+|------------------------|--------|----------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+| 0 (shipped)            |    780 |    0.234 |  0.111 |  0.124 |  0.165 |  0.022 | -0.094 | -0.004 |  0.031 |  0.010 |  0.131 |
+| +0.25 into             |   2045 |    0.442 |  0.345 |  0.098 |  0.132 |  0.003 |  0.042 |  0.059 |  0.045 |  0.026 |  0.314 |
+| +0.5 into              |   1376 |    0.337 |  0.239 |  0.099 |  0.140 |  0.012 |  0.036 |  0.028 |  0.017 |  0.017 |  0.254 |
+| +1 into                |   1013 |    0.243 |  0.158 |  0.084 |  0.150 |  0.015 |  0.005 |  0.028 | -0.033 |  0.011 |  0.177 |
+| -0.25 against          |   2289 |    0.334 |  0.232 |  0.102 |  0.133 |  0.006 |  0.044 |  0.051 | -0.019 |  0.017 |  0.234 |
+| -0.5 against           |   2317 |    0.347 |  0.217 |  0.129 |  0.116 |  0.010 |  0.051 |  0.038 | -0.012 |  0.017 |  0.223 |
+| -1 against             |   2022 |    0.326 |  0.194 |  0.132 |  0.111 |  0.008 |  0.040 |  0.036 | -0.012 |  0.019 |  0.205 |
+| particle (stick 0)     |   1048 |    0.237 |  0.167 |  0.070 |  0.181 |  0.013 | -0.036 | -0.009 |  0.001 |  0.011 |  0.163 |
+| hull='rail' (stick 0)  |    532 |    0.499 |  0.478 |  0.020 |  0.153 |  0.149 | -0.011 |  0.072 |  0.063 |  0.000 |  0.427 |
+
+Reading the columns: 'measured' is the gain deficit (1 - the bank gain) taken on the DECK-frame tilt, which is
+not numerically the same as 3.3a's 1 - 0.768 taken on the world-frame feltWorld; both are published and the
+difference is the horizontal projection, not a disagreement. 'press' is the falsification column.

@@ -1,6 +1,8 @@
 import { Buffer } from 'node:buffer';
+import type { SpotName } from '../Bathymetry';
 import { describe, expect, it } from 'vitest';
 import { BARREL_CASES } from './barrelLibraryIndex';
+import { barrelCaseNote, type PoolTubeCase } from './barrelLibrary';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { sheetTablesLookup } from './lipSheet';
@@ -56,7 +58,8 @@ function equalResults(a: LoftResult, b: LoftResult): void {
       expect(Buffer.from(value.buffer, value.byteOffset, value.byteLength).equals(
         Buffer.from(view.buffer, view.byteOffset, view.byteLength),
       ), key).toBe(true);
-    } else expect(Object.is(value, other), key).toBe(true);
+    } else if (Array.isArray(value)) expect(other, key).toEqual(value);
+    else expect(Object.is(value, other), key).toBe(true);
   }
 }
 
@@ -188,10 +191,13 @@ describe('the clear-profile drawing hold', () => {
 
   it('keeps every shipped spot case finite at late-clear, touchdown and collapse clocks without changing contact or clock/fade authority', () => {
     const visited: string[] = [];
-    for (const spot of new Set(BARREL_CASES.map(entry => entry.spot))) {
+    // Each spot's drawn list; the Wave Pool's two (a38, its default since 2026-11-04, and its own, `?poolTubeCase=pool`).
+    const lists = [...new Set(BARREL_CASES.map(entry => entry.spot))]
+      .flatMap((spot): [SpotName, PoolTubeCase | undefined][] => (spot === 'pool' ? [[spot, 'a38'], [spot, 'pool']] : [[spot, undefined]]));
+    for (const [spot, poolTubeCase] of lists) {
       const rules = BARREL_SPOTS[spot];
       if (!rules) throw new Error(`The shipped barrel spot ${spot} has no loft configuration`);
-      const spotCases = readBarrelCases(spot).map(decodeCase);
+      const spotCases = readBarrelCases(spot, undefined, poolTubeCase).map(decodeCase);
       const spotLibrary = new ProfileLibrary(spotCases);
       for (const c of spotCases) {
         visited.push(c.id);
@@ -230,6 +236,7 @@ describe('the clear-profile drawing hold', () => {
         }
       }
     }
-    expect(visited.sort()).toEqual(BARREL_CASES.map(entry => entry.id).sort());
+    // Every case a spot draws (those kept but not drawn, `BARREL_CASE_NOTES`, aside).
+    expect([...new Set(visited)].sort()).toEqual(BARREL_CASES.filter(entry => !barrelCaseNote(entry.id)).map(entry => entry.id).sort());
   });
 });

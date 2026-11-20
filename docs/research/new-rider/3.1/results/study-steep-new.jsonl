@@ -1,0 +1,51 @@
+{"kind":"placed","angle":25,"heading":0,"fell":"","t":1.5,"legPowerPeakW":54,"boardAccelPeakG":1.3,"end":9.9}
+{"kind":"placed","angle":25,"heading":20,"fell":"","t":1.5,"legPowerPeakW":72,"boardAccelPeakG":1.4,"end":9.4}
+{"kind":"placed","angle":25,"heading":45,"fell":"balance","t":0.67,"legPowerPeakW":175,"boardAccelPeakG":3.1,"end":6.5}
+{"kind":"placed","angle":25,"heading":135,"fell":"balance","t":0.7,"legPowerPeakW":183,"boardAccelPeakG":1.9,"end":3.7}
+{"kind":"placed","angle":25,"heading":160,"fell":"balance","t":1,"legPowerPeakW":154,"boardAccelPeakG":1.3,"end":1.7}
+{"kind":"placed","angle":25,"heading":180,"fell":"","t":1.5,"legPowerPeakW":130,"boardAccelPeakG":1.4,"end":0.3}
+{"kind":"placed","angle":28,"heading":0,"fell":"","t":1.5,"legPowerPeakW":51,"boardAccelPeakG":1.3,"end":10.6}
+{"kind":"placed","angle":28,"heading":20,"fell":"","t":1.5,"legPowerPeakW":82,"boardAccelPeakG":1.5,"end":10.1}
+{"kind":"placed","angle":28,"heading":45,"fell":"lost board","t":0.52,"legPowerPeakW":126,"boardAccelPeakG":2.8,"end":5.7}
+{"kind":"placed","angle":28,"heading":135,"fell":"balance","t":0.62,"legPowerPeakW":82,"boardAccelPeakG":2.1,"end":3.1}
+{"kind":"placed","angle":28,"heading":160,"fell":"balance","t":0.85,"legPowerPeakW":158,"boardAccelPeakG":1.3,"end":2.1}
+{"kind":"placed","angle":28,"heading":180,"fell":"","t":1.5,"legPowerPeakW":131,"boardAccelPeakG":1.3,"end":0.2}
+{"kind":"placed","angle":30,"heading":0,"fell":"","t":1.5,"legPowerPeakW":53,"boardAccelPeakG":1.3,"end":11}
+{"kind":"placed","angle":30,"heading":20,"fell":"","t":1.5,"legPowerPeakW":98,"boardAccelPeakG":1.7,"end":10.5}
+{"kind":"placed","angle":30,"heading":45,"fell":"lost board","t":0.48,"legPowerPeakW":125,"boardAccelPeakG":3.1,"end":5.9}
+{"kind":"placed","angle":30,"heading":135,"fell":"balance","t":0.57,"legPowerPeakW":84,"boardAccelPeakG":2.3,"end":3.4}
+{"kind":"placed","angle":30,"heading":160,"fell":"balance","t":0.8,"legPowerPeakW":105,"boardAccelPeakG":1.4,"end":2.1}
+{"kind":"placed","angle":30,"heading":180,"fell":"","t":1.5,"legPowerPeakW":133,"boardAccelPeakG":1.6,"end":0.4}
+{"kind":"placed","angle":32,"heading":0,"fell":"","t":1.5,"legPowerPeakW":63,"boardAccelPeakG":1.3,"end":11.5}
+{"kind":"placed","angle":32,"heading":20,"fell":"","t":1.5,"legPowerPeakW":108,"boardAccelPeakG":1.9,"end":10.8}
+{"kind":"placed","angle":32,"heading":45,"fell":"lost board","t":0.48,"legPowerPeakW":123,"boardAccelPeakG":3.4,"end":6}
+{"kind":"placed","angle":32,"heading":135,"fell":"balance","t":0.55,"legPowerPeakW":84,"boardAccelPeakG":3.8,"end":3.7}
+{"kind":"placed","angle":32,"heading":160,"fell":"balance","t":0.77,"legPowerPeakW":109,"boardAccelPeakG":1.4,"end":2.1}
+{"kind":"placed","angle":32,"heading":180,"fell":"","t":1.5,"legPowerPeakW":131,"boardAccelPeakG":1.4,"end":0.5}
+{"kind":"placed","angle":35,"heading":0,"fell":"","t":1.5,"legPowerPeakW":69,"boardAccelPeakG":1.3,"end":12.2}
+{"kind":"placed","angle":35,"heading":20,"fell":"","t":1.5,"legPowerPeakW":106,"boardAccelPeakG":2,"end":11.1}
+{"kind":"placed","angle":35,"heading":45,"fell":"lost board","t":0.47,"legPowerPeakW":130,"boardAccelPeakG":3.8,"end":6.1}
+{"kind":"placed","angle":35,"heading":135,"fell":"balance","t":0.52,"legPowerPeakW":84,"boardAccelPeakG":2.8,"end":3.9}
+{"kind":"placed","angle":35,"heading":160,"fell":"lost board","t":0.8,"legPowerPeakW":101,"boardAccelPeakG":2.3,"end":1.7}
+{"kind":"placed","angle":35,"heading":180,"fell":"","t":1.5,"legPowerPeakW":137,"boardAccelPeakG":1.7,"end":0.6}
+{"kind":"placed","angle":40,"heading":0,"fell":"","t":1.5,"legPowerPeakW":69,"boardAccelPeakG":1.3,"end":13.3}
+{"kind":"placed","angle":40,"heading":20,"fell":"balance","t":0.57,"legPowerPeakW":93,"boardAccelPeakG":3.3,"end":7}
+{"kind":"placed","angle":40,"heading":45,"fell":"balance","t":0.47,"legPowerPeakW":151,"boardAccelPeakG":4.6,"end":6.4}
+{"kind":"placed","angle":40,"heading":135,"fell":"balance","t":0.52,"legPowerPeakW":87,"boardAccelPeakG":3.4,"end":4}
+{"kind":"placed","angle":40,"heading":160,"fell":"balance","t":0.85,"legPowerPeakW":97,"boardAccelPeakG":1.5,"end":1.6}
+{"kind":"placed","angle":40,"heading":180,"fell":"","t":1.5,"legPowerPeakW":134,"boardAccelPeakG":1.6,"end":0.6}
+{"kind":"placed","angle":45,"heading":0,"fell":"","t":1.5,"legPowerPeakW":61,"boardAccelPeakG":1.3,"end":14.1}
+{"kind":"placed","angle":45,"heading":20,"fell":"lost board","t":0.48,"legPowerPeakW":101,"boardAccelPeakG":2.5,"end":6.9}
+{"kind":"placed","angle":45,"heading":45,"fell":"balance","t":0.47,"legPowerPeakW":184,"boardAccelPeakG":5.5,"end":6.5}
+{"kind":"placed","angle":45,"heading":135,"fell":"balance","t":0.53,"legPowerPeakW":109,"boardAccelPeakG":4.1,"end":4.3}
+{"kind":"placed","angle":45,"heading":160,"fell":"balance","t":0.9,"legPowerPeakW":72,"boardAccelPeakG":2.9,"end":1.9}
+{"kind":"placed","angle":45,"heading":180,"fell":"","t":1.5,"legPowerPeakW":132,"boardAccelPeakG":2.2,"end":0.6}
+{"kind":"tilted","angle":30,"heading":0,"ramp":1.5,"fell":"lost board","t":1.98,"slopeAtEnd":30,"legPowerPeakW":73,"over2kWat":null,"end":5.7}
+{"kind":"tilted","angle":30,"heading":20,"ramp":1.5,"fell":"","t":2.5,"slopeAtEnd":30,"legPowerPeakW":131,"over2kWat":null,"end":10.8}
+{"kind":"tilted","angle":40,"heading":0,"ramp":1.5,"fell":"impact","t":1.68,"slopeAtEnd":40,"legPowerPeakW":2738,"over2kWat":1.67,"end":1.1}
+{"kind":"tilted","angle":40,"heading":20,"ramp":1.5,"fell":"impact","t":1.73,"slopeAtEnd":40,"legPowerPeakW":2136,"over2kWat":1.67,"end":2.3}
+{"kind":"tilted","angle":50,"heading":0,"ramp":1.5,"fell":"lost board","t":1.23,"slopeAtEnd":45.8,"legPowerPeakW":66,"over2kWat":null,"end":6.3}
+{"kind":"tilted","angle":50,"heading":20,"ramp":1.5,"fell":"lost board","t":1.25,"slopeAtEnd":46.3,"legPowerPeakW":67,"over2kWat":null,"end":6.6}
+{"kind":"tilted","angle":20,"heading":180,"ramp":0.8,"fell":"balance","t":0.58,"slopeAtEnd":16.4,"legPowerPeakW":14,"over2kWat":null,"end":0.5}
+{"kind":"tilted","angle":30,"heading":180,"ramp":0.8,"fell":"balance","t":0.52,"slopeAtEnd":21.4,"legPowerPeakW":3,"over2kWat":null,"end":1.3}
+{"kind":"tilted","angle":40,"heading":180,"ramp":0.8,"fell":"lost board","t":0.45,"slopeAtEnd":23.7,"legPowerPeakW":0,"over2kWat":null,"end":2.2}

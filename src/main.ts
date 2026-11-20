@@ -16,7 +16,7 @@ import {
   type Texture,
 } from 'three';
 import { addPadSource } from './game/Bindings';
-import { Controls } from './game/Controls';
+import { Controls, stanceHandoverSwitch } from './game/Controls';
 import { SteamControllerDriver } from './game/steam/SteamControllerDriver';
 import { advanceFrameClock, frameDue } from './game/frameLimit';
 import { ownSurferDetail, PRESETS, resolveGraphics, withGlowOverride, withPreset, type ResolvedGraphics } from './game/Graphics';
@@ -26,13 +26,14 @@ import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Se
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
 import { simulatedSeconds } from './game/timeScale';
-import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, startOutSwitch, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
+import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, snapFanSwitch, startOutSwitch, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
 import type { OnlineController } from './net/OnlineController';
 import { ONLINE_QUEUE } from './net/OnlinePacer';
 import { decompress } from './wave/surfZoneState';
 import { INTERPOLATION_DELAY, createRemoteState, type RemoteState } from './net/RemoteSurfers';
 import { RemoteSurferViews } from './scene/RemoteSurferViews';
+import { RemoteSpray } from './net/remoteSpray';
 import { NameTags, type TagEntry } from './ui/NameTags';
 import { t } from './ui/strings';
 import { LocalSurfZone } from './game/SurfZoneHost';
@@ -40,6 +41,7 @@ import { StillFrameGate } from './game/StillFrameGate';
 import { BACKDROP_TIME, TIMES, backdropSettings, physicalSettingsFor, ridesAsPractice, type SurfConditions, type SwellSize, type TimeOfDay } from './game/SurfConditions';
 import type { WaterLook } from './scene/water/waterLook';
 import { setGlitterForGraphics } from './scene/water/glitter';
+import { DISPLAY_EXPOSURE, setWaterLight, waterLightOn, waterLightState } from './scene/water/waterLight';
 import { setFoamStreaksForGraphics } from './scene/water/foamFreshness';
 import type { RideView } from './scene/SpectatorCamera';
 import { RIDER_SNAPSHOT, SURF_ZONE_STEP, SWIM_BITS, type SurfZoneStatus } from './wave/SurfZoneRunner';
@@ -91,6 +93,10 @@ const recordRequested = devFlag('record');
 const waterSheetRequested = devFlag('waterSheet');
 /** `?particleBench`: a dev tool times the whitewater's particles on a heavy sea (src/dev/particleBench.ts). */
 const particleBenchRequested = devFlag('particleBench');
+/** `?inpage&boardSprayStrip`: a dev tool films the boards' spray on the Wave Pool, frame by frame (src/dev/boardSprayStrip.ts). */
+const boardSprayStripRequested = devFlag('boardSprayStrip');
+/** `?inpage&duckDiveStrip`: a dev tool films a timed duck-dive at the Canyon or on a still sea (src/dev/duckDiveStrip.ts). */
+const duckDiveStripRequested = devFlag('duckDiveStrip');
 /** `?waterSheet&compute=gpu` (or `auto`, and the same on `?record`): the sea steps in the worker, on the GPU as the game's does, even beside `inpage`. */
 const devToolOnDevice = (waterSheetRequested || recordRequested) && ['gpu', 'auto'].includes(devParam('compute') ?? '');
 /**
@@ -194,7 +200,11 @@ class SurfGame {
   /** Under the glow, a plain colour behind everything (before the photo loads) as its preimage. */
   private readonly gradedBackdrop = new Color();
   private glowWanted = false;
+  /** The glow's MSAA samples, from the Graphics setting (2× or 4×). */
+  private glowAntialias = 2;
   private drawnLook?: WaterLook;
+  /** The sea's config wants the water light (ruling 25e, `waterLightOn`); in effect only while the water is drawn Rich. */
+  private waterLightWanted = false;
   private readonly skyColor = new Color('#b8e3e5');
   private readonly physicalMode: PhysicalMode;
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
@@ -224,6 +234,11 @@ class SurfGame {
   private soundSnapped?: boolean;
   private readonly listenerForward = new Vector3();
   /** Online play (spec N1): the session, its frame logic, and the other surfers as drawn with their tags. */
+  /**
+   * Other players' boards' spray from their poses (board-spray), each patch with its board's spin (snap-fan). The
+   * `?snapFan=old` switch reaches it online too: it is drawn on this page only and changes nothing the room shares.
+   */
+  private readonly remoteSpray = new RemoteSpray(snapFanSwitch());
   private online?: {
     controller: OnlineController; play: OnlinePlay; views: RemoteSurferViews; tags: NameTags;
     state: RemoteState; anchors: Vector3[]; rebuilding: boolean;
@@ -247,7 +262,7 @@ class SurfGame {
     this.renderer.outputColorSpace = 'srgb';
     // Photographed skies carry a real sun; neutral tone mapping keeps colours and rolls off its highlights.
     this.renderer.toneMapping = NeutralToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = DISPLAY_EXPOSURE;
     this.renderer.domElement.tabIndex = 0;
     this.renderer.domElement.setAttribute('aria-label', 'Surf game canvas. Click here to use keyboard controls.');
     getElement('#scene').append(this.renderer.domElement);
@@ -290,6 +305,7 @@ class SurfGame {
     this.caustics = new CausticMap(this.water.causticSource, this.water.causticUniforms);
     this.physicalMode.seabed.useCaustics(this.water.causticUniforms, this.water.causticSource as never);
     this.physicalMode.spray.useWater(this.water.causticSource);
+    this.physicalMode.fan.useWater(this.water.causticSource);
     this.lab = this.labHost();
     this.school = this.schoolHost();
     this.shadows = new ShadowRig(this.renderer, this.sunlight, this.scene);
@@ -304,7 +320,7 @@ class SurfGame {
     window.addEventListener('resize', () => this.resize());
     // The app shows the loading card whenever a scene builds.
     getElement<HTMLElement>('#loading').classList.add('is-hidden');
-    if (!recordRequested && !waterSheetRequested && !particleBenchRequested) requestAnimationFrame(this.frame);
+    if (!recordRequested && !waterSheetRequested && !particleBenchRequested && !boardSprayStripRequested && !duckDiveStripRequested) requestAnimationFrame(this.frame);
   }
 
   /**
@@ -388,6 +404,7 @@ class SurfGame {
     this.physicalMode.surfer.setDetail(own.lodDistance, own.textureCap);
     this.online?.views.setDetail(resolved.surferLodDistance, resolved.textureCap);
     this.glowWanted = resolved.glow;
+    this.glowAntialias = resolved.glowSamples;
     // The sun's glitter comes with the rich sea (High, Ultra); Medium draws its road lite (the M1's frame budget).
     setGlitterForGraphics(resolved.richSea);
     // Aged foam's streaks (web-ocean plan, item 7) take the headroom the glitter leaves: Low and Medium only.
@@ -420,6 +437,9 @@ class SurfGame {
     // An online room fixes its own sea (components included); otherwise the GPU tier decides.
     const tier = options.overrides || this.graphics?.richSea === false ? undefined : gpuTier;
     if (!(await this.physicalMode.start(settings, seed, this.water, options.overrides ?? {}, factory, tier))) return false;
+    // The water light (ruling 25e): on in the 2 m pool, or as `?waterLight` says; a room pins the default. Rich only.
+    this.waterLightWanted = waterLightOn(this.physicalMode.config);
+    this.applyWaterLight();
     this.frozen = false;
     this.freezeIn = undefined;
     if (!options.lab) this.leaveLab();
@@ -493,18 +513,29 @@ class SurfGame {
     this.physicalMode.defaultView = camera;
     const settings = physicalSettingsFor(room.spot, room.conditions, { stage: 2, compute: 'auto' });
     // 4–19 m beyond the solo start (`rideLineupOffset`: 15–30 m outside the break line, nearer at the Canyon's Big).
-    const start = rideLineupOffset({ spot: room.spot, significantHeight: swellFor(settings).significantHeight, ...startOutSwitch() });
+    const start = rideLineupOffset({ spot: room.spot, significantHeight: swellFor(settings).significantHeight, ...(settings.poolWaves ? { poolWaves: settings.poolWaves } : {}), ...startOutSwitch() });
     const spawn = { spawnAlong: (Math.random() - 0.5) * 40, spawnOut: start + 4 + Math.random() * 15 };
     const handed = await controller.requestSea();
     const sea = handed ? await decompress(handed.bytes, handed.deflated) : undefined;
     // Left the room while waiting for its sea: build nothing (it would replace the menu's waves).
     if (controller.closed) return false;
     // A handed-over sea brings its own clock and replaces everything a spin-up would build; a fresh one starts at the room's.
-    // The room's sea is the same on every client and handed between them: always the Canyon's reef bed, whatever
-    // `?canyonBed` says (its old bed is a solo dev switch).
+    // The room's sea is the same on every client and handed between them: always the Canyon's default layout, whatever
+    // `?canyonBed`, `?canyonWaves`, `?canyonRamp`, `?canyonJoin`, `?canyonAgeJoin`, `?poolAgeJoin`, `?poolFloor`, `?poolSize`, `?canyonReefSeq` or `?canyonBeachLook` say (its
+    // old layouts, its halved ramp, breaking, onsets and beach look are solo dev switches), and
+    // every spot's onset whatever `?onset` says, every rider's stroke whatever `?stroke` says, the surface the bodies
+    // sample moving through their step whatever `?surfaceMotion` says, its heights' reads whatever `?plainHeight` says, the Barrel's contact rows whatever `?contactRows` says, the GPU's uploads whatever `?deviceWater`, `?launchWater` or `?devicePlunge` say, the Barrel's water on the GPU whatever `?barrelGpu` says, the swim back to the board whatever `?swim` says,
+    // a roller's froth on the boards whatever `?froth` says, the legs letting Compress go whatever `?extension` says, Snap whatever `?snap` says, the rail change's push whatever `?legDrive` says, the carve's flexing legs whatever `?carveFlex` says, Snap's driving legs whatever `?snapLegs` says, Snap's rail change whatever `?snapCross` says, the legs' power limit whatever `?legPower` says, the felt vertical's frame whatever `?feltFrame` says, the knees' travel read where the leg is whatever `?kneeRoom` says, the crouch's kept reach whatever `?stanceReach` says, the ankle's torque unbounded whatever `?ankleLimit` says, the balance's own commanded ankle rest bounded as it ships whatever `?ankleRange` says, the measured bank clamped as it ships whatever `?bankClamp` says, the contact's bound without the trunk rotor's angular momentum rate whatever `?bodyBank` says, the lean the rider asks for capped on the shipped 4.5 m turn whatever `?askCap` says, the stance ladder's fourth rung as it ships whatever `?stanceDeep` says, the deep tuck a tube's clearance only whatever `?deepen` says, the arms' shipped one-scalar spread whatever `?armCarry` says, the mass model's trunk never folded whatever `?trunk` says, where the hydrostatic support points whatever `?buoyFrame` says, the water's own heel datum in the balance's model whatever `?waterHeel` says, the mount as it ships whatever `?mountAgree` says, the rider's body a point mass in the balance's model whatever `?riderBody` says, the balance's two optional costs off whatever `?riderCost` says, the balance's water table read off its shipped 4 m/s floor whatever `?plantFloor` says, the new surfer whatever `?rider` says, the hollow over a banked deck whatever `?deckHollow` says, and
+    // the boards' spray and its curtains whatever `?boardSpray` and `?spraySheet` say, a plunging lip's veil whatever `?lipVeil` says, the duck-dive's two bodies whatever `?duckBody` says;
+    // the water light (body gain and exposure, ruling 25e) whatever `?waterLight` says, so every client draws the default;
+    // and the cases' own tubes, whatever `?tubeShape`, `?canyonTube`, `?poolTube`, `?poolCrash`, `?poolTubeCase`, `?tubeFace`,
+    // `?tubeFrom`, `?tubeLag`, `?tubeClock`, `?tubeAnchor`, `?tubeForm`, `?tubeThrow`, `?wallFlow`, `?tubeContact`, `?tubeCap`,
+    // `?tubeMerge`, `?tubeGuard`, `?tubeTrack`, `?tubeInertia`, `?tubeRetire`, `?tubeBuoy`, `?tubeDrop`, `?formClock`, `?tubeSeam`, `?seamTau`, `?seamBand`, `?wallBody`, `?crestLine`, `?anchorLine`, `?loftMesh`, `?wallFoot` or `?afterTube` say (the spot's own swept
+    // barrel and its crash: what a rider hits must match on every client), and the sea's own wave whatever `?wave` says.
     const overrides: Partial<SurfZoneConfig> = {
       stage: 2, compute: 'auto', componentCount: GPU_TIER_COMPONENTS, startSeaTime: controller.seaTimeNow(), ...(sea ? { spinUpPeriods: 0 } : {}),
-      canyonBed: 'reef',
+      canyonBed: 'reef', canyonJoin: undefined, canyonStart: undefined, canyonAgeJoin: undefined, poolAgeJoin: undefined, poolBarrel: undefined, poolFloor: undefined, poolSize: undefined, canyonReefSeq: undefined, canyonBeachLook: undefined, onsetRule: undefined, tubeShape: 'basilisk',
+      sweptBarrel: undefined, sweptCrash: undefined, poolTubeCase: undefined, tubeFace: undefined, tubeFrom: undefined, tubeLag: undefined, tubeClock: undefined, tubeAnchor: undefined, tubeForm: undefined, tubeThrow: undefined, wallFlow: undefined, tubeContact: undefined, tubeCap: undefined, tubeMerge: undefined, tubeGuard: undefined, tubeTrack: undefined, tubeInertia: undefined, tubeRetire: undefined, tubeBuoy: undefined, tubeDrop: undefined, formClock: undefined, tubeSeam: undefined, seamTau: undefined, seamBand: undefined, wallBody: undefined, crestLine: undefined, anchorLine: undefined, loftMesh: undefined, wallFoot: undefined, afterTube: undefined, wave: undefined, waterLight: undefined, stroke: undefined, surfaceMotion: undefined, plainHeight: undefined, contactRows: undefined, deviceWater: undefined, launchWater: undefined, devicePlunge: undefined, barrelGpu: undefined, swim: undefined, froth: undefined, extension: undefined, snap: undefined, snapQuick: undefined, snapPivot: undefined, snapRecentre: undefined, snapUpturn: undefined, snapDepth: undefined, snapStamp: undefined, agile: undefined, legDrive: undefined, hull: undefined, railSuction: undefined, compressPull: undefined, carveFlex: undefined, snapLegs: undefined, snapCross: undefined, legPower: undefined, rider: undefined, feltFrame: undefined, kneeRoom: undefined, stanceReach: undefined, ankleLimit: undefined, ankleRange: undefined, bankClamp: undefined, bodyBank: undefined, askCap: undefined, stanceDeep: undefined, deepen: undefined, armCarry: undefined, trunk: undefined, buoyFrame: undefined, waterHeel: undefined, mountAgree: undefined, riderBody: undefined, riderCost: undefined, plantFloor: undefined, deckHollow: undefined, snapFan: undefined, boardSpray: undefined, spraySheet: undefined, lipVeil: undefined, duckBody: undefined,
     };
     const started = await this.startPhysical(room.seed, settings, {
       sun: TIMES[room.conditions.time], rider: true, factory: onlineSurfZoneFactory(spawn, sea, this.stance), overrides,
@@ -577,6 +608,8 @@ class SurfGame {
     return {
       phase: ride.phase, speed: ride.speed, resets: ride.resets, separation: ride.separation, seaTime: status.seaTime, x: board[0], z: board[2],
       report: ride.report, timeScale: this.timeScale,
+      // What let go at the fall (the Logbook's fall readout): the runner's latch, so the ride tracker can log it.
+      broke: ride.broke,
     };
   }
 
@@ -711,6 +744,9 @@ class SurfGame {
 
   /** One frame of the physical surf zone: fixed solver steps with the player's (or `?demo`'s autopilot's) input, then render. */
   private physicalFrame(elapsed: number, simElapsed: number): void {
+    // The pad's right stick across swings the ride view round the rider in every stage, on real time (the owner,
+    // 2026-10-22); the Wave Lab flies its own camera.
+    if (!this.waveLab.active) this.physicalMode.camera.steerSwing(controls.cameraSwing, elapsed);
     if (this.online) {
       this.onlineFrame(elapsed);
       return;
@@ -961,9 +997,12 @@ class SurfGame {
       anchors[entries.length] ??= new Vector3();
       return anchors[entries.length];
     };
+    // Their boards' spray (board-spray), thrown in the worker's spray with the next steps.
+    this.remoteSpray.begin();
     for (const player of others) {
       const drawn = controller.remote.sample(player.id, seaTime, state);
       views.update(player.id, drawn ? state : undefined, surface, camera.position, seaTime);
+      if (drawn) this.remoteSpray.add(controller.remote, player.id, seaTime, state, surface, host.config.windSpeed ?? 0);
       const world = anchor();
       if (!views.tagAnchor(player.id, world)) continue;
       const call = controller.calls.get(player.id);
@@ -977,6 +1016,7 @@ class SurfGame {
       const world = anchor().set(rider[head], rider[head + 1] + 0.45, rider[head + 2]);
       entries.push({ id: controller.you!, name: '', world, call: t(`online.call.${own.call}`) });
     }
+    this.physicalMode.setRemoteSheets(this.remoteSpray.packed());
     const canvas = this.renderer.domElement;
     tags.update(entries, camera, canvas.clientWidth, canvas.clientHeight, this.showNameTags);
   }
@@ -1061,6 +1101,20 @@ class SurfGame {
     this.scene.background = background;
   }
 
+  /**
+   * The water light (ruling 25e, `waterLight.ts`), in effect only while the sea wants it and the water is drawn Rich:
+   * the Rich body gain on every water drawing (one shared value, so no seam), the canvas's exposure and, under the
+   * glow, the grade's (`syncGlow`). Off, or Classic: gain 4 and exposure 1.05, exactly as before.
+   */
+  private applyWaterLight(): void {
+    const state = waterLightState(this.waterLightWanted, this.water.drawnLook);
+    setWaterLight(state.on);
+    this.renderer.toneMappingExposure = state.exposure;
+    this.water.refreshBodyGain();
+    this.physicalMode.farField.refreshBodyGain();
+    this.syncGlow();
+  }
+
   /** The water look (G8) on every water drawing: the tank, the far ocean and the spray. */
   private applyWaterLook(look: WaterLook): void {
     this.water.setLook(look);
@@ -1068,10 +1122,13 @@ class SurfGame {
     this.physicalMode.spray.setLook(look);
     this.physicalMode.setSprayLook(look);
     this.physicalMode.lipSheet.setLook(look);
+    this.physicalMode.curtains.setLook(look);
+    this.physicalMode.fan.setLook(look);
     // The sand, bubbles and riders take the horizon haze with the Rich water (hazeLand.ts).
     setHazeLandLook(look);
     this.drawnLook = look;
-    this.syncGlow();
+    // The water light follows the look (Rich only); it syncs the glow.
+    this.applyWaterLight();
   }
 
   /**
@@ -1081,19 +1138,41 @@ class SurfGame {
    */
   private syncGlow(): void {
     const on = this.glowWanted && this.drawnLook === 'rich';
+    // The HDR scene's MSAA: the setting's 2× or 4×; `?glowMsaa=2|4` (dev) overrides it.
+    const samples = glowSamples(devParam('glowMsaa'), this.glowAntialias);
+    // The grade's exposure: the water light's, scaled as the canvas's (ruling 25e), else `GLOW`'s.
+    const { glowExposure: exposure } = waterLightState(this.waterLightWanted, this.water.drawnLook);
+    if (on && this.glow && (this.glow.settings.samples !== samples || this.glow.settings.exposure !== exposure)) {
+      // A new anti-aliasing setting or exposure: a pass with them, its old targets freed. The skies are graded again
+      // (their preimages follow the exposure, so they draw as shot), and with a new exposure the colour under water and
+      // the haze's horizon too.
+      const regrade = this.glow.settings.exposure !== exposure;
+      this.glow.dispose();
+      this.glow = new GlowPass({ samples, exposure });
+      this.photoBackground.grade(this.glow.settings);
+      this.environment.gradeSky(this.glow.settings);
+      this.needsRender = true;
+      if (!regrade) return;
+      const below = new Color(UNDERWATER);
+      const { lookPower, lookSaturation } = this.glow.settings;
+      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
+      this.underwaterFog.color.copy(below);
+      this.underwaterColor.copy(below);
+      this.refreshHaze();
+      return;
+    }
     if (on === (this.glow !== undefined)) return;
     this.needsRender = true;
     const below = new Color(UNDERWATER);
     if (on) {
-      // `?glowMsaa=2` (dev): the HDR scene at 2× MSAA, for the owner's A/B against the default 4×.
-      this.glow = new GlowPass({ samples: glowSamples(devParam('glowMsaa')) });
+      this.glow = new GlowPass({ samples, exposure });
       this.sunDisc = new SunDisc();
       this.scene.add(this.sunDisc.sprite);
       // The photo and the painted sky, which are already as the canvas shows them, as the light the grade turns back into them.
       this.photoBackground.grade(this.glow.settings);
       this.environment.gradeSky(this.glow.settings);
-      const { exposure, lookPower, lookSaturation } = this.glow.settings;
-      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, exposure, lookPower, lookSaturation));
+      const { lookPower, lookSaturation } = this.glow.settings;
+      below.setRGB(...agxPreimage([below.r, below.g, below.b] as Rgb, this.glow.settings.exposure, lookPower, lookSaturation));
     } else {
       this.glow?.dispose();
       this.glow = undefined;
@@ -1168,6 +1247,8 @@ class SurfGame {
     this.physicalMode.farField.setSun(direction, radiance);
     this.physicalMode.spray.setSun(direction, radiance);
     this.physicalMode.lipSheet.setSun(direction, radiance);
+    this.physicalMode.curtains.setSun(direction, radiance);
+    this.physicalMode.fan.setSun(direction, radiance);
   }
 
   private refreshReflection(): void {
@@ -1243,6 +1324,8 @@ if (recordRequested && new URLSearchParams(window.location.search).get('pilot') 
 } else if (recordRequested) void import('./dev/rideRecorder').then(({ recordRide }) => recordRide(game.recording));
 if (waterSheetRequested) void import('./dev/waterSheet').then(({ renderWaterSheet }) => renderWaterSheet(game.recording));
 if (particleBenchRequested) void import('./dev/particleBench').then(({ runParticleBench }) => runParticleBench(game.recording));
+if (boardSprayStripRequested) void import('./dev/boardSprayStrip').then(({ boardSprayStrip }) => boardSprayStrip(game.recording));
+if (duckDiveStripRequested) void import('./dev/duckDiveStrip').then(({ duckDiveStrip }) => duckDiveStrip(game.recording));
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const settings = new SettingsStore(availableStorage(), defaultSettings(reducedMotion));
 /** `?graphics=low|medium|high|ultra` (dev): films and sheets under a preset without touching the saved settings. */
@@ -1275,6 +1358,6 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   pause: () => app.pause(),
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
-}, { stick: () => settings.value.controls });
-const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
+}, { stick: () => settings.value.controls, ...stanceHandoverSwitch() });
+const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested || duckDiveStripRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

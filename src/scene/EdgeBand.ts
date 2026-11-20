@@ -137,9 +137,9 @@ varying vec2 vWaterBandSlope;
 /**
  * The band, after the water's own vertex chunk: there the tank's mirror image (the water's lookups read it past the side
  * edges), handed over to the far ocean's linear sea by the band's weight. Height and slope blend (with the weight's own
- * slope across the gap), as do depth and foam; the current and the air go with the tank's share.
+ * slope across the gap), as do depth and foam; the current, the air and a rock floor's cover of the bed go with the tank's share.
  */
-function bandVertexBlock(rich: boolean, vertexSlope: boolean): string {
+function bandVertexBlock(rich: boolean, vertexSlope: boolean, rock: boolean): string {
   return /* glsl */ `
 vWaterBandSkirt = min( waterBandEdge, 1.0 );
 float waterBandW = waterBandWeight( waterXZ );
@@ -157,7 +157,7 @@ if ( waterBandW > 0.0 ) {
   vWaterFoam = mix( vWaterFoam, waterFarDepth <= 0.05 ? 0.0 : clamp( ( 1.0 - farCap ) * 1.4, 0.0, 0.85 ), waterBandW );
   vWaterFlow *= 1.0 - waterBandW;
   waterHeight = mix( waterHeight, waterFarHeight, waterBandW );
-  objectNormal = normalize( vec3( -waterBandSlope.x, 1.0, -waterBandSlope.y ) );${rich ? '\n  vWaterAir *= 1.0 - waterBandW;' : ''}${vertexSlope ? '\n  vWaterSurfaceSlope = waterBandSlope;' : ''}
+  objectNormal = normalize( vec3( -waterBandSlope.x, 1.0, -waterBandSlope.y ) );${rich ? '\n  vWaterAir *= 1.0 - waterBandW;' : ''}${vertexSlope ? '\n  vWaterSurfaceSlope = waterBandSlope;' : ''}${rock ? '\n  vWaterRock *= 1.0 - waterBandW;' : ''}
 }
 vWaterBandSlope = -objectNormal.xz / objectNormal.y;
 `;
@@ -243,8 +243,9 @@ ${out.slice(end)}`;
 export function bandShaders(vertex: string, fragment: string): { vertex: string; fragment: string } {
   const rich = vertex.includes('vWaterAir = ');
   const vertexSlope = vertex.includes('vWaterSurfaceSlope = waterCubicSample.yz;');
+  const rock = vertex.includes('vWaterRock = ');
   let v = once(vertex, '#include <common>', `#include <common>\n${bandVertexPars}`);
-  v = once(v, VERTEX_FIELDS_SET, `${VERTEX_FIELDS_SET}\n${bandVertexBlock(rich, vertexSlope)}`);
+  v = once(v, VERTEX_FIELDS_SET, `${VERTEX_FIELDS_SET}\n${bandVertexBlock(rich, vertexSlope, rock)}`);
   // The skirt hangs under the rim, shaded as the rim's surface (its world point stays on it).
   v = once(v, WORLD, `${WORLD}\ntransformed.y -= ${EDGE_BAND.skirt.toFixed(3)} * max( 0.0, waterBandEdge - 1.0 );`);
   let f = once(fragment, '#include <common>', `#include <common>\n${bandFragmentPars}`);

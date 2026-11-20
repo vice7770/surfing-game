@@ -1,0 +1,46 @@
+##### 1. the first run: a KEPT .sea was imported (no 'spun up' line) — this branch
+===== CANYON B (?canyonWaves=true) =====
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.16/1.26, roller 0.64/0.77, front 0.00/0.00, lip 0.02/0.05, foam 2.54/2.64, airSources 0.05/0.07, aeration 1.33/1.41, contact 0.00/0.00, board 0.62/0.83, bubbles 0.15/0.17, spray 0.26/0.36, sounds 0.00/0.00, snapshotFields 4.00/4.21, snapshot 4.51/4.77, summary 0.40/0.42
+  CPU stages per step (step − water + snapshot + summary): 11.91/12.85; water (CPU solver, not timed on the device) 77.9
+  hashes: snapshots d236d12d682dc4f6, state ab2156bcafecc1c0
+===== CANYON DEFAULT =====
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.26/1.38, roller 0.38/0.54, front 0.00/0.00, lip 0.03/0.05, foam 3.68/3.86, airSources 0.04/0.06, aeration 1.93/2.03, contact 0.00/0.00, board 0.62/0.81, bubbles 0.17/0.19, spray 0.17/0.26, sounds 0.00/0.00, snapshotFields 4.17/4.60, snapshot 4.66/5.16, summary 0.42/0.45
+  CPU stages per step (step − water + snapshot + summary): 13.63/14.99; water (CPU solver, not timed on the device) 84.0
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+
+##### 2. the same kept .sea on a CLEAN main at 99854a51 (the branch-against-main control)
+99854a51859ab97326c04b9205112b49234827b3
+===== MAIN CONTROL: CANYON B (?canyonWaves=true) =====
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.17/1.25, roller 0.64/0.75, front 0.00/0.00, lip 0.03/0.03, foam 2.52/2.61, airSources 0.05/0.07, aeration 1.33/1.41, contact 0.00/0.00, board 0.61/0.82, bubbles 0.15/0.17, spray 0.25/0.35, sounds 0.00/0.00, snapshotFields 3.91/4.10, snapshot 4.40/4.64, summary 0.40/0.42
+  CPU stages per step (step − water + snapshot + summary): 11.78/12.61; water (CPU solver, not timed on the device) 78.0
+  hashes: snapshots d236d12d682dc4f6, state ab2156bcafecc1c0
+===== MAIN CONTROL: CANYON DEFAULT =====
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.41/1.63, roller 0.46/0.62, front 0.00/0.00, lip 0.03/0.03, foam 4.23/4.85, airSources 0.05/0.07, aeration 2.16/2.50, contact 0.00/0.00, board 0.72/0.91, bubbles 0.19/0.22, spray 0.19/0.27, sounds 0.00/0.00, snapshotFields 4.85/5.45, snapshot 5.41/6.08, summary 0.48/0.55
+  CPU stages per step (step − water + snapshot + summary): 15.66/17.75; water (CPU solver, not timed on the device) 96.4
+  hashes: snapshots a8ac71b70eac2add, state 6319ed883e54b32e
+
+##### 3. a FRESH spin-up, Canyon B, main then this branch
+===== FRESH SPIN-UP, MAIN 99854a51, CANYON B =====
+spun up on the CPU in 47.9 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/wk/bench/F-main.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.33/1.56, roller 0.72/0.95, front 0.00/0.00, lip 0.03/0.03, foam 2.86/3.33, airSources 0.06/0.09, aeration 1.47/1.71, contact 0.00/0.00, board 0.73/0.96, bubbles 0.17/0.21, spray 0.27/0.45, sounds 0.00/0.00, snapshotFields 4.50/5.23, snapshot 5.07/5.91, summary 0.46/0.53
+  CPU stages per step (step − water + snapshot + summary): 13.53/15.80; water (CPU solver, not timed on the device) 90.1
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+===== FRESH SPIN-UP, THIS BRANCH, CANYON B =====
+spun up on the CPU in 44.4 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/wk/bench/F-branch.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.18/1.38, roller 0.65/0.79, front 0.00/0.00, lip 0.03/0.03, foam 2.48/2.80, airSources 0.05/0.07, aeration 1.35/1.54, contact 0.00/0.00, board 0.63/0.90, bubbles 0.15/0.18, spray 0.26/0.39, sounds 0.00/0.00, snapshotFields 3.93/4.34, snapshot 4.45/4.91, summary 0.40/0.44
+  CPU stages per step (step − water + snapshot + summary): 11.87/13.77; water (CPU solver, not timed on the device) 77.8
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+
+##### 4. a FRESH spin-up, the default Canyon, this branch
+===== FRESH SPIN-UP, THIS BRANCH, CANYON DEFAULT =====
+spun up on the CPU in 68.7 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/wk/bench/FD-branch.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.38/2.10, roller 0.46/0.64, front 0.00/0.00, lip 0.03/0.04, foam 3.97/5.83, airSources 0.05/0.09, aeration 2.04/2.90, contact 0.00/0.00, board 0.70/1.19, bubbles 0.19/0.23, spray 0.18/0.33, sounds 0.00/0.00, snapshotFields 4.81/6.53, snapshot 5.35/7.29, summary 0.46/0.60
+  CPU stages per step (step − water + snapshot + summary): 15.33/21.17; water (CPU solver, not timed on the device) 91.1
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96

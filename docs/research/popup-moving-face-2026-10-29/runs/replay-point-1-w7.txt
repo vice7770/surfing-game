@@ -1,0 +1,27 @@
+== Point medium seed 1, wave 7 (sea saved at t 93.6), moving: 8 riders
+dx  -4.0: rode                         pop 6.70 ahead 3.65 frac 0.79 slope 6.4 speed 5.50/6.60 | push load -16.63…65.19 heave rms 0.125 m/s a frame
+dx  -2.9: fell popping up (lost board) pop 5.88 ahead 3.34 frac 0.69 slope 20.5 speed 3.65/4.41 | push load -51.25…35.35 heave rms 0.436 m/s a frame
+dx  -1.7: fell popping up (lost board) pop 6.77 ahead 3.40 frac 0.73 slope -29.4 speed 5.38/6.34 | push load -98.77…199.96 heave rms 0.388 m/s a frame
+dx  -0.6: fell popping up (foot slip)  pop 6.07 ahead 2.63 frac 0.76 slope 17.3 speed 4.39/5.05 | push load -10.75…66.11 heave rms 0.393 m/s a frame
+dx   0.6: fell popping up (lost board) pop 6.12 ahead 2.36 frac 0.80 slope 16.2 speed 4.58/5.50 | push load -278.69…695.01 heave rms 0.271 m/s a frame
+dx   1.7: fell popping up (lost board) pop 6.13 ahead 2.23 frac 0.82 slope 18.0 speed 4.73/5.65 | push load -41.19…1485.91 heave rms 0.188 m/s a frame
+dx   2.9: fell popping up (foot slip)  pop 6.12 ahead 2.05 frac 0.83 slope 18.9 speed 4.98/6.21 | push load -37.43…74.47 heave rms 0.292 m/s a frame
+dx   4.0: fell popping up (foot slip)  pop 6.07 ahead 2.10 frac 0.83 slope 18.0 speed 4.99/6.21 | push load -42.54…658.64 heave rms 0.662 m/s a frame
+point medium: 8 riders: rode 1, fell popping up 7, other 0
+== held: 8 riders
+dx  -4.0: rode                         pop 6.67 ahead 3.74 frac 0.77 slope 8.8 speed 5.39/6.66 | push load -27.98…191.92 heave rms 0.230 m/s a frame
+dx  -2.9: fell popping up (lost board) pop 5.88 ahead 3.42 frac 0.68 slope 20.6 speed 3.78/4.36 | push load -29.92…92.88 heave rms 0.214 m/s a frame
+dx  -1.7: fell popping up (lost board) pop 6.75 ahead 3.32 frac 0.70 slope -36.6 speed 5.58/6.80 | push load -624.60…511.96 heave rms 0.530 m/s a frame
+dx  -0.6: fell popping up (foot slip)  pop 6.05 ahead 2.64 frac 0.74 slope 18.6 speed 4.36/5.39 | push load -21.97…47.31 heave rms 0.598 m/s a frame
+dx   0.6: fell popping up (lost board) pop 6.12 ahead 2.39 frac 0.79 slope 16.5 speed 4.53/5.54 | push load -54.04…614.52 heave rms 0.577 m/s a frame
+dx   1.7: fell popping up (foot slip)  pop 6.13 ahead 2.26 frac 0.81 slope 18.6 speed 4.68/5.70 | push load -48.86…119.33 heave rms 0.206 m/s a frame
+dx   2.9: fell popping up (impact)     pop 6.12 ahead 2.10 frac 0.82 slope 19.4 speed 4.99/6.21 | push load -2.88…76.43 heave rms 0.548 m/s a frame
+dx   4.0: fell popping up (impact)     pop 6.07 ahead 2.16 frac 0.82 slope 18.6 speed 5.03/6.19 | push load -87.17…330.04 heave rms 0.221 m/s a frame
+point medium: 8 riders: rode 1, fell popping up 7, other 0
+== moving, one rider at the start: popped with the board in the air (no load), landing 4 frames on
+  t 0.000 push     n4 f0 s0 t0 i0 least 0.00 asked 0.00 gave 0.00 err 0.000 | v 4.57 vy -0.43 ay -13 pitch -12.0 slope 14.5 lift 0.00 | ahead 2.54 frac 0.80 shore 4.52/5.10 | depth 3.85 over bed 3.98 brk 0.18 
+  t 0.017 push     n4 f0 s0 t0 i0 least 0.00 asked 0.00 gave 0.00 err 0.000 | v 4.54 vy -0.60 ay -10 pitch -12.6 slope 13.8 lift 0.00 | ahead 2.82 frac 0.79 shore 4.54/4.17 | depth 3.86 over bed 3.97 brk 0.16 
+  t 0.033 push     n4 f0 s0 t0 i0 least 0.00 asked 0.00 gave 0.00 err 0.001 | v 4.50 vy -0.77 ay -10 pitch -13.2 slope 13.9 lift 0.00 | ahead 3.17 frac 0.79 shore 4.51/3.07 | depth 3.86 over bed 3.96 brk 0.22 
+  t 0.050 push     n4 f0 s0 t0 i0 least 0.01 asked 0.01 gave 0.01 err 0.001 | v 4.46 vy -0.95 ay -11 pitch -13.8 slope 14.4 lift 0.00 | ahead 3.07 frac 0.80 shore 4.47/3.44 | depth 3.87 over bed 3.94 brk 0.30 
+  t 0.067 push     n13 f0 s0 t0 i0 least 1.36 asked 2.30 gave 2.30 err 0.000 | v 4.66 vy -0.57 ay 23 pitch -14.1 slope 12.1 lift 0.18 | ahead 3.31 frac 0.81 shore 4.42/2.74 | depth 3.88 over bed 3.92 brk 0.29 
+  t 0.083 push     n16 f0 s0 t0 i0 least 0.66 asked 2.79 gave 2.79 err 0.000 | v 4.77 vy -0.21 ay 22 pitch -14.0 slope 15.1 lift 0.38 | ahead 3.28 frac 0.81 shore 4.65/2.94 | depth 3.89 over bed 3.92 brk 0.27 

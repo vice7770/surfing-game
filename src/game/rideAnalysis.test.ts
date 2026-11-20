@@ -24,9 +24,16 @@ function trace(seconds: number, at: (t: number) => Part, gaps: number[] = [1]): 
   let z = 0;
   const make = (t: number, dt: number, phase?: RideSample['phase']): RideSample => {
     const { wave, course, ...part } = at(t);
-    const sample: RideSample = {
+    const base = {
       t, x, z, heading: 0, speed: 7, roll: 0, load: 1, phase: phase ?? 'standing', depth: 3, breakingHere: 0,
-      ...part, wave: { ...FRAME, ...wave },
+      ...part,
+    };
+    const sample: RideSample = {
+      ...base,
+      // Still water by default, so the speed through the water along the heading is the ground speed projected on it:
+      // a board moving along a course off its heading reads less through the water than over the ground.
+      throughWater: part.throughWater ?? base.speed * Math.cos((course ?? base.heading) - base.heading),
+      wave: { ...FRAME, ...wave },
     };
     x += sample.speed * Math.sin(course ?? sample.heading) * dt;
     z += sample.speed * Math.cos(course ?? sample.heading) * dt;
@@ -61,10 +68,13 @@ function analyze(samples: RideSample[], timeScale?: number, fall = true): RideRe
 }
 
 describe('RideAnalyzer', () => {
-  // Forsyth et al. 2024: a mean bottom turn is about 100° at 7.3 m/s, low on the face.
-  const bottomTurn = () => {
+  // Forsyth et al. 2024: a mean bottom turn is about 100° at 7.3 m/s, low on the face. It leaves the bottom climbing:
+  // the face fraction holds at 0.25 through the turn (0.5–1.5 s) and then rises, which is the carry the turn is for.
+  const CLIMB = 0.3;
+  const climbing = (t: number) => 0.25 + CLIMB * Math.max(0, t - 1.5);
+  const bottomTurn = (gaps?: number[]) => {
     const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
-    return trace(2, (t) => ({ heading: heading(t), speed: 7.3, wave: { faceFraction: 0.25 } }));
+    return trace(2, (t) => ({ heading: heading(t), speed: 7.3, wave: { faceFraction: climbing(t) } }), gaps);
   };
 
   it('finds a bottom turn toward the crest low on the face, with its radius and load', () => {
@@ -89,14 +99,201 @@ describe('RideAnalyzer', () => {
   it('reads the radius and the pull from the path, not the heading, when the board swings about its path', () => {
     const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
     const course = turn(30 * DEG, 50 * DEG, 0.5, 1);
-    const report = analyze(trace(2, (t) => ({ heading: heading(t), course: course(t), speed: 7.3, wave: { faceFraction: 0.25 } })));
+    const report = analyze(trace(2, (t) => ({ heading: heading(t), course: course(t), speed: 7.3, wave: { faceFraction: climbing(t) } })));
     expect(report.maneuvers).toHaveLength(1);
     const [maneuver] = report.maneuvers;
+    expect(maneuver.kind).toBe('bottom turn');
     expect(maneuver.yaw).toBeCloseTo(1.745, 1);
     expect(maneuver.peakYawRate).toBeCloseTo(1.745, 1);
     // 7.3 m along a path turning 50°: 8.4 m, 0.65 g.
     expect(maneuver.radius).toBeCloseTo(8.4, 1);
     expect(maneuver.lateralG).toBeCloseTo(0.65, 1);
+  });
+
+  /**
+   * **The path's bend must gate the name, not only report it** (the reviewer's control of 2026-11-19). Before this,
+   * `towardCrest` was read from the heading and `high` from the face fraction, while `pathYaw` and `pathLength` — the
+   * actually-travelled path — were used only for the reported radius and pull. So a rider going dead straight along
+   * the crest, turning nothing but its nose, scored a bottom turn with radius `Infinity` and 0 g.
+   */
+  describe('a run is only named when the board turned', () => {
+    /** The control: dead straight along the crest at 4 m/s, flat, face fraction 0.25, the nose alone yawing 100° in 1 s. */
+    const noseOnly = () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      return trace(2, (t) => ({ heading: heading(t), course: 90 * DEG, speed: 4, roll: 0, wave: { faceFraction: 0.25 } }));
+    };
+
+    it('does not name the nose-yaw control a bottom turn: its path never bent', () => {
+      const report = analyze(noseOnly());
+      expect(report.maneuvers.map((m) => m.kind)).toEqual(['unjudged']);
+      const [run] = report.maneuvers;
+      expect(run.unjudged).toBe('path did not bend');
+      // The measurements that gave it away are still reported.
+      expect(run.pathYaw).toBeCloseTo(0, 6);
+      expect(run.radius).toBe(Infinity);
+      expect(run.lateralG).toBeCloseTo(0, 6);
+      expect(run.yaw).toBeCloseTo(1.745, 1);
+    });
+
+    // The nose turns across the wave (30° to 130°), while the path straightens back into the wave's own travel
+    // (60° to −20°): its along-travel part grows, so the board bent away from the face the nose turned into.
+    it('does not name a turn whose path bent away from the face its nose turned into', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      const course = turn(60 * DEG, -80 * DEG, 0.5, 1);
+      const report = analyze(trace(2, (t) => ({ heading: heading(t), course: course(t), speed: 7.3, wave: { faceFraction: climbing(t) } })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['path turned the other way']);
+    });
+
+    it('does not name a bottom turn that never climbed after it let go', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      const report = analyze(trace(2, (t) => ({ heading: heading(t), speed: 7.3, wave: { faceFraction: 0.25 } })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['no carry']);
+    });
+
+    /**
+     * Whether it climbed is read from the window's MEAN height, not its highest: the highest only ever rises, so a
+     * peak test could not reject a run that slid down the face with a flicker in it. Here the board drops away from
+     * 0.25 at 0.2 of the face a second, with two samples flicking up to 0.3 — above where it let go, so the peak says
+     * it carried. The mean says it did not, and the mean is what decides.
+     */
+    it('is not fooled into a carry by a flicker on the way down', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      const sliding = (t: number) => (t > 1.6 && t < 1.64 ? 0.3 : 0.25 - 0.2 * Math.max(0, t - 1.5));
+      const report = analyze(trace(2, (t) => ({ heading: heading(t), speed: 7.3, wave: { faceFraction: sliding(t) } })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['no carry']);
+      expect(report.maneuvers[0].carry).toBeLessThan(0);
+    });
+
+    /**
+     * **Missing coverage is not a measured carry.** The carry's mean divides by the time the face was *read*, so a
+     * window the wave was unreadable through still produced a mean — out of whatever few samples carried a wave.
+     * Here the turn lets go at 1.5 s and the 0.3 s window that follows holds 18 samples at 1/60 s, of which exactly
+     * **one** carries a wave, 0.03 of the face above the release. That is a mean of one sample, and it scored a
+     * `bottom turn` on a carry of +0.03. `'carry unseen'` is the reason for exactly this.
+     */
+    it('does not read a carry out of one sample of eighteen: missing coverage is unseen, not a climb', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      // The one sample the face is read on: the first after the release.
+      const read = (t: number) => t < 1.5 + 1.5 / 60;
+      const report = analyze(trace(2, (t) => ({
+        heading: heading(t), speed: 7.3,
+        wave: t < 1.5 + 0.5 / 60 ? { faceFraction: 0.25 } : { faceFraction: 0.28, ...(read(t) ? {} : { valid: false }) },
+      })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['carry unseen']);
+    });
+
+    /**
+     * **Roundoff is not a climb.** A board held at a constant height reads a mean height that differs from the
+     * height it let go at only by the floating-point error of the sum — here +5.6e-17 of the face on a constant
+     * 0.27 — and a bare `> 0` named it a `bottom turn`. The sign of that error is the accumulation's, not the
+     * board's: 0.27 happens to err upward.
+     */
+    it('does not call floating-point roundoff a carry: a constant height is not a climb', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      const report = analyze(trace(2, (t) => ({ heading: heading(t), speed: 7.3, wave: { faceFraction: 0.27 } })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['no carry']);
+    });
+
+    /**
+     * **A shrinking denominator is not a climb.** `faceFraction` is the board's height above the trough ahead of the
+     * crest *divided by that crest's height above it*, so when the wave flattens under a board that is not moving,
+     * the fraction rises on its own. Here the board sits at a constant **0.375 m** above a fixed trough while the
+     * face height falls **1.50 m → 1.23 m** over the window: the fraction climbs 0.250 → 0.305 and it scored a
+     * `bottom turn`. In metres — the unit a climb is in, and the one the speed is asked to pay for — it rose 0.
+     */
+    it('does not call a shrinking face a climb: the board held still while the wave flattened', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      // 1.5 m while it turns; then 0.9 m/s of flattening, 1.50 m at 1.5 s to 1.23 m at 1.8 s.
+      const faceHeight = (t: number) => 1.5 - 0.9 * Math.max(0, t - 1.5);
+      const report = analyze(trace(2, (t) => ({
+        heading: heading(t), speed: 7.3, wave: { faceHeight: faceHeight(t), faceFraction: 0.375 / faceHeight(t) },
+      })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['no carry']);
+      // The height it reached, in metres above the trough, is where it let go: the climb is zero, not 0.055 of a face.
+      expect(report.maneuvers[0].carry).toBeLessThan(1e-9);
+    });
+
+    /**
+     * **An unreadable baseline is not a zero.** The climb is measured against the height the turn let go at, and that
+     * height was read off the turn's last sample whether or not the sample carried a wave. One unreadable frame at
+     * the release — the gauge's own zeros for `faceHeight` and `faceFraction` — put the baseline at 0 m, so the 18
+     * valid samples that followed, all at an unchanged 0.375 m above the trough, read as a **+0.375 m** climb and
+     * scored a `bottom turn`. A board that never moved.
+     *
+     * Coverage cannot catch this one: every sample of the window is valid, and it is the baseline that is missing.
+     * `'carry unseen'` already means "this window was not a measurement", and a measurement with no baseline is the
+     * same failure.
+     */
+    it('does not measure a climb from an unreadable baseline: one invalid frame at the release', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      // The turn runs 0.5–1.5 s at a constant rate, so its peak — the sample that names it — is its first; only the
+      // last sample, the one it lets go on, carries no wave.
+      const release = (t: number) => Math.abs(t - 1.5) < 1e-6;
+      const report = analyze(trace(2, (t) => ({
+        heading: heading(t), speed: 7.3,
+        wave: release(t) ? { valid: false, faceHeight: 0, faceFraction: 0 } : { faceHeight: 1.5, faceFraction: 0.25 },
+      })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['carry unseen']);
+      // Nothing is reported as climbed: the window had no height to be measured against.
+      expect(report.maneuvers[0].carry).toBeUndefined();
+    });
+
+    it('leaves a run unjudged when the ride ended before the carry could be seen', () => {
+      // The turn ends at 1.5 s and the ride at 1.6 s: 0.1 s of carry, less than the 0.3 s watched.
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      const report = analyze(trace(1.6, (t) => ({ heading: heading(t), speed: 7.3, wave: { faceFraction: climbing(t) } })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['carry unseen']);
+    });
+
+    /**
+     * The climb must be payable from the speed the board had **through the water along its heading**
+     * (`boardVelocity·forward − waterFlow·forward`), not from its speed over the ground: on moving water the two
+     * differ by up to 1.5x, and a bogged board reads 1.1–1.3 m/s through the water at 3.5–3.7 over still water.
+     * The face fraction rises 1 per second after the release, so the 0.3 s window climbs 0.3 of a 1.5 m face: 0.45 m.
+     * 1.2 m/s through the water buys v² / 2g = 0.07 m of height; the 4 m/s read over the ground would buy 0.82 m.
+     */
+    it('does not name a climb the speed through the water cannot pay for', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      const report = analyze(trace(2, (t) => ({
+        heading: heading(t), speed: 4, throughWater: 1.2, wave: { faceFraction: 0.25 + Math.max(0, t - 1.5) },
+      })));
+      expect(report.maneuvers.map((m) => m.unjudged)).toEqual(['speed cannot carry']);
+      // The same climb, with the ground speed through the water, is a bottom turn: the column is what decides it.
+      const paid = analyze(trace(2, (t) => ({
+        heading: heading(t), speed: 4, throughWater: 4, wave: { faceFraction: 0.25 + Math.max(0, t - 1.5) },
+      })));
+      expect(paid.maneuvers.map((m) => m.kind)).toEqual(['bottom turn']);
+    });
+
+    /**
+     * **The same moving denominator was in condition 3**, where it overcharged instead of overpaying: the climb the
+     * speed had to pay for multiplied the *fraction* gained by the face height **at the release**, so a face that
+     * flattened under a climbing board billed it for height it never gained. Here the board climbs 0.30 m → 0.45 m
+     * above the trough (0.15 m, which 2.5 m/s through the water pays for twice over: v² / 2g = 0.32 m) while the
+     * face falls 1.50 m → 0.75 m. Read as fractions the climb is 0.20 → 0.60 of a 1.50 m face = 0.60 m, four times
+     * the real rise, and a true bottom turn was refused as `'speed cannot carry'`.
+     */
+    it('charges the speed for the metres climbed, not for a fraction of a face that shrank', () => {
+      const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
+      const faceHeight = (t: number) => 1.5 - 2.5 * Math.max(0, t - 1.5);
+      const above = (t: number) => 0.3 + 0.5 * Math.max(0, t - 1.5);
+      const report = analyze(trace(2, (t) => ({
+        heading: heading(t), speed: 7.3, throughWater: 2.5,
+        wave: { faceHeight: faceHeight(t), faceFraction: above(t) / faceHeight(t) },
+      })));
+      expect(report.maneuvers.map((m) => m.kind)).toEqual(['bottom turn']);
+      // The carry is the mean of a steady 0.15 m climb: about half of it, in metres.
+      expect(report.maneuvers[0].carry).toBeCloseTo(0.075, 2);
+    });
+
+    it('leaves the turns off the top alone: they are judged as before', () => {
+      const top = turn(100 * DEG, -60 * DEG, 0.5, 1);
+      const topTurn = analyze(trace(2, (t) => ({ heading: top(t), wave: { faceFraction: 0.8, speedAlongCrest: 7 * Math.sin(top(t)) } })));
+      expect(topTurn.maneuvers.map((m) => m.kind)).toEqual(['top turn']);
+      // A nose-only run high on the face away from the crest still scores: the same hole, left for the owner to rule on.
+      const nose = analyze(trace(2, (t) => ({ heading: top(t), course: 90 * DEG, wave: { faceFraction: 0.8 } })));
+      expect(nose.maneuvers.map((m) => m.kind)).toEqual(['top turn']);
+    });
   });
 
   it('finds a cutback: a long turn away from the crest high on the face that reverses along it', () => {
@@ -212,8 +409,7 @@ describe('RideAnalyzer', () => {
     const normal = analyze(bottomTurn());
     expect(slow.timeScale).toBe(0.4);
     expect({ ...slow, timeScale: 1 }).toEqual(normal);
-    const heading = turn(30 * DEG, 100 * DEG, 0.5, 1);
-    const uneven = analyze(trace(2, (t) => ({ heading: heading(t), speed: 7.3, wave: { faceFraction: 0.25 } }), [1, 2, 3, 4, 5, 6]));
+    const uneven = analyze(bottomTurn([1, 2, 3, 4, 5, 6]));
     expect(uneven.maneuvers.map((m) => m.kind)).toEqual(['bottom turn']);
     expect(uneven.maneuvers[0].yaw).toBeCloseTo(normal.maneuvers[0].yaw, 1);
   });

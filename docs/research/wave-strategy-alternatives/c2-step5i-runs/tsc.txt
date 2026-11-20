@@ -1,0 +1,7 @@
+C2 step 5i: both TypeScript projects on the finished tree, exits read on their own line.
+
+$ npx tsc --noEmit -p .
+exit: 0
+
+$ npx tsc --noEmit -p server/tsconfig.json
+exit: 0

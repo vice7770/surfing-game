@@ -1,0 +1,102 @@
+# Step 3.2y — the hull's roll restoring under this rider, measured
+
+## A. The moment ladder: flat still water, towed at 7.5 m/s, the 73 kg payload at the DECK (y = 0.07)
+##    so the moment the hold reads is about the feet. 5 payload spreads a point.
+
+## rollspring — moment, rider rigid
+   40 runs, 33 s wall · face 1.40 m / 16° / 5.70 m/s · board+payload 75.54 kg, its own roll inertia 0.029 kg·m² (effective for a roll moment, 1/(f·I⁻¹·f): 0.0285)
+   datum: every angle is the DECK's roll about the heading from the WORLD's level, + the board's level-left side down; rollAccel is in that same sense, so + at a + roll is DIVERGENT.
+   held roll | runs | the roll reached | the rail reached | rollAccel, rad/s² | the body's bank | its CoM across | draft | speed | still attached
+         1° push    0 N |  5 |     1.01–1.01° |     1.01–1.01° |   -8.342–-0.323 |     0.00–0.00° |   0.000–0.000 m | 0.084–0.085 m | 7.50–7.50 m/s | 5 of 5
+         2° push    0 N |  5 |     2.02–2.02° |     2.02–2.02° |  -13.992–-0.552 |     0.00–0.00° |   0.000–0.000 m | 0.085–0.086 m | 7.50–7.50 m/s | 5 of 5
+         5° push    0 N |  5 |     5.05–5.06° |     5.05–5.06° |  -18.875–-0.761 |     0.00–0.00° |   0.000–0.000 m | 0.087–0.091 m | 7.50–7.50 m/s | 5 of 5
+        10° push    0 N |  5 |   10.12–10.19° |   10.12–10.19° |  -39.053–-1.315 |     0.00–0.00° |   0.000–0.000 m | 0.108–0.124 m | 7.50–7.50 m/s | 5 of 5
+        20° push    0 N |  5 |   20.23–20.58° |   20.23–20.58° |  -92.321–-2.277 |     0.00–0.00° |   0.000–0.000 m | 0.113–0.174 m | 7.50–7.51 m/s | 5 of 5
+        30° push    0 N |  5 |   30.43–30.92° |   30.43–30.92° | -144.767–-2.876 |     0.00–0.00° |   0.000–0.000 m | 0.144–0.233 m | 7.50–7.51 m/s | 5 of 5
+        45° push    0 N |  5 |   45.00–45.59° |   45.00–45.59° | -202.792–-4.091 |     0.00–0.00° |   0.000–0.000 m | 0.171–0.202 m | 7.50–7.50 m/s | 5 of 5
+        60° push    0 N |  5 |   60.36–62.09° |   60.36–62.09° | -74120.923–-4.790 |     0.00–0.00° |   0.000–0.000 m | 0.182–0.530 m | 7.50–7.53 m/s | 5 of 5
+   the settle ladder, rollAccel averaged over the 0.25 s ending at 0.25 / 0.5 / 0.75 / 1 / 1.5 / 2 / 3 s:
+         1° push    0 N | 0.00–0.00 | -39.74–-0.09 | -0.81–0.00 | -7.05–-0.29 | -0.98–-0.08 | -1.88–-0.09 | -5.09–-0.21
+         2° push    0 N | 0.00–0.00 | -54.55–-0.19 | -1.66–-0.01 | -13.76–-0.54 | -2.68–-0.17 | -3.65–-0.19 | -4.21–-0.17
+         5° push    0 N | 0.00–0.00 | -76.34–-0.55 | -2.62–-0.02 | -28.14–-1.16 | -13.49–-0.57 | -7.12–-0.41 | -15.52–-0.69
+        10° push    0 N | 0.00–0.00 | -128.80–-0.59 | -6.53–-0.37 | -49.17–-2.03 | -25.86–-0.89 | -15.16–-0.67 | -25.76–-1.60
+        20° push    0 N | 0.00–0.00 | -161.12–-0.19 | -20.70–-1.38 | -98.36–-3.38 | -45.59–-1.41 | -29.86–-1.96 | -120.72–-2.49
+        30° push    0 N | 0.00–0.00 | -240.64–0.27 | -45.19–-2.64 | -185.60–-3.79 | -88.47–-2.47 | -57.69–-2.98 | -204.94–-2.84
+        45° push    0 N | 0.00–0.00 | -487.54–1.40 | -203.22–-4.07 | -869.47–-4.92 | -439.13–-3.60 | -145.60–-3.73 | -180.40–-3.48
+        60° push    0 N | 0.00–0.00 | -1422.12–0.49 | -3046.95–-3.96 | -2116.83–-4.80 | -113.39–-2.55 | -3200.93–-4.54 | -233.49–-4.79
+   the moment, from 1/ω̇ = (I_dry + I_water)/M over 5 payload spreads at each held roll (the spreads leave the mass, the
+   centre of mass and so the whole hydrodynamic condition alone — check the draft column agrees across them):
+     held roll | runs | the rail reached | M, N·m | K = M/roll, N·m/rad | I_water, kg·m² | fit R² | the drafts
+           1.0° |    5 |             1.01° |   6.13 |               347.8 |         0.7081 | 1.00000 | 0.085 0.084 0.084 0.084 0.084
+           2.0° |    5 |             2.02° |  10.49 |               297.4 |         0.7183 | 1.00000 | 0.086 0.086 0.085 0.085 0.085
+           5.0° |    5 |             5.05° |  14.47 |               164.1 |         0.7741 | 0.99995 | 0.088 0.087 0.089 0.091 0.091
+          10.0° |    5 |            10.12° |  24.79 |               140.4 |         0.5845 | 0.99999 | 0.108 0.124 0.116 0.116 0.115
+          20.0° |    5 |            20.58° |  42.88 |               119.4 |         0.6870 | 0.99936 | 0.174 0.139 0.130 0.113 0.115
+          30.0° |    5 |            30.92° |  53.46 |                99.1 |         0.3746 | 0.99988 | 0.233 0.156 0.148 0.145 0.144
+          45.0° |    5 |            45.00° |  75.70 |                96.4 |         0.6753 | 0.99459 | 0.202 0.176 0.175 0.173 0.171
+          60.0° |    5 |            62.09° |  87.64 |                80.9 |         0.2826 | 0.99783 | 0.530 0.182 0.195 0.205 0.208
+   the spring over 40 held points (push 0 N): dω̇/d(rail) = -10087.49 1/s², ω̇ = 0 at a rail of 11.26°, restoring
+   quartiles of rollAccel over every held run: -19.329 / -7.106 / -2.862 rad/s²
+
+## B. The same against the tow's speed (1, 5 and 20 degrees of roll)
+
+### tow 5 m/s
+   the moment, from 1/ω̇ = (I_dry + I_water)/M over 5 payload spreads at each held roll (the spreads leave the mass, the
+   centre of mass and so the whole hydrodynamic condition alone — check the draft column agrees across them):
+     held roll | runs | the rail reached | M, N·m | K = M/roll, N·m/rad | I_water, kg·m² | fit R² | the drafts
+           1.0° |    5 |             1.05° |   3.89 |               212.1 |         0.7926 | 1.00000 | 0.204 0.204 0.204 0.204 0.203
+           5.0° |    5 |             5.24° |   7.45 |                81.5 |         0.8022 | 0.99999 | 0.213 0.213 0.213 0.213 0.213
+          20.0° |    5 |            20.93° |  18.32 |                50.2 |         1.0141 | 0.99929 | 0.250 0.253 0.253 0.252 0.252
+   the spring over 15 held points (push 0 N): dω̇/d(rail) = -16.70 1/s², ω̇ = 0 at a rail of -5.71°, restoring
+   quartiles of rollAccel over every held run: -4.784 / -1.985 / -0.760 rad/s²
+
+### tow 6.5 m/s
+   the moment, from 1/ω̇ = (I_dry + I_water)/M over 5 payload spreads at each held roll (the spreads leave the mass, the
+   centre of mass and so the whole hydrodynamic condition alone — check the draft column agrees across them):
+     held roll | runs | the rail reached | M, N·m | K = M/roll, N·m/rad | I_water, kg·m² | fit R² | the drafts
+           1.0° |    5 |             1.02° |   5.11 |               287.2 |         0.7223 | 1.00000 | 0.115 0.115 0.115 0.115 0.114
+           5.0° |    5 |             5.11° |  10.22 |               114.6 |         0.7643 | 0.99998 | 0.135 0.133 0.131 0.130 0.130
+          20.0° |    5 |            20.75° |  33.64 |                92.9 |         0.8233 | 0.99967 | 0.227 0.164 0.148 0.156 0.161
+   the spring over 15 held points (push 0 N): dω̇/d(rail) = -40.51 1/s², ω̇ = 0 at a rail of -2.06°, restoring
+   quartiles of rollAccel over every held run: -6.774 / -3.356 / -1.056 rad/s²
+
+### tow 7.5 m/s
+   the moment, from 1/ω̇ = (I_dry + I_water)/M over 5 payload spreads at each held roll (the spreads leave the mass, the
+   centre of mass and so the whole hydrodynamic condition alone — check the draft column agrees across them):
+     held roll | runs | the rail reached | M, N·m | K = M/roll, N·m/rad | I_water, kg·m² | fit R² | the drafts
+           1.0° |    5 |             1.01° |   6.13 |               347.8 |         0.7081 | 1.00000 | 0.085 0.084 0.084 0.084 0.084
+           5.0° |    5 |             5.05° |  14.47 |               164.1 |         0.7741 | 0.99995 | 0.088 0.087 0.089 0.091 0.091
+          20.0° |    5 |            20.58° |  42.88 |               119.4 |         0.6870 | 0.99936 | 0.174 0.139 0.130 0.113 0.115
+   the spring over 15 held points (push 0 N): dω̇/d(rail) = -76.12 1/s², ω̇ = 0 at a rail of -0.69°, restoring
+   quartiles of rollAccel over every held run: -9.651 / -4.186 / -1.473 rad/s²
+
+### tow 9 m/s
+   the moment, from 1/ω̇ = (I_dry + I_water)/M over 5 payload spreads at each held roll (the spreads leave the mass, the
+   centre of mass and so the whole hydrodynamic condition alone — check the draft column agrees across them):
+     held roll | runs | the rail reached | M, N·m | K = M/roll, N·m/rad | I_water, kg·m² | fit R² | the drafts
+           1.0° |    5 |             1.01° |   4.09 |               232.1 |         0.5644 | 1.00000 | 0.060 0.059 0.058 0.058 0.058
+           5.0° |    5 |             5.05° |  19.14 |               217.2 |         0.5647 | 0.99993 | 0.085 0.069 0.066 0.064 0.065
+          20.0° |    5 |            20.29° |  58.58 |               165.4 |         0.4872 | 0.99995 | 0.136 0.106 0.100 0.090 0.089
+   the spring over 15 held points (push 0 N): dω̇/d(rail) = -109.30 1/s², ω̇ = 0 at a rail of -0.70°, restoring
+   quartiles of rollAccel over every held run: -14.216 / -5.327 / -1.159 rad/s²
+
+### tow 10.5 m/s
+   the moment, from 1/ω̇ = (I_dry + I_water)/M over 5 payload spreads at each held roll (the spreads leave the mass, the
+   centre of mass and so the whole hydrodynamic condition alone — check the draft column agrees across them):
+     held roll | runs | the rail reached | M, N·m | K = M/roll, N·m/rad | I_water, kg·m² | fit R² | the drafts
+           1.0° |    5 |             1.00° |   6.20 |               355.3 |         0.4464 | 1.00000 | 0.040 0.040 0.039 0.039 0.039
+           5.0° |    5 |             5.03° |  27.94 |               318.2 |         0.5837 | 0.99966 | 0.048 0.065 0.058 0.054 0.052
+          20.0° |    5 |            20.09° |  76.48 |               218.1 |         0.4780 | 0.99970 | 0.115 0.087 0.078 0.071 0.070
+   the spring over 15 held points (push 0 N): dω̇/d(rail) = -103.36 1/s², ω̇ = 0 at a rail of -3.52°, restoring
+   quartiles of rollAccel over every held run: -20.067 / -7.586 / -1.826 rad/s²
+
+## C. The draft-matched low carry: tow 8 m/s, where the low-carry cell trims to 0.074 m, against the
+##    rider's own 0.915 m carry's 0.077 m at 7.5 m/s.
+   the moment, from 1/ω̇ = (I_dry + I_water)/M over 5 payload spreads at each held roll (the spreads leave the mass, the
+   centre of mass and so the whole hydrodynamic condition alone — check the draft column agrees across them):
+     held roll | runs | the rail reached | M, N·m | K = M/roll, N·m/rad | I_water, kg·m² | fit R² | the drafts
+           1.0° |    5 |             1.01° |   6.85 |               388.5 |         0.6898 | 1.00000 | 0.074 0.074 0.074 0.074 0.074
+           5.0° |    5 |             5.06° |  16.05 |               181.8 |         0.7401 | 0.99996 | 0.094 0.090 0.088 0.088 0.087
+          20.0° |    5 |            20.33° |  46.08 |               129.9 |         0.4715 | 0.99998 | 0.161 0.120 0.123 0.120 0.114
+   the spring over 15 held points (push 0 N): dω̇/d(rail) = -75.75 1/s², ω̇ = 0 at a rail of -1.33°, restoring
+   quartiles of rollAccel over every held run: -10.616 / -4.727 / -1.649 rad/s²

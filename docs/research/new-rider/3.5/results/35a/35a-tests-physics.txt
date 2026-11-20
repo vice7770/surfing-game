@@ -1,0 +1,1126 @@
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/surfing-game-wt/35a-askcap
+
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+node:internal/bootstrap/switches/does_own_process_state:142
+    cachedCwd = rawMethods.cwd();
+                           ^
+
+Error: ENOENT: no such file or directory, uv_cwd
+    at process.wrappedCwd [as cwd] (node:internal/bootstrap/switches/does_own_process_state:142:28)
+    at file:///Users/vicentealmeida/Documents/ChatGPT/surfing-game/node_modules/vitest/dist/chunks/index.D4dXTzh9.js:669:21
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'uv_cwd'
+}
+
+Node.js v22.17.0
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 37 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit node:events:530:35
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit ../../surfing-game/node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit node:events:518:28
+ ❯ Process.ChildProcess._handle.onexit node:internal/child_process:293:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  21 passed (21)
+      Tests  352 passed | 16 expected fail (368)
+     Errors  37 errors
+   Start at  16:43:54
+   Duration  349.84s (tests 98%, import 1%, transform 1%)
+

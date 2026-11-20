@@ -1,0 +1,113 @@
+{
+ "generated": "2026-11-13T03:38:16",
+ "machine": "Apple M4 Pro, 10 performance + 4 efficiency cores, 48 GB, macOS 27.2",
+ "levels": {
+  "scout": 10,
+  "phase1": 10,
+  "phase2": 14
+ },
+ "basilisk": "4ec35831 2026-10-21",
+ "cases": {
+  "pool_straight_big": {
+   "what": "Barrel 1.8 m faces",
+   "transect": "the straight reef's ray over its barrel section (s 65\u2013175), platform to crest",
+   "H_over_h0": 0.437,
+   "period_s": 10.0,
+   "S1": 0.0463,
+   "S2": 0.0463,
+   "HMID": 0.2,
+   "HS": 0.2,
+   "reef_top_h0": null,
+   "back_slope": null,
+   "domain_h0": 64.0,
+   "window": [
+    31.0,
+    47.0
+   ],
+   "tswitch": 23.5,
+   "tmax": 34.0,
+   "dx_m": 0.017578125,
+   "A0": 0.3536428,
+   "A0_from": "scout",
+   "foot_crest_m": 1.5913925999999998,
+   "t_vertical": 28.1,
+   "t_touchdown": 29.575,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 2.094948,
+    "x_m": 168.90840000000003,
+    "trough_m": -0.5145975,
+    "H_m": 2.6095455000000003
+   },
+   "pre_touchdown": {
+    "t": 29.475,
+    "crest_m": 2.0463255,
+    "trough_m": -0.5015385,
+    "H_m": 2.547864,
+    "jet_m2": 0.6098952737147556,
+    "tube_m2": 1.3324760987663922,
+    "tube_L_m": 2.24867065726002,
+    "tube_W_m": 0.848684114896292,
+    "L/W": 2.6495967319180993,
+    "tilt_deg": 45.491572061427036,
+    "lip_m": 0.27122481086577,
+    "lip_cells": 15.429678129252693,
+    "per H at touchdown": {
+     "jet": 0.0939512976421885,
+     "tube": 0.20526123738229377,
+     "lip": 0.10645183999843398
+    },
+    "per H at vertical": {
+     "jet": 0.08956235830555821,
+     "tube": 0.19567244891804564,
+     "lip": 0.1039356511951104
+    },
+    "open_s": 0.9989960556809282
+   },
+   "depth_vertical_m": 2.560927012270465,
+   "wall_s": {
+    "scout": 81.07,
+    "p1": 34.64,
+    "p2": 47264.25
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 357,
+    "clean": 298,
+    "by_phase": {
+     "pre": {
+      "n": 120,
+      "clean": 93,
+      "flags": {
+       "jump_lip": 27
+      }
+     },
+     "open": {
+      "n": 59,
+      "clean": 59,
+      "flags": {}
+     },
+     "post": {
+      "n": 178,
+      "clean": 146,
+      "flags": {
+       "surface_torn_in_window": 2,
+       "jump_lip": 26,
+       "jump_crest": 2,
+       "no_cavity": 1,
+       "jump_toe": 9,
+       "toe_collapsed": 2
+      }
+     }
+    }
+   },
+   "psi0": 0.06003987589935773,
+   "fits": {
+    "A_O/H2": 0.27635209990868376,
+    "A_J/H2": 0.118393245315714,
+    "W/L": 0.39772623386883316,
+    "theta_O": 41.2064337710891
+   }
+  }
+ }
+}

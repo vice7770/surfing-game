@@ -1,0 +1,120 @@
+@@@ compress 0.25 0
+## shipped (the ankle unbounded) — fell 'balance' at 3.82 s (roll -43.6° on that frame), 229 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.700 | -29.8 | -34.1 | -0.059 | 0.632 | -2.31 | 0.05 | -2.36 | -2.34 / -0.28 | 7.90 | 151 | 23.7 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.88 s (roll -18.6° on that frame), 233 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.650 | -5.8 | -27.9 | -0.217 | 0.594 | -1.44 | 1.26 | -2.70 | -1.66 / 0.89 | 7.85 | 106 | 27.3 |
+@@@ compress 0.25 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 3.58 s (roll -18.7° on that frame), 215 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.583 | -18.7 | -34.1 | -0.173 | 0.629 | -2.57 | 0.35 | -2.91 | -2.66 / 0.03 | 8.85 | 453 | 22.9 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.77 s (roll -7.1° on that frame), 226 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.467 | 7.8 | -13.1 | -0.197 | 0.597 | -1.18 | 1.91 | -3.08 | -1.47 / 1.49 | 8.54 | 88 | 18.9 |
+@@@ compress 0.25 3
+## shipped (the ankle unbounded) — fell 'balance' at 4.05 s (roll 13.4° on that frame), 243 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 4.033 | 15.8 | 14.0 | -0.002 | 0.617 | 0.49 | -0.19 | 0.68 | 0.13 / -0.71 | 9.01 | 198 | 5.6 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.83 s (roll 8.3° on that frame), 230 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.817 | 7.0 | 23.3 | 0.160 | 0.598 | 0.08 | -1.15 | 1.23 | 0.19 / -1.00 | 8.39 | 87 | 82.6 |
+@@@ compress 0.5 0
+## shipped (the ankle unbounded) — fell 'balance' at 3.33 s (roll 74.3° on that frame), 200 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.333 | 74.3 | 70.0 | -0.003 | 0.631 | 1.74 | 0.12 | 1.62 | 1.04 / -0.46 | 9.47 | 1 | 11.9 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.35 s (roll 82.4° on that frame), 201 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.333 | 82.0 | 70.0 | -0.068 | 0.629 | 1.89 | 0.17 | 1.72 | 0.94 / -0.73 | 9.47 | -2 | 11.6 |
+@@@ compress 0.5 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 3.40 s (roll 67.0° on that frame), 204 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.383 | 65.0 | 51.0 | -0.103 | 0.590 | 1.70 | 0.27 | 1.43 | 1.14 / 0.04 | 12.29 | -185 | 17.2 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.18 s (roll 13.5° on that frame), 191 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.167 | 17.3 | 27.4 | 0.105 | 0.609 | -0.14 | -1.09 | 0.95 | -0.20 / -1.42 | 11.70 | 91 | -57.5 |
+@@@ compress 0.5 3
+## shipped (the ankle unbounded) — fell 'balance' at 3.42 s (roll 86.7° on that frame), 205 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.383 | 89.8 | 70.0 | 0.012 | 0.631 | 1.97 | -0.35 | 2.31 | 0.91 / -1.71 | 10.78 | 47 | 18.9 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.25 s (roll 96.6° on that frame), 195 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.233 | 77.8 | 61.4 | -0.145 | 0.566 | 1.91 | 0.15 | 1.76 | 1.44 / 0.92 | 10.08 | -106 | 102.6 |
+@@@ compress 0.75 0
+## shipped (the ankle unbounded) — fell 'balance' at 2.73 s (roll 89.6° on that frame), 164 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 2.733 | 89.6 | 70.0 | 0.019 | 0.625 | 1.79 | -0.20 | 1.99 | 0.54 / -1.82 | 7.88 | -10 | 18.4 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 2.73 s (roll 88.9° on that frame), 164 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 2.717 | 89.8 | 70.0 | -0.014 | 0.611 | 1.85 | 0.03 | 1.82 | 0.48 / -1.62 | 7.80 | 40 | 24.6 |
+@@@ compress 0.75 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 1.42 s (roll 88.1° on that frame), 85 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.383 | 90.0 | 70.0 | -0.030 | 0.650 | 1.43 | 0.12 | 1.31 | 0.47 / -1.14 | 3.20 | -111 | 30.9 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.30 s (roll 95.9° on that frame), 78 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.283 | 78.6 | 70.0 | -0.020 | 0.605 | 1.43 | 0.02 | 1.41 | 0.80 / 0.27 | 2.66 | -158 | 119.2 |
+@@@ compress 0.75 3
+## shipped (the ankle unbounded) — fell 'balance' at 1.60 s (roll 69.7° on that frame), 96 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.583 | 71.8 | 70.0 | 0.070 | 0.599 | 1.42 | 0.15 | 1.27 | 0.95 / -0.24 | 4.52 | 28 | 99.0 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.60 s (roll 69.7° on that frame), 96 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.583 | 71.8 | 70.0 | 0.070 | 0.599 | 1.42 | 0.15 | 1.27 | 0.95 / -0.24 | 4.52 | 28 | 99.0 |
+@@@ compress 1 0
+## shipped (the ankle unbounded) — fell 'balance' at 2.65 s (roll 88.7° on that frame), 159 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 2.600 | 89.8 | 70.0 | -0.005 | 0.611 | 2.27 | 0.28 | 2.00 | 0.95 / -1.44 | 7.82 | -171 | 24.3 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 2.55 s (roll 90.6° on that frame), 153 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 2.550 | 90.6 | 70.0 | -0.116 | 0.572 | 2.48 | 0.40 | 2.08 | 1.70 / 0.51 | 7.54 | -116 | 65.8 |
+@@@ compress 1 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 1.30 s (roll 89.8° on that frame), 78 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.250 | 89.9 | 70.0 | -0.054 | 0.626 | 1.51 | 0.57 | 0.94 | 0.72 / -0.76 | 2.47 | -333 | 27.2 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.30 s (roll 88.3° on that frame), 78 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.283 | 90.0 | 70.0 | -0.034 | 0.637 | 0.74 | 0.23 | 0.51 | -0.57 / -1.33 | 2.61 | -95 | 30.4 |
+@@@ compress 1 3
+## shipped (the ankle unbounded) — fell 'balance' at 1.50 s (roll 82.2° on that frame), 90 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.433 | 90.0 | 70.0 | -0.016 | 0.636 | 1.81 | 0.60 | 1.22 | 0.57 / -1.04 | 3.74 | -410 | 48.2 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.35 s (roll 94.0° on that frame), 81 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.333 | 84.6 | 70.0 | -0.081 | 0.596 | 1.80 | 0.62 | 1.18 | 1.51 / 1.11 | 3.08 | -148 | 111.0 |
+@@@ tall 0.25 0
+## shipped (the ankle unbounded) — fell 'balance' at 3.83 s (roll 1.1° on that frame), 230 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.833 | 1.1 | 11.2 | 0.149 | 0.893 | -1.20 | -2.01 | 0.81 | -1.20 / -2.08 | 9.32 | 134 | 27.9 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.83 s (roll -5.6° on that frame), 230 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.817 | -1.3 | 10.7 | 0.175 | 0.892 | -1.32 | -1.68 | 0.36 | -1.33 / -1.99 | 9.28 | -105 | 62.8 |
+@@@ tall 0.25 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 3.77 s (roll -6.0° on that frame), 226 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.750 | -3.9 | 3.1 | 0.093 | 0.866 | -1.00 | -1.54 | 0.54 | -1.09 / -1.69 | 9.40 | -138 | -28.1 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.58 s (roll 30.7° on that frame), 215 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.567 | 24.9 | 16.8 | -0.093 | 0.896 | -0.00 | 0.36 | -0.36 | -0.03 / 0.71 | 8.80 | -107 | 105.8 |
+@@@ tall 0.25 3
+## shipped (the ankle unbounded) — fell 'balance' at 3.85 s (roll 2.6° on that frame), 231 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.833 | 5.4 | 12.0 | 0.103 | 0.902 | -0.81 | -1.10 | 0.28 | -0.95 / -1.38 | 8.23 | 197 | 27.1 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.85 s (roll 0.4° on that frame), 231 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.833 | 4.6 | 11.6 | 0.109 | 0.901 | -0.84 | -1.05 | 0.21 | -0.98 / -1.41 | 8.23 | 107 | -57.0 |
+@@@ tall 0.5 0
+## shipped (the ankle unbounded) — fell 'balance' at 3.25 s (roll 90.0° on that frame), 195 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.250 | 90.0 | 70.0 | -0.113 | 0.645 | 2.28 | 0.40 | 1.88 | 1.14 / -0.80 | 9.44 | -290 | 22.3 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.18 s (roll 98.4° on that frame), 191 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.167 | 80.9 | 64.4 | -0.167 | 0.637 | 2.17 | 0.07 | 2.10 | 1.67 / 0.92 | 9.01 | -107 | 105.5 |
+@@@ tall 0.5 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 3.12 s (roll 52.9° on that frame), 187 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.100 | 53.1 | 45.1 | -0.104 | 0.906 | 1.11 | 0.50 | 0.61 | 0.72 / 0.10 | 11.25 | -36 | 2.1 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.12 s (roll 53.0° on that frame), 187 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.100 | 53.1 | 45.0 | -0.104 | 0.906 | 1.11 | 0.49 | 0.62 | 0.71 / 0.11 | 11.25 | -34 | 9.4 |
+@@@ tall 0.5 3
+## shipped (the ankle unbounded) — fell 'balance' at 3.38 s (roll 90.6° on that frame), 203 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.367 | 90.0 | 70.0 | -0.087 | 0.667 | 2.84 | 0.16 | 2.68 | 1.81 / -0.78 | 10.35 | -281 | 29.8 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 3.27 s (roll 100.9° on that frame), 196 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.250 | 87.3 | 56.3 | -0.326 | 0.611 | 2.57 | 0.16 | 2.41 | 2.45 / 1.36 | 9.76 | -100 | 80.4 |
+@@@ tall 0.75 0
+## shipped (the ankle unbounded) — fell 'balance' at 3.32 s (roll 72.1° on that frame), 199 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 3.300 | 70.4 | 68.7 | -0.017 | 0.727 | 1.74 | -0.38 | 2.12 | 1.25 / -0.69 | 10.95 | 9 | 12.7 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 2.98 s (roll 54.6° on that frame), 179 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 2.967 | 68.5 | 36.2 | -0.347 | 0.635 | 1.76 | 0.90 | 0.86 | 1.30 / -0.39 | 9.44 | 14 | -42.0 |
+@@@ tall 0.75 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 1.43 s (roll 91.1° on that frame), 86 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.417 | 88.1 | 70.0 | -0.046 | 0.696 | 1.75 | 0.65 | 1.10 | 1.09 / -0.05 | 2.98 | -315 | 37.7 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.38 s (roll 97.1° on that frame), 83 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.367 | 80.3 | 70.0 | -0.021 | 0.666 | 1.52 | -0.06 | 1.58 | 1.05 / 0.49 | 2.71 | -177 | 124.1 |
+@@@ tall 0.75 3
+## shipped (the ankle unbounded) — fell 'balance' at 1.85 s (roll 90.1° on that frame), 111 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.833 | 87.8 | 70.0 | -0.017 | 0.755 | 2.14 | 0.44 | 1.70 | 0.96 / -0.88 | 5.74 | -331 | 60.9 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.77 s (roll 90.0° on that frame), 106 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.767 | 90.0 | 70.0 | -0.170 | 0.749 | 2.13 | 0.63 | 1.49 | 1.53 / 0.90 | 5.22 | -150 | 84.5 |
+@@@ tall 1 0
+## shipped (the ankle unbounded) — fell 'balance' at 2.67 s (roll 63.7° on that frame), 160 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 2.650 | 62.7 | 63.3 | 0.013 | 0.830 | 1.17 | -1.16 | 2.33 | 0.72 / -1.45 | 9.09 | 19 | 21.2 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 2.25 s (roll 74.4° on that frame), 135 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 2.233 | 64.7 | 29.8 | -0.418 | 0.704 | 0.58 | 0.04 | 0.54 | 0.43 / 0.90 | 7.11 | -99 | 92.4 |
+@@@ tall 1 1.5
+## shipped (the ankle unbounded) — fell 'balance' at 1.32 s (roll 88.6° on that frame), 79 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.267 | 85.2 | 70.0 | 0.007 | 0.653 | 1.66 | 0.07 | 1.60 | 1.16 / -0.24 | 2.13 | -452 | 84.9 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.33 s (roll 88.3° on that frame), 80 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.317 | 89.7 | 70.0 | 0.022 | 0.695 | 1.01 | -0.20 | 1.21 | -0.05 / -1.82 | 2.36 | -134 | 40.3 |
+@@@ tall 1 3
+## shipped (the ankle unbounded) — fell 'balance' at 1.53 s (roll 89.5° on that frame), 92 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.517 | 90.0 | 70.0 | 0.015 | 0.734 | 1.97 | 0.24 | 1.73 | 1.20 / -0.68 | 3.79 | -243 | 43.0 |
+## ankleLimit=feet (the sole's own bound) — fell 'balance' at 1.50 s (roll 92.8° on that frame), 90 frames; the last row is the last frame the split reconstructs (3.2z's rule), not the separation frame
+| 0.000 | 1.483 | 87.0 | 70.0 | -0.006 | 0.710 | 1.91 | 0.46 | 1.44 | 1.31 / 0.43 | 3.60 | -264 | 119.3 |

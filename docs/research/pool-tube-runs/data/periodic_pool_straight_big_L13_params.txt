@@ -1,0 +1,17 @@
+name=pool_straight_big
+kind=p2
+level=13
+h0=4.5
+H_over_h0=0.437
+period=10
+S1=0.0463
+HMID=0.2
+S2=0.0463
+HS=0.2
+domain=64
+tout0=23
+tmax=34
+xwin0=31
+xwin1=47
+xtoe=28.22
+train_c=1.0742567605428652

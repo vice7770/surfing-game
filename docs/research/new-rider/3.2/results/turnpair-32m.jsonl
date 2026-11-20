@@ -1,0 +1,11 @@
+{"set": "32m-pairB-c5", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.68, 1.98], "outcomes": {"other fall in up": 2, "sudden fall in down": 2, "other fall in down": 4}}
+{"set": "32m-pairB-c8", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.93, 3.5], "outcomes": {"other fall in wait": 2, "other fall in up": 2, "sudden fall in up": 2, "sudden fall in down": 2}}
+{"set": "32m-pairB-c9", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [1.12, 3.58], "outcomes": {"other fall in wait": 2, "other fall in up": 4, "sudden fall in up": 2}}
+{"set": "32m-pairB-c10", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [1.52, 3.78], "outcomes": {"other fall in wait": 4, "other fall in up": 2, "sudden fall in up": 2}}
+{"set": "32m-pairB-c11", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [1.27, 3.78], "outcomes": {"other fall in wait": 4, "other fall in up": 2, "sudden fall in up": 2}}
+{"set": "32m-pairB-c12", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [1.13, 3.72], "outcomes": {"other fall in wait": 2, "other fall in up": 4, "sudden fall in up": 2}}
+{"set": "32m-pairB-c13", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [1.05, 3.43], "outcomes": {"other fall in up": 4, "sudden fall in up": 4}}
+{"set": "32m-pairB-c15", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.85, 3.7], "outcomes": {"other fall in wait": 2, "other fall in up": 2, "sudden fall in up": 2, "other fall in down": 2}}
+{"set": "32m-pairB-c20", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.77, 3.47], "outcomes": {"other fall in wait": 2, "sudden fall in up": 4, "other fall in down": 2}}
+{"set": "32m-pairB-c25", "n": 8, "topTurnBegun": 0, "onePair": 0, "twoPairs": 0, "fellOf": 8, "fellRangeS": [0.57, 0.88], "outcomes": {"other fall in down": 8}}
+{"set": "old", "n": 8, "topTurnBegun": 8, "onePair": 7, "twoPairs": 6, "fellOf": 2, "fellRangeS": [5.63, 11.53], "outcomes": {"time up": 4, "done": 2, "sudden fall in run": 2}}

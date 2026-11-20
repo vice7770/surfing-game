@@ -111,8 +111,8 @@ describe('OnlinePlay', () => {
     expect(link.sent[0]).toMatchObject({ x: 2, z: -110, paddling: true, step: Math.round(100 / SURF_ZONE_STEP) });
   });
 
-  it('spawns from the ride\'s own start out: 11 m outside the break line, nearer at the Canyon\'s Big', () => {
-    for (const config of [{ spot: 'beach', significantHeight: 1.4 }, { spot: 'canyon', significantHeight: 2.4 }] as const) {
+  it('spawns from the ride\'s own start out: 11 m outside the break line, nearer at the Canyon\'s Small', () => {
+    for (const config of [{ spot: 'beach', significantHeight: 1.4 }, { spot: 'canyon', significantHeight: 2.4 }, { spot: 'canyon', significantHeight: 0.9 }] as const) {
       const { link, surf, play } = setup();
       surf.fake.config = config;
       link.seaTime = 100 + 2 * SURF_ZONE_STEP;
@@ -121,7 +121,12 @@ describe('OnlinePlay', () => {
       expect(out).toBeGreaterThanOrEqual(rideLineupOffset(config) - 1e-9);
       expect(out).toBeLessThanOrEqual(rideLineupOffset(config) + SPAWN_REACH + 1e-9);
     }
-    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4 })).toBeLessThan(RIDE_LINEUP_OFFSET);
+    // Since canyon-beach-break the Canyon's starts are its beach peak's (6, 9 and 3 m out), on either layout since canyon-b
+    // (`?canyonBed=old`, main's at 376d9cd4: the bowl leaves the upcoast peak's tip as it was).
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4 })).toBe(3);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9 })).toBeLessThan(RIDE_LINEUP_OFFSET);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 0.9, canyonBed: 'old' })).toBe(6);
+    expect(rideLineupOffset({ spot: 'canyon', significantHeight: 2.4, canyonBed: 'old' })).toBe(3);
   });
 
   it('passes the others\' pushes on to the water', () => {

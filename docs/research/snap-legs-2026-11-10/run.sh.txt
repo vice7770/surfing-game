@@ -1,0 +1,53 @@
+# Snap-legs probes (2026-11-10). Run from the repo root: bash docs/research/snap-legs-2026-11-10/run.sh.txt <out-dir>
+# Copies the scratch probe into src/physics as a zz-* file, runs it with the switch off and on, and removes it.
+set -e
+D=docs/research/snap-legs-2026-11-10; O=${1:?out dir}; mkdir -p "$O"; O=$(cd "$O" && pwd)
+T=src/physics/zz-turnbody.test.ts; cp $D/turnbody.test.ts.txt $T
+# run <out name> VAR=value...
+run() { out=$1; shift; env "$@" OUT=$O/$out.json npx vitest run $T 2>&1 | grep -E "rror|failed" || true; }
+opts() { case $1 in
+  off) echo '{}';; on) echo '{"snapLegs":"drive"}';;
+  deep-off) echo '{"snapDepth":"deep"}';; deep-on) echo '{"snapDepth":"deep","snapLegs":"drive"}';;
+  stamp-off) echo '{"snapStamp":"on"}';; stamp-on) echo '{"snapStamp":"on","snapLegs":"drive"}';;
+  lean-off) echo '{"snapPivot":"lean"}';; lean-on) echo '{"snapPivot":"lean","snapLegs":"drive"}';;
+  agile-off) echo '{"agile":"on"}';; agile-on) echo '{"agile":"on","snapLegs":"drive"}';;
+  both-off) echo '{"legDrive":"on","carveFlex":"on"}';; both-on) echo '{"legDrive":"on","carveFlex":"on","snapLegs":"drive"}';;
+esac; }
+for sw in off on; do export OPTS="$(opts $sw)"; for W in flat canyon; do
+  # 1, 2. the cutback from a Compress carve and from a stick-only carve: the study's three speeds, and six for the means
+  run cut-$W-$sw PLAN=cutback WATER=$W SPEEDS=6,8,11 CARVE=1.0
+  run stand-$W-$sw PLAN=standcut WATER=$W SPEEDS=6,8,11 CARVE=1.0
+  run cut6-$W-$sw PLAN=cutback WATER=$W SPEEDS=6,7,8,9,10,11 CARVE=1.0
+  run stand6-$W-$sw PLAN=standcut WATER=$W SPEEDS=6,7,8,9,10,11 CARVE=1.0
+  # 3. half a stick under Snap
+  run half-$W-$sw PLAN=cutback WATER=$W SPEEDS=6,7,8,9,10,11 CARVE=1.0 SNAPSTICK=0.5
+  # Snap with the stick from trim (no carve first: one frame of it)
+  run top-$W-$sw PLAN=standcut WATER=$W SPEEDS=6,7,8,9,10,11 CARVE=0
+  # 4. the guards: no Snap held
+  run trim-$W-$sw PLAN=trim WATER=$W SPEEDS=6,8,11
+  run compress-$W-$sw PLAN=carve WATER=$W SPEEDS=6,8,11
+  run stick-$W-$sw PLAN=carve WATER=$W SPEEDS=6,8,11 STAND=1
+done; done
+# the other switches: the cutbacks' means with each, the new switch off and on
+for k in deep stamp lean agile both; do for sw in off on; do export OPTS="$(opts $k-$sw)"; for W in flat canyon; do
+  run cut6-$W-$k-$sw PLAN=cutback WATER=$W SPEEDS=6,7,8,9,10,11 CARVE=1.0
+  run stand6-$W-$k-$sw PLAN=standcut WATER=$W SPEEDS=6,7,8,9,10,11 CARVE=1.0
+  if [ $k = both ]; then for p in trim compress stick; do
+    case $p in trim) a="PLAN=trim";; compress) a="PLAN=carve";; stick) a="PLAN=carve STAND=1";; esac
+    run $p-$W-$k-$sw $a WATER=$W SPEEDS=6,8,11
+  done; fi
+done; done; done
+rm $T
+cd $O; S=$OLDPWD/$D
+for sw in off on; do
+  echo "##### 1. the cutback from a Compress carve (toe = frontside cutback's first turn on the toes), switch $sw"; python3 $S/snapsum.py.txt cut-flat-$sw.json cut-canyon-$sw.json
+  echo "##### 2. Snap from a stick-only carve, switch $sw"; python3 $S/snapsum.py.txt stand-flat-$sw.json stand-canyon-$sw.json
+  echo "##### 3. half a stick under Snap, switch $sw"; python3 $S/snapsum.py.txt half-flat-$sw.json half-canyon-$sw.json
+  echo "##### Snap with the stick from trim, switch $sw"; python3 $S/snapsum.py.txt top-flat-$sw.json top-canyon-$sw.json
+done
+echo "##### means over six speeds, both sides, flat and the Canyon-matched wave (24 runs a row)"
+a=""; for k in "" deep- stamp- lean- agile- both-; do for sw in off on; do for p in cut6 stand6; do a="$a $p-$k$sw=$p-flat-$k$sw.json,$p-canyon-$k$sw.json"; done; done; done
+for sw in off on; do for p in half top; do a="$a $p-$sw=$p-flat-$sw.json,$p-canyon-$sw.json"; done; done
+python3 $S/agg.py.txt $a
+echo "##### 4. same bytes with the switch on and no Snap held?"
+for W in flat canyon; do for p in trim compress stick; do cmp $p-$W-off.json $p-$W-on.json && echo "$p $W: identical"; cmp $p-$W-both-off.json $p-$W-both-on.json && echo "$p $W (legDrive + carveFlex): identical"; done; done

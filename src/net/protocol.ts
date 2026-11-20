@@ -1,5 +1,6 @@
 import { DEFAULT_SURFER, sanitizeSurfer, type SurferSettings } from '../game/SurferChoice';
 import type { SurfConditions, SwellSize, TideLevel, TimeOfDay, WindKind } from '../game/SurfConditions';
+import type { PoolWaves } from '../wave/pool';
 import type { SpotName } from '../wave/Bathymetry';
 import { normalizeRoomCode } from './roomCode';
 
@@ -35,6 +36,7 @@ const SWELLS: readonly SwellSize[] = ['practice', 'small', 'medium', 'big'];
 const TIDES: readonly TideLevel[] = ['low', 'mid', 'high'];
 const WINDS: readonly WindKind[] = ['offshore', 'calm', 'onshore'];
 const TIMES: readonly TimeOfDay[] = ['dawn', 'midday', 'sunset'];
+const POOL_WAVES: readonly PoolWaves[] = ['training', 'barrel'];
 
 /** What a room's creator chooses. */
 export interface RoomSettings {
@@ -130,10 +132,13 @@ export function parseRoomSettings(raw: unknown): RoomSettings | undefined {
   const tide = oneOf(conditions.tide, TIDES);
   const wind = oneOf(conditions.wind, WINDS);
   const time = oneOf(conditions.time, TIMES);
+  // The Wave Pool's waves (its Barrel mode): optional, so a room from before it, with none, runs Training.
+  const waves = conditions.waves === undefined ? undefined : oneOf(conditions.waves, POOL_WAVES);
   const cap = value.cap;
   if (!spot || !swell || !tide || !wind || !time) return undefined;
+  if (conditions.waves !== undefined && !waves) return undefined;
   if (typeof cap !== 'number' || !Number.isInteger(cap) || cap < ROOM_CAP.min || cap > ROOM_CAP.max) return undefined;
-  return { spot, conditions: { swell, tide, wind, time }, cap };
+  return { spot, conditions: { swell, tide, wind, time, ...(waves ? { waves } : {}) }, cap };
 }
 
 export function parseLook(raw: unknown): PlayerLook | undefined {

@@ -1,8 +1,12 @@
 import type { SpotName } from '../Bathymetry';
 import { BARREL_SPOTS } from './barrelSpots';
-import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+import { FRONT_CAPACITY, FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
+import { arcPlaces, arcRespace, lipShare, type ArcPlaces } from './arcMesh';
+import { FACE_ANCHOR, FaceAnchor, smoothShifts, type TubeFace } from './faceAnchor';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
+import { seamB, seamBand, seamCourseWeight, seamHeightWeight } from './tubeSeam';
+import { REST_DUG, dugAlong, dugCap, dugCrestRamp, dugPlace, dugShare } from './wallFoot';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
 export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from './lipSheet';
@@ -11,18 +15,23 @@ export { SHEET, THROAT, arcView, sheetAcross, throatViews, tubeSkyView } from '.
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
  * "Lofting" and "The seam"; the advisor's rulings, 2026-09-30):
  * - `spacing`, `fine`, m: slices every half metre along the front, a quarter where neighbouring clocks differ by more
- *   than `frames` library frames (the advisor: 2–4, so neighbours stay within a stage);
+ *   than `frames` library frames (the advisor: 2–4, so neighbours stay within a stage), and halved again where they
+ *   still do, up to `levels` times (0.25, 0.125, 0.0625 m: the advisor's fifth ruling, 2026-10-22, a slow peel's clock
+ *   steps 4–8 times that between half-metre slices at the Canyon); within the budget the most levels that fit;
  * - `budget`, vertices: past it the spacing widens and neighbouring clocks are clamped to T_open/4 (the advisor);
  * - `pinned`: samples at each end of a profile blended onto the water, never reaching the lip or throat [inferred];
  * - `extension`, `extensionSamples`: the surface runs on over the water this far past each end, m, in this many
  *   samples, so the seam's band always has both surfaces [inferred];
  * - `band`, m: the dithered overlap at the mask's edge [inferred];
- * - `endBlend`, m: a front's ends blend into the water over this length [inferred].
+ * - `endBlend`, m: a front's ends, and the ends a cut leaves (`sealRuns`), blend into the water over this length: where a
+ *   run meets water that isn't on its front, and nowhere else (the advisor, 2026-10-22: the same as `band`; it was 2.5 m,
+ *   which drew short close-out sections as pointed shards, T2). A run's leading end needs no taper of its own: its
+ *   slices draw their own clocks' frames, the steepening face before the throw and the lip growing after it [inferred].
  * (After touchdown a slice fades into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a
  * faded slice is dropped.)
  */
 export const LOFT = {
-  spacing: 0.5, fine: 0.25, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 2.5,
+  spacing: 0.5, fine: 0.25, levels: 3, frames: 3, budget: 40_000, pinned: 6, extension: 1.5, extensionSamples: 3, band: 1, endBlend: 1,
 } as const;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
@@ -45,6 +54,45 @@ export const REST = { behind: 0.1, ramp: 0.5, near: 0.1, ahead: 3, step: 0.5 } a
 /** H for `REST`, m: the crest's height over the lower of the water at the toe and at the profile's front end. */
 function restHeight(crestY: number, toeY: number, frontY: number): number {
   return Math.max(1e-6, crestY - (toeY < frontY ? toeY : frontY));
+}
+
+/**
+ * How long a front's end blends into the water, m (the advisor, 2026-10-22): `LOFT.endBlend` where its end slice has
+ * thrown (a close-out's ends, a cut end with a lip), so short sections draw blunt, not as shards; and at a young end,
+ * whose end slice has not thrown (τ < 0, no lip inside the blend), at least the slice's drawn height H. The library's
+ * earliest frames already stand 0.8–1.0 of the held height on a 14–28° face, about 0.37 H over the solver's own
+ * unbroken crest beside them (Padang Medium), and over 1 H that seam is no steeper than about 20°, the face's own slope
+ * [inferred]. `profile` is scratch.
+ */
+export function endBlendLength(
+  library: ProfileLibrary, slope: number, footHeight: number, footDepth: number, tau: number, profile: Float32Array,
+  thrownEnds = false,
+): number {
+  // A thrown end under the face ruling carries a 0.8–1.0 m wall: it blends over at least its height too (`TubeFace`).
+  if (!(tau < 0) && !thrownEnds) return LOFT.endBlend;
+  library.profileAt({ slope, footHeight, footDepth, seconds: tau }, profile);
+  const height = restHeight(profile[2 * LANDMARK.crest + 1], profile[2 * LANDMARK.toe + 1], profile[2 * LAST + 1]);
+  return Math.max(LOFT.endBlend, height);
+}
+
+/** A profile's arc from the crest to the lip's tip, in its own units. */
+export function crestToTip(profile: Float32Array): number {
+  let length = 0;
+  for (let i = LANDMARK.crest; i < LANDMARK.lip; i += 1) {
+    const dx = profile[2 * i + 2] - profile[2 * i];
+    const dy = profile[2 * i + 3] - profile[2 * i + 1];
+    length += Math.sqrt(dx * dx + dy * dy);
+  }
+  return length;
+}
+
+/** A front's end weight at σ: a smoothstep over each end's blend (`endBlendLength`), the lower of the two; 0 past an end. */
+export function endWeight(sigma: number, first: number, last: number, blendFirst: number, blendLast: number): number {
+  const a = sigma - first;
+  const b = last - sigma;
+  if (a <= 0 || b <= 0) return 0;
+  const u = Math.min(1, a / blendFirst, b / blendLast);
+  return u * u * (3 - 2 * u);
 }
 /**
  * The library's runs' slope along the wave's path, per spot with a barrel transect (`BARREL_SPOTS`; the owner's 1:19 at
@@ -134,10 +182,22 @@ export interface LoftResult {
   overlaps: number;
   overlapsOpen: number;
   overlapOpenWeight: number;
+  /**
+   * Of `overlapsOpen`, those at weight ≥ 0.5 (the advisor's 2026-11-05 bar 8: none), and each open drop's strips this build
+   * as pairs (the dropped strip's first slice, the kept one's): diagnostics.
+   */
+  overlapsOpenHeavy: number;
+  openDrops: number[];
+  /** Under `TubeFace.merge`: overlapping strips both kept, both open at weight ≥ 0.5 (a fold the contact's first front answers). */
+  overlapsKept: number;
+  /** The clock refinement's depth this build (`LOFT.levels` unless the budget clamped it; 0: none). */
+  refineLevels: number;
   /** Ray stabilization: slices corrected, largest shared blend, minimum stored row advance, and invalid input pairs. */
   rayCorrections: number;
   rayMaxBlend: number;
   rayMinAdvance: number;
+  /** Ruling 22: how many vertices' dig the cap (`dugCap`) eased or the bed rule held in this build (a contact's: so far). */
+  dugCapped: number;
   rayInvalidIntervals: number;
   /** Per slice, its ray (the front's shoreward normal, x and z), its weight on the water, and 1 if its profile overhangs. */
   sliceRayX: Float32Array;
@@ -169,7 +229,63 @@ export interface LoftResult {
   sliceTipY: Float32Array;
   sliceTipZ: Float32Array;
   sliceMouth: Float32Array;
+  /**
+   * Per slice, how far its lip's outer surface has stretched since its face went vertical, as L(0) / L(τ), L the profile's
+   * arc from the crest to the lip's tip (`LANDMARK.crest`–`LANDMARK.lip`), at most 1; 1 before the throw (T3, the
+   * water-physics advisor, 2026-11-01: the crest's foam, carried onto the lip, thins as its surface stretches). Drawn lofts
+   * only (1 in contact mode).
+   */
+  sliceStretch: Float32Array;
+  /** Per slice, s since its lip touched down (τ less its touchdown time; ≤ 0 before). */
+  sliceAfter: Float32Array;
+  /**
+   * Per slice, its shift (the face anchor, `LoftOptions.face`): where its drawn crest stands along its ray from its
+   * point, m (0 with the crest anchor, and where the face anchor found no crossing); and the slices that fell back.
+   */
+  sliceShift: Float32Array;
+  shiftMisses: number;
+  /**
+   * A diagnostic (a probe's): per record, its smoothed shift as this build placed its case, m (NaN: the crest anchor;
+   * Infinity: a record the face anchor did not read this build).
+   */
+  recordShift?: Float32Array;
+  /**
+   * Step 7's wall water (`TubeFace.wallFlow`, the contact's loft only; absent otherwise): per slice, the anchor's height (the
+   * case's crossing at 0.3 of its height over its trough, m in the world), its crest landmark's height, m, its drawn crest's
+   * speed along its ray C (m/s) and B = U/C at the crest (0.85 before the throw, 1 from it; Derakhti et al. 2020); per
+   * vertex, the case's surface's own velocity along its ray and up, m/s (its frames at its clock's rate, carried by its
+   * anchor), from which the water there takes its normal component (the kinematic condition).
+   */
+  wall?: WallWater;
 }
+
+/** Step 7's wall water's per-slice and per-vertex fields (`LoftResult.wall`). */
+export interface WallWater {
+  low: Float32Array;
+  top: Float32Array;
+  speed: Float32Array;
+  b: Float32Array;
+  along: Float32Array;
+  up: Float32Array;
+  /**
+   * Ruling 5's seam blend (`TubeFace.seam`; absent without it), per vertex: the case's share α = α_h · α_τ there, 0 where
+   * its surface is the solver's; the wall water's flow is weighed by it (`ContactHit.seam`).
+   */
+  seam?: Float32Array;
+  /**
+   * Ruling 21's dug foot (`TubeFace.dug`; absent without it), per vertex: the case's share α at a floor vertex past the
+   * crest, where the surface is the case's also under the solver's sea; 0 elsewhere. A body's water there is the
+   * contact's surface, not the sea over it (`ContactHit.dug`).
+   */
+  dug?: Float32Array;
+}
+
+/**
+ * Step 7's wall water (`LoftResult.wall`; the advisor's 2026-11-04 ruling §1.4.3): B = U/C, the crest water's speed over
+ * the crest's, as the face goes vertical (`before`, 0.85) and from the throw (`thrown`, 1): Derakhti, Kirby, Banner, Grilli
+ * & Thomson 2020, §4 (LES and BEM).
+ */
+export const WALL_FLOW = { before: 0.85, thrown: 1 } as const;
 
 export interface LoftOptions {
   /** Build for the contact (Part B, PR 4): see `SweptLoft`. */
@@ -178,6 +294,11 @@ export interface LoftOptions {
   sheet?: boolean;
   /** Hold each drawn case at its last clear profile, with the existing touchdown/collapse clock. Off by default; ignored in contact mode. */
   holdClearDrawing?: boolean;
+  /**
+   * The step 3 ruling's tube (`TubeFace`; the pool's straight Barrel): the face anchor, the floor never under the
+   * solver's surface, and thrown ends blended over their height. None: as before. Raw Basilisk cases only.
+   */
+  face?: TubeFace;
 }
 
 const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
@@ -188,6 +309,13 @@ const C_CAP_REFINEMENT = { levels: 3, minimumSpan: 0.0625, maximumSagitta: 0.015
 const E = LOFT.extensionSamples;
 const EXTENSION_STEP = LOFT.extension / E;
 const LAST = PROFILE_POINTS - 1;
+/** Ruling 3's surface normal speed (`SweptLoft.normalSpeed`): its next frame is searched within this many segments. */
+const NORMAL_REACH = 6;
+/** Ruling 3's surface normal speed: the most a case's surface moves along its normal, m per second of its clock (inferred: the
+ * crest's own speed plus a falling jet's, about 5 + 5 m/s at 1.5–1.8 m). */
+const NORMAL_SPEED = 10;
+/** Ruling 3's case crest's own motion for the wall water's carry (`TubeFace.track`): over ±this many frames. */
+const CREST_SPAN = 4;
 const PHASE = { pre: 0, open: 1, post: 2 } as const;
 
 /**
@@ -220,6 +348,44 @@ interface Sample {
   footDepth: number;
   /** Its point's pace along its column while it runs on it, m per second of its clock (NaN: none; a point with none takes its neighbour's). */
   pace: number;
+}
+
+/**
+ * Ruling 18's build 1 (`TubeFace.anchorLine`): a per-record value at σ between records k and k + 1 on a C1 curve through
+ * the records, a cubic Hermite piece whose slope at each record is the parabola's through it and its two neighbours
+ * (Catmull-Rom on uneven spacing; an end record, or one whose neighbour has no value, takes its one segment's slope).
+ * `sigmaOf(j)`, `value(j)`: record j's σ and value, NaN outside the front or with none. `monotone`: each record's slope is
+ * limited (Fritsch and Carlson 1980: none where its two segments' slopes disagree in sign, at most three times the
+ * smaller), so the curve never turns back between two records. Straight where the segment has no length.
+ */
+export function recordCurve(sigmaOf: (j: number) => number, value: (j: number) => number, k: number, sigma: number, monotone: boolean): number {
+  const s0 = sigmaOf(k);
+  const s1 = sigmaOf(k + 1);
+  const v0 = value(k);
+  const v1 = value(k + 1);
+  const h = s1 - s0;
+  if (!(h > 1e-12)) return v0;
+  const d = (v1 - v0) / h;
+  const slopeAt = (j: number, own: number): number => {
+    // The neighbouring segment's slope on record j's other side: j − 1..j for record k, j..j + 1 for record k + 1.
+    const o = j === k ? j - 1 : j + 1;
+    const span = Math.abs(sigmaOf(o) - sigmaOf(j));
+    const other = (value(o) - value(j)) / (sigmaOf(o) - sigmaOf(j));
+    if (!(span > 1e-12) || !(other === other)) return own;
+    let m = (other * h + own * span) / (h + span);
+    if (monotone) {
+      if (other * own <= 0) return 0;
+      const limit = 3 * Math.min(Math.abs(other), Math.abs(own));
+      if (Math.abs(m) > limit) m = Math.sign(m) * limit;
+    }
+    return m;
+  };
+  const m0 = slopeAt(k, d);
+  const m1 = slopeAt(k + 1, d);
+  const t = (sigma - s0) / h;
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * v0 + (t3 - 2 * t2 + t) * h * m0 + (-2 * t3 + 3 * t2) * v1 + (t3 - t2) * h * m1;
 }
 
 /**
@@ -261,10 +427,30 @@ export class SweptLoft {
   private sealApplies = new Uint8Array(0);
   private heightReady = new Uint8Array(0);
   private rowHeightAt?: (x: number, z: number) => number;
+  /** Ruling 22's bed read (`build`'s `bedAt`), for the cap's bed rule; absent, the rule is skipped. */
+  private rowBedAt?: (x: number, z: number) => number;
   private normalReady = new Uint8Array(0);
+  /** Per vertex, 1 where the face ruling's floor holds it on the solver's surface (`TubeFace.union`), for `prepareRow`. */
+  private floorRows = new Uint8Array(0);
+  /** Ruling 21 (`TubeFace.dug`), per vertex, for `prepareRow`: its crest ramp (`dugCrestRamp`) and its rest's ease 1 − pin. */
+  private dugRows = new Float64Array(0);
+  private dugEase = new Float64Array(0);
+  private readonly dugAt = new Float64Array(2);
   private normalFirst = new Int32Array(0);
   private normalLast = new Int32Array(0);
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
+  /** A front's ends' profiles, for their blends (`endBlendLength`). */
+  private readonly endProfile = new Float32Array(2 * PROFILE_POINTS);
+  /** Per slice, the drawn height H (`restHeight`), m: the seal's young cut ends blend over it (`endBlendLength`). */
+  private readonly sliceHeight = new Float64Array(MAX_SLICES + 1);
+  /** Ruling 5's seam blend (`TubeFace.seam`), per slice: its clock's share α_τ and its height band b, m (`seamBand`). */
+  private readonly seamTauRow = new Float64Array(MAX_SLICES + 1);
+  private readonly seamBandRow = new Float64Array(MAX_SLICES + 1);
+  /** Ruling 22 (`dugCap`), per slice: the drawn height H the cap is measured in. */
+  private readonly dugHeightRow = new Float64Array(MAX_SLICES + 1);
+  /** Per slice, its library's frame time, s (the refinement's unit; read by probes). */
+  private readonly sliceFrame = new Float64Array(MAX_SLICES + 1);
+  private readonly sliceTouchdown = new Float64Array(MAX_SLICES + 1);
   /** Per front, its slices' σ, before and after refinement. */
   private base = new Float64Array(2 * MAX_SLICES + 8);
   private sigmas = new Float64Array(2 * MAX_SLICES + 8);
@@ -288,6 +474,8 @@ export class SweptLoft {
   private readonly velocity = new Float64Array(2);
   /** A slice's forward rest (`forwardRest`): its hold and end, m past the toe, and the climbs where it eases and at the toe. */
   private readonly rest = new Float64Array(4);
+  /** Scratch: a slice's profile at τ = 0, for its stretch (`stretchOf`). */
+  private readonly stretchProfile = new Float32Array(2 * PROFILE_POINTS);
   /** Per slice, its anchor (x, z) and its drawn profile's reach along its ray past its extensions, m: its footprint. */
   private readonly anchorX = new Float64Array(MAX_SLICES + 1);
   private readonly anchorZ = new Float64Array(MAX_SLICES + 1);
@@ -307,6 +495,27 @@ export class SweptLoft {
   private readonly boxes = new Float64Array(4 * (MAX_SLICES + 1));
 
   private readonly contact: boolean;
+  /** The step 3 ruling's (`LoftOptions.face`); the face anchor's arithmetic, and each front's records' smoothed shifts. */
+  private readonly face?: TubeFace;
+  private readonly faceAnchor?: FaceAnchor;
+  private recordRaw = new Float64Array(0);
+  private recordShift = new Float64Array(0);
+  /** Per record, its case's lower-face crossing's speed along its ray, m per clock second (`FaceAnchor.caseFace`). */
+  private recordSpeed = new Float64Array(0);
+  private readonly recordSigma: number[] = [];
+  private readonly faceScratch = new Float64Array(3);
+  /** Step 7's wall water: a slice's profile a frame on (`LoftResult.wall`). */
+  private readonly wallProfile = new Float32Array(2 * PROFILE_POINTS);
+  /** Ruling 18's build 2 (`TubeFace.arcMesh`): the slice's profile at its throw, the crest-to-toe arc's lengths, the vertices' places on the curve, and a vertex's wall water (along, up). */
+  private readonly arcProfile = new Float32Array(2 * PROFILE_POINTS);
+  private readonly arcLengths = new Float64Array(LANDMARK.toe - LANDMARK.crest + 1);
+  private readonly arcSlots = arcPlaces();
+  private readonly arcWall = new Float64Array(2);
+  /** Ruling 3's crest motion over ±`CREST_SPAN` frames (`TubeFace.track`): scratch. */
+  private readonly crestProfile = new Float32Array(2 * PROFILE_POINTS);
+  /** `normalSpeed`'s unit normal (along the ray, up), and its frame step, s. */
+  private readonly normalScratch = new Float64Array(2);
+  private wallStep = 0;
   private readonly measureSheet: boolean;
   private readonly holdClearDrawing: boolean;
   /** A slice's lip thickness per profile point, m, and its far side's view of the sky (`sheetAcross`). */
@@ -321,6 +530,10 @@ export class SweptLoft {
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
+    if (options.face && library.options.geometry !== 'bounded-C') {
+      this.face = options.face;
+      if (options.face.anchor) this.faceAnchor = new FaceAnchor(library, slope, options.face.continuity);
+    }
     this.measureSheet = options.sheet ?? !this.contact;
     this.holdClearDrawing = !this.contact && (options.holdClearDrawing ?? false);
     this.rayPlan = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
@@ -336,22 +549,32 @@ export class SweptLoft {
       sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
       sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
       sliceToeClimb: new Float32Array(slices), restSamples: 0,
-      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
-      rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0,
+      clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0, overlapsOpenHeavy: 0, openDrops: [], overlapsKept: 0, refineLevels: 0,
+      rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0, dugCapped: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
       sliceTipTransportAlong: new Float32Array(slices), sliceTipTransportUp: new Float32Array(slices),
       sliceFormed: new Float32Array(slices), sliceTipX: new Float32Array(slices), sliceTipY: new Float32Array(slices), sliceTipZ: new Float32Array(slices),
-      sliceMouth: new Float32Array(slices),
+      sliceMouth: new Float32Array(slices), sliceStretch: new Float32Array(slices), sliceAfter: new Float32Array(slices),
+      sliceShift: new Float32Array(slices), shiftMisses: 0, recordShift: new Float32Array(FRONT_CAPACITY),
+      ...(this.contact && options.face?.wallFlow === true && library.options.geometry !== 'bounded-C' ? { wall: {
+        low: new Float32Array(slices), top: new Float32Array(slices), speed: new Float32Array(slices), b: new Float32Array(slices),
+        along: new Float32Array(vertices), up: new Float32Array(vertices),
+        ...(options.face.seam ? { seam: new Float32Array(vertices) } : {}),
+        ...(options.face.seam && options.face.dug ? { dug: new Float32Array(vertices) } : {}),
+      } } : {}),
     };
   }
 
-  /** Internal query backend only: no mutable LoftResult escapes the worker owner. */
-  static forContactQueries(library: ProfileLibrary, slope: number): {
+  /**
+   * Internal query backend only: no mutable LoftResult escapes the worker owner. `face`: the pool's straight Barrel's tube
+   * (`TubeFace`), its rows' heights and normals found on demand too, its floor rule kept per vertex (pool-barrel-perf).
+   */
+  static forContactQueries(library: ProfileLibrary, slope: number, face?: TubeFace): {
     build: SweptLoft['build']; prepareRow(row: number): void; prepareNormal(vertex: number): void;
   } {
-    const loft = new SweptLoft(library, slope, { contact: true });
+    const loft = new SweptLoft(library, slope, { contact: true, ...(face ? { face } : {}) });
     loft.normalDemand = true;
     const vertices = loft.result.positions.length / 3;
     loft.initialX = new Float64Array(vertices);
@@ -362,6 +585,11 @@ export class SweptLoft {
     loft.sealApplies = new Uint8Array(vertices);
     loft.heightReady = new Uint8Array(MAX_SLICES + 1);
     loft.normalReady = new Uint8Array(loft.result.positions.length / 3);
+    loft.floorRows = new Uint8Array(loft.result.positions.length / 3);
+    if (face?.seam && face.dug) {
+      loft.dugRows = new Float64Array(vertices);
+      loft.dugEase = new Float64Array(vertices);
+    }
     loft.normalFirst = new Int32Array(MAX_SLICES + 1);
     loft.normalLast = new Int32Array(MAX_SLICES + 1);
     return {
@@ -371,9 +599,29 @@ export class SweptLoft {
     };
   }
 
-  /** Loft the records' fronts over the water (`heightAt`). */
-  build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): LoftResult {
+  /**
+   * A slice's stretch (`LoftResult.sliceStretch`): its drawn profile's crest-to-tip arc against the same slice's at τ = 0
+   * (the query as it stands, its clock set to 0), at most 1.
+   */
+  private stretchOf(profile: Float32Array): number {
+    const query = this.query;
+    const seconds = query.seconds;
+    query.seconds = 0;
+    this.library.profileAt(query, this.stretchProfile);
+    query.seconds = seconds;
+    const now = crestToTip(profile);
+    return now > 0 ? Math.min(1, crestToTip(this.stretchProfile) / now) : 1;
+  }
+
+  /**
+   * Loft the records' fronts over the water (`heightAt`). `bedAt` is the bed under it (m, the same datum), read only
+   * under ruling 21's dug foot for ruling 22's bed rule (`dugCap`); without it that rule is skipped.
+   */
+  build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number,
+    bedAt?: (x: number, z: number) => number): LoftResult {
     const r = this.result;
+    this.rowBedAt = bedAt;
+    r.dugCapped = 0;
     if (this.normalDemand) {
       this.heightReady.fill(0);
       this.sealBlend.fill(1);
@@ -392,11 +640,17 @@ export class SweptLoft {
     r.overlaps = 0;
     r.overlapsOpen = 0;
     r.overlapOpenWeight = 0;
+    r.overlapsOpenHeavy = 0;
+    r.openDrops.length = 0;
+    r.overlapsKept = 0;
     r.restSamples = 0;
     r.rayCorrections = 0;
     r.rayMaxBlend = 0;
     r.rayMinAdvance = 0;
     r.rayInvalidIntervals = 0;
+    r.shiftMisses = 0;
+    // The diagnostic's records not read this build stay Infinity (NaN: read, on the crest anchor).
+    r.recordShift?.fill(Infinity, 0, Math.min(count, r.recordShift.length));
     const boundedC = this.library.options.geometry === 'bounded-C';
     if (boundedC) this.retirementRow.fill(0);
     if (boundedC) r.cSampling = { policy: 'fixed-origin-stored-F32-X-and-raw-knots/v1', mandatoryRawKnots: 0, plannedStations: 0,
@@ -414,18 +668,19 @@ export class SweptLoft {
       : Math.ceil((f.last - f.first + 2 * LOFT.extension) / LOFT.spacing) + 1);
     if (boundedC) this.cScratch(samples);
     if (this.base.length < samples) this.base = new Float64Array(Math.max(samples, 2 * this.base.length));
-    if (this.sigmas.length < 2 * samples) this.sigmas = new Float64Array(Math.max(2 * samples, 2 * this.sigmas.length));
+    const refined = 2 ** LOFT.levels * samples;
+    if (this.sigmas.length < refined) this.sigmas = new Float64Array(Math.max(refined, 2 * this.sigmas.length));
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
     // live ones count in this legacy spacing decision; C closures also count against the final hard prefix cap.
     let live = 0;
-    let extra = 0;
-    for (const f of fronts) {
-      const survey = this.survey(records, f);
-      live += survey.live;
-      extra += survey.extra;
-    }
+    const extra = this.extraByLevel.fill(0);
+    for (const f of fronts) live += this.survey(records, f, extra);
     let spacing: number = LOFT.spacing;
-    let budgeted = live + extra > MAX_SLICES;
+    // The most refinement levels that fit the budget (none: the base spacing alone); fewer than `LOFT.levels` is a clamp.
+    let levels = boundedC ? 1 : LOFT.levels;
+    while (levels > 0 && live + extra[levels - 1] > MAX_SLICES) levels -= 1;
+    r.refineLevels = levels;
+    let budgeted = levels === 0;
     if (live > MAX_SLICES) spacing = (LOFT.spacing * live) / Math.max(1, MAX_SLICES - 2 * fronts.length);
     for (let frontIndex = 0; frontIndex < fronts.length; frontIndex += 1) {
       const f = fronts[frontIndex];
@@ -434,7 +689,7 @@ export class SweptLoft {
         break;
       }
       const n = boundedC ? this.cRefinements(records, f, spacing, !budgeted)
-        : budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
+        : budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing, levels);
       if (r.cSampling) r.cSampling.plannedStations += n;
       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
       // C truncation owns the ordered prefix even when a dangling support rollback leaves capacity.
@@ -691,14 +946,15 @@ export class SweptLoft {
   }
 
   /**
-   * A front's base slices at `spacing` that have not faded after touchdown (the rest are dropped), and the midpoints
-   * the live ones need (neighbouring clocks more than `frames` frames apart).
+   * A front's base slices at `spacing` that have not faded after touchdown (the rest are dropped), how many; and, added
+   * into `extra` per refinement depth (`extra[L − 1]` with L levels), the slices the live ones' refinement would add:
+   * where neighbouring clocks differ by more than `frames` frames, a midpoint, and halving again while they still would
+   * (the clock taken as linear between them).
    */
-  private survey(records: Float32Array, f: Front): { live: number; extra: number } {
+  private survey(records: Float32Array, f: Front, extra: Float64Array): number {
     const boundedC = this.library.options.geometry === 'bounded-C';
     const n = boundedC ? this.cBaseSlices(records, f, LOFT.spacing) : this.baseSlices(f, LOFT.spacing, this.base);
     let live = 0;
-    let extra = 0;
     let previous = Number.NaN;
     let previousFrame = 0;
     for (let k = 0; k < n; k += 1) {
@@ -709,28 +965,63 @@ export class SweptLoft {
         continue;
       }
       live += 1;
-      if (Math.abs(s.tau - previous) > LOFT.frames * Math.min(times.frameSeconds, previousFrame)) extra += 1;
-      previous = s.tau;
+      // Past touchdown the drawing holds its frame, so the clocks compared are the drawn ones (the C's as they were).
+      const drawn = boundedC ? s.tau : Math.min(s.tau, times.touchdownSeconds);
+      // A gap of g frames-thresholds needs ⌈log2 g⌉ halvings; L levels add 2^min(L, that) − 1 slices (only ÷ and ×).
+      let gap = Math.abs(drawn - previous) / (LOFT.frames * Math.min(times.frameSeconds, previousFrame));
+      let added = 0;
+      for (let level = 0; level < LOFT.levels; level += 1) {
+        if (gap > 1) {
+          added = 2 * added + 1;
+          gap /= 2;
+        }
+        extra[level] += added;
+      }
+      previous = drawn;
       previousFrame = times.frameSeconds;
     }
-    return { live, extra };
+    return live;
   }
 
-  /** A front's base slices, with the midpoints where neighbouring clocks differ by more than `frames` frames, into `sigmas`; how many. */
-  private refinements(records: Float32Array, f: Front, spacing: number): number {
+  /** Per refinement depth, the slices a build's refinement would add (`survey`). */
+  private readonly extraByLevel = new Float64Array(LOFT.levels);
+
+  /**
+   * A front's base slices, with midpoints where neighbouring drawn clocks (held at touchdown, as the drawing holds its
+   * frame) differ by more than `frames` frames, halved again up to `levels` deep while they still do, into `sigmas`;
+   * how many.
+   */
+  private refinements(records: Float32Array, f: Front, spacing: number, levels: number): number {
     const n = this.baseSlices(f, spacing, this.base);
     let out = 0;
     let previousTau = 0;
     let previousFrame = 0;
     for (let k = 0; k < n; k += 1) {
       const s = this.at(records, f, this.base[k], this.probe);
-      const frame = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).frameSeconds;
-      if (k > 0 && Math.abs(s.tau - previousTau) > LOFT.frames * Math.min(frame, previousFrame)) this.sigmas[out++] = (this.base[k - 1] + this.base[k]) / 2;
+      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+      const tau = Math.min(s.tau, times.touchdownSeconds);
+      const frame = times.frameSeconds;
+      if (k > 0) out = this.refine(records, f, this.base[k - 1], previousTau, previousFrame, this.base[k], tau, frame, levels, out);
       this.sigmas[out++] = this.base[k];
-      previousTau = s.tau;
+      previousTau = tau;
       previousFrame = frame;
     }
     return out;
+  }
+
+  /** The slices strictly between σ a and b (drawn clocks and frames given), in order, into `sigmas` from `out`; the new end. */
+  private refine(
+    records: Float32Array, f: Front, a: number, tauA: number, frameA: number, b: number, tauB: number, frameB: number, levels: number, out: number,
+  ): number {
+    if (levels <= 0 || !(Math.abs(tauB - tauA) > LOFT.frames * Math.min(frameA, frameB))) return out;
+    const middle = (a + b) / 2;
+    const s = this.at(records, f, middle, this.probe);
+    const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+    const tau = Math.min(s.tau, times.touchdownSeconds);
+    const frame = times.frameSeconds;
+    out = this.refine(records, f, a, tauA, frameA, middle, tau, frame, levels - 1, out);
+    this.sigmas[out++] = middle;
+    return this.refine(records, f, middle, tau, frame, b, tauB, frameB, levels - 1, out);
   }
 
   /** Front f's values at σ (see `Sample`), into `into`. */
@@ -780,8 +1071,17 @@ export class SweptLoft {
     const lerp = (name: keyof typeof FRONT_FIELD) => field(k, name) + t * (field(k + 1, name) - field(k, name));
     into.x = lerp('x');
     into.z = lerp('z');
-    into.tau = lerp('tau');
-    into.footHeight = lerp('footHeight');
+    if (this.face?.anchorLine) {
+      // Ruling 18's build 1 (`TubeFace.anchorLine`): the clock and the foot height on a C1 curve through the records
+      // (`recordCurve`), the clock kept monotone between two records, in place of straight lines with a corner at each.
+      const value = (name: 'tau' | 'footHeight') => (j: number) => (j >= f.start && j < f.end ? field(j, name) : Number.NaN);
+      const sigmaOf = (j: number) => (j >= f.start && j < f.end ? field(j, 'sigma') : Number.NaN);
+      into.tau = recordCurve(sigmaOf, value('tau'), k, sigma, true);
+      into.footHeight = recordCurve(sigmaOf, value('footHeight'), k, sigma, false);
+    } else {
+      into.tau = lerp('tau');
+      into.footHeight = lerp('footHeight');
+    }
     into.footDepth = lerp('footDepth');
     const pace0 = field(k, 'pace');
     const pace1 = field(k + 1, 'pace');
@@ -919,6 +1219,16 @@ export class SweptLoft {
       runStart = -1;
     };
     const plannedCount = this.planRays(records, f, n, budgeted);
+    if (this.faceAnchor) this.recordShifts(records, f, heightAt);
+    // Each end's blend: 1 m where its end point has thrown, at least its height H at a young end (`endBlendLength`); under
+    // the face ruling, at least H at a thrown end too.
+    const end = (k: number) => {
+      const o = k * FRONT_STRIDE;
+      return endBlendLength(this.library, this.slope, records[o + FRONT_FIELD.footHeight], records[o + FRONT_FIELD.footDepth],
+        records[o + FRONT_FIELD.tau], this.endProfile, this.face?.thrownEnds);
+    };
+    const blendFirst = end(f.start);
+    const blendLast = end(f.end - 1);
     for (let k = 0; k < plannedCount; k += 1) {
       if (this.plannedLive[k] === 0) { closeRun(); continue; }
       const retirementSupport = this.library.options.geometry === 'bounded-C' && this.plannedLive[k] === 2;
@@ -944,9 +1254,51 @@ export class SweptLoft {
       query.footDepth = s.footDepth;
       query.seconds = tau;
       query.hold = this.contact || this.holdClearDrawing ? 'contact' : 'drawing';
+      // Ruling 18's build 2 (`TubeFace.arcMesh`): before the throw, the share of the crest-to-toe arc the lip mark holds
+      // at this slice's throw (clock 0), read first so the slice's own lookup stands after it.
+      let throwShare = Number.NaN;
+      if (this.face?.arcMesh && tau < 0) {
+        query.seconds = 0;
+        if (!this.library.profileAt(query, this.arcProfile).analytic) throwShare = lipShare(this.arcProfile);
+        query.seconds = tau;
+      }
       const lookup = this.library.profileAt(query, profile);
+      // The vertices' places on this profile's own curve under it; undefined: the library's own points.
+      const arc: ArcPlaces | undefined = throwShare === throwShare && !lookup.analytic && arcRespace(profile, throwShare, this.arcLengths, this.arcSlots) ? this.arcSlots : undefined;
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
+      // Step 7's wall water: the same shape a frame on, at the same hold, for its surface's own motion.
+      const wall = this.result.wall;
+      let wallEpsilon = 0;
+      let wallRate = 1;
+      let wallCrest = 0;
+      let wallCarry = 0;
+      if (wall && wFade !== 0) {
+        wallEpsilon = Math.max(1e-3, lookup.frameSeconds);
+        this.wallStep = wallEpsilon;
+        query.seconds = tau + wallEpsilon;
+        this.library.profileAt(query, this.wallProfile);
+        query.seconds = tau;
+        const rate = this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.tauRate]);
+        wallRate = rate === rate ? rate : 1;
+        wallCrest = (this.wallProfile[2 * LANDMARK.crest] - profile[2 * LANDMARK.crest]) / wallEpsilon;
+        if (this.face?.track) {
+          // Ruling 3 (`TubeFace.track`; *built so*): the case's crest's own motion over ±`CREST_SPAN` frames, as the
+          // drawing's landmarks' (`landmarkVelocity`): its landmark slides along a flat top from frame to frame, and over one
+          // frame it moved over 12 m/s on 5 % of the wall's slices (pool 1.5 m, measured), carrying every vertex of the
+          // slice's wall water with it through the anchor's carry below.
+          query.seconds = tau + CREST_SPAN * wallEpsilon;
+          this.library.profileAt(query, this.crestProfile);
+          const ahead = this.crestProfile[2 * LANDMARK.crest];
+          query.seconds = tau - CREST_SPAN * wallEpsilon;
+          this.library.profileAt(query, this.crestProfile);
+          wallCrest = (ahead - this.crestProfile[2 * LANDMARK.crest]) / (2 * CREST_SPAN * wallEpsilon);
+          query.seconds = tau;
+        }
+        // The anchor carries the shape: its drawn crest's speed less the case's crest's own (lab-frame) motion.
+        const speed = this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.crestSpeed]);
+        wallCarry = speed === speed ? speed - wallCrest * wallRate : 0;
+      }
       // Before the C contour forms, the ordinary surface keeps drawing and contact ownership.
       const wFormation = lookup.analytic?.formation ?? 1;
       if (retirementSupport && wFade !== 0) throw new Error('C retirement closure clocks disagree with its profile lookup');
@@ -981,11 +1333,11 @@ export class SweptLoft {
       const reachBack = drawnCrestX - (REST.behind + REST.ramp) * drawnHeight;
       // The weights: into the water at the front's ends, and after touchdown.
       const d = Math.min(sigma - f.first, f.last - sigma);
-      const r0 = Math.min(1, d / LOFT.endBlend);
-      const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
+      const wEnd = endWeight(sigma, f.first, f.last, blendFirst, blendLast);
       // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
       // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
-      const w = wEnd * wFade * wFormation;
+      // Under the face ruling a lagged join's slice fades in as it forms and out as it retires unbroken (`FRONT_FIELD.fade`).
+      const w = wEnd * wFade * wFormation * (this.face ? 1 - this.recordLerp(records, f, sigma, (k) => records[k * FRONT_STRIDE + FRONT_FIELD.fade]) : 1);
       let overturned = 0;
       for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
         if (profile[2 * (i + 1)] < profile[2 * i]) {
@@ -998,17 +1350,25 @@ export class SweptLoft {
       if (lookup.clamped) r.clampedLookups += 1;
       // The anchor, the profile's x origin in the world: the crest point K = S − c n, so the profile's crest landmark
       // sits on the point's crest, before the throw and from it alike (the advisor, 2026-10-03: u = 1 from the throw).
+      // Under the face ruling the crest stands at the point's shift along its ray instead, K = S + (δ − c) n: where its
+      // case's lower face sits on the solver's (`FaceAnchor`); with no crossing, on the crest as before.
       const crest = profile[2 * LANDMARK.crest];
-      const ax = s.x - crest * nx;
-      const az = s.z - crest * nz;
+      const shift = this.faceAnchor ? this.shiftAt(records, f, sigma, nx, nz) : 0;
+      if (this.faceAnchor && !(shift === shift)) r.shiftMisses += 1;
+      const along0 = shift === shift ? shift - crest : -crest;
+      const ax = s.x + along0 * nx;
+      const az = s.z + along0 * nz;
       let life = Number.NaN;
       let anchorVX = 0;
       let anchorVZ = 0;
       if (tau >= 0) {
         life = tau / touchdown;
         if (this.contact) {
-          // Its motion, per second of the clock (the advisor, 2026-09-30 and 2026-10-03): K̇ = Ṡ − ċ n.
-          const follow = this.crestPointVelocity(s, tau, lookup.frameSeconds, nx, nz);
+          // Its motion, per second of the clock (the advisor, 2026-09-30 and 2026-10-03): K̇ = Ṡ − ċ n. Under the face
+          // ruling the case's lower-face crossing moves the anchor where its crest did: K̇ = Ṡ − ẋ_c n.
+          const follow = this.faceAnchor && shift === shift
+            ? this.facePointVelocity(s, this.recordLerp(records, f, sigma, (k) => this.recordSpeed[k - f.start]), nx, nz)
+            : this.crestPointVelocity(s, tau, lookup.frameSeconds, nx, nz);
           anchorVX = follow[0];
           anchorVZ = follow[1];
         }
@@ -1017,8 +1377,11 @@ export class SweptLoft {
       const maskSlice = this.library.options.geometry === 'bounded-C' ? wFade * maskBand * wFormation : wFade > 0 ? maskBand : 0;
       // The forward rest, from the drawn slice in both modes, so the contact and the overlaps follow the drawing.
       const forward = this.rest;
+      // Ruling 21 (`TubeFace.dug`): the rest's lengths in wave heights, on forward vertices respaced to reach them.
+      const dug = this.face?.seam !== undefined && this.face.dug === true;
       if (w > 0) {
-        this.forwardRest(ax, az, nx, nz, drawnToeX, stillLevel + frontY, drawnHeight, drawnFrontX + LOFT.extension - LOFT.band - drawnToeX, heightAt);
+        if (dug) this.forwardRest(ax, az, nx, nz, drawnToeX, stillLevel + frontY, drawnHeight, REST_DUG.ahead * drawnHeight, heightAt, REST_DUG);
+        else this.forwardRest(ax, az, nx, nz, drawnToeX, stillLevel + frontY, drawnHeight, drawnFrontX + LOFT.extension - LOFT.band - drawnToeX, heightAt);
       } else {
         forward[0] = 0;
         forward[1] = REST.ramp * drawnHeight;
@@ -1051,6 +1414,9 @@ export class SweptLoft {
       r.sliceLife[slice] = life;
       r.sliceCollapse[slice] = lookup.collapseSeconds;
       r.sliceFade[slice] = wFade;
+      r.sliceAfter[slice] = tau - touchdown;
+      r.sliceShift[slice] = shift === shift ? shift : 0;
+      r.sliceStretch[slice] = this.measureSheet && w > 0 && tau > 0 ? this.stretchOf(profile) : 1;
       r.sliceTipGap[slice] = tipGap;
       if (tipGap > r.tipGap) r.tipGap = tipGap;
       r.sliceRestHold[slice] = restHold;
@@ -1065,6 +1431,9 @@ export class SweptLoft {
       r.sliceRayX[slice] = nx;
       r.sliceRayZ[slice] = nz;
       r.sliceWeight[slice] = w;
+      this.sliceHeight[slice] = drawnHeight;
+      this.sliceFrame[slice] = lookup.frameSeconds;
+      this.sliceTouchdown[slice] = lookup.touchdownSeconds;
       r.sliceOverturned[slice] = overturned;
       // Boundary transport and water flow differ once the analytic cap rests on its floor.
       const fluidScale = lookup.analytic ? lookup.analytic.lengthScale / lookup.analytic.timeScale : 1;
@@ -1085,6 +1454,26 @@ export class SweptLoft {
       }
       r.sliceAnchorVX[slice] = anchorVX;
       r.sliceAnchorVZ[slice] = anchorVZ;
+      if (wall) {
+        // The anchor's height (the case's crossing at 0.3 of its height over its trough) and its crest's, in the world; its
+        // drawn crest's speed; B at the crest (Derakhti et al. 2020: 0.85 as the face goes vertical, 1 soon after).
+        let trough = Infinity;
+        for (let i = LANDMARK.crest; i <= LAST; i += 1) if (profile[2 * i + 1] < trough) trough = profile[2 * i + 1];
+        const top = profile[2 * LANDMARK.crest + 1];
+        wall.low[slice] = stillLevel + trough + FACE_ANCHOR.fraction * (top - trough);
+        wall.top[slice] = stillLevel + top;
+        wall.speed[slice] = wallEpsilon > 0 ? wallCarry + wallCrest * wallRate : Number.NaN;
+        // Ruling 5 (`TubeFace.seam`): 0.85 to the throw, then to 1 over 0.2 s, no step (`seamB`).
+        wall.b[slice] = this.face?.seam ? seamB(tau, WALL_FLOW.before, WALL_FLOW.thrown) : tau < 0 ? WALL_FLOW.before : WALL_FLOW.thrown;
+      }
+      const seam = this.face?.seam;
+      const seamTau = seam ? seamCourseWeight(tau, seam, s.footDepth) : 1;
+      const seamReach = seam ? seamBand(seam.band, s.footHeight) : 0;
+      if (seam) {
+        this.seamTauRow[slice] = seamTau;
+        this.seamBandRow[slice] = seamReach;
+        this.dugHeightRow[slice] = drawnHeight;
+      }
       // How far each point stands off the water: from just behind the crest to the toe, eased onto it either side, and
       // ahead of the toe held as the forward rest says first.
       const profileCrestX = profile[2 * LANDMARK.crest];
@@ -1105,12 +1494,40 @@ export class SweptLoft {
         let sky = 1;
         let underLip = 0;
         let inner = 0;
-        if (j < E) {
+        let place = -1;
+        let placeShare = 0;
+        if (dug && j > E + LANDMARK.toe) {
+          // Ruling 21: the vertices past the toe stand evenly out to 5 H and the mask's band, on the profile's own line
+          // (its front level past its end), and rest as the forward rest says.
+          along = dugAlong(j - E - LANDMARK.toe, LOFT_SAMPLES - 1 - E - LANDMARK.toe, toeX, drawnHeight, LOFT.band);
+          dugPlace(profile, LANDMARK.toe, LAST, along, this.dugAt);
+          place = this.dugAt[0];
+          placeShare = this.dugAt[1];
+          above = profile[2 * place + 1] + placeShare * (profile[2 * place + 3] - profile[2 * place + 1]);
+          const past = along - toeX;
+          const u = past > restHold ? Math.min(1, (past - restHold) / restSpan) : 0;
+          pin = u * u * (3 - 2 * u);
+          maskAlong = Math.min(1, Math.max(0, 1 - (past - restEnd) / LOFT.band));
+          if (formed > 0 && along < profile[2 * LAST]) {
+            const i = placeShare < 0.5 ? place : place + 1;
+            sky = this.inside[4 * i];
+            underLip = this.inside[4 * i + 1];
+            inner = formed * this.inside[4 * i + 2];
+          }
+        } else if (j < E) {
           along = profile[0] - (E - j) * EXTENSION_STEP;
         } else if (j < E + PROFILE_POINTS) {
           const i = j - E;
-          along = profile[2 * i];
-          above = profile[2 * i + 1];
+          if (arc && i > LANDMARK.crest && i < LANDMARK.toe) {
+            // The same curve, the vertex at its fixed share of the crest-to-toe arc (`arcMesh.ts`).
+            const m = arc.from[i];
+            const t = arc.share[i];
+            along = profile[2 * m] + t * (profile[2 * m + 2] - profile[2 * m]);
+            above = profile[2 * m + 1] + t * (profile[2 * m + 3] - profile[2 * m + 1]);
+          } else {
+            along = profile[2 * i];
+            above = profile[2 * i + 1];
+          }
           // Past the ramps the profile rests on the water; the mask lets the water draw itself a band beyond them.
           if (i < LANDMARK.crest) {
             const past = profileCrestX - along - REST.behind * height;
@@ -1156,6 +1573,37 @@ export class SweptLoft {
         }
         const v = slice * LOFT_SAMPLES + j;
         const profileIndex = j - E;
+        if (wall && wallEpsilon > 0) {
+          // The case's surface's velocity there: its frames' motion at the clock's rate, carried by its anchor.
+          const i = Math.min(LAST, Math.max(0, profileIndex));
+          if (place >= 0) {
+            // Ruling 21's respaced vertex: the same field on the profile's own line, read at the vertex's place on it.
+            this.wallAt(profile, place, wallEpsilon, wallRate, wallCarry);
+            const [along0, up0] = [this.arcWall[0], this.arcWall[1]];
+            this.wallAt(profile, place + 1, wallEpsilon, wallRate, wallCarry);
+            wall.along[v] = along0 + placeShare * (this.arcWall[0] - along0);
+            wall.up[v] = up0 + placeShare * (this.arcWall[1] - up0);
+          } else if (arc && i > LANDMARK.crest && i < LANDMARK.toe) {
+            // The arc mesh: the same field on the same curve, read at the vertex's own place on it.
+            const m = arc.from[i];
+            const t = arc.share[i];
+            this.wallAt(profile, m, wallEpsilon, wallRate, wallCarry);
+            const [along0, up0] = [this.arcWall[0], this.arcWall[1]];
+            this.wallAt(profile, m + 1, wallEpsilon, wallRate, wallCarry);
+            wall.along[v] = along0 + t * (this.arcWall[0] - along0);
+            wall.up[v] = up0 + t * (this.arcWall[1] - up0);
+          } else if (this.face?.track) {
+            // Ruling 3 (`TubeFace.track`): the surface's own normal speed, its displacement along its normal to the next
+            // frame (`normalSpeed`), not its point's: the profile's points slide along it from frame to frame. Where it has
+            // none (an end, or no crossing in reach), the anchor's carry alone.
+            const normal = this.normalSpeed(profile, i);
+            wall.along[v] = normal === normal ? wallCarry + normal * this.normalScratch[0] * wallRate : wallCarry;
+            wall.up[v] = normal === normal ? normal * this.normalScratch[1] * wallRate : 0;
+          } else {
+            wall.along[v] = wallCarry + ((this.wallProfile[2 * i] - profile[2 * i]) / wallEpsilon) * wallRate;
+            wall.up[v] = ((this.wallProfile[2 * i + 1] - profile[2 * i + 1]) / wallEpsilon) * wallRate;
+          }
+        }
         const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
         const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
         const px = sharedUnder >= 0 ? this.sharedSheetX[sharedUnder] : ax + along * nx;
@@ -1166,17 +1614,32 @@ export class SweptLoft {
         }
         const e = w * (1 - pin);
         r.positions[3 * v] = px;
+        // Under the face ruling a floor vertex never lies under the solver's surface: the back slope, the face from the
+        // throat on and the extensions, and the whole profile before it overturns; the lip's are left as they are.
+        const floor = this.face?.union === true && (overturned === 0 || profileIndex <= LANDMARK.crest || profileIndex >= LANDMARK.throat);
+        const dugRamp = dug ? dugCrestRamp(profileIndex, LANDMARK.crest) : -1;
         if (this.normalDemand) {
           this.initialX[v] = px;
           this.initialZ[v] = pz;
           this.targetY[v] = stillLevel + above;
           this.initialBlend[v] = e;
+          this.floorRows[v] = floor ? 1 : 0;
+          if (dug) {
+            this.dugRows[v] = dugRamp;
+            this.dugEase[v] = 1 - pin;
+          }
+        } else if (seam) {
+          // Ruling 5's seam blend (`TubeFace.seam`, `seamY`), in place of the clamp below.
+          const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
+          if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
+          r.positions[3 * v + 1] = this.seamY(v, h, stillLevel + above, e, floor, seamTau, seamReach, dugRamp, 1 - pin, drawnHeight, px, pz);
         } else if (e === 1) {
-          r.positions[3 * v + 1] = stillLevel + above;
+          r.positions[3 * v + 1] = floor ? Math.max(stillLevel + above, heightAt(px, pz)) : stillLevel + above;
         } else {
           const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
           if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
-          r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
+          const y = e === 0 ? h : h + e * (stillLevel + above - h);
+          r.positions[3 * v + 1] = floor && y < h ? h : y;
         }
         r.positions[3 * v + 2] = pz;
         r.mask[v] = maskSlice * maskAlong;
@@ -1225,15 +1688,16 @@ export class SweptLoft {
    * ease starts and at the toe, m. The water is read along the ray every `REST.step` m from the toe; the hold ends where
    * it first comes within `REST.near` H of the level (between two readings, where the line between them does), and the
    * ease runs `REST.ramp` H from there, all within `REST.ahead` H and `room`, m past the toe. Only + − × ÷.
+   * Under ruling 21 (`TubeFace.dug`) `lengths` are `REST_DUG`'s; otherwise `REST`'s own.
    */
   private forwardRest(
     ax: number, az: number, nx: number, nz: number, toeX: number, level: number, height: number, room: number,
-    heightAt: (x: number, z: number) => number,
+    heightAt: (x: number, z: number) => number, lengths: { ramp: number; near: number; ahead: number } = REST,
   ): void {
     const out = this.rest;
-    const ramp = REST.ramp * height;
-    const near = REST.near * height;
-    const cap = Math.max(0, Math.min(REST.ahead * height, room));
+    const ramp = lengths.ramp * height;
+    const near = lengths.near * height;
+    const cap = Math.max(0, Math.min(lengths.ahead * height, room));
     // The latest the ease may start and still end within the cap.
     const latest = Math.max(0, cap - ramp);
     let hold = latest;
@@ -1308,11 +1772,17 @@ export class SweptLoft {
       const cutLast = r.sliceWeight[last] > 0;
       if (cutFirst || cutLast) {
         for (let s = first; s <= last; s += 1) {
+          // A young cut end (its slice not thrown) blends over at least its height, as a front's own young end does; under the
+          // step 7 follow-up's merge (`TubeFace.merge`) a thrown one too, as a front's own thrown end does (`thrownEnds`).
+          const blend = (end: number) => (r.sliceTau[end] < 0 || this.face?.merge ? Math.max(LOFT.endBlend, this.sliceHeight[end]) : LOFT.endBlend);
+          const u = Math.min(1, Math.max(0, Math.min(
+            cutFirst ? (r.sliceSigma[s] - r.sliceSigma[first]) / blend(first) : Infinity,
+            cutLast ? (r.sliceSigma[last] - r.sliceSigma[s]) / blend(last) : Infinity,
+          )));
           const distance = Math.min(
             cutFirst ? r.sliceSigma[s] - r.sliceSigma[first] : Infinity,
             cutLast ? r.sliceSigma[last] - r.sliceSigma[s] : Infinity,
           );
-          const u = Math.min(1, Math.max(0, distance / LOFT.endBlend));
           const weight = u * u * (3 - 2 * u);
           const mask = Math.min(1, Math.max(0, distance / LOFT.band));
           r.sliceWeight[s] *= weight;
@@ -1337,6 +1807,132 @@ export class SweptLoft {
       this.finishRun(first, last);
       first = last + 1;
     }
+  }
+
+  /**
+   * Front f's records' shifts under the face ruling (`FaceAnchor.shift`), each along its own ray at its own clock, smoothed
+   * along σ (`smoothShifts`), for `shiftAt`. The rays are the front's planned ones (`planRays` has prepared them).
+   */
+  private recordShifts(records: Float32Array, f: Front, heightAt: (x: number, z: number) => number): void {
+    const anchor = this.faceAnchor!;
+    const n = f.end - f.start;
+    if (this.recordRaw.length < n) {
+      this.recordRaw = new Float64Array(2 * n);
+      this.recordShift = new Float64Array(2 * n);
+      this.recordSpeed = new Float64Array(2 * n);
+    }
+    const sigmas = this.recordSigma;
+    sigmas.length = n;
+    const hold = this.contact || this.holdClearDrawing ? 'contact' : 'drawing';
+    if (this.face!.continuity) {
+      // Step 7: the shift the simulation kept for each point (`continueAnchor`, the records' `anchor`), under the contact's
+      // hold; a drawing without the clear-roof hold moves it by its case's crest-over-crossing at its own hold.
+      for (let k = 0; k < n; k += 1) {
+        const o = (f.start + k) * FRONT_STRIDE;
+        sigmas[k] = records[o + FRONT_FIELD.sigma];
+        const fh = records[o + FRONT_FIELD.footHeight];
+        const fd = records[o + FRONT_FIELD.footDepth];
+        const tau = records[o + FRONT_FIELD.tau];
+        const kept = records[o + FRONT_FIELD.anchor];
+        anchor.caseFace(fh, fd, tau, hold, this.faceScratch);
+        this.recordSpeed[k] = this.faceScratch[2];
+        let shift = kept;
+        if (hold === 'drawing' && kept === kept) {
+          const drawing = this.faceScratch[1] - this.faceScratch[0];
+          anchor.caseFace(fh, fd, tau, 'contact', this.faceScratch);
+          const contact = this.faceScratch[1] - this.faceScratch[0];
+          if (drawing === drawing && contact === contact) shift = kept - contact + drawing;
+        }
+        this.recordShift[k] = shift;
+        if (this.result.recordShift) this.result.recordShift[f.start + k] = shift;
+      }
+      return;
+    }
+    for (let k = 0; k < n; k += 1) {
+      const o = (f.start + k) * FRONT_STRIDE;
+      const sigma = records[o + FRONT_FIELD.sigma];
+      sigmas[k] = sigma;
+      this.rayPlan.rayAt(sigma, this.plannedRay);
+      this.recordRaw[k] = anchor.shift(records[o + FRONT_FIELD.footHeight], records[o + FRONT_FIELD.footDepth], records[o + FRONT_FIELD.tau],
+        hold, records[o + FRONT_FIELD.x], records[o + FRONT_FIELD.z], this.plannedRay[0], this.plannedRay[1], heightAt, this.faceScratch);
+      this.recordSpeed[k] = this.faceScratch[2];
+    }
+    smoothShifts(sigmas, this.recordRaw, n, this.recordShift);
+    if (this.result.recordShift) for (let k = 0; k < n; k += 1) this.result.recordShift[f.start + k] = this.recordShift[k];
+  }
+
+  /**
+   * Front f's smoothed shift at σ (`recordShifts`), linear between its records, its ends' past them; NaN with none there.
+   * Ruling 18's build 1 (`TubeFace.anchorLine`): between two records with a shift, the place the shift puts the case's
+   * crest along the slice's ray (rayX, rayZ) runs on a C1 curve through its records' places (`recordCurve`) rather than on
+   * straight lines: a record's place is (S_j − S_k)·n + δ_j, as `smoothPlaces` reads a neighbour's, so a record's step
+   * along its column (its own shift moves by the step, its case's crest does not) stays out of the curve.
+   */
+  private shiftAt(records: Float32Array, f: Front, sigma: number, rayX: number, rayZ: number): number {
+    const linear = this.recordLerp(records, f, sigma, (k) => this.recordShift[k - f.start]);
+    if (!this.face?.anchorLine) return linear;
+    const sigmaAt = (j: number) => records[j * FRONT_STRIDE + FRONT_FIELD.sigma];
+    if (!(sigma > sigmaAt(f.start)) || !(sigma < sigmaAt(f.end - 1))) return linear;
+    let low = f.start + 1;
+    let high = f.end - 1;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (sigmaAt(middle) < sigma) low = middle + 1;
+      else high = middle;
+    }
+    const k = low - 1;
+    const a = this.recordShift[k - f.start];
+    const b = this.recordShift[k + 1 - f.start];
+    if (!(a === a) || !(b === b)) return linear;
+    const x0 = records[k * FRONT_STRIDE + FRONT_FIELD.x];
+    const z0 = records[k * FRONT_STRIDE + FRONT_FIELD.z];
+    const sigmaOf = (j: number) => (j >= f.start && j < f.end ? sigmaAt(j) : Number.NaN);
+    const place = (j: number) => (j >= f.start && j < f.end
+      ? (records[j * FRONT_STRIDE + FRONT_FIELD.x] - x0) * rayX + (records[j * FRONT_STRIDE + FRONT_FIELD.z] - z0) * rayZ + this.recordShift[j - f.start]
+      : Number.NaN);
+    const s0 = sigmaAt(k);
+    const s1 = sigmaAt(k + 1);
+    const t = s1 - s0 > 1e-12 ? (sigma - s0) / (s1 - s0) : 0;
+    const p0 = place(k);
+    const straight = p0 + t * (place(k + 1) - p0);
+    return linear + recordCurve(sigmaOf, place, k, sigma, false) - straight;
+  }
+
+  /**
+   * A per-record value of front f (`value(k)`, k its record) at σ: linear between its records, its ends' past them; across
+   * a NaN, the other's.
+   */
+  private recordLerp(records: Float32Array, f: Front, sigma: number, value: (k: number) => number): number {
+    const sigmaOf = (k: number) => records[k * FRONT_STRIDE + FRONT_FIELD.sigma];
+    if (sigma <= sigmaOf(f.start)) return value(f.start);
+    if (sigma >= sigmaOf(f.end - 1)) return value(f.end - 1);
+    let low = f.start + 1;
+    let high = f.end - 1;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (sigmaOf(middle) < sigma) low = middle + 1;
+      else high = middle;
+    }
+    const k = low - 1;
+    const s0 = sigmaOf(k);
+    const s1 = sigmaOf(k + 1);
+    const t = s1 - s0 > 1e-12 ? (sigma - s0) / (s1 - s0) : 0;
+    const a = value(k);
+    const b = value(k + 1);
+    return a === a ? (b === b ? a + t * (b - a) : a) : b;
+  }
+
+  /**
+   * Under the face ruling, a thrown slice's anchor's velocity, m per second of its clock (x, z): its point's, Ṡ, less its
+   * case's lower-face crossing's along the ray, ẋ_c n (`speed`: its records' `FaceAnchor.caseFace`, interpolated; 0 for a
+   * held shape, its mean speed once extrapolated), as the crest's was (`crestPointVelocity`).
+   */
+  private facePointVelocity(s: Sample, speed: number, nx: number, nz: number): Float64Array {
+    const pace = s.pace === s.pace ? s.pace : 0;
+    const out = this.velocity;
+    out[0] = -speed * nx;
+    out[1] = pace - speed * nz;
+    return out;
   }
 
   /**
@@ -1399,6 +1995,76 @@ export class SweptLoft {
         r.indexCount += 6;
       }
     }
+  }
+
+  /** Ruling 18's build 2: the wall water at profile point `i` (the loft's own two rules), into `arcWall` (along, up). */
+  private wallAt(profile: Float32Array, i: number, wallEpsilon: number, wallRate: number, wallCarry: number): void {
+    if (this.face?.track) {
+      const normal = this.normalSpeed(profile, i);
+      this.arcWall[0] = normal === normal ? wallCarry + normal * this.normalScratch[0] * wallRate : wallCarry;
+      this.arcWall[1] = normal === normal ? normal * this.normalScratch[1] * wallRate : 0;
+    } else {
+      this.arcWall[0] = wallCarry + ((this.wallProfile[2 * i] - profile[2 * i]) / wallEpsilon) * wallRate;
+      this.arcWall[1] = ((this.wallProfile[2 * i + 1] - profile[2 * i + 1]) / wallEpsilon) * wallRate;
+    }
+  }
+
+  /**
+   * Ruling 3 (`TubeFace.track`; the water-physics advisor's advisor-ruling-3.md §1): the case's surface's own speed along its
+   * normal at profile point i (m per second of its clock), its unit normal (along the ray, up) left in `normalScratch`; NaN
+   * where its next frame (`wallProfile`) does not cross the normal within `NORMAL_REACH` segments and `NORMAL_SPEED` of it
+   * (*tried*: a reach of 12 segments found other parts of the folded lip, 35 m/s off), or it has no normal. *(Built so)* A profile
+   * point is not a material point: from frame to frame the points slide along the surface, fastest about the lip, so the
+   * difference at one index carried a tangential part that the barycentric blend of three vertices turned into normal speed
+   * (measured in the probe's largest wall-water steps: the surface's speed up 20–26 m/s either way between neighbouring
+   * steps at life 0.55–0.6). The kinematic condition needs only the normal speed, so it is the displacement of the surface
+   * along the normal to the next frame, over the frame step. Only + − × ÷ and √.
+   */
+  private normalSpeed(profile: Float32Array, i: number): number {
+    const next = this.wallProfile;
+    const px = profile[2 * i];
+    const py = profile[2 * i + 1];
+    // The tangent from the nearest points apart from it each way: before the lip forms, the profile's lip-to-throat points
+    // (64–88) all lie at one place, whose index differences moved up to 31 m/s from frame to frame (measured).
+    let a = i;
+    let b = i;
+    while (a > 0 && profile[2 * a - 2] === px && profile[2 * a - 1] === py) a -= 1;
+    while (b < LAST && profile[2 * b + 2] === px && profile[2 * b + 3] === py) b += 1;
+    a = Math.max(0, a - 1);
+    b = Math.min(LAST, b + 1);
+    const tx = profile[2 * b] - profile[2 * a];
+    const ty = profile[2 * b + 1] - profile[2 * a + 1];
+    const length = Math.sqrt(tx * tx + ty * ty);
+    if (!(length > 1e-9)) return Number.NaN;
+    // The normal, square to the tangent (either way: the displacement along it is signed alike).
+    const nx = -ty / length;
+    const ny = tx / length;
+    let best = Number.NaN;
+    // The next frame's segments about it, `NORMAL_REACH` of length each way past its own run of points at one place.
+    let from = a;
+    for (let count = 0; from > 0 && count < NORMAL_REACH; from -= 1) if (next[2 * from - 2] !== next[2 * from] || next[2 * from - 1] !== next[2 * from + 1]) count += 1;
+    let to = b;
+    for (let count = 0; to < LAST && count < NORMAL_REACH; to += 1) if (next[2 * to + 2] !== next[2 * to] || next[2 * to + 3] !== next[2 * to + 1]) count += 1;
+    for (let k = from; k < to; k += 1) {
+      const ax = next[2 * k];
+      const ay = next[2 * k + 1];
+      const bx = next[2 * k + 2] - ax;
+      const by = next[2 * k + 3] - ay;
+      // p + s n = a + u b: s and u by Cramer's rule.
+      const det = bx * ny - by * nx;
+      if (det === 0) continue;
+      const qx = ax - px;
+      const qy = ay - py;
+      const u = (nx * qy - ny * qx) / det;
+      if (u < 0 || u > 1) continue;
+      const sDist = (bx * qy - qx * by) / det;
+      // A crossing further than the surface moves in a frame is another part of a folded profile, not this one's next place.
+      if (Math.abs(sDist) > NORMAL_SPEED * this.wallStep) continue;
+      if (!(best === best) || Math.abs(sDist) < Math.abs(best)) best = sDist;
+    }
+    this.normalScratch[0] = nx;
+    this.normalScratch[1] = ny;
+    return best === best ? best / this.wallStep : Number.NaN;
   }
 
   /**
@@ -1465,6 +2131,81 @@ export class SweptLoft {
               r.sliceJoined[t] = 0;
               continue;
             }
+            // Under the face ruling a lagged join's piece not yet thrown gives way to a thrown one, and else a weaker earlier
+            // strip gives way too: where the retire guard splits a front (a point left unbroken leaves a gap), its leading
+            // piece never cuts a hole in the tube beside it. It is counted as dropped.
+            const unthrown = (k: number) => r.slicePhase[k] === 0 && r.slicePhase[k + 1] === 0;
+            if (this.face?.merge) {
+              // The step 7 follow-up (the advisor's 2026-11-05 ruling §5.2): an open strip at weight ≥ 0.5 is never dropped
+              // (two of them both stay: a fold, which the contact's first front answers), and a thrown cut end blends over
+              // max(1 m, H) (`sealRuns`). *(Built so)* Between two thrown strips the lighter still gives way, as before: keeping
+              // the earlier-thrown instead raised the holes 9× at a38 1.5 m in 12 periods (0.009 → 0.083 a build), the earlier
+              // piece being mostly the short one already faded (weight 0.00–0.02) beside a live one.
+              const openAt = (k: number) => (r.slicePhase[k] === 1 && r.sliceOverturned[k] === 1) || (r.slicePhase[k + 1] === 1 && r.sliceOverturned[k + 1] === 1);
+              const heavy = (k: number) => openAt(k) && Math.max(r.sliceWeight[k], r.sliceWeight[k + 1]) >= 0.5;
+              const hs = heavy(s);
+              const ht = heavy(t);
+              if (hs && ht) {
+                r.overlapsKept += 1;
+                continue;
+              }
+              const dropEarlier: boolean | undefined = hs !== ht ? hs : undefined;
+              if (dropEarlier !== undefined) {
+                const gone = dropEarlier ? t : s;
+                r.sliceJoined[gone] = 0;
+                r.overlaps += 1;
+                const weight = Math.max(r.sliceWeight[gone], r.sliceWeight[gone + 1]);
+                if (openAt(gone) && weight > 0) {
+                  r.overlapsOpen += 1;
+                  r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+                  if (weight >= 0.5) r.overlapsOpenHeavy += 1;
+                  r.openDrops.push(gone, dropEarlier ? s : t);
+                }
+                if (dropEarlier) continue;
+                break;
+              }
+            }
+            if (this.face?.drop) {
+              // Ruling 3 (`TubeFace.drop`; the advisor's advisor-ruling-3.md §5): every hole the probe logged was a strip that
+              // had faded (weight 0.00–0.22) dropped over a lighter one kept; a continuously breaking crest has one surface,
+              // and where two descriptions overlap the more developed one is the water (inferred). So the lighter gives way,
+              // whatever its phase or front; on a tie the first front's stays. (Two open strips at 0.5 or more both stay,
+              // under `merge`, above.)
+              const ws = Math.max(r.sliceWeight[s], r.sliceWeight[s + 1]);
+              const wt = Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]);
+              const gone = wt < ws ? t : s;
+              r.sliceJoined[gone] = 0;
+              if (gone === s && resting(s)) break;
+              r.overlaps += 1;
+              const weight = gone === t ? wt : ws;
+              const open = (r.slicePhase[gone] === 1 && r.sliceOverturned[gone] === 1) || (r.slicePhase[gone + 1] === 1 && r.sliceOverturned[gone + 1] === 1);
+              if (open && weight > 0) {
+                r.overlapsOpen += 1;
+                r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+                if (weight >= 0.5) r.overlapsOpenHeavy += 1;
+                r.openDrops.push(gone, gone === t ? s : t);
+              }
+              if (gone === t) continue;
+              break;
+            }
+            if (this.face && !unthrown(t) && unthrown(s)) {
+              r.sliceJoined[s] = 0;
+              r.overlaps += 1;
+              break;
+            }
+            if (this.face && (unthrown(t) && !unthrown(s)
+              || Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) < Math.max(r.sliceWeight[s], r.sliceWeight[s + 1]))) {
+              r.sliceJoined[t] = 0;
+              r.overlaps += 1;
+              const open = (r.slicePhase[t] === 1 && r.sliceOverturned[t] === 1) || (r.slicePhase[t + 1] === 1 && r.sliceOverturned[t + 1] === 1);
+              if (open && Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) > 0) {
+                r.overlapsOpen += 1;
+                r.overlapOpenWeight = Math.max(r.overlapOpenWeight, r.sliceWeight[t], r.sliceWeight[t + 1]);
+                if (Math.max(r.sliceWeight[t], r.sliceWeight[t + 1]) >= 0.5) r.overlapsOpenHeavy += 1;
+                r.openDrops.push(t, s);
+              }
+              continue;
+            }
             r.sliceJoined[s] = 0;
             if (resting(s)) break;
             r.overlaps += 1;
@@ -1475,6 +2216,8 @@ export class SweptLoft {
             if (open && weight > 0) {
               r.overlapsOpen += 1;
               r.overlapOpenWeight = Math.max(r.overlapOpenWeight, weight);
+              if (weight >= 0.5) r.overlapsOpenHeavy += 1;
+              r.openDrops.push(s, t);
             }
             break;
           }
@@ -1517,6 +2260,45 @@ export class SweptLoft {
     return true;
   }
 
+  /**
+   * Ruling 5's seam blend (`TubeFace.seam`) at vertex `v`: its height over the solver's surface `h`, from the case's
+   * `target` at the slice's weight `e`, and its share α into `WallWater.seam`. A floor vertex (`TubeFace.union`'s) stands
+   * α_τ · S(δ / b) of its height δ over the solver's surface, and on it where it lies under it: δ S(δ / b) leaves the
+   * solver's surface with its own height and slope, so the back slope and the foot need no case of their own. A lip vertex
+   * (crest to throat of an overturned slice: air under it) keeps its place, by α_τ alone (whole from the throw).
+   */
+  private seamY(v: number, h: number, target: number, e: number, floor: boolean, tau: number, band: number, dug = -1, ease = 1,
+    height = 0, x = 0, z = 0): number {
+    const share = this.result.wall?.seam;
+    const marks = this.result.wall?.dug;
+    const delta = e * (target - h);
+    if (dug >= 0) {
+      // Ruling 21 (`TubeFace.dug`): past the crest the case's share is the clock's alone, its height signed, so the
+      // front is the case's also under the sea; today's height share eases out over the crest's ramp (`dugShare`).
+      // Its flow's share fades with the rest's ease, so it is the sea's where the surface is.
+      const alpha = dugShare(tau, floor && dug < 1 ? seamHeightWeight(delta, band) : 1, dug);
+      if (share) share[v] = alpha * ease;
+      if (marks) marks[v] = floor ? alpha : 0;
+      const y = alpha === 1 ? (e === 1 ? target : h + delta) : h + alpha * delta;
+      // Ruling 22 (`dugCap`): a floor vertex's dig under the sea is capped in the slice's height `height` and, with a
+      // bed read, in the sea's own depth at (`x`, `z`); a dig the cap leaves alone keeps its number.
+      if (!floor || !(y < h)) return y;
+      const dig = h - y;
+      const capped = dugCap(dig, height, this.rowBedAt ? h - this.rowBedAt(x, z) : Infinity);
+      if (!(capped < dig)) return y;
+      this.result.dugCapped += 1;
+      return h - capped;
+    }
+    if (marks) marks[v] = 0;
+    if (!floor) {
+      if (share) share[v] = tau;
+      return tau === 1 ? (e === 1 ? target : h + delta) : h + tau * delta;
+    }
+    const alpha = tau * seamHeightWeight(delta, band);
+    if (share) share[v] = alpha;
+    return alpha === 1 ? (e === 1 ? target : h + delta) : h + alpha * delta;
+  }
+
   /** Materialize the original initial F32 Y store, then its separate cut-seal F32 store, once for this row. */
   private prepareRow(row: number): void {
     if (this.heightReady[row] === 1) return;
@@ -1529,14 +2311,27 @@ export class SweptLoft {
       const v = row * LOFT_SAMPLES + j;
       const o = 3 * v;
       const e = this.initialBlend[v];
-      if (e === 1) r.positions[o + 1] = this.targetY[v];
+      // The face ruling's floor (`TubeFace.union`) as `loftFront` holds it: never under the solver's surface.
+      const floor = this.floorRows[v] === 1;
+      if (this.face?.seam) {
+        // Ruling 5's seam blend (`TubeFace.seam`, `seamY`), as `loftFront` holds it.
+        const profileIndex = j - E;
+        const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
+        const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
+        const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
+        if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
+        const dug = this.face.dug ? this.dugRows[v] : -1;
+        r.positions[o + 1] = this.seamY(v, h, this.targetY[v], e, floor, this.seamTauRow[row], this.seamBandRow[row], dug, dug >= 0 ? this.dugEase[v] : 1,
+          this.dugHeightRow[row], this.initialX[v], this.initialZ[v]);
+      } else if (e === 1) r.positions[o + 1] = floor ? Math.max(this.targetY[v], heightAt(this.initialX[v], this.initialZ[v])) : this.targetY[v];
       else {
         const profileIndex = j - E;
         const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
         const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
         const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
         if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
-        r.positions[o + 1] = e === 0 ? h : h + e * (this.targetY[v] - h);
+        const y = e === 0 ? h : h + e * (this.targetY[v] - h);
+        r.positions[o + 1] = floor && y < h ? h : y;
       }
       if (this.sealApplies[v] === 1) {
         const water = heightAt(r.positions[o], r.positions[o + 2]);
@@ -1634,3 +2429,4 @@ export class SweptLoft {
     }
   }
 }
+

@@ -1,0 +1,32 @@
+# pin-check.ts (60 steps after one period's spin-up, Medium seed 1), 2026-11-04: main 4eee1e5f (runs/pin.txt's), the head ca567450, then the branch with --switches
+## main 4eee1e5f
+beach: sea d65e9541 grid 160×233 take-off 0.000,-107.500 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":5}
+point: sea 0f9561cb grid 160×233 take-off 0.000,-123.000 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":8}
+reef: sea 08eeae3a grid 160×248 take-off -50.000,-94.500 start 11 tank {"offshore":-388.02487623983757,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":30}
+padang: sea b49c761c grid 320×516 take-off -50.000,-196.591 start 11 tank {"offshore":-1143.8503414433649,"zoneInner":-1032.591378704909,"blendEnd":-952.591378704909,"fineFrom":-255,"shore":30,"edgeDepth":25}
+pool: sea 042a89cb grid 280×359 take-off 27.000,-214.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9}
+canyon: sea 316bb67a grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+canyon b: sea 316bb67a grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+canyon old: sea 110c2d83 grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+## head ca567450 (its canyon: the take-off zone's gate)
+beach: sea d65e9541 grid 160×233 take-off 0.000,-107.500 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":5}
+point: sea 0f9561cb grid 160×233 take-off 0.000,-123.000 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":8}
+reef: sea 08eeae3a grid 160×248 take-off -50.000,-94.500 start 11 tank {"offshore":-388.02487623983757,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":30}
+padang: sea b49c761c grid 320×516 take-off -50.000,-196.591 start 11 tank {"offshore":-1143.8503414433649,"zoneInner":-1032.591378704909,"blendEnd":-952.591378704909,"fineFrom":-255,"shore":30,"edgeDepth":25}
+pool: sea 042a89cb grid 280×359 take-off 27.000,-214.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9}
+canyon: sea 13e8a1d8 grid 400×507 take-off 75.000,-190.500 start 9 tank {"offshore":-536,"zoneInner":-446,"blendEnd":-386,"fineFrom":-446,"shore":30,"edgeDepth":7.9}
+canyon b: sea 316bb67a grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+canyon old: sea 110c2d83 grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+## branch (the bed-keyed join; canyon zone = ?canyonJoin=zone, canyon half = ?canyonRamp=half, before its take-off fit)
+beach: sea d65e9541 grid 160×233 take-off 0.000,-107.500 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":5}
+point: sea 0f9561cb grid 160×233 take-off 0.000,-123.000 start 11 tank {"offshore":-330,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":8}
+reef: sea 08eeae3a grid 160×248 take-off -50.000,-94.500 start 11 tank {"offshore":-388.02487623983757,"zoneInner":-270,"blendEnd":-190,"fineFrom":-150,"shore":30,"edgeDepth":30}
+padang: sea b49c761c grid 320×516 take-off -50.000,-196.591 start 11 tank {"offshore":-1143.8503414433649,"zoneInner":-1032.591378704909,"blendEnd":-952.591378704909,"fineFrom":-255,"shore":30,"edgeDepth":25}
+pool: sea 042a89cb grid 280×359 take-off 27.000,-214.500 start 11 tank {"offshore":-479.9681440827902,"zoneInner":-325.5,"blendEnd":-315.5,"fineFrom":-267,"shore":30,"edgeDepth":9}
+canyon: sea c169eb09 grid 400×507 take-off 75.000,-190.500 start 9 tank {"offshore":-536,"zoneInner":-446,"blendEnd":-386,"fineFrom":-446,"shore":30,"edgeDepth":7.9}
+canyon b: sea 316bb67a grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+canyon old: sea 110c2d83 grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+canyon zone: sea 13e8a1d8 grid 400×507 take-off 75.000,-190.500 start 9 tank {"offshore":-536,"zoneInner":-446,"blendEnd":-386,"fineFrom":-446,"shore":30,"edgeDepth":7.9}
+canyon half: sea b39b9481 grid 400×507 take-off 75.000,-190.500 start 9 tank {"offshore":-536,"zoneInner":-446,"blendEnd":-386,"fineFrom":-446,"shore":30,"edgeDepth":7.9}
+canyon b zone: sea 316bb67a grid 400×451 take-off -112.000,-125.000 start 9 tank {"offshore":-480,"zoneInner":-390,"blendEnd":-330,"fineFrom":-390,"shore":30,"edgeDepth":7.9}
+## pin-values.ts --bed b and --bed old: the JSON is identical on main 4eee1e5f and the branch (cmp)

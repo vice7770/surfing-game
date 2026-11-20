@@ -1,8 +1,9 @@
 import type { RideInput } from '../physics/RideSession';
 import { heldActions, padValue, readPads, type Action, type Bindings, type PadKind, type PadState } from './Bindings';
-import { AxisRamp } from './InputAxes';
+import { AxisRamp, SprintPress } from './InputAxes';
 import { DEFAULT_STICK, drivingPad, padKey, padSticks, touched, type StickSettings } from './Sticks';
 import type { CallId } from '../net/protocol';
+import { devParam } from '../devTools';
 
 /** One frame's paddle, steer and pop-up press, as `input` reads them. */
 export interface BoardInput {
@@ -32,6 +33,17 @@ export interface ControlEnvironment {
   document?: Document;
   /** The stick settings (spec C1): which stick trims, the response and the dead zones; the defaults without. */
   stick?: () => StickSettings;
+  /** 'old': the stance keys' ramps cross-fade when one takes over from another, as before stance-handover (`stanceHandoverSwitch`). */
+  stanceHandover?: 'old';
+}
+
+/**
+ * The `?stanceHandover=old` dev switch (stance-handover, 2026-11-05): the keyboard's and touch's stance ramps cross-fade
+ * when Snap takes over from Compress or the crouch held with it (or hands back to them), as before, the legs rising
+ * about 6 cm for 0.3 s in between. Only the local player's keys: the pad's buttons, and the sea, are the same either way.
+ */
+export function stanceHandoverSwitch(search?: string): { stanceHandover?: 'old' } {
+  return devParam('stanceHandover', search)?.trim().toLowerCase() === 'old' ? { stanceHandover: 'old' } : {};
 }
 
 const EDITABLE = new Set(['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA']);
@@ -50,21 +62,25 @@ export class Controls {
   private padPrevious = new Set<Action>();
   private padSteerValue = 0;
   private padTrimValue = 0;
-  private padRotateValue = 0;
+  private padSwingValue = 0;
   private padCrouchValue = 0;
   private padCompressValue = 0;
+  private padSnapValue = 0;
   private padDuckValue = 0;
   private touchPaddle = false;
   private touchLeft = false;
   private touchRight = false;
   private touchCrouch = false;
   private touchCompress = false;
+  private touchSnap = false;
   /** Compress held since lying down (Space and RT paddle): it waits for a fresh press standing. */
   private compressStale = false;
+  /** The paddle double-pressed and held, on any device: the sprint paddle (`SprintPress`). */
+  private readonly sprintPress = new SprintPress();
   /** Keys held → the ride's axes, ramped (spec P9). */
-  private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp(), compress: new AxisRamp(), duckDive: new AxisRamp() };
+  private readonly ramps = { steer: new AxisRamp(), trim: new AxisRamp(), crouch: new AxisRamp(), compress: new AxisRamp(), snap: new AxisRamp(), duckDive: new AxisRamp() };
   /** The latest ride request, for the hints to see what the player holds. */
-  lastRequest: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0, compress: 0, hand: false, duckDive: 0, reel: false };
+  lastRequest: RideInput = { paddle: false, popUp: false, steer: 0, trim: 0, crouch: 0, compress: 0, snap: 0, hand: false, duckDive: 0, reel: false };
   private getUpRequested = false;
   private active = true;
   /** The device the player last pressed something on, so hints can name its keys or buttons. */
@@ -74,12 +90,15 @@ export class Controls {
   /** The pad whose sticks steer and trim: the one touched last (spec C1). */
   private driving?: string;
   private readonly stick: () => StickSettings;
+  /** The deepest stance held wins at once from the keys (stance-handover); false with `stanceHandover: 'old'`. */
+  private readonly handover: boolean;
   private readonly pads: () => PadState[];
 
   constructor(private readonly bindings: () => Bindings, private readonly handlers: ControlHandlers, environment: ControlEnvironment = {}) {
     const target = environment.target ?? globalThis.window;
     this.pads = environment.pads ?? (() => readPads());
     this.stick = environment.stick ?? (() => DEFAULT_STICK);
+    this.handover = environment.stanceHandover !== 'old';
     target.addEventListener('keydown', (event) => this.keyDown(event as KeyboardEvent));
     target.addEventListener('keyup', (event) => {
       this.held.delete((event as KeyboardEvent).code);
@@ -92,6 +111,7 @@ export class Controls {
       this.bindTouchButton(page, 'touch-right', (held) => { this.touchRight = held; });
       this.bindTouchButton(page, 'touch-crouch', (held) => { this.touchCrouch = held; });
       this.bindTouchButton(page, 'touch-compress', (held) => { this.touchCompress = held; });
+      this.bindTouchButton(page, 'touch-snap', (held) => { this.touchSnap = held; });
     }
   }
 
@@ -119,12 +139,14 @@ export class Controls {
 
   /**
    * The ride's request for this frame (spec P9): paddling, the duck-dive and the
-   * pop-up key's hold (the reel, in the water) lying down; trim, crouch, Compress
-   * and the hand standing; steering always. Keys and touch ramp in and out over
-   * RAMP_TIME, so a digital input feels analog; a pad's stick and trigger pass
-   * straight through. Disabled, every axis ramps back to rest. The upper body's
-   * rotation is the pad's alone (the movement-flow spec): standing, while the pad
-   * was used last; otherwise undefined, and the body turns with the ride by itself.
+   * pop-up key's hold (the reel, in the water) lying down; trim, crouch, Compress,
+   * Snap (held, like Compress: the snap stance) and the hand standing; steering always. Keys and touch ramp in and out over
+   * RAMP_TIME, so a digital input feels analog; a pad's stick, trigger and buttons pass
+   * straight through, in and out (analog-stance, 2026-11-19: a trigger's own travel
+   * is what the stance asks for, never a ramp run up behind it). Disabled, every axis ramps back to rest. No device asks for
+   * the upper body's rotation: the pad's right stick across swings the camera
+   * (`cameraSwing`, the owner, 2026-10-22), so `rotate` stays undefined and the
+   * body turns with the ride by itself.
    */
   rideRequest(dt: number, standing: boolean): RideInput {
     const keys = this.active ? heldActions(this.held, [], this.bindings()) : new Set<Action>();
@@ -132,36 +154,76 @@ export class Controls {
     const touch = (held: boolean) => this.active && held;
     const steerKeys = Number(has('steerRight') || touch(this.touchRight)) - Number(has('steerLeft') || touch(this.touchLeft));
     const trimKeys = standing ? Number(has('trimForward')) - Number(has('trimBack')) : 0;
-    const crouchKeys = standing && (has('crouch') || touch(this.touchCrouch)) ? 1 : 0;
-    // Compress takes a press made standing: the paddle's Space or RT held through the pop-up does not compress.
+    /**
+     * A stance's key, without the pad's button folded in (analog-stance, 2026-11-19). The pad asks by its own travel
+     * below (`padTravel`), so its buttons must not drive these ramps as well: a trigger past TRIGGER_PRESS reads as a
+     * plain press too (`tritonProtocol`), and that press ran the ramp up to a full stance behind a quarter-pulled
+     * trigger, then held the stance on for RAMP_TIME after it was let go. Keys and touch still ramp (spec P9).
+     */
+    const onKeys = (action: Action) => this.active && keys.has(action);
+    const crouchKeys = standing && (onKeys('crouch') || touch(this.touchCrouch)) ? 1 : 0;
+    // Compress takes a press made standing: the paddle's Space or RT held through the pop-up does not compress. The
+    // pad's own press counts here (`has`), so a button bound to Compress goes stale through the pop-up like the trigger.
     const compressHeld = has('compress') || touch(this.touchCompress) || (this.active && this.padCompressValue > 0);
     if (!standing) this.compressStale = compressHeld;
     else if (!compressHeld) this.compressStale = false;
     const compressing = standing && !this.compressStale;
-    const compressKeys = compressing && (has('compress') || touch(this.touchCompress)) ? 1 : 0;
-    // The keyboard's duck-dive ramps; a pad's buttons (LT analog, the D-pad at full) pass straight through.
+    const compressKeys = compressing && (onKeys('compress') || touch(this.touchCompress)) ? 1 : 0;
+    // Snap (the snap stance): held standing; Q and RB do nothing lying down, so a press held through the pop-up counts.
+    const snapKeys = standing && (onKeys('snap') || touch(this.touchSnap)) ? 1 : 0;
+    // The keyboard's duck-dive ramps; a pad's buttons (L3 and the D-pad, at full; an analog trigger if rebound to one) pass straight through.
     const duckKeys = !standing && this.active && keys.has('duckDive') ? 1 : 0;
     const steer = this.ramps.steer.update(steerKeys, dt);
     const trim = this.ramps.trim.update(trimKeys, dt);
     // Switching from crouch starts Compress at the current input ramp, avoiding a delayed turn request.
     if (compressKeys) this.ramps.compress.raise(this.ramps.crouch.value);
+    // The deepest stance held wins (the owner, 2026-11-05: hold Compress, press Snap on top, let Compress go). Snap, which
+    // wins over Compress and the crouch held with it, starts at their ramp; let go with either still held, it hands back
+    // to them at once. Cross-faded, the 0.2 s ramps asked half the depth at their crossing: the legs rose about 6 cm for
+    // 0.3 s and the weight came forward between the two stances. The pad's buttons pass straight through already.
+    if (this.handover) {
+      const compressHeld = compressing && (compressKeys > 0 || (this.active && this.padCompressValue > 0));
+      const crouchHeld = crouchKeys > 0 || (standing && this.active && this.padCrouchValue > 0);
+      if (snapKeys) {
+        const held = Math.max(this.ramps.compress.value, this.ramps.crouch.value, compressHeld ? this.padCompressValue : 0, crouchHeld ? this.padCrouchValue : 0);
+        this.ramps.snap.raise(held);
+      } else if (compressHeld || crouchHeld) {
+        if (compressHeld) this.ramps.compress.raise(this.ramps.snap.value);
+        if (crouchHeld) this.ramps.crouch.raise(this.ramps.snap.value);
+        this.ramps.snap.reset();
+      }
+    }
     const crouch = this.ramps.crouch.update(crouchKeys, dt);
     const compress = this.ramps.compress.update(compressKeys, dt);
+    const snap = this.ramps.snap.update(snapKeys, dt);
     const duck = this.ramps.duckDive.update(duckKeys, dt);
     const pad = this.active;
+    const paddle = !standing && (has('paddle') || touch(this.touchPaddle));
     this.lastRequest = {
-      paddle: !standing && (has('paddle') || touch(this.touchPaddle)),
+      paddle,
+      sprint: this.sprintPress.update(paddle, dt),
       popUp: this.active && this.getUpRequested,
       steer: pad && this.padSteerValue !== 0 ? this.padSteerValue : steer,
       trim: standing && pad && this.padTrimValue !== 0 ? this.padTrimValue : trim,
-      crouch: standing && pad ? Math.max(this.padCrouchValue, crouch) : crouch,
-      compress: compressing && pad ? Math.max(this.padCompressValue, compress) : compress,
+      // The pad asks by its travel, as the sticks above do: holding a quarter-pulled trigger asks for a quarter of the
+      // stance, and letting it go asks for none at once. Nothing on the pad falls through to the key's ramp.
+      crouch: standing && pad && this.padCrouchValue > 0 ? this.padCrouchValue : crouch,
+      compress: compressing && pad && this.padCompressValue > 0 ? this.padCompressValue : compress,
+      snap: standing && pad && this.padSnapValue > 0 ? this.padSnapValue : snap,
       hand: standing && has('hand'),
-      rotate: standing && pad && this.lastDevice === 'gamepad' ? this.padRotateValue : undefined,
-      duckDive: standing ? 0 : Math.max(pad ? this.padDuckValue : 0, duck),
+      duckDive: standing ? 0 : pad && this.padDuckValue > 0 ? this.padDuckValue : duck,
       reel: !standing && has('popUp'),
     };
     return this.lastRequest;
+  }
+
+  /**
+   * The camera's swing asked for this frame (the owner, 2026-10-22): the driving pad's right stick across, −1 to 1
+   * after its dead zone and response, positive right; in every stage, lying down, standing or in the water. Nothing
+   * while a menu is open; the keyboard and touch have none.
+   */
+  get cameraSwing(): number {
+    return this.active ? this.padSwingValue : 0;
   }
 
   requestGetUp(): void { this.getUpRequested = true; }
@@ -183,14 +245,26 @@ export class Controls {
       const sticks = padSticks(pads.find((pad, index) => padKey(pad, index) === this.driving), this.stick());
       this.padSteerValue = sticks.steer;
       this.padTrimValue = sticks.trim;
-      this.padRotateValue = sticks.rotate;
-      this.padCrouchValue = padValue(pads, this.bindings().gamepad.crouch[0]);
-      // A trigger resting just off its stop is not a press (the Steam Controller reports raw travel).
-      const compressValue = padValue(pads, this.bindings().gamepad.compress[0]);
-      this.padCompressValue = compressValue < TRIGGER_REST ? 0 : compressValue;
-      this.padDuckValue = Math.max(0, ...this.bindings().gamepad.duckDive.map((button) => padValue(pads, button)));
+      this.padSwingValue = sticks.swing;
+      // LT by default: a trigger, so its travel is the depth asked for.
+      this.padCrouchValue = this.padTravel(pads, 'crouch');
+      this.padCompressValue = this.padTravel(pads, 'compress');
+      // RB by default (a button: 1 pressed); a trigger rebound to it presses by its travel.
+      this.padSnapValue = this.padTravel(pads, 'snap');
+      // L3 and the D-pad's down by default (duck-dive-l3), both plain buttons; a trigger rebound to either by its travel.
+      this.padDuckValue = this.padTravel(pads, 'duckDive');
     }
     this.padPrevious = now;
+  }
+
+  /**
+   * How far the pad asks for `action`, 0–1: the furthest of every button bound to it, so a second slot asks as well as
+   * the first. A plain button reads 1 held and 0 let go; a trigger reads its travel, and one resting just off its stop
+   * counts as nothing (the Steam Controller reports raw travel, and a few hundredths once compressed a little).
+   */
+  private padTravel(pads: readonly PadState[], action: Action): number {
+    const value = Math.max(0, ...this.bindings().gamepad[action].map((button) => padValue(pads, button)));
+    return value < TRIGGER_REST ? 0 : value;
   }
 
   private keyDown(event: KeyboardEvent): void {
@@ -216,18 +290,21 @@ export class Controls {
 
   private release(): void {
     this.held.clear();
+    this.sprintPress.reset();
     this.padHeld = new Set();
     this.padSteerValue = 0;
     this.padTrimValue = 0;
-    this.padRotateValue = 0;
+    this.padSwingValue = 0;
     this.padCrouchValue = 0;
     this.padCompressValue = 0;
+    this.padSnapValue = 0;
     this.padDuckValue = 0;
     this.touchPaddle = false;
     this.touchLeft = false;
     this.touchRight = false;
     this.touchCrouch = false;
     this.touchCompress = false;
+    this.touchSnap = false;
     this.getUpRequested = false;
   }
 

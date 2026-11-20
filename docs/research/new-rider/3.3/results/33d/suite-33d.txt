@@ -1,0 +1,37 @@
+Rider/board/HUD/runner suite, step 3.3d, on the tree that merges (claude/rider-new-33d, cut from main 2d37193a).
+
+  ./node_modules/.bin/vitest run src/physics/ src/game/PhysicalMode.test.ts src/ui/RideHud.test.ts \
+    src/wave/SurfZoneRunner.test.ts src/wave/SprayCloud.test.ts
+
+vitest exit: 0 (read from vitest's own exit status, on its own line, never through a pipe).
+SurfZoneRunner.test.ts is OUTSIDE the merge suite, so a red there is news: it is green.
+src/wave/SurfZoneSimulation.test.ts is deliberately not in it (c2-step5g.md 7.4), closed by reading.
+The worktree's node_modules is a SYMLINK to the main checkout's, and ./node_modules/.bin is used rather than npx: a
+tree without node_modules makes `npx tsc`/`npx vitest` print an install banner, and that has exited 0 on this project.
+
+58 files, 790 passed, 21 expected fail (811) -- SIX MORE PASSING TESTS than 3.3c's 784/805, and they are this round's
+own. The file count is unchanged.
+  hullForces.test.ts (five cases, `a hull patch whose hydrostatic support points along the hull`):
+    - the default is bit-for-bit the shipped force and reports hullShare 0;
+    - driven far past planing with a dry deck, the support lies along the hull normal at the SAME magnitude;
+    - at rest it keeps the water-surface normal (the Froude factor is 0), so a heeled floating board gets no side push;
+    - CAPSIZED (bottom face clear, deck 2 cm under) it keeps the water-surface normal, so a flipped board is never
+      pushed under by its own buoyancy even though its hull normal points straight down;
+    - half way (deck exactly on the surface line) the blend is half the planing share, the direction is between the
+      two normals, and the MAGNITUDE is unchanged.
+  PhysicalMode.test.ts (one case): ?buoyFrame=hull parsing, every spot's config through surfZoneConfigFor, and the
+    online-room pin read out of main.ts so that removing that pin fails here.
+
+
+Run twice: once on the source change, and again after 1b.4's probe-only additions (no `src/` file changed
+between them -- `git diff --numstat <first commit> -- src/` is empty). Identical counts both times; the second
+run's output follows.
+
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/ChatGPT/wt-33d
+
+
+ Test Files  58 passed (58)
+      Tests  790 passed | 21 expected fail (811)
+   Start at  21:53:03
+   Duration  110.41s (tests 97%, import 2%, transform 2%)
+

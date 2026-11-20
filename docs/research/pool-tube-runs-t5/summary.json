@@ -1,0 +1,115 @@
+{
+ "generated": "2026-11-13T03:24:16",
+ "machine": "Apple M1, 4 performance + 4 efficiency cores, 8 GB, macOS 15.7.4",
+ "levels": {
+  "scout": 10,
+  "phase1": 10,
+  "phase2": 13
+ },
+ "basilisk": "082dd5c9 2026-09-28",
+ "cases": {
+  "pool_far_big": {
+   "what": "the 2 m pool's wave, 2-5 s before the throw",
+   "transect": "pool_straight_big's ray, its fine frames from twice as far out (T5)",
+   "H_over_h0": 0.437,
+   "period_s": 10.0,
+   "S1": 0.0463,
+   "S2": 0.0463,
+   "HMID": 0.2,
+   "HS": 0.2,
+   "reef_top_h0": null,
+   "back_slope": null,
+   "domain_h0": 64.0,
+   "window": [
+    25.0,
+    47.0
+   ],
+   "tswitch": 18.0,
+   "tmax": 34.0,
+   "dx_m": 0.03515625,
+   "A0": 0.35471010000000003,
+   "A0_from": "scout",
+   "foot_crest_m": 1.5961954500000002,
+   "t_vertical": 28.2,
+   "t_touchdown": 29.625,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.9971945,
+    "x_m": 169.7697,
+    "trough_m": -0.534582,
+    "H_m": 2.5317765000000003
+   },
+   "pre_touchdown": {
+    "t": 29.6,
+    "crest_m": 1.9344014999999999,
+    "trough_m": -0.532638,
+    "H_m": 2.4670395000000003,
+    "jet_m2": 0.7595215017979058,
+    "tube_m2": 0.9635677890715613,
+    "tube_L_m": 1.8753701756527945,
+    "tube_W_m": 0.8364186640080309,
+    "L/W": 2.2421429080338986,
+    "tilt_deg": 48.98394863630015,
+    "lip_m": 0.40499817671117927,
+    "lip_cells": 11.519948137562432,
+    "per H at touchdown": {
+     "jet": 0.12479232236878479,
+     "tube": 0.1583179171009047,
+     "lip": 0.16416363690617003
+    },
+    "per H at vertical": {
+     "jet": 0.11849208577219564,
+     "tube": 0.15032511500954476,
+     "lip": 0.15996600675896125
+    },
+    "open_s": 0.9651317826070003
+   },
+   "depth_vertical_m": 2.5228871036260143,
+   "wall_s": {
+    "scout": 162.33,
+    "p1": 45.67,
+    "p2": 22176.75
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 553,
+    "clean": 404,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 201,
+      "flags": {
+       "jump_crest": 1,
+       "jump_lip": 119,
+       "jump_toe": 1,
+       "toe_collapsed": 6
+      }
+     },
+     "open": {
+      "n": 57,
+      "clean": 57,
+      "flags": {}
+     },
+     "post": {
+      "n": 176,
+      "clean": 146,
+      "flags": {
+       "surface_torn_in_window": 9,
+       "jump_crest": 3,
+       "jump_lip": 16,
+       "jump_toe": 10,
+       "no_cavity": 1
+      }
+     }
+    }
+   },
+   "psi0": 0.05999466081238531,
+   "fits": {
+    "A_O/H2": 0.2761116008610775,
+    "A_J/H2": 0.11821858303634832,
+    "W/L": 0.397651131609372,
+    "theta_O": 41.22743918406207
+   }
+  }
+ }
+}

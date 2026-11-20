@@ -24,7 +24,8 @@ import { buildBoardShape } from '../physics/boardShape';
 import { createBoardMesh } from '../scene/BoardMesh';
 import { BOARD_DESIGNS } from '../scene/board/boardDesigns';
 import { SkinnedSurfer } from '../scene/character/SkinnedSurfer';
-import { RIG_DETAIL } from '../scene/rig/HumanoidRig';
+import { RIG_DETAIL, RIG_SWITCHES } from '../scene/rig/HumanoidRig';
+import { turnBodySwitches } from '../scene/rig/stanceBlend';
 import type { OutfitId } from '../scene/character/outfits';
 import { PhotoSky, type TimeOfDay } from '../scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from '../scene/ShadowRig';
@@ -32,12 +33,14 @@ import { posturePoints } from '../scene/rig/posturePoints';
 import { POINT, createRiderVisualState, type RiderVisualState } from '../scene/rig/riderVisualState';
 import { StanceGauge, measureJoints, type StanceJoints } from '../scene/rig/stanceGauge';
 import { STANCES } from '../scene/rig/stanceMap';
-import { MOMENT_STANCE, RIDING_MOMENTS, STANCE_RECIPES, drawnRecipe, drawnStance, type StanceRecipe } from './ridingPoses';
+import { MOMENT_STANCE, RIDING_MOMENTS, STANCE_RECIPES, TURN_FILMS, drawnRecipe, drawnStance, type StanceRecipe } from './ridingPoses';
 import { drawRealism } from './realismSheet';
 import { figureAngles, figureLengths, figurePlan, referenceJoints } from './stanceFigure';
 import { MEASURE_LABEL, compareStance, formatMeasure } from './stanceReport';
 
 const params = new URLSearchParams(window.location.search);
+// The turning body's switches, as in the game (`?turnTrunk=lean`, `?turnLead=on`, `?cutbackHand=back`, or `?turnBody=on`).
+Object.assign(RIG_SWITCHES, turnBodySwitches(window.location.search));
 const timeOfDay = (params.get('sky') ?? 'midday') as TimeOfDay;
 const SURFERS = ['surfer1', 'surfer2', 'surfer3', 'surfer4'];
 /** One outfit each, so the sheet shows all four: the women in the full suit and the bikini, the men in the shorts and the spring suit. */
@@ -299,6 +302,8 @@ function drawStances(surfers: SkinnedSurfer[], single: boolean, scale: number, r
 
 /** Motions for the films beside the map's stances: a pump's three pulses, a held bottom turn released, a weave with the weight back. */
 const FILM_RECIPES: Record<string, StanceRecipe & { show?: number }> = {
+  // The turning body's films (`TURN_FILMS`): the carves each side and the cutbacks, for the drawn switches (`?turnBody=on`).
+  ...TURN_FILMS,
   pumping: {
     ...STANCE_RECIPES['pump-compression'],
     controls: [{ at: 0.4, crouch: 1 }, { at: 0.8, crouch: 0 }, { at: 1.2, crouch: 1 }, { at: 1.6, crouch: 0 }, { at: 2.0, crouch: 1 }, { at: 2.4, crouch: 0 }],
@@ -323,6 +328,15 @@ const FILM_RECIPES: Record<string, StanceRecipe & { show?: number }> = {
   tube: { ...STANCE_RECIPES['tube-frontside'], seconds: 1.8 },
   'tube-backside': { ...STANCE_RECIPES['tube-backside'], seconds: 1.6 },
   'kick-out': { ...STANCE_RECIPES['kick-out'], seconds: 1.3 },
+  // The snap stance (2026-11-03; round 2): on flat water at 8 m/s, Snap and a full steer onto the heels (frontside) or the
+  // toes (backside) at 0.3 s (the legs loading, the hips over the back foot, the shoulders wound toward the turn, the
+  // board coming round under them), let go at 0.9 s with the steer held; `snap-long` holds it to 1.2 s, taken alone at
+  // 0.3 s and steered from 0.6 s: the board slows from 7.4 to 5.9 m/s turning 90° by 2 s, and the rider stays on (with
+  // the upper body leaning back past the hips, as before round 2's fix, it slowed to 4.2 m/s, turned 56° and the rider
+  // fell at 1.9 s; `docs/research/snap-stance-2026-11-03/README.md`, Round 2).
+  snap: { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1, steer: -1 }, { at: 0.9, snap: 0, steer: -1 }], seconds: 2 },
+  'snap-backside': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1, steer: 1 }, { at: 0.9, snap: 0, steer: 1 }], seconds: 2 },
+  'snap-long': { ...STANCE_RECIPES.trim, steady: false, controls: [{ at: 0.3, snap: 1 }, { at: 0.6, snap: 1, steer: -1 }, { at: 1.2, snap: 0, steer: -1 }], seconds: 2 },
   // The animation-realism plan's phase 3: paddling from rest (a look-up every eight strokes); the catch down a 15° face
   // into the pop-up and the landing; sitting up after 2 s still (the scan's full cycle), then paddling off; and a ride
   // let go with Enter, lying back down (the prone kick-out).

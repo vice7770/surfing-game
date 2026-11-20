@@ -8,7 +8,8 @@ const DEG = Math.PI / 180;
 function turn(kind: Maneuver['kind'], start: number, degrees: number, peak: number, speedIn: number, faceFraction: number, kept = 0.92): Maneuver {
   return {
     kind, start, end: start + 1, yaw: degrees * DEG, peakYawRate: peak, speedIn, speedOut: speedIn * kept,
-    radius: speedIn / peak, lateralG: (speedIn * peak) / 9.81, roll: 0.7, faceFraction, pocket: true,
+    radius: speedIn / peak, lateralG: (speedIn * peak) / 9.81, pathYaw: degrees * DEG, throughWater: speedIn,
+    roll: 0.7, faceFraction, pocket: true,
   };
 }
 
@@ -59,6 +60,19 @@ describe('scoreRide', () => {
       const { score } = scoreRide(ride);
       expect(Math.abs(score * 10 - Math.round(score * 10))).toBeLessThan(1e-9);
     }
+  });
+
+  /**
+   * An `'unjudged'` run is a turn the analyzer measured and refused to name (2026-11-19). It must score exactly
+   * nothing: no manoeuvre value, no variety, and no link in a combination. A ride of nothing but unjudged runs
+   * scores what the same ride with no turns at all scores.
+   */
+  it('scores an unjudged run as no manoeuvre at all', () => {
+    const runs = [turn('unjudged', 3, 99, 1.9, 7.3, 0.3), turn('unjudged', 5, 152, 3, 6.7, 0.8)];
+    expect(scoreRide(proRide({ maneuvers: runs }))).toEqual(scoreRide(proRide({ maneuvers: [] })));
+    // Mixed in with real turns it changes neither the value, the variety nor the combination.
+    const mixed = proRide({ maneuvers: [...proRide().maneuvers, turn('unjudged', 12, 99, 1.9, 7.3, 0.3)] });
+    expect(scoreRide(mixed)).toEqual(scoreRide(proRide()));
   });
 
   // Review Focus 3: slow motion changes nothing.

@@ -1,0 +1,892 @@
+{
+ "generated": "2026-11-13T08:06:40",
+ "machine": "Apple M1, 4 performance + 4 efficiency cores, 8 GB, macOS 15.7.4",
+ "levels": {
+  "scout": 10,
+  "phase1": 10,
+  "phase2": 12
+ },
+ "basilisk": "082dd5c9 2026-09-28",
+ "cases": {
+  "pool_c2_b3_a3": {
+   "what": "C2 library, A0 row a3",
+   "transect": "the reef's near end (the steepest slope, the deepest crest)",
+   "H_over_h0": 0.44,
+   "period_s": 10.5,
+   "S1": 0.105,
+   "S2": 0.105,
+   "HMID": 0.3,
+   "HS": 0.3,
+   "reef_top_h0": 1.34,
+   "back_slope": 0.1,
+   "domain_h0": 64.0,
+   "window": [
+    21.0,
+    54.0
+   ],
+   "tswitch": 14.0,
+   "tmax": 35.5,
+   "dx_m": 0.078125,
+   "A0": 0.35773944,
+   "A0_from": "scout",
+   "foot_crest_m": 1.7886972,
+   "t_vertical": 24.075,
+   "t_touchdown": 25.35,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.78345,
+    "x_m": 167.2655,
+    "trough_m": -1.01215,
+    "H_m": 2.7956000000000003
+   },
+   "pre_touchdown": {
+    "t": 25.25,
+    "crest_m": 1.68875,
+    "trough_m": -0.73787,
+    "H_m": 2.4266199999999998,
+    "jet_m2": 1.620964836182992,
+    "tube_m2": 1.2839771986001836,
+    "tube_L_m": 2.1851458657962057,
+    "tube_W_m": 0.9634977482305906,
+    "L/W": 2.267930433474394,
+    "tilt_deg": 30.899845871151335,
+    "lip_m": 0.7418108152667227,
+    "lip_cells": 9.49517843541405,
+    "per H at touchdown": {
+     "jet": 0.27527707713903704,
+     "tube": 0.2180488326792588,
+     "lip": 0.3056971488188191
+    },
+    "per H at vertical": {
+     "jet": 0.20740705748453797,
+     "tube": 0.1642885315550675,
+     "lip": 0.26534941167074066
+    },
+    "open_s": 0.9102499908660051
+   },
+   "depth_vertical_m": 2.2128341924076445,
+   "wall_s": {
+    "scout": 1158.65,
+    "p1": 121.27,
+    "p2": 10690.0
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 778,
+    "clean": 617,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 236,
+      "flags": {
+       "jump_lip": 84,
+       "toe_collapsed": 1
+      }
+     },
+     "open": {
+      "n": 51,
+      "clean": 51,
+      "flags": {}
+     },
+     "post": {
+      "n": 407,
+      "clean": 330,
+      "flags": {
+       "jump_lip": 43,
+       "jump_toe": 59,
+       "jump_crest": 28,
+       "surface_torn_in_window": 21,
+       "toe_collapsed": 7,
+       "no_cavity": 4
+      }
+     }
+    }
+   },
+   "psi0": 0.13576805405587633,
+   "fits": {
+    "A_O/H2": 0.6791502795232062,
+    "A_J/H2": 0.6236510122917694,
+    "W/L": 0.5235107377868106,
+    "theta_O": -26.948221441595315
+   }
+  },
+  "pool_c2_b2_a3": {
+   "what": "C2 library, A0 row a3",
+   "transect": "the bed line's middle",
+   "H_over_h0": 0.44,
+   "period_s": 10.5,
+   "S1": 0.068,
+   "S2": 0.068,
+   "HMID": 0.205,
+   "HS": 0.205,
+   "reef_top_h0": 2.07,
+   "back_slope": 0.0646,
+   "domain_h0": 64.0,
+   "window": [
+    24.0,
+    57.0
+   ],
+   "tswitch": 16.5,
+   "tmax": 36.0,
+   "dx_m": 0.078125,
+   "A0": 0.35864,
+   "A0_from": "scout",
+   "foot_crest_m": 1.7932000000000001,
+   "t_vertical": 26.35,
+   "t_touchdown": 27.7,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.9532250000000002,
+    "x_m": 178.75,
+    "trough_m": -0.7920349999999999,
+    "H_m": 2.74526
+   },
+   "pre_touchdown": {
+    "t": 27.675,
+    "crest_m": 1.77809,
+    "trough_m": -0.7599499999999999,
+    "H_m": 2.5380399999999996,
+    "jet_m2": 3.3931912049457225,
+    "tube_m2": 1.7118780643999187,
+    "tube_L_m": 2.5622964165421935,
+    "tube_W_m": 1.1015234396880658,
+    "L/W": 2.3261388039711584,
+    "tilt_deg": 32.52158811519706,
+    "lip_m": 1.3242773876743024,
+    "lip_cells": 16.95075056223107,
+    "per H at touchdown": {
+     "jet": 0.5267583248558291,
+     "tube": 0.2657516087647541,
+     "lip": 0.5217716772290045
+    },
+    "per H at vertical": {
+     "jet": 0.4502371931002561,
+     "tube": 0.22714640233710254,
+     "lip": 0.48238687325583096
+    },
+    "open_s": 0.963794107975767
+   },
+   "depth_vertical_m": 2.416145909151191,
+   "wall_s": {
+    "scout": 725.05,
+    "p1": 155.58,
+    "p2": 12317.94
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 707,
+    "clean": 553,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 263,
+      "flags": {
+       "jump_crest": 2,
+       "jump_lip": 53,
+       "jump_toe": 4,
+       "surface_torn_in_window": 4,
+       "toe_collapsed": 2
+      }
+     },
+     "open": {
+      "n": 54,
+      "clean": 54,
+      "flags": {}
+     },
+     "post": {
+      "n": 333,
+      "clean": 236,
+      "flags": {
+       "toe_collapsed": 3,
+       "surface_torn_in_window": 39,
+       "jump_crest": 22,
+       "jump_toe": 40,
+       "jump_lip": 52,
+       "no_cavity": 3
+      }
+     }
+    }
+   },
+   "psi0": 0.08787072936375245,
+   "fits": {
+    "A_O/H2": 0.4243844094857993,
+    "A_J/H2": 0.25466262086911906,
+    "W/L": 0.4439532814731928,
+    "theta_O": 23.819010603223646
+   }
+  },
+  "pool_c2_b1_a3": {
+   "what": "C2 library, A0 row a3",
+   "transect": "the reef's middle (deep end of the bed line: the gentlest slope, the shallowest crest)",
+   "H_over_h0": 0.44,
+   "period_s": 10.5,
+   "S1": 0.036,
+   "S2": 0.036,
+   "HMID": 0.19,
+   "HS": 0.19,
+   "reef_top_h0": 3.92,
+   "back_slope": 0.0342,
+   "domain_h0": 64.0,
+   "window": [
+    27.0,
+    60.0
+   ],
+   "tswitch": 19.5,
+   "tmax": 39.5,
+   "dx_m": 0.078125,
+   "A0": 0.3552652,
+   "A0_from": "scout",
+   "foot_crest_m": 1.776326,
+   "t_vertical": 29.35,
+   "t_touchdown": 30.45,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 2.436395,
+    "x_m": 194.375,
+    "trough_m": -0.555015,
+    "H_m": 2.99141
+   },
+   "pre_touchdown": {
+    "t": 30.425,
+    "crest_m": 2.2385550000000003,
+    "trough_m": -0.549535,
+    "H_m": 2.7880900000000004,
+    "jet_m2": 1.0282406667144528,
+    "tube_m2": 0.42601775512522977,
+    "tube_L_m": 1.3922719419173335,
+    "tube_W_m": 0.6085568627011639,
+    "L/W": 2.2878255546039554,
+    "tilt_deg": 55.85336777440226,
+    "lip_m": 0.7385343593855925,
+    "lip_cells": 9.453239800135584,
+    "per H at touchdown": {
+     "jet": 0.13227604421606373,
+     "tube": 0.05480423527094586,
+     "lip": 0.26488899547202294
+    },
+    "per H at vertical": {
+     "jet": 0.11490604953426391,
+     "tube": 0.047607548366388204,
+     "lip": 0.2468850339423859
+    },
+    "open_s": 0.785313717609884
+   },
+   "depth_vertical_m": 3.0689804528216476,
+   "wall_s": {
+    "scout": 1147.1399999999999,
+    "p1": 177.53,
+    "p2": 11468.39
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 727,
+    "clean": 544,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 294,
+      "flags": {
+       "jump_lip": 26,
+       "jump_crest": 1,
+       "jump_toe": 1
+      }
+     },
+     "open": {
+      "n": 44,
+      "clean": 44,
+      "flags": {}
+     },
+     "post": {
+      "n": 363,
+      "clean": 206,
+      "flags": {
+       "surface_torn_in_window": 42,
+       "toe_collapsed": 26,
+       "jump_lip": 69,
+       "jump_toe": 53,
+       "jump_crest": 28,
+       "no_cavity": 25
+      }
+     }
+    }
+   },
+   "psi0": 0.046629883852903745,
+   "fits": {
+    "A_O/H2": 0.205024352213595,
+    "A_J/H2": 0.0732356156162571,
+    "W/L": 0.3754522370796731,
+    "theta_O": 46.40638759774127
+   }
+  },
+  "pool_c2_b3_a2": {
+   "what": "C2 library, A0 row a2",
+   "transect": "the reef's near end (the steepest slope, the deepest crest)",
+   "H_over_h0": 0.33,
+   "period_s": 10.5,
+   "S1": 0.105,
+   "S2": 0.105,
+   "HMID": 0.3,
+   "HS": 0.3,
+   "reef_top_h0": 1.34,
+   "back_slope": 0.1,
+   "domain_h0": 64.0,
+   "window": [
+    22.0,
+    55.0
+   ],
+   "tswitch": 15.5,
+   "tmax": 35.0,
+   "dx_m": 0.078125,
+   "A0": 0.252590144,
+   "A0_from": "scout",
+   "foot_crest_m": 1.26295072,
+   "t_vertical": 25.075,
+   "t_touchdown": 26.225,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.290165,
+    "x_m": 165.703,
+    "trough_m": -0.7302799999999999,
+    "H_m": 2.020445
+   },
+   "pre_touchdown": {
+    "t": 26.125,
+    "crest_m": 1.289055,
+    "trough_m": -0.60048,
+    "H_m": 1.889535,
+    "jet_m2": 0.9831436442500063,
+    "tube_m2": 0.7140268952749551,
+    "tube_L_m": 1.7610330434790167,
+    "tube_W_m": 0.6685680807408545,
+    "L/W": 2.634036972760618,
+    "tilt_deg": 33.529491016916005,
+    "lip_m": 0.5582766591975767,
+    "lip_cells": 7.145941237728982,
+    "per H at touchdown": {
+     "jet": 0.2753639573184438,
+     "tube": 0.19998834622452724,
+     "lip": 0.29545716760873797
+    },
+    "per H at vertical": {
+     "jet": 0.24083683464781935,
+     "tube": 0.17491236231569535,
+     "lip": 0.27631371267100896
+    },
+    "open_s": 0.8210097956830636
+   },
+   "depth_vertical_m": 1.999441251137618,
+   "wall_s": {
+    "scout": 520.0,
+    "p1": 101.89,
+    "p2": 6271.77
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 718,
+    "clean": 596,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 300,
+      "flags": {
+       "jump_lip": 20,
+       "jump_crest": 7,
+       "jump_toe": 7,
+       "toe_collapsed": 2,
+       "surface_torn_in_window": 1
+      }
+     },
+     "open": {
+      "n": 46,
+      "clean": 45,
+      "flags": {
+       "toe_collapsed": 1
+      }
+     },
+     "post": {
+      "n": 352,
+      "clean": 251,
+      "flags": {
+       "surface_torn_in_window": 37,
+       "jump_toe": 33,
+       "jump_crest": 17,
+       "jump_lip": 18,
+       "toe_collapsed": 1,
+       "no_cavity": 32
+      }
+     }
+    }
+   },
+   "psi0": 0.14811027862894688,
+   "fits": {
+    "A_O/H2": 0.7447985720273684,
+    "A_J/H2": 0.7462949270937058,
+    "W/L": 0.5440111728026807,
+    "theta_O": -44.30235745045278
+   }
+  },
+  "pool_c2_b2_a2": {
+   "what": "C2 library, A0 row a2",
+   "transect": "the bed line's middle",
+   "H_over_h0": 0.33,
+   "period_s": 10.5,
+   "S1": 0.068,
+   "S2": 0.068,
+   "HMID": 0.205,
+   "HS": 0.205,
+   "reef_top_h0": 2.07,
+   "back_slope": 0.0646,
+   "domain_h0": 64.0,
+   "window": [
+    25.0,
+    57.0
+   ],
+   "tswitch": 18.0,
+   "tmax": 38.5,
+   "dx_m": 0.078125,
+   "A0": 0.251971264,
+   "A0_from": "scout",
+   "foot_crest_m": 1.25985632,
+   "t_vertical": 28.0,
+   "t_touchdown": 29.175,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.6578249999999999,
+    "x_m": 180.625,
+    "trough_m": -0.693205,
+    "H_m": 2.35103
+   },
+   "pre_touchdown": {
+    "t": 29.15,
+    "crest_m": 1.385045,
+    "trough_m": -0.6869649999999999,
+    "H_m": 2.07201,
+    "jet_m2": 2.036976477936925,
+    "tube_m2": 1.0151248318000405,
+    "tube_L_m": 1.950649798150606,
+    "tube_W_m": 0.8634632003637499,
+    "L/W": 2.2591000952082942,
+    "tilt_deg": 36.772850320276724,
+    "lip_m": 1.0442553449974281,
+    "lip_cells": 13.36646841596708,
+    "per H at touchdown": {
+     "jet": 0.47446296644731484,
+     "tube": 0.23644806124515924,
+     "lip": 0.5039818075189928
+    },
+    "per H at vertical": {
+     "jet": 0.36852730579971565,
+     "tube": 0.1836551493675336,
+     "lip": 0.44416929813631817
+    },
+    "open_s": 0.8388578347196509
+   },
+   "depth_vertical_m": 2.039752810251237,
+   "wall_s": {
+    "scout": 584.08,
+    "p1": 158.51,
+    "p2": 7543.89
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 741,
+    "clean": 544,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 280,
+      "flags": {
+       "jump_crest": 2,
+       "jump_lip": 28,
+       "jump_toe": 9,
+       "surface_torn_in_window": 5,
+       "toe_collapsed": 1
+      }
+     },
+     "open": {
+      "n": 47,
+      "clean": 47,
+      "flags": {}
+     },
+     "post": {
+      "n": 374,
+      "clean": 217,
+      "flags": {
+       "jump_crest": 25,
+       "surface_torn_in_window": 48,
+       "jump_lip": 59,
+       "jump_toe": 75,
+       "no_cavity": 47,
+       "toe_collapsed": 1
+      }
+     }
+    }
+   },
+   "psi0": 0.09597788137772895,
+   "fits": {
+    "A_O/H2": 0.46750635104814026,
+    "A_J/H2": 0.3051591173076878,
+    "W/L": 0.4574192609684078,
+    "theta_O": 17.079797345528984
+   }
+  },
+  "pool_c2_b1_a2": {
+   "what": "C2 library, A0 row a2",
+   "transect": "the reef's middle (deep end of the bed line: the gentlest slope, the shallowest crest)",
+   "H_over_h0": 0.33,
+   "period_s": 10.5,
+   "S1": 0.036,
+   "S2": 0.036,
+   "HMID": 0.19,
+   "HS": 0.19,
+   "reef_top_h0": 3.92,
+   "back_slope": 0.0342,
+   "domain_h0": 64.0,
+   "window": [
+    30.0,
+    62.0
+   ],
+   "tswitch": 23.5,
+   "tmax": 43.5,
+   "dx_m": 0.078125,
+   "A0": 0.250262816,
+   "A0_from": "scout",
+   "foot_crest_m": 1.25131408,
+   "t_vertical": 33.075,
+   "t_touchdown": 34.0,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 2.03125,
+    "x_m": 204.22899999999998,
+    "trough_m": -0.48473900000000003,
+    "H_m": 2.5159890000000003
+   },
+   "pre_touchdown": {
+    "t": 33.975,
+    "crest_m": 1.94197,
+    "trough_m": -0.480244,
+    "H_m": 2.422214,
+    "jet_m2": 0.20984352088220248,
+    "tube_m2": 0.29437468525017607,
+    "tube_L_m": 1.1278755309501156,
+    "tube_W_m": 0.4292792659418154,
+    "L/W": 2.627370153728757,
+    "tilt_deg": 60.9886680196084,
+    "lip_m": 0.18605202003578497,
+    "lip_cells": 2.3814658564580475,
+    "per H at touchdown": {
+     "jet": 0.035766014196470734,
+     "tube": 0.05017362045526166,
+     "lip": 0.07681072772091357
+    },
+    "per H at vertical": {
+     "jet": 0.03314958443607795,
+     "tube": 0.04650321555566419,
+     "lip": 0.07394786703589919
+    },
+    "open_s": 0.6603774443537653
+   },
+   "depth_vertical_m": 2.5808360000000006,
+   "wall_s": {
+    "scout": 582.22,
+    "p1": 210.82,
+    "p2": 7860.61
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 738,
+    "clean": 580,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 306,
+      "flags": {
+       "jump_lip": 14,
+       "jump_crest": 1,
+       "jump_toe": 1,
+       "toe_collapsed": 1
+      }
+     },
+     "open": {
+      "n": 37,
+      "clean": 37,
+      "flags": {}
+     },
+     "post": {
+      "n": 381,
+      "clean": 237,
+      "flags": {
+       "no_cavity": 28,
+       "jump_lip": 73,
+       "surface_torn_in_window": 44,
+       "jump_crest": 31,
+       "toe_collapsed": 7,
+       "jump_toe": 61
+      }
+     }
+    }
+   },
+   "psi0": 0.05089831662370994,
+   "fits": {
+    "A_O/H2": 0.22772814612151315,
+    "A_J/H2": 0.08616284362332627,
+    "W/L": 0.3825421039119822,
+    "theta_O": 44.97545505076323
+   }
+  },
+  "pool_c2_b3_a1": {
+   "what": "C2 library, A0 row a1",
+   "transect": "the reef's near end (the steepest slope, the deepest crest)",
+   "H_over_h0": 0.22,
+   "period_s": 10.5,
+   "S1": 0.105,
+   "S2": 0.105,
+   "HMID": 0.3,
+   "HS": 0.3,
+   "reef_top_h0": 1.34,
+   "back_slope": 0.1,
+   "domain_h0": 64.0,
+   "window": [
+    23.0,
+    55.0
+   ],
+   "tswitch": 17.5,
+   "tmax": 39.5,
+   "dx_m": 0.078125,
+   "A0": 0.153536608,
+   "A0_from": "scout",
+   "foot_crest_m": 0.76768304,
+   "t_vertical": 26.725,
+   "t_touchdown": 27.5,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 0.91218,
+    "x_m": 169.6095,
+    "trough_m": -0.4667925,
+    "H_m": 1.3789725
+   },
+   "pre_touchdown": {
+    "t": 27.375,
+    "crest_m": 0.9535150000000001,
+    "trough_m": -0.43670800000000004,
+    "H_m": 1.3902230000000002,
+    "jet_m2": 0.23084955101619897,
+    "tube_m2": 0.14753818750996572,
+    "tube_L_m": 0.6756929905380542,
+    "tube_W_m": 0.4132387762046541,
+    "L/W": 1.6351151669354018,
+    "tilt_deg": 59.29706818711234,
+    "lip_m": 0.3416485804187098,
+    "lip_cells": 4.373101829359486,
+    "per H at touchdown": {
+     "jet": 0.1194428330244403,
+     "tube": 0.07633707329257407,
+     "lip": 0.2457509193983338
+    },
+    "per H at vertical": {
+     "jet": 0.12139975867636804,
+     "tube": 0.07758776346072137,
+     "lip": 0.2477559055156719
+    },
+    "open_s": 0.5532892101342365
+   },
+   "depth_vertical_m": 1.5,
+   "wall_s": {
+    "scout": 414.16,
+    "p1": 117.17,
+    "p2": 3145.26
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 832,
+    "clean": 483,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 302,
+      "flags": {
+       "jump_lip": 17,
+       "jump_crest": 3,
+       "jump_toe": 1
+      }
+     },
+     "open": {
+      "n": 31,
+      "clean": 31,
+      "flags": {}
+     },
+     "post": {
+      "n": 481,
+      "clean": 150,
+      "flags": {
+       "no_cavity": 300,
+       "surface_torn_in_window": 18,
+       "toe_collapsed": 8,
+       "jump_lip": 42,
+       "jump_crest": 4,
+       "jump_toe": 22
+      }
+     }
+    }
+   },
+   "psi0": 0.1677398744548114,
+   "fits": {
+    "A_O/H2": 0.8492083922251418,
+    "A_J/H2": 0.964619156448026,
+    "W/L": 0.5766159314694417,
+    "theta_O": -75.50951479920721
+   }
+  },
+  "pool_c2_b2_a1": {
+   "what": "C2 library, A0 row a1",
+   "transect": "the bed line's middle",
+   "H_over_h0": 0.22,
+   "period_s": 10.5,
+   "S1": 0.068,
+   "S2": 0.068,
+   "HMID": 0.205,
+   "HS": 0.205,
+   "reef_top_h0": 2.07,
+   "back_slope": 0.0646,
+   "domain_h0": 64.0,
+   "window": [
+    27.0,
+    58.0
+   ],
+   "tswitch": 21.0,
+   "tmax": 41.0,
+   "dx_m": 0.078125,
+   "A0": 0.151928448,
+   "A0_from": "scout",
+   "foot_crest_m": 0.75964224,
+   "t_vertical": 30.6,
+   "t_touchdown": 31.6,
+   "tube": true,
+   "at_vertical": {
+    "crest_m": 1.1747,
+    "x_m": 185.2345,
+    "trough_m": -0.55406,
+    "H_m": 1.72876
+   },
+   "pre_touchdown": {
+    "t": 31.575,
+    "crest_m": 0.9626600000000001,
+    "trough_m": -0.5382,
+    "H_m": 1.5008599999999999,
+    "jet_m2": 0.9737883149338877,
+    "tube_m2": 0.3704368353750098,
+    "tube_L_m": 1.351116613154567,
+    "tube_W_m": 0.5503094185290358,
+    "L/W": 2.455194419107109,
+    "tilt_deg": 35.9333055755417,
+    "lip_m": 0.7207285481156961,
+    "lip_cells": 9.22532541588091,
+    "per H at touchdown": {
+     "jet": 0.43229896172636517,
+     "tube": 0.1644499701443731,
+     "lip": 0.48021037812700457
+    },
+    "per H at vertical": {
+     "jet": 0.3258330609434478,
+     "tube": 0.12394949303189995,
+     "lip": 0.4169049191997131
+    },
+    "open_s": 0.7139215614635323
+   },
+   "depth_vertical_m": 1.5444870080928959,
+   "wall_s": {
+    "scout": 441.28,
+    "p1": 146.37,
+    "p2": 3219.24
+   },
+   "stage": "done",
+   "library_stats": {
+    "total": 737,
+    "clean": 558,
+    "by_phase": {
+     "pre": {
+      "n": 320,
+      "clean": 302,
+      "flags": {
+       "jump_lip": 18,
+       "jump_crest": 5,
+       "jump_toe": 6
+      }
+     },
+     "open": {
+      "n": 40,
+      "clean": 40,
+      "flags": {}
+     },
+     "post": {
+      "n": 377,
+      "clean": 216,
+      "flags": {
+       "no_cavity": 90,
+       "surface_torn_in_window": 38,
+       "jump_toe": 52,
+       "jump_crest": 29,
+       "toe_collapsed": 7,
+       "jump_lip": 30
+      }
+     }
+    }
+   },
+   "psi0": 0.10891786941742673,
+   "fits": {
+    "A_O/H2": 0.5363341474312927,
+    "A_J/H2": 0.3958541383179876,
+    "W/L": 0.4789125811023458,
+    "theta_O": 4.758173260025025
+   }
+  },
+  "pool_c2_b1_a1": {
+   "what": "C2 library, A0 row a1",
+   "transect": "the reef's middle (deep end of the bed line: the gentlest slope, the shallowest crest)",
+   "H_over_h0": 0.22,
+   "period_s": 10.5,
+   "S1": 0.036,
+   "S2": 0.036,
+   "HMID": 0.19,
+   "HS": 0.19,
+   "reef_top_h0": 3.92,
+   "back_slope": 0.0342,
+   "domain_h0": 64.0,
+   "window": [
+    35.0,
+    64.0
+   ],
+   "tswitch": 29.5,
+   "tmax": 49.0,
+   "dx_m": 0.078125,
+   "A0": 0.15063264799999998,
+   "A0_from": "scout",
+   "foot_crest_m": 0.7531632399999999,
+   "t_vertical": 38.8,
+   "t_touchdown": 40.775,
+   "tube": false,
+   "at_vertical": {
+    "crest_m": 1.4856249999999998,
+    "x_m": 219.7655,
+    "trough_m": -0.377341,
+    "H_m": 1.8629659999999997
+   },
+   "pre_touchdown": null,
+   "depth_vertical_m": 1.9272020000000007,
+   "wall_s": {
+    "scout": 316.44,
+    "p1": 158.98,
+    "p2": 3072.49
+   },
+   "stage": "done",
+   "library_stats": null,
+   "psi0": 0.05778601195476611,
+   "fits": {
+    "A_O/H2": 0.264363797587401,
+    "A_J/H2": 0.10987129262388788,
+    "W/L": 0.39398256585686653,
+    "theta_O": 42.22489782424368
+   }
+  }
+ }
+}

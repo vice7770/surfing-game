@@ -1,0 +1,703 @@
+
+
+========== 1. THE TRIM THE LOOP HOLDS, as a column — |phi_ref| beside the face's own tilt ==========
+Every frame of every run of the arm, from frame 1. The model's sign is phi = -roll, so the trim that would be
+"the board flush with the face" is -tilt. 3.4d measured |phi_ref| EXACTLY 0.0000 at 18 182 frames with the
+datum off; these are the same column on the arms that move the reference.
+       arm     frames  |ref| med |ref| peak  |ref| fr1   tilt fr1  ref/-tilt  exactly 0
+     g-off       2193     0.0000      0.000     0.0000     8.8242     0.0000      1.000
+ g-predict       5144     0.0000      0.000     0.0000     8.8153     0.0000      1.000
+     g-ref       4144     6.7943     15.655     9.1052     8.8146     1.0373      0.091
+    g-tilt        845     8.8871     14.248     9.1052     8.8107     1.0378      0.000
+   g-mdeck       2193     0.0000      0.000     0.0000     8.8242     0.0000      1.000
+   g-mfelt       2207     0.0000      0.000     0.0000     8.8242     0.0000      1.000
+   g-mboth       2207     0.0000      0.000     0.0000     8.8242     0.0000      1.000
+     g-all        802     8.9424     14.042     9.1052     8.8107     1.0378      0.000
+     l-off       1433     0.0000      0.000     0.0000     8.9803     0.0000      1.000
+ l-predict       1309     0.0000      0.000     0.0000     8.9841     0.0000      1.000
+     l-ref        555     9.5647     13.667     9.1052     8.9792     1.0180      0.000
+    l-tilt        497     9.3748     12.992     9.1052     8.9829     1.0174      0.000
+   l-mdeck       1607     0.0000      0.000     0.0000     8.9814     0.0000      1.000
+   l-mfelt       1422     0.0000      0.000     0.0000     8.9803     0.0000      1.000
+   l-mboth       1607     0.0000      0.000     0.0000     8.9814     0.0000      1.000
+     l-all        558     9.6246     12.996     9.1052     8.9860     1.0174      0.000
+
+
+========== 2. THE ROWS, PER ARM, FILTERED AND UNFILTERED, ON BOTH QUANTITIES ==========
+
+--- g-off, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 2193 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     39.002     1188.9       30.5     1180.9      1.000       8.80       9.04
+   0.2-0.6        576      9.120      583.3       64.0      542.0      0.964       7.75      10.21
+   0.6-1.0        576      8.024     1776.9      221.5     1640.0      0.910       5.30      18.85
+   1.0-1.5        568      8.127     5458.0      671.6     3593.8      0.796       2.85      41.02
+   1.5-3.0        209     10.086     7706.6      764.1     4993.8      0.737       0.11      54.39
+
+--- g-off, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1746 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      8.978      581.5       64.8      535.9      0.962       7.71      10.24
+   0.6-1.0        576      8.024     1776.9      221.5     1640.0      0.910       5.30      18.85
+   1.0-1.5        475      9.936     3777.3      380.2     3054.1      0.880       2.50      36.48
+   1.5-3.0        143     20.444     3495.0      171.0     3366.1      0.979       0.12      45.60
+
+--- g-predict, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 5144 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264      1.514      851.8      562.6      626.9      0.583       8.43       9.24
+   0.2-0.6        576      3.469      861.2      248.3      736.1      0.832       7.50       2.34
+   0.6-1.0        576      5.468     1318.9      241.2     1222.7      0.875       5.46       3.00
+   1.0-1.5        663      3.897      749.9      192.5      731.3      0.830       4.75       8.22
+   1.5-3.0       1692      4.272      379.7       88.9      318.7      0.791       3.49       4.57
+  3.0-99.0       1373      6.982     1243.7      178.1     1226.7      0.879       3.03       9.27
+
+--- g-predict, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 4828 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      3.496      854.1      244.4      741.8      0.837       7.48       2.25
+   0.6-1.0        576      5.468     1318.9      241.2     1222.7      0.875       5.46       3.00
+   1.0-1.5        649      3.929      680.1      173.1      699.6      0.838       4.67       7.83
+   1.5-3.0       1686      4.303      375.2       87.2      314.6      0.793       3.45       4.53
+  3.0-99.0       1365      7.083     1224.1      172.8     1208.5      0.882       3.00       9.15
+
+--- g-ref, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 4144 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264      1.150     1319.2     1147.0     1264.7      0.530       8.27      10.53
+   0.2-0.6        576      2.976     1208.7      406.2     1109.1      0.776       7.61       1.93
+   0.6-1.0        560      5.631     1765.9      313.6     1519.1      0.818       5.66       2.91
+   1.0-1.5        549      3.316      511.0      154.1      429.6      0.769       4.28       2.40
+   1.5-3.0       1385      4.741      367.6       77.5      315.6      0.798       3.20       1.91
+  3.0-99.0        810      8.658     3020.0      348.8     2525.2      0.859       7.66      15.37
+
+--- g-ref, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 3810 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      2.900     1188.2      409.6     1075.5      0.766       7.60       1.83
+   0.6-1.0        549      5.845     1642.2      281.0     1451.4      0.834       5.58       2.72
+   1.0-1.5        545      3.343      502.5      150.3      419.2      0.769       4.24       2.34
+   1.5-3.0       1373      4.790      351.4       73.4      305.7      0.803       3.15       1.84
+  3.0-99.0        791      9.147     2768.9      302.7     2458.6      0.880       7.58      14.79
+
+--- g-tilt, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 845 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264      0.750     1993.8     2659.9     1551.5      0.352       7.94       9.77
+   0.2-0.6        355      1.653     3376.6     2043.3     3370.5      0.541       7.97       5.05
+   0.6-1.0        205      6.087     9682.0     1590.7     7215.3      0.722       9.80      47.26
+   1.0-1.5         21      2.463    25986.0    10552.7     9350.7      0.476      13.38      53.05
+
+--- g-tilt, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 520 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        331      1.838     3417.0     1858.8     3235.7      0.568       8.05       5.09
+   0.6-1.0        180      7.818     7924.6     1013.7     6600.2      0.789       9.71      43.68
+   1.0-1.5          9     10.853     5904.7      544.1     5330.6      1.000      13.31      31.54
+
+--- g-mdeck, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 2193 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     39.002     1188.9       30.5     1180.9      1.000       8.80       9.04
+   0.2-0.6        576      9.120      583.3       64.0      542.0      0.964       7.75      10.21
+   0.6-1.0        576      8.024     1776.9      221.5     1640.0      0.910       5.30      18.85
+   1.0-1.5        568      8.127     5458.0      671.6     3593.8      0.796       2.85      41.02
+   1.5-3.0        209     10.086     7706.6      764.1     4993.8      0.737       0.11      54.39
+
+--- g-mdeck, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1746 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      8.978      581.5       64.8      535.9      0.962       7.71      10.24
+   0.6-1.0        576      8.024     1776.9      221.5     1640.0      0.910       5.30      18.85
+   1.0-1.5        475      9.936     3777.3      380.2     3054.1      0.880       2.50      36.48
+   1.5-3.0        143     20.444     3495.0      171.0     3366.1      0.979       0.12      45.60
+
+--- g-mfelt, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 2207 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     39.002     1188.9       30.5     1180.9      1.000       8.80       9.04
+   0.2-0.6        576      9.120      583.3       64.0      542.0      0.964       7.75      10.21
+   0.6-1.0        576      8.017     1776.8      221.6     1639.9      0.910       5.30      18.85
+   1.0-1.5        577      7.829     5758.0      735.4     3708.7      0.783       2.93      41.52
+   1.5-3.0        214      9.534     8083.5      847.8     5190.8      0.720       0.12      55.23
+
+--- g-mfelt, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1753 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      8.978      581.5       64.8      535.9      0.962       7.71      10.24
+   0.6-1.0        576      8.017     1776.8      221.6     1639.9      0.910       5.30      18.85
+   1.0-1.5        481      9.606     3958.8      412.1     3139.8      0.869       2.57      36.89
+   1.5-3.0        144     20.102     3569.0      177.5     3419.3      0.972       0.14      45.82
+
+--- g-mboth, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 2207 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     39.002     1188.9       30.5     1180.9      1.000       8.80       9.04
+   0.2-0.6        576      9.120      583.3       64.0      542.0      0.964       7.75      10.21
+   0.6-1.0        576      8.017     1776.8      221.6     1639.9      0.910       5.30      18.85
+   1.0-1.5        577      7.829     5758.0      735.4     3708.7      0.783       2.93      41.52
+   1.5-3.0        214      9.534     8083.5      847.8     5190.8      0.720       0.12      55.23
+
+--- g-mboth, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1753 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      8.978      581.5       64.8      535.9      0.962       7.71      10.24
+   0.6-1.0        576      8.017     1776.8      221.6     1639.9      0.910       5.30      18.85
+   1.0-1.5        481      9.606     3958.8      412.1     3139.8      0.869       2.57      36.89
+   1.5-3.0        144     20.102     3569.0      177.5     3419.3      0.972       0.14      45.82
+
+--- g-all, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 802 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        262      0.759     1953.5     2574.2     1534.8      0.370       7.96       9.84
+   0.2-0.6        318      1.911     3049.2     1595.6     2944.9      0.579       8.26       5.71
+   0.6-1.0        208      6.476     9156.0     1413.7     7057.8      0.736       9.93      46.59
+   1.0-1.5         14      7.534    14682.6     1948.7     6658.4      0.786      13.34      42.37
+
+--- g-all, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 494 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        299      2.122     3119.5     1469.9     2832.8      0.599       8.32       5.77
+   0.6-1.0        186      8.176     7623.3      932.4     6480.0      0.812       9.82      43.55
+   1.0-1.5          9     10.734     5948.2      554.1     5362.6      1.000      13.32      31.49
+
+--- l-off, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 1433 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198      7.415     1044.4      140.8     1394.0      0.793       9.60       5.17
+   0.2-0.6        424      2.911     2904.5      997.8     1293.6      0.601      11.24      13.22
+   0.6-1.0        279      3.807     2604.7      684.1     1950.7      0.781      10.39      13.94
+   1.0-1.5        155      2.469     2378.6      963.2     2022.5      0.716       9.68      17.54
+   1.5-3.0        182      4.071     1838.3      451.6     1623.2      0.791       4.90      15.95
+  3.0-99.0        195      9.385      465.3       49.6      474.7      0.923       1.43       7.07
+
+--- l-off, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1180 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        400      2.940     2736.6      930.8     1259.8      0.610      11.25      13.35
+   0.6-1.0        265      4.101     2041.4      497.8     1785.0      0.823      10.28      13.01
+   1.0-1.5        147      2.596     1914.9      737.7     1981.4      0.755       9.83      16.24
+   1.5-3.0        173      3.924     1689.0      430.4     1479.0      0.798       4.97      14.77
+  3.0-99.0        195      9.385      465.3       49.6      474.7      0.923       1.43       7.07
+
+--- l-predict, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 1309 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        191      0.850      783.0      921.4      978.0      0.607       9.60       8.29
+   0.2-0.6        287      2.689     1848.0      687.3     1343.2      0.641      10.15       5.99
+   0.6-1.0        229      3.961     4962.7     1252.9     2281.1      0.651       8.91      10.32
+   1.0-1.5        176      9.557     3652.7      382.2     2933.5      0.869      10.60      12.93
+   1.5-3.0        209     15.833     1348.6       85.2     1310.1      0.962       7.86       6.62
+  3.0-99.0        217      7.548     1188.9      157.5      874.1      0.811       3.60       3.23
+
+--- l-predict, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1081 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        275      2.774     1866.3      672.8     1426.8      0.662      10.16       6.02
+   0.6-1.0        217      4.320     4215.2      975.8     2251.4      0.687       8.88       9.27
+   1.0-1.5        166     10.955     2833.0      258.6     2897.2      0.922      10.86      11.76
+   1.5-3.0        209     15.833     1348.6       85.2     1310.1      0.962       7.86       6.62
+  3.0-99.0        214      7.860     1149.1      146.2      843.8      0.822       3.51       3.09
+
+--- l-ref, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 555 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        176      0.987     1256.7     1273.8      628.6      0.301       9.21       9.23
+   0.2-0.6        199      2.315     1822.4      787.2     1515.1      0.724       9.48       4.20
+   0.6-1.0        125      7.909     8123.9     1027.2     5853.2      0.744       9.64      27.17
+   1.0-1.5         55      6.325     6351.1     1004.1     6046.8      0.800      12.02      38.77
+
+--- l-ref, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 363 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        190      2.211     1800.5      814.5     1497.2      0.711       9.50       4.09
+   0.6-1.0        122      8.664     8209.3      947.5     5709.2      0.762       9.63      26.41
+   1.0-1.5         51      7.577     6038.8      797.0     5939.9      0.863      11.91      36.97
+
+--- l-tilt, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 497 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        180      0.677     1704.5     2516.1     1381.3      0.311       9.24       8.82
+   0.2-0.6        207      2.650     2496.8      942.2     2620.6      0.758       9.07       5.72
+   0.6-1.0        110      2.961    19346.5     6534.3    10039.1      0.473       9.59      54.16
+
+--- l-tilt, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 294 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        198      2.910     2658.3      913.4     2601.8      0.763       9.09       5.71
+   0.6-1.0         96      3.406    17893.0     5253.3     9851.2      0.510       9.61      50.67
+
+--- l-mdeck, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 1607 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198     29.912     1070.9       35.8     1082.9      1.000       9.62       9.08
+   0.2-0.6        432      3.374      657.6      194.9      750.0      0.859      10.47       6.37
+   0.6-1.0        408      2.523     3275.2     1298.3     1861.3      0.618      10.86      10.09
+   1.0-1.5        192      2.014     3843.5     1908.2     2338.1      0.594       9.53      20.07
+   1.5-3.0        182      4.071     1838.3      451.6     1623.2      0.791       4.90      15.95
+  3.0-99.0        195      9.385      465.3       49.6      474.7      0.923       1.43       7.07
+
+--- l-mdeck, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1358 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        414      3.431      685.3      199.7      762.7      0.855      10.48       6.27
+   0.6-1.0        401      2.565     3019.7     1177.3     1810.3      0.628      10.84       9.80
+   1.0-1.5        175      2.161     2699.1     1249.2     2371.1      0.651       9.78      17.82
+   1.5-3.0        173      3.924     1689.0      430.4     1479.0      0.798       4.97      14.77
+  3.0-99.0        195      9.385      465.3       49.6      474.7      0.923       1.43       7.07
+
+--- l-mfelt, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 1422 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198      7.472     1031.5      138.1     1387.2      0.803       9.60       5.11
+   0.2-0.6        423      2.920     2997.6     1026.8     1241.2      0.600      11.27      13.22
+   0.6-1.0        270      3.836     2361.5      615.7     1921.1      0.800      10.37      13.28
+   1.0-1.5        154      2.486     2337.6      940.2     2020.3      0.721       9.66      17.39
+   1.5-3.0        182      4.070     1838.5      451.7     1623.3      0.791       4.90      15.95
+  3.0-99.0        195      9.391      465.3       49.6      474.6      0.923       1.43       7.07
+
+--- l-mfelt, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1176 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        400      2.924     2865.3      979.9     1229.0      0.608      11.28      13.36
+   0.6-1.0        261      4.026     1988.8      494.0     1776.9      0.828      10.27      12.72
+   1.0-1.5        147      2.597     1915.0      737.4     1981.3      0.755       9.83      16.24
+   1.5-3.0        173      3.924     1689.2      430.5     1479.1      0.798       4.97      14.77
+  3.0-99.0        195      9.391      465.3       49.6      474.6      0.923       1.43       7.07
+
+--- l-mboth, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 1607 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198     29.912     1070.9       35.8     1082.9      1.000       9.62       9.08
+   0.2-0.6        432      3.378      654.6      193.8      746.8      0.859      10.47       6.36
+   0.6-1.0        408      2.533     3296.6     1301.4     1858.7      0.615      10.86      10.11
+   1.0-1.5        192      2.002     3833.1     1914.9     2436.3      0.599       9.55      20.08
+   1.5-3.0        182      4.070     1838.5      451.7     1623.3      0.791       4.90      15.95
+  3.0-99.0        195      9.391      465.3       49.6      474.6      0.923       1.43       7.07
+
+--- l-mboth, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1358 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        414      3.435      682.0      198.5      759.3      0.855      10.48       6.26
+   0.6-1.0        401      2.576     3040.0     1180.2     1808.5      0.626      10.84       9.82
+   1.0-1.5        175      2.146     2693.6     1254.9     2381.9      0.657       9.80      17.82
+   1.5-3.0        173      3.924     1689.2      430.5     1479.1      0.798       4.97      14.77
+  3.0-99.0        195      9.391      465.3       49.6      474.6      0.923       1.43       7.07
+
+--- l-all, THE MODEL THIS ARM RAN (rollRel), UNFILTERED, from frame 1 — 558 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        196      0.488     1237.8     2537.9     1547.6      0.291       9.36      10.52
+   0.2-0.6        239      2.303     2963.9     1286.7     2881.0      0.669       9.29       5.82
+   0.6-1.0        123      2.329    18887.6     8111.0     9221.8      0.455       9.85      54.83
+
+--- l-all, THE MODEL THIS ARM RAN (rollRel), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 329 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        226      2.582     3141.3     1216.7     2841.7      0.677       9.30       5.80
+   0.6-1.0        103      2.544    16357.3     6429.3     9411.3      0.476       9.74      50.89
+
+
+----- the same arms on the SHIPPED plant rebuilt at the controller's point (relFull): the same model on each
+----- arm's own trajectory, so this column separates "which model" from "where on the wave the ride went".
+
+--- g-off, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 2193 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     32.429      988.5       30.5      975.9      1.000       8.80       9.04
+   0.2-0.6        576      9.340      597.4       64.0      530.7      0.938       7.75      10.21
+   0.6-1.0        576      7.412     1641.4      221.5     1530.7      0.894       5.30      18.85
+   1.0-1.5        568      6.767     4545.1      671.6     2918.5      0.773       2.85      41.02
+   1.5-3.0        209      7.574     5787.4      764.1     3361.7      0.722       0.11      54.39
+
+--- g-off, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1746 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      9.172      594.1       64.8      523.0      0.935       7.71      10.24
+   0.6-1.0        576      7.412     1641.4      221.5     1530.7      0.894       5.30      18.85
+   1.0-1.5        475      8.095     3077.4      380.2     2476.2      0.857       2.50      36.48
+   1.5-3.0        143     13.649     2333.4      171.0     2178.1      0.958       0.12      45.60
+
+--- g-predict, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 5144 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264      2.076     1167.9      562.6     1762.9      0.909       8.43       9.24
+   0.2-0.6        576      2.594      644.0      248.3      619.7      0.804       7.50       2.34
+   0.6-1.0        576      2.192      528.7      241.2      454.3      0.682       5.46       3.00
+   1.0-1.5        663      2.814      541.6      192.5      579.5      0.849       4.75       8.22
+   1.5-3.0       1692      3.307      293.9       88.9      301.6      0.853       3.49       4.57
+  3.0-99.0       1373      4.536      808.0      178.1      765.3      0.811       3.03       9.27
+
+--- g-predict, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 4828 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      2.501      611.1      244.4      592.3      0.795       7.48       2.25
+   0.6-1.0        576      2.192      528.7      241.2      454.3      0.682       5.46       3.00
+   1.0-1.5        649      2.823      488.6      173.1      558.6      0.858       4.67       7.83
+   1.5-3.0       1686      3.324      289.9       87.2      298.3      0.856       3.45       4.53
+  3.0-99.0       1365      4.588      792.9      172.8      754.0      0.813       3.00       9.15
+
+--- g-ref, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 4144 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264      1.353     1552.2     1147.0     2795.4      0.902       8.27      10.53
+   0.2-0.6        576      1.433      581.9      406.2      701.0      0.726       7.61       1.93
+   0.6-1.0        560      2.633      825.8      313.6      769.9      0.768       5.66       2.91
+   1.0-1.5        549      5.158      794.8      154.1      741.2      0.872       4.28       2.40
+   1.5-3.0       1385      5.386      417.6       77.5      411.8      0.892       3.20       1.91
+  3.0-99.0        810      2.665      929.7      348.8      687.5      0.736       7.66      15.37
+
+--- g-ref, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 3810 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      1.327      543.8      409.6      656.8      0.714       7.60       1.83
+   0.6-1.0        549      2.689      755.4      281.0      728.3      0.783       5.58       2.72
+   1.0-1.5        545      5.217      784.1      150.3      727.4      0.875       4.24       2.34
+   1.5-3.0       1373      5.456      400.3       73.4      401.6      0.897       3.15       1.84
+  3.0-99.0        791      2.735      827.9      302.7      650.4      0.753       7.58      14.79
+
+--- g-tilt, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 845 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264      0.333      886.9     2659.9     3265.0      0.648       7.94       9.77
+   0.2-0.6        355      0.982     2007.3     2043.3     1989.8      0.425       7.97       5.05
+   0.6-1.0        205      4.042     6429.5     1590.7     3912.5      0.663       9.80      47.26
+   1.0-1.5         21      1.337    14107.5    10552.7     2402.3      0.143      13.38      53.05
+
+--- g-tilt, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 520 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        331      1.053     1956.4     1858.8     1820.6      0.435       8.05       5.09
+   0.6-1.0        180      4.939     5006.0     1013.7     3429.3      0.722       9.71      43.68
+   1.0-1.5          9      2.104     1144.6      544.1      506.6      0.333      13.31      31.54
+
+--- g-mdeck, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 2193 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     32.429      988.5       30.5      975.9      1.000       8.80       9.04
+   0.2-0.6        576      9.340      597.4       64.0      530.7      0.938       7.75      10.21
+   0.6-1.0        576      7.412     1641.4      221.5     1530.7      0.894       5.30      18.85
+   1.0-1.5        568      6.767     4545.1      671.6     2918.5      0.773       2.85      41.02
+   1.5-3.0        209      7.574     5787.4      764.1     3361.7      0.722       0.11      54.39
+
+--- g-mdeck, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1746 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      9.172      594.1       64.8      523.0      0.935       7.71      10.24
+   0.6-1.0        576      7.412     1641.4      221.5     1530.7      0.894       5.30      18.85
+   1.0-1.5        475      8.095     3077.4      380.2     2476.2      0.857       2.50      36.48
+   1.5-3.0        143     13.649     2333.4      171.0     2178.1      0.958       0.12      45.60
+
+--- g-mfelt, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 2207 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     32.429      988.5       30.5      975.9      1.000       8.80       9.04
+   0.2-0.6        576      9.340      597.4       64.0      530.7      0.938       7.75      10.21
+   0.6-1.0        576      7.406     1641.4      221.6     1530.6      0.894       5.30      18.85
+   1.0-1.5        577      6.543     4812.2      735.4     3011.6      0.761       2.93      41.52
+   1.5-3.0        214      7.210     6112.7      847.8     3513.0      0.706       0.12      55.23
+
+--- g-mfelt, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1753 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      9.172      594.1       64.8      523.0      0.935       7.71      10.24
+   0.6-1.0        576      7.406     1641.4      221.6     1530.6      0.894       5.30      18.85
+   1.0-1.5        481      7.853     3236.5      412.1     2545.9      0.846       2.57      36.89
+   1.5-3.0        144     13.451     2388.2      177.5     2216.3      0.951       0.14      45.82
+
+--- g-mboth, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 2207 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        264     32.429      988.5       30.5      975.9      1.000       8.80       9.04
+   0.2-0.6        576      9.340      597.4       64.0      530.7      0.938       7.75      10.21
+   0.6-1.0        576      7.406     1641.4      221.6     1530.6      0.894       5.30      18.85
+   1.0-1.5        577      6.543     4812.2      735.4     3011.6      0.761       2.93      41.52
+   1.5-3.0        214      7.210     6112.7      847.8     3513.0      0.706       0.12      55.23
+
+--- g-mboth, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1753 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        552      9.172      594.1       64.8      523.0      0.935       7.71      10.24
+   0.6-1.0        576      7.406     1641.4      221.6     1530.6      0.894       5.30      18.85
+   1.0-1.5        481      7.853     3236.5      412.1     2545.9      0.846       2.57      36.89
+   1.5-3.0        144     13.451     2388.2      177.5     2216.3      0.951       0.14      45.82
+
+--- g-all, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 802 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        262      0.355      912.7     2574.2     3237.8      0.660       7.96       9.84
+   0.2-0.6        318      1.072     1710.6     1595.6     1737.3      0.487       8.26       5.71
+   0.6-1.0        208      4.378     6189.3     1413.7     3768.1      0.673       9.93      46.59
+   1.0-1.5         14      1.641     3197.7     1948.7      974.1      0.357      13.34      42.37
+
+--- g-all, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 494 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        299      1.144     1681.9     1469.9     1601.9      0.492       8.32       5.77
+   0.6-1.0        186      5.228     4874.3      932.4     3323.2      0.742       9.82      43.55
+   1.0-1.5          9      2.190     1213.6      554.1      555.1      0.333      13.32      31.49
+
+--- l-off, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 1433 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198      7.823     1101.8      140.8     1283.7      0.803       9.60       5.17
+   0.2-0.6        424      2.406     2401.1      997.8      956.9      0.554      11.24      13.22
+   0.6-1.0        279      2.853     1951.5      684.1     1413.9      0.771      10.39      13.94
+   1.0-1.5        155      2.489     2397.0      963.2     1879.1      0.748       9.68      17.54
+   1.5-3.0        182      2.857     1290.3      451.6     1024.2      0.676       4.90      15.95
+  3.0-99.0        195      9.181      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-off, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1180 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        400      2.432     2263.3      930.8      928.4      0.568      11.25      13.35
+   0.6-1.0        265      3.026     1506.2      497.8     1268.8      0.811      10.28      13.01
+   1.0-1.5        147      2.617     1930.6      737.7     1856.6      0.789       9.83      16.24
+   1.5-3.0        173      2.741     1179.8      430.4      920.6      0.671       4.97      14.77
+  3.0-99.0        195      9.181      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-predict, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 1309 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        191      1.993     1836.8      921.4     2403.1      0.827       9.60       8.29
+   0.2-0.6        287      2.144     1473.6      687.3     1090.0      0.700      10.15       5.99
+   0.6-1.0        229      2.092     2621.1     1252.9     1033.3      0.485       8.91      10.32
+   1.0-1.5        176      5.275     2016.1      382.2     1664.7      0.830      10.60      12.93
+   1.5-3.0        209      4.883      415.9       85.2      382.7      0.804       7.86       6.62
+  3.0-99.0        217      4.391      691.6      157.5      452.5      0.774       3.60       3.23
+
+--- l-predict, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1081 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        275      2.124     1428.9      672.8     1061.6      0.698      10.16       6.02
+   0.6-1.0        217      2.195     2141.6      975.8      956.9      0.512       8.88       9.27
+   1.0-1.5        166      5.837     1509.6      258.6     1609.0      0.880      10.86      11.76
+   1.5-3.0        209      4.883      415.9       85.2      382.7      0.804       7.86       6.62
+  3.0-99.0        214      4.510      659.3      146.2      435.2      0.785       3.51       3.09
+
+--- l-ref, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 555 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        176      1.172     1492.3     1273.8     2450.8      0.813       9.21       9.23
+   0.2-0.6        199      1.476     1161.5      787.2     1046.9      0.618       9.48       4.20
+   0.6-1.0        125      4.836     4967.7     1027.2     3109.2      0.744       9.64      27.17
+   1.0-1.5         55      3.666     3680.8     1004.1     2479.3      0.764      12.02      38.77
+
+--- l-ref, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 363 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        190      1.357     1105.1      814.5      997.5      0.600       9.50       4.09
+   0.6-1.0        122      5.142     4872.6      947.5     3000.4      0.762       9.63      26.41
+   1.0-1.5         51      4.086     3256.6      797.0     2429.6      0.824      11.91      36.97
+
+--- l-tilt, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 497 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        180      0.430     1080.7     2516.1     3066.3      0.672       9.24       8.82
+   0.2-0.6        207      1.141     1075.1      942.2     1124.3      0.531       9.07       5.72
+   0.6-1.0        110      2.582    16871.1     6534.3     6681.4      0.473       9.59      54.16
+
+--- l-tilt, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 294 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        198      1.174     1072.2      913.4     1059.2      0.520       9.09       5.71
+   0.6-1.0         96      2.969    15596.8     5253.3     6591.5      0.510       9.61      50.67
+
+--- l-mdeck, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 1607 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198     17.863      639.5       35.8      654.4      1.000       9.62       9.08
+   0.2-0.6        432      2.423      472.3      194.9      590.5      0.826      10.47       6.37
+   0.6-1.0        408      1.994     2589.0     1298.3     1333.5      0.591      10.86      10.09
+   1.0-1.5        192      2.061     3933.0     1908.2     2168.1      0.615       9.53      20.07
+   1.5-3.0        182      2.857     1290.3      451.6     1024.2      0.676       4.90      15.95
+  3.0-99.0        195      9.181      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-mdeck, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1358 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        414      2.484      496.1      199.7      612.9      0.829      10.48       6.27
+   0.6-1.0        401      2.019     2377.1     1177.3     1290.2      0.601      10.84       9.80
+   1.0-1.5        175      2.217     2770.1     1249.2     2116.5      0.674       9.78      17.82
+   1.5-3.0        173      2.741     1179.8      430.4      920.6      0.671       4.97      14.77
+  3.0-99.0        195      9.181      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-mfelt, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 1422 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198      7.606     1050.0      138.1     1277.9      0.803       9.60       5.11
+   0.2-0.6        423      2.397     2461.3     1026.8      929.1      0.556      11.27      13.22
+   0.6-1.0        270      2.888     1777.8      615.7     1405.9      0.789      10.37      13.28
+   1.0-1.5        154      2.506     2356.1      940.2     1870.8      0.753       9.66      17.39
+   1.5-3.0        182      2.857     1290.4      451.7     1024.4      0.676       4.90      15.95
+  3.0-99.0        195      9.186      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-mfelt, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1176 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        400      2.401     2353.0      979.9      909.0      0.563      11.28      13.36
+   0.6-1.0        261      3.001     1482.5      494.0     1288.6      0.816      10.27      12.72
+   1.0-1.5        147      2.618     1930.5      737.4     1856.8      0.789       9.83      16.24
+   1.5-3.0        173      2.740     1179.8      430.5      920.8      0.671       4.97      14.77
+  3.0-99.0        195      9.186      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-mboth, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 1607 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        198     17.863      639.5       35.8      654.4      1.000       9.62       9.08
+   0.2-0.6        432      2.445      473.8      193.8      580.9      0.826      10.47       6.36
+   0.6-1.0        408      1.983     2580.3     1301.4     1334.3      0.588      10.86      10.11
+   1.0-1.5        192      2.058     3940.3     1914.9     2193.4      0.615       9.55      20.08
+   1.5-3.0        182      2.857     1290.4      451.7     1024.4      0.676       4.90      15.95
+  3.0-99.0        195      9.186      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-mboth, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 1358 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        414      2.507      497.8      198.5      602.4      0.829      10.48       6.26
+   0.6-1.0        401      2.007     2369.3     1180.2     1291.2      0.599      10.84       9.82
+   1.0-1.5        175      2.214     2778.1     1254.9     2139.2      0.674       9.80      17.82
+   1.5-3.0        173      2.740     1179.8      430.5      920.8      0.671       4.97      14.77
+  3.0-99.0        195      9.186      455.2       49.6      429.8      0.938       1.43       7.07
+
+--- l-all, the SHIPPED plant on this arm's ride (relFull), UNFILTERED, from frame 1 — 558 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.0-0.2        196      0.356      902.3     2537.9     3166.1      0.622       9.36      10.52
+   0.2-0.6        239      1.062     1366.7     1286.7     1333.3      0.519       9.29       5.82
+   0.6-1.0        123      2.228    18072.1     8111.0     6128.0      0.423       9.85      54.83
+
+--- l-all, the SHIPPED plant on this arm's ride (relFull), LIVE ONLY (the folder's own filter, t>0.2 && clamped==0) — 329 ticks
+     age s          n     gm rel    gm|err|   gm|game|  gm|model|   m over g   gm|tilt|   gm|roll|
+   0.2-0.6        226      1.137     1383.1     1216.7     1239.3      0.513       9.30       5.80
+   0.6-1.0        103      2.500    16073.9     6429.3     5901.6      0.447       9.74      50.89
+
+
+========== 2b. THE MOUNT'S OWN WINDOW (t <= 0.2 s) ON ONE PAGE, unfiltered against the folder's filter =====
+The folder's `live` filter is `t > 0.2 && clamped === 0`, so its own column here is EMPTY by construction for
+the mount; the comparison the filter hides is the mount against the arm's first live bin (0.2-0.6 s).
+       arm    n mount  rel mount  rel .2-.6      ratio gm|err| mtgm|game| mt   m over g ph/game mt
+     g-off        288     35.609      8.978       3.97     1127.0       31.6      1.000       72.0
+ g-predict        288      1.599      3.496       0.46      866.2      541.8      0.594        4.0
+     g-ref        288      1.308      2.900       0.45     1353.3     1035.0      0.569        2.1
+    g-tilt        288      0.708      1.838       0.39     2055.0     2901.1      0.337        0.7
+   g-mdeck        288     35.609      8.978       3.97     1127.0       31.6      1.000       72.0
+   g-mfelt        288     35.609      8.978       3.97     1127.0       31.6      1.000       72.0
+   g-mboth        288     35.609      8.978       3.97     1127.0       31.6      1.000       72.0
+     g-all        281      0.722      2.122       0.34     1964.9     2719.6      0.363        0.7
+     l-off        216      6.943      2.940       2.36     1106.1      159.3      0.778       11.3
+ l-predict        203      0.872      2.774       0.31      812.9      932.1      0.581        1.9
+     l-ref        185      1.078      2.211       0.49     1295.6     1201.5      0.335        1.5
+    l-tilt        189      0.655      2.910       0.23     1625.4     2480.5      0.328        0.7
+   l-mdeck        216     24.150      3.431       7.04      950.1       39.3      0.995       45.8
+   l-mfelt        216      7.068      2.924       2.42     1094.0      154.8      0.787       11.6
+   l-mboth        216     24.150      3.435       7.03      950.1       39.3      0.995       45.8
+     l-all        209      0.475      2.582       0.18     1227.2     2584.6      0.306        0.7
+
+
+========== 3. THE FALLS, the owner's bar, on the folder's own median convention ==========
+       arm        runs        fell      median         min         max   Comp fell    Comp med  low1-3 med
+     g-off          24          24       1.450       1.083       2.683      8 of 8       1.483           -
+ g-predict          24          24       4.033       1.117       5.817      8 of 8       4.367           -
+     g-ref          24          24       3.683       0.833       4.350      8 of 8       4.150           -
+    g-tilt          24          24       0.683       0.217       1.117      8 of 8       0.683           -
+   g-mdeck          24          24       1.450       1.083       2.683      8 of 8       1.483           -
+   g-mfelt          24          24       1.467       1.083       2.683      8 of 8       1.483           -
+   g-mboth          24          24       1.467       1.083       2.683      8 of 8       1.483           -
+     g-all          24          24       0.683       0.167       1.117      8 of 8       0.683           -
+     l-off          18          18       1.033       0.500       6.233      6 of 6       1.167       0.617
+ l-predict          18          18       0.967       0.150       5.983      6 of 6       1.050       0.183
+     l-ref          18          18       0.483       0.117       1.317      6 of 6       0.483       0.133
+    l-tilt          18          18       0.433       0.133       0.900      6 of 6       0.433       0.150
+   l-mdeck          18          18       1.167       0.833       6.233      6 of 6       1.167       1.000
+   l-mfelt          18          18       1.033       0.500       6.233      6 of 6       1.167       0.633
+   l-mboth          18          18       1.167       0.833       6.233      6 of 6       1.167       1.000
+     l-all          18          18       0.733       0.167       0.917      6 of 6       0.783       0.183
+
+
+========== 4. THE MOUNT'S OWN FRAME 1 — the body's placement and the felt vertical ==========
+Per arm, and on the low cell per entry speed, because PLANING_SPEED = 4 and the entries are set absolutely.
+       arm      entry       runs       roll       tilt       heel       BANK  bank/roll feltAcross    feltMag
+     g-off        all         24      8.857      8.824      0.059      8.697      0.983     -7.545      9.534
+ g-predict        all         24      9.295      8.815      0.539      8.501      0.915     -7.919      9.535
+     g-ref        all         24      9.581      8.815      0.785      8.399      0.878     -8.109      9.541
+    g-tilt        all         24      9.584      8.811      0.796      8.393      0.877     -8.084      9.540
+   g-mdeck        all         24      8.857      8.824      0.059      8.697      0.983     -7.545      9.534
+   g-mfelt        all         24      8.857      8.824      0.059      8.697      0.983      0.367      9.348
+   g-mboth        all         24      8.857      8.824      0.059      8.697      0.983      0.367      9.348
+     g-all        all         24      9.584      8.811      0.796      8.393      0.877     -0.179      9.345
+     l-off          1          3      8.338      9.050     -0.712     -0.036     -0.004     -7.545      9.541
+     l-off          2          3      8.334      9.016     -0.682     -0.037     -0.004     -7.561      9.532
+     l-off          3          3      8.329      8.980     -0.651     -0.038     -0.005     -7.578      9.525
+     l-off          4          3      8.895      8.947     -0.052      8.715      0.980     -7.528      9.529
+     l-off          5          3      8.883      8.911     -0.028      8.709      0.980     -7.531      9.525
+     l-off          6          3      8.872      8.876     -0.003      8.703      0.981     -7.535      9.524
+ l-predict          1          3      9.055      9.059     -0.004     -0.427     -0.047     -7.819      9.382
+ l-predict          2          3      9.058      9.021      0.037     -0.400     -0.044     -7.957      9.387
+ l-predict          3          3      9.058      8.984      0.074     -0.380     -0.042     -8.060      9.390
+ l-predict          4          3      9.599      8.949      0.650      8.375      0.873     -7.975      9.532
+ l-predict          5          3      9.391      8.906      0.484      8.467      0.902     -7.876      9.525
+ l-predict          6          3      9.151      8.870      0.281      8.573      0.937     -7.725      9.524
+     l-ref          1          3      9.139      9.054      0.085     -0.503     -0.055     -7.861      9.357
+     l-ref          2          3      9.143      9.017      0.127     -0.473     -0.052     -8.007      9.363
+     l-ref          3          3      9.145      8.979      0.166     -0.449     -0.049     -8.131      9.368
+     l-ref          4          3      9.644      8.944      0.700      8.347      0.866     -7.987      9.537
+     l-ref          5          3      9.623      8.904      0.719      8.362      0.869     -8.018      9.536
+     l-ref          6          3      9.605      8.867      0.738      8.376      0.872     -8.053      9.537
+    l-tilt          1          3      9.129      9.059      0.070     -0.543     -0.060     -7.894      9.338
+    l-tilt          2          3      9.134      9.021      0.113     -0.512     -0.056     -8.034      9.344
+    l-tilt          3          3      9.138      8.983      0.155     -0.484     -0.053     -8.195      9.352
+    l-tilt          4          3      9.682      8.950      0.732      8.341      0.862     -8.020      9.537
+    l-tilt          5          3      9.639      8.904      0.735      8.356      0.867     -8.021      9.536
+    l-tilt          6          3      9.603      8.864      0.739      8.370      0.872     -8.037      9.536
+   l-mdeck          1          3      8.933      9.050     -0.117      8.745      0.979     -7.553      9.551
+   l-mdeck          2          3      8.919      9.016     -0.097      8.732      0.979     -7.537      9.542
+   l-mdeck          3          3      8.906      8.982     -0.075      8.723      0.979     -7.530      9.534
+   l-mdeck          4          3      8.895      8.947     -0.052      8.715      0.980     -7.528      9.529
+   l-mdeck          5          3      8.883      8.911     -0.028      8.709      0.980     -7.531      9.525
+   l-mdeck          6          3      8.872      8.876     -0.003      8.703      0.981     -7.535      9.524
+   l-mfelt          1          3      8.338      9.050     -0.712     -0.036     -0.004      0.343      9.370
+   l-mfelt          2          3      8.334      9.016     -0.682     -0.037     -0.004      0.335      9.360
+   l-mfelt          3          3      8.329      8.980     -0.651     -0.038     -0.005      0.325      9.351
+   l-mfelt          4          3      8.895      8.947     -0.052      8.715      0.980      0.374      9.354
+   l-mfelt          5          3      8.883      8.911     -0.028      8.709      0.980      0.376      9.349
+   l-mfelt          6          3      8.872      8.876     -0.003      8.703      0.981      0.374      9.345
+   l-mboth          1          3      8.933      9.050     -0.117      8.745      0.979      0.327      9.379
+   l-mboth          2          3      8.919      9.016     -0.097      8.732      0.979      0.351      9.370
+   l-mboth          3          3      8.906      8.982     -0.075      8.723      0.979      0.366      9.361
+   l-mboth          4          3      8.895      8.947     -0.052      8.715      0.980      0.374      9.354
+   l-mboth          5          3      8.883      8.911     -0.028      8.709      0.980      0.376      9.349
+   l-mboth          6          3      8.872      8.876     -0.003      8.703      0.981      0.374      9.345
+     l-all          1          3      9.707      9.059      0.647      8.272      0.852      0.157      9.371
+     l-all          2          3      9.701      9.023      0.679      8.300      0.856      0.031      9.363
+     l-all          3          3      9.692      8.986      0.706      8.322      0.859     -0.058      9.356
+     l-all          4          3      9.682      8.950      0.732      8.341      0.862     -0.125      9.351
+     l-all          5          3      9.639      8.904      0.735      8.356      0.867     -0.123      9.347
+     l-all          6          3      9.603      8.864      0.739      8.370      0.872     -0.138      9.345
+
+
+========== 5. THE MOUNT'S SETTLING READS — when each of its disagreements is over ==========
+"felt within 1 deg of the face's normal": the first frame at which |feltAcross - (-rail)| < 1 deg, i.e. the felt
+vertical read on the deck agrees with the face's normal read on the deck. "heel > tilt": 3.4d's own crossover.
+       arm        runs   felt<1deg     of runs   heel>tilt     of runs  first send     of runs
+     g-off          24       0.217       1.000       0.600       1.000       0.117       1.000
+ g-predict          24       0.883       0.625       0.567       1.000       0.017       1.000
+     g-ref          24       0.733       0.292       0.433       1.000       0.017       1.000
+    g-tilt          24         nan       0.000       0.283       0.708       0.017       1.000
+   g-mdeck          24       0.217       1.000       0.600       1.000       0.117       1.000
+   g-mfelt          24       0.017       1.000       0.600       1.000       0.117       1.000
+   g-mboth          24       0.017       1.000       0.600       1.000       0.117       1.000
+     g-all          24       0.017       1.000       0.283       0.583       0.017       1.000
+     l-off          18       0.233       0.556       0.667       1.000       0.117       1.000
+ l-predict          18       1.683       0.111       0.500       0.667       0.017       1.000
+     l-ref          18         nan       0.000       0.450       0.500       0.017       1.000
+    l-tilt          18         nan       0.000       0.283       0.500       0.017       1.000
+   l-mdeck          18       0.233       0.611       0.683       1.000       0.117       1.000
+   l-mfelt          18       0.017       1.000       0.667       1.000       0.117       1.000
+   l-mboth          18       0.017       1.000       0.683       1.000       0.117       1.000
+     l-all          18       0.017       1.000       0.283       0.500       0.017       1.000
+
+
+========== 6. THE CONTROLS ==========
+C1. This round's two shipped-datum, shipped-mount arms against step 3.4d's own `two-off-` arms, column by
+column over every shared column of the per-run summary. `wheel` and `mount` are this round's own two new
+columns and are excluded by name, which is stated rather than hidden.
+  g-off vs 34d-two-off-unsteered: 24 runs, 8376 column reads, 0 differing
+  l-off vs 34d-two-off-low: 18 runs, 6282 column reads, 0 differing
+
+C2. The folder's own closures on every arm of this round (peaks over all arms): the sense reconstruction, the
+tick spacing and the ledger's split, closure and residual. **`ledgerApart` is NOT one of them** and is printed
+apart with its meaning: it is a COUNT of substeps the standing solve did not decide, not a residual, so a 16
+there is sixteen substeps and not a closure of 16.
+  senseOff: 0.00e+0
+  spacingOff: 0.00e+0
+  ledgerSplit: 0.00e+0
+  ledgerClosure: 0.00e+0
+  ledgerResidual: 0.00e+0
+  ledgerApart (a COUNT of substeps, peak over all arms): 16
+
+
+========== 7. THE PREDICTIONS THAT ARE PER-RUN CLAIMS, read per run ==========
+P6: `mountAgree=deck` puts the 1-3 m/s entries within 0.5 deg of the 8.70-8.72 deg the 4-6 m/s entries start at.
+  l-mdeck: the 4-6 m/s band is 8.703-8.715 deg; the nine 1-3 m/s runs go from [-0.039, -0.036] to [8.723, 8.745] — within 0.5 deg of the band in 9 of 9
+  l-mboth: the 4-6 m/s band is 8.703-8.715 deg; the nine 1-3 m/s runs go from [-0.039, -0.036] to [8.723, 8.745] — within 0.5 deg of the band in 9 of 9
+P7: `mountAgree=felt` puts the felt vertical across the deck inside 1.5 deg at frame 1, and its magnitude ...
+    g-mfelt: |feltAcross| at frame 1 0.341-0.376 deg, inside 1.5 in 24 of 24; feltMag 9.342-9.362 m/s^2 (the SEED is g cos tilt = 9.694, and this column is frame 1, which is already low-passed)
+    g-mboth: |feltAcross| at frame 1 0.341-0.376 deg, inside 1.5 in 24 of 24; feltMag 9.342-9.362 m/s^2 (the SEED is g cos tilt = 9.694, and this column is frame 1, which is already low-passed)
+    l-mfelt: |feltAcross| at frame 1 0.324-0.376 deg, inside 1.5 in 18 of 18; feltMag 9.345-9.380 m/s^2 (the SEED is g cos tilt = 9.694, and this column is frame 1, which is already low-passed)
+    l-mboth: |feltAcross| at frame 1 0.327-0.376 deg, inside 1.5 in 18 of 18; feltMag 9.345-9.390 m/s^2 (the SEED is g cos tilt = 9.694, and this column is frame 1, which is already low-passed)
+      g-off: |feltAcross| at frame 1 7.520-7.566 deg, inside 1.5 in 0 of 24; feltMag 9.524-9.553 m/s^2 (the SEED is g cos tilt = 9.694, and this column is frame 1, which is already low-passed)
+      l-off: |feltAcross| at frame 1 7.519-7.578 deg, inside 1.5 in 0 of 18; feltMag 9.524-9.551 m/s^2 (the SEED is g cos tilt = 9.694, and this column is frame 1, which is already low-passed)
+P5: the mount's window against the WHOLE live population of the same arm, which is what the prediction said.
+       arm     rel mount  rel all live         ratio
+     g-off        35.609         9.513          3.74
+ g-predict         1.599         4.917          0.33
+     g-ref         1.308         4.980          0.26
+    g-tilt         0.708         3.129          0.23
+   g-mdeck        35.609         9.513          3.74
+   g-mfelt        35.609         9.415          3.78
+   g-mboth        35.609         9.415          3.78
+     g-all         0.722         3.632          0.20
+     l-off         6.943         3.942          1.76
+ l-predict         0.872         6.443          0.14
+     l-ref         1.078         4.159          0.26
+    l-tilt         0.655         3.064          0.21
+   l-mdeck        24.150         3.487          6.93
+   l-mfelt         7.068         3.919          1.80
+   l-mboth        24.150         3.490          6.92
+     l-all         0.475         2.570          0.18
+
+C3. Every arm's run count and the population every number above is drawn from.
+       g-off: 24 runs, 2193 ticks (1746 live), 2193 frames
+   g-predict: 24 runs, 5144 ticks (4828 live), 5144 frames
+       g-ref: 24 runs, 4144 ticks (3810 live), 4144 frames
+      g-tilt: 24 runs, 845 ticks (520 live), 845 frames
+     g-mdeck: 24 runs, 2193 ticks (1746 live), 2193 frames
+     g-mfelt: 24 runs, 2207 ticks (1753 live), 2207 frames
+     g-mboth: 24 runs, 2207 ticks (1753 live), 2207 frames
+       g-all: 24 runs, 802 ticks (494 live), 802 frames
+       l-off: 18 runs, 1433 ticks (1180 live), 1433 frames
+   l-predict: 18 runs, 1309 ticks (1081 live), 1309 frames
+       l-ref: 18 runs, 555 ticks (363 live), 555 frames
+      l-tilt: 18 runs, 497 ticks (294 live), 497 frames
+     l-mdeck: 18 runs, 1607 ticks (1358 live), 1607 frames
+     l-mfelt: 18 runs, 1422 ticks (1176 live), 1422 frames
+     l-mboth: 18 runs, 1607 ticks (1358 live), 1607 frames
+       l-all: 18 runs, 558 ticks (329 live), 558 frames

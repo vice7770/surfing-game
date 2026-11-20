@@ -1,0 +1,44 @@
+C2 step 5g: the series probe, 600 frames (20 s) at 1/30 s, the held 2 m pool Barrel at t 72 s onward.
+
+== ?wave=library, lipVeil off  (?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&compute=gpu&receiver=http://localhost:5338)
+   sea lip landings 1234 in 517 of 600 frames, 37.259 m3
+   live particles min 897 median 1525 max 2215
+   mean per frame: spray 1225 mist 153 foamball 106 tubespray 4 tubemist 7
+   highest spray/mist per frame: median 1.62 m, 90% 1.81 m, max 2.04 m
+
+== the default sea, lipVeil off  (?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&compute=gpu&receiver=http://localhost:5339)
+   sea lip landings 1258 in 524 of 600 frames, 38.857 m3
+   live particles min 920 median 1602 max 2244
+   mean per frame: spray 1278 mist 156 foamball 111 tubespray 5 tubemist 8
+   highest spray/mist per frame: median 1.65 m, 90% 1.85 m, max 2.05 m
+
+== ?wave=library, ?lipVeil=on  (?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&lipVeil=on&compute=gpu&receiver=http://localhost:5338)
+   sea lip landings 1234 in 517 of 600 frames, 37.259 m3
+   live particles min 2087 median 2160 max 2292
+   mean per frame: spray 265 mist 1783 foamball 106 tubespray 5 tubemist 12
+   highest spray/mist per frame: median 3.51 m, 90% 4.37 m, max 4.72 m
+
+== ?wave=library, lipVeil off (the paired control)  (?inpage&waterSheet&spot=pool&waves=barrel&swell=big&poolSize=ref&wallBody=stream&tubeLook=merge&lipLook=fray&afterTube=roller&poolReach=long&wave=library&compute=gpu&receiver=http://localhost:5339)
+   sea lip landings 1234 in 517 of 600 frames, 37.259 m3
+   live particles min 897 median 1525 max 2215
+   mean per frame: spray 1225 mist 153 foamball 106 tubespray 4 tubemist 7
+   highest spray/mist per frame: median 1.62 m, 90% 1.81 m, max 2.04 m
+
+
+The Particles levels, 60 frames after an 8 s settle at each level (c2-step5g-probe.js):
+
+== ?lipVeil=on
+   high   live 4211 (spray+mist 4096 of the 4096 pool) | highest 3.75 m | 95% of the drawn area below 2.40 m
+   medium live 2121 (spray+mist 2048 of the 2048 pool) | highest 2.96 m | 95% of the drawn area below 1.74 m
+   low    live 1062 (spray+mist 1024 of the 1024 pool) | highest 3.13 m | 95% of the drawn area below 2.04 m
+
+== lipVeil off
+   high   live 2522 (spray+mist 2405 of the 4096 pool) | highest 1.81 m | 95% of the drawn area below 1.58 m
+   medium live 1104 (spray+mist 1048 of the 2048 pool) | highest 1.65 m | 95% of the drawn area below 1.48 m
+   low    live  457 (spray+mist  421 of the 1024 pool) | highest 1.51 m | 95% of the drawn area below 1.31 m
+
+== ?lipVeil=on at a 0.35 rate (tried, not shipped)
+   high   live 4209 (spray+mist 4096 of the 4096 pool) | highest 3.08 m | 95% of the drawn area below 2.42 m
+   medium live 2021 (spray+mist 1942 of the 2048 pool) | highest 2.01 m | 95% of the drawn area below 1.75 m
+   low    live  912 (spray+mist  877 of the 1024 pool) | highest 2.73 m | 95% of the drawn area below 2.05 m
+

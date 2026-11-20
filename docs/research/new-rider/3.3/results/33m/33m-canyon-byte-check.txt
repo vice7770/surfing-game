@@ -1,0 +1,16 @@
+===== CANYON B (?canyonWaves=true) =====
+spun up on the CPU in 87.0 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/bench33m2/B.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.34/2.41, roller 0.74/1.19, front 0.00/0.00, lip 0.03/0.04, foam 2.78/4.75, airSources 0.06/0.12, aeration 1.47/2.54, contact 0.00/0.00, board 0.72/1.76, bubbles 0.17/0.28, spray 0.29/0.52, sounds 0.00/0.00, snapshotFields 4.45/7.85, snapshot 5.05/8.97, summary 0.45/0.72
+  CPU stages per step (step − water + snapshot + summary): 13.45/23.89; water (CPU solver, not timed on the device) 87.7
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+
+===== CANYON DEFAULT =====
+spun up on the CPU in 57.3 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/bench33m2/D.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.28/1.43, roller 0.40/0.53, front 0.00/0.00, lip 0.03/0.03, foam 3.66/3.93, airSources 0.05/0.07, aeration 1.93/2.07, contact 0.00/0.00, board 0.64/0.85, bubbles 0.17/0.19, spray 0.17/0.26, sounds 0.00/0.00, snapshotFields 4.25/4.64, snapshot 4.75/5.21, summary 0.42/0.46
+  CPU stages per step (step − water + snapshot + summary): 13.85/15.14; water (CPU solver, not timed on the device) 84.6
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+
+# refs on main: B a367d938f15fa934 / 9e5831f80e38abd9, default ea3d57a4d49f4b48 / a1a2555739210f96 — ALL FOUR MATCH.
+# built from the final tree (after the banking guard), fresh state paths, the grid line and the 'spun up on the CPU in … s' line read so no kept .sea was imported.

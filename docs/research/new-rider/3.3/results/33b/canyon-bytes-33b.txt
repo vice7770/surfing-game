@@ -1,0 +1,47 @@
+Canyon byte check, step 3.3b (claude/rider-new-33b, cut from main e2dc402c). The same command and the same reference
+as 3.3a's, C2 step 5f's and 3.2t-3.2z's. FRESH spin-ups, on the tree that merges.
+
+  rolldown scripts/m1-cpu-bench.ts -o <out>/m1-cpu-bench.mjs --format esm --platform node
+  node <out>/cb.mjs             --spot canyon --size medium --steps 3600 --state <fresh-b>.sea   # Canyon B
+  node <out>/m1-cpu-bench.mjs   --spot canyon --size medium --steps 3600 --state <fresh-c>.sea   # default Canyon
+
+THE WRAPPER, WRITTEN OUT (3.3a Part 25 §5.5: the shorthand in 3.2y's and 3.2z's notes is WRONG and cost 3.3a a leg).
+`cb.mjs` is, in full:
+
+    // `?canyonWaves=true` reaches the game through `devTools.ts`'s `currentSearch()`, which reads
+    // `globalThis.location?.search` -- so `location` must be an OBJECT with a `search`, not the string itself.
+    globalThis.location = { search: '?canyonWaves=true' };
+    await import('./m1-cpu-bench.mjs');
+
+A bare STRING has no `.search`, so `currentSearch()` reads `undefined ?? ''` and the bench silently runs the DEFAULT
+Canyon while the operator believes it is running B -- no error, and a plausible pair of hashes at the end. THE GRID IS
+READ FIRST, BEFORE THE HASHES: Canyon B is 400 x 451 = 180400 cells, the default Canyon 400 x 507 = 202800.
+
+EXPECTED (main's published figures, unchanged from step 5f through 3.3a):
+  Canyon B       snapshots a367d938f15fa934  state 9e5831f80e38abd9
+  default Canyon snapshots ea3d57a4d49f4b48  state a1a2555739210f96
+
+This round changed no source file at all, so this is the only possible result, and it is run anyway because that is
+what a seatbelt is for. The two legs overlapped on the machine for part of their run, so the step TIMES carry that
+load and are not comparable with 3.3a's; the HASHES are the invariant and are unaffected by it.
+
+== Canyon B (?canyonWaves=true): a fresh spin-up, with the wrapper above. GRID READ FIRST: 400 x 451 = 180400, B.
+spun up on the CPU in 47.0 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/bench/b1.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.19/1.43, roller 0.67/0.79, front 0.00/0.00, lip 0.03/0.03, foam 2.49/3.15, airSources 0.06/0.07, aeration 1.33/1.74, contact 0.00/0.00, board 0.63/1.01, bubbles 0.15/0.21, spray 0.26/0.38, sounds 0.00/0.00, snapshotFields 3.97/4.81, snapshot 4.49/5.42, summary 0.40/0.49
+  CPU stages per step (step − water + snapshot + summary): 12.02/18.18; water (CPU solver, not timed on the device) 78.1
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+leg B run 1 exit
+0
+
+== default Canyon (no wrapper). GRID READ FIRST: 400 x 507 = 202800, the default.
+spun up on the CPU in 56.8 s; kept in /tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/bench/c1.sea
+canyon medium, 64 components, 400 × 507 = 202800 cells, render 401 × 567, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.26/1.46, roller 0.38/0.55, front 0.00/0.00, lip 0.03/0.03, foam 3.66/3.97, airSources 0.04/0.08, aeration 1.92/2.11, contact 0.00/0.00, board 0.62/0.85, bubbles 0.17/0.20, spray 0.16/0.28, sounds 0.00/0.00, snapshotFields 4.21/4.91, snapshot 4.70/5.50, summary 0.42/0.47
+  CPU stages per step (step − water + snapshot + summary): 13.63/15.69; water (CPU solver, not timed on the device) 83.6
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+leg C exit
+0
+
+ALL FOUR HASHES IDENTICAL to the reference above. No source file was touched, and the grids confirm which spot
+each leg actually ran.

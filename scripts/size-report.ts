@@ -9,6 +9,7 @@
  *   npm run report:sizes -- --spots point --heights 3 --periods 14 --seconds 120
  *   npm run report:sizes -- --spots beach --heights 3,4 --tag big --no-practice   (one of several processes per spot)
  *   npm run report:sizes -- --summary                                            (rebuild the report and fits only)
+ *   npm run report:sizes -- --spots canyon --swells small --tag swell-small --no-practice   (the Surf screen's own swells)
  *
  * A process writes docs/research/sizes/<spot>[-<tag>].json; the report and the fits read every file.
  */
@@ -36,6 +37,12 @@ const periods = list('periods', SIZE_GRID.periods);
 const seconds = Number(option('seconds') ?? SIZE_SEA_SECONDS);
 const gating = process.argv.includes('--gates');
 const withPractice = !process.argv.includes('--no-practice');
+/**
+ * `--swells small,medium,big`: the spot's own swells as the Surf screen sends them (`swellChoice`), in place of the
+ * height and period grid. Each run records its `size`, and the forecast's fit leaves it out: a spot whose faces its
+ * power law can't follow shows these measured faces for its sizes (SWELL_SURF).
+ */
+const swellSizes = option('swells')?.split(',') as SizeRun['size'][] | undefined;
 /** `--kinds deep` or `edge`: which small-day runs a process makes (both by default). */
 const kinds = (option('kinds')?.split(',') ?? ['edge', 'deep']) as SizeRun['heightAt'][];
 const tag = option('tag');
@@ -84,7 +91,20 @@ for (const spot of spots) {
   // Practice gives its groundswell at the edge; buoys give theirs in deep water. Small days also run at the edge,
   // with today's edge height, for the gate against today's sizes; the Canyon always takes its swell at the edge.
   if (withPractice) runs.push(measure({ ...base(spot), ...practiceSwell(spot), heightAt: 'edge' }, 'practice', 'edge'));
-  for (const significantHeight of heights) {
+  // The Surf screen's swells: in deep water but at the Canyon, whose swell is always given at its edge.
+  for (const size of swellSizes ?? []) {
+    const swell = swellChoice(spot, size!);
+    const heightAt: SizeRun['heightAt'] = spot === 'canyon' ? 'edge' : 'deep';
+    runs.push({
+      ...measure({
+        ...base(spot), significantHeight: swell.significantHeight, peakPeriod: swell.peakPeriod, heightAt,
+        directionDegrees: swell.directionDegrees ?? directionFor(spot), spreading: swell.spreading ?? spreadingFor(swell.spread),
+      }, 'buoy', heightAt),
+      size,
+    });
+    console.log(`${spot} ${size}: take-off H1/3 ${runs.at(-1)!.takeOffTypical?.toFixed(2)} m (${((Date.now() - started) / 60000).toFixed(1)} min)`);
+  }
+  for (const significantHeight of swellSizes ? [] : heights) {
     for (const peakPeriod of periods) {
       const given: SizeRun['heightAt'][] = spot === 'canyon' ? ['edge'] : significantHeight <= SMALL_DAY ? kinds : ['deep'];
       for (const heightAt of given) runs.push(measure({ ...base(spot), significantHeight, peakPeriod, heightAt }, 'buoy', heightAt));
@@ -120,11 +140,16 @@ for (const spot of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
   const runs = all.filter((run) => run.spot === spot);
   // The forecast reads a buoy's deep-water height (the Canyon's is taken at its edge), at the take-off, where the readout measures.
   const atTakeOff = (run: SizeRun) => ({ ...run, typical: run.takeOffTypical ?? Number.NaN, sets: run.takeOffSets ?? Number.NaN });
-  const buoys = runs.filter((run) => run.source === 'buoy' && run.takeOffTypical !== undefined && (spot === 'canyon' || run.heightAt === 'deep')).map(atTakeOff);
+  // The Surf screen's own swells (`--swells`) are shown as measured, not fitted.
+  const buoys = runs.filter((run) => run.source === 'buoy' && run.size === undefined && run.takeOffTypical !== undefined
+    && (spot === 'canyon' || run.heightAt === 'deep')).map(atTakeOff);
   const practice = runs.find((run) => run.source === 'practice' && run.takeOffTypical !== undefined);
   if (!buoys.length) continue;
   const fit = fitForecast(buoys);
   console.log(`${spot}: { a: ${fit.a.toFixed(4)}, sets: ${fit.sets.toFixed(3)} }${practice ? `; practice { typical: ${practice.takeOffTypical!.toFixed(2)}, sets: ${practice.takeOffSets!.toFixed(2)} }` : ''} (${buoys.length} runs at the take-off)`);
+  for (const run of runs.filter((r) => r.size !== undefined && r.takeOffTypical !== undefined)) {
+    console.log(`  ${run.size}: { typical: ${run.takeOffTypical!.toFixed(2)}, sets: ${run.takeOffSets!.toFixed(2)} } (${run.takeOffWaves} waves at the take-off)`);
+  }
 }
 const gates = gating ? sizeGates(all, read(`${directory}/baseline`)) : undefined;
 writeFileSync(reportFile, sizeMarkdown(all, gates, `npm run report:sizes -- ${process.argv.slice(2).join(' ')}`));

@@ -1,7 +1,7 @@
 import type { ShadowLevel } from '../scene/ShadowRig';
 import type { WaterLook } from '../scene/water/waterLook';
 import type { ParticleLevel } from '../wave/particleBudget';
-import type { AdvancedGraphics, ConcretePreset, Detection, GraphicsPreset, GraphicsSettings } from './Settings';
+import type { AdvancedGraphics, ConcretePreset, Detection, GlowAntialias, GraphicsPreset, GraphicsSettings } from './Settings';
 
 /** What each graphics preset sets (plan P8). Ultra supersamples; the Auto benchmark never picks it. */
 export const PRESETS: Record<ConcretePreset, AdvancedGraphics> = {
@@ -38,11 +38,11 @@ export const SURFER_DETAIL: Record<ConcretePreset, { shadows: ShadowLevel; surfe
 /** Settings the running surf zone cannot change: they take effect on the next wave. */
 export const NEXT_WAVE_FIELDS: readonly (keyof AdvancedGraphics)[] = ['waterSimulation', 'seaDetail'];
 
-/** Choose a preset: its values are copied in (Auto copies the detected preset's); Custom keeps them. The glow is no preset's and stays. */
+/** Choose a preset: its values are copied in (Auto copies the detected preset's); Custom keeps them. The glow and its anti-aliasing are no preset's and stay. */
 export function withPreset(graphics: GraphicsSettings, preset: GraphicsPreset, detected?: Detection): GraphicsSettings {
   if (preset === 'custom') return { ...graphics, preset };
   const source = preset === 'auto' ? PRESETS[detected?.preset ?? 'medium'] : PRESETS[preset];
-  return { preset, ...source, glow: graphics.glow };
+  return { preset, ...source, glow: graphics.glow, glowAntialias: graphics.glowAntialias };
 }
 
 /** Change an advanced value by hand: the preset becomes Custom. */
@@ -67,6 +67,8 @@ export interface ResolvedGraphics {
   waterLook: WaterLook;
   /** The glow and colour grade: asked for, on the Rich look (Classic, Low's look, never pays for it). */
   glow: boolean;
+  /** The glow's MSAA samples, 2 or 4. */
+  glowSamples: GlowAntialias;
   /** How many whitewater particles the sea keeps (visual only). */
   particles: ParticleLevel;
   /** Show the menu's waves as a still frame instead of running them. */
@@ -114,6 +116,7 @@ export function resolveGraphics(graphics: GraphicsSettings, detected: Detection 
     detailedFoam: graphics.foam === 'detailed',
     waterLook: graphics.waterLook,
     glow: graphics.glow && graphics.waterLook === 'rich',
+    glowSamples: graphics.glowAntialias,
     particles: graphics.particles,
     stillBackdrop: effective === 'low',
     // Custom tunes only the advanced values: the surfer follows the detected preset.

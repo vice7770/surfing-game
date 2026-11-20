@@ -282,9 +282,12 @@ function runSpot(spot: SpotName, seed: number): SpotRun {
         b.weights.push({ t: runner.simulation.seaTime, weight: physicsWeight(session), share, climb: velocity.y });
       }
       b.lastPhase = phase;
+      // The board's speed through the water along its heading, which is not its speed over the ground: the analyzer
+      // asks a bottom turn's carry to be paid from this column, as `SurfZoneRunner.analyze` feeds it.
+      const throughWater = (velocity.x - here.flowX) * Math.sin(session.heading) + (velocity.z - here.flowZ) * Math.cos(session.heading);
       b.analyzer.push({
         t: runner.simulation.seaTime, x: body.x, z: body.z, heading: session.heading, speed: Math.hypot(velocity.x, velocity.z),
-        roll: Math.asin(Math.max(-1, Math.min(1, left.y))), load: session.rider.contact.load, phase: session.phase, wave,
+        throughWater, roll: Math.asin(Math.max(-1, Math.min(1, left.y))), load: session.rider.contact.load, phase: session.phase, wave,
         depth: here.stillDepth, breakingHere: here.breaking,
       });
       const closed = b.analyzer.report();
@@ -389,7 +392,9 @@ function turnTables(rides: Ride[]): string {
   for (const a of analyses) ends.set(a.end, (ends.get(a.end) ?? 0) + 1);
   const maneuvers = analyses.flatMap((a) => a.maneuvers);
   const rows: string[] = [];
-  for (const kind of ['bottom turn', 'top turn', 'snap', 'cutback'] as ManeuverKind[]) {
+  // `unjudged` is listed last: a run the analyzer measured and refused to name. Leaving it out would hide the
+  // rejections, and how many there are is the first thing to look at when a tuning run reads fewer turns than before.
+  for (const kind of ['bottom turn', 'top turn', 'snap', 'cutback', 'unjudged'] as ManeuverKind[]) {
     const of = maneuvers.filter((m) => m.kind === kind);
     // A path that did not turn has no radius: averaged over the turns that did.
     const average = (value: (m: (typeof of)[number]) => number, digits = 1) => fixed(mean(of.map(value).filter(Number.isFinite)), digits);

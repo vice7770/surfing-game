@@ -1,0 +1,20 @@
+old pool medium: 280 x 359 cells, render 281 x 511, t 20.000
+new pool medium: 280 x 359 cells, render 281 x 511, t 20.000
+ms p50/p95 over 300 steps (order alternated):
+breaking       old 0.13/0.27  new 0.13/0.27  new/old p50 0.99, paired median diff -0.00
+roller         old 0.00/0.00  new 0.00/0.00  new/old p50 1.00, paired median diff 0.00
+front          old 0.00/0.00  new 0.00/0.00  new/old p50 0.95, paired median diff 0.00
+lip            old 0.28/0.59  new 0.28/0.59  new/old p50 1.00, paired median diff -0.00
+foam           old 1.93/1.99  new 1.93/1.97  new/old p50 1.00, paired median diff 0.00
+airSources     old 0.08/0.09  new 0.08/0.09  new/old p50 0.99, paired median diff -0.00
+aeration       old 1.49/1.53  new 1.32/1.35  new/old p50 0.89, paired median diff -0.17
+contact        old 0.00/0.00  new 0.00/0.00  new/old p50 -, paired median diff 0.00
+board          old 0.80/1.62  new 0.82/1.62  new/old p50 1.02, paired median diff 0.01
+bubbles        old 0.18/0.20  new 0.18/0.20  new/old p50 1.01, paired median diff 0.00
+spray          old 0.21/0.43  new 0.21/0.47  new/old p50 0.99, paired median diff 0.00
+sounds         old 0.00/0.00  new 0.00/0.00  new/old p50 0.94, paired median diff -0.00
+snapshotFields old 2.45/2.52  new 2.44/2.51  new/old p50 1.00, paired median diff -0.01
+snapshot       old 2.71/2.83  new 2.71/2.81  new/old p50 1.00, paired median diff -0.01
+summary        old 0.20/0.21  new 0.20/0.21  new/old p50 1.00, paired median diff -0.00
+cpu            old 8.43/9.61  new 8.26/9.43  new/old p50 0.98, paired median diff -0.18
+snapshots differing on 320 of 320 steps frame 0 flow; frame 0 board; frame 0 rider; frame 0 reaction; frame 1 flow; state old a55649732824f8ee new 756934d0b8765df1 DIFFER

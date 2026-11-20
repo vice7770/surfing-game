@@ -102,6 +102,7 @@ export function transformedSea(
  * (`transformedSea`), capped at γh, so the spin-up only has to settle the nonlinear shape.
  */
 export function warmStart(solver: ShallowWaterSolver, sea: SeaState, options: WarmStartOptions): void {
+  solver.markAllWater();
   const { referenceZ, seaTime } = options;
   const gamma = options.breakerIndex ?? 0.78;
   const components = sea.components;

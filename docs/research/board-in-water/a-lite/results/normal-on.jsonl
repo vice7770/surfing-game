@@ -1,0 +1,7 @@
+{"name":"glide 7 m/s","t":3,"fell":"","frameW":25,"subW":25,"window05W":10,"substeps":5760,"overPower":0,"pushCut":0}
+{"name":"held carve (standing)","t":2.28,"fell":"balance","frameW":255,"subW":266,"window05W":100,"substeps":4361,"overPower":0,"pushCut":19}
+{"name":"held carve (Compress)","t":3,"fell":"","frameW":60,"subW":61,"window05W":6,"substeps":5760,"overPower":0,"pushCut":0}
+{"name":"paddling 8 s","t":8,"fell":"","frameW":14,"subW":14,"window05W":10,"substeps":1936,"overPower":0,"pushCut":0}
+{"name":"pop-up from the paddle speed, 2.5 s","t":2.18,"fell":"balance","frameW":406,"subW":445,"window05W":269,"substeps":2929,"overPower":0,"pushCut":147}
+{"name":"pop-up from 5 m/s prone, 2.8 s","t":2.8,"fell":"","frameW":475,"subW":477,"window05W":297,"substeps":3640,"overPower":0,"pushCut":0}
+{"name":"20° face, 45° off the fall line, 7 m/s, 3 s","t":3,"fell":"","frameW":287,"subW":373,"window05W":51,"substeps":5760,"overPower":0,"pushCut":129}

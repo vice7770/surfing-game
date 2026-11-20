@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { FLY_IDLE } from '../../scene/FlyCamera';
 import { SpectatorCamera, type SpectatorView } from '../../scene/SpectatorCamera';
 import type { SurfZoneStatus } from '../../wave/SurfZoneRunner';
-import { WaveLab, type LabSea } from './WaveLab';
+import { WaveLab, nearestPeak, type LabSea } from './WaveLab';
 
 /** A sea whose one swell runs shoreward at 5 m/s: crest at z = −60 + 5 t (wavelength 60 m). */
 function fakeSea(clock: { t: number }): LabSea {
@@ -93,3 +93,17 @@ describe('WaveLab', () => {
     expect(info?.rows[1].value).toBe('1.6 m');
   });
 });
+
+// canyon-beach-break (2026-10-23): at a spot with several peaks the card reads the one under the view.
+describe('nearestPeak', () => {
+  it('takes the peak whose stretch holds x, else the nearest stretch', () => {
+    const peaks = [{ from: -37, to: 48, id: 'reef' }, { from: -182, to: -48, id: 'up' }, { from: 66, to: 180, id: 'down' }];
+    expect(nearestPeak(peaks, 0)!.id).toBe('reef');
+    expect(nearestPeak(peaks, -115)!.id).toBe('up');
+    expect(nearestPeak(peaks, -45)!.id).toBe('up');
+    expect(nearestPeak(peaks, 60)!.id).toBe('down');
+    expect(nearestPeak(peaks, 52)!.id).toBe('reef');
+    expect(nearestPeak(undefined, 0)).toBeUndefined();
+  });
+});
+

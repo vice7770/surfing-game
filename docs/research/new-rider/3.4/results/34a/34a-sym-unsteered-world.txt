@@ -1,0 +1,29 @@
+# step 3.4a — the two-body rider as a plant, 24 runs, new rider, world filter, ledger on, ridden plant: symmetric
+# fell 24 of 24, at 0.767–2.000 s, median 0.967; Compress 8 of 8
+# live runs 24 of 24; live ticks 1242 of 1533
+# CONTROLS — the assembly at zero inertia with the shipped coupling against the shipped plant:
+#   A, over each row's largest entry: 1.10e-14 | its roll row's own relative error against the shipped one: 2.41e-11
+#   the force at the feet: 2.80e-14 | its side→roll cross term (must be 0): 1.00e-15
+#   the groups sum to the two-body row: roll 3.00e-15 bank 2.33e-13 | its compliance symmetric: 2.00e-15
+#   P0a sense residual 0.00e+00, tick spacing off 0.00e+00
+# THE TWO ROWS against the ledger (shipped at the controller's exact point / coupling consistent / two-body):
+#   roll 4.692–23.014 (9.179) / 4.610–22.660 (9.021) / 4.555–30.276 (10.022)
+#   lean 2.510–10.257 (3.401) / 2.133–11.205 (3.682) / 0.669–3.128 (1.081)
+#   roll sign 0.111–0.500 (0.344) -> 0.111–0.484 (0.348) | lean sign 0.500–0.903 (0.729) -> 0.559–0.919 (0.761)
+#   and the controller's own blend (3.3p's published column): roll 4.589–22.926 (9.189) lean 2.109–10.265 (3.428)
+# THE ONE-STEP RESIDUAL over the component's own change:
+#   roll rate 4.050–20.107 (9.131) -> 4.564–22.923 (9.839) | bank rate 2.057–13.600 (3.017) -> 0.642–3.886 (1.020)
+# THE FORCE AT THE FEET, N:
+#   the shipped plant's own closed form 122.5–237.3 (171.2) | the two-body plant's outcome 90.7–188.2 (127.9) | ratio 0.603–0.934 (0.803)
+# THE FOUR LATERAL READS, the game off its own A⁻¹ against each plant:
+#   sway kg: game 2.796–3.648 (3.132) model 2.540 two 10.407–11.368 (11.086) | game/model 1.101–1.436 (1.233) game/two 0.258–0.321 (0.290)
+#   side→roll rad/s per N·s: game -0.10855–-0.03623 (-0.05638) model exactly 0 two -0.03596–-0.02021 (-0.03096) | game/two 1.402–3.896 (2.230)
+#   roll inertia game/model 0.773–1.448 (1.107) game/two 0.771–1.444 (1.105) | yaw game/model 0.964–1.051 (1.008) game/two 0.907–0.989 (0.947)
+#   the bank inertia each plant meets, kg·m²: shipped 0.688–1.611 (0.964) two 5.326–10.287 (6.874)
+#   |the ankle's own authority over the lean, model/game|: shipped 1.213–1.930 (1.500) two 0.185–0.288 (0.225)
+# THE BODY'S OWN WEIGHT ON ITS OWN LEAN, °/s²:
+#   the game's own gravity source 114.0–443.5 (267.7) | the shipped LINE g/h·θ 120.1–417.3 (253.8) (ratio 0.929–1.077 (0.962))
+#   SOLVED through each plant's own lateral compliance: shipped 3840.9–13403.7 (8121.7) (x29.734–34.581 (30.867)) two 601.5–1739.5 (1186.4) (x3.949–5.292 (4.363))
+# THE ROLL ROW'S GROUPS AND ITS CONDITIONING:
+#   the water's side force group: shipped 1336.2–4932.7 (3082.0) two 234.0–776.7 (496.5)
+#   conditioning (largest term over the net): shipped 1.96–6.25 (2.55) two 1.02–4.28 (2.36) game 1.57–8.50 (3.23)

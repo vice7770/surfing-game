@@ -1,0 +1,13 @@
+
+## F. the acceptance test on FaceWater 1.40 m / 16° / 5.70 m/s, depth 2.6 m, rider old
+  the face, reduced as step 5e does: H 1.40 m · run 7.30 m · turn 16.0° · local 16.0°
+  FaceWater 1.40/16: rider old, 6 runs, 11 s wall
+    the gate (reaches the wave on the side): 6 of 6 · still up at the end: 0 of 6
+    n: nUp 1.199 median of medians (1.018–1.254) · nPerp 1.180 · n(total) 1.208 · peak n 1.579
+    φ_F 39.4° · liftShare (1 + a_com/g) 0.993 · ceiling 1/cos φ_F 1.294
+    the turn: path rate 54.6 °/s median, 131.8 °/s most · the law's rate from the measured n 49.9 °/s · rail 42.3° median, 82.2° most
+    the water under the board: slope 0.0° median, 13.0° most · frames over 30° 0.0 % · over 20° 0.0 %
+    speed 9.00 m/s at the start, 7.84 through the turn · froth 0.000 · void most 0.000
+    where on the face: placed 0.75 of the run onshore of the crest; the water under the board 0.21 m over still water at the start, 0.21 m at most (a climb of 0.00 m)
+    job 0, the ring: the lean asked for turns around 0.00 times a second · it reaches 0.0° · round 32.5° off the fall line at 1 s · up for 4.55 s (mean 3.87)
+    job 1, the legs: work done by the leg drive 0.0 J median (0 means the pair never fired) · the board's share of it 3284.2 J

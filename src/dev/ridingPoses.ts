@@ -36,6 +36,8 @@ interface Controls {
   trim?: number;
   crouch?: number;
   compress?: number;
+  /** Snap held (the snap stance, 2026-11-03), 0–1. */
+  snap?: number;
   hand?: boolean;
   /** Lying, the paddle held (the arms stroke). */
   paddle?: boolean;
@@ -86,6 +88,8 @@ export interface StanceRecipe {
   thrown?: readonly [number, number, number];
   /** Read this long after the swimmer first holds the board (the recovery's grab), s, within `seconds`; not reached without a hold. */
   hold?: number;
+  /** 'old': back on the board as before swim-back (`RideSessionOptions.swim`): the reel to the ankle, the springs' pull. */
+  swim?: 'old';
   /**
    * The weight (the feet's pressure) read at steady speed (the phase-5 physics plan's W1): from the same run on its
    * water tilted down along the travel by `STEADY_SLOPE`, the face that holds trim's speed, as a wave's face feeds a
@@ -173,7 +177,29 @@ export const STANCE_RECIPES: Record<string, StanceRecipe> = {
   'fall-back': standing([], 3, { speed: 7, separate: 0.5, pitch: 25, after: 0.45, phase: 'fallen' }),
   surfacing: standing([], 3.5, { speed: 7, separate: 0.5, phase: 'fallen' }),
   reel: standing([{ at: 3, reel: true }], 3.6, { speed: 7, separate: 0.5, phase: 'fallen' }),
-  'climb-grab': standing([{ at: 1.5, reel: true }], 23, { speed: 7, separate: 0.5, hold: 2.2, phase: 'fallen' }),
+  // As before swim-back (2026-10-29): today the hold lasts only until the board is deck-up and turned, and then the
+  // physics climbs the body on (phase prone, the rig's tests); this key pose reads the old hold, 2.2 s by the board.
+  'climb-grab': standing([{ at: 1.5, reel: true }], 23, { speed: 7, separate: 0.5, hold: 2.2, phase: 'fallen', swim: 'old' }),
+};
+
+
+/**
+ * The turning body's films (2026-11-10; `docs/research/turn-body-2026-11-10/drawn-fixes.md`): on flat water at 8 m/s, the
+ * stick alone or with Compress from 0.3 s onto the toes' rail (`steer` +1) or the heels', let go at 1.8 s; and the
+ * cutbacks, a Compress carve for 1 s, then Snap with the stick thrown the other way for 1.2 s (frontside: off the toes'
+ * rail onto the heels'). The character sheet plays them (`?motion=turn-toe`), with the drawn switches of the address
+ * (`?turnBody=on`), and the turning body's tests read them.
+ */
+const turnFilm = (controls: Controls[], seconds: number): StanceRecipe => ({ phase: 'standing', water: 'flat', start: 'standing', speed: 8, controls, seconds });
+const carveFilm = (steer: number, compress: number) => turnFilm([{ at: 0.3, compress, steer }, { at: 1.8, compress: 0, steer: 0 }], 2.4);
+const cutbackFilm = (steer: number) => turnFilm([{ at: 0.3, compress: 1, steer }, { at: 1.3, compress: 0, snap: 1, steer: -steer }, { at: 2.5, snap: 0, steer: 0 }], 2.9);
+export const TURN_FILMS: Record<string, StanceRecipe> = {
+  'turn-toe': carveFilm(1, 1),
+  'turn-heel': carveFilm(-1, 1),
+  'turn-stand-toe': carveFilm(1, 0),
+  'turn-stand-heel': carveFilm(-1, 0),
+  'turn-cutback': cutbackFilm(1),
+  'turn-cutback-backside': cutbackFilm(-1),
 };
 
 /**
@@ -268,7 +294,8 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
   const toes = stance === 'regular' ? -1 : 1;
   const slopes = steady ? steadySlopes(recipe.water, stance) : undefined;
   const water = slopes ? new PlaneWater(slopes) : waterFor(recipe, stance);
-  const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined ? new RideSession({ stance }) : undefined;
+  const session = recipe.start === 'prone' || recipe.after !== undefined || recipe.separate !== undefined
+    ? new RideSession({ stance, ...(recipe.swim ? { swim: recipe.swim } : {}) }) : undefined;
   const mounted = session ? undefined : mount(recipe.speed, stance, recipe.water, slopes);
   if (session) session.place({ x: 0, z: 0, heading: 0, speed: recipe.start === 'prone' ? 0 : recipe.speed, phase: recipe.start }, water);
   const board = session?.board ?? mounted!.board;
@@ -300,7 +327,7 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       }
       session.step(STEP, water, {
         paddle: controls.paddle === true || controls.swim === true, popUp: controls.popUp === true, steer, trim: controls.trim, crouch: controls.crouch,
-        compress: controls.compress, hand: controls.hand, reel: controls.reel === true,
+        compress: controls.compress, ...(controls.snap === undefined ? {} : { snap: controls.snap }), hand: controls.hand, reel: controls.reel === true,
       });
       if (throwing && session.surfer.active) {
         throwing = false;
@@ -312,6 +339,7 @@ function play(recipe: StanceRecipe, stance: StanceName, visit?: (world: RiderVis
       rider.trim = controls.trim ?? 0;
       rider.crouch = controls.crouch ?? 0;
       rider.compress = controls.compress ?? 0;
+      rider.snap = controls.snap ?? 0;
       rider.hand = controls.hand ?? false;
       board.step(STEP, water);
     }
@@ -380,12 +408,17 @@ function worldState({ board, rider, session }: Run, out: RiderVisualState): Ride
     for (let i = 0; i < 7; i += 1) rider.renderPoint(i, board, out.points[i]);
     out.phase = rider.attached ? rider.phase : 'fallen';
     out.weight = rider.attached ? rider.contact.weight : Number.NaN;
+    out.snap = rider.attached ? rider.snapping : 0;
+    // As the snapshot carries it (`RIDER_SNAPSHOT.twist`): the upper body's twist, Snap's wound shoulders.
+    out.twist = rider.attached ? rider.twist.angle : 0;
     const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
     out.heading = Math.atan2(forward.x, forward.z);
     out.boardPosition.copy(board.position);
     out.boardQuaternion.copy(board.orientation);
   }
   out.stroking = 0;
+  // As the page does (`PhysicalMode`): the stick last sent, for the drawing's lead into a turn.
+  out.steer = rider.steer;
   return out;
 }
 
@@ -475,7 +508,7 @@ function copyState(from: RiderVisualState, to: RiderVisualState): void {
   Object.assign(to, {
     phase: from.phase, heading: from.heading, stroking: from.stroking, cue: from.cue, yawRate: from.yawRate, leanRate: from.leanRate, speed: from.speed, climb: from.climb,
     uprightBlend: from.uprightBlend, standingBlend: from.standingBlend, duck: from.duck, clock: from.clock, breath: from.breath,
-    separation: from.separation, stance: from.stance, weight: from.weight,
+    separation: from.separation, stance: from.stance, weight: from.weight, twist: from.twist, steer: from.steer,
   });
   to.boardPosition.copy(from.boardPosition);
   to.boardQuaternion.copy(from.boardQuaternion);
