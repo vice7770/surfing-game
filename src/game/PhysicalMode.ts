@@ -596,6 +596,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?plantFloor=4.5|5|6`: the balance's internal model is built on the lowest MEASURED row of its water table at or above
     // this speed, so a design below 4 m/s stops inheriting row '4', the table's own sign-turnover row (step 3.4m), opt-in, to ride.
     ...plantFloorSwitch(),
+    // `?twistStop=model|design`: the balance's internal plant carries the twist joint's own end stop, so past 0.87 rad of twist the
+    // loop stops planning against a torso 100x softer than the one it is actually driving (step 3.5j), opt-in, to ride.
+    ...twistStopSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1432,6 +1435,37 @@ export function riderCostSwitch(search?: string): { riderCost?: 'point' | 'fixed
 export function plantFloorSwitch(search?: string): { plantFloor?: '4.5' | '5' | '6' } {
   const v = devParam('plantFloor', search)?.trim().toLowerCase();
   return v === '4.5' || v === '5' || v === '6' ? { plantFloor: v } : {};
+}
+
+/**
+ * The `?twistStop=model|design` dev switch (`SurfZoneConfig.twistStop`, step 3.5j): opt-in, the balance's internal plant carries
+ * the twist joint's own **end stop**.
+ *
+ * The game's twist joint is a spring of `TWIST_STIFFNESS` = 20 N·m/rad with a stop on it: past `TWIST_BODY_RANGE` =
+ * 0.87 rad (49.85°) `coupleYaw` adds `TWIST_STOP` = 2000 N·m/rad. The balance's own `TwistPlant` carries the 20 and
+ * **no stop at all**, and the `cue` ride of step 3.5h reached **51.10°** of twist — so in that region the loop plans
+ * against a torso **100x softer** than the one it is driving. Step 3.5i found and registered that
+ * (`docs/research/new-rider/3.5/twist-work.md` §5.2) **without claiming it as a cause of anything**, and this switch
+ * does not claim it either: it is a correctness fix on the model, and whether the fall moves is a separate question
+ * with its own answer.
+ *
+ * Set, the gain schedule gains a fifth axis — the twist stiffness, read at the joint's own angle each control tick
+ * (`SCHEDULE_TWIST_K`, `PredictiveController.blend`) — and Φ, Γ, K, L and the reference are rebuilt on it exactly as
+ * the rail axis rebuilds them for a carve. It is a change of **plant**, not of controller and not of actuator: no
+ * torque is added, scaled or clamped anywhere, the stop was already pushing, and the twist command's own bound
+ * (`TWIST_BODY_TORQUE` and the feet's grip) is untouched. **Not a hidden motor.** Nothing on the default rider, and
+ * nothing at all below 49.85° of twist, where the axis's first knot is `TWIST_STIFFNESS` itself.
+ *
+ * **Two values.** `model` rebuilds Φ, Γ, the filter and the reference on the corrected plant and **leaves the gain
+ * row alone** — the loop predicts and aims against the joint it has and pushes exactly as hard as before. That is the
+ * honest minimum and the only arm that is purely a change of belief. `design` re-solves the gain row too, which the
+ * LQR answers by wanting the twist handle used up to **21x harder** (`k[1][θ_t]` 42.4 -> 888.5 N·m/rad at 5.0 m/s)
+ * — a demand the hips' own 100 N·m bound then clips. `design` is kept as the comparison the measurement needed and is
+ * **not** the recommended arm. Anything else, the shipped model. docs/research/new-rider/3.5/twist-stop.md.
+ */
+export function twistStopSwitch(search?: string): { twistStop?: 'model' | 'design' } {
+  const v = devParam('twistStop', search)?.trim().toLowerCase();
+  return v === 'model' || v === 'design' ? { twistStop: v } : {};
 }
 
 /**

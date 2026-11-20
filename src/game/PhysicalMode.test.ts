@@ -10,7 +10,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, bodyBankSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, armCarrySwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, bodyBankSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, armCarrySwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, twistStopSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1402,6 +1402,42 @@ describe('PhysicalMode', () => {
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { stanceDeep: undefined }).stanceDeep).toBeUndefined();
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).stanceDeep).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The `?twistStop=model|design` dev switch (step 3.5j): opt-in, the balance's internal plant carries the twist
+  // joint's own end stop. `coupleYaw` adds TWIST_STOP = 2000 N·m/rad past TWIST_BODY_RANGE = 0.87 rad (49.85°), the
+  // balance's TwistPlant carries TWIST_STIFFNESS = 20 and no stop at all, and the measured `cue` ride reached 51.10°
+  // — so the ride enters the region where the two disagree 100x. `model` corrects the plant and leaves the gain row
+  // alone; `design` re-solves the gain row too. Off by default and pinned off for online rooms.
+  it('carries `?twistStop=model` and `=design`, and ignores anything else (`on` is NOT a value)', () => {
+    expect(twistStopSwitch('?twistStop=model')).toEqual({ twistStop: 'model' });
+    expect(twistStopSwitch('?twistStop=MODEL')).toEqual({ twistStop: 'model' });
+    expect(twistStopSwitch('?twistStop=design')).toEqual({ twistStop: 'design' });
+    expect(twistStopSwitch('?twistStop=Design')).toEqual({ twistStop: 'design' });
+    // `on` would be the natural guess and it is deliberately NOT a value: the two arms differ in what they change
+    // (the belief alone, or the gain row with it), so a ride has to say which.
+    for (const search of ['', '?twistStop', '?twistStop=', '?twistStop=on', '?twistStop=off', '?twistStop=1', '?twistStop=stop', '?stanceDeep=on']) {
+      expect(twistStopSwitch(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      for (const [search, want] of [['?twistStop=model', 'model'], ['?twistStop=design', 'design']] as const) {
+        vi.stubGlobal('location', { search });
+        for (const spot of ['point', 'pool', 'canyon'] as const) {
+          expect(surfZoneConfigFor(physicalSettingsFor(spot, conditions, { stage: 2, compute: 'cpu' }), 5, false).twistStop, `${spot} ${search}`).toBe(want);
+        }
+      }
+      // An online room pins it off: main.ts's room overrides name it, and removing that pin fails here.
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\btwistStop: undefined\b/);
+      vi.stubGlobal('location', { search: '?twistStop=model' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false, { twistStop: undefined }).twistStop).toBeUndefined();
+      vi.stubGlobal('location', { search: '' });
+      expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).twistStop).toBeUndefined();
     } finally {
       vi.unstubAllGlobals();
     }

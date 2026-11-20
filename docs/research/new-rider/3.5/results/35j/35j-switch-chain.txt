@@ -1,0 +1,16 @@
+################ Step 3.5j — the switch chain, hop by hop, from a search string to a rider's weights
+
+                            search        switch  SurfZoneConfig     RideSession
+                            (none)             —               —               —
+                  ?twistStop=model         model           model           model
+                 ?twistStop=design        design          design          design
+                     ?twistStop=on             —               —               —
+                     ?twistStop=ON             —               —               —
+                  ?twistStop=Model         model           model           model
+                    ?twistStop=yes             —               —               —
+                      ?twistStop=1             —               —               —
+                    ?twistStop=off             —               —               —
+
+  ⚠️ `Model` and `ON` are lower-cased by the switch; `on`, `yes`, `1` and `off` are NOT values and must all
+  read `—`. Only `model` and `design` reach the config, and the `RideSession` column is the runner's own
+  forwarding expression applied to that config — the hop a `swing` option was once dropped in.

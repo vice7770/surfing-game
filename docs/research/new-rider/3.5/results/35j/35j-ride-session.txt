@@ -1,0 +1,80 @@
+################ Step 3.5j ridden — THE REAL SESSION PATH (search string -> surfZoneConfigFor -> SurfZoneConfig -> RideSession -> its own rider)
+
+  FaceWater 1.4 m / 16° / depth 6 m, entry 5.7 m/s, -45° off the fall line, SINK 0.06 m,
+  6 s, stances tall,crouch,compress, steers 0,1,-1. Canyon B's own calibration (#223), NOT the Canyon.
+
+  THE CONFIG THE SESSION WAS BUILT FROM: {"twistStop":"model"}   (the parse and config hops, live)
+
+  ⭐ THE HANDOVER, every live tick of every cell. `body` is `AttachedRider.twistModelK`, `sched` is
+  `PredictiveController.schedTwistK`, `want` is the secant this probe computes from `tb.angle` and the stop's
+  own constants. Off the switch `body` must be 0 and `sched` exactly 20 on EVERY tick.
+
+     arm      stance     steer    ticks     past R     max °   body!=want  sched!=body       body max      sched max
+     off        tall         0       42          0    20.291            0            0          0.000         20.000
+     off        tall         1       45          0    32.353            0            0          0.000         20.000
+     off        tall        -1       42          0     9.398            0            0          0.000         20.000
+     off      crouch         0       73         13    57.566            0            0          0.000         20.000
+     off      crouch         1      106         34    57.953            0            0          0.000         20.000
+     off      crouch        -1       36          0    -7.287            0            0          0.000         20.000
+     off    compress         0       70         10    58.641            0            0          0.000         20.000
+     off    compress         1       46          0   -43.537            0            0          0.000         20.000
+     off    compress        -1       36          0    -7.291            0            0          0.000         20.000
+   model        tall         0       42          0    20.291            0            0          0.000         20.000
+   model        tall         1       45          0    32.353            0            0          0.000         20.000
+   model        tall        -1       42          0     9.398            0            0          0.000         20.000
+   model      crouch         0       73         13    57.565            0            0        288.152        288.152
+   model      crouch         1      105         31    57.983            0            0        300.609        300.609
+   model      crouch        -1       36          0    -7.287            0            0          0.000         20.000
+   model    compress         0       69          9    58.675            0            0        320.907        320.907
+   model    compress         1       46          0   -43.537            0            0          0.000         20.000
+   model    compress        -1       36          0    -7.291            0            0          0.000         20.000
+  design        tall         0       42          0    20.291            0            0          0.000         20.000
+  design        tall         1       45          0    32.353            0            0          0.000         20.000
+  design        tall        -1       42          0     9.398            0            0          0.000         20.000
+  design      crouch         0       67          7    57.558            0            0        287.942        287.942
+  design      crouch         1      110         26    57.973            0            0        300.330        300.330
+  design      crouch        -1       36          0    -7.287            0            0          0.000         20.000
+  design    compress         0       65          5    58.692            0            0        321.385        321.385
+  design    compress         1       46          0   -43.537            0            0          0.000         20.000
+  design    compress        -1       36          0    -7.291            0            0          0.000         20.000
+
+  CONTROL, the switch off is inert: ticks with a non-zero `twistModelK` off the switch = 0 — none, as the gate requires.
+  CONTROL, the two sides agree with the formula: mismatching ticks over every cell = 0 — none.
+  ⛔ CELLS THAT REACHED THE STOP AT ALL: 9 of 27.
+
+  ⭐ WHAT IT DOES, AT NEUTRAL AND THROUGH A STEER. `work` is the joint's DELIVERED generalised work over the
+  whole live run, J (Σ tb.active · Δtb.angle); `fell` is the first tick the rider came off, s.
+
+  stance       steer      arm     fell s      work J    max tw °   end tw °     bank °    swing °    climb m
+    tall           0      off      0.717      -3.657      20.291     20.291    -13.232     -6.586      0.591
+                        model      0.717      -3.657      20.291     20.291    -13.232     -6.586      0.591
+                       design      0.717      -3.657      20.291     20.291    -13.232     -6.586      0.591
+    tall           1      off      0.767      -8.226      32.353     32.353     22.357    -11.082      0.582
+                        model      0.767      -8.226      32.353     32.353     22.357    -11.082      0.582
+                       design      0.767      -8.226      32.353     32.353     22.357    -11.082      0.582
+    tall          -1      off      0.717      -1.480       9.398      9.398    -13.886     -3.450      0.588
+                        model      0.717      -1.480       9.398      9.398    -13.886     -3.450      0.588
+                       design      0.717      -1.480       9.398      9.398    -13.886     -3.450      0.588
+  crouch           0      off      1.233    -129.766      57.566     52.683    -70.000    -16.573      0.292
+                        model      1.233    -129.713      57.565     52.742    -70.000    -17.049      0.292
+                       design      1.133    -129.278      57.558     52.503    -54.292     -9.806      0.352
+  crouch           1      off      1.783    -174.866      57.953     35.726    -44.293    -65.676     -0.007
+                        model      1.767    -202.409      57.983      8.719    -30.414    -55.161      0.003
+                       design      1.850    -203.869      57.973    -41.053    -39.617    -54.496     -0.050
+  crouch          -1      off      0.617      -6.580      -7.287     -7.287    -13.520      1.227      0.612
+                        model      0.617      -6.580      -7.287     -7.287    -13.520      1.227      0.612
+                       design      0.617      -6.580      -7.287     -7.287    -13.520      1.227      0.612
+compress           0      off      1.183    -142.793      58.641     52.140    -70.000    -17.005      0.323
+                        model      1.167    -142.368      58.675     52.132    -70.000    -16.544      0.333
+                       design      1.100    -147.983      58.692     55.557    -57.953    -13.468      0.371
+compress           1      off      0.783     -40.945     -43.537    -43.537    -12.613     20.547      0.552
+                        model      0.783     -40.945     -43.537    -43.537    -12.613     20.547      0.552
+                       design      0.783     -40.945     -43.537    -43.537    -12.613     20.547      0.552
+compress          -1      off      0.617      -6.582      -7.291     -7.291    -13.519      1.228      0.612
+                        model      0.617      -6.582      -7.291     -7.291    -13.519      1.228      0.612
+                       design      0.617      -6.582      -7.291     -7.291    -13.519      1.228      0.612
+
+  ⚠️ `bank`, `swing` and `climb` here are this run's own peak body lean, net heading change and net surface
+  rise — NOT the ride analyzer's bottom-turn columns, which need a wave frame this analytic face has not got.
+  They are printed so the two arms can be compared on the same three quantities, not to be set beside the
+  owner's 42° / 40° / 0.296 -> 0.995 m target, which is a Canyon measurement and belongs to a Canyon run.

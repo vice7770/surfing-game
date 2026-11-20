@@ -1,0 +1,13 @@
+# Step 3.5j — the default arm's BYTE CHECK: the whole live trace of the default rider, both paths, on this
+# branch against its base (claude/ride-everything, 85fb6cb9). 3 stances x 3 steers x the fixture and the real
+# session, every live frame's twist, delivered torque, command, bank, roll, speed and heading to 12 decimals,
+# plus the fall's own time and cause. The two read-out fields the base branch does not have (twistModelK and
+# schedTwistK) are masked in this diff and pinned separately: 0 and exactly 20 on every tick off the switch,
+# which 35j-ride-fixture.txt and 35j-ride-session.txt both count as 0 of 0.
+#
+#   lines compared: 1235
+#   base   md5: e0604f81e4c360dd5e54314eb1af7c9e
+#   branch md5: e0604f81e4c360dd5e54314eb1af7c9e
+#   diff lines: 0
+#
+# ====> IDENTICAL.

@@ -223,6 +223,12 @@ export interface RideSessionOptions {
    * sign-turnover row.
    */
   plantFloor?: '4.5' | '5' | '6';
+  /**
+   * The twist joint's end stop carried by the balance's own plant (step 3.5j; `AttachedRiderOptions.twistStop`): 'on'
+   * (the `?twistStop=model|design` dev switch). By default the model carries `TWIST_STIFFNESS` = 20 N·m/rad and no stop at all,
+   * while the game's joint adds `TWIST_STOP` = 2000 past 0.87 rad and the measured ride reached 51.10° of twist.
+   */
+  twistStop?: 'model' | 'design';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -341,6 +347,8 @@ export class RideSession {
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
       ...(options.riderCost ? { riderCost: options.riderCost } : {}),
       ...(options.plantFloor ? { plantFloor: options.plantFloor } : {}),
+      // Step 3.5j: the twist joint's end stop in the balance's own plant (`?twistStop=model|design`).
+      ...(options.twistStop ? { twistStop: options.twistStop } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

@@ -942,6 +942,58 @@ export interface DesignWeights {
    * It changes the **plant**, not the control law, and it is **not purely additive** - see `stanceAt`.
    */
   stanceDeep?: boolean;
+  /**
+   * **The twist joint's END STOP, carried by the plant the controller is designed on** (step 3.5j, `?twistStop=model|design`;
+   * off by default). The mismatch this corrects was found and registered by step 3.5i (`3.5/twist-work.md` §5.2) and
+   * is a plain disagreement of numbers, not a theory of the fall:
+   *
+   * - the game's twist joint is a spring of `TWIST_STIFFNESS` 20 N·m/rad **plus an end stop**: past
+   *   `AttachedRider`'s `TWIST_BODY_RANGE` = 0.87 rad (49.85°) it adds `TWIST_STOP` = 2000 N·m/rad
+   *   [R, `AttachedRider.ts:578, 4806-4816`];
+   * - `TwistPlant.stiffness` — the only twist stiffness this file's plant has — is `TWIST_STIFFNESS` and carries **no
+   *   stop at all** [R, `plantAt`, `rollModel.ts`'s `twistRows`];
+   * - and the `cue` ride of step 3.5h reached **51.10°** of twist, inside that region. So past 49.85° the loop plans
+   *   against a joint **100x softer** than the one it is driving.
+   *
+   * Set, the gain schedule gains a **fifth axis**: the twist stiffness, read at the joint's own angle, beside the
+   * speed, the depth and the rail it already carries (`SCHEDULE_TWIST_K`, `PredictiveController.blend`). `blend` is
+   * handed the stiffness the body actually has at the angle it is at, and the design it blends is built on that
+   * stiffness, exactly as the rail axis rebuilds a design for a carve.
+   *
+   * ⭐⭐ **Two values, and the difference between them is the whole argument of the round.**
+   *
+   * - **`'model'` — the belief alone.** Φ, Γ, the filter's L and the reference are rebuilt on the corrected plant;
+   *   **the gain row K stays the shipped one**, designed on `TWIST_STIFFNESS`. So the loop predicts, filters and aims
+   *   against the joint it actually has, and pushes exactly as hard as it pushed before. This is the honest minimum
+   *   and **the only arm that is purely a change of what the controller BELIEVES.** (The pattern is not new: with
+   *   `heaveSense` and `heaveGains: 'free'` this file already ships a plant correction whose gains are left alone,
+   *   for the same reason — *"the rider feels and anticipates the board, and does not try to steer it."*)
+   * - **`'design'` — the whole design re-solved**, K with it. ⚠️ That is **not** a pure belief change: the LQR on a
+   *   stiff joint wants the twist handle used far harder, and `k[1][θ_t]` goes from **42.4 N·m/rad at 5.0 m/s to
+   *   888.5** at the stiffest knot, **21x** — a commanded torque the hips' own 100 N·m bound then clips. It is kept because it is the
+   *   form a reader would expect of a gain schedule, and because the measurement needs it as the comparison; it is
+   *   not the recommended arm. `docs/research/new-rider/3.5/twist-stop.md` has what each one measured.
+   *
+   * ⭐ **Neither value adds, scales or clamps a torque in the game.** `TWIST_STOP` is the game's own joint and was
+   * already pushing back before this flag existed; the twist command's bound (`TWIST_BODY_TORQUE` and the feet's
+   * grip) is untouched by both. What `'design'` scales is a **gain inside the controller**, which is why it is named
+   * separately and measured separately rather than hidden inside one `on`.
+   *
+   * ⚠️ **The stiffness carried is the SECANT, not the tangent**, and that is forced by the plant's form, not chosen
+   * for taste: the game's joint torque is `k θ + TWIST_STOP sign(θ)(|θ| − R)`, which past the stop is **affine** —
+   * slope `k + TWIST_STOP` and an offset `−TWIST_STOP·R` — while `twistRows` can only carry `stiffness · θ_t`, a
+   * line through the origin with no constant term. The secant `k + TWIST_STOP (|θ| − R)/|θ|` is the **unique**
+   * stiffness that reproduces the game's torque **exactly at the angle the joint is at**, offset and all; the tangent
+   * would need a constant term the plant has nowhere to put. The secant is also continuous at the stop (it starts at
+   * `TWIST_STIFFNESS` and rises), so the schedule does not step.
+   *
+   * ⚠️ **The stop's DAMPING is NOT carried, and that is a stated gap, not an oversight.** `TWIST_STOP_DAMPING` = 50
+   * N·m·s/rad rides on top of `TWIST_DAMPING` = 3 past the same range — a 17x mismatch on the rate. It is linear in
+   * the rate with no offset, so unlike the stiffness it has no continuous secant: it jumps 3 -> 53 the instant the
+   * stop engages, and blending it along an axis whose coordinate is a stiffness would read 3 just past the stop,
+   * where the truth is 53. One correction, one axis; the damping is left for a round that can carry a step.
+   */
+  twistStop?: 'model' | 'design';
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -1315,10 +1367,40 @@ export const SCHEDULE_DEPTHS = [0, 0.195, 0.3];
 export const SCHEDULE_DEPTHS_DEEP = [0, 0.195, 0.3, 0.45];
 /** Step 3.2f: the schedule's rails, rad (the measured table's angles). */
 export const SCHEDULE_RAILS = RAIL_ANGLES.map((a) => (a * Math.PI) / 180);
+/**
+ * **Step 3.5j (`?twistStop=model|design`): the gain schedule's fifth axis — the twist joint's own stiffness, N·m/rad.**
+ *
+ * The knots are **geometric, ratio about 3**, and the reason is the gains' own shape rather than a round number: the
+ * gain row's entries go roughly as the logarithm of the stiffness over this range, so geometric knots carry a near
+ * uniform interpolation error while an arithmetic ladder would spend four of its five knots in a region the joint
+ * never reaches. The ends are both physical and neither is a choice:
+ *
+ * - **20** is `TWIST_STIFFNESS`, the joint below the stop, and it is the first knot so that **a tick with the stop not
+ *   engaged lands exactly on the shipped design** — which is what makes the flag's own sub-stop ticks byte-identical.
+ * - **2020** is `TWIST_STIFFNESS + TWIST_STOP`, the stop's own tangent, which the secant approaches from below as the
+ *   angle grows and **never exceeds**. So nothing is clamped away at the top: the axis covers the joint's whole range.
+ *
+ * The angles the three middle knots are the secant of (`20 + 2000(1 − 0.87/|θ|)`) are **50.9°, 55.5° and 66.3°**, and
+ * the `cue` ride's own peak, 51.10°, sits between the first two.
+ */
+export const SCHEDULE_TWIST_K = [20, 60, 180, 540, 2020];
+/**
+ * The pair of `SCHEDULE_TWIST_K` knots a twist stiffness falls between, and how far between them, blended linearly as
+ * the rail's pair is. **`undefined` is the shipped axis-free lookup**: no stiffness given, or one at or below the
+ * first knot (the stop not engaged), which is what keeps a sub-stop tick on the shipped eight designs and bit-exact.
+ */
+export function twistKnots(stiffness?: number): { k0: number; k1: number; f: number } | undefined {
+  const ks = SCHEDULE_TWIST_K;
+  if (stiffness === undefined || !Number.isFinite(stiffness) || stiffness <= ks[0]) return undefined;
+  const v = Math.min(ks[ks.length - 1], stiffness);
+  let i = 0;
+  while (i < ks.length - 2 && v > ks[i + 1]) i += 1;
+  return { k0: ks[i], k1: ks[i + 1], f: Math.max(0, Math.min(1, (v - ks[i]) / (ks[i + 1] - ks[i]))) };
+}
 const designCache = new Map<string, Design>();
 /** The design at a table point (cached for the page; the default weights unless given). */
-export function scheduledDesign(speed: number, depth: number, rail = 0, weights?: DesignWeights): Design {
-  const key = `${speed}|${depth}|${r3(rail)}|${weights ? JSON.stringify(weights) : ''}`;
+export function scheduledDesign(speed: number, depth: number, rail = 0, weights?: DesignWeights, twistK?: number): Design {
+  const key = `${speed}|${depth}|${r3(rail)}|${weights ? JSON.stringify(weights) : ''}|${twistK ?? ''}`;
   let d = designCache.get(key);
   if (!d) {
     const w = weights ?? DEFAULT_WEIGHTS;
@@ -1338,16 +1420,30 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
     // Step 3.5c (ruling D): the row ships, so `undefined` is `true` here and only an explicit `false` reaches the
     // three-row ladder. A partial weights object that never heard of the field gets the shipped plant.
     const ladder: { stanceDeep: boolean } = { stanceDeep: w.stanceDeep ?? true };
-    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor, ...ladder });
+    // Step 3.5j (`?twistStop=model|design`): the twist joint's stiffness is a plant too, so it enters here beside the body, the
+    // floor and the ladder — and it is the ONE thing this file carries about the stop. `undefined` passes nothing and
+    // `plantAt` reads its own `TWIST_STIFFNESS`, which is the shipped design to the bit.
+    const joint: { twistStiffness: number } | undefined = twistK !== undefined ? { twistStiffness: twistK } : undefined;
+    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor, ...ladder, ...joint });
     d = design(y, t, w);
     if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
       // The gains stay the shipped ones, designed on the free plant, with no gain on the four board states: the rider
       // feels and anticipates the board, and does not try to steer it. `DesignWeights.heaveGains` has the measurement.
-      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor, ...ladder });
+      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor, ...ladder, ...joint });
       const gains = design(ten.y, ten.t, { ...w, heaveSense: false });
       const pad = new Array<number>(d.phi.length - N_STATE).fill(0);
       d = { ...d, k: gains.k.map((row) => [...row, ...pad]) };
     }
+    // **Step 3.5j, `twistStop: 'model'`: the plant carries the joint's stop and the gain row DOES NOT.** It stays the
+    // row this very function builds with no stiffness given — so the loop predicts, filters and aims against the joint
+    // it actually has while pushing exactly as hard as it pushed before. The same shape as `heaveGains: 'free'` above
+    // and for the same reason: a correction to what the model BELIEVES is not a licence to push harder. `'design'`
+    // re-solves K too, which the LQR answers by wanting the twist handle used up to 21x harder.
+    //
+    // ⚠️ It is taken by RECURSION rather than by a second `design` call, and the order matters: the shipped row has to
+    // be whatever the whole pipeline above would have produced for these weights, the heave branch included. The
+    // recursive call passes no stiffness, so `joint` is undefined inside it and it cannot recurse again.
+    if (joint && w.twistStop === 'model') d = { ...d, k: scheduledDesign(speed, depth, rail, weights).k.map((r) => r.slice()) };
     designCache.set(key, d);
   }
   return d;
@@ -1437,6 +1533,14 @@ export class PredictiveController {
   readonly raw = [0, 0];
   /** The estimated bias on each command (rad, N·m). */
   readonly bias = [0, 0];
+  /**
+   * **Read-only, for probes (step 3.5j): the twist stiffness the gain schedule was read at this tick, N·m/rad** — the
+   * fifth axis's own coordinate, `TWIST_STIFFNESS` (20) whenever the axis is off or the stop is not engaged. It is the
+   * axis coordinate and not a property of the blended matrices: past the first knot the design is a mix of the two
+   * knots either side of it, as the rail's is. This is the quantity a switch check reads, because it is the one thing
+   * `?twistStop=model|design` is for, and it is written on **every** tick in **both** arms so that an unmoved 20 is evidence.
+   */
+  schedTwistK = SCHEDULE_TWIST_K[0];
   /** Ticks run since the reset. */
   ticks = 0;
 
@@ -1460,10 +1564,27 @@ export class PredictiveController {
     this.sent[0] = 0; this.sent[1] = 0;
     this.raw[0] = 0; this.raw[1] = 0;
     this.bias[0] = 0; this.bias[1] = 0;
+    this.schedTwistK = SCHEDULE_TWIST_K[0];
   }
 
-  /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
-  private blend(speed: number, depth: number, rail: number): Design {
+  /**
+   * The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight.
+   *
+   * **Step 3.5j (`?twistStop=model|design`, `DesignWeights.twistStop`): a fifth axis, the twist joint's own stiffness** — the
+   * eight above at the knot below `twistK` and the same eight at the knot above, sixteen in all, blended on the same
+   * linear factor the rail uses. **With the flag off, or with `twistK` at or below the first knot (the stop not
+   * engaged), `twistKnots` returns `undefined` and the arrays below are the eight designs and the eight weights this
+   * method always built, in the same order** — so the mixing sums the same terms in the same sequence and the blended
+   * matrices are bit-identical, not merely close.
+   *
+   * **The cost, measured and stated rather than left to be found.** A design solve is **1.6–11 ms** and is cached, so
+   * the first tick that crosses the stop at a new (speed, depth, rail, knot) cell pays up to eight of them — **one
+   * frame's hitch, once per cell** — and every tick after it is a cache hit at 0.017 ms. The per-tick mixing goes from
+   * eight designs to sixteen, about 16 000 multiplies a tick, which is not a cost worth a word. The cache's own size
+   * goes from at most 17 x 4 x 6 = 408 designs per weights set to **17 x 4 x 6 x 5 = 2 040**, and only the cells a
+   * ride actually visits are ever built.
+   */
+  private blend(speed: number, depth: number, rail: number, twistK?: number): Design {
     const v = Math.max(SCHEDULE_SPEEDS[0], Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 1], speed));
     const v0 = Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 2], Math.floor(v * 2) / 2);
     const fv = (v - v0) / 0.5;
@@ -1487,12 +1608,17 @@ export class PredictiveController {
     const fr = Math.max(0, Math.min(1, (a - rails[k]) / (rails[k + 1] - rails[k])));
     const r0 = rails[k];
     const r1 = rails[k + 1];
-    const ds = [
-      scheduledDesign(v0, i0, r0, this.weights), scheduledDesign(v0 + 0.5, i0, r0, this.weights), scheduledDesign(v0, i1, r0, this.weights), scheduledDesign(v0 + 0.5, i1, r0, this.weights),
-      scheduledDesign(v0, i0, r1, this.weights), scheduledDesign(v0 + 0.5, i0, r1, this.weights), scheduledDesign(v0, i1, r1, this.weights), scheduledDesign(v0 + 0.5, i1, r1, this.weights),
+    // Step 3.5j: the fifth axis's own pair. `undefined` is the shipped lookup and takes the eight-design path below.
+    const tk = this.weights?.twistStop ? twistKnots(twistK) : undefined;
+    const eight = (jointK?: number) => [
+      scheduledDesign(v0, i0, r0, this.weights, jointK), scheduledDesign(v0 + 0.5, i0, r0, this.weights, jointK), scheduledDesign(v0, i1, r0, this.weights, jointK), scheduledDesign(v0 + 0.5, i1, r0, this.weights, jointK),
+      scheduledDesign(v0, i0, r1, this.weights, jointK), scheduledDesign(v0 + 0.5, i0, r1, this.weights, jointK), scheduledDesign(v0, i1, r1, this.weights, jointK), scheduledDesign(v0 + 0.5, i1, r1, this.weights, jointK),
     ];
-    const ws = [(1 - fv) * (1 - fd) * (1 - fr), fv * (1 - fd) * (1 - fr), (1 - fv) * fd * (1 - fr), fv * fd * (1 - fr),
+    const w8 = [(1 - fv) * (1 - fd) * (1 - fr), fv * (1 - fd) * (1 - fr), (1 - fv) * fd * (1 - fr), fv * fd * (1 - fr),
       (1 - fv) * (1 - fd) * fr, fv * (1 - fd) * fr, (1 - fv) * fd * fr, fv * fd * fr];
+    const ds = tk ? [...eight(tk.k0), ...eight(tk.k1)] : eight(undefined);
+    const ws = tk ? [...w8.map((w) => w * (1 - tk.f)), ...w8.map((w) => w * tk.f)] : w8;
+    this.schedTwistK = tk ? tk.k0 + tk.f * (tk.k1 - tk.k0) : SCHEDULE_TWIST_K[0];
     const first = ds[0];
     let out = this.blendedDesign;
     if (!out) {
@@ -1526,9 +1652,14 @@ export class PredictiveController {
    * One tick: `sense` now (this file's order and signs), the board's speed through the water, m/s, the leg's depth, m,
    * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
    * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
+   *
+   * **Step 3.5j: `twistK`, the twist joint's own stiffness at the angle it is at, N·m/rad** — the fifth schedule axis
+   * (`DesignWeights.twistStop`, `?twistStop=model|design`). The caller computes it, because the end stop is the **body's** and
+   * `AttachedRider` owns its constants; this file owns only the schedule. Omitted, or with the flag off, every line
+   * below runs exactly as it shipped.
    */
-  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0): readonly number[] {
-    const d = this.blend(speed, depth, rail);
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, twistK?: number): readonly number[] {
+    const d = this.blend(speed, depth, rail, twistK);
     // The plant's own size: ten, or fourteen with the board's heave and pitch carried (step 3.2p).
     const n = d.phi.length;
     const p = d.c.length;
