@@ -68,6 +68,7 @@ them. Read the citation before you commission anything in this space.
 | Early hip allocation | `HIP_CAPTURE_GAIN` delivered 35–264 N·m: "not late, not enough". Raising the gain made the fall **sooner in 36 of 60** | 3.2x |
 | `?askCap`, `?ankleLimit=feet`, `?ankleRange=wide`, `?buoyFrame=hull` | Inert / worse / innocent / 12 of 12 falls across 36 cells | 3.5 sweeps |
 | Rotor gain 500 → 8000 | 12 of 12 falls, sooner in 36 of 60 | 3.5 |
+| `?twistGrip=feet` — the end stop bounded by the feet's grip (`claude/twist-grip`, `9a33b4a6`) | **A null, and a clean one. 108 matched pairs on Canyon B, both arms fell 108 of 108**, median Δfall **exactly 0.000 s**, 73 pairs on the same frame, of the 35 that moved **18 earlier and 17 later**. The clamp is right — it cut the delivered joint peak 203.52 → 153.38 N·m median, requested 245.69 vs delivered 172.50 — and it **does not keep the rider up**. ⚠️ It also lets the twist reach **92°** where the shipped stop held 60.7°, so bound and range may have to land together | `3.5/twist-grip.md`, `3.5/results/35k/` |
 | `?waterHeel=tilt\|predict\|ref` — the balance's water datum | **On the owner's own cell, 18 runs each: off 1.033 s, `predict` 0.967, `ref` 0.483, `both` 0.433, and 18 of 18 fell in every arm.** Each half gives 2.5–2.8× **on the glide** (4.033 / 3.683 against 1.450) and the pair cancels there — but the glide is not his water, and on his the ordering reverses | 3.4 README §7 reading 1, §8 |
 | `?swing=mass` (a weight for the hip to shift) | The hip gets a mass and, on the turn that fails, **never shifts it** | PR #444 |
 
@@ -163,6 +164,16 @@ force by `FOOT_FRICTION ×` load at `:3914`, `:4032`, `:4162`, `:4256` and `:560
 unbounded, a body weight threw the board from under every rider in 0.2 s."* `:4816` is the
 sixth path and the only unbounded one — so this is a clamp that was never added, not a
 decision taken on purpose.
+
+⭐⭐ **A separate finding against the SHIPPED rider, not against any switch: the rig cannot
+draw the torso as far as the physics twists it.** `RIG_DETAIL.cascade.twistMost = 45`
+(`src/scene/rig/HumanoidRig.ts:315`, applied at `:994`) clamps the **drawn** chest and hips
+at **45°** — but `TWIST_BODY_RANGE` alone is **49.85°** and the measured ride reaches
+**50–56.76°**. So **the drawn torso is saturated during ordinary riding in the shipped
+game**, and extra twist shows only in the head's look (`:2555`, limited to `neckTurn` 90°
+from the chest's aim). The physics and the drawing disagree about the rider's own body by
+5–12° before any switch is touched. ⚠️ This is a candidate explanation for a *look*
+complaint, not for the fall, and nobody has ridden it.
 
 ⚠️ **What none of this establishes:** whether it moves the fall. #455's own table has every
 arm falling in **0.98–2.17 s**. Three things are open — whether `legLoad` is one leg or both,
