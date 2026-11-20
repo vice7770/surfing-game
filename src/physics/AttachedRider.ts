@@ -2253,6 +2253,12 @@ export class AttachedRider {
   readonly capsLegs: boolean;
   /** The new surfer (`rider: 'new'`); and the power window kept, with `legPower: 'cap'` or the new surfer. */
   private readonly newRider: boolean;
+  /**
+   * A placed standing start's posture (`RiderPlacement.posture`; the test wave's ride start, 2026-11-20): 'plumb' mounts
+   * the new surfer's leg line along gravity, in pitch and across, as a pop-up's landing leaves it, in place of square to
+   * the deck. Read by the next `mount` alone and cleared there; an initial condition only. Absent: as before.
+   */
+  mountPosture?: 'plumb';
   /** The felt vertical's low pass held on the deck's own axes (`feltFrame: 'deck'`, step 3.3c) rather than in the world. */
   private readonly deckFelt: boolean;
   /**
@@ -3045,6 +3051,7 @@ export class AttachedRider {
       }
     }
     this.frame(board, false);
+    this.mountPosture = undefined;
     this.position.copy(this.target);
     this.velocity.copy(this.drive.set(0, 0, 0)).add(board.velocityAt(this.target, this.scratch2));
     this.angularVelocity.copy(this.upright ? this.scratch.set(0, board.angularVelocity.y, 0) : board.angularVelocity);
@@ -5461,10 +5468,13 @@ export class AttachedRider {
           this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
         }
       } else {
-        this.standingBody.measure(this.heading, boardUp, Math.atan2(cz, cy));
+        // A placed start's 'plumb' posture (`mountPosture`): the leg line measured as if along gravity, so the body
+        // starts plumb in pitch (the pitch ankle at the deck's own pitch) and across; else square to the deck.
+        const plumb = this.mountPosture === 'plumb';
+        this.standingBody.measure(this.heading, boardUp, Math.atan2(cz, cy), plumb ? Y : undefined);
         // A new mount on a planing board: square to the deck across as well (`mount`).
         if (this.banking) {
-          const angle = this.standingBody.bankOf(this.heading, boardUp) - Math.atan2(cx, Math.hypot(cy, cz));
+          const angle = this.standingBody.bankOf(this.heading, plumb ? Y : boardUp) - Math.atan2(cx, Math.hypot(cy, cz));
           this.bankRaw = angle;
           this.bank.angle = Math.max(-this.bankMax, Math.min(this.bankMax, angle));
         }

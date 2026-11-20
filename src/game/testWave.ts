@@ -25,14 +25,15 @@ export const TEST_WAVE_SPIN_UP_PERIODS = 5;
  * Each mode's start: the sea time the session opens at (the train's phase), where the rider is put then, and how long the
  * wave lasts from there, s (its white has run the arm into the bowl). Measured on the in-page solver
  * (scripts/test-wave-probe.ts).
- * - 'ride': standing on the open face at mid-height, about 10 m along the arm (+x) ahead of the white, moving with the
+ * - 'ride': standing, his body plumb (`posture` 'plumb'), on the open face at mid-height, about 10 m along the arm (+x)
+ *   ahead of the white, moving with the
  *   wave as it peels: along the arm at the white's speed and shoreward with the face, the board flat on it, its nose
  *   along its motion through the water (no slip).
  * - 'catch': lying at the take-off, nose to the beach, paddling speed, before the wave reaches the peak: paddled on, the
  *   wave picks the board up.
  */
 export const TEST_WAVE_STARTS: Record<TestWaveMode, { seaTime: number; placement: RiderPlacement; life: number }> = {
-  ride: { seaTime: 62.5, placement: { x: -93.5, z: -94.65, heading: (54 * Math.PI) / 180, speed: 7.7, phase: 'standing', followSurface: true }, life: 8 },
+  ride: { seaTime: 62.5, placement: { x: -93.5, z: -94.65, heading: (54 * Math.PI) / 180, speed: 7.7, phase: 'standing', followSurface: true, posture: 'plumb' }, life: 8 },
   catch: { seaTime: 58, placement: { x: -108, z: -109, heading: 0, speed: 1.7, phase: 'prone', followSurface: true }, life: 12.5 },
 };
 

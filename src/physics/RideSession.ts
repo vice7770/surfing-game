@@ -81,6 +81,11 @@ export interface RiderPlacement {
   speed: number;
   phase: 'standing' | 'prone';
   followSurface?: boolean;
+  /**
+   * Standing: 'plumb' starts the new surfer's body along gravity, as a pop-up's landing leaves it, in place of square to
+   * the deck (`AttachedRider.mountPosture`; the test wave's ride start). An initial condition only; absent, as before.
+   */
+  posture?: 'plumb';
 }
 
 export interface RideSessionOptions {
@@ -412,6 +417,7 @@ export class RideSession {
     this.board.place(new Vector3(at.x, surface + this.board.shape.centerOfMass.y - 0.05, at.z), orientation, velocity);
     this.rider.phase = placement.phase;
     this.ducking = false;
+    this.rider.mountPosture = placement.posture;
     this.board.attach(this.rider);
     this.surfer.active = false;
     this.recovery.release();
