@@ -451,9 +451,10 @@ Each batch is its own PR from `main`, merged only when the owner says so in the 
 
 - [x] **Task 1: W1 (weight is the pressure).** The pressure slot on the snapshot. The gauge and the map read it, low-passed, on steady-speed recipes. `PHASE5_MISSES` re-pinned. The top turn and the kick-out read at full S (decision 5).
 - [x] **Task 2: the along-board loop probe** (a fast unit test, not a ride). W/S steps on a towed board: the pressure and the board's pitch rate, with today's 0.2 m zone and a 0.1 m zone. If 0.1 m rings, smooth the pressure the balance reads over 0.2 s.
-- [ ] **Task 3: W2** (S 0.30, W 0.70, a 0.1 m zone, standing only). *Held back: it breaks the bars (below); the owner's call.* The bars re-measured: the still-water bar, `projectionLean`, `stanceLadder`, `pumping`.
+- [x] **Task 3: W2.** The original S 0.30 / W 0.70 targets and 0.1 m zone missed the turn checks below. Batch E shipped the owner's revised choice, S 0.40 / W 0.60 with the existing 0.2 m zone, while standing.
 - [x] **Task 4: the projection rises tall** (item 2.2 A, 0.04 m, settling over 0.5 s).
-- [ ] **Task 5:** *held back (below).* Phase 1's drawn trim bias removed (decision 7); the stance stills and the before/after clip of a top turn (`motion-clip.mjs`).
+- [ ] **Task 5, decision 7:** remove the drawn trim offset. Re-tested after batch E and held at the existing knee and arm limits. [Follow-up measurements](#6-follow-up-after-batch-e)
+- [x] **Task 5, visual comparison:** trim stills and the top-turn clip are in [the follow-up](#6-follow-up-after-batch-e).
 
 **Shot list (batch A):**
 1. Beach, medium, the chase camera, a right (frontside for a regular foot). Drop, Compress at the base for the bottom turn, let Compress go as the board climbs, then hold S with the steer back (the top turn). *Look for:*
@@ -572,10 +573,10 @@ The moving face replaces no bar: the still-water bar, the cap and `projectionLea
 
 ### Batch C: the water (items 2.8, 2.10, 2.11; 2.7 if asked)
 
-- [ ] **Task 1: the paddle's rate and sprint**, `PULL_SHARE` re-fit, the paddle speed bar.
-- [ ] **Task 2: the paddle's roll and length**, the prone stability tests, the body film's paddle pin.
-- [ ] **Task 3: the fall starts from the rider's own body** (item 2.10 A).
-- [ ] **Task 4: the remote swimmer's head under**, from the local sea (item 2.11 A).
+- [x] **Task 1: the paddle's rate and sprint**, `PULL_SHARE` re-fit, the paddle speed bar (746ecf65e).
+- [x] **Task 2: the paddle's roll and length**, the prone stability tests, the body film's paddle pin (746ecf65e, 9daf5567d).
+- [x] **Task 3: the fall starts from the rider's own body** (item 2.10 A, be07dd232).
+- [x] **Task 4: the remote swimmer's head under**, from the local sea (item 2.11 A, bae2d9d42).
 - [ ] **Task 5 (only if the owner asks, decision 15):** the margin by the extrapolated centre of mass (item 2.7 B).
 
 **Shot list (batch C):**
@@ -730,3 +731,24 @@ Also:
 - the pelvis is 0.78 sin τ plus the shifts;
 - the knee comes from two 0.45 m bones;
 - the paddle thrust is quasi-steady hand drag, as `handLocal` (`:1317–1339`) moves the hand.
+
+## 6. Follow-up after batch E
+
+**2026-11-20. Decision 7 stays open.** With batch E's foot pressure in place, removing the trim offset moved the drawn pelvis the full 6 cm in an isolated 6 cm forward-shift test. Batch E drew 1.8 cm of that shift. The experiment set `TRIM_FRONTSIDE.weight.keep` to 1, which also reaches poses that inherit trim. Drop and landing kept their own settings. Four existing tests failed, so the game still uses batch E's pose.
+
+| Drawn measurement | Batch E | Offset removed | Existing limit |
+|---|---:|---:|---:|
+| Correlation of hip height with the simulated pelvis over chop, 30 / 60 Hz | 0.804 / 0.804 | 0.595 / 0.593 | > 0.80 |
+| Backside trim, trailing arm from the trunk's downward axis | 10.4° | 6.8° | 10–35° |
+| Frontside tube, rear knee included angle | 53.1° | 60.4° | ≤ 60° |
+| Peak of the measured hand-swing RMS values across both hands and all three pump frame rates | 3.86 cm | 3.79 cm | ≤ 4 cm |
+
+Those measurements use the rig's test humanoid. On the four surfer models, the trial also took the mean rear knee angle in neutral trim to 147.95° Regular and 148.09° Goofy (limit 145°). The side-by-side still shows the same surfer and simulation frame for each version. [Trim comparison at 1.2 s](../../research/animation-realism-2026-10-22/phase5-trim-comparison.jpg)
+
+**Top-turn footage.** The clip compares the end of phase 4 (`2dd9ba524`) with batch E (`ca1dd3502`). Both use `top-turn-sequence`, surfer 2, Goofy, and the same inputs on a 15° plane face. It shows when the head turns and how the knees extend after releasing Compress. Whether the tail pivots cleanly on a breaking wave still needs the Beach ride. [Top-turn comparison](../../research/animation-realism-2026-10-22/phase5-top-turn-comparison.mp4)
+
+**Pressure regression check.** A held S now has a test through the pop-up. The target stays centred in the prone and push supports, then midway between the feet on landing. Full S moves it to 40% front once standing. Release, half W and full W give 50%, 55% and 60%. Lying down with W held centres it again. The test failed against batch D at the first standing sample and passed on E. Actual load also depends on the board's motion. For a board starting at 7 m/s on flat water with full W, the measured front share averaged 0.835 on D and 0.908 on E over the last half-second of a two-second glide, in both stances.
+
+**Verification.** The production build passed. The main validation run passed 2,946 tests, with 18 expected failures and two skipped. This run included the surf-zone simulation suite. The Wave Pool and pool-start files also passed all eight tests when run separately.
+
+**Next owner ride.** On Beach at Medium, try three top turns each side with S held at the top and note whether the tail pivots or bogs. At Point, try two cutbacks each side with S, steer and Compress (a fresh Space press after paddling). At either spot, hold W through a bottom turn for front-foot drive, then watch whether the head leads the board through a bottom turn and cutback. The owner’s observations on these four checks are pending.

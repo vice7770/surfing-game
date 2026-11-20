@@ -302,6 +302,35 @@ describe('pop-up', () => {
     return { board, rider, tow, water };
   };
 
+  it('moves the pressure target with trim only after standing, and centres it on lying down', () => {
+    const { board, rider, tow, water } = towedProne(6);
+    const { front, rear } = stanceFeet(board.shape);
+    const targetShare = () => 0.5 + rider.copTarget.z / (front - rear);
+    rider.trim = -1;
+    run(board, water, STEP, tow);
+    expect(rider.copTarget.z).toBe(0);
+
+    expect(rider.popUp()).toBe(true);
+    run(board, water, 0.3, tow);
+    expect(rider.phase).toBe('push');
+    expect(rider.copTarget.z).toBe(0);
+    run(board, water, 0.6, tow);
+    expect(rider.phase).toBe('landing');
+    expect(targetShare()).toBe(0.5);
+    run(board, water, 0.6, tow);
+    expect(rider.phase).toBe('standing');
+    expect(targetShare()).toBeCloseTo(0.4, 6);
+
+    for (const [trim, expected] of [[0, 0.5], [0.5, 0.55], [1, 0.6]]) {
+      rider.trim = trim;
+      run(board, water, STEP, tow);
+      expect(targetShare()).toBeCloseTo(expected, 6);
+    }
+    expect(rider.lieDown(board)).toBe(true);
+    run(board, water, STEP, tow);
+    expect(rider.copTarget.z).toBe(0);
+  });
+
   // Borgonovo-Santos et al. 2021: 1.20 ± 0.19 s, about 60 % push and 40 % landing, peak landing 1.63 ± 0.18 BW, front-foot biased.
   it('stands from prone in about 1.2 s on a planing board, landing on the front foot', () => {
     const { board, rider, tow, water } = towedProne(6);
