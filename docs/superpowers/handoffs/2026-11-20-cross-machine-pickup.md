@@ -80,9 +80,38 @@ before you declare a question open.
 
 ## 4. What stands — the measured ground to build on
 
-**The turn works and it is expensive.** A full steer banks the rider 42°, turns 40° of
-course and climbs the face from 0.296 m to 0.995 m, while an unasked rider descends to
-0.031 m. It costs **70% of the speed**.
+⭐⭐ **The turn works — and "it costs 70% of the speed" was THREE DIFFERENT WINDOWS read as
+one.** Corrected 2026-11-20 from the recovered `capterms/w211.jsonl` (seed 2, wave 2,
+`ships/cueL`, the owner's full six-flag URL, scripted full steer plus a Compress pulse),
+row-by-row, all one arm. Times from standing; water speed along board heading:
+
+| row | s | event | course ° | body bank ° | through-water m/s | height m | planing |
+| ---: | ---: | --- | ---: | ---: | ---: | ---: | --- |
+| 1013 | 0.317 | first sampled full input | 1.66 | 1.53 | 6.70 | 0.983 | yes |
+| 1175 | 1.217 | first centred input | 13.81 | 37.24 | **8.83** | 0.378 | yes |
+| 1202 | 1.367 | **peak rider bank** (board roll 41.58°) | 27.96 | **42.83** | 8.66 | 0.314 | yes |
+| 1226 | 1.500 | near trough | 45.73 | 37.07 | 7.64 | 0.296 | yes |
+| 1247 | 1.617 | peak course | 54.06 | 22.21 | 6.25 | 0.316 | yes |
+| 1328 | 2.067 | first sample above 0.50 m | 48.61 | 5.31 | 4.24 | 0.504 | yes |
+| 1457 | 2.783 | first sample above 0.90 m | 46.37 | −1.09 | 3.31 | 0.903 | yes |
+| 1496 | 3.000 | end of the earlier comparison | 35.57 | 2.24 | 2.61 | 0.995 | **no** |
+
+✅ **The 42° bank HAS a source** — row 1202, **42.83°** of world rider bank, 0.15 s after
+release, still planing. An earlier note in this document called it unsourceable; **that
+withdrawal is itself withdrawn.** The peer recovered the capture and gave the row.
+
+⛔ **But the speed claim does not survive.** Through-water speed along the heading **RISES**
+6.70 → 8.83 m/s *while the input is held*. The 66% drop spans **+1.5 → +3.0 s**, by which
+time the board has **come off plane** (last row). And the ~40° redirect spans release → peak
+course. **Three different windows.** So "a turn costs 70% of the speed" conflates the turn
+with the exit from planing that follows it — the turn itself gains heading-projected speed.
+⚠️ Anyone quoting a speed cost must state the window.
+
+⭐⭐ **And wave 1 of the same capture gives a discriminator worth more than any of the above:
+both scripted sharp inputs lose balance at about +0.70 s while still planing at 3.8–3.9 m/s,
+with the matched neutral rider still standing at comparable speed.** Same water, same speed,
+same plane — one input stands and the other does not. That is the cleanest pair anyone has
+on the owner's own complaint, and nobody has worked it.
 
 **The lean ceiling closes as the turn pays for itself.** The cap is
 `atan(speedThrough² / (g · R))` with `R = TURN_RADIUS = 4.5`
@@ -186,10 +215,37 @@ never touches that phase. The gaze question stands on its own terms, as before.
 ⚠️ **Whether the drawn chest clips during a ride is now simply unmeasured** — it needs the
 final `chest` after both followers, on a real ride, as a population. Nothing here rests on it.
 
-⚠️ **What none of this establishes:** whether it moves the fall. #455's own table has every
-arm falling in **0.98–2.17 s**. Three things are open — whether `legLoad` is one leg or both,
-whether the literature supports 30° + 20° as a braced surfing stance's whole rotation, and
-whether any of it survives a ride. All three are with the Codex peer in the consult log.
+✅ **All three sub-questions are now ANSWERED — 2026-11-20, sourced by the peer with links in
+the consult log.**
+
+1. **`legLoad` is the whole rider through both soles** — `this.mass * max(0, specificForce · up)`
+   with `mass = REFERENCE_RIDER.mass` = 73 kg (`AttachedRider.ts:4357`, `:2656`). So
+   `0.9 × 716 × 0.315 ≈ 203 N·m` is the **pair's** couple, and it is the *evenly loaded*
+   bound — under a fore-aft shift the real couple is set by the weaker foot and is smaller.
+2. **30° + 20° does NOT cover a braced surfing stance, and the design never claimed it did.**
+   Simoneau measured *active rotation of one hip* in 60 people, seated or prone (33° seated,
+   36° prone). Lorenz measured *internal tibial* rotation in 40 seated people with the leg in
+   a device (17.5–20° under 4 N·m). **Neither tested a loaded two-foot stance.** ⭐ And 3.2's
+   own README labels 50° **an inference for pelvis relative to feet**, and explicitly lets the
+   shoulders add trunk rotation separately. So my earlier framing — "the spine is in the
+   stiffness source but not in the range" — **overstated it**: the range is deliberately
+   pelvis-to-feet, not a whole-body figure that forgot the spine.
+3. **20 N·m/rad is a PASSIVE, SEATED reference.** Kosmopoulos measured passive thoracolumbar
+   axial stiffness in 18 seated people with the lower body secured and the moment applied at
+   the shoulders: 20.3 ± 5.8 N·m/rad right, 17.4 ± 4.9 left. ⛔ **Braced pelvis-to-board
+   stiffness, speed-dependent damping, and the end stop's slope each need their own evidence
+   and have none.** Keep 20 as an explicitly provisional whole-rider assumption.
+
+⚠️ **And a warning against the obvious fix:** widening the single rotor to stand in for spine
+motion **would also rotate the pelvis and every mass rigidly attached to it, changing the
+board reaction.** It is not a free parameter. No source anywhere sets a bottom-turn
+chest-to-deck limit — that target is open.
+
+⚠️ **What none of this establishes:** whether any of it moves the fall. #455's table has every
+arm falling in **0.98–2.17 s**, and 3.5k's 108 pairs fell in both arms. ⭐ On the convention
+question: my 53.639° / 11.32% / 132.35 N·m are the upper-middle observation of each sorted
+column; pooling with a mean-of-middle-pair gives 53.4935° / 10.79% / 127.28 N·m. **Both
+conventions give 32 of 54 estimated peak demands over 100 N·m**, so that count is convention-free.
 
 **And the wave is not the cause.** On **flat still water with a tow and no wave at all**,
 the rider falls **23 of 24 runs** — and there he slides off the **tail**, with no across
@@ -216,6 +272,15 @@ manoeuvre naming always did. The report was simply never read out.
 ⭐ **So the analyser was measured, not wired.** Canyon B, GPU sea, three seas (seeds 1–3),
 three real browser sessions, via a new `?rideReports=N` + `?seed=N` (off by default, verified
 in-session by printing the sea the host actually built, not the URL):
+
+⛔ **THE POPULATION BELOW IS INPUT-STARVED — read this first.** `src/dev/rideReports.ts:134-146`
+forwards **only** `paddle`, `popUp` and `steer` to `advance`, while `Autopilot.next` also
+returns `trim`, `crouch`, `compress` and `rotate` — and the bottom-turn phase
+(`Autopilot.ts:561`) asks for `crouch: TURN_CROUCH, compress: 1`. **All of it was dropped.**
+So these three named turns were ridden with the steering and **without the compression the
+pilot asked for at the base of the turn**, and they cannot grade stance or release. Raised by
+the peer, verified in the pushed branch, routed to the builder for a fix and a re-measure.
+The figures stand only as "what the analyser reports under reduced controls".
 
 > **151 autopilot attempts → 20 analysed rides → 13 measured → 3 named a bottom turn.**
 > Ride duration n=20: **median 1.94 s**, range 0.00–8.40. Ends: fell ×18, kicked out ×2.
@@ -249,14 +314,14 @@ to tune from, and nothing here should move a constant:
    can never arrive. Every measured ride costs a paddle and a catch, and the Canyon catch is
    the bottleneck: **151 attempts for 20 rides.**
 
-⚠️ **And the target numbers themselves do not hold together.** The builder could not source
-**"42° bank"** to the probe trace the other three come from (Canyon seed 2 wave 2,
-`capterms/w211.jsonl`: course +13.81→+54.06° = 40.25°, surface 0.296→0.995 m, through-water
-7.64→2.61 m/s = 66% spent). The nearest 42 on that line is the **right arm's course**,
-−42.13°, which is a course and not a bank. **So "42° / 40° / 0.296→0.995 m / 70%" is
-probably not one trace's four columns.** Treat the bank figure as unsourced until someone
-finds it. And `carry` (mean, 0.3 s) against the probe's peak rise over 1.5 s are **not the
-same quantity and cannot be differenced.**
+✅ **The target's bank figure is SOURCED after all — see the row table in §4.** An earlier
+draft of this section said the builder could not source "42° bank" to the trace its three
+companions come from, and asked for it to be treated as unsourced. **The peer recovered the
+capture: row 1202, 42.83° of world rider bank, board roll 41.58°, 0.15 s after release,
+still planing.** The builder was looking at the right arm's course angle (−42.13°); the bank
+column is elsewhere in the same file. ⚠️ What *does* still fail is the **speed** figure's
+window and the comparison of `carry` (a 0.3 s mean) against the probe's peak rise over
+1.5 s — **not the same quantity and cannot be differenced.**
 
 The classifier's rules, as ruled: **a bottom turn must climb** (any climb at all); snap and
 top turn are ungated; there is no player progression. `src/game/rideAnalysis.ts` decided the
