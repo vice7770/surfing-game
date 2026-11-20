@@ -97,6 +97,8 @@ const ADDRESS = process.env.ADDRESS ?? '?canyonWaves=true&rider=new&feltFrame=de
 const ARM_SUFFIX: Record<string, string> = {
   ships: '',
   cap: '&askCap=4.5',
+  // Step 3.5j: the lateral swing in the mass model. Opt-in, physics-only, no command law touched.
+  swing: '&swing=mass',
 };
 const ARMS = (process.env.ARMS ?? 'ships').split(',').filter(Boolean);
 const SCRIPTS = (process.env.SCRIPTS ?? 'cue,cueL,cueR').split(',').filter(Boolean);
@@ -177,7 +179,7 @@ const RIDER_KEYS = [
   'agile', 'legDrive', 'hull', 'railSuction', 'compressPull', 'carveFlex', 'snapLegs', 'snapCross', 'legPower', 'rider',
   'feltFrame', 'kneeRoom', 'stanceReach', 'ankleLimit', 'ankleRange', 'bankClamp', 'bodyBank', 'askCap', 'stanceDeep',
   'deepen', 'armCarry', 'trunk', 'buoyFrame', 'waterHeel', 'mountAgree', 'riderBody', 'riderCost', 'plantFloor',
-  'deckHollow', 'snapUpturn',
+  'deckHollow', 'snapUpturn', 'swing',
 ] as const;
 
 type Config = SurfZoneConfig & Record<string, unknown>;
@@ -429,6 +431,16 @@ function readRow(board: BoardBody, rider: AttachedRider, into: Series | null, pr
     legLoad: soft(rider, 'legLoad'), legExt: r(rider.leg.extension, 5), copX: r(rider.contact.centreOfPressure.x, 5),
     copZ: r(rider.contact.centreOfPressure.z, 5), wetted: r(board.wettedArea, 5),
     swingT: soft(rider, 'swingTorque'), swingA: r(rider.swing.angle * DEG, 4),
+    swingR: r(rider.swing.rate ?? Number.NaN, 4),
+    /**
+     * **Step 3.5j's own two columns, peek-only.** `foldA` is `AttachedRider.swingFold` in degrees - the lateral fold
+     * the MASS MODEL carries this frame, 0 off the switch and whenever the rotor is at 0, so it is the arm's own
+     * liveness check. `comX` is the posture centre's lateral offset from the stance point, m
+     * (`localCenter.x - base.x`): the **settled lateral weight shift** itself, against a sole half-width of 0.130 m.
+     * Neither is read by anything in the game.
+     */
+    foldA: r((peek(rider, 'swingFold') ?? 0) * DEG, 4),
+    comX: r((peekO(rider, 'localCenter')?.x ?? Number.NaN) - (peekO(rider, 'base')?.x ?? Number.NaN), 6),
     slope: r(slope, 3), steer: r(rider.steer, 4),
   };
 }
