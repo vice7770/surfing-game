@@ -34,7 +34,8 @@ const OWNER = '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceRe
 const OLD = '?canyonWaves=true';
 const rider = option('rider') ?? 'new';
 const foam = option('foam');
-const search = `${rider === 'new' ? OWNER : OLD}&testWave=${mode}${foam === 'on' ? '&testFoam=on' : ''}`;
+// `--extra '&mountAgree=felt'`: more switches on the address (an existing rider option, to compare).
+const search = `${rider === 'new' ? OWNER : OLD}&testWave=${mode}${foam === 'on' ? '&testFoam=on' : ''}${option('extra') ?? ''}`;
 const startOverride = option('start') !== undefined ? Number(option('start')) : undefined;
 
 /** The game's config for the owner's address: the page's own switches, then the test wave's overrides (main.ts `startTestWave`). */
@@ -70,6 +71,37 @@ function faceAt(runner: SurfZoneRunner, x: number, nearZ: number, band = 25) {
     if (water.surfaceAt(x, z) <= midY) { midZ = z; break; }
   }
   return { crestZ, crest, troughZ, trough, midZ, midY, height: crest - trough };
+}
+
+/**
+ * The tilt at a moment: the deck's roll (its +x, the board's left, up from level) and pitch (nose up) against gravity, deg;
+ * the face's slope under the board and its part across the board's heading, deg; the body's axis (the physics pelvis to the
+ * head) against gravity and against the deck's normal, deg, and its lean toward the board's left; and the balance's felt
+ * vertical (`pairFelt`, on the deck's axes with `feltFrame=deck`) against gravity and the deck's normal, deg.
+ */
+function tilt(runner: SurfZoneRunner): string {
+  const session = runner.session!;
+  const { board, rider: body } = session;
+  const deg = 180 / Math.PI;
+  const left = new Vector3(1, 0, 0).applyQuaternion(board.orientation);
+  const forward = new Vector3(0, 0, 1).applyQuaternion(board.orientation);
+  const normal = new Vector3(0, 1, 0).applyQuaternion(board.orientation);
+  const surface = runner.water.surfaceAt(board.centerOfMass.x, board.centerOfMass.z);
+  runner.water.sampleAt(board.centerOfMass.x, surface, board.centerOfMass.z, sample);
+  const slope = Math.atan(Math.hypot(sample.slopeX, sample.slopeZ)) * deg;
+  // The surface's rise across the heading: the slope along the board's left, level.
+  const lx = left.x, lz = left.z, ln = Math.hypot(lx, lz) || 1;
+  const across = Math.atan((sample.slopeX * lx + sample.slopeZ * lz) / ln) * deg;
+  const pelvis = body.partPosition(0, new Vector3());
+  const head = body.partPosition(2, new Vector3());
+  const axis = head.sub(pelvis).normalize();
+  const angle = (a: Vector3, b: Vector3) => Math.acos(Math.max(-1, Math.min(1, a.dot(b)))) * deg;
+  const up = new Vector3(0, 1, 0);
+  const felt = (body as unknown as { pairFelt: Vector3; deckFelt: boolean; pairFresh: boolean });
+  const feltWorld = felt.pairFelt.clone();
+  if (felt.deckFelt) feltWorld.applyQuaternion(board.orientation);
+  feltWorld.normalize();
+  return `deck roll ${(Math.asin(left.y) * deg).toFixed(1)}° pitch ${(Math.asin(forward.y) * deg).toFixed(1)}°; face ${slope.toFixed(1)}°, rising ${across.toFixed(1)}° toward the board's left; body axis ${angle(axis, up).toFixed(1)}° from gravity (${(Math.asin(axis.dot(left)) * deg).toFixed(1)}° toward the left), ${angle(axis, normal).toFixed(1)}° from the deck normal; felt vertical ${felt.pairFresh ? 'unseeded (seeds at the world vertical on the first loaded substep)' : `${angle(feltWorld, up).toFixed(1)}° from gravity, ${angle(feltWorld, normal).toFixed(1)}° from the deck normal`}; phase ${session.phase}`;
 }
 
 if (command === 'scan') {
@@ -114,6 +146,33 @@ if (command === 'scan') {
     console.log(`t ${t.toFixed(2)}: white to x ${edge.x.toFixed(1)} (z ${edge.z.toFixed(1)}, ${n} onsets, peel ${peel.toFixed(1)} m/s); at x ${x.toFixed(1)}: crest z ${face.crestZ.toFixed(1)} ${face.crest.toFixed(2)} m, trough z ${face.troughZ.toFixed(1)} ${face.trough.toFixed(2)} m, face ${face.height.toFixed(2)} m, mid z ${face.midZ.toFixed(2)} y ${face.midY.toFixed(2)}, flow (${sample.flowX.toFixed(2)}, ${sample.flowZ.toFixed(2)}), slope (${sample.slopeX.toFixed(3)}, ${sample.slopeZ.toFixed(3)}), mid dz/dt ${vz.toFixed(2)} m/s`);
     previous = face;
     previousX = x;
+  }
+} else if (command === 'ridegrid') {
+  // A population around the ride start: x ±1 m (along the arm), heading ±5°, speed ±0.5 m/s; each run from the recorded
+  // start with no input, its fall time (cut off at `--seconds`).
+  const config = gameConfig();
+  const runner = new SurfZoneRunner(config, { rider: true });
+  const { simulation } = runner;
+  const start = simulation.exportState();
+  const base = TEST_WAVE_STARTS.ride.placement;
+  const seconds = Number(option('seconds') ?? 4);
+  const headings = (option('headings') ?? '-5,0,5').split(',').map(Number);
+  const dxs = (option('dxs') ?? '-1,0,1').split(',').map(Number);
+  const speeds = (option('speeds') ?? '-0.5,0,0.5').split(',').map(Number);
+  const baseHeading = option('heading') !== undefined ? Number(option('heading')) : (base.heading * 180) / Math.PI;
+  console.log(`ridegrid rider ${rider} (${search}): around ${JSON.stringify(base)} heading ${baseHeading}°`);
+  for (const dh of headings) for (const dx of dxs) for (const dv of speeds) {
+    simulation.importState(start);
+    runner.invalidateTubeApproach();
+    const placement: RiderPlacement = { ...base, x: base.x + dx, heading: ((baseHeading + dh) * Math.PI) / 180, speed: base.speed + dv };
+    let fell = Number.NaN;
+    let placed = '';
+    for (let step = 0; step < Math.round(seconds / SURF_ZONE_STEP); step += 1) {
+      runner.advance(1, { paddle: false, popUp: false, steer: 0, retry: false, ...(step === 0 ? { place: placement } : {}) });
+      if (step === 0) placed = tilt(runner);
+      if (runner.status().ride?.phase === 'fallen') { fell = (step + 1) * SURF_ZONE_STEP; break; }
+    }
+    console.log(`dh ${dh} dx ${dx} dv ${dv}: ${Number.isNaN(fell) ? `≥ ${seconds} s` : `fell at ${fell.toFixed(2)} s (${runner.status().ride?.separation})`} | after step 1: ${placed}`);
   }
 } else if (command === 'runs') {
   const config = gameConfig();
@@ -163,6 +222,7 @@ if (command === 'scan') {
     runner.water.sampleAt(board.centerOfMass.x, surface - 0.05, board.centerOfMass.z, sample);
     const rv = session.rider.velocity;
     const rel = new Vector3(board.velocity.x - sample.flowX, 0, board.velocity.z - sample.flowZ);
+    console.log(`tilt at the placement, before a step: ${tilt(runner)}`);
     console.log(`at the placement, before a step: board v (${board.velocity.x.toFixed(3)}, ${board.velocity.y.toFixed(3)}, ${board.velocity.z.toFixed(3)}), body v (${rv.x.toFixed(3)}, ${rv.y.toFixed(3)}, ${rv.z.toFixed(3)}), |board − body| ${board.velocity.distanceTo(rv).toFixed(4)} m/s; water at the board (${sample.flowX.toFixed(3)}, ${sample.flowY.toFixed(3)}, ${sample.flowZ.toFixed(3)}); through the water ${rel.length().toFixed(2)} m/s along heading ${(Math.atan2(rel.x, rel.z) * 180 / Math.PI).toFixed(1)}°, board heading ${(session.heading * 180 / Math.PI).toFixed(1)}°; ${whiteGap()}`);
   }
   for (let run = 0; run < runs; run += 1) {
@@ -179,6 +239,7 @@ if (command === 'scan') {
     let first = '';
     const lines: string[] = [];
     let last = { phase: '', t: 0 };
+    let atStandTilt = '';
     const whites: string[] = [];
     const total = Math.round(seconds / SURF_ZONE_STEP);
     for (let step = 0; step < total; step += 1) {
@@ -209,8 +270,11 @@ if (command === 'scan') {
         first = `placed: board v (${board.velocity.x.toFixed(2)}, ${board.velocity.y.toFixed(2)}, ${board.velocity.z.toFixed(2)}) m/s, body v (${rv.x.toFixed(2)}, ${rv.y.toFixed(2)}, ${rv.z.toFixed(2)}), |board − body| ${board.velocity.distanceTo(rv).toFixed(3)} m/s, water flow (${sample.flowX.toFixed(2)}, ${sample.flowY.toFixed(2)}, ${sample.flowZ.toFixed(2)}), board ${(board.centerOfMass.y - surface).toFixed(3)} m from the surface; wave: face ${status.wave.faceHeight.toFixed(2)} m, ${status.wave.faceFraction.toFixed(2)} up it, ${status.wave.aheadOfCrest.toFixed(1)} m ahead of the crest, crest ${status.wave.crestSpeed.toFixed(1)} m/s, breaking at the crest ${status.wave.crestBreaking.toFixed(2)}, curl ${status.wave.curlDistance.toFixed(1)} m (side ${status.wave.curlSide}); phase ${status.phase}`;
       }
       const phase = status.phase;
+      if (step === 0 && run === 0) console.log(`tilt after the first step: ${tilt(runner)}`);
+      if (step === 5 && run === 0) console.log(`tilt after 0.1 s: ${tilt(runner)}`);
       if (phase === 'standing' && Number.isNaN(standAt)) {
         standAt = t;
+        if (mode === 'catch') atStandTilt = tilt(runner);
         // The stand's numbers: speed through the water along the heading, the planing latch, the worst foot's height over the water.
         const surface = runner.water.surfaceAt(board.centerOfMass.x, board.centerOfMass.z);
         runner.water.sampleAt(board.centerOfMass.x, surface - 0.05, board.centerOfMass.z, sample);
@@ -235,6 +299,7 @@ if (command === 'scan') {
     const stood = Number.isNaN(standAt) ? '' : !Number.isNaN(fellAt) ? `stood ${(fellAt - standAt).toFixed(2)} s then fell (${runner.status().ride?.separation ?? '?'})` : `stood ≥ ${standFor} s (censored)`;
     signatures.push(firstBoard);
     console.log(`run ${run + 1} (paddle from ${(delay * SURF_ZONE_STEP).toFixed(1)} s): ${first}`);
+    if (atStandTilt) console.log(`  tilt at the first standing frame: ${atStandTilt}`);
     if (mode === 'catch') console.log(`  cue ${Number.isNaN(cueAt) ? 'never' : `at ${cueAt.toFixed(2)} s`}; ${Number.isNaN(standAt) ? 'no stand' : `stood at ${standAt.toFixed(2)} s: ${atStand}`}; ${stood || (Number.isNaN(fellAt) ? 'no fall' : `fell at ${fellAt.toFixed(2)} s`)}`);
     else console.log(`  ${Number.isNaN(fellAt) ? `still standing at ${seconds} s` : `fell at ${fellAt.toFixed(2)} s (${runner.status().ride?.separation ?? '?'})`}`);
     console.log(`  ${lines.join(' | ')}`);
