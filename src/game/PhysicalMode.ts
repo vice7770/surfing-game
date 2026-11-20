@@ -1155,15 +1155,15 @@ export function ankleLimitSwitch(search?: string): { ankleLimit?: 'feet' } {
 /**
  * The `?twistGrip=feet` dev switch (`SurfZoneConfig.twistGrip`, step 3.5k): opt-in, **the twist's END STOP is bounded
  * by the same foot grip its ACTIVE torque already is** — `FOOT_FRICTION × legLoad × TWIST_GRIP_SPAN`, the identical
- * expression `AttachedRider.controlStep` writes one screen away.
+ * expression `AttachedRider.predictiveBank` writes one screen away.
  *
  * The rider's torso twisting against the board is one degree of freedom with two torques on it, both crossing the
  * same two soles. The active one is held to `min(TWIST_BODY_TORQUE, grip)` and then slewed through MOTOR_LAG; the end
  * stop past TWIST_BODY_RANGE is `TWIST_STOP × over` with a TWIST_STOP_DAMPING damper beside it, held to nothing and
  * lagged by nothing, straight onto the board's angular rows. It is the only unbounded one of the six foot-borne
  * forces in that file. Measured on the committed Canyon table (54 rows): every row reached the stop, peak twist
- * 50.26 / 53.64 / 56.76° against the 49.85° range, a median 11.3 % of each ride's ticks past it, and the stop's
- * **requested** peak torque 14.5 / 132.4 / 241.4 N·m — past the active bound's 100 N·m in **32 of 54**.
+ * 50.26 / 53.49 / 56.76° against the 49.85° range, a median 11.3 % of each ride's ticks past it, and the stop's
+ * **requested** peak torque 14.5 / 127.3 / 241.4 N·m — past the active bound's 100 N·m in **32 of 54**.
  *
  * Slipping feet transmit a constant torque at the limit, so the stop's stiffness and damping leave the implicit
  * solve's own `alpha`/`beta` at the same moment they leave the torque: the matrix and the applied law stay the same

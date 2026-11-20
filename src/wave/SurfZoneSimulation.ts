@@ -322,12 +322,12 @@ export interface SurfZoneConfig {
   ankleLimit?: 'feet';
   /**
    * 'feet': **the twist's END STOP bounded by the same foot grip its ACTIVE torque already is** — `FOOT_FRICTION ×
-   * legLoad × TWIST_GRIP_SPAN`, the identical expression `AttachedRider.controlStep` applies to the active torque
+   * legLoad × TWIST_GRIP_SPAN`, the identical expression `AttachedRider.predictiveBank` applies to the active torque
    * (step 3.5k; `RideSessionOptions.twistGrip`). The twist has one degree of freedom and two torques across the same
    * foot contact: the active one is bounded by the grip and lagged through MOTOR_LAG, the end stop past
    * TWIST_BODY_RANGE is bounded by nothing and lagged by nothing, and it is the only unbounded one of the six
    * foot-borne forces in that file. Measured on the committed Canyon table, the stop's requested peak torque is
-   * 14.5 / 132.4 / 241.4 N·m (min/median/max over 54 rows), past the active bound of 100 N·m in 32 of them, while
+   * 14.5 / 127.3 / 241.4 N·m (min/median/max over 54 rows), past the active bound of 100 N·m in 32 of them, while
    * every one of the 54 rows reached the stop at all. Past the bound the feet slip and the twist goes, so this
    * **removes** a torque and adds none; TWIST_BODY_RANGE itself is untouched. The new surfer (`?rider=new`) only.
    * Every spot. The `?twistGrip=feet` dev switch, opt-in, to ride; online rooms run the default.

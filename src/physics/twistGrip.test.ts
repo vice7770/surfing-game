@@ -115,7 +115,7 @@ describe('`legLoad` and the grip bound it builds', () => {
     // `legLoad = mass × max(0, specificForce · up)` with `mass = REFERENCE_RIDER.mass`, the whole rider, so at one
     // body weight along the leg line it is m g = 716 N — the same 716 N `LEAN_IN_RATE`'s own note uses for the
     // feet's moment. The couple two feet at ±TWIST_GRIP_SPAN make is 2 × (μ legLoad / 2) × span = μ legLoad span,
-    // so the expression at `controlStep` IS a two-foot couple with the total load, and is self-consistent.
+    // so the expression at `predictiveBank` IS a two-foot couple with the total load, and is self-consistent.
     const atRest = FOOT_FRICTION * REFERENCE_RIDER.mass * 9.81 * TWIST_GRIP_SPAN;
     expect(atRest).toBeGreaterThan(200);
     expect(atRest).toBeLessThan(207);

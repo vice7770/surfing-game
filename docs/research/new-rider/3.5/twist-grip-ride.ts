@@ -3,7 +3,7 @@
  * away, and does it move the fall?**
  *
  * The defect, in one line: the rider's torso twisting against the board is **one degree of freedom with two torques
- * on it, both crossing the same two soles, under different rules**. `AttachedRider.controlStep` holds the active
+ * on it, both crossing the same two soles, under different rules**. `AttachedRider.predictiveBank` holds the active
  * torque to `Math.min(TWIST_BODY_TORQUE, FOOT_FRICTION × legLoad × TWIST_GRIP_SPAN)` and then slews it through
  * MOTOR_LAG; `coupleYaw`'s end stop past TWIST_BODY_RANGE is `TWIST_STOP × over` with a TWIST_STOP_DAMPING damper
  * beside it, **bounded by nothing and lagged by nothing**, and it reaches the board's angular rows through the same
@@ -73,6 +73,7 @@ import { surfZoneConfigFor, twistGripSwitch } from '../../../../src/game/Physica
 import { physicalSettingsFor, type SwellSize } from '../../../../src/game/SurfConditions';
 import { PhysicalSurfWater } from '../../../../src/physics/PhysicalSurfWater';
 import { SurfZoneSimulation, type SurfZoneConfig } from '../../../../src/wave/SurfZoneSimulation';
+import { SurfZoneRunner } from '../../../../src/wave/SurfZoneRunner';
 import { AttachedRider } from '../../../../src/physics/AttachedRider';
 import { BoardBody } from '../../../../src/physics/BoardBody';
 import { RideSession } from '../../../../src/physics/RideSession';
@@ -134,6 +135,12 @@ interface Tick {
   bound: number;
   slips: number;
   substeps: number;
+  /** The ledger's own peaks, over EVERY coupled substep — a frame read catches 1 substep in 16. */
+  peakAsk: number;
+  peakGot: number;
+  peakRemoved: number;
+  peakTorque: number;
+  peakSlipTorque: number;
   active: number;
   bank: number;
   roll: number;
@@ -180,6 +187,11 @@ function readTick(t: number, rider: AttachedRider, board: BoardBody, water: Surf
     bound: l.bound,
     slips: l.slips,
     substeps: l.substeps,
+    peakAsk: l.peakAsk,
+    peakGot: l.peakGot,
+    peakRemoved: l.peakRemoved,
+    peakTorque: l.peakTorque,
+    peakSlipTorque: l.peakSlipTorque,
     active: tb.active,
     bank: rider.bank.angle * DEG,
     roll: Math.atan2(boardUp.dot(side), boardUp.y) * DEG,
@@ -265,7 +277,7 @@ function runSession(arm: Arm, stance: Stance, steer: number, speed: number): Res
 function summary(r: Result): {
   n: number; past: number; maxTwist: number; endTwist: number; maxDrawn: number; work: number;
   askPeak: number; gotPeak: number; removedPeak: number; boundMed: number; slipFrac: number; substeps: number;
-  maxBank: number; swing: number; climb: number;
+  torquePeak: number; slipTorquePeak: number; maxBank: number; swing: number; climb: number;
 } {
   const { ticks } = r;
   let work = 0;
@@ -285,15 +297,19 @@ function summary(r: Result): {
     if (Math.abs(k.drawn) > Math.abs(maxDrawn)) maxDrawn = k.drawn;
     if (Math.abs(k.twist) > TWIST_BODY_RANGE * DEG) past += 1;
     if (Math.abs(k.bank) > Math.abs(maxBank)) maxBank = k.bank;
-    askPeak = Math.max(askPeak, k.ask);
-    gotPeak = Math.max(gotPeak, k.got);
-    removedPeak = Math.max(removedPeak, k.ask - k.got);
+    // ⭐ The LEDGER's peaks, which run over every coupled substep; the frame's own `ask`/`got` are 1 substep in 16
+    // and are kept only for the tick-by-tick controls.
+    askPeak = Math.max(askPeak, k.peakAsk);
+    gotPeak = Math.max(gotPeak, k.peakGot);
+    removedPeak = Math.max(removedPeak, k.peakRemoved);
     if (k.bound > 0) bounds.push(k.bound);
   }
   const last = ticks[ticks.length - 1];
   return {
     n: ticks.length, past, maxTwist, maxDrawn, work,
     endTwist: ticks.length ? last.twist : NaN,
+    torquePeak: ticks.length ? last.peakTorque : 0,
+    slipTorquePeak: ticks.length ? last.peakSlipTorque : 0,
     askPeak, gotPeak, removedPeak, boundMed: stats(bounds).med,
     slipFrac: ticks.length && last.substeps > 0 ? last.slips / last.substeps : 0,
     substeps: ticks.length ? last.substeps : 0,
@@ -376,7 +392,7 @@ if (MODE === 'parse') {
   say('################ Step 3.5k — the switch chain, hop by hop, from a search string to a rider\'s own field');
   say();
   const w = [36, 12, 16, 16, 16];
-  say(row(['search', 'switch', 'SurfZoneConfig', 'runner hop', 'RideSession'], w));
+  say(row(['search', 'switch', 'SurfZoneConfig', 'runner hop', 'live rider'], w));
   for (const value of ['', 'feet', 'FEET', ' feet ', 'on', 'yes', '1', 'off', 'true']) {
     const search = value ? `?twistGrip=${value}` : '';
     (globalThis as { location?: { search: string } }).location = { search };
@@ -384,17 +400,20 @@ if (MODE === 'parse') {
     const settings = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'offshore', time: 'midday' }, { stage: 2, compute: 'cpu' });
     const config = surfZoneConfigFor(settings, 5, false);
     const hop = forwarded(config) as { twistGrip?: string };
-    const session = new RideSession(hop as ConstructorParameters<typeof RideSession>[0]);
-    // ⭐ Read off the OBJECT the host built, not off the string that was passed in: `twistStopBounded` is the live
-    // `AttachedRider`'s own report of the field the switch sets, on the rider a `RideSession` built for itself.
+    // ⭐⭐ `SurfZoneRunner` ITSELF, not a copy of its forwarding expression: the hop a `swing` option was dropped
+    // in is run for real, and what is printed is the live `AttachedRider` the runner's own `RideSession` built.
+    const runner = new SurfZoneRunner({ ...config, compute: 'cpu' }, { rider: true }, 'warm');
+    const built = runner.session?.rider.twistStopBounded;
     say(row([search || '(none)', parsed, config.twistGrip ?? '—', hop.twistGrip ?? '—',
-      session.rider.twistStopBounded ? 'BOUNDED' : 'unbounded'], w));
+      built === undefined ? 'NO RIDER' : built ? 'BOUNDED' : 'unbounded'], w));
   }
   say();
   say('  ⚠️ `FEET` and ` feet ` are lower-cased and trimmed by the switch; `on`, `yes`, `1`, `true` and `off` are');
   say('  NOT values and must all read `—`. Only `feet` reaches the config. The `runner hop` column is');
-  say('  `SurfZoneRunner`\'s own forwarding expression applied to that config — the hop a `swing` option was once');
-  say('  dropped in — and `RideSession` is that expression actually handed to a constructor.');
+  say('  `SurfZoneRunner`\'s own forwarding expression written out in this probe. ⭐ `live rider` does NOT use that');
+  say('  copy: it constructs a REAL `SurfZoneRunner` from the config and reads `runner.session.rider.`');
+  say('  `twistStopBounded` off the `AttachedRider` the runner built for itself — so the hop a `swing` option was');
+  say('  once dropped in is exercised for real, and the column is the host\'s own object, not the URL passed in.');
 } else if (MODE === 'sea') {
   say('################ Step 3.5k ridden — THE REAL CANYON (`?canyonWaves=true`, bed B), through RideSession');
   say();
@@ -453,6 +472,8 @@ if (MODE === 'parse') {
   line('stop REQUESTED peak N·m', (s) => s.askPeak);
   line('stop DELIVERED peak N·m', (s) => s.gotPeak);
   line('REMOVED peak N·m', (s) => s.removedPeak);
+  line('whole joint torque peak', (s) => s.torquePeak);
+  line('…of it on slip substeps', (s) => s.slipTorquePeak);
   line('grip bound N·m (median)', (s) => s.boundMed);
   line('slip share of substeps %', (s) => 100 * s.slipFrac);
   line('fall s', (s, e) => (e.fellAt === null ? NaN : e.fellAt));
@@ -496,7 +517,9 @@ if (MODE === 'parse') {
     + ` max ${f(d.max)} s.  Pairs whose fall MOVED AT ALL: ${moved} of ${d.n}.`);
   say();
   say('  ⚠️ `tw` is `tb.angle`\'s peak and `drawn` is `AttachedRider.drawnTwist`\'s — the rig\'s OWN quantity, the');
-  say('  one the torso is posed from. A pair whose `drawn` columns differ is a pair whose rider LOOKS different.');
+  say('  one the torso is posed from. ⚠️ `RIG_DETAIL.cascade.twistMost` clamps the drawn CHEST and HIPS at 45 deg,');
+  say('  under TWIST_BODY_RANGE\'s own 49.85, so twist past the stop shows only in the head\'s look. A pair whose');
+  say('  `drawn` columns differ is a moved POSE only where the twist is near or either side of 45 deg.');
   say('  ⚠️ `bank`, `swing` and `climb` are this run\'s own peak body lean, net heading change and net surface rise.');
   say('  They are NOT the ride analyzer\'s bottom-turn columns, which are read off a wave frame on a turn the');
   say('  analyzer itself named, and a placed rider on a crest is not a named bottom turn.');
@@ -555,7 +578,10 @@ if (MODE === 'parse') {
     + `${hadPast === 0 ? '  NONE — so this mode says NOTHING about the stop and is INCONCLUSIVE.' : ''}`);
   say();
   say('  ⭐ WHAT IT DOES, AT NEUTRAL AND THROUGH A STEER. `drawn` is `AttachedRider.drawnTwist`, the rig\'s own');
-  say('  quantity — the one the torso is posed from, so a moved `drawn` is a rider that LOOKS different.');
+  say('  quantity — the one the torso is posed from. ⚠️ `RIG_DETAIL.cascade.twistMost` clamps the drawn CHEST and');
+  say('  HIPS at 45°, which TWIST_BODY_RANGE\'s own 49.85° already exceeds, so twist past the stop shows only in the');
+  say('  head\'s look (held within `neckTurn` = 90° of the chest\'s aim). A moved `drawn` is a moved POSE only where');
+  say('  the twist is near or either side of 45°.');
   say();
   const w2 = [8, 10, 7, 9, 10, 10, 9, 10, 9, 9, 9];
   say(row(['stance', 'steer', 'arm', 'fell s', 'work J', 'max tw °', 'end tw °', 'max drawn °', 'bank °', 'swing °', 'climb m'], w2));

@@ -1,6 +1,6 @@
 ################ Step 3.5k — the switch chain, hop by hop, from a search string to a rider's own field
 
-                              search        switch    SurfZoneConfig        runner hop       RideSession
+                              search        switch    SurfZoneConfig        runner hop        live rider
                               (none)             —                 —                 —         unbounded
                      ?twistGrip=feet          feet              feet              feet           BOUNDED
                      ?twistGrip=FEET          feet              feet              feet           BOUNDED
@@ -13,5 +13,7 @@
 
   ⚠️ `FEET` and ` feet ` are lower-cased and trimmed by the switch; `on`, `yes`, `1`, `true` and `off` are
   NOT values and must all read `—`. Only `feet` reaches the config. The `runner hop` column is
-  `SurfZoneRunner`'s own forwarding expression applied to that config — the hop a `swing` option was once
-  dropped in — and `RideSession` is that expression actually handed to a constructor.
+  `SurfZoneRunner`'s own forwarding expression written out in this probe. ⭐ `live rider` does NOT use that
+  copy: it constructs a REAL `SurfZoneRunner` from the config and reads `runner.session.rider.`
+  `twistStopBounded` off the `AttachedRider` the runner built for itself — so the hop a `swing` option was
+  once dropped in is exercised for real, and the column is the host's own object, not the URL passed in.

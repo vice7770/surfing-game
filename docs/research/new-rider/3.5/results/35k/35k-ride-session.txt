@@ -14,19 +14,19 @@
      off        tall         0       42          0      0.000      0.000      0.000      4.808     0.000     20.291
      off        tall         1       45          0      0.000      0.000      0.000    201.974     0.000     32.353
      off        tall        -1       42          0      0.000      0.000      0.000    185.680     0.000      9.398
-     off      crouch         0       73         13    416.213    416.213      0.000    169.295     0.000     57.566
-     off      crouch         1      106         34    456.150    456.150      0.000    217.650     0.000     57.953
+     off      crouch         0       73         13    444.578    444.578      0.000    169.295     0.000     57.566
+     off      crouch         1      106         34    502.798    502.798      0.000    217.650     0.000     57.953
      off      crouch        -1       36          0      0.000      0.000      0.000    106.165     0.000     -7.287
-     off    compress         0       70         10    466.034    466.034      0.000    184.733     0.000     58.641
+     off    compress         0       70         10    485.534    485.534      0.000    184.733     0.000     58.641
      off    compress         1       46          0      0.000      0.000      0.000    132.170     0.000    -43.537
      off    compress        -1       36          0      0.000      0.000      0.000    106.145     0.000     -7.291
     feet        tall         0       42          0      0.000      0.000      0.000      4.808     0.000     20.291
     feet        tall         1       45          0      0.000      0.000      0.000    201.974     0.000     32.353
     feet        tall        -1       42          0      0.000      0.000      0.000    185.680     0.000      9.398
-    feet      crouch         0       73         13    561.239    255.258    336.045    168.710    11.301     64.135
-    feet      crouch         1      106         33    700.910    235.187    491.181    221.610     7.429     68.034
+    feet      crouch         0       73         13    563.961    259.645    337.273    168.710    11.301     64.135
+    feet      crouch         1      106         33    701.938    239.520    495.774    221.610     7.429     68.034
     feet      crouch        -1       36          0      0.000      0.000      0.000    106.165     0.000     -7.287
-    feet    compress         0       70         10    679.253    263.063    444.222    187.658    12.500     67.648
+    feet    compress         0       70         10    680.098    267.355    449.384    187.658    12.500     67.648
     feet    compress         1       46          0      0.000      0.000      0.000    132.170     0.000    -43.537
     feet    compress        -1       36          0      0.000      0.000      0.000    106.145     0.000     -7.291
 
@@ -35,7 +35,10 @@
   ⛔ CELLS THAT REACHED THE STOP AT ALL: 6 of 18.
 
   ⭐ WHAT IT DOES, AT NEUTRAL AND THROUGH A STEER. `drawn` is `AttachedRider.drawnTwist`, the rig's own
-  quantity — the one the torso is posed from, so a moved `drawn` is a rider that LOOKS different.
+  quantity — the one the torso is posed from. ⚠️ `RIG_DETAIL.cascade.twistMost` clamps the drawn CHEST and
+  HIPS at 45°, which TWIST_BODY_RANGE's own 49.85° already exceeds, so twist past the stop shows only in the
+  head's look (held within `neckTurn` = 90° of the chest's aim). A moved `drawn` is a moved POSE only where
+  the twist is near or either side of 45°.
 
   stance       steer      arm     fell s      work J    max tw °   end tw °  max drawn °     bank °    swing °    climb m
     tall           0      off      0.717      -3.657      20.291     20.291      20.291    -13.232     -6.586      0.591

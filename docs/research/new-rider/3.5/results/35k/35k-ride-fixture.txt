@@ -9,29 +9,32 @@
      arm      stance     steer    ticks     past R    ask N·m    got N·m    removed      bound    slip %   max tw °
      off        tall         0       37          0      0.000      0.000      0.000     69.989     0.000     27.010
      off        tall         1       37          0      0.000      0.000      0.000     53.246     0.000     24.615
-     off        tall        -1      122         19    459.229    459.229      0.000    202.386     0.000     57.149
-     off      crouch         0       94         32    324.004    324.004      0.000    162.793     0.000     54.640
+     off        tall        -1      122         19    486.689    486.689      0.000    202.386     0.000     57.149
+     off      crouch         0       94         32    350.225    350.225      0.000    162.793     0.000     54.640
      off      crouch         1       82          0      0.000      0.000      0.000    177.504     0.000     35.241
-     off      crouch        -1       78          8    238.774    238.774      0.000    177.718     0.000     54.655
-     off    compress         0      104         40    268.498    268.498      0.000    175.316     0.000     53.684
+     off      crouch        -1       78          8    240.261    240.261      0.000    177.718     0.000     54.655
+     off    compress         0      104         40    289.377    289.377      0.000    175.316     0.000     53.684
      off    compress         1       88          0      0.000      0.000      0.000    200.004     0.000     34.339
-     off    compress        -1       79         10    245.518    245.518      0.000    177.896     0.000     54.943
+     off    compress        -1       79         10    248.287    248.287      0.000    177.896     0.000     54.943
     feet        tall         0       37          0      0.000      0.000      0.000     69.989     0.000     27.010
     feet        tall         1       37          0      0.000      0.000      0.000     53.246     0.000     24.615
-    feet        tall        -1      135         18    550.401    211.553    355.477    208.252     4.213    -62.552
-    feet      crouch         0       94         32    365.348    210.387    154.961    163.109     9.109     57.274
+    feet        tall        -1      135         18    556.400    211.556    357.965    208.252     4.213    -62.552
+    feet      crouch         0       94         32    370.814    210.387    161.692    163.109     9.109     57.274
     feet      crouch         1       82          0      0.000      0.000      0.000    177.504     0.000     35.241
-    feet      crouch        -1       81          8    243.890    221.352     30.836    177.807     3.086     55.017
-    feet    compress         0      104         40    568.860    193.987    567.811    175.942     9.555     63.629
+    feet      crouch        -1       81          8    245.858    221.352     32.393    177.807     3.086     55.017
+    feet    compress         0      104         40    568.860    194.152    567.811    175.942     9.555     63.629
     feet    compress         1       88          0      0.000      0.000      0.000    200.004     0.000     34.339
-    feet    compress        -1       80         11    259.461    212.461     50.476    178.137     3.750     55.584
+    feet    compress        -1       80         11    262.905    214.382     51.476    178.137     3.750     55.584
 
   CONTROL, the switch off is inert: ticks where `got` differs from `ask` off the switch = 0 — none, as the gate requires.
   CONTROL, nothing is delivered past the bound on the switch: ticks with `got` > `bound` = 0 — none.
   ⛔ CELLS THAT REACHED THE STOP AT ALL: 10 of 18.
 
   ⭐ WHAT IT DOES, AT NEUTRAL AND THROUGH A STEER. `drawn` is `AttachedRider.drawnTwist`, the rig's own
-  quantity — the one the torso is posed from, so a moved `drawn` is a rider that LOOKS different.
+  quantity — the one the torso is posed from. ⚠️ `RIG_DETAIL.cascade.twistMost` clamps the drawn CHEST and
+  HIPS at 45°, which TWIST_BODY_RANGE's own 49.85° already exceeds, so twist past the stop shows only in the
+  head's look (held within `neckTurn` = 90° of the chest's aim). A moved `drawn` is a moved POSE only where
+  the twist is near or either side of 45°.
 
   stance       steer      arm     fell s      work J    max tw °   end tw °  max drawn °     bank °    swing °    climb m
     tall           0      off      0.633      -7.987      27.010     27.010      27.010    -11.922     -7.258      0.608

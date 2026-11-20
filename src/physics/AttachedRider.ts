@@ -1443,7 +1443,7 @@ export interface AttachedRiderOptions {
   /**
    * **The twist's END STOP bounded by the same foot grip its ACTIVE torque already is** (`twistGrip: 'feet'`,
    * step 3.5k): the stop past TWIST_BODY_RANGE is clamped to `FOOT_FRICTION × legLoad × TWIST_GRIP_SPAN`, which is
-   * the identical expression `controlStep` already applies to the active torque. Opt-in, off by default (the
+   * the identical expression `predictiveBank` already applies to the active torque. Opt-in, off by default (the
    * `?twistGrip=feet` dev switch), pinned off in the online rooms. **TWIST_BODY_RANGE itself is not touched** — how
    * far the hips and knees really twist is an open anatomy question and not this switch's.
    *
@@ -1451,7 +1451,7 @@ export interface AttachedRiderOptions {
    * The active torque is `Math.min(TWIST_BODY_TORQUE, grip)` and then slewed through MOTOR_LAG. The end stop is
    * `TWIST_STOP × over` with a TWIST_STOP_DAMPING damper beside it, bounded by nothing and lagged by nothing, and it
    * reaches the board's angular rows through the same `kick` the active torque does. It is the only unbounded one of
-   * the six foot-borne forces in this file: `controlStep`, `twistStep`, `hipStep`, `agileStep` and `footFriction` all
+   * the six foot-borne forces in this file: `predictiveBank`, `twistStep`, `legDriveStep`, `legsStep` and `project` all
    * write `FOOT_FRICTION ×` a load, and the back foot's own note states the rule with its own record of the
    * alternative — *"an unloaded foot pushes nothing: unbounded, a body weight threw the board from under every rider
    * in 0.2 s."*
@@ -2351,9 +2351,20 @@ export class AttachedRider {
    *   slip. `ask − got` is what the clamp removed.
    * - `slips` / `substeps`: coupled substeps the feet slipped, and coupled substeps in all. Off the switch `slips` is
    *   0 by construction.
-   * - `peakAsk`, `peakGot`, `peakRemoved`: the run's own peaks of the three.
+   * - `peakAsk`, `peakGot`, `peakRemoved`: the run's own peaks of the three, over **every** coupled substep. A
+   *   per-frame read catches one substep in NEW_STANDING_SUBSTEPS = 16, so these are the headline numbers and the
+   *   per-substep fields above are the sample.
+   * - `peakTorque`: the peak of `|tb.torque|` — the WHOLE joint torque the solve actually delivered, booked in
+   *   `finish` where it is known, over every coupled substep. `peakSlipTorque` is the same peak over the substeps
+   *   the feet slipped. These are the numbers that would still have run away had only `tb.spring` been clamped, so
+   *   they are the measured answer to the implicit solve's consistency question and not an argument about it.
    */
-  readonly twistStopLedger = { bound: 0, ask: 0, got: 0, slips: 0, substeps: 0, peakAsk: 0, peakGot: 0, peakRemoved: 0 };
+  readonly twistStopLedger = {
+    bound: 0, ask: 0, got: 0, slips: 0, substeps: 0, peakAsk: 0, peakGot: 0, peakRemoved: 0,
+    peakTorque: 0, peakSlipTorque: 0,
+  };
+  /** Whether the latest coupled substep's feet slipped against the stop (`twistGrip: 'feet'`); for `finish`'s booking. */
+  private twistSlipped = false;
   /** The bound on the rest the balance may command, off the live sole or doubled (`ankleRange`, step 3.3k); undefined by default. */
   private readonly ankleRange: 'load' | 'wide' | undefined;
   /**
@@ -4865,6 +4876,7 @@ export class AttachedRider {
       this.yawCoupled = false;
       this.yawInertia = 0;
       tb.coupled = false;
+      this.twistSlipped = false;
       return;
     }
     const n = this.up;
@@ -4880,7 +4892,7 @@ export class AttachedRider {
     // ⭐ Step 3.5k, the twist stop's own grip bound (`twistGrip: 'feet'`; `AttachedRiderOptions.twistGrip` has the
     // whole argument). The stop's REQUESTED torque is its spring term plus what its stiffness and damping would send
     // through the implicit term, taken at the substep's incoming rate: the whole of what the shipped stop asks the
-    // feet for. The bound is the identical expression `controlStep` already holds the ACTIVE torque to.
+    // feet for. The bound is the identical expression `predictiveBank` already holds the ACTIVE torque to.
     const stop = over > 0 ? TWIST_STOP * Math.sign(tb.angle) * over : 0;
     const ask = over > 0 ? stop + (TWIST_STOP * h + TWIST_STOP_DAMPING) * tb.rate : 0;
     const bound = FOOT_FRICTION * Math.max(0, this.legLoad) * TWIST_GRIP_SPAN;
@@ -4888,6 +4900,7 @@ export class AttachedRider {
     // stiffness and damping transmit nothing. Dropping them from `stiffness`/`damping` here is what keeps `alpha` and
     // `beta` — the system matrix — describing the same law the torque below applies.
     const slipping = this.twistGrip === 'feet' && over > 0 && Math.abs(ask) > bound;
+    this.twistSlipped = slipping;
     const stiffness = this.twistStiffness + (over > 0 && !slipping ? TWIST_STOP : 0);
     const damping = this.twistDamping + (over > 0 && !slipping ? TWIST_STOP_DAMPING : 0);
     const held = slipping ? bound * Math.sign(ask) : stop;
@@ -5300,6 +5313,11 @@ export class AttachedRider {
       tb.rate = tb.upper - turned;
       tb.angle += h * tb.rate;
       tb.torque = (tb.inertia * (before - tb.upper)) / h;
+      // Step 3.5k, read-only: the WHOLE joint torque the solve delivered this substep — `tb.spring + alpha θ̇/h`,
+      // which is the number a clamp on `tb.spring` alone would have left unbounded. Booked in both arms.
+      const stopLedger = this.twistStopLedger;
+      stopLedger.peakTorque = Math.max(stopLedger.peakTorque, Math.abs(tb.torque));
+      if (this.twistSlipped) stopLedger.peakSlipTorque = Math.max(stopLedger.peakSlipTorque, Math.abs(tb.torque));
       // The legs' twist work: on the board at its mean turn, on the upper body the other way at its mean spin.
       twistWork = h * tb.torque * ((tb.turn + turned) / 2 - (before + tb.upper) / 2);
       this.twist.angle = tb.angle;
