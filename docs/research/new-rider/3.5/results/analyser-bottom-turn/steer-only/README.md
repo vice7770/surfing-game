@@ -1,3 +1,20 @@
+# ⛔ SUPERSEDED — this arm's rider was INPUT-STARVED
+
+**Every number in this file was measured on a rider that was steered and never crouched.** The
+collector that gathered it (`src/dev/rideReports.ts` at `bb8f5131`) rebuilt the autopilot's input
+as `{ paddle, popUp, steer }` and so discarded `trim`, `crouch`, `compress` and `rotate`. The
+autopilot's bottom turn asks for `crouch` and `compress` at the base of the turn
+(`Autopilot.next`); none of it arrived. Found by the project's peer reviewer, not by the builder.
+
+**This arm is kept, not deleted**, because it is a real measurement of a real (if hobbled) rider
+and because the figures below have been quoted. It is the *steer-only* arm. The fixed arm is in
+`../whole-input/`, gathered on the same four seeds and styles so the two are comparable.
+
+**Do not quote this arm's columns as the game's bottom turn.** Quote the fixed arm, and cite this
+one only to say what the stick alone achieves.
+
+---
+
 # The analyser's own named bottom turns — the raw population
 
 The first measurement of `RideAnalyzer`'s bottom-turn columns taken **through the shipped
