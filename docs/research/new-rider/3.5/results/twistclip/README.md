@@ -71,7 +71,44 @@ the physical range and **any** yaw rate of the same sign puts the sum over it. T
 `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on`. Raw in
 `new-owner-address.txt`.
 
-See that file for the numbers; the headline and the ordinary-riding split are quoted in the branch's report.
+| quantity | n | result |
+| --- | --- | --- |
+| runs | 72 | **61 of 72 fell inside 3 s** |
+| standing frames | 7 956 | — |
+| `\|state.twist\|` | 7 956 | median **17.06°**, range 0.00–**58.23°** (q1 6.14, q3 36.61) |
+| frames with `\|twist\|` past 45° | 7 956 | 1 380 |
+| drawn chest, shipped | 7 956 | median −37.70°, range **−169.25 … +119.50°** |
+| drawn chest, clamp lifted | 7 956 | median −37.53°, range −169.25 … +122.82° |
+| `\|lifted − shipped\|` (the clipping) | 7 956 | median **0.00°**, range 0.00–**18.88°** (q3 0.00) |
+| frames clipped by more than 0.5° | 7 956 | **1 297 (16.3 %)** |
+| …the clipping on those frames | 1 297 | median **2.94°**, range 0.50–18.88° (q1 1.42, q3 6.31) |
+
+**The ordinary-riding split, which is the headline.** 61 of 72 runs end in a fall inside 3 s, and the frames
+just before one carry board roll past any rail and yaw rates no rider asks for — a clip that only happens
+while the rider is already going over is not a riding defect. Restricting to `|board roll| ≤ 45°` **and** an
+unclamped turn `≤ 60°` leaves **7 062 of 7 956** standing frames, and the clip survives the filter:
+
+| quantity | n | result |
+| --- | --- | --- |
+| frames clipped by more than 0.5° | 7 062 | **825 (11.7 %)** |
+| …the clipping on those frames | 825 | **median 2.36°, range 0.51–16.15°** (q1 1.26, q3 5.23) |
+| …`\|twist\|` on those frames | 825 | median 48.67°, range 0.79–56.68° |
+| …of those, where the **physics twist alone** is already past 45° | 825 | **509 (61.7 %)** |
+| `\|board roll\|` over all standing frames | 7 956 | median 5.2°, range 0.0–89.6° (q1 1.9, q3 20.2) |
+
+**So: the final drawn chest tracks the physics twist exactly on 88.3 % of ordinary riding frames, and on the
+other 11.7 % it falls short by a median 2.36° and at worst 16.15°.** On about three fifths of the clipped
+frames the term that goes over the clamp is the solver's own twist, not the yaw-rate anticipation the clamp
+was written to bound (`|blend · 0.3 · yawRate|` median 2.60°, `|blend · twist|` median 17.03°). Whether
+2.36° is visible is the owner's call, by eye; this folder does not claim it is.
+
+**Side effects of lifting the clamp**, same frames: the hips move by 0.00–**7.27°** (median 0.00°) and the head
+by 0.00–**19.53°** (median 0.00°). The head is not incidental — `HumanoidRig.ts:2555` holds the look within
+`neckTurn` 90° of *where the chest is turning to*, so the head currently absorbs part of the surplus and would
+stop having to. Any change here has to be judged on the head as well as the torso.
+
+**Determinism check:** this arm was run twice (the first raw file was lost to an overwrite). Every number
+shared by the two runs reproduced to the printed precision.
 
 ## Why the two arms differ at all
 
@@ -107,3 +144,17 @@ attempted: `npm test` includes `src/wave/SurfZoneSimulation.test.ts` and will no
 
 Nothing in `src/` is changed by this branch. The reader mutates `RIG_DETAIL.cascade.twistMost` in process and
 restores it in a `finally`.
+
+## What is NOT established here
+
+- **No pictures.** Nothing in this folder says whether the mesh still looks like a person with the clamp
+  lifted, and nothing says whether 2.36° is visible. Both are judged by eye and neither was attempted.
+- **No old-rider Snap or rotation-stick arm**, so arm 1's null covers only a rider using neither.
+- **No paddle-and-pop-up ride.** The rider is placed standing, as this folder's sea arms place one, with the
+  stance and the stick held for the run. 61 of 72 runs fall inside 3 s, so the population is short rides.
+- **One seed, one swell, one spot.** Seed 1, medium, Canyon bed B.
+- **A proposed fix is not a measured one.** If the clip is to be closed, the smallest change consistent with
+  the history above is to clamp the **anticipation term only** (`cascade.chest · yawRate`) and let
+  `state.twist` through, which is what `864bb7f0` wrote the constant for. Two things argue against doing that
+  blind: `tb.angle` has only a **soft** end stop, so the drawing would have no hard bound (the peak measured
+  here is 58.23°, not a guarantee), and the head moves with it. Neither is settled by this folder.
