@@ -5,6 +5,7 @@ import type { ParticleLevel } from '../wave/particleBudget';
 import type { SolverDevice, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import type { SurfZoneInit, SurfZoneSnapshot } from './SurfZoneHost';
+import { replayCanyonApproach } from '../wave/canyonStandingApproach';
 
 /** Main thread → worker. `buffers` come back filled in the next snapshot. */
 export type SurfZoneRequest =
@@ -118,6 +119,7 @@ export class SurfZoneWorkerCore {
         runner.setSprayLook(this.sprayLook);
         runner.setSprayEnabled(this.sprayEnabled);
         runner.setParticleLevel(this.particleLevel);
+        if (options?.canyonApproach) replayCanyonApproach(runner, options.canyonApproach);
         this.runner = runner;
         this.ready(runner);
       };

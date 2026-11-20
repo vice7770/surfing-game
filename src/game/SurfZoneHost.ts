@@ -7,6 +7,7 @@ import type { RenderGrid, SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { compress, decodeSurfZoneState, encodeSurfZoneState } from '../wave/surfZoneState';
 import { TUBE_STRIDE, carveAt, carveGrid } from '../wave/tubeTable';
 import { ROLLER_SLOTS, ROLLER_STRIDE } from '../wave/SpillingRoller';
+import { replayCanyonApproach } from '../wave/canyonStandingApproach';
 
 /** What a surf zone fixes when it starts: its render grid, bed, break focus, window and solver column width. */
 export interface SurfZoneInit {
@@ -80,6 +81,7 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
     super();
     this.runner = new SurfZoneRunner(config, options);
     if (sea) this.runner.simulation.importState(decodeSurfZoneState(sea));
+    if (options.canyonApproach) replayCanyonApproach(this.runner, options.canyonApproach);
     this.init = {
       grid: { ...this.runner.grid }, bed: this.runner.bed, focus: this.runner.focus,
       windowXMin: this.runner.windowXMin, dx: this.runner.simulation.solver.dx,

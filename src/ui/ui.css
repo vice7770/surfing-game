@@ -221,6 +221,8 @@
 .end-card-actions button { flex: 1 1 auto; min-height: 2.6em; padding: 0 1em; font-size: .88em; }
 .ui:has(.end-card) .hud-hints { display: none; }
 .has-touch .end-card { bottom: 84px; }
+.canyon-controls { display: grid; gap: .6em; }
+.canyon-controls a { justify-self: start; color: var(--ink); font-size: .85em; text-underline-offset: .15em; }
 
 /* Dev tools: telemetry over a Surf ride. */
 .ride-telemetry { position: absolute; top: max(64px, 9vh); right: max(12px, 2vw); width: min(22em, 46vw); max-height: 70vh; overflow: auto; padding: .7em .8em; border-radius: 12px; background: var(--paper); box-shadow: 0 12px 35px rgba(20, 73, 75, .12); backdrop-filter: blur(14px); font-size: .9em; }

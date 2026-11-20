@@ -78,7 +78,10 @@ function saveStandingStart(session: RideSession): void {
   const sample = water.sampleAt(x, water.surfaceAt(x, z) - 0.05, z, createWaterSample());
   const speed = (board.velocity.x - sample.flowX) * Math.sin(heading) + (board.velocity.z - sample.flowZ) * Math.cos(heading);
   const placement = { x, z, heading, speed, phase: 'standing' };
-  if (!approachSea) throw new Error('Missing water before the first paddle stroke.');
+  const approachTicks = approachInputs.reduce((total, row) => total + row.steps, 0);
+  if (!approachSea || Math.abs(approachSea.solverTime + approachTicks * step - sea.solver.time) > 1e-6) {
+    throw new Error('The recorded sea and paddle-in controls are out of step.');
+  }
   const metadata = { config: variant, placement, solverTime: sea.solver.time, approachPlacement, approachInputs, approachSolverTime: approachSea.solverTime };
   const folder = 'public/debug/canyon';
   mkdirSync(folder, { recursive: true });

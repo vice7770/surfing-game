@@ -25,6 +25,8 @@ import type { StanceName } from './physics/riderPosture';
 import { SettingsStore, defaultSettings, type GameplaySettings } from './game/Settings';
 import { SURFER_BODIES, type SurferSettings } from './game/SurferChoice';
 import { DEV_TOOLS, devFlag, devParam } from './devTools';
+import { loadCanyonStanding, runStandingTurn, type CanyonSide, type CanyonTurnReading } from './dev/canyonStanding';
+import type { CanyonApproach } from './wave/canyonStandingApproach';
 import { simulatedSeconds } from './game/timeScale';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, PhysicalMode, snapFanSwitch, startOutSwitch, swellFor, webGpuAvailable, type PhysicalSettings, type SurfZoneHostFactory } from './game/PhysicalMode';
 import { OnlinePlay, type OnlinePhase } from './game/OnlinePlay';
@@ -118,10 +120,11 @@ function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactor
  * room's clock.
  */
 /** Surf School (spec L2): a surf zone with the player's rider, starting from a recorded sea. */
-function recordedSurfZoneFactory(sea: Uint8Array, stance: StanceName): SurfZoneHostFactory {
+function recordedSurfZoneFactory(sea: Uint8Array, stance: StanceName, canyonApproach?: CanyonApproach): SurfZoneHostFactory {
+  const options = { rider: true, stance, ...(canyonApproach ? { canyonApproach } : {}) };
   return inPage
-    ? (config, extra) => new LocalSurfZone(config, { rider: true, stance, ...extra }, sea)
-    : (config, extra) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...extra }, { sea });
+    ? (config, extra) => new LocalSurfZone(config, { ...options, ...extra }, sea)
+    : (config, extra) => new WorkerSurfZone(config, undefined, { ...options, ...extra }, { sea });
 }
 function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea: Uint8Array | undefined, stance: StanceName): SurfZoneHostFactory {
   return inPage
@@ -249,6 +252,8 @@ class SurfGame {
   private surfSwell: SwellSize = 'practice';
   /** Settings: Regular or Goofy (the stances spec), from the next ride. */
   private stance: StanceName = 'regular';
+  private canyonRecording?: Awaited<ReturnType<typeof loadCanyonStanding>>;
+  private canyonStanding = false;
   /** The sun the environment shows now, whoever set it. */
   private shownSun = { height: START_SUN.sunHeight, direction: START_SUN.sunDirection };
   /** The graphics settings in force (plan P8); until applied, today's defaults. */
@@ -431,12 +436,15 @@ class SurfGame {
       lab?: boolean;
       /** A Surf School lesson's sea (spec L2); any other scene ends the school. */
       school?: boolean;
+      canyonStanding?: boolean;
     } = {},
   ): Promise<boolean> {
     const factory = options.factory ?? surfZoneFactory(options.rider ?? true, this.stance);
     // An online room fixes its own sea (components included); otherwise the GPU tier decides.
     const tier = options.overrides || this.graphics?.richSea === false ? undefined : gpuTier;
     if (!(await this.physicalMode.start(settings, seed, this.water, options.overrides ?? {}, factory, tier))) return false;
+    this.canyonStanding = options.canyonStanding === true;
+    this.physicalMode.stance = this.canyonStanding ? 'regular' : this.stance;
     // The water light (ruling 25e): on in the 2 m pool, or as `?waterLight` says; a room pins the default. Rich only.
     this.waterLightWanted = waterLightOn(this.physicalMode.config);
     this.applyWaterLight();
@@ -481,6 +489,26 @@ class SurfGame {
     this.physicalMode.defaultView = camera;
     const water = { stage: this.graphics?.stage ?? 2, compute: this.graphics?.compute ?? 'auto' } as const;
     return this.startPhysical(seed, physicalSettingsFor(spot, conditions, water), { sun: TIMES[conditions.time], rider: true });
+  }
+
+  /** Rebuild from the exact recorded water, including a fresh regular-stance rider on every retry. */
+  async startCanyonStanding(): Promise<boolean> {
+    const { config, approachPlacement, approachInputs, sea } = this.canyonRecording ??= await loadCanyonStanding();
+    this.leaveOnline();
+    this.surfSwell = 'medium';
+    this.physicalMode.defaultView = 'behind';
+    const settings = physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+    return this.startPhysical(config.seed, settings, { sun: TIMES.midday,
+      factory: recordedSurfZoneFactory(sea.slice(), 'regular', { approachPlacement, approachInputs }),
+      overrides: config, canyonStanding: true });
+  }
+
+  runCanyonTurn(side: CanyonSide, signal: AbortSignal, show: (reading: CanyonTurnReading) => void): Promise<void> {
+    return runStandingTurn(this.physicalMode, side, signal, reading => {
+      this.physicalMode.update(SURF_ZONE_STEP);
+      this.needsRender = true;
+      show(reading);
+    });
   }
 
   /** The physical ride's status, while a rider is on the water. */
@@ -586,7 +614,7 @@ class SurfGame {
   /** Settings: Regular or Goofy, taken up at the next session, retry or lesson restart (never mid-ride). */
   setStance(stance: StanceName): void {
     this.stance = stance;
-    this.physicalMode.stance = stance;
+    if (!this.canyonStanding) this.physicalMode.stance = stance;
   }
 
   setPaused(paused: boolean): void {
@@ -1359,5 +1387,5 @@ const controls = new Controls(() => settings.value.controls.bindings, {
   mute: () => app.toggleMute(),
   call: (call) => app.call(call),
 }, { stick: () => settings.value.controls, ...stanceHandoverSwitch() });
-const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested || duckDiveStripRequested ? 'stage' : startRide ? 'ride' : 'menu', steam: steamController });
+const app = new App(game, controls, settings, { start: recordRequested || waterSheetRequested || particleBenchRequested || boardSprayStripRequested || duckDiveStripRequested ? 'stage' : devParam('canyonDebug') === 'standing' ? 'canyon' : startRide ? 'ride' : 'menu', steam: steamController });
 game.onFrame = (intervalMs, status) => app.frame(intervalMs, status);

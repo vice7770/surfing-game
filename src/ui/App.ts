@@ -64,6 +64,7 @@ import type { OnlinePhase } from '../game/OnlinePlay';
 import { DEFAULT_ROOM_SETTINGS, MAX_BOTS, type Refusal } from '../net/protocol';
 import { roomCodeFromSearch } from '../net/roomCode';
 import { devFlag, devParam } from '../devTools';
+import type { CanyonSide, CanyonTurnReading } from '../dev/canyonStanding';
 import { createMultiplayerScreen, type MultiplayerState } from './MultiplayerScreen';
 
 /** The Wave Lab as the menus drive it (spec L1; implemented in main.ts). */
@@ -118,6 +119,8 @@ export interface GameHost {
   readonly backdropRunning: boolean;
   showBackdrop(spot: SpotName): Promise<boolean>;
   startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean>;
+  startCanyonStanding(): Promise<boolean>;
+  runCanyonTurn(side: CanyonSide, signal: AbortSignal, show: (reading: CanyonTurnReading) => void): Promise<void>;
   readonly rideStatus: SurfZoneStatus['ride'] | undefined;
   readonly rideFrame: RideFrame | undefined;
   readonly viewName: string;
@@ -182,6 +185,10 @@ export class App {
   private surf?: SurfReading;
   /** The current wave's seed: Replay keeps it, New wave moves on. */
   private seed = 1 + Math.floor(Math.random() * 9999);
+  private canyonDebug = false;
+  private canyonRun?: AbortController;
+  private canyonResult?: string;
+  private readonly canyonProgress = el('p', { class: 'end-card-reason' });
   private readonly rideHud: RideHud;
   private readonly tracker = new RideTracker();
   private readonly logbook = new Logbook(localStore());
@@ -237,9 +244,10 @@ export class App {
     private readonly controls: Controls,
     readonly settings: SettingsStore,
     /** Where the page opens: the menu, a Surf ride (`?physical`, `?demo`), or the bare stage (`?record`, `?waterSheet`); and the Steam Controller (C1). */
-    options: { start: 'menu' | 'ride' | 'stage'; steam?: SteamControllerDriver },
+    options: { start: 'menu' | 'ride' | 'stage' | 'canyon'; steam?: SteamControllerDriver },
   ) {
-    this.stack = new ScreenStack(options.start === 'stage' ? 'stage' : 'menu');
+    this.canyonDebug = options.start === 'canyon';
+    this.stack = new ScreenStack(options.start === 'stage' || this.canyonDebug ? 'stage' : 'menu');
     // A room's link (`?room=CODE`) opens Multiplayer with the code filled in (N1).
     const linked = roomCodeFromSearch(globalThis.location?.search ?? '');
     this.multiplayer = { name: settings.value.online.name, code: linked ?? '', settings: { ...DEFAULT_ROOM_SETTINGS }, webGpu: undefined };
@@ -286,6 +294,7 @@ export class App {
     this.steam?.onChange(() => this.steamChanged());
     this.show();
     if (options.start === 'ride') void this.paddleOut();
+    if (this.canyonDebug) void this.resetCanyon();
   }
 
   /** A Steam Controller came or went (spec C1): once one has connected, the menu's Connect button goes for good. */
@@ -436,6 +445,10 @@ export class App {
 
   /** R: in the Surf School the same wave again; in Surf, paddle out again. */
   retry(): void {
+    if (this.canyonDebug) {
+      void this.resetCanyon();
+      return;
+    }
     if (this.stack.base === 'lesson') {
       if (!this.lessonOverlay && this.lessonFlow?.retry()) void this.restartAttempt();
       return;
@@ -451,6 +464,10 @@ export class App {
   }
 
   back(): void {
+    if (this.stack.current === 'canyon-ready' && (this.canyonRun || this.canyonResult)) {
+      void this.resetCanyon();
+      return;
+    }
     if (this.stack.back() !== undefined) this.show();
   }
 
@@ -470,7 +487,7 @@ export class App {
     this.controls.enabled = current === 'ride' || lessonRiding;
     this.game.lab.input.enabled = current === 'wavelab';
     this.menuInput.active = !playing;
-    this.game.setPaused(this.stack.stack.includes('pause') || (current === 'lesson' && !lessonRiding));
+    this.game.setPaused(this.stack.stack.includes('pause') || current === 'canyon-ready' || (current === 'lesson' && !lessonRiding));
     this.applyAccessibility();
     if (base !== 'menu') this.backdropReady = false;
     if (base === 'menu' && this.scene !== 'backdrop') this.openBackdrop();
@@ -485,6 +502,7 @@ export class App {
   }
 
   private render(id: ScreenId): Node[] {
+    if (id === 'canyon-ready') return [this.canyonCard()];
     if (id === 'menu') {
       const strip = this.steam ? steamStrip(this.steam.status, this.settings.value.seen.steamController) : undefined;
       return [createMainMenu({
@@ -628,7 +646,7 @@ export class App {
     if (id === 'pause') {
       return [createPauseMenu({
         resume: () => this.back(),
-        replay: () => void this.paddleOut(),
+        replay: () => void (this.canyonDebug ? this.resetCanyon() : this.paddleOut()),
         newWave: () => this.nextWave(),
         camera: () => {
           this.game.cycleView();
@@ -648,11 +666,13 @@ export class App {
   }
 
   private nextWave(): void {
+    this.canyonDebug = false;
     this.seed = (this.seed % 9999) + 1;
     void this.paddleOut();
   }
 
   private quitToMenu(): void {
+    this.canyonDebug = false;
     this.leaveLesson();
     this.leaveWaveLab();
     this.leaveRoom();
@@ -663,6 +683,7 @@ export class App {
   }
 
   private changeSpot(): void {
+    this.canyonDebug = false;
     this.hideEndCard();
     this.sessionScores = [];
     this.stack.reset('menu');
@@ -696,10 +717,7 @@ export class App {
     if (!showsEndCard(result)) return;
     const scoring = score !== undefined ? { score, bestTwo: bestTwo(this.sessionScores) } : undefined;
     this.endCard = createRideEndCard(endCardModel(result, records, this.settings.value.gameplay.units, scoring), {
-      replay: () => {
-        this.game.quickRetry();
-        this.noteRetry();
-      },
+      replay: () => this.retry(),
       newWave: () => this.nextWave(),
       changeSpot: () => this.changeSpot(),
       menu: () => this.quitToMenu(),
@@ -847,6 +865,79 @@ export class App {
 
   /** Start the chosen session behind the loading card, then ride; repeated presses while it loads are ignored. */
   private readonly paddleOut = oncePerFlight(() => this.startSession());
+
+  private readonly resetCanyon = oncePerFlight(async () => {
+    this.canyonRun?.abort();
+    this.canyonRun = undefined;
+    this.canyonResult = undefined;
+    this.surfChoice = { spot: 'canyon', conditions: { ...DEFAULT_CONDITIONS, swell: 'medium' } };
+    this.seed = 2;
+    if (this.loadingText) this.loadingText.textContent = 'Replaying the Canyon paddle-in to the first standing frame…';
+    this.showLoading(true);
+    this.stack.reset('stage');
+    this.show();
+    try {
+      if (!await this.game.startCanyonStanding()) return;
+      this.hideEndCard();
+      this.tracker.reset();
+      this.scene = 'ride';
+      this.stack.reset('ride');
+    } catch (error) {
+      this.canyonResult = error instanceof Error ? error.message : String(error);
+      this.canyonProgress.textContent = this.canyonResult;
+    } finally {
+      this.showLoading(false);
+    }
+    this.stack.push('canyon-ready');
+    this.show();
+  });
+
+  private canyonCard(): HTMLElement {
+    const action = (text: string, click: () => void, primary = false) => el('button', {
+      class: primary ? 'button-primary' : 'button-secondary', text, attrs: { type: 'button' },
+      dataset: primary ? { nav: '', navDefault: '' } : { nav: '' }, on: { click },
+    });
+    const fresh = !this.canyonRun && !this.canyonResult;
+    return el('section', { class: 'end-card canyon-controls', attrs: { 'aria-label': 'Canyon standing debug' } },
+      el('h2', { text: 'Canyon standing start' }),
+      fresh ? el('p', { class: 'end-card-reason', text: 'Medium swell · Seed 2 · Paused. Each turn holds full steer and Compress from 0.30 to 1.20 s.' })
+        : this.canyonProgress,
+      el('div', { class: 'end-card-actions' }, ...(fresh ? [
+        action('Ride manually', () => this.back(), true),
+        action('Run left turn', () => void this.measureCanyon('left')),
+        action('Run right turn', () => void this.measureCanyon('right')),
+      ] : [action('Reset standing start', () => void this.resetCanyon(), true)])),
+      el('a', { text: 'View the turn analysis', attrs: { href: '/canyon-debug.html' }, dataset: { nav: '' } }));
+  }
+
+  private async measureCanyon(side: CanyonSide): Promise<void> {
+    const run = new AbortController();
+    this.canyonRun = run;
+    this.canyonProgress.textContent = 'Starting the ' + side + ' turn…';
+    this.show();
+    let last: CanyonTurnReading | undefined;
+    try {
+      await this.game.runCanyonTurn(side, run.signal, reading => {
+        last = reading;
+        this.canyonProgress.textContent = side + ' · ' + reading.elapsed.toFixed(2) + ' s · ' + reading.input + ' · ' + reading.phase;
+      });
+      if (last && !run.signal.aborted) {
+        const angle = (value: number) => (value >= 0 ? '+' : '−') + Math.abs(value).toFixed(1) + '°';
+        this.canyonResult = 'Finished ' + side + ' turn at ' + last.elapsed.toFixed(2) + ' s · ' + last.phase
+          + (last.separation ? ' (' + last.separation + ')' : '') + ' · peak body bank ' + angle(last.peakBank)
+          + (last.peakCourseChange !== undefined ? ' · travel direction from steer onset ' + angle(last.peakCourseChange) + ' peak' : '')
+          + (last.courseChangeAtRelease !== undefined ? ', ' + angle(last.courseChangeAtRelease) + ' at release' : '');
+      }
+    } catch (error) {
+      if (!run.signal.aborted) this.canyonResult = error instanceof Error ? error.message : String(error);
+    } finally {
+      if (this.canyonRun === run) {
+        this.canyonRun = undefined;
+        this.canyonProgress.textContent = this.canyonResult ?? '';
+        this.show();
+      }
+    }
+  }
 
   private async startSession(): Promise<void> {
     this.setLoadingText('loading.paddleOut');

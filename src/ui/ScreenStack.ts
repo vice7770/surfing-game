@@ -3,7 +3,7 @@
  * scene for the `?record` and `?waterSheet` dev tools, spec L1) show a scene; the
  * rest are panels over one.
  */
-export type ScreenId = 'menu' | 'surf' | 'multiplayer' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab' | 'stage' | 'school' | 'lesson';
+export type ScreenId = 'menu' | 'surf' | 'multiplayer' | 'logbook' | 'settings' | 'ride' | 'pause' | 'wavelab' | 'stage' | 'school' | 'lesson' | 'canyon-ready';
 
 /** `lesson` (spec L2) is a Surf School lesson's scene; `school` is its list, a panel over the menu. */
 const SCENES: ReadonlySet<ScreenId> = new Set(['menu', 'ride', 'wavelab', 'stage', 'lesson']);

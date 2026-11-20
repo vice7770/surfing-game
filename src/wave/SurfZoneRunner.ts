@@ -33,6 +33,7 @@ import { SurfZoneSimulation, rideLineupAlong, rideLineupOffset, sweptBarrelOn, t
 import type { RiderBounds } from '../physics/riderBounds';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
+import type { CanyonApproach } from './canyonStandingApproach';
 
 export { surfZoneSea } from './SurfZoneSimulation';
 
@@ -114,6 +115,8 @@ const EDGE_HINT_REPEAT = 4;
 const EDGE_HINT_CLEAR = 0.1;
 
 export interface SurfZoneRunnerOptions {
+  /** CPU standing debugger: replay this paddle-in on the imported recording before publishing the first snapshot. */
+  canyonApproach?: CanyonApproach;
   /** Carry a riderless board on the water (P4c). */
   board?: boolean;
   /** Carry a board with a rider the player controls (P4d). */
