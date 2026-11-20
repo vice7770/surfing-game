@@ -1,0 +1,20 @@
+input c0, seeds done: s1 s2 s3 s4 s5 s6 s7 s8 s9  (margin 0.5 s)
+| bucket | n | ships: fell, median (range) | plantFloor 4.5: fell, median (range) | paired floor − ships: later / sooner / same, median (range) |
+|---|---|---|---|---|
+| SHARP-STEER | 10 | 10 of 10, 0.717 (0.467–0.983) | 10 of 10, 3.067 (1.050–4.333) | 10 / 0 / 0, +2.083 (+0.467 to +3.383) |
+| turn window, neutral outlives, off the plane | 1 | 1 of 1, 0.783 (0.783–0.783) | 1 of 1, 1.217 (1.217–1.217) | 1 / 0 / 0, +0.433 (+0.433 to +0.433) |
+| turn window, neutral falls too | 83 | 83 of 83, 0.867 (0.467–1.333) | 83 of 83, 0.933 (0.533–2.217) | 42 / 32 / 9, +0.017 (-0.617 to +1.300) |
+| outside the turn window | 21 | 21 of 21, 2.700 (0.183–4.383) | 20 of 21 (1 censored), 2.883 (0.183–5.000) | 9 / 8 / 4, +0.000 (-0.800 to +2.200) |
+| censored on ships | 3 | 0 of 3 (3 censored), 1.333 (1.333–3.983) | 1 of 3 (2 censored), 1.333 (1.333–3.450) | 0 / 1 / 2, +0.000 (-0.533 to +0.000) |
+| neutral | 59 | 51 of 59 (8 censored), 1.050 (0.183–5.000) | 51 of 59 (8 censored), 1.167 (0.183–5.000) | 20 / 21 / 18, +0.000 (-0.617 to +0.750) |
+
+  SHARP-STEER s2 wave 1 cueL: ships 0.700 -> floor 3.983
+  SHARP-STEER s2 wave 1 cueR: ships 0.717 -> floor 3.717
+  SHARP-STEER s3 wave 9 cueR: ships 0.467 -> floor 1.500
+  SHARP-STEER s3 wave 12 cueL: ships 0.983 -> floor 2.867
+  SHARP-STEER s3 wave 12 cueR: ships 0.700 -> floor 3.783
+  SHARP-STEER s4 wave 6 cueL: ships 0.583 -> floor 1.050
+  SHARP-STEER s8 wave 2 cueL: ships 0.733 -> floor 1.833
+  SHARP-STEER s8 wave 2 cueR: ships 0.717 -> floor 1.717
+  SHARP-STEER s8 wave 5 cueL: ships 0.950 -> floor 4.333
+  SHARP-STEER s8 wave 5 cueR: ships 0.983 -> floor 3.267

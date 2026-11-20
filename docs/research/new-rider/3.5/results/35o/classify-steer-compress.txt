@@ -1,0 +1,48 @@
+seed wave scr      ships  neutral plan vFall  vmin    ovfl |    floor    neutF   ovflF  class
+  s1    6 cueL     2.433  >=3.983    1  5.98  4.56 0.98541 |    2.567  >=3.983 0.98541  outside the turn window
+  s1    6 cueR     1.733  >=3.983    1  6.02  4.50 0.91875 |    2.733  >=3.983 0.93541  outside the turn window
+  s1    7 cueL     1.250    1.733    0  1.64  1.57 0.28541 |    1.383    1.350 1.25208  turn-window, neutral also falls
+  s1    7 cueR     1.250    1.733    0  1.64  1.57 0.28541 |    1.383    1.350 1.25208  turn-window, neutral also falls
+  s1    8 cueL     0.767    0.750    0  1.90  1.83 0.26875 |    1.350    1.383 1.21875  turn-window, neutral also falls
+  s1    8 cueR     0.767    0.750    0  1.90  1.83 0.26875 |    1.350    1.383 1.21875  turn-window, neutral also falls
+  s1   10 cueL     0.700    0.700    1  4.19  3.61 0.25208 |    0.717    0.667 0.26875  turn-window, neutral also falls
+  s1   10 cueR     0.700    0.700    1  4.23  4.15 0.25208 |    0.667    0.667 0.26875  turn-window, neutral also falls
+  s1   11 cueL     0.867    0.683    0  1.40  1.31 0.25208 |    0.833    0.817 0.80208  turn-window, neutral also falls
+  s1   11 cueR     0.867    0.683    0  1.40  1.31 0.25208 |    0.833    0.817 0.80208  turn-window, neutral also falls
+  s1   12 cueL     0.700    0.633    0  0.06 -0.01 0.25208 |    0.600    0.633 0.56875  turn-window, neutral also falls
+  s1   12 cueR     0.700    0.633    0  0.06 -0.01 0.25208 |    0.600    0.633 0.56875  turn-window, neutral also falls
+  s2    1 cueL     0.717    3.900    1  4.31  3.82 0.51875 |    1.717    3.683    None  SHARP-STEER
+  s2    1 cueR     1.000    3.900    1  4.26  3.64 0.51875 |    1.317    3.683 0.76875  SHARP-STEER
+  s2    2 cueL     4.650  >=5.000    0  1.90  5.11    None |    3.900  >=5.000    None  outside the turn window
+  s2    2 cueR     3.933  >=5.000    0  3.09  5.09    None |    3.667  >=5.000    None  outside the turn window
+  s2    5 cueL     0.733    0.950    0  2.60  2.55 0.26875 |    1.800    1.683    None  turn-window, neutral also falls
+  s2    5 cueR     1.167    0.950    1  3.70  2.63 0.26875 |    1.800    1.683    None  turn-window, neutral also falls
+  s2    6 cueL     1.183    2.300    1  4.94  3.82 0.53541 |    2.050    2.300    None  SHARP-STEER
+  s2    6 cueR     0.967    2.300    1  5.41  3.70 0.58541 |    1.683    2.300 0.96875  SHARP-STEER
+  s2    8 cueL     0.533    0.550    0  0.67  0.67 0.26875 |    0.550    0.550 0.35208  turn-window, neutral also falls
+  s2    8 cueR     0.533    0.550    0  0.67  0.67 0.26875 |    0.550    0.550 0.35208  turn-window, neutral also falls
+  s2   10 cueL     0.700    0.933    1  2.84  2.78 0.43541 |    1.433    0.933 0.70208  turn-window, neutral also falls
+  s2   10 cueR     0.700    0.933    1  2.93  2.64 0.45208 |    1.250    0.933 0.70208  turn-window, neutral also falls
+  s2   11 cueL     3.717  >=5.000    1  4.14  5.25    None |    3.867  >=5.000    None  outside the turn window
+  s2   11 cueR     4.783  >=5.000    0  1.38  5.21    None |    4.267  >=5.000    None  outside the turn window
+  s3    2 cueL     1.083    1.133    0  0.46  0.40 0.28541 |    0.950    0.983 0.28541  turn-window, neutral also falls
+  s3    2 cueR     1.083    1.133    0  0.46  0.40 0.28541 |    0.950    0.983 0.28541  turn-window, neutral also falls
+  s3    5 cueL   >=1.333  >=1.333    1  6.48  5.44 0.86875 |  >=1.333  >=1.333 0.86875  censored
+  s3    5 cueR   >=1.333  >=1.333    1  6.32  5.42 1.20208 |  >=1.333  >=1.333 1.20208  censored
+  s3    6 cueL     0.983    1.083    0  2.79  2.77 0.26875 |    0.817    1.167 0.28541  turn-window, neutral also falls
+  s3    6 cueR     1.050    1.083    0  3.10  2.93 0.26875 |    1.333    1.167 0.28541  turn-window, neutral also falls
+  s3    7 cueL     0.883    0.917    0  0.69  0.51 0.58541 |    0.833    0.833 0.75208  turn-window, neutral also falls
+  s3    7 cueR     0.883    0.917    0  0.69  0.51 0.58541 |    0.833    0.833 0.75208  turn-window, neutral also falls
+  s3    9 cueL     0.450    0.983    1  2.44  2.39 0.26875 |    1.583    1.383 1.10208  SHARP-STEER
+  s3    9 cueR     0.450    0.983    1  2.53  2.48 0.26875 |    2.267    1.383 1.10208  SHARP-STEER
+  s3   10 cueL     1.167    1.283    0 -0.43 -0.66 0.26875 |    0.550    1.217 0.35208  turn-window, neutral also falls
+  s3   10 cueR     1.167    1.283    0 -0.43 -0.66 0.26875 |    0.550    1.217 0.35208  turn-window, neutral also falls
+  s3   12 cueL     1.650    1.733    1  3.66  3.73 0.51875 |    1.600    2.483 0.86875  outside the turn window
+  s3   12 cueR     1.967    1.733    1  6.24  3.92 0.31875 |    1.450    2.483 0.75208  outside the turn window
+
+SHARP-STEER events (margin 0.5 s): n = 6
+  ships: fell 6 of 6, median 0.842 s, range 0.450-1.183
+  floor: fell 6 of 6, censored 0; median 1.700 s, range 1.317-2.267 (censored counted at their floor)
+  paired change floor - ships: median +0.933 s, range +0.317 to +1.817; later in 6, sooner in 0, same in 0
+  still standing at 1.5 s with the floor: 5 of 6
+other steered riders by bucket: {'outside the turn window': 8, 'turn-window, neutral also falls': 24, 'censored': 2}
