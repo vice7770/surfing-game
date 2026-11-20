@@ -1441,6 +1441,52 @@ export interface AttachedRiderOptions {
    */
   ankleLimit?: 'feet';
   /**
+   * **The twist's END STOP bounded by the same foot grip its ACTIVE torque already is** (`twistGrip: 'feet'`,
+   * step 3.5k): the stop past TWIST_BODY_RANGE is clamped to `FOOT_FRICTION × legLoad × TWIST_GRIP_SPAN`, which is
+   * the identical expression `controlStep` already applies to the active torque. Opt-in, off by default (the
+   * `?twistGrip=feet` dev switch), pinned off in the online rooms. **TWIST_BODY_RANGE itself is not touched** — how
+   * far the hips and knees really twist is an open anatomy question and not this switch's.
+   *
+   * **The defect.** One degree of freedom, two torques, both crossing the same foot contact, under different rules.
+   * The active torque is `Math.min(TWIST_BODY_TORQUE, grip)` and then slewed through MOTOR_LAG. The end stop is
+   * `TWIST_STOP × over` with a TWIST_STOP_DAMPING damper beside it, bounded by nothing and lagged by nothing, and it
+   * reaches the board's angular rows through the same `kick` the active torque does. It is the only unbounded one of
+   * the six foot-borne forces in this file: `controlStep`, `twistStep`, `hipStep`, `agileStep` and `footFriction` all
+   * write `FOOT_FRICTION ×` a load, and the back foot's own note states the rule with its own record of the
+   * alternative — *"an unloaded foot pushes nothing: unbounded, a body weight threw the board from under every rider
+   * in 0.2 s."*
+   *
+   * **TWIST_STOP_DAMPING is inside the same bound, and that is a ruling, not a convenience.** There is no connection
+   * between the rider and the board but the two soles, so every torque the twist joint puts on the board — spring,
+   * damper or stop — is transmitted by the same Coulomb traction. Coulomb bounds the *total* tangential force at a
+   * contact, never each constitutive term on its own, so a bound that let the damper through would not be a friction
+   * bound at all: at 50 N·m·s/rad and a 2 rad/s twist the damper alone is 100 N·m, the whole of the active bound, and
+   * a stop is hit hardest exactly when the rate is highest. Nor does being dissipative exempt it: dissipation is in
+   * the *joint's* coordinate, and `finish`'s own `twistWork` books the board's share of it either way, so a damper can
+   * and does drive the board's turn.
+   *
+   * **The solver stays consistent because the stop leaves `alpha` and `beta` when it leaves the torque.** The twist is
+   * solved implicitly: `coupleYaw` puts β n nᵀ on the board with `β = I_U α / (I_U + α)`, `α = h (k h + c)`, so the
+   * stop's stiffness and damping sit in the **system matrix** as well as in `tb.spring`. Clamping `tb.spring` alone
+   * would leave the matrix predicting a torque the joint no longer delivers, and the delivered torque — `tb.torque`,
+   * which is `spring + α θ̇_new / h` — would still run past the bound through the implicit term. So this is a
+   * **stick/slip projection** instead, which is what a friction contact actually does:
+   * - **stick**, `|τ_stop| ≤ bound`: nothing changes. `k`, `c`, `α`, `β` and `tb.spring` are the shipped ones.
+   * - **slip**, `|τ_stop| > bound`: the feet are sliding, so the stop transmits a *constant* torque at the limit and
+   *   its stiffness and damping transmit nothing. TWIST_STOP leaves `stiffness`, TWIST_STOP_DAMPING leaves `damping`,
+   *   and `tb.spring` carries `bound × sign(τ_stop)` as an explicit saturation torque. The law applied and the law
+   *   `α`/`β` encode are then the same law, and `tb.torque` is bounded by the bound plus the base joint's own
+   *   spring and damper rather than by nothing.
+   *
+   * The stick test is taken with the substep's incoming rate (`tb.rate`), one explicit Newton step, as a semi-implicit
+   * friction solver takes it: the *test* is O(h) in the rate, the *law* applied is exact either way. The probes print
+   * `twistStopAsk` against `twistStopGot` so the residual is measured and not assumed.
+   *
+   * **This removes a force; it adds none.** When the stop asks for more than the feet hold, the feet slip and the
+   * twist goes — there is no new torque and no new authority anywhere, and off the switch not a float moves.
+   */
+  twistGrip?: 'feet';
+  /**
    * **The bound on the rest the balance may command at the ankle** (`ankleRange`, step 3.3k): `'load'` reads it off
    * the live sole, `'wide'` doubles the shipped one. Opt-in, off by default (the `?ankleRange=load|wide` dev switch),
    * pinned off in the online rooms.
@@ -2292,6 +2338,22 @@ export class AttachedRider {
   private readonly stanceReach: 'keep' | undefined;
   /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
   private readonly ankleLimit: 'feet' | undefined;
+  /** The twist's end stop bounded by the feet's own grip (`twistGrip: 'feet'`, step 3.5k); undefined by default. */
+  private readonly twistGrip: 'feet' | undefined;
+  /**
+   * **Step 3.5k's twist-stop ledger, read-only, written on every coupled substep in BOTH arms** so that an unmoved
+   * number is evidence. All N·m about the board's own up axis, magnitudes:
+   * - `bound`: `FOOT_FRICTION × max(0, legLoad) × TWIST_GRIP_SPAN`, the grip the active torque is already held to.
+   *   Printed off the switch too, where it binds nothing.
+   * - `ask`: the stop's REQUESTED torque this substep — `TWIST_STOP × over` plus `(TWIST_STOP h + TWIST_STOP_DAMPING)
+   *   × tb.rate`, the whole of what the shipped stop would put on the board. 0 inside the range.
+   * - `got`: the stop's DELIVERED torque — `ask` when the feet hold it (and off the switch, always), `bound` when they
+   *   slip. `ask − got` is what the clamp removed.
+   * - `slips` / `substeps`: coupled substeps the feet slipped, and coupled substeps in all. Off the switch `slips` is
+   *   0 by construction.
+   * - `peakAsk`, `peakGot`, `peakRemoved`: the run's own peaks of the three.
+   */
+  readonly twistStopLedger = { bound: 0, ask: 0, got: 0, slips: 0, substeps: 0, peakAsk: 0, peakGot: 0, peakRemoved: 0 };
   /** The bound on the rest the balance may command, off the live sole or doubled (`ankleRange`, step 3.3k); undefined by default. */
   private readonly ankleRange: 'load' | 'wide' | undefined;
   /**
@@ -2679,6 +2741,7 @@ export class AttachedRider {
     this.kneeRoomAchieved = options.kneeRoom === 'achieved';
     this.stanceReach = options.stanceReach === 'keep' ? 'keep' : undefined;
     this.ankleLimit = options.ankleLimit === 'feet' ? 'feet' : undefined;
+    this.twistGrip = options.twistGrip === 'feet' ? 'feet' : undefined;
     this.ankleRange = options.ankleRange === 'load' || options.ankleRange === 'wide' ? options.ankleRange : undefined;
     // Step 3.4i: `Math.PI` is no bound — `frame`'s own `atan2` reading cannot exceed it — so the branch is one value.
     this.bankMax = options.bankClamp === 'off' ? Math.PI : MAX_BANK;
@@ -3278,6 +3341,16 @@ export class AttachedRider {
   /** Agile: the torques on the hips (about the body's up) and the trunk (about the body's side axis) the latest substep, N·m; the feet's forces in `limbs` are their reaction on the board. */
   get legTorques(): { hip: number; trunk: number } {
     return { hip: this.hipTorque, trunk: this.trunkTorque };
+  }
+
+  /**
+   * **Step 3.5k: whether THIS rider's twist stop is bounded by the feet's grip** (`twistGrip: 'feet'`). It exists so a
+   * probe can print back the state of the object **the host actually built**, rather than the search string it passed
+   * in: `?bodyBank=hip` parsed zero times in a real session while its own tests passed, and a `swing` option was
+   * silently dropped in a `RideSession` forwarding hop. `twistStopLedger` is the behavioural half of the same check.
+   */
+  get twistStopBounded(): boolean {
+    return this.twistGrip === 'feet';
   }
 
   /** The upper body's turn against the board as the rig draws it, rad: the twist, and with the agile legs the hips' turn. */
@@ -4777,7 +4850,8 @@ export class AttachedRider {
    *   are on the deck: I_L n nᵀ on the rotation and its own spin's momentum on the right-hand side, as 3.2b's whole was;
    * - the upper body's share (`upper`, and TWIST_BODY_ARMS with the arms out) turns on the legs' twist θ_t (the upper body's
    *   yaw less the board's), which puts τ_b = τ_a + k θ_t + c θ̇_t on the board and −τ_b on the upper body (TWIST_STIFFNESS,
-   *   TWIST_DAMPING, the active torque τ_a; an end stop past TWIST_BODY_RANGE). Backward Euler over the substep, the upper
+   *   TWIST_DAMPING, the active torque τ_a; an end stop past TWIST_BODY_RANGE, bounded by the feet's own grip with
+   *   step 3.5k's `twistGrip: 'feet'` and by nothing as it ships). Backward Euler over the substep, the upper
    *   body's spin eliminated: with α = h (k h + c), the board meets β n nᵀ, β = I_U α / (I_U + α), and on the right-hand
    *   side n [β (ω_u − Ω) + I_U / (I_U + α) h (τ_a + k θ_t)], Ω its own turn now. `finish` moves the twist on.
    * So the standing solve and the solves apart all carry it; no force but the legs' with its reaction. In flight the
@@ -4803,8 +4877,29 @@ export class AttachedRider {
     if (!tb.coupled) tb.upper = turn + tb.rate;
     const h = this.substep;
     const over = Math.abs(tb.angle) - TWIST_BODY_RANGE;
-    const stiffness = this.twistStiffness + (over > 0 ? TWIST_STOP : 0);
-    const damping = this.twistDamping + (over > 0 ? TWIST_STOP_DAMPING : 0);
+    // ⭐ Step 3.5k, the twist stop's own grip bound (`twistGrip: 'feet'`; `AttachedRiderOptions.twistGrip` has the
+    // whole argument). The stop's REQUESTED torque is its spring term plus what its stiffness and damping would send
+    // through the implicit term, taken at the substep's incoming rate: the whole of what the shipped stop asks the
+    // feet for. The bound is the identical expression `controlStep` already holds the ACTIVE torque to.
+    const stop = over > 0 ? TWIST_STOP * Math.sign(tb.angle) * over : 0;
+    const ask = over > 0 ? stop + (TWIST_STOP * h + TWIST_STOP_DAMPING) * tb.rate : 0;
+    const bound = FOOT_FRICTION * Math.max(0, this.legLoad) * TWIST_GRIP_SPAN;
+    // Slip: the feet cannot hold what the stop asks, so the stop transmits a CONSTANT torque at the limit and its
+    // stiffness and damping transmit nothing. Dropping them from `stiffness`/`damping` here is what keeps `alpha` and
+    // `beta` — the system matrix — describing the same law the torque below applies.
+    const slipping = this.twistGrip === 'feet' && over > 0 && Math.abs(ask) > bound;
+    const stiffness = this.twistStiffness + (over > 0 && !slipping ? TWIST_STOP : 0);
+    const damping = this.twistDamping + (over > 0 && !slipping ? TWIST_STOP_DAMPING : 0);
+    const held = slipping ? bound * Math.sign(ask) : stop;
+    const ledger = this.twistStopLedger;
+    ledger.bound = bound;
+    ledger.ask = Math.abs(ask);
+    ledger.got = slipping ? bound : Math.abs(ask);
+    ledger.substeps += 1;
+    if (slipping) ledger.slips += 1;
+    ledger.peakAsk = Math.max(ledger.peakAsk, ledger.ask);
+    ledger.peakGot = Math.max(ledger.peakGot, ledger.got);
+    ledger.peakRemoved = Math.max(ledger.peakRemoved, ledger.ask - ledger.got);
     const alpha = h * (stiffness * h + damping);
     const beta = (upper * alpha) / (upper + alpha);
     const gain = upper / (upper + alpha);
@@ -4813,7 +4908,9 @@ export class AttachedRider {
     tb.beta = beta;
     tb.gain = gain;
     tb.turn = turn;
-    tb.spring = tb.active + this.twistStiffness * tb.angle + (over > 0 ? TWIST_STOP * Math.sign(tb.angle) * over : 0);
+    // Off the switch `held` is exactly the shipped `over > 0 ? TWIST_STOP * sign(angle) * over : 0`; slipping, it is
+    // the saturation torque, explicit here because a constant torque has no stiffness to put in the matrix.
+    tb.spring = tb.active + this.twistStiffness * tb.angle + held;
     const inertia = lower + beta;
     this.yawInertia = inertia;
     const kick = lower * (this.yawSpin - turn) + beta * (tb.upper - turn) + gain * h * tb.spring;

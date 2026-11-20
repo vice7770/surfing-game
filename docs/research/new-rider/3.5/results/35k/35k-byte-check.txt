@@ -1,0 +1,18 @@
+################ Step 3.5k — OFF THE SWITCH, NOT ONE FLOAT MOVES
+
+  `docs/research/new-rider/3.5/twist-grip-bytes.ts` imports only `AttachedRider`, `BoardBody` and
+  `FaceWater` — nothing step 3.5k added — so the SAME source file compiles and runs on the base branch as
+  on the branch under test. It prints every live column of the DEFAULT rider (no `twistGrip`) to twelve
+  decimals: `tb.angle`, `tb.rate`, `tb.active`, `tb.spring`, `tb.torque`, `tb.alpha`, `tb.beta`,
+  `drawnTwist`, `bank.angle`, the board's roll, speed, position (x, y, z) and heading, over 9 cells
+  (3 stances x 3 steers) of 6 s on Canyon B's own calibrated face.
+
+  BASE      /Users/vicentealmeida/Documents/ChatGPT/surfing-game @ aafb128ef889b571850c79ce0903e8019fb5945e
+  BRANCH    /private/tmp/claude-501/twist-grip-wt @ claude/twist-grip
+
+    $ diff base.txt branch.txt
+    (no output)
+
+  730 lines each, 0 differing lines. The switch off, the stop is the shipped stop to the last bit: the
+  stick branch keeps `stiffness`, `damping`, `alpha`, `beta` and `tb.spring` exactly as they were, and the
+  ledger that was added is written but never read by the physics.

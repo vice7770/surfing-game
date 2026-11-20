@@ -1,0 +1,17 @@
+################ Step 3.5k — the switch chain, hop by hop, from a search string to a rider's own field
+
+                              search        switch    SurfZoneConfig        runner hop       RideSession
+                              (none)             —                 —                 —         unbounded
+                     ?twistGrip=feet          feet              feet              feet           BOUNDED
+                     ?twistGrip=FEET          feet              feet              feet           BOUNDED
+                   ?twistGrip= feet           feet              feet              feet           BOUNDED
+                       ?twistGrip=on             —                 —                 —         unbounded
+                      ?twistGrip=yes             —                 —                 —         unbounded
+                        ?twistGrip=1             —                 —                 —         unbounded
+                      ?twistGrip=off             —                 —                 —         unbounded
+                     ?twistGrip=true             —                 —                 —         unbounded
+
+  ⚠️ `FEET` and ` feet ` are lower-cased and trimmed by the switch; `on`, `yes`, `1`, `true` and `off` are
+  NOT values and must all read `—`. Only `feet` reaches the config. The `runner hop` column is
+  `SurfZoneRunner`'s own forwarding expression applied to that config — the hop a `swing` option was once
+  dropped in — and `RideSession` is that expression actually handed to a constructor.

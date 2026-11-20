@@ -1,0 +1,61 @@
+################ Step 3.5k ridden — THE REAL SESSION PATH (the owner's own search string -> surfZoneConfigFor -> SurfZoneConfig -> the runner's hop -> RideSession -> its own rider)
+
+  FaceWater 1.4 m / 16° / depth 6 m, entry 5.7 m/s, -45° off the fall line, SINK 0.06 m,
+  6 s, stances tall,crouch,compress, steers 0,1,-1. Canyon B's own calibration (#223), NOT the Canyon.
+
+  ⭐ WHAT THE HOST ACTUALLY BUILT, printed off its own objects and not off the strings passed in:
+     off the switch: SurfZoneConfig {"twistGrip":null}  ->  RideSession options {"twistGrip":null}
+     on  the switch: SurfZoneConfig {"twistGrip":"feet"}  ->  RideSession options {"twistGrip":"feet"}
+
+  ⭐ THE CLAMP, every live tick of every cell. `ask` is the stop's REQUESTED peak torque, `got` what it
+  DELIVERED, `removed` the peak of `ask − got`. Off the switch `got` must equal `ask` on EVERY tick.
+
+     arm      stance     steer    ticks     past R    ask N·m    got N·m    removed      bound    slip %   max tw °
+     off        tall         0       42          0      0.000      0.000      0.000      4.808     0.000     20.291
+     off        tall         1       45          0      0.000      0.000      0.000    201.974     0.000     32.353
+     off        tall        -1       42          0      0.000      0.000      0.000    185.680     0.000      9.398
+     off      crouch         0       73         13    416.213    416.213      0.000    169.295     0.000     57.566
+     off      crouch         1      106         34    456.150    456.150      0.000    217.650     0.000     57.953
+     off      crouch        -1       36          0      0.000      0.000      0.000    106.165     0.000     -7.287
+     off    compress         0       70         10    466.034    466.034      0.000    184.733     0.000     58.641
+     off    compress         1       46          0      0.000      0.000      0.000    132.170     0.000    -43.537
+     off    compress        -1       36          0      0.000      0.000      0.000    106.145     0.000     -7.291
+    feet        tall         0       42          0      0.000      0.000      0.000      4.808     0.000     20.291
+    feet        tall         1       45          0      0.000      0.000      0.000    201.974     0.000     32.353
+    feet        tall        -1       42          0      0.000      0.000      0.000    185.680     0.000      9.398
+    feet      crouch         0       73         13    561.239    255.258    336.045    168.710    11.301     64.135
+    feet      crouch         1      106         33    700.910    235.187    491.181    221.610     7.429     68.034
+    feet      crouch        -1       36          0      0.000      0.000      0.000    106.165     0.000     -7.287
+    feet    compress         0       70         10    679.253    263.063    444.222    187.658    12.500     67.648
+    feet    compress         1       46          0      0.000      0.000      0.000    132.170     0.000    -43.537
+    feet    compress        -1       36          0      0.000      0.000      0.000    106.145     0.000     -7.291
+
+  CONTROL, the switch off is inert: ticks where `got` differs from `ask` off the switch = 0 — none, as the gate requires.
+  CONTROL, nothing is delivered past the bound on the switch: ticks with `got` > `bound` = 0 — none.
+  ⛔ CELLS THAT REACHED THE STOP AT ALL: 6 of 18.
+
+  ⭐ WHAT IT DOES, AT NEUTRAL AND THROUGH A STEER. `drawn` is `AttachedRider.drawnTwist`, the rig's own
+  quantity — the one the torso is posed from, so a moved `drawn` is a rider that LOOKS different.
+
+  stance       steer      arm     fell s      work J    max tw °   end tw °  max drawn °     bank °    swing °    climb m
+    tall           0      off      0.717      -3.657      20.291     20.291      20.291    -13.232     -6.586      0.591
+                         feet      0.717      -3.657      20.291     20.291      20.291    -13.232     -6.586      0.591
+    tall           1      off      0.767      -8.226      32.353     32.353      32.353     22.357    -11.082      0.582
+                         feet      0.767      -8.226      32.353     32.353      32.353     22.357    -11.082      0.582
+    tall          -1      off      0.717      -1.480       9.398      9.398       9.398    -13.886     -3.450      0.588
+                         feet      0.717      -1.480       9.398      9.398       9.398    -13.886     -3.450      0.588
+  crouch           0      off      1.233    -129.766      57.566     52.683      57.566    -70.000    -16.573      0.292
+                         feet      1.233    -124.762      64.135     51.521      64.135    -70.000    -14.799      0.293
+  crouch           1      off      1.783    -174.866      57.953     35.726      57.953    -44.293    -65.676     -0.007
+                         feet      1.783    -179.617      68.034     31.651      68.034    -29.871    -61.305     -0.006
+  crouch          -1      off      0.617      -6.580      -7.287     -7.287      -7.287    -13.520      1.227      0.612
+                         feet      0.617      -6.580      -7.287     -7.287      -7.287    -13.520      1.227      0.612
+compress           0      off      1.183    -142.793      58.641     52.140      58.641    -70.000    -17.005      0.323
+                         feet      1.183    -145.354      67.648     56.406      67.648    -70.000    -17.666      0.324
+compress           1      off      0.783     -40.945     -43.537    -43.537     -43.537    -12.613     20.547      0.552
+                         feet      0.783     -40.945     -43.537    -43.537     -43.537    -12.613     20.547      0.552
+compress          -1      off      0.617      -6.582      -7.291     -7.291      -7.291    -13.519      1.228      0.612
+                         feet      0.617      -6.582      -7.291     -7.291      -7.291    -13.519      1.228      0.612
+
+  ⚠️ `bank`, `swing` and `climb` here are this run's own peak body lean, net heading change and net surface
+  rise — NOT the ride analyzer's bottom-turn columns, which need a wave frame this analytic face has not got.

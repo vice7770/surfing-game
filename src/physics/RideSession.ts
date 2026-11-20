@@ -168,6 +168,8 @@ export interface RideSessionOptions {
   stanceReach?: 'keep';
   /** The ankle's torque bounded by the moment the soles can transmit (step 3.3i; `AttachedRiderOptions.ankleLimit`): 'feet' (the `?ankleLimit=feet` dev switch); by default unbounded, as it always was. */
   ankleLimit?: 'feet';
+  /** Step 3.5k: the twist's END STOP bounded by the same foot grip its active torque already is (`AttachedRiderOptions.twistGrip`): 'feet' (the `?twistGrip=feet` dev switch); by default the stop is bounded by nothing. TWIST_BODY_RANGE is not touched. */
+  twistGrip?: 'feet';
   /** The bound on the rest the balance may command at the ankle (step 3.3k; `AttachedRiderOptions.ankleRange`): 'load' off the live sole or 'wide' doubled (the `?ankleRange=load|wide` dev switch); by default ANKLE_REST_RANGE's own 14.32°. */
   ankleRange?: 'load' | 'wide';
   /** Step 3.4i: the 70 degree clamp on the MEASURED bank lifted at `AttachedRider.frame`'s three sites (`AttachedRiderOptions.bankClamp`): 'off' (the `?bankClamp=off` dev switch); by default MAX_BANK, as it always was. */
@@ -328,6 +330,7 @@ export class RideSession {
       ...(options.kneeRoom ? { kneeRoom: options.kneeRoom } : {}),
       ...(options.stanceReach ? { stanceReach: options.stanceReach } : {}),
       ...(options.ankleLimit ? { ankleLimit: options.ankleLimit } : {}),
+      ...(options.twistGrip ? { twistGrip: options.twistGrip } : {}),
       ...(options.ankleRange ? { ankleRange: options.ankleRange } : {}),
       ...(options.bankClamp ? { bankClamp: options.bankClamp } : {}),
       ...(options.bodyBank ? { bodyBank: options.bodyBank } : {}),

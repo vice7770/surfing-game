@@ -1,0 +1,57 @@
+################ Step 3.5k ridden — THE FIXTURE PATH (AttachedRider and BoardBody built directly, as every probe in this folder builds them)
+
+  FaceWater 1.4 m / 16° / depth 6 m, entry 5.7 m/s, -45° off the fall line, SINK 0.06 m,
+  6 s, stances tall,crouch,compress, steers 0,1,-1. Canyon B's own calibration (#223), NOT the Canyon.
+
+  ⭐ THE CLAMP, every live tick of every cell. `ask` is the stop's REQUESTED peak torque, `got` what it
+  DELIVERED, `removed` the peak of `ask − got`. Off the switch `got` must equal `ask` on EVERY tick.
+
+     arm      stance     steer    ticks     past R    ask N·m    got N·m    removed      bound    slip %   max tw °
+     off        tall         0       37          0      0.000      0.000      0.000     69.989     0.000     27.010
+     off        tall         1       37          0      0.000      0.000      0.000     53.246     0.000     24.615
+     off        tall        -1      122         19    459.229    459.229      0.000    202.386     0.000     57.149
+     off      crouch         0       94         32    324.004    324.004      0.000    162.793     0.000     54.640
+     off      crouch         1       82          0      0.000      0.000      0.000    177.504     0.000     35.241
+     off      crouch        -1       78          8    238.774    238.774      0.000    177.718     0.000     54.655
+     off    compress         0      104         40    268.498    268.498      0.000    175.316     0.000     53.684
+     off    compress         1       88          0      0.000      0.000      0.000    200.004     0.000     34.339
+     off    compress        -1       79         10    245.518    245.518      0.000    177.896     0.000     54.943
+    feet        tall         0       37          0      0.000      0.000      0.000     69.989     0.000     27.010
+    feet        tall         1       37          0      0.000      0.000      0.000     53.246     0.000     24.615
+    feet        tall        -1      135         18    550.401    211.553    355.477    208.252     4.213    -62.552
+    feet      crouch         0       94         32    365.348    210.387    154.961    163.109     9.109     57.274
+    feet      crouch         1       82          0      0.000      0.000      0.000    177.504     0.000     35.241
+    feet      crouch        -1       81          8    243.890    221.352     30.836    177.807     3.086     55.017
+    feet    compress         0      104         40    568.860    193.987    567.811    175.942     9.555     63.629
+    feet    compress         1       88          0      0.000      0.000      0.000    200.004     0.000     34.339
+    feet    compress        -1       80         11    259.461    212.461     50.476    178.137     3.750     55.584
+
+  CONTROL, the switch off is inert: ticks where `got` differs from `ask` off the switch = 0 — none, as the gate requires.
+  CONTROL, nothing is delivered past the bound on the switch: ticks with `got` > `bound` = 0 — none.
+  ⛔ CELLS THAT REACHED THE STOP AT ALL: 10 of 18.
+
+  ⭐ WHAT IT DOES, AT NEUTRAL AND THROUGH A STEER. `drawn` is `AttachedRider.drawnTwist`, the rig's own
+  quantity — the one the torso is posed from, so a moved `drawn` is a rider that LOOKS different.
+
+  stance       steer      arm     fell s      work J    max tw °   end tw °  max drawn °     bank °    swing °    climb m
+    tall           0      off      0.633      -7.987      27.010     27.010      27.010    -11.922     -7.258      0.608
+                         feet      0.633      -7.987      27.010     27.010      27.010    -11.922     -7.258      0.608
+    tall           1      off      0.633      -3.904      24.615     23.559      24.615     13.322     -4.311      0.610
+                         feet      0.633      -3.904      24.615     23.559      24.615     13.322     -4.311      0.610
+    tall          -1      off      2.050    -221.001      57.149     52.749      57.149    -38.669    -35.020     -0.239
+                         feet      2.267    -180.035     -62.552    -53.640     -62.552     63.694     18.154     -0.356
+  crouch           0      off      1.583     -65.108      54.640     52.136      54.640    -70.000     10.132      0.038
+                         feet      1.583     -68.073      57.274     53.988      57.274    -70.000     11.051      0.038
+  crouch           1      off      1.383     -10.398      35.241     24.434      35.241    -30.812     50.921      0.165
+                         feet      1.383     -10.398      35.241     24.434      35.241    -30.812     50.921      0.165
+  crouch          -1      off      1.317     -48.544      54.655     49.292      54.655    -70.000    -40.300      0.260
+                         feet      1.367     -53.729      55.017     43.327      55.017    -70.000    -43.552      0.233
+compress           0      off      1.750     -54.906      53.684     50.585      53.684    -70.000     37.531     -0.056
+                         feet      1.750     -64.463      63.629     63.629      63.629    -70.000     35.244     -0.055
+compress           1      off      1.483     -29.213      34.339     34.339      34.339     32.195     58.086      0.093
+                         feet      1.483     -29.213      34.339     34.339      34.339     32.195     58.086      0.093
+compress          -1      off      1.333     -45.278      54.943     51.112      54.943    -70.000    -44.647      0.250
+                         feet      1.350     -45.381      55.584     51.730      55.584    -70.000    -46.297      0.242
+
+  ⚠️ `bank`, `swing` and `climb` here are this run's own peak body lean, net heading change and net surface
+  rise — NOT the ride analyzer's bottom-turn columns, which need a wave frame this analytic face has not got.
