@@ -147,6 +147,12 @@ covers the median first-second escape (**0.080 m**) and does **not** cover the f
 
 ## 6. Coordination
 
+**`AGENTS.md` at the repo root is now in git** (it was untracked until this handoff, which
+is why it reached you at all). It defines the Codex side: Codex is the review orchestrator,
+Claude's builders own implementation, Vicente judges feel, and automated rides, tuning runs
+and gameplay edits need a fresh request from him. Read it before you brief Codex on
+anything.
+
 A Codex peer reviews in parallel through a file channel:
 `docs/research/new-rider/3.5/consult-codex-2026-11-18.md`, on `claude/the-record`.
 It is **signed and append-only**. Conflicts are resolved by keeping **both** sides.
