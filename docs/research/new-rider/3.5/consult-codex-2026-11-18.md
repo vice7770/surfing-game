@@ -885,3 +885,23 @@ With `FOOT_FRICTION = 0.9` and `TWIST_GRIP_SPAN = 0.315`, the grip bound is `0.9
 ⚠️ Standing caveat on all of this: it says nothing yet about whether it moves **the fall**. #455's own table has every arm falling in 0.98–2.17 s. This is a defect in how a torque is bounded, and whether fixing it helps the owner stand is a separate question that needs riding, not reasoning.
 
 — Claude (*Water physics research*), 2026-11-20
+
+### ⭐ Addendum, same night — it is not a design choice, it is the one site out of six
+
+Strengthening my previous entry. `AttachedRider.ts` enforces a `FOOT_FRICTION ×` load bound at **five** separate sites:
+
+| line | what it bounds |
+| --- | --- |
+| `:3914` | the **active twist** authority (`× TWIST_GRIP_SPAN`) |
+| `:4032` | `Math.min(TWIST_TORQUE, FOOT_FRICTION * legLoad * TWIST_GRIP_RADIUS)` |
+| `:4162` | `FOOT_FRICTION * legLoad * (1 − share)` |
+| `:4256` | `span * Math.min(strength, FOOT_FRICTION * front, FOOT_FRICTION * (load − front))` — the lateral couple, by the **weaker** foot |
+| `:5607` | `FOOT_FRICTION * normal` |
+
+And `:986-990` states the rule in prose: *"Each foot pushes across the deck no harder than its grip … so the couple is at most the feet's span times the weaker foot's push"*, with the reason attached — ⚠️ *"an unloaded foot pushes nothing: unbounded, a body weight threw the board from under every rider in 0.2 s."* **That is this project's own record of what an unbounded foot force does.**
+
+⛔ **`:4816` is the sixth site and the only one with no bound.** So the asymmetry is not a modelling decision taken on purpose; it is one path that was never given the clamp the other five have, in a file whose comments argue for the clamp twice.
+
+⚠️ One loose end I noticed and cannot resolve: twist is bounded by `TWIST_GRIP_SPAN = 0.315 m` at `:3914` and by `TWIST_GRIP_RADIUS = 0.15 m` at `:4032` — **two different lever arms for the same contact.** Probably two different couples, but worth your eye.
+
+— Claude (*Water physics research*), 2026-11-20

@@ -157,6 +157,13 @@ stiff joint stop is legitimate passive physics and is **not** a hidden motor; th
 the missing bound. ⭐ Note which way a fix cuts: bounding the stop by grip lets the twist
 **slip** rather than brace, so it relieves a disturbance instead of adding an authority.
 
+⭐ **And the missing bound is the one site out of six.** The same file clamps a foot-borne
+force by `FOOT_FRICTION ×` load at `:3914`, `:4032`, `:4162`, `:4256` and `:5607`, and
+`:986-990` states the rule in prose with its reason: *"an unloaded foot pushes nothing:
+unbounded, a body weight threw the board from under every rider in 0.2 s."* `:4816` is the
+sixth path and the only unbounded one — so this is a clamp that was never added, not a
+decision taken on purpose.
+
 ⚠️ **What none of this establishes:** whether it moves the fall. #455's own table has every
 arm falling in **0.98–2.17 s**. Three things are open — whether `legLoad` is one leg or both,
 whether the literature supports 30° + 20° as a braced surfing stance's whole rotation, and
