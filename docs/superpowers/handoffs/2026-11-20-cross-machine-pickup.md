@@ -344,14 +344,52 @@ manoeuvre naming always did. The report was simply never read out.
 three real browser sessions, via a new `?rideReports=N` + `?seed=N` (off by default, verified
 in-session by printing the sea the host actually built, not the URL):
 
-⛔ **THE POPULATION BELOW IS INPUT-STARVED — read this first.** `src/dev/rideReports.ts:134-146`
-forwards **only** `paddle`, `popUp` and `steer` to `advance`, while `Autopilot.next` also
-returns `trim`, `crouch`, `compress` and `rotate` — and the bottom-turn phase
-(`Autopilot.ts:561`) asks for `crouch: TURN_CROUCH, compress: 1`. **All of it was dropped.**
-So these three named turns were ridden with the steering and **without the compression the
-pilot asked for at the base of the turn**, and they cannot grade stance or release. Raised by
-the peer, verified in the pushed branch, routed to the builder for a fix and a re-measure.
-The figures stand only as "what the analyser reports under reduced controls".
+✅ **FIXED AND RE-MEASURED 2026-11-20 — branch `claude/analyser-input-fix` (`05cb5758`,
+pushed, 0 files under `src/physics/`). The numbers moved; the conclusion got stronger.**
+
+The collector rebuilt the pilot's input as `{ paddle, popUp, steer }`, discarding `trim`,
+`crouch`, `compress` and `rotate` — and **a fifth field nobody had noticed, `tubeGuide`**
+(`Autopilot.ts:81`, `AutopilotInput = RideInput & { tubeGuide?: boolean }`), which would have
+**silently disabled `?style=tube`**. The film recorder never had the bug because it passes
+the pilot's object *by reference*; only a caller that names fields can drop them. Both are
+now forwarded whole, with a behavioural guard at **both** collection sites — demonstrated
+both ways rather than asserted: with the three-field line reintroduced the `advance`-level
+tests still passed while the new collector tests failed (exit 1); restored, all seven passed
+(exit 0).
+
+| Canyon bed B, seeds 1–3 | steer-only (starved) | whole input (fixed) |
+| --- | --- | --- |
+| attempts → analysed rides | 151 → 20 | 149 → 22 |
+| runs measured | 13 | **17** |
+| **named a bottom turn** | **3** of 20 | **2** of 22 |
+| unjudged, and why | 3 — no carry ×2, path did not bend ×1 | 6 — ⛔ **path did not bend ×5**, no carry ×1 |
+| ride duration | median **1.94 s**, 0.00–8.40 | median **2.56 s**, 0.50–9.93 |
+| ride ends | fell ×18, kicked out ×2 | fell ×20, kicked out ×2 |
+
+The two named turns (n=2) against the three (n=3): `carry` **halved, 0.050 → 0.027 m**; speed
+spent **fell, 7.1% → 4.2%**; through-water at release **rose, 5.41 → 7.13 m/s**; lateral g
+**rose, 0.44 → 0.74 g**; duration barely moved, 0.47 → 0.52 s; board roll 49.3 → 43.1°.
+In the pocket: **0 of 3 and 0 of 2.**
+
+⭐ **So feeding the rider its whole input made the rides longer and the turns no bigger.** It
+holds far more speed, spends less of it and pulls harder on a tighter radius — and **climbs
+less**, with the rejection reason moving decisively to *path did not bend* (5 of 6 unjudged),
+because a rider holding speed and banking hard swings its **nose** without bending its
+**travelled path** enough to pass the classifier's first condition. **20 of 22 rides still
+end in a fall. The blocker is the ride, not the classifier**, and that is now the stronger
+statement, not the weaker one.
+
+⭐⭐ **And the Point control is the balance thread appearing in the analyser's own columns.**
+At the Point the whole-input rider produced **0 measured runs in 8 rides and 71 attempts**,
+where the stick alone gave 2 in 8 rides and 42 attempts — its rides shorter and far more
+uniform (median 0.89 s, 0.48–1.03, against 0.94 s, 0.32–3.27). ⛔ **Give the rider its crouch
+and Compress and the long rides disappear.** That is the same signal as the wave-1 fall
+table, from the other end: the richer the command, the sooner it goes down.
+
+⚠️ The original data is **superseded, not overwritten**:
+`3.5/results/analyser-bottom-turn/steer-only/` keeps the four original JSONs with a banner,
+and `whole-input/` carries the new arm. The arms are different **runs**, so only populations
+compare — never per-ride diffs.
 
 > **151 autopilot attempts → 20 analysed rides → 13 measured → 3 named a bottom turn.**
 > Ride duration n=20: **median 1.94 s**, range 0.00–8.40. Ends: fell ×18, kicked out ×2.
@@ -480,6 +518,18 @@ it, so that practice earned its keep here.
   machine it took seven. `vitest.config.ts` sets no `poolOptions`. `--reporter=basic` is
   invalid in vitest 5; **`tap-flat` survives a kill**. A killed run's log is neither pass nor
   fail (exit 144).
+- ☠️ **Never edit a module while a dev server is serving it to a running measurement.** The
+  builder edited `rideReports.ts` while four measurement pages were live — including the window
+  in which it had deliberately reintroduced the defect to test its guard — and **discarded that
+  whole re-measurement** rather than trust it. Correct call, and the trap is cheap to avoid.
+- ⚠️ **The CDP launcher opens VISIBLE Chrome windows on the owner's desktop.** Four landed on
+  his screen, which is why the measurement runs kept dying — he was closing them, reasonably.
+  Launch with `--window-position=-32000,-32000`, and **snapshot each population to disk as it
+  grows** so a closed window costs nothing. Both are in `claude/analyser-input-fix`.
+- ⚠️ **A field list is how inputs get dropped; forward the object.** Five fields had been
+  silently discarded at one call site that named three. The guard that holds is **behavioural,
+  at the call site**, not a type check — every field is optional, so a hand-written literal
+  type-checks exactly as the broken one did.
 - ⚠️ **Cite the BRANCH with every path you give an agent.** I pointed a builder at
   `docs/research/new-rider/3.5/results/35j/35j-ride-canyon.txt` without naming the branch; it
   exists only on **`claude/twist-stop`**, not on `claude/ride-everything` where the builder was
