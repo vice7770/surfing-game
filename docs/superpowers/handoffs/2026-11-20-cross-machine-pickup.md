@@ -159,6 +159,17 @@ Two rules learned the hard way:
 - Codex's work has been found **uncommitted three times**. Check for it and commit it
   verbatim.
 
+**Three Codex branches were committed but never pushed, and are now on origin.** They were
+found during this handoff, eleven commits in all, every one docs-only:
+`codex/canyon-neutral-ankle-review` (7), `codex/surf-motion-11-13` (2) and
+`codex/surf-motion-14-16` (2). The last two carried
+`docs/research/new-rider/3.5/independent-video-review-11-13.md` and
+`video-review-14-16.md`, Codex's independent reads of clips 11–16, which existed **nowhere
+else in the repo** — and its worktree sat in `/private/tmp`, so a reboot would have taken
+them. Both documents are now on `claude/the-record` as well. No PR was opened for any of
+the three; pushing a branch preserves the work without growing the PR count. **Check for
+unpushed Codex branches before you trust a branch listing.**
+
 **Preserve independent reads.** When two agents read the same footage, let the second one
 record its observations before it sees the first. The two reads of clip 29 currently
 **disagree** on the first visible foot (~1.25 s vs 0.6900 media s) — that disagreement is
