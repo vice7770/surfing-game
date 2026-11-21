@@ -1,0 +1,77 @@
+# 3.5q the closure's own cell (3.4 Part 5's owner's low cell): 3.3/plant.ts RIDER=new FELT=deck BODY=two ENTRIES=1,2,3,4,5,6, arms A (none), B (FLOOR=4.5), C (FLOOR=4.5 WHEEL=tilt), F (WHEEL=tilt)
+## A
+tall 1 0.667 balance wheel off floor ships body two felt deck
+tall 2 0.5 balance wheel off floor ships body two felt deck
+tall 3 1 balance wheel off floor ships body two felt deck
+tall 4 2.733 balance wheel off floor ships body two felt deck
+tall 5 1.217 balance wheel off floor ships body two felt deck
+tall 6 1.05 balance wheel off floor ships body two felt deck
+crouch 1 0.617 balance wheel off floor ships body two felt deck
+crouch 2 0.567 balance wheel off floor ships body two felt deck
+crouch 3 0.883 balance wheel off floor ships body two felt deck
+crouch 4 6.233 balance wheel off floor ships body two felt deck
+crouch 5 1.283 balance wheel off floor ships body two felt deck
+crouch 6 1.033 balance wheel off floor ships body two felt deck
+compress 1 0.617 balance wheel off floor ships body two felt deck
+compress 2 0.55 balance wheel off floor ships body two felt deck
+compress 3 0.783 balance wheel off floor ships body two felt deck
+compress 4 1.733 balance wheel off floor ships body two felt deck
+compress 5 1.2 balance wheel off floor ships body two felt deck
+compress 6 1.167 balance wheel off floor ships body two felt deck
+## B
+tall 1 0.667 balance wheel off floor 4.5 body two felt deck
+tall 2 0.533 balance wheel off floor 4.5 body two felt deck
+tall 3 0.967 balance wheel off floor 4.5 body two felt deck
+tall 4 1.417 balance wheel off floor 4.5 body two felt deck
+tall 5 1.217 balance wheel off floor 4.5 body two felt deck
+tall 6 1.05 balance wheel off floor 4.5 body two felt deck
+crouch 1 0.633 balance wheel off floor 4.5 body two felt deck
+crouch 2 0.6 balance wheel off floor 4.5 body two felt deck
+crouch 3 0.8 balance wheel off floor 4.5 body two felt deck
+crouch 4 1.417 balance wheel off floor 4.5 body two felt deck
+crouch 5 1.283 balance wheel off floor 4.5 body two felt deck
+crouch 6 1.033 balance wheel off floor 4.5 body two felt deck
+compress 1 0.617 balance wheel off floor 4.5 body two felt deck
+compress 2 0.567 balance wheel off floor 4.5 body two felt deck
+compress 3 0.767 balance wheel off floor 4.5 body two felt deck
+compress 4 1.233 balance wheel off floor 4.5 body two felt deck
+compress 5 1.2 balance wheel off floor 4.5 body two felt deck
+compress 6 1.167 balance wheel off floor 4.5 body two felt deck
+## C
+tall 1 0.133 balance wheel tilt floor 4.5 body two felt deck
+tall 2 0.133 balance wheel tilt floor 4.5 body two felt deck
+tall 3 0.15 balance wheel tilt floor 4.5 body two felt deck
+tall 4 0.733 balance wheel tilt floor 4.5 body two felt deck
+tall 5 0.767 balance wheel tilt floor 4.5 body two felt deck
+tall 6 0.9 balance wheel tilt floor 4.5 body two felt deck
+crouch 1 0.133 balance wheel tilt floor 4.5 body two felt deck
+crouch 2 0.133 balance wheel tilt floor 4.5 body two felt deck
+crouch 3 0.15 balance wheel tilt floor 4.5 body two felt deck
+crouch 4 0.7 balance wheel tilt floor 4.5 body two felt deck
+crouch 5 0.75 balance wheel tilt floor 4.5 body two felt deck
+crouch 6 0.867 balance wheel tilt floor 4.5 body two felt deck
+compress 1 0.133 balance wheel tilt floor 4.5 body two felt deck
+compress 2 0.133 balance wheel tilt floor 4.5 body two felt deck
+compress 3 0.167 balance wheel tilt floor 4.5 body two felt deck
+compress 4 0.7 balance wheel tilt floor 4.5 body two felt deck
+compress 5 1.083 lost board wheel tilt floor 4.5 body two felt deck
+compress 6 0.867 balance wheel tilt floor 4.5 body two felt deck
+## F
+tall 1 0.15 balance wheel tilt floor ships body two felt deck
+tall 2 0.15 balance wheel tilt floor ships body two felt deck
+tall 3 0.15 balance wheel tilt floor ships body two felt deck
+tall 4 0.783 balance wheel tilt floor ships body two felt deck
+tall 5 0.767 balance wheel tilt floor ships body two felt deck
+tall 6 0.9 balance wheel tilt floor ships body two felt deck
+crouch 1 0.15 balance wheel tilt floor ships body two felt deck
+crouch 2 0.15 balance wheel tilt floor ships body two felt deck
+crouch 3 0.15 balance wheel tilt floor ships body two felt deck
+crouch 4 0.733 balance wheel tilt floor ships body two felt deck
+crouch 5 0.75 balance wheel tilt floor ships body two felt deck
+crouch 6 0.867 balance wheel tilt floor ships body two felt deck
+compress 1 0.133 balance wheel tilt floor ships body two felt deck
+compress 2 0.15 balance wheel tilt floor ships body two felt deck
+compress 3 0.167 balance wheel tilt floor ships body two felt deck
+compress 4 0.433 balance wheel tilt floor ships body two felt deck
+compress 5 1.083 lost board wheel tilt floor ships body two felt deck
+compress 6 0.867 balance wheel tilt floor ships body two felt deck

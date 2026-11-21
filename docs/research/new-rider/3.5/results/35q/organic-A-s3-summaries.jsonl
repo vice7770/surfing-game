@@ -1,0 +1,58 @@
+{"control":true,"address":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","scripts":["cue","cueL","cueR"],"seed":3,"periods":12,"standHold":5,"turnSteer":1,"turnCompress":0,"probe":"on","subFrom":99,"subTo":99,"search":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","grid":"400x451","cells":180400,"spunUp":65.299,"seaTime":22,"startX":-122,"startZ":-134,"riderOptions":{"rider":"new","feltFrame":"deck","stanceReach":"keep","deepen":"on","riderBody":"two"},"extra":{},"diagnostic":{"schedFloor":null,"hipOff":0}}
+{"kind":"built","script":"cue","wave":2,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueL","wave":2,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueR","wave":2,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cue","wave":6,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueL","wave":6,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueR","wave":6,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cue","wave":5,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueL","wave":5,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueR","wave":5,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cue","wave":7,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueL","wave":7,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueR","wave":7,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cue","wave":9,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueL","wave":9,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueR","wave":9,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cue","wave":10,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueL","wave":10,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueR","wave":10,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cue","wave":12,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueL","wave":12,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"built","script":"cueR","wave":12,"plantFloor":null,"waterHeel":null,"riderBody":"two","weightsKeys":9,"schedFloor":null,"hipOff":0}
+{"kind":"summary","script":"cue","wave":1,"frames":1142,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueL","wave":1,"frames":1142,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueR","wave":1,"frames":1142,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":2,"frames":564,"pop":7.05,"stand":8.25,"fell":9.38333,"cause":"balance","fellAfterStand":1.13333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueL","wave":2,"frames":564,"pop":7.05,"stand":8.25,"fell":9.38333,"cause":"balance","fellAfterStand":1.13333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueR","wave":2,"frames":564,"pop":7.05,"stand":8.25,"fell":9.38333,"cause":"balance","fellAfterStand":1.13333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":3,"frames":439,"pop":6.58333,"stand":null,"fell":7.3,"cause":"lost board","fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueL","wave":3,"frames":439,"pop":6.58333,"stand":null,"fell":7.3,"cause":"lost board","fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueR","wave":3,"frames":439,"pop":6.58333,"stand":null,"fell":7.3,"cause":"lost board","fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":4,"frames":660,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueL","wave":4,"frames":660,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueR","wave":4,"frames":660,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":5,"frames":1202,"pop":17.46667,"stand":18.66667,"fell":null,"cause":null,"fellAfterStand":null,"stood":1,"standExposure":1.33333,"censored":1}
+{"kind":"summary","script":"cueL","wave":5,"frames":1202,"pop":17.46667,"stand":18.66667,"fell":null,"cause":null,"fellAfterStand":null,"stood":1,"standExposure":1.33333,"censored":1}
+{"kind":"summary","script":"cueR","wave":5,"frames":1202,"pop":17.46667,"stand":18.66667,"fell":null,"cause":null,"fellAfterStand":null,"stood":1,"standExposure":1.33333,"censored":1}
+{"kind":"summary","script":"cue","wave":6,"frames":600,"pop":7.7,"stand":8.9,"fell":9.98333,"cause":"lost board","fellAfterStand":1.08333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueL","wave":6,"frames":591,"pop":7.7,"stand":8.9,"fell":9.83333,"cause":"lost board","fellAfterStand":0.93333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueR","wave":6,"frames":588,"pop":7.7,"stand":8.9,"fell":9.78333,"cause":"balance","fellAfterStand":0.88333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":7,"frames":585,"pop":7.61667,"stand":8.81667,"fell":9.73333,"cause":"balance","fellAfterStand":0.91667,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueL","wave":7,"frames":585,"pop":7.61667,"stand":8.81667,"fell":9.73333,"cause":"balance","fellAfterStand":0.91667,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueR","wave":7,"frames":585,"pop":7.61667,"stand":8.81667,"fell":9.73333,"cause":"balance","fellAfterStand":0.91667,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":8,"frames":659,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueL","wave":8,"frames":659,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueR","wave":8,"frames":659,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":9,"frames":572,"pop":7.33333,"stand":8.53333,"fell":9.51667,"cause":"balance","fellAfterStand":0.98333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueL","wave":9,"frames":543,"pop":7.33333,"stand":8.53333,"fell":9.03333,"cause":"balance","fellAfterStand":0.5,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueR","wave":9,"frames":541,"pop":7.33333,"stand":8.53333,"fell":9,"cause":"balance","fellAfterStand":0.46667,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":10,"frames":617,"pop":7.78333,"stand":8.98333,"fell":10.26667,"cause":"lost board","fellAfterStand":1.28333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueL","wave":10,"frames":617,"pop":7.78333,"stand":8.98333,"fell":10.26667,"cause":"lost board","fellAfterStand":1.28333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueR","wave":10,"frames":617,"pop":7.78333,"stand":8.98333,"fell":10.26667,"cause":"lost board","fellAfterStand":1.28333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":11,"frames":578,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueL","wave":11,"frames":578,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cueR","wave":11,"frames":578,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":12,"frames":584,"pop":6.78333,"stand":7.98333,"fell":9.71667,"cause":"balance","fellAfterStand":1.73333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueL","wave":12,"frames":539,"pop":6.78333,"stand":7.98333,"fell":8.96667,"cause":"balance","fellAfterStand":0.98333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cueR","wave":12,"frames":522,"pop":6.78333,"stand":7.98333,"fell":8.68333,"cause":"balance","fellAfterStand":0.7,"stood":1,"standExposure":5,"censored":0}

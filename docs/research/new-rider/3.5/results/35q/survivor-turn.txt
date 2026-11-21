@@ -1,0 +1,10 @@
+# 3.5q the wave-2 survivor's turn: seed 2 wave 2 cueL, steer alone; turn peak = largest |body bank| in 0.3-2.0 s after the stand; climb = faceH x faceFrac (sharp-steer.ts rows); B is 3.5o's published floor arm
+o-A-s2.jsonl: fell +3.7 s; turn peak bank 42.83 at +1.367 s
+  0.5 m: +2.067 s, 4.24 m/s through, course 48.6
+  0.9 m: +2.783 s, 3.31 m/s through, course 46.4
+o-C-s2.jsonl: fell +3.88333 s; turn peak bank 24.21 at +1.383 s
+  0.5 m: not reached (max climb after the peak 0.31 m)
+  0.9 m: not reached (max climb after the peak 0.31 m)
+o-D-s2.jsonl: fell +3 s; turn peak bank 42.48 at +1.433 s
+  0.5 m: +2.200 s, 4.92 m/s through, course 49.4
+  0.9 m: +2.917 s, 5.05 m/s through, course 74.5

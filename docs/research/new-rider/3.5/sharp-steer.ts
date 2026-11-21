@@ -486,7 +486,7 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
     // Print back what the host actually built (the switch's own read, never the URL): the predictor's weights.
     const built = (session.rider as Any).predictor?.weights;
     emit({
-      kind: 'built', script: script.name, wave: trial.index, plantFloor: built?.plantFloor ?? null, riderBody: built?.riderBody ?? null,
+      kind: 'built', script: script.name, wave: trial.index, plantFloor: built?.plantFloor ?? null, waterHeel: built?.waterHeel ?? null, riderBody: built?.riderBody ?? null,
       weightsKeys: built ? Object.keys(built).length : 0, schedFloor: SCHED_FLOOR ?? null, hipOff: HIP_OFF ? 1 : 0,
     });
     if (PROBE_ON && (WAVES === null || WAVES.includes(trial.index))) {
