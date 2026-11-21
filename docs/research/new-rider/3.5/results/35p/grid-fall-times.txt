@@ -1,0 +1,43 @@
+# 3.5p: fall times per cell, 6 s runs (straight-fall.ts GRID=1); paired against the first column
+cell               g-new.jsonl     g-old.jsonl   g-floor.jsonl  g-new-off.json
+-5|-1|-0.5               2.900             >=6           2.900           2.900
+-5|-1|0                  3.550             >=6           3.550           3.550
+-5|-1|0.5                2.133             >=6           2.133           2.133
+-5|0|-0.5                2.800             >=6           2.800           2.800
+-5|0|0                   3.283             >=6           3.283           3.283
+-5|0|0.5                 2.100             >=6           2.100           2.100
+-5|1|-0.5                2.833             >=6           2.833           2.833
+-5|1|0                   3.250             >=6           3.250           3.250
+-5|1|0.5                 2.083             >=6           2.083           2.083
+0|-1|-0.5                2.517             >=6           2.517           2.517
+0|-1|0                   2.533             >=6           2.533           2.533
+0|-1|0.5                 2.383             >=6           2.383           2.383
+0|0|-0.5                 2.533             >=6           2.533           2.533
+0|0|0                    2.500             >=6           2.500           2.500
+0|0|0.5                  2.367             >=6           2.367           2.367
+0|1|-0.5                 2.583             >=6           2.583           2.583
+0|1|0                    2.517             >=6           2.517           2.517
+0|1|0.5                  2.350             >=6           2.350           2.350
+5|-1|-0.5                2.650           5.750           2.650           2.650
+5|-1|0                   2.567             >=6           2.567           2.567
+5|-1|0.5                 2.050             >=6           2.050           2.050
+5|0|-0.5                 2.717           5.817           2.717           2.717
+5|0|0                    2.683             >=6           2.683           2.683
+5|0|0.5                  2.333             >=6           2.333           2.333
+5|1|-0.5                 2.850           5.467           2.850           2.850
+5|1|0                    3.083             >=6           3.083           3.083
+5|1|0.5                  2.500             >=6           2.500           2.500
+g-new.jsonl: n 27, fell 27, censored 0, median 2.533, range 2.050-3.550
+g-old.jsonl: n 27, fell 3, censored 24, median 6.000 (censored at floor), range 5.467-6.000
+g-floor.jsonl: n 27, fell 27, censored 0, median 2.533, range 2.050-3.550
+g-new-off.jsonl: n 27, fell 27, censored 0, median 2.533, range 2.050-3.550
+paired second - first: later 27 / sooner 0 / same 0, median +3.467 (range +2.450 to +3.950)
+
+g-new.jsonl: n 27, fell 27, censored 0, median 2.533, range 2.050-3.550
+g-lvl.jsonl: n 27, fell 27, censored 0, median 4.167, range 2.667-5.817
+paired second - first: later 27 / sooner 0 / same 0, median +1.617 (range +0.367 to +3.067)
+
+# WARM=1 (the balance starts from the posture it is placed in), paired against the shipped grid
+g-new.jsonl: n 27, fell 27, censored 0, median 2.533, range 2.050-3.550
+g-warm.jsonl: n 27, fell 27, censored 0, median 4.567, range 2.667-5.750
+paired second - first: later 27 / sooner 0 / same 0, median +1.867 (range +0.300 to +3.250)

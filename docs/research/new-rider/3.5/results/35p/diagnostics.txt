@@ -1,0 +1,93 @@
+# 3.5p diagnostic arms on the base cell (dh 0, dx 0, dv 0), straight-fall.ts; each line: the arm's control row (as built) then its summary
+# file names: lvl = PLACE_LEVEL=1; rail = SCHED_RAIL=actual; face = SCHED_RAIL=face; gs-th06 = GAIN_SCALE=2:0.6; gs-phi166 = GAIN_SCALE=0:1.66; warm = WARM=1; st-<s> = STEER=<s> (the control row predates GAIN_SCALE/WARM fields, the file name is the record)
+## base-new.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': None, 'steer': None}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":2.5,"censored":0,"seconds":4,"sep":"balance"}
+## lvl-new.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 1, 'steer': None}
+{"kind":"placeLevel","across":12.177,"after":0.1258}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":4.16667,"censored":0,"seconds":6,"sep":"balance"}
+## rail-new.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': 'actual', 'placeLevel': 0, 'steer': None}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":1.18333,"censored":0,"seconds":6,"sep":"balance"}
+## face-new.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': 'face', 'placeLevel': 0, 'steer': 0}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":1.5,"censored":0,"seconds":6,"sep":"balance"}
+## face-lvl.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': 'face', 'placeLevel': 1, 'steer': 0}
+{"kind":"placeLevel","across":12.177,"after":0.1258}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":1.93333,"censored":0,"seconds":6,"sep":"balance"}
+## gs-th06.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 0, 'steer': 0}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":1.3,"censored":0,"seconds":6,"sep":"balance"}
+## gs-phi166.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 0, 'steer': 0}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":1.31667,"censored":0,"seconds":6,"sep":"balance"}
+## gs-phi166-lvl.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 1, 'steer': 0}
+{"kind":"placeLevel","across":12.177,"after":0.1258}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":1.9,"censored":0,"seconds":6,"sep":"balance"}
+## warm-base.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 0, 'steer': 0}
+{"kind":"warm","roll":-12.4272,"bank":0,"rest":12.4272}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":4.56667,"censored":0,"seconds":6,"sep":"balance"}
+## st-0.1.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 0, 'steer': 0.1}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":1.78333,"censored":0,"seconds":6,"sep":"balance"}
+## st-0.2.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 0, 'steer': 0.2}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":0.58333,"censored":0,"seconds":6,"sep":"balance"}
+## st-0.35.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 0, 'steer': 0.35}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":0.56667,"censored":0,"seconds":6,"sep":"balance"}
+## st--0.1.jsonl
+{'search': '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&testWave=ride', 'schedFloor': None, 'hipOff': 0, 'schedRail': None, 'placeLevel': 0, 'steer': -0.1}
+{"kind":"summary","cell":"0|0|0","dh":0,"dx":0,"dv":0,"fell":2,"censored":0,"seconds":6,"sep":"balance"}
+
+# the still plane (straight-plane.ts), 14.6 deg falling toward +z; ACROSS=1 tilts 12 deg across a 54 deg heading
+## p-new-face.jsonl
+{"kind":"control","search":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","rider":"new","seconds":6,"slope":14.6,"across":1,"headings":[54],"speeds":[7.7],"optio
+{"kind":"summary","cell":"54|7.7","fell":null,"censored":1,"seconds":6,"sep":null}
+## p-new-glide.jsonl
+{"kind":"control","search":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","rider":"new","seconds":6,"slope":14.6,"across":0,"headings":[54],"speeds":[7.7],"optio
+{"kind":"summary","cell":"54|7.7","fell":null,"censored":1,"seconds":6,"sep":null}
+## p-old-face.jsonl
+{"kind":"control","search":"?canyonWaves=true","rider":"old","seconds":6,"slope":14.6,"across":1,"headings":[54],"speeds":[7.7],"options":{}}
+{"kind":"summary","cell":"54|7.7","fell":null,"censored":1,"seconds":6,"sep":null}
+## p-old-glide.jsonl
+{"kind":"control","search":"?canyonWaves=true","rider":"old","seconds":6,"slope":14.6,"across":0,"headings":[54],"speeds":[7.7],"options":{}}
+{"kind":"summary","cell":"54|7.7","fell":null,"censored":1,"seconds":6,"sep":null}
+## pg-new-49.jsonl
+{"kind":"control","search":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","rider":"new","seconds":6,"slope":14.6,"across":1,"headings":[49],"speeds":[7.2,7.7,8.2
+{"kind":"summary","cell":"49|7.2","fell":null,"censored":1,"seconds":6,"sep":null}
+{"kind":"summary","cell":"49|7.7","fell":null,"censored":1,"seconds":6,"sep":null}
+{"kind":"summary","cell":"49|8.2","fell":null,"censored":1,"seconds":6,"sep":null}
+## pg-new-54.jsonl
+{"kind":"control","search":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","rider":"new","seconds":6,"slope":14.6,"across":1,"headings":[54],"speeds":[7.2,7.7,8.2
+{"kind":"summary","cell":"54|7.2","fell":2.83333,"censored":0,"seconds":6,"sep":"balance"}
+{"kind":"summary","cell":"54|7.7","fell":null,"censored":1,"seconds":6,"sep":null}
+{"kind":"summary","cell":"54|8.2","fell":null,"censored":1,"seconds":6,"sep":null}
+## pg-new-59.jsonl
+{"kind":"control","search":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","rider":"new","seconds":6,"slope":14.6,"across":1,"headings":[59],"speeds":[7.2,7.7,8.2
+{"kind":"summary","cell":"59|7.2","fell":2.03333,"censored":0,"seconds":6,"sep":"balance"}
+{"kind":"summary","cell":"59|7.7","fell":null,"censored":1,"seconds":6,"sep":null}
+{"kind":"summary","cell":"59|8.2","fell":null,"censored":1,"seconds":6,"sep":null}
+
+# organic neutral take-offs, 3.5o's sharp-steer.ts MODE=takeoff drive, SCRIPTS=cue, STAND_HOLD=5, owner's address
+## org-s2.jsonl
+{"control":true,"address":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","scripts":["cue"],"seed":2,"periods":7,"standHold":5,"turnSteer":1,"turnCompress":0,"probe":"on","subFrom":99,"subTo":99,"search
+{"kind":"summary","script":"cue","wave":1,"frames":723,"pop":6.93333,"stand":8.13333,"fell":12.03333,"cause":"balance","fellAfterStand":3.9,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":2,"frames":811,"pop":7.28333,"stand":8.48333,"fell":null,"cause":null,"fellAfterStand":null,"stood":1,"standExposure":5,"censored":1}
+{"kind":"summary","script":"cue","wave":3,"frames":476,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":4,"frames":1142,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":5,"frames":581,"pop":7.51667,"stand":8.71667,"fell":9.66667,"cause":"balance","fellAfterStand":0.95,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":6,"frames":606,"pop":6.58333,"stand":7.78333,"fell":10.08333,"cause":"balance","fellAfterStand":2.3,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":7,"frames":637,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+## org-s8.jsonl
+{"control":true,"address":"?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on","scripts":["cue"],"seed":8,"periods":6,"standHold":5,"turnSteer":1,"turnCompress":0,"probe":"on","subFrom":99,"subTo":99,"search
+{"kind":"summary","script":"cue","wave":1,"frames":583,"pop":7.31667,"stand":8.51667,"fell":9.7,"cause":"balance","fellAfterStand":1.18333,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":2,"frames":562,"pop":6.5,"stand":7.7,"fell":9.35,"cause":"balance","fellAfterStand":1.65,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":3,"frames":669,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":4,"frames":1142,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}
+{"kind":"summary","script":"cue","wave":5,"frames":759,"pop":6.63333,"stand":7.83333,"fell":12.63333,"cause":"balance","fellAfterStand":4.8,"stood":1,"standExposure":5,"censored":0}
+{"kind":"summary","script":"cue","wave":6,"frames":624,"pop":null,"stand":null,"fell":null,"cause":null,"fellAfterStand":null,"stood":0,"standExposure":null,"censored":0}

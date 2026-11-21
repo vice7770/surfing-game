@@ -1,0 +1,109 @@
+# 3.5p: the capture point's split across, 27 cells, 0-0.55 s (g-new-early)
+substeps 15120 split identity holds 15120 engine capture point matched 15120
+window 0.0-0.2 s, axis x, n 27 cells: median (range), m of capture point
+         dcp: -0.100 (-0.119 to -0.070)
+        dPos: -0.176 (-0.191 to -0.157)
+     dVrider: -0.033 (-0.039 to -0.027)
+    dVboardT: -0.088 (-0.108 to -0.057)
+    dVboardR: +0.066 (+0.057 to +0.074)
+     dVframe: +0.008 (+0.007 to +0.010)
+    dFeltPos: +0.119 (+0.105 to +0.132)
+    dFeltVel: +0.002 (+0.002 to +0.003)
+      dOmega: +0.000 (-0.002 to +0.002)
+   board CoM share of the total: +0.868 (+0.812 to +0.921)
+window 0.2-0.35 s, axis x, n 27 cells: median (range), m of capture point
+         dcp: -0.337 (-0.368 to -0.292)
+        dPos: -0.075 (-0.085 to -0.066)
+     dVrider: -0.012 (-0.014 to -0.011)
+    dVboardT: -0.369 (-0.392 to -0.324)
+    dVboardR: +0.020 (+0.006 to +0.031)
+     dVframe: +0.007 (-0.000 to +0.017)
+    dFeltPos: +0.081 (+0.069 to +0.085)
+    dFeltVel: -0.001 (-0.003 to -0.000)
+      dOmega: +0.012 (+0.004 to +0.017)
+   board CoM share of the total: +1.087 (+1.053 to +1.138)
+window 0.35-0.55 s, axis x, n 27 cells: median (range), m of capture point
+         dcp: +0.342 (+0.291 to +0.497)
+        dPos: +0.073 (+0.063 to +0.085)
+     dVrider: -0.093 (-0.106 to -0.086)
+    dVboardT: +0.547 (+0.478 to +0.750)
+    dVboardR: -0.124 (-0.168 to -0.101)
+     dVframe: +0.003 (-0.021 to +0.028)
+    dFeltPos: -0.000 (-0.004 to +0.003)
+    dFeltVel: -0.010 (-0.012 to -0.006)
+      dOmega: -0.062 (-0.084 to -0.047)
+   board CoM share of the total: +1.624 (+1.510 to +1.720)
+
+# along
+substeps 15120 split identity holds 15120 engine capture point matched 15120
+window 0.0-0.2 s, axis z, n 27 cells: median (range), m of capture point
+         dcp: -0.208 (-0.234 to -0.179)
+        dPos: +0.075 (+0.066 to +0.083)
+     dVrider: -0.008 (-0.024 to +0.008)
+    dVboardT: -0.235 (-0.261 to -0.204)
+    dVboardR: -0.002 (-0.004 to -0.001)
+     dVframe: -0.007 (-0.008 to -0.006)
+    dFeltPos: -0.041 (-0.056 to -0.025)
+    dFeltVel: -0.003 (-0.003 to -0.002)
+      dOmega: +0.012 (+0.011 to +0.013)
+   board CoM share of the total: +1.127 (+1.091 to +1.163)
+window 0.2-0.35 s, axis z, n 27 cells: median (range), m of capture point
+         dcp: +0.307 (+0.280 to +0.329)
+        dPos: +0.045 (+0.042 to +0.051)
+     dVrider: -0.014 (-0.023 to -0.010)
+    dVboardT: +0.367 (+0.343 to +0.383)
+    dVboardR: -0.022 (-0.027 to -0.020)
+     dVframe: -0.033 (-0.043 to -0.031)
+    dFeltPos: -0.045 (-0.047 to -0.039)
+    dFeltVel: +0.002 (-0.000 to +0.002)
+      dOmega: +0.012 (+0.008 to +0.017)
+   board CoM share of the total: +1.182 (+1.157 to +1.258)
+window 0.35-0.55 s, axis z, n 27 cells: median (range), m of capture point
+         dcp: +0.179 (+0.108 to +0.305)
+        dPos: +0.078 (+0.061 to +0.094)
+     dVrider: -0.053 (-0.076 to -0.029)
+    dVboardT: +0.087 (+0.003 to +0.171)
+    dVboardR: -0.018 (-0.027 to -0.016)
+     dVframe: +0.033 (+0.023 to +0.036)
+    dFeltPos: +0.033 (+0.023 to +0.040)
+    dFeltVel: -0.015 (-0.019 to -0.012)
+      dOmega: +0.047 (+0.030 to +0.077)
+   board CoM share of the total: +0.475 (+0.030 to +0.724)
+
+# the spiral: roll and yaw ledgers and the split, 1.0 s to the fall (g-new-led)
+cells 27, window 1.0 s to 0.1 s before the fall (or the end)
+mean water roll moment per cell (N m): -36.4 (-47.2 to -26.4)
+mean rider roll moment per cell (N m): +36.4 (+26.5 to +47.2)
+share of frames with water and rider opposed: +100.0 (+100.0 to +100.0) %
+mean water yaw moment per cell (N m): +47.6 (+23.1 to +70.2)
+mean rider yaw moment per cell (N m): -48.3 (-71.2 to -22.8)
+rail range seen: -82.1 to 0.2 | bank range seen: -70.0 to -10.7 | ankle explicit torque range: -111.2 to 324.4
+capture split across, 1.0 s to the fall, per cell (m):
+         dcp: -0.4 (-0.8 to -0.2) -0.440
+        dPos: -0.1 (-0.1 to +0.0) -0.067
+     dVrider: -1.7 (-2.9 to -1.2) -1.710
+    dVboardT: +1.6 (+0.7 to +2.5) +1.591
+    dVboardR: -0.1 (-0.2 to +0.0) -0.107
+     dVframe: -0.2 (-0.3 to -0.0) -0.173
+    dFeltPos: -0.1 (-0.1 to -0.0) -0.068
+    dFeltVel: -0.0 (-0.1 to +0.1) -0.018
+      dOmega: +0.2 (-0.1 to +0.3) +0.192
+   rider + board CoM (the differential): -0.188 (-0.519 to +0.047)
+substeps 41711 identities hold 41711
+
+# the old rider's roll and yaw ledgers, 0.5 s to the end (g-old-led), and the ledger's inertness against g-old
+cells 27, window 0.5 s to 0.0 s before the fall (or the end)
+mean water roll moment per cell (N m): +32.0 (+3.8 to +43.5)
+mean rider roll moment per cell (N m): -32.0 (-43.6 to -3.8)
+share of frames with water and rider opposed: +100.0 (+99.4 to +100.0) %
+mean water yaw moment per cell (N m): +5.4 (+2.4 to +12.7)
+mean rider yaw moment per cell (N m): -5.4 (-12.7 to -2.3)
+rail range seen: -47.5 to 20.8 | bank range seen: -2.3 to 3.0 | ankle explicit torque range: -17.2 to 68.0
+g-old.jsonl: n 27, fell 3, censored 24, median 6.000 (censored at floor), range 5.467-6.000
+g-old-led.jsonl: n 27, fell 3, censored 24, median 6.000 (censored at floor), range 5.467-6.000
+paired second - first: later 0 / sooner 0 / same 27, median +0.000 (range +0.000 to +0.000)
+
+# the new rider's ledger run against g-new (inertness)
+g-new.jsonl: n 27, fell 27, censored 0, median 2.533, range 2.050-3.550
+g-new-led.jsonl: n 27, fell 27, censored 0, median 2.533, range 2.050-3.550
+paired second - first: later 0 / sooner 0 / same 27, median +0.000 (range +0.000 to +0.000)
