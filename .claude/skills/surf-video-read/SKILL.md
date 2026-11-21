@@ -53,6 +53,21 @@ Two defences, both proven:
 
 Closing the artifact pane restored painting once. Posting canvas PNGs to a local HTTP sink would bypass the problem entirely, but the pane blocks localhost with `ERR_BLOCKED_BY_CLIENT`.
 
+#### ☠️☠️ BUT BOTH OF THOSE DEFENCES CAN PASS WHILE THE READ IS POISONED — clip 13, and this is the worst one yet
+
+**With the pane HIDDEN, the decode freezes while every status signal stays honest.** On clip 13: `document.hidden` returned **`false`**, `visibilityState` **`"visible"`**, `readyState` **4**, `buffered` covered the whole clip, every seek resolved, and `video.currentTime` returned **exactly** the value asked for. `drawImage(video, …)` returned **the same frame every time**.
+
+**So the canvas stamp was CORRECT and the picture was seconds old, and the second screenshot matched the first.** It produced two tidy 1.4-second runs of pixel-identical frames, which reads exactly like **two editorial freeze-frames** and would have been published as data.
+
+**The defence that works is an OUT-OF-ORDER PROBE.** Seek a handful of times in a deliberately scrambled order, far apart, with repeats — e.g. 10.7, 9.4, 10.0, 9.3, 10.7, 9.4, 16.8, 17.4, 16.3 — and difference **every pair**. On clip 13 all **45 pairs returned 0**, including frames 7 s apart. A real freeze-frame cannot do that.
+
+> **RULE: never trust a run of zero frame-differences. Probe out of order and difference every pair. The stamp proves the clock, not the pixels.** Run the probe after the harness is built, after every quality change, and whenever a trace shows repeated frames.
+
+**Two causes, both worth checking first:**
+
+- **The pane is hidden.** `tabs_context` says so in one line — **read it**. Showing the pane half-fixed it; a **page reload** fixed it completely.
+- **☠️ A YouTube Short carries TWO `<video>` elements after a reload, and `document.querySelector('video')` returns the EMPTY one** (`videoWidth` 0, `duration` null). Build the harness on `[...document.querySelectorAll('video')].find(v => v.videoWidth > 0)` and re-select it after every reload or quality change, or you will silently measure nothing.
+
 **And the version of this that bites hardest: TWO READS IN ONE TAB.** The browser pane is shared across agents, and a fresh pane has exactly **one** tab. On 2026-11-17 two video reads ran at once and `tabs_context` showed a single tab — **so each was seeking `currentTime` in a tab the other was navigating, and a screenshot could return the other clip's frame.** Nothing in the image says which video it came from.
 
 **So every read claims its own tab:** call `tabs_create` first, keep the `tabId`, and **pass it explicitly on every call afterwards** — `navigate`, `javascript_tool`, `computer`, `read_page`, all of them. **Omitting `tabId` targets whatever tab is active, which may be another agent's.** Say in the report which `tabId` was used. **Discard any frame you cannot prove came from your own clip at the timestamp you intended** — a thin honest read beats a fuller one built on someone else's video.
@@ -83,6 +98,10 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 - **⭐ AND THEREFORE: A SMALLER VIEWPORT IS STRICTLY BETTER FOR MEASURING.** Get the high-quality **stream** first (that is what enlarging and reloading is for), **then shrink the viewport to take the frames.** Clip 12 measured the canvas→screenshot scale at **0.625 at 1280×1000** — not the 0.78 clip 9 recorded, so **the scale is not a constant; measure it** — and **exactly 1.0 at 800×640**, where a 790×594 source crop renders **1:1** for about **55 % more usable pixels.** Stream quality and screenshot scale are two different knobs: maximise the first, minimise the second.
 - **☠️ SURVEY STRIPS LIE ABOUT ANGLES.** Clip 12 read **"~70°"** off 0.26× strips for frames that measured **32–43°** at 1:1, and **"~45°"** for one that measured **10°**. **Use strips to FIND a moment; never to measure one.** Every angle it published came from a gridded frame at **≥0.86×**.
 - **A PUBLISHED QUALITY CEILING CAN BE FICTITIOUS.** Clip 12 publishes `hd2160`, and it **A/Bs identical to `hd1440`** at the same field of view and final size. **Four clips, four different ceilings, and the fourth shows the label can mean nothing.** There, the binding limit was **motion blur at 24 fps**, not resolution — **so check what is actually limiting you before chasing pixels.**
+- **☠️ 2160p CAN FREEZE THE DECODE OUTRIGHT, NOT JUST SLOW IT.** On clip 13 `setPlaybackQualityRange('hd2160','hd2160')` really did deliver **2160×3840**, the first drawn frame was real, **and every frame after it was identical** — caught only by the out-of-order probe above. Dropping back to `hd1440` and re-probing restored it. **A second agent on another machine read the same clip at 2160 successfully, so this is per-session, not per-video: try it, PROBE it, and fall back without argument.** Say in the report which resolution you actually measured at, because it bounds every fine angle you publish.
+- **⚠️ THE OVERLAY CANVAS, NOT THE VIEWPORT, CAPS YOUR MAGNIFICATION.** The canvas is **790×594**, so **570 px of usable height**. A rider 700 source px tall therefore caps at **0.814×** no matter how you arrange it — one panel or three. **So multi-panel comparison frames cost NOTHING in scale**: put two or three gridded frames side by side and halve your screenshots. Clip 13 measured this and it also reproduced clip 12's **0.625 at 1280×1000 / exactly 1.0 at 800×640** to the digit, so that pair of numbers is now a fact rather than one reading.
+- **☠️☠️ A POSTURE CLAIM NEEDS THE SAME SAMPLING DENSITY AS A TIMING CLAIM.** The skill already says *"do not pronounce on cuts from a coarse sheet."* **Clip 13 proved it applies to the BODY, and worse.** It surveyed the first six seconds at **0.5 s**, saw frames that looked alike, and published *"one posture held 8.75 s, unchanged."* **At 0.1 s there is an unmistakable compress → extend → compress in the middle of that span**, and at **1/30 s** the extended frame carries a **hand above the crown 0.18 s before the rail bites** — an arm lead the same document had just declared **absent, 0 of 3**. **One coarse survey produced two opposite errors in one read.** **Rule: before writing "held", "unchanged" or "frozen" over a window, sample that window at ≤0.1 s; before writing a lead or an order, sample at the native frame grid.**
+- **☠️ A VISIBILITY CLAIM NEEDS FULL FRAMES, NOT RIDER-CENTRED CROPS.** A fixed-size crop centred on a blob finder will render a confident-looking tile of **water** when the rider is not there, and will lock onto **a paddler in the foreground** when he is. Three of clip 13's twelve survey tiles were other people, and the rider is **absent from the frame at one sampled time, unreadable at another and legs-only at a third** — none of which the crops showed. **Before saying "continuously visible", render the WHOLE frame at those times and look.** And restrict the finder's search band to where the rider actually is; a beach-break line-up is full of decoys.
 
 ### ⭐ MEASURE LEG DEPTH BY THE LEG CHAIN, NOT BY A WAISTBAND SCALE
 
@@ -103,7 +122,7 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 
 **A drone does not fix the saturation problem; it SWAPS it.** Video 10 was shot down the line from above and its leg chain was readable on **only 2 of 7 frames attempted** — and both were frames where the rider was visibly extended, because **boardshorts cover the knee exactly when the thigh goes horizontal, and spray covers the ankle.** It neither confirmed nor refuted the saturation claim.
 
-> **THE FOOTAGE ASK, CORRECTED THREE TIMES. It now reads: WATER-LEVEL, SIDE-ON — emphatically NOT from behind — a rider whose knees are not inside his boardshorts, and the rider at ≥900 source pixels.**
+> **THE FOOTAGE ASK, CORRECTED FOUR TIMES. Clip 12 delivered "down the line from behind" and clip 13 delivered "water-level, side-on", and the leg chain refused on both. It now reads: a lens about 45° OFF THE BOARD'S AXIS and LEVEL WITH THE DECK, a rider whose knees are not inside his boardshorts, and the rider at ≥900 source pixels.** Nothing less puts the knee bend — or the hip fold — in the image plane.
 
 **⚠️ CLIP 12 KILLED THE "DOWN THE LINE FROM BEHIND" HALF OF THE ASK, by delivering it.** It gave **bare legs, the knee visible as a joint, a rider 1.3–2× bigger than clip 11's, and two whole shots filmed down the line from behind** — **and the leg chain still saturated.** **From behind, the thigh points AT the lens instead of across it**, so the foreshortening is worse, not better.
 
@@ -123,6 +142,33 @@ Closing the artifact pane restored painting once. Posting canvas PNGs to a local
 - **report a second, independent ruler** — **apparent stature in head-lengths** needs no hip landmark at all and is the most robust thing available (video 9: **4.86–6.24 head-lengths = 63–81 % of standing**, moving 17 points in 0.27 s);
 - **say when the two rulers disagree, and name no rung rather than picking one**;
 - and **ask the owner for footage shot from the water or down the line** rather than from the beach, because the projection is what hides the knee.
+
+**⚠️ CLIP 13 KILLED THE OTHER HALF OF THE ASK, also by delivering it.** It gave **water-level, side-on, bare legs, the knee as a joint, a 600 px rider** — and the leg chain **refused on three of four legs attempted**, including both legs of the one frame where both knees were unmistakable. **Five refusals, five situations, and the geometry ask has now failed from the beach, from behind AND from the water.** **The lens that would actually work sits about 45° off the board's axis and level with the deck, and thirteen clips have not produced one — so plan the second ruler first and treat an admissible leg chain as a windfall.**
+
+#### ⭐ AND THE TRUNK ANGLE NEEDS ITS OWN GATE — clip 13, and it is the same geometry
+
+**Nobody had tested this.** A surfer's hip fold carries his chest toward his **toes**, perpendicular to the board's long axis — **which in a side-on shot points at the lens, exactly like the knee bend.** So a broadside trunk angle under-reads for the same reason the leg chain saturates.
+
+**The test, per frame:** measure the **projected shoulder-to-waistband distance ÷ head length in the same frame.** Standard proportions (acromion ≈0.82 of stature, boardshorts waistband ≈0.60) put an in-plane trunk at **≈1.6–1.8 head-lengths**. Clip 13 measured **0.39, 1.03, 1.18, 1.34, 1.59, 1.63** across six attempts: **two clean, one marginal, three refused — and both clean readings were frames where the trunk was visibly vertical. No visibly-folded frame passed.**
+
+> ⚠️ **THE 1.6–1.8 BAND IS NOT A CONSTANT AND DOES NOT TRANSFER BETWEEN CLIPS. Video 14 refuted it the next day.**
+> That rider's two **visibly vertical** trunks read **2.03 and 2.11** — because she wears a **bikini bottom, which
+> sits lower than a boardshorts waistband** (≈0.56 of stature against ≈0.60), moving the expectation to **≈2.0**.
+> **Run the test WITHIN a clip, against that clip's own most-vertical frame**, and treat 1.6–1.8 as nothing more
+> than the worked example that produced the method. **A cross-clip constant here is a frame error of exactly the
+> kind the gate exists to catch** — the waistband is a garment, not a landmark.
+>
+> **The method survives intact and is the point:** a projected trunk is admissible only when the shoulder-to-hip
+> segment is lying in the image plane, and **you establish the in-plane value from the subject in front of you.**
+
+
+**☠️ AND THE SECOND HALF, WHICH IS THE ONE THAT BITES.** It is tempting to console yourself that foreshortening only **shrinks** an angle, so every published fold is "safe as a lower bound." **That is true for a single angle from vertical, under a level camera, at fixed yaw. It is NOT true for a SPAN, because a span is the difference of two projected angles.** **A fixed lean swivelled from facing the lens to side-on changes its apparent angle from near 0° to its true value with zero anatomical flexion**, and the reverse swivel manufactures the opposite.
+
+> **CONSEQUENCE, to be stated in any read that quotes a trunk range: after thirteen clips there is NO gated measurement of trunk angular travel anywhere in the series, and the published spans (V8 59°, V9 65°, V11 60°, V12 80°) are not even lower bounds wherever yaw moved between the two frames — and V12's pair is 2.4 s apart inside a turn.**
+>
+> **Keep the gate PER FRAME. A span needs BOTH frames admissible AND the yaw unchanged between them. Qualify every range and every rate.**
+
+**This does NOT weaken the engine-side argument for `engine-target` rows 1 and 2, and say so when you report it:** the reason to build them is **structural** — `HumanoidRig.ts:1383–1385` interpolates the drawn trunk from leg depth, so folding at a fixed leg depth is impossible at any value of any constant. **That stands on code and needs no camera.** What the gate removes is the *number* in the target column, not the row.
 
 ### What the error bar actually is
 

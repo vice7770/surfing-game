@@ -1,0 +1,24 @@
+address ?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on  grid 400x451 = 180400 cells  spun up in 86 s  start (-122.0, -134.0), 9 m out  Hs 1.40 m  Tp 11.0 s
+  ships     {'canyonBed': 'b', 'rider': 'new', 'feltFrame': 'deck', 'stanceReach': 'keep', 'deepen': 'on', 'riderBody': 'two'}
+  sea differences between arms: none
+4 waves, 20 runs, 461 s wall
+
+arm/script       runs  popped  stood  fell  fell<1s  |  fell after the stand, s (median of those that fell after standing)  stand after pop  first second: load  legLoad  wetted  roll peak  pinned%
+ships/cue         4      0      0     0       0  |               nan (0 of 0)      nan        nan     nan     nan      nan     nan
+ships/early       4      3      3     3       3  |             0.400 (3 of 3)    1.200        0.4   0.985   0.601     43.3   100.0
+ships/earlyL      4      3      3     3       3  |             0.400 (3 of 3)    1.200        0.4   0.985   0.601     43.3   100.0
+ships/lift        4      2      2     2       2  |             0.575 (2 of 2)    1.200        0.7   0.930   0.557     43.0   100.0
+ships/liftL       4      2      2     2       2  |             0.575 (2 of 2)    1.200        0.6   0.925   0.557     44.2   100.0
+
+causes, over the runs that fell (population per arm/script above):
+  ships/cue: {}
+  ships/early: {'balance / <=1 s after the stand': 3}
+  ships/earlyL: {'balance / <=1 s after the stand': 3}
+  ships/lift: {'foot slip / <=1 s after the stand': 1, 'balance / <=1 s after the stand': 1}
+  ships/liftL: {'balance / <=1 s after the stand': 2}
+
+the stand itself, over the runs that stood:
+  ships/early: pop 5.85 s after placing, stand 1.200 s after the pop, landing peak 0.97 body weights, front share 0.65, face under the board 1 deg, 0.02 up, refusals 3 of 3
+  ships/earlyL: pop 5.85 s after placing, stand 1.200 s after the pop, landing peak 0.97 body weights, front share 0.65, face under the board 1 deg, 0.02 up, refusals 3 of 3
+  ships/lift: pop 8.61 s after placing, stand 1.200 s after the pop, landing peak 1.21 body weights, front share 0.73, face under the board 6 deg, 0.93 up, refusals 2 of 2
+  ships/liftL: pop 8.61 s after placing, stand 1.200 s after the pop, landing peak 1.21 body weights, front share 0.73, face under the board 6 deg, 0.93 up, refusals 2 of 2

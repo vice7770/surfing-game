@@ -1,0 +1,10 @@
+Canyon byte check, C2 step 5c: scripts/m1-cpu-bench.ts medium, 3600 steps, fresh spin-ups
+== Canyon B (?canyonWaves=true)
+spun up on the CPU in 414.6 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s5c/byte/canyon-b.sea
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+== default Canyon
+spun up on the CPU in 193.5 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s5c/byte/canyon-c.sea
+  hashes: snapshots ea3d57a4d49f4b48, state a1a2555739210f96
+== the 2 m pool with wave unset
+pool ref Barrel, 900 steps from /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s5c/byte/sea21.bin: solver t 36.000, lip jets 278, hash 0545d279d79bafe7, library key false
+BYTEDONE

@@ -1,0 +1,21 @@
+
+the first second after the stand, frame by frame (population = frames):
+  all3     [971 frames] planing in 823 (84.8 %), a non-zero lean ask in 340, a non-zero trunk fold in 517; speed 7.461  leanCap 0.558  load 0.959  legLoad 672.574  legExt -0.011  roll 0.440  wetted 0.305  faceFrac 0.630
+  all3cap  [971 frames] planing in 824 (84.9 %), a non-zero lean ask in 350, a non-zero trunk fold in 516; speed 7.461  leanCap 0.558  load 0.959  legLoad 672.616  legExt -0.011  roll 0.373  wetted 0.305  faceFrac 0.630
+  bank     [971 frames] planing in 823 (84.8 %), a non-zero lean ask in 340, a non-zero trunk fold in 0; speed 7.462  leanCap 0.558  load 0.959  legLoad 672.574  legExt -0.011  roll 0.440  wetted 0.305  faceFrac 0.630
+  ships    [1106 frames] planing in 891 (80.6 %), a non-zero lean ask in 429, a non-zero trunk fold in 0; speed 7.370  leanCap 0.542  load 0.927  legLoad 676.255  legExt -0.012  roll 0.599  wetted 0.304  faceFrac 0.633
+  trunk    [1106 frames] planing in 891 (80.6 %), a non-zero lean ask in 429, a non-zero trunk fold in 568; speed 7.370  leanCap 0.542  load 0.927  legLoad 676.255  legExt -0.012  roll 0.599  wetted 0.304  faceFrac 0.633
+
+at the stand (the frame 'Getting up…' clears), medians per arm; population in brackets:
+  all3     [21] speed 6.347  leanPlaning 1.000  load 0.805  legLoad 693.739  legExt 0.009  roll -0.784  bankA 0.001  wetted 0.253  ahead 2.570  faceFrac 0.747  slope 17.095
+  all3cap  [21] speed 6.347  leanPlaning 1.000  load 0.805  legLoad 693.739  legExt 0.009  roll -0.784  bankA 0.001  wetted 0.253  ahead 2.570  faceFrac 0.747  slope 17.095
+  bank     [21] speed 6.347  leanPlaning 1.000  load 0.805  legLoad 693.739  legExt 0.009  roll -0.784  bankA 0.001  wetted 0.253  ahead 2.570  faceFrac 0.747  slope 17.095
+  ships    [21] speed 6.347  leanPlaning 1.000  load 0.805  legLoad 693.739  legExt 0.009  roll -0.784  bankA 0.001  wetted 0.253  ahead 2.570  faceFrac 0.747  slope 17.095
+  trunk    [21] speed 6.347  leanPlaning 1.000  load 0.805  legLoad 693.739  legExt 0.009  roll -0.784  bankA 0.001  wetted 0.253  ahead 2.570  faceFrac 0.747  slope 17.095
+
+at the fall (the last frame still attached), medians per arm over the runs that stood and then fell:
+  all3     [14] speed 6.694  steer 0.000  leanPlaning 1.000  leanCap 0.200  leanAsk 0.000  load 0.504  legLoad 650.688  roll 0.760  bankA 0.147  front 0.449  inContact 1.000  margin 0.338  tTip 0.033  wetted 0.356  ahead 3.697  faceFrac 0.623  slope 13.274  drift -20.002  foot5 0.000  foot6 0.000  limit {'tip': 14}
+  all3cap  [14] speed 6.694  steer 0.000  leanPlaning 1.000  leanCap 0.200  leanAsk 0.000  load 0.508  legLoad 636.757  roll 0.119  bankA 0.141  front 0.462  inContact 1.000  margin 0.319  tTip 0.035  wetted 0.356  ahead 3.697  faceFrac 0.623  slope 13.274  drift -20.002  foot5 0.000  foot6 0.000  limit {'tip': 14}
+  bank     [14] speed 6.694  steer 0.000  leanPlaning 1.000  leanCap 0.200  leanAsk 0.000  load 0.504  legLoad 643.675  roll 0.760  bankA 0.147  front 0.449  inContact 1.000  margin 0.338  tTip 0.033  wetted 0.356  ahead 3.697  faceFrac 0.623  slope 13.274  drift -20.002  foot5 0.000  foot6 0.000  limit {'tip': 14}
+  ships    [14] speed 6.390  steer 0.000  leanPlaning 1.000  leanCap 0.186  leanAsk 0.000  load 0.486  legLoad 633.066  roll 4.208  bankA 0.005  front 0.629  inContact 1.000  margin 0.115  tTip 0.097  wetted 0.409  ahead 3.950  faceFrac 0.616  slope 11.384  drift -1.936  foot5 0.000  foot6 0.000  limit {'tip': 12, 'none': 2}
+  trunk    [14] speed 6.390  steer 0.000  leanPlaning 1.000  leanCap 0.186  leanAsk 0.000  load 0.486  legLoad 639.612  roll 4.208  bankA 0.005  front 0.629  inContact 1.000  margin 0.115  tTip 0.097  wetted 0.409  ahead 3.950  faceFrac 0.616  slope 11.384  drift -1.936  foot5 0.000  foot6 0.000  limit {'tip': 12, 'none': 2}

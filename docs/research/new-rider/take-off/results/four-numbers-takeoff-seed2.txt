@@ -1,0 +1,265 @@
+# The four numbers, through a stand and on a placement — one instrument, two populations
+# Every median is a PLAIN median. Every share carries its count.
+
+## takeoff-seed2 — takeoff
+   address ?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on  arms ['ships']  scripts ['cue', 'cueL', 'cueR']  seed 2  size medium  probe on
+   grid 400x451 = 180400 cells, spun up in 56.4 s to sea time 22.00 s; start (-122.0, -134.0), Hs 1.40 m, Tp 11.0 s
+   switches {"ships": {"canyonBed": "b", "rider": "new", "feltFrame": "deck", "stanceReach": "keep", "deepen": "on", "riderBody": "two"}}
+   seaDiffs []  (empty is the only passing value)
+   runs 33  waves 11  wall 1202.4 s
+   rows emitted 5339; standing+attached rows 2049 in 21 runs
+   CONTROL the three headrooms reproduce the engine's own rawMargin in 3155 of 3155 window frames
+   stands 21 of 33 runs; observed falls 14; no-fall rows 7 of which CENSORED 0
+   post-stand exposure allowed, median 3.0000 s; first second available in 21 of 21
+   fell after the stand: median 0.8333 s, range 0.5333–2.3000, within 1 s in 11 of 14
+   causes {'balance': 14}
+   the stand's own refusal {'sinking': 15, None: 3, 'feet under water': 3}
+
+### takeoff-seed2 — the regime (#429's premise, re-measured)
+   planing at the first standing frame: 1 in 15 of 21 stands; median 1.000
+   planing through the first second: 891 of 1106 frames (80.6 %)
+   a non-zero lean CAP: 891 of 1106 frames; a non-zero lean ASK: 429 of 1106 frames
+   median leanCap over the first second 0.5342 rad
+   per wave (the no-stick script where there is one), so a pooled share cannot hide the spread:
+      wave  script  planing@stand  planing share  capMed, rad  fell after stand, s  exposure  refusal
+         1     cue              1          61/61       0.5392              no fall      3.00  sinking
+         1    cueL              1          43/43       0.5342               0.7167      3.00  sinking
+         1    cueR              1          60/60       0.5234               1.0000      3.00  sinking
+         2     cue              1          61/61       0.7466              no fall      3.00  sinking
+         2    cueL              1          61/61       0.7781              no fall      3.00  sinking
+         2    cueR              1          61/61       0.7796              no fall      3.00  sinking
+         5     cue              0          18/57       0.0000               0.9500      3.00  None
+         5    cueL              0          19/44       0.0000               0.7333      3.00  None
+         5    cueR              0          25/61       0.0000               1.1667      3.00  None
+         6     cue              1          61/61       0.5978               2.3000      3.00  sinking
+         6    cueL              1          61/61       0.6232               1.1833      3.00  sinking
+         6    cueR              1          58/58       0.6177               0.9667      3.00  sinking
+         8     cue              0           0/33       0.0000               0.5500      3.00  feet under water
+         8    cueL              0           0/32       0.0000               0.5333      3.00  feet under water
+         8    cueR              0           0/32       0.0000               0.5333      3.00  feet under water
+        10     cue              1          38/56       0.3654               0.9333      3.00  sinking
+        10    cueL              1          42/42       0.3927               0.7000      3.00  sinking
+        10    cueR              1          42/42       0.3927               0.7000      3.00  sinking
+        11     cue              1          60/60       0.7475              no fall      3.00  sinking
+        11    cueL              1          60/60       0.7786              no fall      3.00  sinking
+        11    cueR              1          60/60       0.7785              no fall      3.00  sinking
+
+### takeoff-seed2 — NUMBER 1: `tip`
+   limit === 'tip' (ONE substep of 32)
+      fired on 14 of 21 stands; first at a median 0.5083 s after the stand (0.5083 of the first second), inside the first second on 13 of 14
+   limitTime.tip > 0 (the decaying memory, the published quantity)
+      fired on 21 of 21 stands; first at a median 0.0000 s after the stand (0.0000 of the first second), inside the first second on 21 of 21
+   the raw demand outside the support box (the geometry itself)
+      fired on 14 of 21 stands; first at a median 0.5083 s after the stand (0.5083 of the first second), inside the first second on 13 of 14
+   the first second, pooled over 1106 frames in 21 stands:
+      pinNow (limit==='tip')      166 = 15.0 %
+      pinned (limitTime.tip > 0)  1106 = 100.0 %   ratio memory/now 6.66
+      outAny (the geometry)       166 = 15.0 %
+      MASKING: of 166 first-second frames whose demand is outside the box, 166 report limit==='tip' and 0 do not (limit is 'impact'/'slip'/'flight' instead)
+   LATCH TEST on `limitTime.tip > 0`: it goes positive in 21 runs and, over the 2028 standing frames that follow, returns to 0 on 0 of them  → it is a LATCH, not a share of pinned frames
+   and it flips BEFORE the stand on 21 of 21 stands — in phase {'landing': 21} — so on those the first second's "pinned" share is a memory of the POP-UP, not of the stand
+   per-stand pinNow share: median 0.1860, zero in 8 of 21
+   LEAD (not a result): pinNow == 0 in 8 of 10 stands that carried the first second; pinNow > 0 in 11 of 11 that did not
+
+### takeoff-seed2 — NUMBER 2: the stance's tolerance
+   AT THE STAND (21 stands): support half-width across median 0.13000 m (values [0.13])
+      CoM above the DECK (project's own `height`) median 0.57595 m → tolerance 12.719°
+      CoM as raw local y (3.5/bank.ts's `height`)      median 0.64390 m → tolerance 11.414°
+      load 0.805 bw, front SHARE OF LOAD 0.3431 (not a position), roll -0.784°, mismatch 0.809°
+   THROUGH THE FIRST SECOND (1109 frames): CoM above the deck median 0.66121 m (range 0.52148–0.86780), tolerance median 11.123° (range 8.520–13.998), |mismatch| median 1.072°, |mismatch| past the tolerance on 72 of 1109 frames
+   the mismatch passes the tolerance at all on 8 of 21 stands
+   by phase (every attached frame emitted), so the pop-up's own support is measured and not inferred:
+      prone       1764 frames   half-width [0.18]   CoM above deck median 0.12390 m   tolerance median 55.460°
+      push         903 frames   half-width [0.23]   CoM above deck median 0.26001 m   tolerance median 41.495°
+      landing      609 frames   half-width [0.13]   CoM above deck median 0.47818 m   tolerance median 15.209°
+      standing    2049 frames   half-width [0.13]   CoM above deck median 0.71097 m   tolerance median 10.362°
+
+### takeoff-seed2 — NUMBER 3: the body against the deck
+   every standing frame
+      lag(fr)  lag(s)   frames   slope    median |mismatch|, °
+            0  0.0000     2049    0.8668   0.937
+            1  0.0167     2028    0.8631   1.079
+            2  0.0333     2007    0.8543   1.186
+            3  0.0500     1986    0.8425   1.308
+            4  0.0667     1965    0.8300   1.384
+            5  0.0833     1944    0.8187   1.442
+            6  0.1000     1923    0.8101   1.589
+            7  0.1167     1902    0.8046   1.700
+            8  0.1333     1881    0.8018   1.838
+            9  0.1500     1860    0.8019   1.912
+           10  0.1667     1839    0.8046   1.991
+           12  0.2000     1797    0.8140   2.019
+           16  0.2667     1713    0.8225   2.260
+           24  0.4000     1545    0.6025   2.711
+      → the follow gain crosses 1.000 at - frames = - s   [lag 0 slope 0.8668]
+      → it PEAKS at 0.8668 at lag 0 frames = 0.0000 s — so it NEVER reaches 1 and there is no crossing
+      leverage: |deck roll| median 1.433°, 90th 13.308°, max 69.690°; frames past 2° 901 of 2049
+   OFF the plane at BOTH ends (planing == 0)
+      lag(fr)  lag(s)   frames   slope    median |mismatch|, °
+            0  0.0000      215    0.7548   2.940
+            1  0.0167      205    0.7579   3.325
+            2  0.0333      195    0.7543   3.777
+            3  0.0500      185    0.7460   3.680
+            4  0.0667      175    0.7359   4.281
+            5  0.0833      165    0.7280   4.774
+            6  0.1000      155    0.7268   4.459
+            7  0.1167      146    0.7397   4.483
+            8  0.1333      137    0.7671   4.433
+            9  0.1500      128    0.8140   3.917
+           10  0.1667      119    0.8844   3.309
+           12  0.2000      101    1.1022   2.486
+           16  0.2667       65    1.8019   3.819
+           24  0.4000       40    5.8800   15.642
+      → the follow gain crosses 1.000 at 11.06 frames = 0.1844 s   [lag 0 slope 0.7548]
+      → it PEAKS at 5.8800 at lag 24 frames = 0.4000 s
+      leverage: |deck roll| median 3.684°, 90th 18.813°, max 53.091°; frames past 2° 141 of 215
+   ON the plane at BOTH ends (planing == 1)
+      lag(fr)  lag(s)   frames   slope    median |mismatch|, °
+            0  0.0000     1834    0.8915   0.848
+            1  0.0167     1815    0.8881   0.931
+            2  0.0333     1796    0.8807   1.075
+            3  0.0500     1777    0.8712   1.190
+            4  0.0667     1758    0.8614   1.249
+            5  0.0833     1739    0.8527   1.277
+            6  0.1000     1720    0.8460   1.411
+            7  0.1167     1701    0.8407   1.531
+            8  0.1333     1682    0.8354   1.607
+            9  0.1500     1663    0.8293   1.662
+           10  0.1667     1644    0.8217   1.746
+           12  0.2000     1606    0.7991   1.851
+           16  0.2667     1532    0.7460   1.945
+           24  0.4000     1410    0.5444   2.222
+      → the follow gain crosses 1.000 at - frames = - s   [lag 0 slope 0.8915]
+      → it PEAKS at 0.8915 at lag 0 frames = 0.0000 s — so it NEVER reaches 1 and there is no crossing
+      leverage: |deck roll| median 1.296°, 90th 12.396°, max 69.690°; frames past 2° 760 of 1834
+   deck past 2° at the predictor end
+      lag(fr)  lag(s)   frames   slope    median |mismatch|, °
+            0  0.0000      901    0.8676   2.921
+            1  0.0167      886    0.8640   3.021
+            2  0.0333      871    0.8553   3.106
+            3  0.0500      854    0.8438   3.186
+            4  0.0667      837    0.8315   3.279
+            5  0.0833      821    0.8205   3.540
+            6  0.1000      805    0.8126   3.751
+            7  0.1167      791    0.8076   4.018
+            8  0.1333      775    0.8057   4.237
+            9  0.1500      758    0.8059   4.455
+           10  0.1667      743    0.8087   4.765
+           12  0.2000      713    0.8175   5.320
+           16  0.2667      653    0.8237   6.794
+           24  0.4000      536    0.6008   7.939
+      → the follow gain crosses 1.000 at - frames = - s   [lag 0 slope 0.8676]
+      → it PEAKS at 0.8676 at lag 0 frames = 0.0000 s — so it NEVER reaches 1 and there is no crossing
+      leverage: |deck roll| median 6.273°, 90th 23.839°, max 69.690°; frames past 2° 901 of 901
+   deck past 5° at the predictor end
+      lag(fr)  lag(s)   frames   slope    median |mismatch|, °
+            0  0.0000      543    0.8715   3.703
+            1  0.0167      533    0.8691   3.839
+            2  0.0333      523    0.8605   3.848
+            3  0.0500      510    0.8480   3.828
+            4  0.0667      496    0.8364   4.012
+            5  0.0833      483    0.8259   4.250
+            6  0.1000      472    0.8171   4.660
+            7  0.1167      462    0.8129   5.111
+            8  0.1333      455    0.8107   5.483
+            9  0.1500      449    0.8104   5.550
+           10  0.1667      441    0.8133   5.963
+           12  0.2000      425    0.8220   7.753
+           16  0.2667      379    0.8123   9.858
+           24  0.4000      301    0.5599   11.088
+      → the follow gain crosses 1.000 at - frames = - s   [lag 0 slope 0.8715]
+      → it PEAKS at 0.8715 at lag 0 frames = 0.0000 s — so it NEVER reaches 1 and there is no crossing
+      leverage: |deck roll| median 10.347°, 90th 28.948°, max 69.690°; frames past 2° 543 of 543
+   |mismatch| against |deck roll rate| (#421's own form), BAND MEDIANS:
+      rate    0–20   °/s     1122 frames   median mismatch/rate 78.3 ms
+      rate   20–50   °/s      447 frames   median mismatch/rate 56.6 ms
+      rate   50–100  °/s      274 frames   median mismatch/rate 46.9 ms
+      rate  100–200  °/s      155 frames   median mismatch/rate 38.4 ms
+      rate  200–inf  °/s       30 frames   median mismatch/rate 51.2 ms
+      the PER-FRAME law |mismatch| = B|rate| through the origin: B = 50.9 ms, R2 = 0.303 over 2028 frames (negative means worse than the mean, which is #424's finding)
+   the body banks the SAME WAY as the deck, deck past 2°: 796 of 901 frames (0.883)
+
+### takeoff-seed2 — NUMBER 4: the demand outside the feet
+   AT THE STAND (21 stands): outX median 0.00000 m, outZ median 0.00000 m; outside at all on 0 of 21
+   THROUGH THE FIRST SECOND (1109 frames in 21 runs):
+      the demand is outside the feet ACROSS on 163 of 1109 frames (14.7 %), ALONG on 8 of 1109 (0.7 %)
+      the excursion across, over escaping frames: median 0.12427 m, peak 2.50427 m
+      … restricted to escaping frames the feet actually CARRY (load >= 0.5 bw): 127 of 163, median 0.08000 m — the load-matched figure, since `freeX` diverges as the normal impulse vanishes
+      the excursion along, over escaping frames: median 0.58703 m
+      on the FIRST escaping frame of a run: median 0.01169 m (13 runs)
+      per-run peak excursion across: median 0.31453 m
+   AT THE FALL, the last attached frame (14 rows): outX median 1.10027 m (peak 1.96671), outZ median 0.00000 m; outside at all on 12 of 14
+      and the CAPTURE POINT past the feet there — a DIFFERENT quantity (it carries the body's own velocity, `across = px + vx/omega`) — median 0.60975 m
+      what a palm could add across (#425's ceiling, for scale): 0.10194 m; the board's half-width 0.232 m
+      the demand was REFRESHED this frame (`loaded`) on 1108 of 1109 first-second frames; on the rest `desiredCop` is the last loaded substep's
+
+### takeoff-seed2 — which constraint goes first (the three headrooms, read separately)
+   at the stand (21 rows):
+      project's own three: across 0.9693  along 1.0000  grip 0.8991   (their clamped min = rawMargin 0.8940, filtered into margin 0.9191)
+      which of the three is LOWEST: {'grip': 18, 'across': 3}
+      the capture test's own three (`balanceLimits`): margin 0.8154  grip 0.8991  knee 0.6696; which bound {'knee': 18, 'margin': 3}; capture point past the feet 0.0000 m
+   at the fall (the LAST ATTACHED frame) (14 rows):
+      project's own three: across -8.4636  along 1.0000  grip 0.6522   (their clamped min = rawMargin 0.0000, filtered into margin 0.1152)
+      which of the three is LOWEST: {'across': 12, 'along': 2}
+      the capture test's own three (`balanceLimits`): margin 0.0000  grip 0.6522  knee 0.8116; which bound {'margin': 14}; capture point past the feet 0.6098 m
+
+### takeoff-seed2 — wave 1, the scripts side by side, with the three headrooms separate
+   cue  (182 standing frames)
+      t+s     roll°    bank°   across    along     grip   rawMarg  limit  outX     load   planing  cap
+       0.00   -1.031    0.068   0.9161   1.0000   0.8991   0.8991   none  0.0000   0.783        1  0.4536
+       0.10    0.560    1.033   0.9271   1.0000   0.9460   0.9271   none  0.0000   1.028        1  0.5422
+       0.20    1.679    0.776   0.9798   1.0000   0.9664   0.9664   none  0.0000   1.292        1  0.6593
+       0.30    0.133   -0.930   0.9416   1.0000   0.9642   0.9416   none  0.0000   1.280        1  0.6963
+       0.40   -0.752   -0.949   0.9263   1.0000   0.9805   0.9263   none  0.0000   1.232        1  0.6756
+       0.50    0.057   -0.590   0.9724   1.0000   0.9544   0.9544   none  0.0000   1.153        1  0.5284
+       0.60   -0.103   -0.816   0.9428   1.0000   0.9630   0.9428   none  0.0000   0.736        1  0.3462
+       0.70   -0.958   -0.267   0.9900   1.0000   0.9158   0.9158   none  0.0000   0.468        1  0.3015
+       0.80    0.296   -0.062   0.9475   1.0000   0.8684   0.8684   none  0.0000   0.681        1  0.3917
+       0.90    1.052   -0.317   0.9434   1.0000   0.8179   0.8179   none  0.0000   0.632        1  0.5456
+       1.00    0.387   -0.464   0.9908   1.0000   0.8874   0.8874   none  0.0000   1.112        1  0.5392
+       1.10   -0.269   -1.216   0.9365   1.0000   0.8900   0.8900   none  0.0000   1.336        1  0.5515
+       1.20   -1.277   -1.930   0.9446   1.0000   0.8590   0.8590   none  0.0000   1.256        1  0.4551
+       1.30   -2.136   -1.998   0.9609   1.0000   0.8547   0.8547   none  0.0000   1.263        1  0.3600
+       1.40   -2.341   -0.976   0.8536   1.0000   0.8535   0.8535   none  0.0000   1.227        1  0.3348
+       1.50    0.544   -0.137   0.8103   1.0000   0.8390   0.8103   none  0.0000   1.089        1  0.6347
+       1.60    0.976   -1.307   0.5259   1.0000   0.7980   0.5259   none  0.0000   1.038        1  0.9298
+       1.70   -5.321   -1.803   0.9344   1.0000   0.7535   0.7535   none  0.0000   1.057        1  0.9330
+       1.80   -7.187   -1.722   0.7215   1.0000   0.7854   0.7215   none  0.0000   1.121        1  0.9467
+       1.90   -2.191    1.655   0.4431   1.0000   0.8121   0.4431   none  0.0000   1.107        1  0.9279
+       2.00    8.288    4.693   0.8663   1.0000   0.8262   0.8262   none  0.0000   1.062        1  0.8958
+       2.10   10.413    2.333   0.3698   1.0000   0.8447   0.3698   none  0.0000   0.744        1  0.8257
+       2.20    2.110   -1.214   0.7886   1.0000   0.9148   0.7886   none  0.0000   0.946        1  0.8043
+       2.30   -1.941   -1.603   0.9658   1.0000   0.9255   0.9255   none  0.0000   0.802        1  0.7994
+       2.40   -0.114    0.059   0.9764   1.0000   0.9739   0.9739   none  0.0000   1.129        1  0.7895
+       2.50    2.473    2.408   0.9613   1.0000   0.9782   0.9613   none  0.0000   1.301        1  0.8047
+       2.60    4.967    5.017   0.9612   1.0000   0.9765   0.9612   none  0.0000   1.296        1  0.7469
+       2.70    7.540    7.536   0.9165   1.0000   0.9633   0.9165   none  0.0000   1.271        1  0.6305
+       2.80   11.698    9.271   0.9212   1.0000   0.8954   0.8954   none  0.0000   1.131        1  0.4842
+       2.90   14.817   10.084   0.9149   1.0000   0.8676   0.8676   none  0.0000   0.969        1  0.3810
+       3.00   16.687   11.113   0.9247   1.0000   0.8427   0.8427   none  0.0000   0.947        1  0.3341
+      last attached frame: t+3.0167 s, limit none, across 0.9402, along 1.0000, grip 0.8338, capture past the feet 0.0000 m, bLimit knee
+   cueL  (43 standing frames)
+      t+s     roll°    bank°   across    along     grip   rawMarg  limit  outX     load   planing  cap
+       0.00   -1.031    0.068   0.9161   1.0000   0.8991   0.8991   none  0.0000   0.783        1  0.4536
+       0.10    0.560    1.033   0.9271   1.0000   0.9460   0.9271   none  0.0000   1.028        1  0.5422
+       0.20    1.679    0.776   0.9798   1.0000   0.9664   0.9664   none  0.0000   1.292        1  0.6593
+       0.30    0.133   -0.930   0.9416   1.0000   0.9642   0.9416   none  0.0000   1.280        1  0.6963
+       0.40   -1.222   -0.658   0.9225   1.0000   0.9853   0.9225   none  0.0000   1.004        1  0.6434
+       0.50    0.490    1.758   0.9371   1.0000   0.9301   0.9301   none  0.0000   0.720        1  0.4353
+       0.60    8.031    4.398  -0.1233   1.0000   0.7323   0.0000    tip  0.0160   0.650        1  0.3485
+       0.70    6.300   -8.605  -0.3750   1.0000   0.4939   0.0000    tip  0.0488   0.359        1  0.3986
+      last attached frame: t+0.7000 s, limit tip, across -0.3750, along 1.0000, grip 0.4939, capture past the feet 0.8545 m, bLimit margin
+   cueR  (60 standing frames)
+      t+s     roll°    bank°   across    along     grip   rawMarg  limit  outX     load   planing  cap
+       0.00   -1.031    0.068   0.9161   1.0000   0.8991   0.8991   none  0.0000   0.783        1  0.4536
+       0.10    0.560    1.033   0.9271   1.0000   0.9460   0.9271   none  0.0000   1.028        1  0.5422
+       0.20    1.679    0.776   0.9798   1.0000   0.9664   0.9664   none  0.0000   1.292        1  0.6593
+       0.30    0.133   -0.930   0.9416   1.0000   0.9642   0.9416   none  0.0000   1.280        1  0.6963
+       0.40   -0.883   -0.947   0.9222   1.0000   0.9752   0.9222   none  0.0000   0.997        1  0.6416
+       0.50    0.403   -1.249   0.9907   1.0000   0.9215   0.9215   none  0.0000   0.723        1  0.4355
+       0.60   -3.285   -8.154  -0.0073   1.0000   0.8867   0.0000    tip  0.0009   0.521        1  0.3052
+       0.70  -18.394   -8.863  -0.6803   1.0000   0.6050   0.0000    tip  0.0884   0.678        1  0.4920
+       0.80   -7.372    3.650  -0.9496   1.0000   0.8915   0.0000    tip  0.1235   0.817        1  0.5037
+       0.90    8.690    5.513   0.1131   1.0000   0.7173   0.1131   none  0.0000   1.245        1  0.5822
+      last attached frame: t+0.9833 s, limit tip, across -15.1285, along -10.1095, grip 0.2147, capture past the feet 0.7401 m, bLimit margin
+

@@ -47,16 +47,367 @@ They are first for a reason worth stating: they are the only rows that are **shi
 measurable without a longer ride**. The rows that need the rider to survive longer (7, 8, 16) are not first,
 because nothing can be learned from them yet.
 
+### STATUS 2026-11-18: ROWS 1 AND 2 ARE BUILT, AND ROW 3 IS ANSWERED YES
+
+**PR #411, branch `claude/trunk-mass-3-5h`, opt-in behind `?trunk=mass`, open and not merged.** The rotor's own
+parts — torso, head, both arms, i.e. what `HIP_PITCH_INERTIA` models — now turn about the **physical pelvis** by
+`StandingBody.hip.angle` on local `+x`, and **local `+x` is `across`**: `orientation` is `bodyFrame` when upright
+(`AttachedRider.ts:5113`) and `across` is `X` turned by `bodyFrame` (`:5278`), **so the fold's axis is the one
+`StandingBody.couple` already pairs its couple on, in every stance and at every bank, with no frame correction.**
+Verified here by reading both lines, because a fold about any other axis would be an unpaired couple.
+
+| | default | `?trunk=mass` |
+|---|---|---|
+| trunk travel while the **leg spring's compression** holds within 2 mm | **0.00°** | **0.05–4.49°**, > 0 on 18 of 18 |
+| trunk travel while the **drawn pelvis** holds within 2 mm | **0.00°** | **0.05–5.35°**, > 0 on 18 of 18 |
+| **row 3 — opposite-sign frames** | **no moving frames at all** | **754 of 1 734 moving frames, 43.5 %** |
+| centre of mass moved by the fold | **0.0000 m** | up to **0.1067 m** |
+
+**Row 3 was the acceptance test and it passes: it was impossible, and it is now possible.** 60 paired arms, one
+`FaceWater` bench (Canyon-matched 1.4 m / 16° / 5.7 m/s), 6 576 default and 6 484 switched live frames,
+`RIDER=new FELT=deck BODY=two`. **No footage figure appears in the code, the probe or the test** — row 2's target
+column has no number to build to and the round did not invent one.
+
+**Three things the round itself says against it, and they matter more than the table:**
+
+1. ⭐ **The rotor is INERT on 42 of 60 arms.** Its drive is the ankle's excess past 0.8 of the feet's reach, and on
+   a gentle entry that is zero. **Making the fold possible and making it appear are different questions, and only
+   the first is done.**
+2. ⚠️ **The visual cost: the drawn trunk is 17.34° from vertical with the switch off and 6.18° with it on, at zero
+   physics fold.** The rider **stands straighter in plain trim.** That is the honest trade.
+3. ⭐ **A new one-owner coupling, found by the skinned-pose test and pinned rather than fixed:** `HumanoidRig`'s
+   `this.up` is **both** the trunk's direction **and** the axis the drawn hips are lifted along (`standingLift`).
+   Folded, those stop being one vector and **the drawn hips travel ~55 mm per radian.** It is **not** caused by
+   standing the rig's own `backForMass` down (0.0499 m with the switch off, within 3 mm) — **it arrives with row 1
+   itself.** What the lift axis should be is a rig question for the owner's eye.
+
+**Falls: 60 of 60 on both arms**, time-to-fall unchanged on 46 arms, shorter on 10, longer on 4, upper middle
+0.000 s — no direction. **Ruling F rejects that as a metric anyway.** **One bench**, and `FaceWater` writes
+`breaking: 0, voidFraction: 0` with no foam. **No drag or work claim is made**, because `waterForces` samples at the
+folded position but computes only `v + ω × offset` — no relative hinge motion, no local-centre recentre term.
+
+**Nothing was added to make the fold behave** — no torque, no drive, no constant. **It did not need any.**
+
+### STATUS 2026-11-18: ROW 6's RATE HALF IS SETTLED, AND ITS CLASSIFICATION IS WRONG
+
+**PR #413, `claude/pump-rate`, measurement only — no constant tuned, no switch added, nothing under `src/` touched.**
+**864 runs, 12 arms, 91 562 live ticks, 0 frozen**, `rider:'new' feltFrame:'deck' riderBody:'two'`, `steer = 0`
+throughout (trim, no direction change), on `FaceWater`'s Canyon-**fit** face (1.4 m / 16° / 5.7 m/s; `breaking: 0`,
+`voidFraction: 0`, **no foam**). Half-cycles taken from a **2 mm zigzag on the signal**, never from the input's
+toggles. Medians are `qt(v, 0.5)`, the upper middle.
+
+| asked half-cycle | achieved | rest excursion | **share of the 0.195 m rung** |
+|---|---|---|---|
+| 0.10 s | 0.100 s | 0.016 m | ⚠️ **0.08 — WITHDRAWN as an amplitude reading**, see below |
+| 0.15 s | 0.150 s | 0.038 m | 0.20 |
+| **0.22 s (the footage)** | **0.217 s** | **0.078 m** | **0.40** |
+| 0.28 s | 0.267 s | 0.100 m | **0.51** |
+| 0.45 s | 0.433 s | 0.160 m | 0.82 |
+| 0.60 s | 0.600 s | 0.182 m | 0.93 |
+| **key never pressed (the control)** | **0.650 s** | **0.016 m** | **20 half-cycles in 16 of 72 runs — NOT a zero** |
+
+> **The channel completes a half-cycle at 0.217 s** — over **401 half-cycles in 69 of 72 runs** — **while carrying
+> 40 % of the rung.** **The excursion falls below half the rung at a half-cycle of 0.27 s, and 0.27 s is row 6's
+> number.**
+>
+> ⚠️ **DO NOT READ THIS AS A MATCH TO THE FOOTAGE. CORRECTED 2026-11-18 after an independent clip-14 read.** The
+> 0.22 s it was briefly compared to is **a within-window average from one reader — 0.88 s divided by four, inside a
+> single window — not a cadence the rider was shown to sustain.** The reviewer **reproduces leg involvement and a
+> low trunk**, so the row's *direction* stands, but **could not independently count four equally identifiable
+> half-strokes, nor measure any physical compression at that camera angle.** And ⚠️ **the board was rolling and
+> turning through that passage — "from oblique to nearly end-on" — so "in trim with no direction change" may not
+> describe the window at all.** Row 6 is specifically about pumping **in trim**. **The game figure is sound; it is
+> the footage side of the comparison that has no reliable number — neither rate nor depth.**
+
+**⚠️ CORRECTED 2026-11-18 (PR #413 at `9ab365b1`): the control was never a zero, and fixing it cost the round a row.**
+The published `hold0` zero was an artefact — `firstPress` stayed `NaN` with the key never pressed and `x.t >= NaN`
+emptied the filter. **Corrected, the control gives 20 half-cycles in 16 of 72 runs at a median 0.016 m** — the
+balance's own knee drop wanders measurably **with the crouch key never touched.** Consequences, all stated by the
+round rather than found later:
+
+- **The 0.10 s arm is WITHDRAWN as an amplitude measurement.** Its median excursion is **0.016 m — identical to the
+  control's.** At that command period the channel's depth is **indistinguishable from no input at all.** Its *timing*
+  is still a reading (841 half-cycles in 63 of 72 runs at a median 0.100 s against 20 in 16 of 72 at 0.650 s); its
+  *excursion* is not.
+- **Every other arm clears the floor** as multiples of 0.016 m: 0.15 → **2.4×**, **0.22 → 4.9×**, 0.30 → **7.0×**,
+  0.60 → **11.4×**.
+- **And the round volunteered the overlap:** the control's own tail reaches **0.125 m on one run of 72**, which
+  overlaps the 0.22 arm's 0.078 m median. **The medians and counts separate them; a single run does not.**
+- **`hold1` was never broken** (a held key gives a finite `firstPress`) and **now carries the negative control's
+  weight: 4 half-cycles in 4 of 72 runs at 0.005 m, 2.6 % of the rung.**
+- **The positive arms are byte-identical** — 0.217 s, 0.078 m, the 0.40 share and the halving point are exactly as
+  first measured. **The fix changed the control, not the result.**
+- **The detector self-test now characterises both directions:** silent at and below the 2 mm threshold, **firing from
+  3 mm**, and recovering amplitude and period at every amplitude tested — but **under-recovering ~5 % at large
+  amplitude** (0.186 m from a known 0.195 m, 1/60 s sampling of a turning point), so **the halving point is quoted
+  bracketed at 0.26–0.28 s** with 0.27 s the midpoint. A tightening of the stated precision, not a changed number.
+
+**The governor is the critically damped follower at `LEG_FREQUENCY = 12` rad/s**, whose step response needs
+**0.567 s** to come within 5 mm of the rung (50 % at 0.183 s, 90 % at 0.400 s, 95 % at 0.483 s). **Any half-period
+under about 0.6 s is amplitude-limited.** An isolated replica of `prepareLeg`'s own lines reproduces **82–96 % of
+the in-game excursion at all seven periods**, so the attribution is clean: **the follower governs and the game's
+coupling costs 4–18 %.**
+
+**So row 6's kind is wrong for the rate half.** The leg-depth pump is **not inexpressible at the footage's beat** —
+it is present, timed to within 0.003 s, and **short on depth by a measured factor of 2.5.** That is a
+**quantitative shortfall with a number**, not an expressibility limit. **Nothing here touches row 6's trunk half:
+`hip.angle` was not read.**
+
+**⚠️ AND THE COMPARISON CANNOT BE CLOSED, FOR THE REASON ROW 6 ALREADY CARRIES.** Whether 0.078 m is what video
+14's rider does **is unknown**, because the footage's leg figures come off a **saturated** leg chain (99–100 % on
+every readable frame). **The series has no measured depth for any pump, in any clip.** So **"40 % of the rung" is a
+fact about the game and not a verdict against the footage** — only the *rate* was ever comparable. Closing it needs
+a non-saturating depth excursion measured **from footage**, and no round has one.
+
+**A second mechanism, real but not the one at 0.22 s:** at **0.30 s and longer** the chain's own asked-for excursion
+falls to 0.166 m, because `stanceRoom`'s knee travel is **0.30 m at tall but only 0.15 m at the pumping crouch**
+(`humanBalance.ts:159–160`), narrowing the square wave's ends to 0.045 m at saturated `knees`. **At 0.22 s the
+asked-for excursion is 0.194 m over 525 half-cycles — essentially the whole rung** — so the knee drop moves the
+pump's **mean depth**, not its **excursion**, in the band that matters.
+
+**What to do about the follower is deliberately not proposed and is the owner's.** My own read, offered with low
+confidence because I have been wrong on exactly this kind of call twice today: `LEG_FREQUENCY` looks like a
+**capability constant** — how fast a leg can change its commanded length — rather than an invented force, since
+every newton still arrives through the leg spring. **But there is no reason to touch it yet: the game pumps at the
+right rhythm with an amplitude nobody has shown to be wrong.**
+
+### STATUS 2026-11-18: ⭐ ROW 3's ACCEPTANCE TEST SHOULD BE **DECOUPLING**, NOT AN OPPOSITE SIGN
+
+**Video 15 (PR #414) counted a category the series had never counted.** Over **10 resolved transitions with both
+channels legible, in one 18.56 s ride**: 3 same-sign up, 1 same-sign down, 2 frozen, **4 DECOUPLED — one channel
+moves while the other visibly does not — and 0 opposite-sign.**
+
+| | count | status |
+|---|---|---|
+| **opposite-sign** (row 3 as written) | **0 in 36 resolved transitions, five riders, five clips** | V9's single passage stays **SINGLE and five-times-not-reproduced** |
+| **DECOUPLED** | **4 in one ride** | **reproduced** |
+
+> **Both are equally unreachable in the engine.** `HumanoidRig.ts:1383–1385` forces the drawn trunk's correlation
+> with leg depth to **+1 within a stage**, so **a correlation of 0 is exactly as impossible as −1.** **So rows 1 and
+> 2 can have a REPRODUCED acceptance test instead of a single-instance one** — and PR #411 should be judged on
+> whether the two channels can **decouple**, not only on whether they can oppose.
+
+**That is the strongest footage justification rows 1–2 have ever had**, and it arrives from a category nobody was
+looking for. **Row 3's wording should be widened to "a correlation other than +1" rather than "opposite signs".**
+
+### ROW 6: THE CLIP CONTAINS ALMOST NO TRIM, AND THAT IS THE FINDING
+
+**The rider turns every ~1.9 s and the longest flat-board, constant-heading stretch in 22.661 s is 0.56 s.** Board
+roll and heading were checked on **full frames** for every candidate, and **three otherwise pump-looking passages
+were rejected** because the board's bottom became visible (rail roll) or its nose swung — at **10.80, 13.36,
+17.28**. Three survived: **10.16–10.72 (0.56 s), 12.88–13.20 (0.32 s), 16.80–17.12 (0.32 s)**.
+
+In the two longest, **the body's height over the board rises then falls once while the trunk's fold is visibly
+unchanged** (6 frames at 0.08 s, fixed 260 px crops at magnification **exactly 1.00**, head length 40/40/37 px so
+it is not a zoom). In the third, **both channels rise together — no cycle.** **The arm carriage does not change at
+all through either.**
+
+**No cadence and no depth were published, deliberately** — two half-strokes in 0.56 s is not a rhythm, and dividing
+the window would be the **within-window average** this series has already withdrawn once. **And the height change is
+not called a leg extension in any unit, because the knee is never identifiable as a joint anywhere in the clip**
+(thigh inside boardshorts, ankle in spray; three attempts at 2.3–3.0×, three refusals).
+
+**Against row 6's target (0.55–0.60 s, in the TRUNK, legs not working): neither half reproduces, and clips 14 and 15
+are on the same side of it.** **Target column should read: "contested, and no clip has yet shown a sustained trim
+cadence."**
+
+### Row 5: its own evidence row is clip-specific, and the arm is not fixed
+
+Row 5's evidence quotes V9's **rear** arm, which is correct for V9. **Video 15 shows the LEAD hand doing the same
+job at ~14.36** (reaching up and forward over the nose) **and the REAR hand at 20.28.** **Both arms do it** — so the
+row's intent is "an arm leads the rail", not "the rear arm leads". **Three leads in 7 resolved direction changes**
+(+0.10 s ± 0.04 at 20.38, ≥ +0.20 s at 8.44, **≥ +0.50 s at ~14.90 — the longest in the series**). Tally **16 of 28
+across seven clips.**
+
+**Clip 14's top-of-wave / bottom-of-wave separator is REPRODUCED** (all three leads at the top, all four clean
+misses at the bottom) and **clip 13's open-face/slab separator is contradicted again** — **but a borderline at the
+top that does NOT lead (11.70) means it is not a rule even inside this clip.** **No separator may be built from
+this.**
+
+### Row 16 becomes a finding, and two rows gain reproductions
+
+- **Row 16 — second anticipatory brace, resolved at the native grid.** A floater lands into whitewater at ~18.08,
+  met with the body **already folded and compressed from ≤17.92**, **both channels frozen across 4 native frames**,
+  and the ride continues standing for a further **4.3 s**. **With clip 14 that is a finding, not a sighting:
+  the brace is anticipation, not a reaction after contact.**
+- **Row 11 — the first reproduction of any down-transition form in the series:** two more instances of V9's
+  "legs only" (10.32→10.56, 13.04→13.20). V7's and V8's forms stay single.
+- **Row 8 —** fastest sustained chaining in the series (**≤1.86 s**, a lower bound) on the **longest single ride read
+  (18.56 s)**. **Row 15 —** carriage A on an eighth clip. **Row 9 —** shoulders forward of hips in 5 frames.
+- **Row 4 — its first NON-confirming clip**, recorded as a counterweight rather than skipped: this clip's
+  straightest-legged, most upright passage (17.04–17.20) carries its **widest** arms, which is consistent with
+  "tall ⇒ arms spread". **Seven clips refuted that implication and one consistent case does not restore it.**
+
+### Two ⛔ refusals whose CAUSES are new
+
+- **Row 2 — the trunk gate cannot be RUN at all**, not merely not passed: **this rider wears a loose T-shirt over his
+  boardshorts, so there is no visible waistband anywhere in 22.661 s.** **The gate needs a garment edge that TRACKS
+  THE PELVIS** — a waistband, a wetsuit seam, bare skin. **A loose shirt hem in a 5 m/s airflow is not a landmark.**
+  So "calibrate within the clip" was necessary and **not sufficient.**
+- **Row 18 — the series finally got its frame and lost it to LIGHT.** For the first time in fifteen clips a **90 px
+  head and the board's nose are unambiguous together** (t = 19.000) — and the head is a **backlit flat silhouette,
+  no eye, no mouth.** The in-image angle between the head's facing line and the board's long axis is **16° ± 8°**,
+  head below the axis, **reported as a projection mixing yaw with pitch, not a yaw.** **The footage ask gains a
+  clause: nose legible AND head ≥60 px AND the face LIT, not backlit.**
+
+### STATUS 2026-11-18: ⭐ THE SERIES HAS A REAL PUMP CADENCE AT LAST — 0.92 s, AND IT IS ASYMMETRIC
+
+**Video 16 (PR #415) is the mirror of clip 15: ZERO direction changes in 14.0 s of continuous standing riding**, the
+nose down the line in **45 of 45 frames checked by eye** and the board's bottom never visible, inside one unbroken
+24.0 s shot. **With nothing but trim to look at, it measured the thing fifteen clips could not.**
+
+| | value | how |
+| --- | --- | --- |
+| **full period** | **0.92 s** | **four independent measurements** — two max→max and two min→min, **all 0.92** |
+| **down half-cycle** | **0.50 s** (×2) | each extreme located individually; one re-checked at the native 1/24 s grid to within 0.06 s |
+| **up half-cycle** | **0.42 s** (×3) | — |
+| excursion | 20–28 % | **of the reader's own scale — NOT comparable to the game's "share of the 0.195 m rung"** |
+| window | 7.5–11.0 s | one rider, one shot |
+
+> ⭐ **AND IT IS ASYMMETRIC: the rise beats the sink, 3 of 3.** The reader states *"which the engine's single leg
+> spring cannot produce."* **That claim is plausible and UNVERIFIED, and the arithmetic cuts both ways:** the game's
+> rate limits *are* asymmetric (`CROUCH_ACCELERATION = 6` down against `EXTEND_ACCELERATION = 15` up, `:1052–1055`),
+> **but PR #413 found the governor is the critically damped follower at `LEG_FREQUENCY = 12` rad/s, with the
+> acceleration clamp binding on only 3.9 % of ticks** — and a symmetric follower gives symmetric strokes.
+> **Nobody has split the game's own half-cycles into down and up.** That is a cheap, decisive follow-up and it is
+> recorded as open rather than guessed.
+
+**Against row 6's target (0.55–0.60 s, in the TRUNK): the period is FASTER and the channel is the legs — the third
+clip in a row on that side of it.** Row 6's rate half now has a real footage figure for the first time; **its depth
+half still has none, because no clip in sixteen has yielded a calibrated pump depth.**
+
+**Do not compare the 20–28 % excursion to the game's 40 % of rung.** The denominators are different and nobody has
+reconciled them. **That comparison is exactly the frame error this document has made five times.**
+
+### Row 3: decoupling is NOT universal, and the row's two observables are not independent
+
+**7 resolved transitions: 3 same-sign up, 3 same-sign down, 1 frozen, 0 DECOUPLED, 0 opposite-sign.** So **clip 15's
+four-in-one-ride is not reproduced on the one clip that is nothing but trim.** Series: **43 resolved transitions, six
+clips, no opposite sign.**
+
+> **So an acceptance test built on decoupling must read "the engine CAN decouple", not "the engine decouples at rate
+> X".** PR #411 satisfies that reading; it does not satisfy a frequency reading, and none is available.
+
+⭐ **And a methodological correction to the row itself, from the reader: row 3's two observables are not
+independent — folding the trunk lowers the head by itself, so SAME-SIGN transitions are nearly free.** **The series
+should stop counting same-sign transitions as evidence.** Re-counted on that basis, **this clip contributes one
+frozen window and nothing else**, and clip 15 contributes **its four decoupled plus two frozen.**
+
+### ⚠️ The brief's own trim test is refuted, and this clip is the counter-example
+
+The strict criterion I set — *a flat board on a constant heading* — gives a **different answer from the eye** here.
+The board's in-image long axis **oscillates −16° to +19° WITH the ~0.9 s pump period**, so the longest window steady
+to ±3° is **~0.25 s, shorter than clip 15's 0.56 s** — on a clip with **zero direction changes in 14 s.**
+
+> **A flat-board, constant-heading test cannot tell a pump from a turn.** The board's angle oscillating *in phase
+> with the pump* is what pumping **is**. **Both readings are reported, and the strict criterion must not be used
+> alone again.**
+
+### Two ⛔ causes that are new, and the footage ask gains two clauses
+
+- **Rows 2, 10 and 14 — a one-piece black wetsuit removes the hip landmark AND the knee in the same garment.** ⚠️ **CORRECTED by clip 19 — the second half is WRONG. A one-piece removes the WAIST and LEAVES the LEG**: it is form-fitting, so thigh, knee and shin read as three segments (10.280 and 11.600 on clip 19). **The clothing clause splits in two, and NO garment in nineteen clips satisfies both halves.** Four
+  leg-chain attempts at 1.45×; **the thigh/shin gate was not even computable.** **Eighth consecutive rung refusal,
+  seventh distinct cause.**
+- **Row 5 cannot be touched because THERE IS NO TURN IN THE CLIP — zero overhead arms in 14.0 s.** Every earlier miss
+  was a turn without an overhead arm; **this is a clip without a turn.** Tally stays **16 of 28.**
+- **Row 18 — head ≈40 px inside a CAP BRIM'S SHADOW** at 4.2×, a new cause after clip 15's backlighting.
+- **The footage ask gains: the waist must be a visible TONAL BREAK** ⚠️ (**superseding "boardshorts and a short or sleeveless top, not a steamer"** — clip 18 refused on a *black top over black boardshorts*, which satisfies the old clause and fails the real requirement; and a one-piece kills the waist but **not** the leg) (the old wording said a one-piece kills both depth
+  landmarks at once, and it is what most surfers wear in cold water) **and, for row 18, a lit face AND a bare head.**
+
+### Rows that moved, and one that came back
+
+**Row 8 —** the "zero" end extends past V7's 13 s to **14.0 s**, now on two clips. **Row 4 —** carriage A held
+unchanged across **1.17 s containing a full depth excursion** (clip 15's best was 0.56 s). **Row 15 —** ninth clip.
+**Row 9 —** fifth clip for head-forward, eleventh for shoulders-forward. **Row 17 — the first measurable foot
+position since V7:** 0.62 / 0.63 of board length, 2.75 s apart, **±6 %** (the tail is in spray).
+
+### STATUS 2026-11-18: ⭐⭐ THE RULERS ARE CALIBRATED (PR #416) — AND THE SHOT WE HAVE BEEN ASKING FOR IS THE WRONG SHOT
+
+**4 files, +2 041, −0 against the merge base.** Method: the game's **own four committed surfer GLBs** plus the
+rig-test stand-in, posed through `HumanoidRig` over **29 depths (21.5–100.5° of true front-knee flexion)**, truth read
+in 3D by the game's **own `StanceGauge`**, the same joints projected through a pinhole camera at **20 / 40 / 90 px**
+head scales, **rounded to whole pixels**, plus **240 seeded draws of ±1 / ±3 px of landmark error.** No renderer, no
+`src/` change, no export, no constant touched. **12 s, byte-for-byte reproducible.**
+
+#### The span claim, with its number — and it does NOT retire everything
+
+| lens | apparent angle a ZERO-FLEXION swivel manufactures |
+| --- | --- |
+| level, ±30° of yaw | **27.8–46.9°** |
+| level, ±90° of yaw | **32.7–53.9°** |
+| **raised 45°** | **49.3–124.1°** |
+
+5 subjects × 2 poses, true tilts 33.2–55.3°, 90 px head, no landmark error. **So every published trunk span sits
+inside what a swivel alone can make, and on a raised lens none of them bounds anything.**
+
+**But the round refutes its own brief here, in the footage's favour: at a LEVEL lens the manufactured ceiling is
+53.9°, which is below V9's 65° and V12's 80°.** So **a level-lens 65° implies ≥11° of true travel** — **V9's 65°
+survives degraded rather than dying** (and that subtraction is optimistic, since the manufactured range grows with
+the lean).
+
+#### ⭐ THE LEG CHAIN'S REAL AXIS IS NOT THE ONE ANYONE GUESSED
+
+**It is not "side-on versus down the line". It is ONE bearing — the direction the knees point**, 24–29° off the toes'
+rail on these bodies. **There it reads 100.0 % at every knee angle from 24° to 99° of flexion: a range of 0.0 points.
+A ruler that cannot fail.** Along the board's axis it lands within **−0.6 to +2.6 points** of the 3D truth.
+
+**Over 2 755 readings it over-reads by up to +36.0 and UNDER-reads by at most 1.5** — so **the skill's "the leg chain
+is an upper bound" is confirmed, to 1.5 points.** In-plane the inverse **`flexion = 2·arccos(chain)`** is exact to
+**0.14 points over 145 poses.** **Resolution at ±3 px: 6.8° of flexion down the line and 16.8° side-on at a 90 px
+head; 15.2 / 37.7 at 40 px; 30.2 / 73.2 at 20 px — at 20 px it resolves nothing.**
+
+#### Per ruler
+
+| ruler | verdict |
+| --- | --- |
+| **leg chain** | **usable when the board is nearly end-on** (projected length ÷ width ≤ 0.7). **Refuse within 45° of where the knees point** |
+| **thigh/shin 1.0–1.1 gate** | ⛔ **wrong before any projection — these bodies are 0.89–1.03.** At 99° flexion it **false-rejects the three bearings where the chain works** (−90, −80, +90); at 76° it false-accepts 3 of 6. **It is a bearing meter, not a gate** |
+| **replacement gate: BOARD ASPECT** | ✅ projected length ÷ width, and it **needs no body landmark at all**: ≈0.1 ⇒ within 2.6 points, ≤0.7 ⇒ 5.3, ≤1.4 ⇒ 9.6. Refuse ≥2.2. Gives \|bearing\| but **not its sign**, and the signs differ by up to 30 points |
+| **trunk gate (shoulder→waistband ÷ head)** | ⛔ **never usable as a gate.** In-plane it is **2.08–2.24** on the hip line — **the published 1.6–1.8 contains no subject** — and it reads **1.95–2.24 at EVERY bearing** on a near-vertical trunk while the angle error runs 0–23.6°. **One gate value of 1.80 covers a 55° range of true angles; 2.00 covers 70°** |
+| **projected trunk angle** | ≤2.8° at \|bearing\| ≈ 90°, **level lens, board end-on, PER FRAME ONLY.** Refuse any raised lens: it over-reads 1.3° at 10°, **16.6° at 30°, 120.3° at 45°** |
+| **hip over deck ÷ head** | stance-width confound **−0.40 to +0.11 head-lengths at fixed true flexion** — **and the true 3D hip moves too, so it is geometry, not projection.** Fold-invariant to 0.08 with the head upright at ≤20° elevation; **+0.51 to +0.84 if the head goes with the chest** |
+| **apparent stature** | ✅ **RESCUED OUTRIGHT.** It responds to a pure 45° fold by **1.06–4.69 head-lengths at every elevation 0–60° — it never dies at a FIXED lens.** What kills it is **the elevation CHANGING between frames: 50–67° cancels a 45° fold** |
+
+> ⭐⭐ **ONE LENS SERVES BOTH THE LEG AND THE TRUNK: LEVEL WITH THE RIDER, LOOKING ALONG THE BOARD'S AXIS, FROM THE
+> NOSE OR THE TAIL. NOTHING IN SIXTEEN CLIPS IS THAT SHOT** — and **the ask this series has made three times
+> ("water-level, SIDE-ON, emphatically not from behind") is ACTIVELY WRONG: side-on costs 17.5–18.9 points of chain
+> error and 8.9–11.8° of trunk error.**
+
+#### Invalidated, and rescued
+
+**Invalidated:** every published trunk span and rate **on a raised lens** — V8 59°, V9 65°, V11 60°, V12 80°, V12's
+120 °/s and 20 °/s, V13's ≥78 °/s; **clip 13's trunk gate in both halves** (band *and* method — it is blind where it
+matters, so clip 14's "keep the method, lose the number" does not save it); **the series' own footage ask**; and
+**clip 12's stated mechanism for its down-the-line refusals** — from the tail the chain is *accurate*, and what
+refused those frames was the thigh/shin gate, whose 0.31 / 0.58 ratios map to bearings of ~20–30°, i.e. the dead
+quadrant.
+
+**Rescued:** **clip 14's "impossible" 2.03 and 2.11** — the game's own rider reads **2.03 at bearing 0** and 2.08–2.24
+in-plane, so **the band was wrong, not the readings**, and its bikini-bottom diagnosis is confirmed to two decimals;
+**its 3.6 is a TIPPED HEAD, not a landmark error** (the probe's grid reaches 3.80). **Clip 12's hip-above-deck**
+within stated bounds, with its 3.83→3.22 fall **understated** if anything. **Apparent stature, outright.** **The leg
+chain's upper-bound property.** And **every chain reading the thigh/shin gate refused on an end-on board is
+revisitable** — V10's 96–100 % and V14's 95.9–99.9 % become **0–33° of flexion** if admissible.
+
+#### What this round says against itself, named rather than estimated
+
+**The law transfers, the constant does not:** the dead bearing is *where the knees point*, but the specific 24–29° is
+the game rig's own knee pole. **Board roll and pitch were NOT swept — and a real bottom turn rolls 20–40°**, which
+rotates the body against the image's vertical. **No camera roll, Regular stance only**, the pure fold does not
+translate the pelvis as the rig's own `hinge` does, and **the rig's standing pose already carries 39–42° of knee
+flexion, so the 0–20° band is untested.** **Motion blur, rolling shutter and the occlusion that actually defeated
+most of the sixteen reads are not in this model at all.**
+
 ### Rows by kind of change
 
 | kind | count | rows |
 |---|---|---|
 | **geometry** — states where mass already is, or sequences existing constants; **needs no ruling** | **9** | 1, 2, 3, 4, 5, 6, 11, 12, 15 |
-| **force** — adds or changes a paired force; **the owner must rule** (no hidden motors) | **2** | 9, 10 |
+| **force** — adds or changes a paired force, **or changes where one is applied**; **the owner must rule** (no hidden motors) | **3** | 9, 10, 19 |
 | **blocked by survival** — cannot be judged while the rides end first | **3** | 7, 8, 16 |
 | **unknown** | **3** | 13, 14, 18 |
 | **none — the game already matches** | **1** | 17 |
-| | **18** | |
+| | **19** | |
 
 Row 12 is geometry but its **whose call** is the owner's, because they have already ruled on it (Rulings C and E).
 
@@ -110,7 +461,7 @@ spikes, V6/V7/V8 abstain, V9 has one hold of ~0.6 s — see row 12); which chann
 | **7** | **A turn is a sequence of beats with durations** | V8 T3: bottom turn → climb → top turn in **1.00 s**, beats entry 0.15 / load 0.30 / peak 0.20 / exit 0.25, and **the peak is marked by an arm, not a hip**. V8 T4: a snap in **0.35 s**. V9 T4: a carve in **0.83 s**, beats arm 0.07 / entry 0.06 / load 0.27 / exit 0.40. V9 T5: a roundhouse cutback in **1.10 s**. Against the literature in `stance-frame.md` §6: a bottom turn **0.96 ± 0.04 s** (n = 6, 835 turns) and a cutback **0.8 ± 0.03 s** (n = 4, 2 060 cutbacks) | Moves are **named only after the fact** by `rideAnalysis` (`bottom turn`, `top turn`, `snap`, `cutback`). There is no beat clock | **There is no manoeuvre object to have beats.** A name applied afterwards cannot sequence anything. And the engine cannot currently **produce the sample**: rides end before a second beat structure exists to read | **blocked by survival** to judge; **geometry / sequencing** afterwards | **mine / no ruling needed**, when it becomes judgeable. **No date is promised** |
 | **8** | **Turns chained at a rate** — one direction change every ~2.3 s, sustained | V9 §0.7: **≥13 direction changes in 30 s** (≥5 / ≥4 / ≥4 across three shots). **And V7 §0.2: ZERO direction changes in 13 s.** **The clips disagree and both are true of their clip** — V7 is a tube then a long trim, V9 is open-face turning. The engine has to cover **both ends of that range**, which is itself the requirement | Individually the moves exist. **Nothing in the game chains them** | No chaining notion exists, and the sample cannot be taken while rides end first. **This is a sixth axis no read before V9 had flagged: rate** | **blocked by survival** | **mine / no ruling needed**, when judgeable. **No date is promised** |
 | **9** | **The hips travel aft while the shoulders travel forward, over planted feet** | V7 T5 (11.70–12.95 and its mirror at 4.70–5.10), **located in the hips over stationary feet with 0 steps in 13 s**; V8 T6 (three separate shots); V9 T6 (7.17–7.57, 14.30–14.43, 1.23–1.43, **0 steps in ~3.5 s** of legible feet); and V1's original observation. **Four clips, and in none of them does a foot move to do it.** No clip gives a magnitude — **direction and sign only** | **Default rider: a rigid translation.** `TRIM_SHIFT = 0.25 m` driven by W/S lands in `lean.z` and is added to **every part for which `shifts(i)` is true — pelvis, torso, head and both arms, together** (`AttachedRider.ts:5514–5518`). **`?rider=new`: no translation at all** — W/S becomes the pitch ankle's reference lean through `copTarget.z`, a torque with its reaction | **Hips and shoulders are welded.** They translate by the same 0.25 m in the same direction, so a differential is **not expressible at any value**. `STAMP_BACK` under Snap is the one place the upper body is asked back past the hips, and it is a **prescribed lean target, not a joint**. A real differential is a **hip joint**, so it needs row 1 in the mass model first | **force** — and **downstream of row 1** | **the owner's.** Bounded by no hidden motors: paired reaction, visible limb, and a kinematic prescription realised by whatever force it takes is a cheat |
-| **10** | **The two legs at different extensions in the same frame** | V8 §0.4: front **97 %** / rear **86 %** at t = 14.40; front **88 %** / rear **76 %** at t = 13.30. Both from the same self-calibrating measurement on the same frame, **so the difference is more reliable than either absolute number** — and the two frames where the knee was unmistakable are the ones that read lowest, which is the bias showing itself honestly. **One clip, two frames** ⚠️ **SAT** (the absolute levels; V9 could not measure the split at all, because rider B's boardshorts reach his knee in exactly the deepest frames) | **One leg spring.** `readonly leg = { extension, rate, rest, force, height }` (`AttachedRider.ts:2084`) — one rest length, one stiffness, one damping, **one row (index 6) in the board's solve** | A 10–12 point split between the legs is **not expressible at any value.** The *drawing* already has two legs with separate targets (`stanceMap.ts:423–424`), but they differ only because the two feet sit at different places on the deck and the IK solves each from one pelvis point | **force** — a second spring, each with its own load and reaction at its own foot | **the owner's** |
+| **10** | **The two legs at different extensions in the same frame** | V8 §0.4: front **97 %** / rear **86 %** at t = 14.40; front **88 %** / rear **76 %** at t = 13.30. Both from the same self-calibrating measurement on the same frame, **so the difference is more reliable than either absolute number** — and the two frames where the knee was unmistakable are the ones that read lowest, which is the bias showing itself honestly. **One clip, two frames** ⚠️ **SAT** (the absolute levels; V9 could not measure the split at all, because rider B's boardshorts reach his knee in exactly the deepest frames) | **One leg spring.** `readonly leg = { extension, rate, rest, force, height }` (`AttachedRider.ts:2084`) — one rest length, one stiffness, one damping, **one row (index 6) in the board's solve** | A 10–12 point split between the legs is **not expressible at any value.** The *drawing* already has two legs with separate targets (`stanceMap.ts:423–424`), but they differ only because the two feet sit at different places on the deck and the IK solves each from one pelvis point. **Codex reproduced this half independently on 2026-11-18** and cites the IK itself — `HumanoidRig.ts:1132–1174`, a `for (const side of SIDES)` loop with a per-side `ankleTarget`, a per-side `kneePole` and a per-side `solveTwoBone` — **verified here by reading.** Two readers, two sites, same conclusion. **It does not move this row's classification:** the row asks for a split that something *physical* drives, and `standingBody.ts` has no per-side anything in 386 lines — one leg line, one load, two knees only as a strength cap | **force** — a second spring, each with its own load and reaction at its own foot | **the owner's** |
 | **11** | **The down-transition is not one thing** | **Three forms in three clips.** V7 T2: **knees and trunk together**, within its 0.3 s resolution. V8 T2: **trunk only** — 35°→76° while the leg chain moves 97 %→95 %. V9 T2 (down beat): **legs only** — hips drop over 0.33 s with the trunk unchanged within ±10°. **Each is SINGLE, on a different rider.** The up-transition is clearer and more reproduced: **legs lead the trunk by ~0.5 s** (V7 T1, 620 px) and **~0.3 s** (V8 T1) — **two riders, two breaks, same order** | One thing by construction | Row 2's formula allows exactly one form: both together, in fixed proportion. **That it is not one fixed thing IS the finding, and the engine must not be built as if it were** | **geometry** — a constraint on rows 1–3, not separate work | **mine / no ruling needed** |
 | **12** | **A deep low: sometimes a 0.25–0.7 s dip, sometimes held for seconds** | **The clips disagree and the disagreement is the evidence.** **Dips:** V3 **2 of 2** at hips 35–50 % for 0.25–0.5 s as sampled, and *"a sustained crouch of more than 1 s: never"*; V4 **8 dips in ~30 slowed s of readable footage**, each 1–2 slowed s (**≈0.25–0.7 real s at 3–4×, unverified**), none over 2 consecutive samples; V1's **turns**, low phase 1.5–2 slowed s. **Holds:** V1's **tube**, held 15+ slowed s with only 10–15 points of change — but V4 found **no tube shot long enough to test it**, so it is neither reproduced nor refuted; **V2**, a long carve held 3–4 s of video clock with ~10 points of change; **V5, 3 of 3 turns, 1.75 / 2 / ≥2.9 s at 45–60 %** — one rider, the third cut off by the clip's end; V9, **one leg-depth hold of ~0.6 s**, the longest and clearest the series has, trunk upright throughout — **SINGLE**. **Abstaining:** V6 (no low below ~65 % at all), V7 (its tuck begins inside an invisible 2.95 s barrel, so **0.45 s is a lower bound, not a duration**), V8 (both deepest moments unmeasurable) | **All four stances, with Compress HELD** (Ruling C). The fourth `STANCE_TABLE` row and the deepen button `?deepen=on` are **built** (step 3.5b/3.5c) and ship by default; the dip fires on the owner's input only (Ruling E) | The pieces exist. **What does not exist is a self-release, and it cannot be added within the owner's rules**: measured, the dip **rose while still held in 0 of 19 runs, 0 ticks, at every hold length**; `kneeStrength = 2·KNEE_TORQUE/d` bounds a **force**, not a length, so it cannot raise the body; and a clock, timer, fatigue or stamina is **cancelled** (*"lets leave it as infite stamina"*). **A second measured limit: the leg's own pace needs 0.45–0.52 s for the last 0.15 m, so a 0.25 s press never arrives and only the upper half of the footage's 0.25–0.7 s band is reachable at the leg's current speed** | **geometry** — the depths and the button exist; what is left is sequencing | **the owner's — already ruled** (C: both patterns are real, the dip is an addition; E: it fires on their input only). **Crouch's value waits on their `?kneeRoom=achieved` ride** |
 | **13** | **A low that the turn consumes, rather than one the turn causes** | V6 §3.1: the rider is at his lowest at the **end of the drop** (11.63–11.88), is **already extending when the board starts to come round**, and is at his **tallest at the peak of the turn** (12.25–12.50). **Low → tall, with the turn in the "tall" half. SINGLE — one turn, and it is a bottom turn off a take-off, so the low it spends is the pop-up's.** It is the **1 of 9**: eight earlier readable turns put the low at entry. It is also the one surf frame that matches the ski and skateboard literature's sign (`stance-frame.md` §6(d): flex between turns, extend through the arc) | Nothing ties a depth change to a turn's phase in either direction | The timing the game has, where it has one, is **compress into the turn** — the opposite. But with one observation on one take-off turn, **the footage does not establish which way round it should be**, and this document does not pick | **unknown** | **the owner's** — it is a feel question and they ride |
@@ -119,6 +470,7 @@ spikes, V6/V7/V8 abstain, V9 has one hold of ~0.6 s — see row 12); which chann
 | **16** | **Meeting whitewater: a brace, and riding out of it still standing** | V6 §5 row 7: at 12.88 the trunk folds sharply forward and both arms go down and forward **as the foam lands** — **SINGLE**, one frame, end not seen. Riding out of an engulfment still on the feet: V6 (3.35 s invisible, then riding), V8 (**2 shots**), V9 (**2**, one over the falls). **Three clips** | A wipeout exists. **No absorb-an-impact posture; the rider meets foam with whatever stance it already holds.** Separately, step 3.5e established the foam **does** reach the board, through five channels | No posture exists to brace with, and the ride-through cannot be judged while rides end first. The owner's own words name this as felt: *"this happen on turns and on tip of the wave foam that creates instability"* | **blocked by survival** to judge; the posture itself is **geometry** | **mine / no ruling needed** for the posture. **No date is promised** |
 | **17** | **The feet never move while standing** | V7 §2.4, the strongest count in the series: the **front foot sits at 44–49 % of board length from the nose across 5 frames spanning 9.80–11.40 s**, inside a ±3–5 % reading error, and **the rear foot never leaves the traction pad — 0 steps in 13 s.** V8: 0 seen, but **weaker** (the deck and both feet were rarely both in frame). V9: 0 in ~3.5 s of legible feet, **also weaker** | The feet are fixed at **0.30 m from the tail and +0.63 m ahead of it** (`riderPosture.ts:59–62`, the measured pop-up spacing from Borgonovo-Santos et al. 2021) and **nothing moves them while upright** (`AttachedRider.ts:3035–3038`) | **Nothing to fix. Zero steps by construction, and the footage asks for zero steps.** This is the one row where the game and the footage simply agree — recorded so that no round spends anything here | **none — already correct** | **mine / nothing to decide** |
 | **18** | **Head and gaze** | **Nine clips, no usable observation.** The face is 5–8 px wide in the close shots (V4), a few pixels from the drone (V3), never resolvable (V6, V7, V8, V9). All any read could say is that the head is turned with the trunk where it is visible | No head or gaze role in the stance or the rig | Nothing to compare against. **The footage cannot supply a target, so this document will not invent one** | **unknown** | **the owner's** — whether they want it at all |
+| **19** | **The loaded hand torques the body** — a layback, a hand-drag stall, a hand set in the face | V11 (**Codex's independent read**, 4.10 s): one arm raised, the other hand approaching the water. V2 §7 (6.5-7.5 s): the rider draped over a horizontal board, one leg extended. **Contact is not measurable in any clip** - no read in the series has ever resolved whether a hand carries weight, and Codex says so for V11 too | The hand's water force is real and already paired: `applyWater` builds it, `waterForce.add(force)` sums it (`AttachedRider.ts:4502`), and `waterMoment.add(cross(arm, force))` computes **its full moment at the hand's own lever** (`:4504`). Then only `waterMoment.y` is differenced out - `handYaw = this.waterMoment.y - moment` (`:4357`) - and only `rhs[4]` receives it (`:4735`). **The x and z components are computed and then dropped** | The hand's force reaches the **board** at the feet's lever (`cross(a, f)`), and reaches the **body** as a net force on its centre-of-mass line - `standingBody.couple` is handed `f`, never a per-part moment. **CORRECTED 2026-11-18 by Codex, who is right:** the hand's force *does* roll and pitch the board — through the coupled force path, at the feet's lever. What is missing is the **hand-specific residual moment about the rider reference**, `cross(hand − a, F_hand)`, whose standing path retains **world Y only**. **And two omitted components say nothing about the fraction of torque lost** — the residual's size has never been measured, so "two of three" counts components, not share of moment. What survives: **a hand in the water cannot roll or pitch the board at its own lever**, so a layback leans on the feet, not on the hand. Introduced by `58396bff`, *"feat: drag a hand in the face to stall"* - a **yaw feature whose scope was yaw**; nothing in the code says the other two components were considered | **force-application / constraint-model change** — Codex's classification, and **it overturns mine.** I called it energy-neutral. It is not: **a change to the lever changes angular work by the residual moment dotted with the angular velocity**, so moving a force's point of application is a dynamics change, not bookkeeping. Codex's conditions if it is ever built: **preserve the force and its reaction exactly once**, and check **sign, reference origin, body DOFs and rotational work on every path** | **the owner's** — a force-class change by the owner's own rule. My argument that it needed no ruling was wrong |
 
 ---
 
@@ -150,6 +502,7 @@ than a figure from one frame.
 | **16** | **Whether a distinct posture exists at foam contact**, and whether a ride survives an engulfment | **No duration or angle target — one frame of brace in nine clips.** The ride-through is observed in 3 clips but never measured | **SINGLE** for the brace; **3 clips** for riding out of foam | No posture. The ride-through is **not judgeable yet** |
 | **17** | **Foot travel along the board while standing** | **0 steps.** V7's own count: front foot at 44–49 % of board length across 5 frames over 1.6 s | **3 clips** (V7 strong, V8 and V9 weak "none seen") | **0 by construction. The target is already met** |
 | **18** | **Head yaw relative to the trunk or the board's heading** | **None. Nine clips cannot supply one.** An honest "no metric yet" | **0 clips** | No quantity exists |
+| **19** | **The roll and pitch moment a loaded hand puts on the body**, against the ankle's own torque | **No footage target** - contact is unmeasurable in eleven clips. The code-side target is an identity: `cross(hand - CoM, F_hand)` is computed every substep and discarded | **0 clips.** This row comes from reading code, not footage - the only row in the table that does | **Yaw only.** `handYaw` is `waterMoment.y`; x and z are computed and thrown away. **Their magnitude has never been measured**, so no fraction-of-torque claim may be made from this row |
 
 ### 2.1 Which of these an agent could score today
 
@@ -227,6 +580,7 @@ exists in physics — is reached only through `freeBody = newRider && upright &&
 | **16** | **absent quantity** for the posture; **not samplable** for the ride-through | The foam does reach the board (3.5e, five channels), so the physics side exists; the body side does not |
 | **17** | **already correct** | Feet fixed by construction; the footage asks for exactly that |
 | **18** | **absent quantity, and no target** | Nine clips give nothing to build against |
+| **19** | **force-application / constraint-model change** | The hand-specific residual moment about the rider reference; world Y only survives. **Not energy-neutral** — the residual dotted with angular velocity is work — so **the owner must rule.** My own "lever correction, needs no ruling" was overturned by Codex within the hour |
 
 ### What the architecture cannot be asked for at all
 
