@@ -1,0 +1,73 @@
+
+============================================================================================================
+0. POSITIVE CONTROLS against PR #454 (Part 3 §7 and results/35m/35m-tables.txt §8)
+============================================================================================================
+  §8 which half flips last, over all 142 falls: weightPast 87 / beyond 38 / both 17   (published 87 / 38 / 17)
+  §8 of which zero-stick: 16 / 6 / 14   (published 16 / 6 / 14)
+  steered falls that fired the capture test: 100   (published "100 steered falls")
+  of them |px| >= halfAcross: 67, median |px| 0.1301 m   (published 67, median 0.1301 m)
+  median |vx/omega| over the same: 0.3635 m   (published 0.3635 m)
+  weightPast legs over 142 falls, exclusive: across-only 63 / along-only 63 / both 9 / neither 7   (published 63 / 63 / 9 / 7)
+  ⚠ scope note: 17 of the 142 falls did NOT separate by the capture test (5 "lost board", 12 a posture/sway
+     backstop). Over the 125 that did: weightPast 82 / beyond 38 / both 5.
+
+============================================================================================================
+1. CAN |px| EXCEED THE SUPPORT BOX? Measured, on the same runs
+============================================================================================================
+  |px| at the separating substep, m, board +x, over 100 steered capture-test falls:
+    min 0.0004  median 0.1301  max 0.2591 = 1.99 x halfAcross
+    inside the box (<0.1295) 33 | within one substep of the edge (0.1295-0.1310) 46 | further past 21
+    of the 67 at or past the edge: 46 are in the 0.1300-0.1305 band and 21 are further out, to 0.2591 m
+    4dp histogram inside the band: [(0.13, 9), (0.1301, 15), (0.1302, 14), (0.1303, 5), (0.1304, 1), (0.1305, 2)]
+    over all 142 separating substeps in the set (capture test or not): max |px| 0.7193 m = 5.53 x halfAcross
+  and the capture point itself: peak |s.across| - halfAcross over a whole live run (pastXPeak), all 142 falls: max 1.2159 m
+  which half flipped last, by band: {'pinned': {'weightPast last': 46}, 'past': {'weightPast last': 4, 'beyond last': 16, 'both together': 1}, 'inside': {'both together': 1, 'beyond last': 16, 'weightPast last': 16}}
+
+============================================================================================================
+2. THE DISCRIMINATING CHECK: |px| one substep (1/3840 s) BEFORE the separating substep
+============================================================================================================
+  pinned       n=46  |px| one substep earlier <= halfAcross in 46 of 46 ; median 0.1299 -> 0.1301 m
+               step in |px| over that one substep: median +0.000300 m, range +0.000000..+0.000900 m  (= |dpx/dt| median 1.15 m/s)
+  further past n=21  |px| one substep earlier <= halfAcross in 0 of 21 ; median 0.1657 -> 0.1667 m
+               step in |px| over that one substep: median +0.000200 m, range -0.000800..+0.001900 m  (= |dpx/dt| median 0.77 m/s)
+  inside       n=33  |px| one substep earlier <= halfAcross in 33 of 33 ; median 0.0436 -> 0.0430 m
+               step in |px| over that one substep: median +0.000000 m, range -0.002200..+0.000300 m  (= |dpx/dt| median 0.38 m/s)
+
+============================================================================================================
+3. THE SAME PIN ON THE OTHER LEG, AT ITS OWN DIFFERENT EDGE (0.375 m, not 0.130 m)
+============================================================================================================
+  along-only falls whose weightPast flipped last: n=32
+    |pz| min 0.3750  median 0.3752  max 0.3871 ; within 0.0010 m past 0.375 in 30 of 32
+    4dp histogram: [(0.375, 8), (0.3751, 6), (0.3752, 3), (0.3753, 3), (0.3754, 9), (0.3755, 1), (0.3871, 2)]
+
+============================================================================================================
+4. THE FREEZE (CAPTURE_LOAD = 0.2 bw), on the pinning falls specifically
+============================================================================================================
+  pinned       n=46  frozen AT the separating substep: 0 ; frozenShare median 0.0000, max 0.0581, >0 in 1
+  further past n=21  frozen AT the separating substep: 0 ; frozenShare median 0.0055, max 0.3267, >0 in 11
+  inside       n=33  frozen AT the separating substep: 0 ; frozenShare median 0.0448, max 0.2780, >0 in 21
+  the published column against the live reconstruction at the last attached substep:
+    |s.pointAcross - ePx| > 0.0005 m in 11 of 100, and the state was frozen in 11 of those 11
+
+============================================================================================================
+5. WHICH LEG OF weightPast, on the pinning falls
+============================================================================================================
+  pinned       n=46  across (|px|>=0.130) 46 ; along (|pz|>=0.375) 0 ; both 0
+  further past n=21  across (|px|>=0.130) 21 ; along (|pz|>=0.375) 4 ; both 4
+  inside       n=33  across (|px|>=0.130) 0 ; along (|pz|>=0.375) 33 ; both 0
+
+============================================================================================================
+6. THE OWNER'S ADDRESS (feltFrame deck, riderBody two, stanceReach keep, deepen on)
+============================================================================================================
+  probe  steered capture-test falls 52 ; |px|>=0.130 in 36 ; pinned band 25 ; median |px| 0.1301 m
+         of the pinned, |px| one substep earlier <= halfAcross in 25 of 25 ; median step +0.000300 m
+         which half flips last: {'weightPast last': 30, 'both together': 2, 'beyond last': 20}
+  owner  steered capture-test falls 48 ; |px|>=0.130 in 31 ; pinned band 21 ; median |px| 0.1301 m
+         of the pinned, |px| one substep earlier <= halfAcross in 21 of 21 ; median step +0.000300 m
+         which half flips last: {'weightPast last': 36, 'beyond last': 12}
+
+============================================================================================================
+7. THE TWO FLOORS IN THE px CHAIN (humanBalance.ts:468-469) — do they bind?
+============================================================================================================
+  height = max(0.2, offset.n): min 0.2048 m, floor binds in 0 of 100 steered falls, and in 0 of the 46 pinned
+  omega = sqrt(max(0.5, g)/height): |felt| min 1.8270 m/s^2, floor binds in 0 of 100
