@@ -47,7 +47,8 @@ if (VARIANT === 'game' || VARIANT === 'lasting' || VARIANT === 'load') {
 if (process.env.RAILZERO === '1') for (const a of [10, 15, 20]) Object.assign(RAIL_PLANT[`5|${a}`], { roll: RAIL_PLANT['5|0'].roll, slip: RAIL_PLANT['5|0'].slip, yaw: RAIL_PLANT['5|0'].yaw, rate: RAIL_PLANT['5|0'].rate });
 // VARIANT=face (phase 2, §8.4): the shipped table read at the equivalent speed, `plantSpeed: 'face'` as the game builds it.
 // VARIANT=pf45: `plantFloor: 4.5`, for the steering comparison.
-const weights = { ...DEFAULT_WEIGHTS, riderBody: 'two' as const, ...(VARIANT === 'pf6' ? { plantFloor: 6 } : {}), ...(VARIANT === 'pf45' ? { plantFloor: 4.5 } : {}), ...(VARIANT === 'face' ? { plantSpeed: 'face' as const } : {}) };
+// VARIANT=taper (phase 3, §9.3): `plantSpeed: 'taper'`, max(v, min(1.68 v, 7.8)).
+const weights = { ...DEFAULT_WEIGHTS, riderBody: 'two' as const, ...(VARIANT === 'pf6' ? { plantFloor: 6 } : {}), ...(VARIANT === 'pf45' ? { plantFloor: 4.5 } : {}), ...(VARIANT === 'face' ? { plantSpeed: 'face' as const } : {}), ...(VARIANT === 'taper' ? { plantSpeed: 'taper' as const } : {}) };
 const TOP = Number(process.env.TOP ?? 6);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ctl = new PredictiveController(weights, 'tan') as any;
@@ -63,7 +64,7 @@ for (const depth of [0, 0.3]) {
     out({ part: 'gains', depth, v, phi: r3(k[0]), phiDot: r3(k[1]), bank: r3(k[2]), bankDot: r3(k[3]), yawRate: r3(k[4]), slip: r3(k[5]), twist: r3(k[6]), twistRate: r3(k[7]), twistBank: r3(d.k[1][2]) });
   }
   // The design's own nominal closed loop (the model as the truth, no timing error) at the schedule's knots.
-  for (const v of [...(VARIANT === 'face' ? [3, 3.5] : []), ...SCHEDULE_SPEEDS].filter((s) => s <= TOP)) {
+  for (const v of [...(VARIANT === 'face' || VARIANT === 'taper' ? [3, 3.5] : []), ...SCHEDULE_SPEEDS].filter((s) => s <= TOP)) {
     const d = scheduledDesign(v, depth, 0, weights);
     try {
       const ld = leastDamping(eigenvalues(closedLoop(d.phi, d.gamma, d.steps, d)));

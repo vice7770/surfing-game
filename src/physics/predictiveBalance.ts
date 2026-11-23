@@ -943,8 +943,11 @@ export interface DesignWeights {
    * at these speeds (the ridden geometry carries 90–98 % of the game's support on flat water at the true speed,
    * plant-rows.md §8.1), so it is a design choice, ridden and measured. Off by default and pinned off for online rooms.
    * With `plantFloor` the floor clamps the lookup after the map.
+   *
+   * `'taper'` (step 3.5w phase 3, plant-rows.md §9): the same, with v_eq = max(v, min(1.68 v, 7.8)) — `face` below
+   * 4.64 m/s, the plateau of the attitude match (7.8 m/s water) up to a true 7.8 m/s, and the shipped plant above.
    */
-  plantSpeed?: 'face';
+  plantSpeed?: PlantSpeed;
   /**
    * **The stance ladder's fourth rung read, the tube tuck's 0.45 m** (step 3.5b; **shipped by default since step 3.5c
    * and the owner's ruling D of 2026-11-17, "keep the row"**).
@@ -1441,12 +1444,24 @@ export const SCHEDULE_DEPTHS = [0, 0.195, 0.3];
  */
 export const EQUIVALENT_SPEED_FACTOR = 1.68;
 export const EQUIVALENT_SPEED_TOP = 12;
-export function equivalentSpeed(speed: number): number {
+/** The `plantSpeed` maps (`DesignWeights.plantSpeed`): `'face'` (3.5w phase 2) and `'taper'` (phase 3). */
+export type PlantSpeed = 'face' | 'taper';
+/**
+ * **Step 3.5w phase 3 (`?plantSpeed=taper`): the plateau of the attitude match**, m/s. From 4.5 to 6 m/s the game's
+ * ridden attitude matches the free-trim rows at 7.57–7.98 m/s (mean of seven matches 7.80; plant-rows.md §9.1).
+ */
+export const EQUIVALENT_SPEED_CAP = 7.8;
+/**
+ * The map for a `plantSpeed` value. `'face'`: min(12, 1.68 v). `'taper'`: max(v, min(1.68 v, `EQUIVALENT_SPEED_CAP`)):
+ * face's below 7.8 / 1.68 = 4.64 m/s, the plateau's 7.8 m/s water up to a true 7.8 m/s, and the speed itself above.
+ */
+export function equivalentSpeed(speed: number, map: PlantSpeed = 'face'): number {
+  if (map === 'taper') return Math.max(speed, Math.min(EQUIVALENT_SPEED_FACTOR * speed, EQUIVALENT_SPEED_CAP));
   return Math.min(EQUIVALENT_SPEED_TOP, EQUIVALENT_SPEED_FACTOR * speed);
 }
-/** The speed the water's tables are read at for these weights: `equivalentSpeed` with `plantSpeed: 'face'`, else the speed itself. */
+/** The speed the water's tables are read at for these weights: `equivalentSpeed` with a `plantSpeed`, else the speed itself. */
 export function tableSpeedFor(speed: number, weights?: Pick<DesignWeights, 'plantSpeed'>): number {
-  return weights?.plantSpeed === 'face' ? equivalentSpeed(speed) : speed;
+  return weights?.plantSpeed !== undefined ? equivalentSpeed(speed, weights.plantSpeed) : speed;
 }
 /**
  * Step 3.5w: the schedule's speeds with `plantSpeed: 'face'`: two more knots, at 3 and 3.5 m/s (their water read at 5.04
@@ -1491,7 +1506,7 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
     const ladder: { stanceDeep: boolean } = { stanceDeep: w.stanceDeep ?? true };
     // Step 3.5w: the equivalent speed is a plant too: the water's tables read at v_eq, through the same weights the
     // cache's key carries. Omitted, `plantAt` reads every table at `speed`, exactly as it did.
-    const face: { tableSpeed: number } | undefined = w.plantSpeed === 'face' ? { tableSpeed: equivalentSpeed(speed) } : undefined;
+    const face: { tableSpeed: number } | undefined = w.plantSpeed !== undefined ? { tableSpeed: equivalentSpeed(speed, w.plantSpeed) } : undefined;
     const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor, ...ladder, ...face });
     d = design(y, t, w);
     if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
@@ -1647,8 +1662,8 @@ export class PredictiveController {
 
   /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
   private blend(speed: number, depth: number, rail: number): Design {
-    // Step 3.5w (`plantSpeed: 'face'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
-    const speeds = this.weights?.plantSpeed === 'face' ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
+    // Step 3.5w (`plantSpeed: 'face'` or `'taper'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
+    const speeds = this.weights?.plantSpeed !== undefined ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
     const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
     const v0 = Math.min(speeds[speeds.length - 2], Math.floor(v * 2) / 2);
     const fv = (v - v0) / 0.5;

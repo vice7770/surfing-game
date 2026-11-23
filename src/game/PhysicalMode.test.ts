@@ -1701,6 +1701,7 @@ describe('PhysicalMode', () => {
   it('reads the balance\'s water tables at the equivalent speed with `?plantSpeed=face` (an opt-in dev switch), pinned off online', () => {
     expect(plantSpeedSwitch('?plantSpeed=face')).toEqual({ plantSpeed: 'face' });
     expect(plantSpeedSwitch('?plantSpeed=FACE')).toEqual({ plantSpeed: 'face' });
+    expect(plantSpeedSwitch('?plantSpeed=taper')).toEqual({ plantSpeed: 'taper' });
     for (const search of ['', '?plantSpeed', '?plantSpeed=', '?plantSpeed=on', '?plantSpeed=1.68', '?plantFloor=6']) {
       expect(plantSpeedSwitch(search), search).toEqual({});
     }

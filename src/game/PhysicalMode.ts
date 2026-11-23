@@ -1454,10 +1454,12 @@ export function plantFloorSwitch(search?: string): { plantFloor?: '4.5' | '5' | 
  * attitude at 3–5 m/s (trim against the face and tail immersion, 3.5v's standing frames) to the speeds at which the
  * table's free-trim rows have it; the kinematic speed, the drag the feet carry and the board's game-measured inertia
  * stay at v. A change of the plant the design is built on, not of control law, and no force in the game.
- * `docs/research/new-rider/3.5/plant-rows.md` §8. Only `face`; anything else, the shipped speed.
+ * `docs/research/new-rider/3.5/plant-rows.md` §8. `taper` (§9): max(v, min(1.68 v, 7.8)) — face's below 4.64 m/s,
+ * the 7.8 m/s water up to a true 7.8, the speed itself above. Only `face` or `taper`; anything else, the shipped speed.
  */
-export function plantSpeedSwitch(search?: string): { plantSpeed?: 'face' } {
-  return devParam('plantSpeed', search)?.trim().toLowerCase() === 'face' ? { plantSpeed: 'face' } : {};
+export function plantSpeedSwitch(search?: string): { plantSpeed?: 'face' | 'taper' } {
+  const value = devParam('plantSpeed', search)?.trim().toLowerCase();
+  return value === 'face' || value === 'taper' ? { plantSpeed: value } : {};
 }
 
 /**
