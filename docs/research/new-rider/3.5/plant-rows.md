@@ -593,3 +593,116 @@ Only the `taper` arm is run; shipped and `plantFloor=6` are 3.5v's (`results/35v
 - **The grid:** the cells start at 7.2–8.2 m/s (7.7 ± 0.5), i.e. at the plateau's top and the shipped region.
   **Median Δ within ±0.1 s; at most 2 cells worse by ≥ 0.25 s (the 7.2 m/s column is the risk). Pass, with less
   confidence than the rest.**
+
+### 9.6 Model check (run after §9.1–§9.5 were committed at `af311c19`; `results/35w/model-taper.jsonl`)
+
+Built at `1373e6e1`: `PlantSpeed = 'face' | 'taper'`, `EQUIVALENT_SPEED_CAP = 7.8`, `equivalentSpeed(v, map)`, the
+same route as `face` (`?plantSpeed=taper` parsed in `plantSpeedSwitch`; the online pin unchanged), and tests in
+`src/physics/plantSpeed.test.ts` (the map at 0–14 m/s, continuous and monotone, > 5 m/s from 3 m/s up; face's designs
+at the 3–4.5 knots; the 7.8 m/s water at 6; shipped's designs at 8, 9, 12) and `PhysicalMode.test.ts` (the parse).
+
+**Gains, Compress (depth 0.3), bank / bank rate / slip / yaw rate:**
+
+| schedule m/s | shipped | face | **taper** |
+| --- | --- | --- | --- |
+| 3.0–4.5 | (§8.6) | 1.57, 1.05, 0.94, 1.28 (bank) | **= face, identical** |
+| 5.0 | 1.50 / 0.20 / 0.36 / 0.06 | 1.00 / 0.17 / 0.40 / −0.09 | **1.14 / 0.19 / 0.43 / −0.10** |
+| 5.5 | 1.34 / 0.20 / 0.62 / −0.02 | 0.78 / 0.14 / 0.30 / −0.08 | **1.11 / 0.18 / 0.43 / −0.10** |
+| 6.0 | 0.93 / 0.15 / 0.40 / −0.08 | 0.78 / 0.14 / 0.32 / −0.08 | **1.09 / 0.18 / 0.43 / −0.09** |
+| 7.0 | 0.84 / 0.14 / 0.36 / −0.08 | 0.60 / 0.11 / 0.20 / −0.07 | **1.07 / 0.17 / 0.44 / −0.09** |
+| 7.5 | 1.22 / 0.19 / 0.52 / −0.10 | 0.58 / 0.11 / 0.17 / −0.06 | **1.07 / 0.17 / 0.44 / −0.09** |
+| 8.0, 9.0 | 0.98 / 0.16, 0.70 / 0.12 | 0.57, 0.56 | **= shipped, identical** |
+
+Tall (depth 0): taper 1.09–1.16 / 0.21–0.24 at 5–7.5 m/s (face 0.84–1.03; shipped 0.72–1.96), shipped's at ≥ 8.
+Nominal least damping 0.59–0.67 at every knot (not a discriminator).
+
+**β_ref at a 21° lean (°), tall / Compress:** 0.5 / 0.6 at 3.0; −0.7 to −1.2 at 3.5–4.5 (face's); −0.33 at 5.0; 0.17
+at 5.5; 0.56 at 6.0; 1.13 / 1.11 at 7.0; 1.34 / 1.31 at 7.5; shipped's 1.48 / 1.40 at 8 and 1.15 / 1.00 at 9. Cells with
+|β_ref| > 10° over leans 1–25°, 3–9 m/s: **2 tall / 1 Compress**, face's bottom-knot corner (3.0–3.1 m/s, leans 1–2°;
+−47° in Compress at 3.05), as predicted.
+
+**Verdict on §9.3's line: PASS** (|β_ref| ≤ 1.53° at a 21° lean, 3–9 m/s). Predictions: Compress bank 1.07–1.14 at
+5–7.5 (predicted 1.0–1.3, held), rate 0.17–0.19 (predicted 0.17–0.22, held), |β_ref| ≤ 1.4° there (≤ 2°, held).
+
+### 9.7 Take-offs (`plant-rows-takeoffs.py results/35v/data results/35w/data results/35w/data-taper`; `results/35w/takeoffs-taper.md`)
+
+**Spot check first:** catch run 2, `cue`, switch off, re-run on this branch's bundle (taper in `src`): 125 rows against
+3.5v's file with **zero differences**, and against phase 2's full-field re-run of the same stand, 127 rows, differing
+only in the spin-up's wall-clock seconds. Every taper stand prints its build back as `plantSpeed: 'taper'`, and every
+pair has the same stand time (no unpaired stand). The taper files are committed compact (every row but the frames;
+`effect` reads only an arm's summary; the reader's output is identical on the full files in the scratchpad).
+
+| population | n | shipped | `plantFloor=6` | face | **taper** | pass line | verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| organic `cueLater` on, sideways falls | 9 | — | 2 / 4 / 3 / 0, +0.50 | 3 / 4 / 2 / 0, +0.58 | **3 / 4 / 2 / 0, +0.58 (7 helped)** | ≥ 6 | **pass** |
+| organic `cueLater` off, not crest stalls | 19 | — | 4 / 8 / 6 / 1, +0.53 | 4 / 8 / 4 / 3, +0.67 | **4 / 8 / 4 / 3, +0.68 (12 helped)** | ≥ 12 | **pass** |
+| catch collapses | 12 | — | 9 / 3 / 0 / 0, +2.08 | 10 / 2 / 0 / 0, +2.08 | **10 / 2 / 0 / 0, +2.08 (12)** | ≥ 12 | **pass** |
+| lasting controls | 34 | 34 | 34 kept | 32 kept | **34 kept** | none lost | **pass** |
+
+(rescue / delay / none / worse, median Δ against shipped.) On the falls taper is face, stand for stand, but for three
+stands that differ by 0.02–0.08 s (s2w5 `cue` on, s3w6 `cue` and `cueC` off). **s1w6 `cueC` (face's two lost
+controls) is carried 3 s on both cue arms.** As predicted.
+
+### 9.8 Steering (`plant-rows-steer.py results/35w/steer results/35o/population-summaries.jsonl.gz results/35w/steer-taper`; `results/35w/steer-taper.md`)
+
+The taper steering files are compact (68 KB: the summaries, the builds and the seed-2 wave-2 `cueL` rows, all the
+reader reads; output identical to the full files, kept in the scratchpad). Shipped still reproduces 3.5o, 435 of 435.
+
+| | n | shipped median | `plantFloor=4.5` | `plantFloor=6` | face | **taper** | pass line | verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| sharp-steer collapses, steer only | 10 | 0.717 | 10 later, +2.083 | 10 later, +1.992 | 10 later, +1.217 | **10 later, +1.033, median 1.650; none worse** | no worse than shipped | **pass** |
+| Steer + Compress collapses | 6 | 0.842 | 6 later, +0.933 | 6 later, +1.125 | 6 later, +1.100 | **4 later / 1 same / 1 sooner, +0.367; 1 worse by 0.250 s** | none worse ≥ 0.25 s | **not pass, not fail** (fail is ≥ 2 worse or median worse) |
+| seed-2 wave-2 left climb at 0.90 m | 1 | +2.783 s, 3.31 m/s, 46.4° | — | not reached (falls 2.717) | not reached (falls 0.900) | **not reached (falls 3.633)** | within 0.1 m/s, 2° | **FAIL** |
+| neutral riders, steer only | 59 | — | — | +0.000 (9 worse) | +0.000 (11 worse) | **+0.000 (10 worse)** | median within ±0.1 s | **pass** |
+| neutral riders, Compress seeds | 20 | — | — | +0.017 (2) | +0.000 (3) | **+0.000 (2)** | | |
+| every steered rider, steer only | 118 | — | — | +0.050, 22 worse | +0.033, 32 worse | **+0.050, 22 worse** | (secondary) | |
+| every steered rider, Compress | 40 | — | — | +0.300, 4 worse | +0.150, 11 worse | **+0.150, 6 worse** | (secondary) | |
+
+**The Compress collapse that is worse is s2w6 `cueL`: 1.183 → 0.933 s, exactly 15 frames (0.250 s) at 60 Hz**, on the
+line's edge. **The climb:** taper turns as shipped does through the bottom turn (course 48.8° at +1.6 s against
+shipped's 53.9°) and reaches 0.50 m at +2.250 s, 5.86 m/s through the water, course 49.9° (shipped: +2.067 s,
+4.24 m/s, 48.6°). Then, at 5.4–6.3 m/s on the climb (the plateau's water), the board rolls **to the outside of the
+turn** (−11° at +2.0 s, −26° at +2.4 s, −43° at +3.2 s) while shipped's stays at −3° to +4°; the course unwinds to
++4° and the climb stalls at 0.62 m. It falls at 3.633 s, 0.07 s before shipped (3.700 s). Prediction: "survives,
+verdict on the 0.1 m/s / 2° line about even" — it survives about as long, but never reaches 0.90 m.
+**The six largest steering losses** are now 0.8–2.5 s (s1w6 `cueR` 5.00 → 2.53, s4w3 `cueL` 4.38 → 2.53), not
+face's 3.7–5 s riders falling at about 1 s.
+
+### 9.9 The plumb grid (`plant-rows-grid.py`; `results/35w/grid-taper.md`, `results/35w/grid/g-taper.jsonl.gz`)
+
+**Taper: 23 cells later, 4 sooner, median +0.567 s, none worse by ≥ 0.25 s; median fall 3.250 s against shipped's
+2.533** (face: 27 sooner, −1.167; `plantFloor=6`: 23 same, +0.000). Pass line (median ≥ −0.1 s, ≤ 2 cells worse):
+**PASS.** By the cell's speed offset: dv = −0.5 (7.2 m/s, mostly on the plateau) **+1.47 to +3.07 s** (8 of 9 cells
+past 4.8 s); dv = 0 (7.7 m/s) +0.17 to +1.28; dv = +0.5 (8.2 m/s, shipped's design) −0.17 to +0.13. The prediction
+(within ±0.1 s, the 7.2 m/s column the risk) was wrong in sign: that column is where the grid gains most.
+
+### 9.10 Checks
+
+- `npx tsc -b`: clean. Targeted tests (`src/physics/plantSpeed`, `src/physics/predictiveBalance.test`,
+  `src/game/PhysicalMode.test`): **149 of 149 pass** (two new taper tests, one new parse assertion; face's tests
+  unchanged and passing).
+- Canyon byte check (Medium, 3 600 steps, fresh spin-up): **before** (`af311c19`, no `src` change): snapshots
+  `a367d938f15fa934`, state `9e5831f80e38abd9`. **After** (`1373e6e1`, taper in `src`, switch off): snapshots
+  `a367d938f15fa934`, state `9e5831f80e38abd9`. **Identical** (`results/35w/canyon-byte-check.txt`).
+
+### 9.11 Verdict
+
+**Taper passes every pre-registered line but two of the steering lines.** It keeps face's take-off gains (7 / 12 / 12
+helped, the same stands), keeps all 34 lasting controls (face lost 2), carries all 10 steer-only sharp-steer collapses
+later (median +1.03 s, none worse), leaves the neutral riders' median at +0.000 s, and moves the plumb grid **later**
+(median +0.57 s, none worse; face −1.17 s). The model check passed.
+
+It **fails the climb line**: the seed-2 wave-2 left rider survives as long as shipped (3.63 s against 3.70) and turns as
+far, but on the climb at 5.4–6.3 m/s rolls to the outside and never reaches 0.90 m. And on **Steer + Compress** it is
+between the lines: median +0.37 s, but one collapse (s2w6 `cueL`) is worse by exactly 0.250 s, and Compress gains
+less from taper (+0.37) than from face (+1.10) or `plantFloor=6` (+1.13).
+
+What remains (for the coordinator and Vicente; nothing further is built):
+1. Both residual losses happen at 5–6.5 m/s on the plateau, the part of the map the grid and the controls did not test
+   (the grid starts at 7.2 m/s; the controls are straight). That is where the climb rolls out and where Compress, with
+   its deeper stance, reads the 7.8 m/s water. A taper that ramps down from 1.68 v towards v over 4.6–7.8 m/s, rather
+   than holding 7.8, would be the next variant to pre-register; the attitude match does not argue for it (it plateaus),
+   so it would be a design choice.
+2. `plantFloor=6` remains the alternative that carries Compress collapses furthest and changes nothing at ≥ 6 m/s, but
+   it also loses the climb (falls at 2.72 s, 0.90 m not reached).
+3. The owner's ride is the remaining test. `?plantSpeed=taper` is ready to ride on this branch.

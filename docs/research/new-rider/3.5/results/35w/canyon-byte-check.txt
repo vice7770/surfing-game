@@ -11,3 +11,11 @@ canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solv
 ms p50/p95 over 3600 steps: breaking 0.85/0.94, roller 0.45/0.56, front 0.00/0.00, lip 0.02/0.02, foam 1.68/1.78, airSources 0.04/0.05, aeration 0.79/0.85, contact 0.00/0.00, board 0.44/0.60, bubbles 0.11/0.12, spray 0.18/0.28, sounds 0.00/0.00, snapshotFields 2.82/2.99, snapshot 3.17/3.40, summary 0.24/0.31
   CPU stages per step (step − water + snapshot + summary): 8.17/8.96; water (CPU solver, not timed on the device) 54.6
   hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+## phase 3 before, af311c19 (pre-registration only; bundled before any src change)
+spun up on the CPU in 29.8 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/6f7d50a0-2092-465b-909b-518d9dad1233/scratchpad/taper/byte/nostate-before
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+## phase 3 after, 1373e6e1 (?plantSpeed=taper in src, switch off)
+spun up on the CPU in 31.3 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/6f7d50a0-2092-465b-909b-518d9dad1233/scratchpad/taper/byte/nostate-after
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
