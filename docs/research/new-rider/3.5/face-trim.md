@@ -156,6 +156,133 @@ switch will not by itself give a straight trim; whether the clamp, the bias and 
 settle somewhere standing is what §8 measures. If it fails toward the uphill rail, the yaw cost is the next suspect,
 not the face column.
 
-## 8. Results
+## 8. Results (measured once, 2026-11-23)
 
-(to be filled in after the measurement)
+**The build.** Every arm was printed back from the live `AttachedRider.predictor.weights` of a session built on the
+game's own config path (`surfZoneConfigFor` under the address; `SurfZoneRunner` for the test wave, `RideSession` for
+3.5o's drive): `faceTrim` `'on'`/`'model'` and `plantFloor` 4.5/null exactly as asked, `riderBody` `'two'`, in every
+cell and every rider (`results/35r/grid-arms.txt`, `organic-arms.txt`, the `built` rows). **Inert when off:** this
+build's shipped arm reproduces 3.5p's grid in **27 of 27** cells and 3.5q's organic seed 2 in **21 of 21** riders, on
+the same frame. Fall times are seconds after the placement (grid) or the stand (organic); a median counts a censored
+ride at its floor, labelled ≥.
+
+### 8.1 The test wave's 27-cell plumb ride grid, no input
+
+| arm | fell | median (range), s | paired vs shipped | side of the separation (sign of the capture point across) | falls below 3 m/s through the water, 0.25 s before | body within 3° of plumb | 0.5 s to the end: rail / bank (medians) | heading turned |
+|---|---|---|---|---|---|---|---|---|
+| shipped | 27 | 2.533 (2.050–3.550) | — | downhill 27 | **0 of 27** (median 9.24 m/s) | 9.3 % | −12.1° / −23.1° | −96.3° |
+| floor (3.5q B) | 27 | 2.533 | same frame 27 / 27 | downhill 27 | — | 9.3 % | — | — |
+| **on** | **25** | **5.267 (4.167 to ≥ 6.000)** | **later 27 / 27, +2.867 (+0.667 to +3.767)** | uphill 14, downhill 11 | **24 of 25** (1.94 m/s) | **41.4 %** | −2.5° / −3.6° | −75.9° |
+| on + floor | 27 | 5.067 (4.100–5.967) | later 27 / 27, +2.550 (+0.550 to +3.650) | uphill 15, downhill 12 | 26 of 27 (2.42 m/s) | 37.3 % | −2.5° / −3.9° | −55.6° |
+| model | 27 | 3.350 (2.133–5.417) | later 21 / sooner 6, +0.583 (−0.633 to +3.067) | downhill 18, uphill 9 | 8 of 27 (6.61 m/s) | 10.1 % | −22.6° / −29.5° | −108.4° |
+| model + floor | 27 | 3.350 (2.133–5.317) | later 21 / sooner 6, +0.583 (−0.633 to +2.883) | downhill 18, uphill 9 | 6 of 27 | 10.1 % | −22.6° / −29.5° | −108.4° |
+
+Rail is 3.5p's (+ = uphill rail into the face), bank + toward the face; the heading turned is to the last attached
+frame (− = down the face). The share of frames from 0.5 s with an uphill rail **and** the body within 3° of plumb is
+0 % shipped, 8.4 % (0–32.4) `on`, 8.6 % (0–28.6) `on + floor`, 0 % (0–44.4) `model`.
+
+- **`on` removes the spiral, and only the spiral.** No `on` fall is the shipped roll-over at the trough: 24 of 25 come
+  off the plane, below 3 m/s through the water, after the wave's push is spent. In the base cell the body is still
+  thrown to −19.7° by 0.5 s (the placement's snap; the tilt is sensed only from 0.1 s), comes back to −1 to −9° by
+  2–3.5 s while the board turns down the face, rides the bottom near plumb, and falls at 5.3 s when its speed through
+  the water has dropped from 8 to 1.3 m/s.
+- **It does not give him the trim it asks for.** Over the ride the board sits about flush (rail −2.5°), not on the
+  neutral point's 7.6° of uphill rail, and it still turns down the face (−76° median), more slowly than shipped.
+- **`model` alone does little:** later by a median 0.58 s, the body leans further downhill (−29.4° at 1.0 s against
+  −15.5°), and the falls stay mostly planing. On this ride the reference does the work, not the model change.
+- **The floor**, inert on the shipped ride (3.5q), now moves 26 of 27 `on` cells, slightly sooner (5.067 against
+  5.267): the longer rides end below 4.5 m/s.
+
+### 8.2 Organic rides on the owner's address (3.5o's drive, steer only, seeds 1–3, 60 riders)
+
+A is 3.5q's shipped arm, B 3.5o's own floor population for these seeds; the buckets are 3.5o's rule on A, as 3.5q
+listed them. Paired median (range); later / sooner / same.
+
+| bucket (n) | A shipped | E on | G model | F on + floor | H model + floor |
+|---|---|---|---|---|---|
+| **outside the turn window, the post-turn rides across the face** (9) | 2.517 (1.733–3.700) | **1.967; vs A 0 / 8 / 1, −0.733** | 1.950; vs A 5 / 4 / 0, +0.017 | 1.967; **vs B 2 / 7 / 0, −0.317** | 1.983; vs B 3 / 6 / 0, −0.167 |
+| sharp-steer collapse (5) | 0.700 (0.467–0.983) | 0.700; 0 / 1 / 4 | 0.700; 0 / 1 / 4 | see §8.4 | see §8.4 |
+| turn window, neutral falls too (23) | 0.750 (0.500–1.283) | 0.683; 3 / 11 / 9, +0.000 | 0.867; 9 / 7 / 7, +0.000 | 0.933; vs B 7 / 6 / 10, +0.000 | 0.933; vs B 9 / 3 / 11, +0.000 |
+| censored on shipped (3) | 0 of 3 fell | 1 of 3 | 1 of 3 | 1 of 3 | 1 of 3 |
+| neutral (20) | 16 of 20 fell, 1.108 (0.550 to ≥ 5.000) | 1.033; 4 / 7 / 9, +0.000 | 1.108; 8 / 3 / 9, +0.000 | 1.300; vs B 4 / 5 / 11, +0.000 | 1.358; vs B 7 / 3 / 10, +0.000 |
+
+| rider | A | B floor | E on | F on + floor | G model | H model + floor |
+|---|---|---|---|---|---|---|
+| seed 2 wave 2 left (post-turn) | 3.700 | 3.683 | **2.750** | **2.650** | **2.633** | 2.900 |
+| seed 2 wave 2 right (post-turn) | 3.133 | 4.033 | 2.917 | 2.900 | 3.150 | 3.233 |
+| seed 2 wave 1 neutral | 3.900 | 3.683 | 3.850 | 3.050 | 3.933 | 3.667 |
+
+**The post-turn rides across the face fall sooner with `on`**: 8 of 9 against shipped (median −0.733 s), 7 of 9 with
+the floor against the floor alone (−0.317 s). Those are the rides the owner rides after every turn.
+
+### 8.3 The wave-2 survivor's turn (seed 2 wave 2 left, steer alone)
+
+| arm | turn peak bank | at 0.50 m of climb | at 0.90 m of climb | fall |
+|---|---|---|---|---|
+| shipped (this build) | 42.83° at +1.367 s | +2.067 s, 4.24 m/s, course 48.6° | +2.783 s, 3.31 m/s, course 46.4° | +3.683 s |
+| on | 43.49° at +1.367 s | +2.017 s, 4.09 m/s, 52.0° | **not reached** (0.89 m at most) | **+2.733 s** |
+| on + floor | 43.49° at +1.367 s | +2.017 s, 4.08 m/s, 51.3° | not reached (0.84 m) | +2.633 s |
+| model | 43.12° at +1.350 s | +2.000 s, 4.06 m/s, 55.9° | not reached (0.83 m) | +2.617 s |
+| model + floor | 43.12° at +1.350 s | +2.000 s, 3.97 m/s, 50.3° | +2.683 s, 4.33 m/s, 62.2° | +2.883 s |
+
+**The turn is not damaged** (43.5° against 42.8°, at the same instant). **The climb is**: with `on` the ankle's
+command (requested, pre-clamp) swings −36.4° → +56.9° → −25.2° at +2.00 / +2.25 / +2.50 s, at 4.0–4.6 m/s through
+the water, against −6.7° / −0.6° / −2.5° shipped, and he falls 0.95 s sooner. Over the whole post-turn bucket the
+share of frames with the command past ±14.3° is about the same in both arms (median 46–50 % from +1.5 s), so this
+trace is the survivor's, not a bucket-wide mechanism.
+
+### 8.4 With `plantFloor=4.5`: the sharp-steer collapses (n 5: seeds 2.1 L/R, 3.9 R, 3.12 L/R)
+
+| arm | fell | median (range) | vs A | vs B (the floor alone) |
+|---|---|---|---|---|
+| B floor | 5 | 3.717 (1.500–3.983) | later 5 / 5, +3.000 | — |
+| F on + floor | 5 | 3.633 (1.667–4.000) | later 5 / 5, +2.933 | later 3 / sooner 2, +0.017 (−0.300 to +0.167) |
+| H model + floor | 5 | 3.433 (1.617–3.983) | later 5 / 5, +2.733 | later 2 / sooner 2 / same 1, +0.000 (−0.350 to +0.117) |
+
+**They compose**: the switch keeps the floor's rescue of the sharp steer (seed 2 wave 1 left 4.000, right 3.883),
+where `waterHeel` took part of it back (3.5q: sooner than the floor in 4 of 5). On its own neither variant rescues a
+collapse (0.700 s, as shipped), as expected: that fault is row '4'.
+
+### 8.5 Verdict
+
+**No variant gives the new rider a trim across the face, and neither should go on the owner's address as built.**
+`on` is the first arm in this thread to make the test wave's straight-line fall later in every cell (27 of 27, median
++2.9 s), with the trough roll-over gone and the body near plumb four times as often: evidence that the face's
+support term and the face-aware reference are the right axis for that ride. But the board still turns down the face
+and rides flush rather than railed, the remaining falls are off-the-plane stalls, and it **costs the organic
+post-turn rides across the face** (8 of 9 sooner, the survivor 0.95 s sooner on his climb). `model` alone changes
+little on the test wave and also costs the post-turn rides. The sharp-steer floor composes with both.
+
+### 8.6 What remains uncertain, and what I would try next (not built: two variants were the budget)
+
+- **Why the post-turn climbs fall sooner is not separated.** One candidate, from the model's own numbers: the neutral
+  trim's slip target per radian of tilt grows as the speed falls (0.41 at 6.5 m/s, 1.0 on row '4.5', 1.9 on row
+  '4'), which those climbs cross; the floor halves the cost (−0.733 → −0.317 against each arm's own control).
+  Consistent with it, not proven.
+- **The trim is built on the derivatives at zero rail** (the schedule's rail is still the lean asked). The trim's own
+  rail (7.6°) and slip (4–5°, far more when slow) are where the plant should be linearised; `RAIL_PLANT` has the
+  held-rail derivatives at 10°. That is the next model change I would try: the same switch, the trim and its
+  derivatives read at the trim's own rail.
+- **The yaw**, as §1 and §7 said: no point of the trim family balances it, and with `on` the board still turns
+  56–76° down the face. Holding a line across a face is a heading question (the old rider's `holdLine`), which is an
+  authority the owner has not opened; it is not attempted here.
+- **The level point** (the old rider's trim: 12° of rail, 2.8–3.4° of slip, 34 N·m on the ankle) is the family's other
+  end and was not built.
+- **The placement's snap** still throws the body at 0.5 s; the organic stands across a face that would start this
+  balance cold were not measured. Feel is not measured: a bot ride is not evidence of feel. Seeds 1–3 only; the
+  buckets are small; the grid is one wave.
+
+## 9. Reproduce
+
+    ./node_modules/.bin/rolldown docs/research/new-rider/3.5/straight-fall.ts -o <s>/sf.mjs --format esm --platform node
+    env GRID=1 SECONDS=6 FRAMES=1 EXTRA='&faceTrim=on' OUT=<s>/g-on.jsonl node --max-old-space-size=3200 <s>/sf.mjs   # model; &plantFloor=4.5
+    ./node_modules/.bin/rolldown docs/research/new-rider/3.5/sharp-steer.ts -o <s>/raw.mjs --format esm --platform node
+    printf "globalThis.location = { search: '' };\n" > <s>/ss.mjs && cat <s>/raw.mjs >> <s>/ss.mjs
+    env ADDRESS='?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&faceTrim=on' SEED=2 PERIODS=12 TURN_STEER=1 TURN_COMPRESS=0 STAND_HOLD=5 SUB_FROM=99 SUB_TO=99 OUT=<s>/o-on-s2.jsonl node --max-old-space-size=3200 <s>/ss.mjs
+    python3 docs/research/new-rider/3.5/face-trim-grid.py ship=<g-ship> on=<g-on> ...     # §8.1; face-trim-ends.py the end speeds
+    python3 docs/research/new-rider/3.5/face-trim-organic.py <dir with o-*.jsonl and done.txt>   # §8.2-8.4
+
+`results/35r/`: `model-side.jsonl` (§1, §3, §4, §7), `grid-arms.txt` and `organic-arms.txt` (every table above),
+`grid-{on,onf,model,modelf}-frames-thin.jsonl.gz` (the grid's frames, the columns the tables read; the shipped grid is
+3.5p's own `grid-new-frames.jsonl.gz`, identical cell for cell), `organic-o-*-summaries.jsonl.gz` (each organic run's
+control, `built` and summary rows, and the survivor's own frame rows).

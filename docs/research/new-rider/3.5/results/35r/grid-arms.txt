@@ -1,0 +1,68 @@
+# 3.5r test wave, 27-cell plumb ride grid, no input (straight-fall.ts GRID=1 FRAMES=1); every arm on this build; paired against this build's shipped arm
+ship: fell 27/27, median 2.533 (2.050-3.550)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, None, None)}
+   axis at the separation (side, sign of cpX): {'x- (downhill)': 27}; rail at the last attached frame -84.5 (-92.6 to -43.5, n 27)
+   share of live frames with |bank| <= 3 deg: +9.3 (+7.1 to +12.8, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +0.0 (+0.0 to +0.0, n 27) %
+   median over 0.5 s-end: rail -12.1 (-26.4 to -5.3, n 27), bank -23.1 (-32.6 to -18.4, n 27); bank at 1.0 s -15.5 (-20.4 to -10.8, n 27); at 2.0 s -38.9 (-70.0 to -26.4, n 27)
+   heading turned to the last attached frame -96.3 (-128.2 to -31.1, n 27) (- = down the face); face fraction there +0.0 (+0.0 to +0.3, n 27)
+on: fell 25/27, median 5.267 (4.167->= 6.000) | vs ship: later 27 / sooner 0 / same 0, median +2.867 (+0.667 to +3.767)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, 'on', 'on')}
+   axis at the separation (side, sign of cpX): {'x+ (uphill)': 14, 'x- (downhill)': 11}; rail at the last attached frame -52.6 (-104.2 to +92.9, n 25)
+   share of live frames with |bank| <= 3 deg: +41.4 (+21.6 to +51.9, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +8.4 (+0.0 to +32.4, n 27) %
+   median over 0.5 s-end: rail -2.5 (-5.2 to -0.6, n 27), bank -3.6 (-5.9 to -1.8, n 27); bank at 1.0 s -18.3 (-20.5 to -13.9, n 27); at 2.0 s -6.9 (-13.6 to +0.3, n 27)
+   heading turned to the last attached frame -75.9 (-145.4 to -15.0, n 27) (- = down the face); face fraction there +0.3 (+0.1 to +0.6, n 27)
+onf: fell 27/27, median 5.067 (4.100-5.967) | vs ship: later 27 / sooner 0 / same 0, median +2.550 (+0.550 to +3.650)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(4.5, None, 'on', 'on')}
+   axis at the separation (side, sign of cpX): {'x+ (uphill)': 15, 'x- (downhill)': 12}; rail at the last attached frame +43.2 (-55.3 to +56.8, n 27)
+   share of live frames with |bank| <= 3 deg: +37.3 (+22.1 to +47.9, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +8.6 (+0.0 to +28.6, n 27) %
+   median over 0.5 s-end: rail -2.5 (-5.1 to -0.8, n 27), bank -3.9 (-8.1 to -2.3, n 27); bank at 1.0 s -18.3 (-20.5 to -13.9, n 27); at 2.0 s -6.9 (-13.6 to +0.3, n 27)
+   heading turned to the last attached frame -55.6 (-88.4 to -20.7, n 27) (- = down the face); face fraction there +0.2 (+0.1 to +0.3, n 27)
+model: fell 27/27, median 3.350 (2.133-5.417) | vs ship: later 21 / sooner 6 / same 0, median +0.583 (-0.633 to +3.067)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, 'model', 'model')}
+   axis at the separation (side, sign of cpX): {'x- (downhill)': 18, 'x+ (uphill)': 9}; rail at the last attached frame -73.5 (-94.0 to +60.9, n 27)
+   share of live frames with |bank| <= 3 deg: +10.1 (+6.0 to +56.5, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +0.0 (+0.0 to +44.4, n 27) %
+   median over 0.5 s-end: rail -22.6 (-37.2 to +0.7, n 27), bank -29.5 (-41.8 to +1.0, n 27); bank at 1.0 s -29.4 (-37.3 to -20.5, n 27); at 2.0 s -30.9 (-64.3 to -11.0, n 27)
+   heading turned to the last attached frame -108.4 (-166.9 to +39.2, n 27) (- = down the face); face fraction there +0.1 (+0.0 to +0.3, n 27)
+modelf: fell 27/27, median 3.350 (2.133-5.317) | vs ship: later 21 / sooner 6 / same 0, median +0.583 (-0.633 to +2.883)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(4.5, None, 'model', 'model')}
+   axis at the separation (side, sign of cpX): {'x- (downhill)': 18, 'x+ (uphill)': 9}; rail at the last attached frame -73.5 (-94.0 to +65.9, n 27)
+   share of live frames with |bank| <= 3 deg: +10.1 (+5.7 to +49.0, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +0.0 (+0.0 to +36.0, n 27) %
+   median over 0.5 s-end: rail -22.6 (-37.2 to +0.6, n 27), bank -29.5 (-41.8 to +1.0, n 27); bank at 1.0 s -29.4 (-37.3 to -20.5, n 27); at 2.0 s -30.9 (-64.3 to -11.0, n 27)
+   heading turned to the last attached frame -108.4 (-180.8 to +24.2, n 27) (- = down the face); face fraction there +0.0 (+0.0 to +0.3, n 27)
+
+# per cell
+cell                ship        on       onf     model    modelf
+-5|-1|-0.5         2.900     4.500     4.150     2.333     2.333
+-5|-1|0            3.550     4.217     4.100     4.500     4.433
+-5|-1|0.5          2.133     4.500     4.417     2.167     2.167
+-5|0|-0.5          2.800     4.167     4.117     2.567     2.567
+-5|0|0             3.283     4.467     4.400     4.167     4.167
+-5|0|0.5           2.100     4.967     4.650     2.167     2.167
+-5|1|-0.5          2.833     4.533     4.417     2.500     2.500
+-5|1|0             3.250     4.667     4.650     3.350     3.350
+-5|1|0.5           2.083     5.050     4.783     2.133     2.133
+0|-1|-0.5          2.517     4.950     4.867     4.833     4.717
+0|-1|0             2.533     5.317     4.933     5.000     4.933
+0|-1|0.5           2.383     5.333     4.917     2.883     2.883
+0|0|-0.5           2.533     5.233     5.067     4.717     4.583
+0|0|0              2.500     5.500     5.033     5.167     5.067
+0|0|0.5            2.367     5.083     5.083     2.950     2.950
+0|1|-0.5           2.583     5.200     5.133     4.683     4.600
+0|1|0              2.517     5.267     5.167     5.300     5.217
+0|1|0.5            2.350     5.300     5.167     3.467     3.467
+5|-1|-0.5          2.650     5.817     5.683     2.517     2.517
+5|-1|0             2.567     5.850     5.650     3.700     3.700
+5|-1|0.5           2.050     5.817     5.700     5.117     4.933
+5|0|-0.5           2.717     5.917     5.767     2.367     2.367
+5|0|0              2.683     5.983     5.817     3.233     3.233
+5|0|0.5            2.333     5.933     5.767     4.917     4.750
+5|1|-0.5           2.850     6.000     5.850     2.217     2.217
+5|1|0              3.083   >=6.000     5.917     3.333     3.333
+5|1|0.5            2.500   >=6.000     5.967     5.417     5.317
+
+# how each arm's falls end (last attached frame; speed 0.25 s before it)
+ship: fell 27; on the fall line (|face tilt| < 3 deg to the end) in 26 of 27, from 2.10 (1.62 to 2.47, n 26) s; speed through 0.25 s before the end 9.24 (5.75 to 9.80, n 27) m/s; under 3 m/s there in 0 of 27
+on: fell 25; on the fall line (|face tilt| < 3 deg to the end) in 4 of 25, from 2.33 (1.77 to 2.38, n 4) s; speed through 0.25 s before the end 1.94 (-0.20 to 3.03, n 25) m/s; under 3 m/s there in 24 of 25
+onf: fell 27; on the fall line (|face tilt| < 3 deg to the end) in 16 of 27, from 2.33 (1.72 to 2.43, n 16) s; speed through 0.25 s before the end 2.42 (1.97 to 3.12, n 27) m/s; under 3 m/s there in 26 of 27
+model: fell 27; on the fall line (|face tilt| < 3 deg to the end) in 11 of 27, from 1.68 (1.40 to 2.08, n 11) s; speed through 0.25 s before the end 6.61 (2.05 to 9.57, n 27) m/s; under 3 m/s there in 8 of 27
+modelf: fell 27; on the fall line (|face tilt| < 3 deg to the end) in 13 of 27, from 1.73 (1.40 to 2.10, n 13) s; speed through 0.25 s before the end 6.61 (2.39 to 9.57, n 27) m/s; under 3 m/s there in 6 of 27
