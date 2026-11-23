@@ -416,3 +416,33 @@ Compress at 3.05 m/s), the same kind as 3.5o's second corner; `plantFloor=6` has
 `'5'` (v_eq 5.04), whose yaw moment per slip (−28.6) is the table's smallest, with the true V of 3. Prediction check:
 Compress gains at 3.5–5 m/s 0.94–1.28 (predicted 0.9–1.5, held), but 1.57 at 3.0; above 7 m/s the face gains are
 30–55 % **below** shipped (predicted within ±30 %: missed), because 7.14 m/s and up read the 12 m/s water.
+
+### 8.7 Take-offs (`plant-rows-takeoffs.py`, `results/35w/takeoffs.md`)
+
+**Reproduction first.** Shipped and `plantFloor=6` are 3.5v's own arms (`results/35v/data`, the same probe). On this
+branch, with the switch off, catch runs 2 and 7 (`cue`, base) and run 2 (`cueC`, `plantFloor=6`) were re-run and
+compared frame by frame with 3.5v's files: **zero differences** in every value 3.5v kept (7 043, 7 931 and 6 650
+fields; the summaries differ only in wall-clock seconds). The face arm (`fs`) prints its build back as
+`plantSpeed: 'face'` on every stand. Every pair below has the same stand time and speed (no unpaired stand).
+
+| population | n | `plantFloor=6`: rescue / delay / none / worse, median Δ | **face** | pass line | verdict |
+| --- | --- | --- | --- | --- | --- |
+| organic `cueLater` on, sideways falls | 9 | 2 / 4 / 3 / 0, +0.50 | **3 / 4 / 2 / 0, +0.58** | ≥ 6 helped | pass (7) |
+| organic `cueLater` off, not crest stalls | 19 | 4 / 8 / 6 / 1, +0.53 | **4 / 8 / 4 / 3, +0.67** | ≥ 12 helped | pass (12) |
+| catch collapses | 12 | 9 / 3 / 0 / 0, +2.08 | **10 / 2 / 0 / 0, +2.08** | ≥ 12 helped | pass (12) |
+| lasting controls | 34 | 34 kept | **32 kept, 2 lost** | none lost | **FAIL** |
+
+**The two lost controls are the same rider, s1w6 `cueC`, on both cue arms** (organic `cueLater` on: falls at 2.45 s;
+off: 2.87 s; shipped and `plantFloor=6` carry both). It is not a take-off fall. The stand lands at 4.4–4.9 m/s and
+the board accelerates down the face to **7–8 m/s**, where the face design reads the **12 m/s water** (v_eq capped). There
+the board's roll drifts from 1–2° to 60° over about 2 s (+8° at +1.4 s, +20° at +2.0 s) and the body's bank follows it,
+while the raw ankle command stays at 1–3°: **a slow lean divergence the low-gain design does not correct**. The
+shipped design on the same stand holds the roll within ±4° with commands of the same size and the other sign. This is
+§8.2's flagged risk (a constant factor over-reads above about 5.5 m/s, where the attitude match gives 1.29–1.45, not
+1.68) and §8.6's missed prediction (gains 30–55 % below shipped above 7 m/s).
+
+On the falls the face arm does as well as or better than `plantFloor=6` everywhere: 7 against 6, 12 against 12 and
+12 against 12 helped. The three "worse" stands on the switch-off organic arm are s1w7 `cue` (`plantFloor=6` is
+worse there too) and s3w2 ×2 (1.13 → 0.88 and 1.18 → 0.83 s; s3w2 is 3.5v's pop-up-separation wave).
+**By the pre-registered line, the take-offs fail on the controls.** Steering and the grid ran in parallel with this
+read and are reported below as measured.
