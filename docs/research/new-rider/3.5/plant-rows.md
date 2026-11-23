@@ -446,3 +446,60 @@ On the falls the face arm does as well as or better than `plantFloor=6` everywhe
 worse there too) and s3w2 ×2 (1.13 → 0.88 and 1.18 → 0.83 s; s3w2 is 3.5v's pop-up-separation wave).
 **By the pre-registered line, the take-offs fail on the controls.** Steering and the grid ran in parallel with this
 read and are reported below as measured.
+
+### 8.8 Steering (`plant-rows-steer.py`, `results/35w/steer.md`; `sharp-steer.ts`, PERIODS 12, STAND_HOLD 5)
+
+**Reproduction:** this round's shipped arm reproduces 3.5o's shipped population **435 of 435 riders to the identical
+fall time**, so 3.5o's `plantFloor=4.5` arm is a valid comparison. Every arm printed its build back.
+
+| | n | shipped median | `plantFloor=4.5` (3.5o) | `plantFloor=6` | **face** | pass line | verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| sharp-steer collapses, steer only | 10 | 0.717 | 10 later, +2.083, median 3.067 | 10 later, +1.992, median 2.900 | **10 later, +1.217, median 2.042; none worse** | no worse than shipped | pass |
+| Steer + Compress collapses | 6 | 0.842 | 6 later, +0.933 | 6 later, +1.125 | **6 later, +1.100; none worse** | no worse than shipped | pass |
+| seed-2 wave-2 left climb at 0.90 m | 1 | +2.783 s, 3.31 m/s, 46.4° | — | not reached (falls 2.717) | **not reached: falls at 0.900 s** | within 0.1 m/s, 2° | **FAIL** |
+| neutral riders, steer only | 59 | — | — | median +0.000 (9 worse ≥ 0.25 s) | **median +0.000 (11 worse)** | median within ±0.1 s | pass |
+| neutral riders, Compress seeds | 20 | — | — | +0.017 (2 worse) | +0.000 (3 worse) | | |
+| every steered rider, steer only | 118 | — | — | median +0.050, 22 worse | **median +0.033, 32 worse** | (not pre-registered) | |
+| every steered rider, Compress | 40 | — | — | median +0.300, 4 worse | **median +0.150, 11 worse** | (not pre-registered) | |
+
+**The climb fails, and its mechanism is the same as the lost control's.** On seed 2 wave 2 the left turn is asked at
+6–7 m/s through the water; with the face design (the 10–12 m/s water) the lean ask ramps 0 → 40° in 0.4 s while the
+board's course stays at +2° to −2° (shipped turns to +48°) and the board rolls to 13°: it leans without turning and
+falls at +0.90 s. The face arm's six largest steering losses are all riders the shipped balance carried 3.7–5 s at
+higher speed (s3w5 L/R, s1w6 R, s4w3 L, s2w2 L, s9w1 L: 5.00 → 0.97 s and similar).
+
+### 8.9 The plumb grid (`results/35w/grid.md`; `straight-fall.ts` GRID=1, 3.5p's 27 cells, no input)
+
+Shipped reproduces 3.5p's published column in **27 of 27 cells**. `plantFloor=6`: 23 same, median +0.000, none worse
+(the grid's base speed is 7.7 m/s, above its floor). **Face: all 27 cells fall earlier, median −1.167 s (−0.73 to
+−2.27), median fall 1.350 s against 2.533.** Pass line (median ≥ −0.1 s, ≤ 2 cells worse): **FAIL.** The cells start at
+7.7 m/s, so every face design there reads the 12 m/s water.
+
+### 8.10 Checks
+
+- `npx tsc -b`: clean. Targeted tests: `src/physics/plantSpeed.test.ts` (new: the map, off bit for bit, on reads
+  v_eq, the 3 m/s hold), `src/physics/predictiveBalance.test.ts`, `src/game/PhysicalMode.test.ts` (new: the switch,
+  its parse, the online pin): **147 of 147 pass.**
+- Canyon byte check (Medium, 3 600 steps, fresh spin-up): **before** (`0ddd042a`, before any `src/` change):
+  snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`. **After** (`09294147`, the switch in `src/`, off): snapshots
+  `a367d938f15fa934`, state `9e5831f80e38abd9`. **Identical** (`results/35w/canyon-byte-check.txt`).
+
+### 8.11 Verdict and what it says
+
+**Phase 2 fails its pre-registered lines, on one cause.** The model check passed (|β_ref| ≤ 1.2° at a 21° lean,
+3–9 m/s). The equivalent speed does what it was built for at 3–5 m/s: the take-off falls are helped as often as or more
+often than with `plantFloor=6` (7, 12 and 12 against 6, 12 and 12) and every sharp-steer collapse is later than shipped
+(16 of 16). **But a single factor of 1.68 reads the 10–12 m/s water at 6–8 m/s**, where the shipped design already
+holds, and there the low-gain design lets the board lean away slowly (2 of 34 lasting controls lost, the climb's
+survivor lost, all 27 grid cells 0.7–2.3 s earlier). Both were named as risks before any arm ran (§8.2, §8.6).
+
+What the measurements point to, for the coordinator and Vicente (nothing here is built):
+
+1. **A map that returns to the speed itself above about 5 m/s** (e.g. v_eq = 1.68 v up to 3 m/s, tapering to v by
+   5.5–6 m/s), which is what the attitude match itself says (1.29–1.45 at 5.5–6 m/s) and what `plantFloor=6` already
+   is in effect: it changes nothing at or above 6 m/s, which is why it loses no control and moves no grid cell. That
+   is a new pre-registration and a new run of these arms.
+2. **`plantFloor=6` as it stands** (3.5v and here: 0 of 34 controls lost, the grid untouched, the collapses carried
+   further than face, its climb survivor falls at 2.72 s rather than 3.70 s).
+3. §8.1's reading stands whichever is chosen: these are stiffer-than-real designs; the board's own water at 3–4.5 m/s
+   (§7.2) asks for higher gains, not lower, and 3.5v's falls show higher gains failing.

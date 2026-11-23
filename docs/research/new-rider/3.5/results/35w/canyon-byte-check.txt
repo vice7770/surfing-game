@@ -1,0 +1,13 @@
+# 3.5w: Canyon byte check, Medium, 3600 steps, fresh spin-up (scripts/m1-cpu-bench.ts, '?canyonWaves=true' prepended)
+## before, 0ddd042a (no src change)
+spun up on the CPU in 28.0 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/6f7d50a0-2092-465b-909b-518d9dad1233/scratchpad/byte/nostate-before
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 0.81/0.89, roller 0.44/0.53, front 0.00/0.00, lip 0.02/0.02, foam 1.64/1.76, airSources 0.04/0.05, aeration 0.77/0.83, contact 0.00/0.00, board 0.41/0.56, bubbles 0.10/0.11, spray 0.18/0.24, sounds 0.00/0.00, snapshotFields 2.82/2.95, snapshot 3.15/3.32, summary 0.24/0.30
+  CPU stages per step (step − water + snapshot + summary): 7.98/8.60; water (CPU solver, not timed on the device) 51.1
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+## after, 09294147 (?plantSpeed in src, switch off)
+spun up on the CPU in 30.9 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/6f7d50a0-2092-465b-909b-518d9dad1233/scratchpad/byte/nostate-after
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 0.85/0.94, roller 0.45/0.56, front 0.00/0.00, lip 0.02/0.02, foam 1.68/1.78, airSources 0.04/0.05, aeration 0.79/0.85, contact 0.00/0.00, board 0.44/0.60, bubbles 0.11/0.12, spray 0.18/0.28, sounds 0.00/0.00, snapshotFields 2.82/2.99, snapshot 3.17/3.40, summary 0.24/0.31
+  CPU stages per step (step − water + snapshot + summary): 8.17/8.96; water (CPU solver, not timed on the device) 54.6
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9

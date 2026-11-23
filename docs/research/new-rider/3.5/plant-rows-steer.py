@@ -108,6 +108,14 @@ def main(directory, pop35o):
         for arm in ('pf6', 'face'):
             print(f'- {arm} - shipped: {pair(T, nk, "ship", arm)[1]}')
         print()
+        sk = sorted(k[1:] for k in T if k[0] == 'ship' and k[1] == c and k[4] != 'cue' and T[k] is not None)
+        print(f'### every steered rider that stood (n = {len(sk)})\n')
+        for arm in ('pf6', 'face'):
+            d, txt = pair(T, sk, 'ship', arm)
+            print(f'- {arm} - shipped: {txt}')
+        worst = sorted(((T[('face',) + k] - T[('ship',) + k], k) for k in sk if T.get(('face',) + k) is not None), key=lambda x: x[0])[:6]
+        print('- face, the six largest losses: ' + ', '.join(f"s{k[1]}w{k[2]} {k[3]} {T[('ship',) + k]:.2f} -> {T[('face',) + k]:.2f}" for _, k in worst))
+        print()
     print('## The seed-2 wave-2 left turn\'s climb (3.5o: 0.50 m at +2.067 s, 4.24 m/s, 48.6°; 0.90 m at +2.783 s, 3.31 m/s, 46.4°)\n')
     for arm in ARMS:
         rs = sorted((r for r in rows.get(arm, []) if r.get('climb') is not None and r.get('attached')), key=lambda r: r['tStand'])
@@ -118,7 +126,7 @@ def main(directory, pop35o):
         out = []
         for h in (0.5, 0.9):
             hit = next((r for r in rs[lo:] if r['climb'] >= h), None)
-            out.append(f"{h:.2f} m: " + ('not reached' if hit is None else f"+{hit['tStand']:.3f} s, {hit['speed']:.2f} m/s, course {hit['course']:.1f}°"))
+            out.append(f"{h:.2f} m: " + ('not reached' if hit is None else f"+{hit['tStand']:.3f} s, {hit['speedThrough']:.2f} m/s through the water ({hit['speed']:.2f} over the ground), course {hit['course']:.1f}°"))
         print(f"- {arm}: fall {fmt(T.get((arm, 0, 2, 2, 'cueL')))}; " + '; '.join(out))
 
 
