@@ -960,6 +960,21 @@ export interface DesignWeights {
    * combined with `waterHeel`.
    */
   faceTrim?: 'on' | 'model';
+  /**
+   * **The line held with the stick centred** (step 3.5s, `?holdLine=ref`; `docs/research/new-rider/3.5/hold-line.md`).
+   * Standing, the stick centred and the hand unused, the rider holds the line he came out of a turn on (the old rider's
+   * latch, a world heading, which the caller hands `tick` as `hold`). The heading rides the senses' own 0.1 s line and
+   * is brought forward over the delay by the estimate's and the prediction's yaw rate; the reference then asks the turn
+   * rate back to the line, r = −ψ̂ / HOLD_LINE_TIME within ±HOLD_LINE_RATE, through the **coordinated lean** of that
+   * turn, atan(v r / g), within the caller's lean cap, added to the bank asked before the steady turn (and `faceTrim`'s
+   * trim). The coordinated turn is the relation the game measures on the face (hold-line.md §1.2); the model's own yaw
+   * row is singular at 5 m/s and is not used.
+   *
+   * A change of reference only: Φ, Γ, K, L and the design are untouched, the same two commands through the same
+   * clamps, and with no line (`hold` absent or its heading NaN) the added bank is exactly zero, so the controller is
+   * the one without it tick for tick. No integral: one fails the model gate at 5 m/s (hold-line.md §3.3).
+   */
+  holdLine?: 'ref';
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -1510,6 +1525,16 @@ export function steadyTurn(phi: Mat, gamma: Mat, bank: number, twist: number, dr
 /** The controller's limits on what it sends: the ankle's rest, rad (± or [least, most]), and the twist's torque, N·m (±). */
 export interface ControlLimits { ankle: number | readonly [number, number]; twist: number }
 
+/**
+ * Step 3.5s (`DesignWeights.holdLine`): the line held, as the caller hands it to `tick` each tick: the board's heading
+ * from the latched line NOW, rad, this file's sign (+ the nose to the right of the line), or NaN while no line is
+ * latched; and the largest lean the stick's own ask may have now (the lean cap), rad.
+ */
+export interface HoldInput { heading: number; cap: number }
+/** Step 3.5s: the hold's heading time, s (r = −ψ̂ / this), and its largest turn rate asked, rad/s (hold-line.md §2–§3). */
+export const HOLD_LINE_TIME = 1.0;
+export const HOLD_LINE_RATE = 0.2;
+
 export class PredictiveController {
   private readonly weights?: DesignWeights;
   /** The senses' line (newest last) and the commands sent (newest last), at most steps + 1 of each. */
@@ -1538,6 +1563,14 @@ export class PredictiveController {
    */
   private readonly faces: number[] = [];
   faceSensed = 0;
+  /**
+   * Step 3.5s (`holdLine`): the heading from the line as it rides the senses' line (newest last, NaN while no line is
+   * latched), and, for probes, the heading the last tick brought forward (rad, NaN when the hold did not act) and the
+   * bank it added (rad, this file's sign; 0 when it did not act).
+   */
+  private readonly headings: number[] = [];
+  holdHeading = Number.NaN;
+  holdBank = 0;
 
   /**
    * The reference's steady turn: the turn that balances the lean asked ('tan', the default since step 3.2f and ruling
@@ -1556,6 +1589,9 @@ export class PredictiveController {
     this.commands.length = 0;
     this.faces.length = 0;
     this.faceSensed = 0;
+    this.headings.length = 0;
+    this.holdHeading = Number.NaN;
+    this.holdBank = 0;
     this.estimate = [];
     this.ticks = 0;
     this.sent[0] = 0; this.sent[1] = 0;
@@ -1635,7 +1671,7 @@ export class PredictiveController {
    * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
    * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
    */
-  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, face = 0): readonly number[] {
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, face = 0, hold?: HoldInput): readonly number[] {
     const d = this.blend(speed, depth, rail);
     // The plant's own size: ten, or fourteen with the board's heave and pitch carried (step 3.2p).
     const n = d.phi.length;
@@ -1707,16 +1743,39 @@ export class PredictiveController {
     if (d.predD && this.weights?.waterHeel !== 'ref') for (let jj = 0; jj < N; jj += 1) for (let i = 0; i < n; i += 1) xh[i] += d.predD[jj][i][0] * tilt;
     // Step 3.5r: the face over the delay, held at its sensed value (the brain knows it only as of the senses' time).
     if (d.predF) for (let i = 0; i < n; i += 1) xh[i] += d.predF[i][0] * sensedFace;
+    // Step 3.5s (`holdLine: 'ref'`): the line held. The heading rides the senses' line, so the brain knows it as it
+    // was N ticks ago, brought forward over the delay by the mean of the estimate's yaw rate then and the prediction's
+    // now; the turn rate back to the line, within ±HOLD_LINE_RATE, is asked as the bank of its coordinated turn within
+    // the lean cap. Only while a line is latched now and was N ticks ago; otherwise nothing is added and the bank asked
+    // is the caller's own, bit for bit.
+    let holdBank = 0;
+    this.holdHeading = Number.NaN;
+    if (this.weights?.holdLine === 'ref') {
+      const now = hold && Number.isFinite(hold.heading) ? hold.heading : Number.NaN;
+      this.headings.push(now);
+      if (this.headings.length > N + 1) this.headings.shift();
+      const sensed = this.headings.length > N ? this.headings[this.headings.length - 1 - N] : Number.NaN;
+      if (hold && Number.isFinite(now) && Number.isFinite(sensed)) {
+        const heading = sensed + (N * CONTROL_STEP * ((e[4] ?? 0) + xh[4])) / 2;
+        const rate = Math.max(-HOLD_LINE_RATE, Math.min(HOLD_LINE_RATE, -heading / HOLD_LINE_TIME));
+        const cap = Math.max(0, hold.cap);
+        // `|| 0`: a zero cap gives −0 here, and the probes and the bit-for-bit check read a plain 0.
+        holdBank = Math.max(-cap, Math.min(cap, Math.atan((Math.max(0, speed) * rate) / 9.81))) || 0;
+        this.holdHeading = heading;
+      }
+    }
+    this.holdBank = holdBank;
+    const bank = holdBank === 0 ? bankAsked : bankAsked + holdBank;
     // `'predict'` leaves the reference the flat-water one that ships; `'both'` and `'ref'` solve the steady turn on
     // this face.
     const refHeel = this.weights?.waterHeel === 'both' || this.weights?.waterHeel === 'ref';
     const drive = d.gammaD && refHeel ? d.gammaD.map((row) => row[0] * tilt) : undefined;
-    let ref = steadyTurn(d.phi, d.gamma, bankAsked, twistAsked, drive);
-    if (this.turn === 'tan' && Math.abs(bankAsked) > 1e-6) {
+    let ref = steadyTurn(d.phi, d.gamma, bank, twistAsked, drive);
+    if (this.turn === 'tan' && Math.abs(bank) > 1e-6) {
       // The turn that balances the lean asked (the linear model's bank is the lean's tangent in the body's balance), its
       // angles (the board's roll, the bank, the ankle's rest) brought back to the lean asked.
-      const t = steadyTurn(d.phi, d.gamma, Math.tan(bankAsked), twistAsked, drive);
-      const f = bankAsked / Math.tan(bankAsked);
+      const t = steadyTurn(d.phi, d.gamma, Math.tan(bank), twistAsked, drive);
+      const f = bank / Math.tan(bank);
       ref = { x: t.x.map((v, i) => (i === 0 || i === 2 || i === 8 ? v * f : v)), u: [t.u[0] * f, t.u[1]] };
     }
     // Step 3.5r (`faceTrim: 'on'`): the steady turn for the lean asked, moved to the face's neutral trim by the sensed

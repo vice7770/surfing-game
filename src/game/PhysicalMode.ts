@@ -600,6 +600,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?faceTrim=on|model`: the face's tilt is a sensed input of the balance's own model, through the face's whole
     // first-order column; 'on' also holds the face's neutral trim (step 3.5r), opt-in, to ride.
     ...faceTrimSwitch(),
+    // `?holdLine=ref`: standing with the stick centred, the balance holds the line he came out of a turn on, by asking the
+    // coordinated lean of the turn back to it (step 3.5s), opt-in, to ride.
+    ...holdLineSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1449,6 +1452,19 @@ export function plantFloorSwitch(search?: string): { plantFloor?: '4.5' | '5' | 
 export function faceTrimSwitch(search?: string): { faceTrim?: 'on' | 'model' } {
   const v = devParam('faceTrim', search)?.trim().toLowerCase();
   return v === 'on' || v === 'model' ? { faceTrim: v } : {};
+}
+
+/**
+ * The `?holdLine=ref` dev switch (`SurfZoneConfig.holdLine`, step 3.5s; `docs/research/new-rider/3.5/hold-line.md`):
+ * opt-in, the new surfer standing with the stick centred and the hand unused holds the line he came out of a turn on
+ * (the old rider's latch, a world heading): his balance senses the heading through its 0.1 s line and asks, inside its
+ * own reference, the coordinated lean of the turn back to the line. A change of reference only: the same two commands
+ * through the same clamps, no force; with the stick off centre the controller is the one without it. Meant on top of
+ * `?faceTrim=on`. Nothing on the default rider; anything but the one value, off.
+ */
+export function holdLineSwitch(search?: string): { holdLine?: 'ref' } {
+  const v = devParam('holdLine', search)?.trim().toLowerCase();
+  return v === 'ref' ? { holdLine: 'ref' } : {};
 }
 
 /**

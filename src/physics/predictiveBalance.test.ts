@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { eigenvalues, lateralCompliance, lateralMass } from './rollModel';
-import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, faceColumn, faceSupport, faceTrimPoint, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, faceColumn, faceSupport, faceTrimPoint, HOLD_LINE_RATE, HOLD_LINE_TIME, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -583,5 +583,59 @@ describe('the cost function on the plant it is designed on (step 3.4b, `captureO
       expect(plant.phi).toEqual(off.phi);
       expect(plant.gamma).toEqual(off.gamma);
     }
+  });
+});
+
+describe('the line held with the stick centred (step 3.5s, `holdLine`)', () => {
+  const tilt = 12 * (Math.PI / 180);
+  const ON: DesignWeights = { ...DEFAULT_WEIGHTS, faceTrim: 'on' };
+  const HOLD: DesignWeights = { ...DEFAULT_WEIGHTS, faceTrim: 'on', holdLine: 'ref' };
+  const run = (weights: DesignWeights | undefined, hold?: (i: number) => { heading: number; cap: number } | undefined, ticks = 40, speed = 6.5) => {
+    const c = new PredictiveController(weights);
+    const sent: number[][] = [];
+    for (let i = 0; i < ticks; i += 1) {
+      const sense = [0.02 * Math.sin(i / 5), 0.1 * Math.cos(i / 5), 0, 0, 0, 0.01 * Math.sin(i / 3), 0];
+      sent.push([...c.tick(sense, speed, 0, 0, 0, { ankle: 0.25, twist: 30 }, 0, 0, tilt, hold?.(i))]);
+    }
+    return { sent, c };
+  };
+
+  // The positive control: with no line latched the hold adds exactly nothing, so the controller is `faceTrim: 'on'`'s
+  // tick for tick (the stick off centre, the hand in use, or before the line latches).
+  it('sends exactly the commands of the controller without it while no line is held', () => {
+    const on = run(ON).sent;
+    expect(run(HOLD).sent).toEqual(on);
+    expect(run(HOLD, () => ({ heading: Number.NaN, cap: 1 })).sent).toEqual(on);
+    // A line held, the weight off: nothing reads it.
+    expect(run(ON, () => ({ heading: 0.2, cap: 1 })).sent).toEqual(on);
+    // The design is untouched by the weight.
+    const { y, t } = plantAt(6.5, 0, { body: true });
+    const off = design(y, t, ON);
+    const held = design(y, t, HOLD);
+    for (const key of ['phi', 'gamma', 'k', 'phiE', 'gammaE', 'l', 'phiN', 'trimX', 'trimU'] as const) expect(held[key]).toEqual(off[key]);
+  });
+
+  // The nose turned right of the line (+) is answered, once the heading has come through the sense line, by the
+  // coordinated lean of the turn back (left, −), and only then; the turn rate asked is bounded and the lean is within
+  // the cap the caller hands in.
+  it('asks the coordinated lean of the turn back to the line, sensed through the delay, within the rate bound and the cap', () => {
+    const psi = 0.05;
+    const early = run(HOLD, () => ({ heading: psi, cap: 1 }), 6).c;
+    expect(early.holdBank).toBe(0);
+    const { c } = run(HOLD, () => ({ heading: psi, cap: 1 }), 12);
+    expect(c.holdBank).toBeLessThan(0);
+    expect(c.reference.x[2]).toBeLessThan(0);
+    // The coordinated lean of r = −ψ̂ / T at this speed (ψ̂ the sensed heading brought forward over the delay).
+    const rate = Math.max(-HOLD_LINE_RATE, Math.min(HOLD_LINE_RATE, -c.holdHeading / HOLD_LINE_TIME));
+    expect(c.holdBank).toBeCloseTo(Math.atan((6.5 * rate) / 9.81), 12);
+    expect(Math.abs(c.holdHeading - psi)).toBeLessThan(0.05);
+    // Far off the line the rate is bounded; the cap bounds the lean; a zero cap (not planing) asks nothing.
+    const far = run(HOLD, () => ({ heading: 1, cap: 1 }), 12).c;
+    expect(far.holdBank).toBeCloseTo(Math.atan((6.5 * -HOLD_LINE_RATE) / 9.81), 12);
+    expect(run(HOLD, () => ({ heading: 1, cap: 0.05 }), 12).c.holdBank).toBe(-0.05);
+    expect(run(HOLD, () => ({ heading: 1, cap: 0 }), 12).c.holdBank).toBe(0);
+    // The line dropped (the stick moved): the hold stops at once.
+    const dropped = run(HOLD, (i) => (i < 11 ? { heading: psi, cap: 1 } : undefined), 12);
+    expect(dropped.c.holdBank).toBe(0);
   });
 });

@@ -1780,6 +1780,15 @@ export interface AttachedRiderOptions {
    * pinned off for online rooms, meant to be ridden with `?rider=new`, and not with `waterHeel`.
    */
   faceTrim?: 'on' | 'model';
+  /**
+   * **The line held with the stick centred** (step 3.5s, `?holdLine=ref`; `DesignWeights.holdLine` has the scope line
+   * and `docs/research/new-rider/3.5/hold-line.md` the measurement): standing, the stick centred and the hand unused,
+   * the new surfer's balance holds the line `holdLine` latches (the old rider's rule, a world heading) by asking the
+   * coordinated lean of the turn back to it, sensed through its own delay. A change of reference only: the same two
+   * commands through the same clamps; with the stick off centre the controller is the one without it. Opt-in, off by
+   * default, pinned off for online rooms, meant to be ridden with `?rider=new` and `?faceTrim=on`.
+   */
+  holdLine?: 'ref';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2331,6 +2340,14 @@ export class AttachedRider {
   private readonly waterHeel: boolean;
   /** Step 3.5r: the internal model carries the face as a sensed input (`faceTrim`); false by default. */
   private readonly faceTrim: boolean;
+  /** Step 3.5s: the balance holds the latched line with the stick centred (`holdLine`); false by default. */
+  private readonly holdLineRef: boolean;
+  /**
+   * Step 3.5s, read-only: the board's heading from the line `holdLine` latched, rad, this file's sign (+ the nose turned
+   * to the board's left of it, as the world heading), NaN while no line is held. Written by `holdLine` for every rider;
+   * read only by the new surfer's balance under `holdLine`, and by probes.
+   */
+  standingLineError = Number.NaN;
   /** The face's own tilt under the board, rad, in the MODEL's own sign (the probe's reversed), 0 unless `waterHeel`. Read-only. */
   schedTilt = 0;
   /** rad, the range the latest bank step allowed the commanded rest — ANKLE_REST_RANGE unless `ankleRange` is set. Read-only, for the ledger. */
@@ -2748,10 +2765,13 @@ export class AttachedRider {
     // `balance.weights` wins and nothing but the two values reaches the design.
     const faceWeights: { faceTrim: 'on' | 'model' } | undefined = options.faceTrim === 'on' ? { faceTrim: 'on' }
       : options.faceTrim === 'model' ? { faceTrim: 'model' } : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || faceWeights
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...faceWeights, ...options.balance?.weights }
+    // Step 3.5s: `holdLine` reaches the same weights route, by value, so an explicit one in `balance.weights` wins.
+    const holdWeights: { holdLine: 'ref' } | undefined = options.holdLine === 'ref' ? { holdLine: 'ref' } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || faceWeights || holdWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...faceWeights, ...holdWeights, ...options.balance?.weights }
       : undefined;
     this.faceTrim = weights?.faceTrim !== undefined;
+    this.holdLineRef = weights?.holdLine === 'ref';
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.rateSense = options.balance?.rateSense ?? 'canal';
@@ -3117,6 +3137,7 @@ export class AttachedRider {
     this.contact.weight = Number.NaN;
     this.standingLine = undefined;
     this.standingHold = 0;
+    this.standingLineError = Number.NaN;
     this.markParts();
   }
 
@@ -3944,7 +3965,10 @@ export class AttachedRider {
       let rail = Math.abs(this.leanAsked);
       for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
       rail = Math.min(this.railCap, rail);
-      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense);
+      // Step 3.5s (`holdLine`): the board's heading from the latched line, in the model's sign (its y is the board's
+      // right, the world heading's + is the nose to the left), and the lean cap the stick's own ask has now.
+      const hold = this.holdLineRef ? { heading: -this.standingLineError, cap: this.leanProbe.cap } : undefined;
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold);
       this.schedRail = rail;
       this.schedTilt = this.faceTrim ? faceSense : faceTilt;
       this.heldAnkleRaw = -this.predictor.raw[0];
@@ -6065,6 +6089,7 @@ export class AttachedRider {
       this.standingLine = undefined;
       this.standingHold = 0;
       this.holdRate = 0;
+      this.standingLineError = Number.NaN;
       return;
     }
     const forward = this.scratch.set(0, 0, 1).applyQuaternion(board.orientation);
@@ -6073,6 +6098,7 @@ export class AttachedRider {
       // Out of a turn the banked body carries the board on round a moment: the line is the heading it comes out on.
       if (Math.abs(board.angularVelocity.y) > STANDING_HOLD_SETTLE) {
         this.standingHold = 0;
+        this.standingLineError = Number.NaN;
         return;
       }
       this.standingLine = heading;
@@ -6081,6 +6107,7 @@ export class AttachedRider {
     this.holdRate += (board.angularVelocity.y - this.holdRate) * (1 - Math.exp(-h / STANDING_HOLD_RATE_SMOOTHING));
     let error = heading - this.standingLine;
     error -= 2 * Math.PI * Math.round(error / (2 * Math.PI));
+    this.standingLineError = error;
     const turn = -(error + STANDING_HOLD_RATE_TIME * this.holdRate) / STANDING_HOLD_ANGLE;
     this.standingHold = Math.max(-STANDING_HOLD_SHARE, Math.min(STANDING_HOLD_SHARE, turn));
   }

@@ -399,6 +399,9 @@ function frameRow(t: number, cell: string): Record<string, unknown> {
     twA: r(self.twistBody?.angle * DEG, 3), twR: r(self.twistBody?.rate * DEG, 3), twActive: r(self.twistBody?.active, 3), heldTwist: r(self.heldTwist, 3), twistT: r(self.twistTorque, 3),
     legRest: r(self.leg?.rest, 4), legExt: r(self.leg?.extension, 4), legLoad: r(self.legLoad, 3), captureLoad: r(self.captureLoad, 3), knees: r(rider.human.knees, 3), arms: r(rider.human.arms, 3),
     leanAsked: r(self.leanAsked * DEG, 3), schedRail: r(self.schedRail * DEG, 3), cap: r(self.leanProbe.cap * DEG, 3),
+    // Step 3.5s: the line `holdLine` latched (world heading, deg), the heading from it (game sign), and the hold's last tick.
+    line: self.standingLine === undefined ? null : r(self.standingLine * DEG, 3), lineErr: r(self.standingLineError * DEG, 3),
+    holdPsi: r(pred?.holdHeading * DEG, 3), holdBank: r(pred?.holdBank * DEG, 3),
     cpX: r(st.across, 5), cpZ: r(st.along, 5), past: r(st.past, 5), pastX: r(st.pastAcross, 5), beyond: st.beyond ? 1 : 0, weightPast: st.weightPast ? 1 : 0, margin: r(st.margin, 4),
     pX: r(st.pointAcross, 5), vX: r(st.speedAcross, 5), offX: r(st.offsetAcross, 5), feltX: r(st.feltAcross, 5), H: r(st.height, 4), omega: r(st.omega, 3), frozen: rider.human.frozen ? 1 : 0,
     sup: [r(sup.xMin, 3), r(sup.xMax, 3), r(sup.zMin, 3), r(sup.zMax, 3)], limit: self.limit, feasible: self.feasible ? 1 : 0, wantX: r(self.desiredCop?.x, 5), wantZ: r(self.desiredCop?.z, 5),
@@ -436,7 +439,7 @@ for (const c of cells) {
     if (step === 0) {
       // Print back what the host actually built (the switch's own read, never the URL).
       const w = (rider as Any).predictor?.weights;
-      built = { kind: 'built', cell, plantFloor: w?.plantFloor ?? null, waterHeel: w?.waterHeel ?? null, configWaterHeel: (config as Any).waterHeel ?? null, faceTrim: w?.faceTrim ?? null, configFaceTrim: (config as Any).faceTrim ?? null, riderBody: w?.riderBody ?? null, stanceDeep: w?.stanceDeep ?? null, deckFelt: (rider as Any).deckFelt ?? null, newRider: (rider as Any).newRider, predictive: (rider as Any).predictive, substeps: rider.standingSubsteps ?? null, configPlantFloor: (config as Any).plantFloor ?? null };
+      built = { kind: 'built', cell, plantFloor: w?.plantFloor ?? null, waterHeel: w?.waterHeel ?? null, configWaterHeel: (config as Any).waterHeel ?? null, faceTrim: w?.faceTrim ?? null, configFaceTrim: (config as Any).faceTrim ?? null, holdLine: w?.holdLine ?? null, configHoldLine: (config as Any).holdLine ?? null, riderBody: w?.riderBody ?? null, stanceDeep: w?.stanceDeep ?? null, deckFelt: (rider as Any).deckFelt ?? null, newRider: (rider as Any).newRider, predictive: (rider as Any).predictive, substeps: rider.standingSubsteps ?? null, configPlantFloor: (config as Any).plantFloor ?? null };
       emit(built);
     }
     if (FRAMES) emit(frameRow(t, cell));

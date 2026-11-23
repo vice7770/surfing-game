@@ -233,6 +233,11 @@ export interface RideSessionOptions {
    * `?faceTrim` dev switch. By default the model has no face.
    */
   faceTrim?: 'on' | 'model';
+  /**
+   * The line held with the stick centred (step 3.5s; `AttachedRiderOptions.holdLine`): 'ref' — the `?holdLine` dev
+   * switch. By default the new surfer's balance holds no line.
+   */
+  holdLine?: 'ref';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -352,6 +357,7 @@ export class RideSession {
       ...(options.riderCost ? { riderCost: options.riderCost } : {}),
       ...(options.plantFloor ? { plantFloor: options.plantFloor } : {}),
       ...(options.faceTrim ? { faceTrim: options.faceTrim } : {}),
+      ...(options.holdLine ? { holdLine: options.holdLine } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

@@ -496,6 +496,14 @@ export interface SurfZoneConfig {
    */
   faceTrim?: 'on' | 'model';
   /**
+   * 'ref': the new surfer's balance holds the line with the stick centred (step 3.5s; `RideSessionOptions.holdLine`,
+   * `DesignWeights.holdLine`): standing, the stick centred and the hand unused, it asks the coordinated lean of the turn
+   * back to the line he came out of a turn on, sensed through its own delay. A change of reference, no force and no
+   * authority. The new surfer (`?rider=new`) only. The `?holdLine` dev switch, opt-in, to ride; online rooms run the
+   * default.
+   */
+  holdLine?: 'ref';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

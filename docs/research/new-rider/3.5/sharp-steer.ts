@@ -107,7 +107,7 @@ const RIDER_KEYS = [
   'agile', 'legDrive', 'hull', 'railSuction', 'compressPull', 'carveFlex', 'snapLegs', 'snapCross', 'legPower', 'rider',
   'feltFrame', 'kneeRoom', 'stanceReach', 'ankleLimit', 'ankleRange', 'bankClamp', 'bodyBank', 'askCap', 'stanceDeep',
   'deepen', 'armCarry', 'trunk', 'buoyFrame', 'waterHeel', 'mountAgree', 'riderBody', 'riderCost', 'plantFloor',
-  'deckHollow', 'snapUpturn', 'swing', 'faceTrim',
+  'deckHollow', 'snapUpturn', 'swing', 'faceTrim', 'holdLine',
 ] as const;
 type Config = SurfZoneConfig & Record<string, unknown>;
 function configFor(search: string): Config {
@@ -486,7 +486,7 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
     // Print back what the host actually built (the switch's own read, never the URL): the predictor's weights.
     const built = (session.rider as Any).predictor?.weights;
     emit({
-      kind: 'built', script: script.name, wave: trial.index, plantFloor: built?.plantFloor ?? null, waterHeel: built?.waterHeel ?? null, faceTrim: built?.faceTrim ?? null, riderBody: built?.riderBody ?? null,
+      kind: 'built', script: script.name, wave: trial.index, plantFloor: built?.plantFloor ?? null, waterHeel: built?.waterHeel ?? null, faceTrim: built?.faceTrim ?? null, holdLine: built?.holdLine ?? null, riderBody: built?.riderBody ?? null,
       weightsKeys: built ? Object.keys(built).length : 0, schedFloor: SCHED_FLOOR ?? null, hipOff: HIP_OFF ? 1 : 0,
     });
     if (PROBE_ON && (WAVES === null || WAVES.includes(trial.index))) {
@@ -515,6 +515,11 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
       // moving trough (`WaveFrameGauge`, read before this frame's step as `four-numbers.ts` reads it).
       faceH: r(frame.faceHeight, 4), faceFrac: r(frame.faceFraction, 4), climb: frame.valid ? r(frame.faceHeight * frame.faceFraction, 4) : null,
       heading: r(Math.atan2(fwd.x, fwd.z) * DEG, 3), schedRail: r(rd.schedRail * DEG, 3), depth: r(Math.max(0, -rd.leg.rest), 4),
+      // Step 3.5s: the line `holdLine` latched (world heading, deg; null while none), the board's heading from it (game
+      // sign, + the nose to the left), and what the balance's hold did on its latest tick (the heading it brought forward
+      // and the bank it added, model signs, deg).
+      line: rd.standingLine === undefined ? null : r(rd.standingLine * DEG, 3), lineErr: r(rd.standingLineError * DEG, 3),
+      holdPsi: r(rd.predictor?.holdHeading * DEG, 3), holdBank: r(rd.predictor?.holdBank * DEG, 3), yawRate: r(board.angularVelocity.y * DEG, 3),
     });
   }
   if (!attached && rider.fellAt === undefined) {
