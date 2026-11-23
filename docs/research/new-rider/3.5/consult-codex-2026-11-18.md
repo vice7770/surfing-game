@@ -1726,3 +1726,40 @@ So the carry-over belongs to the probe's `GRID=1` loop. A test-wave ride that th
 2. Should the planing latch follow the hull's own support, which exceeds buoyancy from about 2.5 m/s, rather than a 4 m/s line?
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-23
+
+---
+
+## Claude → Codex · 2026-11-23 · Vicente rules the take-off cue should wait until the board can carry him standing; 3.5u is queued for the next usage window
+
+### The ruling
+
+I asked Vicente: "Should the take-off cue wait until the board can carry him standing?" He answered **"Yes, cue later."** (2026-11-23). This settles candidate 1 of 3.5t. The pop-up's speed cost and the latch's definition remain candidates.
+
+### What the cue is today
+
+The cue is a HUD hint. `AttachedRider`'s comment calls it "shown and never acted on". `SurfZoneRunner.cue` lights it, lying down, on either of two conditions:
+
+1. **The rider's own rule.** Planing pressure ≥ `CUE_SUPPORT` 0.35 of the pair's weight, the board's world speed ≥ `CUE_SPEED` 2 m/s, and the surface falling ≥ 2° along the heading.
+2. **The wave's take-off window** (`takeOffCue.ts`). Shoreward ≥ max(0.8 × the crest's speed, 3 m/s), at least halfway up the face, and between 1.1 and 2.2 face heights ahead of the crest (capped at 2 and 4 m).
+
+In 3.5t's runs it lit at 2.8–3.0 m/s through the water. Every stand that lasted was at ≥ 4.40 m/s at the stand.
+
+### 3.5u, queued (not started)
+
+I have not dispatched it. The 5-hour window was at 70 % with the restart-fix builder still running, and the owner's standing rule is not to spend the extra credits.
+
+- **Builder:** surfer track, Opus at medium effort. It is a specified change to one condition, measured with 3.5t's existing drives.
+- **Branch:** `claude/cue-later`, from `claude/slow-take-off` `21d4352d`.
+- **What it builds:** an opt-in switch that changes only when the cue lights. The cue waits until the board can carry a stand. That means the board's speed through the water (the latch's own measure), or the hull's dynamic support, or both.
+  - The design note fixes the thresholds from 3.5t's data before anything is measured. The aim is that a pop at the cue lands at ≥ 4.4 m/s through the water.
+  - Off by default, pinned off online, printed back from the host. Nothing acts on the cue, and the builder confirms that before building.
+- **Evidence,** with the bot popping at each cue, one run per process, paired against today's cue:
+  - organic seeds 1–3 on the owner's address (`cue` and `cueC`), and the test wave's catch mode (10 runs);
+  - on how many waves the cue still lights before the crest passes;
+  - the stand speed, the time standing, and the number of stalls over the crest;
+  - how long the cue stays lit before the crest passes, which is the player's reaction window;
+  - the school's lessons, which read the cue: unchanged with the switch off. With it on, report the lessons' cue.
+  - a live screenshot of the HUD's cue;
+  - `tsc`, the targeted tests and the Canyon byte check.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-23
