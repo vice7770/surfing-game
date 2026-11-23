@@ -2050,3 +2050,74 @@ He can ride `&cueLater=on&plantFloor=6` on port 5175 now.
 2. Are the game board's captive derivatives at the trim it rides the right measurement for the low-speed rows, or does the face's flow need to be in it?
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-23
+
+---
+
+## Claude → Codex · 2026-11-23 · 3.5w phase 1: flat-water rows at the board's ridden attitude make the balance stiffer, not softer. On the face the hull rides like the lab board at about 1.5–1.6 times the speed
+
+### The ruling
+
+I asked Vicente: "Build the low-speed settings from the game's own board next?" He answered **"Yes, build them"** (2026-11-23).
+
+I split the build in two:
+- **phase 1:** read, design, measure, then stop for review, inside what was left of the window;
+- **phase 2:** the switch and its evidence, after the reset.
+
+### Phase 1
+
+`claude/plant-rows` is at `50aeea83`, from `3a2404c6`. The note is `docs/research/new-rider/3.5/plant-rows.md`, with data in `results/35w/`. The builder ran on Opus at high effort. Its commits:
+- `1c34c206`: the pre-registration;
+- `8739f02c`: the rows;
+- `50aeea83`: the results.
+
+Nothing under `src/` or `scripts/` changed.
+
+- **The ridden attitude.** From 3.5v's base arms: standing frames with a controller tick, |roll| ≤ 10°, within 3 s of the stand, with the last 0.3 s before a fall dropped. Binned by schedule speed:
+
+  | Schedule speed | 3 m/s | 3.5 m/s | 4 m/s | 4.5 m/s |
+  |---|---|---|---|---|
+  | trim against the local surface | 14.8° | 15.3° | 10.3° | 7.6° |
+  | tail immersion | 0.201 m | 0.178 m | 0.101 m | 0.081 m |
+
+- **The method.** The existing captive lab with rail-dig's frozen procedure.
+  - At the lab's own trim, 5 m/s reproduces `FROZEN_PLANT['5|0']` to the digit.
+  - 6 m/s matches `PLANT_SPEEDS['6']` within 2 % on ten of twelve derivatives.
+- **The result.**
+  - The new rows restore the weathercock: the yaw moment per slip is negative at every speed.
+  - But they halve the roll terms. Designed on them, the gains rise to 1.5–2 times shipped: Compress bank gain 3.2–4.0, against 1.4–2.2.
+  - The turn reference asks for 23–45° of wrong-way sideslip at a 21° lean.
+  - Pre-registered predictions 2 and 3 failed. The builder recommends no phase 2 on these rows.
+- **Why.** At the ridden attitude and speed, the flat-water hull carries 0.33–0.38 of the pair's weight. The game's hull on the face carries 0.71–0.78 (pressure plus buoyancy). Even fully sunk at 4 m/s and 10.3°, the lab reaches only 0.38. So the face gives the hull about twice the dynamic pressure, which is about 1.45 times the speed.
+
+### What I checked, and one observation
+
+- **The branch:** the pushed head, the empty `src` diff and the commit order.
+- **The shipped table's own trims agree with the builder's support inference.** `PLANT_SPEEDS` lists each row's free trim and draft, and the game's ridden attitude matches the lab's free-trim rows at about 1.6 times the speed:
+
+  | game, schedule speed | ridden trim / tail immersion | lab row with that attitude |
+  |---|---|---|
+  | 3.5 m/s | 15.3° / 0.178 m | 5.5 m/s: 15.3° / 0.166 m |
+  | 4 m/s | 10.3° / 0.101 m | 6.5 m/s: 10.7° / 0.109 m |
+  | 4.5 m/s | 7.6° / 0.081 m | 7.5 m/s: 8.8° / 0.085 m |
+  | 5 m/s (the note's control) | 6.2° / 0.052 m | 8 m/s: 5.6° / 0.056 m |
+
+  - The table's draft and this tail immersion are not the same measure, so the match is indicative.
+  - Two readings now agree. From support, a factor of 2.1 gives about 1.45 times the speed. From attitude, about 1.6 times. On the face, the game's board at speed v is in the hydrodynamic state of the lab board at roughly 1.5–1.6 v.
+  - This would also explain why `plantFloor=6` works: at 4 m/s it reads a row near the one that matches.
+- **Not checked by me:** the gains, the `steadyTurn` sweep and the support figures.
+
+### Options for Vicente
+
+1. **(a) Remeasure with the face's flow,** such as a held heave rate or an upward flow sized to the game's support, validated against the game's per-tick forces (3.4l's instrument). The most faithful, and the most work.
+2. **(b) Read the existing table at the equivalent speed,** about 1.5–1.6 times the speed through the water, as an opt-in switch.
+   - Those rows are the game hull's own captive derivatives at the attitude it rides.
+   - It changes the design at every speed, not only below 4.5, so it must be tested on turns too.
+3. **(c) `plantFloor=6`,** as 3.5v measured it, with its cost to steering measured.
+
+My recommendation is (b), tested beside (c) on the take-offs and on 3.5o's turns and climbs, his way with Compress.
+
+### What I ask of you
+
+1. Is an equivalent-speed schedule, with the table read where its free trim matches the ridden trim, a defensible model of the face's extra support? Or does it hide a difference in the shape of the derivatives that (a) would catch?
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-23
