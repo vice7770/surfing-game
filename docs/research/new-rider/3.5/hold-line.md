@@ -200,3 +200,158 @@ running host (`predictor.weights.holdLine`) by `straight-fall.ts` and `sharp-ste
 
 The ledger cells: `env SECONDS=6 LEDGER=1 DH=.. DX=.. DV=.. EXTRA='&faceTrim=on' OUT=.. node <s>/sf.mjs` (and `RIDER=old`),
 thinned to the columns read, in `results/35s/ledgers/`.
+
+## 7. Results (measured once, 2026-11-23)
+
+**The build.** `1a70bf32`. Every arm was printed back from the live `AttachedRider.predictor.weights` of a host built
+on the game's own config path (`straight-fall.ts`, `sharp-steer.ts` `built` rows): `faceTrim` `'on'`, `holdLine`
+`'ref'`, `plantFloor` 4.5 or none, `riderBody` `'two'`, exactly as asked, in every cell and every rider. Fall times
+are seconds after the placement (grid) or the stand (organic). A bot ride is not evidence of feel.
+
+**A note on the grid's run mode, found on the way.** For speed I ran the grid one cell per process (27 processes per
+arm). 3.5p and 3.5r ran it with `GRID=1`, all 27 cells in one process. **The two modes do not give the same fall times
+for the same build**: the starting commit `41748e53`, rebuilt and run one cell per process, gives 3.583 / 2.433 / 5.683 s
+on three cells where its own `GRID=1` run gave 3.550 / 2.383 / 5.233 (`results/35s/grid-arms.txt`, `p35` and `r35on`
+columns against `ship` and `on`): something carries from one cell to the next inside one process. So the grid's
+**pairings below are all within one mode (one cell per process, this build)**, and the inertness check against 3.5p is
+run in 3.5p's own mode (§7.1). What carries over between cells was not chased.
+
+### 7.1 Inert when off
+
+- **The test wave, 3.5p's mode** (`GRID=1`, this build, switch off): SEQ_SHIP. The same build, one cell per process,
+  matches the starting commit run the same way on every cell tried (3 of 3).
+- **Organic** (3.5o's drive, steer only): this build's shipped seed 2 reproduces 3.5q's arm A in **21 of 21** riders on
+  the same frame, and this build's `on` reproduces 3.5r's E in **60 of 60** riders (seeds 1-3).
+- **The Canyon byte check** (`scripts/m1-cpu-bench.ts`, Canyon B medium, 3 600 steps, fresh spin-up,
+  `globalThis.location = { search: '?canyonWaves=true' }` prepended as an object; grid 400 × 451 = 180 400): this
+  branch and `41748e53` both give **snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`**, 3.5c's published
+  reference pair, and the spun-up seas hash the same (`d6ba1d99…48f88aa`). ⚠️ I did not find a test that prints the
+  brief's `75ffaf2b…164525` (it appears only in the consult log's test-wave entry); this is the protocol the folder's
+  byte checks use (`results/35c-canyon-byte-check.txt`). `results/35s/canyon-byte-check.txt`.
+- `npx tsc -b` exits 0; `predictiveBalance.test.ts` 28 of 28 (two new: the inert controller, the hold's sign, delay,
+  bound and cap); `PhysicalMode.test.ts` the switch tests 3 of 3 (one new: `?holdLine=ref` and its online pin).
+
+### 7.2 The test wave's 27-cell plumb ride grid, no input (one cell per process, this build)
+
+| arm | fell | median (range), s | paired | side of the separation | speed through the water 0.25 s before the end (fell rides) | body within 3° of plumb | 0.5 s to the end: rail / bank (medians) |
+|---|---|---|---|---|---|---|---|
+| shipped | 27 | 2.533 (2.050–3.583) | — | downhill 27 | 9.24 m/s (5.73–9.85), 0 under 3 | 9.3 % | −12.1° / −23.0° |
+| on | 25 | 5.300 (4.183 to ≥ 6.000) | vs shipped later 27 / 0, +2.900 | uphill 13, downhill 12 | 1.94 (−0.19 to 2.95), 25 of 25 under 3 | 41.4 % | −2.6° / −4.0° |
+| **hold** | **27** | **4.750 (3.733–5.383)** | **vs on sooner 27 / 27, −0.617 (−1.033 to −0.167); vs shipped later 27 / 0, +2.300 (+0.250 to +2.967)** | **uphill 27** | **4.37 (2.98–5.32), 1 under 3** | 27.5 % | **+3.5° / +1.5°** |
+
+Rail + is the uphill rail into the face, bank + toward the face (3.5p's signs). The share of frames from 0.5 s with an
+uphill rail **and** the body within 3° of plumb: shipped 0 %, on 8.4 % (0–32.4), **hold 21.6 % (10.2–36.0)**.
+
+**The heading against the latched line** (`hold-line-grid.py`, `results/35s/grid-line.txt`; the line latches on the
+first frame in every cell of every arm, the old rider's rule; game sign, + up the face):
+
+| arm | mean \|heading − line\| | worst | at the last attached frame | within 5° / 10° of the line | yaw oscillation about its 1 s mean, RMS early (0.5–2 s) → late (2 s–end), late/early |
+|---|---|---|---|---|---|
+| shipped | 21.6° (11.0–42.4) | −96.1° (−128.1 to −31.1) | −96.1° | 23 % / 44 % (it falls early) | 30.2 → 7.8°/s, 0.27; grows in 0 of 23 |
+| on | 36.5° (25.5–43.9) | −77.5° (−147.1 to −37.9) | −77.5° (−145.2 to −15.1) | 9 % / 15 % | 27.9 → 14.4°/s, 0.49; grows in 1 of 27 |
+| **hold** | **20.3° (13.8–26.2)** | **−31.6° (−41.4 to +46.7)** | **+2.7° (−35.7 to +46.7)** | 12 % / 18 % | 27.1 → 19.2°/s, **0.72 (0.43–1.42); grows in 4 of 27** |
+
+**What the hold does, and how its rides end** (`hold-line-ends.py`, `results/35s/grid-hold-ends.txt`):
+
+- **It halves the weathervane, and does not hold the line.** The heading runs down the face to −31.6° (median worst)
+  against `on`'s −77.5°, the body sits within −0.2 to +3.9° of plumb from 0.5 s (bank +1.5° median, against `on`'s
+  −4.0°), and the board rides on its uphill rail (+3.5°, against −2.6°): the trim 3.5r asked for and never got. But only
+  12 % of the ride is within 5° of the line.
+- **The body does not take the lean the hold asks.** Over 1–3 s the hold asks +8.9° (+7.9 to +9.7) toward the face —
+  its rate bound, held there — and the body's bank is −2.6° (−6.6 to +2.3): **11.7° short**. The controller's own
+  trade delivers a small part of the ask; the rest is the steady error the proportional hold then carries (median
+  |error| 20°).
+- **Every ride ends in a turn back up the face.** In 26 of 27 cells the last 0.27 s (0.02–0.87) is an unbroken turn up
+  the face: yaw rate up to +85°/s (+41 to +119), the uphill rail at +69° (+52 to +100), at 4.82 m/s (3.83–5.56) through
+  the water, heading still −17° from the line, the hold asking +5.1° — and he separates **uphill, toward the face, in
+  27 of 27**. So the hold trades `on`'s off-the-plane stalls (25 of 25 under 3 m/s) for a carve back up at 4–5.5 m/s,
+  the speed band where the model gate already fails for `on` itself (§3.3). It ends the rides **0.62 s sooner than
+  `on` in every cell**.
+- **The ring**: none in the sense of 3.2e (no growing heading oscillation; the late/early ratio stays under 1 in 23 of
+  27 cells), but the late oscillation is larger than `on`'s (19.2 against 14.4°/s RMS), and the end is a single
+  divergent turn, not a ring.
+
+### 7.3 Organic rides on the owner's address (3.5o's drive, steer only, seeds 1–3, 60 riders)
+
+A is 3.5q's shipped arm, B 3.5o's floor population, E `on` (this build, = 3.5r's E on all 60), F `on` + floor (3.5r),
+I hold, J hold + floor. Paired median (range); later / sooner / same. `results/35s/organic-arms.txt`.
+
+| bucket (n) | A shipped | E on | I hold | J hold + floor | F on + floor |
+|---|---|---|---|---|---|
+| **outside the turn window, the post-turn rides across the face (9)** | 2.517 (1.733–3.700) | 1.967; vs A 0 / 8 / 1, −0.733 | **1.983; vs A 0 / 7 / 2, −0.717; vs E 3 / 3 / 3, +0.000 (−0.183 to +0.150)** | 1.983; vs B 3 / 6 / 0, −0.383; vs F 3 / 3 / 3, +0.000 | 1.967; vs B 2 / 7 / 0, −0.317 |
+| sharp-steer collapse (5) | 0.700 (0.467–0.983) | 0.700 | 0.700; vs E 1 / 3 / 1, −0.017 | see §7.5 | see §7.5 |
+| turn window, neutral falls too (23) | 0.750 (0.500–1.283) | 0.683 | 0.683; vs E 1 / 3 / 19, +0.000 | 0.933; vs F 1 / 2 / 20, +0.000 | 0.933 |
+| censored on shipped (3) | 0 of 3 fell | 1 of 3 | 1 of 3; vs E 1 / 0 / 2 | 1 of 3 | 1 of 3 |
+| neutral (20) | 16 of 20 fell, 1.108 | 1.033 | 1.017; vs E 4 / 3 / 13, +0.000 | 1.300; vs F 4 / 1 / 15, +0.000 | 1.300 |
+
+| rider | A | E on | I hold | J hold + floor |
+|---|---|---|---|---|
+| seed 2 wave 2 left (post-turn) | 3.700 | 2.750 | **2.700** | 2.750 |
+| seed 2 wave 2 right (post-turn) | 3.133 | 2.917 | **2.733** | 2.667 |
+| seed 2 wave 1 neutral | 3.900 | 3.850 | 3.917 | 3.833 |
+
+**On the owner's address the hold changes almost nothing**: the post-turn bucket is +0.000 against `on` (3 later,
+3 sooner, 3 the same, within ±0.18 s), and it keeps 3.5r's cost against shipped (7 of 9 sooner, −0.717 s). The
+neutral and turn-window buckets move on 4–7 riders of 20–23, by a median of nothing.
+
+### 7.4 The turn is not limited: the wave-2 survivor (seed 2 wave 2 left, steer alone)
+
+| arm | turn peak bank | at 0.50 m of climb | at 0.90 m of climb | fall |
+|---|---|---|---|---|
+| shipped (this build) | 42.83° at +1.367 s | +2.067 s, 4.24 m/s, course 48.6° | +2.783 s, 3.31 m/s, 46.4° | +3.683 s |
+| on | **43.49° at +1.367 s** | +2.017 s, 4.09 m/s, 52.0° | not reached (0.89 m at most) | +2.733 s |
+| **hold** | **43.58° at +1.367 s** | +2.033 s, 4.07 m/s, 49.2° | not reached (0.86 m) | **+2.683 s** |
+| hold + floor | 43.58° at +1.367 s | +2.017 s, 4.05 m/s, 49.4° | not reached (0.90 m, short of it) | +2.733 s |
+
+The peak bank is `on`'s within 0.09°, at the same instant: the stick's turn is untouched (the difference is the state
+the pre-turn hold left at the turn's start; the hold was active from the stand to the steer). After the turn the line
+latches at +1.683 s on a 71.7° heading (course 52.3°); the heading then runs 19.3° off it by +1.933 s and the hold asks
+−4.8° to +2.6° (model sign) through the climb; he falls 0.05 s sooner than `on`.
+
+### 7.5 With `&plantFloor=4.5`: the sharp-steer collapses (n 5)
+
+| arm | fell | median (range) | vs A | vs B (the floor alone) | vs F (on + floor) |
+|---|---|---|---|---|---|
+| B floor | 5 | 3.717 (1.500–3.983) | later 5 / 5, +3.000 | — | — |
+| F on + floor | 5 | 3.633 (1.667–4.000) | later 5 / 5, +2.933 | 3 / 2 / 0, +0.017 | — |
+| **J hold + floor** | 5 | **3.550 (1.700–3.950)** | **later 5 / 5, +2.833** | later 1 / sooner 4, −0.067 (−0.300 to +0.200) | 2 / 2 / 1, +0.000 (−0.333 to +0.083) |
+
+**They compose**: the floor's rescue of the sharp steer stands with the hold (2.1L 3.950, 2.1R 3.550 s). The hold is
+inactive while the stick is held, so the collapse itself is untouched; the small differences come after the turn,
+once the line latches.
+
+### 7.6 Verdict
+
+**He does not hold the line, and the hold should not go on Vicente's address as built.** The game's own measurement
+settled the axis — on the face the board turns at the coordinated rate of the body's lean (§1.2), so holding the line
+is holding the lean, and the model's N_β weathervane is not the game's — and the hold, built on it inside the
+controller's reference, passes the model gate where `on` passes it. On the test wave it halves the turn down the face
+(worst −32° against −78°), keeps the body near plumb and the uphill rail in, and does not ring. But the body takes only
+a small part of the lean it asks (11.7° short over 1–3 s), so the line is held to within 5° for 12 % of the ride, and
+every ride ends in a turn back up the face at 4–5.5 m/s: **sooner than `on` in 27 of 27 cells (−0.62 s)**, and on the
+owner's address it changes nothing against `on` (post-turn +0.000, survivor −0.05 s). Its cost is not authority —
+nothing past a bound was asked — but the low-speed end, where the gate already fails for `on` itself. No force, torque
+or clamp in the game was changed.
+
+### 7.7 What remains uncertain, and what I would try next (not built)
+
+- **Why the body does not take the ask.** The hold's lean goes through the same reference the stick's does, yet the
+  bank stays 11.7° short on the face. Candidates, not separated: the model's face column (3.5r) expects the face to
+  turn him down hard (the N_β §1 finds the game lacks), so the controller's own yaw cost resists the turn the hold
+  asks; and the filter's bias states absorb part of the ask. A test: the hold with the face column's yaw row removed.
+- **The turn back up at 4–5.5 m/s.** The hold's ask is a lean at the coordinated rate for 11.5°/s whatever the
+  speed; below ~5.5 m/s the gate already fails, and the rides end there. A speed fade (no ask below the gate's
+  5 m/s) is the obvious next arm; it was not designed before the ride, so it is not built here.
+- **B (`holdLine` as the lean asked)** fails the model gate and was not ridden; the ring is the model's word only.
+- **The grid's run mode**: cells run in one process do not give the same fall times as cells run alone, on the
+  starting commit too. Every pairing here is within one mode; what carries over was not found.
+- Seeds 1–3 only; the buckets are small; the grid is one wave; feel is not measured.
+
+## 8. Reproduce (the rides)
+
+`straight-fall.ts` one cell per process, `env SECONDS=6 FRAMES=1 DH=.. DX=.. DV=.. EXTRA='&faceTrim=on&holdLine=ref' OUT=..`
+(and `GRID=1 FRAMES=0` for the inert check, 3.5p's mode); `sharp-steer.ts` as face-trim.md §9 with
+`&faceTrim=on&holdLine=ref[&plantFloor=4.5]`; then `face-trim-grid.py`, `face-trim-ends.py`, `hold-line-grid.py`,
+`hold-line-ends.py` on the grid files and `hold-line-organic.py <dir>` on the organic ones. `results/35s/`:
+`grid-*-percell-frames-thin.jsonl.gz`, `organic-o-*-summaries.jsonl.gz` (summaries, `built` rows and the survivor's
+rows), `canyon-byte-check.txt`, and every table above as `.txt`.

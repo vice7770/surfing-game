@@ -1,0 +1,3 @@
+ship: fell 27; on the fall line (|face tilt| < 3 deg to the end) in 26 of 27, from 2.10 (1.62 to 2.48, n 26) s; speed through 0.25 s before the end 9.24 (5.73 to 9.85, n 27) m/s; under 3 m/s there in 0 of 27
+on: fell 25; on the fall line (|face tilt| < 3 deg to the end) in 4 of 25, from 2.33 (1.77 to 2.38, n 4) s; speed through 0.25 s before the end 1.94 (-0.19 to 2.95, n 25) m/s; under 3 m/s there in 25 of 25
+hold: fell 27; on the fall line (|face tilt| < 3 deg to the end) in 1 of 27, from 2.43 (2.43 to 2.43, n 1) s; speed through 0.25 s before the end 4.37 (2.98 to 5.32, n 27) m/s; under 3 m/s there in 1 of 27

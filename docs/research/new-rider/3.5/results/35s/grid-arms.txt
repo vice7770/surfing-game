@@ -1,0 +1,102 @@
+ship: fell 27/27, median 2.533 (2.050-3.583)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, None, None)}
+   axis at the separation (side, sign of cpX): {'x- (downhill)': 27}; rail at the last attached frame -89.2 (-92.7 to -43.4, n 27)
+   share of live frames with |bank| <= 3 deg: +9.3 (+7.1 to +12.8, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +0.0 (+0.0 to +0.0, n 27) %
+   median over 0.5 s-end: rail -12.1 (-26.3 to -5.3, n 27), bank -23.0 (-32.5 to -18.4, n 27); bank at 1.0 s -15.5 (-20.4 to -10.8, n 27); at 2.0 s -38.9 (-70.0 to -26.4, n 27)
+   heading turned to the last attached frame -96.3 (-128.2 to -31.1, n 27) (- = down the face); face fraction there +0.0 (+0.0 to +0.3, n 27)
+p35: fell 27/27, median 2.533 (2.050-3.550) | vs ship: later 1 / sooner 3 / same 23, median +0.000 (-0.050 to +0.017)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, None, None)}
+   axis at the separation (side, sign of cpX): {'x- (downhill)': 27}; rail at the last attached frame -84.5 (-92.6 to -43.5, n 27)
+   share of live frames with |bank| <= 3 deg: +9.3 (+7.1 to +12.8, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +0.0 (+0.0 to +0.0, n 27) %
+   median over 0.5 s-end: rail -12.1 (-26.4 to -5.3, n 27), bank -23.1 (-32.6 to -18.4, n 27); bank at 1.0 s -15.5 (-20.4 to -10.8, n 27); at 2.0 s -38.9 (-70.0 to -26.4, n 27)
+   heading turned to the last attached frame -96.3 (-128.2 to -31.1, n 27) (- = down the face); face fraction there +0.0 (+0.0 to +0.3, n 27)
+on: fell 25/27, median 5.300 (4.183->= 6.000) | vs ship: later 27 / sooner 0 / same 0, median +2.900 (+0.633 to +3.767)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, 'on', 'on')}
+   axis at the separation (side, sign of cpX): {'x+ (uphill)': 13, 'x- (downhill)': 12}; rail at the last attached frame -52.6 (-104.2 to +92.9, n 25)
+   share of live frames with |bank| <= 3 deg: +41.4 (+21.6 to +51.9, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +8.4 (+0.0 to +32.4, n 27) %
+   median over 0.5 s-end: rail -2.6 (-5.2 to -0.6, n 27), bank -4.0 (-5.9 to -1.8, n 27); bank at 1.0 s -18.3 (-20.5 to -13.9, n 27); at 2.0 s -6.9 (-13.6 to +0.3, n 27)
+   heading turned to the last attached frame -77.6 (-145.3 to -15.0, n 27) (- = down the face); face fraction there +0.3 (+0.1 to +0.8, n 27)
+r35on: fell 25/27, median 5.267 (4.167->= 6.000) | vs ship: later 27 / sooner 0 / same 0, median +2.867 (+0.633 to +3.767)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, 'on', 'on')}
+   axis at the separation (side, sign of cpX): {'x+ (uphill)': 14, 'x- (downhill)': 11}; rail at the last attached frame -52.6 (-104.2 to +92.9, n 25)
+   share of live frames with |bank| <= 3 deg: +41.4 (+21.6 to +51.9, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +8.4 (+0.0 to +32.4, n 27) %
+   median over 0.5 s-end: rail -2.5 (-5.2 to -0.6, n 27), bank -3.6 (-5.9 to -1.8, n 27); bank at 1.0 s -18.3 (-20.5 to -13.9, n 27); at 2.0 s -6.9 (-13.6 to +0.3, n 27)
+   heading turned to the last attached frame -75.9 (-145.4 to -15.0, n 27) (- = down the face); face fraction there +0.3 (+0.1 to +0.6, n 27)
+hold: fell 27/27, median 4.750 (3.733-5.383) | vs ship: later 27 / sooner 0 / same 0, median +2.300 (+0.250 to +2.967)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, 'on', 'on')}
+   axis at the separation (side, sign of cpX): {'x+ (uphill)': 27}; rail at the last attached frame +68.6 (+52.2 to +100.4, n 27)
+   share of live frames with |bank| <= 3 deg: +27.5 (+17.1 to +40.0, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +21.6 (+10.2 to +36.0, n 27) %
+   median over 0.5 s-end: rail +3.5 (+2.8 to +6.4, n 27), bank +1.5 (-0.2 to +3.9, n 27); bank at 1.0 s -12.2 (-15.9 to -5.4, n 27); at 2.0 s -1.8 (-9.5 to +6.4, n 27)
+   heading turned to the last attached frame +2.8 (-35.7 to +46.9, n 27) (- = down the face); face fraction there +0.2 (+0.1 to +0.4, n 27)
+
+# per cell
+cell                ship       p35        on     r35on      hold
+-5|-1|-0.5         2.900     2.900     4.500     4.500     3.733
+-5|-1|0            3.583     3.550     4.217     4.217     3.833
+-5|-1|0.5          2.133     2.133     4.483     4.500     4.167
+-5|0|-0.5          2.783     2.800     4.183     4.167     3.967
+-5|0|0             3.283     3.283     4.467     4.467     4.233
+-5|0|0.5           2.100     2.100     4.967     4.967     4.283
+-5|1|-0.5          2.850     2.833     4.533     4.533     4.267
+-5|1|0             3.250     3.250     4.667     4.667     4.200
+-5|1|0.5           2.083     2.083     5.050     5.050     4.017
+0|-1|-0.5          2.517     2.517     4.950     4.950     4.217
+0|-1|0             2.533     2.533     5.317     5.317     4.617
+0|-1|0.5           2.433     2.383     5.333     5.333     4.750
+0|0|-0.5           2.533     2.533     5.683     5.233     4.767
+0|0|0              2.500     2.500     5.500     5.500     4.983
+0|0|0.5            2.367     2.367     5.083     5.083     4.667
+0|1|-0.5           2.583     2.583     5.200     5.200     5.033
+0|1|0              2.517     2.517     5.267     5.267     4.750
+0|1|0.5            2.350     2.350     5.300     5.300     4.867
+5|-1|-0.5          2.650     2.650     5.817     5.817     5.250
+5|-1|0             2.567     2.567     5.850     5.850     5.200
+5|-1|0.5           2.050     2.050     5.817     5.817     4.917
+5|0|-0.5           2.717     2.717     5.917     5.917     5.300
+5|0|0              2.683     2.683     5.983     5.983     5.317
+5|0|0.5            2.333     2.333     5.933     5.933     5.300
+5|1|-0.5           2.850     2.850     6.000     6.000     5.317
+5|1|0              3.083     3.083   >=6.000   >=6.000     5.383
+5|1|0.5            2.500     2.500   >=6.000   >=6.000     5.383
+on: fell 25/27, median 5.300 (4.183->= 6.000)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, 'on', 'on')}
+   axis at the separation (side, sign of cpX): {'x+ (uphill)': 13, 'x- (downhill)': 12}; rail at the last attached frame -52.6 (-104.2 to +92.9, n 25)
+   share of live frames with |bank| <= 3 deg: +41.4 (+21.6 to +51.9, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +8.4 (+0.0 to +32.4, n 27) %
+   median over 0.5 s-end: rail -2.6 (-5.2 to -0.6, n 27), bank -4.0 (-5.9 to -1.8, n 27); bank at 1.0 s -18.3 (-20.5 to -13.9, n 27); at 2.0 s -6.9 (-13.6 to +0.3, n 27)
+   heading turned to the last attached frame -77.6 (-145.3 to -15.0, n 27) (- = down the face); face fraction there +0.3 (+0.1 to +0.8, n 27)
+hold: fell 27/27, median 4.750 (3.733-5.383) | vs on: later 0 / sooner 27 / same 0, median -0.617 (-1.033 to -0.167)
+   built (plantFloor, waterHeel, faceTrim, config faceTrim): {(None, None, 'on', 'on')}
+   axis at the separation (side, sign of cpX): {'x+ (uphill)': 27}; rail at the last attached frame +68.6 (+52.2 to +100.4, n 27)
+   share of live frames with |bank| <= 3 deg: +27.5 (+17.1 to +40.0, n 27) %; share from 0.5 s with an uphill rail AND |bank| <= 3: +21.6 (+10.2 to +36.0, n 27) %
+   median over 0.5 s-end: rail +3.5 (+2.8 to +6.4, n 27), bank +1.5 (-0.2 to +3.9, n 27); bank at 1.0 s -12.2 (-15.9 to -5.4, n 27); at 2.0 s -1.8 (-9.5 to +6.4, n 27)
+   heading turned to the last attached frame +2.8 (-35.7 to +46.9, n 27) (- = down the face); face fraction there +0.2 (+0.1 to +0.4, n 27)
+
+# per cell
+cell                  on      hold
+-5|-1|-0.5         4.500     3.733
+-5|-1|0            4.217     3.833
+-5|-1|0.5          4.483     4.167
+-5|0|-0.5          4.183     3.967
+-5|0|0             4.467     4.233
+-5|0|0.5           4.967     4.283
+-5|1|-0.5          4.533     4.267
+-5|1|0             4.667     4.200
+-5|1|0.5           5.050     4.017
+0|-1|-0.5          4.950     4.217
+0|-1|0             5.317     4.617
+0|-1|0.5           5.333     4.750
+0|0|-0.5           5.683     4.767
+0|0|0              5.500     4.983
+0|0|0.5            5.083     4.667
+0|1|-0.5           5.200     5.033
+0|1|0              5.267     4.750
+0|1|0.5            5.300     4.867
+5|-1|-0.5          5.817     5.250
+5|-1|0             5.850     5.200
+5|-1|0.5           5.817     4.917
+5|0|-0.5           5.917     5.300
+5|0|0              5.983     5.317
+5|0|0.5            5.933     5.300
+5|1|-0.5           6.000     5.317
+5|1|0            >=6.000     5.383
+5|1|0.5          >=6.000     5.383

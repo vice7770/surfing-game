@@ -1,0 +1,10 @@
+o-on-s3 exit 0
+o-hold-s3 exit 0
+o-holdf-s3 exit 0
+o-on-s1 exit 0
+o-hold-s1 exit 0
+o-holdf-s1 exit 0
+o-hold-s2 exit 0
+o-ship-s2 exit 0
+o-on-s2 exit 0
+o-holdf-s2 exit 0

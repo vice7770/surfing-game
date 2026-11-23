@@ -1,0 +1,6 @@
+spun up on the CPU in 69.7 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/6f7d50a0-2092-465b-909b-518d9dad1233/scratchpad/bb-base.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+spun up on the CPU in 69.8 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/6f7d50a0-2092-465b-909b-518d9dad1233/scratchpad/bb-branch.sea
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9

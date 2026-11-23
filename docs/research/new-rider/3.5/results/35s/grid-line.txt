@@ -1,0 +1,12 @@
+ship: cells 27; latched at +0.017 (+0.017 to +0.017, n 27) s
+   heading - line over the ride (deg, game sign, + up the face): mean |error| +21.6 (+11.0 to +42.4, n 27); worst -96.1 (-128.1 to -31.1, n 27); at the last attached frame -96.1 (-128.1 to -31.1, n 27)
+   share of the ride within 5 deg of the line +23.3 (+18.2 to +31.1, n 27) %, within 10 deg +43.5 (+29.0 to +55.7, n 27) %; overshoots past the line +1 (+1 to +1, n 27)
+   yaw oscillation about its 1 s mean, RMS deg/s: early (0.5-2.0 s) +30.16 (+22.62 to +36.82, n 27), late (2.0 s to the end) +7.83 (+3.54 to +21.16, n 23); late/early +0.27 (+0.14 to +0.71, n 23) (> 1 grows in 0 of 23)
+on: cells 27; latched at +0.017 (+0.017 to +0.017, n 27) s
+   heading - line over the ride (deg, game sign, + up the face): mean |error| +36.5 (+25.5 to +43.9, n 27); worst -77.5 (-147.1 to -37.9, n 27); at the last attached frame -77.5 (-145.2 to -15.1, n 27)
+   share of the ride within 5 deg of the line +9.1 (+7.7 to +11.2, n 27) %, within 10 deg +14.9 (+12.4 to +19.0, n 27) %; overshoots past the line +1 (+1 to +1, n 27)
+   yaw oscillation about its 1 s mean, RMS deg/s: early (0.5-2.0 s) +27.87 (+15.60 to +42.90, n 27), late (2.0 s to the end) +14.41 (+3.85 to +23.01, n 27); late/early +0.49 (+0.21 to +1.04, n 27) (> 1 grows in 1 of 27)
+hold: cells 27; latched at +0.017 (+0.017 to +0.017, n 27) s
+   heading - line over the ride (deg, game sign, + up the face): mean |error| +20.3 (+13.8 to +26.2, n 27); worst -31.6 (-41.4 to +46.7, n 27); at the last attached frame +2.7 (-35.7 to +46.7, n 27)
+   share of the ride within 5 deg of the line +11.5 (+9.1 to +16.0, n 27) %, within 10 deg +18.3 (+14.5 to +30.0, n 27) %; overshoots past the line +2 (+1 to +2, n 27)
+   yaw oscillation about its 1 s mean, RMS deg/s: early (0.5-2.0 s) +27.11 (+17.95 to +47.06, n 27), late (2.0 s to the end) +19.21 (+8.49 to +49.67, n 27); late/early +0.72 (+0.43 to +1.42, n 27) (> 1 grows in 4 of 27)
