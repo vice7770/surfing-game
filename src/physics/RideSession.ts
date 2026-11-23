@@ -229,6 +229,11 @@ export interface RideSessionOptions {
    */
   plantFloor?: '4.5' | '5' | '6';
   /**
+   * The balance's water tables read at the equivalent speed min(12, 1.68 v) (step 3.5w; `AttachedRiderOptions.plantSpeed`):
+   * 'face' — the `?plantSpeed` dev switch. By default the speed through the water itself.
+   */
+  plantSpeed?: 'face';
+  /**
    * The face in the balance's own model (step 3.5r; `AttachedRiderOptions.faceTrim`): 'on' or 'model' — the
    * `?faceTrim` dev switch. By default the model has no face.
    */
@@ -356,6 +361,7 @@ export class RideSession {
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
       ...(options.riderCost ? { riderCost: options.riderCost } : {}),
       ...(options.plantFloor ? { plantFloor: options.plantFloor } : {}),
+      ...(options.plantSpeed ? { plantSpeed: options.plantSpeed } : {}),
       ...(options.faceTrim ? { faceTrim: options.faceTrim } : {}),
       ...(options.holdLine ? { holdLine: options.holdLine } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),

@@ -14,7 +14,7 @@ import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, ride
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
 import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, railPull, stanceAt, type CaptureOmega, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, equivalentSpeed, railPull, stanceAt, type CaptureOmega, type DesignWeights } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -1772,6 +1772,14 @@ export interface AttachedRiderOptions {
    */
   plantFloor?: '4.5' | '5' | '6';
   /**
+   * **The water's tables read at an equivalent speed** (step 3.5w, `?plantSpeed=face`): the balance's internal model
+   * reads every table of the water's captive answer at min(12, 1.68 v) instead of the speed through the water v, and
+   * its schedule reaches down to 3 m/s. The factor matches the game's ridden attitude at 3–5 m/s to the table's own
+   * free-trim rows. `DesignWeights.plantSpeed` has the scope line, `docs/research/new-rider/3.5/plant-rows.md` §8 the
+   * design. A change of plant, not of control law; no force. Opt-in, off by default, pinned off for online rooms.
+   */
+  plantSpeed?: 'face';
+  /**
    * **The face in the balance's own model** (step 3.5r, `?faceTrim=on|model`; `DesignWeights.faceTrim` has the scope
    * line and `docs/research/new-rider/3.5/face-trim.md` the derivation): the face's tilt across the heading, sensed
    * through the balance's 0.1 s line, drives the internal model through the face's whole first-order column (the heel
@@ -2343,6 +2351,8 @@ export class AttachedRider {
   private readonly faceTrim: boolean;
   /** Step 3.5s: the balance holds the latched line with the stick centred (`holdLine`); false by default. */
   private readonly holdLineRef: boolean;
+  /** Step 3.5w: the balance's water tables are read at the equivalent speed (`plantSpeed: 'face'`); false by default. */
+  private readonly plantSpeedFace: boolean;
   /**
    * Step 3.5s, read-only: the board's heading from the line `holdLine` latched, rad, this file's sign (+ the nose turned
    * to the board's left of it, as the world heading), NaN while no line is held. Written by `holdLine` for every rider;
@@ -2768,9 +2778,12 @@ export class AttachedRider {
       : options.faceTrim === 'model' ? { faceTrim: 'model' } : undefined;
     // Step 3.5s: `holdLine` reaches the same weights route, by value, so an explicit one in `balance.weights` wins.
     const holdWeights: { holdLine: 'ref' } | undefined = options.holdLine === 'ref' ? { holdLine: 'ref' } : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || faceWeights || holdWeights
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...faceWeights, ...holdWeights, ...options.balance?.weights }
+    // Step 3.5w: `plantSpeed` reaches the same weights route, by value, so an explicit one in `balance.weights` wins.
+    const speedWeights: { plantSpeed: 'face' } | undefined = options.plantSpeed === 'face' ? { plantSpeed: 'face' } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || faceWeights || holdWeights || speedWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...faceWeights, ...holdWeights, ...speedWeights, ...options.balance?.weights }
       : undefined;
+    this.plantSpeedFace = weights?.plantSpeed === 'face';
     this.faceTrim = weights?.faceTrim !== undefined;
     this.holdLineRef = weights?.holdLine === 'ref';
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
@@ -3964,7 +3977,9 @@ export class AttachedRider {
       // `railPull` of what that rail's own lean would balance (0.76-0.88 measured), so the rail is a little more than
       // the lean: tan(lean) = pull × tan(rail). Two passes, since the pull itself goes with the rail.
       let rail = Math.abs(this.leanAsked);
-      for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
+      // Step 3.5w (`plantSpeed: 'face'`): the pull is the water's table's, read at the speed the design reads it at.
+      const pullSpeed = this.plantSpeedFace ? equivalentSpeed(speed) : speed;
+      for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(pullSpeed, rail));
       rail = Math.min(this.railCap, rail);
       // Step 3.5s (`holdLine`): the board's heading from the latched line, in the model's sign (its y is the board's
       // right, the world heading's + is the nose to the left), and the lean cap the stick's own ask has now.

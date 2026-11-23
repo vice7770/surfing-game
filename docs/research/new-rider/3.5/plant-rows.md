@@ -370,3 +370,49 @@ rule (rescue ≥ 3 s, delay ≥ +0.25 s, worse ≤ −0.25 s). Order: model, tak
 **Predicted:** take-offs about as `plantFloor=6` (both read ≥ 5–6 m/s water at these speeds); controls kept;
 sharp-steer carried like 3.5o's schedule floor; the neutral riders and the grid within ±0.1 s, with the risk at
 ≥ 6 m/s, where a constant factor reads the 10–12 m/s water.
+
+### 8.6 Model checks (run after §8.1–§8.5 were committed at `0ddd042a`; `results/35w/model-<variant>.jsonl`)
+
+Built: `DesignWeights.plantSpeed`, `equivalentSpeed`, `tableSpeedFor`, `SCHEDULE_SPEEDS_FACE`, `plantAt`'s `tableSpeed`,
+the route to `?plantSpeed=face`, `main.ts`'s pin, and `src/physics/plantSpeed.test.ts` (off is bit for bit the shipped
+plant; on reads the water at v_eq and the kinematics, drag and inertia at v; the controller holds the 3 m/s design
+below 3). Owner's weights (`riderBody: 'two'`), rail 0; the ankle row of the design `blend` returns.
+
+**Gains, bank / bank rate / slip / yaw rate, Compress (depth 0.3):**
+
+| schedule m/s | shipped | `plantFloor=6` | **face** | `plantFloor=4.5` |
+| --- | --- | --- | --- | --- |
+| 3.0 | 2.23 / 0.35 / 0.69 / −0.03 | 0.97 / 0.17 / 0.39 / −0.10 | **1.57 / 0.23 / 0.37 / 0.05** | 1.43 / 0.19 / 0.10 / 0.05 |
+| 3.5 | (= 4) | (= 4) | **1.05 / 0.19 / 0.44 / −0.11** | (= 4) |
+| 4.0 | 2.23 / 0.35 / 0.69 / −0.03 | 0.97 / 0.17 / 0.39 / −0.10 | **0.94 / 0.17 / 0.36 / −0.10** | 1.43 / 0.19 / 0.10 / 0.05 |
+| 4.5 | 1.44 / 0.19 / 0.13 / 0.04 | 0.94 / 0.16 / 0.38 / −0.09 | **1.28 / 0.22 / 0.50 / −0.11** | 1.44 / 0.19 / 0.13 / 0.04 |
+| 5.0 | 1.50 / 0.20 / 0.36 / 0.06 | 0.93 / 0.16 / 0.38 / −0.09 | **1.00 / 0.17 / 0.40 / −0.09** | (= shipped) |
+| 5.5 | 1.34 / 0.20 / 0.62 / −0.02 | 0.93 / 0.15 / 0.39 / −0.08 | **0.78 / 0.14 / 0.30 / −0.08** | |
+| 6.0 | 0.93 / 0.15 / 0.40 / −0.08 | (= shipped) | **0.78 / 0.14 / 0.32 / −0.08** | |
+| 7.0 | 0.84 / 0.14 / 0.36 / −0.08 | | **0.60 / 0.11 / 0.20 / −0.07** | |
+| 7.5 | 1.22 / 0.19 / 0.52 / −0.10 | | **0.58 / 0.11 / 0.17 / −0.06** | |
+| 8.0 | 0.98 / 0.16 / 0.41 / −0.08 | | **0.57 / 0.10 / 0.18 / −0.06** | |
+| 9.0 | 0.70 / 0.12 / 0.32 / −0.07 | | **0.56 / 0.10 / 0.18 / −0.06** | |
+
+**Tall (depth 0):** face 2.02 / 0.31 at 3.0, 0.77 / 0.18 at 3.5, 0.95 / 0.21 at 4.0, 1.21 / 0.25 at 4.5, 0.90–1.02 at
+5–6.5, 0.82–0.86 at 7–9 (shipped 2.73 / 0.35 at ≤ 4, 2.04 at 4.5, 0.72–1.96 at 5–9; `plantFloor=6` 0.71–0.76 below 6).
+
+**Nominal least damping** of each design's own loop: face 0.59–0.68 at every knot 3–9 m/s (shipped 0.57–0.65,
+`plantFloor=6` 0.59–0.65). Not a discriminator, as in §7.4.
+
+**The reference, β_ref at a 21° lean (°):**
+
+| | 3.0 | 3.5 | 4.0 | 4.5 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | cells with \|β_ref\| > 10°, leans 1–25°, 3–9 m/s |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| shipped, tall | 34.8 | 34.8 | 34.8 | 5.2 | 4.7 | 2.5 | 1.6 | 1.5 | 1.1 | 515 (3–5.15 m/s, every lean); worst 546° at 4.3 |
+| `plantFloor=6` | −1.3 | −1.3 | −1.3 | −0.5 | 1.8 | 2.5 | 1.6 | 1.5 | 1.1 | 0 |
+| `plantFloor=4.5` | 4.9 | 4.9 | 4.9 | 5.2 | 4.7 | 2.5 | 1.6 | 1.5 | 1.1 | 41 (leans 1–6°); worst −389° at 4.5 |
+| **face, tall** | **0.5** | **−0.7** | **−0.8** | **−1.1** | **−0.3** | **0.1** | **0.1** | **0.2** | **0.4** | **2** (3.0–3.1 m/s, leans 1–2°); worst −13.4° |
+| **face, Compress** | 0.6 | −0.7 | −0.8 | −1.2 | −0.3 | 0.1 | 0.1 | 0.2 | 0.3 | **1** (3.05 m/s, lean 2°): −46.9° |
+
+**Verdict on §8.4's line: PASS** — |β_ref| ≤ 1.2° at a 21° lean at every speed 3–9 m/s, no singular speed along it.
+**Flagged:** a residual corner at the bottom knot, 3.0–3.1 m/s with a 1–2° lean (3 of 3 025 cells; −47° in
+Compress at 3.05 m/s), the same kind as 3.5o's second corner; `plantFloor=6` has none. The 3 m/s design reads row
+`'5'` (v_eq 5.04), whose yaw moment per slip (−28.6) is the table's smallest, with the true V of 3. Prediction check:
+Compress gains at 3.5–5 m/s 0.94–1.28 (predicted 0.9–1.5, held), but 1.57 at 3.0; above 7 m/s the face gains are
+30–55 % **below** shipped (predicted within ±30 %: missed), because 7.14 m/s and up read the 12 m/s water.

@@ -552,7 +552,7 @@ function catchMode(): void {
     if (!built && st.phase === 'standing') {
       built = true;
       const w = (session.rider as Any).predictor?.weights;
-      emit({ kind: 'built', cueLater: runner.config.cueLater ?? null, faceTrim: w?.faceTrim ?? null, holdLine: w?.holdLine ?? null, plantFloor: w?.plantFloor ?? null, riderBody: w?.riderBody ?? null, extra: EXTRA });
+      emit({ kind: 'built', cueLater: runner.config.cueLater ?? null, faceTrim: w?.faceTrim ?? null, holdLine: w?.holdLine ?? null, plantFloor: w?.plantFloor ?? null, plantSpeed: w?.plantSpeed ?? null, riderBody: w?.riderBody ?? null, extra: EXTRA });
     }
     if (st.phase === 'fallen' && Number.isNaN(fellAt)) fellAt = t;
     const wf = st.wave;
@@ -583,7 +583,7 @@ const RIDER_KEYS = [
   'stroke', 'swim', 'extension', 'duckBody', 'snap', 'snapQuick', 'snapPivot', 'snapRecentre', 'snapDepth', 'snapStamp',
   'agile', 'legDrive', 'hull', 'railSuction', 'compressPull', 'carveFlex', 'snapLegs', 'snapCross', 'legPower', 'rider',
   'feltFrame', 'kneeRoom', 'stanceReach', 'ankleLimit', 'ankleRange', 'bankClamp', 'bodyBank', 'askCap', 'stanceDeep',
-  'deepen', 'armCarry', 'trunk', 'buoyFrame', 'waterHeel', 'mountAgree', 'riderBody', 'riderCost', 'plantFloor',
+  'deepen', 'armCarry', 'trunk', 'buoyFrame', 'waterHeel', 'mountAgree', 'riderBody', 'riderCost', 'plantFloor', 'plantSpeed',
   'deckHollow', 'snapUpturn', 'swing', 'faceTrim', 'holdLine', 'slowStand',
 ] as const;
 function organicMode(): void {
@@ -660,7 +660,7 @@ function organicMode(): void {
     if (session.phase === 'standing' && rider.standAt === undefined) {
       rider.standAt = t;
       const w = (session.rider as Any).predictor?.weights;
-      emit({ kind: 'stand', script: rider.script, wave: trial.index, t: r(t, 4), refusal: (session.rider as Any).popUpReport.refusal ?? null, report: { ...(session.rider as Any).popUpReport }, faceTrim: w?.faceTrim ?? null, holdLine: w?.holdLine ?? null, plantFloor: w?.plantFloor ?? null, slowStand: w?.slowStand ?? (session.rider as Any).slowStand ?? null });
+      emit({ kind: 'stand', script: rider.script, wave: trial.index, t: r(t, 4), refusal: (session.rider as Any).popUpReport.refusal ?? null, report: { ...(session.rider as Any).popUpReport }, faceTrim: w?.faceTrim ?? null, holdLine: w?.holdLine ?? null, plantFloor: w?.plantFloor ?? null, plantSpeed: w?.plantSpeed ?? null, slowStand: w?.slowStand ?? (session.rider as Any).slowStand ?? null });
     }
     const attached = session.rider.attached;
     const ledger = drainLedger(session.rider);

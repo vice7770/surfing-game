@@ -597,6 +597,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?plantFloor=4.5|5|6`: the balance's internal model is built on the lowest MEASURED row of its water table at or above
     // this speed, so a design below 4 m/s stops inheriting row '4', the table's own sign-turnover row (step 3.4m), opt-in, to ride.
     ...plantFloorSwitch(),
+    // `?plantSpeed=face`: the balance's internal model reads its water tables at the equivalent speed min(12, 1.68 v),
+    // the speed at which the table's own free-trim rows have the board's ridden attitude (step 3.5w), opt-in, to ride.
+    ...plantSpeedSwitch(),
     // `?faceTrim=on|model`: the face's tilt is a sensed input of the balance's own model, through the face's whole
     // first-order column; 'on' also holds the face's neutral trim (step 3.5r), opt-in, to ride.
     ...faceTrimSwitch(),
@@ -1442,6 +1445,19 @@ export function riderCostSwitch(search?: string): { riderCost?: 'point' | 'fixed
 export function plantFloorSwitch(search?: string): { plantFloor?: '4.5' | '5' | '6' } {
   const v = devParam('plantFloor', search)?.trim().toLowerCase();
   return v === '4.5' || v === '5' || v === '6' ? { plantFloor: v } : {};
+}
+
+/**
+ * The `?plantSpeed=face` dev switch (`SurfZoneConfig.plantSpeed`, step 3.5w): opt-in, the new surfer's balance reads
+ * every table of the water's captive answer at the equivalent speed min(12, 1.68 v) instead of the speed through the
+ * water v, and its gain schedule reaches down to 3 m/s. 1.68 is the mean of ten matches of the game's own ridden
+ * attitude at 3–5 m/s (trim against the face and tail immersion, 3.5v's standing frames) to the speeds at which the
+ * table's free-trim rows have it; the kinematic speed, the drag the feet carry and the board's game-measured inertia
+ * stay at v. A change of the plant the design is built on, not of control law, and no force in the game.
+ * `docs/research/new-rider/3.5/plant-rows.md` §8. Only `face`; anything else, the shipped speed.
+ */
+export function plantSpeedSwitch(search?: string): { plantSpeed?: 'face' } {
+  return devParam('plantSpeed', search)?.trim().toLowerCase() === 'face' ? { plantSpeed: 'face' } : {};
 }
 
 /**

@@ -709,26 +709,31 @@ const DRAG_AT_7 = Math.sin((11.01 * Math.PI) / 180);
  * 3.2c's plant at a speed and stance: `YawPlant` and `TwistPlant`. `scales` multiplies the water's twelve derivatives
  * (the robustness gate); `feetScale` the along-board force the feet carry (step 3.2e's errors by contributor).
  */
-export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean; body?: boolean | number | RiderBody; plantFloor?: number; stanceDeep?: boolean } = {}): { y: YawPlant; t: TwistPlant } {
+export function plantAt(speed: number, depth: number, opts: { rollInertia?: number; yawInertia?: number; twistStiffness?: number; twistDamping?: number; scales?: number[]; feetScale?: number; rail?: number; heave?: HeavePlant; sink?: boolean; body?: boolean | number | RiderBody; plantFloor?: number; stanceDeep?: boolean; tableSpeed?: number } = {}): { y: YawPlant; t: TwistPlant } {
   // Step 3.4m (`?plantFloor`): the lowest row of `PLANT_SPEEDS` the water's twelve derivatives may be read at. Only
   // the table lookup moves — `speed` itself still enters the kinematic rows, the rail correction, the board's inertia
   // and the heave plant at its true value, as it always did.
-  const lab = labAt(speed, opts.plantFloor);
+  // Step 3.5w (`?plantSpeed=face`): `tableSpeed`, when given, is the speed every WATER table is read at (the twelve,
+  // the rail correction, the held and heave tables); the floor clamps after it. The drag the feet carry, the board's
+  // game-measured inertia and the kinematic V stay at `speed`. Omitted, every read below is the shipped one.
+  const water = opts.tableSpeed ?? speed;
+  const lab = labAt(water, opts.plantFloor);
+  const drag = opts.tableSpeed === undefined ? lab.drag : labAt(speed, opts.plantFloor).drag;
   const s = opts.scales ?? new Array<number>(12).fill(1);
   // Step 3.2f: the rail's own correction (`railCorrection`), so the schedule covers carving as it covers speed and stance.
   // Step 3.2p: `sink` reads the HELD table instead (`frozenCorrection`) and carries the board's heave and pitch as four
   // more states, which is the only consistent pair: the free table has the re-trim folded in already.
-  const c = opts.sink ? frozenCorrection(speed, opts.rail ?? 0) : railCorrection(speed, opts.rail ?? 0);
+  const c = opts.sink ? frozenCorrection(water, opts.rail ?? 0) : railCorrection(water, opts.rail ?? 0);
   const scaled = { roll: lab.roll.map((x, k) => (x + c.roll[k]) * s[k]), slip: lab.slip.map((x, k) => (x + c.slip[k]) * s[3 + k]), yaw: lab.yaw.map((x, k) => (x + c.yaw[k]) * s[6 + k]), rate: lab.rate.map((x, k) => (x + c.rate[k]) * s[9 + k]) };
   // Step 3.5b (shipped since 3.5c): the ladder reads the tuck's row too, so a depth past 0.30 m is no longer clamped
   // onto Compress's pendulum, inertia and bank limit. Omitted, the three rows and the 0.30 m clamp as they shipped.
   const st = stanceAt(depth, opts.stanceDeep);
-  const heave = opts.heave ?? (opts.sink ? heavePlantAt(speed, opts.rail ?? 0, st.height) : undefined);
+  const heave = opts.heave ?? (opts.sink ? heavePlantAt(water, opts.rail ?? 0, st.height) : undefined);
   const board = boardInertiaAt(speed);
   const y: YawPlant = {
     speed, boardRollInertia: opts.rollInertia ?? board.roll, boardYawInertia: opts.yawInertia ?? board.yaw, riderYawInertia: st.lower, boardMass: 2.54,
     mass: 73, height: st.height, ankleStiffness: 800, ankleDamping: 80, ...boardDerivatives(scaled, speed, 0.236),
-    feetForward: ((opts.feetScale ?? 1) * FEET_FORWARD_AT_7 * lab.drag) / DRAG_AT_7, feetStation: -0.244, deckHeight: 0.031,
+    feetForward: ((opts.feetScale ?? 1) * FEET_FORWARD_AT_7 * drag) / DRAG_AT_7, feetStation: -0.244, deckHeight: 0.031,
     // The board's heave and pitch as states (ruling 29t item 2), when the caller supplies the water's answer to them or
     // asks for the measured one (`sink`, step 3.2p). Without either, the plant is the ten-state one it always was.
     ...(heave ? { heave } : {}),
@@ -924,6 +929,22 @@ export interface DesignWeights {
    * rooms.
    */
   plantFloor?: number;
+  /**
+   * **The water's tables read at an equivalent speed** (step 3.5w, `?plantSpeed=face`;
+   * `docs/research/new-rider/3.5/plant-rows.md` §8). With `'face'`, every table of the **water's** captive answer
+   * (`PLANT_SPEEDS`' twelve, the rail correction and its range and pull, the held and heave tables) is read at
+   * `equivalentSpeed(v)` = min(12, `EQUIVALENT_SPEED_FACTOR` · v) instead of v, and the schedule gains knots at 3 and
+   * 3.5 m/s (`SCHEDULE_SPEEDS_FACE`). The factor is the mean of ten matches of the game's ridden attitude (trim and
+   * draft at 3–5 m/s) to the table's own free-trim rows. The kinematic V, the drag the feet carry and the board's
+   * game-measured inertia stay at the true speed.
+   *
+   * **It is a change of plant, not of controller**, the shape of `plantFloor`: Φ, Γ, K and L are rebuilt on rows the lab
+   * measured, and no water force in the game is computed from them. It reads a **stiffer** water than the board meets
+   * at these speeds (the ridden geometry carries 90–98 % of the game's support on flat water at the true speed,
+   * plant-rows.md §8.1), so it is a design choice, ridden and measured. Off by default and pinned off for online rooms.
+   * With `plantFloor` the floor clamps the lookup after the map.
+   */
+  plantSpeed?: 'face';
   /**
    * **The stance ladder's fourth rung read, the tube tuck's 0.45 m** (step 3.5b; **shipped by default since step 3.5c
    * and the owner's ruling D of 2026-11-17, "keep the row"**).
@@ -1412,6 +1433,28 @@ export function leastDamping(values: readonly { re: number; im: number }[], step
 export const SCHEDULE_SPEEDS = Array.from({ length: 17 }, (_, i) => 4 + 0.5 * i);
 export const SCHEDULE_DEPTHS = [0, 0.195, 0.3];
 /**
+ * **Step 3.5w (`DesignWeights.plantSpeed`, `?plantSpeed=face`): the equivalent speed the water's tables are read at.**
+ * v_eq = min(12, 1.68 v): 1.68 is the mean of ten matches of the game's ridden attitude at 3–5 m/s (its trim against
+ * the face and its tail immersion, 3.5v's standing frames) to the speeds at which `PLANT_SPEEDS`' own free-trim rows
+ * have that trim and that draft (ratios 1.54–1.86; `docs/research/new-rider/3.5/plant-rows.md` §8.2). Capped at the
+ * table's top, 12 m/s, which every water table already clamps to.
+ */
+export const EQUIVALENT_SPEED_FACTOR = 1.68;
+export const EQUIVALENT_SPEED_TOP = 12;
+export function equivalentSpeed(speed: number): number {
+  return Math.min(EQUIVALENT_SPEED_TOP, EQUIVALENT_SPEED_FACTOR * speed);
+}
+/** The speed the water's tables are read at for these weights: `equivalentSpeed` with `plantSpeed: 'face'`, else the speed itself. */
+export function tableSpeedFor(speed: number, weights?: Pick<DesignWeights, 'plantSpeed'>): number {
+  return weights?.plantSpeed === 'face' ? equivalentSpeed(speed) : speed;
+}
+/**
+ * Step 3.5w: the schedule's speeds with `plantSpeed: 'face'`: two more knots, at 3 and 3.5 m/s (their water read at 5.04
+ * and 5.88), so the board's own 3–4 m/s gets designs of its own; below 3 the controller holds the 3 m/s design, as the
+ * shipped one holds 4's. No design with the switch on reads row '4' or '4.5'.
+ */
+export const SCHEDULE_SPEEDS_FACE = [3, 3.5, ...SCHEDULE_SPEEDS];
+/**
  * **Step 3.5b: the gain schedule's own fourth knot, the tuck's 0.45 m — shipped by default since step 3.5c.**
  *
  * This is a SECOND clamp on the same quantity, and it is independent of `stanceAt`'s. The designs the controller
@@ -1446,12 +1489,15 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
     // Step 3.5c (ruling D): the row ships, so `undefined` is `true` here and only an explicit `false` reaches the
     // three-row ladder. A partial weights object that never heard of the field gets the shipped plant.
     const ladder: { stanceDeep: boolean } = { stanceDeep: w.stanceDeep ?? true };
-    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor, ...ladder });
+    // Step 3.5w: the equivalent speed is a plant too: the water's tables read at v_eq, through the same weights the
+    // cache's key carries. Omitted, `plantAt` reads every table at `speed`, exactly as it did.
+    const face: { tableSpeed: number } | undefined = w.plantSpeed === 'face' ? { tableSpeed: equivalentSpeed(speed) } : undefined;
+    const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor, ...ladder, ...face });
     d = design(y, t, w);
     if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
       // The gains stay the shipped ones, designed on the free plant, with no gain on the four board states: the rider
       // feels and anticipates the board, and does not try to steer it. `DesignWeights.heaveGains` has the measurement.
-      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor, ...ladder });
+      const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor, ...ladder, ...face });
       const gains = design(ten.y, ten.t, { ...w, heaveSense: false });
       const pad = new Array<number>(d.phi.length - N_STATE).fill(0);
       d = { ...d, k: gains.k.map((row) => [...row, ...pad]) };
@@ -1601,8 +1647,10 @@ export class PredictiveController {
 
   /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
   private blend(speed: number, depth: number, rail: number): Design {
-    const v = Math.max(SCHEDULE_SPEEDS[0], Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 1], speed));
-    const v0 = Math.min(SCHEDULE_SPEEDS[SCHEDULE_SPEEDS.length - 2], Math.floor(v * 2) / 2);
+    // Step 3.5w (`plantSpeed: 'face'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
+    const speeds = this.weights?.plantSpeed === 'face' ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
+    const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
+    const v0 = Math.min(speeds[speeds.length - 2], Math.floor(v * 2) / 2);
     const fv = (v - v0) / 0.5;
     // Step 3.5b (`?stanceDeep`): the schedule's depths reach the tuck's 0.45 m knot. The walk over the knots gives
     // the same pair the three-knot list always computed (d <= 0.195 takes [0, 0.195] and anything deeper
@@ -1618,7 +1666,8 @@ export class PredictiveController {
     const i1 = knots[kd + 1];
     const fd = (dp - i0) / (i1 - i0);
     const rails = SCHEDULE_RAILS;
-    const a = Math.max(0, Math.min(railLimit(v), Math.abs(rail)));
+    // Step 3.5w: the rail range is the water's table's at the speed it is read at.
+    const a = Math.max(0, Math.min(railLimit(tableSpeedFor(v, this.weights)), Math.abs(rail)));
     let k = 0;
     while (k < rails.length - 2 && a > rails[k + 1]) k += 1;
     const fr = Math.max(0, Math.min(1, (a - rails[k]) / (rails[k + 1] - rails[k])));

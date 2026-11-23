@@ -488,6 +488,13 @@ export interface SurfZoneConfig {
    */
   plantFloor?: '4.5' | '5' | '6';
   /**
+   * 'face': the new surfer's balance reads its water tables at the equivalent speed min(12, 1.68 v) instead of the
+   * speed through the water, and its gain schedule reaches down to 3 m/s (step 3.5w; `RideSessionOptions.plantSpeed`,
+   * `DesignWeights.plantSpeed`; `docs/research/new-rider/3.5/plant-rows.md` §8). It changes the plant the design is
+   * built on, no force in the game. The `?plantSpeed` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  plantSpeed?: 'face';
+  /**
    * 'on' | 'model': the face in the new surfer's balance model (step 3.5r; `RideSessionOptions.faceTrim`,
    * `DesignWeights.faceTrim`): the face's tilt across the heading, sensed through the balance's own delay, drives its
    * internal model through the face's whole first-order column; 'on' also moves its reference to the face's neutral
