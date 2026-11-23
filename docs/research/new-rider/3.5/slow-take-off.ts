@@ -15,6 +15,11 @@
  *  * `cueC` — pop at the cue, then Compress held (1) from `C_AT` s after the stand (default 0.2: the owner's 0.1–0.3 s).
  *  * `paddle` (catch only) — never pop: keep paddling (and sprinting) past the cue, and log the board until the crest
  *    has passed. Question 5.
+ *  * `never` (organic only, step 3.5u) — the same: never pop, keep paddling and sprinting, log until the crest has passed
+ *    (the reaction window: how long the cue is lit before the crest passes).
+ *
+ * Step 3.5u (`?cueLater=on` in `EXTRA`): both drives pop on the player's cue, `takeOffCue.ts` `playerCue` (catch through
+ * the runner's status, organic by calling it); each row's `cueT` is today's (shipped) cue beside it.
  *
  * Per frame (`kind: 'f'`): the board's speed over the ground and through the water (the latch's own measure), the latch,
  * the lean cap and ask, the leg's load, both feet's depth, the wetted hull and its submerged volume, the hull's four
@@ -48,7 +53,7 @@ import type { BoardBody } from '../../../../src/physics/BoardBody';
 import { PhysicalSurfWater } from '../../../../src/physics/PhysicalSurfWater';
 import { RideSession, type RiderPlacement } from '../../../../src/physics/RideSession';
 import { createWaterSample, type SurfWater } from '../../../../src/physics/SurfWater';
-import { inTakeOffWindow } from '../../../../src/physics/takeOffCue';
+import { inTakeOffWindow, playerCue, speedThroughWater } from '../../../../src/physics/takeOffCue';
 import { WaveFrameGauge, type WaveFrame } from '../../../../src/physics/waveFrame';
 import { SURF_ZONE_STEP, SurfZoneRunner, type RideRequest } from '../../../../src/wave/SurfZoneRunner';
 import { SurfZoneSimulation, rideLineupAlong, rideLineupOffset, type SurfZoneConfig } from '../../../../src/wave/SurfZoneSimulation';
@@ -294,6 +299,7 @@ function catchMode(): void {
     const st0 = runner.status().ride;
     const lying = st0 ? st0.phase === 'prone' : true;
     const cue = st0?.cue ?? false;
+    const cueToday = lying && runner.cue;
     if (lying && cue && Number.isNaN(cueAt) && step > 0) cueAt = t - SURF_ZONE_STEP;
     const popUp = SCRIPT !== 'paddle' && !popped && !Number.isNaN(cueAt);
     if (popUp) { popped = true; popAt = t; }
@@ -313,7 +319,7 @@ function catchMode(): void {
     if (!built && st.phase === 'standing') {
       built = true;
       const w = (session.rider as Any).predictor?.weights;
-      emit({ kind: 'built', faceTrim: w?.faceTrim ?? null, holdLine: w?.holdLine ?? null, plantFloor: w?.plantFloor ?? null, riderBody: w?.riderBody ?? null, extra: EXTRA });
+      emit({ kind: 'built', cueLater: runner.config.cueLater ?? null, faceTrim: w?.faceTrim ?? null, holdLine: w?.holdLine ?? null, plantFloor: w?.plantFloor ?? null, riderBody: w?.riderBody ?? null, extra: EXTRA });
     }
     if (st.phase === 'fallen' && Number.isNaN(fellAt)) fellAt = t;
     const wf = st.wave;
@@ -323,7 +329,7 @@ function catchMode(): void {
     const log = SCRIPT === 'paddle' ? (step % 3 === 0 || near) : (near || step % 30 === 0);
     const ledger = drainLedger(session.rider);
     if (log && Number.isNaN(fellAt)) {
-      emit({ kind: 'f', t: r(t, 4), tS: Number.isNaN(standAt) ? null : r(t - standAt, 4), cue: cue ? 1 : 0, ...row(session, runner.water, wave), ...(ledger && ledger.solves ? { led: ledger } : {}) });
+      emit({ kind: 'f', t: r(t, 4), tS: Number.isNaN(standAt) ? null : r(t - standAt, 4), cue: cue ? 1 : 0, cueT: cueToday ? 1 : 0, ...row(session, runner.water, wave), ...(ledger && ledger.solves ? { led: ledger } : {}) });
     }
     if (!Number.isNaN(fellAt)) break;
     if (!Number.isNaN(standAt) && t - standAt >= STAND_HOLD) break;
@@ -371,11 +377,13 @@ function organicMode(): void {
   const focus = sim.breakPoint();
   const startX = focus.x + rideLineupAlong(config);
   const startZ = focus.z - rideLineupOffset(config);
-  emit({ kind: 'control', mode: 'organic', seed: SEED, periods: PERIODS, scripts: SCRIPTS, search, riderOptions: opts, cAt: C_AT, ledger: LEDGER, only: ONLY ?? null, spinUp: (Date.now() - wall) / 1000 });
+  const CUE_LATER = config.cueLater === 'on';
+  const cueSample = createWaterSample();
+  emit({ kind: 'control', mode: 'organic', cueLater: config.cueLater ?? null, seed: SEED, periods: PERIODS, scripts: SCRIPTS, search, riderOptions: opts, cAt: C_AT, ledger: LEDGER, only: ONLY ?? null, spinUp: (Date.now() - wall) / 1000 });
   if (config.canyonBed !== 'b' || config.rider !== 'new') { emit({ fatal: 'address' }); process.exit(2); }
   interface Rider {
     script: string; session: RideSession; gauge: WaveFrameGauge; sprinting: boolean; seenBehind: boolean;
-    cueAt?: number; popAt?: number; standAt?: number; fellAt?: number; cause?: string; passedAt?: number; arrival?: number; done: boolean; frames: number;
+    cueAt?: number; todayAt?: number; popAt?: number; standAt?: number; fellAt?: number; cause?: string; passedAt?: number; arrival?: number; done: boolean; frames: number;
   }
   interface Trial { placed: number; riders: Rider[]; index: number }
   const trials: Trial[] = [];
@@ -400,12 +408,14 @@ function organicMode(): void {
     const toCrest = rider.seenBehind && frame.valid && frame.aheadOfCrest > 0 && closing > 0.5 ? frame.aheadOfCrest / closing : Number.POSITIVE_INFINITY;
     const prone = session.phase === 'prone';
     if (rider.arrival === undefined && rider.seenBehind && frame.valid && frame.aheadOfCrest <= 0.5 && frame.crestSpeed > 2) rider.arrival = t;
-    const cue = prone && (session.rider.popUpCue || inTakeOffWindow(frame));
+    const today = prone && (session.rider.popUpCue || inTakeOffWindow(frame));
+    const cue = prone && playerCue(today, today && CUE_LATER ? speedThroughWater(board, water, cueSample) : 0, CUE_LATER);
     if (cue && rider.cueAt === undefined) rider.cueAt = t;
+    if (today && rider.todayAt === undefined) rider.todayAt = t;
     let pop = false;
     if (prone && rider.popAt === undefined && rider.seenBehind) {
       if (!rider.sprinting && toCrest <= SPRINT) rider.sprinting = true;
-      if (cue) pop = true;
+      if (cue && rider.script !== 'never') pop = true;
     }
     if (pop) rider.popAt = t;
     const since = rider.standAt === undefined ? -1 : t - rider.standAt;
@@ -420,10 +430,10 @@ function organicMode(): void {
     }
     const attached = session.rider.attached;
     const ledger = drainLedger(session.rider);
-    const near = rider.cueAt !== undefined && t >= rider.cueAt - 0.5;
+    const near = rider.todayAt !== undefined && t >= rider.todayAt - 0.5;
     if (attached && near) {
       const wave: Wave = { faceH: frame.faceHeight, faceFrac: frame.faceFraction, ahead: frame.aheadOfCrest, crest: frame.crestSpeed, valid: frame.valid, shoreward: frame.speedShoreward };
-      emit({ kind: 'f', script: rider.script, wave: trial.index, t: r(t, 4), tS: rider.standAt === undefined ? null : r(t - rider.standAt, 4), cue: cue ? 1 : 0, ...row(session, water, wave), ...(ledger && ledger.solves ? { led: ledger } : {}) });
+      emit({ kind: 'f', script: rider.script, wave: trial.index, t: r(t, 4), tS: rider.standAt === undefined ? null : r(t - rider.standAt, 4), cue: cue ? 1 : 0, cueT: today ? 1 : 0, ...row(session, water, wave), ...(ledger && ledger.solves ? { led: ledger } : {}) });
     }
     if (!attached && rider.fellAt === undefined) { rider.fellAt = t; rider.cause = session.separation ?? '?'; rider.done = true; }
     if (rider.passedAt === undefined && rider.arrival !== undefined && frame.valid && frame.aheadOfCrest < -1.5 && session.phase !== 'standing') rider.passedAt = t;
@@ -468,7 +478,7 @@ function organicMode(): void {
   }
   for (const trial of trials) for (const rider of trial.riders) {
     emit({
-      kind: 'summary', mode: 'organic', seed: SEED, script: rider.script, wave: trial.index, cue: r(rider.cueAt, 4), pop: r(rider.popAt, 4), stand: r(rider.standAt, 4), fell: r(rider.fellAt, 4),
+      kind: 'summary', mode: 'organic', seed: SEED, script: rider.script, wave: trial.index, cue: r(rider.cueAt, 4), cueToday: r(rider.todayAt, 4), arrival: r(rider.arrival, 4), passed: r(rider.passedAt, 4), pop: r(rider.popAt, 4), stand: r(rider.standAt, 4), fell: r(rider.fellAt, 4),
       fellAfterStand: rider.fellAt !== undefined && rider.standAt !== undefined ? r(rider.fellAt - rider.standAt, 4) : null,
       censored: rider.standAt !== undefined && rider.fellAt === undefined ? 1 : 0, exposure: rider.standAt === undefined ? null : r(Math.min(STAND_HOLD, TRIAL - rider.standAt), 4), cause: rider.cause ?? null,
     });

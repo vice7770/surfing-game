@@ -603,6 +603,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?holdLine=ref`: standing with the stick centred, the balance holds the line he came out of a turn on, by asking the
     // coordinated lean of the turn back to it (step 3.5s), opt-in, to ride.
     ...holdLineSwitch(),
+    // `?cueLater=on`: the pop-up cue the player is shown waits until the board moves 3.6 m/s through the water (step
+    // 3.5u), opt-in, to ride.
+    ...cueLaterSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1465,6 +1468,18 @@ export function faceTrimSwitch(search?: string): { faceTrim?: 'on' | 'model' } {
 export function holdLineSwitch(search?: string): { holdLine?: 'ref' } {
   const v = devParam('holdLine', search)?.trim().toLowerCase();
   return v === 'ref' ? { holdLine: 'ref' } : {};
+}
+
+/**
+ * The `?cueLater=on` dev switch (`SurfZoneConfig.cueLater`, step 3.5u; `docs/research/new-rider/3.5/cue-later.md`):
+ * opt-in, the pop-up cue the player is shown (the HUD's prompt, the "POP UP NOW" label, and every reader of the ride
+ * status's `cue`) lights only while the shipped cue is lit and the board moves at least 3.6 m/s through the water, so a
+ * pop at the cue stands on a board that can carry him. The rider's paddle sprint and the drawn body's cue stay as they
+ * ship. Anything but the one value, off.
+ */
+export function cueLaterSwitch(search?: string): { cueLater?: 'on' } {
+  const v = devParam('cueLater', search)?.trim().toLowerCase();
+  return v === 'on' ? { cueLater: 'on' } : {};
 }
 
 /**

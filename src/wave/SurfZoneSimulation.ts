@@ -504,6 +504,14 @@ export interface SurfZoneConfig {
    */
   holdLine?: 'ref';
   /**
+   * 'on': the pop-up cue the player is shown waits until the board can carry a stand, its speed through the water at
+   * least `CUE_LATER_SPEED` while the shipped cue is lit (step 3.5u; `takeOffCue.ts` `playerCue`,
+   * `docs/research/new-rider/3.5/cue-later.md`). The ride status's `cue` only: the rider's own cue (the paddle sprint)
+   * and the drawn body's cue bit stay as they ship. The `?cueLater` dev switch, opt-in, to ride; online rooms run the
+   * default.
+   */
+  cueLater?: 'on';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

@@ -1878,7 +1878,8 @@ const SINK_RATE = 0.3;
 /** …and the contact bound by its limits for no more than this long lately, s. */
 const STAND_STRAIN = 0.05;
 /**
- * The pop-up cue, shown and never acted on: planing pressure carries at least
+ * The pop-up cue (`popUpCue`; the paddle sprint reads it in `advanceStroke`, and the runner shows it, with the take-off
+ * window, as the HUD's cue, which `?cueLater=on` holds back until the board can carry a stand): planing pressure carries at least
  * this share of board and rider (lying down, the body's own buoyancy carries
  * much of the rest), the board moves at least this fast, m/s, and
  * the surface falls along its heading at least this steeply (Kimura and

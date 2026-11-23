@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { inTakeOffWindow } from './takeOffCue';
+import { Vector3 } from 'three';
+import { CUE_LATER_SPEED, inTakeOffWindow, playerCue, speedThroughWater } from './takeOffCue';
+import { createWaterSample, type SurfWater } from './SurfWater';
 import type { WaveFrame } from './waveFrame';
 
 /** Traced on the reference wave: the moment the wave had caught a paddler, high on the face and just ahead of the crest. */
@@ -49,5 +51,33 @@ describe('the take-off window (Kimura and Kakinuma 2015)', () => {
     // A big face keeps the traced 2–4 m, which the bigger spots' catches were tuned with.
     expect(inTakeOffWindow({ ...CAUGHT, faceHeight: 4, aheadOfCrest: 3 })).toBe(true);
     expect(inTakeOffWindow({ ...CAUGHT, faceHeight: 4, aheadOfCrest: 5 })).toBe(false);
+  });
+});
+
+// Step 3.5u (`?cueLater=on`; docs/research/new-rider/3.5/cue-later.md): the player's cue waits until the board can carry a
+// stand, 3.6 m/s through the water, while the shipped cue is lit; off, it is the shipped cue exactly.
+describe('the player\'s pop-up cue (`?cueLater`)', () => {
+  it('is today\'s cue exactly with the switch off, at any speed', () => {
+    for (const today of [false, true]) {
+      for (const speed of [0, 1, 2.9, CUE_LATER_SPEED - 1e-9, CUE_LATER_SPEED, 4.4, 9]) expect(playerCue(today, speed, false)).toBe(today);
+    }
+  });
+
+  it('with the switch on, stays dark below the threshold and lights at and above it while today\'s cue is lit', () => {
+    expect(CUE_LATER_SPEED).toBe(3.6);
+    for (const speed of [0, 2, 2.9, 3.5, CUE_LATER_SPEED - 1e-9]) expect(playerCue(true, speed, true), String(speed)).toBe(false);
+    for (const speed of [CUE_LATER_SPEED, 3.7, 4.4, 6.5]) expect(playerCue(true, speed, true), String(speed)).toBe(true);
+    for (const speed of [0, 3.6, 4.4, 9]) expect(playerCue(false, speed, true), String(speed)).toBe(false);
+  });
+
+  it('reads the board\'s horizontal speed through the water under it (the planing latch\'s measure)', () => {
+    const flowing = (flowX: number, flowZ: number, outsideDomain = false): SurfWater => ({
+      sampleAt: (_x, _y, _z, out) => Object.assign(out, { flowX, flowZ, outsideDomain }),
+      surfaceAt: () => 0, addReaction: () => {}, setSampleTime: () => {},
+    });
+    const board = { position: new Vector3(1, 0, 2), velocity: new Vector3(0, -3, 5) };
+    expect(speedThroughWater(board, flowing(0, 2), createWaterSample())).toBeCloseTo(3, 12);
+    expect(speedThroughWater(board, flowing(3, 5), createWaterSample())).toBeCloseTo(3, 12);
+    expect(speedThroughWater(board, flowing(3, 5, true), createWaterSample())).toBeCloseTo(5, 12);
   });
 });

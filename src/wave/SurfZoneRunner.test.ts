@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { REFERENCE_BOARD } from '../physics/boardReference';
 import { WATER } from '../physics/hullForces';
 import { createWaterSample } from '../physics/SurfWater';
+import { CUE_LATER_SPEED } from '../physics/takeOffCue';
 import { sampleCubicSurface } from '../scene/water/cubicSurface';
 import type { SpotName } from './Bathymetry';
 import { readBarrelCases } from './barrel/nodeBarrelCases';
@@ -340,6 +341,29 @@ describe('SurfZoneRunner with a rider', () => {
     const buffers = runner.createBuffers();
     runner.fill(buffers);
     expect(buffers.rider[RIDER_SNAPSHOT.cue]).toBe(1);
+    runner.session!.rider.phase = 'standing';
+    expect(runner.status().ride!.cue).toBe(false);
+  });
+
+  // Step 3.5u (`?cueLater=on`): the status's cue (the HUD's) waits until the board moves CUE_LATER_SPEED through the
+  // water; the snapshot's cue bit (the drawn body's) stays on the shipped rule.
+  it('holds the status\'s cue back until the board can carry a stand with `cueLater`, and leaves the snapshot\'s bit', () => {
+    const runner = new SurfZoneRunner({ ...calm, cueLater: 'on' }, { rider: true });
+    runner.advance(1, idle);
+    const caught = {
+      valid: true, directionX: 0, directionZ: 1, aheadOfCrest: 2.7, crestSpeed: 6.5, faceHeight: 1.8, faceFraction: 0.8, crestBreaking: 0,
+      curlDistance: Infinity, curlSide: 0, speedOverGround: 5.2, speedShoreward: 5.2, speedAlongCrest: 0, requiredSpeed: Infinity,
+    };
+    (runner as unknown as { wave: typeof caught }).wave = caught;
+    const board = runner.session!.board;
+    board.velocity.set(0, 0, 2);
+    expect(runner.cue).toBe(true);
+    expect(runner.status().ride!.cue).toBe(false);
+    const buffers = runner.createBuffers();
+    runner.fill(buffers);
+    expect(buffers.rider[RIDER_SNAPSHOT.cue]).toBe(1);
+    board.velocity.set(0, 0, CUE_LATER_SPEED + 0.5);
+    expect(runner.status().ride!.cue).toBe(true);
     runner.session!.rider.phase = 'standing';
     expect(runner.status().ride!.cue).toBe(false);
   });

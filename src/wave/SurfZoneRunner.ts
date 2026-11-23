@@ -10,7 +10,7 @@ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
 import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
 import type { StanceName } from '../physics/riderPosture';
 import { createWaterSample } from '../physics/SurfWater';
-import { inTakeOffWindow } from '../physics/takeOffCue';
+import { inTakeOffWindow, playerCue, speedThroughWater } from '../physics/takeOffCue';
 import { WaveFrameGauge, type WaveFrame } from '../physics/waveFrame';
 import type { PeelEstimate } from './Breaking';
 import { BoussinesqSolver } from './BoussinesqSolver';
@@ -937,6 +937,19 @@ export class SurfZoneRunner {
     return session.rider.popUpCue || (this.wave !== undefined && inTakeOffWindow(this.wave));
   }
 
+  /**
+   * The pop-up cue the player is shown (the ride status's `cue`: the HUD's prompt and its readers): `cue`, and with
+   * `?cueLater=on` only once the board moves `CUE_LATER_SPEED` through the water (step 3.5u). The drawn body's cue bit
+   * (the snapshot) stays on `cue`.
+   */
+  get playerCue(): boolean {
+    const today = this.cue;
+    if (!today || this.config.cueLater !== 'on') return today;
+    return playerCue(today, speedThroughWater(this.session!.board, this.water, this.cueSample), true);
+  }
+
+  private readonly cueSample = createWaterSample();
+
   /** The rider (on the board, or fallen) against the wave under it. */
   private measureRide(tubeGuide = false): void {
     const { session, gauge } = this;
@@ -1215,7 +1228,7 @@ export class SurfZoneRunner {
         phase: this.session.phase,
         speed: Math.hypot(this.session.board.velocity.x, this.session.board.velocity.z),
         boardSpeed: this.session.board.velocity.length(),
-        cue: this.cue,
+        cue: this.playerCue,
         popUp: { ...this.session.rider.popUpReport },
         separation: this.session.separation,
         resets: this.rideResets,
