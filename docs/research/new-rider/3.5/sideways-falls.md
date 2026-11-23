@@ -107,3 +107,18 @@ buoyancy) or the pop-up's landing.
   rolling it further) more than A.
 - If neither arm moves the falls, the candidate is (C) the landing: the first command's 0.1 s sense delay against the
   pop-up's landing posture.
+
+### 0.7 Added after the switch-on organic baseline and the three arms, before running it (2026-11-23)
+
+The baseline (§1) puts every switch-on organic sideways fall's first divergence in the balance's own command: from the
+first tick after the 0.1 s blind start, the raw ankle command is 12–19° against 1–2° on the lasting stands and grows
+(AUC 0.90 / 0.98 / 1.00 over +0.1, +0.2, +0.3 s), all at schedule speeds 3.25–4.20 (lasting 4.68–6.13). The effective
+gains read off the ticks (`−tm/x̂`) at schedule speed ≤ 4.0 are 2.5 on the bank and 0.35 on its rate, against 1.0 and
+0.18 at 5.5; `plantFloor=4.5` lowers them only to 1.9 and 0.25 (the 4.5 m/s design) and delays two of nine falls by
+≥ 0.25 s. The question this leaves is whether a planing design holds these stands at all.
+
+**One more causal arm, with an existing switch (no new code): `&plantFloor=6`** (the design read off the 6 m/s plant
+row at every speed below it: bank gain about 0.8, rate 0.15). Prediction: if the falls are the bottom rows' gains on a
+plant they do not describe, `plantFloor=6` rescues or delays (≥ 0.25 s) most of the switch-on organic sideways falls
+and the catch collapses; if they are the landing's own disturbance beyond any design's reach, it does not, and the fall
+is C. Same pairing and rule as §0.5. Run on organic (switch on and off) and the catch start (switch off).
