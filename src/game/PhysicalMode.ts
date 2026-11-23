@@ -597,6 +597,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?plantFloor=4.5|5|6`: the balance's internal model is built on the lowest MEASURED row of its water table at or above
     // this speed, so a design below 4 m/s stops inheriting row '4', the table's own sign-turnover row (step 3.4m), opt-in, to ride.
     ...plantFloorSwitch(),
+    // `?faceTrim=on|model`: the face's tilt is a sensed input of the balance's own model, through the face's whole
+    // first-order column; 'on' also holds the face's neutral trim (step 3.5r), opt-in, to ride.
+    ...faceTrimSwitch(),
     // `?deckHollow=on`: a banked planing board's deck, and the standing rider's legs over it, stay dry in the open hollow behind the low rail's entry (deck-hollow), opt-in, to ride.
     ...deckHollowSwitch(),
     // `?boardSpray=off`: no spray off the boards, as before board-spray, for A/Bs.
@@ -1433,6 +1436,19 @@ export function riderCostSwitch(search?: string): { riderCost?: 'point' | 'fixed
 export function plantFloorSwitch(search?: string): { plantFloor?: '4.5' | '5' | '6' } {
   const v = devParam('plantFloor', search)?.trim().toLowerCase();
   return v === '4.5' || v === '5' || v === '6' ? { plantFloor: v } : {};
+}
+
+/**
+ * The `?faceTrim=on|model` dev switch (`SurfZoneConfig.faceTrim`, step 3.5r; `docs/research/new-rider/3.5/face-trim.md`):
+ * opt-in, the new surfer's balance carries the face in its own internal model. The face's tilt across the heading is a
+ * sensed input (through the balance's 0.1 s line) driving the filter's one-step model and the predictor through the
+ * face's whole first-order column (the heel against the face and the water's support turned through it); `on` also
+ * moves the reference to the face's neutral trim. A change of model and reference: the same two commands through the
+ * same clamps, no force and no authority. Nothing on the default rider; anything but the two values, off.
+ */
+export function faceTrimSwitch(search?: string): { faceTrim?: 'on' | 'model' } {
+  const v = devParam('faceTrim', search)?.trim().toLowerCase();
+  return v === 'on' || v === 'model' ? { faceTrim: v } : {};
 }
 
 /**

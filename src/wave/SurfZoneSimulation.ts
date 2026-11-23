@@ -488,6 +488,14 @@ export interface SurfZoneConfig {
    */
   plantFloor?: '4.5' | '5' | '6';
   /**
+   * 'on' | 'model': the face in the new surfer's balance model (step 3.5r; `RideSessionOptions.faceTrim`,
+   * `DesignWeights.faceTrim`): the face's tilt across the heading, sensed through the balance's own delay, drives its
+   * internal model through the face's whole first-order column; 'on' also moves its reference to the face's neutral
+   * trim. A change of model and reference, no force and no authority. The new surfer (`?rider=new`) only. The
+   * `?faceTrim` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  faceTrim?: 'on' | 'model';
+  /**
    * 'on': the riders' boards keep their deck, and a standing rider's legs over it, dry below the surface line while the
    * hollow behind a banked planing board's low rail is open (deck-hollow, 2026-11-10; `RideSessionOptions.deckHollow`).
    * Every spot. The `?deckHollow=on` dev switch, opt-in, to ride; online rooms run the default.

@@ -436,7 +436,7 @@ for (const c of cells) {
     if (step === 0) {
       // Print back what the host actually built (the switch's own read, never the URL).
       const w = (rider as Any).predictor?.weights;
-      built = { kind: 'built', cell, plantFloor: w?.plantFloor ?? null, waterHeel: w?.waterHeel ?? null, configWaterHeel: (config as Any).waterHeel ?? null, riderBody: w?.riderBody ?? null, stanceDeep: w?.stanceDeep ?? null, deckFelt: (rider as Any).deckFelt ?? null, newRider: (rider as Any).newRider, predictive: (rider as Any).predictive, substeps: rider.standingSubsteps ?? null, configPlantFloor: (config as Any).plantFloor ?? null };
+      built = { kind: 'built', cell, plantFloor: w?.plantFloor ?? null, waterHeel: w?.waterHeel ?? null, configWaterHeel: (config as Any).waterHeel ?? null, faceTrim: w?.faceTrim ?? null, configFaceTrim: (config as Any).faceTrim ?? null, riderBody: w?.riderBody ?? null, stanceDeep: w?.stanceDeep ?? null, deckFelt: (rider as Any).deckFelt ?? null, newRider: (rider as Any).newRider, predictive: (rider as Any).predictive, substeps: rider.standingSubsteps ?? null, configPlantFloor: (config as Any).plantFloor ?? null };
       emit(built);
     }
     if (FRAMES) emit(frameRow(t, cell));

@@ -228,6 +228,11 @@ export interface RideSessionOptions {
    * sign-turnover row.
    */
   plantFloor?: '4.5' | '5' | '6';
+  /**
+   * The face in the balance's own model (step 3.5r; `AttachedRiderOptions.faceTrim`): 'on' or 'model' — the
+   * `?faceTrim` dev switch. By default the model has no face.
+   */
+  faceTrim?: 'on' | 'model';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -346,6 +351,7 @@ export class RideSession {
       ...(options.riderBody ? { riderBody: options.riderBody } : {}),
       ...(options.riderCost ? { riderCost: options.riderCost } : {}),
       ...(options.plantFloor ? { plantFloor: options.plantFloor } : {}),
+      ...(options.faceTrim ? { faceTrim: options.faceTrim } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

@@ -107,7 +107,7 @@ const RIDER_KEYS = [
   'agile', 'legDrive', 'hull', 'railSuction', 'compressPull', 'carveFlex', 'snapLegs', 'snapCross', 'legPower', 'rider',
   'feltFrame', 'kneeRoom', 'stanceReach', 'ankleLimit', 'ankleRange', 'bankClamp', 'bodyBank', 'askCap', 'stanceDeep',
   'deepen', 'armCarry', 'trunk', 'buoyFrame', 'waterHeel', 'mountAgree', 'riderBody', 'riderCost', 'plantFloor',
-  'deckHollow', 'snapUpturn', 'swing',
+  'deckHollow', 'snapUpturn', 'swing', 'faceTrim',
 ] as const;
 type Config = SurfZoneConfig & Record<string, unknown>;
 function configFor(search: string): Config {
@@ -486,7 +486,7 @@ function stepRider(rider: Rider, t: number, trial: Trial): void {
     // Print back what the host actually built (the switch's own read, never the URL): the predictor's weights.
     const built = (session.rider as Any).predictor?.weights;
     emit({
-      kind: 'built', script: script.name, wave: trial.index, plantFloor: built?.plantFloor ?? null, waterHeel: built?.waterHeel ?? null, riderBody: built?.riderBody ?? null,
+      kind: 'built', script: script.name, wave: trial.index, plantFloor: built?.plantFloor ?? null, waterHeel: built?.waterHeel ?? null, faceTrim: built?.faceTrim ?? null, riderBody: built?.riderBody ?? null,
       weightsKeys: built ? Object.keys(built).length : 0, schedFloor: SCHED_FLOOR ?? null, hipOff: HIP_OFF ? 1 : 0,
     });
     if (PROBE_ON && (WAVES === null || WAVES.includes(trial.index))) {

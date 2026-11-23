@@ -1771,6 +1771,15 @@ export interface AttachedRiderOptions {
    * rooms, and meant to be ridden with `?rider=new`.
    */
   plantFloor?: '4.5' | '5' | '6';
+  /**
+   * **The face in the balance's own model** (step 3.5r, `?faceTrim=on|model`; `DesignWeights.faceTrim` has the scope
+   * line and `docs/research/new-rider/3.5/face-trim.md` the derivation): the face's tilt across the heading, sensed
+   * through the balance's 0.1 s line, drives the internal model through the face's whole first-order column (the heel
+   * against the face and the water's support turned through it); `'on'` also moves the reference to the face's neutral
+   * trim. A change of model and reference only: the same two commands through the same clamps. Opt-in, off by default,
+   * pinned off for online rooms, meant to be ridden with `?rider=new`, and not with `waterHeel`.
+   */
+  faceTrim?: 'on' | 'model';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2320,6 +2329,8 @@ export class AttachedRider {
   bankRaw = 0;
   /** Step 3.3p: the internal model reads the water's derivatives at the heel against the water (`waterHeel`); false by default. */
   private readonly waterHeel: boolean;
+  /** Step 3.5r: the internal model carries the face as a sensed input (`faceTrim`); false by default. */
+  private readonly faceTrim: boolean;
   /** The face's own tilt under the board, rad, in the MODEL's own sign (the probe's reversed), 0 unless `waterHeel`. Read-only. */
   schedTilt = 0;
   /** rad, the range the latest bank step allowed the commanded rest — ANKLE_REST_RANGE unless `ankleRange` is set. Read-only, for the ledger. */
@@ -2733,9 +2744,14 @@ export class AttachedRider {
     // `PredictiveController` an undefined `weights` exactly as it always did — and both read sites now default that
     // to the fourth rung (`DEFAULT_WEIGHTS.stanceDeep`, `blend`'s `?? true`).
     const ladderWeights: { stanceDeep: boolean } | undefined = options.stanceDeep === 'off' ? { stanceDeep: false } : undefined;
-    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights
-      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...options.balance?.weights }
+    // Step 3.5r: `faceTrim` reaches the same weights route, named exhaustively, so an explicit `faceTrim` in
+    // `balance.weights` wins and nothing but the two values reaches the design.
+    const faceWeights: { faceTrim: 'on' | 'model' } | undefined = options.faceTrim === 'on' ? { faceTrim: 'on' }
+      : options.faceTrim === 'model' ? { faceTrim: 'model' } : undefined;
+    const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || faceWeights
+      ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...faceWeights, ...options.balance?.weights }
       : undefined;
+    this.faceTrim = weights?.faceTrim !== undefined;
     this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.rateSense = options.balance?.rateSense ?? 'canal';
@@ -3899,6 +3915,8 @@ export class AttachedRider {
     // so the heel the water's own terms must be read at is `−tilt` in the model's sign. Zero with the switch off,
     // and then nothing in the controller reads it (`Design.gammaD` is undefined).
     const faceTilt = this.waterHeel ? -(roll - rail) : 0;
+    // Step 3.5r (`faceTrim`): the same tilt, handed to the controller as the face's own sensed input. 0 with it off.
+    const faceSense = this.faceTrim ? -(roll - rail) : 0;
     if (this.controlDue <= 1e-9) {
       this.controlDue += CONTROL_STEP;
       const turn = this.up.dot(this.boardSpin);
@@ -3926,9 +3944,9 @@ export class AttachedRider {
       let rail = Math.abs(this.leanAsked);
       for (let k = 0; k < 2; k += 1) rail = Math.atan(Math.tan(Math.min(MAX_BANK, Math.abs(this.leanAsked))) / railPull(speed, rail));
       rail = Math.min(this.railCap, rail);
-      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt);
+      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense);
       this.schedRail = rail;
-      this.schedTilt = faceTilt;
+      this.schedTilt = this.faceTrim ? faceSense : faceTilt;
       this.heldAnkleRaw = -this.predictor.raw[0];
       this.heldTwist = -u[1];
     }

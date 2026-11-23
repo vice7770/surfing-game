@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { eigenvalues, lateralCompliance, lateralMass } from './rollModel';
-import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, faceColumn, faceSupport, faceTrimPoint, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -171,6 +171,74 @@ describe('the water\'s own heel datum (step 3.3p, `waterHeel`)', () => {
     expect(ref.x).toEqual(off.x);
     expect(pre.x).not.toEqual(off.x);
     expect(both.x).toEqual(pre.x);
+  });
+});
+
+describe('the face in the balance\'s own model (step 3.5r, `faceTrim`)', () => {
+  const tilt = 12 * (Math.PI / 180);
+  const run = (weights?: DesignWeights, face = 0, ticks = 40) => {
+    const c = new PredictiveController(weights);
+    const sent: number[][] = [];
+    for (let i = 0; i < ticks; i += 1) {
+      const sense = [0.02 * Math.sin(i / 5), 0.1 * Math.cos(i / 5), 0, 0, 0, 0.01 * Math.sin(i / 3), 0];
+      sent.push([...c.tick(sense, 6.5, 0, 0, 0, { ankle: 0.25, twist: 30 }, 0, 0, face)]);
+    }
+    return { sent, c };
+  };
+
+  // The positive control: the face is an input, not a state, so Φ, Γ, K and L are the shipped ones and with no tilt the
+  // controller sends exactly the shipped commands, tick for tick; with a tilt it does not.
+  it('leaves the design byte-identical, and sends the shipped commands when the tilt is zero', () => {
+    const { y, t } = plantAt(6.5, 0, { body: true });
+    const off = design(y, t, { ...DEFAULT_WEIGHTS, riderBody: 'two' });
+    const on = design(y, t, { ...DEFAULT_WEIGHTS, riderBody: 'two', faceTrim: 'on' });
+    for (const key of ['phi', 'gamma', 'k', 'phiE', 'gammaE', 'l', 'phiN'] as const) expect(on[key]).toEqual(off[key]);
+    expect(off.gammaF).toBeUndefined();
+    expect(on.gammaF).toBeDefined();
+    const shipped = run(undefined).sent;
+    expect(run({ ...DEFAULT_WEIGHTS, faceTrim: 'on' }).sent).toEqual(shipped);
+    expect(run({ ...DEFAULT_WEIGHTS, faceTrim: 'model' }).sent).toEqual(shipped);
+    expect(run({ ...DEFAULT_WEIGHTS, faceTrim: 'on' }, tilt).sent).not.toEqual(run(undefined, tilt).sent);
+    expect(run({ ...DEFAULT_WEIGHTS, faceTrim: 'model' }, tilt).sent).not.toEqual(run({ ...DEFAULT_WEIGHTS, faceTrim: 'on' }, tilt).sent);
+  });
+
+  // The face's column is the heel datum plus the support turned through the face, and the support term is not small:
+  // it turns the column's sign on the body's bank, the yaw and the slip against `waterHeel`'s (face-trim.md §4).
+  it('is the heel datum plus the support turned through the face, of the other sign from waterHeel on bank, yaw and slip', () => {
+    const { y, t } = plantAt(6.5, 0, { body: true });
+    const face = faceColumn(y, t);
+    const heel = heelColumn(y, t).map((h) => -h);
+    expect(faceSupport(y)).toBeCloseTo((73 + 2.54) * 9.81, 6);
+    for (const i of [3, 4, 5]) expect(Math.sign(face[i])).toBe(-Math.sign(heel[i]));
+    // A level board on a 12-degree face is pushed DOWN it: (S - Y_phi) tau > 0.
+    expect((faceSupport(y) - y.heelSide) * tilt).toBeGreaterThan(60);
+  });
+
+  // The neutral trim balances the board's sway and roll with no ankle torque, so a plumb body holds it.
+  it('puts the reference at a trim that balances the sway and the roll with the ankle unloaded', () => {
+    for (const v of [5, 6.5, 8]) {
+      const { y } = plantAt(v, 0, { body: true });
+      const p = faceTrimPoint(y);
+      const psi = (p.roll - 1) * tilt;
+      const slip = p.slip * tilt;
+      expect(Math.abs(y.heelSide * psi + y.slipSide * slip + faceSupport(y) * tilt)).toBeLessThan(1e-9);
+      expect(Math.abs(y.heelRoll * psi + y.slipRoll * slip)).toBeLessThan(1e-9);
+      expect(p.rest).toBe(-p.roll);
+      // Railed into the face (between level and flush) and slipping down it.
+      expect(p.roll).toBeGreaterThan(0);
+      expect(p.roll).toBeLessThan(1);
+      expect(p.slip).toBeGreaterThan(0);
+    }
+    // On the controller: `'on'` moves the reference by the sensed tilt once the line has filled, `'model'` never does.
+    const on = run({ ...DEFAULT_WEIGHTS, faceTrim: 'on' }, tilt, 8).c;
+    const model = run({ ...DEFAULT_WEIGHTS, faceTrim: 'model' }, tilt, 8).c;
+    expect(on.faceSensed).toBe(tilt);
+    expect(on.reference.x[0]).toBeGreaterThan(0);
+    expect(on.reference.x[0]).toBeLessThan(tilt);
+    expect(on.reference.x[2]).toBe(0);
+    expect(model.reference.x.every((v) => v === 0)).toBe(true);
+    // Before the line fills the tilt is not yet sensed.
+    expect(run({ ...DEFAULT_WEIGHTS, faceTrim: 'on' }, tilt, 3).c.faceSensed).toBe(0);
   });
 });
 

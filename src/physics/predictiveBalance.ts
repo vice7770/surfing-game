@@ -942,6 +942,24 @@ export interface DesignWeights {
    * It changes the **plant**, not the control law, and it is **not purely additive** - see `stanceAt`.
    */
   stanceDeep?: boolean;
+  /**
+   * **The face as the internal model's own sensed input** (step 3.5r, `?faceTrim=on|model`;
+   * `docs/research/new-rider/3.5/face-trim.md`). The face's tilt across the heading enters the model through its whole
+   * first-order column (`faceColumn`): the water's heel terms read at the heel against the face **and** the water's
+   * support of the pair turned through the face, which is what `waterHeel`'s column leaves out and is larger than the
+   * heel terms and of the other sign on the body's bank, the yaw and the slip. The tilt is sensed: it rides the same
+   * `delay` line as the senses, so the model knows it as it was then and holds it over the delay.
+   *
+   * - `'model'`: the column in the filter's one-step model and in the predictor; the reference as shipped.
+   * - `'on'`: those, and the reference holds the face's **neutral trim** (`faceTrimPoint`): the bank target is the
+   *   lean asked, as shipped, and the board's roll, the slip and the ankle's rest move to the straight trim on this
+   *   face at which the rail's roll moment and the slip's cancel, so a plumb body holds it with no ankle torque.
+   *
+   * Φ, Γ, K and L are untouched (the face is an input, not a state), so with the tilt at zero the controller is the
+   * shipped one exactly. It adds no authority: the same two commands, the same clamps. Off by default; not meant to be
+   * combined with `waterHeel`.
+   */
+  faceTrim?: 'on' | 'model';
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -1058,6 +1076,16 @@ export interface Design {
    */
   gammaD?: Mat;
   predD?: Mat[];
+  /**
+   * **Step 3.5r, `DesignWeights.faceTrim` only**: the face's own input column, discretised (n × 1), the same column
+   * padded for the estimate's model (ne × 1, nothing on the bias states), its sum over the delay with the tilt held
+   * (n × 1), and the reference's trim per radian of tilt (`trimX` n × 1, `trimU` 2 × 1; zero for `'model'`).
+   */
+  gammaF?: Mat;
+  gammaFE?: Mat;
+  predF?: Mat;
+  trimX?: Mat;
+  trimU?: Mat;
 }
 /**
  * The capture point across as a row over the state, m per rad: ξ = L (θ + θ̇/ω₀) with L the centre of mass over the feet
@@ -1113,6 +1141,45 @@ export function heelColumn(y: YawPlant, t: TwistPlant): number[] {
   const full = continuousPlant(y, t);
   const bare = continuousPlant({ ...y, heelRoll: 0, heelSide: 0, heelYaw: 0 }, t);
   return full.a.map((row, i) => row[0] - bare.a[i][0]);
+}
+
+/** The water's support of the pair, N: the rider's and the board's weight, which the hull carries (step 3.5r). */
+export function faceSupport(y: YawPlant, gravity = 9.81): number {
+  return (y.mass + y.boardMass) * gravity;
+}
+/**
+ * **Step 3.5r: the face's whole first-order column**, per radian of the face's tilt τ across the heading (the model's
+ * sign: a board flush with the face has φ = τ). The lab measured the water's force on flat water with the side force on
+ * the LEVEL axis (`roll-plant/plant.probe.ts`, `F.dot(levelLeft)`); on a face the same force arises at the same heel
+ * **against the face** (ψ = φ − τ) but in the face's frame. Turned into the level frame the model integrates in, to
+ * first order: the roll and yaw moments are the heel terms at ψ, and the side force is the heel terms at ψ **plus the
+ * support turned through τ**, `faceSupport · τ`, downhill. So the column is `−heelColumn` (the heel datum, which is
+ * `waterHeel`'s whole column) plus the support on the board's sway row, both by differencing the code's own
+ * `continuousPlant`, so the side force reaches every row through the same solve the plant's own forces do.
+ */
+export function faceColumn(y: YawPlant, t: TwistPlant): number[] {
+  const heel = heelColumn(y, t);
+  const bare = { ...y, heelRoll: 0, heelSide: 0, heelYaw: 0 };
+  const base = continuousPlant(bare, t).a;
+  const unit = continuousPlant({ ...bare, heelSide: 1 }, t).a;
+  const support = faceSupport(y);
+  return heel.map((h, i) => -h + support * (unit[i][0] - base[i][0]));
+}
+/**
+ * **Step 3.5r: the face's neutral trim**, per radian of tilt: the straight trim (the board's roll and sway and the
+ * body's bank balanced, the turn held) at which the rail's own roll moment and the slip's cancel, so the body holds it
+ * plumb and the ankle unloaded (`face-trim.md` §1). Closed form from the design point's own derivatives:
+ * sway `Y_φ ψ + Y_β β + S τ = 0`, roll `K_φ ψ + K_β β = 0` (no ankle torque), so
+ * `ψ/τ = −S / (Y_φ − Y_β K_φ / K_β)`, `β = −K_φ ψ / K_β`, the board's roll `φ = τ + ψ`, and the ankle's rest
+ * `δ = θ − φ = −φ` with the bank unchanged. Returned per radian of τ; zero if the derivatives give no finite trim.
+ */
+export function faceTrimPoint(y: YawPlant): { roll: number; slip: number; rest: number } {
+  const denominator = y.heelSide - (y.slipSide * y.heelRoll) / y.slipRoll;
+  const psi = -faceSupport(y) / denominator;
+  const slip = (-y.heelRoll * psi) / y.slipRoll;
+  const roll = 1 + psi;
+  if (!Number.isFinite(psi) || !Number.isFinite(slip) || !(denominator > 0)) return { roll: 0, slip: 0, rest: 0 };
+  return { roll, slip, rest: -roll };
 }
 
 export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WEIGHTS, delay = PREDICT_DELAY, step = CONTROL_STEP): Design {
@@ -1222,7 +1289,33 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
       powerD = mul(powerD, phi);
     }
   }
-  return { phi, gamma, c, k, phiE, gammaE, cE, l, phiN: power, pred, steps, bias, ...(gammaD && predD ? { gammaD, predD } : {}) };
+  // Step 3.5r (`faceTrim`): the face's own column (`faceColumn`), discretised over the same step as Γ; the estimate's
+  // copy with nothing on the bias states; its sum over the delay (the tilt is held at its sensed value there); and the
+  // reference's neutral trim per radian of tilt (`faceTrimPoint`), zero unless `'on'`. Φ, Γ, K and L above untouched.
+  let face: Pick<Design, 'gammaF' | 'gammaFE' | 'predF' | 'trimX' | 'trimU'> = {};
+  if (w.faceTrim) {
+    const col = faceColumn(y, t);
+    const gammaF = discretise(a, col.map((x) => [x]), step).gamma;
+    const gammaFE = Array.from({ length: ne }, (_, i) => [i < nState ? gammaF[i][0] : 0]);
+    let powerF = eye(nState);
+    const predF = zeros(nState, 1);
+    for (let j = steps - 1; j >= 0; j -= 1) {
+      const term = mul(powerF, gammaF);
+      for (let i = 0; i < nState; i += 1) predF[i][0] += term[i][0];
+      powerF = mul(powerF, phi);
+    }
+    const trimX = zeros(nState, 1);
+    const trimU = zeros(N_COMMAND, 1);
+    if (w.faceTrim === 'on') {
+      const p = faceTrimPoint(y);
+      trimX[0][0] = p.roll;
+      trimX[5][0] = p.slip;
+      trimX[8][0] = p.rest;
+      trimU[0][0] = p.rest;
+    }
+    face = { gammaF, gammaFE, predF, trimX, trimU };
+  }
+  return { phi, gamma, c, k, phiE, gammaE, cE, l, phiN: power, pred, steps, bias, ...(gammaD && predD ? { gammaD, predD } : {}), ...face };
 }
 
 /**
@@ -1439,6 +1532,12 @@ export class PredictiveController {
   readonly bias = [0, 0];
   /** Ticks run since the reset. */
   ticks = 0;
+  /**
+   * Step 3.5r (`faceTrim`): the face's tilt as it rides the senses' line (newest last, at most steps + 2), and the
+   * sensed value the last tick used, rad, the model's sign (for probes). Empty and 0 unless the design carries the face.
+   */
+  private readonly faces: number[] = [];
+  faceSensed = 0;
 
   /**
    * The reference's steady turn: the turn that balances the lean asked ('tan', the default since step 3.2f and ruling
@@ -1455,6 +1554,8 @@ export class PredictiveController {
   reset(): void {
     this.senses.length = 0;
     this.commands.length = 0;
+    this.faces.length = 0;
+    this.faceSensed = 0;
     this.estimate = [];
     this.ticks = 0;
     this.sent[0] = 0; this.sent[1] = 0;
@@ -1502,6 +1603,9 @@ export class PredictiveController {
         gammaE: copy(first.gammaE), l: copy(first.l), phiN: copy(first.phiN), pred: first.pred.map(copy),
         // Step 3.3p: the tilt's own column and its delay line, blended as every other matrix is.
         ...(first.gammaD && first.predD ? { gammaD: copy(first.gammaD), predD: first.predD.map(copy) } : {}),
+        // Step 3.5r: the face's column, its estimate's copy, its sum over the delay and the trim, likewise.
+        ...(first.gammaF && first.gammaFE && first.predF && first.trimX && first.trimU
+          ? { gammaF: copy(first.gammaF), gammaFE: copy(first.gammaFE), predF: copy(first.predF), trimX: copy(first.trimX), trimU: copy(first.trimU) } : {}),
       };
       this.blendedDesign = out;
     }
@@ -1519,6 +1623,10 @@ export class PredictiveController {
       mix(out.gammaD, (d) => d.gammaD!);
       for (let j = 0; j < out.predD.length; j += 1) mix(out.predD[j], (d) => d.predD![j]);
     }
+    if (out.gammaF && out.gammaFE && out.predF && out.trimX && out.trimU) {
+      mix(out.gammaF, (d) => d.gammaF!); mix(out.gammaFE, (d) => d.gammaFE!); mix(out.predF, (d) => d.predF!);
+      mix(out.trimX, (d) => d.trimX!); mix(out.trimU, (d) => d.trimU!);
+    }
     return out;
   }
 
@@ -1527,7 +1635,7 @@ export class PredictiveController {
    * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
    * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
    */
-  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0): readonly number[] {
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, face = 0): readonly number[] {
     const d = this.blend(speed, depth, rail);
     // The plant's own size: ten, or fourteen with the board's heave and pitch carried (step 3.2p).
     const n = d.phi.length;
@@ -1537,6 +1645,17 @@ export class PredictiveController {
     if (this.estimate.length !== ne) this.estimate = new Array<number>(ne).fill(0);
     this.senses.push(sense.slice());
     if (this.senses.length > N + 1) this.senses.shift();
+    // Step 3.5r (`faceTrim`): the face's tilt rides the senses' own line, so the model knows it as it was `N` ticks
+    // ago (`sensedFace`, held over the delay) and the filter's one-step model is driven by the one before that
+    // (`stepFace`). Nothing is kept, and both are 0, unless the design carries the face.
+    const faced = d.gammaF !== undefined;
+    if (faced) {
+      this.faces.push(face);
+      if (this.faces.length > N + 2) this.faces.shift();
+    }
+    const sensedFace = faced && this.faces.length > N ? this.faces[this.faces.length - 1 - N] : 0;
+    const stepFace = faced && this.faces.length > N + 1 ? this.faces[this.faces.length - 2 - N] : 0;
+    this.faceSensed = sensedFace;
     const e = this.estimate;
     if (this.senses.length > N) {
       const yk = this.senses[this.senses.length - 1 - N];
@@ -1544,6 +1663,7 @@ export class PredictiveController {
       const pred = new Array<number>(ne);
       for (let i = 0; i < ne; i += 1) {
         let s = d.gammaE[i][0] * old[0] + d.gammaE[i][1] * old[1];
+        if (d.gammaFE) s += d.gammaFE[i][0] * stepFace;
         const row = d.phiE[i];
         for (let j = 0; j < ne; j += 1) s += row[j] * e[j];
         pred[i] = s;
@@ -1585,6 +1705,8 @@ export class PredictiveController {
     // propagation is gated on the value and not on `predD`'s presence. `'both'` and `'predict'` are the lines 3.3p
     // shipped, unchanged, and with the flag off `predD` is undefined and the condition is the same `if (d.predD)`.
     if (d.predD && this.weights?.waterHeel !== 'ref') for (let jj = 0; jj < N; jj += 1) for (let i = 0; i < n; i += 1) xh[i] += d.predD[jj][i][0] * tilt;
+    // Step 3.5r: the face over the delay, held at its sensed value (the brain knows it only as of the senses' time).
+    if (d.predF) for (let i = 0; i < n; i += 1) xh[i] += d.predF[i][0] * sensedFace;
     // `'predict'` leaves the reference the flat-water one that ships; `'both'` and `'ref'` solve the steady turn on
     // this face.
     const refHeel = this.weights?.waterHeel === 'both' || this.weights?.waterHeel === 'ref';
@@ -1596,6 +1718,13 @@ export class PredictiveController {
       const t = steadyTurn(d.phi, d.gamma, Math.tan(bankAsked), twistAsked, drive);
       const f = bankAsked / Math.tan(bankAsked);
       ref = { x: t.x.map((v, i) => (i === 0 || i === 2 || i === 8 ? v * f : v)), u: [t.u[0] * f, t.u[1]] };
+    }
+    // Step 3.5r (`faceTrim: 'on'`): the steady turn for the lean asked, moved to the face's neutral trim by the sensed
+    // tilt (the bank target stays the lean asked; `trimX` and `trimU` are zero for `'model'`).
+    if (d.trimX && d.trimU && sensedFace !== 0) {
+      for (let i = 0; i < n; i += 1) ref.x[i] += d.trimX[i][0] * sensedFace;
+      ref.u[0] += d.trimU[0][0] * sensedFace;
+      ref.u[1] += d.trimU[1][0] * sensedFace;
     }
     for (let i = 0; i < n; i += 1) this.reference.x[i] = ref.x[i];
     this.reference.u[0] = ref.u[0]; this.reference.u[1] = ref.u[1];
