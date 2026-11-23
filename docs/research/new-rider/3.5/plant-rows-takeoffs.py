@@ -6,7 +6,10 @@ byte-identical, checked by re-running catch runs 2 and 7 `cue` and run 2 `cueC` 
 `fs` arm (`results/35w/data`). Populations as 3.5v §6 defined them; the rule is 3.5v §0.5's (`sideways-falls.py`
 `effect`: rescue = carried 3 s, delay = +0.25 s, worse = -0.25 s).
 
-Usage: python3 plant-rows-takeoffs.py results/35v/data results/35w/data
+Usage: python3 plant-rows-takeoffs.py results/35v/data results/35w/data [results/35w/data-taper]
+
+Phase 3 (plant-rows.md section 9): with a third directory, its `tp` arm (`plantSpeed=taper`; compact files, the
+summaries only, which is all `effect` reads of an arm) is added as a column, and the difference column is taper - pf6.
 """
 import importlib.util
 import os
@@ -19,12 +22,16 @@ sf = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sf)
 
 CREST_STALLS = {(1, 12), (2, 8), (3, 7), (3, 10)}  # 3.5t kind a, 2.34-2.76 m/s (3.5v section 3)
-ARMS = ('pf6', 'fs')
 
 
-def main(v_dir, w_dir):
+def main(v_dir, w_dir, *more):
     S = sf.stands_of(v_dir)
     S.update(sf.stands_of(w_dir))
+    for extra in more:
+        S.update(sf.stands_of(extra))
+    taper = any(k[2] == 'tp' for k in S)
+    ARMS = ('pf6', 'fs', 'tp') if taper else ('pf6', 'fs')
+    last = 'tp' if taper else 'fs'
     base = {k: v for k, v in S.items() if k[2] == 'base'}
 
     def falls(mode, cl, crest=False):
@@ -49,11 +56,15 @@ def main(v_dir, w_dir):
         ('catch (switch off): the collapses', falls('c', 'off')),
         ('lasting controls (organic on, organic off, catch off)', lasting('o', 'on') + lasting('o', 'off') + lasting('c', 'off')),
     ]
-    print('# 3.5w phase 2: take-offs, paired by stand (time standing, s, censored at 3.00)\n')
+    print(f"# 3.5w phase {'3' if taper else '2'}: take-offs, paired by stand (time standing, s, censored at 3.00)\n")
     for title, keys in pops:
         print(f'## {title} (n = {len(keys)})\n')
-        print('| stand | script | shipped | plantFloor=6 | face | face - pf6 |')
-        print('| --- | --- | --- | --- | --- | --- |')
+        if taper:
+            print('| stand | script | shipped | plantFloor=6 | face | taper | taper - pf6 |')
+            print('| --- | --- | --- | --- | --- | --- | --- |')
+        else:
+            print('| stand | script | shipped | plantFloor=6 | face | face - pf6 |')
+            print('| --- | --- | --- | --- | --- | --- |')
         tally = {a: {'rescue': 0, 'delay': 0, 'none': 0, 'worse': 0, 'n/a': 0, 'unpaired': 0, 'd': [], 'lost': 0} for a in ARMS}
         for k in keys:
             t0 = sf.standing_time(S[k]['summary'])
@@ -72,7 +83,7 @@ def main(v_dir, w_dir):
                 if t1 is not None and t1 < sf.HOLD and t0 == sf.HOLD:
                     tally[a]['lost'] += 1
                 cells.append('n/a' if d is None else f'{t1:.2f} ({tag})')
-            diff = '' if ts['fs'] is None or ts['pf6'] is None else f"{ts['fs'] - ts['pf6']:+.2f}"
+            diff = '' if ts[last] is None or ts['pf6'] is None else f"{ts[last] - ts['pf6']:+.2f}"
             print(f"| {sf.label(k).split()[0]} | {k[4]} | {t0:.2f} | " + ' | '.join(cells) + f' | {diff} |')
         print()
         for a in ARMS:
@@ -84,4 +95,4 @@ def main(v_dir, w_dir):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], *sys.argv[3:])
