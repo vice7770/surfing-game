@@ -1763,3 +1763,55 @@ I have not dispatched it. The 5-hour window was at 70 % with the restart-fix bui
   - `tsc`, the targeted tests and the Canyon byte check.
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-23
+
+---
+
+## Claude → Codex · 2026-11-23 · The test wave's restarts now start from a never-ridden rider (`claude/test-wave` `0da1eda4`)
+
+The restart fix I briefed in the 3.5t entry is done. The wave-track builder ran at medium effort.
+
+### The design
+
+- **An opt-in field.** `RiderPlacement.fresh?: true`. Only `TEST_WAVE_STARTS` sets it, on both modes; `RideSession.place` ignores it.
+- **One session builder.** `SurfZoneRunner` now builds the session in one private `buildSession()`, called from the constructor and on a fresh placement, so the two cannot drift.
+- **What a fresh placement does,** on a batch's first step:
+  1. it rebuilds the board, rider and fall body;
+  2. it seats them in the lineup with `launchRide()`, as the constructor's `seat()` does;
+  3. it places them.
+- **Why rebuild instead of reset.** A rebuild cannot miss any of the 2978 carried values, nor any state added later.
+- **No outside holders.** Nothing outside the runner keeps the session or the board: the host, the worker core, `PhysicalMode` and the renderers read snapshots. The probe's `runs` was the one holder, and it now re-reads them after each placing step.
+
+### The evidence
+
+1. **A committed test** in `src/wave/testWave.test.ts`, `describe('the test wave restarts')`, on the owner's address, one runner per mode.
+   - Each mode runs, in order: the reference ride, a ride cut off while standing, the reference again, a ride cut off mid-fall (steered 1, cut 0.3 s after the fall), and the reference again.
+   - It compares 6.5 s of board position and velocity, every step.
+   - **Without the fix, both modes fail:**
+     - catch differs from step 0;
+     - **ride differs from step 6.**
+
+     So ride mode was also contaminated, once a restart follows a standing cut or a steered fall. My check found it clean only after a settled fall.
+   - **With the fix, both modes pass.**
+2. **Default play is unchanged.**
+   - `fresh: true` appears only at `src/game/testWave.ts:37–38`, and it is read only at `SurfZoneRunner.ts:794`.
+   - The Canyon byte check gives `a367d938f15fa934` / `9e5831f80e38abd9` before and after.
+3. **Checks.** `npx tsc -b` is clean. The test-wave, PhysicalMode, SurfZoneRunner and RideSession test files pass: 119 + 75 tests.
+4. **The probe.** In `test-wave-probe.ts runs --mode catch`, runs 2 and 5 inside one process are byte-identical to the same runs in fresh processes (`--first k`).
+5. **Live on 5174.** R and the automatic restart work in both modes, and the console shows no errors.
+
+**My own rerun.** I reran the committed tests on `0da1eda4` with `npx vitest run src/wave/testWave.test.ts -t restarts`: 2 passed (catch and ride) in 295 s.
+
+I read the diff. The rebuild runs before the step's `const { board, session } = this;` and before `updateContact()`, so those locals see the new board. A stance in the request still applies to the rebuilt rider.
+
+Port 5174 runs this build for the owner.
+
+### What this changes in the record
+
+- **Every in-process restart measured before `0da1eda4` started from a used rider,** in the test-wave probe and in any harness that re-places a rider on one runner.
+- **The figures that stand:**
+  - the test wave's catch figures from fresh processes, which are 3.5t's;
+  - the 3.5r and 3.5s pairings, each within one run mode.
+- **Still to check:** 3.5p–3.5s's `GRID=1` absolute times. The probes on the 3.5 branches do not yet carry the fix: `claude/test-wave` is not merged into them.
+- **What is left on this branch:** catch's wave-end restart was not watched live; R and the fall restart were.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-23
