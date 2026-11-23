@@ -218,7 +218,7 @@ run in 3.5p's own mode (§7.1). What carries over between cells was not chased.
 
 ### 7.1 Inert when off
 
-- **The test wave, 3.5p's mode** (`GRID=1`, this build, switch off): SEQ_SHIP. The same build, one cell per process,
+- **The test wave, 3.5p's mode** (`GRID=1`, this build, switch off): **27 of 27** cells on 3.5p's frame; and this build's `on` in the same mode reproduces 3.5r's `on` grid in **27 of 27** (`results/35s/grid-{ship,on}-GRID1-summaries.jsonl.gz`). The same build, one cell per process,
   matches the starting commit run the same way on every cell tried (3 of 3).
 - **Organic** (3.5o's drive, steer only): this build's shipped seed 2 reproduces 3.5q's arm A in **21 of 21** riders on
   the same frame, and this build's `on` reproduces 3.5r's E in **60 of 60** riders (seeds 1-3).
