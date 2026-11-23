@@ -503,3 +503,93 @@ What the measurements point to, for the coordinator and Vicente (nothing here is
    further than face, its climb survivor falls at 2.72 s rather than 3.70 s).
 3. §8.1's reading stands whichever is chosen: these are stiffer-than-real designs; the board's own water at 3–4.5 m/s
    (§7.2) asks for higher gains, not lower, and 3.5v's falls show higher gains failing.
+
+## 9. Phase 3: the tapered table, `?plantSpeed=taper` (pre-registered before any check or arm, 2026-11-23)
+
+**The owner's choice.** After phase 2, asked "Build the tapered table, or pause until the weekly reset?", Vicente chose
+**"Build the tapered table"** (2026-11-23), §8.11's option 1. His standing rulings hold: the turn is not to be limited;
+the falls come from a balance that lacks the ability to stand; no hidden motors.
+
+### 9.1 The map
+
+**v_eq = max(v, min(1.68 v, V_CAP)), V_CAP = 7.8 m/s.** A second value of the same switch; `face` stays as it is.
+
+**V_CAP is the plateau of the attitude match.** §8.2's method (the game's ridden attitude, `attitude.md`'s `before`
+cut, matched to `PLANT_SPEEDS`' own free-trim rows, linear between rows), carried to 5.5 and 6 m/s:
+
+| game v | trim / tail | speed with that trim | speed with that draft |
+| --- | --- | --- | --- |
+| 4.5 | 7.65° / 0.081 | 7.68 | 7.57 |
+| 5.0 | 6.2° / 0.052 | 7.91 | (8.86) |
+| 5.5 | 5.85° / 0.057 | 7.96 | 7.98 |
+| 6.0 | 7.03° / 0.071 | 7.78 | 7.74 |
+
+(7.5 → 8 m/s rows: trim 8.8° → 5.6°, draft 0.085 → 0.056 m.) The 5.0 m/s draft match (0.052 m) lies below row `'8'`'s
+draft and is read off the 8.5 → 9 stretch, where the table's draft is not monotone (0.056, 0.070, 0.045); it is left
+out. **Mean of the other seven: 7.803 → V_CAP = 7.8 m/s** (spread 7.57–7.98; the median of all eight is 7.85).
+
+| true v | 3 | 3.5 | 4 | 4.5 | 4.643 | 5 | 6 | 7 | 7.5 | 7.8 | 8 | 9 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `face` v_eq | 5.04 | 5.88 | 6.72 | 7.56 | 7.80 | 8.40 | 10.08 | 11.76 | 12 | 12 | 12 | 12 |
+| **`taper` v_eq** | 5.04 | 5.88 | 6.72 | 7.56 | 7.80 | **7.80** | **7.80** | **7.80** | **7.80** | **7.80** | **8** | **9** |
+
+- **Below V_CAP / 1.68 = 4.643 m/s** it is `face`, bit for bit (the take-off gains).
+- **4.643 m/s to 7.8 m/s** it reads the plateau's water, 7.8 m/s, with the true kinematics.
+- **At and above 7.8 m/s** it is the speed itself: the shipped plant.
+- Continuous and monotone (non-decreasing); the 3 and 3.5 m/s knots are kept (`SCHEDULE_SPEEDS_FACE`); no design reads
+  row `'4'` or `'4.5'` (the lowest water read by any knot is 5.04). Everything §8.3 routes through v_eq is routed the
+  same way; the kinematics, `drag` and `BOARD_INERTIA` stay at v. Off by default and pinned off online, as `face`.
+- The schedule's knots 5–7.5 m/s all read the 7.8 m/s water; knot 4.5 reads 7.56; knot 8 and above are shipped. So
+  between 7.5 and 8 m/s the blend still carries part of the plateau design; at ≥ 8 m/s it is the shipped controller.
+
+### 9.2 Predicted gains and reference (before the model check)
+
+- 3–4.5 m/s knots: equal to §8.6's face designs (Compress bank 1.57, 1.05, 0.94, 1.28; β_ref at 21° −0.8 to 0.6°).
+- 5–7.5 m/s knots: the 7.8 m/s water, which lies between the face design at 4.5 (7.56 water, 1.28 / 0.22) and at 5
+  (8.4 water, 1.00 / 0.17): **Compress bank gain about 1.0–1.3, rate 0.17–0.22**, against face's 0.58–0.78 at
+  5.5–7.5 and shipped's 0.84–1.50 there. |β_ref| ≤ 2° at a 21° lean.
+- ≥ 8 m/s: shipped's own gains and β_ref, identically.
+- The bottom-knot corner (§8.6, 3.0–3.1 m/s, leans 1–2°) is unchanged, since that knot is `face`'s.
+
+### 9.3 Model check, pass line (as §8.4)
+
+Gains per schedule speed 3–9 m/s (tall and Compress) and `steadyTurn`'s β_ref at a 21° lean and over leans 1–25°, at
+3–9 m/s (`plant-rows-gains.ts`, `VARIANT=taper`). **Pass: no singular speed and |β_ref| ≤ 10° at every speed (21°
+lean). Fail → stop and report before any arm.**
+
+### 9.4 Arms, pass and fail lines: §8.5's, exactly
+
+Only the `taper` arm is run; shipped and `plantFloor=6` are 3.5v's (`results/35v/data`) and this round's
+(`results/35w/steer`, `results/35w/grid`), `face` is phase 2's. Paired by stand / rider / cell against shipped and
+`plantFloor=6`, one run per process, the owner's address, `cue` and `cueC`; 3.5v's rule (rescue ≥ 3 s, delay
+≥ +0.25 s, worse ≤ −0.25 s).
+
+| population | n | pass | fail |
+| --- | --- | --- | --- |
+| organic `cueLater` on, sideways falls | 9 | rescued + delayed ≥ `plantFloor=6`'s (6) | < 4 |
+| organic `cueLater` off, not crest stalls | 19 | ≥ `plantFloor=6`'s (12) | < 9 |
+| catch collapses (switch off) | 12 | ≥ `plantFloor=6`'s (12; 9 rescued) | < 9 |
+| lasting controls | 34 | none lost (all ≥ 3 s) | any lost |
+| sharp-steer collapses, seeds 1–9 | 10 | no worse than shipped on the paired median, and none worse by ≥ 0.25 s; reported against `plantFloor=4.5` | median worse, or ≥ 2 worse |
+| Steer + Compress | 6 | as above | as above |
+| seed-2 wave-2 left climb at 0.90 m | 1 | within 0.1 m/s and 2° of shipped (3.31 m/s, 46.4°) | outside |
+| neutral riders | 59 | paired median Δ within ±0.1 s | outside |
+| 3.5p plumb grid, no input | 27 | paired median Δ ≥ −0.1 s and ≤ 2 cells worse by ≥ 0.25 s | otherwise |
+| `npx tsc -b`, targeted tests incl. the taper's map, Canyon byte check before and after | — | pass; `a367d938f15fa934` / `9e5831f80e38abd9` both times | any difference |
+
+### 9.5 Predictions (before any arm)
+
+- **Take-offs:** the stands land at 3–5 m/s, where taper is face below 4.64 m/s and a softer water (7.8, not
+  7.8–8.4) just above: **about face's counts, 7 / 12 / 12 helped (pass), within ±1 each.**
+- **Lasting controls: 34 of 34 kept.** s1w6 `cueC` runs at 7–8 m/s, where taper reads the 7.8 m/s water (Compress
+  bank gain about 1.0–1.2, not face's 0.57) and is shipped at ≥ 8.
+- **Sharp-steer collapses:** all 10 later than shipped (as face and both floors), median between face's +1.2 s and
+  `plantFloor=6`'s +2.0 s; Steer + Compress 6 of 6 later. Pass.
+- **The climb survivor:** the turn is asked at 6–7 m/s, where taper reads the 7.8 m/s water, not face's 10–12. My
+  prediction is that it **survives the climb**, but I do not predict that it lands within 0.1 m/s and 2° of shipped's
+  3.31 m/s, 46.4° at 0.90 m: the design at 6–7 m/s is not shipped's. **Predicted: survives, verdict on the 0.1 m/s / 2°
+  line uncertain (about even).**
+- **Neutral riders:** median Δ within ±0.1 s. Pass.
+- **The grid:** the cells start at 7.2–8.2 m/s (7.7 ± 0.5), i.e. at the plateau's top and the shipped region.
+  **Median Δ within ±0.1 s; at most 2 cells worse by ≥ 0.25 s (the 7.2 m/s column is the risk). Pass, with less
+  confidence than the rest.**
