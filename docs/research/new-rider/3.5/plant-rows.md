@@ -253,3 +253,120 @@ Phase-1 files: `plant-rows-attitude.py`, `plant-rows.ts`, `plant-rows-gains.ts`;
 `rows.jsonl`, `gains-<shipped|pf6|game|lasting>.jsonl`, `gains-<game|shipped>-railzero.jsonl` (the `load` variant
 stopped in the damping step on a non-converging eigenvalue at depth 0.3, 5 m/s; its gains and Compress damping to
 4.5 m/s are in `gains-load.jsonl`).
+
+## 8. Phase 2: the equivalent-speed table (pre-registered before any check or arm, 2026-11-23)
+
+**The owner's choice.** Asked "Which fix should phase 2 build and test?", Vicente chose **"Equivalent-speed table"**
+(2026-11-23), §7.6's option (b). The coordinator's review of phase 1 is on the record at `1a320c1b`.
+
+### 8.1 A correction to §7.3, found while designing the map (it changes the map's basis, not the owner's choice)
+
+**§7.3's support figures are wrong by a factor of 1.966.** `plant-rows.ts` divides the vertical force by
+`(73 + board.mass) · g`, but `BoardBody.mass` already includes the payloads (`BoardBody.ts:558`, shape mass plus the
+73 kg rider), so the weight was counted twice. The check that exposes it is in the data: at the lab's own free trim,
+where the towed board is in vertical equilibrium by construction, the probe printed Z/W = **0.509** at both 5 and
+6 m/s; corrected it is **1.001**. Corrected (× 148.54 / 75.54):
+
+| row | lab Z/W at the ridden geometry (corrected) | game Fp + Fb (`attitude.md`) | lab / game |
+| --- | --- | --- | --- |
+| 3 | 0.704 | 0.78 | 0.90 |
+| 3.5 | 0.743 | 0.77 | 0.96 |
+| 4 | 0.653 | 0.71 | 0.92 |
+| 4.5 | 0.722 | 0.74 | 0.98 |
+| 5 (control) | 0.643 | 0.68 | 0.95 |
+| 6 (control) | 0.808 | 0.88 | 0.92 |
+
+**So at the game's geometry the flat-water lab carries 90–98 % of the support the game's hull carries.** The "twice the
+dynamic pressure" inference and its "about 1.45×" are withdrawn. Two consequences, stated before anything runs:
+- §7.2's rows are, by this measure, the water the board is actually in (the remaining 2–10 % and the face's slope are
+  the unmeasured part). Both the game's hull and the lab's carry only about three quarters of the weight there: the
+  board is not in vertical equilibrium; it is descending the face.
+- **The equivalent speed is therefore not a better model of the water; it reads a stiffer water than the board meets**
+  (the shipped free-trim rows at about 1.6–1.7× the speed have the board's geometry *and* the full weight carried).
+  Its basis is the attitude match (below) and 3.5v's evidence that `plantFloor=6` (also a stiffer water) holds the
+  landings. Read as a design choice: the balance's model and gains are those of a faster board. Whether that stands
+  the board up is what the arms test. (The §7.4 gains on the true rows rise, which fits: the LQR on the weaker water
+  asks for more, and more is what 3.5v showed growing into the fall.)
+
+### 8.2 The map
+
+**Form: one constant factor, v_eq = min(12, k · v), k = 1.68.** k is the mean of ten matches of the game's ridden
+attitude (`attitude.md`, `before` cut) to the shipped table's own free-trim rows (`PLANT_SPEEDS`' comments), by trim and
+by draft, linear between rows on the table's monotone stretch (4–7.5 m/s), at the five row speeds 3–5 m/s (the lab's
+deepest patch and the game's tail point agree to 3–5 mm in §7.2, so the two measures are comparable):
+
+| game v | trim / tail | speed with that trim | ratio | speed with that draft | ratio |
+| --- | --- | --- | --- | --- | --- |
+| 3.0 | 14.8° / 0.201 | 5.59 | 1.864 | 5.14 | 1.714 |
+| 3.5 | 15.3° / 0.178 | 5.50 | 1.571 | 5.38 | 1.536 |
+| 4.0 | 10.3° / 0.101 | 6.63 | 1.658 | 6.72 | 1.681 |
+| 4.5 | 7.6° / 0.081 | 7.69 | 1.708 | 7.57 | 1.682 |
+| 5.0 | 6.2° / 0.052 | 7.91 | 1.581 | 8.86 | 1.772 |
+
+Mean 16.767 / 10 = **1.677 → 1.68** (spread 1.54–1.86). The coordinator's own match (3.5 → 5.5, 4 → 6.5, 4.5 → 7.5,
+5 → 8) gives 1.57–1.67. At 5.5 and 6 m/s the same match gives 1.45 and 1.29 (the game's trim stops falling while the
+table's keeps falling); a constant factor over-reads there, which the neutral riders and the grid test.
+
+- **Above the table:** every water table already clamps at its top (`PLANT_SPEEDS` 12, the rail and heave tables 9);
+  v_eq is capped at 12, so every schedule speed ≥ 7.14 m/s reads the 12 m/s rows.
+- **Below the table:** with the switch on, the schedule gains knots at **3 and 3.5 m/s** (true speed), whose water is
+  read at 5.04 and 5.88; below 3 m/s the controller holds the 3 m/s design, as the shipped one holds 4's. **No design
+  with the switch on reads row `'4'` or `'4.5'`.**
+
+### 8.3 The switch, and what reads v_eq
+
+**`?plantSpeed=face`**: off by default, one value only, pinned off for online rooms in `main.ts`, printed back from the
+host by the probes (`kind: 'built'`). Routed as `plantFloor` is: `PhysicalMode.plantSpeedSwitch` →
+`SurfZoneConfig.plantSpeed` → `SurfZoneRunner` → `RideSessionOptions` → `AttachedRiderOptions` →
+`DesignWeights.plantSpeed`, so the design cache's key carries it.
+
+| consumer | with the switch on | why |
+| --- | --- | --- |
+| `labAt`'s twelve derivatives | **v_eq** | the water's table |
+| `railCorrection` (`RAIL_PLANT`), `railLimit` in `blend` | **v_eq** | the water's table, and the rail range that table has at the speed read |
+| `railPull` in `AttachedRider`'s schedule rail | **v_eq** | the same table's pull, so the design point and the table agree |
+| `frozenCorrection`, `heavePlantAt` (only with `heaveSense`, off) | **v_eq** | the water's tables |
+| `steadyTurn`'s reference, `faceColumn`, `faceTrimPoint`, `heelColumn`, `captureRow` | through the design | built on the same `YawPlant` |
+| `lab.drag` → `feetForward` | **true v** | the terminal glide's measured drag (`bars.probe.ts`), not a captive derivative |
+| `boardInertiaAt` | **true v** | measured in the game (3.2e), not in the lab |
+| the kinematic V (`boardDerivatives`' sweep, the slip row's V, `holdLine`'s coordinated lean) | **true v** | kinematics, not water |
+| weights, senses, delay, the ankle and twist clamps, the stick, the lean cap | unchanged | — |
+
+No force, clamp, authority or stick change; the only thing that moves outside the model is the ankle's commanded rest
+and the twist's commanded torque, as with `plantFloor` (3.4k Part D). **Off, everything byte-identical**: `labAt`,
+`plantAt` and every schedule cell compared bit for bit with and without the field absent, then the Canyon byte check.
+
+**With `plantFloor`:** the floor clamps the lookup **after** the map, `labAt(v_eq, floor)`. With k · 3 = 5.04, floors
+4.5 and 5 are inert under the switch; floor 6 lifts v_eq < 6 (v < 3.57). Not combined in any arm.
+
+### 8.4 Model checks, offline, before any arm (`plant-rows-gains.ts`, `VARIANT=face`)
+
+Gains per schedule speed 3–9 m/s (tall and Compress), shipped / `plantFloor=6` / face; nominal damping at the knots;
+`steadyTurn`'s β_ref at a 21° lean (and the worst over 1–25°) at 3–9 m/s. **Pass: no singular speed and |β_ref| ≤ 10°
+at every speed (21° lean). Fail → stop and report before any arm.**
+
+**Predicted:** at 3–4.5 m/s the face design equals the shipped 5–7.5 m/s designs' water with the true kinematics, so
+Compress bank gain about 0.9–1.5 and its rate 0.15–0.20 (shipped at 4: 2.23 / 0.35; `plantFloor=6`: 0.97 / 0.17);
+|β_ref| ≤ 5° at 3–7 m/s; at ≥ 7.14 m/s the 12 m/s water, gains within ±30 % of shipped there.
+
+### 8.5 Arms, pass and fail lines
+
+Paired by stand against shipped and `plantFloor=6`, one run per process, the owner's address, `cue` and `cueC`; 3.5v's
+rule (rescue ≥ 3 s, delay ≥ +0.25 s, worse ≤ −0.25 s). Order: model, take-offs, steering, grid.
+
+| population | n | pass | fail |
+| --- | --- | --- | --- |
+| organic `cueLater` on, sideways falls | 9 | rescued + delayed ≥ `plantFloor=6`'s (6) | < 4 |
+| organic `cueLater` off, not crest stalls | 19 | ≥ `plantFloor=6`'s (12) | < 9 |
+| catch collapses (switch off) | 12 | ≥ `plantFloor=6`'s (12; 9 rescued) | < 9 |
+| lasting controls | 34 | none lost (all ≥ 3 s) | any lost |
+| sharp-steer collapses, seeds 1–9 | 10 | no worse than shipped on the paired median, and none worse by ≥ 0.25 s; reported against `plantFloor=4.5` | median worse, or ≥ 2 worse |
+| Steer + Compress | 6 | as above | as above |
+| seed-2 wave-2 left climb at 0.90 m | 1 | within 0.1 m/s and 2° of shipped (3.31 m/s, 46.4°) | outside |
+| neutral riders | 59 | paired median Δ within ±0.1 s | outside |
+| 3.5p plumb grid, no input | 27 | paired median Δ ≥ −0.1 s and ≤ 2 cells worse by ≥ 0.25 s | otherwise |
+| `npx tsc -b`, targeted tests incl. a new map/switch test, Canyon byte check before and after | — | pass; `a367d938f15fa934` / `9e5831f80e38abd9` both times | any difference |
+
+**Predicted:** take-offs about as `plantFloor=6` (both read ≥ 5–6 m/s water at these speeds); controls kept;
+sharp-steer carried like 3.5o's schedule floor; the neutral riders and the grid within ±0.1 s, with the risk at
+≥ 6 m/s, where a constant factor reads the 10–12 m/s water.
