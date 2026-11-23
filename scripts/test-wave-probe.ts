@@ -13,6 +13,7 @@
  *   rolldown scripts/test-wave-probe.ts -o dist/scripts/test-wave-probe.mjs --format esm --platform node
  *   node dist/scripts/test-wave-probe.mjs scan --mode ride [--start 63.5] [--seconds 6]
  *   node dist/scripts/test-wave-probe.mjs runs --mode catch --rider new --n 10
+ *   node dist/scripts/test-wave-probe.mjs runs --mode catch --n 5 --first 5     run 5 alone, in a fresh process
  */
 import { Vector3 } from 'three';
 import { physicalSettingsFor } from '../src/game/SurfConditions';
@@ -178,8 +179,9 @@ if (command === 'scan') {
   const config = gameConfig();
   const runner = new SurfZoneRunner(config, { rider: true });
   const { simulation } = runner;
-  const session = runner.session!;
-  const { board } = session;
+  // A `fresh` placement builds the runner's board and rider anew: read again after each run's placing step.
+  let session = runner.session!;
+  let { board } = session;
   const start = simulation.exportState();
   const startTime = simulation.seaTime;
   // `--place x,z,speed,heading` (heading in degrees from +z toward +x): another placement, to search for the start.
@@ -225,7 +227,8 @@ if (command === 'scan') {
     console.log(`tilt at the placement, before a step: ${tilt(runner)}`);
     console.log(`at the placement, before a step: board v (${board.velocity.x.toFixed(3)}, ${board.velocity.y.toFixed(3)}, ${board.velocity.z.toFixed(3)}), body v (${rv.x.toFixed(3)}, ${rv.y.toFixed(3)}, ${rv.z.toFixed(3)}), |board − body| ${board.velocity.distanceTo(rv).toFixed(4)} m/s; water at the board (${sample.flowX.toFixed(3)}, ${sample.flowY.toFixed(3)}, ${sample.flowZ.toFixed(3)}); through the water ${rel.length().toFixed(2)} m/s along heading ${(Math.atan2(rel.x, rel.z) * 180 / Math.PI).toFixed(1)}°, board heading ${(session.heading * 180 / Math.PI).toFixed(1)}°; ${whiteGap()}`);
   }
-  for (let run = 0; run < runs; run += 1) {
+  // `--first k`: begin at run k (its own paddle delay), to compare one run in a fresh process against the same run in a long one.
+  for (let run = Number(option('first') ?? 1) - 1; run < runs; run += 1) {
     // The game's restart (main.ts `restartTestWave`): the recorded sea, then the rider placed on the next step.
     simulation.importState(start);
     runner.invalidateTubeApproach();
@@ -255,6 +258,10 @@ if (command === 'scan') {
         ...(step === 0 ? { place: placement } : {}),
       };
       runner.advance(1, request);
+      if (step === 0) {
+        session = runner.session!;
+        board = session.board;
+      }
       const status = runner.status().ride!;
       if (step === 0 || (step + 1) % 30 === 0) {
         const at = `${t.toFixed(2)} s: ${whiteGap()}`;

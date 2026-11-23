@@ -86,6 +86,12 @@ export interface RiderPlacement {
    * the deck (`AttachedRider.mountPosture`; the test wave's ride start). An initial condition only; absent, as before.
    */
   posture?: 'plumb';
+  /**
+   * The test wave's starts (2026-11-23): the runner that places him first builds the board and rider anew
+   * (`SurfZoneRunner`), so every run starts from a never-ridden rider, not the last run's. `RideSession.place` itself
+   * ignores it; absent (normal play, the school), the same rider is placed as before.
+   */
+  fresh?: true;
 }
 
 export interface RideSessionOptions {

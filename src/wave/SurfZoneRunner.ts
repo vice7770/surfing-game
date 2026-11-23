@@ -416,10 +416,12 @@ export class SurfZoneRunner {
   readonly bed: Float32Array;
   /** Where the break line crosses x = 0: the camera's focus. */
   readonly focus: { x: number; z: number };
-  /** The board, riderless or ridden, sampling the water through the `SurfWater` seam. */
-  readonly board?: BoardBody;
-  /** The board, its rider and the rider's fall body, when the player rides. */
-  readonly session?: RideSession;
+  /** The board, riderless or ridden, sampling the water through the `SurfWater` seam (built anew with the session). */
+  board?: BoardBody;
+  /** The board, its rider and the rider's fall body, when the player rides; built anew by a `fresh` placement. */
+  session?: RideSession;
+  /** The player's stance for the first ride (`SurfZoneRunnerOptions.stance`): a rebuilt session starts from it too. */
+  private readonly riderStance?: StanceName;
   /** The swept barrel's contact at a swept spot, given the barrel files (the Padang Padang spec, Part B, PR 4). */
   readonly contact?: SweptContact;
   private readonly contactQueries?: SweptSurfaceQueries;
@@ -553,14 +555,8 @@ export class SurfZoneRunner {
     if (options.rider) {
       const direction = (config.directionDegrees * Math.PI) / 180;
       this.gauge = new WaveFrameGauge({ directionX: Math.sin(direction), directionZ: Math.cos(direction) });
-      this.session = new RideSession({
-        stance: options.stance, ...(config.stroke ? { stroke: config.stroke } : {}), ...(config.swim ? { swim: config.swim } : {}),
-        ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
-        ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
-        ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
-        ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}), ...(config.legDrive ? { legDrive: config.legDrive } : {}), ...(config.hull ? { hull: config.hull } : {}), ...(config.railSuction ? { railSuction: config.railSuction } : {}), ...(config.compressPull ? { compressPull: config.compressPull } : {}), ...(config.carveFlex ? { carveFlex: config.carveFlex } : {}), ...(config.snapLegs ? { snapLegs: config.snapLegs } : {}), ...(config.snapCross ? { snapCross: config.snapCross } : {}), ...(config.legPower ? { legPower: config.legPower } : {}), ...(config.rider ? { rider: config.rider } : {}), ...(config.feltFrame ? { feltFrame: config.feltFrame } : {}), ...(config.kneeRoom ? { kneeRoom: config.kneeRoom } : {}), ...(config.stanceReach ? { stanceReach: config.stanceReach } : {}), ...(config.ankleLimit ? { ankleLimit: config.ankleLimit } : {}), ...(config.ankleRange ? { ankleRange: config.ankleRange } : {}), ...(config.bankClamp ? { bankClamp: config.bankClamp } : {}), ...(config.bodyBank ? { bodyBank: config.bodyBank } : {}), ...(config.askCap ? { askCap: config.askCap } : {}), ...(config.stanceDeep ? { stanceDeep: config.stanceDeep } : {}), ...(config.deepen ? { deepen: config.deepen } : {}), ...(config.armCarry ? { armCarry: config.armCarry } : {}), ...(config.trunk ? { trunk: config.trunk } : {}), ...(config.buoyFrame ? { buoyFrame: config.buoyFrame } : {}), ...(config.waterHeel ? { waterHeel: config.waterHeel } : {}), ...(config.mountAgree ? { mountAgree: config.mountAgree } : {}), ...(config.riderBody ? { riderBody: config.riderBody } : {}), ...(config.riderCost ? { riderCost: config.riderCost } : {}), ...(config.plantFloor ? { plantFloor: config.plantFloor } : {}), ...(config.deckHollow ? { deckHollow: config.deckHollow } : {}),
-        ...(config.snapUpturn ? { snapUpturn: config.snapUpturn } : {}),
-      });
+      this.riderStance = options.stance;
+      this.session = this.buildSession();
       this.board = this.session.board;
     } else if (options.board) {
       this.board = new BoardBody(config.duckBody === 'old' ? { submerged: 'old' } : {});
@@ -568,6 +564,22 @@ export class SurfZoneRunner {
       this.board.plateAllowed = false;
     }
     if (start === 'spun-up') this.seat();
+  }
+
+  /**
+   * The board, rider and fall body as the page's options build them: at construction, and anew for a `fresh` placement
+   * (the test wave's starts), so the two cannot drift apart.
+   */
+  private buildSession(): RideSession {
+    const { config } = this;
+    return new RideSession({
+      stance: this.riderStance, ...(config.stroke ? { stroke: config.stroke } : {}), ...(config.swim ? { swim: config.swim } : {}),
+      ...(config.extension ? { extension: config.extension } : {}), ...(config.duckBody ? { duckBody: config.duckBody } : {}),
+      ...(config.snap ? { snap: config.snap } : {}), ...(config.snapQuick ? { snapQuick: config.snapQuick } : {}),
+      ...(config.snapPivot ? { snapPivot: config.snapPivot } : {}), ...(config.snapRecentre ? { snapRecentre: config.snapRecentre } : {}),
+      ...(config.snapDepth ? { snapDepth: config.snapDepth } : {}), ...(config.snapStamp ? { snapStamp: config.snapStamp } : {}), ...(config.agile ? { agile: config.agile } : {}), ...(config.legDrive ? { legDrive: config.legDrive } : {}), ...(config.hull ? { hull: config.hull } : {}), ...(config.railSuction ? { railSuction: config.railSuction } : {}), ...(config.compressPull ? { compressPull: config.compressPull } : {}), ...(config.carveFlex ? { carveFlex: config.carveFlex } : {}), ...(config.snapLegs ? { snapLegs: config.snapLegs } : {}), ...(config.snapCross ? { snapCross: config.snapCross } : {}), ...(config.legPower ? { legPower: config.legPower } : {}), ...(config.rider ? { rider: config.rider } : {}), ...(config.feltFrame ? { feltFrame: config.feltFrame } : {}), ...(config.kneeRoom ? { kneeRoom: config.kneeRoom } : {}), ...(config.stanceReach ? { stanceReach: config.stanceReach } : {}), ...(config.ankleLimit ? { ankleLimit: config.ankleLimit } : {}), ...(config.ankleRange ? { ankleRange: config.ankleRange } : {}), ...(config.bankClamp ? { bankClamp: config.bankClamp } : {}), ...(config.bodyBank ? { bodyBank: config.bodyBank } : {}), ...(config.askCap ? { askCap: config.askCap } : {}), ...(config.stanceDeep ? { stanceDeep: config.stanceDeep } : {}), ...(config.deepen ? { deepen: config.deepen } : {}), ...(config.armCarry ? { armCarry: config.armCarry } : {}), ...(config.trunk ? { trunk: config.trunk } : {}), ...(config.buoyFrame ? { buoyFrame: config.buoyFrame } : {}), ...(config.waterHeel ? { waterHeel: config.waterHeel } : {}), ...(config.mountAgree ? { mountAgree: config.mountAgree } : {}), ...(config.riderBody ? { riderBody: config.riderBody } : {}), ...(config.riderCost ? { riderCost: config.riderCost } : {}), ...(config.plantFloor ? { plantFloor: config.plantFloor } : {}), ...(config.deckHollow ? { deckHollow: config.deckHollow } : {}),
+      ...(config.snapUpturn ? { snapUpturn: config.snapUpturn } : {}),
+    });
   }
 
   /** Only WorkerCore retains this runner; replies never publish the owner or query backend. */
@@ -777,6 +789,13 @@ export class SurfZoneRunner {
 
   /** The board, rider and particles after the water's step `step` of a batch. */
   private afterWater(step: number, input: RideRequest): void {
+    // A `fresh` placement (the test wave's starts) rides a never-ridden board and rider: built anew and put in the lineup,
+    // as the constructor builds and seats them, before it is placed (a placement counts on a batch's first step only).
+    if (step === 0 && input.place?.fresh && this.session) {
+      this.session = this.buildSession();
+      this.board = this.session.board;
+      this.launchRide();
+    }
     const { board, session } = this;
     this.updateContact();
     if (session) {

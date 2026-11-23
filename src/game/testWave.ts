@@ -31,10 +31,11 @@ export const TEST_WAVE_SPIN_UP_PERIODS = 5;
  *   along its motion through the water (no slip).
  * - 'catch': lying at the take-off, nose to the beach, paddling speed, before the wave reaches the peak: paddled on, the
  *   wave picks the board up.
+ * Both are `fresh`: each start and restart places a never-ridden rider, so no run inherits the last one's state.
  */
 export const TEST_WAVE_STARTS: Record<TestWaveMode, { seaTime: number; placement: RiderPlacement; life: number }> = {
-  ride: { seaTime: 62.5, placement: { x: -93.5, z: -94.65, heading: (54 * Math.PI) / 180, speed: 7.7, phase: 'standing', followSurface: true, posture: 'plumb' }, life: 8 },
-  catch: { seaTime: 58, placement: { x: -108, z: -109, heading: 0, speed: 1.7, phase: 'prone', followSurface: true }, life: 12.5 },
+  ride: { seaTime: 62.5, placement: { x: -93.5, z: -94.65, heading: (54 * Math.PI) / 180, speed: 7.7, phase: 'standing', followSurface: true, posture: 'plumb', fresh: true }, life: 8 },
+  catch: { seaTime: 58, placement: { x: -108, z: -109, heading: 0, speed: 1.7, phase: 'prone', followSurface: true, fresh: true }, life: 12.5 },
 };
 
 /** After a fall or the wave's end, the same wave starts again this many seconds later (sea time). */

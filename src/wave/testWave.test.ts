@@ -112,3 +112,70 @@ describe('the test wave', () => {
     expect(white).toBeGreaterThan(100);
   }, 1_500_000);
 });
+
+/**
+ * Every start and restart of the test wave rides a never-ridden rider (`RiderPlacement.fresh`, 2026-11-23): on the owner's
+ * address, each mode's ride restarted on one runner after a ride cut off while standing and after one cut off mid-fall
+ * runs the board's steps bit for bit as the runner's first ride did. 'catch' paddles from the first step and pops up at
+ * 3.3 s; 'ride' presses nothing.
+ */
+describe('the test wave restarts', () => {
+  const OWNER = '?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on';
+  const seconds = 6.5;
+  const popAt = Math.round(3.3 / SURF_ZONE_STEP);
+  for (const mode of ['catch', 'ride'] as const) {
+    it(`'${mode}' rides the first run's board again after a ride cut off standing and one cut off mid-fall`, () => {
+      const global = globalThis as { location?: { search: string } };
+      const saved = global.location;
+      global.location = { search: `${OWNER}&testWave=${mode}` };
+      try {
+        const settings = { ...physicalSettingsFor('canyon', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' }), tide: 0, windSpeed: 0 };
+        const config = surfZoneConfigFor(settings, TEST_WAVE.seed, false, testWaveOverrides(mode));
+        const runner = new SurfZoneRunner(config, { rider: true });
+        const start = runner.simulation.exportState();
+        const { placement } = TEST_WAVE_STARTS[mode];
+        expect(placement.fresh).toBe(true);
+        /** One run from the recorded start, as the game restarts: the sea, then the placement on the first step. */
+        const run = (input: (step: number, phase: string) => Partial<RideRequest>, until: (step: number, phase: string, fellAt: number) => boolean) => {
+          runner.simulation.importState(start);
+          runner.invalidateTubeApproach();
+          const boards: number[] = [];
+          let phase = '';
+          let fellAt = -1;
+          for (let step = 0; !until(step, phase, fellAt); step += 1) {
+            runner.advance(1, { paddle: false, popUp: false, steer: 0, retry: false, ...input(step, phase), ...(step === 0 ? { place: placement } : {}) });
+            const { board } = runner.session!;
+            boards.push(board.position.x, board.position.y, board.position.z, board.velocity.x, board.velocity.y, board.velocity.z);
+            phase = runner.status().ride!.phase;
+            if (phase === 'fallen' && fellAt < 0) fellAt = step;
+          }
+          return { boards, phase };
+        };
+        const steps = Math.round(seconds / SURF_ZONE_STEP);
+        const reference = () => run(
+          (step, phase) => (mode === 'catch' ? { paddle: step < popAt && phase !== 'standing', popUp: step === popAt } : {}),
+          (step) => step >= steps,
+        );
+        const first = reference();
+        // Cut off standing: the reference's own end for 'catch' (he stands from the pop to 6.5 s); 'ride' at 1 s.
+        const standing = mode === 'catch' ? first : run(() => ({}), (step) => step >= Math.round(1 / SURF_ZONE_STEP));
+        expect(standing.phase).toBe('standing');
+        const afterStanding = reference();
+        // Cut off mid-fall: steered hard once standing, until 0.3 s after he falls (or 12 s).
+        const falling = run(
+          (step, phase) => (mode === 'catch' ? { paddle: step < popAt && phase !== 'standing', popUp: step === popAt, steer: phase === 'standing' ? 1 : 0 } : { steer: 1 }),
+          (step, _phase, fellAt) => (fellAt >= 0 && step >= fellAt + Math.round(0.3 / SURF_ZONE_STEP)) || step >= Math.round(12 / SURF_ZONE_STEP),
+        );
+        expect(falling.phase).toBe('fallen');
+        const afterFall = reference();
+        const firstDiff = (a: number[]) => a.findIndex((value, i) => value !== first.boards[i]);
+        console.log(`${mode}: ${first.boards.length / 6} steps, first ride ends ${first.phase}; restart after standing differs from step ${Math.floor(firstDiff(afterStanding.boards) / 6)}, after a fall from step ${Math.floor(firstDiff(afterFall.boards) / 6)} (−1: none)`);
+        expect(first.boards.length).toBe(steps * 6);
+        expect(afterStanding.boards).toEqual(first.boards);
+        expect(afterFall.boards).toEqual(first.boards);
+      } finally {
+        global.location = saved;
+      }
+    }, 1_500_000);
+  }
+});
