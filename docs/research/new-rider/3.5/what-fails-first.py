@@ -1,11 +1,14 @@
 """Step 3.5x reader (what-fails-first.md). Reads `what-fails-first.ts` organic runs, one file per process, named
 `o-s<seed>-<arm>.jsonl[.gz]`, arm in A (cueLater=on&plantFloor=6) | B (cueLater=on&plantSpeed=taper) | R (cueLater=on)
-| S0 (cueLater off, the 3.5o reproduction) | S0-off (the same with every instrument off).
+| Y (cueLater=on&plantSpeed=taper6, step 3.5y, return-taper.md) | S0 (cueLater off, the 3.5o reproduction) | S0-off (the
+same with every instrument off).
 
     python3 what-fails-first.py <run dir> checks          # builds printed back, reproduction, inertness
     python3 what-fails-first.py <run dir> classify        # the first failure of every rider (section 0.4)
     python3 what-fails-first.py <run dir> climb           # the climb after a turn (section 0.6)
     python3 what-fails-first.py <run dir> compact <out>   # the committed compact copy: summaries, builds, x35-light rows
+    python3 what-fails-first.py <run dir> twins           # 3.5y: the turn-twin split (3.5x's turn-twins.md), every arm
+    python3 what-fails-first.py <run dir> lines           # 3.5y: return-taper.md section 0.5's lines, Y against A and B
 
 Angles in degrees, + toward the board's +x (its left rail) unless named; `rollS` is 3.5o's roll (+ with the +x rail down);
 times are seconds after the stand; vW is the horizontal |v_board - flow| (m/s, world); `sched` the controller's speed.
@@ -25,7 +28,7 @@ sf = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(sf)
 load = sf.load
 
-ARMS = {'A': ('on', 6, None), 'B': ('on', None, 'taper'), 'R': ('on', None, None), 'S0': (None, None, None), 'S0-off': (None, None, None)}
+ARMS = {'A': ('on', 6, None), 'B': ('on', None, 'taper'), 'R': ('on', None, None), 'Y': ('on', None, 'taper6'), 'S0': (None, None, None), 'S0-off': (None, None, None)}
 TURN = {'cueL': 1, 'cueR': -1, 'cueCL': 1, 'cueCR': -1}
 G = 9.81
 
@@ -33,7 +36,7 @@ G = 9.81
 def runs(directory):
     out = {}
     for name in sorted(os.listdir(directory)):
-        m = re.match(r'o-s(\d)-(A|B|R|S0-off|S0)\.jsonl(\.gz)?$', name)
+        m = re.match(r'o-s(\d)-(A|B|R|Y|S0-off|S0)\.jsonl(\.gz)?$', name)
         if m:
             out[(int(m.group(1)), m.group(2))] = os.path.join(directory, name)
     return out
@@ -56,6 +59,8 @@ def design_speed(arm, v):
         return max(v, 6.0)
     if arm == 'B':
         return max(v, min(1.68 * v, 7.8))
+    if arm == 'Y':
+        return max(v, min(1.68 * v, 6.0))
     return v
 
 
@@ -306,7 +311,7 @@ def classify(directory, quiet=False):
         print('\n## Counts (riders that stood; held = lasted the hold)\n')
         print('| arm | drive | stood | held | P | S | F | O | L-gain | L-ref | U | N |')
         print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
-        for arm in ('A', 'B', 'R'):
+        for arm in ('A', 'B', 'R', 'Y'):
             for script_set, title in ((('cue',), 'take-off, centred'), (('cueC',), 'take-off, his way'), (('cueL', 'cueR'), 'turn, steer only'), (('cueCL', 'cueCR'), 'turn, his way')):
                 cs = [c for k, c in table.items() if k[0] == arm and k[2] in script_set and c['cls'] is not None]
                 if not cs:
@@ -393,9 +398,11 @@ def summary(directory):
     med = lambda xs: None if not xs else round(st.median(xs), 2)
     print('| arm | drive | stood | fell in hold | median fall (s) | final escape: median t (s) | median vW / sched (m/s) | sched < 4.5 at the final escape | rolled >= 20 deg inside / outside | command unsaturated or away, last 0.1 s |')
     print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
-    for arm in ('R', 'A', 'B'):
+    for arm in ('R', 'A', 'B', 'Y'):
         for script_set, title in ((('cue',), 'take-off, centred'), (('cueC',), 'take-off, his way'), (('cueL', 'cueR'), 'turn, steer only'), (('cueCL', 'cueCR'), 'turn, his way')):
             cs = [c for k, c in table.items() if k[0] == arm and k[2] in script_set and c['cls'] is not None]
+            if not cs:
+                continue
             fell = [c for c in cs if c['cls'] != 'held']
             fin = [c['final'] for c in fell if c.get('final')]
             ins = sum(1 for c in fell if c.get('final') and c['final'].get('rollS') is not None and TURN.get(c['script'], 0) and c['final']['rollS'] * TURN[c['script']] >= 20)
@@ -408,7 +415,7 @@ def summary(directory):
     print('| --- | --- | --- | --- | --- |')
     def ft(c, hold):
         return hold if c['cls'] == 'held' or c.get('fell') is None else min(hold, c['fell'])
-    for a, b in (('A', 'R'), ('B', 'R'), ('A', 'B')):
+    for a, b in (('A', 'R'), ('B', 'R'), ('A', 'B'), ('Y', 'A'), ('Y', 'B'), ('Y', 'R')):
         for script_set, title, hold in ((('cue',), 'take-off, centred', 3), (('cueC',), 'take-off, his way', 3), (('cueL', 'cueR'), 'turn, steer only', 5), (('cueCL', 'cueCR'), 'turn, his way', 5)):
             ds = []
             for k, c in table.items():
@@ -430,7 +437,7 @@ def divergence(directory, a='A', b='B', tol=2.0):
     print(f'| rider | parts at (s) | vW | sched | design {a} / {b} | fell {a} / {b} |')
     print('| --- | --- | --- | --- | --- | --- |')
     speeds = []
-    for seed in (1, 2, 3):
+    for seed in range(1, 10):
         if (seed, a) not in rs or (seed, b) not in rs:
             continue
         ra, rb = load(rs[(seed, a)]), load(rs[(seed, b)])
@@ -488,6 +495,156 @@ def compact(directory, out_dir):
                 fh.write(json.dumps(x, separators=(',', ':')) + '\n')
 
 
+# ------------------------------------------------------------------------------------------------------------------
+# Step 3.5y (return-taper.md): the turn-twin split and section 0.5's lines.
+TWIN = {'cueL': 'cue', 'cueR': 'cue', 'cueCL': 'cueC', 'cueCR': 'cueC'}
+DRIVES = (('cueL', 'cueR'), 'turn, steer only'), (('cueCL', 'cueCR'), 'turn, his way')
+
+
+def fall5(s):
+    """Seconds standing, censored at 5 s (the probe's STAND_HOLD); None if he never stood."""
+    if s is None or s.get('stand') is None:
+        return None
+    f = s.get('fellAfterStand')
+    return 5.0 if f is None or f > 5.0 + 1e-9 else f
+
+
+def summaries(directory):
+    out = {}
+    for (seed, arm), path in runs(directory).items():
+        if arm.startswith('S0'):
+            continue
+        for x in load(path):
+            if x.get('kind') == 'summary':
+                out[(arm, seed, x['script'], x['wave'])] = x
+    return out
+
+
+def twin_split(summ, table, arm, scripts):
+    """3.5x's turn-twin split: twin = the same arm, seed and wave's stick-centred script, both ridden 5 s. A turn rider
+    that fell within 5 s is 'twin too' when the twin falls no later than 0.25 s after him, 'turn-caused' when the twin
+    outlives him by 0.5 s or more, else 'between'."""
+    fell, too, tc, between = [], [], [], []
+    for k, s in summ.items():
+        if k[0] != arm or k[2] not in scripts or s.get('stand') is None:
+            continue
+        f = s.get('fellAfterStand')
+        if f is None or f > 5.0 + 1e-9:
+            continue
+        fell.append(k)
+        tf = fall5(summ.get((arm, k[1], TWIN[k[2]], k[3])))
+        if tf is None:
+            continue
+        (too if tf <= f + 0.25 + 1e-9 else tc if tf - f >= 0.5 - 1e-9 else between).append(k)
+    return fell, too, tc, between
+
+
+def twins(directory, quiet=False):
+    summ = summaries(directory)
+    table = classify(directory, quiet=True)
+    med = lambda xs: None if not xs else round(st.median(xs), 2)
+    if not quiet:
+        print('Every rider rode 5 s; the twin is the same stand with the stick centred (cue for cueL/R, cueC for cueCL/CR).\n')
+        print('| arm | drive | turn riders that stood | fell in 5 s | twin falls too (within 0.25 s, or first) | turn-caused (twin outlives by >= 0.5 s) | between | turn-caused: median fall (s); median sched at the final escape (m/s); final escape inside +0.3 to +1.5 s | turn-caused: registered classes |')
+        print('| --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    out = {}
+    for arm in ('R', 'A', 'B', 'Y'):
+        for scripts, title in DRIVES:
+            stood = [k for k, s in summ.items() if k[0] == arm and k[2] in scripts and s.get('stand') is not None]
+            if not stood:
+                continue
+            fell, too, tc, between = twin_split(summ, table, arm, scripts)
+            fin = [table[k].get('final') for k in tc if table.get(k) and table[k].get('final')]
+            inwin = sum(1 for f in fin if 0.3 <= f['t'] <= 1.5)
+            cls = {}
+            for k in tc:
+                c = table[k]['cls']
+                cls[c] = cls.get(c, 0) + 1
+            out[(arm, title)] = {'fell': fell, 'too': too, 'tc': tc, 'between': between}
+            if not quiet:
+                # 3.5x's 'between' column counts every stood rider in neither class, the riders that held 5 s included.
+                print(f"| {arm} | {title.replace('turn, ', '')} | {len(stood)} | {len(fell)} | {len(too)} | {len(tc)} | {len(stood) - len(too) - len(tc)} | {med([summ[k]['fellAfterStand'] for k in tc])}; {med([f['sched'] for f in fin if f.get('sched') is not None])}; {inwin} of {len(tc)} | {cls} |")
+    return out
+
+
+def lines(directory):
+    """return-taper.md section 0.5: every line, Y against A (and B), with the counts, medians and the riders that move most."""
+    summ = summaries(directory)
+    table = classify(directory, quiet=True)
+    tw = twins(directory, quiet=True)
+    med = lambda xs: None if not xs else round(st.median(xs), 3)
+    seeds = sorted({k[1] for k in summ if k[0] == 'Y'})
+
+    def paired(a, b, scripts, hold):
+        ds = []
+        for k, s in summ.items():
+            if k[0] != a or k[2] not in scripts or s.get('stand') is None:
+                continue
+            o = summ.get((b,) + k[1:])
+            if o is None or o.get('stand') != s.get('stand'):
+                continue
+            fa, fb = min(hold, fall5(s)), min(hold, fall5(o))
+            ds.append((round(fa - fb, 4), k, fa, fb))
+        return ds
+
+    def report(title, ds):
+        d = [x[0] for x in ds]
+        if not d:
+            print(f'- {title}: no pairs')
+            return None
+        print(f"- **{title}:** n {len(d)}; later {sum(x >= 0.25 for x in d)} / sooner {sum(x <= -0.25 for x in d)} / same {sum(abs(x) < 0.25 for x in d)}; median {med(d):+.3f} s; worse by >= 0.5 s: {sum(x <= -0.5 for x in d)}")
+        mv = sorted(ds, key=lambda x: -abs(x[0]))[:6]
+        print('  - most moved: ' + '; '.join(f"s{k[1]}w{k[3]} {k[2]} {fb:.2f} -> {fa:.2f} ({dd:+.2f})" for dd, k, fa, fb in mv))
+        return d
+
+    print(f'Seeds with Y: {seeds}. Paired by stand; censored at the hold; later/sooner = |diff| >= 0.25 s. "A -> Y" reads base -> Y.\n')
+    print('### Main line: turns his way (cueCL, cueCR), Y - A')
+    d = report('Y - A, his way', paired('Y', 'A', ('cueCL', 'cueCR'), 5.0))
+    if d:
+        later, sooner, worse = sum(x >= 0.25 for x in d), sum(x <= -0.25 for x in d), sum(x <= -0.5 for x in d)
+        ok = med(d) >= 0.10 and later > sooner and worse <= 2
+        bad = med(d) < 0 or sooner > later
+        print(f"  - verdict: {'PASS' if ok else 'FAIL' if bad else 'between'} (pass: median >= +0.10, later > sooner, <= 2 worse by >= 0.5; fail: median < 0 or sooner > later)")
+    print('\n### Turns his way, Y - B, and B\'s in-window turn-caused falls')
+    d = report('Y - B, his way', paired('Y', 'B', ('cueCL', 'cueCR'), 5.0))
+    btc = tw.get(('B', 'turn, his way'), {}).get('tc', [])
+    inwin = [k for k in btc if table.get(k, {}).get('final') and 0.3 <= table[k]['final']['t'] <= 1.5]
+    moved = 0
+    for k in sorted(inwin, key=lambda k: (k[1], k[3], k[2])):
+        y = table.get(('Y',) + k[1:])
+        if y is None:
+            print(f'  - s{k[1]}w{k[3]} {k[2]}: no Y rider')
+            continue
+        yf = y.get('final')
+        out = y['cls'] == 'held' or y.get('fell') is None or y['fell'] > 5 or (yf is not None and not (0.3 <= yf['t'] <= 1.5))
+        moved += out
+        ytxt = 'held 5 s' if y['cls'] == 'held' else 'fell %s, final escape %s' % (y.get('fell'), ('%.2f s (sched %s)' % (yf['t'], yf['sched'])) if yf else 'none')
+        print(f"  - s{k[1]}w{k[3]} {k[2]}: B final escape {table[k]['final']['t']:.2f} s (sched {table[k]['final']['sched']}), fell {table[k]['fell']}; Y: {ytxt} -> {'out of the window' if out else 'still in the window'}")
+    if d is not None:
+        ok = med(d) > 0 and sum(x >= 0.25 for x in d) > sum(x <= -0.25 for x in d) and moved >= 6
+        bad = med(d) < 0 or sum(x <= -0.25 for x in d) > sum(x >= 0.25 for x in d) or moved <= 3
+        print(f"  - {moved} of {len(inwin)} moved out; verdict: {'PASS' if ok else 'FAIL' if bad else 'between'}")
+    print('\n### Turns steer only (cueL, cueR): reported, no line')
+    report('Y - A, steer only', paired('Y', 'A', ('cueL', 'cueR'), 5.0))
+    report('Y - B, steer only', paired('Y', 'B', ('cueL', 'cueR'), 5.0))
+    report('B - A, steer only (3.5x: +0.275)', paired('B', 'A', ('cueL', 'cueR'), 5.0))
+    print('\n### Take-offs (cue, cueC, 3 s hold)')
+    for sc in ('cue', 'cueC'):
+        report(f'Y - A, {sc}', paired('Y', 'A', (sc,), 3.0))
+    both = paired('Y', 'A', ('cue', 'cueC'), 3.0)
+    lost = [(k, fa) for dd, k, fa, fb in both if fb >= 3.0 - 1e-9 and fa < 3.0 - 1e-9]
+    d = [x[0] for x in both]
+    if d:
+        print(f"  - both scripts: median {med(d):+.3f} s; stands A carries 3 s: {sum(1 for x in both if x[3] >= 3 - 1e-9)}; lost under Y: {len(lost)} {[f's{k[1]}w{k[3]} {k[2]} {fa:.2f}' for k, fa in lost]}; verdict: {'PASS' if not lost and abs(med(d)) <= 0.1 else 'FAIL'}")
+    print('\n### Neutral riders (cue, cueC as the turn twins, ridden 5 s)')
+    d = report('Y - A, neutral, 5 s', paired('Y', 'A', ('cue', 'cueC'), 5.0))
+    if d:
+        print(f"  - verdict: {'PASS' if abs(med(d)) <= 0.1 else 'FAIL'} (median within +-0.1 s)")
+    print('\n### Y beside R')
+    for scripts, title in DRIVES:
+        report(f'Y - R, {title}', paired('Y', 'R', scripts, 5.0))
+
+
 if __name__ == '__main__':
     d = sys.argv[1]
     what = sys.argv[2] if len(sys.argv) > 2 else 'classify'
@@ -505,3 +662,7 @@ if __name__ == '__main__':
         divergence(d, *(sys.argv[3:5] if len(sys.argv) > 4 else ('A', 'B')))
     elif what == 'compact':
         compact(d, sys.argv[3])
+    elif what == 'twins':
+        twins(d)
+    elif what == 'lines':
+        lines(d)
