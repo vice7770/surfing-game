@@ -32,6 +32,8 @@ const ARMS: Record<string, DesignWeights> = {
   R: { ...DEFAULT_WEIGHTS, riderBody: 'two' },
   A: { ...DEFAULT_WEIGHTS, riderBody: 'two', plantFloor: 6 },
   B: { ...DEFAULT_WEIGHTS, riderBody: 'two', plantSpeed: 'taper' },
+  // Step 3.5y (return-taper.md §0.3): Y, `plantSpeed: 'taper6'`, added as a fourth arm; R, A and B are unchanged.
+  ...(process.env.ARMS_Y === '0' ? {} : { Y: { ...DEFAULT_WEIGHTS, riderBody: 'two', plantSpeed: 'taper6' } as DesignWeights }),
 };
 const f = (x: number, d = 3) => (Number.isFinite(x) ? Number(x.toFixed(d)) : null);
 const emit = (o: unknown) => process.stdout.write(`${JSON.stringify(o)}\n`);

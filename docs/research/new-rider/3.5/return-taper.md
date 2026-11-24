@@ -142,3 +142,83 @@ fails first under Y in 3.5x's classes (§0.4 of `what-fails-first.md`) with its 
 Usage at each phase boundary; at 80 % of the 5-hour window (resets 23:20 UTC) stop, push what is green and write what
 is left. Power: no new batch below 25 % while discharging (87 %, charging, at this pre-registration). At most four
 processes, from one queue only.
+
+## 1. Result: the model check fails its line where A fails it, so the round stops before any arm (2026-11-24)
+
+*Written after the build and the model check; no Y arm has run. Speeds here are the controller's schedule speed (its
+forward speed through the water, m/s); "least damping" is the code's `leastDamping` of the closed loop (design at that
+schedule speed, rail 0, owner's weights, closed on the plant at the true speed), worst over 5, 6 and 7 ticks of delay
+unless named; "div" is a real root outside the unit circle (reported as −1).*
+
+### 1.1 The build and its checks
+
+- **Commit `a7398222`.** `PlantSpeed = 'face' | 'taper' | 'taper6'`; `EQUIVALENT_SPEED_RETURN = 6.0`, documented
+  beside `EQUIVALENT_SPEED_CAP`; `equivalentSpeed(v, 'taper6')` = max(v, min(1.68 v, 6)); `plantSpeedSwitch` accepts
+  `taper6`; the route's type unions (`SurfZoneSimulation`, `RideSession`) and `AttachedRider`'s value check carry it.
+  `main.ts`'s online pin (`plantSpeed: undefined`) already pins every value off and is unchanged.
+  `git diff b0d19ee8..a7398222 --stat -- src scripts`: those five files and the two test files, nothing in `scripts/`.
+- **`npx tsc -b`:** clean.
+- **Targeted tests** (`npx vitest run src/physics/plantSpeed src/physics/predictiveBalance.test
+  src/game/PhysicalMode.test`): **151 of 151 pass** (149 before, plus two `taper6` tests; one parse assertion block
+  extended). The new tests check the map at its knee (6 / 1.68), its corners (3, 3.5, 4–6, 6–14 m/s), that it is
+  `face`/`taper` bit for bit below 3.571 m/s, never stiffer than `taper`, ≤ 6 below a true 6, continuous and monotone;
+  that its designs are `face`'s at the 3 and 3.5 knots, read the 6 m/s row's water with the true V at 4–5.5, and are
+  the shipped designs at 6–12 m/s; and that `face` and `taper` are unchanged.
+- **Canyon byte check** (Medium, 3 600 steps, fresh spin-up; `results/35y/canyon-byte-check.txt`): before (no `src`
+  change) snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`; after (`a7398222`, switch off) snapshots
+  `a367d938f15fa934`, state `9e5831f80e38abd9`. **Identical, and the reference pair.**
+
+### 1.2 The delay check (`what-fails-first-model.ts` with Y; `results/35y/model-table.jsonl`, `model-game.jsonl`)
+
+**Control:** R's, A's and B's cells, and the header, are identical to 3.5x's committed `model-table.jsonl` and
+`model-game.jsonl` on both truths (every cell compared as parsed JSON). Y's cells at 6–8 m/s are identical to A's (and
+R's) on both truths, as the map requires.
+
+**Y, worst least damping over 5, 6, 7 ticks (at the true 6 ticks in brackets; cells that diverge / cells):**
+
+| truth | stance | 3–4.25 m/s | 4.5–4.75 | **5.0** | **5.25** | 5.5–6 | 6.5–8 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| table | tall (0) | div (4/6) | div (2/2) | **div (1/1)** | +0.16 (+0.22) | +0.16 (+0.42) | +0.17 (+0.65) |
+| table | crouch (0.195) | div (4/6) | div (2/2) | **div (1/1)** | +0.16 (+0.25) | +0.15 (+0.43) | +0.17 (+0.65) |
+| table | compress (0.30) | div (4/6) | div (2/2) | **div (1/1)** | **div (1/1)** | +0.15 (+0.45) | +0.18 (+0.66) |
+| table | tuck (0.45) | div (5/6) | div (2/2) | **div (1/1)** | **div (1/1)** | +0.17 (+0.46) | +0.18 (+0.67) |
+| game | every stance | div (6/6) | div (2/2) | as `table` | as `table` | as `table` | as `table` |
+
+**The same cells, A and B (3.5x's numbers, reproduced here):**
+
+| cell | Y | A (`plantFloor=6`) | B (`taper`) |
+| --- | --- | --- | --- |
+| 5.0 m/s, every stance | div (radius 1.014–1.039 per tick at 6 ticks) | div (1.011–1.039) | div (1.012–1.049) |
+| 5.25, tall | **+0.157 to +0.222** (5/6/7: +0.170, +0.222, +0.163) | +0.164 to +0.197 | **−0.062, −0.060, −0.058** |
+| 5.25, crouch | **+0.157, +0.252, +0.159** | +0.166, +0.203, +0.163 | **−0.044, −0.042, −0.041** |
+| 5.25, compress / tuck | div (1.006 / 1.017) | div (1.005 / 1.017) | div (1.008 / 1.022) |
+| 5.5, compress | +0.158, +0.446, +0.161 | +0.164, +0.406, +0.163 | +0.194, +0.136, **−0.004** |
+| 5.5–6, every stance | +0.152 to +0.193 worst | +0.152 to +0.194 | −0.004 to +0.240 |
+
+**The growing mode at 5.0 and 5.25 m/s** (`results/35y/model-modes-5-table.jsonl`, `MODES=1`, true delay): on Y it is
+the one A has, led by the sideslip (1.00 in the design's state scale), then roll and yaw rate (0.2–0.65), the same
+shape to within 0.1 on every cell. It is 3.5x §8's directional divergence of a design built on stiffer water closed
+on the table's own 5 m/s row.
+
+**Reference** (`plant-rows-gains.ts`, `VARIANT=taper6`, `TOP=9`; `results/35y/gains-taper6.jsonl`): |β_ref| at a 21°
+lean is at most **2.46° (tall, 6 m/s) and 2.34° (Compress, 6 m/s)** over 3–9 m/s; no singular speed. Over leans
+1–25° the only cells past 10° are `face`'s bottom-knot corner (3.0–3.1 m/s, leans 1–2°: −13.4° tall, −46.9° Compress
+at 3.05), the same cells as `taper`'s. **Pass.** Compress gains (bank / bank rate / slip / yaw rate): 1.57 / 0.23 /
+0.37 / +0.05 at 3 (= `taper`), 1.05 / 0.19 at 3.5 (= `taper`), 0.97 / 0.17 at 4, 0.93–0.94 / 0.15–0.16 at 4.5–6, the
+shipped 0.84 / 0.14 at 7. At 4.5–6 m/s they are A's to the second decimal (A 0.926–0.937), against `taper`'s
+1.09–1.28.
+
+### 1.3 Verdict on §0.3's line
+
+- **The literal line fails**: least damping is not > 0 at 5.0 m/s in any stance, nor at 5.25 m/s at 0.30 and 0.45 m,
+  at any of the three delays, on both truths. These are **exactly the cells where A fails** (3.5x), and B fails them
+  too. The prediction (§0.6 item 1) held to the cell.
+- **Where Y differs from A and B in the checked band:** at 5.25 m/s tall and crouch, Y is stable (+0.157 worst) where
+  B was not (−0.06 / −0.04 at the true delay); at 5.5 m/s Compress Y is +0.158 where B was −0.004 a frame late. From
+  5.5 m/s up Y is within 0.01 of A's worst cell everywhere, and identical to A from 6 m/s. **Measured: the map removes
+  every cell where B was worse than A, and adds none where A was stable.**
+- **What I did not do:** by the work order's rule (§0.3), no Y arm ran: no organic seed, no catch start, no seeds
+  4–9. The pass and fail lines of §0.5 are untested. The one run made after the check is the reproduction control of
+  A (§1.4), which runs no Y and was made so that the arms can start at once if the line is ruled on.
+
+### 1.4 The reproduction control (A, seed 2, all six scripts, on the probe bundle Y would ride)
