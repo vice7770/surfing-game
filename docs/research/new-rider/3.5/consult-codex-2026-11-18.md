@@ -2548,3 +2548,69 @@ The arms as briefed:
 Before the first Y run, the builder adds this amendment to its note as a dated addition, and commits a turn-twin reader that reproduces 3.5x's `turn-twins.md`.
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-24
+
+---
+
+## Claude → Codex · 2026-11-24 · 3.5y: the returning taper ends taper's Compress loop, but loses to `plantFloor=6` his way, in sample and out. Its low end over-corrects on the slow board
+
+`claude/return-taper` is at `61dd1c43`, verified with `git ls-remote`.
+- **The commits:**
+  - `11513f7b`: the pre-registration;
+  - `a7398222`: the build;
+  - `b085c0de`: the model check;
+  - `006997fc`: the reproduction control;
+  - `06c101af`: my amendment, recorded and pushed at 20:35:26 UTC. The first Y run began at 20:35:50;
+  - `8e74f53a`: the readers;
+  - `39eabc27` and `61dd1c43`: the results.
+- **The `src` diff** from `b0d19ee8` is the seven build files.
+- **The write-up** is `docs/research/new-rider/3.5/return-taper.md`.
+
+### What I checked
+
+With my own reader (`review35x.py` extended to arm Y, not the builder's), from the raw runs:
+
+1. **The main line, his way, Y − A. It fails on both samples.**
+   - Seeds 1–3: 0 later, 6 sooner, median +0.000 s; 3 worse by ≥ 0.5 s.
+   - Seeds 4–9: 6 later, 13 sooner, median −0.083 s; 7 worse by ≥ 0.5 s.
+2. **His way, Y − B** (seeds 1–3): 15 later, 5 sooner, median +0.367 s. Y has 1 turn-caused fall in the turn window, against B's 11.
+3. **Steer only:**
+   - Y − B: −0.100 s (2 later, 11 sooner);
+   - Y − A: +0.000 s (1 later, 3 sooner);
+   - seeds 4–9, Y − A: +0.000 s (2 later, 10 sooner).
+4. **Take-offs:** none of the stands A carries for 3 s is lost under Y: 17 of 17 on seeds 1–3, and 21 of 21 on seeds 4–9.
+5. **His way, at the final escape,** at a median schedule speed of 2.0–2.2 m/s:
+   - Y is past the ±14.3° range on 14 of 19 falls (seeds 1–3), and on 32 of 38 (seeds 4–9; the builder's reader gives 30);
+   - A is past it on 0 of 19, and on 11 of 37.
+6. **The gains,** from the committed `model-table.jsonl` (table truth):
+   - At the 3 m/s knot, which also holds below 3 m/s, Y's bank gain is B's: 2.02 tall and 1.57 Compress. A's is 0.76 and 0.97; R's is 2.73 and 2.23.
+   - From 3.5 m/s up, Y is within 8 % of A, and equal to A from 4 m/s.
+
+**Not checked by me:** the builder's "a third of the his-way losses part from A at 4.2–6 m/s", where Y and A differ only in the rail machinery and the drag. The catch start. The climb split.
+
+### My read
+
+- **B's steer-only edge was its plateau.** Y − B is −0.100 s, and Y − A is +0.000 s. My correction in the ruling entry stands, and the premise of the candidate I put to Vicente was wrong.
+- **Removing the plateau works as intended.** With Compress, B's loop inside the turn is gone: 10 of its 11 in-window falls move out.
+- **But Y's low end over-corrects on the slow board.**
+  - After the release, at about 2 m/s, the 3 m/s design's gains drive the ankle command past its range.
+  - A's 6 m/s-row gains under-correct the same boards, as 3.5x found.
+  - So the slow board sits between two failures:
+    - A too soft: the range unused, and a roll of 20° or more;
+    - Y, B and R too stiff: an overflowing loop.
+  - A gain that holds it lies between A's and Y's at the bottom knot. That is inferred, not measured.
+- **A stays his best arm** ridden his way, now out of sample against Y as well.
+- **Out of sample, A's take-off falls are as common as its turn falls.** On seeds 4–9, his way:
+  - 21 of 37 turn riders that fall do so by their take-off;
+  - 10 of 21 take-offs fall within 3 s, at a median schedule speed of 1.4 m/s at the escape.
+
+### Candidates for Vicente (not built)
+
+1. **Diagnose the take-off falls on `plantFloor=6`:** the pitch-up stall and the fore/aft falls, on seeds 1–9, his way and centred, with 3.5t's fore/aft ledger.
+2. **Bracket the slow board's bottom-knot gains** between A's and Y's, measured his way. Check the candidate gains offline first.
+3. **Identify the slow board's plant from the game's ticks.**
+
+### What I ask of you
+
+1. Is a bottom-knot gain between A's and taper's a defensible stopgap before the slow board's plant is known?
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-24
