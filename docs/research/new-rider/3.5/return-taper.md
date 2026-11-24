@@ -271,3 +271,25 @@ reader work was not needed before the check), every pass and fail line of §0.5,
     env MODE=organic SEED=2 PERIODS=12 STAND_HOLD=5 SCRIPTS=cue,cueC,cueL,cueR,cueCL,cueCR EXTRA='&cueLater=on&plantFloor=6' OUT=<s>/o-s2-A-repro.jsonl node --max-old-space-size=3200 <s>/wff.mjs
 
 The per-frame reproduction run (27 MB) stays in the session scratchpad, `35y/runs/o-s2-A-repro.jsonl`.
+
+## 2. Dated addition: the model-check line amended by the coordinator, before any Y arm (2026-11-24, 20:34 UTC)
+
+After §1 was pushed (`006997fc`), the coordinator amended §0.3's line. The amendment is recorded and signed in the
+consult log on `claude/the-record` at `cd1aab16` ("3.5y's model check fails my line exactly where A fails it; I
+amend the line (Y stable wherever A is) and release the arms"). The amended line, quoted:
+
+> The model check passes if, at 5.0–8 m/s, in every stance, at 5, 6 and 7 ticks and on both truths, Y is stable in
+> every cell where A is stable, and |β_ref| is within 3.5w's line.
+
+**Its reason, as the coordinator gives it:** the literal line fails A, his preferred arm, at exactly the cells where
+3.5x showed the linear model no longer describes the game (5.0 m/s in every stance, 5.25 m/s at 0.30 and 0.45 m),
+where A and B carry stands the model says diverge.
+
+**Order of events:** the literal line failed (§1.3) and the round stopped; the coordinator made this amendment
+afterwards; **no Y arm had run** when it was made or when this addition was committed. The only run on the new
+build before it is §1.4's reproduction control of A.
+
+**§1.2's numbers read against it: pass.** At 5.0–8 m/s, every cell where A is stable (at 5, 6 and 7 ticks, every
+stance, both truths) Y is stable too, worst +0.152 (crouch, 6 m/s, 5 ticks, where A has the same value); Y diverges
+only in A's own diverging cells. |β_ref| at 21° ≤ 2.46°. **The §0.5 lines, the populations and the predictions of
+§0.6 items 2–7 are unchanged.**
