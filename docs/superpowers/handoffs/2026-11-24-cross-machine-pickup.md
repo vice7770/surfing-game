@@ -4,6 +4,10 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
+- **Status, 2026-11-24 at about 18:45 UTC.**
+  - Vicente asked to continue. 3.5x is running on the first machine, on `claude/what-fails-first`, from `1be12ee7`.
+  - The reset hold below no longer applies: the account read 0 % of its weekly limit, with extra usage disabled.
+  - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
