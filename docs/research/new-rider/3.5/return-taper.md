@@ -293,3 +293,123 @@ build before it is §1.4's reproduction control of A.
 stance, both truths) Y is stable too, worst +0.152 (crouch, 6 m/s, 5 ticks, where A has the same value); Y diverges
 only in A's own diverging cells. |β_ref| at 21° ≤ 2.46°. **The §0.5 lines, the populations and the predictions of
 §0.6 items 2–7 are unchanged.**
+
+## 3. Results, seeds 1–3 and the catch start (run 20:35–20:51 UTC, after §2 was pushed at 20:35:27)
+
+*Canyon B Medium, 12 periods, one process per arm per seed, all six scripts, `STAND_HOLD=5`. Y's runs are new; A, B
+and R are 3.5x's runs (`35x/runs/`), valid by §1.4's control. Times are seconds after the stand; speeds are horizontal
+|v_board − flow| (vW, m/s, world) or the controller's schedule speed (sched, m/s); `rollS` is 3.5o's roll (+ with
+the +x rail down; for a left turn + is the inside); |raw| is the ankle command (deg) against its ±14.3° range. Paired
+by stand, censored at the hold (3 s take-offs, 5 s turns and neutral riders); "later"/"sooner" = |Δ| ≥ 0.25 s.
+Tables: `results/35y/lines.md`, `summary.md`, `twins.md`, `classify.md`, `climb.md`, `diverge-YA.md`,
+`diverge-YB.md`, `catch.md`, `checks.md`.*
+
+### 3.1 Controls
+
+- Every Y file prints back `cueLater` on and `plantSpeed` `taper6` (`control`, `built` and every `stand` row).
+- The extended reader reproduces 3.5x's committed `summary.md`, `classify.md`, `turn-twins.md`, `diverge-AB.md`,
+  `climb.md` (R, A, B rows) and `catch.md` byte for byte from 3.5x's runs; its `checks` still finds R's and A's
+  take-off rows identical to 3.5v's (riders and frame rows) and B's summaries identical to 3.5w's.
+- Every Y stand is A's, B's and R's stand to the frame (no unpaired rider in any pair below).
+- Cross-check against the coordinator's independent reader (`review35x.py`'s list): B's 11 in-window turn-caused falls
+  his way are the same 11 riders, at the same final-escape times.
+
+### 3.2 The lines (§0.5)
+
+| line | n | Y − A: later / sooner, median, worse ≥ 0.5 s | Y − B | verdict |
+| --- | --- | --- | --- | --- |
+| **main: turns his way vs A** | 26 | **0 / 6, +0.000 s, 3** | — | **FAIL** (sooner > later; also 3 worse by ≥ 0.5 s) |
+| turns his way vs B | 26 | — | **15 / 5, +0.367 s**; **10 of B's 11** in-window falls move out | **PASS** |
+| turns steer only | 26 | 1 / 3, +0.000 s, 1 | **2 / 11, −0.100 s, 7 worse by ≥ 0.5 s** | reported |
+| take-offs (`cue`, `cueC`, 3 s) | 26 | 1 / 1 and 0 / 0, +0.000 s; 0 of A's 17 lasting stands lost | — | **PASS** |
+| catch start | 18 stands | all 18 carry 3 s; run 3 separates in the pop-up, no stand, as on A, B, R | — | **PASS** |
+| neutral riders (5 s) | 26 | 1 / 1, +0.000 s | — | **PASS** |
+| Y − R (reported) | 26 + 26 | steer only 14 / 1, +0.550 s; his way 16 / 2, +0.450 s | — | — |
+
+**The riders that move most.**
+- His way, Y against A, all six sooner: s2w2 `cueCL` 4.80 → 3.98 s; s1w10 `cueCR` 4.13 → 3.53; s2w1 `cueCR`
+  3.62 → 3.07; s2w10 `cueCL` 1.48 → 1.03; s2w6 `cueCR` 3.70 → 3.27; s2w6 `cueCL` 3.32 → 2.97.
+- His way, Y against B: s3w6 `cueCL` 1.07 → 5.00 (held), s3w6 `cueCR` 1.37 → 5.00, s1w6 `cueCL` 1.38 → 5.00,
+  s3w12 `cueCR` 1.60 → 5.00, s2w1 `cueCL` 1.17 → 3.87, s1w10 `cueCL` 1.58 → 4.15. The one of B's 11 that stays in
+  the window is s2w10 `cueCL` (final escape 0.95 s at a schedule speed of 2.04 m/s on both arms: below 3.571 m/s,
+  where Y and B are the same design).
+- Steer only, Y against B: s3w6 `cueL` 5.00 → 2.22, s3w6 `cueR` 5.00 → 2.48, s1w10 `cueL` 4.12 → 2.23, s3w12 `cueL`
+  3.87 → 1.98, s3w12 `cueR` 4.55 → 2.82 (B's best steer-only riders lose what B gave them); s2w6 `cueR` 0.87 → 2.45.
+- Take-offs: s2w5 `cue` 2.15 → 1.72, s3w9 `cue` 0.92 → 1.35; every other pair within 0.18 s.
+
+### 3.3 Which of Y − A or Y − B carries B's steer-only +0.275 s
+
+**Measured: Y − B.** Steer only, B − A is +0.275 s (14 later, 2 sooner), as 3.5x. Y − A is +0.000 s (1 later,
+3 sooner) and Y − B is −0.100 s (2 later, 11 sooner, 7 worse by ≥ 0.5 s). The riders B carries furthest steer only
+(s3w6, s3w12, s1w10) are carried by B and not by Y. Where the rides part (the first frame with roll > 2° apart,
+`diverge-*.md`):
+
+| pair | drive | riders that part | median time (s) | median sched there (m/s) | below 3.571 / 3.571–4.6 / 4.6–7.8 |
+| --- | --- | --- | --- | --- | --- |
+| Y, B | steer only | 22 | 0.61 | 5.59 | 0 / 6 / 16 |
+| Y, B | his way | 22 | 0.60 | 5.95 | 3 / 4 / 12 |
+| Y, A | steer only | 20 | 1.04 | 3.70 | 9 / 5 / 6 |
+| Y, A | his way | 24 | 1.02 | 3.14 | 13 / 6 / 5 |
+
+**Read.** B's edge steer only is the plateau during the turn: Y and B part early in the turn at 5.6 m/s, inside the
+band where only the plateau separates them, and B's best riders keep their gain only with the plateau. B's
+low-speed reading, which Y keeps, adds nothing steer only (Y − A +0.000 s). **This is the opposite of my
+prediction** (§0.6 item 4: the larger share in Y − A).
+
+### 3.4 What fails first under Y, and why the main line fails
+
+| arm | drive | stood | fell | median fall (s) | final escape: median t (s), vW / sched (m/s) | rolled ≥ 20° inside / outside | final escape: median max \|raw\| (deg); past the range | turn-caused (twin outlives ≥ 0.5 s); median fall; sched; in +0.3–1.5 s |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A | steer only | 26 | 24 | 2.42 | 2.12; 3.37 / 2.59 | 16 / 6 | 10.3; 1 of 24 | 14; 2.52; 3.83; 0 |
+| **Y** | steer only | 26 | 24 | 2.28 | 1.95; 3.47 / 3.17 | 16 / 3 | **12.1; 9 of 24** | 14; 2.51; 4.33; 0 |
+| B | steer only | 26 | 22 | 2.74 | 2.61; 2.44 / 2.50 | 10 / 4 | 17.0; 14 of 22 | 12; 2.90; 3.37; 3 |
+| A | his way | 26 | 19 | 3.27 | 3.10; 2.39 / 1.59 | 14 / 4 | 9.6; **0 of 19** | 9; 3.70; 2.31; 0 |
+| **Y** | his way | 26 | 19 | 2.97 | 2.75; 2.71 / 2.04 | 11 / 4 | **19.1; 14 of 19** | 12; 3.27; 2.55; **1** |
+| B | his way | 26 | 23 | 1.38 | 1.05; 3.35 / 3.28 | 5 / 5 | 27.3; 21 of 23 | 16; 1.41; 4.91; 11 |
+
+Registered classes (first escape, §0.4 of 3.5x), Y: take-offs centred F 2, N 3 (held 8); his way L-gain 1, U 2, N 1
+(held 9); turns steer only F 3, U 15, N 6 (held 2); **turns his way O 2, L-gain 7 (1 in the turn), U 2, N 8 (held 7)**.
+
+- **Take-offs:** A's set, unchanged in kind: the two fore/aft falls (s2w6, s2w10 `cue`, F), and the slowest
+  landings s1w8 and s3w9 (3.5x's fore/aft pitch-up on the face), with s3w9 `cue` lasting 0.43 s longer and s2w5
+  `cue` 0.43 s shorter.
+- **Turns, steer only:** A's picture. The final escape comes after the release (none of 14 turn-caused falls in the
+  window), median 1.95 s, on a board slowed to a schedule speed of about 3.2 m/s, rolled ≥ 20° (16 inside, 3
+  outside). The command is still mostly inside the range (median 12°), but 9 of 24 overflow it at the final
+  escape, against A's 1.
+- **Turns, his way: the loop on the slow board.** B's in-turn loop is gone (1 turn-caused fall in the window, against
+  B's 11). What fails first instead is the slow board after the release: final escape a median 2.75 s at a schedule
+  speed of 2.04 m/s (vW 2.7 m/s), and there **the command overflows the range** in 14 of 19 falls (median max |raw|
+  19°), the ankle windows rising into the escape (e.g. s2w10 `cueCL` 19 → 18 → 35°, s2w2 `cueCL` 14 → 14 → 25°).
+  On the same riders A stays inside the range (median 9.6°, 0 of 19) and falls later. In 18 of 19 the command is
+  unsaturated or pointing away from the fall over the last 0.1 s, so by 3.5x's rule this is **within the balance's
+  authority: an over-gained loop**, R's kind, not a lack of ankle.
+- **Why (measured gains, inferred cause):** Y and A part his way at a median 1.02 s and 3.14 m/s, 13 of 24 below
+  3.571 m/s. There Y keeps `taper`'s reading. Below 3.5 m/s Y blends toward, and below 3 m/s holds, the 3 m/s design
+  built on 5.04 m/s water with the true V = 3. A holds the 4 m/s design on the 6 m/s row. The gains differ by
+  1.6–2.7×. At 3 m/s Compress bank / bank rate is 1.57 / 0.23 (Y) against 0.97 / 0.17 (A); tall it is 2.02 / 0.31
+  against 0.76 / 0.18. From 3.5 to 5 m/s the two agree within 9 % (Compress bank 1.05 against 0.97 at 3.5 m/s). The board with Compress held after the release
+  spends its last second below 3 m/s (median schedule speed 2.0 m/s at the final escape). **Inferred:** there Y's
+  stiffer low-speed gains drive the ankle past its range, and A's softer ones do not. Three of the six his-way losses
+  part from A at 4.2–5.8 m/s instead (s2w1 `cueCR`, s2w6 `cueCR`, s2w6 `cueCL`). There the two read the same twelve
+  derivatives and differ only by the rail machinery (`railCorrection`, `railLimit` and `railPull` at v_eq = 6 rather
+  than at v) and the drag. That part of Y − A is not separated from the low-speed reading.
+
+### 3.5 The climb (3.5x §0.6's rule; `climb.md`)
+
+Climbers: **Y 9** (A 8, B 12, R 4). 3.5o's 0.90 m line is reached on Y by s1w6 `cueL` (+2.93 s, vW 2.1 m/s) and
+s2w11 `cueR` (+3.07 s, 1.7 m/s), the two A riders that reach it, plus s3w9 `cueR`, a slow take-off rising on the
+face that the rule admits. The roll-out O (≥ 20° to the outside after +1.2 s) comes on s1w6 `cueL` at +2.53 s
+(3.9 m/s). The seed-2 wave-2 left survivor (`cueL`) reaches 0.50 m at +2.17 s (4.4 m/s) and falls at 2.55 s without
+0.90 m, as on A (A: 0.50 m at +2.18 s, falls 2.47 s).
+
+### 3.6 Against the predictions (§0.6)
+
+1. Model check: failed the literal line at A's cells — **held** (§1).
+2. Main line pass — **wrong: fail** (0 later, 6 sooner).
+3. His way against B, median ≥ +0.3 s and ≥ 8 of 11 out — **held** (+0.367 s; 10 of 11).
+4. Steer only, the larger share in Y − A — **wrong**: Y − B carries it (−0.100 s, 11 sooner); Y − A +0.000 s.
+5. Take-offs, catch, neutral riders pass — **held**.
+6. Climbers between 8 and 12, 0.90 m by 2 or 3 — **held** (9; 2 turn riders and 1 take-off).
+7. What fails first, U after the release with no in-window loop — **held steer only; wrong his way**, where the first
+   failure is the loop past the range on the slow board below 3 m/s.
