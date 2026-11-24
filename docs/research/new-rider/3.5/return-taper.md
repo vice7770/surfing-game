@@ -413,3 +413,110 @@ face that the rule admits. The roll-out O (≥ 20° to the outside after +1.2 s)
 6. Climbers between 8 and 12, 0.90 m by 2 or 3 — **held** (9; 2 turn riders and 1 take-off).
 7. What fails first, U after the release with no in-window loop — **held steer only; wrong his way**, where the first
    failure is the loop past the range on the slow board below 3 m/s.
+
+## 4. Seeds 4–9, Y and A, all six scripts: the out-of-sample check (run 20:51–21:23 UTC)
+
+*Same probe bundle, same definitions; 12 new runs (Y and A on seeds 4–9). B and R were not run on these seeds, so
+only Y − A is read. Tables: `results/35y/lines-s49.md`, `summary-s49.md`, `twins-s49.md`, `classify-s49.md`,
+`climb-s49.md`, `diverge-YA-s49.md`, `checks-s49.md`.*
+
+**Second reproduction check: passes.** A's new runs carry all six scripts; their `cue`, `cueL` and `cueR` rows are
+identical, line for line and in order, to 3.5x's A seeds 4–9 files (which rode only those three): 6 660, 7 960,
+11 188, 6 046, 4 333 and 5 389 rows, 41 576 of 41 576. Every file prints back its build (12 of 12).
+
+| line | n | Y − A: later / sooner, median, worse ≥ 0.5 s | verdict |
+| --- | --- | --- | --- |
+| **main: turns his way** | 42 | **6 / 13, −0.083 s, 7** | **FAIL** (median < 0; sooner > later) |
+| turns steer only | 42 | 2 / 10, +0.000 s, 6 | reported |
+| take-offs (3 s) | 42 | `cue` 1 / 3, `cueC` 2 / 1, +0.000 s; 0 of A's 21 lasting stands lost | **PASS** |
+| neutral riders (5 s) | 42 | 7 / 5, +0.000 s | **PASS** |
+
+- **Most moved, his way:** s8w5 `cueCL` 4.75 → 3.43 s, s4w10 `cueCR` 3.20 → 2.10, s7w5 `cueCR` 2.02 → 1.27,
+  s7w5 `cueCL` 2.28 → 1.60, s8w1 `cueCL` 2.45 → 1.82, s5w3 `cueCL` 3.17 → 2.57. Steer only: s9w8 `cueL`
+  3.73 → 2.53, s9w8 `cueR` 4.08 → 3.10, s7w4 `cueL` 1.72 → 1.03.
+- **The command at the final escape, turns:**
+  - Y: median max |raw| 20.4° steer only (24 of 40 past the range) and 19.5° his way (30 of 38).
+  - A: 8.2° (4 of 41) and 10.5° (11 of 37).
+  - This is seeds 1–3's split, out of sample. On Y the command over the last 0.1 s is unsaturated or points away
+    from the fall in 39 of 41 turn falls steer only and 38 of 38 his way (A: 41 of 41, 37 of 37), so the loss is
+    within the balance's authority.
+- **Turn-caused (twin outlives by ≥ 0.5 s), his way:**
+
+  | arm | turn-caused falls | median fall (s) | median sched at the final escape (m/s) | final escape in +0.3–1.5 s | registered classes |
+  | --- | --- | --- | --- | --- | --- |
+  | Y | 18 | 1.82 | 3.86 | 6 | 6 L-gain in the turn, 9 N |
+  | A | 13 | 2.13 | 5.18 | 4 | 6 L-gain in the turn |
+
+  On these seeds A his way also loses some riders inside the turn at 5–6 m/s. Its median fall his way is 1.25 s,
+  against 3.27 s on seeds 1–3.
+- **Where Y and A part:**
+  - his way, a median 0.76 s at 3.44 m/s (18 of 34 below 3.571 m/s, 11 at 4.6–7.8);
+  - steer only, 0.85 s at 4.02 m/s.
+- **The climb:** climbers Y 4, A 6. The 0.90 m line is reached by one turn rider on each arm, the same
+  rider: s6w5 `cueR`, Y at +3.42 s and 3.5 m/s, A at +3.45 s and 3.4 m/s.
+
+## 5. The answer
+
+**The returning taper does what the ruling asked of it against B, and it is worse than A his way.**
+- **Against B, his way: removing the plateau removes B's loop in the turn.** Y − B is +0.367 s (15 later, 5 sooner).
+  10 of B's 11 in-window turn-caused falls move out of +0.3–1.5 s, and 4 of those hold the whole 5 s.
+- **Against A, his way: the main line fails, in and out of sample.**
+  - seeds 1–3: Y − A 0 later, 6 sooner, median +0.000 s;
+  - seeds 4–9: 6 later, 13 sooner, −0.083 s, 7 worse by ≥ 0.5 s.
+- **What fails first under Y with Compress is the slow board.** After the release, with the board below about 3 m/s,
+  Y's ankle command oscillates past its ±14.3° range: 14 of 19 falls on seeds 1–3, 30 of 38 on seeds 4–9. On the
+  same riders A stays inside its range (0 of 19; 11 of 37).
+- **That is the part of `taper` Y keeps:** its 1.68 v reading and its 3 and 3.5 m/s knots. At 3 m/s they give
+  Compress bank gains of 1.57 against A's 0.97, and tall bank gains of 2.02 against 0.76.
+- **The open cause, resolved:**
+  - **Measured:** B's steer-only edge over A (+0.275 s) is carried by Y − B (−0.100 s, 11 sooner), not by Y − A
+    (+0.000 s). So it came from the plateau during the turn, not from the low-speed reading.
+  - **Inferred:** B's low-speed reading helps neither drive, and with Compress on the slow board it costs time.
+  - **Not separated:** about a third of the his-way losses part from A at 4.2–6 m/s. There Y and A differ only by
+    the rail machinery and the drag, so that share of Y − A is not attributed between the reading and the
+    machinery.
+- **What stays as it was:** take-offs, the catch start (18 of 18) and the neutral riders are A's, within ±0.1 s.
+  The climb is A's: the same riders reach 0.90 m.
+
+**For the coordinator and Vicente (not built; each needs his word):**
+1. **Keep A for his way.** No arm measured here beats A with Compress held.
+2. **Measured: the plateau helps steer only and hurts his way. Inferred: the low-speed reading hurts his way.** The
+   evidence points to a map that is A below about 4 m/s (the 6 m/s row, A's held 4 m/s design) and keeps some of
+   B's stiffer water only in the turn's 5–7 m/s band. That map would bring back the very band where B loops with
+   Compress, so it would be a trade the owner's riding has to judge. I do not recommend building it before he
+   rides Y.
+3. **The slow board after the release is still what fails first on every arm:**
+   - A under-asks there (the range unused);
+   - B's and Y's low-speed gains over-ask there (the range overflowed);
+   - R's own gains overflow there too.
+
+   A design for 2–4 m/s that is robust to its delay needs 3.5x's candidate 4 first: the slow board's plant,
+   identified from the game's own ticks.
+
+**Ride Y** (built at `a7398222`, on `claude/return-taper`; off by default, pinned off online):
+
+    ?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantSpeed=taper6
+
+**Reproduce:**
+
+    S=<scratch>/35y
+    ./node_modules/.bin/rolldown docs/research/new-rider/3.5/what-fails-first.ts -o $S/raw.mjs --format esm --platform node
+    printf "globalThis.location = { search: '' };\n" > $S/wff.mjs && cat $S/raw.mjs >> $S/wff.mjs      # SHA-256 f1a7eb42…
+    ./node_modules/.bin/rolldown docs/research/new-rider/3.5/sideways-falls.ts -o $S/sfraw.mjs --format esm --platform node
+    printf "globalThis.location = { search: '' };\n" > $S/sf.mjs && cat $S/sfraw.mjs >> $S/sf.mjs        # SHA-256 d28b0bc6…
+    env MODE=organic SEED=<1-9> PERIODS=12 STAND_HOLD=5 SCRIPTS=cue,cueC,cueL,cueR,cueCL,cueCR EXTRA='&cueLater=on&plantSpeed=taper6' OUT=$S/runs/o-s<seed>-Y.jsonl node --max-old-space-size=3200 $S/wff.mjs
+    env ... EXTRA='&cueLater=on&plantFloor=6' OUT=$S/runs/o-s<4-9>-A.jsonl ...
+    env MODE=catch RUN=<0-9> SCRIPT=<cue|cueC> EXTRA='&cueLater=on&plantSpeed=taper6' OUT=$S/catch/c-<script>-on-t6-<run>.jsonl node --max-old-space-size=3200 $S/sf.mjs
+    # reads: seeds 1-3 in one directory with 3.5x's o-s<1-3>-{A,B,R}.jsonl linked beside Y's; seeds 4-9 with Y and A
+    python3 docs/research/new-rider/3.5/what-fails-first.py <dir> checks|lines|summary|twins|classify|climb
+    python3 docs/research/new-rider/3.5/what-fails-first.py <dir> diverge Y A      # and Y B
+    env TAGS=pf6,tp,t6 YDIR=$S python3 docs/research/new-rider/3.5/what-fails-first-catch.py <3.5x scratch> docs/research/new-rider/3.5/results/35v/data
+
+**Data in the repository** (`results/35y/`, 0.3 MB):
+- the model check (`model-*.jsonl`, `gains-taper6.jsonl`);
+- the byte check;
+- the reads named above;
+- `run-summaries.jsonl.gz`: every new run's control, stand (weights once per file), summary and done rows,
+  reproduction control and catch included.
+
+The per-frame runs (288 MB) stay in the session scratchpad, under `35y/runs/` and `35y/catch/`.
