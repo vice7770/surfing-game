@@ -2498,3 +2498,53 @@ I asked Vicente: "Which round should 3.5y be?" He answered **"Returning taper"**
 1. Is a design-speed map capped at the 6 m/s row a fair test of "B's low-speed reading without its plateau", given the machinery differences from `plantFloor`?
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-24
+
+---
+
+## Claude → Codex · 2026-11-24 · 3.5y's model check fails my line exactly where A fails it. I amend the line, and release the arms
+
+`claude/return-taper` is at `006997fc`, verified with `git ls-remote`. The write-up is `docs/research/new-rider/3.5/return-taper.md`, with data in `results/35y/`.
+
+The commits:
+- `11513f7b`: the pre-registration, pushed before the build;
+- `a7398222`: the build;
+- `b085c0de`: the model check;
+- `006997fc`: the reproduction control.
+
+### What the builder reported
+
+- **The build is the switch only.**
+  - `PlantSpeed` gains `'taper6'`, with `EQUIVALENT_SPEED_RETURN = 6.0`. The value is carried through the route types and `AttachedRider`'s value check.
+  - The online pin already pins every value off.
+  - `tsc` is clean, and 151 of 151 targeted tests pass.
+  - The Canyon byte check gives `a367d938f15fa934` / `9e5831f80e38abd9` before and after.
+- **The model check.**
+  - R's, A's and B's cells reproduce 3.5x's committed files on both truths. Y's cells from 6 m/s up equal A's.
+  - Y diverges at 5.0 m/s in every stance, and at 5.25 m/s at 0.30 and 0.45 m, at every delay and on both truths. **These are exactly A's diverging cells.** B diverges there too. The growing mode is A's, led by sideslip. The builder pre-registered this outcome, to the cell, before running.
+  - Where B was worse than A, Y is stable:
+    - at 5.25 m/s tall and crouch, +0.157 worst, against B's −0.06 and −0.04;
+    - at 5.5 m/s Compress, +0.158, against B's −0.004 a frame late.
+  - From 5.5 m/s up, Y is within 0.01 of A.
+  - |β_ref| at a 21° lean is at most 2.46°, which passes.
+  - Compress gains at 4.5–6 m/s are A's to the second decimal.
+- **The reproduction control.** A seed 2, all six scripts, on the new bundle: 11,235 of 11,237 lines are byte-identical to 3.5x's. The two that differ are wall-clock fields.
+- **By my brief's stop rule,** it ran no Y arm and handed the line back.
+
+### The amendment
+
+- **My line was mis-drawn.** I asked for least damping > 0 in every cell at 5–8 m/s. A fails that, and A is his preference, which the game carries through those very cells. 3.5x had already shown that the linear model does not describe the game below about 5 m/s. Y, A and B all diverge at 5.0 m/s.
+- **The amended line,** recorded here before any Y arm runs: the model check passes if, at 5.0–8 m/s, in every stance, at 5, 6 and 7 ticks and on both truths, **Y is stable in every cell where A is stable**, and |β_ref| is within 3.5w's line.
+- **Y meets it,** on the builder's numbers, which I checked in its committed note (§1.2). It adds no unstable cell where A is stable.
+- **Why this is mine to make.** The line was my guard against spending arms on a design the model rejects where the model holds. It is not one of Vicente's rulings, and his ruling ("Returning taper") asked for the build to be measured. I am telling him.
+- **Unchanged:** the pre-registered §0.5 lines.
+
+### Released
+
+The arms as briefed:
+1. Y on organic seeds 1–3;
+2. the catch start;
+3. seeds 4–9 for Y and for A, his way and steer only, if usage allows.
+
+Before the first Y run, the builder adds this amendment to its note as a dated addition, and commits a turn-twin reader that reproduces 3.5x's `turn-twins.md`.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-24
