@@ -208,8 +208,9 @@ def classify_rider(arm, script, s, frames, hold):
         if e['tS'] - 0.15 - 1e-9 <= x['tS'] <= e['tS'] + 1e-9 and x.get('cps'):
             for k in ('pos', 'rider', 'boardT', 'boardR', 'frame', 'felt', 'omega'):
                 ch[k] = ch.get(k, 0) + (x['cps'].get(k) or 0) * side
-    res['lead'] = max(ch, key=lambda k: ch[k]) if ch else None
-    res['leadShare'] = {k: round(v, 3) for k, v in sorted(ch.items(), key=lambda kv: -kv[1])[:3]}
+    # 3.5v section 5's reading: the channel with the largest |change|, its sign toward the fall side kept
+    res['lead'] = max(ch, key=lambda k: abs(ch[k])) if ch else None
+    res['leadShare'] = {k: round(v, 3) for k, v in sorted(ch.items(), key=lambda kv: -abs(kv[1]))[:3]}
     # controller term at the first M4
     m4 = marks.get('M4')
     if m4 is not None and m4['tS'] <= e['tS'] + 1e-9:
@@ -224,6 +225,29 @@ def classify_rider(arm, script, s, frames, hold):
     # raw in the model's sign is -(board-frame); toward recovery = away from the fall side, so board-frame raw * side < 0
     res['satRecover'] = bool(lastw) and all(x['ctl']['over'] > 0 and -x['ctl']['raw'] * side < 0 for x in lastw)
     res['unsatOrAway'] = bool(lastw) and any(x['ctl']['over'] <= 0 or -x['ctl']['raw'] * side > 0 for x in lastw)
+    # 0.10 (dated addition): the final escape, the onset of the last run of margin loss ending in the separation
+    lost = lambda x: (x.get('headX') is not None and x['headX'] <= 0) or (x.get('cps') or {}).get('inf', 0) > 0 or x.get('beyond') == 1 or (x.get('pastZ') or 0) > 0
+    onset = None
+    gap_from = None
+    for x in reversed(st_frames):
+        if lost(x):
+            onset = x
+            gap_from = None
+        else:
+            if onset is None:
+                continue
+            if gap_from is None:
+                gap_from = x['tS']
+            if onset['tS'] - x['tS'] > 0.05 + 1e-9:
+                break
+    if onset is not None:
+        fside = sf.side_of(onset)
+        lw = [x for x in st_frames if x.get('ctl') and onset['tS'] - 0.1 - 1e-9 <= x['tS'] <= onset['tS'] + 1e-9]
+        res['finalSat'] = bool(lw) and all(x['ctl']['over'] > 0 and -x['ctl']['raw'] * fside < 0 for x in lw)
+        res['finalMaxRaw'] = max((abs(x['ctl']['raw']) for x in lw), default=None)
+        prevc = [x for x in st_frames if x.get('ctl') and x['tS'] <= onset['tS']]
+        res['final'] = {'t': onset['tS'], 'vW': onset.get('vW'), 'sched': prevc[-1]['ctl']['speed'] if prevc else None,
+                        'lean': (onset.get('x35') or {}).get('lean'), 'rollS': (onset.get('x35') or {}).get('rollS')}
     rw = raw_windows(st_frames, e['tS'])
     res['rawWin'] = [None if v is None else round(v, 1) for v in rw]
     grows = all(v is not None for v in rw) and rw[0] < rw[1] < rw[2]
@@ -276,7 +300,9 @@ def classify(directory, quiet=False):
                 if c['cls'] in (None, 'held'):
                     continue
                 marks = ', '.join(f'{k} {v:.2f}' for k, v in sorted((c.get('marks') or {}).items(), key=lambda kv: kv[1]))
-                print(f"| {arm} | s{seed}w{wave} {script} | {fmt(c['stand'])} | {fmt(c['fell'], 3)} | {c['cls']} | {fmt(c.get('tEsc'), 3)} | {marks} | {fmt(c.get('vW'))} / {fmt(c.get('sched'))} / {fmt(c.get('design'))} | {c.get('lead')} {c.get('leadShare')} | {c.get('m4term')} | {c.get('rawWin')} | {c.get('satRecover')} |")
+                fe = c.get('final') or {}
+                fin = '' if not fe or c.get('tEsc') is None or abs(fe['t'] - c['tEsc']) <= 0.3 else f" (final {fe['t']:.2f}: {fmt(fe.get('vW'))} / {fmt(fe.get('sched'))} m/s, lean {fmt(fe.get('lean'), 0)}, roll {fmt(fe.get('rollS'), 0)})"
+                print(f"| {arm} | s{seed}w{wave} {script} | {fmt(c['stand'])} | {fmt(c['fell'], 3)} | {c['cls']} | {fmt(c.get('tEsc'), 3)}{fin} | {marks} | {fmt(c.get('vW'))} / {fmt(c.get('sched'))} / {fmt(c.get('design'))} | {c.get('lead')} {c.get('leadShare')} | {c.get('m4term')} | {c.get('rawWin')} | {c.get('satRecover')} |")
         print('\n## Counts (riders that stood; held = lasted the hold)\n')
         print('| arm | drive | stood | held | P | S | F | O | L-gain | L-ref | U | N |')
         print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
@@ -293,7 +319,7 @@ def classify(directory, quiet=False):
 # ------------------------------------------------------------------------------------------------------------------
 def climb(directory):
     rs = runs(directory)
-    print('| arm | rider | fell (s) | climber | 0.50 m at (s, vW, course) | 0.90 m at | peak (m, at s) | O at (s, vW) |')
+    print('| arm | rider | fell (s) | bottom (s, m, vW) | 0.50 m at (s, vW, sched, course) | 0.90 m at | peak (m, at s) | O at (s, vW) |')
     print('| --- | --- | --- | --- | --- | --- | --- | --- |')
     out = []
     for (seed, arm), path in sorted(rs.items()):
@@ -317,15 +343,21 @@ def climb(directory):
             if not climber:
                 continue
             turn = TURN[sc]
-            def first_at(h):
-                x = next((x for x in fr if x['tS'] > 0.3 and cl(x) is not None and cl(x) >= h), None)
-                return None if x is None else (round(x['tS'], 3), x.get('vW'), (x.get('x35') or {}).get('course'))
             pk = max(later, key=lambda x: cl(x))
+            # 3.5o's lines are crossed on the way up the face: after the bottom (the least climb from +0.3 s to the peak)
+            before = [x for x in fr if 0.3 <= x['tS'] <= pk['tS'] and cl(x) is not None]
+            bottom = min(before, key=lambda x: cl(x))
+            def first_at(h):
+                x = next((x for x in fr if x['tS'] >= bottom['tS'] and cl(x) is not None and cl(x) >= h), None)
+                if x is None:
+                    return None
+                pc = [y for y in fr if y.get('ctl') and y['tS'] <= x['tS']]
+                return (round(x['tS'], 3), x.get('vW'), pc[-1]['ctl']['speed'] if pc else None, (x.get('x35') or {}).get('course'))
             o = next((x for x in fr if x['tS'] >= 1.2 and (x.get('x35') or {}).get('rollS') is not None and x['x35']['rollS'] * turn <= -20), None)
-            r = {'arm': arm, 'seed': seed, 'script': sc, 'wave': s['wave'], 'fell': s.get('fellAfterStand'), 'h50': first_at(0.5), 'h90': first_at(0.9),
+            r = {'arm': arm, 'seed': seed, 'script': sc, 'wave': s['wave'], 'fell': s.get('fellAfterStand'), 'bottom': (round(bottom['tS'], 3), round(cl(bottom), 2), bottom.get('vW')), 'h50': first_at(0.5), 'h90': first_at(0.9),
                  'peak': (round(cl(pk), 3), round(pk['tS'], 3)), 'O': None if o is None else (round(o['tS'], 3), o.get('vW'))}
             out.append(r)
-            print(f"| {arm} | s{seed}w{s['wave']} {sc} | {r['fell']} | yes | {r['h50']} | {r['h90']} | {r['peak']} | {r['O']} |")
+            print(f"| {arm} | s{seed}w{s['wave']} {sc} | {r['fell']} | {r['bottom']} | {r['h50']} | {r['h90']} | {r['peak']} | {r['O']} |")
     return out
 
 
@@ -353,6 +385,80 @@ def climb_ticks(directory, arm, seed, script, wave, t0=1.0):
         top = sorted(tm.items(), key=lambda kv: -abs(kv[1]))[:3]
         cl = None if x.get('faceH') is None else round(x['faceH'] * x['faceFrac'], 2)
         print(f"| {x['tS']:.3f} | {vW} | {sched} | {des:.2f} | {cl} | {x35.get('course')} | {r} | {x35.get('rollS')} | {(x.get('lat') or {}).get('bank')} | {x35.get('lean')} | {xr[0]} / {xr[2]} / {xr[4]} / {xr[5]} | {cb(vW)} / {cb(des)} | {x['ctl']['raw']} | {', '.join(f'{k} {v:+.1f}' for k, v in top)} |")
+
+
+def summary(directory):
+    """The per arm x drive picture (registered classes and the final escape), and the paired fall times."""
+    table = classify(directory, quiet=True)
+    med = lambda xs: None if not xs else round(st.median(xs), 2)
+    print('| arm | drive | stood | fell in hold | median fall (s) | final escape: median t (s) | median vW / sched (m/s) | sched < 4.5 at the final escape | rolled >= 20 deg inside / outside | command unsaturated or away, last 0.1 s |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    for arm in ('R', 'A', 'B'):
+        for script_set, title in ((('cue',), 'take-off, centred'), (('cueC',), 'take-off, his way'), (('cueL', 'cueR'), 'turn, steer only'), (('cueCL', 'cueCR'), 'turn, his way')):
+            cs = [c for k, c in table.items() if k[0] == arm and k[2] in script_set and c['cls'] is not None]
+            fell = [c for c in cs if c['cls'] != 'held']
+            fin = [c['final'] for c in fell if c.get('final')]
+            ins = sum(1 for c in fell if c.get('final') and c['final'].get('rollS') is not None and TURN.get(c['script'], 0) and c['final']['rollS'] * TURN[c['script']] >= 20)
+            out = sum(1 for c in fell if c.get('final') and c['final'].get('rollS') is not None and TURN.get(c['script'], 0) and c['final']['rollS'] * TURN[c['script']] <= -20)
+            slow = sum(1 for f in fin if f.get('sched') is not None and f['sched'] < 4.5)
+            unsat = sum(1 for c in fell if c.get('final') and not c.get('finalSat'))
+            print(f"| {arm} | {title} | {len(cs)} | {len(fell)} | {med([c['fell'] for c in fell])} | {med([f['t'] for f in fin])} | {med([f['vW'] for f in fin if f.get('vW') is not None])} / {med([f['sched'] for f in fin if f.get('sched') is not None])} | {slow} of {len(fin)} | {ins} / {out} | {unsat} of {len(fell)} |")
+    print('\n### Paired fall times (same stand on every arm; censored at the hold)\n')
+    print('| pair | drive | n | later / sooner / same (0.25 s) | median diff (s) |')
+    print('| --- | --- | --- | --- | --- |')
+    def ft(c, hold):
+        return hold if c['cls'] == 'held' or c.get('fell') is None else min(hold, c['fell'])
+    for a, b in (('A', 'R'), ('B', 'R'), ('A', 'B')):
+        for script_set, title, hold in ((('cue',), 'take-off, centred', 3), (('cueC',), 'take-off, his way', 3), (('cueL', 'cueR'), 'turn, steer only', 5), (('cueCL', 'cueCR'), 'turn, his way', 5)):
+            ds = []
+            for k, c in table.items():
+                if k[0] != a or k[2] not in script_set or c['cls'] is None:
+                    continue
+                o = table.get((b,) + k[1:])
+                if o is None or o['cls'] is None or o['stand'] != c['stand']:
+                    continue
+                ds.append(ft(c, hold) - ft(o, hold))
+            if ds:
+                print(f"| {a} - {b} | {title} | {len(ds)} | {sum(d >= 0.25 for d in ds)} / {sum(d <= -0.25 for d in ds)} / {sum(abs(d) < 0.25 for d in ds)} | {med(ds):+.2f} |")
+    return table
+
+
+def divergence(directory, a='A', b='B', tol=2.0):
+    """Where two arms' rides of the same rider first part: the first frame |rollS_a - rollS_b| > tol deg, with the
+    schedule speed there and each arm's design speed."""
+    rs = runs(directory)
+    print(f'| rider | parts at (s) | vW | sched | design {a} / {b} | fell {a} / {b} |')
+    print('| --- | --- | --- | --- | --- | --- |')
+    speeds = []
+    for seed in (1, 2, 3):
+        if (seed, a) not in rs or (seed, b) not in rs:
+            continue
+        ra, rb = load(rs[(seed, a)]), load(rs[(seed, b)])
+        sa, fa, _ = riders(ra)
+        sb, fb, _ = riders(rb)
+        sbk = {(x['script'], x['wave']): x for x in sb}
+        for x in sa:
+            if x.get('stand') is None:
+                continue
+            k = (x['script'], x['wave'])
+            y = sbk.get(k)
+            A = {f['t']: f for f in fa.get(k, []) if f.get('tS') is not None and f['tS'] >= 0}
+            B = {f['t']: f for f in fb.get(k, []) if f.get('tS') is not None and f['tS'] >= 0}
+            part = None
+            for t in sorted(set(A) & set(B)):
+                ua, ub = A[t].get('roll'), B[t].get('roll')
+                if ua is not None and ub is not None and abs(ua - ub) > tol:
+                    part = A[t]
+                    break
+            if part is None:
+                continue
+            prevc = [f for f in sorted(A.values(), key=lambda f: f['t']) if f.get('ctl') and f['t'] <= part['t']]
+            sc = prevc[-1]['ctl']['speed'] if prevc else None
+            speeds.append(sc)
+            print(f"| s{seed}w{k[1]} {k[0]} | {part['tS']:.2f} | {part.get('vW')} | {sc} | {design_speed(a, sc):.2f} / {design_speed(b, sc):.2f} | {x.get('fellAfterStand')} / {y.get('fellAfterStand') if y else None} |")
+    sp = [v for v in speeds if v is not None]
+    if sp:
+        print(f"\n{len(sp)} riders part; schedule speed where they part: median {st.median(sp):.2f} m/s, {sum(4.6 <= v <= 7.8 for v in sp)} of {len(sp)} at 4.6-7.8 m/s, {sum(v < 4.6 for v in sp)} below 4.6")
 
 
 def compact(directory, out_dir):
@@ -393,5 +499,9 @@ if __name__ == '__main__':
         climb(d)
     elif what == 'ticks':
         climb_ticks(d, sys.argv[3], int(sys.argv[4]), sys.argv[5], int(sys.argv[6]), float(sys.argv[7]) if len(sys.argv) > 7 else 1.0)
+    elif what == 'summary':
+        summary(d)
+    elif what == 'diverge':
+        divergence(d, *(sys.argv[3:5] if len(sys.argv) > 4 else ('A', 'B')))
     elif what == 'compact':
         compact(d, sys.argv[3])

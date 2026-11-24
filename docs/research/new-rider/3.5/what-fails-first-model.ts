@@ -76,18 +76,25 @@ for (const depth of DEPTHS) for (const v of SPEEDS) {
     // The growing mode (when the loop has a real eigenvalue outside the unit circle): its plant-state shape by power
     // iteration on the closed loop at the true delay (the largest-modulus eigenvalue is then that one), normalised.
     if (process.env.MODES === '1') {
-      const M = closedLoop(phi, gamma, 6, d);
+      // MODE_TS: the true delay the mode is read at (6 ticks by default). A complex pair does not settle under power
+      // iteration, so the shape is the RMS of each plant state over the last 600 iterates (its amplitude in the mode).
+      const M = closedLoop(phi, gamma, Number(process.env.MODE_TS ?? 6), d);
       let x = M.map((_, i) => 1 + 0.01 * i);
-      let lam = 0;
+      let growth = 0;
+      const n = phi.length;
+      const amp = new Array<number>(n).fill(0);
       for (let it = 0; it < 3000; it += 1) {
         const y = M.map((row) => row.reduce((s, m, j) => s + m * x[j], 0));
         const norm = Math.hypot(...y);
-        lam = y.reduce((s, v, i) => s + v * x[i], 0) / x.reduce((s, v) => s + v * v, 0);
+        if (it >= 2400) { growth += Math.log(norm); for (let i = 0; i < n; i += 1) amp[i] += (y[i] / norm) ** 2; }
         x = y.map((v) => v / norm);
       }
-      const n = phi.length;
-      const big = Math.max(...x.slice(0, n).map(Math.abs)) || 1;
-      res.mode = { lambda: f(lam, 4), shape: x.slice(0, n).map((v) => f(v / big, 2)) };
+      // The shape in the design's own units: each of the first eight states over its `stateScale` (the twist torque and
+      // the rest, in N·m and rad of rest, are left out so the roll, bank, yaw and twist channels compare).
+      const sc = d.phi.length >= 8 ? (ARMS.R.stateScale as number[]) : [];
+      const scaled = amp.slice(0, 8).map((v, i) => Math.sqrt(v) / (sc[i] ?? 1));
+      const big = Math.max(...scaled) || 1;
+      res.mode = { radius: f(Math.exp(growth / 600), 4), shape: scaled.map((v) => f(v / big, 2)) };
     }
     // The design's own nominal loop (its own model as the truth, its own delay), for reference.
     try {
