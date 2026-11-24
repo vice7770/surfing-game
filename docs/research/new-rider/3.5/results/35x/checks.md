@@ -25,3 +25,11 @@
 ## Reproduction (b): cueLater off, seed 2, against 3.5o's population (shipped, steer only)
 - s2 S0-off: 33 of 33 riders with the identical stand and fall time (within 1.5e-4 s: 3.5o rounds to 5 decimals, this probe to 4)
 - s2 S0: 33 of 33 riders with the identical stand and fall time (within 1.5e-4 s: 3.5o rounds to 5 decimals, this probe to 4)
+## Builds printed back
+- s4 A: cueLater on, (plantFloor, plantSpeed) [(6, None)], scripts ['cue', 'cueL', 'cueR'], standHold 5, lat True x35 True ledger True -> OK
+- s5 A: cueLater on, (plantFloor, plantSpeed) [(6, None)], scripts ['cue', 'cueL', 'cueR'], standHold 5, lat True x35 True ledger True -> OK
+- s6 A: cueLater on, (plantFloor, plantSpeed) [(6, None)], scripts ['cue', 'cueL', 'cueR'], standHold 5, lat True x35 True ledger True -> OK
+- s7 A: cueLater on, (plantFloor, plantSpeed) [(6, None)], scripts ['cue', 'cueL', 'cueR'], standHold 5, lat True x35 True ledger True -> OK
+- s8 A: cueLater on, (plantFloor, plantSpeed) [(6, None)], scripts ['cue', 'cueL', 'cueR'], standHold 5, lat True x35 True ledger True -> OK
+- s9 A: cueLater on, (plantFloor, plantSpeed) [(6, None)], scripts ['cue', 'cueL', 'cueR'], standHold 5, lat True x35 True ledger True -> OK
+

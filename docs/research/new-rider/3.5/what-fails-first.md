@@ -199,9 +199,10 @@ inside the turn, at 4.4–7.5 m/s, where B's design differs from A's.**
    comes at +0.72 to +0.83 s at vW 1.9–2.5 m/s. The command at that escape is small: median |raw| 8.5°, inside the
    ±14.3° range on every A take-off fall. The pitch-up and the speed loss are the same on R, A and B to within a few
    degrees and a few tenths of a m/s. Neither switch changes them (§4.1).
-2. **Turns, steer only (A).** 24 of 26 turn riders fall within 5 s on A, 23 on R and 22 on B. On A none falls in the turn
-   window. The 14 falls the turn causes (the stick-centred twin outlives the rider by ≥ 0.5 s) come at a median
-   2.52 s, about 1.3 s after the stick is released at +1.2 s. The schedule speed at their final escape is a median
+2. **Turns, steer only (A).** 24 of 26 turn riders fall within 5 s on A, 23 on R and 22 on B. On A, 9 of the 24 share
+   their stick-centred twin's take-off failure. 14 are caused by the turn (the twin outlives the rider by ≥ 0.5 s),
+   and none of those comes in the turn window. They fall at a median 2.52 s, about 1.3 s after the stick is released at
+   +1.2 s. The schedule speed at their final escape is a median
    3.8 m/s. With the later cue the stands are faster, so the full stick asks a lean of 45–50° at 7–9 m/s, not
    3.5o's 21°. After the release, the lean asked eases to 0 by about +1.9 s. The board keeps yawing at up to 130°/s
    (median of the largest) and slows to a median least speed of 2.4 m/s through the water. It then rolls 20° or more,
@@ -505,7 +506,29 @@ frame off each way. The truth was either the shipped table at v (`table`) or 3.5
 
 ## 9. The catch start and seeds 4–9
 
-*(Filled in §9.1 below when the batches finished.)*
+### 9.1 Seeds 4–9, A, steer only (`results/35x/s49-summary.md`, `classify-s49.md`, `climb-s49.md`)
+
+Every file printed back `cueLater` on and `plantFloor` 6. R and B were not run on these seeds, so nothing here is
+attributed between arms.
+
+| | stood | fell in hold | the picture |
+| --- | --- | --- | --- |
+| take-offs (`cue`, 3 s) | 21 | 11 | median fall 0.95 s; registered classes F 4, U 3, N 2, S 1, L-gain 1. Final escape at a median vW of 2.15 m/s and schedule speed of 1.88 m/s. The board has slowed from about 4 m/s at the stand. Three are seeds 1–3's pitch-up stall again (s5w5 +14 → +38°, which the rule classes S since the crest is 0.47 m behind it; s5w12 +8 → +25°; s6w10 −2 → +39°). |
+| turns (`cueL`, `cueR`, 5 s) | 42 | 41 | 21 share their twin's take-off failure. 19 are caused by the turn: median fall 3.18 s, schedule speed 2.83 m/s at the final escape, 2 of 19 in the turn window, rolled ≥ 20° inside 8 and outside 8, median \|raw\| 9.8° (3 of 19 past the range) |
+
+**Read.** Seeds 4–9 repeat seeds 1–3's A picture, out of sample:
+- Most turn falls caused by the turn come after the release, on a board that has slowed below 3–4 m/s, with the ankle
+  range largely unused.
+- About half the turn riders on these seeds fall first by their take-off: the slow board or a fore/aft escape.
+
+### 9.2 The test wave's catch start, `cueLater` on (`results/35x/catch.md`; 3.5v's `sideways-falls.ts` unchanged)
+
+Runs 0–9, `cue` and `cueC`, on A and B. R is 3.5v's committed `c-*-on-base`. Every A and B run printed back its build
+(`on`/6/– and `on`/–/`taper`), and every stand is R's stand to the frame.
+
+- **A and B carry all 18 stands for 3 s,** as R does.
+- **Run 3 separates in the pop-up on every arm (P),** unchanged, with no stand. This is 3.5v's pop-up separation, the
+  only first failure on this wave with the later cue.
 
 ## 10. Candidates for Vicente (not built), surprises, what is left, reproduce
 
@@ -539,7 +562,7 @@ frame off each way. The truth was either the shipped table at v (`table`) or 3.5
   only on B.
 
 **What is left.**
-- R and B on seeds 4–9 (only A ran there, steer only).
+- R and B on seeds 4–9 (only A ran there, steer only), and his way on seeds 4–9.
 - The fore/aft stall and the two F falls, not diagnosed.
 - A climb with the stick held.
 - A game-identified plant for the delay check.
@@ -566,4 +589,17 @@ the committed `what-fails-first.ts`):
     python3 docs/research/new-rider/3.5/what-fails-first.py <dir> checks|classify|summary|climb|diverge
     python3 docs/research/new-rider/3.5/what-fails-first.py <dir> ticks A 2 cueL 2 0.3
     node <s>/split.mjs <s>/runs/o-s<seed>-<arm>.jsonl <script> <wave> 1.2 <t>      # what-fails-first-split.ts, bundled
+    python3 docs/research/new-rider/3.5/what-fails-first-climbsplit.py <dir> <s>/split.mjs A B   # climbsplit.md
+    python3 docs/research/new-rider/3.5/what-fails-first-catch.py <s> docs/research/new-rider/3.5/results/35v/data   # catch.md
     env TRUTH=table|game [MODES=1 MODE_TS=5|6|7] node <s>/m.mjs                   # what-fails-first-model.ts, bundled, from the repository root
+
+**Data in the repository** (`results/35x/`, 0.3 MB):
+- `checks.md`, `classify.md`, `summary.md`, `turn-twins.md`, `compress-pairs.md`, `climb.md`, `climb-ticks.md`,
+  `climbsplit.md`, `diverge-AB.md`, `catch.md`, and the seeds 4–9 counterparts;
+- `classification.json.gz`: every rider's first-failure record, seeds 1–3;
+- `run-summaries.jsonl.gz`: every run's control, stand (weights once per file), summary and done rows, catch included;
+- `model-*.jsonl`, `model-summary.md`: the delay check.
+
+The per-frame runs (about 300 MB) stay outside the repository, in the session scratchpad under `35x/runs/` and
+`35x/catch/`. Every number in this note is recomputed from them by the readers above; re-running one organic seed
+takes about 10.5 minutes.
