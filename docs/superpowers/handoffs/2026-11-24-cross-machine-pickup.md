@@ -1,0 +1,155 @@
+# Cross-machine pickup, 2026-11-24
+
+*Claude coordinator (Opus 5.5), surfer and wave tracks.*
+- This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
+- Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
+- Nothing is merged, and there are no PRs.
+
+## Start here
+
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `57ca1a63`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+   - Start at "3.5s" (2026-11-23).
+   - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
+   - Each step's evidence is linked from its entry.
+2. **Check usage before anything else** (see [Usage](#usage)). Start no builder before the weekly reset on **2026-11-25 at 14:00 UTC**.
+3. **To ride the current build:**
+   1. Check out `claude/plant-rows` at `1be12ee7` in its own worktree.
+   2. Link or install `node_modules`, and run the dev server.
+   3. Open the game with Vicente's address and the switches:
+
+      ```
+      ?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantFloor=6
+      ```
+
+   - **`&plantFloor=6`** is his preference. The measured alternative is `&plantSpeed=taper` in its place.
+   - **The test wave.** Add `&testWave=catch` (lying down, paddling in) or `&testWave=ride` (standing, across the face).
+     - On this branch, reload the page rather than pressing R if you need an exact repeat.
+     - The restart fix is on `claude/test-wave`, which is not merged into this line.
+
+## The owner's verdict (2026-11-24)
+
+> "I tested the code it seem to improve with both option &plantFloor=6 improved the stability. The surfer is able to turn but still not enough balance yet."
+
+## The open question, and the proposed next round (needs his word)
+
+**"Not enough balance yet."** The proposed next round is **3.5x**, a diagnosis:
+
+- **Base:** `claude/plant-rows` `1be12ee7`, with `?cueLater=on&plantFloor=6` (his preference) as the base and `&plantSpeed=taper` beside it.
+- **What still fails, on his address:**
+  - take-offs;
+  - turns;
+  - the climb after a turn.
+- **How the bot rides:** steer only, and his way, holding Compress (R2) from 0.1–0.3 s after the stand.
+- **Instruments:** 3.5v's bank ledger, the capture-point split, and the controller's per-state decomposition (`docs/research/new-rider/3.5/sideways-falls.ts`).
+- **The question:** what fails first now, at what speed, and is it within the balance's authority?
+- **The builder:** Opus at high effort, in its own worktree, with a usage guard.
+
+Also open:
+
+1. **The delay question** (Claude's reading, put to Codex).
+   - The true low-speed water is weak, so the balance's design asks for high gains.
+   - With the controller's 0.1 s blind start after the pop-up, those gains grow into the fall.
+   - Both working variants lower the low-speed gains, and neither models the delay.
+   - A design that accounts for its own sense delay might replace both the floor and the speed map.
+2. **The climb after a turn.** With both `plantFloor=6` and `taper`, the board rolls to the outside at 5.4–6.3 m/s on the climb, and the climb survivor (seed 2, wave 2, left) never reaches 0.90 m.
+3. **Smaller items:**
+   - 3.5u's 3.8 m/s cue fallback;
+   - a quieter pop-up landing (his design call);
+   - the two pop-up separations at 3.6–3.7 m/s;
+   - the fore/aft falls 3.5v found (s2w6 and s2w10 under `cue`).
+
+## Branches
+
+| branch | head | what it holds |
+| --- | --- | --- |
+| `claude/plant-rows` | `1be12ee7` | 3.5w: `?plantSpeed=face` and `?plantSpeed=taper`; it contains 3.5u and 3.5v. **The ride build.** ⚠ Its `results/35w/steer/` carries 143 MB of phase-2 steering output. Cut it before any integration; rewriting history needs Vicente's word. |
+| `claude/sideways-falls` | `3a2404c6` | 3.5v: the sideways-fall diagnosis (docs and probes) |
+| `claude/cue-later` | `4ccda729` | 3.5u: `?cueLater=on` |
+| `claude/slow-take-off` | `21d4352d` | 3.5t: the slow take-off diagnosis |
+| `claude/hold-line` | `6e8bdc2d` | 3.5s: `?holdLine=ref` (not fit for his address) |
+| `claude/face-trim` | `41748e53` | 3.5r: `?faceTrim=on` |
+| `claude/test-wave` | `0da1eda4` | the test wave (`?testWave=ride\|catch`, `&testFoam=on`), with exact restarts |
+| `claude/the-record` | `57ca1a63` | the consult log |
+| `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
+| `main` | `1a29a6c7` | untouched |
+
+Every switch is opt-in, pinned off online, and byte-identical when off. The Canyon byte check gives snapshots `a367d938f15fa934` and state `9e5831f80e38abd9`.
+
+## What the 2026-11-23 thread established
+
+1. **3.5s: hold the line.** On a face, the board turns at the coordinated rate of the body's bank. `?holdLine=ref` halves the drift, but it ends every test-wave ride turning back up the face. It is not fit for his address.
+2. **3.5t: the slow take-off falls are a stall over the crest.**
+   - He stands at 2.3–2.8 m/s at the top of the face, and the crest passes under him.
+   - The cue lit at about 3.0 m/s through the water.
+   - Every stand that lasted was at ≥ 4.4 m/s.
+3. **3.5u: `?cueLater=on`.** The pop-up prompt waits until the board moves 3.6 m/s through the water.
+   - Only the prompt moves. The paddle sprint reads the rider's own cue (`AttachedRider.ts`, `advanceStroke`) and keeps today's timing, as does the drawn body.
+   - On the test wave, the stands that last go from 4 of 10 to 9 of 10.
+   - On his waves, the crest stalls end, and the share of pops that last doubles.
+4. **3.5v: the remaining slow-stand falls are sideways, and they come from the balance's own loop.**
+   - The pop-up's landing roll (5–29°), the 0.1 s blind start, and gains about 2.5 times the planing design's below a 4.5 m/s schedule combine.
+   - Rows `'4'` and `'4.5'` of `PLANT_SPEEDS` describe a lab board that does not plane, at 46° and 26° of trim.
+   - `plantFloor=6` rescues 9 of 12 catch collapses and loses none of 34 lasting stands.
+5. **3.5w: the low-speed settings.**
+   - **Phase 1.** Flat-water rows measured at the board's ridden attitude make the balance stiffer, not softer. A double-counted weight was found and corrected in phase 2: the lab carries 90–98 % of the game's support.
+   - **Phase 2.** The equivalent-speed table (`face`, 1.68 v) gives the best take-offs yet, but it fails above about 6 m/s.
+   - **Phase 3.** `taper`, max(v, min(1.68 v, 7.8)), keeps the take-off gains and all 34 controls, and rides the plumb grid longer (median fall 3.25 s against 2.53). The climb after a turn still stalls.
+
+## Owner rulings in this thread
+
+| date | his answer | what it decided |
+| --- | --- | --- |
+| 2026-11-23 | "Hold the line" | With the stick centred, the balance holds the line across the face. |
+| 2026-11-23 | "Yes, cue later" | The take-off cue waits until the board can carry him standing. |
+| 2026-11-23 | "Yes, diagnose it" | The sideways-fall diagnosis (3.5v). |
+| 2026-11-23 | "Yes, build them" | Build the low-speed settings from the game's own board. |
+| 2026-11-23 | "Equivalent-speed table" | Phase 2's design. |
+| 2026-11-23 | "Build the tapered table" | Phase 3's design. |
+
+**Standing rulings:**
+- The turn is not to be limited.
+- The fall comes from a balance that lacks the ability to stand.
+- No hidden motors.
+- No PRs.
+- Merge only on his word.
+- He rides holding Compress (R2) from 0.1–0.3 s after standing, so every fall measurement needs a drive that rides his way.
+
+## Usage
+
+- **The weekly limit** was at **89 %** at 18:15 UTC on 2026-11-24. It resets on 2026-11-25 at 14:00 UTC.
+- **Extra usage is enabled on the account again** (€25.11 of €50 spent). On 2026-11-23 Vicente asked that the extra credits not be spent. Past the weekly limit, work would bill them, so hold builders until the reset.
+- **Builder costs measured on 2026-11-23,** as shares of the 5-hour window:
+
+  | builder | share of the window |
+  |---|---|
+  | medium switch build with paired arms | about 19 % |
+  | high diagnosis with five arms | about 29 % |
+  | high build with steering and the grid | about 40 % |
+
+  The coordinator's review adds about 5 %. A full window of builder work costs about 8–10 % of the weekly limit.
+- **Brief every builder with a usage guard:** stop at 80 % of the window, and push what is green.
+
+## Working notes
+
+- **Tests.**
+  - Never run the whole vitest suite: `SurfZoneSimulation.test.ts` alone carries hours of timeouts.
+  - In worktrees under `.claude/`, `--dir src` finds no tests, so use path filters, e.g. `npx vitest run src/physics/plantSpeed`.
+  - Console output needs `--silent=false --reporter=verbose`.
+- **Probes.**
+  - Bundle with `./node_modules/.bin/rolldown … --format esm --platform node`, and prepend `globalThis.location = { search: '' };`.
+  - One run per process, at most about 4 in parallel, with `node --max-old-space-size=3200`.
+  - Keep per-frame output out of the repository.
+- **The Canyon byte check.**
+  1. Bundle `scripts/m1-cpu-bench.ts`.
+  2. Prepend `globalThis.location = { search: '?canyonWaves=true' };`.
+  3. Run the Canyon, medium size, 3600 steps, from a fresh spin-up.
+- **Git.**
+  - Other agents commit in the main checkout and switch its branch, so work in worktrees.
+  - Push with `git push origin "HEAD:refs/heads/<branch>"`, then verify with `git ls-remote`.
+- **The shell is zsh.** Quote globs. In `git show`, write `"${B}:path"`, not `$B:path`.
+
+## Left behind on the first machine (not portable)
+
+- **Port 5174:** `claude/test-wave` `0da1eda4`.
+- **Port 5175:** `claude/plant-rows` `1be12ee7`, served from the `balance` worktree, which is detached.
+- **The worktrees:** `.claude/worktrees/` holds `record`, `balance`, `sideways`, `plant-rows` and `test-wave`.
