@@ -222,3 +222,52 @@ shipped 0.84 / 0.14 at 7. At 4.5–6 m/s they are A's to the second decimal (A 0
   A (§1.4), which runs no Y and was made so that the arms can start at once if the line is ruled on.
 
 ### 1.4 The reproduction control (A, seed 2, all six scripts, on the probe bundle Y would ride)
+
+- **The bundle:** `what-fails-first.ts` (unchanged) built from this branch at `a7398222`, location prepended; SHA-256
+  `f1a7eb420a90f85e9a7f884e15318a1fffa58351c2efc67ad3b93f24ed9b309f`. It differs from 3.5x's
+  (`bf340599…`) because `src` now carries `taper6`.
+- **The run:** `MODE=organic SEED=2 PERIODS=12 STAND_HOLD=5 SCRIPTS=cue,cueC,cueL,cueR,cueCL,cueCR
+  EXTRA='&cueLater=on&plantFloor=6'`, alone, 20:22–20:33 UTC.
+- **Against `35x/runs/o-s2-A.jsonl`:** 11 237 rows each, in the same order. **11 235 lines byte-identical.** The other
+  two differ only in wall-clock fields: the `control` row's `spinUp` (31.189 against 27.908 s) and the `done` row's
+  `seconds`. Every stand, frame, summary and controller row is identical. **Pass:** with `taper6` in `src` and off,
+  the probe rides A exactly as 3.5x did, so 3.5x's A, B and R runs can serve as the comparison arms once Y runs.
+
+### 1.5 What this leaves for the coordinator and Vicente
+
+- **The decision the line asks for.** Read literally, §0.3's line (> 0 at 5–8 m/s, every stance, ±1 frame) cannot be
+  met by Y, nor by A, his preference, nor by B: all three diverge at 5.0 m/s, and at 5.25 m/s in the deep stances,
+  on both truths. In 3.5x the coordinator and the builder read 5.0 m/s as the edge of the band where the linear model
+  does not describe the game (A and B carry stands there that the model says diverge). If the line is meant as
+  "no cell where Y is worse than A, and no cell from 5.25 m/s up where A is stable and Y is not", Y meets it: every
+  cell from 5.25 m/s up where A is stable, Y is stable too (+0.152 worst), and the cells where B failed and A held,
+  Y holds. **That reading is a change of line, so it is the coordinator's and Vicente's to make, not mine.**
+- **If the arms are released**, everything they need is in place: the build (`a7398222`), the probe bundle above, the
+  reproduction control passed, and the pre-registered lines of §0.5 untouched. Y's seeds 1–3 take about 11 minutes
+  with four running; the catch start about 7 minutes; seeds 4–9 for Y and A about 35 minutes.
+- **Vicente can ride Y now**, independent of the line: the switch is built, off by default, pinned off online, and
+  byte-identical when off:
+
+      ?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantSpeed=taper6
+
+  (his address with the later cue; `plantSpeed=taper6` replaces `plantFloor=6`). Do not combine it with `plantFloor`.
+
+**Not done:** every arm of §0.4 (Y seeds 1–3, the catch start, seeds 4–9 for Y and A), the extended reader (§0.4's
+reader work was not needed before the check), every pass and fail line of §0.5, and the climb.
+
+**Reproduce:**
+
+    # the build's checks
+    npx tsc -b
+    npx vitest run src/physics/plantSpeed src/physics/predictiveBalance.test src/game/PhysicalMode.test
+    ./node_modules/.bin/rolldown scripts/m1-cpu-bench.ts -o <s>/raw.mjs --format esm --platform node
+    printf "globalThis.location = { search: '?canyonWaves=true' };\n" > <s>/bench.mjs && cat <s>/raw.mjs >> <s>/bench.mjs
+    node --max-old-space-size=3200 <s>/bench.mjs --spot canyon --size medium --steps 3600 --state <s>/fresh
+    # the model check (each bundled with `globalThis.location = { search: '' };` prepended, run from the repository root)
+    env TRUTH=table node <s>/what-fails-first-model.mjs > model-table.jsonl      # TRUTH=game for model-game.jsonl
+    env TRUTH=table MODES=1 SPEEDS=5,5.25 node <s>/what-fails-first-model.mjs     # model-modes-5-table.jsonl
+    env VARIANT=taper6 TOP=9 node <s>/plant-rows-gains.mjs > gains-taper6.jsonl
+    # the reproduction control
+    env MODE=organic SEED=2 PERIODS=12 STAND_HOLD=5 SCRIPTS=cue,cueC,cueL,cueR,cueCL,cueCR EXTRA='&cueLater=on&plantFloor=6' OUT=<s>/o-s2-A-repro.jsonl node --max-old-space-size=3200 <s>/wff.mjs
+
+The per-frame reproduction run (27 MB) stays in the session scratchpad, `35y/runs/o-s2-A-repro.jsonl`.
