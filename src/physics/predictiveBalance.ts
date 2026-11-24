@@ -946,6 +946,8 @@ export interface DesignWeights {
    *
    * `'taper'` (step 3.5w phase 3, plant-rows.md §9): the same, with v_eq = max(v, min(1.68 v, 7.8)) — `face` below
    * 4.64 m/s, the plateau of the attitude match (7.8 m/s water) up to a true 7.8 m/s, and the shipped plant above.
+   * `'taper6'` (step 3.5y, return-taper.md): v_eq = max(v, min(1.68 v, 6)) — `face` below 3.571 m/s, the 6 m/s water up
+   * to a true 6 m/s, and the shipped plant above.
    */
   plantSpeed?: PlantSpeed;
   /**
@@ -1444,19 +1446,30 @@ export const SCHEDULE_DEPTHS = [0, 0.195, 0.3];
  */
 export const EQUIVALENT_SPEED_FACTOR = 1.68;
 export const EQUIVALENT_SPEED_TOP = 12;
-/** The `plantSpeed` maps (`DesignWeights.plantSpeed`): `'face'` (3.5w phase 2) and `'taper'` (phase 3). */
-export type PlantSpeed = 'face' | 'taper';
+/** The `plantSpeed` maps (`DesignWeights.plantSpeed`): `'face'` (3.5w phase 2), `'taper'` (phase 3) and `'taper6'` (3.5y). */
+export type PlantSpeed = 'face' | 'taper' | 'taper6';
 /**
  * **Step 3.5w phase 3 (`?plantSpeed=taper`): the plateau of the attitude match**, m/s. From 4.5 to 6 m/s the game's
  * ridden attitude matches the free-trim rows at 7.57–7.98 m/s (mean of seven matches 7.80; plant-rows.md §9.1).
  */
 export const EQUIVALENT_SPEED_CAP = 7.8;
 /**
+ * **Step 3.5y (`?plantSpeed=taper6`): the returning taper's cap**, m/s. `taper`'s map with the water it reads above
+ * its 1.68 v stretch held at the 6 m/s row instead of the 7.8 m/s plateau, so it is never stiffer than `plantFloor=6`'s
+ * 6 m/s row and returns to the speed itself at 6 m/s. The owner's ruling after 3.5x (2026-11-24): keep `taper`'s
+ * low-speed setting, drop the stiff-water band B loops on with Compress (`what-fails-first.md` §4.3, §8;
+ * `docs/research/new-rider/3.5/return-taper.md`).
+ */
+export const EQUIVALENT_SPEED_RETURN = 6.0;
+/**
  * The map for a `plantSpeed` value. `'face'`: min(12, 1.68 v). `'taper'`: max(v, min(1.68 v, `EQUIVALENT_SPEED_CAP`)):
  * face's below 7.8 / 1.68 = 4.64 m/s, the plateau's 7.8 m/s water up to a true 7.8 m/s, and the speed itself above.
+ * `'taper6'`: max(v, min(1.68 v, `EQUIVALENT_SPEED_RETURN`)): face's below 6 / 1.68 = 3.571 m/s, the 6 m/s water up
+ * to a true 6 m/s, and the speed itself above.
  */
 export function equivalentSpeed(speed: number, map: PlantSpeed = 'face'): number {
   if (map === 'taper') return Math.max(speed, Math.min(EQUIVALENT_SPEED_FACTOR * speed, EQUIVALENT_SPEED_CAP));
+  if (map === 'taper6') return Math.max(speed, Math.min(EQUIVALENT_SPEED_FACTOR * speed, EQUIVALENT_SPEED_RETURN));
   return Math.min(EQUIVALENT_SPEED_TOP, EQUIVALENT_SPEED_FACTOR * speed);
 }
 /** The speed the water's tables are read at for these weights: `equivalentSpeed` with a `plantSpeed`, else the speed itself. */
@@ -1662,7 +1675,7 @@ export class PredictiveController {
 
   /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
   private blend(speed: number, depth: number, rail: number): Design {
-    // Step 3.5w (`plantSpeed: 'face'` or `'taper'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
+    // Step 3.5w (`plantSpeed: 'face'`, `'taper'` or `'taper6'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
     const speeds = this.weights?.plantSpeed !== undefined ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
     const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
     const v0 = Math.min(speeds[speeds.length - 2], Math.floor(v * 2) / 2);

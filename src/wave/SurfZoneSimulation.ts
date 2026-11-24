@@ -493,8 +493,9 @@ export interface SurfZoneConfig {
    * `DesignWeights.plantSpeed`; `docs/research/new-rider/3.5/plant-rows.md` §8). It changes the plant the design is
    * built on, no force in the game. The `?plantSpeed` dev switch, opt-in, to ride; online rooms run the default.
    * 'taper' (plant-rows.md §9): max(v, min(1.68 v, 7.8)) — face's below 4.64 m/s, the 7.8 m/s water up to 7.8, the speed above.
+   * 'taper6' (return-taper.md, step 3.5y): max(v, min(1.68 v, 6)) — face's below 3.571 m/s, the 6 m/s water up to 6.
    */
-  plantSpeed?: 'face' | 'taper';
+  plantSpeed?: 'face' | 'taper' | 'taper6';
   /**
    * 'on' | 'model': the face in the new surfer's balance model (step 3.5r; `RideSessionOptions.faceTrim`,
    * `DesignWeights.faceTrim`): the face's tilt across the heading, sensed through the balance's own delay, drives its

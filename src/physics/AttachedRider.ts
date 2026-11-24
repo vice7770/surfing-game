@@ -1778,6 +1778,7 @@ export interface AttachedRiderOptions {
    * free-trim rows. `DesignWeights.plantSpeed` has the scope line, `docs/research/new-rider/3.5/plant-rows.md` §8 the
    * design. A change of plant, not of control law; no force. Opt-in, off by default, pinned off for online rooms.
    * `'taper'` (§9): max(v, min(1.68 v, 7.8)) — face's below 4.64 m/s, the 7.8 m/s water up to 7.8, the speed above.
+   * `'taper6'` (3.5y, return-taper.md): max(v, min(1.68 v, 6)) — face's below 3.571 m/s, the 6 m/s water up to 6.
    */
   plantSpeed?: PlantSpeed;
   /**
@@ -2780,7 +2781,7 @@ export class AttachedRider {
     // Step 3.5s: `holdLine` reaches the same weights route, by value, so an explicit one in `balance.weights` wins.
     const holdWeights: { holdLine: 'ref' } | undefined = options.holdLine === 'ref' ? { holdLine: 'ref' } : undefined;
     // Step 3.5w: `plantSpeed` reaches the same weights route, by value, so an explicit one in `balance.weights` wins.
-    const speedWeights: { plantSpeed: PlantSpeed } | undefined = options.plantSpeed === 'face' || options.plantSpeed === 'taper' ? { plantSpeed: options.plantSpeed } : undefined;
+    const speedWeights: { plantSpeed: PlantSpeed } | undefined = options.plantSpeed === 'face' || options.plantSpeed === 'taper' || options.plantSpeed === 'taper6' ? { plantSpeed: options.plantSpeed } : undefined;
     const weights = options.balance?.weights || heelWeights || bodyWeights || costs || floorWeights || ladderWeights || faceWeights || holdWeights || speedWeights
       ? { ...DEFAULT_WEIGHTS, ...heelWeights, ...bodyWeights, ...costs, ...floorWeights, ...ladderWeights, ...faceWeights, ...holdWeights, ...speedWeights, ...options.balance?.weights }
       : undefined;

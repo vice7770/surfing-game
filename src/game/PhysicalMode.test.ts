@@ -1702,7 +1702,9 @@ describe('PhysicalMode', () => {
     expect(plantSpeedSwitch('?plantSpeed=face')).toEqual({ plantSpeed: 'face' });
     expect(plantSpeedSwitch('?plantSpeed=FACE')).toEqual({ plantSpeed: 'face' });
     expect(plantSpeedSwitch('?plantSpeed=taper')).toEqual({ plantSpeed: 'taper' });
-    for (const search of ['', '?plantSpeed', '?plantSpeed=', '?plantSpeed=on', '?plantSpeed=1.68', '?plantFloor=6']) {
+    expect(plantSpeedSwitch('?plantSpeed=taper6')).toEqual({ plantSpeed: 'taper6' });
+    expect(plantSpeedSwitch('?plantSpeed=TAPER6')).toEqual({ plantSpeed: 'taper6' });
+    for (const search of ['', '?plantSpeed', '?plantSpeed=', '?plantSpeed=on', '?plantSpeed=1.68', '?plantFloor=6', '?plantSpeed=taper7', '?plantSpeed=6']) {
       expect(plantSpeedSwitch(search), search).toEqual({});
     }
     const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;

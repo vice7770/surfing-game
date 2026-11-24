@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_WEIGHTS, EQUIVALENT_SPEED_CAP, EQUIVALENT_SPEED_FACTOR, PredictiveController, SCHEDULE_SPEEDS, SCHEDULE_SPEEDS_FACE, equivalentSpeed, plantAt, scheduledDesign, tableSpeedFor,
+  DEFAULT_WEIGHTS, EQUIVALENT_SPEED_CAP, EQUIVALENT_SPEED_FACTOR, EQUIVALENT_SPEED_RETURN, PredictiveController, SCHEDULE_SPEEDS, SCHEDULE_SPEEDS_FACE, equivalentSpeed, plantAt, scheduledDesign, tableSpeedFor,
 } from './predictiveBalance';
 
 // Step 3.5w (`?plantSpeed=face`, docs/research/new-rider/3.5/plant-rows.md §8): the water's tables read at the
@@ -95,5 +95,66 @@ describe('the equivalent speed (plantSpeed)', () => {
     const ctl = new PredictiveController(taper) as any;
     expect(ctl.blend(2.2, 0.3, 0).k).toEqual(scheduledDesign(3, 0.3, 0, taper).k);
     expect(ctl.blend(6, 0.3, 0).k[0][2]).not.toBe(scheduledDesign(6, 0.3, 0, shipped).k[0][2]);
+  });
+
+  // Step 3.5y (`?plantSpeed=taper6`, return-taper.md): max(v, min(1.68 v, 6)), taper's machinery unchanged.
+  it('taper6: face below 6 / 1.68, the 6 m/s water up to a true 6, the speed itself above; face and taper unchanged', () => {
+    expect(EQUIVALENT_SPEED_RETURN).toBe(6);
+    expect(EQUIVALENT_SPEED_CAP).toBe(7.8);
+    // face and taper, unchanged at their own knots and corners.
+    expect(equivalentSpeed(3, 'face')).toBeCloseTo(5.04, 12);
+    expect(equivalentSpeed(7.5, 'face')).toBe(12);
+    expect(equivalentSpeed(5, 'taper')).toBe(7.8);
+    expect(equivalentSpeed(4.5, 'taper')).toBeCloseTo(7.56, 12);
+    expect(equivalentSpeed(8, 'taper')).toBe(8);
+    // Below the knee 6 / 1.68 = 3.5714 m/s, taper6 is face (and taper) bit for bit.
+    for (const v of [0, 1, 2.5, 3, 3.25, 3.5, 3.57]) {
+      expect(equivalentSpeed(v, 'taper6')).toBe(equivalentSpeed(v, 'face'));
+      expect(equivalentSpeed(v, 'taper6')).toBe(equivalentSpeed(v, 'taper'));
+    }
+    expect(equivalentSpeed(3, 'taper6')).toBeCloseTo(5.04, 12);
+    expect(equivalentSpeed(3.5, 'taper6')).toBeCloseTo(5.88, 12);
+    // The knee and the 6 m/s water up to a true 6.
+    for (const v of [6 / 1.68, 3.6, 4, 4.5, 6 / 1.68 + 1.07, 5, 5.5, 5.99, 6]) expect(equivalentSpeed(v, 'taper6')).toBe(6);
+    // Above, the speed itself (where taper still reads its plateau up to 7.8).
+    for (const v of [6, 6.5, 7, 7.5, 7.8, 8, 9, 12, 14]) expect(equivalentSpeed(v, 'taper6')).toBe(v);
+    expect(equivalentSpeed(7, 'taper')).toBe(7.8);
+    // Never stiffer than taper, and never above the 6 m/s row below a true 6.
+    for (let v = 0; v <= 14; v += 0.01) {
+      expect(equivalentSpeed(v, 'taper6')).toBeLessThanOrEqual(equivalentSpeed(v, 'taper'));
+      if (v < 6) expect(equivalentSpeed(v, 'taper6')).toBeLessThanOrEqual(6);
+    }
+    // Continuous and monotone; from 3 m/s up it never reads row '4' or '4.5'.
+    let last = -Infinity;
+    for (let v = 0; v <= 14; v += 0.001) {
+      const e = equivalentSpeed(v, 'taper6');
+      expect(e).toBeGreaterThanOrEqual(last);
+      if (last > -Infinity) expect(e - last).toBeLessThan(0.002);
+      last = e;
+    }
+    for (let v = 3; v <= 14; v += 0.01) expect(equivalentSpeed(v, 'taper6')).toBeGreaterThan(5);
+    for (const v of [1, 3, 4, 6, 9]) expect(tableSpeedFor(v, { plantSpeed: 'taper6' })).toBe(equivalentSpeed(v, 'taper6'));
+  });
+
+  it('taper6: the designs are face\'s at the 3 and 3.5 knots, the 6 m/s water at 4-5.5, shipped at and above 6', () => {
+    const taper6 = { ...DEFAULT_WEIGHTS, riderBody: 'two' as const, plantSpeed: 'taper6' as const };
+    const taper = { ...DEFAULT_WEIGHTS, riderBody: 'two' as const, plantSpeed: 'taper' as const };
+    const face = { ...DEFAULT_WEIGHTS, riderBody: 'two' as const, plantSpeed: 'face' as const };
+    const shipped = { ...DEFAULT_WEIGHTS, riderBody: 'two' as const };
+    for (const v of [3, 3.5]) {
+      expect(scheduledDesign(v, 0.3, 0, taper6).k).toEqual(scheduledDesign(v, 0.3, 0, face).k);
+      expect(scheduledDesign(v, 0, 0, taper6).k).toEqual(scheduledDesign(v, 0, 0, taper).k);
+    }
+    // 4-5.5 m/s: the 6 m/s row's water with the true kinematics, not taper's 6.72-7.8 m/s water.
+    for (const v of [4, 4.5, 5, 5.5]) {
+      expect(plantAt(v, 0.3, { tableSpeed: equivalentSpeed(v, 'taper6') }).y.heelRoll).toBe(plantAt(6, 0.3).y.heelRoll);
+      expect(plantAt(v, 0.3, { tableSpeed: equivalentSpeed(v, 'taper6') }).y.speed).toBe(v);
+      expect(scheduledDesign(v, 0.3, 0, taper6).k[0][2]).not.toBe(scheduledDesign(v, 0.3, 0, taper).k[0][2]);
+    }
+    for (const v of [6, 6.5, 7, 7.5, 8, 9, 12]) expect(scheduledDesign(v, 0.3, 0, taper6).k).toEqual(scheduledDesign(v, 0.3, 0, shipped).k);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ctl = new PredictiveController(taper6) as any;
+    expect(ctl.blend(2.2, 0.3, 0).k).toEqual(scheduledDesign(3, 0.3, 0, taper6).k);
+    expect(ctl.blend(7, 0.3, 0).k).toEqual(scheduledDesign(7, 0.3, 0, shipped).k);
   });
 });
