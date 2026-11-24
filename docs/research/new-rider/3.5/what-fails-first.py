@@ -1,0 +1,397 @@
+"""Step 3.5x reader (what-fails-first.md). Reads `what-fails-first.ts` organic runs, one file per process, named
+`o-s<seed>-<arm>.jsonl[.gz]`, arm in A (cueLater=on&plantFloor=6) | B (cueLater=on&plantSpeed=taper) | R (cueLater=on)
+| S0 (cueLater off, the 3.5o reproduction) | S0-off (the same with every instrument off).
+
+    python3 what-fails-first.py <run dir> checks          # builds printed back, reproduction, inertness
+    python3 what-fails-first.py <run dir> classify        # the first failure of every rider (section 0.4)
+    python3 what-fails-first.py <run dir> climb           # the climb after a turn (section 0.6)
+    python3 what-fails-first.py <run dir> compact <out>   # the committed compact copy: summaries, builds, x35-light rows
+
+Angles in degrees, + toward the board's +x (its left rail) unless named; `rollS` is 3.5o's roll (+ with the +x rail down);
+times are seconds after the stand; vW is the horizontal |v_board - flow| (m/s, world); `sched` the controller's speed.
+"""
+import gzip
+import importlib.util
+import json
+import math
+import os
+import re
+import statistics as st
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+_spec = importlib.util.spec_from_file_location('sf', os.path.join(HERE, 'sideways-falls.py'))
+sf = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(sf)
+load = sf.load
+
+ARMS = {'A': ('on', 6, None), 'B': ('on', None, 'taper'), 'R': ('on', None, None), 'S0': (None, None, None), 'S0-off': (None, None, None)}
+TURN = {'cueL': 1, 'cueR': -1, 'cueCL': 1, 'cueCR': -1}
+G = 9.81
+
+
+def runs(directory):
+    out = {}
+    for name in sorted(os.listdir(directory)):
+        m = re.match(r'o-s(\d)-(A|B|R|S0-off|S0)\.jsonl(\.gz)?$', name)
+        if m:
+            out[(int(m.group(1)), m.group(2))] = os.path.join(directory, name)
+    return out
+
+
+def riders(rows):
+    summ = [x for x in rows if x.get('kind') == 'summary']
+    frames = {}
+    for x in rows:
+        if x.get('kind') == 'f':
+            frames.setdefault((x['script'], x['wave']), []).append(x)
+    stands = {(x['script'], x['wave']): x for x in rows if x.get('kind') == 'stand'}
+    return summ, frames, stands
+
+
+def design_speed(arm, v):
+    if v is None:
+        return None
+    if arm == 'A':
+        return max(v, 6.0)
+    if arm == 'B':
+        return max(v, min(1.68 * v, 7.8))
+    return v
+
+
+# ------------------------------------------------------------------------------------------------------------------
+def checks(directory):
+    rs = runs(directory)
+    print('## Builds printed back')
+    for (seed, arm), path in rs.items():
+        rows = load(path)
+        ctl = next(x for x in rows if x.get('kind') == 'control')
+        want = ARMS[arm]
+        st_rows = [x for x in rows if x.get('kind') == 'stand']
+        got = {(x.get('plantFloor'), x.get('plantSpeed')) for x in st_rows}
+        ok = ctl.get('cueLater') == want[0] and got <= {(want[1], want[2])}
+        print(f"- s{seed} {arm}: cueLater {ctl.get('cueLater')}, (plantFloor, plantSpeed) {sorted(got, key=str)}, scripts {ctl['scripts']}, standHold {ctl.get('standHold')}, lat {ctl.get('lat')} x35 {ctl.get('x35')} ledger {ctl.get('ledger')} -> {'OK' if ok else 'MISMATCH'}")
+    # (a) the take-off rows against 3.5v's (R -> on-base, A -> on-pf6), and B's summaries against 3.5w's.
+    print('\n## Reproduction (a): cue/cueC take-off rows over the first 3 s')
+    ref = {'R': ('35v/data', 'on-base'), 'A': ('35v/data', 'on-pf6'), 'B': ('35w/data-taper', 'on-tp')}
+    base = os.path.join(HERE, 'results')
+    for (seed, arm), path in rs.items():
+        if arm not in ref:
+            continue
+        old_path = os.path.join(base, ref[arm][0], f'o-s{seed}-{ref[arm][1]}.jsonl.gz')
+        if not os.path.exists(old_path):
+            print(f'- s{seed} {arm}: no committed file {old_path}')
+            continue
+        old = load(old_path)
+        new = load(path)
+        so = {(x['script'], x['wave']): x for x in old if x.get('kind') == 'summary'}
+        sn = {(x['script'], x['wave']): x for x in new if x.get('kind') == 'summary' and x['script'] in ('cue', 'cueC')}
+        same = diff = 0
+        bad = []
+        for k, a in so.items():
+            b = sn.get(k)
+            if b is None:
+                bad.append((k, 'missing'))
+                continue
+            fa = a.get('fellAfterStand')
+            fb = b.get('fellAfterStand')
+            fb3 = fb if fb is not None and fb <= 3.0 + 1e-9 else None
+            fa3 = fa if fa is not None and fa <= 3.0 + 1e-9 else None
+            if a.get('stand') == b.get('stand') and a.get('pop') == b.get('pop') and fa3 == fb3:
+                same += 1
+            else:
+                diff += 1
+                bad.append((k, a.get('stand'), b.get('stand'), fa, fb))
+        # frame rows (only where the committed file has frames)
+        fo = {(x['script'], x['wave'], x['t']): x for x in old if x.get('kind') == 'f'}
+        fn = {(x['script'], x['wave'], x['t']): x for x in new if x.get('kind') == 'f'}
+        fsame = fdiff = 0
+        first_bad = None
+        for k, a in fo.items():
+            b = fn.get(k)
+            if b is None:
+                fdiff += 1
+                first_bad = first_bad or (k, 'missing')
+                continue
+            # a committed file slimmed to a subset of a dict's keys (3.5v's arm files) is compared on those keys
+            d = [f for f in a if f not in ('x35',) and (({k: b.get(f, {}).get(k) for k in a[f]} != a[f]) if isinstance(a[f], dict) and isinstance(b.get(f), dict) else a[f] != b.get(f))]
+            if d:
+                fdiff += 1
+                first_bad = first_bad or (k, d[:5])
+            else:
+                fsame += 1
+        print(f'- s{seed} {arm} vs {os.path.basename(old_path)}: riders {same} same / {diff} differ; frame rows {fsame} identical / {fdiff} differ (every common field){"; first: " + str(first_bad) if first_bad else ""}{"; " + str(bad[:4]) if bad else ""}')
+    # (b) S0 against 3.5o's population, (c) inertness.
+    print("\n## Reproduction (b): cueLater off, seed 2, against 3.5o's population (shipped, steer only)")
+    pop = [x for x in load(os.path.join(base, '35o/population-summaries.jsonl.gz')) if x.get('kind') == 'summary']
+    for (seed, arm), path in rs.items():
+        if arm not in ('S0', 'S0-off'):
+            continue
+        p = {(x['script'], x['wave']): x for x in pop if x['run'] == f's{seed}-c0-ships'}
+        n = {(x['script'], x['wave']): x for x in load(path) if x.get('kind') == 'summary'}
+        eq = lambda u, v: (u is None and v is None) or (u is not None and v is not None and abs(u - v) < 1.5e-4)
+        same = [k for k in p if k in n and eq(p[k].get('fellAfterStand'), n[k].get('fellAfterStand')) and eq(p[k].get('stand'), n[k].get('stand'))]
+        diffs = [(k, p[k].get('fellAfterStand'), n.get(k, {}).get('fellAfterStand')) for k in p if k not in same]
+        print(f'- s{seed} {arm}: {len(same)} of {len(p)} riders with the identical stand and fall time (within 1.5e-4 s: 3.5o rounds to 5 decimals, this probe to 4){"; differ: " + str(diffs[:6]) if diffs else ""}')
+
+
+# ------------------------------------------------------------------------------------------------------------------
+def tick_frames(frames):
+    return [x for x in frames if x.get('ctl') is not None]
+
+
+def raw_windows(st_frames, t_esc):
+    out = []
+    for lo in (t_esc - 0.3, t_esc - 0.2, t_esc - 0.1):
+        w = [abs(x['ctl']['raw']) for x in st_frames if x.get('ctl') and lo - 1e-9 <= x['tS'] < lo + 0.1 - 1e-9]
+        out.append(max(w) if w else None)
+    return out
+
+
+def classify_rider(arm, script, s, frames, hold):
+    """Section 0.4's rule. Returns a dict."""
+    res = {'script': script, 'wave': s['wave'], 'stand': s.get('stand'), 'fell': s.get('fellAfterStand'), 'cause': s.get('cause')}
+    if s.get('stand') is None:
+        res['cls'] = None
+        return res
+    fa = s.get('fellAfterStand')
+    if fa is None or fa > hold + 1e-9:
+        res['cls'] = 'held'
+        return res
+    sframes = [x for x in frames if x.get('tS') is not None and x['tS'] >= 0]
+    standing = [x for x in sframes if x.get('ph') == 'standing']
+    if not standing or fa <= 0.1 + 1e-9:
+        res['cls'] = 'P'
+        return res
+    st_frames = [x for x in sframes if x.get('ph') in ('standing', 'landing') and x['tS'] > 0]
+    marks = {}
+    for x in st_frames:
+        if 'M1' not in marks and x.get('headX') is not None and x['headX'] <= 0:
+            marks['M1'] = x
+        if 'M2' not in marks and (x.get('cps') or {}).get('inf', 0) > 0:
+            marks['M2'] = x
+        if 'M3' not in marks and x.get('beyond') == 1:
+            marks['M3'] = x
+        if 'F' not in marks and (x.get('pastZ') or 0) > 0:
+            marks['F'] = x
+        if 'M4' not in marks and (x.get('ctl') or {}).get('over', -1) > 0:
+            marks['M4'] = x
+    turn = TURN.get(script, 0)
+    if turn:
+        for x in st_frames:
+            if x['tS'] >= 1.2 and (x.get('x35') or {}).get('rollS') is not None and x['x35']['rollS'] * turn <= -20:
+                marks['O'] = x
+                break
+    esc = sorted((v['tS'], k) for k, v in marks.items() if k in ('M1', 'M2', 'M3', 'F'))
+    last = standing[-1]
+    res['marks'] = {k: v['tS'] for k, v in marks.items()}
+    res['axis'] = sf.axis(frames)
+    if not esc:
+        e = last
+        res['esc'] = None
+    else:
+        e = marks[esc[0][1]]
+        res['esc'] = esc[0][1]
+    res['tEsc'] = e['tS']
+    res['vW'] = e.get('vW')
+    sched = (e.get('ctl') or {}).get('speed')
+    if sched is None:
+        prev = [x for x in st_frames if x.get('ctl') and x['tS'] <= e['tS']]
+        sched = prev[-1]['ctl']['speed'] if prev else None
+    res['sched'] = sched
+    res['design'] = design_speed(arm, sched)
+    res['ahead'] = e.get('ahead')
+    # leading channel: capture-point split over the last 0.15 s, signed toward the escape
+    side = sf.side_of(e)
+    ch = {}
+    for x in st_frames:
+        if e['tS'] - 0.15 - 1e-9 <= x['tS'] <= e['tS'] + 1e-9 and x.get('cps'):
+            for k in ('pos', 'rider', 'boardT', 'boardR', 'frame', 'felt', 'omega'):
+                ch[k] = ch.get(k, 0) + (x['cps'].get(k) or 0) * side
+    res['lead'] = max(ch, key=lambda k: ch[k]) if ch else None
+    res['leadShare'] = {k: round(v, 3) for k, v in sorted(ch.items(), key=lambda kv: -kv[1])[:3]}
+    # controller term at the first M4
+    m4 = marks.get('M4')
+    if m4 is not None and m4['tS'] <= e['tS'] + 1e-9:
+        tm = m4['ctl']['tm']
+        res['m4term'] = max(tm, key=lambda k: abs(tm[k]))
+        res['m4'] = m4['tS']
+        x35 = m4.get('x35') or {}
+        xr = x35.get('xr')
+        res['refSlip'] = None if not xr else xr[5]
+    # saturated toward recovery over the last 0.1 s?
+    lastw = [x for x in st_frames if x.get('ctl') and e['tS'] - 0.1 - 1e-9 <= x['tS'] <= e['tS'] + 1e-9]
+    # raw in the model's sign is -(board-frame); toward recovery = away from the fall side, so board-frame raw * side < 0
+    res['satRecover'] = bool(lastw) and all(x['ctl']['over'] > 0 and -x['ctl']['raw'] * side < 0 for x in lastw)
+    res['unsatOrAway'] = bool(lastw) and any(x['ctl']['over'] <= 0 or -x['ctl']['raw'] * side > 0 for x in lastw)
+    rw = raw_windows(st_frames, e['tS'])
+    res['rawWin'] = [None if v is None else round(v, 1) for v in rw]
+    grows = all(v is not None for v in rw) and rw[0] < rw[1] < rw[2]
+    # the rule
+    if e.get('vW') is not None and e['vW'] < 3.0 and (e.get('ahead') is not None and e['ahead'] <= 0.5):
+        cls = 'S'
+    elif res['axis'] == 'along':
+        cls = 'F'
+    elif turn and e['tS'] > 1.2 and 'O' in marks and marks['O']['tS'] <= e['tS'] + 1e-9:
+        cls = 'O'
+    elif m4 is not None and m4['tS'] <= e['tS'] + 1e-9 and grows:
+        cls = 'L-ref' if res.get('refSlip') is not None and abs(res['refSlip']) > 15 else 'L-gain'
+        if turn and 0.3 <= e['tS'] <= 1.5:
+            cls += ' (turn)'
+    elif m4 is None or m4['tS'] > e['tS'] + 1e-9:
+        cls = 'U'
+    else:
+        cls = 'N'
+    res['cls'] = cls
+    return res
+
+
+def classify(directory, quiet=False):
+    rs = runs(directory)
+    table = {}
+    for (seed, arm), path in sorted(rs.items()):
+        if arm.startswith('S0'):
+            continue
+        rows = load(path)
+        summ, frames, stands = riders(rows)
+        hold = next(x for x in rows if x.get('kind') == 'control').get('standHold', 3)
+        for s in summ:
+            if s.get('pop') is None:
+                continue
+            h = 3.0 if s['script'] in ('cue', 'cueC') else hold
+            c = classify_rider(arm, s['script'], s, frames.get((s['script'], s['wave']), []), h)
+            c['seed'] = seed
+            table[(arm, seed, s['script'], s['wave'])] = c
+    if not quiet:
+        fmt = lambda v, n=2: '—' if v is None else (f'{v:.{n}f}' if isinstance(v, (int, float)) else str(v))
+        for script_set, title in ((('cue', 'cueC'), 'Take-offs (3 s hold)'), (('cueL', 'cueR'), 'Turns, steer only (5 s hold)'), (('cueCL', 'cueCR'), 'Turns, his way (5 s hold)')):
+            print(f'\n## {title}\n')
+            print('| arm | rider | stand at (s) | fell after (s) | class | first escape (s) | margins | vW / sched / design (m/s) | lead (last 0.15 s) | first M4 term | raw windows (deg) | sat. to recovery |')
+            print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+            for key in sorted(table, key=lambda k: (k[0], k[1], k[3], k[2])):
+                arm, seed, script, wave = key
+                if script not in script_set:
+                    continue
+                c = table[key]
+                if c['cls'] in (None, 'held'):
+                    continue
+                marks = ', '.join(f'{k} {v:.2f}' for k, v in sorted((c.get('marks') or {}).items(), key=lambda kv: kv[1]))
+                print(f"| {arm} | s{seed}w{wave} {script} | {fmt(c['stand'])} | {fmt(c['fell'], 3)} | {c['cls']} | {fmt(c.get('tEsc'), 3)} | {marks} | {fmt(c.get('vW'))} / {fmt(c.get('sched'))} / {fmt(c.get('design'))} | {c.get('lead')} {c.get('leadShare')} | {c.get('m4term')} | {c.get('rawWin')} | {c.get('satRecover')} |")
+        print('\n## Counts (riders that stood; held = lasted the hold)\n')
+        print('| arm | drive | stood | held | P | S | F | O | L-gain | L-ref | U | N |')
+        print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+        for arm in ('A', 'B', 'R'):
+            for script_set, title in ((('cue',), 'take-off, centred'), (('cueC',), 'take-off, his way'), (('cueL', 'cueR'), 'turn, steer only'), (('cueCL', 'cueCR'), 'turn, his way')):
+                cs = [c for k, c in table.items() if k[0] == arm and k[2] in script_set and c['cls'] is not None]
+                if not cs:
+                    continue
+                n = lambda p: sum(1 for c in cs if c['cls'].startswith(p))
+                print(f"| {arm} | {title} | {len(cs)} | {n('held')} | {n('P')} | {n('S')} | {n('F')} | {n('O')} | {n('L-gain')} | {n('L-ref')} | {n('U')} | {n('N')} |")
+    return table
+
+
+# ------------------------------------------------------------------------------------------------------------------
+def climb(directory):
+    rs = runs(directory)
+    print('| arm | rider | fell (s) | climber | 0.50 m at (s, vW, course) | 0.90 m at | peak (m, at s) | O at (s, vW) |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- |')
+    out = []
+    for (seed, arm), path in sorted(rs.items()):
+        rows = load(path)
+        summ, frames, stands = riders(rows)
+        for s in summ:
+            sc = s['script']
+            if sc not in TURN or s.get('stand') is None:
+                continue
+            fr = [x for x in frames.get((sc, s['wave']), []) if x.get('tS') is not None and x['tS'] >= 0 and x.get('ph') == 'standing']
+            if not fr:
+                continue
+            cl = lambda x: None if x.get('faceH') is None or x.get('faceFrac') is None else x['faceH'] * x['faceFrac']
+            at12 = [x for x in fr if abs(x['tS'] - 1.2) < 0.009]
+            win = [cl(x) for x in fr if 0.3 <= x['tS'] <= 1.2 and cl(x) is not None]
+            if not at12 or not win:
+                continue
+            lo = min(win)
+            later = [x for x in fr if x['tS'] > 1.2 and cl(x) is not None]
+            climber = any(cl(x) >= lo + 0.2 for x in later)
+            if not climber:
+                continue
+            turn = TURN[sc]
+            def first_at(h):
+                x = next((x for x in fr if x['tS'] > 0.3 and cl(x) is not None and cl(x) >= h), None)
+                return None if x is None else (round(x['tS'], 3), x.get('vW'), (x.get('x35') or {}).get('course'))
+            pk = max(later, key=lambda x: cl(x))
+            o = next((x for x in fr if x['tS'] >= 1.2 and (x.get('x35') or {}).get('rollS') is not None and x['x35']['rollS'] * turn <= -20), None)
+            r = {'arm': arm, 'seed': seed, 'script': sc, 'wave': s['wave'], 'fell': s.get('fellAfterStand'), 'h50': first_at(0.5), 'h90': first_at(0.9),
+                 'peak': (round(cl(pk), 3), round(pk['tS'], 3)), 'O': None if o is None else (round(o['tS'], 3), o.get('vW'))}
+            out.append(r)
+            print(f"| {arm} | s{seed}w{s['wave']} {sc} | {r['fell']} | yes | {r['h50']} | {r['h90']} | {r['peak']} | {r['O']} |")
+    return out
+
+
+def climb_ticks(directory, arm, seed, script, wave, t0=1.0):
+    """Per tick through the climb: roll, bank, lean, the reference's bank/roll/yaw rate, the coordinated banks, terms."""
+    path = runs(directory)[(seed, arm)]
+    rows = load(path)
+    fr = [x for x in rows if x.get('kind') == 'f' and x['script'] == script and x['wave'] == wave and x.get('tS') is not None and x['tS'] >= t0 and x.get('ctl')]
+    print(f'### {arm} s{seed}w{wave} {script}: per tick from +{t0} s (model signs for xr/terms: phi = -roll, bank = -bank)')
+    print('| t (s) | vW | sched | design | climb (m) | course | yaw rate (deg/s) | rollS | bank | lean asked | x_ref roll / bank / yaw rate / slip | coord. bank at vW / at design (deg) | raw | terms (largest 3) |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    prev = None
+    for x in fr:
+        x35 = x.get('x35') or {}
+        if prev is not None and x35.get('tick') == prev:
+            continue
+        prev = x35.get('tick')
+        sched = x['ctl']['speed']
+        des = design_speed(arm, sched)
+        r = x35.get('yawRate')
+        vW = x.get('vW')
+        cb = lambda v: None if v is None or r is None else round(math.degrees(math.atan(v * math.radians(r) / G)), 1)
+        xr = x35.get('xr') or [None] * 6
+        tm = x['ctl']['tm']
+        top = sorted(tm.items(), key=lambda kv: -abs(kv[1]))[:3]
+        cl = None if x.get('faceH') is None else round(x['faceH'] * x['faceFrac'], 2)
+        print(f"| {x['tS']:.3f} | {vW} | {sched} | {des:.2f} | {cl} | {x35.get('course')} | {r} | {x35.get('rollS')} | {(x.get('lat') or {}).get('bank')} | {x35.get('lean')} | {xr[0]} / {xr[2]} / {xr[4]} / {xr[5]} | {cb(vW)} / {cb(des)} | {x['ctl']['raw']} | {', '.join(f'{k} {v:+.1f}' for k, v in top)} |")
+
+
+def compact(directory, out_dir):
+    """Committed copy: summaries, controls, stands (weights), and for falling/climbing riders a light frame row."""
+    os.makedirs(out_dir, exist_ok=True)
+    keep_f = ('script', 'wave', 't', 'tS', 'ph', 'vW', 'vG', 'roll', 'bank', 'headX', 'pastX', 'pastZ', 'beyond', 'capX', 'capZ', 'faceH', 'faceFrac', 'ahead', 'copX', 'compress', 'ask', 'cap', 'legRest')
+    for (seed, arm), path in runs(directory).items():
+        rows = load(path)
+        o = []
+        for x in rows:
+            k = x.get('kind')
+            if k in ('control', 'summary', 'done', 'stand'):
+                o.append(x)
+            elif k == 'f' and x.get('tS') is not None and x['tS'] >= 0:
+                y = {f: x[f] for f in keep_f if f in x}
+                y['kind'] = 'f'
+                if x.get('ctl'):
+                    y['ctl'] = {f: x['ctl'][f] for f in ('speed', 'raw', 'over', 'range') if f in x['ctl']}
+                    y['ctl']['tm'] = x['ctl'].get('tm')
+                if x.get('cps'):
+                    y['cps'] = x['cps']
+                if x.get('x35'):
+                    y['x35'] = {f: x['x35'][f] for f in ('course', 'yawRate', 'rollS', 'lean', 'steerIn', 'compIn', 'xr', 'args', 'tick') if f in x['x35']}
+                o.append(y)
+        with gzip.open(os.path.join(out_dir, os.path.basename(path).replace('.jsonl', '') + '.jsonl.gz'), 'wt') as fh:
+            for x in o:
+                fh.write(json.dumps(x, separators=(',', ':')) + '\n')
+
+
+if __name__ == '__main__':
+    d = sys.argv[1]
+    what = sys.argv[2] if len(sys.argv) > 2 else 'classify'
+    if what == 'checks':
+        checks(d)
+    elif what == 'classify':
+        classify(d)
+    elif what == 'climb':
+        climb(d)
+    elif what == 'ticks':
+        climb_ticks(d, sys.argv[3], int(sys.argv[4]), sys.argv[5], int(sys.argv[6]), float(sys.argv[7]) if len(sys.argv) > 7 else 1.0)
+    elif what == 'compact':
+        compact(d, sys.argv[3])

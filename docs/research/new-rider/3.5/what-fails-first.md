@@ -170,3 +170,12 @@ Usage checked at each phase boundary; at 80 % of the 5-hour window, stop, push w
 Power: the laptop is on battery (36 % at the pre-registration); no new batch below 25 % while discharging. The order of
 batches is therefore: A seeds 1–3 with the seed-2 reproduction; then B seeds 1–3 and R seed 2; then R seeds 1 and 3 and
 the catch start.
+
+### 0.10 Added after A's seeds 1 and 3 were read, before R seeds 1 and 3 and B seed 2 ran (2026-11-24)
+
+B seeds 1 and 3 and A and R seed 2 were already running, and none of them had been read. A's turn riders often lose a
+margin briefly and stand on: s1w6 `cueL` loses the contact (M2, an `impact` limit) at +1.40 s and separates at
++3.07 s. The first escape of §0.4 stays the rule and is reported as registered. **One descriptive read is added beside
+it, and it changes no class:** the **final escape**, the onset of the last run of margin loss (any of M1–M3, F on
+consecutive frames, gaps of at most 0.05 s bridged) that ends in the separation, with the speed through the water, the
+schedule speed and the lean asked there. Where the two differ by more than 0.3 s the table shows both.
