@@ -7,7 +7,8 @@
 - **Status, 2026-11-24, after 20:00 UTC.**
   - Vicente asked to continue, and 3.5x ran on the first machine. It is done and reviewed: `claude/what-fails-first` `b0d19ee8`, from `1be12ee7`.
   - The coordinator's review is in the consult log.
-  - Vicente chose the returning taper. 3.5y (`?plantSpeed=taper6`) is running on the first machine, on `claude/return-taper`, from `b0d19ee8`.
+  - Vicente chose the returning taper. 3.5y (`?plantSpeed=taper6`) is done and reviewed: `claude/return-taper` `61dd1c43`. It loses to `plantFloor=6` his way, which stays the ride build.
+  - The next round waits for Vicente's choice.
   - The reset hold below no longer applies: the account read 0 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
