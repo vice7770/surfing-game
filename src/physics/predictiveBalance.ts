@@ -19,6 +19,7 @@
  * lagged torque); commands [u_a, u_t].
  */
 import { HEAVE_AT, N_HEAVE, boardDerivatives, lateralCompliance, twistRows, twistStateCount, type HeavePlant, type RiderBody, type TwistPlant, type YawPlant } from './rollModel';
+import { WOBBLE } from './wobbleKnobs';
 
 export type Mat = number[][];
 export const zeros = (r: number, c: number): Mat => Array.from({ length: r }, () => new Array<number>(c).fill(0));
@@ -1756,7 +1757,11 @@ export class PredictiveController {
     const ne = d.phiE.length;
     if (this.estimate.length !== ne) this.estimate = new Array<number>(ne).fill(0);
     this.senses.push(sense.slice());
-    if (this.senses.length > N + 1) this.senses.shift();
+    // Step 3.6c's diagnostic knob (`wobbleKnobs.ts`, `senseShift`; 0 by default, read by no address): the filter reads
+    // the sense `N + shift` ticks old, so the line keeps that many more. At 0 the shipped line, bit for bit.
+    const shift = WOBBLE.senseShift;
+    const age = N + shift;
+    if (this.senses.length > Math.max(N, age) + 1) this.senses.shift();
     // Step 3.5r (`faceTrim`): the face's tilt rides the senses' own line, so the model knows it as it was `N` ticks
     // ago (`sensedFace`, held over the delay) and the filter's one-step model is driven by the one before that
     // (`stepFace`). Nothing is kept, and both are 0, unless the design carries the face.
@@ -1769,8 +1774,8 @@ export class PredictiveController {
     const stepFace = faced && this.faces.length > N + 1 ? this.faces[this.faces.length - 2 - N] : 0;
     this.faceSensed = sensedFace;
     const e = this.estimate;
-    if (this.senses.length > N) {
-      const yk = this.senses[this.senses.length - 1 - N];
+    if (this.senses.length > age) {
+      const yk = this.senses[this.senses.length - 1 - age];
       const old = this.commands.length > N ? this.commands[this.commands.length - 1 - N] : [0, 0];
       const pred = new Array<number>(ne);
       for (let i = 0; i < ne; i += 1) {
@@ -1869,7 +1874,14 @@ export class PredictiveController {
     for (let q = 0; q < N_COMMAND; q += 1) {
       let s = ref.u[q] - (q === 0 ? b0 : b1);
       const row = gains[q];
-      for (let j = 0; j < n; j += 1) s -= row[j] * (xh[j] - ref.x[j]);
+      // Step 3.6c's diagnostic knobs (`wobbleKnobs.ts`, `ankleGain`, `twistGain`; 1 by default, read by no address).
+      const g = q === 0 ? WOBBLE.ankleGain : WOBBLE.twistGain;
+      if (g === 1) for (let j = 0; j < n; j += 1) s -= row[j] * (xh[j] - ref.x[j]);
+      else {
+        let fb = 0;
+        for (let j = 0; j < n; j += 1) fb += row[j] * (xh[j] - ref.x[j]);
+        s -= g * fb;
+      }
       u[q] = s;
     }
     this.raw[0] = u[0]; this.raw[1] = u[1];

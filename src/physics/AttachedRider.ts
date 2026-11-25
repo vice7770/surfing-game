@@ -7,6 +7,7 @@ import { armCarriagePlace, createArmCarriage, resetArmCarriage, stepArmCarriage,
 import { bankLedger } from './bankLedger';
 import { WATER } from './hullForces';
 import { RIDER_LEG } from './legSpring';
+import { WOBBLE } from './wobbleKnobs';
 import { MinimumJerkTrack } from './MinimumJerkTrack';
 import { SEAWATER_DENSITY as SEAWATER } from './PhysicalSurfWater';
 import { createWaterSample } from './SurfWater';
@@ -4024,7 +4025,8 @@ export class AttachedRider {
       // Step 3.5s (`holdLine`): the board's heading from the latched line, in the model's sign (its y is the board's
       // right, the world heading's + is the nose to the left), and the lean cap the stick's own ask has now.
       const hold = this.holdLineRef ? { heading: -this.standingLineError, cap: this.leanProbe.cap } : undefined;
-      const u = this.predictor.tick(sense, speed, this.yawDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold);
+      // Step 3.6c's diagnostic knob (`wobbleKnobs.ts`, `designDepth`; off by default, read by no address).
+      const u = this.predictor.tick(sense, speed, WOBBLE.designDepth < 0 ? this.yawDepth : WOBBLE.designDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold);
       this.schedRail = rail;
       this.schedTilt = this.faceTrim ? faceSense : faceTilt;
       this.heldAnkleRaw = -this.predictor.raw[0];
@@ -4550,7 +4552,8 @@ export class AttachedRider {
     this.extending = this.restRate > 0 && this.leg.rest < rest;
     // The deeper tuck keeps the current bent-leg stiffness rather than softening below it; standing tall, the riding stance's.
     // The new surfer: the softer knees (KNEE_STIFFNESS), their strength capped in `project` (`kneeStrength`).
-    this.legStiffness = this.freeBody ? KNEE_STIFFNESS
+    // Step 3.6c's diagnostic knob (`wobbleKnobs.ts`, `knee`; identity by default, read by no address).
+    this.legStiffness = this.freeBody ? (WOBBLE.knee === 1 ? KNEE_STIFFNESS : KNEE_STIFFNESS * WOBBLE.knee)
       : LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * Math.min(CROUCH_DEPTH, Math.max(0, -this.leg.rest))) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
     this.leg.height = this.localCenter.y - this.base.y;
@@ -4902,7 +4905,8 @@ export class AttachedRider {
     const w = board.angularVelocity;
     const turn = n.x * w.x + n.y * w.y + n.z * w.z;
     if (!this.yawCoupled) this.yawSpin = turn;
-    const stance = stanceAt(this.yawDepth, this.stanceDeepRow);
+    // Step 3.6c's diagnostic knob (`wobbleKnobs.ts`, `splitDepth`; off by default, read by no address).
+    const stance = stanceAt(WOBBLE.splitDepth < 0 ? this.yawDepth : WOBBLE.splitDepth, this.stanceDeepRow);
     const lower = this.yawScale * stance.lower;
     const upper = this.yawScale * (stance.upper + TWIST_BODY_ARMS * Math.max(0, Math.min(1, this.human.arms)));
     if (!tb.coupled) tb.upper = turn + tb.rate;

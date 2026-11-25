@@ -6,6 +6,7 @@ import { THRUSTER, createFinForce, finForce, type FinSpec } from './finForces';
 import { hollowWetShare, railDepth } from './deckHollow';
 import { RAIL_SUCTION, WATER, WET_RAMP, createPatchForce, patchForce, planingScales, submergedShare, wettedShare, type WorldPatch } from './hullForces';
 import { bankLedger } from './bankLedger';
+import { WOBBLE } from './wobbleKnobs';
 import { solveLinear } from './legSpring';
 import { createWaterSample, type SurfWater, type WaterSample } from './SurfWater';
 import type { BoardSpraySheet } from '../wave/SprayCloud';
@@ -970,6 +971,13 @@ export class BoardBody implements BoardContactBody {
           v.z + w.x * ry - w.y * rx - sample.flowZ,
         ).applyQuaternion(inverse);
         const out = finForce(foil.fin, relative, immersed, this.finOut);
+        // Step 3.6c's diagnostic knob (`wobbleKnobs.ts`, `fins`; 1 by default, read by no address): the fin's lift slope.
+        if (WOBBLE.fins !== 1) {
+          out.force.x *= WOBBLE.fins;
+          out.force.y *= WOBBLE.fins;
+          out.force.z *= WOBBLE.fins;
+          out.damping *= WOBBLE.fins;
+        }
         const force = this.foilScratch.set(out.force.x, out.force.y, out.force.z).applyQuaternion(q);
         fx = force.x;
         fy = force.y;
