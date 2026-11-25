@@ -145,6 +145,24 @@ truths share exactly these mechanics and differ from the grey-box plant only in 
 - Everything else stands: the cells, the data rules, the split, the validation and its pass line, the check, the
   credibility rule and the lock.
 
+### 0.3b Amendments, 2026-11-25, about 16:45 UTC, after reading the training fits and before any held-out file was read
+
+1. **The face enters the grey-box through the model's own face column** (`faceColumn`, 3.5r: the heel terms at φ − τ
+   and the support turned through τ), driven by the measured tilt, not through a free coefficient per row. With a free
+   tilt coefficient per row the heel derivatives were confounded with it (on the face φ ≈ τ): the training fit put the
+   roll moment per roll (`heelRoll`) at 2–22 N·m/rad against the table's −269 to −316. With the face column it is
+   still −51 to +21 (training, every cell), so the confound was not the whole story; the column stays because it is
+   the physics. The known plants of §0.8 carry their own face column, driven by the same tilt, when the fit is grey.
+2. **A closed-loop prediction joins the validation, and the credibility rule.** On the training fit, A closed on the
+   identified plant diverges with a real root of 2–4 /s in most cells, **6–7 m/s included**, where A rides for
+   seconds in the game and the gain lock's map (table) is stable at every delay. An open-loop prediction with the
+   measured commands cannot see that, because the commands it is fed are the game's. So, from each held-out start
+   tick, the ride's own controller (the real class, replayed exactly from the logged arguments up to that tick, then
+   copied) is closed on each plant with the ride's logged references for n ticks, and the plant's states are compared
+   with the game's (φ, θ, r, β at 0.25 and 0.5 s, the same RMS). **A cell is credible for the check and the lock only
+   if the identified plant also beats both truths there on all eight of these.** The registered open-loop pass line
+   (§0.6) is unchanged and is reported as registered.
+
 ### 0.4 The data split
 
 - **Identification:** seeds 1–3, Canyon Medium and Big (the benchmark's seas, `PERIODS=12`), every ride the benchmark's

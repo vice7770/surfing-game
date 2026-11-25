@@ -21,7 +21,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import {
-  CONTROL_STEP, DEFAULT_WEIGHTS, PLANT_SPEEDS, PredictiveController, closedLoop, continuousPlant, discretise, inverse, leastDamping, plantAt,
+  CONTROL_STEP, DEFAULT_WEIGHTS, PLANT_SPEEDS, PredictiveController, closedLoop, continuousPlant, discretise, faceColumn, inverse, leastDamping, plantAt,
   type Design, type DesignWeights, type LabPlant, type Mat,
 } from '../../../../src/physics/predictiveBalance';
 import { eigenvalues } from '../../../../src/physics/rollModel';
@@ -318,8 +318,16 @@ function setTruth(which: 'table' | 'game'): void {
     Object.assign(PLANT_SPEEDS, gameRows);
   }
 }
-const truthCache = new Map<string, { phi: Mat; gamma: Mat }>();
-export function truthAt(which: 'table' | 'game' | 'K2', v: number, depth: number): { phi: Mat; gamma: Mat } {
+/** A plant's discretisation with the face's own column (`faceColumn`, 3.5r) as a third input: Φ, Γ and Γ_F (10 × 1). */
+export interface Disc { phi: Mat; gamma: Mat; gammaF: number[] }
+function discFace(y: Any, t: Any): Disc {
+  const { a, b } = continuousPlant(y, t);
+  const f = faceColumn(y, t);
+  const d = discretise(a, b.map((row, i) => [...row, f[i]]), H);
+  return { phi: d.phi, gamma: d.gamma.map((r) => [r[0], r[1]]), gammaF: d.gamma.map((r) => r[2]) };
+}
+const truthCache = new Map<string, Disc>();
+export function truthAt(which: 'table' | 'game' | 'K2', v: number, depth: number): Disc {
   const vr = Math.round(v * 100) / 100;
   const dr = Math.round(depth * 1000) / 1000;
   const key = `${which}|${vr}|${dr}`;
@@ -327,8 +335,7 @@ export function truthAt(which: 'table' | 'game' | 'K2', v: number, depth: number
   if (!t) {
     setTruth(which === 'game' ? 'game' : 'table');
     const { y, t: tw } = plantAt(vr, dr, { rail: 0, body: true, stanceDeep: true, ...(which === 'K2' ? { plantFloor: 6 } : {}) });
-    const { a, b } = continuousPlant(y, tw);
-    t = discretise(a, b, H);
+    t = discFace(y, tw);
     setTruth('table');
     truthCache.set(key, t);
   }
@@ -406,15 +413,15 @@ function glsFit(seqs: Seq[], c0: number[][], iterations = 5): { c: number[][]; r
 // row with its own face and hip inputs and constant, rows weighted by their residual variance.
 // ---------------------------------------------------------------------------------------------------------------
 const WATER = ['heelYaw', 'heelSide', 'heelRoll', 'slipYaw', 'slipSide', 'slipRoll', 'yawDamping', 'yawSide', 'yawRoll', 'rollRateYaw', 'rollRateSide', 'rollDamping'] as const;
-const NG = WATER.length + 8 * 3;
+const NG = WATER.length + 8 * 2;
 const rq = (v: number) => Math.round(v * 20) / 20;
 const rd = (d: number) => Math.round(d * 100) / 100;
 function waterAt(v: number, dep: number): number[] {
   const { y } = plantAt(v, dep, { rail: 0, body: true, stanceDeep: true });
   return WATER.map((k) => (y as Any)[k] as number);
 }
-const greyCache = new Map<string, { phi: Mat; gamma: Mat }>();
-export function greyPlant(p: readonly number[], v: number, dep: number, exact = false): { phi: Mat; gamma: Mat } {
+const greyCache = new Map<string, Disc>();
+export function greyPlant(p: readonly number[], v: number, dep: number, exact = false): Disc {
   const vv = exact ? v : rq(v), dd = exact ? dep : rd(dep);
   const key = `${vv}|${dd}|${p.join(',')}`;
   let out = greyCache.get(key);
@@ -422,20 +429,19 @@ export function greyPlant(p: readonly number[], v: number, dep: number, exact = 
     const { y, t } = plantAt(vv, dd, { rail: 0, body: true, stanceDeep: true });
     const yy = { ...y } as Any;
     WATER.forEach((k, i) => { yy[k] = p[i]; });
-    const { a, b } = continuousPlant(yy, t);
-    out = discretise(a, b, H);
+    out = discFace(yy, t);
     if (greyCache.size > 20000) greyCache.clear();
     greyCache.set(key, out);
   }
   return out;
 }
-function greyJac(p: readonly number[], v: number, dep: number): { phi: Mat; gamma: Mat }[] {
+function greyJac(p: readonly number[], v: number, dep: number): Disc[] {
   return WATER.map((_, m) => {
     const h = Math.max(1, 0.01 * Math.abs(p[m]));
     const up = p.slice(), dn = p.slice();
     up[m] += h; dn[m] -= h;
     const a = greyPlant(up, v, dep), b = greyPlant(dn, v, dep);
-    return { phi: a.phi.map((row, i) => row.map((x, j) => (x - b.phi[i][j]) / (2 * h))), gamma: a.gamma.map((row, i) => row.map((x, j) => (x - b.gamma[i][j]) / (2 * h))) };
+    return { phi: a.phi.map((row, i) => row.map((x, j) => (x - b.phi[i][j]) / (2 * h))), gamma: a.gamma.map((row, i) => row.map((x, j) => (x - b.gamma[i][j]) / (2 * h))), gammaF: a.gammaF.map((x, i) => (x - b.gammaF[i]) / (2 * h)) };
   });
 }
 interface GreyPair { x: number[]; u: number[]; y: number[]; v: number; dep: number; tilt: number; hip: number; ride: number }
@@ -443,7 +449,7 @@ function greyNormal(pairs: GreyPair[], p: number[], w: number[], rides?: number[
   const N = Array.from({ length: NG }, () => new Array<number>(NG).fill(0));
   const b = new Array<number>(NG).fill(0);
   const res: number[][] = [];
-  const jac = new Map<string, { phi: Mat; gamma: Mat }[]>();
+  const jac = new Map<string, Disc[]>();
   const counts = rides ? new Map<number, number>() : undefined;
   if (rides && counts) for (const r of rides) counts.set(r, (counts.get(r) ?? 0) + 1);
   for (const q of pairs) {
@@ -452,18 +458,19 @@ function greyNormal(pairs: GreyPair[], p: number[], w: number[], rides?: number[
     const key = `${rq(q.v)}|${rd(q.dep)}`;
     let J = jac.get(key);
     if (!J) { J = greyJac(p, q.v, q.dep); jac.set(key, J); }
-    const pred = step(pl.phi, pl.gamma, q.x, q.u);
+    // The face's tilt enters through the plant's own face column (the heel terms at φ − τ and the support turned through τ).
+    const pred = step(pl.phi, pl.gamma, q.x, q.u).map((v, i) => v + pl.gammaF[i] * q.tilt);
     const r = pred.map((v, i) => q.y[i] - v).slice(0, 8);
     res.push(r);
     if (mult === 0) continue;
     for (let i = 0; i < 8; i += 1) {
       const g = new Array<number>(NG).fill(0);
       for (let m = 0; m < WATER.length; m += 1) {
-        let s2 = J[m].gamma[i][0] * q.u[0] + J[m].gamma[i][1] * q.u[1];
+        let s2 = J[m].gamma[i][0] * q.u[0] + J[m].gamma[i][1] * q.u[1] + J[m].gammaF[i] * q.tilt;
         for (let j = 0; j < 10; j += 1) s2 += J[m].phi[i][j] * q.x[j];
         g[m] = s2;
       }
-      g[WATER.length + 3 * i] = q.tilt; g[WATER.length + 3 * i + 1] = q.hip; g[WATER.length + 3 * i + 2] = 1;
+      g[WATER.length + 2 * i] = q.hip; g[WATER.length + 2 * i + 1] = 1;
       const wi = w[i] * mult;
       for (let a2 = 0; a2 < NG; a2 += 1) { if (g[a2] === 0) continue; b[a2] += wi * g[a2] * r[i]; for (let c2 = 0; c2 < NG; c2 += 1) N[a2][c2] += wi * g[a2] * g[c2]; }
     }
@@ -487,7 +494,7 @@ function greyFit(rides: Ride[], cell: string, medV: number, medDep: number, boot
   const p0 = waterAt(medV, medDep);
   let p = p0.slice();
   let w = new Array<number>(8).fill(1);
-  let e = new Array<number>(24).fill(0);
+  let e = new Array<number>(16).fill(0);
   let kappa = Number.NaN;
   // The rows' weights from the increments' spread at the start, then from the residuals.
   { const inc = new Array<number>(8).fill(0); for (const q of pairs) for (let i = 0; i < 8; i += 1) inc[i] += (q.y[i] - q.x[i]) ** 2; w = inc.map((v) => pairs.length / Math.max(1e-300, v)); }
@@ -500,7 +507,7 @@ function greyFit(rides: Ride[], cell: string, medV: number, medDep: number, boot
     // The residuals with the exogenous terms, for the weights.
     const { res } = greyNormal(pairs, p, w, []);
     const ss = new Array<number>(8).fill(0);
-    res.forEach((r, k) => { for (let i = 0; i < 8; i += 1) { const rr = r[i] - (e[3 * i] * pairs[k].tilt + e[3 * i + 1] * pairs[k].hip + e[3 * i + 2]); ss[i] += rr * rr; } });
+    res.forEach((r, k) => { for (let i = 0; i < 8; i += 1) { const rr = r[i] - (e[2 * i] * pairs[k].hip + e[2 * i + 1]); ss[i] += rr * rr; } });
     w = ss.map((v) => pairs.length / Math.max(1e-300, v));
   }
   const sigma = w.map((v) => 1 / Math.sqrt(v));
@@ -524,8 +531,8 @@ function greyFit(rides: Ride[], cell: string, medV: number, medDep: number, boot
   return { p, e, kappa, sigma, boot: bootD, p0 };
 }
 /** A cell's plant at a speed and depth: the grey-box water at that speed and depth, or the black-box cell's Φ, Γ. */
-export function cellPlant(f: Any, v: number, dep: number): { phi: Mat; gamma: Mat } {
-  return f.grey ? greyPlant(f.grey, v, dep) : plantOf(f.c);
+export function cellPlant(f: Any, v: number, dep: number): Disc {
+  return f.grey ? greyPlant(f.grey, v, dep) : { ...plantOf(f.c), gammaF: new Array<number>(10).fill(0) };
 }
 
 function fit(rides: Ride[], iv: boolean, boot: number): CellFit[] {
@@ -602,7 +609,7 @@ function validate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Any[] {
   const byCell = new Map(fits.filter((f) => f.enough).map((f) => [f.cell, { f, p: plantOf(f.c), piv: f.civ ? plantOf(f.civ) : undefined }]));
   const acc = new Map<string, Any>();
   void acc;
-  const models = ['id', 'iv', 'table', 'game', 'persist', ...(known ? ['known'] : [])];
+  const models = ['id', 'iv', 'table', 'game', 'persist', ...(known ? ['known'] : []), 'idF', 'tableF', 'gameF', ...(known ? ['knownF'] : [])];
   for (const ride of rides) {
     const t = ride.ticks;
     for (let k = 0; k < t.length; k += 1) {
@@ -624,13 +631,16 @@ function validate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Any[] {
       let e = acc.get(cell);
       if (!e) { e = { cell, rides: new Set<string>(), n: {}, se: {} }; for (const m of models) { e.se[m] = {}; for (const hz of HORIZONS) e.se[m][hz] = new Array<number>(10).fill(0); } for (const hz of HORIZONS) e.n[hz] = 0; acc.set(cell, e); }
       e.rides.add(ride.key);
-      const pl: Record<string, { phi: Mat; gamma: Mat }> = { id: fit.f.grey ? greyPlant(fit.f.grey, a.v, a.dep) : fit.p, table: truthAt('table', a.v, a.dep), game: truthAt('game', a.v, a.dep) };
+      const idp = cellPlant(fit.f, a.v, a.dep);
+      const pl: Record<string, { phi: Mat; gamma: Mat; gammaF?: number[] }> = { id: idp, table: truthAt('table', a.v, a.dep), game: truthAt('game', a.v, a.dep) };
+      // Reported beside the registered line: the same three (four) with the face's own column driven by the measured tilt.
+      pl.idF = idp; pl.tableF = pl.table; pl.gameF = pl.game;
       if (fit.piv) pl.iv = fit.piv;
-      if (known) pl.known = truthAt(known === 'K1' ? 'table' : 'K2', a.v, a.dep);
+      if (known) { pl.known = truthAt(known === 'K1' ? 'table' : 'K2', a.v, a.dep); pl.knownF = pl.known; }
       const xs: Record<string, number[]> = {};
       for (const m of Object.keys(pl)) xs[m] = a.x.slice();
       for (let j = 1; j <= reach; j += 1) {
-        for (const m of Object.keys(pl)) xs[m] = step(pl[m].phi, pl[m].gamma, xs[m], t[k + j - 1].u);
+        for (const m of Object.keys(pl)) { xs[m] = step(pl[m].phi, pl[m].gamma, xs[m], t[k + j - 1].u); if (m.endsWith('F') && pl[m].gammaF) { const gf = pl[m].gammaF!; const tl = t[k + j - 1].ftilt; xs[m] = xs[m].map((v, i) => v + gf[i] * tl); } }
         if (HORIZONS.includes(j)) {
           const truth = t[k + j].x;
           e.n[j] += 1;
@@ -659,10 +669,76 @@ function validate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Any[] {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
+// The closed-loop prediction (amendment §0.6a): from each start tick, the ride's own controller (replayed exactly from
+// the logged arguments up to that tick, then cloned) closed on each plant with the ride's logged references, n ticks
+// ahead; the plants' states against the game's.
+// ---------------------------------------------------------------------------------------------------------------
+function cloneController(c: Any, weights: DesignWeights): Any {
+  const d = new PredictiveController(weights, 'tan') as Any;
+  for (const k of ['senses', 'commands', 'faces', 'headings']) { d[k].length = 0; for (const v of c[k]) d[k].push(Array.isArray(v) ? v.slice() : v); }
+  d.estimate = c.estimate.slice();
+  d.ticks = c.ticks;
+  for (const k of ['predicted', 'sent', 'raw', 'bias']) for (let i = 0; i < c[k].length; i += 1) d[k][i] = c[k][i];
+  d.faceSensed = c.faceSensed; d.holdHeading = c.holdHeading; d.holdBank = c.holdBank;
+  return d;
+}
+function closedValidate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Map<string, Any> {
+  const byCell = new Map(fits.filter((f) => f.enough).map((f) => [f.cell, f]));
+  const acc = new Map<string, Any>();
+  const models = ['id', 'table', 'game', ...(known ? ['known'] : [])];
+  const nMax = HORIZONS[HORIZONS.length - 1];
+  for (const ride of rides) {
+    const t = ride.ticks;
+    if (!t.length || t[0].n !== 0) continue;
+    const ctl = new PredictiveController(WEIGHTS_A, 'tan') as Any;
+    for (let k = 0; k < t.length; k += 1) {
+      const a = t[k];
+      if (a.n !== k) break;
+      // The controller's state just before tick k is in `ctl` now.
+      if (selectedAt(a)) {
+        const bi = binOf(a.v), gi = groupOf(a.dep);
+        const f = bi >= 0 && gi >= 0 ? byCell.get(cellName(bi, gi)) : undefined;
+        let reach = 0;
+        for (let j = 1; j <= nMax && k + j < t.length; j += 1) { if (t[k + j].n !== a.n + j || t[k + j].inf !== 0 || t[k + j].ph !== 'standing') break; reach = j; }
+        if (f && reach >= HORIZONS[0]) {
+          const cell = f.cell;
+          let e = acc.get(cell);
+          if (!e) { e = { n: {}, se: {} }; for (const m of models) { e.se[m] = {}; for (const hz of HORIZONS) e.se[m][hz] = new Array<number>(10).fill(0); } for (const hz of HORIZONS) e.n[hz] = 0; acc.set(cell, e); }
+          const pl: Record<string, Disc> = { id: cellPlant(f, a.v, a.dep), table: truthAt('table', a.v, a.dep), game: truthAt('game', a.v, a.dep) };
+          if (known) pl.known = truthAt(known === 'K1' ? 'table' : 'K2', a.v, a.dep);
+          for (const m of Object.keys(pl)) {
+            const c2 = cloneController(ctl, WEIGHTS_A);
+            let x = a.x.slice();
+            for (let j = 0; j < reach; j += 1) {
+              const g = t[k + j];
+              const sense = [x[2], x[3], x[7], x[6], x[7] - x[4], x[2] - x[0], x[3] - x[1], 0, 0];
+              const u = c2.tick(sense, g.v, g.dep, g.ba, g.ta, { ankle: g.lim[0], twist: g.lim[1] }, g.rail, g.tilt, g.face, undefined);
+              x = step(pl[m].phi, pl[m].gamma, x, [u[0], u[1]]).map((v, i) => v + pl[m].gammaF[i] * g.ftilt);
+              if (HORIZONS.includes(j + 1)) { if (m === 'id') e.n[j + 1] += 1; for (let i = 0; i < 10; i += 1) e.se[m][j + 1][i] += (x[i] - t[k + j + 1].x[i]) ** 2; }
+            }
+          }
+        }
+      }
+      ctl.tick(a.s, a.v, a.dep, a.ba, a.ta, { ankle: a.lim[0], twist: a.lim[1] }, a.rail, a.tilt, a.face, undefined);
+    }
+  }
+  const out = new Map<string, Any>();
+  for (const [cell, e] of acc) {
+    const rms: Any = {};
+    for (const m of models) { rms[m] = {}; for (const hz of HORIZONS) rms[m][hz] = e.n[hz] > 0 ? e.se[m][hz].map((v: number) => Math.sqrt(v / e.n[hz])) : null; }
+    const fails: string[] = [];
+    for (const hz of [15, 30]) { if (!rms.id[hz]) { fails.push(`no ${hz}`); continue; } for (const i of DECIDING) if (!(rms.id[hz][i] < Math.min(rms.table[hz][i], rms.game[hz][i]))) fails.push(`${STATES[i]}@${hz}`); }
+    out.set(cell, { n: e.n, rms, pass: fails.length === 0, fails });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
 // MODE=simulate: the recovery control's closed-loop rides (§0.8).
 // ---------------------------------------------------------------------------------------------------------------
 function simulate(fits: CellFit[], rides: Ride[], known: 'K1' | 'K2'): Map<string, Any[]> {
   const byFit = new Map(fits.filter((f) => f.enough).map((f) => [f.cell, f]));
+  const faced = fits.some((f) => f.grey);
   const files = new Map<string, Any[]>();
   const weights = known === 'K1' ? WEIGHTS_R : WEIGHTS_A;
   const truth = known === 'K1' ? 'table' : 'K2';
@@ -674,7 +750,7 @@ function simulate(fits: CellFit[], rides: Ride[], known: 'K1' | 'K2'): Map<strin
     const bi = binOf(g.v), gi = groupOf(g.dep);
     const f = bi >= 0 && gi >= 0 ? byFit.get(cellName(bi, gi)) : undefined;
     const p = f ? cellPlant(f, g.v, g.dep) : undefined;
-    return p && nx && nx.n === g.n + 1 ? step(p.phi, p.gamma, g.x, g.u).map((v, i) => nx.x[i] - v) : new Array<number>(10).fill(0);
+    return p && nx && nx.n === g.n + 1 ? step(p.phi, p.gamma, g.x, g.u).map((v, i) => nx.x[i] - v - p.gammaF[i] * g.ftilt) : new Array<number>(10).fill(0);
   };
   const rms = new Array<number>(10).fill(0);
   let nd = 0;
@@ -712,7 +788,8 @@ function simulate(fits: CellFit[], rides: Ride[], known: 'K1' | 'K2'): Map<strin
           : dMode === 'selected' ? (selectedAt(g) ? dOf(ride, k) : new Array<number>(10).fill(0))
             : dMode === 'half' ? dOf(ride, k).map((v) => 0.5 * v) : dOf(ride, k);
       const kp = truthAt(truth, g.v, g.dep);
-      x = step(kp.phi, kp.gamma, x, sent).map((v, i) => v + d[i]);
+      // With a grey-box fit the face enters through the plant's own column, so the known plant carries its own too.
+      x = step(kp.phi, kp.gamma, x, sent).map((v, i) => v + d[i] + (faced ? kp.gammaF[i] * g.ftilt : 0));
       if (nx.n !== g.n + 1) break;
     }
     const list = files.get(ride.file) ?? [];
@@ -810,7 +887,11 @@ if (MODE === 'fit') {
   emit({ fit: OUT, sha256: createHash('sha256').update(text).digest('hex'), cells: fits.length, enough: fits.filter((f) => f.enough).length, rides: rides.length, lag: lagCheck(rides) });
 } else if (MODE === 'validate') {
   const fits = (JSON.parse(readFileSync(process.env.FIT!, 'utf8')) as { fits: CellFit[] }).fits;
-  const res = validate(fits, readRides(dirs), process.env.KNOWN === 'K1' || process.env.KNOWN === 'K2' ? (process.env.KNOWN as 'K1' | 'K2') : undefined);
+  const known = process.env.KNOWN === 'K1' || process.env.KNOWN === 'K2' ? (process.env.KNOWN as 'K1' | 'K2') : undefined;
+  const rides = readRides(dirs);
+  const res = validate(fits, rides, known);
+  // The closed-loop prediction (§0.6a), the ride build's controller in the loop (A's weights: every ride here is A's).
+  if (process.env.CLOSED !== 'off') { const cl = closedValidate(fits, rides, known); for (const r of res) r.closed = cl.get(r.cell) ?? null; }
   writeFileSync(OUT, JSON.stringify(res));
   emit({ validate: OUT, cells: res.length, pass: res.filter((r) => r.pass).length, enough: res.filter((r) => r.enough).length });
 } else if (MODE === 'simulate') {
