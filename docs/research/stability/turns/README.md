@@ -202,3 +202,43 @@ measurement, is added. Nothing else in §0 changes.
 - The reader adds, per ride: the twist angle at +1.0 s, the mean twist torque × steer over +1.0 to +1.25 s, and the
   saturated fraction (|torque| ≥ 99.5 N·m; the feet's grip bound is not logged by this run and is checked in a later
   run if it matters).
+
+### 0.11 Amendment, 2026-11-25, about 19:52 UTC, before any row of the onset run was read: the steer's shape
+
+The coordinator relayed a new owner report (about 19:45 UTC, on `claude/balance-bar` at his address, with a gamepad):
+"Playing with the controller stick makes the surfer fall. Im able to turn with my arrows but not with the controller".
+In `Controls.rideRequest` the keys' steer (arrows, A/D, the pad's D-pad) goes through `AxisRamp` (`RAMP_TIME` 0.2 s,
+linear, in and out); the left stick passes straight through (`shapeAxis`, 0.15 dead zone, linear), so a push asks full
+lock in that frame and a spring-centred release asks 0 in that frame. The benchmark's steer is a step in and out, like
+the stick.
+
+**Added measurement.** Each steer ride of the deep stances and of the his-way turn also runs with three shapes, the
+target being the benchmark's (±1 from +1.0 s to +2.0 s):
+- `~ramp`: the keys' `AxisRamp` in and out (1/12 of full lock per 1/60 s step; full at +1.2 s, 0 at +2.2 s);
+- `~in`: ramped in, stepped out at +2.0 s;
+- `~out`: stepped in at +1.0 s, ramped out (0 at +2.2 s).
+
+The drive applies the same `AxisRamp` arithmetic as `src/game/InputAxes.ts`, every step, on the session's own steer
+field (only nonzero values sent, as the probes send them). Scripts: `crouch`, `compress` and `hisway`, left and right,
+each shape, on `tw-catch`, `tw-ride` and Canyon Big (seeds 1–3), and `hisway` on Canyon Medium (seeds 1–3). The step
+version is the onset run's own ride of the same id; the straight twin is the same as for the step (a shaped ride sends
+the step ride's inputs until +1.0 s).
+
+**What it tells apart.**
+- *The onset step throws him* if `~in` (and `~ramp`) fall less often, or later, inside the steer (before +2.0 s) than
+  the step, while `~out` falls like the step.
+- *The release step throws him* if `~out` (and `~ramp`) fall less often after the release (+2.0 to +3.5 s) than the
+  step, while `~in` falls like the step.
+- *Neither* if all four fall alike (paired, by id).
+- Read per shape: falls inside the steer and after the release (balance-labelled, by the benchmark's cause rule with the
+  same prone twin), fall time against the step's (paired), the lowest reserve, and the onset metrics of §0.3 (a ramp
+  delays the lean asked by up to 0.2 s, so its own onset is read beside the step's, not as an arm).
+
+**An eased stick as a candidate arm.** If the shapes show that a step (in or out) throws him and the ramp does not, an
+eased stick is a candidate: input shaping behind its own switch in `Controls` (or the stick's shaping), not in the
+physics; the turn's size and authority not limited (full lock still reached); judged like every arm (§0.7), ridden his
+way with the stick. It counts toward §0.5's three arms.
+
+**Predictions.** The release step throws more riders than the onset step: `~out` and `~ramp` fall less often in
++2.0–3.5 s than the step on the Big swell (Compress and his way), and `~in` changes falls inside the steer by no more
+than 2 of 36. Low confidence.
