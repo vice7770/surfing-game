@@ -1,0 +1,13 @@
+# 3.6a: the Canyon byte check on claude/stability-report (after the runner, the report and the gain lock; src unchanged but the new test)
+# Build: ./node_modules/.bin/rolldown scripts/m1-cpu-bench.ts -o raw.mjs --format esm --platform node; then { echo "globalThis.location = { search: '?canyonWaves=true' };"; cat raw.mjs; } > bench.mjs
+# Run:   node --max-old-space-size=3200 bench.mjs --spot canyon --steps 3600 --state <a fresh path>   (fresh spin-up)
+# Reference: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+
+globalThis.location = { search: '?canyonWaves=true' };
+impor
+
+spun up on the CPU in 30.8 s; kept in nostate
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 0.85/0.92, roller 0.46/0.54, front 0.00/0.00, lip 0.02/0.02, foam 1.68/1.75, airSources 0.04/0.05, aeration 0.81/0.86, contact 0.00/0.00, board 0.45/0.61, bubbles 0.11/0.13, spray 0.19/0.27, sounds 0.00/0.00, snapshotFields 2.86/2.98, snapshot 3.22/3.37, summary 0.25/0.32
+  CPU stages per step (step − water + snapshot + summary): 8.24/8.79; water (CPU solver, not timed on the device) 53.3
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9

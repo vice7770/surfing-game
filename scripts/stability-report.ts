@@ -326,12 +326,14 @@ async function main(): Promise<void> {
   const wall = Date.now();
   process.stderr.write(`stability ${MODE}: ${list.length} processes, ${JOBS} at once, build ${EXTRA}, into ${OUT}\n`);
   const times = REUSE ? new Map<string, { seconds: number; code: number | null }>() : await runAll(list);
-  const seconds = (Date.now() - wall) / 1000;
+  const timesFile = join(OUT, 'times.json');
+  const ran = REUSE && existsSync(timesFile) ? (JSON.parse(readFileSync(timesFile, 'utf8')) as { seconds: number; jobs: number }) : undefined;
+  const seconds = ran ? ran.seconds : (Date.now() - wall) / 1000;
   const { rides, check } = collect(list);
-  const head = [`# Stability ${MODE}: build \`${EXTRA}\``, '', `${rides.length} rides from ${list.length} processes${REUSE ? ' (re-read)' : `, ${(seconds / 60).toFixed(1)} min with ${JOBS} at once`}. Times are seconds after the first standing frame; reserve is \`balanceReserve\` (red below 0.3); vW is the speed through the water, horizontal, m/s.`, ''];
+  const head = [`# Stability ${MODE}: build \`${EXTRA}\``, '', `${rides.length} rides from ${list.length} processes, ${(seconds / 60).toFixed(1)} min with ${ran ? ran.jobs : JOBS} at once${REUSE ? ' (re-read from the run\'s files)' : ''}. Times are seconds after the first standing frame; reserve is \`balanceReserve\` (red below 0.3); vW is the speed through the water, horizontal, m/s.`, ''];
   const md = [...head, tables(rides)].join('\n');
   writeFileSync(join(OUT, 'rides.jsonl'), rides.map((r) => JSON.stringify(r)).join('\n') + '\n');
-  writeFileSync(join(OUT, 'times.json'), JSON.stringify({ mode: MODE, jobs: JOBS, seconds, perJob: Object.fromEntries(times) }, null, 1));
+  if (!REUSE) writeFileSync(timesFile, JSON.stringify({ mode: MODE, jobs: JOBS, seconds, perJob: Object.fromEntries(times) }, null, 1));
   for (const r of rides) process.stdout.write(`${JSON.stringify(r)}\n`);
   process.stdout.write(`\n${md}\n`);
   let code = 0;
