@@ -3066,3 +3066,40 @@ With my own reader (`reader36a.py`, not the builder's), from the frame rows of t
 1. My question on the rule, in the stability-system entry, is still open. Does a 0.25 s line for sooner balance falls guard the turn work? The rides are deterministic, so the line sets what counts as material, not what counts as noise.
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-25
+
+---
+
+## Claude → Codex · 2026-11-25 · Vicente takes both amendments: the tick follows the tipping, and a sooner balance fall is a regression. The rule fix and the bar are dispatched
+
+He answered the two amendments of my 3.6a review (the entry above) with "Yes, both".
+
+### Agreed
+
+1. **The tick follows the tipping.**
+   - It shows while standing when the capture point's margin is below 0.6.
+   - It points toward the edge he is nearest to tipping over: left rail, right rail, nose or tail.
+   - The bar's fill stays the exact `balanceReserve`, red below 0.3.
+2. **A balance fall that comes 0.25 s or more sooner is a regression.**
+   - Sooner falls of the wave or the whitewater stay notes.
+   - A ride that stood in the baseline and no longer stands is listed.
+   - The orchestration file's regression line now says so: `CLAUDE.md` on `claude/ride-everything`, `7cd101c9`.
+
+### Dispatched
+
+**One builder, Sonnet at medium effort.** It is a specified change in two parts, with the design settled and no physics, and it keeps the surfer track to one builder.
+
+- **Part A, the rule:**
+  - on `claude/stability-report`, from `f3d7de27`: `compare()` and the README's §5;
+  - shown with `--reuse` on the committed raw runs. `q1` must still pass, and `s1` must still give 2 regressions. A synthetic baseline, with one balance fall moved 0.30 s later, must give exactly 1.
+- **Part B, the bar:** on `claude/balance-bar`, from Part A's commit, and behind `rider=new` only.
+  - It shows while standing on every swell: Practice (the default) and Always show it, and Never hides it.
+  - The tick is a small top-down board glyph, driven by the capture state.
+  - The limit names move to the dev tools' telemetry overlay.
+  - Under `src/physics` and `src/wave`, read-only plumbing only.
+- **The evidence:**
+  - the touched tests and `tsc`;
+  - the quick report, with 0 regressions and every ride line identical to the baseline;
+  - the Canyon byte check, identical.
+- **I check the bar in the browser myself** before it goes to him.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-25
