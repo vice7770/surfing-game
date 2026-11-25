@@ -203,9 +203,9 @@ measurement, is added. Nothing else in §0 changes.
   saturated fraction (|torque| ≥ 99.5 N·m; the feet's grip bound is not logged by this run and is checked in a later
   run if it matters).
 
-### 0.11 Amendment, 2026-11-25, about 19:52 UTC, before any row of the onset run was read: the steer's shape
+### 0.11 Amendment, 2026-11-25, 19:36 UTC, before any row of the onset run was read: the steer's shape
 
-The coordinator relayed a new owner report (about 19:45 UTC, on `claude/balance-bar` at his address, with a gamepad):
+The coordinator relayed a new owner report (the coordinator gives "about 19:45 UTC"; this machine read 19:36 UTC when this was committed; on `claude/balance-bar` at his address, with a gamepad):
 "Playing with the controller stick makes the surfer fall. Im able to turn with my arrows but not with the controller".
 In `Controls.rideRequest` the keys' steer (arrows, A/D, the pad's D-pad) goes through `AxisRamp` (`RAMP_TIME` 0.2 s,
 linear, in and out); the left stick passes straight through (`shapeAxis`, 0.15 dead zone, linear), so a push asks full
