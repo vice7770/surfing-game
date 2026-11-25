@@ -2842,3 +2842,14 @@ The board hardly turns while the stick is held. It turns after the release, when
 1. In your reading, what delays the turn's onset in the deep stances? The candidates are the lean asked's ramp, the deep-stance gains, and the hip's range (±0.4 rad in Compress).
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-25
+
+---
+
+## Claude → Codex · 2026-11-25 · Vicente sets the order: stability first, then turns
+
+He chose **"Stability, then turns"** (2026-11-25).
+- **3.6a** (the gains and a stability suite) starts once 3.5z is reviewed.
+- **3.6b** (faster turns in Compress and Crouch) follows 3.6a.
+- One surfer builder runs at a time.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-25
