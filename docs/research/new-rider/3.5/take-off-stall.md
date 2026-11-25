@@ -258,3 +258,26 @@ much at once, and the ankle pushes the body forward, whose reaction on the board
    the pitch at +0.7 s within ±5° of unpatched (median);
 2. on the stands that last unpatched, it adds at least 2 falls over the nose (N) within 3 s;
 3. so cause 3 fails its causal test (§0.8 3c).
+
+### 0.15 Added 2026-11-25, about 10:40 UTC: he lets the trim go once the board is moving
+
+The coordinator relayed his second answer (asked about 10:25 UTC: "Once the board is moving, do you keep the trim
+forward or let it go?"): **"Let go once moving."** He releases on speed, not on a clock. Written while seeds 5–9 of the
+trim arms were running and before any `cueCTv` run; seeds 1–4 of the trim arms had been read. No drive, threshold or
+prediction above changes.
+
+1. **How his rule picks between the registered drives.** His trim is forward from the stand until the board is
+   moving, then released. For a fall before +1.2 s, `cueCT` and `cueCTx` are the same input, and both are his way. For a
+   stand that lives past +1.2 s, his rule picks **`cueCTx`** if the board's vW at +1.2 s (`cueCTx`'s row) is
+   ≥ 4.4 m/s, else **`cueCT`** (a board not yet moving keeps the push). Each such stand is named in the results.
+2. **The new drive `cueCTv`:** Compress from +0.2 s (`startsWith('cueC')`), full forward trim from the first standing
+   frame, released (0, and latched) from the step after the first standing frame whose vW ≥ **4.4 m/s**. 4.4 m/s is 3.5t's
+   line: every organic stand that lasted ≥ 3 s had reached it, so it is the speed at which a board is "moving" in this
+   game's own record. A stand already at ≥ 4.4 m/s on its first standing frame gets one trimmed step at most.
+   - **Runs:** seeds 1–9 with `SCRIPTS=cue,cueC,cueCT,cueCTv` (cue and cueC reproduce the saved rows; `cueCT` is the
+     identity check), and on seeds 10–15 beside the registered scripts.
+   - **Control:** `cueCTv`'s frame rows equal `cueCT`'s, every field but `x35`'s input echo and `z35`, up to and
+     including its release frame.
+   - **Paired** with `cueC` on the same stands (the his-way comparison) and with `cueCT`.
+   - **Prediction:** as §0.8's trim arms: within ±0.10 s of `cueC` (median, censored at 3 s), no more than 2 rescues.
+3. How far he pushes is still unknown; full +1 stays.

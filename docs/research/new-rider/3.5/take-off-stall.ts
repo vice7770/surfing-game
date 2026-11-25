@@ -14,6 +14,9 @@
  *      - `cueTx` : +1 from the stand, released (0) from `TRIM_UNTIL` s after it (default 1.2);
  *      - `cueCTx`: the same with Compress;
  *      - `cueTB` : −1 (full back) held, the sign check, stick centred.
+ *      - `cueCTv`: (dated addition 0.15) Compress from +0.2 s and +1 from the stand, released (0, latched) from the step
+ *        after the first standing frame whose vW (horizontal |v_board − flow|, the latch's measure) is ≥ `TRIM_SPEED`
+ *        (default 4.4 m/s).
  *    None ends in `L` or `R`, so none turns (3.5x's rule).
  *  * **`z35`** (`Z35=off` drops it; read-only): per standing or landing frame,
  *      - the pitch reference's parts from the latest `StandingBody.prepare` call (deg, forward +, in the heading's
@@ -676,9 +679,18 @@ function z35Row(session: RideSession, water: SurfWater): Record<string, unknown>
   }
   return { z35: out };
 }
+/** Step 3.5z dated addition 0.15: `cueCTv` releases the trim on the first standing frame whose vW reaches TRIM_SPEED (m/s). */
+const TRIM_SPEED = Number(process.env.TRIM_SPEED ?? 4.4);
+const vSample = createWaterSample();
+const released = new WeakSet<object>();
 /** Step 3.5z: the trim a script sends now (0: none, and nothing is sent). */
-function trimOf(script: string, standing: boolean, since: number): number {
+function trimOf(script: string, standing: boolean, since: number, session?: RideSession, water?: SurfWater): number {
   if (!standing || since < 0) return 0;
+  if (script === 'cueCTv' && session && water) {
+    if (released.has(session)) return 0;
+    if (speedThroughWater(session.board, water, vSample) >= TRIM_SPEED) { released.add(session); return 0; }
+    return 1;
+  }
   if (script === 'cueT' || script === 'cueCT') return 1;
   if (script === 'cueTx' || script === 'cueCTx') return since < TRIM_UNTIL ? 1 : 0;
   if (script === 'cueTB') return -1;
@@ -797,7 +809,7 @@ function organicMode(): void {
   const startZ = focus.z - rideLineupOffset(config);
   const CUE_LATER = config.cueLater === 'on';
   const cueSample = createWaterSample();
-  emit({ kind: 'control', mode: 'organic', cueLater: config.cueLater ?? null, seed: SEED, periods: PERIODS, scripts: SCRIPTS, search, riderOptions: opts, cAt: C_AT, ledger: LEDGER, only: ONLY ?? null, spinUp: (Date.now() - wall) / 1000, probe: '3.5z', standHold: STAND_HOLD, turnAt: TURN_AT, turnFor: TURN_FOR, turnSteer: TURN_STEER, lat: LAT, x35: X35, z35: Z35, trimUntil: TRIM_UNTIL, patch: PATCH || null });
+  emit({ kind: 'control', mode: 'organic', cueLater: config.cueLater ?? null, seed: SEED, periods: PERIODS, scripts: SCRIPTS, search, riderOptions: opts, cAt: C_AT, ledger: LEDGER, only: ONLY ?? null, spinUp: (Date.now() - wall) / 1000, probe: '3.5z', standHold: STAND_HOLD, turnAt: TURN_AT, turnFor: TURN_FOR, turnSteer: TURN_STEER, lat: LAT, x35: X35, z35: Z35, trimUntil: TRIM_UNTIL, trimSpeed: TRIM_SPEED, patch: PATCH || null });
   if (config.canyonBed !== 'b' || config.rider !== 'new') { emit({ fatal: 'address' }); process.exit(2); }
   interface Rider {
     script: string; session: RideSession; gauge: WaveFrameGauge; sprinting: boolean; seenBehind: boolean;
@@ -842,7 +854,7 @@ function organicMode(): void {
     const turn = rider.script.length > 3 && rider.script.endsWith('L') ? 1 : rider.script.length > 3 && rider.script.endsWith('R') ? -1 : 0;
     const turning = turn !== 0 && session.phase === 'standing' && since >= TURN_AT && since < TURN_AT + TURN_FOR;
     // Step 3.5z: the trim drives (sent only when nonzero).
-    const trim = trimOf(rider.script, session.phase === 'standing', since);
+    const trim = trimOf(rider.script, session.phase === 'standing', since, session, water);
     const input = { paddle: prone && !pop && rider.popAt === undefined, sprint: prone && rider.sprinting && !pop, popUp: pop, steer: turning ? turn * TURN_STEER : 0, ...(compress ? { compress } : {}), ...(trim ? { trim } : {}) };
     watchLat(session);
     session.step(STEP, water, input);

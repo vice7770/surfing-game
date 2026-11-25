@@ -728,6 +728,44 @@ def dump(tag, d, seed, script, wave, t0=-0.5, t1=1.5, step=0.05):
         print(f"| {ts:.3f} | {x.get('ph')} | {fmt(x.get('vW'))} | {fmt(x.get('pitch'), 1)} | {fmt(x.get('deckP'), 1)} | {fmt(x.get('nose'))} | {fmt(x.get('tail'))} | {fmt(x.get('footR'))} | {fmt(x.get('Fp'))} | {fmt(x.get('Fb'))} | {fmt(None if z.get('trkT') is None else z['trkT'] / W_PAIR)} | {fmt(z.get('face'), 1)} | {fmt(x.get('feltDev'), 1)} | {fmt(z.get('off'), 1)} | {fmt(x.get('ref'), 1)} | {fmt(z.get('lean'), 1)} | {fmt(x.get('ank'), 1)} | {fmt(x.get('rest'), 1)} | {fmt(x.get('hip'), 1)} | {fmt(x.get('copZ'), 3)} | {fmt(x.get('copT'), 3)} | {fmt(x.get('capZ'), 3)} | {fmt(z.get('fs'))} | {fmt(x.get('legBw'))} | {fmt(x.get('ahead'))} | {fmt(x.get('fall'), 1)} | {fmt(x.get('compress'))} | {fmt(x.get('trim'))} |")
 
 
+def budget(tag, dirs, scripts=('cue', 'cueC')):
+    """The along-track budget (z35 trk, step-mean N over the pair's weight W): mean per force over windows, and the
+    measured deceleration of vW, per class."""
+    ss = all_stands(tag, dirs, scripts)
+    keys = ('pressure', 'buoyancy', 'addedMass', 'friction', 'fins', 'rails', 'froth', 'radiation', 'suction')
+    wins = ((0.0, 0.2), (0.2, 0.45), (0.45, 0.7), (0.7, 1.0))
+    print('## The along-track budget: water forces along the horizontal track through the water (W; + drives), mean over the window, median over riders\n')
+    print('dvW/dt is the measured change of vW over the window (m/s per s); (trkT/W) g is what the budget alone gives the pair (m/s per s), for comparison.\n')
+    print('| drive | group | n | window (s) | ' + ' | '.join(keys) + ' | trkT | (trkT/W) g | dvW/dt | pitch | slope ahead (fall, deg) |')
+    print('| --- | --- | --- | --- | ' + ' | '.join('---' for _ in keys) + ' | --- | --- | --- | --- | --- |')
+    for drive in scripts:
+        groups = {}
+        for s in ss:
+            if s.script != drive:
+                continue
+            c, _ = classify(s)
+            g = 'lasting' if c == 'held' else c
+            groups.setdefault(g, []).append(s)
+        for g in sorted(groups):
+            lst = groups[g]
+            for a, b in wins:
+                vals = {k: [] for k in keys + ('trkT', 'dv', 'pitch', 'fall')}
+                for s in lst:
+                    w = [x for x in s.st if a - 1e-9 <= x['tS'] <= b + 1e-9 and (x.get('z35') or {}).get('trkT') is not None]
+                    if len(w) < 3:
+                        continue
+                    for k in keys:
+                        vals[k].append(sum((x['z35'].get('trk') or {}).get(k, 0) for x in w) / len(w) / W_PAIR)
+                    vals['trkT'].append(sum(x['z35']['trkT'] for x in w) / len(w) / W_PAIR)
+                    vals['dv'].append((w[-1]['vW'] - w[0]['vW']) / max(1e-6, w[-1]['tS'] - w[0]['tS']))
+                    vals['pitch'].append(sum(x['pitch'] for x in w) / len(w))
+                    vals['fall'].append(sum(x.get('fall') or 0 for x in w) / len(w))
+                if not vals['trkT']:
+                    continue
+                tk = med(vals['trkT'], 3)
+                print(f"| {drive} | {g} | {len(vals['trkT'])} | {a:.2f}-{b:.2f} | " + ' | '.join(fmt(med(vals[k], 3), 3) for k in keys) + f" | {fmt(tk, 3)} | {fmt(None if tk is None else tk * 9.81, 2)} | {fmt(med(vals['dv']))} | {fmt(med(vals['pitch'], 1), 1)} | {fmt(med(vals['fall'], 1), 1)} |")
+
+
 if __name__ == '__main__':
     what = sys.argv[1]
     if what == 'repro':
@@ -738,5 +776,5 @@ if __name__ == '__main__':
         a = sys.argv
         dump(a[2], a[3], int(a[4]), a[5], int(a[6]), *(float(v) for v in a[7:10]))
     else:
-        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never}[what]
+        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never, 'budget': budget}[what]
         fn(sys.argv[2], sys.argv[3:])
