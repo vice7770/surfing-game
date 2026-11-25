@@ -209,3 +209,21 @@ stand state, or what full forward trim does.
 
 Usage read at each phase boundary; at 80 % of the 5-hour window, stop, push what is green and write what is left. Power
 checked before each batch; no new batch on battery below 25 % while discharging.
+
+### 0.13 Added 2026-11-25, about 10:21 UTC: the owner trims forward when he stands
+
+The coordinator relayed his answer (asked about 10:15 UTC: "When you stand up, do you push the trim forward (right
+stick up, or W)?"): **"Yes, forward."** It arrived after the first trim-arm batch had started (seeds 1–4 launched
+10:17:27 UTC; no row of it read). It changes no drive, threshold or prediction above, only how the arms are read:
+
+1. **"His way" is now Compress from +0.2 s and forward trim from the stand.** `cueCT` (held) and `cueCTx` (released at
+   +1.2 s) are the drives closest to his way; `cueC` is "Compress only". The take-off falls that remain under `cueCT`
+   and `cueCTx` are reported with their classes, mechanism and authority verdict as **the falls he still meets**,
+   beside `cueC`'s.
+2. **Unknown:** how far he pushes (full or partial) and how long he holds it. The held/released pair brackets the
+   duration; full +1 stays as registered. A magnitude arm is added only if the usage guard leaves room, and only as a
+   further dated addition before it runs.
+3. **A rescue is read per stand:** if `cueCT` or `cueCTx` carries a stand that `cueC` drops, that stand's `cueC` fall is
+   not one he would meet, and the note says so stand by stand. If trim barely changes the falls (as predicted in §0.8),
+   the falls he meets are `cueC`'s.
+4. Seeds 10–15 keep `cueCT` and `cueCTx` in their scripts.
