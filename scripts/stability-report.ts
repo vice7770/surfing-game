@@ -305,7 +305,12 @@ function compare(rides: Ride[], base: Baseline): { text: string; regressions: nu
     if (b.lowest !== null && c.lowest !== null && c.lowest > b.lowest + RESERVE_DROP) better.push(`${b.id}: lowest reserve ${f(c.lowest, 3)}, baseline ${f(b.lowest, 3)}`);
     if (b.fell && c.stood && !c.fell && !c.cut) better.push(`${b.id}: fell at +${f(b.fellAt)} s in the baseline, now lasts 5 s`);
     else if (b.fell && c.fell && c.fellAt! > b.fellAt! + LATER) better.push(`${b.id}: falls later, +${f(c.fellAt)} s against +${f(b.fellAt)} s`);
-    else if (b.fell && c.fell && c.fellAt! < b.fellAt! - LATER) notes.push(`${b.id}: falls sooner, +${f(c.fellAt)} s against +${f(b.fellAt)} s`);
+    else if (b.fell && c.fell && c.fellAt! < b.fellAt! - LATER) {
+      // Amended 2026-11-25: a balance fall that comes 0.25 s or more sooner is a regression; another cause stays a note.
+      if (c.cause === 'balance') fail.push(`${b.id}: falls sooner, +${f(c.fellAt)} s against +${f(b.fellAt)} s (balance)`);
+      else notes.push(`${b.id}: falls sooner, +${f(c.fellAt)} s against +${f(b.fellAt)} s`);
+    }
+    if (b.fell && b.stood && !c.stood) notes.push(`${b.id}: stood in the baseline, now no stand`);
     if (b.fell && c.fell && b.cause !== c.cause) notes.push(`${b.id}: cause ${b.cause} → ${c.cause}`);
   }
   for (const c of rides) if (!was.has(c.id)) notes.push(`${c.id}: not in the baseline (${c.fell ? `falls at +${f(c.fellAt)} s, ${c.cause}` : 'lasts 5 s'})`);

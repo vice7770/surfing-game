@@ -139,6 +139,15 @@ Against the committed baseline of the same mode (rides matched by id):
   unless `--update-baseline` is given.
 - **Report** balance falls separately from wave and whitewater falls, per group, against the baseline's counts.
 
+**Amended 2026-11-25 with Vicente's word, after the coordinator's review.** The text above stays as first written.
+- **Fail** also if a baseline fall now falls 0.25 s or more sooner (`fellAt` lower by more than `LATER`) and the current
+  fall's cause is `balance`. The line reads "falls sooner, +x s against +y s (balance)". Why: most falls already take the
+  reserve to 0, so the 0.10 reserve test cannot catch a sooner fall. A sooner fall of another cause (wave, whitewater)
+  stays under "Other changes".
+- **Report**, under "Other changes", a baseline ride that stood and fell and now has no stand ("stood in the baseline,
+  now no stand"). A baseline ride that lasted and now has no stand already fails.
+- Nothing else changes: exit codes, improvements, tables, metrics and baselines.
+
 ## 6. The file layout
 
 | path | what |
