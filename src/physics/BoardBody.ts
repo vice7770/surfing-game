@@ -346,8 +346,19 @@ export class BoardBody implements BoardContactBody {
    * default game pays one branch per substep and nothing else.
    */
   static yawLedger = false;
+  /**
+   * **Step 3.6c (`docs/research/stability/wobble/README.md` M1), a measurement switch and not part of the sim: the yaw
+   * ledger booked as the roll ledger is.** Off (the default) the yaw ledger is exactly as it was, `waterTy` and all, so
+   * every earlier probe reads what it read. On (only while `yawLedger` is on too), `waterTy` is not booked wholesale
+   * (the settle loop's `radiated` and `inertia` already carry its explicit half: the roll ledger's note below), ruling
+   * 3's wall push and `plateWall` are booked at their own sites as the roll ledger books them, `suction` is in the
+   * residual, and the part left out is booked in `duplicate`, so the shipped residual is `rider − duplicate + suction`.
+   * Read only inside the ledger's branches: the solve, the state and every force are the same either way.
+   */
+  static yawLedgerClosed = false;
   readonly yaw = {
     buoyancy: 0, pressure: 0, addedMass: 0, radiation: 0, friction: 0, bed: 0, fins: 0, rails: 0, froth: 0, suction: 0, gyro: 0, rider: 0, total: 0,
+    duplicate: 0,
   };
   /**
    * **The roll ledger (step 3.3h, a measurement tool and not part of the sim): who ROLLS the board, per source, in
@@ -877,7 +888,9 @@ export class BoardBody implements BoardContactBody {
     for (const force of Object.values(this.forces)) force.multiplyScalar(inverseDt);
     if (BoardBody.yawLedger) {
       const y = this.yaw;
-      y.rider = y.total - (y.buoyancy + y.pressure + y.addedMass + y.radiation + y.friction + y.bed + y.fins + y.rails + y.froth + y.gyro);
+      y.rider = BoardBody.yawLedgerClosed
+        ? y.total - (y.buoyancy + y.pressure + y.addedMass + y.radiation + y.friction + y.bed + y.fins + y.rails + y.froth + y.suction + y.gyro)
+        : y.total - (y.buoyancy + y.pressure + y.addedMass + y.radiation + y.friction + y.bed + y.fins + y.rails + y.froth + y.gyro);
       for (const key of Object.keys(y) as (keyof BoardBody['yaw'])[]) y[key] *= inverseDt;
     }
     if (BoardBody.rollLedger) {
@@ -1414,6 +1427,11 @@ export class BoardBody implements BoardContactBody {
         waterTz += push * cz;
         // Ruling 3's wall push is the one `waterT` entry with no settle-loop twin, so the roll ledger books it here.
         if (BoardBody.rollLedger) this.roll.addedMass += push * this.rollOf(cx, cy, cz);
+        // Step 3.6c: the closed yaw ledger books it here as well (`yawLedgerClosed`).
+        if (BoardBody.yawLedger && BoardBody.yawLedgerClosed) {
+          this.yaw.addedMass += push * cy;
+          this.yaw.duplicate -= push * cy;
+        }
         this.reaction[k * 3] += push * ux;
         this.reaction[k * 3 + 1] += push * uy;
         this.reaction[k * 3 + 2] += push * uz;
@@ -1436,6 +1454,11 @@ export class BoardBody implements BoardContactBody {
       waterTy += this.plateWall[4];
       waterTz += this.plateWall[5];
       if (BoardBody.rollLedger) this.roll.addedMass += this.rollOf(this.plateWall[3], this.plateWall[4], this.plateWall[5]);
+      // Step 3.6c: the closed yaw ledger books it here as well (`yawLedgerClosed`).
+      if (BoardBody.yawLedger && BoardBody.yawLedgerClosed) {
+        this.yaw.addedMass += this.plateWall[4];
+        this.yaw.duplicate -= this.plateWall[4];
+      }
     }
     this.applyFoils(h, water, system);
     const ft = this.foilTotals;
@@ -1480,7 +1503,10 @@ export class BoardBody implements BoardContactBody {
       y.friction += h * totals.fty;
       y.fins += h * ft[4];
       y.rails += h * ft[10];
-      y.addedMass += waterTy;
+      // Step 3.6c (`yawLedgerClosed`): the closed ledger leaves `waterTy` out (its wall and plate parts are booked at
+      // their own sites) and books what it leaves out in `duplicate`.
+      if (BoardBody.yawLedgerClosed) y.duplicate += waterTy;
+      else y.addedMass += waterTy;
       y.froth += h * frothTy;
       y.gyro -= h * gyro[1];
     }
