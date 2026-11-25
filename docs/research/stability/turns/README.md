@@ -471,3 +471,62 @@ stances' ringing (§1.2 item 7): a turn that comes in harder or sooner swings th
 | The gain lock, `npx vitest run src/physics/stabilityGains` | 5 of 5 |
 | The touched tests (`PhysicalMode`, `predictiveBalance`, `RideSession`, `AttachedRider`, `AttachedRider.deepCrouch`, `stabilityGains`) | 6 files, 328 passed and 8 expected failures (`it.fails` in `AttachedRider.test.ts`, 8 at `dea549c7` too), 0 failing; the two new switch tests and the two turn-weight tests among them |
 | `SurfZoneRunner` and `SurfZoneSimulation` tests (one line each of plumbing) | **not run to the end**: started at 20:05 beside the game runs, stopped at 21:28 after 82 CPU-minutes unfinished, so as not to load the machine past four processes. Their two changed lines are covered by `tsc` and by the switch-off full report, which drives every test-wave ride through `SurfZoneRunner` |
+
+### 3.2 `?leanPace=stance`, the full run and his way
+
+*Full report (`--mode full`, 21:26–21:56 UTC, exit 1) and the probe's his-way set (`his-lp`, 21:56–22:20). Tables:
+`results/falls-lp.md` (every group and drive against the baseline), `results/regressions-lp.md` (every regression with its
+frames), `results/pass-lp.md` (the pass lines), `results/hisway-falls-lp.md`. Crouch here is the tuck (×4.41; the
+correction under §0.12), Compress ×2.33, Snap (0.30 m) ×2.33.*
+
+**Stability: fails.** 51 rides regress (the report prints 55 lines; four rides fail two tests): 7 lasting rides now fall,
+39 balance falls 0.25 s or more sooner, 5 lowest reserves 0.10 lower (each ride counted once, by the first test it
+fails, in that order: lasted, sooner, reserve). By drive: Big Crouch 16, Snap 13, Compress 12, none 3; Medium none 2; the
+test wave 5. On 39 of the 51 the yaw's ringing over
+the steer grew, and 35 fall inside the steer. Balance falls per group: test wave 11 → 11 and 13 → 13, Medium 14 → 12,
+Big 77 → 77 (wave 54 → 54, whitewater 4 → 8); lasting rides: Medium 8 → 10, Big 27 → 23.
+
+| Big, before the release (+2.0 s) | none | Compress | Crouch (tuck) | Snap |
+| --- | --- | --- | --- | --- |
+| balance / wave falls, switch off | 1 / 10 | 12 / 8 | 12 / 8 | 5 / 8 |
+| balance / wave falls, `leanPace=stance` | 2 / 10 | **8 / 9** | **20 / 11** | **13 / 8** |
+
+**Faster: no by the pass line**, but by stance it splits:
+- **Compress passes every cell but one.** Big steer-only: +1.1° at +0.5 s (20 of 28 pairs rise), +3.4° at +1.0 s (13 of 15),
+  +5.5 deg/s peak yaw (21 of 36). His way with the steer: Big +1.2° / +3.4° / +5.5 (21 of 27, 13 of 15, 21 of 36),
+  Medium +2.2° / +4.6° / +18.4 deg/s (15 of 20, 15 of 18, 17 of 22), `tw-catch` both rides rise on all three. It fails on
+  `tw-ride` at +0.5 s (one pair; the placed start's rail change). His way's Big balance falls before the release go
+  12 → 8 and in all 19 → 16; but 2 lasting rides fall, 8 balance falls come 0.25 s or more sooner and 4 reserves drop.
+- **Crouch, the tuck, is made worse.** At ×4.41 the lean asked comes in at 6.2 rad/s; 33 of 36 Big rides fall before the
+  release (20 off), so only 2 pairs reach +1.0 s. The peak yaw rises (+25.7 deg/s) because the board swings harder.
+- Snap (not a pass-line cell) falls before the release 13 → 21.
+
+## 5. After review (Codex, consult log `27b026f5`, and the coordinator's checks), 2026-11-25, about 22:30 UTC
+
+My §1 text is kept as first written; these are its corrections.
+1. **Falls before the release, by cause** (the benchmark's labels, `baseline-full.json`, Big, 36 steer rides each):
+   none 11 (1 balance, 10 wave), Compress 20 (12 balance, 8 wave), Crouch 20 (12 balance, 8 wave), Snap 13 (5 balance,
+   8 wave). The "fell before +2.0 s" column of §1.1 mixes them. In balance falls inside the steer it is **1 tall against
+   12 in Compress and 12 in Crouch**, a sharper split than the mixed 11 against 20.
+2. **The balance falls go sideways** (the coordinator's check of `full-f2`): the first capture-past-reach frame (`m3`) at
+   or after the escape has the fore/aft inside the feet (`mf` 0) in 12 of 12 Compress falls, 8 of 12 Crouch (the other 4
+   have no `m3` sample), 5 of 5 Snap, 1 of 1 tall.
+3. **The yaw ledger cannot carry §1.2 item 7's attribution.** Codex found that `BoardBody`'s yaw ledger books part of the
+   surface-normal impulse twice (in `addedMass`), and `rider` is a residual: one bare-board step reports +38.4 N·m of
+   rider torque with no rider. So "carried by the rider's yaw coupling against the fins and the hull's pressure"
+   (§1.2 item 7) and `ledger.py`'s columns are withdrawn as evidence. What rings is **not identified**.
+4. **The twist correlation is with the commanded twist**, not the joint's torque, and the frozen linear controller with
+   its six-tick delay decays in all 42 cells Codex tested (largest pole 0.988). So the sensing delay alone does not
+   explain the 2.5–3 Hz ringing; §1.2 item 7's "(the senses' delay)" is only the lag the correlation found.
+5. **The roll reference against the schedule speed.** Codex showed that `tick`'s board-roll reference for a 39° lean
+   reverses its order with depth between 7.0 and 7.5 m/s. I re-read the onset rows with the speed the schedule is read at
+   (`vS`) beside the reference (`refroll.py`, `results/refroll-big.md`; Big, +0.4 to +0.6 s, lean asked 34–44°). In the
+   speeds the rides sit at, the reference roll per degree of lean asked is lower in the deep stances in every bin: 5–6.5
+   m/s 1.00 / 0.96 / 0.95 (none / Compress / Crouch), 8–9.5 m/s 0.96 / 0.88 / 0.86, 9.5–12 m/s 0.84 / 0.75 / 0.70, and
+   the rail per degree of lean asked likewise (0.29 / 0.23 / 0.14, 0.22 / 0.08 / 0.05, 0.28 / 0.21 / 0.16). No frame of
+   that window sits at 6.5–8 m/s, where the reversal is, so §1.2 item 6 holds for these rides but is not a property of
+   the stance at every speed.
+6. **Not done here** (the coordinator's scope): Codex's half-cycle work estimate from `twAct` and `twA`, a closed
+   riderless yaw budget, and the release-then-turn drive (his report that letting go of R2 just before the turn still
+   throws him; the balance reads the commanded stance, `heldDepth`, while the legs are still rising). Each is for the
+   next round, by Vicente's word.
