@@ -880,15 +880,84 @@ def counts(tag, dirs, scripts=FORE + ('cueCTv',)):
         print(f'- picks `{k}` ({len(v)}): ' + ', '.join(v))
 
 
+def tparts(tag, dirs, scripts=('cue', 'cueC')):
+    """The T falls (and matched lasting stands below 4.6 m/s): the pitch loop's parts and the hull, stand -> tT -> tE."""
+    ss = all_stands(tag, dirs, scripts)
+    print('## The pitch loop on the T falls: the reference, the body, the command and the feet (deg forward +, m toward the nose)\n')
+    print('lean: the leg line from the vertical; ref - lean: how far the body is behind (+) its reference; rest: the ankle rest off the deck normal (MAX_PITCH 45); hip / hipR; copZ - copT (m); headZ least (1 = clear, 0 = at the toe or heel); fs: the front foot\'s measured share.\n')
+    print('| rider | class | at | vW | pitch | tail | Fp | Fb | face | dev | ref | lean | ref - lean | ank | rest | hip / hipR | copZ - copT | headZ | fs |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    agg = {}
+    for s in sorted(ss, key=lambda s: (s.script, s.seed, s.wave)):
+        cls, info = classify(s)
+        lasting = cls == 'held' and s.f0 and s.f0['vW'] < 4.6
+        if cls != 'T' and not lasting:
+            continue
+        pts = (('stand', 0.0), ('+0.35', 0.35), ('tT', info.get('tT')), ('tE', info.get('tE'))) if cls == 'T' else (('stand', 0.0), ('+0.35', 0.35), ('+0.7', 0.7))
+        for lab, t in pts:
+            if t is None:
+                continue
+            x = s.at(t)
+            if x is None:
+                continue
+            z = x.get('z35') or {}
+            g = 'T' if cls == 'T' else 'lasting<4.6'
+            agg.setdefault((g, lab), []).append(x)
+            if cls == 'T':
+                print(f"| s{s.seed}w{s.wave} {s.script} | {cls} | {lab} {x['tS']:.2f} | {fmt(x.get('vW'))} | {fmt(x.get('pitch'), 1)} | {fmt(x.get('tail'))} | {fmt(x.get('Fp'))} | {fmt(x.get('Fb'))} | {fmt(z.get('face'), 1)} | {fmt(z.get('dev'), 1)} | {fmt(z.get('ref'), 1)} | {fmt(z.get('lean'), 1)} | {fmt(None if z.get('ref') is None else z['ref'] - z['lean'], 1)} | {fmt(x.get('ank'), 1)} | {fmt(x.get('rest'), 1)} | {fmt(x.get('hip'), 1)} / {fmt(z.get('hipR'), 0)} | {fmt(x['copZ'] - (x.get('copT') or 0), 3)} | {fmt(x.get('headZ'))} | {fmt(z.get('fs'))} |")
+    print('\n### Medians\n')
+    print('| group | at | n | vW | pitch | tail | Fp | Fb | dev | ref | lean | ref - lean | rest | copZ - copT | headZ | fs |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    for (g, lab), xs in sorted(agg.items()):
+        z = [x.get('z35') or {} for x in xs]
+        m = lambda k, n=2: fmt(med([x.get(k) for x in xs], n), n)
+        mz = lambda k, n=1: fmt(med([q.get(k) for q in z], n), n)
+        print(f"| {g} | {lab} | {len(xs)} | {m('vW')} | {m('pitch', 1)} | {m('tail')} | {m('Fp')} | {m('Fb')} | {mz('dev')} | {mz('ref')} | {mz('lean')} | {fmt(med([q['ref'] - q['lean'] for q in z if q.get('ref') is not None], 1), 1)} | {m('rest', 1)} | {fmt(med([x['copZ'] - (x.get('copT') or 0) for x in xs], 3), 3)} | {m('headZ')} | {mz('fs', 2)} |")
+
+
+def patch(tag_p, tag_b, dirs):
+    """The patch arm against the unpatched runs, paired by (seed, wave, script)."""
+    pa = {(s.seed, s.wave, s.script): s for s in all_stands(tag_p, dirs, ('cue', 'cueC', 'cueCT'))}
+    ba = {(s.seed, s.wave, s.script): s for s in all_stands(tag_b, dirs, ('cue', 'cueC', 'cueCT'))}
+    print(f'## The patch ({tag_p}) against unpatched ({tag_b}), paired by stand; fall time censored at 3 s\n')
+    print('| script | group (unpatched class) | n | later / sooner (0.25 s) | median diff (s) | range | rescued (>= 3 s) | new falls <= 3 s | vW +0.7 diff | pitch +0.7 diff | ref at the stand: unpatched -> patched | patched classes |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    for sc in ('cue', 'cueC', 'cueCT'):
+        groups = {}
+        for k, x in pa.items():
+            if k[2] != sc or k not in ba:
+                continue
+            y = ba[k]
+            if x.summary.get('stand') != y.summary.get('stand'):
+                continue
+            c, _ = classify(y)
+            g = 'lasting' if c == 'held' else c
+            groups.setdefault(g, []).append((x, y))
+        for g, lst in sorted(groups.items()):
+            d = [x.fall_time(3) - y.fall_time(3) for x, y in lst]
+            dv = [x.at(0.7)['vW'] - y.at(0.7)['vW'] for x, y in lst if x.at(0.7) and y.at(0.7)]
+            dp = [x.at(0.7)['pitch'] - y.at(0.7)['pitch'] for x, y in lst if x.at(0.7) and y.at(0.7)]
+            resc = [f's{x.seed}w{x.wave}' for x, y in lst if y.fall3 and not x.fall3]
+            new = [f's{x.seed}w{x.wave}' for x, y in lst if x.fall3 and not y.fall3]
+            r0 = med([y.f0.get('ref') for x, y in lst]), med([x.f0.get('ref') for x, y in lst])
+            pcs = {}
+            for x, y in lst:
+                c, _ = classify(x)
+                pcs[c] = pcs.get(c, 0) + 1
+            print(f"| {sc} | {g} | {len(lst)} | {sum(v >= 0.25 for v in d)} / {sum(v <= -0.25 for v in d)} | {med(d, 3):+.3f} | {min(d):+.2f} to {max(d):+.2f} | {len(resc)} {resc} | {len(new)} {new} | {fmt(med(dv))} | {fmt(med(dp, 1), 1)} | {fmt(r0[0], 1)} -> {fmt(r0[1], 1)} | {pcs} |")
+
+
 if __name__ == '__main__':
     what = sys.argv[1]
     if what == 'repro':
         repro(sys.argv[2], sys.argv[3], sys.argv[4:])
     elif what == 'inert':
         inert(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif what == 'patch':
+        patch(sys.argv[2], sys.argv[3], sys.argv[4:])
     elif what == 'dump':
         a = sys.argv
         dump(a[2], a[3], int(a[4]), a[5], int(a[6]), *(float(v) for v in a[7:10]))
     else:
-        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never, 'budget': budget, 'froth': froth, 'counts': counts}[what]
+        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never, 'budget': budget, 'froth': froth, 'counts': counts, 'tparts': tparts}[what]
         fn(sys.argv[2], sys.argv[3:])
