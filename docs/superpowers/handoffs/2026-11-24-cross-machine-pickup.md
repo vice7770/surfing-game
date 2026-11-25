@@ -20,9 +20,10 @@
     - **The tail-stall falls** (16 of 30) are set before the stand, on waves already losing the board: the prone twin stalls too.
     - **The other falls** are mostly a whitewater brake at the foot of the face.
     - **Forward trim rescues none.**
-  - **The stability system is being specified with Vicente by grilling** (2026-11-25).
-    - Round 1 is settled: the bar is the game's exact balance reserve with no look-ahead, red when close to a fall, a readout only, on by default and hidden in tournaments. It gets a direction tick, and `npm run report:stability` will be the benchmark.
-    - Round 2 is open. 3.6a is dispatched once the grilling is done.
+  - **The stability system was agreed with Vicente by grilling** (2026-11-25). The spec is consult-log entry `cef3aa44`.
+    - **The bar:** the game's exact balance reserve with no look-ahead, red below 0.3, with a direction tick below 0.6, as a readout only. It is on by default behind `rider=new`, shown online and hidden in tournaments.
+    - **The benchmark:** `npm run report:stability`, a fixed bot matrix judged against a committed baseline. It is required in every surfer round (`CLAUDE.md`).
+    - **3.6a part 1** (the benchmark and the gain lock) is running on `claude/stability-report`, from `claude/take-off-stall` `b66eb87c`. Then come the bar's UI piece, 3.6a part 2 (the slow board's plant) and 3.6b (faster turns).
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.

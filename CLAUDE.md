@@ -13,4 +13,11 @@ When Vicente asks Claude to coordinate surfer or wave work, the lead advises, br
 
 Read recent owner feedback and the [signed Claude–Codex consultation](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md) before dispatching movement work. Verify consequential findings against the source, saved measurements or footage. Include the input, sample, time and reference frame when reporting a physical result. Record findings and corrections under your own signed heading, preserving the other reviewer’s text. Scope changes and approvals come from Vicente.
 
+Once `npm run report:stability` exists (step 3.6a), every surfer-track round includes it in its evidence. Run the quick run after each change and the full run before review.
+- **A regression** is a ride that lasted its hold and now falls, or any ride whose lowest balance reserve drops by more than 0.10.
+- **Each regression** is reported and explained before review.
+- **The baseline moves** only when Vicente accepts an improvement.
+
+The [stability-system entry in the consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md) records the agreed design.
+
 For a cross-machine pickup, link the pushed branch and commit, the work order, the supporting evidence and the question still open. Verify the commit is reachable on the remote. The [surfer and wave handoff](docs/superpowers/handoffs/2026-11-16-surfer-and-wave-handoff.md) records standing project decisions. The [cross-machine pickup](https://github.com/vice7770/surfing-game/blob/claude/ride-everything/docs/superpowers/handoffs/2026-11-20-cross-machine-pickup.md) and the [sharp-steer work order](https://github.com/vice7770/surfing-game/blob/claude/ride-everything/docs/superpowers/handoffs/2026-11-20-work-order-sharp-steer-collapse.md) record the November 20 movement handoff. Their current successor is the [November 24 cross-machine pickup](https://github.com/vice7770/surfing-game/blob/claude/ride-everything/docs/superpowers/handoffs/2026-11-24-cross-machine-pickup.md): start there. Follow later successors as work advances.
