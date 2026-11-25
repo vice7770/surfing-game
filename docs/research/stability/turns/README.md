@@ -275,3 +275,91 @@ show, and the straight twins ring too).
 `RIDER_KEYS` in `scripts/stability-ride.ts`, so `leanPace` and `turnGains` are added to that list (and to the probe's).
 With the switches absent the config carries neither key, so nothing reaches the session that did not before; the
 switch-off controls (§0.6 item 3) check it. The benchmark's scripts, matrix and baselines are unchanged.
+
+---
+
+## 1. The onset, measured (switch off, the ride build)
+
+*Run `onset-off`: the turn probe (`turn-probe.ts` at `d138edc8`, bundle `e15f79f5…`), `EXTRA='&cueLater=on&plantFloor=6'`,
+started 19:27 UTC, 37 processes, 32 min. The benchmark's full matrix plus the straight twins (every stance on Canyon Big,
+none on Medium) and his-way turns on every sea: 252 steer rides. All numbers are medians over the rides of the cell;
+frames and signs as §0.3 (course and heading world x–z, yaw world, roll/rail/bank the rider's, + toward the steer; times
+from the steer's start at +1.0 s). Tables: `results/onset-off.md` (every column), `results/ring-off.md`,
+`results/hull-<group>.md`. Recompute: `python3 onset.py <run> --md …`, `ring.py`, `hull.py`, `ledger.py`, `series.py`.*
+
+### 1.1 The onset per stance
+
+| sea | stance | rides | fell before +2.0 s | course toward, twin-subtracted, +0.25 / +0.5 / +1.0 s (deg) | heading, twin-subtracted, least over +0–0.5 s (deg) | time turning away (s) | t5 (s; rides reaching it) | peak yaw toward (deg/s) | lean asked / body bank / rail at +0.5 s (deg) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Big | none | 36 | 11 | −3.7 / +0.2 / +14.2 | −4.2 | 0.42 | 0.83 (23) | 90 | 40 / 12.2 / 10.3 |
+| Big | Crouch | 36 | 20 | −1.0 / −0.5 / +6.4 | −2.1 | 0.35 | 0.78 (16) | 79 | 40 / 11.8 / 6.3 |
+| Big | Compress | 36 | 20 | −2.0 / −0.2 / +9.9 | −3.0 | 0.38 | 0.78 (22) | 77 | 40 / 11.1 / 7.1 |
+| Big | Snap | 36 | 13 | −3.7 / +2.5 / +12.6 | −4.3 | 0.38 | 0.58 (24) | 85 | 40 / 16.9 / 17.0 |
+| Big | his way + steer | 36 | 20 | −1.9 / −0.3 / +9.9 | −3.0 | 0.37 | 0.78 (21) | 77 | 40 / 11.1 / 7.1 |
+| Medium | none | 26 | — | −4.5 / +0.8 / — | −4.9 | 0.45 | 0.77 (17) | — | 40 / 12.3 / 13.6 |
+| Medium | his way + steer | 26 | — | −2.9 / −0.1 / — | −3.0 | 0.41 | 0.75 (20) | — | 40 / 10.9 / 9.7 |
+| test wave, catch | none / Crouch / Compress / Snap | 2 each | 0 / 1 / 0 / 1 | +0.5 s: +0.2 / −2.6 / −1.8 / +8.0 | −5.9 / −2.2 / −4.1 / −6.7 | 0.48 / 0.40 / 0.35 / 0.34 | 0.75 / 0.64 / 0.70 / 0.41 | — | 41 / 16 / 9 / 10 (bank) |
+| test wave, ride | none / Crouch / Compress / Snap | 2 each | 0 / 2 / 2 / 2 | +0.5 s: −2.1 / −0.9 / +8.5 / — | −3.3 / −8.5 / −13.0 / −0.6 | 0.30 / 0.25 / 0.26 / 0.17 | 0.68 / 0.53 / 0.32 / — | — | 40 / 10 / 18 / — (bank) |
+
+(The full columns, Medium's falls and yaw peaks included, are in `results/onset-off.md`; the test-wave rows give both
+rides of a cell in `onset-off.jsonl`.) On the test wave and on Big, his way with the steer is the Compress steer ride
+frame for frame on 32 of its 40 rides: the stand is already at 4.4 m/s or more, so the trim is released on the first
+standing step. Its 8 other rides are slow Canyon stands.
+
+### 1.2 What the frames show
+
+1. **§0.2 holds.** The hip's range is 1.2 rad on every frame of every stance (`stanceReach=keep`), and the lean-out
+   pull, the compressed turn's assist and the carve's carry are 0 on every frame (the new rider). Two of the four leads
+   (the hip's range, Compress's lean-out pull) do not act on his address.
+2. **No limb is at its bound during the onset** on the Canyon: the ankle's raw ask is past its range or the rail's bite
+   on 0 % of the frames of +1.0 to +1.5 s (median, every stance, Big and Medium), the twist torque at 100 N·m on 0 %, the
+   hip at its range on 0 %. **H3 is out.** (The test wave's `tw-ride` start is different: the rider is placed in a turn
+   with the twist at its range, 0.78–0.91 rad, and the ankle past its range on 13–52 % of the onset's frames; §1.3.)
+3. **The lean asked is the ramp, the same in every stance:** 20° at +0.23–0.25 s, 40° at +0.5 s (1.4 rad/s); the cap
+   (atan(v²/(g·4.5 m))) is 48–64° at the steer's start on Big and does not bind by +0.5 s. The deep stances start the
+   steer 0.4–0.9 m/s slower (Big vW 7.0 Crouch, 7.5 Compress, 7.9 none): **H6 is small**.
+4. **The body's bank trails the lean asked by 26–28° at +0.5 s in every stance** (Big; 24–43° on the other seas), with
+   no limb at its bound (`ring.py`'s last column). The controller's own prediction of the bank (`predicted[2]`) agrees
+   with the body's (9.5 against 11.1° in Compress, 12.1 against 12.1° with no stance), so this is the controller asking
+   for little, not the body failing to deliver: its raw ankle ask at +0.5 s is 0.07–0.10 rad against a range of 0.25.
+   The reference's own board roll is 30–34° by then; the board is at 6–11°. **H1 (the ramp) is not the pace setter**:
+   the body is not near the ramp. The pace is the balance's tracking (H4, generalised to every stance).
+5. **The wrong way is real and common to every stance (W2, not W1).** After the straight twin is subtracted, the heading
+   and the course both turn away from the steer for the first 0.35–0.45 s: the heading by 2–6° at its least, the course
+   by 1–6° at +0.25 s. The board rolls outward first (rail at its least −0.5 to −1.5° at +0.07–0.13 s, the controller's
+   predicted roll −2 to −4°), the counter-lean that brings the body over its feet. **The deep stances do not turn away
+   more**: they turn away least (Big heading −2.1° Crouch, −3.0° Compress, −4.2° none). The raw wrong-way counts of the
+   3.6a review (19 and 16 of 32) were the wave's drift plus this.
+6. **What the deep stances lack is the turn-in after it.** At the same body bank (11–12° at +0.5 s), the deep stances
+   hold the board flatter: rail 6.3° Crouch and 7.1° Compress against 10.3° with no stance, and the body leans past the
+   board by 5.8° and 3.7° against 1.9°. Their reference asks for it: at the lean asked of 39°, the steady turn's board roll
+   is 28° (Crouch) and 30° (Compress) against 34° (none). Over +0.4 to +0.6 s their yaw rate is 6–9°/s against 19°/s
+   with no stance (the controller's prediction: about 0–1 against 10). For the rides still standing at +2.0 s, the
+   course per degree of rail over +1.5 to +2.0 s is close (1.18 Compress, 0.95 Crouch, 1.26 none; `hull-big.md`), so the
+   hull turns a deep stance's rail nearly as well (**H7 is small**); the deep stances get less rail.
+7. **The deep stances ring.** Over the steer, the yaw rate's ringing (std about its centred 0.25 s mean) is 19 and 25
+   deg/s in Crouch and Compress against 11 with no stance on Big (30–53 against 7–11 on the test wave), and their straight
+   twins ring 2.5–3.5 times as much as no stance's twin (8–11 against 3 deg/s). The twist torque sent follows −yaw 0.10 s
+   later with correlation 0.86–0.89 (the senses' delay). In the frames this is a 2.5–3 Hz swing of the yaw rate between
+   toward and away (`series.py`, e.g. `big:s1:w9:crouch:left`: −27, +43, −51, +119, −202 deg/s at 0.1–0.15 s intervals,
+   the fall at +0.87 s), carried by the rider's yaw coupling against the fins and the hull's pressure (`ledger.py`).
+   **H8 as registered (the twist at its range, saturated) holds only on the test wave's `tw-ride` start**; on the Canyon
+   the twist is centred and never saturated at the onset. What rings is not identified: the straight twins ring too, so
+   it is not the steer's alone.
+
+### 1.3 The test wave's `tw-ride` start
+
+The rider is placed standing on the face in a turn: at +1.0 s the twist is at 0.78–0.91 rad (its range is 0.87), the
+board is rolled 8–20° and yawing 30–50°/s. One steer continues that turn and the other is a rail change. Its onset
+metrics mix the two, and with two rides a cell they are read ride by ride (`onset-off.jsonl`), not as a stance effect.
+
+### 1.4 The diagnosis, in one paragraph
+
+*What slows the turn in Compress and Crouch* (Canyon Big, the frames above): not a limb at its bound, not the hip's
+range, not the lean-out pull, and not the lean asked's ramp. In every stance the balance asks for far less lean than it
+is given (the body's bank 27° behind the lean asked at +0.5 s, the ankle at a third of its range), and first rolls the
+board out to bring the body over its feet, so for 0.35–0.45 s the board turns away. In Compress and Crouch two things
+then hold the board flat: the balance's own steady turn asks 4–6° less board roll for the same lean, so the board
+carries 3–4° less rail at +0.5 s and yaws at a third of the rate; and the yaw rings at 2.5–3 Hz, more than twice as much
+as with no stance, swinging the board toward and away. 20 of 36 Big rides fall before the release in each deep stance,
+against 11 with no stance.
