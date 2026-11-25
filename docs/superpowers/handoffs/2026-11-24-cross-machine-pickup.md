@@ -4,12 +4,14 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-24, after 20:00 UTC.**
+- **Status, 2026-11-25, about 10:15 UTC.**
   - Vicente asked to continue, and 3.5x ran on the first machine. It is done and reviewed: `claude/what-fails-first` `b0d19ee8`, from `1be12ee7`.
-  - The coordinator's review is in the consult log.
   - Vicente chose the returning taper. 3.5y (`?plantSpeed=taper6`) is done and reviewed: `claude/return-taper` `61dd1c43`. It loses to `plantFloor=6` his way, which stays the ride build.
-  - The next round waits for Vicente's choice.
-  - The reset hold below no longer applies: the account read 0 % of its weekly limit, with extra usage disabled.
+  - **Vicente chose the take-off falls** (2026-11-25). 3.5z, their fore/aft diagnosis on `plantFloor=6`, is running on the first machine.
+    - It is on `claude/take-off-stall`, from `b0d19ee8`: docs and probes only, with no `src` change.
+    - Its dispatch is consult-log entry `c968561d`.
+  - The coordinator's reviews are in the consult log.
+  - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
@@ -76,7 +78,10 @@ Also open:
 | `claude/hold-line` | `6e8bdc2d` | 3.5s: `?holdLine=ref` (not fit for his address) |
 | `claude/face-trim` | `41748e53` | 3.5r: `?faceTrim=on` |
 | `claude/test-wave` | `0da1eda4` | the test wave (`?testWave=ride\|catch`, `&testFoam=on`), with exact restarts |
-| `claude/the-record` | `57ca1a63` | the consult log |
+| `claude/what-fails-first` | `b0d19ee8` | 3.5x: what fails first on `plantFloor=6` and `taper` (docs and probes; from `1be12ee7`) |
+| `claude/return-taper` | `61dd1c43` | 3.5y: `?plantSpeed=taper6` (not adopted: it loses to `plantFloor=6` his way) |
+| `claude/take-off-stall` | (running) | 3.5z: the take-off falls' fore/aft diagnosis (docs and probes; from `b0d19ee8`) |
+| `claude/the-record` | `c968561d` | the consult log (verified on the remote 2026-11-25) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
