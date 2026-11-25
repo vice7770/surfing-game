@@ -530,3 +530,79 @@ My §1 text is kept as first written; these are its corrections.
    riderless yaw budget, and the release-then-turn drive (his report that letting go of R2 just before the turn still
    throws him; the balance reads the commanded stance, `heldDepth`, while the legs are still rising). Each is for the
    next round, by Vicente's word.
+
+### 3.3 `?turnGains=firm`, the full run and his way
+
+*Full report 22:20–22:49 UTC, exit 1; the probe's his-way set after it (§3.4). Tables: `results/falls-tg.md`,
+`results/regressions-tg.md`, `results/pass-tg-steer.md`.*
+
+**Stability: fails.** 30 rides regress: 5 lasting rides now fall, 22 balance falls 0.25 s or more sooner, 3 lowest
+reserves 0.10 lower (Big Crouch 8, none 7, Compress 6, Snap 2; Medium none 3; the test wave 4). **Big's balance falls
+rise, 77 → 80** (whitewater 4 → 6; lasting rides 27 → 22). Before the release, balance / wave: none 1 / 10 → 4 / 10,
+Compress 12 / 8 → 13 / 9, Crouch 12 / 8 → 13 / 9, Snap 5 / 8 → 9 / 8. On 19 of the 30 the ringing grew.
+
+**Faster: no.** The firmer gains push the counter-lean harder, so the board turns away further first: Big at +0.5 s,
+Compress −1.0° (20 of 28 pairs fall), Crouch −0.6° (20 of 31). By +1.0 s they barely gain (+0.4° and +0.2°); the peak yaw
+rises (+5.9 and +10.0 deg/s), the swing larger, not the turn.
+
+### 3.4 The his-way turn, both arms (Compress from +0.2 s, the trim released at 4.4 m/s, the steer at +1.0 s for 1.0 s)
+
+*The probe's his-way set under each arm (`his-lp` 21:56–22:20, `his-tg` 22:49–23:14 UTC), against the onset run's
+his-way rides. Not in the baseline, so the regression rule is applied here by `hisfalls.py` (causes by `shape.py`'s rule).
+Tables: `results/pass-lp.md`, `results/pass-tg.md`, `results/hisway-falls-lp.md`, `results/hisway-falls-tg.md`.*
+
+| sea | `leanPace=stance`: course +0.5 / +1.0 s, peak yaw (median on − off) | regressions (lasted now falls / sooner / reserve) | `turnGains=firm`: course +0.5 / +1.0 s, peak yaw | regressions |
+| --- | --- | --- | --- | --- |
+| test wave, catch | +5.9° / +19.3° / +32.8 (2 of 2 rise) | 0 / 1 / 0 | −5.3° / +19.7° / +25.7 | 0 / 2 / 0 |
+| test wave, ride | −1.2° (1 pair) / — / +19.8 | 0 / 0 / 0 | +1.0° / — / +4.7 | 0 / 0 / 0 |
+| Medium (26) | +2.2° / +4.6° / +18.4 | 2 / 1 / 1 | −1.1° / +1.0° / +5.6 | 0 / 5 / 0 |
+| Big (36) | +1.2° / +3.4° / +5.5 | 2 / 8 / 4 | −1.3° / +0.4° / +5.9 | 2 / 4 / 2 |
+| Big balance falls before the release / in all | 12 → 8 / 19 → 16 | | 12 → 13 / 19 → 20 | |
+
+## 6. For Vicente
+
+**No arm passes both lines, so none is proposed as is.** The round's answer is the diagnosis (§1, corrected by §5): in
+Compress and in his Crouch (the tuck) the balance asks for little lean, turns the board away for 0.35–0.45 s, then holds
+it flatter than standing tall and lets its yaw ring at 2.5–3 Hz, and 12 of 36 Big turns fall sideways for balance inside
+the steer against 1 of 36 tall. His own reports fit it: the arrows were ridden tall, the stick in Compress, and "the board
+starts drifting left and right". The stick's step is not the cause (§2).
+
+**What each arm does, if he wants to feel it** (his address plus the switch; both act only while the stick is off centre):
+- `?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantFloor=6&leanPace=stance`
+  — the lean asked comes in faster the lower he is: ×2.33 in Compress (3.3 rad/s), ×4.41 in his Crouch. It is the one
+  arm that makes **Compress** turn sooner in every cell but the placed start, and on Big his way it takes the balance
+  falls inside the steer from 12 to 8; but 51 benchmark rides regress (39 balance falls 0.25 s or more sooner, 7 lasting
+  rides now fall, 5 reserves lower; the board swings harder), and it makes the tuck much worse (33 of 36 Big tuck turns fall inside the steer). To try: Canyon
+  Big, his way, a full stick for about a second, then centred; and the same with Crouch, to feel the cost.
+- `…&turnGains=firm` — firmer balance while the stick is off centre. Not faster: the board turns away further first, the
+  swing grows, and Big's balance falls rise (77 → 80). Not worth his time.
+
+**Findings for him (each needs his word before any build):**
+1. **The deep stances' ringing is the obstacle** to any faster turn: every arm that brought the turn in harder made the
+   yaw swing more and the margin go on the swing (39 of 51 and 19 of 30 regressions). Its cause is not identified (§5
+   items 3–4): the next step is Codex's half-cycle work estimate on the stored twist rows and a riderless yaw budget that
+   closes, then a fix aimed at the ring, before any pace or gain change.
+2. **His Crouch is the tuck** (0.45 m with `deepen=on`), not the 0.195 m crouch; every Crouch number here is the tuck.
+3. **A turn taken while Compress is let go also throws him** (his report). It is not ridden by any drive yet; the
+   coordinator recommends a release-then-turn drive for the next round.
+4. **`LEAN_IN_RATE` and the "no bound widened" rule.** `leanPace=stance` scales the reference's pace by the same
+   derivation that sets 1.4 rad/s; I read it as a pace, not a body limit (the ankle's range and the feet's grip stay as
+   they ship). Whether that reading stands is his call, but on this evidence it does not matter yet.
+
+## 7. Where everything is, and how to recompute it
+
+- **Raw runs** (not committed, about 1 GB): the session scratchpad,
+  `/private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36b/`:
+  `onset-off/`, `shape-off/` (probe), `rep/q-lp`, `rep/q-tg`, `rep/f-off`, `rep/f-lp`, `rep/f-tg` (report runs, each with its
+  `rides.jsonl`), `his-lp/`, `his-tg/` (probe), the logs beside them, `base/f2` and `base/q1` (the baselines' committed raw
+  runs, unpacked), `chain.sh` (the order the runs went in).
+- **The probe:** `turn-probe.ts` (bundle with `rolldown … --format esm --platform node`), driven by `run.py --set
+  onset|shape|hisway`. The reports: `npm run report:stability -- --mode quick|full --extra '&cueLater=on&plantFloor=6&<switch>' --out <dir>`.
+- **The readers** (all in this folder): `onset.py` (the onset table; `--twins`), `ring.py`, `hull.py`, `ledger.py`
+  (withdrawn as evidence, §5), `refroll.py`, `series.py` (one ride, frame by frame), `inert.py` and `same.py` (the
+  controls), `shape.py` and `shape_ask.py` (§2), `compare.py` (the pass lines), `falls.py`, `regressions.py`,
+  `regress.py`, `hisfalls.py` (the stability lines), `arm.sh`.
+- **The results:** `results/*.md`, `results/shape-ask.txt`.
+
+The Canyon byte check (§0.6 item 3) on the final `src` (both switches absent): snapshots `a367d938f15fa934`, state
+`9e5831f80e38abd9`, identical to the reference (`results/byte-check.txt`).
