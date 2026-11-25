@@ -227,3 +227,34 @@ stick up, or W)?"): **"Yes, forward."** It arrived after the first trim-arm batc
    not one he would meet, and the note says so stand by stand. If trim barely changes the falls (as predicted in §0.8),
    the falls he meets are `cueC`'s.
 4. Seeds 10–15 keep `cueCT` and `cueCTx` in their scripts.
+
+### 0.14 Added 2026-11-25, about 10:30 UTC, after the baseline read and before the patch runs: the patch
+
+**What the baseline read showed** (saved A runs, seeds 1–9, `cue` and `cueC`; full tables in §1–§3 once written):
+- By the registered rule the 30 falls class as T 16 (8 per drive), N 4 (all `cue`), L 9, X 1, W 0, P 0.
+- On the T falls the chain's first event is the nose rising (+0.08 to +0.13 s, 14 of 16), then the speed (+0.27 to
+  +0.35 s), then the pressure aft (+0.18 to +0.43 s), and only then the reference and the felt deviation turning ≥ 3°
+  back (+0.42 to +0.73 s). Over [0, tT] the pitch ledger's largest nose-up sources are the rider's own `pitch` (ankle
+  and hip) and `leg`, against `addedMass`.
+- The divergence starts before the stand, in the pop-up's landing: over the `landing` phase the falls' tail sinks
+  (matched AUC 0.89 / 0.96) and the nose rises, from a lower `Fp` at the landing's onset (matched AUC 0.04 / 0.09).
+  At the stand the reference of the T falls is already about 12° further back than the lasting stands' (it starts
+  from the landing's felt lean), and `feltDev` separates at matched speed (0.20 / 0.11).
+
+**The patch, `PATCH=feltOff`** (`take-off-stall.ts`): `StandingBody.prepare` is handed a zero felt vector, so its
+sensed lean and smoothed deviation are 0 and the pitch reference is the face's normal plus the trim's offset. Opt-in,
+printed back in the `control` row (`patch`). Every bound (the ankle's ±14.3°, the feet's reach, `MAX_PITCH`, the hip's
+`HIP_PITCH_TORQUE` and range, `TRIM_PRESSURE`, `TRIM_FREEDOM`), every gain, the delay and the lag are unchanged: it
+changes what the loop aims at, not what it can do. It tests cause 3 (§0.8 test c) and the reference's start from the
+landing's felt lean.
+
+**Runs:** seeds 1–9, `SCRIPTS=cue,cueC,cueCT`, `STAND_HOLD=5`, A's `EXTRA`, paired by stand against the same scripts
+of the unpatched trim-arm runs.
+
+**Prediction.** With the felt part gone, the T falls' reference at the stand moves forward by their felt deviation
+(about +10 to +17°) to the face's normal. The command's feed-forward then moves the ankle's rest forward by about as
+much at once, and the ankle pushes the body forward, whose reaction on the board is nose-up. So:
+1. on the T falls, the patch gains no time: paired median change (censored at 3 s) ≤ +0.10 s, rescues ≤ 2 of 16, and
+   the pitch at +0.7 s within ±5° of unpatched (median);
+2. on the stands that last unpatched, it adds at least 2 falls over the nose (N) within 3 s;
+3. so cause 3 fails its causal test (§0.8 3c).

@@ -614,6 +614,12 @@ const zPitch = (v: Vector3, heading: Quaternion): number => {
   zLoc.copy(v).applyQuaternion(zInv);
   return Math.atan2(zLoc.z, zLoc.y);
 };
+// Step 3.5z dated addition 0.14: the one probe-level patch, opt-in (`PATCH=feltOff`). The pitch reference without its
+// felt part: `StandingBody.prepare` is handed a zero felt vector, so its sensed lean and smoothed deviation are 0 and the
+// reference is the face's normal plus the trim's offset. No bound, gain, delay or torque changes; `z35` still reports
+// the real felt push's `sensed`.
+const PATCH = process.env.PATCH ?? '';
+const ZERO_FELT = new Vector3();
 function installZ35(): void {
   const SB = StandingBody.prototype as Any;
   const prepare = SB.prepare;
@@ -625,10 +631,11 @@ function installZ35(): void {
     const heel = Number(rest[1] ?? Infinity);
     const depth = Number(rest[2] ?? 0);
     preps.set(this, { face, sensed, off, cop, L: length, load, toe, heel, depth });
-    return prepare.call(this, h, mass, length, load, cop, rate, heading, waterUp, felt, ...rest);
+    return prepare.call(this, h, mass, length, load, cop, rate, heading, waterUp, PATCH === 'feltOff' ? ZERO_FELT.set(0, 0, 0) : felt, ...rest);
   };
 }
-if (Z35) installZ35();
+if (Z35 || PATCH === 'feltOff') installZ35();
+if (PATCH !== '' && PATCH !== 'feltOff') throw new Error(`unknown PATCH ${PATCH}`);
 const zSample = createWaterSample();
 const FORCE_KEYS = ['buoyancy', 'pressure', 'addedMass', 'radiation', 'friction', 'bed', 'fins', 'rails', 'froth', 'suction'] as const;
 function z35Row(session: RideSession, water: SurfWater): Record<string, unknown> {
@@ -790,7 +797,7 @@ function organicMode(): void {
   const startZ = focus.z - rideLineupOffset(config);
   const CUE_LATER = config.cueLater === 'on';
   const cueSample = createWaterSample();
-  emit({ kind: 'control', mode: 'organic', cueLater: config.cueLater ?? null, seed: SEED, periods: PERIODS, scripts: SCRIPTS, search, riderOptions: opts, cAt: C_AT, ledger: LEDGER, only: ONLY ?? null, spinUp: (Date.now() - wall) / 1000, probe: '3.5z', standHold: STAND_HOLD, turnAt: TURN_AT, turnFor: TURN_FOR, turnSteer: TURN_STEER, lat: LAT, x35: X35, z35: Z35, trimUntil: TRIM_UNTIL });
+  emit({ kind: 'control', mode: 'organic', cueLater: config.cueLater ?? null, seed: SEED, periods: PERIODS, scripts: SCRIPTS, search, riderOptions: opts, cAt: C_AT, ledger: LEDGER, only: ONLY ?? null, spinUp: (Date.now() - wall) / 1000, probe: '3.5z', standHold: STAND_HOLD, turnAt: TURN_AT, turnFor: TURN_FOR, turnSteer: TURN_STEER, lat: LAT, x35: X35, z35: Z35, trimUntil: TRIM_UNTIL, patch: PATCH || null });
   if (config.canyonBed !== 'b' || config.rider !== 'new') { emit({ fatal: 'address' }); process.exit(2); }
   interface Rider {
     script: string; session: RideSession; gauge: WaveFrameGauge; sprinting: boolean; seenBehind: boolean;

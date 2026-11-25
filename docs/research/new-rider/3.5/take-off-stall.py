@@ -305,20 +305,34 @@ def feature(s, name):
     if name.startswith('cue.'):
         c = s.cuef or {}
         return c.get(name[4:])
+    if name.startswith('pop.') or name.startswith('land.'):
+        ph = 'push' if name.startswith('pop.') else 'landing'
+        c = next((x for x in s.all if x.get('ph') == ph), None) or {}
+        return c.get(name.split('.', 1)[1])
+    if name in ('dPitchLand', 'dTailLand', 'dvWLand'):
+        c = next((x for x in s.all if x.get('ph') == 'landing'), None)
+        k = {'dPitchLand': 'pitch', 'dTailLand': 'tail', 'dvWLand': 'vW'}[name]
+        return None if c is None or c.get(k) is None or f0.get(k) is None else f0[k] - c[k]
+    if name == 'pitchRate0':
+        a = s.at(0.05) or {}
+        return None if a.get('pitch') is None or f0.get('pitch') is None else (a['pitch'] - f0['pitch']) / max(1e-6, a['tS'])
     return f0.get(name)
 
 
 FEATURES = ['vW', 'sched', 'pitch', 'tail', 'nose', 'footR', 'copZ', 'capZ', 'feltDev', 'ref', 'ank', 'rest', 'hip', 'legBw', 'Fp', 'Fb',
             'faceFrac', 'ahead', 'fall', 'slopeDeg', 'hdgFall', 'frontShare', 'landingPeak', 'dPitch0.2', 'dvW0.2', 'dFeltDev0.2', 'dCopZ0.2', 'trkT0.2',
             'cue.vW', 'cue.pitch', 'cue.faceFrac', 'cue.ahead', 'cue.fall']
+# Descriptive, added after the baseline read (not in section 0.6): the pop-up's push and landing.
+FEATURES_POP = ['pop.vW', 'pop.pitch', 'pop.tail', 'pop.ahead', 'pop.fall', 'pop.faceFrac', 'land.vW', 'land.pitch', 'land.tail', 'land.ahead', 'land.fall',
+                'land.faceFrac', 'land.Fb', 'land.Fp', 'dPitchLand', 'dTailLand', 'dvWLand', 'pitchRate0']
 
 
-def separators(tag, dirs, tol=0.25):
+def separators(tag, dirs, tol=0.25, feats=None):
     ss = all_stands(tag, dirs, ('cue', 'cueC'))
     print(f'## Separators: falls (<= 3 s) against lasting stands, at the stand (tS = 0), the cue, and over 0-0.2 s; matched pairs |dvW| <= {tol} m/s at the stand\n')
     print('| feature | cue: fall / lasting median | cue AUC (n) | cue matched AUC (pairs) | cueC AUC | cueC matched AUC (pairs) | beats speed |')
     print('| --- | --- | --- | --- | --- | --- | --- |')
-    for name in FEATURES:
+    for name in feats or FEATURES:
         cells = []
         beats = True
         for drive in ('cue', 'cueC'):
@@ -704,12 +718,14 @@ def dump(tag, d, seed, script, wave, t0=-0.5, t1=1.5, step=0.05):
     print('| tS | ph | vW | pitch | deckP | nose | tail | footR | Fp | Fb | trkT (W) | face | dev | off | ref | lean | ank | rest | hip | copZ | copT | capZ | fs | legBw | ahead | fall | compress | trim |')
     print('|' + ' --- |' * 28)
     nxt = t0
+    t_st = s.summary['stand']
     for x in s.all:
-        if x.get('tS') is None or x['tS'] < nxt - 1e-9 or x['tS'] > t1:
+        ts = x['t'] - t_st
+        if ts < nxt - 1e-9 or ts > t1:
             continue
-        nxt = x['tS'] + step
+        nxt = ts + step
         z = x.get('z35') or {}
-        print(f"| {x['tS']:.3f} | {x.get('ph')} | {fmt(x.get('vW'))} | {fmt(x.get('pitch'), 1)} | {fmt(x.get('deckP'), 1)} | {fmt(x.get('nose'))} | {fmt(x.get('tail'))} | {fmt(x.get('footR'))} | {fmt(x.get('Fp'))} | {fmt(x.get('Fb'))} | {fmt(None if z.get('trkT') is None else z['trkT'] / W_PAIR)} | {fmt(z.get('face'), 1)} | {fmt(x.get('feltDev'), 1)} | {fmt(z.get('off'), 1)} | {fmt(x.get('ref'), 1)} | {fmt(z.get('lean'), 1)} | {fmt(x.get('ank'), 1)} | {fmt(x.get('rest'), 1)} | {fmt(x.get('hip'), 1)} | {fmt(x.get('copZ'), 3)} | {fmt(x.get('copT'), 3)} | {fmt(x.get('capZ'), 3)} | {fmt(z.get('fs'))} | {fmt(x.get('legBw'))} | {fmt(x.get('ahead'))} | {fmt(x.get('fall'), 1)} | {fmt(x.get('compress'))} | {fmt(x.get('trim'))} |")
+        print(f"| {ts:.3f} | {x.get('ph')} | {fmt(x.get('vW'))} | {fmt(x.get('pitch'), 1)} | {fmt(x.get('deckP'), 1)} | {fmt(x.get('nose'))} | {fmt(x.get('tail'))} | {fmt(x.get('footR'))} | {fmt(x.get('Fp'))} | {fmt(x.get('Fb'))} | {fmt(None if z.get('trkT') is None else z['trkT'] / W_PAIR)} | {fmt(z.get('face'), 1)} | {fmt(x.get('feltDev'), 1)} | {fmt(z.get('off'), 1)} | {fmt(x.get('ref'), 1)} | {fmt(z.get('lean'), 1)} | {fmt(x.get('ank'), 1)} | {fmt(x.get('rest'), 1)} | {fmt(x.get('hip'), 1)} | {fmt(x.get('copZ'), 3)} | {fmt(x.get('copT'), 3)} | {fmt(x.get('capZ'), 3)} | {fmt(z.get('fs'))} | {fmt(x.get('legBw'))} | {fmt(x.get('ahead'))} | {fmt(x.get('fall'), 1)} | {fmt(x.get('compress'))} | {fmt(x.get('trim'))} |")
 
 
 if __name__ == '__main__':
@@ -722,5 +738,5 @@ if __name__ == '__main__':
         a = sys.argv
         dump(a[2], a[3], int(a[4]), a[5], int(a[6]), *(float(v) for v in a[7:10]))
     else:
-        fn = {'table': table, 'sep': separators, 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never}[what]
+        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never}[what]
         fn(sys.argv[2], sys.argv[3:])
