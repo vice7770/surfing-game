@@ -103,6 +103,45 @@ unit RMS after the segment demeaning); the variance inflation factors VIF of δ�
 regressors: how much of the command the state already explains); and a ride-block bootstrap (200 resamples of whole
 rides) of A's least damping at 6 ticks, 5–95 %. A cell with κ > 1e4 or VIF(δ̄) > 100 is flagged ill-conditioned.
 
+### 0.3a Amendment: the registered method fails its own control; the grey-box fit becomes the method (2026-11-25, about 16:20 UTC, before any held-out file was read)
+
+The known-plant recovery (§0.8) was run during development on five of the six training files (Medium seeds 1–2, Big
+seeds 1–3; their own black-box fit supplied the disturbance), as a test of the code. It fails, and it fails for the
+reason the brief named. Least damping of A at 5 / 6 / 7 ticks, K2 (A's own design plant closed with A), on the
+recovered plant against the known one, typical cells:
+
+| disturbance injected | direct LS (registered) | IV, states as their own instruments (registered) | feasible GLS, AR(2) per row | IV, every regressor on the stick and lean lags | grey-box (below) |
+| --- | --- | --- | --- | --- | --- |
+| none | 5 and 7 ticks within 0.04 in every cell | as direct | within 0.04 | within 0.04 but one cell | within 0.02 |
+| white, the game's own RMS | within 0.04 in 12 of 14 cells, div in 2 | div or off in 4 of 11 | div in 3 of 14 | — | — |
+| the game's own residuals, time-shuffled | 10 of 12 cells close | — | — | — | — |
+| **the game's own residuals (registered)** | **div (a real root outside the unit circle) in 9 of 14 cells** where the known plant is +0.16 to +0.20 | **div in 8 of 11** | **div in 8 of 14** | **div in 9 of 12** | **5 and 7 ticks within 0.04 in 12 of 14; div in 1** |
+
+The game's residuals are strongly colored (lag-1 autocorrelation 0.6–0.98 on most rows, gone by about 5 ticks, and
+correlated across rows): with that color, every black-box fit of the 96 mechanical coefficients turns a disturbance
+the controller answers into spurious plant dynamics. Halving the disturbance, or injecting it only on the selected
+ticks, does not cure it. Shuffling it in time does: it is the color, not the size.
+
+**The method from here (amended):** a **grey-box fit**. The plant is the model's own (`plantAt` at each tick's own
+speed and depth: the two-body rider, the ankle's 800 N·m/rad spring and 80 N·m·s/rad damper, the twist rotor, the
+muscles' lags), and **only the water's twelve derivatives** (`heelYaw` … `rollDamping`, the model's axes) are
+identified, shared by the cell, by Gauss–Newton on the eight mechanical rows (each row with its own face and hip inputs
+and constant, rows weighted by their residual variance, 6 iterations from the table's water at the cell's median). The
+δ column is then physics (the ankle spring), not a regression coefficient, so the closed-loop collinearity of the
+command with the state cannot inflate it. The ride-block bootstrap is one Gauss–Newton step per resample from the fit.
+**The assumption is that the game's rider mechanics are the model's**; the held-out validation tests it, because the two
+truths share exactly these mechanics and differ from the grey-box plant only in the water.
+
+- The registered black-box fit (direct LS, one constant per cell) is still taken through the whole pipeline and
+  reported, with its recovery result; it is not credited where its recovery fails.
+- **§0.8 (b) amended:** the 6-tick value is compared by sign and "div" only, and the 5- and 7-tick values within 0.10.
+  When the controller's own model is the plant (K2, and K1 nearly so) its 6-tick least damping is the separation
+  principle's (the LQR and filter poles, 0.34–0.53), and any mismatch at all, the bin's own spread of speed and depth
+  included, takes it down: with no disturbance at all the recovered value was 0.26–0.32 against 0.34–0.53, while 5 and 7
+  ticks matched within 0.04.
+- Everything else stands: the cells, the data rules, the split, the validation and its pass line, the check, the
+  credibility rule and the lock.
+
 ### 0.4 The data split
 
 - **Identification:** seeds 1–3, Canyon Medium and Big (the benchmark's seas, `PERIODS=12`), every ride the benchmark's

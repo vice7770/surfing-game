@@ -127,8 +127,12 @@ function regressors(a: Tick, b: Tick): number[] {
 }
 interface Stats { xtx: number[][]; xty: number[][]; yty: number[]; n: number; sx: number[]; sy: number[]; ztx?: number[][]; ztz?: number[][]; zty?: number[][]; sz?: number[] }
 /** The intercept's structure: one constant per cell (`cell`, the amended primary) or one per segment (`segment`, as first registered). */
-const STRUCT = process.env.STRUCT === 'segment' ? 'segment' : 'cell';
-const NZ = 10 + 31;
+const STRUCT = process.env.STRUCT === 'segment' ? 'segment' : process.env.STRUCT === 'gls' ? 'gls' : process.env.STRUCT === 'grey' ? 'grey' : 'cell';
+/** The instruments: `states` (registered: the states and the exogenous inputs instrument themselves, the steer's lags 0–30 the
+ * commands) or `external` (diagnostic: every regressor instrumented by the stick's and the lean asked's lags 0–40 ticks,
+ * every second one, and the two exogenous inputs). */
+const IVSET = process.env.IVSET === 'external' ? 'external' : 'states';
+const NZ = IVSET === 'external' ? 2 + 21 + 21 : 10 + 31;
 function newStats(iv: boolean): Stats {
   const z = (r: number, c: number) => Array.from({ length: r }, () => new Array<number>(c).fill(0));
   return { xtx: z(NR, NR), xty: z(NR, 8), yty: new Array<number>(8).fill(0), n: 0, sx: new Array<number>(NR).fill(0), sy: new Array<number>(8).fill(0), ...(iv ? { ztx: z(NZ, NR), ztz: z(NZ, NZ), zty: z(NZ, 8), sz: new Array<number>(NZ).fill(0) } : {}) };
@@ -144,6 +148,12 @@ function addStats(into: Stats, from: Stats): void {
 }
 /** The instruments of the IV cross-check: the states, the two exogenous inputs, the steer's lags 0–30. */
 function instruments(ride: Ride, k: number, reg: number[]): number[] {
+  if (IVSET === 'external') {
+    const z = [reg[10], reg[11]];
+    for (let j = 0; j <= 40; j += 2) z.push(k - j >= 0 ? ride.ticks[k - j].st : 0);
+    for (let j = 0; j <= 40; j += 2) z.push(k - j >= 0 ? ride.ticks[k - j].ba : 0);
+    return z;
+  }
   const z = reg.slice(0, 8).concat([reg[10], reg[11]]);
   for (let j = 0; j <= 30; j += 1) z.push(k - j >= 0 ? ride.ticks[k - j].st : 0);
   return z;
@@ -160,7 +170,7 @@ function rideStats(ride: Ride, iv: boolean): Map<string, Stats> {
     // Amendment (§0.2): a segment continues across gaps of up to SEG_GAP ticks while its pairs stay in the same cell
     // (the balance's own knee drop moves the depth across the tall/crouch border tick by tick).
     while (j < pairs.length && pairs[j].k - pairs[j - 1].k <= SEG_GAP && pairs[j].cell === pairs[i].cell) j += 1;
-    if (STRUCT === 'cell' || j - i >= SEG_MIN) {
+    if (STRUCT !== 'segment' || j - i >= SEG_MIN) {
       const seg = pairs.slice(i, j);
       const X = seg.map((p) => regressors(ride.ticks[p.k], ride.ticks[p.k + 1]));
       const Y = seg.map((p) => ride.ticks[p.k + 1].x.slice(0, 8));
@@ -330,11 +340,194 @@ export function truthAt(which: 'table' | 'game' | 'K2', v: number, depth: number
 // ---------------------------------------------------------------------------------------------------------------
 interface CellFit {
   cell: string; bin: [number, number]; group: string; knot: number; pairs: number; rides: number; segments?: number; medV: number; medDep: number; medVW?: number;
-  bigRoll: number; c: number[][]; civ?: number[][]; kappa: number; vif: number[]; r2: number[]; enough: boolean;
+  bigRoll: number; c: number[][]; civ?: number[][]; kappa: number; vif: number[]; r2: number[]; enough: boolean; rho?: [number, number][]; grey?: number[];
   boot?: { A6: number[]; q05: number; q50: number; q95: number };
 }
 function median(a: number[]): number { const s = a.slice().sort((x, y) => x - y); return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : Number.NaN; }
 function quantile(a: number[], q: number): number { const s = a.filter(Number.isFinite).sort((x, y) => x - y); if (!s.length) return Number.NaN; const i = q * (s.length - 1); const lo = Math.floor(i); return s[lo] + (s[Math.min(s.length - 1, lo + 1)] - s[lo]) * (i - lo); }
+/**
+ * **Feasible GLS** (amendment §0.3, `STRUCT=gls`): each mechanical row's disturbance modelled as AR(2), w[k] = ρ1 w[k−1] +
+ * ρ2 w[k−2] + e[k], fitted by iterated Cochrane–Orcutt on the cell's consecutive pairs: ỹ = y[k] − ρ1 y[k−1] − ρ2 y[k−2]
+ * on z̃ likewise (with the cell's constant). The transformed regressors depend on states and commands up to tick k only,
+ * which the white e[k] cannot reach in a loop that acts on 6-tick-old senses, so the fit stays consistent in closed loop.
+ */
+interface Seq { z: number[][]; y: number[][]; k: number[] }
+function cellSeqs(rides: Ride[], cell: string): Seq[] {
+  const out: Seq[] = [];
+  for (const ride of rides) {
+    const ps = pairsOf(ride).filter((p) => p.cell === cell);
+    if (!ps.length) continue;
+    out.push({ z: ps.map((p) => regressors(ride.ticks[p.k], ride.ticks[p.k + 1])), y: ps.map((p) => ride.ticks[p.k + 1].x.slice(0, 8)), k: ps.map((p) => p.k) });
+  }
+  return out;
+}
+/** One row's transformed statistics over the sequences' triples (k−2, k−1, k consecutive). */
+function rowStats(seqs: Seq[], row: number, rho: [number, number]): Stats {
+  const st = newStats(false);
+  for (const q of seqs) for (let i = 2; i < q.k.length; i += 1) {
+    if (q.k[i - 1] !== q.k[i] - 1 || q.k[i - 2] !== q.k[i] - 2) continue;
+    const zt = q.z[i].map((v, c) => v - rho[0] * q.z[i - 1][c] - rho[1] * q.z[i - 2][c]);
+    const yt = q.y[i][row] - rho[0] * q.y[i - 1][row] - rho[1] * q.y[i - 2][row];
+    for (let a = 0; a < NR; a += 1) { for (let b = 0; b < NR; b += 1) st.xtx[a][b] += zt[a] * zt[b]; st.xty[a][row] += zt[a] * yt; st.sx[a] += zt[a]; }
+    st.yty[row] += yt * yt; st.sy[row] += yt; st.n += 1;
+  }
+  return st;
+}
+function glsFit(seqs: Seq[], c0: number[][], iterations = 5): { c: number[][]; rho: [number, number][]; n: number } {
+  const c = c0.map((r) => r.slice());
+  const rho: [number, number][] = Array.from({ length: 8 }, () => [0, 0] as [number, number]);
+  let n = 0;
+  for (let it = 0; it < iterations; it += 1) {
+    for (let row = 0; row < 8; row += 1) {
+      // The residuals of the current fit (less their mean, the cell's constant), then their AR(2) by least squares.
+      const res = seqs.map((q) => q.z.map((z, i) => q.y[i][row] - z.reduce((s, v, a) => s + v * c[a][row], 0)));
+      const all = res.flat();
+      const m = all.reduce((s, v) => s + v, 0) / Math.max(1, all.length);
+      let s11 = 0, s12 = 0, s22 = 0, b1 = 0, b2 = 0;
+      seqs.forEach((q, j) => { for (let i = 2; i < q.k.length; i += 1) {
+        if (q.k[i - 1] !== q.k[i] - 1 || q.k[i - 2] !== q.k[i] - 2) continue;
+        const r0 = res[j][i] - m, r1 = res[j][i - 1] - m, r2 = res[j][i - 2] - m;
+        s11 += r1 * r1; s12 += r1 * r2; s22 += r2 * r2; b1 += r0 * r1; b2 += r0 * r2;
+      } });
+      const det = s11 * s22 - s12 * s12;
+      rho[row] = det > 0 ? [(b1 * s22 - b2 * s12) / det, (s11 * b2 - s12 * b1) / det] : [0, 0];
+      const st = rowStats(seqs, row, rho[row]);
+      n = st.n;
+      const sol = solve(st).c;
+      for (let a = 0; a < NR; a += 1) c[a][row] = sol[a][row];
+    }
+  }
+  return { c, rho, n };
+}
+// ---------------------------------------------------------------------------------------------------------------
+// The grey-box fit (amendment §0.3, `STRUCT=grey`): the model's own mechanics (`plantAt` at each tick's own speed and
+// depth: the rider's two-body solve, the ankle's 800 N·m/rad spring, the twist's rotor, the muscles' lags), with the
+// water's twelve derivatives the only unknowns, shared by the cell. Gauss–Newton on the eight mechanical rows, each
+// row with its own face and hip inputs and constant, rows weighted by their residual variance.
+// ---------------------------------------------------------------------------------------------------------------
+const WATER = ['heelYaw', 'heelSide', 'heelRoll', 'slipYaw', 'slipSide', 'slipRoll', 'yawDamping', 'yawSide', 'yawRoll', 'rollRateYaw', 'rollRateSide', 'rollDamping'] as const;
+const NG = WATER.length + 8 * 3;
+const rq = (v: number) => Math.round(v * 20) / 20;
+const rd = (d: number) => Math.round(d * 100) / 100;
+function waterAt(v: number, dep: number): number[] {
+  const { y } = plantAt(v, dep, { rail: 0, body: true, stanceDeep: true });
+  return WATER.map((k) => (y as Any)[k] as number);
+}
+const greyCache = new Map<string, { phi: Mat; gamma: Mat }>();
+export function greyPlant(p: readonly number[], v: number, dep: number, exact = false): { phi: Mat; gamma: Mat } {
+  const vv = exact ? v : rq(v), dd = exact ? dep : rd(dep);
+  const key = `${vv}|${dd}|${p.join(',')}`;
+  let out = greyCache.get(key);
+  if (!out) {
+    const { y, t } = plantAt(vv, dd, { rail: 0, body: true, stanceDeep: true });
+    const yy = { ...y } as Any;
+    WATER.forEach((k, i) => { yy[k] = p[i]; });
+    const { a, b } = continuousPlant(yy, t);
+    out = discretise(a, b, H);
+    if (greyCache.size > 20000) greyCache.clear();
+    greyCache.set(key, out);
+  }
+  return out;
+}
+function greyJac(p: readonly number[], v: number, dep: number): { phi: Mat; gamma: Mat }[] {
+  return WATER.map((_, m) => {
+    const h = Math.max(1, 0.01 * Math.abs(p[m]));
+    const up = p.slice(), dn = p.slice();
+    up[m] += h; dn[m] -= h;
+    const a = greyPlant(up, v, dep), b = greyPlant(dn, v, dep);
+    return { phi: a.phi.map((row, i) => row.map((x, j) => (x - b.phi[i][j]) / (2 * h))), gamma: a.gamma.map((row, i) => row.map((x, j) => (x - b.gamma[i][j]) / (2 * h))) };
+  });
+}
+interface GreyPair { x: number[]; u: number[]; y: number[]; v: number; dep: number; tilt: number; hip: number; ride: number }
+function greyNormal(pairs: GreyPair[], p: number[], w: number[], rides?: number[]): { N: number[][]; b: number[]; res: number[][] } {
+  const N = Array.from({ length: NG }, () => new Array<number>(NG).fill(0));
+  const b = new Array<number>(NG).fill(0);
+  const res: number[][] = [];
+  const jac = new Map<string, { phi: Mat; gamma: Mat }[]>();
+  const counts = rides ? new Map<number, number>() : undefined;
+  if (rides && counts) for (const r of rides) counts.set(r, (counts.get(r) ?? 0) + 1);
+  for (const q of pairs) {
+    const mult = counts ? counts.get(q.ride) ?? 0 : 1;
+    const pl = greyPlant(p, q.v, q.dep);
+    const key = `${rq(q.v)}|${rd(q.dep)}`;
+    let J = jac.get(key);
+    if (!J) { J = greyJac(p, q.v, q.dep); jac.set(key, J); }
+    const pred = step(pl.phi, pl.gamma, q.x, q.u);
+    const r = pred.map((v, i) => q.y[i] - v).slice(0, 8);
+    res.push(r);
+    if (mult === 0) continue;
+    for (let i = 0; i < 8; i += 1) {
+      const g = new Array<number>(NG).fill(0);
+      for (let m = 0; m < WATER.length; m += 1) {
+        let s2 = J[m].gamma[i][0] * q.u[0] + J[m].gamma[i][1] * q.u[1];
+        for (let j = 0; j < 10; j += 1) s2 += J[m].phi[i][j] * q.x[j];
+        g[m] = s2;
+      }
+      g[WATER.length + 3 * i] = q.tilt; g[WATER.length + 3 * i + 1] = q.hip; g[WATER.length + 3 * i + 2] = 1;
+      const wi = w[i] * mult;
+      for (let a2 = 0; a2 < NG; a2 += 1) { if (g[a2] === 0) continue; b[a2] += wi * g[a2] * r[i]; for (let c2 = 0; c2 < NG; c2 += 1) N[a2][c2] += wi * g[a2] * g[c2]; }
+    }
+  }
+  return { N, b, res };
+}
+function greySolve(N: number[][], b: number[]): { z: number[]; kappa: number } {
+  const sc = N.map((row, i) => Math.sqrt(Math.max(row[i], 1e-300)));
+  const idx = sc.map((_, i) => i).filter((i) => sc[i] > 1e-12);
+  const A = idx.map((i) => idx.map((j) => N[i][j] / (sc[i] * sc[j])));
+  const inv = inverse(A);
+  const bb = idx.map((i) => b[i] / sc[i]);
+  const z = new Array<number>(NG).fill(0);
+  idx.forEach((i, q) => { z[i] = inv[q].reduce((s2, v, r) => s2 + v * bb[r], 0) / sc[i]; });
+  const ev = eigenvalues(A.slice(0, Math.min(A.length, WATER.length)).map((row) => row.slice(0, Math.min(A.length, WATER.length))), { balance: true, maxIterations: 400 }).map((e) => Math.abs(e.re));
+  return { z, kappa: Math.sqrt(Math.max(...ev) / Math.max(1e-300, Math.min(...ev))) };
+}
+function greyFit(rides: Ride[], cell: string, medV: number, medDep: number, boot: number, design?: Design): { p: number[]; e: number[]; kappa: number; sigma: number[]; boot?: number[]; p0: number[] } {
+  const pairs: GreyPair[] = [];
+  rides.forEach((ride, ri) => { for (const q of pairsOf(ride)) if (q.cell === cell) { const a = ride.ticks[q.k], b2 = ride.ticks[q.k + 1]; pairs.push({ x: a.x, u: a.u, y: b2.x, v: a.v, dep: a.dep, tilt: a.ftilt, hip: b2.hip, ride: ri }); } });
+  const p0 = waterAt(medV, medDep);
+  let p = p0.slice();
+  let w = new Array<number>(8).fill(1);
+  let e = new Array<number>(24).fill(0);
+  let kappa = Number.NaN;
+  // The rows' weights from the increments' spread at the start, then from the residuals.
+  { const inc = new Array<number>(8).fill(0); for (const q of pairs) for (let i = 0; i < 8; i += 1) inc[i] += (q.y[i] - q.x[i]) ** 2; w = inc.map((v) => pairs.length / Math.max(1e-300, v)); }
+  for (let it = 0; it < 6; it += 1) {
+    const { N, b } = greyNormal(pairs, p, w);
+    const sol = greySolve(N, b);
+    kappa = sol.kappa;
+    p = p.map((v, m) => v + sol.z[m]);
+    e = sol.z.slice(WATER.length);
+    // The residuals with the exogenous terms, for the weights.
+    const { res } = greyNormal(pairs, p, w, []);
+    const ss = new Array<number>(8).fill(0);
+    res.forEach((r, k) => { for (let i = 0; i < 8; i += 1) { const rr = r[i] - (e[3 * i] * pairs[k].tilt + e[3 * i + 1] * pairs[k].hip + e[3 * i + 2]); ss[i] += rr * rr; } });
+    w = ss.map((v) => pairs.length / Math.max(1e-300, v));
+  }
+  const sigma = w.map((v) => 1 / Math.sqrt(v));
+  let bootD: number[] | undefined;
+  if (boot > 0 && design) {
+    let seed = 4242;
+    const rand = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    const nr = rides.length;
+    bootD = [];
+    for (let it = 0; it < boot; it += 1) {
+      const pick = Array.from({ length: nr }, () => Math.floor(rand() * nr));
+      const { N, b } = greyNormal(pairs, p, w, pick);
+      try {
+        const z = greySolve(N, b).z;
+        const pb = p.map((v, m) => v + z[m]);
+        const pl = greyPlant(pb, medV, medDep, true);
+        bootD.push(damping(pl.phi, pl.gamma, 6, design).damping);
+      } catch { bootD.push(Number.NaN); }
+    }
+  }
+  return { p, e, kappa, sigma, boot: bootD, p0 };
+}
+/** A cell's plant at a speed and depth: the grey-box water at that speed and depth, or the black-box cell's Φ, Γ. */
+export function cellPlant(f: Any, v: number, dep: number): { phi: Mat; gamma: Mat } {
+  return f.grey ? greyPlant(f.grey, v, dep) : plantOf(f.c);
+}
+
 function fit(rides: Ride[], iv: boolean, boot: number): CellFit[] {
   const per = rides.map((r) => ({ ride: r, stats: rideStats(r, iv) }));
   const out: CellFit[] = [];
@@ -349,21 +542,46 @@ function fit(rides: Ride[], iv: boolean, boot: number): CellFit[] {
     for (const p of mine) for (const pr of pairsOf(p.ride)) if (pr.cell === cell) { const t = p.ride.ticks[pr.k]; vs.push(t.v); ds.push(t.dep); if (Math.abs(t.x[0]) > 20 * DEG) big += 1; }
     const s = solve(st);
     const enough = st.n >= MIN_PAIRS && mine.length >= MIN_RIDES;
+    let glsRho: [number, number][] | undefined;
+    let seqsByRide: Seq[] = [];
+    if (STRUCT === 'gls' && enough) {
+      seqsByRide = cellSeqs(mine.map((p) => p.ride), cell);
+      const g = glsFit(seqsByRide, s.c);
+      s.c = g.c;
+      glsRho = g.rho;
+    }
     const cf: CellFit = {
       cell, bin: BINS[b], group: GROUPS[g].name, knot: GROUPS[g].knot, pairs: st.n, rides: mine.length, medV: median(vs), medDep: median(ds), bigRoll: big / Math.max(1, vs.length),
-      c: s.c, kappa: s.kappa, vif: s.vif, r2: s.r2, enough,
+      c: s.c, kappa: s.kappa, vif: s.vif, r2: s.r2, enough, ...(glsRho ? { rho: glsRho } : {}),
     };
     if (iv && st.ztz && enough) { try { cf.civ = solveIV(st); } catch { /* singular instruments */ } }
-    if (boot > 0 && enough) {
+    if (STRUCT === 'grey' && enough) {
+      const design = designOf('A', (BINS[b][0] + BINS[b][1]) / 2, GROUPS[g].knot);
+      const gf = greyFit(mine.map((p) => p.ride), cell, cf.medV, cf.medDep, boot, design);
+      (cf as Any).grey = gf.p; (cf as Any).greyE = gf.e; (cf as Any).greyP0 = gf.p0; (cf as Any).greySigma = gf.sigma; (cf as Any).greyKappa = gf.kappa;
+      if (gf.boot) cf.boot = { A6: [], q05: quantile(gf.boot, 0.05), q50: quantile(gf.boot, 0.5), q95: quantile(gf.boot, 0.95) };
+    } else if (boot > 0 && enough) {
       // The ride-block bootstrap: whole rides resampled with replacement (a fixed generator, so the run repeats).
       let seed = 12345 + b * 97 + g;
       const rand = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
       const d6: number[] = [];
       const design = designOf('A', (BINS[b][0] + BINS[b][1]) / 2, GROUPS[g].knot);
+      // Under GLS: each ride's per-row transformed statistics at the full sample's ρ, resampled the same way.
+      const perRow = glsRho ? seqsByRide.map((q) => Array.from({ length: 8 }, (_, row) => rowStats([q], row, glsRho![row]))) : [];
       for (let it = 0; it < boot; it += 1) {
         const bs = newStats(false);
-        for (let q = 0; q < mine.length; q += 1) { const p = mine[Math.floor(rand() * mine.length)]; const x = p.stats.get(cell)!; addStats(bs, { xtx: x.xtx, xty: x.xty, yty: x.yty, n: x.n, sx: x.sx, sy: x.sy }); }
-        try { const pl = plantOf(solve(bs).c); d6.push(damping(pl.phi, pl.gamma, 6, design).damping); } catch { d6.push(Number.NaN); }
+        const rows = Array.from({ length: 8 }, () => newStats(false));
+        for (let q = 0; q < mine.length; q += 1) {
+          const pick = Math.floor(rand() * mine.length);
+          if (glsRho) { if (pick < perRow.length) for (let row = 0; row < 8; row += 1) addStats(rows[row], perRow[pick][row]); }
+          else { const x = mine[pick].stats.get(cell)!; addStats(bs, { xtx: x.xtx, xty: x.xty, yty: x.yty, n: x.n, sx: x.sx, sy: x.sy }); }
+        }
+        try {
+          let cb: number[][];
+          if (glsRho) { cb = Array.from({ length: NR }, () => new Array<number>(8).fill(0)); for (let row = 0; row < 8; row += 1) { const sol = solve(rows[row]).c; for (let a = 0; a < NR; a += 1) cb[a][row] = sol[a][row]; } }
+          else cb = solve(bs).c;
+          const pl = plantOf(cb); d6.push(damping(pl.phi, pl.gamma, 6, design).damping);
+        } catch { d6.push(Number.NaN); }
       }
       cf.boot = { A6: [], q05: quantile(d6, 0.05), q50: quantile(d6, 0.5), q95: quantile(d6, 0.95) };
     }
@@ -383,6 +601,7 @@ function step(phi: Mat, gamma: Mat, x: number[], u: number[]): number[] {
 function validate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Any[] {
   const byCell = new Map(fits.filter((f) => f.enough).map((f) => [f.cell, { f, p: plantOf(f.c), piv: f.civ ? plantOf(f.civ) : undefined }]));
   const acc = new Map<string, Any>();
+  void acc;
   const models = ['id', 'iv', 'table', 'game', 'persist', ...(known ? ['known'] : [])];
   for (const ride of rides) {
     const t = ride.ticks;
@@ -405,7 +624,7 @@ function validate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Any[] {
       let e = acc.get(cell);
       if (!e) { e = { cell, rides: new Set<string>(), n: {}, se: {} }; for (const m of models) { e.se[m] = {}; for (const hz of HORIZONS) e.se[m][hz] = new Array<number>(10).fill(0); } for (const hz of HORIZONS) e.n[hz] = 0; acc.set(cell, e); }
       e.rides.add(ride.key);
-      const pl: Record<string, { phi: Mat; gamma: Mat }> = { id: fit.p, table: truthAt('table', a.v, a.dep), game: truthAt('game', a.v, a.dep) };
+      const pl: Record<string, { phi: Mat; gamma: Mat }> = { id: fit.f.grey ? greyPlant(fit.f.grey, a.v, a.dep) : fit.p, table: truthAt('table', a.v, a.dep), game: truthAt('game', a.v, a.dep) };
       if (fit.piv) pl.iv = fit.piv;
       if (known) pl.known = truthAt(known === 'K1' ? 'table' : 'K2', a.v, a.dep);
       const xs: Record<string, number[]> = {};
@@ -443,10 +662,32 @@ function validate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Any[] {
 // MODE=simulate: the recovery control's closed-loop rides (§0.8).
 // ---------------------------------------------------------------------------------------------------------------
 function simulate(fits: CellFit[], rides: Ride[], known: 'K1' | 'K2'): Map<string, Any[]> {
-  const byCell = new Map(fits.filter((f) => f.enough).map((f) => [f.cell, plantOf(f.c)]));
+  const byFit = new Map(fits.filter((f) => f.enough).map((f) => [f.cell, f]));
   const files = new Map<string, Any[]>();
   const weights = known === 'K1' ? WEIGHTS_R : WEIGHTS_A;
   const truth = known === 'K1' ? 'table' : 'K2';
+  // The disturbance (§0.8): the game's own (`game`, registered); and two diagnostics, none (`zero`) and white noise of the
+  // game's own RMS per state (`white`, a fixed generator).
+  const dMode = process.env.D_MODE ?? 'game';
+  const dOf = (ride: Ride, k: number): number[] => {
+    const g = ride.ticks[k], nx = ride.ticks[k + 1];
+    const bi = binOf(g.v), gi = groupOf(g.dep);
+    const f = bi >= 0 && gi >= 0 ? byFit.get(cellName(bi, gi)) : undefined;
+    const p = f ? cellPlant(f, g.v, g.dep) : undefined;
+    return p && nx && nx.n === g.n + 1 ? step(p.phi, p.gamma, g.x, g.u).map((v, i) => nx.x[i] - v) : new Array<number>(10).fill(0);
+  };
+  const rms = new Array<number>(10).fill(0);
+  let nd = 0;
+  if (dMode === 'white') {
+    for (const ride of rides) for (let k = 0; k + 1 < ride.ticks.length; k += 1) { const d = dOf(ride, k); if (d.some((v) => v !== 0)) { nd += 1; d.forEach((v, i) => { rms[i] += v * v; }); } }
+    for (let i = 0; i < 10; i += 1) rms[i] = Math.sqrt(rms[i] / Math.max(1, nd));
+  }
+  // `shuffle` (diagnostic): the game's own disturbances drawn in a random order, so their size and tails stay and their
+  // colour goes.
+  const pool: number[][] = [];
+  if (dMode === 'shuffle') for (const ride of rides) for (let k = 0; k + 1 < ride.ticks.length; k += 1) { const d = dOf(ride, k); if (d.some((v) => v !== 0)) pool.push(d); }
+  let seed = 987654321;
+  const gauss = () => { seed = (seed * 1103515245 + 12345) % 2147483648; const u1 = (seed + 1) / 2147483649; seed = (seed * 1103515245 + 12345) % 2147483648; const u2 = seed / 2147483648; return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2); };
   for (const ride of rides) {
     const t = ride.ticks;
     if (t.length < 2 || t[0].n !== 0) continue;
@@ -466,9 +707,10 @@ function simulate(fits: CellFit[], rides: Ride[], known: 'K1' | 'K2'): Map<strin
       if (k + 1 >= t.length) break;
       // The game's own disturbance on this tick: what the game fit's plant leaves unexplained (zero outside every cell).
       const nx = t[k + 1];
-      const bi = binOf(g.v), gi = groupOf(g.dep);
-      const p = bi >= 0 && gi >= 0 ? byCell.get(cellName(bi, gi)) : undefined;
-      const d = p && nx.n === g.n + 1 ? step(p.phi, p.gamma, g.x, g.u).map((v, i) => nx.x[i] - v) : new Array<number>(10).fill(0);
+      const d = dMode === 'zero' ? new Array<number>(10).fill(0) : dMode === 'white' ? rms.map((r, i) => (i < 8 ? r * gauss() : 0))
+        : dMode === 'shuffle' ? pool[Math.floor(((gauss() + 10) * 1e6) % pool.length)]
+          : dMode === 'selected' ? (selectedAt(g) ? dOf(ride, k) : new Array<number>(10).fill(0))
+            : dMode === 'half' ? dOf(ride, k).map((v) => 0.5 * v) : dOf(ride, k);
       const kp = truthAt(truth, g.v, g.dep);
       x = step(kp.phi, kp.gamma, x, sent).map((v, i) => v + d[i]);
       if (nx.n !== g.n + 1) break;
@@ -488,8 +730,8 @@ function check(fits: CellFit[], known?: 'K1' | 'K2'): Any[] {
   for (const f of fits) {
     if (!f.enough) continue;
     const vc = (f.bin[0] + f.bin[1]) / 2;
-    const p = plantOf(f.c);
-    const row: Any = { cell: f.cell, vc, knot: f.knot, medV: f4(f.medV), medDep: f4(f.medDep) };
+    const p = f.grey ? greyPlant(f.grey, f.medV, f.medDep, true) : plantOf(f.c);
+    const row: Any = { cell: f.cell, vc, knot: f.knot, medV: f4(f.medV), medDep: f4(f.medDep), ...(f.grey ? { water: f.grey.map(f4), table: waterAt(f.medV, f.medDep).map(f4) } : {}) };
     const dm = (pl: { phi: Mat; gamma: Mat }, arm: 'A' | 'R', v: number, dep: number) => {
       const d = designOf(arm, v, dep);
       const r: Any = {};
@@ -587,6 +829,38 @@ if (MODE === 'fit') {
   const res = check(fits, known);
   writeFileSync(OUT, JSON.stringify(res));
   emit({ check: OUT, cells: res.length });
+} else if (MODE === 'resid') {
+  // Diagnostic: the autocorrelation of the fit's one-step residuals (the plant part, x[k+1] − Φ x − Γ u, less the cell's
+  // mean) per cell and mechanical row, at lags of 1, 2, 5, 10 and 30 ticks, over consecutive selected pairs.
+  const fits = (JSON.parse(readFileSync(process.env.FIT!, 'utf8')) as { fits: CellFit[] }).fits.filter((f) => f.enough);
+  const plants = new Map(fits.map((f) => [f.cell, plantOf(f.c)]));
+  const out: Any[] = [];
+  const res = new Map<string, { k: number; ride: string; r: number[] }[]>();
+  for (const ride of readRides(dirs)) for (const p of pairsOf(ride)) {
+    const pl = plants.get(p.cell);
+    if (!pl) continue;
+    const a = ride.ticks[p.k], b = ride.ticks[p.k + 1];
+    const r = step(pl.phi, pl.gamma, a.x, a.u).map((v, i) => b.x[i] - v).slice(0, 8);
+    const list = res.get(p.cell) ?? [];
+    list.push({ k: p.k, ride: ride.key, r });
+    res.set(p.cell, list);
+  }
+  for (const [cell, list] of res) {
+    const mean = new Array<number>(8).fill(0).map((_, i) => list.reduce((s, q) => s + q.r[i], 0) / list.length);
+    const byKey = new Map(list.map((q) => [`${q.ride}|${q.k}`, q.r]));
+    const ac: Any = {};
+    for (const lag of [1, 2, 5, 10, 30]) {
+      const num = new Array<number>(8).fill(0), den = new Array<number>(8).fill(0);
+      for (const q of list) {
+        const o = byKey.get(`${q.ride}|${q.k - lag}`);
+        if (!o) continue;
+        for (let i = 0; i < 8; i += 1) { num[i] += (q.r[i] - mean[i]) * (o[i] - mean[i]); den[i] += (q.r[i] - mean[i]) ** 2; }
+      }
+      ac[lag] = num.map((v, i) => f4(v / Math.max(1e-300, den[i])));
+    }
+    out.push({ cell, n: list.length, ac });
+  }
+  emit({ resid: out });
 } else if (MODE === 'replay') {
   emit({ replay: replay(readRides(dirs)) });
 } else throw new Error(`unknown MODE ${MODE}`);
