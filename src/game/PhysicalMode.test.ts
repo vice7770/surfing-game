@@ -9,7 +9,7 @@ import { stormSwell } from '../wave/StormSwell';
 import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
-  REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
+  REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, balanceLimitRows, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
   canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, bodyBankSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, armCarrySwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, plantSpeedSwitch, faceTrimSwitch, holdLineSwitch, cueLaterSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
@@ -2629,5 +2629,20 @@ describe('PhysicalMode', () => {
     const rows = mode.readout();
     expect(rows.find((row) => row.label === 'SWELL')?.value).toMatch(/practice/);
     mode.stop();
+  });
+});
+
+// The balance bar's limit moved from under the HUD bar to the dev tools' readout (2026-11-25; `?rider=new`).
+describe('balanceLimitRows', () => {
+  const ride = (over: object) => ({ phase: 'standing', balance: 0.42, balanceLimit: { limit: 'margin', margin: 0.42, grip: 0.9, knee: 0.7, across: true, past: 0, toward: 'left' }, ...over }) as unknown as NonNullable<Parameters<typeof balanceLimitRows>[0]>;
+  it('names the nearest limit and the edge while standing', () => {
+    expect(balanceLimitRows(ride({}))).toEqual([{ label: 'BALANCE', value: 'margin nearest · reserve 0.42 · margin 0.42 toward left · grip 0.90 · knee 0.70' }]);
+  });
+  it('names the limit that let go, across or not, and the speed, once off the board', () => {
+    expect(balanceLimitRows(ride({ phase: 'fallen', broke: { limit: 'margin', across: true, speed: 8, steer: 0 } }))).toEqual([{ label: 'BALANCE LET GO', value: 'margin off the side (across) · 8.0 m/s' }]);
+    expect(balanceLimitRows(ride({ phase: 'fallen', broke: { limit: 'grip', across: false, speed: 5, steer: 0 } }))[0]?.value).toBe('grip · 5.0 m/s');
+  });
+  it('has nothing to say with no limit', () => {
+    expect(balanceLimitRows(ride({ phase: 'prone', balanceLimit: undefined }))).toEqual([]);
   });
 });

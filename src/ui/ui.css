@@ -400,6 +400,15 @@
   .free-practice-starts, .free-practice-starts button { width: 100%; }
 }
 .hud-balance-group { display: flex; flex-direction: column; align-items: center; gap: .25em; }
+.hud-balance-row { display: flex; align-items: flex-end; gap: .35em; }
+.hud-balance-tick { width: .8em; height: 1.6em; fill: none; stroke: none; }
+.hud-balance-tick[hidden] { display: none; }
+.hud-balance-tick .tick-board { fill: rgba(248, 246, 234, .35); }
+.hud-balance-tick .tick-edge { stroke: var(--accent); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.hud-balance-tick[data-edge='left'] .tick-left, .hud-balance-tick[data-edge='right'] .tick-right,
+.hud-balance-tick[data-edge='nose'] .tick-nose, .hud-balance-tick[data-edge='tail'] .tick-tail { opacity: 1; }
+.is-high-contrast .hud-balance-tick .tick-board { fill: #0d2a2d; stroke: #fff; stroke-width: .6; }
+.is-high-contrast .hud-balance-tick .tick-edge { stroke: #ff8a5c; }
 .hud-balance-limit { font-size: .62em; letter-spacing: .04em; text-transform: uppercase; opacity: .8; white-space: nowrap; }
 .hud-balance-limit.is-broken { color: var(--accent); opacity: 1; }
 .is-high-contrast .hud-balance-limit { opacity: 1; }

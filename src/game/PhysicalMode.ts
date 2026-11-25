@@ -324,6 +324,24 @@ export function formatDevice(config: SurfZoneConfig, status: SurfZoneStatus): st
 }
 
 /** The Wave Lab rows for a running surf zone, from plain status values (they can come from the worker). */
+/**
+ * The balance bar's limit, for the dev tools' overlay (`?rider=new`; the HUD no longer names it): while standing the
+ * nearest of the three limits, the margin and the edge it is nearest to; after a fall the limit that let go, whether the
+ * weight left across the board, and the speed over ground. Read from the status; nothing is written back.
+ */
+export function balanceLimitRows(ride: NonNullable<SurfZoneStatus['ride']>): ReadoutRow[] {
+  const standing = ride.phase === 'standing' || ride.phase === 'recover';
+  if (standing && ride.balanceLimit) {
+    const { limit, margin, grip, knee, toward } = ride.balanceLimit;
+    return [{ label: 'BALANCE', value: `${limit} nearest · reserve ${ride.balance.toFixed(2)} · margin ${margin.toFixed(2)}${toward ? ` toward ${toward}` : ''} · grip ${grip.toFixed(2)} · knee ${knee.toFixed(2)}` }];
+  }
+  if (!standing && ride.broke) {
+    const { limit, across, speed } = ride.broke;
+    return [{ label: 'BALANCE LET GO', value: `${limit}${across ? ' off the side (across)' : ''} · ${speed.toFixed(1)} m/s` }];
+  }
+  return [];
+}
+
 export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneStatus, storm?: StormSwell, practice = false): ReadoutRow[] {
   const { breakPoint, breaker, peel } = status;
   const toSet = status.timeToSet;
@@ -364,6 +382,7 @@ export function formatPhysicalReadout(config: SurfZoneConfig, status: SurfZoneSt
       { label: 'POP-UP', value: status.ride.popUp.outcome === 'none' ? 'not yet'
         : status.ride.popUp.outcome === 'stood' ? `stood in ${status.ride.popUp.duration.toFixed(2)} s · landing ${status.ride.popUp.landingPeak.toFixed(1)} BW, ${Math.round(status.ride.popUp.frontShare * 100)} % front${status.ride.popUp.refusal ? ` · no support: ${REFUSAL_TEXT[status.ride.popUp.refusal]}` : ''}`
         : 'rising' },
+      ...(config.rider === 'new' ? balanceLimitRows(status.ride) : []),
       ...(status.ride.separation ? [{ label: 'FELL', value: `${status.ride.separation} · swim back (Space, arrows) and press Enter by the board to climb on, or R to paddle out again` }] : []),
     ] : []),
     { label: 'PEEL', value: peelText },

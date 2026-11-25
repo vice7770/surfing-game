@@ -3191,7 +3191,7 @@ export class AttachedRider {
    * Lying down and for the old rider the reserve is a single number with no three terms behind it, so `limit` is
    * `'posture'` and the three read the reserve itself.
    */
-  get balanceLimits(): { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number } {
+  get balanceLimits(): { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number; toward?: 'left' | 'right' | 'nose' | 'tail' } {
     if (!this.freeBody) {
       const reserve = this.balanceReserve;
       return { limit: 'posture', margin: reserve, grip: reserve, knee: reserve, across: false, past: 0 };
@@ -3201,7 +3201,7 @@ export class AttachedRider {
     const grip = Math.max(0, 1 - this.frictionUsed);
     const knee = Math.max(0, 1 - this.kneeUsed);
     const limit = margin <= grip && margin <= knee ? 'margin' : grip <= knee ? 'grip' : 'knee';
-    return { limit, margin, grip, knee, across: state.past > 0 && Math.abs(state.pastAcross) >= state.past, past: state.past };
+    return { limit, margin, grip, knee, across: state.past > 0 && Math.abs(state.pastAcross) >= state.past, past: state.past, toward: state.toward };
   }
 
   kineticEnergy(): number {

@@ -291,7 +291,7 @@ export interface SurfZoneStatus {
      * the ride was asking for on the last step the rider was on the board, kept until the next ride starts — so the
      * owner's own ride says what let go rather than only how close it came.
      */
-    balanceLimit?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number };
+    balanceLimit?: { limit: 'margin' | 'grip' | 'knee' | 'posture'; margin: number; grip: number; knee: number; across: boolean; past: number; toward?: 'left' | 'right' | 'nose' | 'tail' };
     broke?: BrokenLimit;
     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
     bank?: number;

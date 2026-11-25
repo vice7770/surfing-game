@@ -80,6 +80,25 @@ describe('HumanBalance', () => {
     expect(balance.sensedBankRate()).toBeCloseTo(0.5, 9);
   });
 
+  // The balance bar's tick (2026-11-25): `toward` names the edge the margin is nearest to running out at. 'left' is the
+  // board's +x rail (`RideInput.steer` +1, docs/research/stability/README.md §3), 'nose' is +z; the smaller of the margin
+  // across and along picks the axis. A readout only: the margin itself is unchanged.
+  it('names the edge the margin is nearest to: +x is left, -x right, +z the nose, -z the tail', () => {
+    const balance = new HumanBalance();
+    const up = { x: 0, y: 9.81, z: 0 };
+    const at = (x: number, z: number) => balance.capture({ x, y: 0.8, z }, { x: 0, y: 0, z: 0 }, up, 0.13, 0.375, 0.375, 0.2, 0.2);
+    expect(at(0.1, 0).toward).toBe('left');
+    expect(at(-0.1, 0).toward).toBe('right');
+    expect(at(0, 0.3).toward).toBe('nose');
+    expect(at(0, -0.3).toward).toBe('tail');
+    // Both off: the nearer edge wins (across 0.05/0.33 = 0.15 used, along 0.3/0.575 = 0.52 used: the nose).
+    expect(at(0.05, 0.3).toward).toBe('nose');
+    // Across on a tie of nothing: centred picks across by the margin's own order.
+    expect(at(0.1, 0.1).toward).toBe('left');
+    // The margin is what it was.
+    expect(at(0.1, 0).margin).toBeCloseTo(1 - 0.1 / 0.33, 9);
+  });
+
   it('reads the capture point against the feet, and a fall only when it is past the room and the weight past the edge', () => {
     const balance = new HumanBalance();
     const up = { x: 0, y: 9.81, z: 0 };

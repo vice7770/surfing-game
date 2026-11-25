@@ -11,8 +11,29 @@ import { t } from './strings';
 import { speedParts, type Units } from './units';
 
 /** Whether the balance meter shows (spec P9): by default on the Practice swell only, where the mechanics are learned. */
-export function showsBalanceMeter(setting: GameplaySettings['balanceMeter'], swell: SurfConditions['swell']): boolean {
+export function showsBalanceMeter(setting: GameplaySettings['balanceMeter'], swell: SurfConditions['swell'], newRider = false, standing = false): boolean {
+  // `rider=new`, standing: the bar is the player's cue and shows on every swell unless the setting is 'never'.
+  // A tournament hides the bar (tournaments do not exist yet; nothing is built for them).
+  if (newRider && standing) return setting !== 'never';
   return setting === 'always' || (setting === 'practice' && swell === 'practice');
+}
+
+/** The capture point's margin below which the bar's tick shows (the owner's choice of 2026-11-25). */
+export const TICK_MARGIN = 0.6;
+
+/** An edge of the board the rider can tip over, as seen from above and behind: the board's left is its +x rail. */
+export type TipEdge = 'left' | 'right' | 'nose' | 'tail';
+
+/**
+ * The bar's direction tick (2026-11-25): while standing and the capture point's margin is under `TICK_MARGIN`, the edge
+ * the rider is nearest to tipping over (`CaptureState.toward`), else undefined. It reads the capture point the margin
+ * comes from, never the stick or the board's roll. Readout only.
+ */
+export function balanceTick(ride: { phase: string; balanceLimit?: { margin: number; toward?: TipEdge } } | undefined): TipEdge | undefined {
+  const standing = ride?.phase === 'standing' || ride?.phase === 'recover';
+  if (!standing || !ride?.balanceLimit) return undefined;
+  const { margin, toward } = ride.balanceLimit;
+  return margin < TICK_MARGIN ? toward : undefined;
 }
 
 /**
@@ -43,6 +64,11 @@ export function balanceLimitLabel(
   }
   if (standing && ride?.balanceLimit) return t(`hud.balance.${ride.balanceLimit.limit}`);
   return '';
+}
+
+/** The line under the bar: the limit's name, except with `rider=new`, where it moves to the dev tools' readout. */
+export function underBarLabel(ride: Parameters<typeof balanceLimitLabel>[0], units: Units, showBalance: boolean, newRider: boolean): string {
+  return showBalance && !newRider ? balanceLimitLabel(ride, units) : '';
 }
 
 /** The three limits `balanceReserve` takes the least of, plus the single number the old rider and a prone one have. */
@@ -140,6 +166,9 @@ export class RideHud {
    */
   private readonly balanceLimit = el('small', { class: 'hud-balance-limit' });
   private balanceLimitText = '';
+  /** The tick (`balanceTick`): a top-down board, nose up, the edge nearest to tipping lit. `rider=new` only. */
+  private readonly tick = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  private tickEdge = '';
   private readonly hints = el('div', { class: 'hud-hints' });
   private hintKeys = '';
   /** A brief callout of each manoeuvre (P9), and the one shown last. */
@@ -166,6 +195,15 @@ export class RideHud {
 
   constructor(onPause: () => void) {
     this.balance.append(this.balanceFill);
+    this.tick.setAttribute('viewBox', '0 0 10 20');
+    this.tick.setAttribute('class', 'hud-balance-tick');
+    this.tick.setAttribute('role', 'img');
+    this.tick.setAttribute('hidden', '');
+    this.tick.innerHTML = '<path class="tick-board" d="M5 1 C8 5 8.500 12 8 19 H2 C1.500 12 2 5 5 1 Z"/>'
+      + '<path class="tick-edge tick-left" d="M2 18 C2.500 12 3 6 5 2.500"/>'
+      + '<path class="tick-edge tick-right" d="M8 18 C7.500 12 7 6 5 2.500"/>'
+      + '<path class="tick-edge tick-nose" d="M3.500 4 L5 1.500 L6.500 4"/>'
+      + '<path class="tick-edge tick-tail" d="M2.500 19 H7.500"/>';
     this.breath.append(this.breathFill);
     this.sprint.append(this.sprintFill);
     this.rotateRow.append(el('small', { text: t('hud.stance.rotation') }), el('span', { class: 'hud-track' }, this.rotateDot));
@@ -178,7 +216,7 @@ export class RideHud {
       this.callout,
       this.coach,
       el('div', { class: 'hud-readout' },
-        el('div', { class: 'hud-balance-group' }, this.balance, this.balanceLimit),
+        el('div', { class: 'hud-balance-group' }, el('div', { class: 'hud-balance-row' }, this.balance, this.tick), this.balanceLimit),
         this.breath,
         el('div', { class: 'hud-speed' }, this.speedValue, this.speedUnit),
         this.stance),
@@ -218,7 +256,7 @@ export class RideHud {
   }
 
   /** `promptOverride`: the Surf School's own line in place of the ride's prompt (spec L2). */
-  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean, showBalance = true, coachHint = '', promptOverride?: string, showBreath = false): void {
+  update(ride: SurfZoneStatus['ride'] | undefined, units: Units, keys: HintKeys, showHints: boolean, showBalance = true, coachHint = '', promptOverride?: string, showBreath = false, newRider = false): void {
     if (this.coach.textContent !== coachHint) this.coach.textContent = coachHint;
     this.coach.hidden = coachHint === '';
     const prompt = promptOverride ?? ridePrompt(ride, keys);
@@ -257,13 +295,21 @@ export class RideHud {
     }
     // Step 3.2v: the limit's name under the meter while standing, and the one that let go for as long as the rider is
     // off the board. Written only when it changes, as the rest of the HUD is.
-    const limitText = showBalance ? balanceLimitLabel(ride, units) : '';
+    // `rider=new`: the limit's name moves to the dev tools' readout (`formatPhysicalReadout`), so nothing is drawn here.
+    const limitText = underBarLabel(ride, units, showBalance, newRider);
     this.balanceLimit.hidden = limitText === '';
     if (limitText !== this.balanceLimitText) {
       this.balanceLimitText = limitText;
       this.balanceLimit.textContent = limitText;
     }
     this.balanceLimit.classList.toggle('is-broken', !standing && !!ride?.broke);
+    const tipEdge = newRider && !this.balance.hidden ? balanceTick(ride) : undefined;
+    this.tick.toggleAttribute('hidden', tipEdge === undefined);
+    if ((tipEdge ?? '') !== this.tickEdge) {
+      this.tickEdge = tipEdge ?? '';
+      this.tick.dataset.edge = this.tickEdge;
+      this.tick.setAttribute('aria-label', tipEdge ? t('hud.balance.tick', { edge: t(`hud.balance.tick.${tipEdge}`) }) : '');
+    }
     const breath = ride?.breath ?? 1;
     this.breath.hidden = !showBreath || ride?.phase !== 'fallen' || breath >= 0.999;
     if (!this.breath.hidden) {

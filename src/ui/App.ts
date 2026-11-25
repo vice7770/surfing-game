@@ -119,6 +119,8 @@ export interface GameHost {
   showBackdrop(spot: SpotName): Promise<boolean>;
   startSurf(spot: SpotName, conditions: SurfConditions, seed: number, camera: RideView | 'overview'): Promise<boolean>;
   readonly rideStatus: SurfZoneStatus['ride'] | undefined;
+  /** Whether the running ride is the new surfer (`?rider=new`; never online): the balance bar's rule and tick. */
+  readonly newRider?: boolean;
   readonly rideFrame: RideFrame | undefined;
   readonly viewName: string;
   setPaused(paused: boolean): void;
@@ -377,9 +379,11 @@ export class App {
         leashIntact: ride ? !ride.leash.snapped : false,
         boardInReach: ride?.boardInReach ?? false,
       }, (id) => this.hintText(id) !== '' && offersHint(id, this.practiceSwell));
+      const newRider = this.game.newRider === true;
+      const standingNow = ride?.phase === 'standing' || ride?.phase === 'recover';
       this.rideHud.update(ride, gameplay.units, this.hintKeys(), !seen.rideHints,
-        showsBalanceMeter(gameplay.balanceMeter, this.practiceSwell), hint ? this.hintText(hint) : '', undefined,
-        showsBreathMeter(gameplay.breathMeter, this.practiceSwell));
+        showsBalanceMeter(gameplay.balanceMeter, this.practiceSwell, newRider, standingNow), hint ? this.hintText(hint) : '', undefined,
+        showsBreathMeter(gameplay.breathMeter, this.practiceSwell), newRider);
       this.rideHud.updateStance(this.controls.lastRequest, ride?.phase === 'standing', gameplay.stanceReadout);
       this.trackRide();
     }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Maneuver } from '../game/rideAnalysis';
-import { balanceLimitLabel, breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, showsSprintBar, stanceReadout } from './RideHud';
+import { balanceLimitLabel, balanceTick, TICK_MARGIN, underBarLabel, breathVignette, edgeNotice, heldDownNotice, maneuverCallout, showsBalanceMeter, showsBreathMeter, showsSprintBar, stanceReadout } from './RideHud';
 
 // P9: on by default in Practice, off in natural seas (the spec).
 describe('showsBalanceMeter', () => {
@@ -137,5 +137,69 @@ describe('balanceLimitLabel', () => {
   it('prefers standing over the last fall, so a new ride is not labelled by the old one', () => {
     const ride = { phase: 'standing' as const, balanceLimit: { limit: 'knee' as const }, broke: { limit: 'margin' as const, across: true, speed: 8 } };
     expect(balanceLimitLabel(ride, 'metric')).toBe('Knees');
+  });
+});
+
+// The balance bar with `rider=new` (2026-11-25): the fill is the exact reserve; it shows on every swell while standing,
+// a tick shows the edge nearest to tipping below a margin of 0.6, and the limit's name moves to the dev readout.
+describe('the balance bar with the new rider', () => {
+  const settings = ['practice', 'always', 'never'] as const;
+  const swells = ['practice', 'medium', 'big'] as const;
+
+  it('without rider=new, behaves exactly as before, standing or not', () => {
+    for (const setting of settings) for (const swell of swells) for (const standing of [true, false]) {
+      const before = setting === 'always' || (setting === 'practice' && swell === 'practice');
+      expect(showsBalanceMeter(setting, swell, false, standing)).toBe(before);
+      expect(showsBalanceMeter(setting, swell)).toBe(before);
+    }
+  });
+
+  it('with rider=new, shows on every swell while standing unless the setting is never', () => {
+    for (const swell of swells) {
+      expect(showsBalanceMeter('practice', swell, true, true)).toBe(true);
+      expect(showsBalanceMeter('always', swell, true, true)).toBe(true);
+      expect(showsBalanceMeter('never', swell, true, true)).toBe(false);
+    }
+  });
+
+  it('with rider=new but not standing, today\'s rule applies', () => {
+    expect(showsBalanceMeter('practice', 'medium', true, false)).toBe(false);
+    expect(showsBalanceMeter('practice', 'practice', true, false)).toBe(true);
+    expect(showsBalanceMeter('always', 'big', true, false)).toBe(true);
+    expect(showsBalanceMeter('never', 'practice', true, false)).toBe(false);
+  });
+
+  const ride = (phase: string, margin: number, toward?: 'left' | 'right' | 'nose' | 'tail') => ({ phase, balanceLimit: { margin, ...(toward ? { toward } : {}) } });
+
+  it('shows the tick below a margin of 0.6 and hides it at and above the line', () => {
+    expect(TICK_MARGIN).toBe(0.6);
+    expect(balanceTick(ride('standing', 0.59, 'left'))).toBe('left');
+    expect(balanceTick(ride('standing', 0.6, 'left'))).toBeUndefined();
+    expect(balanceTick(ride('standing', 0.9, 'left'))).toBeUndefined();
+    expect(balanceTick(ride('standing', 0, 'tail'))).toBe('tail');
+  });
+
+  it('shows the tick while standing and recovering only', () => {
+    expect(balanceTick(ride('recover', 0.3, 'right'))).toBe('right');
+    for (const phase of ['prone', 'paddling', 'fallen', 'popup']) expect(balanceTick(ride(phase, 0.1, 'left'))).toBeUndefined();
+    expect(balanceTick(undefined)).toBeUndefined();
+    expect(balanceTick({ phase: 'standing' })).toBeUndefined();
+    // The old rider's status has no direction: no tick.
+    expect(balanceTick(ride('standing', 0.2))).toBeUndefined();
+  });
+
+  it('points to the edge the capture point names, for each of the four', () => {
+    // 'left' is the board's +x rail (RideInput.steer +1); the sign itself is pinned in humanBalance.test.ts.
+    for (const edge of ['left', 'right', 'nose', 'tail'] as const) expect(balanceTick(ride('standing', 0.3, edge))).toBe(edge);
+  });
+
+  it('draws no limit name under the bar with rider=new, and still does without it', () => {
+    const standing = { phase: 'standing', balanceLimit: { limit: 'margin' as const } };
+    const fallen = { phase: 'fallen', broke: { limit: 'margin' as const, across: true, speed: 8 } };
+    expect(underBarLabel(standing, 'metric', true, true)).toBe('');
+    expect(underBarLabel(fallen, 'metric', true, true)).toBe('');
+    expect(underBarLabel(standing, 'metric', true, false)).toBe('Weight');
+    expect(underBarLabel(fallen, 'metric', true, false)).toBe('Weight off the side — 29km/h');
+    expect(underBarLabel(standing, 'metric', false, false)).toBe('');
   });
 });

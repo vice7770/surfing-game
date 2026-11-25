@@ -268,6 +268,12 @@ export interface CaptureState {
   beyond: boolean;
   /** The capture point's margin, 0–1: 1 at the feet's middle, 0 at the edge plus the room's reach. */
   margin: number;
+  /**
+   * The edge the margin is nearest to running out at, for the balance bar's tick (a readout, never read back): the
+   * smaller of the margin across and along decides the axis (across on a tie); across, the sign of `across` names the
+   * side ('left' is the board's +x rail, `RideInput.steer` +1), along, the sign of `along` names 'nose' (+z) or 'tail'.
+   */
+  toward: 'left' | 'right' | 'nose' | 'tail';
   /** ω₀, 1/s, and the centre of mass's height over the feet along the felt vertical, m. */
   omega: number;
   height: number;
@@ -307,7 +313,7 @@ export class HumanBalance {
   /** Why the knees are going down now: the hip near its range, or the capture point off the feet. */
   kneeCause: 'none' | 'hip' | 'capture' = 'none';
   /** The latest capture point (`capture`). */
-  readonly state: CaptureState = { across: 0, along: 0, past: 0, pastAcross: 0, hipPast: 0, weightPast: false, reach: 0, beyond: false, margin: 1, omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0, offsetAcross: 0, feltAcross: 0 };
+  readonly state: CaptureState = { across: 0, along: 0, past: 0, pastAcross: 0, hipPast: 0, weightPast: false, reach: 0, beyond: false, margin: 1, toward: 'left', omega: 0, height: 0, pointAcross: 0, speedAcross: 0, tiltAcross: 0, offsetAcross: 0, feltAcross: 0 };
   /** The time the capture point last left the feet (NaN while inside), on the balance's clock, s. */
   leftFeetAt = Number.NaN;
   /** Whether `capture` is holding its last state because the feet are light (CAPTURE_LOAD): the validity condition, step 3.2h. */
@@ -499,6 +505,7 @@ export class HumanBalance {
     const marginX = 1 - Math.abs(s.across) / (halfAcross + reachAcross);
     const marginZ = s.along >= 0 ? 1 - s.along / (alongFront + reachAlong) : 1 - -s.along / (alongBack + reachAlong);
     s.margin = Math.max(0, Math.min(1, marginX, marginZ));
+    s.toward = marginX <= marginZ ? (s.across >= 0 ? 'left' : 'right') : (s.along >= 0 ? 'nose' : 'tail');
     if (s.past > 0) {
       if (Number.isNaN(this.leftFeetAt)) this.leftFeetAt = this.clock;
     } else {

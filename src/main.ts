@@ -555,6 +555,11 @@ class SurfGame {
     };
   }
 
+  /** Whether the running ride is the new surfer (`?rider=new`); online, the room's rider is always the old one. */
+  get newRider(): boolean {
+    return this.physicalMode.host?.config.rider === 'new';
+  }
+
   /** The physical ride's status, while a rider is on the water. */
   get rideStatus(): SurfZoneStatus['ride'] | undefined {
     return this.physicalMode.host?.snapshot.status.ride;

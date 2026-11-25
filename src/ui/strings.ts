@@ -197,6 +197,11 @@ export const EN = {
   'hud.balance': 'Balance',
   // Step 3.2v: which of the balance's three limits is nearest, beside the meter, and what let go on a fall. The
   // owner's own words for the three: the weight going off the side, the feet losing their grip, the knees giving.
+  'hud.balance.tick': 'Nearest to tipping: {edge}',
+  'hud.balance.tick.left': 'left rail',
+  'hud.balance.tick.right': 'right rail',
+  'hud.balance.tick.nose': 'nose',
+  'hud.balance.tick.tail': 'tail',
   'hud.balance.margin': 'Weight',
   'hud.balance.grip': 'Grip',
   'hud.balance.knee': 'Knees',
