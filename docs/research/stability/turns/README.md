@@ -183,7 +183,7 @@ Power checked before each batch (none started below 25 % on battery). At most 4 
 the session scratchpad (`…/scratchpad/36b/`); compact results under this folder. Later changes to this section go in as
 dated amendments, written before the data they affect are read.
 
-### 0.10 Amendment, 2026-11-25, about 19:58 UTC, before any row of the onset run was read
+### 0.10 Amendment, 2026-11-25, about 19:31 UTC, before any row of the onset run was read
 
 Written after one smoke ride of the probe (`tw-ride:compress:left`, run to check the probe's rows; its benchmark rows
 equal the baseline's, 105 of 105) and before the onset run's data. In that ride the twist torque sent (`heldTwist`) sits
