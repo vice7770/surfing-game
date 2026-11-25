@@ -300,7 +300,7 @@ It fails if any stand breaks either line. Stands in neither group are reported, 
 3. full forward trim rescues no T fall: on every T fall of `cueC`, `cueCT` and `cueCTx` fall within 0.25 s of it;
 4. on the T falls' waves, the paddle twin (`never`) is below 3.6 m/s at +0.7 s on at least 2/3.
 
-### 0.17 Added 2026-11-25, about 10:57 UTC: he pushes the trim all the way (for reading only)
+### 0.17 Added 2026-11-25, about 10:51 UTC: he pushes the trim all the way (for reading only)
 
 The coordinator relayed his third answer (asked about 11:05 UTC by the coordinator's clock: "How far do you push the trim
 forward when you stand?"): **"All the way."** The coordinator asked for this as addition 0.16; that number was already
