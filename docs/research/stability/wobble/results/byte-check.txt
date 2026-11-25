@@ -1,0 +1,8 @@
+# 3.6c: the Canyon byte check on claude/wobble at f5b8ff8e's src (every WOBBLE knob at identity, yawLedgerClosed false), 2026-11-25 23:43 UTC
+# Build and run as docs/research/stability/byte-check.txt; reference snapshots a367d938f15fa934, state 9e5831f80e38abd9
+
+spun up on the CPU in 31.5 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36c/byte/state-1795650110.json
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 0.96/1.08, roller 0.54/0.66, front 0.00/0.00, lip 0.02/0.02, foam 1.91/2.08, airSources 0.05/0.07, aeration 0.90/1.00, contact 0.00/0.00, board 0.52/0.69, bubbles 0.13/0.15, spray 0.23/0.33, sounds 0.00/0.00, snapshotFields 3.08/3.41, snapshot 3.50/3.89, summary 0.30/0.36
+  CPU stages per step (step − water + snapshot + summary): 9.21/10.28; water (CPU solver, not timed on the device) 58.0
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
