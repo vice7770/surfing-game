@@ -1,0 +1,5 @@
+# 3.6a part 2: the Canyon byte check on claude/slow-board (src unchanged from 3778d3b6), 2026-11-25T17:45Z
+# Build and run as docs/research/stability/byte-check.txt; reference: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+spun up on the CPU in 30.3 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36a2/bytecheck/state-fresh
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9

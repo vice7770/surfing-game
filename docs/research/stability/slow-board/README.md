@@ -359,6 +359,16 @@ gain lock is not extended.**
 | `git diff 3778d3b6 -- src scripts package.json` | empty |
 | The two fits, frozen before any held-out read | grey-box `4e238277…`, black-box `80feaf02…` (SHA-256 of `fit.json`); the analysis bundle `ff5cf528…`, the probe bundle `207b553a…` |
 
+### 2a. The round's evidence (run after the probe runs, 2026-11-25)
+
+| check | result |
+| --- | --- |
+| `npx tsc -b` | clean |
+| `npx vitest run src/physics/stabilityGains` | 5 of 5 pass |
+| `npm run report:stability` quick (`--out` in the scratchpad) | exit 0, 0 regressions, 0 improvements; **26 of 26 ride lines identical to `baseline-quick.json`**, every field; 10.4 min (`results/report-quick.md`) |
+| `npm run report:stability -- --mode full` | exit 0, 0 regressions, 0 improvements; **227 of 227 ride lines identical to `baseline-full.json`**, every field; 29.3 min (`results/report-full.md`) |
+| The Canyon byte check | snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`: identical to the reference (`results/byte-check.txt`) |
+
 ## 3. The method, the closed-loop handling and the conditioning
 
 - **The data** (`results/grey-summary.md`, first table): 71 224 selected pairs from 428 training rides, half of them dither
