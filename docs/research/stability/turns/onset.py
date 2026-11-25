@@ -35,6 +35,8 @@ def load(d):
     rides = {}
     for path in sorted(glob.glob(os.path.join(d, '*.jsonl'))):
         name = os.path.basename(path)[:-6]
+        if '_' not in name:
+            continue  # rides.jsonl and other summaries
         rows = [json.loads(l) for l in open(path) if l.strip()]
         if not any(r['kind'] == 'done' for r in rows):
             continue

@@ -363,3 +363,31 @@ then hold the board flat: the balance's own steady turn asks 4–6° less board 
 carries 3–4° less rail at +0.5 s and yaws at a third of the rate; and the yaw rings at 2.5–3 Hz, more than twice as much
 as with no stance, swinging the board toward and away. 20 of 36 Big rides fall before the release in each deep stance,
 against 11 with no stance.
+
+## 2. The steer's shape (amendment 0.11): neither the onset step nor the release step throws the bot
+
+*Run `shape-off`: the probe at `4e08941b` (bundle built from it), switch off, started 20:00 UTC, 43 processes, 34 min.
+146 shaped rides per shape (Crouch, Compress and his way, left and right, on `tw-catch`, `tw-ride`, Big seeds 1–3 and his
+way on Medium seeds 1–3), each paired with the step ride of the same id from `onset-off`. The drive was checked on its
+own rows: `~ramp` sends 0.083, 0.167, …, 1 by +1.2 s and 0.5 at +2.1 s, 0 at +2.2 s; `~in` steps to 0 at +2.0 s; `~out`
+steps to 1 at +1.0 s. Causes by the benchmark's rule with the fall standing in for the escape; on the onset run's
+benchmark rides this rule agrees with the baseline's labels on 181 of 182 falls. Table: `results/shape-off.md`;
+`results/shape-ask.txt`. Recompute: `python3 shape.py <shape run> <onset run>`, `python3 shape_ask.py …`.*
+
+| shape | pairs | falls before +2.0 s, step → shape (balance) | falls +2.0–3.5 s, step → shape (balance) | falls later / sooner than the step |
+| --- | --- | --- | --- | --- |
+| keys' ramp in and out | 146 | 73 → 73 (43 → 43) | 32 → 30 (20 → 18) | 28 / 29 |
+| ramp in, step out | 146 | 73 → 73 (43 → 43) | 32 → 30 (20 → 18) | 27 / 13 |
+| step in, ramp out | 146 | 73 → 73 (43 → 43) | 32 → 32 (20 → 20) | 13 / 28 |
+
+The median change of a fall's time is 0.00 s in every cell but two test-wave cells (±0.1–0.2 s, two rides each).
+**Why:** the lean asked moves at no more than `LEAN_IN_RATE` (1.4 rad/s, 80°/s) both ways, and the keys' ramp moves the
+stick's own ask (50° × steer) at 250°/s, so the rate limit binds under both shapes: the lean asked differs from the
+step's by a median 0.16° at most over a ride (`~out`: 0.08°), and the rides diverge only where a fall was already
+coming. **My prediction (the release step throws more) was wrong.** For his report ("I'm able to turn with my arrows but
+not with the controller"): the stick's step in or out is not what throws him in these rides, so an eased stick would
+change nothing the balance sees, and I did not build it (§0.11's condition is not met). What the bots do not do and the
+stick does: part deflection (an ask below full lock; the stick is linear past its 0.15 dead zone), a release that
+overshoots the centre (a spring-centred thumbstick swings past it), and small reversals while held. Each would reach the
+lean asked through the same 80°/s limit, so none is a step either. A recording of his stick's axis while he rides,
+replayed by the bot, would tell them apart; that is a probe, not a change, and it needs his session.

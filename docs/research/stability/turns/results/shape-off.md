@@ -1,0 +1,32 @@
+| group | drive | shape | pairs | falls < +2.0 s: step → shape | falls +2.0–3.5 s: step → shape | lasted 5 s: step → shape | fall time, median shape − step (s); later / sooner | lowest reserve, median step → shape | course +0.5 / +1.0 (twin-sub), step → shape |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tw-catch | crouch | ramp | 2 | 1 (1 bal) → 1 (1 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | +0.01; 1 / 0 | 0.01 → 0.03 | -2.6 / 15.5 → -2.6 / 15.1 |
+| tw-catch | crouch | in | 2 | 1 (1 bal) → 1 (1 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | +0.01; 1 / 0 | 0.01 → 0.03 | -2.6 / 15.5 → -2.6 / 15.1 |
+| tw-catch | crouch | out | 2 | 1 (1 bal) → 1 (1 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | +0.01; 1 / 0 | 0.01 → 0.00 | -2.6 / 15.5 → -2.6 / 15.5 |
+| tw-catch | compress | ramp | 2 | 0 (0 bal) → 0 (0 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | +0.11; 1 / 1 | 0.00 → 0.00 | -1.8 / 4.1 → -1.7 / 4.0 |
+| tw-catch | compress | in | 2 | 0 (0 bal) → 0 (0 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | +0.19; 2 / 0 | 0.00 → 0.00 | -1.8 / 4.1 → -1.7 / 4.0 |
+| tw-catch | compress | out | 2 | 0 (0 bal) → 0 (0 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | -0.10; 0 / 2 | 0.00 → 0.00 | -1.8 / 4.1 → -1.8 / 4.1 |
+| tw-catch | hisway | ramp | 2 | 0 (0 bal) → 0 (0 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | +0.11; 1 / 1 | 0.00 → 0.00 | -1.8 / 4.1 → -1.7 / 4.0 |
+| tw-catch | hisway | in | 2 | 0 (0 bal) → 0 (0 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | +0.19; 2 / 0 | 0.00 → 0.00 | -1.8 / 4.1 → -1.7 / 4.0 |
+| tw-catch | hisway | out | 2 | 0 (0 bal) → 0 (0 bal) | 1 (1 bal) → 1 (1 bal) | 0 → 0 | -0.10; 0 / 2 | 0.00 → 0.00 | -1.8 / 4.1 → -1.8 / 4.1 |
+| tw-ride | crouch | ramp | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.01; 1 / 0 | 0.00 → 0.00 | -0.9 / — → -0.6 / — |
+| tw-ride | crouch | in | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.01; 1 / 0 | 0.00 → 0.00 | -0.9 / — → -0.6 / — |
+| tw-ride | crouch | out | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.00; 0 / 0 | 0.00 → 0.00 | -0.9 / — → -0.9 / — |
+| tw-ride | compress | ramp | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.00; 0 / 0 | 0.00 → 0.00 | 8.5 / — → 8.8 / — |
+| tw-ride | compress | in | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.00; 0 / 0 | 0.00 → 0.00 | 8.5 / — → 8.8 / — |
+| tw-ride | compress | out | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.00; 0 / 0 | 0.00 → 0.00 | 8.5 / — → 8.5 / — |
+| tw-ride | hisway | ramp | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.00; 0 / 0 | 0.00 → 0.00 | 8.5 / — → 8.8 / — |
+| tw-ride | hisway | in | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.00; 0 / 0 | 0.00 → 0.00 | 8.5 / — → 8.8 / — |
+| tw-ride | hisway | out | 2 | 2 (2 bal) → 2 (2 bal) | 0 (0 bal) → 0 (0 bal) | 0 → 0 | +0.00; 0 / 0 | 0.00 → 0.00 | 8.5 / — → 8.5 / — |
+| med | hisway | ramp | 26 | 6 (0 bal) → 6 (0 bal) | 11 (5 bal) → 11 (5 bal) | 4 → 4 | +0.00; 5 / 6 | 0.01 → 0.02 | -0.1 / 11.5 → -0.1 / 11.5 |
+| med | hisway | in | 26 | 6 (0 bal) → 6 (0 bal) | 11 (5 bal) → 11 (5 bal) | 4 → 3 | +0.00; 4 / 3 | 0.01 → 0.01 | -0.1 / 11.5 → -0.1 / 11.5 |
+| med | hisway | out | 26 | 6 (0 bal) → 6 (0 bal) | 11 (5 bal) → 11 (5 bal) | 4 → 4 | +0.00; 6 / 5 | 0.01 → 0.01 | -0.1 / 11.5 → -0.1 / 11.5 |
+| big | crouch | ramp | 36 | 20 (12 bal) → 20 (12 bal) | 8 (6 bal) → 8 (6 bal) | 4 → 4 | +0.00; 5 / 7 | 0.00 → 0.00 | -0.5 / 6.4 → -0.5 / 6.5 |
+| big | crouch | in | 36 | 20 (12 bal) → 20 (12 bal) | 8 (6 bal) → 8 (6 bal) | 4 → 4 | +0.00; 5 / 4 | 0.00 → 0.01 | -0.5 / 6.4 → -0.5 / 6.5 |
+| big | crouch | out | 36 | 20 (12 bal) → 20 (12 bal) | 8 (6 bal) → 8 (6 bal) | 4 → 4 | +0.00; 2 / 5 | 0.00 → 0.01 | -0.5 / 6.4 → -0.5 / 6.4 |
+| big | compress | ramp | 36 | 20 (12 bal) → 20 (12 bal) | 5 (3 bal) → 4 (2 bal) | 5 → 5 | +0.00; 7 / 7 | 0.00 → 0.00 | -0.2 / 9.9 → -0.1 / 9.8 |
+| big | compress | in | 36 | 20 (12 bal) → 20 (12 bal) | 5 (3 bal) → 4 (2 bal) | 5 → 6 | +0.00; 6 / 3 | 0.00 → 0.00 | -0.2 / 9.9 → -0.1 / 9.8 |
+| big | compress | out | 36 | 20 (12 bal) → 20 (12 bal) | 5 (3 bal) → 5 (3 bal) | 5 → 4 | +0.00; 2 / 7 | 0.00 → 0.00 | -0.2 / 9.9 → -0.2 / 9.9 |
+| big | hisway | ramp | 36 | 20 (12 bal) → 20 (12 bal) | 5 (3 bal) → 4 (2 bal) | 5 → 5 | +0.00; 7 / 7 | 0.00 → 0.00 | -0.3 / 9.9 → -0.3 / 9.8 |
+| big | hisway | in | 36 | 20 (12 bal) → 20 (12 bal) | 5 (3 bal) → 4 (2 bal) | 5 → 6 | +0.00; 6 / 3 | 0.00 → 0.00 | -0.3 / 9.9 → -0.3 / 9.8 |
+| big | hisway | out | 36 | 20 (12 bal) → 20 (12 bal) | 5 (3 bal) → 5 (3 bal) | 5 → 4 | +0.00; 2 / 7 | 0.00 → 0.00 | -0.3 / 9.9 → -0.3 / 9.9 |

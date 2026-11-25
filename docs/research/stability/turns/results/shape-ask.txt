@@ -1,0 +1,6 @@
+ramp: 146 rides; largest |Δ lean asked| median 0.16°, max 17.34°; |Δ bank| median 0.52°, max 140.00°; |Δ course| median 0.46°, max 45.07°
+in: 146 rides; largest |Δ lean asked| median 0.16°, max 2.67°; |Δ bank| median 0.34°, max 42.98°; |Δ course| median 0.34°, max 23.54°
+out: 146 rides; largest |Δ lean asked| median 0.08°, max 17.34°; |Δ bank| median 0.00°, max 140.00°; |Δ course| median 0.00°, max 31.31°
+tw-catch:compress:left~ramp steer sent at +1.0/+1.017/+1.1/+1.2/+2.0/+2.1/+2.2 s: [0.08333333333333333, 0.16666666666666666, 0.5833333333333333, 1, 1, 0.49999999999999983, 0]
+tw-catch:compress:left~in steer sent at +1.0/+1.017/+1.1/+1.2/+2.0/+2.1/+2.2 s: [0.08333333333333333, 0.16666666666666666, 0.5833333333333333, 1, 1, 0, 0]
+tw-catch:compress:left~out steer sent at +1.0/+1.017/+1.1/+1.2/+2.0/+2.1/+2.2 s: [1, 1, 1, 1, 1, 0.49999999999999983, 0]
