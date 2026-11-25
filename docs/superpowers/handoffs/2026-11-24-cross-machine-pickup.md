@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-25, about 14:50 UTC.**
+- **Status, 2026-11-25, about 15:15 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -29,10 +29,14 @@
       - **He took both amendments** ("Yes, both"; consult log `73c8a415`).
         - The tick follows the tipping margin, because the knees hold the reserve below 0.6 for most of a ride.
         - A balance fall 0.25 s or more sooner is a regression (`CLAUDE.md` `7cd101c9`).
-    - **Running:** one builder, Sonnet at medium effort.
-      - Part A, the rule, on `claude/stability-report`.
-      - Then part B, the bar, on `claude/balance-bar`, behind `rider=new`.
-      - The coordinator checks the bar in the browser before it goes to him.
+    - **Done and reviewed** (consult log `a64a691b`), by one builder, Sonnet at medium effort:
+      - **The rule:** `claude/stability-report` `3778d3b6`.
+      - **The bar:** `claude/balance-bar` `dea549c7`, behind `rider=new`.
+        - It shows while standing on every swell unless the setting is Never.
+        - A board-glyph tick lights the edge he is nearest to tipping over, when the margin is below 0.6.
+        - The limit names moved to the dev telemetry.
+        - Its quick report and the byte check are identical to the baseline, and the coordinator saw it work in the browser.
+      - **Waiting for his ride,** at his usual address on `claude/balance-bar`.
     - Then come 3.6a part 2 (the slow board's plant) and 3.6b (faster turns).
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
@@ -105,9 +109,9 @@ Also open:
 | `claude/what-fails-first` | `b0d19ee8` | 3.5x: what fails first on `plantFloor=6` and `taper` (docs and probes; from `1be12ee7`) |
 | `claude/return-taper` | `61dd1c43` | 3.5y: `?plantSpeed=taper6` (not adopted: it loses to `plantFloor=6` his way) |
 | `claude/take-off-stall` | `b66eb87c` | 3.5z: the take-off falls' fore/aft diagnosis (docs and probes; from `b0d19ee8`) |
-| `claude/stability-report` | `f3d7de27` | 3.6a part 1: `npm run report:stability`, its baselines and the gain lock (scripts, docs and one test; from `b66eb87c`) |
-| `claude/balance-bar` | (running) | the balance bar's UI behind `rider=new` (from `claude/stability-report`) |
-| `claude/the-record` | `73c8a415` | the consult log (verified on the remote 2026-11-25) |
+| `claude/stability-report` | `3778d3b6` | 3.6a part 1: `npm run report:stability`, its baselines and the gain lock, plus the sooner-fall rule (scripts, docs and one test; from `b66eb87c`) |
+| `claude/balance-bar` | `dea549c7` | the balance bar's UI behind `rider=new` (from `3778d3b6`); it contains the ride build |
+| `claude/the-record` | `a64a691b` | the consult log (verified on the remote 2026-11-25) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
