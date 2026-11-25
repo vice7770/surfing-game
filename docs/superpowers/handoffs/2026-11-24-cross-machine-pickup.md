@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-25, about 18:20 UTC.**
+- **Status, 2026-11-25, about 19:25 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -45,14 +45,17 @@
         - Both identified plants make the ride build's controller diverge at 6–7 m/s, where it rides.
       - **So the gain lock stays at 5–8 m/s, and below 5 m/s 3.6b's arms are judged by the benchmark alone.**
       - The builder's candidate (a), a command-dither identification round, is probe-only, but it is an input the rider does not make, so it needs his word.
-    - **Next is 3.6b (faster turns in Compress and Crouch),** which waits for his word.
+    - **3.6b is running** ("Yes, start 3.6b"; consult log `0057220b`).
+      - **The work:** measure the turn's onset per stance, find what slows it in Compress and Crouch, and build each candidate behind its own opt-in switch, judged by the benchmark.
+      - **His way, with a turn,** is added as a probe drive. The committed benchmark is unchanged.
+      - **The builder:** Opus at high effort, on `claude/faster-turns` from `claude/balance-bar` `dea549c7`, so the arms carry the bar.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `02d03650`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `0057220b`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -120,7 +123,8 @@ Also open:
 | `claude/stability-report` | `3778d3b6` | 3.6a part 1: `npm run report:stability`, its baselines and the gain lock, plus the sooner-fall rule (scripts, docs and one test; from `b66eb87c`) |
 | `claude/balance-bar` | `dea549c7` | the balance bar's UI behind `rider=new` (from `3778d3b6`); it contains the ride build |
 | `claude/slow-board` | `5450d8b3` | 3.6a part 2: no plant identified from the game's ticks passes its controls, so the lock is unchanged (docs and probes; from `3778d3b6`) |
-| `claude/the-record` | `02d03650` | the consult log (verified on the remote 2026-11-25) |
+| `claude/faster-turns` | (running) | 3.6b: faster turns in Compress and Crouch, each candidate behind its own switch (from `dea549c7`) |
+| `claude/the-record` | `0057220b` | the consult log (verified on the remote 2026-11-25) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
