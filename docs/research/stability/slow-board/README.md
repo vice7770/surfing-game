@@ -300,3 +300,197 @@ round's reader from the same definitions (README §4.1).
 - Usage checked at every phase boundary; stop at 80 % of the 5-hour window with what is green pushed. Power checked
   before every batch (none below 25 % while discharging). Raw runs stay in the session scratchpad (`36a2/`); compact
   results go under `docs/research/stability/slow-board/`.
+
+## 1. The answer
+
+*Seeds 1–3 identify, seeds 4–9 and the test wave are held out. Speeds are the schedule speed, the board's forward speed
+through the water (m/s); stances by the controller's depth; "A" is the ride build's controller
+(`&cueLater=on&plantFloor=6`); least damping as 3.5x §8 (−1.00, "div", a real root outside the unit circle).*
+
+**No identified plant describes the slow board, so nothing about A's gains below 5 m/s can be read from one, and the
+gain lock is not extended.**
+- **The registered method fails its own control.** Direct least squares on the fully measured state, closed with the
+  game's own controller and fed the game's own residuals, does not return a known plant. A disturbance with the game's
+  color (lag-1 autocorrelation 0.6–0.98, gone by about 5 ticks) turns into spurious plant dynamics. On K2, A's own
+  design plant, 8 of 14 cells come back "div" where the plant is +0.16 to +0.20 (§0.3a). Neither IV variant cures
+  it, nor does AR(2) GLS.
+- **The amended grey-box fit recovers known plants but not the game.** It takes the model's own mechanics and
+  identifies only the water's twelve derivatives. It passes the recovery on most cells (§4). But on the held-out rides
+  it beats both truths on the registered open-loop line in **0 of 16** cells (§5). The registered black-box passes in
+  1, 4–4.5 m/s tall, where its own recovery fails.
+- **Both identified plants say A diverges at 6–7 m/s,** where the table and the gain lock's map say +0.17 to +0.65
+  and where A rides for seconds in the game. A on those plants grows at 2.5–3.8 /s (grey-box) and 0.5–8.5 /s
+  (black-box), which would end the rides within a second, so the plants are wrong about the closed loop.
+- **The failures have a name.**
+  - **The slip is unpredictable** at tick resolution: every model, the two truths included, predicts β no better than
+    "it stays where it is" (median RMS ratio 1.00).
+  - **The yaw rate** carries 0.04–0.09 rad/s of one-step noise.
+  - **The board's roll in the game** is not the model's at any water. The grey-box puts the roll moment per roll at
+    −51 to +21 N·m/rad against the table's −269 to −316, and still leaves 1.3–2× the black-box's one-step residual on
+    the roll rate, the yaw and the upper body.
+- **The 3.5x paradox stands.** A carries stands below 5 m/s that every linear description of the board (table,
+  `game`, black-box, grey-box) says it cannot. The descriptive hazard (§7) still shows the benchmark's own picture:
+  the balance-fall rate rises as the board slows. Tall, seeds 1–3 and the test wave: 0.04 falls/s at 6–7 m/s, 0–0.12
+  at 3–5.5 m/s, 0.21 at 2.5–3 m/s and 0.50 at 2–2.5 m/s. Seeds 4–9: none in 3–7 m/s, 0.37 at 2.5–3 m/s and 0.89 at
+  2–2.5 m/s.
+
+## 2. Controls
+
+| control | result |
+| --- | --- |
+| Pre-registration before any run | `e5fa319f`, 2026-11-25 15:35:41 UTC; the probe `a2628c8b` (15:44:33); the queue launched 15:44:40 |
+| Probe determinism | the same test-wave ride (`tw-ride none:left`, `TICKS=on`) three times: 449 of 449 rows identical each time (wall-clock fields left out) |
+| Probe inertness | `stand`, `f`, `summary` rows of the benchmark's own scripts against `runs/full-f2.tar.gz`: 55 258 of 55 258 on the six seed-1–3 processes (the dither riders sharing them) and 4 977 of 4 977 on the 26 test-wave rides |
+| Controller replay | a fresh `PredictiveController` fed each ride's logged arguments: 428 training rides (72 080 ticks) and 544 held-out rides (81 731 ticks), largest difference from the logged raw command **0** (ankle and twist). So the loop is the code's own, with its 6-tick delay. |
+| The lag rows | ankle exact to 3e-16 rad on 71 036 of 71 652 training pairs; the other 616 (0.9 %) are the rail bite past 48° (§0.2 amendment) and were dropped. Twist within 1e-6 N·m on all but 12 pairs, each with infeasible contact substeps, which §0.2 drops anyway. A one-tick-late lag row misses by up to 0.52 (rad, or N·m/100), so the commands act with no input delay. |
+| v_fwd against the schedule speed | identical on every tick (largest difference 0) |
+| `git diff 3778d3b6 -- src scripts package.json` | empty |
+| The two fits, frozen before any held-out read | grey-box `4e238277…`, black-box `80feaf02…` (SHA-256 of `fit.json`); the analysis bundle `ff5cf528…`, the probe bundle `207b553a…` |
+
+## 3. The method, the closed-loop handling and the conditioning
+
+- **The data** (`results/grey-summary.md`, first table): 71 224 selected pairs from 428 training rides, half of them dither
+  riders. 16 cells have enough data: tall 3–4.5 and 5–7 m/s, crouch 6–7 m/s, and Compress 2–7 m/s. **Crouch and the
+  tuck have no cell below 6 m/s, and the tall stance none below 3 m/s.** Below 5 m/s that leaves nine cells, all tall
+  or Compress: the depths of the steer-only rides and his way.
+- **Closed loop.**
+  - The registered direct fit (one constant per cell) and the registered IV fail the recovery (§0.3a, §4).
+  - The amended grey-box fit takes the model's mechanics and identifies the water's twelve derivatives per cell. Its δ
+    column is the ankle's spring, not a regression coefficient, and the face enters through the model's own face
+    column.
+- **Conditioning.**
+  - Black-box: κ 36–97, VIF(δ̄) 17–140 and VIF(τ̄) 8–21. VIF(δ̄) passes 100 at 3.5–4 tall (105) and 4–4.5 tall (140):
+    there the command is almost a linear function of the state.
+  - Grey-box: the water block's κ is 4–18.
+  - The ride-block bootstrap of A at 6 ticks is "div" across 5–95 % in 12 of the 16 grey-box cells. So the
+    divergence is no sampling accident: it is what the data say, given the structure.
+- **Why the closed loop defeats the black-box** (§0.3a, the dev table): with no disturbance, or white noise, it
+  recovers the known plants. With the game's own residuals it does not, and shuffling those residuals in time mostly
+  restores it. So the problem is the disturbance's color: it is correlated over 2–5 ticks and across rows. The
+  controller answers it, and least squares reads the answer as the plant.
+
+## 4. The known-plant recovery (§0.8, `results/<structure>-summary.md`)
+
+- **Grey-box.** K1 (the table, with R's controller) passes 8 of the 14 cells it has data for, and K2 (A's design
+  plant, with A) passes 6 of 16. Both pass in 4 cells: Compress 3–3.5 and 5–7 m/s, three of them reference bins.
+  - Most failures are (a), the n-step ratio, at 1.26–1.64.
+  - K2's other failures are R's "div" against an oscillating divergence (unstable either way, but the registered rule
+    asks for the same "div"), and 0.13 at 4.5–5 m/s Compress.
+- **Black-box.** It passes K1 in 2 cells and K2 in 1, and never both in one cell.
+
+## 5. The validation (§0.6, held out)
+
+Seeds 4–9, both seas, and the test wave: 359–3 999 start ticks per cell, from 65–332 rides.
+
+| structure | open loop, registered line (12 of 12) | closed loop (§0.3b, 8 of 8) | the states that fail |
+| --- | --- | --- | --- |
+| grey-box (amended method) | **0 of 16** | 2 of 16 (3–3.5, 3.5–4 tall) | β nearly everywhere; r at 3–4.5 tall against `game`; φ and θ at 0.5 s from 5.5 m/s up |
+| black-box (registered) | 1 of 16 (4–4.5 tall) | 2 of 16 (3.5–4, 4–4.5 tall) | β nearly everywhere; φ and θ at 0.5 s |
+
+Typical numbers, grey-box, tall, 3.5–4 m/s, RMS at 0.1 / 0.25 / 0.5 s (identified, `table`, `game`, persistence):
+
+| state | identified | `table` | `game` | persistence |
+| --- | --- | --- | --- | --- |
+| φ (deg) | 1.0 / 4.7 / 13.0 | 3.2 / 12.8 / 32.6 | 1.6 / 6.8 / 21.8 | 3.5 / 9.6 / 20.3 |
+| r (deg/s) | 34 / 46 / 62 | 86 / 257 / 762 | 27 / 34 / 62 | 50 / 41 / 50 |
+| β (deg) | 6.3 / 18.4 / 21.5 | 10.4 / 19.7 / 24.5 | 10.3 / 21.6 / 25.6 | 7.9 / 17.6 / 18.3 |
+
+**Read.**
+- **The `table` truth is far off the game's yaw below 4.5 m/s,** with errors reaching 760°/s at 0.5 s: it is
+  directionally divergent there.
+- **The `game` truth (3.5w's rows) is the better yaw predictor** at 3–4.5 m/s, tall.
+- **Neither is a good description,** and neither is the identified plant.
+- **The slip** is predicted no better than persistence by any model: the median RMS ratio to persistence over 48
+  cell-horizons is 1.006 (grey-box), 1.005 (`table`) and 1.004 (`game`).
+
+Per the registered rule, **the check is not run as evidence** and nothing is locked.
+
+## 6. The check, for the record only (not evidence: no cell is validated and recovered)
+
+`results/<structure>-summary.md`, last table: least damping at 5 / 6 / 7 ticks.
+
+| | 2–5 m/s, the nine cells with data | 5–7 m/s, the reference cells |
+| --- | --- | --- |
+| A on the grey-box plant | "div" in all 9 | "div" or negative in 6 of 7; +0.16 to +0.19 at 5.5–6 tall |
+| A on the black-box plant | "div" in 8 of 9, −0.40 at 4–4.5 tall | "div" or negative in all 7 |
+| A on `table` (3.5x, the gain lock) | "div" | +0.16 to +0.66 in every cell but 5–5.5 Compress ("div") |
+| R on the grey-box plant | "div" | negative or "div", +0.12 to +0.37 at 5.5–6 tall |
+
+The grey-box plants carry a real open-loop root at +1.9 to +6.0 /s in 14 of 16 cells. Where the table is trusted, at
+5.5–7 m/s, its own leading mode is an oscillating pair at +0.7 to +1.2 /s. With that root, A diverges even at 6–7 m/s,
+against the game, where A holds. This is the evidence that the plants are wrong, not A.
+
+## 7. Against the benchmark's falls (§0.10)
+
+- **The registered comparison** of the hazard against A's least damping **has no checked cell to run on**.
+- **The hazard per cell, descriptive** (`results/hazard.md`): balance falls whose final escape begins in the cell, per
+  standing second there, on the benchmark's own scripts. The counts per cell are small (0–8 falls), so read the trend,
+  not the cells.
+
+| stance | 6–7 m/s | 5–6 m/s | 3.5–5 m/s | 2.5–3.5 m/s | 2–2.5 m/s |
+| --- | --- | --- | --- | --- | --- |
+| tall, seeds 1–3 + test wave | 0.04 (2 in 49.5 s) | 0–0.08 (1 in 31.6 s) | 0.07–0.12 (3 in 33.8 s) | 0 at 3–3.5, 0.21 at 2.5–3 | 0.50 (2 in 4.0 s) |
+| tall, seeds 4–9 | 0 (in 42.9 s) | 0 (in 35.4 s) | 0 (in 41.5 s) | 0 at 3–3.5, 0.37 at 2.5–3 | 0.89 (3 in 3.4 s) |
+| Compress, seeds 1–3 + test wave | 0.18 (5 in 28.6 s) | 0 (in 29.8 s) | 0–0.31 (3 in 26.9 s) | 0.10 at 3–3.5, 0.40 at 2.5–3 | 0.40 (3 in 7.5 s) |
+| Compress, seeds 4–9 | 0.26 (8 in 31.0 s) | 0–0.12 (1 in 18.4 s) | 0–0.16 (1 in 17.0 s) | 0.40 at 3–3.5, 0 at 2.5–3 | 0.47 (2 in 4.3 s) |
+
+## 8. The lock
+
+**Unchanged.** No cell meets §0.9's credibility rule, so `src/physics/stabilityGains.test.ts` keeps its 5 tests and
+its 5–8 m/s map, and no fixture is added.
+
+## 9. What would be needed, and the candidates for Vicente (none built)
+
+**For an identified plant to be usable:**
+1. **An excitation the controller does not answer,** i.e. a probe-side perturbation added to the controller's own
+   commands. A small pseudo-random ankle-rest offset (1–2°) and twist torque (5 N·m), independent of the state,
+   would separate the plant from the loop.
+   - The stick dither of this round enters through the reference. It is too weak against the colored disturbance, and
+     the IV on it fails the recovery.
+   - The perturbation is probe-only and changes no game code. But it is an input the rider does not make, so it needs
+     your word.
+2. **Tick-mean states.**
+   - The slip and the yaw rate read at the tick's first substep carry sub-tick chatter (one-step slip residual up to
+     0.13 rad in Compress).
+   - Means over the tick's substeps, accumulated probe-side, are what a 60 Hz model can describe.
+3. **A structure with the board's heave and pitch** (the 14-state plant of 3.2p). The grey-box's leftover residual
+   on the roll rate, yaw and upper body (1.3–2× the black-box's) says the 10-state mechanics miss a coupling, and the
+   board's own 1.0–1.4 Hz heave-and-pitch mode is the known candidate.
+4. **Stationary data.**
+   - The board crosses a 0.5 m/s bin in about 0.25 s (15 ticks), so every cell mixes plants.
+   - Crouch and the tuck have no data below 6 m/s, and the tall stance none below 3 m/s.
+   - A drive that holds a slow speed (the test wave's flat shoulder, say), in every stance, would fill these cells.
+5. **A closed-loop validation line.**
+   - An open-loop prediction with the game's own commands cannot see a wrong closed loop.
+   - Here the plants that beat the truths on some horizons still make A diverge at 6–7 m/s.
+   - Any later identification should be validated with the controller in the loop (§0.3b) and must leave A stable
+     where it holds in the game.
+
+**Candidates (each needs Vicente's word):**
+- **(a) The command-dither identification round** above (items 1, 2 and 4), probe-side only.
+- **(b) 3.5x's candidate 2, a design that knows its delay at 3–5 m/s:** not testable offline yet. No truth is fit to
+  test it on, and this round adds none.
+- **(c) For 3.6b, the benchmark as the only judge below 5 m/s.** The gain lock covers 5–8 m/s and cannot speak lower.
+  Every low-speed gain change is a ridden arm, judged by the regression rule, until a plant passes the controls above.
+
+## 10. Recompute
+
+From the repository root:
+- the probe: `rolldown docs/research/stability/slow-board/slow-board-probe.ts -o <s>/probe.mjs --format esm --platform node`;
+- the runs: `<s>/runs/jobs.txt`'s 44 lines through `<s>/tools/job.sh` (`TICKS=on`, 4 at once);
+- the analysis: `rolldown docs/research/stability/slow-board/identify.ts` (prepend `globalThis.location = { search: '' };`);
+  then `bash docs/research/stability/slow-board/pipeline.sh <s>/runs <s>/ana/<grey|cell> <grey|cell> <s>/id.mjs A`, then
+  `… B`;
+- the tables: `python3 docs/research/stability/slow-board/summarize.py <s>/ana/grey <s>/ana/cell`;
+- the hazard: `python3 docs/research/stability/slow-board/hazard.py <s>/ana/grey/final.json docs/research/stability/baseline-full.json <s>/runs/id <s>/runs/tw <s>/runs/hold`.
+
+The compact outputs are under `results/`: each structure's fit, validation, check and recovery (gzipped JSON), the
+two summaries, the hazard, and the development recovery diagnostics behind §0.3a (`results/dev/`). The per-tick runs
+(about 0.9 GB) stay in the session scratchpad, under `36a2/runs/`.
+
+## 11. Not done
+
+- The registered check as evidence, the lock, and the hazard comparison against A's damping: no cell qualified.
+- R against the identified plant is in the tables (§6), but it is not interpreted for the same reason.
+- Crouch and tuck below 6 m/s, and the tall stance below 3 m/s, had too few data.
+- The command-dither round, the tick-mean states and the 14-state structure (§9) are not built.

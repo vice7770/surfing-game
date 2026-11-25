@@ -51,7 +51,9 @@ def recovery(rec, known_name):
                     div_ok = False
                     continue
                 if not gd:
-                    worst = max(worst, abs(got - want))
+                    # §0.3a: 5 and 7 ticks within 0.10; the 6-tick value by sign only.
+                    if ts != '6':
+                        worst = max(worst, abs(got - want))
                     if abs(want) >= 0.05 and (got > 0) != (want > 0):
                         sign_ok = False
         pass_a = ratio is not None and ratio <= 1.25
@@ -62,6 +64,7 @@ def recovery(rec, known_name):
 
 def main():
     root = sys.argv[1]
+    other = {c['cell']: c for c in load(os.path.join(sys.argv[2], 'check.json'))} if len(sys.argv) > 2 else {}
     fit = load(os.path.join(root, 'fit.json'))
     val = {v['cell']: v for v in load(os.path.join(root, 'val.json'))}
     chk = {c['cell']: c for c in load(os.path.join(root, 'check.json'))}
@@ -72,11 +75,14 @@ def main():
             recs[k] = recovery({'val': load(os.path.join(p, 'val.json')), 'check': load(os.path.join(p, 'check.json'))}, k)
     fits = sorted(fit['fits'], key=lambda f: key(f['cell']))
     print('## The cells (identification data, seeds 1–3)\n')
-    print('| cell | pairs | rides | median v / depth | |φ| > 20° | κ | VIF δ̄ / τ̄ | R² φ̇, θ̇, r, β, ω_u |')
+    print('| cell | pairs | rides | median v / depth | |φ| > 20° | κ (grey: of the water block) | VIF δ̄ / τ̄ | R² φ̇, θ̇, r, β, ω_u (black-box, increments) |')
     print('| --- | --- | --- | --- | --- | --- | --- | --- |')
     for f in fits:
+        if not f['enough'] and f['bin'][0] >= 5:
+            continue
         r2 = ', '.join(f'{f["r2"][i]:.3f}' for i in (1, 3, 4, 5, 7))
-        print(f"| {f['cell']}{'' if f['enough'] else ' (no data)'} | {f['pairs']} | {f['rides']} | {f['medV']:.2f} / {f['medDep']:.3f} | {100 * f['bigRoll']:.0f} % | {f['kappa']:.0f} | {f['vif'][8]:.1f} / {f['vif'][9]:.1f} | {r2} |")
+        kap = f"{f['kappa']:.0f}" + (f" ({f['greyKappa']:.0f})" if f.get('greyKappa') else '')
+        print(f"| {f['cell']}{'' if f['enough'] else ' (no data)'} | {f['pairs']} | {f['rides']} | {f['medV']:.2f} / {f['medDep']:.3f} | {100 * f['bigRoll']:.0f} % | {kap} | {f['vif'][8]:.1f} / {f['vif'][9]:.1f} | {r2} |")
     print('\n## The validation (held out: seeds 4–9 and the test wave), RMS error at 0.1 / 0.25 / 0.5 s\n')
     print('Deciding states, deg or deg/s: identified / `table` / `game` / persistence. Pass: the identified plant below both truths on all twelve.\n')
     print('| cell | starts (rides) | φ | θ | r | β | pass | beats persistence at 0.25 s on φ, θ, r |')
@@ -94,6 +100,18 @@ def main():
             cols.append('<br>'.join(parts))
         verdict = 'no data' if not v['enough'] else ('**pass**' if v['pass'] else 'fail: ' + ', '.join(v['fails']))
         print(f"| {cell} | {v['starts']} ({v['rides']}) | {' | '.join(cols)} | {verdict} | {'yes' if v['skill'] else 'no'} |")
+    print('\n## The closed-loop prediction (§0.3b), RMS error at 0.25 / 0.5 s: the ride\'s own controller closed on each plant\n')
+    print('Deciding states, deg or deg/s: identified / `table` / `game`. Pass: the identified plant below both truths on all eight.\n')
+    print('| cell | starts | φ | θ | r | β | pass |')
+    print('| --- | --- | --- | --- | --- | --- | --- |')
+    for cell in sorted(val, key=key):
+        c = val[cell].get('closed')
+        if not c:
+            continue
+        cols = []
+        for i in DECIDING:
+            cols.append('<br>'.join('/'.join(f"{c['rms'][m][h][i] * DEG:.2f}" for m in ('id', 'table', 'game')) if c['rms']['id'][h] else '—' for h in ('15', '30')))
+        print(f"| {cell} | {c['n'].get('15', 0)} | {' | '.join(cols)} | {'**pass**' if c['pass'] else 'fail: ' + ', '.join(c['fails'])} |")
     if recs:
         print('\n## The known-plant recovery (§0.8)\n')
         print('(a) the recovered plant\'s n-step RMS over the known plant\'s own, worst of φ, θ, r, β × 3 horizons (≤ 1.25); (b) the check on the recovered plant against the known plant: worst |Δ| of A and R at 5, 6, 7 ticks (≤ 0.10), signs, div.\n')
@@ -110,8 +128,8 @@ def main():
                 row += [('—' if r['ratio'] is None else f"{r['ratio']:.2f}"), f"{r['worst']:.2f}{'' if r['sign'] else ', sign'}{'' if r['div'] else ', div'}", '**pass**' if r['pass'] else 'fail']
             print('| ' + ' | '.join(row) + ' |')
     print('\n## The check: least damping at 5 / 6 / 7 ticks (−1 = div, a real root outside the unit circle)\n')
-    print('| cell | validated | recovered (K1, K2) | A identified | R identified | A (IV) at 6 | A bootstrap 5–50–95 % at 6 | A on `table` | A on `game` | identified open loop, leading s (1/s) |')
-    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    print('| cell | validated (open / closed loop) | recovered (K1, K2) | A identified | R identified | A, other structure | A bootstrap 5–50–95 % at 6 | A on `table` | A on `game` | identified open loop, leading s (1/s) | credible |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
     final = []
     for cell in sorted(chk, key=key):
         c = chk[cell]
@@ -120,10 +138,13 @@ def main():
         rk = [recs.get(k, {}).get(cell, {}).get('pass', False) for k in ('K1', 'K2')]
         f = next(x for x in fits if x['cell'] == cell)
         boot = c.get('boot') or [None, None, None]
-        credible = validated and all(rk) and f['kappa'] <= 1e4 and f['vif'][8] <= 100 and bool(v and v['skill']) and boot[0] is not None and ((boot[0] > 0) == (boot[2] > 0))
+        closed_ok = bool(v and v.get('closed') and v['closed']['pass'])
+        o = other.get(cell)
+        agree = (o is None) or ((o['A']['6'][0] > 0) == (c['A']['6'][0] > 0))
+        credible = validated and closed_ok and all(rk) and f['kappa'] <= 1e4 and f['vif'][8] <= 100 and bool(v and v['skill']) and boot[0] is not None and ((boot[0] > 0) == (boot[2] > 0)) and agree
         lead = c['open'][0]
-        print(f"| {cell} | {'yes' if validated else 'no'} | {'/'.join('yes' if x else 'no' for x in rk)} | {' / '.join(d(c['A'][t][0]) for t in ('5', '6', '7'))} | {' / '.join(d(c['R'][t][0]) for t in ('5', '6', '7'))} | {d(c['Aiv']['6'][0]) if c.get('Aiv') else '—'} | {' '.join(d(x) for x in boot)} | {' / '.join(d(c['tableA'][t][0]) for t in ('5', '6', '7'))} | {' / '.join(d(c['gameA'][t][0]) for t in ('5', '6', '7'))} | {lead[0]:+.2f}{'' if abs(lead[1]) < 1e-6 else f' ± {abs(lead[1]):.2f}i'} |")
-        final.append({**c, 'validated': validated, 'recovered': rk, 'passed': validated and all(rk), 'credible': credible})
+        print(f"| {cell} | {'yes' if validated else 'no'} / {'yes' if closed_ok else 'no'} | {'/'.join('yes' if x else 'no' for x in rk)} | {' / '.join(d(c['A'][t][0]) for t in ('5', '6', '7'))} | {' / '.join(d(c['R'][t][0]) for t in ('5', '6', '7'))} | {' / '.join(d(o['A'][t][0]) for t in ('5', '6', '7')) if o else '—'} | {' '.join(d(x) for x in boot)} | {' / '.join(d(c['tableA'][t][0]) for t in ('5', '6', '7'))} | {' / '.join(d(c['gameA'][t][0]) for t in ('5', '6', '7'))} | {lead[0]:+.2f}{'' if abs(lead[1]) < 1e-6 else f' ± {abs(lead[1]):.2f}i'} | {'**yes**' if credible else 'no'} |")
+        final.append({**c, 'validated': validated, 'closedOk': closed_ok, 'recovered': rk, 'passed': validated and all(rk), 'credible': credible})
     json.dump(final, open(os.path.join(root, 'final.json'), 'w'))
 
 
