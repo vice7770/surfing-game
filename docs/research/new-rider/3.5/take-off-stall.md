@@ -259,7 +259,7 @@ much at once, and the ankle pushes the body forward, whose reaction on the board
 2. on the stands that last unpatched, it adds at least 2 falls over the nose (N) within 3 s;
 3. so cause 3 fails its causal test (§0.8 3c).
 
-### 0.15 Added 2026-11-25, about 10:40 UTC: he lets the trim go once the board is moving
+### 0.15 Added 2026-11-25, about 10:31 UTC: he lets the trim go once the board is moving
 
 The coordinator relayed his second answer (asked about 10:25 UTC: "Once the board is moving, do you keep the trim
 forward or let it go?"): **"Let go once moving."** He releases on speed, not on a clock. Written while seeds 5–9 of the
