@@ -14,9 +14,15 @@
     - He set the order ("Stability, then turns"): 3.6a starts once 3.5z is reviewed, and 3.6b follows it. See consult-log entry `7ec10c29` and the entry after it.
   - Vicente asked to continue, and 3.5x ran on the first machine. It is done and reviewed: `claude/what-fails-first` `b0d19ee8`, from `1be12ee7`.
   - Vicente chose the returning taper. 3.5y (`?plantSpeed=taper6`) is done and reviewed: `claude/return-taper` `61dd1c43`. It loses to `plantFloor=6` his way, which stays the ride build.
-  - **Vicente chose the take-off falls** (2026-11-25). 3.5z, their fore/aft diagnosis on `plantFloor=6`, is running on the first machine.
-    - It is on `claude/take-off-stall`, from `b0d19ee8`: docs and probes only, with no `src` change.
-    - Its dispatch is consult-log entry `c968561d`.
+  - **Vicente chose the take-off falls** (2026-11-25). 3.5z, their fore/aft diagnosis on `plantFloor=6`, is done and reviewed.
+    - It is on `claude/take-off-stall` `b66eb87c`, from `b0d19ee8`: docs and probes only, with no `src` change.
+    - The review is consult-log entry `f8edd8e3`.
+    - **The tail-stall falls** (16 of 30) are set before the stand, on waves already losing the board: the prone twin stalls too.
+    - **The other falls** are mostly a whitewater brake at the foot of the face.
+    - **Forward trim rescues none.**
+  - **The stability system is being specified with Vicente by grilling** (2026-11-25).
+    - Round 1 is settled: the bar is the game's exact balance reserve with no look-ahead, red when close to a fall, a readout only, on by default and hidden in tournaments. It gets a direction tick, and `npm run report:stability` will be the benchmark.
+    - Round 2 is open. 3.6a is dispatched once the grilling is done.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
