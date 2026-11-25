@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-25, about 19:25 UTC.**
+- **Status, 2026-11-25, about 23:40 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -45,17 +45,32 @@
         - Both identified plants make the ride build's controller diverge at 6–7 m/s, where it rides.
       - **So the gain lock stays at 5–8 m/s, and below 5 m/s 3.6b's arms are judged by the benchmark alone.**
       - The builder's candidate (a), a command-dither identification round, is probe-only, but it is an input the rider does not make, so it needs his word.
-    - **3.6b is running** ("Yes, start 3.6b"; consult log `0057220b`).
-      - **The work:** measure the turn's onset per stance, find what slows it in Compress and Crouch, and build each candidate behind its own opt-in switch, judged by the benchmark.
-      - **His way, with a turn,** is added as a probe drive. The committed benchmark is unchanged.
-      - **The builder:** Opus at high effort, on `claude/faster-turns` from `claude/balance-bar` `dea549c7`, so the arms carry the bar.
+    - **3.6b is done and reviewed** (dispatched as consult log `0057220b`; the review is `65039723`).
+      - It is on `claude/faster-turns` `340fc560`, from `dea549c7`. Its two arms, `?leanPace=stance` and `?turnGains=firm`, are behind opt-in switches, off by default and pinned off online.
+      - **Neither arm passes the stability line.** The full run gives `leanPace` 51 regressing rides and `turnGains` 30. With the switches off, the full report and the byte check are identical.
+      - **The diagnosis:**
+        - In every stance the balance asks for little lean and first rolls the board out, so it turns the wrong way for 0.35–0.45 s.
+        - The deep stances then carry less rail.
+        - Their 2.5–3 Hz yaw swing, already there on straight rides, grows into a sideways tip.
+        - Before the release on Big, the turn's own falls are 1 of 36 standing tall, against 12 of 36 in Compress and 12 in Crouch.
+      - **What drives the swing is not identified.** Codex's review (`27b026f5`, verified in `5d832318`) withdrew the ledger-based attribution, because the yaw ledger books part of the water's push twice.
+    - **His controller falls** (the evening of 2026-11-25; consult log `891ef88a` and `432d755f`).
+      - He fell turning with the controller but not with the arrows. The D-pad and Precise response did not help: "the board starts drifting left and right".
+      - He turned tall on the arrows, and on the pad he holds R2 (Compress). So the stance is the difference, not the device.
+      - On the pad, turns in Normal hold. Turns in Compress and in Crouch (the tuck, with `deepen=on`) throw him, and so does a turn just after letting go of R2.
+    - **3.6c is running** (consult log `65039723`). Vicente approved it in his own words: "Yes, start it", then "i say yes to this to continue during the night".
+      - **The work is diagnosis only:**
+        - what carries the deep stances' 2.5–3 Hz swing and its sideways tip, using Codex's half-cycle joint work once the riderless yaw budget closes, and frequency tracking with diagnostic knobs;
+        - a turn started 0–0.6 s after letting go of R2.
+      - **The builder:** Opus at xhigh, on `claude/wobble` from `340fc560`, in `.claude/worktrees/wobble`. Its brief is `docs/research/stability/wobble/BRIEF.md` on that branch.
+      - **Vicente is away until about 06:45 UTC.** The coordinator reviews 3.6c when it reports.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `0057220b`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `65039723`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -123,8 +138,9 @@ Also open:
 | `claude/stability-report` | `3778d3b6` | 3.6a part 1: `npm run report:stability`, its baselines and the gain lock, plus the sooner-fall rule (scripts, docs and one test; from `b66eb87c`) |
 | `claude/balance-bar` | `dea549c7` | the balance bar's UI behind `rider=new` (from `3778d3b6`); it contains the ride build |
 | `claude/slow-board` | `5450d8b3` | 3.6a part 2: no plant identified from the game's ticks passes its controls, so the lock is unchanged (docs and probes; from `3778d3b6`) |
-| `claude/faster-turns` | (running) | 3.6b: faster turns in Compress and Crouch, each candidate behind its own switch (from `dea549c7`) |
-| `claude/the-record` | `0057220b` | the consult log (verified on the remote 2026-11-25) |
+| `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
+| `claude/wobble` | (running) | 3.6c: the deep stances' wobble and sideways tip, and a turn just after letting go of R2; diagnosis only (from `340fc560`) |
+| `claude/the-record` | `65039723` | the consult log (verified on the remote 2026-11-25) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
