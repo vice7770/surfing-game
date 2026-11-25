@@ -113,7 +113,7 @@ async function runAll(list: Job[]): Promise<Map<string, { seconds: number; code:
 type Row = Record<string, any>;
 export interface Ride {
   id: string; group: string; script: string; seed?: number; wave?: number;
-  stood: boolean; standSea: number | null; standVW: number | null;
+  stood: boolean; standSea: number | null; standVW: number | null; exposure: number | null; cut: boolean;
   fell: boolean; fellAt: number | null; fellWithin3: boolean | null; separation: string | null;
   cause: 'wave' | 'whitewater' | 'balance' | null; twinVW: number | null; frothMin: number | null; escapeAt: number | null;
   lowest: number | null; red: number | null; warning: number | null;
@@ -142,14 +142,18 @@ function lastRun(frames: Row[], hit: (f: Row) => boolean): number | null {
 }
 const at = (frames: Row[], t: number): Row | undefined => frames.find((f) => f.tS >= t - 1e-6);
 
-function measure(base: Omit<Ride, keyof Metrics>, frames: Row[], steer: number, takeOff: boolean, twinVW: number | null): Ride {
+function measure(base: Omit<Ride, keyof Metrics | 'exposure' | 'cut'>, frames: Row[], steer: number, takeOff: boolean, twinVW: number | null): Ride {
   const standing = frames.filter((f) => typeof f.res === 'number');
   const fell = base.fell;
   const m: Metrics = {
     cause: null, twinVW, frothMin: null, escapeAt: null, lowest: null, red: null, warning: null, recovery: null, recoveryFell: null, recoveryCensored: null,
     course05: null, course10: null, course05World: null, course10World: null, yawPeak: null, yawPeakWorld: null,
   };
-  if (!base.stood) return { ...base, ...m, twinVW: null };
+  if (!base.stood) return { ...base, ...m, twinVW: null, exposure: null, cut: false };
+  // How long the ride was followed: to the fall, else to its last standing frame. A ride that neither fell nor reached
+  // its hold was cut short (it is not a lasting ride).
+  const exposure = fell ? base.fellAt! : standing.length ? standing[standing.length - 1].tS : 0;
+  const cut = !fell && exposure < HOLD - 1e-6;
   m.lowest = round(Math.min(...standing.map((f) => f.res)), 4);
   m.red = round(standing.filter((f) => f.res < RED).length * STEP, 3);
   if (fell) {
@@ -187,7 +191,7 @@ function measure(base: Omit<Ride, keyof Metrics>, frames: Row[], steer: number, 
       m.yawPeakWorld = round(big.yaw, 2);
     }
   }
-  return { ...base, ...m };
+  return { ...base, ...m, exposure: round(exposure, 4), cut };
 }
 type Metrics = Pick<Ride, 'cause' | 'twinVW' | 'frothMin' | 'escapeAt' | 'lowest' | 'red' | 'warning' | 'recovery' | 'recoveryFell' | 'recoveryCensored' | 'course05' | 'course10' | 'course05World' | 'course10World' | 'yawPeak' | 'yawPeakWorld'>;
 
@@ -271,13 +275,14 @@ function tables(rides: Ride[]): string {
     const falls = g.filter((r) => r.fell);
     const n = (c: string) => falls.filter((r) => r.cause === c).length;
     out.push(`### ${GROUP_TITLE[group]}\n`);
-    out.push(`${g.length} rides; ${g.length - falls.length} lasted 5 s; ${falls.length} fell (balance ${n('balance')}, wave ${n('wave')}, whitewater ${n('whitewater')})${group === 'tw-ride' ? '' : `, ${falls.filter((r) => r.fellWithin3).length} within 3 s`}.\n`);
+    const cut = g.filter((r) => r.cut).length;
+    out.push(`${g.length} rides; ${g.length - falls.length - cut} lasted 5 s;${cut ? ` ${cut} cut short;` : ''} ${falls.length} fell (balance ${n('balance')}, wave ${n('wave')}, whitewater ${n('whitewater')})${group === 'tw-ride' ? '' : `, ${falls.filter((r) => r.fellWithin3).length} within 3 s`}.\n`);
     out.push('| ride | stand vW (m/s) | fell at (s) | cause | twin vW +0.7 (m/s) | froth min (W) | lowest reserve | red (s) | warning (s) | recovery (s) | course +0.5 / +1.0 (deg, toward the steer) | peak yaw (deg/s, toward) |');
     out.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
     for (const r of g) {
       const rec = steerOf(r.script) === 0 ? '' : r.recovery !== null ? f(r.recovery) : r.recoveryFell ? 'fell' : r.recoveryCensored !== null ? `> ${f(r.recoveryCensored)}` : '—';
       const turn = steerOf(r.script) === 0 ? '' : `${f(r.course05, 1)} / ${f(r.course10, 1)}`;
-      out.push(`| ${r.id} | ${f(r.standVW)} | ${r.fell ? f(r.fellAt) : '> 5'} | ${r.cause ?? ''} | ${f(r.twinVW)} | ${r.fell ? f(r.frothMin) : ''} | ${f(r.lowest, 3)} | ${f(r.red)} | ${r.fell ? f(r.warning) : ''} | ${rec} | ${turn} | ${steerOf(r.script) === 0 ? '' : f(r.yawPeak, 1)} |`);
+      out.push(`| ${r.id} | ${f(r.standVW)} | ${r.fell ? f(r.fellAt) : r.cut ? `cut at ${f(r.exposure)}` : '> 5'} | ${r.cause ?? ''} | ${f(r.twinVW)} | ${r.fell ? f(r.frothMin) : ''} | ${f(r.lowest, 3)} | ${f(r.red)} | ${r.fell ? f(r.warning) : ''} | ${rec} | ${turn} | ${steerOf(r.script) === 0 ? '' : f(r.yawPeak, 1)} |`);
     }
     out.push('');
   }
@@ -293,12 +298,12 @@ function compare(rides: Ride[], base: Baseline): { text: string; regressions: nu
   const notes: string[] = [];
   for (const b of base.rides) {
     const c = now.get(b.id);
-    const lasted = b.stood && !b.fell;
+    const lasted = b.stood && !b.fell && !b.cut;
     if (lasted && (!c || !c.stood || c.fell)) fail.push(`${b.id}: lasted 5 s in the baseline, now ${!c || !c.stood ? 'no stand' : `falls at +${f(c.fellAt)} s (${c.cause})`}`);
     if (!c) { if (!lasted) notes.push(`${b.id}: in the baseline only`); continue; }
     if (b.lowest !== null && c.lowest !== null && c.lowest < b.lowest - RESERVE_DROP) fail.push(`${b.id}: lowest reserve ${f(c.lowest, 3)}, baseline ${f(b.lowest, 3)} (−${f(b.lowest - c.lowest, 3)})`);
     if (b.lowest !== null && c.lowest !== null && c.lowest > b.lowest + RESERVE_DROP) better.push(`${b.id}: lowest reserve ${f(c.lowest, 3)}, baseline ${f(b.lowest, 3)}`);
-    if (b.fell && c.stood && !c.fell) better.push(`${b.id}: fell at +${f(b.fellAt)} s in the baseline, now lasts 5 s`);
+    if (b.fell && c.stood && !c.fell && !c.cut) better.push(`${b.id}: fell at +${f(b.fellAt)} s in the baseline, now lasts 5 s`);
     else if (b.fell && c.fell && c.fellAt! > b.fellAt! + LATER) better.push(`${b.id}: falls later, +${f(c.fellAt)} s against +${f(b.fellAt)} s`);
     else if (b.fell && c.fell && c.fellAt! < b.fellAt! - LATER) notes.push(`${b.id}: falls sooner, +${f(c.fellAt)} s against +${f(b.fellAt)} s`);
     if (b.fell && c.fell && b.cause !== c.cause) notes.push(`${b.id}: cause ${b.cause} → ${c.cause}`);
@@ -312,7 +317,7 @@ function compare(rides: Ride[], base: Baseline): { text: string; regressions: nu
     const h = base.rides.filter((r) => r.group === group);
     if (!g.length && !h.length) continue;
     const c = (rs: Ride[], k: string) => rs.filter((r) => r.fell && r.cause === k).length;
-    lines.push(`| ${group} | ${c(g, 'balance')} / ${c(h, 'balance')} | ${c(g, 'wave')} / ${c(h, 'wave')} | ${c(g, 'whitewater')} / ${c(h, 'whitewater')} | ${g.filter((r) => !r.fell).length} / ${h.filter((r) => !r.fell).length} |`);
+    lines.push(`| ${group} | ${c(g, 'balance')} / ${c(h, 'balance')} | ${c(g, 'wave')} / ${c(h, 'wave')} | ${c(g, 'whitewater')} / ${c(h, 'whitewater')} | ${g.filter((r) => !r.fell && !r.cut).length} / ${h.filter((r) => !r.fell && !r.cut).length} |`);
   }
   lines.push('', `**Regressions: ${fail.length}.**`, ...fail.map((s) => `- FAIL ${s}`));
   lines.push('', `**Improvements: ${better.length}** (not written into the baseline without \`--update-baseline\`).`, ...better.map((s) => `- ${s}`));

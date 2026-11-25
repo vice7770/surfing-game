@@ -17,6 +17,8 @@
  * `cueCTv`: Compress from `C_AT`, the trim at +1 from the stand, released from the step after the first standing frame
  * with vW ≥ `TRIM_SPEED` = 4.4 m/s); `twin` (never pops: the probe's `paddle` on the test wave and `never` on the Canyon).
  *
+ * One change to the organic drive: a rider that has stood is not dropped at the trial's `TRIAL` s; it rides to its hold.
+ *
  * Rows (JSON lines to `OUT`): `control`, `built` (the requested switches as the config built them, the predictor's
  * weights), `stand`, `f` (each frame from the stand while attached, and the first frame off), `tw` (the twin's speed through
  * the water each frame), `summary`, `done`.
@@ -364,7 +366,11 @@ function organicMode(): void {
     for (let k = active.length - 1; k >= 0; k -= 1) {
       const trial = active[k];
       for (const rider of trial.riders) if (!rider.done) stepRider(rider, t - trial.placed, trial);
-      if (t - trial.placed >= TRIAL || trial.riders.every((rider) => rider.done)) active.splice(k, 1);
+      // The probes drop the whole trial at TRIAL s after placing it, which cut a late stand short of its hold. Here a
+      // rider that has not stood is dropped then exactly as before (so no rider stands that did not stand in the probes),
+      // and a rider that stood rides on to its hold or its fall.
+      if (t - trial.placed >= TRIAL) for (const rider of trial.riders) if (rider.standAt === undefined) rider.done = true;
+      if (trial.riders.every((rider) => rider.done)) active.splice(k, 1);
     }
   }
   for (const trial of trials) for (const rider of trial.riders) {
