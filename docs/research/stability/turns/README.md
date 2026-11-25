@@ -242,3 +242,36 @@ way with the stick. It counts toward §0.5's three arms.
 **Predictions.** The release step throws more riders than the onset step: `~out` and `~ramp` fall less often in
 +2.0–3.5 s than the step on the Big swell (Compress and his way), and `~in` changes falls inside the steer by no more
 than 2 of 36. Low confidence.
+
+### 0.12 Amendment, 2026-11-25, 19:55 UTC: the arms chosen, before any arm has run
+
+Written after reading the onset run's Canyon rides (Big and Medium, all three seeds) and the test wave's `tw-catch` none
+and crouch rides; the rest of the test wave was still running. §1 reports the diagnosis in full. What it rests on:
+- **No bound is reached at the onset** on the Big swell: the ankle's raw ask is past its range on 0 % of the frames of
+  +1.0 to +1.5 s (median, every stance), the twist torque at its 100 N·m on 0 %, the hip at its range on 0 %; the hip's
+  range is 1.2 rad in every stance and the three assist forces are 0 (§0.2 holds). H3 is out.
+- **The body's bank trails the lean asked by 26–28° at +0.5 s in every stance** (Big, median), while the lean asked
+  itself is the ramp's 40°: the controller asks less than the body can give. The lean asked is the same in every stance.
+- **The wrong way survives the twin**: the twin-subtracted heading and course both turn away for the first 0.35–0.42 s in
+  every stance, least in Crouch and Compress. So the deep stances do not drift the wrong way more; they turn in less
+  after it (twin-subtracted course at +1.0 s: none 14.2°, Crouch 6.4°, Compress 9.9°, Snap 12.6°; rail at +0.5 s 10.3°,
+  6.3°, 7.1°, 17.0°).
+- **The deep stances ring**: the yaw rate's ringing over the steer (std about its 0.25 s mean) is 19–25 deg/s in Crouch
+  and Compress against 11 with no stance, and their straight twins ring 2.5–3.5 times more than no stance's too.
+
+**The arms (each behind its own switch, each acting only while a lean is asked, so a straight ride is unchanged):**
+1. `?leanPace=stance` (H5, the ramp): `LEAN_IN_RATE` × (h_tall / h)², h the stance table's height at the leg's depth
+   (Crouch × 1.67, Compress × 2.33, tall × 1). Built before this amendment, from the pre-registered H5.
+2. `?turnGains=firm` (H4 generalised: the controller's own tracking): while the bank asked is not 0, the command uses
+   the gains of the same design with `rho` 5 instead of 10 (the same plant, filter, predictor, reference and clamps).
+   One value, chosen before any run, no sweep.
+3. **The eased stick** (amendment 0.11) only if the shape run supports it; it would be input shaping in `Controls`.
+
+The ringing of the deep stances is reported as a finding; no arm targets it this round (its cause is not identified:
+the twist torque follows the yaw rate 0.10–0.12 s late with correlation 0.86–0.89, which any delayed feedback would
+show, and the straight twins ring too).
+
+**Plumbing needed by the benchmark.** The Canyon rides pass the address's rider switches to the session through
+`RIDER_KEYS` in `scripts/stability-ride.ts`, so `leanPace` and `turnGains` are added to that list (and to the probe's).
+With the switches absent the config carries neither key, so nothing reaches the session that did not before; the
+switch-off controls (§0.6 item 3) check it. The benchmark's scripts, matrix and baselines are unchanged.

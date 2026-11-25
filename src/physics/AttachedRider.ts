@@ -611,6 +611,17 @@ const TWIST_STOP_DAMPING = 50;
  * turn produces no feedback.
  */
 const LEAN_IN_RATE = 1.4;
+/** Step 3.6b (`turnGains: 'firm'`): the balance's effort weight while a lean is asked, half the shipped `rho` of 10. */
+const TURN_RHO = 5;
+/**
+ * Step 3.6b (`leanPace: 'stance'`): LEAN_IN_RATE's derivation, g d / h², at the stance's height against the tall stance's,
+ * (h_tall / h)², h the stance table's (`stanceAt`) at the leg's depth. 1 standing tall.
+ */
+function stancePace(depth: number, deep: boolean): number {
+  const tall = stanceAt(0, deep).height;
+  const now = stanceAt(depth, deep).height;
+  return (tall / now) * (tall / now);
+}
 /**
  * How far onto its rail the balance's schedule is trusted, degrees. The plant is measured at rails of 0 to 40°
  * (`predictiveBalance.ts` RAIL_PLANT); past this cap the schedule holds its design there and the reference carries the
@@ -1798,6 +1809,27 @@ export interface AttachedRiderOptions {
    * default, pinned off for online rooms, meant to be ridden with `?rider=new` and `?faceTrim=on`.
    */
   holdLine?: 'ref';
+  /**
+   * **The lean asked's pace at the stance's own height** (step 3.6b, `?leanPace=stance`;
+   * `docs/research/stability/turns/README.md`): `LEAN_IN_RATE` derives its 1.4 rad/s from the body's own torque bound,
+   * g d / h² over the half second a rail is set in, at the tall stance's height. A deeper stance holds the body lower, so
+   * by the same derivation its lean can come in faster: the pace is scaled by (h_tall / h)², h the stance table's height
+   * (`stanceAt`) at the leg's depth now: 1 standing tall, 1.67 in Crouch, 2.33 in Compress. Only the reference's pace
+   * moves: the ankle's range, the feet's grip, the hip's range and every other limit are as they ship, and the lean asked's
+   * size (the stick's rail and the cap) is unchanged. With the stick centred and the hand unused the lean asked is 0
+   * either way, so a straight ride is the same. Opt-in, off by default, pinned off for online rooms; the new surfer only.
+   */
+  leanPace?: 'stance';
+  /**
+   * **Firmer gains while a lean is asked** (step 3.6b, `?turnGains=firm`; `docs/research/stability/turns/README.md`):
+   * while the bank asked is not 0, the balance's command uses the LQR gains of the same design with its effort weight
+   * `rho` halved (TURN_RHO, against the shipped 10), on the same plant, filter, predictor, reference and clamps. The
+   * diagnosis: with no limb at its bound, the body's bank trails the lean asked by about 27° half a second into a full
+   * steer, so the controller asks less than the body can give. With the stick centred and the hand unused the lean asked
+   * is 0 and the command is the shipped one, bit for bit. Opt-in, off by default, pinned off for online rooms; the new
+   * surfer only.
+   */
+  turnGains?: 'firm';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2352,6 +2384,8 @@ export class AttachedRider {
   private readonly faceTrim: boolean;
   /** Step 3.5s: the balance holds the latched line with the stick centred (`holdLine`); false by default. */
   private readonly holdLineRef: boolean;
+  /** Step 3.6b: the lean asked's pace scaled to the stance's height (`leanPace: 'stance'`); false by default. */
+  private readonly leanPaceStance: boolean;
   /** Step 3.5w: the map the balance's water tables are read through (`plantSpeed`); undefined by default. */
   private readonly plantSpeedMap: PlantSpeed | undefined;
   /**
@@ -2787,8 +2821,11 @@ export class AttachedRider {
     this.plantSpeedMap = weights?.plantSpeed;
     this.faceTrim = weights?.faceTrim !== undefined;
     this.holdLineRef = weights?.holdLine === 'ref';
-    this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan');
+    // Step 3.6b (`turnGains: 'firm'`): the same weights with `rho` at TURN_RHO, for the gains used while a lean is asked.
+    const turnWeights = options.turnGains === 'firm' ? { ...(weights ?? DEFAULT_WEIGHTS), rho: TURN_RHO } : undefined;
+    this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights);
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
+    this.leanPaceStance = options.leanPace === 'stance';
     this.rateSense = options.balance?.rateSense ?? 'canal';
     this.twistStiffness = options.balance?.twist?.stiffness ?? TWIST_STIFFNESS;
     this.twistDamping = options.balance?.twist?.damping ?? TWIST_DAMPING;
@@ -3803,7 +3840,9 @@ export class AttachedRider {
       // Step 3.2q's lean hold was applied here and is gone (see `leanHeld`'s note): the lean the player asks for is
       // again the steer's own, eased at `leanPace`, as it was in 3.2p.
       const towardOwn = (own - this.leanAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
-      this.leanAsked += Math.max(-this.leanPace * h, Math.min(this.leanPace * h, towardOwn));
+      // Step 3.6b (`leanPace: 'stance'`): LEAN_IN_RATE's own derivation at the stance's height. Off, the pace as it ships.
+      const pace = this.leanPaceStance ? this.leanPace * stancePace(this.yawDepth, this.stanceDeepRow) : this.leanPace;
+      this.leanAsked += Math.max(-pace * h, Math.min(pace * h, towardOwn));
     }
     // Read-only, for probes (step 3.3f): the cap, the lean asked after it, the speed it is built on and the plane.
     this.leanProbe.cap = most;

@@ -1640,9 +1640,19 @@ export class PredictiveController {
    */
   private readonly turn: 'linear' | 'tan';
 
-  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan') {
+  /**
+   * Step 3.6b (`?turnGains=firm`): the weights whose LQR gains the command uses while a lean is asked (the bank asked
+   * not 0). The same plant, filter and predictor (only `rho` differs, which reaches K alone), so the estimate runs on as
+   * before; with no lean asked the command is the shipped design's, bit for bit. Undefined by default.
+   */
+  private readonly turnWeights?: DesignWeights;
+  /** Step 3.6b: the turn weights' blend (scratch, refilled each tick it is used). */
+  private turnBlended?: Design;
+
+  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan', turnWeights?: DesignWeights) {
     this.weights = weights;
     this.turn = turn;
+    this.turnWeights = turnWeights;
   }
 
   reset(): void {
@@ -1661,9 +1671,10 @@ export class PredictiveController {
   }
 
   /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
-  private blend(speed: number, depth: number, rail: number): Design {
+  private blend(speed: number, depth: number, rail: number, turning = false): Design {
+    const weights = turning ? this.turnWeights : this.weights;
     // Step 3.5w (`plantSpeed: 'face'` or `'taper'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
-    const speeds = this.weights?.plantSpeed !== undefined ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
+    const speeds = weights?.plantSpeed !== undefined ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
     const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
     const v0 = Math.min(speeds[speeds.length - 2], Math.floor(v * 2) / 2);
     const fv = (v - v0) / 0.5;
@@ -1672,7 +1683,7 @@ export class PredictiveController {
     // [0.195, 0.3]), so the only ticks the fourth knot moves are the ones that were being clamped onto 0.30 m.
     // Step 3.5c (ruling D): the fourth knot SHIPS, so `undefined` weights and weights without the field both take it
     // and only an explicit `false` takes the three-knot list.
-    const knots = (this.weights?.stanceDeep ?? true) ? SCHEDULE_DEPTHS_DEEP : SCHEDULE_DEPTHS;
+    const knots = (weights?.stanceDeep ?? true) ? SCHEDULE_DEPTHS_DEEP : SCHEDULE_DEPTHS;
     const deepest = knots.length - 1;
     const dp = Math.max(0, Math.min(knots[deepest], depth));
     let kd = 0;
@@ -1682,20 +1693,20 @@ export class PredictiveController {
     const fd = (dp - i0) / (i1 - i0);
     const rails = SCHEDULE_RAILS;
     // Step 3.5w: the rail range is the water's table's at the speed it is read at.
-    const a = Math.max(0, Math.min(railLimit(tableSpeedFor(v, this.weights)), Math.abs(rail)));
+    const a = Math.max(0, Math.min(railLimit(tableSpeedFor(v, weights)), Math.abs(rail)));
     let k = 0;
     while (k < rails.length - 2 && a > rails[k + 1]) k += 1;
     const fr = Math.max(0, Math.min(1, (a - rails[k]) / (rails[k + 1] - rails[k])));
     const r0 = rails[k];
     const r1 = rails[k + 1];
     const ds = [
-      scheduledDesign(v0, i0, r0, this.weights), scheduledDesign(v0 + 0.5, i0, r0, this.weights), scheduledDesign(v0, i1, r0, this.weights), scheduledDesign(v0 + 0.5, i1, r0, this.weights),
-      scheduledDesign(v0, i0, r1, this.weights), scheduledDesign(v0 + 0.5, i0, r1, this.weights), scheduledDesign(v0, i1, r1, this.weights), scheduledDesign(v0 + 0.5, i1, r1, this.weights),
+      scheduledDesign(v0, i0, r0, weights), scheduledDesign(v0 + 0.5, i0, r0, weights), scheduledDesign(v0, i1, r0, weights), scheduledDesign(v0 + 0.5, i1, r0, weights),
+      scheduledDesign(v0, i0, r1, weights), scheduledDesign(v0 + 0.5, i0, r1, weights), scheduledDesign(v0, i1, r1, weights), scheduledDesign(v0 + 0.5, i1, r1, weights),
     ];
     const ws = [(1 - fv) * (1 - fd) * (1 - fr), fv * (1 - fd) * (1 - fr), (1 - fv) * fd * (1 - fr), fv * fd * (1 - fr),
       (1 - fv) * (1 - fd) * fr, fv * (1 - fd) * fr, (1 - fv) * fd * fr, fv * fd * fr];
     const first = ds[0];
-    let out = this.blendedDesign;
+    let out = turning ? this.turnBlended : this.blendedDesign;
     if (!out) {
       const copy = (m: Mat) => m.map((row) => row.slice());
       out = {
@@ -1707,7 +1718,8 @@ export class PredictiveController {
         ...(first.gammaF && first.gammaFE && first.predF && first.trimX && first.trimU
           ? { gammaF: copy(first.gammaF), gammaFE: copy(first.gammaFE), predF: copy(first.predF), trimX: copy(first.trimX), trimU: copy(first.trimU) } : {}),
       };
-      this.blendedDesign = out;
+      if (turning) this.turnBlended = out;
+      else this.blendedDesign = out;
     }
     const mix = (target: Mat, get: (d: Design) => Mat) => {
       const ms = ds.map(get);
@@ -1852,9 +1864,11 @@ export class PredictiveController {
     for (let i = 0; i < n; i += 1) this.reference.x[i] = ref.x[i];
     this.reference.u[0] = ref.u[0]; this.reference.u[1] = ref.u[1];
     const u = [0, 0];
+    // Step 3.6b (`turnGains`): while a lean is asked, the turn weights' gains on the same estimate and reference.
+    const gains = this.turnWeights !== undefined && bank !== 0 ? this.blend(speed, depth, rail, true).k : d.k;
     for (let q = 0; q < N_COMMAND; q += 1) {
       let s = ref.u[q] - (q === 0 ? b0 : b1);
-      const row = d.k[q];
+      const row = gains[q];
       for (let j = 0; j < n; j += 1) s -= row[j] * (xh[j] - ref.x[j]);
       u[q] = s;
     }

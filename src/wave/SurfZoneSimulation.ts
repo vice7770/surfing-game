@@ -512,6 +512,20 @@ export interface SurfZoneConfig {
    */
   holdLine?: 'ref';
   /**
+   * 'stance': the new surfer's lean asked comes in at `LEAN_IN_RATE`'s own derivation at the stance's height (step 3.6b;
+   * `RideSessionOptions.leanPace`): faster in Crouch and Compress, the same standing tall; the lean's size, the ankle's
+   * range and every limit unchanged. The new surfer (`?rider=new`) only. The `?leanPace` dev switch, opt-in, to ride;
+   * online rooms run the default.
+   */
+  leanPace?: 'stance';
+  /**
+   * 'firm': while a lean is asked, the new surfer's balance commands with the gains of its own design at half the effort
+   * weight (step 3.6b; `RideSessionOptions.turnGains`); the same plant, reference and limits, the shipped gains with the
+   * stick centred. The new surfer (`?rider=new`) only. The `?turnGains` dev switch, opt-in, to ride; online rooms run the
+   * default.
+   */
+  turnGains?: 'firm';
+  /**
    * 'on': the pop-up cue the player is shown waits until the board can carry a stand, its speed through the water at
    * least `CUE_LATER_SPEED` while the shipped cue is lit (step 3.5u; `takeOffCue.ts` `playerCue`,
    * `docs/research/new-rider/3.5/cue-later.md`). The ride status's `cue` only: the rider's own cue (the paddle sprint)

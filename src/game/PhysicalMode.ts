@@ -625,6 +625,11 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?holdLine=ref`: standing with the stick centred, the balance holds the line he came out of a turn on, by asking the
     // coordinated lean of the turn back to it (step 3.5s), opt-in, to ride.
     ...holdLineSwitch(),
+    // `?leanPace=stance`: the lean asked comes in at its own derivation's pace at the stance's height, faster in Crouch and
+    // Compress (step 3.6b), opt-in, to ride.
+    ...leanPaceSwitch(),
+    // `?turnGains=firm`: while a lean is asked, the balance's gains at half its effort weight (step 3.6b), opt-in, to ride.
+    ...turnGainsSwitch(),
     // `?cueLater=on`: the pop-up cue the player is shown waits until the board moves 3.6 m/s through the water (step
     // 3.5u), opt-in, to ride.
     ...cueLaterSwitch(),
@@ -1505,6 +1510,28 @@ export function faceTrimSwitch(search?: string): { faceTrim?: 'on' | 'model' } {
 export function holdLineSwitch(search?: string): { holdLine?: 'ref' } {
   const v = devParam('holdLine', search)?.trim().toLowerCase();
   return v === 'ref' ? { holdLine: 'ref' } : {};
+}
+
+/**
+ * The `?leanPace=stance` dev switch (`SurfZoneConfig.leanPace`, step 3.6b; `docs/research/stability/turns/README.md`):
+ * opt-in, the new surfer's lean asked moves at `LEAN_IN_RATE` scaled by (h_tall / h)², its own derivation (the body's
+ * torque bound g d / h²) at the stance's height: 1 standing tall, 1.67 in Crouch, 2.33 in Compress. Only the reference's
+ * pace; no force, no limit moved. Nothing on the default rider; anything but the one value, off.
+ */
+export function leanPaceSwitch(search?: string): { leanPace?: 'stance' } {
+  const v = devParam('leanPace', search)?.trim().toLowerCase();
+  return v === 'stance' ? { leanPace: 'stance' } : {};
+}
+
+/**
+ * The `?turnGains=firm` dev switch (`SurfZoneConfig.turnGains`, step 3.6b; `docs/research/stability/turns/README.md`):
+ * opt-in, while a lean is asked the new surfer's balance commands with its own design's gains at half the effort weight
+ * (`rho` 5 against 10): the same plant, filter, reference and clamps; with the stick centred the shipped gains. No force,
+ * no limit moved. Nothing on the default rider; anything but the one value, off.
+ */
+export function turnGainsSwitch(search?: string): { turnGains?: 'firm' } {
+  const v = devParam('turnGains', search)?.trim().toLowerCase();
+  return v === 'firm' ? { turnGains: 'firm' } : {};
 }
 
 /**

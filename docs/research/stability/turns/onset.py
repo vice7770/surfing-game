@@ -133,6 +133,16 @@ def metrics(rides, extra_twins=None):
         m['wrongMin'] = round(min(v for _, v in early), 2) if early else None
         m['wrongFor'] = round(sum(STEP for _, v in early if v < 0), 3) if early else None
         oe = [(k, v) for k, v in sorted(o.items()) if T0 - 1e-6 <= k <= T0 + 0.5 + 1e-6]
+        # The heading (the nose, world x-z), twin-subtracted, beside the course: a course that turns away while the
+        # heading does not is the board pushed sideways (sway), not yawed.
+        if twin and oe and twin['o']:
+            k0 = oe[0][0]
+            g0 = twin['o'].get(k0)
+            hs = [(k, wrap(v['hdg'] - oe[0][1]['hdg']) * s - wrap(twin['o'][k]['hdg'] - g0['hdg']) * s) for k, v in oe if g0 and k in twin['o']]
+            if hs:
+                m['subH0.25'] = next((round(v, 2) for k, v in hs if k >= T0 + 0.25 - 1e-6), None)
+                m['subH0.5'] = round(hs[-1][1], 2) if hs[-1][0] >= T0 + 0.5 - 1e-6 else None
+                m['subHmin'] = round(min(v for _, v in hs), 2)
         if oe:
             rails = [(k, v['rail'] * s) for k, v in oe]
             kmin, rmin = min(rails, key=lambda x: x[1])
@@ -202,7 +212,7 @@ def stance_of(script):
 
 
 def table(ms, groups=('tw-catch', 'tw-ride', 'med', 'big')):
-    cols = ['raw0.5', 'sub0.25', 'sub0.5', 'sub1.0', 'yawPeak', 't5', 'wrongMin', 'wrongFor', 'rail0', 'railMin', 'railMinAt',
+    cols = ['raw0.5', 'subH0.25', 'subH0.5', 'subHmin', 'sub0.25', 'sub0.5', 'sub1.0', 'yawPeak', 't5', 'wrongMin', 'wrongFor', 'rail0', 'railMin', 'railMinAt',
             'bank0', 'ask05', 'bank05', 'rail05', 'ask20', 'bank20', 'rail10', 'vS0', 'cap0', 'ankleSat', 'twistSat', 'hipSat', 'twA0', 'tw025', 'yRails025', 'yFins025', 'yPress025', 'yRider025', 'yAm025', 'yTot025']
     lines = ['| group | stance | rides | fell < +2.0 s | t5 reached | ' + ' | '.join(cols) + ' |',
              '| --- | --- | --- | --- | --- | ' + ' | '.join('---' for _ in cols) + ' |']

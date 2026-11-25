@@ -243,6 +243,10 @@ export interface RideSessionOptions {
    * switch. By default the new surfer's balance holds no line.
    */
   holdLine?: 'ref';
+  /** The lean asked's pace at the stance's height (step 3.6b; `AttachedRiderOptions.leanPace`): 'stance' — the `?leanPace` dev switch. */
+  leanPace?: 'stance';
+  /** Firmer balance gains while a lean is asked (step 3.6b; `AttachedRiderOptions.turnGains`): 'firm' — the `?turnGains` dev switch. */
+  turnGains?: 'firm';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -364,6 +368,8 @@ export class RideSession {
       ...(options.plantSpeed ? { plantSpeed: options.plantSpeed } : {}),
       ...(options.faceTrim ? { faceTrim: options.faceTrim } : {}),
       ...(options.holdLine ? { holdLine: options.holdLine } : {}),
+      ...(options.leanPace ? { leanPace: options.leanPace } : {}),
+      ...(options.turnGains ? { turnGains: options.turnGains } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

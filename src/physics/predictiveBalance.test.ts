@@ -639,3 +639,35 @@ describe('the line held with the stick centred (step 3.5s, `holdLine`)', () => {
     expect(dropped.c.holdBank).toBe(0);
   });
 });
+
+// Step 3.6b (`?turnGains=firm`): the turn weights' gains act only while a lean is asked; with none asked the command is
+// the shipped design's bit for bit, and the estimate runs on the same model either way.
+describe('the turn weights (step 3.6b)', () => {
+  const weights = { ...DEFAULT_WEIGHTS };
+  const firm = { ...DEFAULT_WEIGHTS, rho: 5 };
+  const lim = { ankle: 0.25, twist: 100 };
+  const run = (turn: DesignWeights | undefined, ask: (k: number) => number): number[][] => {
+    const d = scheduledDesign(7, 0.3, 0, weights);
+    const { phi, gamma } = { phi: d.phi, gamma: d.gamma };
+    const ctl = new PredictiveController(weights, 'tan', turn);
+    let x = new Array<number>(phi.length).fill(0);
+    x[1] = 0.2;
+    const out: number[][] = [];
+    for (let k = 0; k < 90; k += 1) {
+      const u = [...ctl.tick(d.c.map((row) => row.reduce((s, v, j) => s + v * x[j], 0)), 7, 0.3, ask(k), 0, lim)];
+      out.push(u);
+      x = phi.map((row, i) => row.reduce((s, v, j) => s + v * x[j], 0) + gamma[i][0] * u[0] + gamma[i][1] * u[1]);
+    }
+    return out;
+  };
+  it('sends the shipped command bit for bit with no lean asked', () => {
+    expect(run(firm, () => 0)).toEqual(run(undefined, () => 0));
+  });
+  it('sends a different command while a lean is asked, and the shipped one again once none is', () => {
+    const ask = (k: number) => (k >= 10 && k < 40 ? -0.3 : 0);
+    const a = run(firm, ask);
+    const b = run(undefined, ask);
+    expect(a.slice(0, 10)).toEqual(b.slice(0, 10));
+    expect(a[20][0]).not.toBe(b[20][0]);
+  });
+});
