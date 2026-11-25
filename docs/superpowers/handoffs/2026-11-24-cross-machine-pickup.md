@@ -11,7 +11,7 @@
     - The turn is too slow in Compress and Crouch.
   - **His next steps:** validate the gain values, and build stability tests; then faster turns.
     - They are proposed as 3.6a (gains and a stability suite) and 3.6b (faster turns in the deep stances), after 3.5z.
-    - The order waits for his word. See consult-log entry `7ec10c29`.
+    - He set the order ("Stability, then turns"): 3.6a starts once 3.5z is reviewed, and 3.6b follows it. See consult-log entry `7ec10c29` and the entry after it.
   - Vicente asked to continue, and 3.5x ran on the first machine. It is done and reviewed: `claude/what-fails-first` `b0d19ee8`, from `1be12ee7`.
   - Vicente chose the returning taper. 3.5y (`?plantSpeed=taper6`) is done and reviewed: `claude/return-taper` `61dd1c43`. It loses to `plantFloor=6` his way, which stays the ride build.
   - **Vicente chose the take-off falls** (2026-11-25). 3.5z, their fore/aft diagnosis on `plantFloor=6`, is running on the first machine.
