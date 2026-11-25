@@ -302,6 +302,13 @@ def feature(s, name):
         xs = [(x.get('z35') or {}).get('trkT') for x in s.st if 0 <= x['tS'] <= 0.2]
         xs = [x for x in xs if x is not None]
         return None if not xs else sum(xs) / len(xs) / W_PAIR
+    if name in ('cue.dvW0.3', 'cue.dvG0.3'):
+        c = s.cuef
+        if c is None:
+            return None
+        k = 'vW' if name == 'cue.dvW0.3' else 'vG'
+        prev = [x for x in s.all if x['t'] <= c['t'] - 0.3 + 1e-6]
+        return None if not prev or prev[-1].get(k) is None else (c[k] - prev[-1][k]) / (c['t'] - prev[-1]['t'])
     if name.startswith('cue.'):
         c = s.cuef or {}
         return c.get(name[4:])
@@ -323,7 +330,7 @@ FEATURES = ['vW', 'sched', 'pitch', 'tail', 'nose', 'footR', 'copZ', 'capZ', 'fe
             'faceFrac', 'ahead', 'fall', 'slopeDeg', 'hdgFall', 'frontShare', 'landingPeak', 'dPitch0.2', 'dvW0.2', 'dFeltDev0.2', 'dCopZ0.2', 'trkT0.2',
             'cue.vW', 'cue.pitch', 'cue.faceFrac', 'cue.ahead', 'cue.fall']
 # Descriptive, added after the baseline read (not in section 0.6): the pop-up's push and landing.
-FEATURES_POP = ['pop.vW', 'pop.pitch', 'pop.tail', 'pop.ahead', 'pop.fall', 'pop.faceFrac', 'land.vW', 'land.pitch', 'land.tail', 'land.ahead', 'land.fall',
+FEATURES_POP = ['cue.dvW0.3', 'cue.dvG0.3', 'pop.vW', 'pop.pitch', 'pop.tail', 'pop.ahead', 'pop.fall', 'pop.faceFrac', 'land.vW', 'land.pitch', 'land.tail', 'land.ahead', 'land.fall',
                 'land.faceFrac', 'land.Fb', 'land.Fp', 'dPitchLand', 'dTailLand', 'dvWLand', 'pitchRate0']
 
 
@@ -644,6 +651,33 @@ def never(tag, dirs):
                     keep += 1
             print(f"| s{seed}w{s.wave} {s.script} | {cls} | {fmt(t0, 3)} | {' | '.join(cells)} | {fmt(None if n7 is None else n7.get('ahead'))}, {None if n7 is None else n7.get('ph')} |")
     print(f'\nT falls whose paddle twin keeps vW >= 3.6 m/s from the stand through +0.7 s: {keep} of {nT}')
+    # the contrast: every cue stand, the twin's vW at the stand's sea time and +0.7 s, by group
+    print('\n| group (cue) | n | stand vW | twin vW at the stand | twin vW at +0.7 | twin keeps >= 3.6 through +0.7 |')
+    print('| --- | --- | --- | --- | --- | --- |')
+    groups = {}
+    for seed, path in files(tag, dirs).items():
+        ss, rows = stands_of(path, ('cue',))
+        nv = {}
+        for x in rows:
+            if x.get('kind') == 'f' and x.get('script') == 'never':
+                nv.setdefault(x['wave'], []).append(x)
+        for s in ss:
+            cls, _ = classify(s)
+            g = 'lasting' if cls == 'held' else cls
+            tw = sorted(nv.get(s.wave, []), key=lambda x: x['t'])
+            t0 = s.summary['stand']
+            def nat(dt):
+                best = None
+                for x in tw:
+                    if x['t'] <= t0 + dt + 1e-6:
+                        best = x
+                    else:
+                        break
+                return best if best is not None and t0 + dt - best['t'] < 0.05 else None
+            vs = [nat(d) for d in (0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7)]
+            groups.setdefault(g, []).append((s.f0['vW'], None if vs[0] is None else vs[0]['vW'], None if vs[-1] is None else vs[-1]['vW'], all(v is not None and v['vW'] >= 3.6 for v in vs)))
+    for g, lst in sorted(groups.items()):
+        print(f"| {g} | {len(lst)} | {med([a for a, b, c, d in lst])} | {med([b for a, b, c, d in lst])} | {med([c for a, b, c, d in lst])} | {sum(1 for a, b, c, d in lst if d)} |")
 
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -766,6 +800,67 @@ def budget(tag, dirs, scripts=('cue', 'cueC')):
                 print(f"| {drive} | {g} | {len(vals['trkT'])} | {a:.2f}-{b:.2f} | " + ' | '.join(fmt(med(vals[k], 3), 3) for k in keys) + f" | {fmt(tk, 3)} | {fmt(None if tk is None else tk * 9.81, 2)} | {fmt(med(vals['dv']))} | {fmt(med(vals['pitch'], 1), 1)} | {fmt(med(vals['fall'], 1), 1)} |")
 
 
+def froth(tag, dirs, scripts=('cue', 'cueC')):
+    """Per fall: the froth term (z35 trk, W) and the speeds from the stand to the final escape: does the board run into
+    the roller's froth, and does the water under it speed up (vG - vW, a proxy for the flow along the track)?"""
+    ss = all_stands(tag, dirs, scripts)
+    print('## Froth and the water under the board, stand -> final escape (falls <= 3 s), and the lasting stands over 0-1.5 s\n')
+    print('| rider | class | tE | least froth (W) at t | mean froth over [tE-0.3, tE] (W) | vG: peak -> at tE (m/s) | vW: peak -> at tE | vG - vW: at stand -> at tE | faceFrac, ahead at tE |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    last = []
+    for s in sorted(ss, key=lambda s: (s.script, s.seed, s.wave)):
+        cls, info = classify(s)
+        tE = info.get('tE') if cls != 'held' else 1.5
+        if tE is None:
+            continue
+        w = [x for x in s.st if 0 <= x['tS'] <= tE + 1e-9 and (x.get('z35') or {}).get('trk') is not None]
+        if not w:
+            continue
+        fr = [((x['z35']['trk'] or {}).get('froth', 0) / W_PAIR, x['tS']) for x in w]
+        least = min(fr)
+        tail = [v for v, t in fr if t >= tE - 0.3]
+        e = w[-1]
+        pk = max(w, key=lambda x: x['vG'])
+        pw = max(w, key=lambda x: x['vW'])
+        row = (least[0], sum(tail) / len(tail))
+        if cls == 'held':
+            last.append(row)
+            continue
+        print(f"| s{s.seed}w{s.wave} {s.script} | {cls} | {fmt(tE)} | {least[0]:+.3f} at {least[1]:.2f} | {row[1]:+.3f} | {pk['vG']:.2f} at {pk['tS']:.2f} -> {e['vG']:.2f} | {pw['vW']:.2f} at {pw['tS']:.2f} -> {e['vW']:.2f} | {s.f0['vG'] - s.f0['vW']:.2f} -> {e['vG'] - e['vW']:.2f} | {fmt(e.get('faceFrac'))}, {fmt(e.get('ahead'))} |")
+    if last:
+        print(f"\nLasting stands ({len(last)}), 0-1.5 s: least froth median {med([a for a, b in last], 3)} W; {sum(1 for a, b in last if a <= -0.05)} of {len(last)} reach -0.05 W or less.")
+
+
+def counts(tag, dirs, scripts=FORE + ('cueCTv',)):
+    """Class counts per script (registered thresholds), with the authority verdicts, and the his-way rule (0.15)."""
+    ss = all_stands(tag, dirs, scripts)
+    print('| drive | stood | fell <= 3 s | P | W | T | N | L | X | median fall (s) | authority: within / edge / outside |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    for sc in scripts:
+        g = [s for s in ss if s.script == sc]
+        if not g:
+            continue
+        cs = [classify(s) for s in g]
+        n = lambda c: sum(1 for x, _ in cs if x == c)
+        au = [authority(s, c, i) for s, (c, i) in zip(g, cs) if c not in ('held', 'P')]
+        v = lambda k: sum(1 for a in au if a and a['verdict'] == k)
+        print(f"| {sc} | {len(g)} | {len(g) - n('held')} | {n('P')} | {n('W')} | {n('T')} | {n('N')} | {n('L')} | {n('X')} | {fmt(med([s.fell for s, (c, i) in zip(g, cs) if c != 'held'], 3), 3)} | {v('within')} / {v('edge')} / {v('outside')} |")
+    by = {(s.seed, s.wave, s.script): s for s in ss}
+    print('\n### His rule (0.15): for each stand living past +1.2 s, vW at +1.2 s on `cueCTx` against 4.4 m/s\n')
+    picks = {'cueCT': [], 'cueCTx': []}
+    for (seed, wave, sc), x in sorted(by.items()):
+        if sc != 'cueCTx':
+            continue
+        if x.fell is not None and x.fell <= 1.2:
+            continue
+        a = x.at(1.2)
+        if a is None:
+            continue
+        picks['cueCTx' if a['vW'] >= 4.4 else 'cueCT'].append(f"s{seed}w{wave} ({a['vW']:.2f})")
+    for k, v in picks.items():
+        print(f'- picks `{k}` ({len(v)}): ' + ', '.join(v))
+
+
 if __name__ == '__main__':
     what = sys.argv[1]
     if what == 'repro':
@@ -776,5 +871,5 @@ if __name__ == '__main__':
         a = sys.argv
         dump(a[2], a[3], int(a[4]), a[5], int(a[6]), *(float(v) for v in a[7:10]))
     else:
-        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never, 'budget': budget}[what]
+        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never, 'budget': budget, 'froth': froth, 'counts': counts}[what]
         fn(sys.argv[2], sys.argv[3:])

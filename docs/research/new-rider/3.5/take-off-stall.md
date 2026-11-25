@@ -281,3 +281,21 @@ prediction above changes.
    - **Paired** with `cueC` on the same stands (the his-way comparison) and with `cueCT`.
    - **Prediction:** as §0.8's trim arms: within ±0.10 s of `cueC` (median, censored at 3 s), no more than 2 rescues.
 3. How far he pushes is still unknown; full +1 stays.
+
+### 0.16 Added 2026-11-25, about 10:52 UTC: the out-of-sample prediction (§0.10), from the seeds 1–9 read, before seeds 10–15 run
+
+Seeds 1–9 have been read: the saved baseline and every trim-arm run (cue, cueC, cueT, cueCT, cueTx, cueCTx, cueTB,
+never). The patch runs and the `cueCTv` runs have not started. Seeds 10–15 run with
+`SCRIPTS=cue,cueC,cueT,cueCT,cueTx,cueCTx,cueTB,cueCTv,never` on the same build.
+
+**The prediction (main), read from the stand state.** In sample, every stand whose tail is ≥ 0.25 m under the surface
+at the stand (the `tail` field, 5 cm in from the tail, `tS = 0`) fell within 3 s as T on every drive (7 of 7 stands),
+and every stand at vW ≥ 4.7 m/s with the tail < 0.10 m under lasted 3 s with Compress (`cueC`, 12 of 12). On seeds
+10–15:
+1. every stand with `tail ≥ 0.25` m falls within 3 s, classed T, on `cue`, `cueC`, `cueCT`, `cueCTx` and `cueCTv`;
+2. every stand with vW ≥ 4.7 m/s and `tail < 0.10` m lasts 3 s on `cueC`.
+It fails if any stand breaks either line. Stands in neither group are reported, not scored.
+
+**Secondary (scored, reported beside):**
+3. full forward trim rescues no T fall: on every T fall of `cueC`, `cueCT` and `cueCTx` fall within 0.25 s of it;
+4. on the T falls' waves, the paddle twin (`never`) is below 3.6 m/s at +0.7 s on at least 2/3.
