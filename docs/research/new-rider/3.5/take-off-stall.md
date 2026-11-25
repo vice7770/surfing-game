@@ -729,7 +729,8 @@ falls (2.4–2.9 s). Every fall before +1.2 s is the same under every his-way dr
 
 **Reproduce** (bundles from the committed `take-off-stall.ts`: `tos.mjs` for the trim arms on seeds 1–9, `tosP.mjs`
 for the patch, `tosV.mjs` for seeds 10–15 and `cueCTv`; with `PATCH` unset and the scripts of 0.2 the three give the
-same rows):
+same rows). Bundle SHA-256 (with the `location` line): `tos.mjs` `28bd4162…d19e` (built at the pre-registration,
+`77d916a8`), `tosP.mjs` `080bbd35…3c01` (0.14), `tosV.mjs` `8cbaebcb…9d58` (0.15):
 
     ./node_modules/.bin/rolldown docs/research/new-rider/3.5/take-off-stall.ts -o <s>/raw.mjs --format esm --platform node
     printf "globalThis.location = { search: '' };\n" > <s>/tos.mjs && cat <s>/raw.mjs >> <s>/tos.mjs
