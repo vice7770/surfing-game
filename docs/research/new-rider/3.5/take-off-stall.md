@@ -299,3 +299,12 @@ It fails if any stand breaks either line. Stands in neither group are reported, 
 **Secondary (scored, reported beside):**
 3. full forward trim rescues no T fall: on every T fall of `cueC`, `cueCT` and `cueCTx` fall within 0.25 s of it;
 4. on the T falls' waves, the paddle twin (`never`) is below 3.6 m/s at +0.7 s on at least 2/3.
+
+### 0.17 Added 2026-11-25, about 10:57 UTC: he pushes the trim all the way (for reading only)
+
+The coordinator relayed his third answer (asked about 11:05 UTC by the coordinator's clock: "How far do you push the trim
+forward when you stand?"): **"All the way."** The coordinator asked for this as addition 0.16; that number was already
+taken by the out-of-sample prediction, so it is 0.17. It changes nothing above. His way is now fully specified:
+Compress from 0.1–0.3 s after the stand (`C_AT` 0.2), trim at +1 from the stand, released once the board is moving
+(0.15), the stick centred. Full +1 is his amount, so no magnitude arm is run. The drive closest to his way is
+`cueCTv` (released at vW ≥ 4.4 m/s); `cueCT` and `cueCTx` bracket it.

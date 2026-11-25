@@ -494,12 +494,12 @@ def chain(tag, dirs):
 
 # ------------------------------------------------------------------------------------------------------------------
 def pairs(tag, dirs):
-    ss = all_stands(tag, dirs)
+    ss = all_stands(tag, dirs, FORE + ('cueCTv',))
     by = {(s.seed, s.wave, s.script): s for s in ss}
     print('## Paired by stand (the same stand; fall time censored at 3 s, and at 5 s)\n')
     print('| pair | n | later / sooner / same (0.25 s), 3 s | median diff 3 s | later / sooner, 5 s | median diff 5 s | rescued (fell <= 3 s -> lasts) | lost (lasted -> falls <= 3 s) | vW at +0.7: median diff | pitch at +0.7: median diff | new N <= 3 s / N <= 5 s |')
     print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
-    for a, b in (('cueT', 'cue'), ('cueTx', 'cue'), ('cueTB', 'cue'), ('cueCT', 'cueC'), ('cueCTx', 'cueC'), ('cueC', 'cue'), ('cueCT', 'cue'), ('cueT', 'cueTx')):
+    for a, b in (('cueT', 'cue'), ('cueTx', 'cue'), ('cueTB', 'cue'), ('cueCT', 'cueC'), ('cueCTx', 'cueC'), ('cueCTv', 'cueC'), ('cueCTv', 'cueCT'), ('cueC', 'cue'), ('cueCT', 'cue'), ('cueT', 'cueTx')):
         d3, d5, dv, dp, resc, lostl, newN3, newN5 = [], [], [], [], [], [], 0, 0
         n = 0
         for (seed, wave, script), x in by.items():
@@ -529,14 +529,33 @@ def pairs(tag, dirs):
                 newN5 += 1
         if n:
             print(f"| {a} - {b} | {n} | {sum(d >= 0.25 for d in d3)} / {sum(d <= -0.25 for d in d3)} / {sum(abs(d) < 0.25 for d in d3)} | {med(d3, 3):+.3f} | {sum(d >= 0.25 for d in d5)} / {sum(d <= -0.25 for d in d5)} | {med(d5, 3):+.3f} | {len(resc)} {resc} | {len(lostl)} {lostl} | {fmt(med(dv))} | {fmt(med(dp, 1), 1)} | {newN3} / {newN5} |")
+    # over the base's falls only (the lasting stands are censored on both sides)
+    print('\n### Over the base falls only (base fell <= 3 s): fall time change, censored at 3 s; vW and pitch at +0.7 s\n')
+    print('| pair | base falls | later / sooner (0.25 s) | median diff (s) | range (s) | vW +0.7 median diff (m/s) | pitch +0.7 median diff (deg) |')
+    print('| --- | --- | --- | --- | --- | --- | --- |')
+    for a, b in (('cueT', 'cue'), ('cueTx', 'cue'), ('cueTB', 'cue'), ('cueCT', 'cueC'), ('cueCTx', 'cueC'), ('cueCTv', 'cueC'), ('cueC', 'cue')):
+        d, dv, dp = [], [], []
+        for (seed, wave, script), x in by.items():
+            if script != a:
+                continue
+            y = by.get((seed, wave, b))
+            if y is None or not y.fall3:
+                continue
+            d.append(x.fall_time(3) - y.fall_time(3))
+            u, v = x.at(0.7), y.at(0.7)
+            if u and v:
+                dv.append(u['vW'] - v['vW'])
+                dp.append(u['pitch'] - v['pitch'])
+        if d:
+            print(f"| {a} - {b} | {len(d)} | {sum(x >= 0.25 for x in d)} / {sum(x <= -0.25 for x in d)} | {med(d, 3):+.3f} | {min(d):+.2f} to {max(d):+.2f} | {fmt(med(dv))} | {fmt(med(dp, 1), 1)} |")
     # per fall of the base: what each arm does
     print('\n### Each base fall (<= 3 s) under the arms: fall time (s; >=3 = lasts the take-off), class\n')
-    print('| rider | cue | cueT | cueTx | cueTB | cueC | cueCT | cueCTx |')
-    print('| --- | --- | --- | --- | --- | --- | --- | --- |')
+    print('| rider | cue | cueT | cueTx | cueTB | cueC | cueCT | cueCTx | cueCTv |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- |')
     keys = sorted({(s.seed, s.wave) for s in ss if s.script in ('cue', 'cueC') and s.fall3})
     for seed, wave in keys:
         cells = []
-        for sc in ('cue', 'cueT', 'cueTx', 'cueTB', 'cueC', 'cueCT', 'cueCTx'):
+        for sc in ('cue', 'cueT', 'cueTx', 'cueTB', 'cueC', 'cueCT', 'cueCTx', 'cueCTv'):
             x = by.get((seed, wave, sc))
             if x is None:
                 cells.append('—')
