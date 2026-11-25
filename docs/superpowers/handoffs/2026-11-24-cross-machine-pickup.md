@@ -26,8 +26,14 @@
     - **3.6a part 1** (the benchmark and the gain lock) is done and reviewed: `claude/stability-report` `f3d7de27`, from `claude/take-off-stall` `b66eb87c`. The review is consult-log entry `c8516a81`.
       - `npm run report:stability` works: quick (the test wave, 26 rides, 10 min) and full (227 rides, 29 min). The baselines are committed, and the gain lock is `src/physics/stabilityGains.test.ts`.
       - His way falls for balance once in 31 Canyon stands. The steered rides fall: 78 of 186 before the release.
-      - **Two amendments wait for his word:** the tick follows the tipping margin (the reserve sits below 0.6 for most of a ride, held there by the knees); and a balance fall 0.25 s or more sooner counts as a regression.
-    - Then come the bar's UI piece, 3.6a part 2 (the slow board's plant) and 3.6b (faster turns).
+      - **He took both amendments** ("Yes, both"; consult log `73c8a415`).
+        - The tick follows the tipping margin, because the knees hold the reserve below 0.6 for most of a ride.
+        - A balance fall 0.25 s or more sooner is a regression (`CLAUDE.md` `7cd101c9`).
+    - **Running:** one builder, Sonnet at medium effort.
+      - Part A, the rule, on `claude/stability-report`.
+      - Then part B, the bar, on `claude/balance-bar`, behind `rider=new`.
+      - The coordinator checks the bar in the browser before it goes to him.
+    - Then come 3.6a part 2 (the slow board's plant) and 3.6b (faster turns).
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
@@ -100,7 +106,8 @@ Also open:
 | `claude/return-taper` | `61dd1c43` | 3.5y: `?plantSpeed=taper6` (not adopted: it loses to `plantFloor=6` his way) |
 | `claude/take-off-stall` | `b66eb87c` | 3.5z: the take-off falls' fore/aft diagnosis (docs and probes; from `b0d19ee8`) |
 | `claude/stability-report` | `f3d7de27` | 3.6a part 1: `npm run report:stability`, its baselines and the gain lock (scripts, docs and one test; from `b66eb87c`) |
-| `claude/the-record` | `c8516a81` | the consult log (verified on the remote 2026-11-25) |
+| `claude/balance-bar` | (running) | the balance bar's UI behind `rider=new` (from `claude/stability-report`) |
+| `claude/the-record` | `73c8a415` | the consult log (verified on the remote 2026-11-25) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
