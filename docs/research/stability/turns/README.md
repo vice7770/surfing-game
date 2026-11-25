@@ -438,3 +438,16 @@ counter-lean of §1.2 item 5 grows: −7.2° against −1.8° in `tw-catch` Comp
 **Both arms fail the stability line on the quick run.** The common thread in 7 of the 9 regressions is the deep
 stances' ringing (§1.2 item 7): a turn that comes in harder or sooner swings the yaw further (std over the steer up by
 11–66 deg/s), and the margin goes on the swing. The other two (`tw-ride:none:right` late in the ride, `tw-ride:crouch:right` in the placed start's rail change) ring no more.
+
+## 4. Controls
+
+| control | result |
+| --- | --- |
+| The probe inert and deterministic (§0.6 item 1): `onset-off`'s files filtered to the benchmark's scripts against the full baseline's raw runs (`runs/full-f2.tar.gz`) | 33 of 33 files identical in every `stand`, `f`, `tw` and `summary` row (`inert.py`), the yaw and roll ledgers on; the benchmark's report re-read on them (`--reuse`): exit 0, and 227 of 227 ride lines identical to `baseline-full.json` in every field (`same.py`) |
+| The twin (§0.6 item 2) | 252 of 252 steer rides identical to their straight twin in every frame row up to +1.0 s (`onset.py --twins`) |
+| Switch off (§0.6 item 3), the full report on `581cc326`'s `src` and scripts (21:26 UTC, 30.8 min) | exit 0, 0 regressions, 0 improvements; 227 of 227 ride lines identical to `baseline-full.json`, and its 26 test-wave rides identical to `baseline-quick.json`'s 26 |
+| The arms off when straight | in both arms' quick runs, the 10 straight and his-way rides identical to the baseline in every field |
+| `npx tsc -b` | clean |
+| The gain lock, `npx vitest run src/physics/stabilityGains` | 5 of 5 |
+| The touched tests (`PhysicalMode`, `predictiveBalance`, `RideSession`, `AttachedRider`, `AttachedRider.deepCrouch`, `stabilityGains`) | 6 files, 328 passed and 8 expected failures (`it.fails` in `AttachedRider.test.ts`, 8 at `dea549c7` too), 0 failing; the two new switch tests and the two turn-weight tests among them |
+| `SurfZoneRunner` and `SurfZoneSimulation` tests (one line each of plumbing) | **not run to the end**: started at 20:05 beside the game runs, stopped at 21:28 after 82 CPU-minutes unfinished, so as not to load the machine past four processes. Their two changed lines are covered by `tsc` and by the switch-off full report, which drives every test-wave ride through `SurfZoneRunner` |
