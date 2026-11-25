@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-25, about 15:15 UTC.**
+- **Status, 2026-11-25, about 15:25 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -37,7 +37,11 @@
         - The limit names moved to the dev telemetry.
         - Its quick report and the byte check are identical to the baseline, and the coordinator saw it work in the browser.
       - **Waiting for his ride,** at his usual address on `claude/balance-bar`.
-    - Then come 3.6a part 2 (the slow board's plant) and 3.6b (faster turns).
+    - **3.6a part 2 is running** ("Yes, start it"; consult log `af31121a`).
+      - **The work:** identify the slow board's plant from the game's own ticks, then check the ride build's gains below 5 m/s.
+      - **The builder:** Opus at xhigh, on `claude/slow-board` from `3778d3b6`.
+      - **Its scope:** docs and probes, plus the gain-lock test only if the plant validates. There is no game behaviour change.
+    - Then comes 3.6b (faster turns).
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
@@ -111,7 +115,8 @@ Also open:
 | `claude/take-off-stall` | `b66eb87c` | 3.5z: the take-off falls' fore/aft diagnosis (docs and probes; from `b0d19ee8`) |
 | `claude/stability-report` | `3778d3b6` | 3.6a part 1: `npm run report:stability`, its baselines and the gain lock, plus the sooner-fall rule (scripts, docs and one test; from `b66eb87c`) |
 | `claude/balance-bar` | `dea549c7` | the balance bar's UI behind `rider=new` (from `3778d3b6`); it contains the ride build |
-| `claude/the-record` | `a64a691b` | the consult log (verified on the remote 2026-11-25) |
+| `claude/slow-board` | (running) | 3.6a part 2: the slow board's plant identified from the game's ticks, and the gains below 5 m/s checked (from `3778d3b6`) |
+| `claude/the-record` | `af31121a` | the consult log (verified on the remote 2026-11-25) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
