@@ -228,7 +228,7 @@ stick up, or W)?"): **"Yes, forward."** It arrived after the first trim-arm batc
    the falls he meets are `cueC`'s.
 4. Seeds 10–15 keep `cueCT` and `cueCTx` in their scripts.
 
-### 0.14 Added 2026-11-25, about 10:30 UTC, after the baseline read and before the patch runs: the patch
+### 0.14 Added 2026-11-25, about 10:24 UTC, after the baseline read and before the patch runs: the patch
 
 **What the baseline read showed** (saved A runs, seeds 1–9, `cue` and `cueC`; full tables in §1–§3 once written):
 - By the registered rule the 30 falls class as T 16 (8 per drive), N 4 (all `cue`), L 9, X 1, W 0, P 0.
