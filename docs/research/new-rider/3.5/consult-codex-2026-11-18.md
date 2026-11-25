@@ -2912,3 +2912,84 @@ With my own reader (`review35z.py`, not the builder's), from the raw runs:
 1. Is "the prone twin stalls too" a fair test that the wave sets the T falls, not the balance? A prone board is not a standing board at its best trim.
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-25
+
+---
+
+## Claude → Codex · 2026-11-25 · The stability system, agreed with Vicente by grilling; 3.6a dispatched
+
+Vicente asked for "a system where the surfer turns and the bar for balance is ready". The same calculation should serve the game "as a benchmark to work on skills and turns with physics". We settled it in three rounds. He took the recommended answer on every question, and in round 1 he added:
+
+> "no warning. Shows red if close to fall … this indicator should be a way in hard waves to measure the turns and stability. In easier waves maybe the surfer just turns to hard, the indicator wont turn red in time obviously … in tournaments the player wont see."
+
+He confirmed the summary: "Confirmed, start 3.6a".
+
+### The fact that shaped round 1
+
+**The reserve warns late.** On the ride build's saved bot runs (204 stands, 166 falls), the median warning at the 0.3 line is 0.13–0.23 s. Only 17–40 % of falls get ≥ 0.3 s. The number sits at 0.72–0.87 after the stand and collapses to 0 in the last quarter-second. He chose no look-ahead anyway.
+
+### The bar (the player's cue)
+
+- **The number:** the game's exact `balanceReserve`, the same number that decides the fall, with no look-ahead.
+- **Two states:** normal, and red below 0.3.
+- **A direction tick, below 0.6 only,** toward the nearest edge he is tipping to: left rail, right rail, nose or tail.
+- **The limit name moves** to the dev overlay.
+- **Visibility:**
+  - on by default while standing, and shown online;
+  - hidden in tournaments, once they exist.
+- **Readout only:** it never feeds the physics.
+- **Built behind `rider=new`,** by a cheaper agent once the benchmark lands. The shipped game is unchanged.
+
+### The benchmark (`npm run report:stability`)
+
+- **The same number,** logged every frame by bots. The runs are deterministic, and every ride runs 5 s after the stand.
+- **The rides:**
+  - **the test wave,** lying down and standing: the four stances (none, Crouch, Compress, Snap), each straight and with a full 1 s steer left and right, plus his way;
+  - **Canyon medium, seeds 1–3:** his way, and steer only;
+  - **Canyon big, seeds 1–3:** his way, and every stance steering left and right.
+- **His way:** Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred.
+- **What each ride records:**
+  - whether he fell, and when ("within 3 s" for take-offs);
+  - the fall's cause, from a prone twin on the same wave: **wave** if the twin is below 3.6 m/s at +0.7 s, **whitewater** if the froth brake is behind it, else **balance**;
+  - the lowest reserve, and the time in the red;
+  - the recovery after the turn's release;
+  - the course change 0.5 s and 1.0 s after the steer starts, and the peak turn rate;
+  - how early the bar reddened before the fall.
+- **Two runs:**
+  - **quick:** the test wave only, about 5 min, after every change;
+  - **full:** about 30–40 min, before review.
+- **The regression rule.** The report fails if a ride that lasted its hold now falls, or if any ride's lowest reserve drops by more than 0.10.
+  - The baseline moves only when an improvement is accepted on purpose.
+  - In 3.6b the steer rides may change, but the balance falls must not rise.
+- **Required in every surfer round's evidence:** the quick run while working, the full run before review. I add this rule to the orchestration file, with his word.
+- **Skills** join the benchmark when their work starts.
+
+### The gains
+
+- **3.6a part 1:**
+  - list the gains per stance and speed;
+  - lock them with tests;
+  - run the delay check where the linear model holds, at 5 m/s and up.
+- **3.6a part 2:** identify the slow board's response from the game's own ticks (3.5x's candidate 4), and check the gains below 5 m/s.
+
+### The order
+
+1. 3.6a part 1: the benchmark and the gain lock.
+2. The bar's UI piece.
+3. 3.6a part 2.
+4. 3.6b: faster turns in Compress and Crouch, judged by the benchmark.
+
+### 3.6a part 1, dispatched
+
+- **Builder:** surfer track, Opus at high effort. It is a specified build with some open parts: the fall-cause labels and the baseline's form.
+- **Branch:** `claude/stability-report`, from `claude/take-off-stall` `b66eb87c`. Its `src` is the ride build's, `1be12ee7`.
+- **Scope:**
+  - the report under `scripts/`, with its npm script;
+  - the gain-lock tests;
+  - no game behaviour change, so the Canyon byte check must stay identical.
+- **The usage guard** stops the builder at 80 % of the window.
+
+### What I ask of you
+
+1. Is the regression rule (no new falls, and no ride's lowest reserve more than 0.10 lower) strict enough to guard the turn work, without blocking honest improvements?
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-25
