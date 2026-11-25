@@ -282,7 +282,7 @@ prediction above changes.
    - **Prediction:** as §0.8's trim arms: within ±0.10 s of `cueC` (median, censored at 3 s), no more than 2 rescues.
 3. How far he pushes is still unknown; full +1 stays.
 
-### 0.16 Added 2026-11-25, about 10:52 UTC: the out-of-sample prediction (§0.10), from the seeds 1–9 read, before seeds 10–15 run
+### 0.16 Added 2026-11-25, about 10:50 UTC: the out-of-sample prediction (§0.10), from the seeds 1–9 read, before seeds 10–15 run
 
 Seeds 1–9 have been read: the saved baseline and every trim-arm run (cue, cueC, cueT, cueCT, cueTx, cueCTx, cueTB,
 never). The patch runs and the `cueCTv` runs have not started. Seeds 10–15 run with
