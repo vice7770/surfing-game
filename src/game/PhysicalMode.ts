@@ -1515,7 +1515,7 @@ export function holdLineSwitch(search?: string): { holdLine?: 'ref' } {
 /**
  * The `?leanPace=stance` dev switch (`SurfZoneConfig.leanPace`, step 3.6b; `docs/research/stability/turns/README.md`):
  * opt-in, the new surfer's lean asked moves at `LEAN_IN_RATE` scaled by (h_tall / h)², its own derivation (the body's
- * torque bound g d / h²) at the stance's height: 1 standing tall, 1.67 in Crouch, 2.33 in Compress. Only the reference's
+ * torque bound g d / h²) at the stance's height: 1 standing tall, 2.33 in Compress, 4.41 at the tuck's depth (Crouch with `deepen=on`). Only the reference's
  * pace; no force, no limit moved. Nothing on the default rider; anything but the one value, off.
  */
 export function leanPaceSwitch(search?: string): { leanPace?: 'stance' } {

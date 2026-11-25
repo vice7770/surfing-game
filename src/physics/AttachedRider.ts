@@ -1814,7 +1814,7 @@ export interface AttachedRiderOptions {
    * `docs/research/stability/turns/README.md`): `LEAN_IN_RATE` derives its 1.4 rad/s from the body's own torque bound,
    * g d / h² over the half second a rail is set in, at the tall stance's height. A deeper stance holds the body lower, so
    * by the same derivation its lean can come in faster: the pace is scaled by (h_tall / h)², h the stance table's height
-   * (`stanceAt`) at the leg's depth now: 1 standing tall, 1.67 in Crouch, 2.33 in Compress. Only the reference's pace
+   * (`stanceAt`) at the leg's depth now: 1 standing tall, 2.33 in Compress (0.30 m), 4.41 at the tuck's 0.45 m (his Crouch with `deepen=on`). Only the reference's pace
    * moves: the ankle's range, the feet's grip, the hip's range and every other limit are as they ship, and the lean asked's
    * size (the stick's rail and the cap) is unchanged. With the stick centred and the hand unused the lean asked is 0
    * either way, so a straight ride is the same. Opt-in, off by default, pinned off for online rooms; the new surfer only.

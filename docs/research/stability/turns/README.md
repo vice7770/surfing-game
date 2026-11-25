@@ -276,6 +276,14 @@ show, and the straight twins ring too).
 With the switches absent the config carries neither key, so nothing reaches the session that did not before; the
 switch-off controls (§0.6 item 3) check it. The benchmark's scripts, matrix and baselines are unchanged.
 
+*Correction, 2026-11-25, 22:00 UTC, after the arms' runs (the text above is kept as written).* On his address Crouch is
+not the 0.195 m crouch: with `deepen=on` full Crouch reaches the tuck's depth anywhere, and the onset rows read the leg's
+depth over the steer at a median 0.45 m in Crouch (0.30 m in Compress and Snap, 0.07 m with no stance, the carve's knee
+flex) on Big and on the test wave. So `leanPace=stance`'s factor is (0.84 / 0.40)² = **4.41 in Crouch** (6.2 rad/s), not
+1.67; 2.33 in Compress; about 1.1 with no stance. The hypotheses' "0.195 m" (H4) and every "Crouch" in §1–§3 are the
+tuck at 0.45 m (the stance table's `STANCE_TUCK`: height 0.40 m, upper-body yaw inertia 2.44 kg·m²). The coordinator
+flagged it; the doc comments of the switch now say so.
+
 ---
 
 ## 1. The onset, measured (switch off, the ride build)
