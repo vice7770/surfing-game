@@ -1,0 +1,5 @@
+{"check":"twistGain","feedbackAt1":[-0.007969855938995532,0.10554621377324835],"ratio13":[1,1.2999999999999696],"ratio07":[1,0.6999999999999797]}
+{"check":"ankleGain","feedbackAt1":[-0.007969855938995532,0.10554621377324835],"ratio13":[1.3000000000000005,1],"ratio07":[0.6999999999999995,1]}
+{"check":"senseShift","firstEstimateMove":{"0":6,"-2":4,"+2":8}}
+{"check":"fins, one step (the slip itself changes within the step)","force1":24.947713845338264,"ratio13":1.0579741323655885,"ratio07":0.9117487877480744}
+{"check":"fins, at the same slip","force1":101.98687195225052,"forceRatio13":1.2999999999999998,"forceRatio07":0.6999999999999998,"dampingRatio13":1.2999999999999998,"dampingRatio07":0.7000000000000001}
