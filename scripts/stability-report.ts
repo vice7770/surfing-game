@@ -1,8 +1,8 @@
 /**
  * **The stability benchmark** (`docs/research/stability/README.md`): `npm run report:stability [-- --mode full]`.
  *
- * Runs every ride of the mode, one process per ride (`scripts/stability-ride.ts`; on the Canyon one per sea, seed and
- * script), at most 4 at once from one queue; reads the game's `balanceReserve` on every frame; labels each fall's cause;
+ * Runs every ride of the mode, one process per ride (`scripts/stability-ride.ts`; on the Canyon one per sea and seed,
+ * every script of it riding that sea), at most 4 at once from one queue; reads the game's `balanceReserve` on every frame; labels each fall's cause;
  * prints a Markdown table per group and a JSON line per ride; compares the run against the committed baseline and exits
  * 1 on a regression (2 on a refused build or a failed ride). Read only: nothing here reaches the physics.
  *
@@ -64,8 +64,11 @@ function jobs(): Job[] {
   const add = (id: string, group: string, env: Record<string, string>, weight: number) => list.push({ id, group, env, file: join(OUT, `${id.replace(/:/g, '_')}.jsonl`), weight });
   const scripts = [...STANCES.flatMap((s) => STEERS.map((w) => `${s}:${w}`)), 'hisway'];
   if (MODE === 'full') {
-    for (const seed of [1, 2, 3]) for (const s of ['hisway', ...STANCES.flatMap((st) => [`${st}:left`, `${st}:right`]), 'twin']) add(`big:s${seed}:${s}`, 'big', { MODE: 'organic', SWELL: 'big', SEED: String(seed), PERIODS: '12', SCRIPTS: s }, 3);
-    for (const seed of [1, 2, 3]) for (const s of ['hisway', 'none:left', 'none:right', 'twin']) add(`med:s${seed}:${s}`, 'med', { MODE: 'organic', SWELL: 'medium', SEED: String(seed), PERIODS: '12', SCRIPTS: s }, 2);
+    // One process per sea and seed, every script of it riding that one sea (riders read the water and never push it).
+    const big = ['hisway', ...STANCES.flatMap((st) => [`${st}:left`, `${st}:right`]), 'twin'];
+    const med = ['hisway', 'none:left', 'none:right', 'twin'];
+    for (const seed of [1, 2, 3]) add(`big:s${seed}`, 'big', { MODE: 'organic', SWELL: 'big', SEED: String(seed), PERIODS: '12', SCRIPTS: big.join(',') }, 3);
+    for (const seed of [1, 2, 3]) add(`med:s${seed}`, 'med', { MODE: 'organic', SWELL: 'medium', SEED: String(seed), PERIODS: '12', SCRIPTS: med.join(',') }, 2);
   }
   for (const tw of ['catch', 'ride']) {
     for (const s of scripts) add(`tw-${tw}:${s}`, `tw-${tw}`, { MODE: 'tw', TW: tw, SCRIPT: s }, 1);
@@ -217,12 +220,12 @@ function collect(list: Job[]): { rides: Ride[]; check: Check } {
     }
   }
   for (const job of list) {
-    const script = job.env.SCRIPT ?? job.env.SCRIPTS;
-    if (script === 'twin') continue;
     const rows = byFile.get(job.id) ?? [];
     if (check.failed.includes(job.id)) continue;
     const takeOff = job.group !== 'tw-ride';
     if (job.env.MODE === 'tw') {
+      const script = job.env.SCRIPT;
+      if (script === 'twin') continue;
       const s = rows.find((r) => r.kind === 'summary');
       const frames = rows.filter((r) => r.kind === 'f');
       const twinRows = job.group === 'tw-catch' ? (byFile.get(`tw-catch:twin`) ?? []).filter((r) => r.kind === 'tw') : [];
@@ -234,11 +237,12 @@ function collect(list: Job[]): { rides: Ride[]; check: Check } {
         fell: fellAt !== null, fellAt, fellWithin3: takeOff && stood ? fellAt !== null && fellAt <= TAKE_OFF_WINDOW : null, separation: s?.cause ?? null,
       }, frames, steerOf(script), takeOff, twinVW));
     } else {
-      const twinRows = (byFile.get(`${job.group}:s${job.env.SEED}:twin`) ?? []).filter((r) => r.kind === 'tw');
-      for (const s of rows.filter((r) => r.kind === 'summary')) {
+      const twinRows = rows.filter((r) => r.kind === 'tw');
+      for (const s of rows.filter((r) => r.kind === 'summary' && r.script !== 'twin')) {
+        const script = s.script as string;
         const stood = s.stand !== null;
-        if (!stood) continue; // a wave this script did not stand on is not a ride (counted in the run's notes)
-        const frames = rows.filter((r) => r.kind === 'f' && r.wave === s.wave);
+        if (!stood) continue; // a wave this script did not stand on is not a ride
+        const frames = rows.filter((r) => r.kind === 'f' && r.wave === s.wave && r.script === script);
         const twinVW = twinAt(twinRows.filter((w) => w.wave === s.wave), s.stand + TWIN_AT);
         const fellAt = s.fellAfterStand ?? null;
         rides.push(measure({

@@ -65,8 +65,16 @@ detects, paddling, sprinting and popping on the player's cue (`playerCue`, with 
 and never push it.
 
 **Processes.** One fresh process per ride on the test wave (3.5t's warning: in-process restarts carry state on this
-line). On the Canyon, one process per (sea, seed, script): each such process carries every wave of that seed for that
-one script. At most 4 processes at once, from one queue. Each runs with `node --max-old-space-size=3200`.
+line). On the Canyon, one process per sea and seed, carrying every script of that group (his way, the steer rides and
+the twin) on every wave of that seed, as 3.5x and 3.5z ran them. At most 4 processes at once, from one queue. Each runs
+with `node --max-old-space-size=3200`.
+
+*Amended 2026-11-25, about 12:42 UTC, before any baseline:* the note first said one process per (sea, seed, script).
+One such process, Canyon Medium seed 1 with one script, had stepped its sea for 6 min and stood once, so the full mode's
+42 of them would take well over an hour with 4 at once. The Canyon riders read the water and never push it, and 3.5z
+§2 reproduced every frame row of `cue` and `cueC` from processes with other script sets, so the rides do not depend on
+which other scripts share the sea. §8's inertness control checks this again: a one-script process against the grouped
+ones.
 
 **A ride** is one stand: on the test wave, one per process; on the Canyon, one per (sea, seed, wave, script). Its id is
 `tw-catch:compress:left`, `med:s2:w6:hisway`, and so on.
