@@ -4,7 +4,14 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-25, about 10:15 UTC.**
+- **Status, 2026-11-25, about 12:00 UTC.**
+  - **Vicente's ride verdict (2026-11-25).**
+    - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
+    - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
+    - The turn is too slow in Compress and Crouch.
+  - **His next steps:** validate the gain values, and build stability tests; then faster turns.
+    - They are proposed as 3.6a (gains and a stability suite) and 3.6b (faster turns in the deep stances), after 3.5z.
+    - The order waits for his word. See consult-log entry `7ec10c29`.
   - Vicente asked to continue, and 3.5x ran on the first machine. It is done and reviewed: `claude/what-fails-first` `b0d19ee8`, from `1be12ee7`.
   - Vicente chose the returning taper. 3.5y (`?plantSpeed=taper6`) is done and reviewed: `claude/return-taper` `61dd1c43`. It loses to `plantFloor=6` his way, which stays the ride build.
   - **Vicente chose the take-off falls** (2026-11-25). 3.5z, their fore/aft diagnosis on `plantFloor=6`, is running on the first machine.
