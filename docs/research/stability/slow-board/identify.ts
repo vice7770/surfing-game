@@ -914,14 +914,15 @@ if (MODE === 'fit') {
   // Diagnostic: the autocorrelation of the fit's one-step residuals (the plant part, x[k+1] − Φ x − Γ u, less the cell's
   // mean) per cell and mechanical row, at lags of 1, 2, 5, 10 and 30 ticks, over consecutive selected pairs.
   const fits = (JSON.parse(readFileSync(process.env.FIT!, 'utf8')) as { fits: CellFit[] }).fits.filter((f) => f.enough);
-  const plants = new Map(fits.map((f) => [f.cell, plantOf(f.c)]));
+  const byFit = new Map(fits.map((f) => [f.cell, f]));
   const out: Any[] = [];
   const res = new Map<string, { k: number; ride: string; r: number[] }[]>();
   for (const ride of readRides(dirs)) for (const p of pairsOf(ride)) {
-    const pl = plants.get(p.cell);
-    if (!pl) continue;
+    const f = byFit.get(p.cell);
+    if (!f) continue;
     const a = ride.ticks[p.k], b = ride.ticks[p.k + 1];
-    const r = step(pl.phi, pl.gamma, a.x, a.u).map((v, i) => b.x[i] - v).slice(0, 8);
+    const pl = cellPlant(f, a.v, a.dep);
+    const r = step(pl.phi, pl.gamma, a.x, a.u).map((v, i) => b.x[i] - v - pl.gammaF[i] * a.ftilt).slice(0, 8);
     const list = res.get(p.cell) ?? [];
     list.push({ k: p.k, ride: ride.key, r });
     res.set(p.cell, list);
@@ -939,7 +940,8 @@ if (MODE === 'fit') {
       }
       ac[lag] = num.map((v, i) => f4(v / Math.max(1e-300, den[i])));
     }
-    out.push({ cell, n: list.length, ac });
+    const rms = mean.map((m, i) => f4(Math.sqrt(list.reduce((s2, q) => s2 + (q.r[i] - m) ** 2, 0) / list.length)));
+    out.push({ cell, n: list.length, rms, ac });
   }
   emit({ resid: out });
 } else if (MODE === 'replay') {

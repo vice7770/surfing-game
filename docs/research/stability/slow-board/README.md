@@ -145,7 +145,7 @@ truths share exactly these mechanics and differ from the grey-box plant only in 
 - Everything else stands: the cells, the data rules, the split, the validation and its pass line, the check, the
   credibility rule and the lock.
 
-### 0.3b Amendments, 2026-11-25, about 16:45 UTC, after reading the training fits and before any held-out file was read
+### 0.3b Amendments, 2026-11-25, about 16:31 UTC (`ba33049c`), after reading the training fits and before any held-out file was read
 
 1. **The face enters the grey-box through the model's own face column** (`faceColumn`, 3.5r: the heel terms at φ − τ
    and the support turned through τ), driven by the measured tilt, not through a free coefficient per row. With a free
