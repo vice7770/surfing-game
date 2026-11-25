@@ -19,7 +19,8 @@ than the new gain-lock test changes.
 
 Options: `--jobs <n>` (processes at once, default 4, at most 4), `--out <dir>` (where the per-ride files go, default
 `dist/stability/<mode>-<time>`), `--baseline <file>` (default `docs/research/stability/baseline-<mode>.json`),
-`--only <id prefix>` (a subset, for debugging; never compared as a whole run).
+`--only <id prefix>` (a subset, for debugging; never compared as a whole run), `--reuse` (re-read the ride files already
+in `--out` instead of running them).
 
 **Exit code:** 0 when no regression; 1 on a regression (§5); 2 when a ride was refused (its printed build is not the
 requested one) or a ride process failed.
@@ -149,6 +150,10 @@ Against the committed baseline of the same mode (rides matched by id):
 | `docs/research/stability/baseline-quick.md`, `baseline-full.md` | their Markdown tables |
 | `docs/research/stability/gains.md`, `gains.json` | the ride build's controller gains and the delay check's map (the gain lock's expected values) |
 | `src/physics/stabilityGains.test.ts` | the gain lock (`npx vitest run src/physics/stabilityGains`) |
+| `docs/research/stability/runs/*.tar.gz` | the raw runs behind the two baselines and the shipped-balance demonstration (1.8 MB) |
+| `docs/research/stability/checks/*.py` | the control readers (determinism, inertness, summary) |
+| `docs/research/stability/shipped-vs-ride-build.md` | the shipped balance's quick report against the ride build's baseline |
+| `docs/research/stability/byte-check.txt` | the Canyon byte check |
 | `dist/stability/…` | a run's raw files (not committed) |
 
 ## 7. Status (2026-11-25, about 14:30 UTC)
