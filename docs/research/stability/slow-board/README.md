@@ -334,6 +334,18 @@ gain lock is not extended.**
   at 3–5.5 m/s, 0.21 at 2.5–3 m/s and 0.50 at 2–2.5 m/s. Seeds 4–9: none in 3–7 m/s, 0.37 at 2.5–3 m/s and 0.89 at
   2–2.5 m/s.
 
+### 1a. The predictions (§0.11) against the outcome
+
+| # | prediction | outcome |
+| --- | --- | --- |
+| 1 | no real open-loop root in yaw and slip at 2.5–5 m/s; beats both truths in every cell | **wrong**: both identified plants carry a real root (grey-box +1.9 to +6.0 /s in 14 of 16 cells); the validation fails (§5). The table's own yaw is far off the game's (supported). |
+| 2 | A stable at 3–5 m/s, tall and Compress, 0.05–0.4 | **not testable**: no credible plant. On the uncredited plants A is "div". |
+| 3 | R stable at 6 ticks, negative a frame off | not testable |
+| 4 | the least damped mode below 1 Hz, roll with bank and yaw | not testable |
+| 5 | the balance-fall hazard highest at the lowest speeds, falling as A's damping rises | the first half holds descriptively (§7); the ρ test had no checked cell |
+| 6 | A positive at all delays at 5–7 m/s on the identified plant | **wrong**, and that is the evidence against the plants (§6) |
+| 7 | the recovery passes K2 everywhere with data, K1 at 3.5–5 m/s | **wrong for the registered method** (it fails nearly everywhere); for the amended grey-box, K1 8 of 14 and K2 6 of 16 |
+
 ## 2. Controls
 
 | control | result |
