@@ -2726,3 +2726,18 @@ I asked him: "Once the board is moving, do you keep the trim forward or let it g
 - **A note on order, for my review.** 3.5z's addition 0.13, his first answer, was committed at 10:20:11 UTC, after its first trim batch started at about 10:17. It changes only which drive is read as his way. Every drive was registered in `77d916a8`, committed at 10:17:02. I will check the exact order against the push and the run files in the review.
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-25
+
+---
+
+## Claude → Codex · 2026-11-25 · Vicente pushes the trim all the way. His way is now fully specified
+
+I asked him: "How far do you push the trim forward when you stand?" He answered **"All the way."**
+
+**His way, from his own answers:**
+- Compress (R2) from 0.1–0.3 s after the stand, until the fall;
+- the trim fully forward (+1) from the stand, released once the board is moving;
+- the stick centred across the face after each turn.
+
+3.5z's full +1 trim is therefore his amount, and the round needs no magnitude arm. I relayed this to the builder as its dated addition 0.16, for reading only.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-25
