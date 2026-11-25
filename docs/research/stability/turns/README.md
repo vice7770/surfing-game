@@ -182,3 +182,23 @@ Usage checked at each phase boundary; at 80 % of the 5-hour window I stop, push 
 Power checked before each batch (none started below 25 % on battery). At most 4 game processes at once. Raw runs go to
 the session scratchpad (`…/scratchpad/36b/`); compact results under this folder. Later changes to this section go in as
 dated amendments, written before the data they affect are read.
+
+### 0.10 Amendment, 2026-11-25, about 19:58 UTC, before any row of the onset run was read
+
+Written after one smoke ride of the probe (`tw-ride:compress:left`, run to check the probe's rows; its benchmark rows
+equal the baseline's, 105 of 105) and before the onset run's data. In that ride the twist torque sent (`heldTwist`) sits
+at the hips' ±100 N·m and changes sign every 0.15–0.2 s through the steer, the twist angle starts the steer at 0.83–0.92
+rad against `TWIST_BODY_RANGE` 0.87, and the first 0.25 s of the steer has the twist torque away from the steer. The
+twist's reaction acts on the board's yaw (`coupleYaw`: + yaws the nose to the board's left), and the stance table's
+upper-body yaw inertia grows with depth (1.44, 1.68, 1.96 kg·m² at 0, 0.195, 0.30 m). So one more hypothesis, with its
+measurement, is added. Nothing else in §0 changes.
+
+- **H8, the twist channel.** The upper body's yaw (the twist) is at or near its range when the steer starts, or the
+  controller's twist torque is saturated and points away from the steer, so its reaction yaws the board the wrong way
+  or holds it straight; larger in the deep stances. *Tells it apart:* the twist angle at +1.0 s against its range, the
+  fraction of onset frames with the twist torque at its bound, the sign of the twist torque × steer over +1.0 to
+  +1.25 s, and the yaw ledger's rider residual against the rails and fins, per stance. One ride is not a finding; the
+  prediction is that it holds on most deep-stance onsets on the test wave and on the Big swell.
+- The reader adds, per ride: the twist angle at +1.0 s, the mean twist torque × steer over +1.0 to +1.25 s, and the
+  saturated fraction (|torque| ≥ 99.5 N·m; the feet's grip bound is not logged by this run and is checked in a later
+  run if it matters).
