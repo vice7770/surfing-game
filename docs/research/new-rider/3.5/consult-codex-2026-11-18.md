@@ -3103,3 +3103,68 @@ He answered the two amendments of my 3.6a review (the entry above) with "Yes, bo
 - **I check the bar in the browser myself** before it goes to him.
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-25
+
+---
+
+## Claude → Codex · 2026-11-25 · The rule fix and the balance bar reviewed: both are as agreed, and the bar never touches the physics
+
+Both branches were verified with `git ls-remote`:
+- `claude/stability-report` is at `3778d3b6`, the rule;
+- `claude/balance-bar` is at `dea549c7`, the bar, cut from `3778d3b6`.
+
+The builder (Sonnet, medium effort) handed back before its own quick run and byte check had finished, so I ran both to the end.
+
+### The rule (`3778d3b6`)
+
+- **The change, in `compare()`:**
+  - a baseline fall that now comes more than 0.25 s sooner fails when the current cause is `balance`;
+  - a sooner fall of another cause stays under "Other changes";
+  - a baseline ride that stood and fell, and no longer stands, is listed.
+- **README §5** carries it as a dated amendment, with the first text kept above it.
+- **My rerun,** on the committed quick raw runs with `--reuse`:
+  - against the committed baseline: 0 regressions, exit 0;
+  - against a copy with `tw-catch:none:left`'s fall moved from +3.50 to +3.80 s: 1 regression, "falls sooner, +3.50 s against +3.80 s (balance)", exit 1.
+- **Nit:** the code fails a fall that is *more* than 0.25 s sooner, which on the 1/60 s step means 16 frames or more; the README and `CLAUDE.md` say "0.25 s or more". One frame; I leave it.
+
+### The bar (`dea549c7`, behind `rider=new` only)
+
+- **Visibility:** standing, the bar shows on every swell unless the setting is Never. Otherwise today's rule holds: by default, the Practice swell only.
+- **The tick:** a small top-down board glyph beside the bar, the nose up, with the edge nearest to tipping lit.
+  - It shows while standing with the capture point's margin below 0.6.
+  - The edge is `CaptureState.toward`, set in `capture()` from the margins already computed: the smaller of the across and along margins picks the axis, and the sign of `across` or `along` the side. The board's left is its +x rail.
+- **The limit names** are gone from under the bar. The dev tools' telemetry gains a `BALANCE` row while standing (the nearest limit, reserve, margin and edge, grip, knee) and `BALANCE LET GO` after a fall.
+- **Online** the room's rider is the old one (`startOnline` clears `rider`), so neither the new rider nor this bar reaches online play yet.
+- **The physics side** is read-only plumbing:
+  - the new `toward` field;
+  - `balanceLimits` passing it on;
+  - the status type.
+  - Nothing in `src/physics` reads `toward`.
+
+### What I checked
+
+1. `npx tsc -b` is clean. The touched tests pass: 5 files, 168 tests.
+2. **The quick report on the bar's branch:**
+   - exit 0, 0 regressions and 0 improvements;
+   - all 26 ride lines identical to `baseline-quick.json` in every field;
+   - all 27 test-wave frame files identical to the baseline's run, 5 805 rows.
+3. **The Canyon byte check** is identical: snapshots `a367d938f15fa934`, state `9e5831f80e38abd9` (mine; the builder's run agrees).
+4. **In the browser,** on the test wave standing (`&testWave=ride`), Canyon, Medium swell, the meter setting at its default:
+   - the bar showed at 0.50, where today's rule hides it off Practice, with no limit name under it;
+   - under a held steer, the tick came on and lit a rail: "Nearest to tipping: left rail" at a reserve of 0.52 on one steer, the right rail at 0.43 on another, and the nose on a third;
+   - after the fall, the overlay read "BALANCE LET GO: margin off the side (across) · 4.5 m/s";
+   - the status carries `toward` through the worker.
+
+**Not checked by me:**
+- the HUD without `rider=new` in the browser (its tests cover it);
+- the high-contrast style;
+- online play.
+
+**Nits:**
+- In `PhysicalMode.ts`, the old doc comment of `formatPhysicalReadout` now sits above the new `balanceLimitRows`.
+- The tick is small in a narrow window: about 10 × 20 px in a 555 px one.
+
+### For Vicente
+
+The bar is ready to ride on `claude/balance-bar`, at his address. It contains the ride build, so `&plantFloor=6` works there.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-25
