@@ -1591,6 +1591,44 @@ export interface AttachedRiderOptions {
    * off for online rooms (the `?trunk=mass` dev switch, to ride).
    */
   trunk?: 'mass';
+  /**
+   * **The lateral swing moves the body's mass** (step 3.5j), opt-in: `'mass'` turns the swing rotor's own parts — the
+   * torso, the head and both arms, which is what `SWING_INERTIA_SET`'s 6 kg·m² is a model of — about the **physical
+   * pelvis** (part 0) by `this.swing.angle`, about the board frame's **z**, which is the axis the heading's `rollAxis`
+   * already pairs the rotor's torque on. The lateral analogue of `trunk: 'mass'`: same parts, same pivot, other axis.
+   *
+   * **Why it exists, in one line.** The owner's ruling of 2026-11-19: *"the turn should not be limited, the turn is
+   * good, the fall is a result of the inbuilt balance that lack the ability to stand."* The ability he names is a
+   * **sustained lateral weight shift** — the advisor's `L·tan(tilt)`, the hips over the rail — and the shipped rotor
+   * cannot give one: its angle moved the **drawing** (`swung`, at `SWING_DRAWN_CHEST` of it) and exerted a **torque**
+   * (`rhs[7]`, `rhs[3..5]`), and nothing displaced any mass sideways. A torque that decays is transient authority; a
+   * mass that has moved is leverage, and it lasts exactly as long as the hip angle is held.
+   *
+   * **What it buys, computed from the standing posture and `PART_MASSES`.** The rotor carries 38 of the 73 kg at
+   * `Σ m·Δy = 11.459 kg·m` above the pelvis, so `localCenter.x` moves by `−0.15698·sin ψ` m: **0.0785 m at 30°**
+   * and **0.1463 m at the 1.2 rad hip range**, against a sole half-width of 0.130 m. `frame()` subtracts the posture's own
+   * `atan2(cx, hypot(cy, cz))` from the lean line to get the **leg's** bank (`:5457`), so that offset is credited as
+   * up to **11.6°** of lean the leg never has to supply, taken at the **0.711 m** standing centre-of-mass height the
+   * take-off probe measured — **13.5°** once the fold's own 0.100 m drop in that height is counted. Beside the
+   * **10.4°** the sole itself allows, this roughly **doubles** the lean available before the demand leaves the sole.
+   * ⚠️ That is an arithmetic statement about the geometry, **not** a prediction that the turn survives: the rotor
+   * still has to get there, and its demand still arrives only on the ankle's saturation overflow.
+   *
+   * **Geometry, not force.** No torque, no drive, no constant and no new quantity. The rotor's torque was already
+   * paired and already booked; `postureRate` is deliberately left at 0, exactly as `foldTrunk` leaves it, because the
+   * fold's own centre-of-mass motion must arrive through the pair and feeding it to `this.drive` would be a hidden
+   * kinematic motor. Nothing here commands a position or a velocity: the angle is whatever the rotor's own torque
+   * produced, and no command law changes — the ankle's reach, rest, spring and damper are untouched, so the ankle's
+   * large command reversals (which are also how a successful turn recovers) are not blunted.
+   *
+   * **And the drawing stops saying it twice.** `swung` re-applied `SWING_DRAWN_CHEST` (0.35) of the angle on top of
+   * the parts; with this on it stands down, so the drawn trunk is the physics' own and the rendered lateral lean is
+   * the full angle instead of 35 % of it.
+   *
+   * The new surfer (`?rider=new`) standing free only — there is no swing rotor's mass anywhere else. Off by default
+   * (the `?swing=mass` dev switch, to ride).
+   */
+  swing?: 'mass';
   /** The new surfer standing free: the board's substeps per frame (NEW_STANDING_SUBSTEPS by default; for the probes' substep trials). */
   standingSubsteps?: number;
   /**
@@ -2288,6 +2326,16 @@ export class AttachedRider {
   }
   /** Step 3.5h: the hip rotor's angle turns the mass model's own trunk, head and arms about the pelvis (`trunk: 'mass'`). */
   private readonly trunkMass: boolean;
+  /** Step 3.5j: the swing rotor's angle turns the same parts about the pelvis **across** (`swing: 'mass'`). */
+  private readonly swingMass: boolean;
+  /** Step 3.5j, read-only: the lateral fold the mass model carries this frame, rad. 0 off the switch and whenever the rotor is at 0. */
+  swingFold = 0;
+  /**
+   * Step 3.5j, read-only: the unit axis `foldSwing` turned the mass about, in `this.parts`' own board-local frame.
+   * It is `rollAxis`'s image there, negated — so `bodyFrame · swingFoldAxis` is `−rollAxis` exactly, which is the
+   * check that the mass and its booked reaction share one line at any pitch. All zeros off the switch.
+   */
+  readonly swingFoldAxis = new Vector3();
   /** A deep crouch keeps the riding stance's hip range and free arms (`stanceReach: 'keep'`, step 3.3h); undefined by default. */
   private readonly stanceReach: 'keep' | undefined;
   /** The ankle's torque bounded by the moment the soles can transmit (`ankleLimit: 'feet'`, step 3.3i); undefined by default. */
@@ -2694,6 +2742,7 @@ export class AttachedRider {
     this.deepens = options.deepen === 'on';
     this.armCarry = options.armCarry === 'on' || options.armCarry === 'rest' ? options.armCarry : undefined;
     this.trunkMass = options.trunk === 'mass';
+    this.swingMass = options.swing === 'mass';
     this.newSubsteps = options.standingSubsteps ?? NEW_STANDING_SUBSTEPS;
     this.yawScale = options.yawInertiaScale ?? 1;
     this.bankGain = options.humanGains?.bank ?? HUMAN_BANK_GAIN;
@@ -3255,6 +3304,9 @@ export class AttachedRider {
    * through the pelvis by `share` of it (standing only; the swing is 0 otherwise).
    */
   private swung(index: number, out: Vector3, share: number): Vector3 {
+    // Step 3.5j (`swing: 'mass'`): `this.parts` already carry the whole swing, so adding `share` of it again here
+    // would draw the lean 1.35 times over. The drawn trunk becomes the physics' own, at the full angle.
+    if (this.swingMass && this.freeBody) return out;
     if (index === 0 || this.phase !== 'standing' || this.swing.angle === 0) return out;
     const pelvis = this.partPosition(0, this.swingPivot);
     // The new surfer: about the body's own forward axis, which pitches with it.
@@ -5748,6 +5800,9 @@ export class AttachedRider {
       this.parts[i * 3 + 2] += this.balance.z + this.lean.z;
     }
     this.foldTrunk();
+    // Step 3.5j: after the nose-ward fold, never before it. The two rotations do not commute, and this order is the
+    // body's own chain - the trunk pitches on the pelvis, and the whole lot swings across on the same pelvis.
+    this.foldSwing();
     const center = postureCenter(this.parts, this.partMasses);
     this.localCenter.set(center.x, center.y, center.z);
   }
@@ -5793,6 +5848,94 @@ export class AttachedRider {
       const z = this.parts[i * 3 + 2] - pivotZ;
       this.parts[i * 3 + 1] = pivotY + y * cos - z * sin;
       this.parts[i * 3 + 2] = pivotZ + y * sin + z * cos;
+    }
+  }
+
+  /**
+   * **The lateral swing in the mass model** (`swing: 'mass'`, step 3.5j). The swing rotor's own parts — the torso, the
+   * head and both arms, which is what `SWING_INERTIA_SET`'s 6 kg·m² is a model of — turn about the **physical pelvis**
+   * (part 0) by `this.swing.angle`, in `this.parts`' own board-local frame. `foldTrunk`'s lateral twin: same parts,
+   * same pivot, the other axis.
+   *
+   * **⭐ THE AXIS, AND WHY IT IS NOT LOCAL +z.** `this.parts` are board-local and the posture is carried into the
+   * world by `bodyFrame`, which is `heading · Rx(framePitch) · Rz(−bank)` (`StandingBody.frame`). The rotor's
+   * reaction is booked on `rollAxis`, which is the **heading's** `−z` (`rhs[3..5] -= h·swingTorque·rollAxis`). Those
+   * two lines are the same **only on a level-pitch rider**: at 20° of body pitch they are `(0, −0.342, 0.940)` apart
+   * from `(0, 0, 1)`. A mass that moved about one line while its reaction was booked about another would **not be a
+   * paired rotor on a climb** — and a climb is exactly the state a bottom turn ends in.
+   *
+   * So the fold turns about `rollAxis`'s own image in the parts' frame, negated so that it reduces to local `+z`
+   * when the body is level and the shipped sign convention is preserved exactly:
+   *
+   *     u = −bodyFrame⁻¹ · rollAxis = −Rz(bank)·Rx(−framePitch)·(0, 0, −1)
+   *       = (−sin p·sin b,  sin p·cos b,  cos p),   p = framePitch, b = bank.angle
+   *
+   * At `p = 0` that is `(0, 0, 1)` for every bank, so the level case is the simple one and nothing is approximated
+   * there. ⚠️ **The one approximation that remains, stated:** `updatePosture` runs one line before `frame(board)`
+   * (`:3629–3634`), so `framePitch` and `bank.angle` are the previous call's — a single frame of lag, which is
+   * exactly the lag `foldTrunk` already lives with. `swingFoldAxis` is published so a probe can check the projection
+   * onto `rollAxis` rather than trust this note.
+   *
+   * **The sign.** Right-handed about `+z` takes **+y to −x**, so a **positive** `swing.angle` throws the trunk toward
+   * **−x**. That is the sense that pairs: `humanSwingStep` writes `swing.rate -= h·swingTorque/I`, so a **positive**
+   * `swingTorque` drives the angle **negative** and the trunk toward **+x**, while the same positive torque subtracts
+   * from `rhs[7]` and pushes the rest of the body toward **−x** (`:3833–3838`). **Trunk one way, the rest of the body
+   * the other, about a pelvis that does not move** — which is what an internal hip torque does, and is why this is
+   * the missing half of a pair rather than a second copy of it.
+   *
+   * **The size of it, from the standing posture and `PART_MASSES`.** The rotor is 38 of 73 kg sitting `Σ m·Δy = 11.459
+   * kg·m` above the pelvis (torso 23 kg at +0.27 m, head 5 at +0.60, arms 2×5 at about +0.22 — "about", because the
+   * arms sit 0.45 m fore and aft and the posture's heights are off the DECK, so the rocker under them counts), so
+   * `localCenter.x` moves `−(11.459/73)·sin ψ = −0.15698·sin ψ` m and `localCenter.y` drops `0.15698·(1 − cos ψ)` m.
+   * **0.0785 m across at 30°, 0.1463 m at the 1.2 rad hip range** (where the height drops 0.100 m), against the
+   * sole's own 0.130 m half-width. Measured in `swingMass.test.ts` off `riderPose` itself, not hand-computed.
+   *
+   * Standing, every part of the posture sits on the stringer (`riderPosture.regularPlaces`) and the goofy mirror only
+   * swaps parts across it, so **regular and goofy swing identically** and the pivot is the same point.
+   *
+   * **No force and no drive.** The rotor's torque was already paired and already booked; this only states where the
+   * mass it carries is. `postureRate` is left at 0 on purpose — the swing's own centre-of-mass motion arrives through
+   * the pair, and feeding it to `this.drive` would be a hidden kinematic motor.
+   */
+  private foldSwing(): void {
+    this.swingFold = 0;
+    this.swingFoldAxis.set(0, 0, 0);
+    if (!this.swingMass || !this.freeBody) return;
+    const angle = this.swing.angle;
+    const pitch = this.standingBody.framePitch;
+    const bank = this.bank.angle;
+    // Nothing asked, or a rotor or a frame that has gone non-finite: the posture stays as the balance left it. The
+    // finiteness test is not decoration — a NaN here would turn every rotor part into NaN and take the body with it.
+    if (!Number.isFinite(angle) || !Number.isFinite(pitch) || !Number.isFinite(bank) || angle === 0) return;
+    this.swingFold = angle;
+    // `rollAxis`'s own image in the parts' frame, negated: `(0, 0, 1)` on a level body, and the exact line the
+    // reaction is booked on at any pitch and bank. Written out rather than built from quaternions so the axis is a
+    // readable quantity a probe can project onto `rollAxis`.
+    const sp = Math.sin(pitch);
+    const ux = -sp * Math.sin(bank);
+    const uy = sp * Math.cos(bank);
+    const uz = Math.cos(pitch);
+    this.swingFoldAxis.set(ux, uy, uz);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const pivotX = this.parts[0];
+    const pivotY = this.parts[1];
+    const pivotZ = this.parts[2];
+    for (let i = 1; i < RIDER_PARTS.length; i += 1) {
+      // The rotor is the trunk, the head and the arms: the legs stand on the deck and the pelvis is the pivot.
+      if (!this.shifts(i)) continue;
+      const x = this.parts[i * 3] - pivotX;
+      const y = this.parts[i * 3 + 1] - pivotY;
+      const z = this.parts[i * 3 + 2] - pivotZ;
+      // Rodrigues about the unit `u`: `v cos + (u x v) sin + u (u.v)(1 - cos)`. `u` is a unit vector by construction
+      // (`(-sp sb, sp cb, cp)` has length 1 for every `p` and `b`), so no renormalisation is needed or hidden.
+      const dot = ux * x + uy * y + uz * z;
+      const cx = uy * z - uz * y;
+      const cy = uz * x - ux * z;
+      const cz = ux * y - uy * x;
+      this.parts[i * 3] = pivotX + x * cos + cx * sin + ux * dot * (1 - cos);
+      this.parts[i * 3 + 1] = pivotY + y * cos + cy * sin + uy * dot * (1 - cos);
+      this.parts[i * 3 + 2] = pivotZ + z * cos + cz * sin + uz * dot * (1 - cos);
     }
   }
 

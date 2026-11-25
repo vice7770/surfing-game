@@ -424,6 +424,15 @@ export interface SurfZoneConfig {
    */
   trunk?: 'mass';
   /**
+   * **The lateral swing moves the body's mass** (step 3.5j, the owner's 2026-11-19 ruling *"the fall is a result of
+   * the inbuilt balance that lack the ability to stand"*): the swing rotor's own parts - the torso, the head and both
+   * arms - turn about the physical pelvis ACROSS by `swing.angle`, so the hip's weight shift reaches the centre of
+   * mass, the inertia tensor, the per-part water forces, the leg's measured bank and the drawn body. The lateral twin
+   * of `trunk`. **Geometry: the rotor's torque was already paired and already booked, and no force, drive or constant
+   * is added.** The new surfer (`?rider=new`) only. Every spot. The `?swing=mass` dev switch, opt-in, to ride.
+   */
+  swing?: 'mass';
+  /**
    * 'hull': the riders' boards resolve the water's **hydrostatic support** along the **hull** normal where the deck is
    * dry and the patch planes, blending back to the water-surface normal as it floats or submerges (step 3.3d, the
    * wave-shape advisor's item 2; `RideSessionOptions.buoyFrame`, `hullForces`' `HULL_BUOYANCY`). One existing force is
