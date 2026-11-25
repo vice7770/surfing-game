@@ -38,10 +38,11 @@ const DEG = Math.PI / 180;
 const LEAN_MAX = 8 * DEG;
 const FIRST_TICK = 9;
 const SEG_MIN = 12;
-const MIN_PAIRS = 600;
-const MIN_RIDES = 8;
-const MIN_STARTS = 300;
-const MIN_START_RIDES = 5;
+const SEG_GAP = 30;
+const MIN_PAIRS = process.env.SMOKE === '1' ? 1 : 600;
+const MIN_RIDES = process.env.SMOKE === '1' ? 1 : 8;
+const MIN_STARTS = process.env.SMOKE === '1' ? 1 : 300;
+const MIN_START_RIDES = process.env.SMOKE === '1' ? 1 : 5;
 const HORIZONS = [6, 15, 30];
 const BINS: [number, number][] = [[1.5, 2], [2, 2.5], [2.5, 3], [3, 3.5], [3.5, 4], [4, 4.5], [4.5, 5], [5, 5.5], [5.5, 6], [6, 7]];
 const GROUPS: { name: string; lo: number; hi: number; knot: number }[] = [
@@ -124,17 +125,21 @@ function regressors(a: Tick, b: Tick): number[] {
   const tbar = (1 - F_MEAN) * x[9] + F_MEAN * a.u[1];
   return [x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], dbar, tbar, a.ftilt, b.hip];
 }
-interface Stats { xtx: number[][]; xty: number[][]; yty: number[]; n: number; ztx?: number[][]; ztz?: number[][]; zty?: number[][] }
+interface Stats { xtx: number[][]; xty: number[][]; yty: number[]; n: number; sx: number[]; sy: number[]; ztx?: number[][]; ztz?: number[][]; zty?: number[][]; sz?: number[] }
+/** The intercept's structure: one constant per cell (`cell`, the amended primary) or one per segment (`segment`, as first registered). */
+const STRUCT = process.env.STRUCT === 'segment' ? 'segment' : 'cell';
 const NZ = 10 + 31;
 function newStats(iv: boolean): Stats {
   const z = (r: number, c: number) => Array.from({ length: r }, () => new Array<number>(c).fill(0));
-  return { xtx: z(NR, NR), xty: z(NR, 8), yty: new Array<number>(8).fill(0), n: 0, ...(iv ? { ztx: z(NZ, NR), ztz: z(NZ, NZ), zty: z(NZ, 8) } : {}) };
+  return { xtx: z(NR, NR), xty: z(NR, 8), yty: new Array<number>(8).fill(0), n: 0, sx: new Array<number>(NR).fill(0), sy: new Array<number>(8).fill(0), ...(iv ? { ztx: z(NZ, NR), ztz: z(NZ, NZ), zty: z(NZ, 8), sz: new Array<number>(NZ).fill(0) } : {}) };
 }
 function addStats(into: Stats, from: Stats): void {
   const acc = (a: number[][], b: number[][]) => { for (let i = 0; i < a.length; i += 1) for (let j = 0; j < a[i].length; j += 1) a[i][j] += b[i][j]; };
   acc(into.xtx, from.xtx); acc(into.xty, from.xty);
-  for (let i = 0; i < 8; i += 1) into.yty[i] += from.yty[i];
+  for (let i = 0; i < 8; i += 1) { into.yty[i] += from.yty[i]; into.sy[i] += from.sy[i]; }
+  for (let i = 0; i < NR; i += 1) into.sx[i] += from.sx[i];
   into.n += from.n;
+  if (into.sz && from.sz) for (let i = 0; i < NZ; i += 1) into.sz[i] += from.sz[i];
   if (into.ztx && from.ztx) { acc(into.ztx, from.ztx); acc(into.ztz!, from.ztz!); acc(into.zty!, from.zty!); }
 }
 /** The instruments of the IV cross-check: the states, the two exogenous inputs, the steer's lags 0–30. */
@@ -145,19 +150,25 @@ function instruments(ride: Ride, k: number, reg: number[]): number[] {
 }
 /** One ride's demeaned sufficient statistics per cell. */
 function rideStats(ride: Ride, iv: boolean): Map<string, Stats> {
-  const pairs = pairsOf(ride);
+  const all = pairsOf(ride);
   const out = new Map<string, Stats>();
+  // Per cell, in tick order, so a segment can bridge the ticks the ride spends in a neighbouring cell.
+  const pairs = [...new Set(all.map((p) => p.cell))].flatMap((cell) => all.filter((p) => p.cell === cell));
   let i = 0;
   while (i < pairs.length) {
     let j = i + 1;
-    while (j < pairs.length && pairs[j].k === pairs[j - 1].k + 1 && pairs[j].cell === pairs[i].cell) j += 1;
-    if (j - i >= SEG_MIN) {
+    // Amendment (§0.2): a segment continues across gaps of up to SEG_GAP ticks while its pairs stay in the same cell
+    // (the balance's own knee drop moves the depth across the tall/crouch border tick by tick).
+    while (j < pairs.length && pairs[j].k - pairs[j - 1].k <= SEG_GAP && pairs[j].cell === pairs[i].cell) j += 1;
+    if (STRUCT === 'cell' || j - i >= SEG_MIN) {
       const seg = pairs.slice(i, j);
       const X = seg.map((p) => regressors(ride.ticks[p.k], ride.ticks[p.k + 1]));
       const Y = seg.map((p) => ride.ticks[p.k + 1].x.slice(0, 8));
       const Z = iv ? seg.map((p, q) => instruments(ride, p.k, X[q])) : [];
       const mean = (m: number[][]) => m[0].map((_, c) => m.reduce((s, r) => s + r[c], 0) / m.length);
-      const mx = mean(X), my = mean(Y), mz = iv ? mean(Z) : [];
+      // `segment`: demeaned per segment (its intercept); `cell`: raw sums, centred once per cell when solved.
+      const zero = (m: number[][]) => m[0].map(() => 0);
+      const mx = STRUCT === 'segment' ? mean(X) : zero(X), my = STRUCT === 'segment' ? mean(Y) : zero(Y), mz = iv ? (STRUCT === 'segment' ? mean(Z) : zero(Z)) : [];
       let st = out.get(seg[0].cell);
       if (!st) { st = newStats(iv); out.set(seg[0].cell, st); }
       for (let q = 0; q < seg.length; q += 1) {
@@ -167,13 +178,15 @@ function rideStats(ride: Ride, iv: boolean): Map<string, Stats> {
           for (let b = 0; b < NR; b += 1) st.xtx[a][b] += xr[a] * xr[b];
           for (let b = 0; b < 8; b += 1) st.xty[a][b] += xr[a] * yr[b];
         }
-        for (let b = 0; b < 8; b += 1) st.yty[b] += yr[b] * yr[b];
+        for (let b = 0; b < 8; b += 1) { st.yty[b] += yr[b] * yr[b]; st.sy[b] += yr[b]; }
+        for (let a = 0; a < NR; a += 1) st.sx[a] += xr[a];
         if (iv) {
           const zr = Z[q].map((v, c) => v - mz[c]);
           for (let a = 0; a < NZ; a += 1) {
             for (let b = 0; b < NR; b += 1) st.ztx![a][b] += zr[a] * xr[b];
             for (let b = 0; b < NZ; b += 1) st.ztz![a][b] += zr[a] * zr[b];
             for (let b = 0; b < 8; b += 1) st.zty![a][b] += zr[a] * yr[b];
+            st.sz![a] += zr[a];
           }
         }
         st.n += 1;
@@ -183,8 +196,24 @@ function rideStats(ride: Ride, iv: boolean): Map<string, Stats> {
   }
   return out;
 }
+/** The statistics centred on the cell's own means (one intercept per cell); a no-op for demeaned segments. */
+function centred(st: Stats): Stats {
+  const n = Math.max(1, st.n);
+  const out: Stats = {
+    xtx: st.xtx.map((row, a) => row.map((v, b) => v - (st.sx[a] * st.sx[b]) / n)), xty: st.xty.map((row, a) => row.map((v, b) => v - (st.sx[a] * st.sy[b]) / n)),
+    yty: st.yty.map((v, b) => v - (st.sy[b] * st.sy[b]) / n), n: st.n, sx: st.sx.map(() => 0), sy: st.sy.map(() => 0),
+  };
+  if (st.ztx && st.sz) {
+    out.ztx = st.ztx.map((row, a) => row.map((v, b) => v - (st.sz![a] * st.sx[b]) / n));
+    out.ztz = st.ztz!.map((row, a) => row.map((v, b) => v - (st.sz![a] * st.sz![b]) / n));
+    out.zty = st.zty!.map((row, a) => row.map((v, b) => v - (st.sz![a] * st.sy[b]) / n));
+    out.sz = st.sz.map(() => 0);
+  }
+  return out;
+}
 /** Solves the scaled normal equations: coefficients (NR × 8), and the scaled matrix's κ and the VIFs. */
-function solve(st: Stats): { c: number[][]; kappa: number; vif: number[]; r2: number[] } {
+function solve(raw: Stats): { c: number[][]; kappa: number; vif: number[]; r2: number[] } {
+  const st = centred(raw);
   const sc = st.xtx.map((row, i) => Math.sqrt(Math.max(row[i], 1e-300)));
   const live = sc.map((s) => s > 1e-12);
   const idx = sc.map((_, i) => i).filter((i) => live[i]);
@@ -203,12 +232,15 @@ function solve(st: Stats): { c: number[][]; kappa: number; vif: number[]; r2: nu
   const r2 = new Array<number>(8).fill(0).map((_, col) => {
     let sse = st.yty[col];
     for (let a = 0; a < NR; a += 1) sse -= c[a][col] * st.xty[a][col];
-    return 1 - sse / Math.max(1e-300, st.yty[col]);
+    // On the increment x[k+1] − x[k] (row `col` is state `col`), which is what the row has to explain.
+    const inc = st.yty[col] - 2 * st.xty[col][col] + st.xtx[col][col];
+    return 1 - sse / Math.max(1e-300, inc);
   });
   return { c, kappa, vif, r2 };
 }
 /** Two-stage least squares with the instruments (§0.3 item 3). */
-function solveIV(st: Stats): number[][] {
+function solveIV(raw: Stats): number[][] {
+  const st = centred(raw);
   const zz = st.ztz!;
   const sc = zz.map((row, i) => Math.sqrt(Math.max(row[i], 1e-300)));
   const idx = sc.map((_, i) => i).filter((i) => sc[i] > 1e-12);
@@ -220,7 +252,7 @@ function solveIV(st: Stats): number[][] {
   const xhx = Array.from({ length: NR }, (_, a) => new Array<number>(NR).fill(0).map((_, b) => zx.reduce((s, row, q) => s + row[a] * t1[q][b], 0)));
   const t2 = izz.map((row) => new Array<number>(8).fill(0).map((_, b) => row.reduce((s, v, q) => s + v * zy[q][b], 0)));
   const xhy = Array.from({ length: NR }, (_, a) => new Array<number>(8).fill(0).map((_, b) => zx.reduce((s, row, q) => s + row[a] * t2[q][b], 0)));
-  return solve({ xtx: xhx, xty: xhy, yty: new Array<number>(8).fill(1), n: st.n }).c;
+  return solve({ xtx: xhx, xty: xhy, yty: new Array<number>(8).fill(1), n: st.n, sx: new Array<number>(NR).fill(0), sy: new Array<number>(8).fill(0) }).c;
 }
 /** The plant (Φ 10 × 10, Γ 10 × 2) from a cell's coefficients (§0.2). */
 export function plantOf(c: number[][]): { phi: Mat; gamma: Mat } {
@@ -330,7 +362,7 @@ function fit(rides: Ride[], iv: boolean, boot: number): CellFit[] {
       const design = designOf('A', (BINS[b][0] + BINS[b][1]) / 2, GROUPS[g].knot);
       for (let it = 0; it < boot; it += 1) {
         const bs = newStats(false);
-        for (let q = 0; q < mine.length; q += 1) { const p = mine[Math.floor(rand() * mine.length)]; const x = p.stats.get(cell)!; addStats(bs, { xtx: x.xtx, xty: x.xty, yty: x.yty, n: x.n }); }
+        for (let q = 0; q < mine.length; q += 1) { const p = mine[Math.floor(rand() * mine.length)]; const x = p.stats.get(cell)!; addStats(bs, { xtx: x.xtx, xty: x.xty, yty: x.yty, n: x.n, sx: x.sx, sy: x.sy }); }
         try { const pl = plantOf(solve(bs).c); d6.push(damping(pl.phi, pl.gamma, 6, design).damping); } catch { d6.push(Number.NaN); }
       }
       cf.boot = { A6: [], q05: quantile(d6, 0.05), q50: quantile(d6, 0.5), q95: quantile(d6, 0.95) };
@@ -348,10 +380,10 @@ function step(phi: Mat, gamma: Mat, x: number[], u: number[]): number[] {
   for (let i = 0; i < 10; i += 1) { let s = gamma[i][0] * u[0] + gamma[i][1] * u[1]; const row = phi[i]; for (let j = 0; j < 10; j += 1) s += row[j] * x[j]; out[i] = s; }
   return out;
 }
-function validate(fits: CellFit[], rides: Ride[]): Any[] {
+function validate(fits: CellFit[], rides: Ride[], known?: 'K1' | 'K2'): Any[] {
   const byCell = new Map(fits.filter((f) => f.enough).map((f) => [f.cell, { f, p: plantOf(f.c), piv: f.civ ? plantOf(f.civ) : undefined }]));
   const acc = new Map<string, Any>();
-  const models = ['id', 'iv', 'table', 'game', 'persist'];
+  const models = ['id', 'iv', 'table', 'game', 'persist', ...(known ? ['known'] : [])];
   for (const ride of rides) {
     const t = ride.ticks;
     for (let k = 0; k < t.length; k += 1) {
@@ -375,6 +407,7 @@ function validate(fits: CellFit[], rides: Ride[]): Any[] {
       e.rides.add(ride.key);
       const pl: Record<string, { phi: Mat; gamma: Mat }> = { id: fit.p, table: truthAt('table', a.v, a.dep), game: truthAt('game', a.v, a.dep) };
       if (fit.piv) pl.iv = fit.piv;
+      if (known) pl.known = truthAt(known === 'K1' ? 'table' : 'K2', a.v, a.dep);
       const xs: Record<string, number[]> = {};
       for (const m of Object.keys(pl)) xs[m] = a.x.slice();
       for (let j = 1; j <= reach; j += 1) {
@@ -530,12 +563,12 @@ const OUT = process.env.OUT ?? '';
 if (MODE === 'fit') {
   const rides = readRides(dirs);
   const fits = fit(rides, true, Number(process.env.BOOT ?? 200));
-  const text = JSON.stringify({ F_MEAN, A_LAG, bins: BINS, groups: GROUPS, inputs: dirs, fits });
+  const text = JSON.stringify({ F_MEAN, A_LAG, STRUCT, bins: BINS, groups: GROUPS, inputs: dirs, fits });
   writeFileSync(OUT, text);
   emit({ fit: OUT, sha256: createHash('sha256').update(text).digest('hex'), cells: fits.length, enough: fits.filter((f) => f.enough).length, rides: rides.length, lag: lagCheck(rides) });
 } else if (MODE === 'validate') {
   const fits = (JSON.parse(readFileSync(process.env.FIT!, 'utf8')) as { fits: CellFit[] }).fits;
-  const res = validate(fits, readRides(dirs));
+  const res = validate(fits, readRides(dirs), process.env.KNOWN === 'K1' || process.env.KNOWN === 'K2' ? (process.env.KNOWN as 'K1' | 'K2') : undefined);
   writeFileSync(OUT, JSON.stringify(res));
   emit({ validate: OUT, cells: res.length, pass: res.filter((r) => r.pass).length, enough: res.filter((r) => r.enough).length });
 } else if (MODE === 'simulate') {

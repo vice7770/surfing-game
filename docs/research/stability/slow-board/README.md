@@ -60,11 +60,21 @@ ticks describe the slow board, and what does it say about A's gains below 5 m/s?
   contact substep (`settleStanding` false) between the two ticks. The share of used ticks with |φ| > 20° is reported.
   A cell needs **≥ 600 training pairs from ≥ 8 rides**, and for validation **≥ 300 held-out start ticks from ≥ 5
   rides**; otherwise it is "no data" and nothing is claimed there.
-- *Amended 2026-11-25, about 15:55 UTC, after the probe's determinism ride and before any identification file was
+- *Amended 2026-11-25, about 15:49 UTC (`adc24d11`), after the probe's determinism ride and before any identification file was
   read:* a pair is also dropped when the ankle's lag row does not hold on it (|δ[k+1] − a δ[k] − (1 − a) u_a[k]| > 1e-9).
   The command the lag follows then changed inside the tick, which the game does when the rail's bite passes 48° and the
   ankle's room shrinks substep by substep (`predictiveBank`'s `room`). On the determinism ride it was 2 of 220 pairs,
   both in the last 0.3 s before the fall; every other pair holds the lag row to 2e-16 (ankle) and 5e-14 N·m (twist).
+- *Amended 2026-11-25, about 16:00 UTC, after reading the cell counts of the first identification file (Medium seed 1,
+  training data) and before any held-out file or any validation was read:* **the intercept is one constant per cell**,
+  not one per segment. The board passes a 0.5 m/s bin in about 0.25 s (15 ticks; it decelerates at about 2 m/s²), and
+  the balance's own knee drop moves the depth across the tall/crouch border tick by tick, so the registered segments
+  were 12–15 ticks long or broken: an intercept per segment would remove almost all of a cell's slow motion (the yaw,
+  the slip, the roll-out), which is what the check needs. The face's push is carried by the face's tilt, which is a
+  regressor. The per-segment structure (gaps up to 30 ticks bridged, at least 12 pairs) is kept as the **secondary**
+  fit and taken through the same recovery, validation and check; a cell where the two structures disagree on the sign
+  of A's least damping at 6 ticks is marked structure-sensitive and is not credible. The rows' R² is reported on the
+  increment x[k+1] − x[k].
 
 ### 0.3 The closed-loop bias, and how it is handled
 
