@@ -391,3 +391,50 @@ stick does: part deflection (an ask below full lock; the stick is linear past it
 overshoots the centre (a spring-centred thumbstick swings past it), and small reversals while held. Each would reach the
 lean asked through the same 80°/s limit, so none is a step either. A recording of his stick's axis while he rides,
 replayed by the bot, would tell them apart; that is a probe, not a change, and it needs his session.
+
+## 3. The arms
+
+Both act only while a lean is asked: in both quick runs the 10 straight and his-way rides of the test wave are identical
+to the baseline in every field, and only the 16 steer rides move. With no stance the leg still flexes in a carve
+(`CARVE_FLEX`), so `leanPace=stance`'s factor is a little above 1 then and the no-stance steer rides move too.
+
+### 3.1 Quick runs (the test wave), against `baseline-quick.json`
+
+*`npm run report:stability -- --extra '&cueLater=on&plantFloor=6&<switch>' --out …` (the report's bundle built from
+`4e08941b`), 20:35 and 20:45 UTC, 10.3 min each. The pass lines' test-wave cells (`compare.py`); the regressions with
+`regress.py` (the benchmark's own frame rows: the yaw rate's ringing over the steer is its std over +1.0 to +2.0 s).*
+
+**`?leanPace=stance`: exit 1, 5 regressions, 4 improvements.**
+
+| ride | switch off | arm | what the frames show |
+| --- | --- | --- | --- |
+| `tw-catch:crouch:right` | falls +3.30 s | falls +1.67 s (balance) | the yaw rings 89 deg/s over the steer against 23, up to 216 deg/s; the margin goes at +1.57 s, inside the steer |
+| `tw-catch:compress:left` | +3.65 s | +2.90 s (balance) | turns much more (+4.9° / +32.8° at +0.5 / +1.0 s against +0.2° / +6.3°); rings 78 against 50 |
+| `tw-ride:none:right` | +4.57 s | +4.27 s (balance) | the carve's knee flex moves the no-stance pace a little; same turn, 0.3 s sooner, late in the ride |
+| `tw-ride:crouch:right` | +1.92 s | +1.55 s (balance) | the placed start's rail change; turns −9.5° at +0.5 s against +1.8° and falls inside the steer |
+| `tw-catch:snap:right` | lowest reserve 0.192 | 0.051 | falls later (+2.72 s against +2.38 s) but closer to the edge first; rings 44 against 30 |
+
+Improvements: `tw-catch:snap:right` falls later (+2.72 s against +2.38 s), `tw-ride:none:left` (+4.05 against +3.67),
+`tw-ride:crouch:left` (+2.88 against +1.67), `tw-ride:compress:left` (+2.98 against +1.70).
+Faster on the test wave: Compress on `tw-catch` passes all three metrics (+5.9° at +0.5 s, +19.3° at +1.0 s, +33 deg/s
+peak yaw, both rides); Crouch fails at +0.5 s on both seas (one pair falls, one turns away more) and `tw-ride` Compress
+fails at +0.5 s.
+
+**`?turnGains=firm`: exit 1, 4 regressions, 3 improvements.**
+
+| ride | switch off | arm | what the frames show |
+| --- | --- | --- | --- |
+| `tw-catch:crouch:right` | falls +3.30 s | +2.47 s (balance) | turns more (+18.5° at +1.0 s against +15.7°); rings 47 against 23; falls on the margin after the release |
+| `tw-catch:compress:left` | +3.65 s | +3.07 s (balance) | turns away more first (−3.9° at +0.5 s against +0.2°); rings 78 against 50, up to 216 deg/s |
+| `tw-catch:compress:right` | +3.10 s | +2.22 s (balance) | −10.5° at +0.5 s, then +40.6° at +1.0 s (against −3.9° and +2.0°); the margin goes at +1.53 s |
+| `tw-catch:snap:right` | lowest reserve 0.192 | 0.000 | rings 53 against 30, up to 180 deg/s; the same fall time |
+
+Improvements: `tw-catch:none:left` falls later (+3.77 s against +3.50 s), `tw-catch:crouch:right`'s lowest reserve
+(0.172 against 0.021, before its sooner fall), `tw-ride:crouch:right` falls later (+2.42 against +1.92).
+Faster on the test wave: at +1.0 s and in the peak yaw every Crouch and Compress cell rises (Compress `tw-catch` +19.7°
+at +1.0 s); at +0.5 s it fails in three of four cells, because the firmer gains roll the board out harder first (the
+counter-lean of §1.2 item 5 grows: −7.2° against −1.8° in `tw-catch` Compress).
+
+**Both arms fail the stability line on the quick run.** The common thread in 7 of the 9 regressions is the deep
+stances' ringing (§1.2 item 7): a turn that comes in harder or sooner swings the yaw further (std over the steer up by
+11–66 deg/s), and the margin goes on the swing. The other two (`tw-ride:none:right` late in the ride, `tw-ride:crouch:right` in the placed start's rail change) ring no more.
