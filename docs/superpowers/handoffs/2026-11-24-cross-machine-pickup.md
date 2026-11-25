@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-25, about 12:00 UTC.**
+- **Status, 2026-11-25, about 14:50 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -23,7 +23,11 @@
   - **The stability system was agreed with Vicente by grilling** (2026-11-25). The spec is consult-log entry `cef3aa44`.
     - **The bar:** the game's exact balance reserve with no look-ahead, red below 0.3, with a direction tick below 0.6, as a readout only. It is on by default behind `rider=new`, shown online and hidden in tournaments.
     - **The benchmark:** `npm run report:stability`, a fixed bot matrix judged against a committed baseline. It is required in every surfer round (`CLAUDE.md`).
-    - **3.6a part 1** (the benchmark and the gain lock) is running on `claude/stability-report`, from `claude/take-off-stall` `b66eb87c`. Then come the bar's UI piece, 3.6a part 2 (the slow board's plant) and 3.6b (faster turns).
+    - **3.6a part 1** (the benchmark and the gain lock) is done and reviewed: `claude/stability-report` `f3d7de27`, from `claude/take-off-stall` `b66eb87c`. The review is consult-log entry `c8516a81`.
+      - `npm run report:stability` works: quick (the test wave, 26 rides, 10 min) and full (227 rides, 29 min). The baselines are committed, and the gain lock is `src/physics/stabilityGains.test.ts`.
+      - His way falls for balance once in 31 Canyon stands. The steered rides fall: 78 of 186 before the release.
+      - **Two amendments wait for his word:** the tick follows the tipping margin (the reserve sits below 0.6 for most of a ride, held there by the knees); and a balance fall 0.25 s or more sooner counts as a regression.
+    - Then come the bar's UI piece, 3.6a part 2 (the slow board's plant) and 3.6b (faster turns).
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
@@ -94,8 +98,9 @@ Also open:
 | `claude/test-wave` | `0da1eda4` | the test wave (`?testWave=ride\|catch`, `&testFoam=on`), with exact restarts |
 | `claude/what-fails-first` | `b0d19ee8` | 3.5x: what fails first on `plantFloor=6` and `taper` (docs and probes; from `1be12ee7`) |
 | `claude/return-taper` | `61dd1c43` | 3.5y: `?plantSpeed=taper6` (not adopted: it loses to `plantFloor=6` his way) |
-| `claude/take-off-stall` | (running) | 3.5z: the take-off falls' fore/aft diagnosis (docs and probes; from `b0d19ee8`) |
-| `claude/the-record` | `c968561d` | the consult log (verified on the remote 2026-11-25) |
+| `claude/take-off-stall` | `b66eb87c` | 3.5z: the take-off falls' fore/aft diagnosis (docs and probes; from `b0d19ee8`) |
+| `claude/stability-report` | `f3d7de27` | 3.6a part 1: `npm run report:stability`, its baselines and the gain lock (scripts, docs and one test; from `b66eb87c`) |
+| `claude/the-record` | `c8516a81` | the consult log (verified on the remote 2026-11-25) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
