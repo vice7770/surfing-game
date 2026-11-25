@@ -60,6 +60,11 @@ ticks describe the slow board, and what does it say about A's gains below 5 m/s?
   contact substep (`settleStanding` false) between the two ticks. The share of used ticks with |φ| > 20° is reported.
   A cell needs **≥ 600 training pairs from ≥ 8 rides**, and for validation **≥ 300 held-out start ticks from ≥ 5
   rides**; otherwise it is "no data" and nothing is claimed there.
+- *Amended 2026-11-25, about 15:55 UTC, after the probe's determinism ride and before any identification file was
+  read:* a pair is also dropped when the ankle's lag row does not hold on it (|δ[k+1] − a δ[k] − (1 − a) u_a[k]| > 1e-9).
+  The command the lag follows then changed inside the tick, which the game does when the rail's bite passes 48° and the
+  ankle's room shrinks substep by substep (`predictiveBank`'s `room`). On the determinism ride it was 2 of 220 pairs,
+  both in the last 0.3 s before the fall; every other pair holds the lag row to 2e-16 (ankle) and 5e-14 N·m (twist).
 
 ### 0.3 The closed-loop bias, and how it is handled
 
