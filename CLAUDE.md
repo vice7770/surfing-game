@@ -14,7 +14,7 @@ When Vicente asks Claude to coordinate surfer or wave work, the lead advises, br
 Read recent owner feedback and the [signed Claude–Codex consultation](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md) before dispatching movement work. Verify consequential findings against the source, saved measurements or footage. Include the input, sample, time and reference frame when reporting a physical result. Record findings and corrections under your own signed heading, preserving the other reviewer’s text. Scope changes and approvals come from Vicente.
 
 Once `npm run report:stability` exists (step 3.6a), every surfer-track round includes it in its evidence. Run the quick run after each change and the full run before review.
-- **A regression** is a ride that lasted its hold and now falls, or any ride whose lowest balance reserve drops by more than 0.10.
+- **A regression** is a ride that lasted its hold and now falls, a balance fall that comes 0.25 s or more sooner, or any ride whose lowest balance reserve drops by more than 0.10.
 - **Each regression** is reported and explained before review.
 - **The baseline moves** only when Vicente accepts an improvement.
 
