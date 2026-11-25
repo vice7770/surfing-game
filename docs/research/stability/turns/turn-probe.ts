@@ -79,8 +79,15 @@ const emit = (line: unknown): void => {
 // The scripts.
 // ---------------------------------------------------------------------------------------------------------------
 type Stance = 'none' | 'crouch' | 'compress' | 'snap';
-interface Script { name: string; stance: Stance; steer: number; trim: 'none' | 'release'; twin: boolean }
-function parseScript(name: string): Script {
+interface Script { name: string; stance: Stance; steer: number; trim: 'none' | 'release'; twin: boolean; shape: 'step' | 'ramp' | 'in' | 'out' }
+function parseScript(full: string): Script {
+  // 3.6b amendment 0.11: `<script>~ramp|~in|~out`, the steer's shape (the keys' AxisRamp in and out, in only, out only).
+  const [name, shape] = full.split('~');
+  if (shape !== undefined && !['ramp', 'in', 'out'].includes(shape)) throw new Error(`unknown shape in ${full}`);
+  const base = parseScriptBase(name);
+  return { ...base, name: full, shape: (shape ?? 'step') as Script['shape'] };
+}
+function parseScriptBase(name: string): Omit<Script, 'shape'> {
   if (name === 'twin') return { name, stance: 'none', steer: 0, trim: 'none', twin: true };
   if (name === 'hisway') return { name, stance: 'compress', steer: 0, trim: 'release', twin: false };
   if (name === 'hisway:left' || name === 'hisway:right') return { name, stance: 'compress', steer: name.endsWith('left') ? 1 : -1, trim: 'release', twin: false };
@@ -91,10 +98,27 @@ function parseScript(name: string): Script {
   return { name, stance: stance as Stance, steer, trim: 'none', twin: false };
 }
 /** The stance and steer fields a script sends now (only nonzero ones, as the probes send them). */
-function stanceInput(script: Script, standing: boolean, since: number, held = standing): Record<string, number> {
+/** The keys' ramp (`src/game/InputAxes.ts` AxisRamp, RAMP_TIME 0.2 s), per ride, for the shaped steers. */
+const RAMP_TIME = 0.2;
+const ramps = new WeakMap<object, { v: number }>();
+function stanceInput(script: Script, standing: boolean, since: number, held = standing, key?: object): Record<string, number> {
   const out: Record<string, number> = {};
   if (script.stance !== 'none' && held && since >= C_AT) out[script.stance] = 1;
-  if (script.steer !== 0 && standing && since >= TURN_AT && since < TURN_AT + TURN_FOR) out.steer = script.steer;
+  const target = script.steer !== 0 && standing && since >= TURN_AT && since < TURN_AT + TURN_FOR ? script.steer : 0;
+  if (script.shape === 'step' || key === undefined) {
+    if (target !== 0) out.steer = target;
+    return out;
+  }
+  let ramp = ramps.get(key);
+  if (!ramp) { ramp = { v: 0 }; ramps.set(key, ramp); }
+  const rising = target !== 0 && (Math.abs(target) > Math.abs(ramp.v) || Math.sign(target) !== Math.sign(ramp.v));
+  const eased = script.shape === 'ramp' || (script.shape === 'in' && target !== 0 && rising) || (script.shape === 'out' && !rising);
+  if (eased) {
+    const step = STEP / RAMP_TIME;
+    const gap = target - ramp.v;
+    ramp.v = Math.abs(gap) <= step ? target : ramp.v + Math.sign(gap) * step;
+  } else ramp.v = target;
+  if (ramp.v !== 0) out.steer = ramp.v;
   return out;
 }
 /** 3.5z's `cueCTv` trim (`take-off-stall.ts` `trimOf`), verbatim for that script. */
@@ -248,7 +272,7 @@ function testWaveMode(): void {
     const since = Number.isNaN(standAt) ? -1 : t - standAt;
     const standing = session.phase === 'standing';
     // The probe's catch mode holds the stance from C_AT after the stand whatever the phase; the steer needs 'standing'.
-    const stance = stanceInput(script, standing, since, !Number.isNaN(standAt));
+    const stance = stanceInput(script, standing, since, !Number.isNaN(standAt), session);
     const trim = trimOf(script, standing, since, session, runner.water);
     const steer = stance.steer ?? 0;
     delete stance.steer;
@@ -367,7 +391,7 @@ function organicMode(): void {
     if (pop) rider.popAt = t;
     const since = rider.standAt === undefined ? -1 : t - rider.standAt;
     const standing = session.phase === 'standing';
-    const stance = stanceInput(rider.script, standing, since);
+    const stance = stanceInput(rider.script, standing, since, standing, session);
     const steer = stance.steer ?? 0;
     delete stance.steer;
     const trim = trimOf(rider.script, standing, since, session, water);

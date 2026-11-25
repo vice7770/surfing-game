@@ -23,6 +23,11 @@ def jobs(which):
         big = HIS + [f'{s}:{w}' for s in STANCES for w in STEERS] + ['twin']
         med = HIS + ['none:straight', 'none:left', 'none:right', 'twin']
         tw = [f'{s}:{w}' for s in STANCES for w in STEERS] + HIS
+    elif which == 'shape':
+        sh = [f'{d}:{w}~{x}' for d in ('crouch', 'compress', 'hisway') for w in ('left', 'right') for x in ('ramp', 'in', 'out')]
+        big = sh + ['twin']
+        med = [f'hisway:{w}~{x}' for w in ('left', 'right') for x in ('ramp', 'in', 'out')] + ['twin']
+        tw = sh
     else:
         big = HIS + ['twin']
         med = HIS + ['twin']
@@ -34,7 +39,7 @@ def jobs(which):
     for t in ('catch', 'ride'):
         for s in tw:
             out.append((f'tw-{t}:{s}', {'MODE': 'tw', 'TW': t, 'SCRIPT': s}, 1))
-        if t == 'catch' and which == 'onset':
+        if t == 'catch' and which in ('onset', 'shape'):
             out.append((f'tw-{t}:twin', {'MODE': 'tw', 'TW': t, 'SCRIPT': 'twin'}, 1))
     return sorted(out, key=lambda j: -j[2])
 

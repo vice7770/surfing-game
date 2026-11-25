@@ -19,10 +19,12 @@ def wrap(d):
 
 
 def steer_of(script):
+    script = script.split('~')[0]
     return 1 if script.endswith(':left') else -1 if script.endswith(':right') else 0
 
 
 def twin_of(script):
+    script = script.split('~')[0]
     if script.startswith('hisway:'):
         return 'hisway'
     return script.rsplit(':', 1)[0] + ':straight'
@@ -87,14 +89,14 @@ def med(xs):
     return round(st.median(xs), 2) if xs else None
 
 
-def metrics(rides):
+def metrics(rides, extra_twins=None):
     out = {}
     for rid, ride in rides.items():
         s = steer_of(ride['script'])
         if s == 0:
             continue
         prefix = rid[: -len(ride['script'])]
-        twin = rides.get(prefix + twin_of(ride['script']))
+        twin = rides.get(prefix + twin_of(ride['script'])) or (extra_twins or {}).get(prefix + twin_of(ride['script']))
         f, o = ride['f'], ride['o']
         c0 = first({k: v for k, v in f.items() if 'res' in v}, T0)
         m = {'id': rid, 'group': ride['group'], 'script': ride['script'], 'steer': s, 'fell': ride['fell'], 'twin': twin is not None}
@@ -153,6 +155,13 @@ def metrics(rides):
             m['hip'] = min(v['hip'] for _, v in oe)
             m['hipSat'] = round(sum(1 for _, v in oe if abs(v['sw']) >= v['hip'] - 1e-3) / len(oe), 3)
             m['assist'] = max(max(v['asF'], v['loF'], v['cyF']) for _, v in oe)
+            # H8: the twist at the steer's start (x steer: + the upper body turned toward the steer), the twist torque's
+            # mean x steer over the first 0.25 s (+ yaws the board toward the steer), and the yaw ledger's sources.
+            m['twA0'] = round(oe[0][1]['twA'] * s, 3)
+            q = [v for k, v in oe if k <= T0 + 0.25 + 1e-6]
+            m['tw025'] = round(sum(v['tw'] * s for v in q) / len(q), 1)
+            for key in ('yRails', 'yFins', 'yPress', 'yRider', 'yAm', 'yTot'):
+                m[key + '025'] = round(sum(v[key] * s for v in q) / len(q), 1)
 
             def reach(key, deg):
                 return next((round(k - T0, 3) for k, v in oe if v[key] * s >= deg), None)
@@ -194,7 +203,7 @@ def stance_of(script):
 
 def table(ms, groups=('tw-catch', 'tw-ride', 'med', 'big')):
     cols = ['raw0.5', 'sub0.25', 'sub0.5', 'sub1.0', 'yawPeak', 't5', 'wrongMin', 'wrongFor', 'rail0', 'railMin', 'railMinAt',
-            'bank0', 'ask05', 'bank05', 'rail05', 'ask20', 'bank20', 'rail10', 'vS0', 'cap0', 'ankleSat', 'twistSat', 'hipSat']
+            'bank0', 'ask05', 'bank05', 'rail05', 'ask20', 'bank20', 'rail10', 'vS0', 'cap0', 'ankleSat', 'twistSat', 'hipSat', 'twA0', 'tw025', 'yRails025', 'yFins025', 'yPress025', 'yRider025', 'yAm025', 'yTot025']
     lines = ['| group | stance | rides | fell < +2.0 s | t5 reached | ' + ' | '.join(cols) + ' |',
              '| --- | --- | --- | --- | --- | ' + ' | '.join('---' for _ in cols) + ' |']
     for g in groups:
