@@ -77,8 +77,8 @@ which other scripts share the sea. §8's inertness control checks this again: a 
 ones.
 
 *Amended 2026-11-25, about 13:40 UTC, after the first full run and before the full baseline:* the probes' organic drive
-drops a wave's whole trial 20 s (`TRIAL`) after placing its riders. On the first full run that cut 11 late stands
-(Medium s3w5, Big s2w5) to 1.2 s with no fall, and the report would have counted them as lasting. The runner now drops
+drops a wave's whole trial 20 s (`TRIAL`) after placing its riders. On the first full run that cut 12 late stands
+(Medium s3w5, Big s2w5) at about 1.2 s; 10 of them had not fallen, and the report would have counted those as lasting. The runner now drops
 only the riders that have not stood at 20 s, exactly as before, and lets a rider that stood ride on to its hold or its
 fall. No rider stands that did not stand in the probes, and nothing before 20 s changes. The report also marks any ride
 that neither fell nor reached 5 s as **cut**, never as lasting.
