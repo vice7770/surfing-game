@@ -392,6 +392,18 @@ overshoots the centre (a spring-centred thumbstick swings past it), and small re
 lean asked through the same 80°/s limit, so none is a step either. A recording of his stick's axis while he rides,
 replayed by the bot, would tell them apart; that is a probe, not a change, and it needs his session.
 
+**Two field reports, relayed by the coordinator after this section's runs (2026-11-25, about 21:30 UTC).**
+- He steered with the D-pad (ramped like the keys) and with Stick response: Precise; neither changed anything, he still
+  fell: "the surfer falls by drifting, the board starts drifting left and right when using the controler". He rides
+  holding R2 (Compress).
+- When he turned with the arrows he was **standing tall**; on the controller he holds **Compress**. So his "arrows work,
+  controller doesn't" is the tall stance against Compress, not the key against the stick. On Big that is 11 of 36 steer
+  rides falling before the release with no stance against 20 of 36 in Compress (§1.1), and his "drifting left and
+  right" reads as the deep stances' yaw ringing (§1.2 item 7: 25 deg/s over the steer in Compress against 11 tall).
+- For a replay, the coordinator notes that past the stick's dead zone (0.05 Steam, 0.15 other pads) the stick's value
+  replaces the keys' and the D-pad's ramped steer (`Controls.ts:206`), so a recording should take the processed request
+  (`lastRequest.steer`), not the raw axis.
+
 ## 3. The arms
 
 Both act only while a lean is asked: in both quick runs the 10 straight and his-way rides of the test wave are identical
