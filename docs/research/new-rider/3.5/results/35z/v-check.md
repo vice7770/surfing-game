@@ -1,0 +1,9 @@
+- s1: 6 cueCTv riders (4 never reach 4.4 m/s standing); rows up to the release frame: 1645 identical to cueCT / 0 differ (every field but z35)
+- s2: 7 cueCTv riders (2 never reach 4.4 m/s standing); rows up to the release frame: 920 identical to cueCT / 1 differ (every field but z35); first: [(5, 10.6333)]
+- s3: 8 cueCTv riders (5 never reach 4.4 m/s standing); rows up to the release frame: 1833 identical to cueCT / 0 differ (every field but z35)
+- s4: 8 cueCTv riders (6 never reach 4.4 m/s standing); rows up to the release frame: 1764 identical to cueCT / 0 differ (every field but z35)
+- s5: 8 cueCTv riders (7 never reach 4.4 m/s standing); rows up to the release frame: 2520 identical to cueCT / 0 differ (every field but z35)
+- s6: 10 cueCTv riders (8 never reach 4.4 m/s standing); rows up to the release frame: 3467 identical to cueCT / 0 differ (every field but z35)
+- s7: 8 cueCTv riders (5 never reach 4.4 m/s standing); rows up to the release frame: 1632 identical to cueCT / 0 differ (every field but z35)
+- s8: 5 cueCTv riders (2 never reach 4.4 m/s standing); rows up to the release frame: 834 identical to cueCT / 0 differ (every field but z35)
+- s9: 6 cueCTv riders (3 never reach 4.4 m/s standing); rows up to the release frame: 1108 identical to cueCT / 0 differ (every field but z35)

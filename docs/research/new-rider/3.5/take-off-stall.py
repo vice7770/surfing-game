@@ -947,6 +947,93 @@ def patch(tag_p, tag_b, dirs):
             print(f"| {sc} | {g} | {len(lst)} | {sum(v >= 0.25 for v in d)} / {sum(v <= -0.25 for v in d)} | {med(d, 3):+.3f} | {min(d):+.2f} to {max(d):+.2f} | {len(resc)} {resc} | {len(new)} {new} | {fmt(med(dv))} | {fmt(med(dp, 1), 1)} | {fmt(r0[0], 1)} -> {fmt(r0[1], 1)} | {pcs} |")
 
 
+def oos(tag, dirs, seeds=None):
+    """Section 0.16's out-of-sample prediction, scored stand by stand."""
+    ss = [s for s in all_stands(tag, dirs, FORE + ('cueCTv',)) if seeds is None or s.seed in seeds]
+    by = {(s.seed, s.wave, s.script): s for s in ss}
+    keys = sorted({(s.seed, s.wave) for s in ss})
+    print('## Out of sample (0.16): every stand, its stand state (`cue` row at tS = 0) and its outcomes\n')
+    print('| stand | vW | tail (m) | group | cue | cueC | cueCT | cueCTx | cueCTv | cueT | scored |')
+    print('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+    p1 = p2 = n1 = n2 = 0
+    p3 = n3 = 0
+    for seed, wave in keys:
+        c = by.get((seed, wave, 'cue'))
+        if c is None or c.f0 is None:
+            continue
+        v, tl = c.f0['vW'], c.f0['tail']
+        grp = 'tail >= 0.25' if tl >= 0.25 else ('fast, dry' if v >= 4.7 and tl < 0.10 else '—')
+        cells, score = [], ''
+        for sc in ('cue', 'cueC', 'cueCT', 'cueCTx', 'cueCTv', 'cueT'):
+            x = by.get((seed, wave, sc))
+            if x is None:
+                cells.append('—')
+                continue
+            k, _ = classify(x)
+            cells.append(f"{fmt(x.fell, 2) if x.fell is not None else '>5'} {'' if k == 'held' else k}")
+        if grp == 'tail >= 0.25':
+            n1 += 1
+            ok = all((by.get((seed, wave, sc)) is not None and classify(by[(seed, wave, sc)])[0] == 'T') for sc in ('cue', 'cueC', 'cueCT', 'cueCTx', 'cueCTv'))
+            p1 += ok
+            score = 'P1 ' + ('holds' if ok else '**fails**')
+        elif grp == 'fast, dry':
+            n2 += 1
+            x = by.get((seed, wave, 'cueC'))
+            ok = x is not None and not x.fall3
+            p2 += ok
+            score = 'P2 ' + ('holds' if ok else '**fails**')
+        y = by.get((seed, wave, 'cueC'))
+        if y is not None and classify(y)[0] == 'T':
+            n3 += 1
+            ok = all(by.get((seed, wave, sc)) is not None and abs(by[(seed, wave, sc)].fall_time(3) - y.fall_time(3)) < 0.25 for sc in ('cueCT', 'cueCTx'))
+            p3 += ok
+            score += f"; P3 {'holds' if ok else '**fails**'}"
+        print(f"| s{seed}w{wave} | {v:.2f} | {tl:.3f} | {grp} | {' | '.join(cells)} | {score} |")
+    print(f'\nP1 (tail >= 0.25 m -> T within 3 s on cue, cueC, cueCT, cueCTx, cueCTv): {p1} of {n1} hold')
+    print(f'P2 (vW >= 4.7 and tail < 0.10 m -> lasts 3 s on cueC): {p2} of {n2} hold')
+    print(f'P3 (cueC T falls: cueCT and cueCTx within 0.25 s): {p3} of {n3} hold')
+
+
+def vcheck(tag, dirs):
+    """0.15's control: `cueCTv` equals `cueCT` frame for frame (every field but z35) up to and including its release
+    frame (the first standing frame with vW >= the release speed); then where they part."""
+    for seed, path in files(tag, dirs).items():
+        rows = load(path)
+        sp = next(x for x in rows if x.get('kind') == 'control').get('trimSpeed', 4.4)
+        fr = {}
+        for x in rows:
+            if x.get('kind') == 'f' and x.get('script') in ('cueCT', 'cueCTv'):
+                fr.setdefault((x['script'], x['wave']), {})[x['t']] = x
+        same = differ = riders = 0
+        bad = []
+        never_rel = 0
+        for (sc, wave), a in fr.items():
+            if sc != 'cueCTv':
+                continue
+            b = fr.get(('cueCT', wave), {})
+            riders += 1
+            rel = None
+            for t in sorted(a):
+                x = a[t]
+                if x.get('ph') == 'standing' and x.get('vW') is not None and x['vW'] >= sp:
+                    rel = t
+                    break
+            if rel is None:
+                never_rel += 1
+            for t in sorted(a):
+                if rel is not None and t > rel + 1e-9:
+                    break
+                y = b.get(t)
+                xx = {k: v for k, v in a[t].items() if k not in ('z35', 'script')}
+                yy = None if y is None else {k: v for k, v in y.items() if k not in ('z35', 'script')}
+                if xx == yy:
+                    same += 1
+                else:
+                    differ += 1
+                    bad.append((wave, t))
+        print(f'- s{seed}: {riders} cueCTv riders ({never_rel} never reach {sp} m/s standing); rows up to the release frame: {same} identical to cueCT / {differ} differ (every field but z35){"; first: " + str(bad[:3]) if bad else ""}')
+
+
 if __name__ == '__main__':
     what = sys.argv[1]
     if what == 'repro':
@@ -959,5 +1046,5 @@ if __name__ == '__main__':
         a = sys.argv
         dump(a[2], a[3], int(a[4]), a[5], int(a[6]), *(float(v) for v in a[7:10]))
     else:
-        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never, 'budget': budget, 'froth': froth, 'counts': counts, 'tparts': tparts}[what]
+        fn = {'table': table, 'sep': separators, 'seppop': lambda tag, dirs: separators(tag, dirs, feats=FEATURES_POP), 'chain': chain, 'pairs': pairs, 'nose': nose, 'never': never, 'budget': budget, 'froth': froth, 'counts': counts, 'tparts': tparts, 'oos': oos, 'vcheck': vcheck}[what]
         fn(sys.argv[2], sys.argv[3:])
