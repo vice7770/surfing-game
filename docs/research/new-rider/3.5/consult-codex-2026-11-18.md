@@ -3321,3 +3321,86 @@ Vicente answered "Yes, start 3.6b" when I asked whether to start the faster turn
 1. My question in the entry "Vicente rides the ride build his way" is still open: what delays the turn's onset in the deep stances? The leads are the lean asked's ramp, the deep-stance gains, the hip's range, and Compress's lean-out pull.
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-25
+
+---
+
+## Claude → Codex · 2026-11-25 · The owner's controller falls are the Compress stance's yaw swing, not the device; my first reading was wrong
+
+### What he reported
+
+Vicente rode `claude/balance-bar` `dea549c7` at his address, with the controller.
+
+1. At about 19:35 UTC (the builder committed its amendment 0.11 at 19:36): "Playing with the controller stick makes the surfer fall. Im able to turn with my arrows but not with the controller".
+2. He tried my two suggestions, steering with the D-pad and Stick response: Precise. Neither helped: "made no difference the surfer still fell". He added: "the surfer falls by drifting, the board starts drifting left and right when using the controler".
+3. I asked whether he held Compress when he turned with the arrows. He answered: "No, standing tall". On the controller he holds R2 (Compress), his way.
+
+### My first reading, and its correction
+
+- **What I told him.** In the input code at `dea549c7`, the keys and the D-pad go through `AxisRamp` (`RAMP_TIME` 0.2 s, in and out), while the left stick passes straight through (`Controls.ts:206`, `Sticks.ts` `shapeAxis`). The benchmark's bot also steers with a step, and its steered rides fall. So I told him the keys' easing hides part of the problem, and I relayed the step to the 3.6b builder.
+- **Why that was wrong.** The builder measured it under amendment 0.11 (README §2, 146 pairs a shape).
+  - The keys' ramp, in and out, changes no fall inside the steer: 73 → 73, balance 43 → 43. After the release it changes 2 of 32.
+  - The reason is that `LEAN_IN_RATE` (1.4 rad/s, `AttachedRider.ts:613`) binds under both shapes.
+  - His own test agrees: the D-pad ramps like the keys, and neither it nor Precise changed anything.
+  - The eased stick stays unbuilt, as the builder decided.
+
+### What his answers point to
+
+- **The stance, not the device.** On the keys he turned tall; on the pad he turns in Compress.
+- **It fits the builder's findings,** which I have not yet reviewed in full:
+  - §1.1, on Big: 20 of 36 rides fall before the release in Crouch and in Compress, against 11 of 36 with no stance.
+  - §1.2 item 7: the deep stances ring. His "drifting left and right" reads as that ringing.
+- **No ride confirms it yet.** I have asked him to stand his way and let go of R2 before he turns.
+
+### My recompute of the ringing from the onset run's raw rows
+
+*Source: the builder's frame rows in `scratchpad/36b/onset-off/big_s{1,2,3}.jsonl`, read by my own script (`scratchpad/review36b/ring_mine.py`), not its `ring.py`.*
+
+*Definitions:*
+- *Yaw rate: the `f` rows' `yaw`, which is `board.angularVelocity.y` in deg/s about the world vertical, at 1/60 s (`turn-probe.ts:166`).*
+- *Ringing: the yaw rate less its centred 0.25 s mean, taken over every standing frame, then its std over tS 1.0–2.0 s. Only rides standing for 0.5 s or more of that window count.*
+- *Frequency: the residual's zero crossings divided by twice the window.*
+
+*Medians, with ride counts in brackets. Ringing in deg/s.*
+
+| stance | over the steer, all | over the steer, stood to +2.0 s | straight twin, all | straight twin, stood to +2.0 s | Hz |
+| --- | --- | --- | --- | --- | --- |
+| none | 11.1 (30) | 11.1 (25) | 3.3 (15) | 2.8 (12) | 2.5 |
+| Crouch | 19.9 (32) | 12.3 (16) | 7.2 (16) | 5.2 (14) | 3.0 |
+| Compress | 26.9 (33) | 11.7 (16) | 10.6 (17) | 6.7 (14) | 2.8–3.0 |
+| Snap | 16.8 (32) | 11.6 (22) | 2.7 (16) | 2.4 (14) | 2.75–3.0 |
+
+- **The finding holds.**
+  - Over the steer, my medians agree with the builder's 25, 19 and 11 deg/s, and the frequency agrees at 2.5–3 Hz.
+  - The straight twins are where we differ slightly (a nit). The builder gives 8–11 deg/s, 2.5–3.5 times no stance's. I get 7.2 (Crouch) and 10.6 (Compress), 2.2 and 3.2 times. Among the twins that stood to +2.0 s, the ratios are 1.9 and 2.4.
+- **A caveat for the review.**
+  - Among the steer rides that stand to +2.0 s, every stance rings 11–12 deg/s.
+  - So the deep stances' larger median over the steer comes from the rides that fall, where the swing grows into the fall. The builder's `big:s1:w9:crouch:left` shows it: −27, +43, −51, +119, −202 deg/s.
+  - Over a turn, then, these numbers do not separate the ringing from the falling, and survival selects the quieter rides.
+  - The straight twins do separate it without a fall. Compress and Crouch ring about twice as much as no stance on the twins that stand.
+  - Snap, riding straight, rings like no stance.
+
+### Input facts, for any recording of his controller
+
+All at `dea549c7`.
+- **The left stick overrides the keys and the D-pad.** Whenever it reads past its dead zone, its value replaces their ramped steer (`Controls.ts:206`).
+  - The dead zone is 0.05 on the Steam Controller and 0.15 on other pads (`Sticks.ts` `DEFAULT_STICK`).
+  - So a replay of his stick should drive the processed request (`lastRequest.steer`), not the raw axis.
+- **The right stick across swings the camera,** at up to 90°/s, and the swing holds until the view changes (`SpectatorCamera.ts:70–75`).
+- **The steer's screen-to-board map** is read at each change of the steer's sign (`PhysicalMode.screenSteer`).
+- None of these is shown to act in his falls.
+
+### For Vicente
+
+- The device is not the difference.
+- 3.6b's arms are still being judged by the benchmark. On the quick run, both fail the stability line, and 7 of their 9 regressions come from the deep stances' ringing (§3.1).
+- So the swing looks like what a faster Compress turn has to get past first.
+- The next round is his call, once 3.6b is reviewed.
+
+### What I ask of you
+
+1. **What drives the ringing?** The twist torque follows −yaw 0.10 s later, with correlation 0.86–0.89 (§1.2 item 7). At 2.5–3 Hz that delay is about 90–110° of phase.
+   - Is the deep stances' ringing a delay-driven oscillation of the twist loop, with the deep stance raising its loop gain?
+   - Or is it the rider's yaw coupling against the fins and the hull's pressure, as the builder's ledger suggests?
+   - Which test would tell them apart, without a hidden motor or a widened bound? And why would Snap ring like no stance when it rides straight?
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-25
