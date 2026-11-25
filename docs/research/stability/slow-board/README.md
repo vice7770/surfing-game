@@ -107,20 +107,23 @@ rides) of A's least damping at 6 ticks, 5–95 %. A cell with κ > 1e4 or VIF(δ
 
 The known-plant recovery (§0.8) was run during development on five of the six training files (Medium seeds 1–2, Big
 seeds 1–3; their own black-box fit supplied the disturbance), as a test of the code. It fails, and it fails for the
-reason the brief named. Least damping of A at 5 / 6 / 7 ticks, K2 (A's own design plant closed with A), on the
-recovered plant against the known one, typical cells:
+reason the brief named. A closed on the recovered plant against A closed on the known plant, K2 (A's own design plant
+closed with A), 14 cells (`dev/rec-*/check*.json` in the scratchpad): the number of cells within 0.04 at both 5 and 7
+ticks, and of cells with a real root outside the unit circle ("div") where the known plant has +0.16 to +0.20:
 
-| disturbance injected | direct LS (registered) | IV, states as their own instruments (registered) | feasible GLS, AR(2) per row | IV, every regressor on the stick and lean lags | grey-box (below) |
+| disturbance injected | direct LS (registered) | IV, states their own instruments (registered) | feasible GLS, AR(2) per row | IV, every regressor on the stick's and lean's lags | grey-box (below) |
 | --- | --- | --- | --- | --- | --- |
-| none | 5 and 7 ticks within 0.04 in every cell | as direct | within 0.04 | within 0.04 but one cell | within 0.02 |
-| white, the game's own RMS | within 0.04 in 12 of 14 cells, div in 2 | div or off in 4 of 11 | div in 3 of 14 | — | — |
-| the game's own residuals, time-shuffled | 10 of 12 cells close | — | — | — | — |
-| **the game's own residuals (registered)** | **div (a real root outside the unit circle) in 9 of 14 cells** where the known plant is +0.16 to +0.20 | **div in 8 of 11** | **div in 8 of 14** | **div in 9 of 12** | **5 and 7 ticks within 0.04 in 12 of 14; div in 1** |
+| none | 14 close, 0 div | 11, 0 | 14, 0 | 11, 0 | 14, 0 |
+| white, the game's own RMS per state | 10, 2 | 2, 2 | 9, 2 | — | — |
+| the game's own residuals, shuffled in time (12 cells) | 9, 1 | — | — | — | — |
+| the game's own residuals, halved | 3, 5 | — | — | — | — |
+| the game's own residuals on the selected ticks only | 1, 6 | — | — | — | — |
+| **the game's own residuals (registered)** | **1, 8** (3 more negative) | **1, 8** | **2, 9** | **0, 9** | **12, 1** |
 
 The game's residuals are strongly colored (lag-1 autocorrelation 0.6–0.98 on most rows, gone by about 5 ticks, and
 correlated across rows): with that color, every black-box fit of the 96 mechanical coefficients turns a disturbance
 the controller answers into spurious plant dynamics. Halving the disturbance, or injecting it only on the selected
-ticks, does not cure it. Shuffling it in time does: it is the color, not the size.
+ticks, does not cure it. Shuffling it in time mostly does: it is the color, not the size.
 
 **The method from here (amended):** a **grey-box fit**. The plant is the model's own (`plantAt` at each tick's own
 speed and depth: the two-body rider, the ankle's 800 N·m/rad spring and 80 N·m·s/rad damper, the twist rotor, the
