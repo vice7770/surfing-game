@@ -77,6 +77,7 @@
       - Diagnosis only: docs, probes and diagnostic knobs, with no arm.
       - **First, the matched delay:** the design, the filter, the predictor and the senses moved together to 4 and 8 ticks.
       - **Then the board's response** to the balance's two commands, measured with kicked twins. These are probe-only, one-tick kicks on a deterministic replay of the same ride, so the wave's forcing cancels between the twins. The response is compared stage by stage with the design's own model.
+        - Vicente approved the kicks by name: "Yes, use the nudges" (consult log `d15c1492`).
       - **Last, the check:** whether that response, closed with the balance's own design, reproduces the game's ringing.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
@@ -84,7 +85,7 @@
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `ae22e9bb`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `d15c1492`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -155,7 +156,7 @@ Also open:
 | `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
 | `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
 | `claude/board-response` | `5f69e9dc` | 3.6d, running: the matched delay, then the board's response by kicked twins (diagnosis only; from `5f69e9dc`; the builder's commits follow) |
-| `claude/the-record` | `ae22e9bb` | the consult log (verified on the remote 2026-11-26) |
+| `claude/the-record` | `d15c1492` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
