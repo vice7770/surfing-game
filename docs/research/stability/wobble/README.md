@@ -226,3 +226,15 @@ At most 8 game processes at once (the machine has 14 cores; nothing else heavy r
 its own 4 and nothing else beside it. Raw runs in the session scratchpad (`…/scratchpad/36c/`), and the ones the tables
 need archived into `runs/` here. Later changes to §0 go in as dated amendments, written before the rows they govern are
 read. If I fit anything, the held-out rows are read blind. I stop at a clean commit if the coordinator says so.
+
+---
+
+## 1. The riderless yaw budget closes (M1)
+
+*Plane water: `budget.ts` (`results/budget-plane.md`), and the switch's own test (`src/physics/yawLedgerClosed.test.ts`,
+5 heels × 30 steps). Canyon water: the base run's bare boards (`bare.py`, `results/budget-canyon.md`). Frame: the world's
+up, N·m, + the nose toward the board's +x; mean torque over the 1/60 s step.*
+
+| water | boards | steps | closed residual, largest \|·\| | shipped residual |
+| --- | --- | --- | --- | --- |
+| plane, slopes (0.20, −0.08), 6 m/s, heels −20° to +20° | 5 | 60 each | 4.8 × 10⁻¹⁴ N·m | 38.43, 51.04, 73.61, 92.16, 93.93 N·m on the first step (heels −20, −10, 0, +10, +20°); Codex's +38.43 and +93.93 |

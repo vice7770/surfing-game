@@ -34,7 +34,8 @@ W_KEYS = ['om', 'p', 'yFin', 'yRail', 'yP', 'yB', 'yAm', 'yRad', 'yFr', 'yFro', 
           'qFin', 'qRail', 'qP', 'qB', 'qAm', 'qRad', 'qFr', 'qFro', 'qBed', 'qGy', 'qSuc', 'qRid', 'qTot',
           'twAct', 'twA', 'twR', 'wAct', 'wK', 'wC', 'le', 'lr', 'lrr', 'lk', 'ank', 'aRest']
 SCRIPTS = ['none:straight', 'crouch:straight', 'compress:straight', 'snap:straight', 'hisway'] if not STEER else None
-rides, _ = load(d, w_keys=W_KEYS, o_keys=('roll',), scripts=set(SCRIPTS) if SCRIPTS else None, groups={'big'})
+GROUP = args[args.index('--group') + 1] if '--group' in args else 'big'
+rides, _ = load(d, w_keys=W_KEYS, o_keys=('roll',), scripts=set(SCRIPTS) if SCRIPTS else None, groups={GROUP})
 
 
 def get(ride, i, k):

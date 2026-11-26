@@ -88,12 +88,29 @@ for rid, ride in sorted(rides.items()):
                 hcs.append(round(math.degrees(cur), 1))
                 cur = 0.0
         hcs.append(round(math.degrees(cur), 1))
+    # Not pre-registered (a description, added after reading the first table): the speed term against the yaw swing,
+    # corr(speedAcross_alt(t + lag), −Ω_alt(t)) at lags 0..8 frames, the best lag and its correlation, frames 53..escape.
+    sp = [w.get(i, {}).get('cSA') for i in range(a - 14, e + 1)]
+    oo = [w.get(i, {}).get('om') for i in range(a - 14, e + 1)]
+    best = None
+    if None not in sp and None not in oo and e - a > 12:
+        spa, ooa = centred(sp), centred(oo)
+        for lag in range(0, 9):
+            pairs = [(spa[k + lag], -ooa[k]) for k in range(len(ooa) - lag) if spa[k + lag] is not None and ooa[k] is not None]
+            if len(pairs) < 10:
+                continue
+            mx = sum(x for x, _ in pairs) / len(pairs); my = sum(y for _, y in pairs) / len(pairs)
+            sxy = sum((x - mx) * (y - my) for x, y in pairs); sxx = sum((x - mx) ** 2 for x, _ in pairs); syy = sum((y - my) ** 2 for _, y in pairs)
+            c = sxy / math.sqrt(sxx * syy) if sxx > 0 and syy > 0 else 0
+            if best is None or c > best[1]:
+                best = (lag, c, sxy / syy if syy > 0 else None)
     tall = rides.get(rid.rsplit(':', 2)[0] + f":none:{'left' if steer > 0 else 'right'}")
     straight = rides.get(rid.rsplit(':', 2)[0] + f":{sc.split(':')[0]}:straight") if sc.split(':')[0] not in ('hisway',) and not sc.startswith('release') else rides.get(rid.rsplit(':', 2)[0] + ':hisway')
     out.append({
         'id': rid, 'script': sc, 'escape': ride['escape'], 'fell': ride['fell'], 'side': 'inside' if side == steer else 'outside', 'sideways': sideways,
         'd_across': round(d_all, 4), 'd_offset': round(d_off, 4), 'd_felt': round(d_felt, 4), 'd_speed': round(d_vel, 4),
         'felt_vs_VdChi': None if corr is None else round(corr, 3), 'halfcycles': hcs,
+        'speed_vs_yaw': None if best is None else {'lag': best[0], 'corr': round(best[1], 3), 'slope': None if best[2] is None else round(best[2], 3)},
         'sw': sw_std(ride, a, e), 'sw_tall': sw_std(tall, a, e) if tall and (tall['fell'] is None or tall['fell'] * 60 > e + 8) else None,
         'sw_straight': sw_std(straight, a, e) if straight and (straight['fell'] is None or straight['fell'] * 60 > e + 8) else None,
     })
@@ -120,6 +137,15 @@ for g in sorted(by):
                  f"{median([r['d_across'] for r in rs]):+.3f} | {median([r['d_offset'] for r in rs]):+.3f} | {median([r['d_felt'] for r in rs]):+.3f} | {median([r['d_speed'] for r in rs]):+.3f} | "
                  f"{big} of {len(rs)} | {median(cs) if cs else float('nan'):+.2f} ({len(cs)}) | {grown} of {len(grow)} | "
                  f"{median([r['sw'] for r in rs]) or float('nan'):.1f} / {median([r['sw_tall'] for r in rs]) or float('nan'):.1f} ({sum(1 for r in rs if r['sw_tall'])}) / {median([r['sw_straight'] for r in rs]) or float('nan'):.1f} ({sum(1 for r in rs if r['sw_straight'])}) |")
+lines.append('')
+lines.append('*Not pre-registered (a description added after the table above was read):* the speed term against the yaw swing, the best correlation of speedAcross_alt (lagged 0–8 frames) with −Ω_alt from 0.12 s before the steer to the escape, and the slope there (m/s per rad/s).')
+lines.append('')
+lines.append('| drive | falls with the series | best lag, median (frames) | correlation, median | slope, median (m/s per rad/s) |')
+lines.append('| --- | --- | --- | --- | --- |')
+for g in sorted(by):
+    rs = [r for r in by[g] if r['speed_vs_yaw']]
+    if rs:
+        lines.append(f"| {g} | {len(rs)} | {median([r['speed_vs_yaw']['lag'] for r in rs])} | {median([r['speed_vs_yaw']['corr'] for r in rs]):+.2f} | {median([r['speed_vs_yaw']['slope'] for r in rs if r['speed_vs_yaw']['slope'] is not None]):+.3f} |")
 lines.append('')
 lines.append('Per fall:')
 lines.append('')
