@@ -8,7 +8,7 @@
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { median, modelOpen, waveErr, SENSE_ROWS, type Resp } from '../response/responseLib';
+import { median, modelOpen, SENSE_ROWS, type Resp } from '../response/responseLib';
 import { FIT_MODE, SPEED_FLOOR, binOf, disc, fitSets, freeResp, loadRuns, ltvResp, openResp, outOf, predErr, type FitSet } from './fitLib';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,6 +28,13 @@ const L: string[] = [`# 3.6e question 2: the held-out prediction (${files.map((x
 const summary: Any = { opened, files: files.map((x) => x.split('/').pop()), stances: {} };
 /** The senses of a full-state response (as the probe's rows), for 3.6d's waveform error. */
 const sensesOf = (G: Float64Array[]): Resp => G.map((x) => outOf(x));
+// Fix after the first opening crashed on its first set, before any output (README §0.11): 3.6d's `waveErr` runs to
+// H = 90 ticks and these responses are 60 long; the senses' waveform error is taken over m = 1 … 60, as e is.
+const waveErr = (a: Resp, b: Resp, rows: number[]): number => {
+  let num = 0, den = 0;
+  for (let m = 1; m <= 60; m += 1) for (const o of rows) { const d = a[m][o] - b[m][o]; num += d * d; den += b[m][o] * b[m][o]; }
+  return den > 0 ? Math.sqrt(num / den) : Number.NaN;
+};
 const measured = (s: FitSet): Resp => s.set.g;
 for (const [script, label] of STANCES) {
   const fit = JSON.parse(readFileSync(join(fitDir, `fit-${label}.json`), 'utf8'));
