@@ -1,0 +1,8 @@
+Thu Nov 26 17:53:29 UTC 2026
+spun up on the CPU in 33.9 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36g/byte/state-36g.json
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 0.91/1.00, roller 0.49/0.59, front 0.00/0.00, lip 0.02/0.02, foam 1.75/1.92, airSources 0.05/0.06, aeration 0.84/0.95, contact 0.00/0.00, board 0.48/0.67, bubbles 0.12/0.14, spray 0.21/0.30, sounds 0.00/0.00, snapshotFields 2.93/3.15, snapshot 3.33/3.58, summary 0.27/0.33
+  CPU stages per step (step − water + snapshot + summary): 8.69/9.39; water (CPU solver, not timed on the device) 55.4
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+exit 0
+Thu Nov 26 17:58:04 UTC 2026
