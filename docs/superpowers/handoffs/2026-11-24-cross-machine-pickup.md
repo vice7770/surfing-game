@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 13:50 UTC.**
+- **Status, 2026-11-26, about 14:55 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -94,14 +94,23 @@
       - **The fit** (`plantAt`'s own parameters) halves the error on every fresh Compress nudge but misses the bar narrowly: 0.514 against 0.5, within sampling. The fitted numbers are not physical.
       - **The closure** (the fitted model with the shipped design) matches the game's swing frequency on the fitting seeds only. On the fresh seeds it misses by +0.30 and +0.51 Hz in Compress. The registered waveform bound was out of reach for any one response per speed bin.
       - **The review's new reading:** the model's 0.244 m lever is the game's own geometry. So the open question is why the game's board barely feels the body's sideways momentum, which may be a question about the game's physics, not only about the balance's picture.
-      - **Open, needs his word:** a candidate 3.6f, diagnosis, tracing where the rider's sideways momentum goes in the game's coupled solve (no hidden motor). Nothing is proposed for the balance yet.
+      - **Open:** where the rider's sideways momentum goes in the game's coupled solve. That is 3.6f, below. Nothing is proposed for the balance yet.
+    - **3.6f is running** (Vicente: "Yes, start 3.6f", 2026-11-26; dispatched as consult log `dab31365`).
+      - Opus at xhigh, on `claude/rider-momentum` from `ef7908f2` (pushed at `abe24730`), in `.claude/worktrees/rider-momentum`. The brief is in `docs/research/stability/rider-momentum/`.
+      - **Diagnosis only:** a code read plus a small probe. No arm, and no fix even if a leak is found; a fix would need his word.
+      - **The plan:**
+        - trace how the body's momentum is carried as the board turns;
+        - measure the momentum accounting per substep, with controls;
+        - measure the yaw inertia the board feels with the bank ledger's unit impulses;
+        - check the ledger's booking while he stands;
+        - give a verdict with sizes: a leak in the coupling, the reaction booked as water, or a freedom the model lacks.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `7c86cfa9`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `dab31365`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -173,7 +182,8 @@ Also open:
 | `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
 | `claude/board-response` | `4a50e650` | 3.6d: the matched delay sets the swing's size and part of its frequency; the command path and senses match the balance's model and the board's mechanics do not (docs, probes and diagnostic knobs, off by default; from `5f69e9dc`) |
 | `claude/board-fit` | `ef7908f2` | 3.6e: the board barely feels the rider's sideways momentum in yaw and rolls far lighter than the balance's picture; the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only (docs, fits and probes; from `4a50e650`) |
-| `claude/the-record` | `7c86cfa9` | the consult log (verified on the remote 2026-11-26) |
+| `claude/rider-momentum` | `abe24730` | 3.6f, running: where the rider's sideways momentum goes when the board turns (diagnosis only; from `ef7908f2`; the builder's commits follow) |
+| `claude/the-record` | `dab31365` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
