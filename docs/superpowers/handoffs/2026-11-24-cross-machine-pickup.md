@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 12:30 UTC.**
+- **Status, 2026-11-26, about 13:50 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -86,22 +86,22 @@
         - The game's own damping is within about ±0.04 of zero, with its sign set by the read-out.
         - A ledger lead: the board's immediate yaw after an ankle nudge is the fins against the rider's coupling.
       - **Open:** fitting `plantAt`'s mechanical terms to the twins, read blind on held-out kicks. That is 3.6e, below. A design on a corrected model would be an arm and would move the gain lock.
-    - **3.6e is running** (Vicente: "Yes, start 3.6e", 2026-11-26; dispatched as consult log `4144ff19`).
-      - Opus at xhigh, on `claude/board-fit` from `4a50e650`, in `.claude/worktrees/board-fit`. The docs and brief are in `docs/research/stability/board-fit/`.
-      - Diagnosis only: fits, scripts and probes, with the shipped design and the gain lock untouched.
-      - **The plan:**
-        - the game's derivatives term by term from 3.6d's twins;
-        - a nested grey-box fit of `plantAt`'s own parameters, gated by a known-plant recovery;
-        - a blind test on fresh twins from Big seeds 4 and 5;
-        - the fitted model closed with the shipped design, against the game's rings and the delay sweeps.
-      - Last, model-only, a design built on the fitted model, as a number for Vicente's next decision.
+    - **3.6e is done and reviewed** (Vicente: "Yes, start 3.6e", 2026-11-26; dispatched as consult log `4144ff19`; the review is `7c86cfa9`).
+      - It is on `claude/board-fit` `ef7908f2`, from `4a50e650`: docs, fits and probes, with no `src` change. The full report (227 of 227 and 26 of 26 identical) and the byte check are identical. The held-out seeds stayed blind until the fits were frozen.
+      - **Two of the board's terms, measured and confirmed by the coordinator's own regression:**
+        - The board barely feels the rider's sideways momentum in yaw: those terms are 0–9 % of the model's, and the yaw inertia it feels is the legs' share alone (1.1–1.3 kg·m² in Compress, against the model's 5.6).
+        - The board and the water roll with an inertia of 0–0.3 kg·m², against the model's 0.63–1.0.
+      - **The fit** (`plantAt`'s own parameters) halves the error on every fresh Compress nudge but misses the bar narrowly: 0.514 against 0.5, within sampling. The fitted numbers are not physical.
+      - **The closure** (the fitted model with the shipped design) matches the game's swing frequency on the fitting seeds only. On the fresh seeds it misses by +0.30 and +0.51 Hz in Compress. The registered waveform bound was out of reach for any one response per speed bin.
+      - **The review's new reading:** the model's 0.244 m lever is the game's own geometry. So the open question is why the game's board barely feels the body's sideways momentum, which may be a question about the game's physics, not only about the balance's picture.
+      - **Open, needs his word:** a candidate 3.6f, diagnosis, tracing where the rider's sideways momentum goes in the game's coupled solve (no hidden motor). Nothing is proposed for the balance yet.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `4144ff19`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `7c86cfa9`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -172,8 +172,8 @@ Also open:
 | `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
 | `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
 | `claude/board-response` | `4a50e650` | 3.6d: the matched delay sets the swing's size and part of its frequency; the command path and senses match the balance's model and the board's mechanics do not (docs, probes and diagnostic knobs, off by default; from `5f69e9dc`) |
-| `claude/board-fit` | `4a50e650` | 3.6e, running: the balance's picture of the board fitted to the kicked twins, tested blind (diagnosis only; from `4a50e650`; the builder's commits follow) |
-| `claude/the-record` | `4144ff19` | the consult log (verified on the remote 2026-11-26) |
+| `claude/board-fit` | `ef7908f2` | 3.6e: the board barely feels the rider's sideways momentum in yaw and rolls far lighter than the balance's picture; the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only (docs, fits and probes; from `4a50e650`) |
+| `claude/the-record` | `7c86cfa9` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
