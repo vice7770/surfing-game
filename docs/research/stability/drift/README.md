@@ -184,3 +184,10 @@ with the better notch": the twist scale is the only C1 that helps, and `wobbleNo
 are used, **`pushTwist=0.5&wobbleNotch=2` is started now, speculatively**, beside `pushTwist=0.35`. The rule's own C3
 (the better of `pushTwist` 0.5 / 0.35 by still falling, then regressions; the better of the two notches likewise) is
 the C3 of record: if it is another pair, it is run too, and the speculative run is reported as an extra row.
+
+### 0.12 Amendment 3, 2026-11-26, 20:48 UTC, before any number of the run it names was read
+
+`wobbleNotch=1` is read: it has fewer still falling than `wobbleNotch=2`, so it is the better notch. The C3 of record is
+therefore `pushTwist=<0.5 or 0.35>&wobbleNotch=1`; `pushTwist=0.35` is still running. **`pushTwist=0.5&wobbleNotch=1`
+is started now**; if `pushTwist=0.35` turns out the better twist scale, `pushTwist=0.35&wobbleNotch=1` is run as well and
+is the C3 of record. `pushTwist=0.5&wobbleNotch=2` (amendment 2) is an extra row.
