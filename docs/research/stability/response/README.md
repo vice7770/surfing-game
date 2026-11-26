@@ -494,7 +494,7 @@ at the same kick time closed with the controller's exact perturbation map (A's o
 | | Compress (38 sets) | tuck (37) | tall (26) |
 | --- | --- | --- | --- |
 | **the closed twins** (the game's own loop around its ride): pooled peak; Prony f; ζ; q₂ (medians) | 2.55 Hz; 2.56 Hz; **+0.019**; 0.79 | 2.84; 2.73; **+0.039**; 0.61 | 2.17; 2.13; **+0.058**; 0.48 |
-| the model's own closed loop at the same ticks (S1) | —; 2.78; **0.727**; 0.000 | —; 3.25; **0.656**; 0.000 | —; 2.36; **0.806**; 0.000 |
+| the model's own closed loop at the same kick ticks (S1, §4.2's 40 / 42 / 28 responses) | —; 2.78; **0.727**; 0.000 | —; 3.25; **0.656**; 0.000 | —; 2.36; **0.806**; 0.000 |
 | the reproduction: pooled peak; f; ζ; q₂ | 2.16; 2.70; −0.056; 2.03 | 2.89; 3.01; +0.011; 0.87 | 2.36; 2.20; −0.075; 2.57 |
 | … the waveform error, Ω / the senses (median) | 1.58 / 1.51 | 0.88 / 0.79 | 2.17 / 1.96 |
 | … sets passing (±0.15 Hz and ±25 % on q₂) | 2 of 38 | 1 of 37 | 0 of 26 |
