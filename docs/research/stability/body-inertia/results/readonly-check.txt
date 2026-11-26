@@ -1,0 +1,6 @@
+the five twin files: sha1 identical before (17:07:59) and after (17:59:34) the round's reads
+53d3a988b5c59be60ce43fb3082cd0707f900359  /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36d/twins/big_s1.jsonl
+2cce0fd75fe5fbd3458095b4f9c5070c780023db  /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36d/twins/big_s2.jsonl
+b5bb853e7f76aa0b902408d520446868564b0971  /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36d/twins/big_s3.jsonl
+a70241644e8035bc843b6ab6e5a44c90d00ea4a3  /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36e/heldout/big_s4.jsonl
+845b460e49e01fa545233cab5c045cbeb3bd9e93  /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36e/heldout/big_s5.jsonl

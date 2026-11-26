@@ -1,0 +1,7 @@
+stability full: 33 processes, 4 at once, build &cueLater=on&plantFloor=6, into /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36g/rep/full
+**Regressions: 0.**
+**Improvements: 0** (not written into the baseline without `--update-baseline`).
+Wall time 67.3 min. Exit 0.
+227 of 227 baseline ride lines identical; 0 differ; 0 only in the run; 0 missing
+26 of 26 baseline ride lines identical; 0 differ; 0 only in the run; 0 missing
+started 17:00:25 UTC, ended 18:07:44 UTC, at e3449861 (src and scripts as fc466712)

@@ -185,6 +185,8 @@ dated amendments below, committed before the numbers they govern are read.
 | 17:54:34 | question 3's tables and amendment 2 committed, before amendment 2 ran | `974bc53e` |
 | 17:55:27 | amendment 2's reader committed; run 17:55:27–17:55:58 | `2b690902` |
 | 17:56:28 | amendment 2's tables committed | `7f8f5579` |
+| 17:58:04 | the byte check done: identical | `ff97c563` (the write-up) |
+| 18:07:44 | the full stability report done: 0 regressions, 227 of 227 and 26 of 26 identical | this commit |
 
 ## 1. Controls (before any P_0 number)
 
@@ -376,12 +378,12 @@ game change to try from this round.
 
 | control | result |
 | --- | --- |
-| the full stability report, `npm run report:stability -- --mode full`, from 17:00:25 UTC at `e3449861` | PENDING |
-| the Canyon byte check (`scripts/m1-cpu-bench.ts` bundled with rolldown, prelude `globalThis.location = { search: '?canyonWaves=true' };`, `--spot canyon --steps 3600`, a fresh state file); the bundle is byte-identical to 3.6f's past its first line | PENDING |
+| the full stability report, `npm run report:stability -- --mode full`, 17:00:25–18:07:44 UTC at `e3449861` (67.3 min: the machine was shared with other sessions' runs and this round's readers) | exit 0, **0 regressions**, 0 improvements; **227 of 227** ride lines identical to `baseline-full.json` in every field, its **26 of 26** test-wave lines identical to `baseline-quick.json` (3.6c's `same.py`; `results/report-full.txt`) |
+| the Canyon byte check (`scripts/m1-cpu-bench.ts` bundled with rolldown, prelude `globalThis.location = { search: '?canyonWaves=true' };`, `--spot canyon --steps 3600`, a fresh state file); the bundle is byte-identical to 3.6f's past its first line; 17:53:29–17:58:04 | snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`: **identical** (`results/byte-check.txt`) |
 | `npx tsc -b` (17:53:29) | exit 0 |
 | the gain lock, `npx vitest run src/physics/stabilityGains` | **5 of 5** |
 | `git diff fc466712 --stat -- src scripts` | **empty** (`src` and `scripts` unchanged; the quick report is not needed) |
-| the twins read only | PENDING |
+| the twins read only | the five twin files' sha1 identical before (17:07:59) and after (17:59:34) the reads (`results/readonly-check.txt`) |
 
 ## 9. What I could not settle
 
