@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 16:30 UTC.**
+- **Status, 2026-11-26, about 17:05 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -115,14 +115,20 @@
         - At the stand, the legs' spin starts from the board's.
 
         All three are small except where the feet have already lost their hold.
-      - **Next, waiting for Vicente:** a candidate 3.6g, model-only. It sets the picture's own nudge responses, with and without the body's inertia, against the game's twins.
+    - **3.6g is running** (Vicente: "Yes, start 3.6g", 2026-11-26; dispatched as consult log `a606635c`, time corrected in `e97b3cd0`).
+      - Opus at high, on `claude/body-inertia` from `fc466712` (pushed at `e3449861`), in `.claude/worktrees/body-inertia`. The brief is in `docs/research/stability/body-inertia/`.
+      - **Model-only diagnosis:** no game change, no arm, no gain change. `riderBody=control` is not ridden in the game without his word.
+      - **The question:** which body the game's board follows in 3.6d's kicked twins. Either the picture's two-body body, with its own rotational inertia (step 3.4a, `riderBody=two`), or one without it (`riderBody=control` is the pre-3.4a version), or something between.
+        - 3.4a found the inertia predicts his lean about three times better.
+        - 3.6f, and 3.4a itself, found it makes a sideways push meet 3–4 times the game's mass.
+      - **The plan:** score the open nudges by 3.6e's error, with and without the inertia, by channel, on the fitting and fresh seeds apart. Close each picture with the shipped design and compare the ring. As the method's own control, put the picture's own nudges through 3.6e's regression.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `0247a8e2`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `e97b3cd0`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -195,7 +201,8 @@ Also open:
 | `claude/board-response` | `4a50e650` | 3.6d: the matched delay sets the swing's size and part of its frequency; the command path and senses match the balance's model and the board's mechanics do not (docs, probes and diagnostic knobs, off by default; from `5f69e9dc`) |
 | `claude/board-fit` | `ef7908f2` | 3.6e: the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only; its term table (the board barely feeling the rider in yaw, rolling far lighter) is withdrawn by the 3.6f review (docs, fits and probes; from `4a50e650`) |
 | `claude/rider-momentum` | `fc466712` | 3.6f: the game's coupled solve conserves the rider's momentum, and the board meets the body's push at its arm; 3.6e's term table could not see it; the picture's body has a rotational inertia the game's lacks (docs and probes; from `ef7908f2`) |
-| `claude/the-record` | `0247a8e2` | the consult log (verified on the remote 2026-11-26) |
+| `claude/body-inertia` | `e3449861` | 3.6g, running: which body the board follows, with or without the body's own rotational inertia in the balance's picture (model-only diagnosis; from `fc466712`; the builder's commits follow) |
+| `claude/the-record` | `e97b3cd0` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
