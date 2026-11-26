@@ -16,6 +16,13 @@
  * - `fins`: every fin's force and its implicit damping × this (the fin's lift slope).
  * - `designDepth`: ≥ 0, the depth the controller's design is scheduled at, whatever the leg's (−1, off).
  * - `splitDepth`: ≥ 0, the depth the rider's yaw inertia's lower and upper shares are read at (`coupleYaw`) (−1, off).
+ *
+ * **Step 3.6d's two** (`docs/research/stability/response/README.md` §0.3), the same rules:
+ * - `designDelay`: ≥ 0, the ticks every design the controller builds assumes (`scheduledDesign`: the design's own
+ *   `steps`, so the senses' line, the filter's age and the predictor all move with it); its cache key carries them
+ *   (−1, off: the shipped `PREDICT_DELAY`, 6 ticks).
+ * - `captureDelay`: ≥ 0, the ticks (1/60 s each) every reader of `HumanBalance`'s own sensing line reads it late, and
+ *   the line's span widened to keep them (−1, off: `BALANCE_DELAY`, 0.1 s).
  */
 export const WOBBLE = {
   knee: 1,
@@ -25,10 +32,12 @@ export const WOBBLE = {
   fins: 1,
   designDepth: -1,
   splitDepth: -1,
+  designDelay: -1,
+  captureDelay: -1,
 };
 
 /** Whether every knob is at its identity (for probes to print). */
 export function wobbleOff(): boolean {
   return WOBBLE.knee === 1 && WOBBLE.ankleGain === 1 && WOBBLE.twistGain === 1 && WOBBLE.senseShift === 0 && WOBBLE.fins === 1
-    && WOBBLE.designDepth < 0 && WOBBLE.splitDepth < 0;
+    && WOBBLE.designDepth < 0 && WOBBLE.splitDepth < 0 && WOBBLE.designDelay < 0 && WOBBLE.captureDelay < 0;
 }

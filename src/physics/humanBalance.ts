@@ -23,6 +23,8 @@
  * progress: with them the bars do not pass (docs/research/new-rider/3.2/README.md).
  */
 
+import { WOBBLE } from './wobbleKnobs';
+
 /** The active loops' delay, s (leg postural responses start at about 90–100 ms; Nashner 1977). */
 export const BALANCE_DELAY = 0.1;
 /** The muscles' lag behind the command, s (provisional; the design's). */
@@ -298,7 +300,9 @@ export interface CaptureState {
 
 /** The new surfer's human balance: the delay line, the roll loop's rest, the order of the moves, the capture point and the reserve. */
 export class HumanBalance {
-  private readonly line = new DelayLine(5, BALANCE_DELAY + 0.02);
+  // Step 3.6d's diagnostic knob (`wobbleKnobs.ts`, `captureDelay`; −1 by default, read by no address): the span kept
+  // long enough for the line read that many ticks (1/60 s) late. At −1 the shipped span.
+  private readonly line = new DelayLine(5, WOBBLE.captureDelay < 0 ? BALANCE_DELAY + 0.02 : Math.max(BALANCE_DELAY, WOBBLE.captureDelay / 60) + 0.02);
   private clock = 0;
   /** The roll's lagged ankle rest, rad; the body's bank the latest substep (NaN before the first), rad. */
   rollRest = Number.NaN;
@@ -363,13 +367,21 @@ export class HumanBalance {
     return this.bankRate;
   }
 
+  /**
+   * The time the line is read at: BALANCE_DELAY ago. Step 3.6d's diagnostic knob (`wobbleKnobs.ts`, `captureDelay`; −1
+   * by default, read by no address) reads it that many ticks (1/60 s) ago instead; at −1 the shipped expression.
+   */
+  private sensedAt(): number {
+    return WOBBLE.captureDelay < 0 ? this.clock - BALANCE_DELAY : this.clock - WOBBLE.captureDelay / 60;
+  }
+
   /** The body's own bank, rad, and its rate, rad/s, as sensed BALANCE_DELAY ago. */
   sensedBank(): number {
-    return this.line.at(this.clock - BALANCE_DELAY, BANK);
+    return this.line.at(this.sensedAt(), BANK);
   }
 
   sensedBankRate(): number {
-    return this.line.at(this.clock - BALANCE_DELAY, BANK_RATE);
+    return this.line.at(this.sensedAt(), BANK_RATE);
   }
 
   /**
@@ -397,7 +409,7 @@ export class HumanBalance {
 
   /** How far past the feet's edge the capture point was BALANCE_DELAY ago, m (0 inside). */
   get sensedCapturePast(): number {
-    return this.line.at(this.clock - BALANCE_DELAY, CAPTURE_OUT);
+    return this.line.at(this.sensedAt(), CAPTURE_OUT);
   }
 
   /**
@@ -409,7 +421,7 @@ export class HumanBalance {
    * the design's order of the moves puts it. Nothing in the game reads this one; the probes do.
    */
   get sensedCaptureAcross(): number {
-    return this.line.at(this.clock - BALANCE_DELAY, CAPTURE_ACROSS);
+    return this.line.at(this.sensedAt(), CAPTURE_ACROSS);
   }
 
   /**
@@ -417,7 +429,7 @@ export class HumanBalance {
    * was BALANCE_DELAY ago, m, signed with that side (board +x; 0 inside). See `CaptureState.hipPast`.
    */
   get sensedCaptureHip(): number {
-    return this.line.at(this.clock - BALANCE_DELAY, CAPTURE_HIP);
+    return this.line.at(this.sensedAt(), CAPTURE_HIP);
   }
 
   /**

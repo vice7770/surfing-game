@@ -1485,7 +1485,10 @@ export const SCHEDULE_RAILS = RAIL_ANGLES.map((a) => (a * Math.PI) / 180);
 const designCache = new Map<string, Design>();
 /** The design at a table point (cached for the page; the default weights unless given). */
 export function scheduledDesign(speed: number, depth: number, rail = 0, weights?: DesignWeights): Design {
-  const key = `${speed}|${depth}|${r3(rail)}|${weights ? JSON.stringify(weights) : ''}`;
+  // Step 3.6d's diagnostic knob (`wobbleKnobs.ts`, `designDelay`; −1 by default, read by no address): the ticks ride in
+  // the key only when it is set, so at −1 the shipped key, bit for bit.
+  const key = WOBBLE.designDelay < 0 ? `${speed}|${depth}|${r3(rail)}|${weights ? JSON.stringify(weights) : ''}`
+    : `${speed}|${depth}|${r3(rail)}|${weights ? JSON.stringify(weights) : ''}|delay${WOBBLE.designDelay}`;
   let d = designCache.get(key);
   if (!d) {
     const w = weights ?? DEFAULT_WEIGHTS;
@@ -1509,12 +1512,14 @@ export function scheduledDesign(speed: number, depth: number, rail = 0, weights?
     // cache's key carries. Omitted, `plantAt` reads every table at `speed`, exactly as it did.
     const face: { tableSpeed: number } | undefined = w.plantSpeed !== undefined ? { tableSpeed: equivalentSpeed(speed, w.plantSpeed) } : undefined;
     const { y, t } = plantAt(speed, depth, { rail, sink: w.heaveSense, ...(body !== undefined ? { body } : {}), ...floor, ...ladder, ...face });
-    d = design(y, t, w);
+    // Step 3.6d (`designDelay`): the design built for that many ticks; at −1 the shipped call.
+    d = WOBBLE.designDelay < 0 ? design(y, t, w) : design(y, t, w, WOBBLE.designDelay * CONTROL_STEP);
     if (w.heaveSense && (w.heaveGains ?? 'free') === 'free' && d.phi.length > N_STATE) {
       // The gains stay the shipped ones, designed on the free plant, with no gain on the four board states: the rider
       // feels and anticipates the board, and does not try to steer it. `DesignWeights.heaveGains` has the measurement.
       const ten = plantAt(speed, depth, { rail, ...(body !== undefined ? { body } : {}), ...floor, ...ladder, ...face });
-      const gains = design(ten.y, ten.t, { ...w, heaveSense: false });
+      const gains = WOBBLE.designDelay < 0 ? design(ten.y, ten.t, { ...w, heaveSense: false })
+        : design(ten.y, ten.t, { ...w, heaveSense: false }, WOBBLE.designDelay * CONTROL_STEP);
       const pad = new Array<number>(d.phi.length - N_STATE).fill(0);
       d = { ...d, k: gains.k.map((row) => [...row, ...pad]) };
     }
