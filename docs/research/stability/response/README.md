@@ -271,6 +271,15 @@ in `…/scratchpad/36d/`; the ones the tables need archived into `runs/` here. L
 amendments, written before the rows they govern are read. Nothing is fitted to the game's rows except the damped
 sinusoid's read-out, which has no held-out role. I stop at a clean commit if the coordinator says so.
 
+### 0.11 Amendments
+
+1. *2026-11-26 about 10:20 UTC, before any twin row is read:* the closing (§0.6) uses the open-loop responses to 90
+   ticks, so an open set that feeds a closing must also stand through 1.5 s and pass the linearity line over 1.5 s
+   as well as over the registered 1.0 s. The stage table keeps the registered 1.0 s. The smoke ride used to test the
+   pipeline (Big seed 1, PERIODS 3, Compress with its twins) is read for its controls only (the zero twins, the
+   pre-kick equality, the held difference at the kick, the masks, the linearity numbers), never for a response; the
+   readers are tested on the known plant (§0.6) and committed before any game response is read.
+
 ### 0.10 The order of the round (UTC, 2026-11-26)
 
 | time | step |
