@@ -1,0 +1,23 @@
+{
+ "none:straight": {
+  "designDelay 4": 2.89,
+  "designDelay 8": 2.11,
+  "off": 2.31,
+  "senseShift -2": 4.26,
+  "senseShift +2": 1.93
+ },
+ "crouch:straight": {
+  "designDelay 4": 3.26,
+  "designDelay 8": 2.54,
+  "off": 2.9,
+  "senseShift -2": 3.73,
+  "senseShift +2": 2.33
+ },
+ "compress:straight": {
+  "designDelay 4": 3.08,
+  "designDelay 8": 2.36,
+  "off": 2.67,
+  "senseShift -2": 3.72,
+  "senseShift +2": 2.05
+ }
+}
