@@ -226,6 +226,14 @@ commit if the coordinator says so.
    - **Reruns with this probe (sha1 `19a792ec…`)**: the three glides again and Big seed 1's base rides without twins
      (amendment 1's base rerun was stopped at 15:25, before its first ride; no row of it was read).
    - **Prediction:** roA − hipA − gyA − axisA closes to ≤ 1 % of RMS(roA); roF − axis − gyF closes likewise.
+3. *2026-11-26, about 15:36 UTC, after reading the twin regressions of `regress.ts` (C4, C4b, Q2, Q4, all three stances)
+   and before running the analysis it adds; exploratory, it decides nothing:* **the lever's twin difference split into
+   the force's change at the base's arm and the arm's change against the base's force.** Per frame, with the base ride's
+   own arm and contact force (its `m` rows, the same wave and frame): δ(levL) ≈ −a_fwd,0 δJ_side − J_side,0 δa_fwd and
+   δ(levF) ≈ a_side,0 δJ_fwd + J_fwd,0 δa_side, each regressed with 3.6e's 14 regressors as in `regress.ts`
+   (`decomp.ts`). Why: in `regress.ts` the rider's yaw per β (−250 N·m/rad in Compress above 8.7 m/s, "a term the model
+   lacks" in 3.6e) sits in the lever (−lev −208 of −251), and the arm along the board moves with the body's pitch
+   freedom w′, which the model lacks; this split says which part carries it.
 
 ### 0.9 The order of the round (UTC, 2026-11-26)
 
