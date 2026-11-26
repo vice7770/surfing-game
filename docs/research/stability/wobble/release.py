@@ -53,6 +53,10 @@ for rid, r in rides.items():
     x['kt60'], x['ktY60'] = (None, None) if w60 is None else (w60['kt'], w60['ktY'])
     rs = [w[i]['lr'] for i in range(12, 121) if i in w]
     x['restMax'] = max(rs) if rs else None
+    # The rise's fastest rate over +1.0..+1.5 s (m/s), and the balance's own knee drop (`human.knees`, 0..1) at +1.0 s.
+    rr = [w[i]['lrr'] for i in range(60, 91) if i in w]
+    x['rateMax'] = max(rr) if rr else None
+    x['knees60'] = None if w60 is None else w60['kn']
     if r['fell'] is not None and r['cause'] == 'balance' and r['escape'] is not None and r['escape'] < 2.0:
         e = round(r['escape'] * 60)
         f = {round(q['tS'] * 60): q for q in r['standing']}
@@ -75,8 +79,8 @@ for x in rows:
     by.setdefault((x['group'], x['drive']), []).append(x)
 lines = ['# 3.6c M7: a turn just after letting go of Compress', '',
          'Both sides pooled. Falls by the benchmark\'s cause rule (balance / wave / whitewater). Depths in m below the riding stance; rest max: the rest\'s highest point over +0.2..+2.0 s (+ over the riding stance). Medians.', '',
-         '| sea | drive | rides | falls < +2.0 s (b / w / ww) | falls +2.0..3.5 s (b / w / ww) | lasting | balance < 2.0: sideways / inside | leg depth at +1.0 s | room depth at +1.0 s | knee travel: room / leg | rest rate at +1.0 s | rest max | swing over the steer (deg/s) |',
-         '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |']
+         '| sea | drive | rides | falls < +2.0 s (b / w / ww) | falls +2.0..3.5 s (b / w / ww) | lasting | balance < 2.0: sideways / inside | leg depth at +1.0 s | room depth at +1.0 s | knee travel: room / leg | knee drop at +1.0 s | rest rate at +1.0 s / fastest in +1.0..1.5 s (m/s) | rest max | swing over the steer (deg/s) |',
+         '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |']
 for g in ('tw-catch', 'tw-ride', 'med', 'big'):
     for dr in DRIVES:
         xs = by.get((g, dr), [])
@@ -87,7 +91,7 @@ for g in ('tw-catch', 'tw-ride', 'med', 'big'):
         bal = [x for x in xs if x.get('sideways') is not None or x.get('inside') is not None]
         lines.append(f"| {g} | {dr} | {len(xs)} | {c(0, 2, 'balance')} / {c(0, 2, 'wave')} / {c(0, 2, 'whitewater')} | {c(2, 3.5, 'balance')} / {c(2, 3.5, 'wave')} / {c(2, 3.5, 'whitewater')} | "
                      f"{sum(1 for x in xs if x['fell'] is None)} | {sum(1 for x in bal if x.get('sideways'))} of {sum(1 for x in bal if x.get('sideways') is not None)} / {sum(1 for x in bal if x.get('inside'))} of {sum(1 for x in bal if x.get('inside') is not None)} | "
-                     f"{median([x['depth60'] for x in xs]):.3f} | {median([x['room60'] for x in xs]):.3f} | {median([x['kt60'] for x in xs]):.3f} / {median([x['ktY60'] for x in xs]):.3f} | {median([x['rate60'] for x in xs]):+.3f} | {median([x['restMax'] for x in xs]):+.3f} | {median([x['sw'] for x in xs]) or float('nan'):.1f} |")
+                     f"{median([x['depth60'] for x in xs]):.3f} | {median([x['room60'] for x in xs]):.3f} | {median([x['kt60'] for x in xs]):.3f} / {median([x['ktY60'] for x in xs]):.3f} | {median([x['knees60'] for x in xs]):.2f} | {median([x['rate60'] for x in xs]):+.3f} / {median([x['rateMax'] for x in xs]):+.3f} | {median([x['restMax'] for x in xs]):+.3f} | {median([x['sw'] for x in xs]) or float('nan'):.1f} |")
 lines.append('')
 lines.append('**Paired by wave and side** (fall time, a lasting ride 5.0 s): the release ride against Compress held (`hisway:<side>`) and against tall (`none:<side>`).')
 lines.append('')

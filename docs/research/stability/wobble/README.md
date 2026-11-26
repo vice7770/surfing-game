@@ -238,3 +238,55 @@ up, N·m, + the nose toward the board's +x; mean torque over the 1/60 s step.*
 | water | boards | steps | closed residual, largest \|·\| | shipped residual |
 | --- | --- | --- | --- | --- |
 | plane, slopes (0.20, −0.08), 6 m/s, heels −20° to +20° | 5 | 60 each | 4.8 × 10⁻¹⁴ N·m | 38.43, 51.04, 73.61, 92.16, 93.93 N·m on the first step (heels −20, −10, 0, +10, +20°); Codex's +38.43 and +93.93 |
+| Canyon Big seeds 1–3, a bare board copied from the `none:straight` ride at tS 0.5 s (5.3–10.0 m/s) | 18 | 120 each | 1.9 × 10⁻¹⁴ N·m | 0.51–40.76 N·m per board (its largest step) |
+
+- **The budget closes.** With the duplicate impulse left out (and `suction` in), a board with no rider shows no rider
+  torque, on plane water and on the Canyon's own water, to 10⁻¹⁴ N·m. The shipped residual is recovered exactly from the
+  closed one (`rider − duplicate + suction`, the switch's test), and the board's state is bit for bit the same with the
+  ledger off, shipped and closed (the test; and control 1 below: the probe's benchmark rows equal the baseline's).
+- **On ridden frames the duplicate was small** (`dup.py`, `results/dup-ridden.md`, the base run's Big standing frames):
+  0.4–0.5 N·m median (2 N·m RMS) against a rider term of 4.5 N·m median (17–40 N·m RMS). So 3.6b's ledger columns were
+  about a tenth off on the Canyon, not grossly; they are now exact. The closed entries sum to the board's own I·ΔΩ to the
+  rows' rounding (0.003 N·m).
+- Every yaw number below is the closed ledger's, about the world's up (+ toward the board's +x), mean over the step.
+
+## 3. Question 2: how the swing becomes the sideways tip (M6)
+
+*Base run, Canyon Big seeds 1–3, the balance falls whose escape (the benchmark's `escapeAt`) is inside the steer
+(+1.0 to +2.0 s), causes by the benchmark's rule. Frames: the capture point and its parts in the board frame (x across,
++ the +x rail), m; Ω about the world's up. From the steer's start (frame 60) to the escape's frame. `tip.py`,
+`results/tip-big.md` (every fall listed).*
+
+| drive (both sides) | balance falls, escape inside the steer | sideways at the first `beyond` frame | inside / outside the turn | Δ across | Δ body offset | Δ felt tilt term | Δ speed term | swing std over the same frames: the fall / the same wave's tall steer / the same wave's straight ride (deg/s) | half-cycle peaks grow (last two > first two) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Compress (= his way on Big) | 12 | 12 of 12 | 11 / 1 | +0.500 | +0.099 | −0.000 | +0.403 | 36.0 / 12.6 / 18.2 | 7 of 9 |
+| tuck (Crouch, `deepen=on`) | 14 | 9 of 9 (5 with no sample) | 13 / 1 | +0.458 | +0.076 | +0.006 | +0.363 | 33.2 / 11.8 / 8.8 | 12 of 14 |
+| Snap | 13 | 11 of 11 | 12 / 1 | +0.471 | +0.065 | +0.017 | +0.372 | 11.7 / 13.4 / 3.2 | 8 of 13 |
+| tall | 2 | 2 of 2 | 2 / 0 | +0.286 | +0.110 | −0.000 | +0.177 | 19.5 / — / 9.2 | 2 of 2 |
+
+1. **The crossing is the body's speed across the feet, not the felt vertical.** Of the capture point's 0.46–0.50 m
+   move toward the edge (median, Compress and the tuck), 0.36–0.40 m is the speed term (`speedAcross / omega`, the body's
+   velocity across relative to the feet), 0.08–0.10 m the body's offset across the deck, and the felt vertical's tilt
+   term changes by 0.000–0.006 m. In 0 of 12 Compress falls is the felt term the largest. **My prediction 5 (the felt
+   tilt carries it) was wrong.** The felt vertical does follow the pair's sideways acceleration where it could be
+   measured (correlation of its across part with V·dχ/dt −0.88 to −0.94, 2 and 5 falls), but the deck rolls with it,
+   so its tilt across the deck stays near zero.
+2. **The speed term is the yaw swing itself.** *Described after the table was read, not pre-registered:* the speed
+   term's alternating part follows −Ω_alt 3–4 frames (0.05–0.07 s) later with a median correlation of +0.97
+   (Compress) and +0.99 (tuck), at 0.64 and 0.58 m/s of body speed across per rad/s of yaw rate. A yaw swing turns the
+   deck under the body, the feet go sideways with it, and the body, far heavier than the board, does not follow at once.
+   At the swing's last half-cycles (median peak 45 deg/s in Compress, 58 in the tuck, 0.8–1.0 rad/s) that is 0.5–0.6
+   m/s across, enough with the turn's lean to carry the point past the feet's edge and the hip's reach.
+3. **The swing grows into the fall.** The half-cycle peaks of Ω_alt grow from a median 17 (Compress) and 13 deg/s
+   (tuck) in the steer's first half-cycle to 45 and 58 deg/s in the last two before the escape (7 of 9 and 12 of 14
+   falls with four or more half-cycles), in 0.5–0.9 s. Codex's `big:s1:w9:compress:left`, frame by frame
+   (`series.py`): Ω_alt peaks −49, +79, −105 deg/s at +1.12, +1.28, +1.48 s (2.8 Hz), the speed term +0.82, −0.50,
+   +1.80 m/s 0.03–0.07 s after each, the margin gone at +1.517 s.
+4. **It goes to the inside** (11 of 12, 13 of 14): the lean of the turn already has the point on the inside half of
+   the feet, so the first half-cycle to reach the edge is an inside one.
+5. **On the same wave the deep stance's straight ride already swings** (18.2 deg/s over the same frames in Compress,
+   against the tall steer's 12.6): the steer grows a swing that is there before it. The tuck's straight ride swings
+   less over those frames (8.8) and its steer more (33.2).
+6. **Snap is different.** Its falls cross the same way (sideways, inside, the speed term), but its swing over the fall
+   is no larger than the tall steer's on the same wave (11.7 against 13.4 deg/s), and its straight ride barely swings
+   (3.2): Snap's falls inside the steer are not this swing's. Not pursued here.
