@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 18:25 UTC.**
+- **Status, 2026-11-26, about 19:45 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -129,14 +129,28 @@
       - **3.6e's regression gives the same "missing lever" from the picture's own nudges.** So its term table says nothing about the lever or the inertia, in the game or the picture.
       - **The coordinator's qualification:** with the water fitted freely, 3.6e's fit dropped the inertia to about zero in most speed bins. The inertia and the water trade off, and the nudges cannot separate them.
       - **Where this leaves the track:** 3.6c–3.6g have mapped where the picture and the board disagree. No single fix to the picture closes it. The only model that predicts fresh nudges by 3.6e's bar is the board's own measured response per speed bin.
-      - **Next:** to be planned with Vicente, toward faster turns in Compress and Crouch. Nothing is dispatched.
+    - **Vicente planned the next phase (2026-11-26)** in two rounds of questions, taking every recommendation (consult log `2ee416d7`).
+      - **The goal:** noticeably faster turns in Compress and Crouch, with no new balance falls. Stopping the deep-stance drift comes first.
+      - **The method:** tune the balance in the game, each change behind a switch, judged by the stability report and then his ride.
+      - **The gains** may move behind a switch; the lock moves only after he rides and accepts.
+      - **The order:** the drift round (3.6h), then the turn round.
+      - He rode the current build on his controller and found "no improvement". That is expected: nothing in how it rides has changed yet.
+    - **3.6h, the drift round, is running** (Vicente: "Yes, start 3.6h", 2026-11-26; dispatched as consult log `2ee416d7`, time corrected in `e3a4191a`).
+      - Opus at high, on `claude/drift` from `ef4b86c8` (pushed at `57a83402`), in `.claude/worktrees/drift`. The brief is in `docs/research/stability/drift/`.
+      - **The candidates:** the balance's push matched to how strongly the board answers; a wobble filter; both together. The quicker rider (a 67 ms reaction) is a reference only. Nothing touches the board's physics.
+      - **His pass line**, in the full stability report at his address:
+        - no regression;
+        - at most 23 of today's 47 deep-stance balance turn falls still falling;
+        - turns no slower.
+      - **Measured alongside, not targeted:** the turn just after letting go of R2.
+      - **If nothing passes,** the builder stops and reports, and he decides.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `215caf8a`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `e3a4191a`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -210,7 +224,8 @@ Also open:
 | `claude/board-fit` | `ef7908f2` | 3.6e: the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only; its term table (the board barely feeling the rider in yaw, rolling far lighter) is withdrawn by the 3.6f review (docs, fits and probes; from `4a50e650`) |
 | `claude/rider-momentum` | `fc466712` | 3.6f: the game's coupled solve conserves the rider's momentum, and the board meets the body's push at its arm; 3.6e's term table could not see it; the picture's body has a rotational inertia the game's lacks (docs and probes; from `ef7908f2`) |
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
-| `claude/the-record` | `215caf8a` | the consult log (verified on the remote 2026-11-26) |
+| `claude/drift` | `57a83402` | 3.6h, running: the drift round, the balance tuned in the game behind opt-in switches to stop the deep-stance turns drifting (from `ef4b86c8`; the builder's commits follow) |
+| `claude/the-record` | `e3a4191a` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
