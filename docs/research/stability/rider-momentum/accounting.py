@@ -79,24 +79,26 @@ for where, d in (('glide', glide), ('Big s1', big)):
             g(ent['jump']), g(ent['lev']), g(ent['levL']), g(ent['levF']), g(ent['rotL']), g(ent['rotU']), g(ent['mVxr']),
             ent['inf'], ent['apart'], ent['bed'], ent['rst'], ent['agile'], ent['drives']))
 L.append('')
-# Amendment 1: R_O's split (only rows written by the amended probe carry it).
-L.append('**R_O split (amendment 1)**, per ride and stance, N·m per frame: RMS over frames with no apart substep of roF − axis; over frames with apart substeps, RMS of roA and of roA − hipA − (axis on those frames); the stand\'s frame; flight substeps\n')
-L.append('| ride | stance | frames all feasible: RMS roF, RMS axis, RMS (roF − axis), largest abs (roF − axis) | frames with apart substeps: n, RMS roA, RMS hipA, RMS (roA − hipA), largest abs (roA − hipA) | the stand\'s frame: stand | flight substeps |')
+# Amendments 1-2: R_O's split (only rows written by the amended probes carry it).
+L.append("**R_O split (amendments 1-2)**, N·m per frame. Feasible frames (no apart substep, no rotor start): RMS of roF, of axis + gyF, of the rest roF − axis − gyF, and its largest. Frames with apart substeps: their number, RMS of roA, of hipA + gyA + axisA, of the rest, and its largest. The rotor-start frames (`rst` > 0, the stand): their R_O. Flight substeps.\n")
+L.append('| ride | stance | feasible frames: n; RMS roF; RMS (axis + gyF); RMS rest; largest rest | apart frames: n; RMS roA; RMS (hipA + gyA + axisA); RMS hipA; RMS gyA; RMS rest; largest rest | rotor-start frames: R_O | flight substeps |')
 L.append('| --- | --- | --- | --- | --- | --- |')
 for where, d in (('glide', glide), ('Big s1', big)):
     for key, name in STANCES:
-        ms = [r for r in rows('%s/%s.jsonl' % (d, key), 'm') if r['nSt'] > 0 and 'roF' in r]
+        ms = [r for r in rows('%s/%s.jsonl' % (d, key), 'm') if r['nSt'] > 0 and 'gyF' in r]
         if not ms:
             continue
-        fe = [r for r in ms if r['apart'] == 0 and r['stand'] == 0]
-        ap = [r for r in ms if r['apart'] > 0 and r['stand'] == 0]
-        sd = [r['stand'] for r in ms if r['stand'] != 0]
-        e = {'feasFrames': len(fe), 'roF': rms([r['roF'] for r in fe]), 'axis': rms([r['axis'] for r in fe]), 'roFx': rms([r['roF'] - r['axis'] for r in fe]),
-             'roFxMax': max([abs(r['roF'] - r['axis']) for r in fe] or [float('nan')]),
-             'apartFrames': len(ap), 'roA': rms([r['roA'] for r in ap]), 'hipA': rms([r['hipA'] for r in ap]), 'roAx': rms([r['roA'] - r['hipA'] for r in ap]),
-             'roAxMax': max([abs(r['roA'] - r['hipA']) for r in ap] or [float('nan')]), 'stand': sd, 'flight': sum(r['flight'] for r in ms)}
+        fe = [r for r in ms if r['apart'] == 0 and r['rst'] == 0]
+        ap = [r for r in ms if r['apart'] > 0 and r['rst'] == 0]
+        sd = [r['ro'] for r in ms if r['rst'] > 0]
+        fr = [r['roF'] - r['axis'] - r['gyF'] for r in fe]
+        ar = [r['roA'] - r['hipA'] - r['gyA'] - r['axisA'] for r in ap]
+        e = {'feasFrames': len(fe), 'roF': rms([r['roF'] for r in fe]), 'expl': rms([r['axis'] + r['gyF'] for r in fe]), 'rest': rms(fr), 'restMax': max([abs(x) for x in fr] or [float('nan')]),
+             'apartFrames': len(ap), 'roA': rms([r['roA'] for r in ap]), 'explA': rms([r['hipA'] + r['gyA'] + r['axisA'] for r in ap]), 'hipA': rms([r['hipA'] for r in ap]), 'gyA': rms([r['gyA'] for r in ap]),
+             'restA': rms(ar), 'restAMax': max([abs(x) for x in ar] or [float('nan')]), 'start': sd, 'flight': sum(r['flight'] for r in ms)}
         J['split|%s|%s' % (where, name)] = e
-        L.append('| %s | %s | %s, %s, %s, %s | %d, %s, %s, %s, %s | %s | %d |' % (where, name, g(e['roF']), g(e['axis']), g(e['roFx']), g(e['roFxMax']), e['apartFrames'], g(e['roA']), g(e['hipA']), g(e['roAx']), g(e['roAxMax']), ', '.join(g(x) for x in sd) or '—', e['flight']))
+        L.append('| %s | %s | %d; %s; %s; %s; %s | %d; %s; %s; %s; %s; %s; %s | %s | %d |' % (where, name, e['feasFrames'], g(e['roF']), g(e['expl']), g(e['rest']), g(e['restMax']),
+                 e['apartFrames'], g(e['roA']), g(e['explA']), g(e['hipA']), g(e['gyA']), g(e['restA']), g(e['restAMax']), ', '.join(g(x) for x in sd) or '—', e['flight']))
 L.append('')
 L.append('**The arm** (the body\'s centre from the board\'s, heading frame, median over standing frames [5 %, 95 %] along): ' + '; '.join(
     '%s %s: along %s [%s, %s] m, across %s m, up %s m; lower %s kg·m², twist β %s' % (k.split('|')[0], k.split('|')[1], g(v['aF']), g(v['aF5']), g(v['aF95']), g(v['aS']), g(v['aU']), g(v['lower']), g(v['beta'], 4))

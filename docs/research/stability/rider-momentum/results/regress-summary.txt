@@ -1,0 +1,90 @@
+== compress [8.7, 10.1) sets 10 V 9.60 C4 {'r': 0.044, 'betadot': 0.011, 'rdot': 0.24, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 9.69±6.2 betadot -0.449±1.1 rdot -1.17±0.071 thetaddot 0.328±0.089 beta -229±69 phi 153±36 theta -56.3±35 delta 120±33 R2 0.917
+  the lever −lev                           r 9.64±5.5 betadot -1±0.7 rdot -0.324±0.097 thetaddot 0.298±0.067 beta -197±61 phi 135±35 theta -37.4±35 delta 76.6±37 R2 0.910
+  the rotors and hand −rot                 r 0.0484±1.1 betadot 0.553±0.48 rdot -0.841±0.064 thetaddot 0.0304±0.049 beta -32±9.6 phi 18.1±7.2 theta -18.9±5.2 delta 43.9±12 R2 0.960
+  **C4: y_syn = −x_f H − I_r ṙ**           r 7.47±2.8 betadot 1.95±0.94 rdot -1.34±0.12 thetaddot 0.357±0.04 beta -21.9±38 phi 355±29 theta -176±22 delta 324±31 R2 0.985
+  Q2: the residual −res                    r 1.04e-12±3.3e-11 betadot 5.08e-12±3e-11 rdot -4.47e-13±1.5e-12 thetaddot -1.18e-12±1.3e-12 beta -4.31e-10±2.8e-10 phi 7.23e-11±3.3e-10 theta 1.81e-11±3.2e-10 delta 7.07e-11±3.9e-10 R2 0.021
+  Q2: the about-O residual −resO           r -0.0244±0.12 betadot -0.0314±0.024 rdot 0.00193±0.0014 thetaddot -0.00199±0.0014 beta -0.329±1.3 phi -0.755±0.34 theta 0.563±0.29 delta -0.175±0.49 R2 0.242
+  model                                    r 168 betadot 171 rdot -5.59 thetaddot 9.82 beta 0 phi 160 theta -160 delta 160
+  kin [66.1, 219.9, -1.7, 7.8, 0.7] R2 0.581
+  q4 lev -1.605±0.121 R2 0.717->0.901 rdot 0.929->0.438
+== compress [10.1, ∞) sets 12 V 11.01 C4 {'r': 0.027, 'betadot': 0.008, 'rdot': 0.248, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 9.2±3.4 betadot 0.451±0.8 rdot -1.34±0.13 thetaddot 0.21±0.079 beta -266±62 phi 198±35 theta -124±26 delta 113±24 R2 0.939
+  the lever −lev                           r 8.01±3.7 betadot 0.175±0.5 rdot -0.316±0.11 thetaddot 0.29±0.045 beta -211±57 phi 212±33 theta -124±25 delta 80.8±23 R2 0.804
+  the rotors and hand −rot                 r 1.19±0.68 betadot 0.276±0.35 rdot -1.03±0.057 thetaddot -0.0804±0.042 beta -54.6±7.3 phi -13.5±7.4 theta -0.599±5.9 delta 31.9±9.7 R2 0.983
+  **C4: y_syn = −x_f H − I_r ṙ**           r 5.3±4.5 betadot 1.59±1 rdot -1.38±0.11 thetaddot 0.295±0.087 beta -57.9±65 phi 404±54 theta -194±36 delta 320±54 R2 0.968
+  Q2: the residual −res                    r -1.59e-11±4.1e-11 betadot 1.71e-11±1.7e-11 rdot -2.52e-12±3.2e-12 thetaddot 1.4e-12±1.6e-12 beta 1.04e-09±4.5e-10 phi -7.38e-10±4e-10 theta 4.91e-10±4.1e-10 delta -3.88e-10±7.7e-10 R2 0.008
+  Q2: the about-O residual −resO           r 0.833±0.64 betadot 0.0786±0.16 rdot 0.0799±0.073 thetaddot 0.00188±0.006 beta -1.54±2.6 phi 12.5±13 theta -13.5±13 delta 23.4±22 R2 0.014
+  model                                    r 193 betadot 196 rdot -5.58 thetaddot 9.79 beta 0 phi 165 theta -165 delta 165
+  kin [42.2, 151.7, -1.9, 4.4, -0.1] R2 0.669
+  q4 lev -1.502±0.123 R2 0.765->0.902 rdot 0.829->0.386
+== compress all ≥ 4 m/s sets 22 V 10.37 C4 {'r': 0.036, 'betadot': 0.008, 'rdot': 0.239, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 8.76±4.6 betadot 0.827±1 rdot -1.28±0.12 thetaddot 0.324±0.08 beta -251±52 phi 223±33 theta -121±32 delta 130±35 R2 0.912
+  the lever −lev                           r 8.48±4.2 betadot 0.303±0.74 rdot -0.296±0.12 thetaddot 0.347±0.054 beta -208±46 phi 221±32 theta -114±32 delta 98.9±37 R2 0.834
+  the rotors and hand −rot                 r 0.279±0.68 betadot 0.524±0.36 rdot -0.981±0.046 thetaddot -0.0231±0.038 beta -42.4±7.8 phi 1.47±5.9 theta -7.06±4.6 delta 31.5±8.1 R2 0.974
+  **C4: y_syn = −x_f H − I_r ṙ**           r 6.73±2.2 betadot 1.57±0.69 rdot -1.33±0.092 thetaddot 0.298±0.051 beta -31.8±34 phi 359±30 theta -175±23 delta 323±36 R2 0.974
+  Q2: the residual −res                    r 4.78e-12±2e-11 betadot 1.2e-11±1.3e-11 rdot -1.55e-12±1.7e-12 thetaddot 3.23e-13±9.5e-13 beta 2.99e-11±3.5e-10 phi -1.73e-10±2.8e-10 theta 1.58e-10±2.6e-10 delta -1.64e-10±4.2e-10 R2 0.003
+  Q2: the about-O residual −resO           r 0.28±0.25 betadot 0.0603±0.099 rdot 0.0435±0.041 thetaddot 0.00509±0.0068 beta 0.588±1.4 phi 7.5±7.6 theta -7.38±7.2 delta 12.5±12 R2 0.009
+  model                                    r 182 betadot 185 rdot -5.59 thetaddot 9.8 beta 0 phi 163 theta -163 delta 163
+  kin [52.2, 180.3, -1.6, 5.8, 0.2] R2 0.608
+  q4 lev -1.555±0.107 R2 0.665->0.886 rdot 0.931->0.406
+== none [9.2, 10.4) sets 9 V 10.11 C4 {'r': 0.026, 'betadot': 0.007, 'rdot': 0.195, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 6.96±5.1 betadot -2.57±1.7 rdot -1.8±0.32 thetaddot 1.24±0.31 beta -225±83 phi -77.7±86 theta 66.9±71 delta -203±61 R2 0.836
+  the lever −lev                           r 4.94±4.9 betadot -2.65±1.8 rdot -0.856±0.32 thetaddot 0.98±0.23 beta -223±74 phi -65±86 theta 62.4±71 delta -240±60 R2 0.525
+  the rotors and hand −rot                 r 2.02±0.84 betadot 0.0841±0.55 rdot -0.947±0.061 thetaddot 0.259±0.11 beta -2.39±11 phi -12.7±8.3 theta 4.48±6.8 delta 37.8±5.6 R2 0.987
+  **C4: y_syn = −x_f H − I_r ṙ**           r 4.71±1.5 betadot 1.25±0.92 rdot -1.11±0.12 thetaddot 0.369±0.077 beta -5.89±24 phi 281±20 theta -86.7±16 delta 272±22 R2 0.995
+  Q2: the residual −res                    r 6.63e-11±2.7e-11 betadot 3.29e-11±7.8e-12 rdot -3.23e-13±1.3e-12 thetaddot 2.94e-12±1.2e-12 beta -4.72e-11±3.9e-10 phi -3.66e-13±2.2e-10 theta -1.02e-10±2.1e-10 delta 6.29e-10±2.8e-10 R2 0.029
+  Q2: the about-O residual −resO           r 0.379±0.22 betadot -0.0511±0.028 rdot -0.000194±0.0064 thetaddot 0.0076±0.0084 beta -5.48±3.4 phi 1.01±2.4 theta -1.28±1.9 delta 0.247±1.4 R2 0.355
+  model                                    r 177 betadot 180 rdot -5.72 thetaddot 15 beta 0 phi 162 theta -162 delta 162
+  kin [40.5, 287.4, 3.7, 17.5, -0.5] R2 0.710
+  q4 lev -1.470±0.098 R2 0.248->0.808 rdot -0.006->0.229
+== none [10.4, ∞) sets 8 V 11.41 C4 {'r': 0.057, 'betadot': 0.006, 'rdot': 0.217, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 32.2±15 betadot 1.98±2.5 rdot -2.05±0.37 thetaddot 2.4±0.91 beta -335±1.3e+02 phi -75.2±76 theta 11.3±60 delta -308±62 R2 0.673
+  the lever −lev                           r 34.3±14 betadot 2.58±2.2 rdot -1.05±0.39 thetaddot 2.53±0.77 beta -333±1.3e+02 phi -15.8±75 theta -32.6±60 delta -340±62 R2 0.409
+  the rotors and hand −rot                 r -2.14±1.5 betadot -0.6±0.6 rdot -1.01±0.084 thetaddot -0.13±0.17 beta -2.28±6.1 phi -59.4±25 theta 43.9±18 delta 32.2±21 R2 0.961
+  **C4: y_syn = −x_f H − I_r ṙ**           r 11.6±2.8 betadot 1.21±0.27 rdot -1.24±0.055 thetaddot 0.56±0.11 beta -100±28 phi 353±62 theta -147±43 delta 264±16 R2 0.985
+  Q2: the residual −res                    r -6.46e-12±4.4e-11 betadot -1.44e-11±9.9e-12 rdot 3.85e-13±2.1e-12 thetaddot -2.22e-13±3.4e-12 beta 1.37e-10±7.4e-10 phi 1.58e-10±6.7e-10 theta -6.45e-11±4.7e-10 delta 3.76e-10±1.9e-10 R2 0.030
+  Q2: the about-O residual −resO           r 1.99±1.9 betadot 0.391±0.12 rdot -0.0517±0.055 thetaddot 0.135±0.079 beta -18.9±18 phi 16.2±10 theta -14.9±9.3 delta -10.4±16 R2 0.205
+  model                                    r 200 betadot 203 rdot -5.72 thetaddot 15 beta 0 phi 167 theta -167 delta 167
+  kin [33.6, 325.4, 5.7, 19.6, -0.2] R2 0.792
+  q4 lev -1.050±0.040 R2 0.470->0.878 rdot 0.296->0.127
+== none all ≥ 4 m/s sets 19 V 10.53 C4 {'r': 0.041, 'betadot': 0.006, 'rdot': 0.197, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 14.3±9 betadot -0.171±1.7 rdot -1.86±0.33 thetaddot 1.48±0.41 beta -281±93 phi -120±69 theta 91.9±64 delta -238±49 R2 0.659
+  the lever −lev                           r 14.5±8.9 betadot 0.086±1.5 rdot -0.882±0.34 thetaddot 1.42±0.36 beta -273±88 phi -96.1±72 theta 77±67 delta -272±50 R2 0.276
+  the rotors and hand −rot                 r -0.237±1 betadot -0.257±0.36 rdot -0.977±0.053 thetaddot 0.0605±0.1 beta -7.58±8 phi -23.7±13 theta 14.9±9.7 delta 33.8±10 R2 0.971
+  **C4: y_syn = −x_f H − I_r ṙ**           r 7.64±1.6 betadot 1.03±0.43 rdot -1.13±0.074 thetaddot 0.398±0.11 beta -47.1±22 phi 272±29 theta -80.7±23 delta 261±15 R2 0.988
+  Q2: the residual −res                    r 2.51e-11±2.4e-11 betadot 7.61e-13±1.7e-11 rdot 1.13e-12±1.4e-12 thetaddot 4.27e-13±1.7e-12 beta 9.87e-11±3.7e-10 phi 1.11e-11±2.2e-10 theta -2.18e-11±1.5e-10 delta 5.39e-10±1.5e-10 R2 0.017
+  Q2: the about-O residual −resO           r 1.05±0.8 betadot 0.192±0.12 rdot -0.0342±0.02 thetaddot 0.0725±0.038 beta -10.5±8.8 phi 7.12±3.4 theta -6.56±3.1 delta -7.28±6 R2 0.121
+  model                                    r 185 betadot 188 rdot -5.72 thetaddot 15 beta 0 phi 164 theta -164 delta 164
+  kin [43.2, 306.4, 4.1, 18.2, -0.1] R2 0.751
+  q4 lev -1.149±0.084 R2 0.334->0.821 rdot 0.140->0.148
+== crouch [8.5, 10) sets 16 V 9.53 C4 {'r': 0.054, 'betadot': 0.025, 'rdot': 0.195, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 24.2±2.1 betadot 1.07±1.4 rdot -0.691±0.13 thetaddot 0.237±0.073 beta -375±34 phi 217±21 theta -139±21 delta 197±31 R2 0.968
+  the lever −lev                           r 23.1±1.8 betadot 0.0014±0.89 rdot -0.0956±0.068 thetaddot 0.187±0.045 beta -348±29 phi 187±24 theta -108±23 delta 148±23 R2 0.960
+  the rotors and hand −rot                 r 1.11±0.74 betadot 1.07±0.81 rdot -0.596±0.075 thetaddot 0.0499±0.039 beta -26.9±9 phi 29.9±17 theta -31.6±16 delta 48.2±23 R2 0.982
+  **C4: y_syn = −x_f H − I_r ṙ**           r 9.18±2 betadot 4.18±1 rdot -1.01±0.095 thetaddot 0.363±0.044 beta -42.5±26 phi 398±30 theta -227±25 delta 362±40 R2 0.985
+  Q2: the residual −res                    r -1.84e-11±5.8e-11 betadot -2.86e-11±2.8e-11 rdot 9.83e-14±1.2e-12 thetaddot -1.55e-12±1.2e-12 beta -6.52e-10±5.9e-10 phi -9.39e-10±4.2e-10 theta 8.34e-10±3.8e-10 delta -1.12e-09±5.8e-10 R2 0.013
+  Q2: the about-O residual −resO           r 0.203±0.15 betadot -0.0136±0.043 rdot 0.00216±0.0025 thetaddot -6.26e-06±0.0019 beta -2.22±1.8 phi -0.563±1.4 theta 0.176±1 delta -0.88±1.6 R2 0.353
+  model                                    r 167 betadot 170 rdot -5.21 thetaddot 7.14 beta 0 phi 160 theta -160 delta 160
+  kin [173.0, 266.0, -4.6, 8.8, 1.1] R2 0.534
+  q4 lev -1.882±0.141 R2 0.814->0.900 rdot 0.443->0.225
+== crouch [10, ∞) sets 10 V 11.09 C4 {'r': 0.023, 'betadot': 0.009, 'rdot': 0.2, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 7.89±5.2 betadot 1.2±1.2 rdot -0.93±0.091 thetaddot 0.217±0.065 beta -203±78 phi 260±47 theta -158±38 delta 177±62 R2 0.976
+  the lever −lev                           r 7.73±5.3 betadot 0.752±0.59 rdot -0.191±0.077 thetaddot 0.195±0.037 beta -179±88 phi 267±44 theta -159±36 delta 168±61 R2 0.923
+  the rotors and hand −rot                 r 0.159±0.93 betadot 0.444±0.65 rdot -0.739±0.043 thetaddot 0.0217±0.035 beta -23.7±15 phi -6.99±6.8 theta 0.0136±8.3 delta 9.43±14 R2 0.993
+  **C4: y_syn = −x_f H − I_r ṙ**           r 4.61±6.4 betadot 1.72±0.69 rdot -1.04±0.14 thetaddot 0.23±0.056 beta -93.2±1.2e+02 phi 493±85 theta -271±70 delta 357±1.1e+02 R2 0.970
+  Q2: the residual −res                    r 5.51e-11±3.7e-11 betadot -2.35e-11±2e-11 rdot 3.75e-12±2.8e-12 thetaddot -2.41e-12±1.2e-12 beta -6.87e-10±9.4e-10 phi 9.03e-10±5.7e-10 theta -1.17e-09±5.4e-10 delta 1.72e-09±7.2e-10 R2 0.033
+  Q2: the about-O residual −resO           r 0.207±0.15 betadot 0.000858±0.023 rdot 0.00121±0.0021 thetaddot -0.000755±0.0008 beta -1.25±1 phi 0.665±0.6 theta -1.11±0.7 delta 1.95±0.91 R2 0.215
+  model                                    r 195 betadot 198 rdot -5.2 thetaddot 7.12 beta 0 phi 166 theta -166 delta 166
+  kin [61.6, 141.2, -2.9, 3.4, -0.1] R2 0.604
+  q4 lev -1.904±0.222 R2 0.784->0.920 rdot 0.647->0.204
+== crouch all ≥ 4 m/s sets 28 V 9.98 C4 {'r': 0.043, 'betadot': 0.015, 'rdot': 0.19, 'sees': False}
+  ledger rider (−yRid): 3.6e's term        r 20.9±4 betadot 2.77±1.7 rdot -0.811±0.089 thetaddot 0.282±0.073 beta -330±47 phi 232±24 theta -146±19 delta 190±31 R2 0.961
+  the lever −lev                           r 19.8±3.7 betadot 2.03±1.2 rdot -0.145±0.062 thetaddot 0.247±0.049 beta -295±46 phi 223±29 theta -132±23 delta 166±32 R2 0.931
+  the rotors and hand −rot                 r 1.1±0.52 betadot 0.737±0.67 rdot -0.666±0.042 thetaddot 0.0341±0.03 beta -35.7±9.2 phi 9.13±9.9 theta -14±9.2 delta 23.6±12 R2 0.986
+  **C4: y_syn = −x_f H − I_r ṙ**           r 7.67±2.4 betadot 2.71±0.62 rdot -0.988±0.091 thetaddot 0.279±0.031 beta -59.7±46 phi 411±46 theta -233±38 delta 362±58 R2 0.977
+  Q2: the residual −res                    r -4.63e-12±3.2e-11 betadot -1.37e-11±2.2e-11 rdot 8.08e-13±1.4e-12 thetaddot -1.18e-12±1e-12 beta -2.62e-10±4.8e-10 phi -5.71e-11±3.2e-10 theta 5.33e-13±3.1e-10 delta 4.22e-11±4.4e-10 R2 0.011
+  Q2: the about-O residual −resO           r 0.219±0.1 betadot 0.00512±0.023 rdot 0.00206±0.0017 thetaddot 9.28e-05±0.001 beta -1.78±1.1 phi 0.258±0.7 theta -0.631±0.58 delta 0.71±0.86 R2 0.236
+  model                                    r 175 betadot 178 rdot -5.21 thetaddot 7.14 beta 0 phi 162 theta -162 delta 162
+  kin [110.1, 201.8, -3.5, 5.9, 0.5] R2 0.531
+  q4 lev -1.715±0.144 R2 0.785->0.896 rdot 0.554->0.236

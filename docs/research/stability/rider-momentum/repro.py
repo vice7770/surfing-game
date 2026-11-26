@@ -62,6 +62,8 @@ for k, r in rows.items():
     if same:
         counts[k[0]][1] += 1
 print('rows compared (identical / all):', {k: '%d / %d' % (v[1], v[0]) for k, v in sorted(counts.items())})
-print('differences:', len(bad))
+print('differences:', len(bad), 'by field:', {f: sum(1 for b in bad if b[0] == f) for f in sorted(set(b[0] for b in bad))})
+# `maxDiff` is the largest twin difference over every channel the row carries, 3.6f's added channels included, so it may
+# differ where every channel 3.6d had is equal; it is reported apart.
 for b in bad[:20]:
     print('  ', b)

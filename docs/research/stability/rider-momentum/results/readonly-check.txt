@@ -1,0 +1,4 @@
+rows compared (identical / all): {'f': '4164 / 4164', 'kbase': '60 / 60', 'kick': '708 / 975', 'o': '4155 / 4155', 'stand': '18 / 18', 'w': '4155 / 4155'}
+differences: 267 by field: {'maxDiff': 267}
+rows compared (identical / all): {'f': '4164 / 4164', 'o': '4155 / 4155', 'stand': '18 / 18', 'w': '4155 / 4155'}
+differences: 0 by field: {}
