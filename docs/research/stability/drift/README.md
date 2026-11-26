@@ -270,3 +270,47 @@ for R and `pushAnkle=0.5`, which carried every Big script). `results/screen.json
   with Q 1, and at +2.37 / +2.43 s under the Q 2 rows), `big:s3:w3:crouch:left` (lasts with 0.236; now a whitewater
   fall at +4.90 to +4.92 s under both twist scales and Q 2). These are rides that end on the edge either way; any change to the deep stance moves them. Each is
   explained ride by ride for the full report (§3).
+
+## 3. The full report of the closest configuration, `wobbleNotch=1` (closest, not a finalist)
+
+*`npm run report:stability -- --mode full --jobs 4 --extra '&cueLater=on&plantFloor=6&wobbleNotch=1'` (bundles from
+`712c4cbe`), 21:20:35–21:53:04 UTC, 32.5 min, exit 1; 227 rides, every process printed `wobbleNotch` 1 as asked. His
+address; the test wave (`tw-catch`, `tw-ride`), Canyon B Medium and Big, organic seeds 1–3. Times s after the stand;
+course world x–z, deg toward the steer; `passline.py`, `regress.py` (`results/passline-n1.json`, `results/regress-n1.json`).*
+
+| line | result | |
+| --- | --- | --- |
+| 1. no regression | **13 regressions** | **fails** |
+| 2. of the 47 Compress and Crouch steer rides falling for balance today, at most 23 still fall | **32 still fall** (Big 24 of 39; `tw-catch` 4 of 4; `tw-ride` 4 of 4); 1 new balance fall among the other 33 (`big:s1:w11:crouch:left`, below) | **fails** |
+| 3. turns no slower (80 rides, paired, rides with the value both ways) | course +0.5 s **+1.41°** mean (median +0.92°; n 69, 49 up / 20 down; 1 reaches it only on, 2 only off); course +1.0 s **+0.81°** (median +0.46°; n 35, 23 up / 11 down; 23 reach it only on); peak yaw −10.5 deg/s (27 up / 53 down) | passes |
+
+**Beside it.** Big's balance falls 77 → 63 (wave 54 → 54, whitewater 4 → 4); lasting rides 27 → 41 (Compress steer 5 →
+14, Crouch 4 → 9; tall, Snap and his way unchanged in count); Medium and both test-wave groups unchanged in count.
+60 improvements in the report's list (16 baseline falls now last their 5 s). The test wave's eight deep turns all still
+fall: on the test wave the notch does not change who falls, only when.
+
+**The 13 regressions, each from its frames** (`regress.py`: the swing is the std of the yaw rate about its centred
+0.25 s mean over the steer, +1.0 s to the release or the fall, world deg/s; for the straight rides over 0.5–3.0 s):
+
+| ride | test | baseline | `wobbleNotch=1` | what the frames show |
+| --- | --- | --- | --- | --- |
+| `big:s1:w5:snap:left` | sooner | balance fall +2.07 s | +1.77 s | Snap at 0.30 m gets the whole notch, but its own swing is at 1.93 Hz (3.6c), below the notch's 2.67 Hz, where the notch (Q 1) passes 0.55 of the feedback with 56° of lag: the escape comes at +1.63 s against +2.00, the swing over the steer the same (13.4 against 13.6) |
+| `big:s1:w9:snap:right` | sooner | +2.95 s | +1.98 s | the same: the escape at +1.82 s against +2.55; the knees' term is the lowest at +1.82 s both ways |
+| `big:s3:w9:snap:left` | sooner | +3.68 s | +2.73 s | the same; here the swing over the steer grows (33.9 against 27.8) |
+| `tw-catch:snap:right` | reserve | lowest 0.192 (balance fall +2.38 s) | 0.061 (falls later, +2.50 s) | Snap again: the margin goes lower before a later fall |
+| `big:s1:w9:none:left` | sooner | +2.95 s | +2.08 s | tall, but the carve's knee flex gives w ≈ 0.2 (§0.1): the knees' term is the lowest at +1.83 s both ways; the turn comes round further (+28.8° at +1.0 s against +12.7°) and the escape follows it at once (+1.83 s against +2.75) |
+| `big:s3:w6:none:left` | lasted | lasts, lowest 0.038 (knees, +2.20 s) | balance fall +2.63 s | tall, the same weight; the same knees' low at +2.20 s that the baseline survived with 0.038 now reaches 0 |
+| `med:s3:w6:none:right` | sooner | +4.27 s | +3.45 s | tall on Medium; the same turn (course +20.7° against +21.3° at +1.0 s), the margin goes 0.8 s sooner |
+| `big:s1:w11:crouch:left` | lasted | lasts, lowest 0.043 | balance fall +4.92 s | the tuck on the edge both ways: it ends on the grip term (0.009 at +4.82 s) and falls 0.08 s before the hold ends; it turns further (+10.9° against +7.8° at +1.0 s) |
+| `big:s2:w12:crouch:left` | reserve | wave fall +2.87 s, lowest 0.128 | wave fall +2.52 s, lowest 0.013 | a wave fall either way (the twin below 3.6 m/s); the margin goes to 0.013 just before it; the swing over the steer is a tenth of the baseline's (3.4 against 36.5) |
+| `big:s2:w16:crouch:left` | reserve | wave fall +3.87 s, lowest 0.160 (grip) | wave fall +3.57 s, lowest 0 (grip) | a wave fall either way; the grip term reaches 0 at +3.50 s, 0.30 s before the baseline's wave fall; it regresses under every configuration screened (§2) |
+| `tw-catch:compress:left` | sooner | +3.65 s | +2.90 s | turns further (+11.2° against +6.3° at +1.0 s) with less swing (22.9 against 29.6) and falls 0.75 s after the release, on the margin |
+| `tw-ride:compress:straight` | sooner | +4.82 s | +2.70 s | the placed start (standing in a turn, 3.6b §1.3); the straight swing unchanged (10.8 against 10.2); the escape at +2.58 s against +4.55 s; not explained further |
+| `tw-ride:hisway` | sooner | +4.82 s | +2.70 s | the same ride frame for frame (his way on `tw-ride` releases the trim on the first step, so it is Compress straight) |
+
+**What they say.** Four are Snap's (0.30 m, the whole notch at the wrong frequency for its own 1.93 Hz mode) and three
+tall rides carrying a fifth of the notch through the carve's knee flex: seven of the thirteen are outside the target
+stances. Three are the tuck's rides that end on the edge either way (two of them wave falls). Two are Compress on the
+test wave's placed start, and one Compress turn that turns further and falls after the release. A version weighted
+only by the stance asked (Compress and Crouch), not by the leg's depth, would leave Snap and tall alone; that is a
+change of the switch, not tested here.

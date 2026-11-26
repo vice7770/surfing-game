@@ -1,0 +1,290 @@
+{
+ "regressions": 13,
+ "regList": [
+  {
+   "id": "big:s1:w11:crouch:left",
+   "test": "lasted",
+   "base": {
+    "fell": false,
+    "fellAt": null,
+    "cause": null,
+    "lowest": 0.0433
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 4.9167,
+    "cause": "balance",
+    "lowest": 0.0086
+   }
+  },
+  {
+   "id": "big:s1:w5:snap:left",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 2.0667,
+    "cause": "balance",
+    "lowest": 0.1022
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 1.7667,
+    "cause": "balance",
+    "lowest": 0.0165
+   }
+  },
+  {
+   "id": "big:s1:w9:none:left",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 2.95,
+    "cause": "balance",
+    "lowest": 0
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.0833,
+    "cause": "balance",
+    "lowest": 0
+   }
+  },
+  {
+   "id": "big:s1:w9:snap:right",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 2.95,
+    "cause": "balance",
+    "lowest": 0
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 1.9833,
+    "cause": "balance",
+    "lowest": 0
+   }
+  },
+  {
+   "id": "big:s2:w12:crouch:left",
+   "test": "reserve",
+   "base": {
+    "fell": true,
+    "fellAt": 2.8667,
+    "cause": "wave",
+    "lowest": 0.1283
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.5167,
+    "cause": "wave",
+    "lowest": 0.0132
+   }
+  },
+  {
+   "id": "big:s2:w16:crouch:left",
+   "test": "reserve",
+   "base": {
+    "fell": true,
+    "fellAt": 3.8667,
+    "cause": "wave",
+    "lowest": 0.1601
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 3.5667,
+    "cause": "wave",
+    "lowest": 0
+   }
+  },
+  {
+   "id": "big:s3:w6:none:left",
+   "test": "lasted",
+   "base": {
+    "fell": false,
+    "fellAt": null,
+    "cause": null,
+    "lowest": 0.0381
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.6333,
+    "cause": "balance",
+    "lowest": 0
+   }
+  },
+  {
+   "id": "big:s3:w9:snap:left",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 3.6833,
+    "cause": "balance",
+    "lowest": 0
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.7333,
+    "cause": "balance",
+    "lowest": 0.0182
+   }
+  },
+  {
+   "id": "med:s3:w6:none:right",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 4.2667,
+    "cause": "balance",
+    "lowest": 0
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 3.45,
+    "cause": "balance",
+    "lowest": 0
+   }
+  },
+  {
+   "id": "tw-catch:compress:left",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 3.65,
+    "cause": "balance",
+    "lowest": 0
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.9,
+    "cause": "balance",
+    "lowest": 0
+   }
+  },
+  {
+   "id": "tw-catch:snap:right",
+   "test": "reserve",
+   "base": {
+    "fell": true,
+    "fellAt": 2.3833,
+    "cause": "balance",
+    "lowest": 0.1918
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.5,
+    "cause": "balance",
+    "lowest": 0.0609
+   }
+  },
+  {
+   "id": "tw-ride:compress:straight",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 4.8167,
+    "cause": "balance",
+    "lowest": 0
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.7,
+    "cause": "balance",
+    "lowest": 0
+   }
+  },
+  {
+   "id": "tw-ride:hisway",
+   "test": "sooner",
+   "base": {
+    "fell": true,
+    "fellAt": 4.8167,
+    "cause": "balance",
+    "lowest": 0
+   },
+   "now": {
+    "stood": true,
+    "fell": true,
+    "fellAt": 2.7,
+    "cause": "balance",
+    "lowest": 0
+   }
+  }
+ ],
+ "baseBalance": 47,
+ "still": 32,
+ "stillByGroup": {
+  "tw-catch": [
+   4,
+   4
+  ],
+  "tw-ride": [
+   4,
+   4
+  ],
+  "big": [
+   39,
+   24
+  ]
+ },
+ "new": [
+  "big:s1:w11:crouch:left"
+ ],
+ "course05": {
+  "n": 69,
+  "mean": 1.407,
+  "median": 0.92,
+  "up": 49,
+  "down": 20,
+  "onlyOn": 1,
+  "onlyOff": 2
+ },
+ "course10": {
+  "n": 35,
+  "mean": 0.811,
+  "median": 0.46,
+  "up": 23,
+  "down": 11,
+  "onlyOn": 23,
+  "onlyOff": 0
+ },
+ "yawPeak": {
+  "n": 80,
+  "mean": -10.45,
+  "median": -6.15,
+  "up": 27,
+  "down": 53,
+  "onlyOn": 0,
+  "onlyOff": 0
+ },
+ "course05World": {
+  "n": 69,
+  "mean": 0.819,
+  "median": 0.65,
+  "up": 39,
+  "down": 30,
+  "onlyOn": 1,
+  "onlyOff": 2
+ },
+ "course10World": {
+  "n": 35,
+  "mean": 0.407,
+  "median": 0.35,
+  "up": 20,
+  "down": 14,
+  "onlyOn": 23,
+  "onlyOff": 0
+ }
+}
