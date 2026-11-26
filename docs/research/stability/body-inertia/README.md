@@ -156,7 +156,7 @@ dated amendments below, committed before the numbers they govern are read.
    returns when every set's term is exactly its own kinematic form, noise-free — its per-r and per-ṙ coefficients
    printed with the line of §0.4. The regression of R_N itself, the forms' residuals and every other number of the first
    read are unchanged by this (the rerun must reproduce them; checked).
-2. *2026-11-26, about 18:00 UTC, after questions 1–3 were read, before this is run.* **Exploratory, model-only: does J
+2. *2026-11-26, 17:54 UTC, after questions 1–3 were read, before this is run.* **Exploratory, model-only: does J
    matter once the water is fitted?** Questions 1–2 put J in the shipped water; 3.6e's fit (c), with the water free,
    ran J to its bound (0) in two of three Compress bins. So, as a reading that decides nothing: 3.6e's frozen fit (a)
    (the twelve water scales of its bin, `results/fit/fit-<stance>.json`, nothing refitted) with J × 1 (**W_two**) and
