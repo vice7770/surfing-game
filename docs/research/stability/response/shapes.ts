@@ -46,5 +46,21 @@ for (const sc of ['compress:straight', 'none:straight', 'crouch:straight']) {
     L.push('');
   }
 }
+// The plant's time variation along a ride: per base and channel, the open responses at two kick times (both passing),
+// ‖G_a − G_b‖ / ‖G_a‖ over the senses and 60 ticks; beside it, the same between the model's responses at those ticks.
+L.push('## The response\'s change along a ride (descriptive)', '', '| stance | channel | pairs of kick times | measured: ‖G(t1) − G(t2)‖ / ‖G(t1)‖, median [range] | model: the same |', '| --- | --- | --- | --- | --- |');
+const rel = (a: Resp, b: Resp) => { let n = 0, d = 0; for (let m = 1; m <= 60; m += 1) for (let o = 0; o < 7; o += 1) { n += (a[m][o] - b[m][o]) ** 2; d += a[m][o] ** 2; } return Math.sqrt(n / d); };
+for (const sc of ['compress:straight', 'none:straight', 'crouch:straight']) for (const ch of ['ankle', 'twist'] as const) {
+  const byBase = new Map<string, typeof g.sets>();
+  for (const s of g.sets) if (s.script === sc && s.mode === 'open' && s.channel === ch && s.pass60) byBase.set(s.base, [...(byBase.get(s.base) ?? []), s]);
+  const meas: number[] = [], mod: number[] = [];
+  for (const [b, ss] of byBase) for (let i = 0; i < ss.length; i += 1) for (let j = i + 1; j < ss.length; j += 1) {
+    meas.push(rel(ss[i].g, ss[j].g));
+    const ka = g.kbase.get(`${b}|${ss[i].at}`)?.design, kb2 = g.kbase.get(`${b}|${ss[j].at}`)?.design;
+    if (ka && kb2) mod.push(rel(modelOpen(ka.phi, ka.gamma, ka.c, ch === 'ankle' ? 0 : 1), modelOpen(kb2.phi, kb2.gamma, kb2.c, ch === 'ankle' ? 0 : 1)));
+  }
+  if (meas.length) L.push(`| ${sc} | ${ch} | ${meas.length} | ${median(meas).toFixed(2)} [${Math.min(...meas).toFixed(2)}, ${Math.max(...meas).toFixed(2)}] | ${mod.length ? median(mod).toFixed(2) : '—'} |`);
+}
+L.push('');
 writeFileSync(out, L.join('\n') + '\n');
 console.log(L.join('\n'));

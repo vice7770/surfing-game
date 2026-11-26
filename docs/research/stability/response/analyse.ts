@@ -274,7 +274,7 @@ export function report(r: Result, q1?: Record<string, Record<string, number>>): 
     L.push(`| closed twins | ${rp.twin.length} | ${f2(pT)} | ${f2(median(rp.twin.map((x) => x.f)))} | ${f2(median(rp.twin.map((x) => x.zeta)), 3)} | ${f2(qT, 3)} | |`);
     L.push(`| reproduction (A's args per tick) | ${rp.pred.length} | ${f2(pP)} | ${f2(median(rp.pred.map((x) => x.f)))} | ${f2(median(rp.pred.map((x) => x.zeta)), 3)} | ${f2(qP, 3)} | ${f2(median(rp.waveOm), 3)} / ${f2(median(rp.waveSense), 3)} |`);
     L.push(`| reproduction (frozen) | ${rp.predFrozen.length} | ${f2(pF)} | ${f2(median(rp.predFrozen.map((x) => x.f)))} | ${f2(median(rp.predFrozen.map((x) => x.zeta)), 3)} | ${f2(qF, 3)} | |`);
-    L.push('', `- reproduces (pooled peak within ±0.15 Hz, median q₂ within ±25 %, ≥ 75 % of sets pass both): **${Math.abs(pP - pT) <= 0.15 && Math.abs(qP - qT) <= 0.25 * Math.abs(qT) && passN >= 0.75 * rp.pass.length ? 'yes' : 'no'}** (${passN} of ${rp.pass.length} sets pass)`, '');
+    L.push('', `- reproduces (pooled peak within ±0.15 Hz, median q₂ within ±25 %, ≥ 75 % of sets pass both): **${((Number.isNaN(pP) && Number.isNaN(pT)) || Math.abs(pP - pT) <= 0.15) && Math.abs(qP - qT) <= 0.25 * Math.abs(qT) && passN >= 0.75 * rp.pass.length ? 'yes' : 'no'}** (${passN} of ${rp.pass.length} sets pass)`, '');
   }
   if (r.known) L.push('## Known plant', '', '```', JSON.stringify(r.known, null, 1), '```', '');
   return L.join('\n');

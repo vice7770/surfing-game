@@ -237,6 +237,9 @@ export function peakOf(p: number[]): number {
   let best = -1;
   for (let i = 0; i < FREQS.length; i += 1) if (FREQS[i] >= 1.5 - 1e-9 && FREQS[i] <= 5 + 1e-9 && (best < 0 || p[i] > p[best])) best = i;
   const a = p[best - 1] ?? 0, b = p[best], c = p[best + 1] ?? 0;
+  // Correction after the first full read (README §4): a spectrum with no peak inside 1.5–5 Hz (its largest in-band bin
+  // at the band's edge, falling away from it) has no peak to refine; it is reported as none (NaN), not extrapolated.
+  if (!(b >= a && b >= c)) return Number.NaN;
   const den = a - 2 * b + c;
   const off = den !== 0 ? 0.5 * (a - c) / den : 0;
   return FREQS[best] + off * PAD;
