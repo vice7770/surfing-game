@@ -327,3 +327,82 @@ govern are read. I stop at a clean commit if the coordinator says so.
 | --- | --- |
 | 2026-11-26 | Vicente approves the round: "Yes, start 3.6e" (relayed by the coordinator, consult log `4144ff19`) |
 | (this commit) | the brief, verbatim, and this pre-registration, before any run |
+
+---
+
+## 1. Question 1: the board's mechanics term by term, from the twins' ledgers
+
+*Fitting set (3.6d's raw twin runs, Canyon Big seeds 1–3, his address, knobs off); the open sets passing over 1.0 s at
+≥ 4 m/s (Compress 63, tuck 69, tall 59), both channels pooled, frames 0–59 after the kick tick (1.0 s, 60 Hz); per unit
+model-sign command; model signs (N = −yaw ledger, K = +roll ledger; r_b = −Ω about the world's up, φ̇ = p about the
+board's own long axis); least squares with cluster-robust (by set) standard errors. Every coefficient, its error, κ,
+the VIFs and the model's value per bin and pooled are in `results/fit/fit-<stance>.md` (third pass). The model's value
+is `plantAt`'s at each set's own kick-tick speed, depth and rail, averaged over the bin.*
+
+**Controls.** The synthetic control (amendments 1–2): on the game's own regressors, y = X b with b the model's
+coefficients is returned with ‖b̂ − b‖ / ‖b‖ ≤ 2.8 × 10⁻¹² in every bin and stance (largest error on a nonzero
+coefficient ≤ 1 × 10⁻¹²); with 10 % white noise, 0.71–1.00 of the coefficients fall within 3 standard errors (1.00 in
+33 of 48 cases; the shortfalls are in bins of 19–24 sets, where 20 clusters make the cluster-robust error small). The
+frame alignment: the frame-end yaw rate against the next tick's, per unit, differs by at most 0.095 of a largest
+|Ω| of 3.9 (Compress); the ledger's `total` against the change of the frame-end rate gives the board's own inertia
+0.444 kg·m² in yaw and 0.025 in roll (medians over sets; the bookkeeping uses 0.449 and 0.026). The water's terms are
+well conditioned (scaled κ 3.5–9.2, every VIF ≤ 18); the rider's term less so (κ 25–54), and its φ, φ̇, θ, θ̇
+coefficients are unread (VIF 50–102: the ankle's θ − φ).
+
+**The water's moments** (the sum of the ten water entries), Compress, by speed bin (median 6.0 / 9.3 / 10.5 m/s),
+game against model:
+
+| moment, per | game, bins 1 / 2 / 3 | model | read |
+| --- | --- | --- | --- |
+| roll, per roll φ (N·m/rad) | −149 ± 25 / −193 ± 26 / −290 ± 15 | −266 / −308 / −352 | the water rights the board at 56–82 % of the table |
+| roll, per slip β | +4 ± 14 / −517 ± 149 / −414 ± 160 | −538 / −855 / −992 | 0 at the low speeds, 40–60 % above |
+| roll, per yaw rate r | −10 ± 4 / +12 ± 8 / +20 ± 7 | +55 / +64 / +67 | a fifth to a third, the wrong sign at the low speeds |
+| roll, per roll acceleration φ̈ (the water's roll inertia, kg·m²) | +0.06 ± 0.08 / −0.18 ± 0.04 / −0.28 ± 0.03 | −0.97 / −0.72 / −0.61 | **0 to 46 % of the model's: the board's roll inertia in the game is about 0.03–0.3 kg·m², the model's 0.63–1.0** |
+| roll, per yaw acceleration ṙ | −0.94 ± 0.29 / −0.74 ± 0.26 / −0.89 ± 0.30 | 0 | a coupling the model lacks |
+| yaw, per roll rate φ̇ | **+6.9 ± 1.3** / −1.8 ± 2.7 / −3.2 ± 2.6 | −6.8 / −11.5 / −13.6 | the wrong sign at the low speeds (the fins, +8.0 ± 0.8 pooled: the coordinator's lead) |
+| yaw, per yaw rate r (the yaw damping) | −9 ± 1 / −40 ± 12 / −57 ± 10 | −49 / −77 / −91 | 18–63 % |
+| yaw, per slip β | +3 ± 10 / +667 ± 171 / +870 ± 185 | +609 / +1231 / +1634 | 0 at the low speeds, 53–54 % above |
+| yaw, per roll φ | −60 ± 9 / −8 ± 21 / +96 ± 17 | +7 / +32 / +49 | turns over with the speed |
+| yaw, per yaw acceleration ṙ (the water's yaw inertia) | +1.00 ± 0.16 / +0.98 ± 0.16 / +0.80 ± 0.19 | −0.12 | **negative added inertia: the water lightens the board's yaw by about 0.9 kg·m²** |
+
+The tuck reads the same way (roll per roll −128 / −140 / −231 against −255 / −300 / −357; the water's roll inertia
++0.08 / −0.14 / −0.25 against −0.89 / −0.72 / −0.60; yaw per roll rate +10.0 ± 1.5 in the low bin; yaw per ṙ
++0.5 to +0.8). Tall is the nearest to the model: roll per roll −405 / −289 / −365 against −263 / −312 / −374, roll per
+slip −970 / −401 / −1071 against −664 / −943 / −1019, the water's roll inertia −0.16 / −0.45 / −0.60 against
+−0.82 / −0.69 / −0.58.
+
+**The rider's coupling** (the ledger's residual), Compress, the read coefficients:
+
+| term, per | game, bins 1 / 2 / 3 | model | read |
+| --- | --- | --- | --- |
+| roll, per ankle rest δ (N·m/rad) | −686 ± 82 / −536 ± 49 / −519 ± 45 | −800 | the ankle's torque per rest at 65–86 % |
+| roll, per slip rate β̇ | −3.0 ± 0.9 / −6.4 ± 2.7 / −0.8 ± 0.6 | −14 / −21 / −24 | the body's lateral push at the deck: 3–30 % |
+| roll, per body bank acceleration θ̈ | −0.89 / −1.10 / −0.71 | −1.25 | 57–88 % |
+| yaw, per twist θ_t, per upper-body rate ω_u, per twist torque τ_a | 17.8–23.8; 2.7–3.3; 0.91–1.03 | 20; 3; 1 | **the twist joint is the model's** |
+| yaw, per yaw rate r | +4 ± 2 / +10 ± 6 / +10 ± 4 | +111 / +164 / +188 | **5–9 %** |
+| yaw, per slip rate β̇ | −1.0 ± 0.8 / −0.6 ± 0.9 / +0.4 ± 0.7 | +114 / +167 / +191 | **0** |
+| yaw, per yaw acceleration ṙ | −1.08 / −1.28 / −1.31 | −5.59 | 19–23 % |
+| yaw, per body bank acceleration θ̈ | +0.23 / +0.16 / +0.17 | +9.8 | 2 % |
+| yaw, per slip β | −3 ± 10 / −253 ± 77 / −274 ± 56 | 0 | a coupling the model lacks, above 8.7 m/s |
+| yaw, per ankle rest δ | +75 / +92 / +130 | +176 / +160 / +164 | 43–79 % |
+
+1. **The rider's yaw coupling through the feet is almost absent in the game.** The model's yaw row carries the body's
+   lateral force H = m [V (β̇ + r) + z_d φ̈ + x_f ṙ + h θ̈] at the feet's station x_f = −0.244 m behind the board's centre
+   of mass, which gives the board a yaw moment of 110–190 N·m per rad/s of yaw rate and per rad/s of slip rate, 9.8 N·m
+   per rad/s² of the body's bank and 4.35 kg·m² of the 5.6 in its rider yaw inertia. In the game the same entries are
+   0–9 % of the model’s in Compress (the tuck 0–14 %, tall 1–20 %). The twist joint, by contrast, is the
+   model’s within 20 % (tall’s θ_t ×1.4–2.0). So the model's board is held in yaw by the rider's mass at a lever the game's
+   board does not have, and the game's board turns more freely: this is the board's heading "answering the ankle at once"
+   of 3.6d.
+2. **The board is far lighter in roll than the model says.** The water's implicit roll inertia, which `BOARD_INERTIA`
+   puts at 0.6–1.0 kg·m² (measured standing tall on a steady glide, 3.2e), is 0 to 0.28 in Compress and the tuck and
+   0.16–0.60 tall. With the board's own 0.026, the deep stances' board rolls as a body of 0.03–0.3 kg·m², not 0.63–1.0.
+3. **The water's derivatives are 20–80 % of the table's, two change sign, and two couplings are new.** The yaw moment
+   per roll rate is +6.9 at 6 m/s in Compress (the fins), against the table's −6.8; the water lightens the board's yaw
+   by about 0.9 kg·m² (+0.8 to +1.0 per ṙ); the yaw acceleration rolls the board (−0.7 to −0.9 per ṙ). At the low bin
+   (4–8.7 m/s, median 6) the slip's moments are 0 in both axes, where the plant (read at the 6 m/s row, `plantFloor`)
+   gives 540–610.
+4. **My prediction 1** (§0.8): the fins' yaw per roll rate departs with the sign that turns the board at once — held
+   (+6.9 against −6.8 at 6 m/s; +6.0 pooled); the water's roll per roll far below the table — partly (56–82 %, not
+   3.6a part 2's near zero); the ankle's spring and damper within 30 % — held (65–86 %); the body's lateral force
+   departs — held, and by far more than I guessed (0–9 % in yaw).
