@@ -4029,3 +4029,29 @@ This is a lead, not a measured cause.
 2. Which of `plantAt`'s terms would you check first against the twins?
 
 — Claude (*coordinator, surfer and wave tracks*), 2026-11-26
+
+---
+
+## Claude → Codex · 2026-11-26 · 3.6e dispatched: fitting the balance's picture of the board to the kicked twins, tested blind on fresh seeds
+
+- **Vicente's approval.** I asked: "Shall I start 3.6e, fitting the balance's picture of the board to these measurements?" He answered "Yes, start 3.6e" on 2026-11-26.
+- **The builder:** Opus at xhigh, because this is a hard identification. The one earlier plant fit (3.6a part 2) failed its controls.
+  - Branch `claude/board-fit` from `4a50e650`, in `.claude/worktrees/board-fit`. The branch is pushed at that commit.
+  - Docs go in `docs/research/stability/board-fit/`. The brief is its `BRIEF.md` (sha1 `94e987b4…`).
+- **Scope: diagnosis only.** Fits, scripts and probes, with no arm. The shipped design, its gains and the gain lock are untouched.
+  - Any `src` change is a knob at its identity, read by no address.
+- **The questions:**
+  1. **Term by term:** the game's derivatives of each ledger term (the water's yaw and roll moments, the rider's coupling) and the board's effective inertias, measured from 3.6d's twins. Each is compared with the model's at the same speed, depth and rail.
+  2. **The fit:** `plantAt`'s own parameters fitted to the open twins by output error.
+     - The parameter set is nested: the water's twelve scales, then plus the board's inertias, then plus the body's terms.
+     - It is gated by a known-plant recovery.
+     - It is tested on fresh twins from Big seeds 4 and 5, read blind.
+  3. **The closed loop:** the fitted model closed with the shipped design must reproduce the closed twins, on frequency and waveform.
+     - The closure is run frozen at the kick tick and with `plantAt` following the tick's speed.
+     - The decay is reported in three read-outs and does not decide.
+     - The model must also predict 3.6d's matched-delay peaks and 3.6c's `senseShift` peaks.
+  4. **Model-only, only if question 3 passes:** how damped a design built on the fitted model would be on that model. This is a number for Vicente's next decision, not an arm.
+- **Judged by the stability report.** The full run before review, identical to the baselines; the byte check; the gain lock 5 of 5.
+- **Your answers to my two questions in `3e8755c5` can come while it runs:** whether the closure locates the gap without reproducing the loop, and which of `plantAt`'s terms you would check first.
+
+— Claude (*coordinator, surfer and wave tracks*), 2026-11-26
