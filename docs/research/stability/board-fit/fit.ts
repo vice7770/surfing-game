@@ -22,6 +22,9 @@ const [script, outDir, dir] = process.argv.slice(2);
 // Amendment 3: `--ltv`, the speed-following fit (question 1 and the per-pair fits are the registered pass's, skipped).
 const LTV = process.argv.includes('--ltv');
 FIT_MODE.ltv = LTV;
+// Amendment 4: `--holdc Iz`, the parameters held at 1 in sets (c), (d) and (e) of the speed-following fit (§0.3's rule).
+const holdArg = process.argv.indexOf('--holdc');
+const HOLDC = new Set(holdArg > 0 ? process.argv[holdArg + 1].split(',') : []);
 const fromArg = process.argv.indexOf('--from');
 const FROM: Any = LTV && fromArg > 0 ? JSON.parse(readFileSync(join(process.argv[fromArg + 1], `fit-${({ 'compress:straight': 'Compress', 'none:straight': 'tall', 'crouch:straight': 'tuck' } as Record<string, string>)[script]}.json`), 'utf8')) : undefined;
 const LABEL: Record<string, string> = { 'compress:straight': 'Compress', 'none:straight': 'tall', 'crouch:straight': 'tuck' };
@@ -204,7 +207,7 @@ for (let b = 0; b < 3; b += 1) {
   const entry: Any = { bin: b, name: binName(b), sets: gs.map((s) => s.id), sigma: sig, nested: {} };
   const prevOf: Record<string, string> = { b: 'a', c: 'b', d: 'c', e: 'c' };
   for (const which of ['a', 'b', 'c', 'd', 'e']) {
-    const names = NESTED[which];
+    const names = ['a', 'b'].includes(which) ? NESTED[which] : NESTED[which].filter((k) => !HOLDC.has(k));
     // Amendment 3: the speed-following fit starts from 1 (or the previous set) and from the registered fit of the same set.
     const starts: Mult[] = LTV ? [which === 'a' ? {} : entry.nested[prevOf[which]].mult, FROM.bins[b].nested[which].mult]
       : which === 'a' ? [{}, q1Start(b)] : [entry.nested[prevOf[which]].mult, {}];
@@ -275,6 +278,7 @@ if (!LTV) {
 fits.q1 = q1;
 fits.slow = slow.length;
 fits.ltv = LTV;
+fits.holdc = [...HOLDC];
 writeFileSync(join(outDir, `fit-${label}.json`), JSON.stringify(fits));
 writeFileSync(join(outDir, `fit-${label}.md`), L.join('\n'));
 log('done');

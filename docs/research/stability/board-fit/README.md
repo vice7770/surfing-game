@@ -311,6 +311,15 @@ govern are read. I stop at a clean commit if the coordinator says so.
      speed and a plant fitted with the speed held would carry the bias above into it; the registered LTI fit's
      selected set is closed too and reported beside. Question 4 follows question 3's primary.
    - `heldout.ts` scores both fits in the same single read.
+4. *2026-11-26, about 13:12 UTC, before any byte of the held-out runs is read and before the rerun's outputs are read:*
+   **§0.3's holding rule applied to the speed-following fit.** Its known-plant control on all three stances
+   (`results/known/ltv-held-*.json`): sets (a) and (b) pass in every bin (largest error 1.9 % and 1.1 %, residual
+   ≤ 1.6 × 10⁻³), but in (c) the board's yaw inertia `Iz` misses the 5 % line in five bins (5.2–11.7 %; it trades
+   with the rider's lower yaw inertia, the pair loading on (c)'s weakest direction). By §0.3's rule `Iz` is held at 1
+   in the speed-following fit's (c), and so in (d) and (e) which contain (c); (b) keeps it. The control is rerun with
+   `Iz` held (truth and fit), and must pass; the game's speed-following fits are rerun the same way (`--holdc Iz`),
+   and those reruns are the speed-following fits that are frozen. I read the first speed-following fits' progress
+   lines (their costs) before this, not their tables.
 
 ### 0.11 The order of the round (UTC, 2026-11-26)
 

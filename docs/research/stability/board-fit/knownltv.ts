@@ -17,6 +17,9 @@ const [script, fitDir, dir, outPath] = process.argv.slice(2);
 // the rail held at the kick tick's, as the speed-following fit does), so its recovery is a control of that fit's code.
 FIT_MODE.ltv = process.argv.includes('--ltv');
 const HELD = process.argv.includes('--held');
+// Amendment 4: `--holdc Iz`: held at 1 in set (c), in the fit and in the truth.
+const hi = process.argv.indexOf('--holdc');
+const HOLDC = new Set(hi > 0 ? process.argv[hi + 1].split(',') : []);
 const LABEL: Record<string, string> = { 'compress:straight': 'Compress', 'none:straight': 'tall', 'crouch:straight': 'tuck' };
 const fit = JSON.parse(readFileSync(join(fitDir, `fit-${LABEL[script]}.json`), 'utf8'));
 const P_STAR: Mult = { rollN: 1.6, rollY: 0.7, rollK: 2.2, slipN: 0.5, slipY: 1.4, slipK: 0.8, yawN: 1.9, yawY: 0.6, yawK: 1.3, rateN: 0.75, rateY: 1.5, rateK: 2.5, Ix: 2.0, Iz: 0.8, J: 1.3, kt: 0.7, ct: 1.5, lower: 0.9, upper: 1.2 };
@@ -41,7 +44,7 @@ function ltv(s: FitSet, pm: Mult): Float64Array[] {
   }
   return out;
 }
-const res: Record<string, unknown> = { script, ltvFit: FIT_MODE.ltv, heldTruth: HELD, sets: open.length, speedChange: open.map((s) => (s.kb.args.speed[ARGS_PRE + W_OPEN] as number) - s.v) };
+const res: Record<string, unknown> = { script, ltvFit: FIT_MODE.ltv, heldTruth: HELD, holdc: [...HOLDC], sets: open.length, speedChange: open.map((s) => (s.kb.args.speed[ARGS_PRE + W_OPEN] as number) - s.v) };
 for (const [name, truth] of [['unperturbed', {} as Mult], ['p*', P_STAR]] as const) {
   const synth = open.map((s) => ({ ...s, x: ltv(s, truth) }));
   const per: unknown[] = [];
@@ -49,7 +52,7 @@ for (const [name, truth] of [['unperturbed', {} as Mult], ['p*', P_STAR]] as con
     const gs = synth.filter((s) => binOf(s.v, fit.edges) === b);
     const sig = scalesOf(gs);
     for (const which of ['a', 'b', 'c']) {
-      const names = NESTED[which];
+      const names = which === 'c' ? NESTED.c.filter((k) => !HOLDC.has(k)) : NESTED[which];
       const want = (k: string) => (name === 'p*' && which !== 'c' && !NESTED[which].includes(k) ? 1 : (truth[k] ?? 1));
       // For (a) and (b) the known plant is p* restricted to the set's own parameters (the others at 1), as in knownfit.
       const sub: Mult = name === 'p*' ? Object.fromEntries(names.map((k) => [k, truth[k]])) : {};
