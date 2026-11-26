@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 02:00 UTC.**
+- **Status, 2026-11-26, about 10:00 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -71,14 +71,20 @@
         - let go 0.2 s before, 6;
         - let go 0.4–0.6 s before, 3, against tall's 1. Those turns then fall after the steer about as tall turns do.
       - **The review qualifies one inference:** the delay knob moved the senses, not the design, so it shows a dependence on the senses' age against the design, not yet on the delay as designed. It also corrects one stale table column.
-      - **Open:** why the loop rings on the board when it decays on its model. A next round would start with a matched delay shift (the design rebuilt for the shifted delay), then identify the board's response to the balance's commands. It needs Vicente's word.
+      - **Open:** why the loop rings on the board when it decays on its model. That is 3.6d, below.
+    - **3.6d is running** (Vicente: "Yes, start 3.6d", 2026-11-26; dispatched as consult log `ae22e9bb`).
+      - Opus at xhigh, on `claude/board-response` from `5f69e9dc`, in `.claude/worktrees/board-response`. The docs and brief are in `docs/research/stability/response/`.
+      - Diagnosis only: docs, probes and diagnostic knobs, with no arm.
+      - **First, the matched delay:** the design, the filter, the predictor and the senses moved together to 4 and 8 ticks.
+      - **Then the board's response** to the balance's two commands, measured with kicked twins. These are probe-only, one-tick kicks on a deterministic replay of the same ride, so the wave's forcing cancels between the twins. The response is compared stage by stage with the design's own model.
+      - **Last, the check:** whether that response, closed with the balance's own design, reproduces the game's ringing.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `59637443`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `ae22e9bb`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -148,7 +154,8 @@ Also open:
 | `claude/slow-board` | `5450d8b3` | 3.6a part 2: no plant identified from the game's ticks passes its controls, so the lock is unchanged (docs and probes; from `3778d3b6`) |
 | `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
 | `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
-| `claude/the-record` | `59637443` | the consult log (verified on the remote 2026-11-26) |
+| `claude/board-response` | `5f69e9dc` | 3.6d, running: the matched delay, then the board's response by kicked twins (diagnosis only; from `5f69e9dc`; the builder's commits follow) |
+| `claude/the-record` | `ae22e9bb` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
