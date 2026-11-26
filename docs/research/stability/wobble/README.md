@@ -244,8 +244,8 @@ up, N·m, + the nose toward the board's +x; mean torque over the 1/60 s step.*
   torque, on plane water and on the Canyon's own water, to 10⁻¹⁴ N·m. The shipped residual is recovered exactly from the
   closed one (`rider − duplicate + suction`, the switch's test), and the board's state is bit for bit the same with the
   ledger off, shipped and closed (the test; and control 1 below: the probe's benchmark rows equal the baseline's).
-- **On ridden frames the duplicate was small** (`dup.py`, `results/dup-ridden.md`, the base run's Big standing frames):
-  0.4–0.5 N·m median (2 N·m RMS) against a rider term of 4.5 N·m median (17–40 N·m RMS). So 3.6b's ledger columns were
+- **On ridden frames the duplicate was small** (`dup.py`, `results/dup-ridden.md`, the base run's Big standing frames
+  to tS 3.6 s): 0.50–0.61 N·m median (1.7–2.4 N·m RMS) against a rider term of 4.4–6.7 N·m median (18–40 N·m RMS). So 3.6b's ledger columns were
   about a tenth off on the Canyon, not grossly; they are now exact. The closed entries sum to the board's own I·ΔΩ to the
   rows' rounding (0.003 N·m).
 - Every yaw number below is the closed ledger's, about the world's up (+ toward the board's +x), mean over the step.
@@ -298,7 +298,66 @@ The swing's peak is stance-dependent with the knobs off: 2.31 Hz tall [2.28, 2.4
 the tuck [2.85, 2.95], 1.93 Snap (window 1, pooled, 90 % bootstrap). The leg's axial mode is the same in every stance,
 so it could not give that order even before the knob.
 
-<!-- M4 rest -->
+| knob (×0.7 / ×1.3; `senseShift` −2 / +2 ticks) | stance | peak Hz: low / off / high | e | swing amplitude, paired ratio to off: low / high (rides down / up) | verdict (§0.3 M4) |
+| --- | --- | --- | --- | --- | --- |
+| `knee` (the leg's axial mode) | tall / tuck / Compress | 2.30 / 2.31 / 2.31; 2.88 / 2.90 / 2.87; 2.67 / 2.67 / 2.67 | +0.01 / −0.01 / +0.00 | 1.04 / 0.96; 0.98 / 0.90; 1.03 / 1.03 | does not carry |
+| `twistGain` (the twist row of the balance's gains) | tall / tuck / Compress | 2.19 / 2.31 / 2.41; 2.79 / 2.90 / 2.95; 2.52 / 2.67 / 2.80 | +0.15 / +0.09 / +0.18 | 1.19 / 0.91; 0.85 / 1.04; 0.98 / 1.04 | partly (tall, Compress); does not carry (tuck, by the ±0.15 Hz rule) |
+| `ankleGain` (the ankle row) | tall / tuck / Compress | 2.31 / 2.31 / 2.33; 2.87 / 2.90 / 2.91; 2.64 / 2.67 / 2.71 | +0.01 / +0.02 / +0.04 | 0.74 (11 of 12 down) / 1.52; 0.80 (11 of 13) / 1.13; **0.70 (13 of 13) / 1.42 (8 of 8 up)** | does not carry the frequency; sets the size |
+| `senseShift` (the senses reach the balance 4 / 6 / 8 ticks late; its design still assumes 6) | tall / tuck / Compress | **4.26 / 2.31 / 1.93; 3.73 / 2.90 / 2.33; 3.72 / 2.67 / 2.05** | **−1.15 / −0.68 / −0.86** | 2.33 / 10.49; 1.27 / 2.78; 1.11 / 5.73 (+2: 8 of 8 up) | **carries** (every stance; every ride's zero-crossing frequency moves the same way: 10–12 of 10–12 up at −2, 8–11 of 8–12 down at +2) |
+<!-- M4 fins -->
+
+Rides standing through the window, of 12–13 a cell, except `ankleGain` ×1.3 (8 a cell: the firmer ankle throws more
+riders before +3.0 s). Intervals and every cell (Snap, his way) in `results/freq-w1.md`; window 2 (tS 0.5–4.5 s) in
+`results/freq-w2.md`.
+
+1. **The leg's own bounce is not it.** ±30 % on the knees' stiffness moves the leg's axial mode by −16 % / +14 %
+   (2.2 / 3.0 Hz) and the swing's peak by at most 0.03 Hz in any stance (e within ±0.03), its size by 0–10 %. Y2 is out;
+   the coordinator's lead 9 (2.46 Hz damped) is a coincidence of numbers.
+2. **The twist loop sets its pace.** The twist row's gain moves the peak the same way in every stance, 0.10–0.16 Hz for
+   ±30 % (e +0.15 to +0.18 in tall and Compress, 2.52 and 2.80 Hz against 2.67 with both intervals clear of it), and
+   barely its size. Below the pre-registered 0.25, so by the rule it is *partly*: the twist's feedback is one of the
+   stiffnesses of the mode, not all of it.
+3. **The loop's delay sets its frequency.** Two ticks less delay than the design assumes moves the swing from 2.67 to
+   3.72 Hz in Compress (2.31 to 4.26 tall, 2.90 to 3.73 in the tuck); two ticks more moves it to 2.05 Hz (1.93, 2.33)
+   and makes it 3–10 times as large. The elasticity is −0.7 to −1.2: the swing's period follows the senses' age about in
+   proportion (2.67 Hz is a period of 3.7 sensing delays). **This is the carrier**: the 2.5–3 Hz swing is the balance
+   loop's own delay-set oscillation, ringing on the real board, not a mode of the leg or of the hull that the loop
+   happens to excite. Codex's nominal test (§0, brief item 7) decays on the controller's own model, where the predictor
+   cancels the delay exactly; on the board the game actually rides, the same loop leaves this mode lightly damped, and
+   any extra delay drives it up.
+4. **The ankle loop sets its size.** The ankle row's gain does not move the peak (e +0.01 to +0.04) but scales the
+   swing nearly in proportion: ×0.7 takes it to 0.70 of itself in Compress on 13 of 13 rides (0.80 in the tuck, 0.74
+   tall), ×1.3 to 1.42 on 8 of 8 (and throws 5 more of 13 before +3.0 s). The ankle's active work is also the largest
+   joint work into the swing (§2.1). So the roll loop is what feeds the swing most; the twist loop fixes where in
+   frequency it rings.
+
+### 2.3 Why it is larger deep (M8, M5)
+
+**Matched waves (M8).** On the 12 Big waves where tall, Compress and the tuck all stand through the window (same wave,
+start and inputs), the swing is 3.21 times tall's in Compress (larger on 10 of 12 waves) and 1.91 times in the tuck
+(10 of 12); window 2 (to 4.5 s, 11 waves) 3.40 (11 of 11) and 2.28 (9 of 11). Its zero-crossing frequency: 2.40 Hz
+tall, 2.60 Compress, 3.10 the tuck.
+
+**The depth swaps (M5)**, each read on the deep ride against the same wave's tall ride (knobs off):
+
+| swap (the deep body otherwise as it is) | Compress: rides standing / amplitude, paired ratio to off (rides down) / share of the excess over tall removed, median (waves ≥ 0.5) | tuck: the same |
+| --- | --- | --- |
+| `splitDepth = 0`: the yaw inertia's split read at tall's (board-rigid 1.37, upper 1.44 kg·m², against Compress's 1.24 / 1.96 and the tuck's 0.86 / 2.44) | 13 / 0.70 (12 of 13) / **+0.48** (3 of 10) | 13 / 0.60 (13 of 13) / **+0.69** (8 of 10) |
+| `designDepth = 0`: the balance's design (model, gains, filter, reference) scheduled at depth 0 | 3 of 13 stand through 3.0 s; the survivors swing 8 times as much | 0 of 13 stand |
+<!-- both0 -->
+
+1. **The yaw inertia's split is about half of it.** Turning the deep body's yaw inertia back to tall's split (more of
+   it carried rigid with the board, less on the upper body the twist turns) takes the swing down to 0.70 of itself in
+   Compress on 12 of 13 rides and to 0.60 in the tuck on 13 of 13, and removes a median 48 % (Compress) and 69 % (tuck)
+   of the excess over tall on the matched waves. By the pre-registered rule (at least half) it explains the tuck's
+   excess and narrowly not Compress's; **my prediction 4 (≥ half in Compress) missed by 2 points**. The mechanism is the
+   one M2 measures: deep, the board and lower body that take the twist's reaction are lighter (1.80 and 1.42 kg·m²
+   against 1.93, the board's own 0.56 with its water included) and the upper body the twist turns is heavier (1.96 and
+   2.44 against 1.44, before the arms' 0.87 × `human.arms`), so the same twist torque yaws the board more.
+2. **The deep design is not the cause; it is what keeps the deep body up at all.** Scheduled at tall's depth, the
+   balance cannot hold the deep body: 10 of 13 Compress and 13 of 13 tuck straight rides fall before +3.0 s. So the
+   design's depth schedule is right in direction, and the swap cannot measure a share.
+<!-- M5 rest -->
 
 ## 3. Question 2: how the swing becomes the sideways tip (M6)
 
@@ -391,3 +450,35 @@ riding stance, m. `release.py`, `results/release.md` (every sea); M6's split for
    14 of 36 x = 0 turns on Big (7 of them fall, against 8 of the 22 that keep the catch) and 6 of 36 at x = 0.2: too few
    to call it a cause here, but the projection's catch is not what the code's note says it is once the balance has
    bent the knees at all. For Vicente as a finding; no bound is changed.
+
+## 5. Controls
+
+| control | result |
+| --- | --- |
+| The probe inert (§0.6 item 1): the base run's files, filtered to the benchmark's scripts and rows, against the full baseline's raw runs (`runs/full-f2.tar.gz`), both ledgers on and the yaw ledger closed, the `finish` wrapper and the bare boards running | 33 of 33 files identical in every `stand`, `f`, `tw` and `summary` row (`inert.py`); the benchmark's report re-read on them (`--reuse`): exit 0, 227 of 227 ride lines identical to `baseline-full.json` (`same.py`) |
+| Knobs off, quick (§0.6 item 2), after the `src` changes (`f5b8ff8e`), 23:42 UTC, 10.5 min | exit 0, 0 regressions, 0 improvements; 26 of 26 ride lines identical to `baseline-quick.json` |
+| Knobs off, full, before the report (`1d16497c`'s `src`, the same as `f5b8ff8e`'s), 00:46–01:31 UTC, 44.4 min with 4 at once beside the knob runs | exit 0, 0 regressions, 0 improvements; 227 of 227 ride lines identical to `baseline-full.json`, and its 26 test-wave rides identical to `baseline-quick.json`'s 26 |
+| The Canyon byte check, knobs at identity, `yawLedgerClosed` false (`f5b8ff8e`'s `src`) | snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`: identical (`results/byte-check.txt`) |
+| `npx tsc -b` | clean |
+| The gain lock, `npx vitest run src/physics/stabilityGains` | 5 of 5 |
+| The touched files' tests | `yawLedgerClosed` (new, 2), `rollLedger`, `railSection`, `stabilityGains`: 27 passed; `predictiveBalance`, `AttachedRider.test`, `AttachedRider.deepCrouch`, `plantSpeed`: 181 passed and 8 expected failures (`it.fails`, as at `340fc560`), 0 failing |
+| Each knob is what it says (§0.6 item 3; `knobcheck.ts`, `results/knobcheck.txt`; the rows) | the gain rows' feedback ×1.3 / ×0.7 exactly, the other row untouched; the senses reach the filter 4 / 6 / 8 ticks late at −2 / 0 / +2; the fins' force and damping ×1.3 / ×0.7 at the same slip; the knees' stiffness 14 / 20 / 26 kN/m in the rows (`lk`); the design and split depths by code |
+| The facts of §0.2 | 1: M1. 2: by the code (`coupleYaw`, `finish`). 3: `yd` = max(0, −`leg.rest`) on all 89,308 Big standing frames, and `heldDepth` 0 the frame Compress is let go. 4: the felt vertical's across part follows V·dχ/dt (−0.88 to −0.94) where measurable, but its tilt across the deck barely changes (§3) |
+
+## 7. Where everything is, and how to recompute it
+
+- **The raw runs** (the session scratchpad, about 0.7 GB):
+  `/private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36c/`:
+  `base/` (knobs off: the benchmark's full matrix, the straight rides, his way's turns, the release drives, the bare
+  boards), `knobs/<setting>/` (13 settings × Big seeds 1–3), `rep/q-off`, `rep/f-off` (the stability reports), the logs
+  beside them, `bin/wobble-probe-d16b1f62.mjs` (the probe bundle every run used, sha1 `22a9716e…`).
+- **Archived here** (`runs/`): `base.tar.gz` (the base run, `slim.py`: every row but the `w` rows cut to the readers'
+  fields and the `w`/`o` rows to tS ≤ 3.6 s) and `knobs.tar.gz` (the knob runs, `slim.py --freq`: their `f` rows cut to
+  what `freq.py` reads). Every table in `results/` recomputes from them: unpack beside this folder and pass the
+  directories to the readers.
+- **The probe:** `wobble-probe.ts` (bundle with `rolldown … --format esm --platform node`), driven by
+  `run.py --set base|knobs`; the checks `budget.ts` (M1, plane water) and `knobcheck.ts` (control 3).
+- **The readers** (`python3 -I`): `bare.py` and `dup.py` (M1), `power.py` (M2, M3; `--steer` for the falls),
+  `hc.py` (M3 against the matched controls), `freq.py` (M4, M5, M8; `--window 2`), `tip.py` (M6), `release.py` (M7),
+  `series.py` (one ride frame by frame), `inert.py` and `same.py` (the controls), all on `wob.py`.
+- **The results:** `results/*.md`, `results/knobcheck.txt`, `results/byte-check.txt`.

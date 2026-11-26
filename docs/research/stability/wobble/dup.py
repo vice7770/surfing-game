@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """3.6c M1, on ridden frames: how far the shipped yaw ledger's rider residual was from the closed one (the duplicate,
 `yDup`, less the omitted suction `ySuc`), against the closed rider term and the fins' term, on the base run's Canyon Big
-standing frames, per script group; and the sum check (the closed entries against `yTot`, rounding of the rows only).
+standing frames up to tS 3.6 s (the archive's span), per script group; and the sum check (the closed entries against `yTot`, rounding of the rows only).
 
     python3 -I dup.py <run dir> [--md out.md]
 """
@@ -14,6 +14,8 @@ for path in sorted(glob.glob(os.path.join(d, 'big_s*.jsonl'))):
         if not line.startswith('{"kind":"w"'):
             continue
         r = json.loads(line)
+        if r['tS'] > 3.6:
+            continue
         g = r['script'].split(':')[0] if not r['script'].startswith('release') else 'release'
         a = acc.setdefault(g, {'n': 0, 'dup': [], 'rid': [], 'fin': [], 'err': 0.0})
         a['n'] += 1
