@@ -250,6 +250,56 @@ up, N·m, + the nose toward the board's +x; mean torque over the 1/60 s step.*
   rows' rounding (0.003 N·m).
 - Every yaw number below is the closed ledger's, about the world's up (+ toward the board's +x), mean over the step.
 
+## 2. Question 1: what carries the 2.5–3 Hz swing, and why it is larger deep
+
+*Base run (knobs off) and the knob runs, Canyon Big seeds 1–3, the straight rides standing through tS 3.0 s (12 tall,
+13 tuck, 13 Compress, 13 Snap; his way is Compress frame for frame on Big, its trim released on the first standing
+step). Window tS 0.5–3.0 s unless stated. Yaw about the world's up, roll about the board's long axis; works and powers
+in the frames of §0.1. Tables: `results/power-straight.md` (M2, M3), `results/freq-w1.md` and `results/freq-w2.md` (M4,
+M5, M8), `results/hc-falls.md`, `results/power-steer-falls.md`.*
+
+### 2.1 Who feeds it (M2, M3)
+
+| straight rides, Big | tall | tuck | Compress | Snap |
+| --- | --- | --- | --- | --- |
+| swing, yaw / roll (deg/s, median std) | 2.5 / 2.6 | 5.8 / 7.1 | 5.4 / 5.6 | 3.5 / 4.1 |
+| power into the yaw swing, the twist's reaction (W; rides +) | +0.010 (12/12) | +0.064 (13/13) | +0.081 (13/13) | +0.005 (7/13) |
+| … the rest of the rider's coupling (the feet's push, the lower body) | +0.002 (8/12) | +0.053 (13/13) | +0.016 (12/13) | +0.042 (13/13) |
+| … the fins | −0.008 (1/12) | −0.087 (0/13) | −0.096 (0/13) | +0.006 (8/13) |
+| … the hull's pressure | −0.011 (1/12) | −0.064 (0/13) | −0.033 (0/13) | −0.047 (0/13) |
+| … the water's inertia (added mass) / friction | +0.005 / +0.002 | +0.032 / +0.010 | +0.022 / +0.009 | +0.004 / +0.004 |
+| power into the roll swing, the rider / the hull's pressure (W) | +0.023 / −0.009 | +0.260 / −0.155 | +0.241 / −0.174 | +0.047 / −0.011 |
+| the twist motor's alternating work, exact (J over 2.5 s; rides +) | +0.12 (12/12) | +0.26 (13/13) | +0.40 (13/13) | +0.14 (13/13) |
+| … Codex's half-cycle estimate, alternating (J; rides +) | +0.038 (12/12) | +0.161 (11/13) | +0.193 (13/13) | +0.010 (9/13) |
+| the ankle's active alternating work (J) | +0.17 | +1.10 | +0.91 | +0.20 |
+| the knees' active alternating work (J) | 0.00 | +2.39 | +0.37 | +0.34 |
+
+1. **The rider drives the swing and the water damps it.** In every deep straight ride the twist's reaction feeds the
+   board's yaw swing (13 of 13 in the tuck and in Compress) and the fins and the hull's pressure take energy out of it
+   (0 of 13 positive). The roll swing is fed by the rider too (12–13 of 13) and damped by the hull. So the swing is not
+   the hull's own mode driven by the water (Y3 is out on this evidence); it is the rider's.
+2. **The balance's own joints do the work.** The twist motor's alternating work is positive in every ride of every
+   stance, 2–3 times tall's in the deep stances; the ankle's moving rest does 5–6 times tall's. The knees' alternating
+   work is large only in the tuck, and the knee knob (below) shows the knees do not set the swing.
+3. **In the held turn the twist pumps the yaw.** Over the steered balance falls (+1.0 s to the escape), the twist's
+   reaction feeds the yaw swing in 12 of 12 Compress and 14 of 14 tuck falls (+4.5 and +2.6 W median), the fins and the
+   hull take it out (−1.5 and −1.6 W in Compress) and now the feet's push takes it out too (−1.0 W). The twist motor's
+   half-cycle work before the escape is +0.86 J median in the falls (23 of 23 positive) against +0.09 J on the same
+   wave's straight ride and +0.19 J on the same wave's tall steer over the same frames (`hc-falls.md`).
+4. **What the frames show** (`big:s3:w9:compress:straight`, `series.py`): the yaw rate swings ±10–22 deg/s at 2.9 Hz
+   from before +1.0 s with no steer, and the twist's active torque leads it by 0.05–0.07 s (about 50° at 2.9 Hz), its
+   peaks ±5–14 N·m with the same sign as the yaw rate that follows. A torque that leads the rate by less than 90° feeds
+   it: the balance turns the upper body against the board's turn to steady the head, and the reaction turns the board
+   further the same way.
+
+### 2.2 What sets its frequency (M4)
+
+The swing's peak is stance-dependent with the knobs off: 2.31 Hz tall [2.28, 2.42], 2.67 Compress [2.66, 2.69], 2.90
+the tuck [2.85, 2.95], 1.93 Snap (window 1, pooled, 90 % bootstrap). The leg's axial mode is the same in every stance,
+so it could not give that order even before the knob.
+
+<!-- M4 rest -->
+
 ## 3. Question 2: how the swing becomes the sideways tip (M6)
 
 *Base run, Canyon Big seeds 1–3, the balance falls whose escape (the benchmark's `escapeAt`) is inside the steer
@@ -290,3 +340,54 @@ up, N·m, + the nose toward the board's +x; mean torque over the 1/60 s step.*
 6. **Snap is different.** Its falls cross the same way (sideways, inside, the speed term), but its swing over the fall
    is no larger than the tall steer's on the same wave (11.7 against 13.4 deg/s), and its straight ride barely swings
    (3.2): Snap's falls inside the steer are not this swing's. Not pursued here.
+
+## 4. Question 3: a turn started just after letting go of Compress (M7)
+
+*Base run: his way (Compress from 0.2 s, the trim from the stand released at vW ≥ 4.4 m/s) with Compress let go x s
+before the steer (±1 from +1.0 s for 1.0 s), against Compress held through the turn (`hisway:<side>`) and the tall
+turn (`none:<side>`) on the same waves, both sides. Causes by the benchmark's rule. Depths are the leg's rest below the
+riding stance, m. `release.py`, `results/release.md` (every sea); M6's split for the release falls in `results/tip-big.md`.*
+
+| Canyon Big, 36 rides each | tall | Compress held | let go at the steer (x = 0) | x = 0.2 s | x = 0.4 s | x = 0.6 s |
+| --- | --- | --- | --- | --- | --- | --- |
+| balance falls before +2.0 s | 1 | 12 | **15** | 6 | 3 | 3 |
+| … of them also a fall of Compress held on the same wave and side | — | — | 12 (+3 new) | 6 | 3 | 3 |
+| balance falls in +2.0–3.5 s | 10 | 3 | 2 | 8 | 8 | 12 |
+| wave falls before +2.0 s | 10 | 8 | 10 | 10 | 10 | 10 |
+| sideways at the first `beyond` frame / inside the turn | 2 of 2 / 2 of 2 | 12 of 12 / 11 of 12 | 7 of 7 / 9 of 10 | 6 of 6 / 7 of 8 | 3 of 4 / 5 of 5 | 2 of 2 / 4 of 4 |
+| the leg's depth at +1.0 s (median) | 0.000 | 0.298 | 0.296 | 0.173 | 0.031 | −0.006 (over) |
+| the room's depth (`heldDepth`) at +1.0 s | 0 | 0.300 | 0 | 0 | 0 | 0 |
+| the knees' travel: as the room reads it / at the leg's depth | 0.30 / 0.30 | 0.05 / 0.05 | 0.30 / 0.05 | 0.30 / 0.17 | 0.30 / 0.28 | 0.30 / 0.30 |
+| the rest's rise rate at +1.0 s / fastest in +1.0–1.5 s (m/s) | 0 / 0 | −0.02 / 0.00 | +0.22 / +0.62 | +0.59 / +0.59 | +0.26 / +0.28 | 0.00 / +0.03 |
+| fall time against Compress held, paired (median; later / sooner / same) | | | −0.14 s (7 / 27 / 2) | −0.04 s (13 / 20 / 3) | +0.08 s (20 / 14 / 2) | +0.17 s (22 / 13 / 1) |
+| the swing over the steer (median std, deg/s) | 10.6 | 19.2 | 14.2 | 13.2 | 12.0 | 10.9 |
+
+1. **How often.** Let go as the turn starts, the turn falls *more* often than holding Compress: 15 of 36 balance falls
+   inside the steer, every one of Compress's 12 among them, and sooner on 27 of 36 waves (median 0.14 s). Let go 0.2 s
+   before, it falls on half of Compress's waves (6); 0.4–0.6 s before, on 3, against tall's 1. On Medium no drive falls
+   much inside the steer (held 0, x = 0 1, x = 0.2 2, tall 0 of 26); on the test wave's two starts the deep falls are
+   `tw-ride`'s placed rail change (held 2, x = 0 2 of 2, the rest 0). **My prediction 6 held for x = 0 and x = 0.6
+   and missed x = 0.2** (6, not ≥ 8).
+2. **By the same crossing.** The release falls cross sideways (18 of 19 with a `beyond` sample) and to the inside (25 of
+   27), with the speed term carrying the capture point as in Compress (`tip-big.md`: Δ speed +0.29 of +0.37 m for
+   x = 0; the speed term follows −Ω_alt at +0.99 correlation). Nothing in them is a new kind of fall.
+3. **Why: the leg is still deep when the turn starts, and the balance's design follows the leg.** The legs rise no
+   faster than the stance's spring can catch (`projectionCatch`, 0.59 m/s for the new rider's 20 kN/m), so the leg is
+   still 0.30 m down at a release-at-the-steer turn's start and 0.17 m down 0.2 s after letting go. The controller's
+   design and the yaw split are scheduled on the leg (`yawDepth`, fact 3: checked, `yd` = −`leg.rest` on every frame),
+   so for the turn's first 0.2–0.5 s the rider balances as Compress does, and falls with its swing. By 0.4 s the leg is
+   up (0.03 m) and the turn behaves nearly as tall.
+4. **Not the room read tall, not the overshoot.** The room reads tall in every release drive (`heldDepth` 0, the
+   knees' travel 0.30 m), including x = 0.4 and 0.6, which fall nearly as tall does; and the rise's overshoot over the
+   riding stance (`EXTENSION_TALL`) is under way only at x = 0.6 (+0.02 m at its highest), where 3 of 36 fall. So
+   neither explains the release's falls. **Prediction 2's item (the design depth still above 0.15 m at +1.0 s while
+   `heldDepth` is 0) holds** for x = 0 (0.30) and x = 0.2 (0.17).
+5. **A finding in the rise itself (not pre-registered as a test).** The catch limit applies only while `fromCompress`
+   holds, and `fromCompress` is cleared whenever the posture's target is below the riding stance, which includes any
+   trace of the balance's own knee drop (`asked = min(asked, −(heldDepth + knees × travel))`; `human.knees` decays
+   exponentially and is rarely exactly 0 once it has fired). With the room now reading tall (0.30 m of travel), the
+   knees' first 10⁻⁴ of drop at the steer's start clears it, and the leg then rises at up to `MAX_LEG_SPEED`
+   (`big:s1:w5:release0:right`: 0.47, 0.84, 1.20, 1.23 m/s at +1.03 to +1.13 s, against the catch's 0.59). It happens in
+   14 of 36 x = 0 turns on Big (7 of them fall, against 8 of the 22 that keep the catch) and 6 of 36 at x = 0.2: too few
+   to call it a cause here, but the projection's catch is not what the code's note says it is once the balance has
+   bent the knees at all. For Vicente as a finding; no bound is changed.
