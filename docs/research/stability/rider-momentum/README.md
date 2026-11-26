@@ -267,6 +267,7 @@ commit if the coordinator says so.
 | 15:37:48–15:42:37 | the Canyon byte check: identical |
 | 15:40:07 | the amended base rerun exits 0 (861 s); its accounting (R_O's split) and its read-only check (identical) |
 | 15:43 | the archive (`runs/`), checked: the regressions rerun on the slim twin rows give the same JSON |
+| 15:58:07 | the full report ends: 227 of 227 and 26 of 26 identical, 0 regressions |
 
 ---
 
@@ -523,7 +524,7 @@ kg·m² against −(I_r + m x_f²) = −5.59.
 | --- | --- | --- |
 | **(a) a leak or hidden source in the coupling** | **none** | R_s per r ≤ 3 × 10⁻¹¹, per ṙ ≤ 2 × 10⁻¹²; R_O per r +0.28 ± 0.25 (tall +1.05 ± 0.80, tuck +0.22 ± 0.10), per ṙ +0.04 ± 0.04: under 0.6 % of the missing 182 and 4.35. Three real non-conservations exist, all small and none the body's sideways momentum: the yaw rotors' axis (RMS 0.3–0.6 N·m), the trunk rotor's couple lost on apart substeps (≤ 1.4 N·m RMS on Big's apart frames, 82 on the Compress glide's last 20; the swing rotor's is lost the same way, in roll), the rotors' start at the stand (−65 to +51 N·m in one frame per ride). Places: `AR:4904–4933` and `5304`; `SB:305` against `SB:380–384` and `BB:1567–1575`; `AR:4907`, `4912`. **Not fixed.** |
 | **(b) the reaction booked as water** | **none** as booking | the ledger's rider term is the body's reaction at its arm plus the rotors to 1.4 × 10⁻¹⁰ relative; the bare board closes to 4 × 10⁻¹⁵ N·m on the face. The water's *physical* answer to the push, −1.56 ± 0.11 N·m per N·m of the lever, carries about half of 3.6e's water yaw per ṙ (+0.93 → +0.41; the tuck +0.55 → +0.24). |
-| **(c) a freedom the model lacks** | **none of the regressed gap**; one real difference at the substep | the pitch freedom carries ≈ 1 % of the lever's lateral part. The difference found is the other way round: the model's body has a frontal inertia J (4.6 kg·m² in Compress) that ties 12.7 kg of it to the feet's sideways motion, the game's point-mass body ties none: a side push at the feet turns the game's board 3.3–4.7 times as much, and the model's instantaneous yaw inertia is 0.13 kg·m² higher (0.74 with its sway held). Its effect at the swing's 2.5–3 Hz is not measured. |
+| **(c) a freedom the model lacks** | **none of the regressed gap**; one real difference at the substep | the pitch freedom carries ≈ 1 % of the lever's lateral part. The difference found is the other way round: the model's body has a frontal inertia J (4.6 kg·m² in Compress) that ties 12.7 kg of it to the feet's sideways motion, the game's point-mass body ties none: a side push at the feet turns the game's board 3.3–4.7 times as much, and J adds 0.13 kg·m² to the model's instantaneous yaw inertia (0.74 with its sway held; the game's (C) is 0.14–0.16 below the model's). Its effect at the swing's 2.5–3 Hz is not measured. |
 | **(d) the method** (registered as a candidate in §0.5) | **all of it** | C4: 3.6e's own regression returns per r 2.7–5.7 %, per β̇ 0.6–2.5 %, per ṙ 19–25 % of the model's from a term built with the model's lever by construction: the same pattern as 3.6e's 0–9 % and "the legs alone". The body's reaction acts on the game's board at its own arm, 0.245–0.30 m behind the board's centre (median), and 3.6e's regression files it under the ankle's states (φ, θ, δ), whose coefficients 3.6e left unread (VIF 36–150). |
 
 **So: the board does feel the rider's sideways momentum, at the 0.25–0.30 m lever, exactly as the solve is written;
@@ -537,7 +538,7 @@ difference found (the body's J) is the model's extra, not the game's.
 | control | result |
 | --- | --- |
 | `git diff ef7908f2 --stat -- src scripts` | empty: no `src` or `scripts` change, so no measurement switch, and the quick report is not required |
-| the full stability report, `npm run report:stability -- --mode full`, 15:28–(see §0.9) | REPORT_PENDING |
+| the full stability report, `npm run report:stability -- --mode full`, 15:27:57–15:58:07 UTC (30.1 min), beside the reruns and the byte check | exit 0, **0 regressions**, 0 improvements; **227 of 227** ride lines identical to `baseline-full.json` in every field, its **26 of 26** test-wave lines identical to `baseline-quick.json` (3.6c's `same.py`; `results/report-full.txt`). The quick report was not run: `src` is unchanged |
 | the Canyon byte check (`scripts/m1-cpu-bench.ts`, fresh spin-up, 3,600 steps) | snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`: **identical** (`results/byte-check.txt`) |
 | `npx tsc -b` | clean (15:28) |
 | the gain lock, `npx vitest run src/physics/stabilityGains` | 5 of 5 (15:28) |
@@ -555,7 +556,7 @@ difference found (the body's J) is the model's extra, not the game's.
   the board makes the rider's body resist it much, because the light board slides sideways under the heavy body.
 - **One real difference between the game and the balance's picture:** the picture gives the rider's body a rotational
   inertia of its own, which makes the feet drag part of the body sideways; the game's body has none. A sideways push at
-  the feet turns the game's board about four times as much as the picture expects. Whether that matters for the wobble
+  the feet turns the game's board three to five times as much as the picture expects. Whether that matters for the wobble
   at 2.5–3 Hz is not measured yet.
 - **Three small bookkeeping faults in the game, all found and none fixed** (a fix changes the physics and needs your
   word): the legs' spin is tilted with the leg without a torque; on the substeps where the feet cannot hold, the trunk's
