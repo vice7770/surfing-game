@@ -147,4 +147,12 @@ dated amendments below, committed before the numbers they govern are read.
 
 ### 0.9 Amendments
 
-(none yet)
+1. *2026-11-26, 17:55 UTC, after the first read of `regctl.ts` (17:51), before its rerun.* **A fix to question 3's
+   synthetic control, and one exploratory reading.** The registered control (§0.4 (i)) is 3.6e's: y = X b with one b,
+   the group's mean b_kin, for every set. My first run built y with **each set's own** b_kin (its own speed in m V x_f)
+   and compared the result with the mean; that is not 3.6e's control, and it "failed" (‖b̂ − b̄‖ / ‖b̄‖ 0.4–2.2) for
+   that reason. The rerun computes the registered control (one b̄) and keeps the per-set version beside it as an
+   **exploratory** reading (labelled so; it decides nothing): what a regression pooled over sets of different speeds
+   returns when every set's term is exactly its own kinematic form, noise-free — its per-r and per-ṙ coefficients
+   printed with the line of §0.4. The regression of R_N itself, the forms' residuals and every other number of the first
+   read are unchanged by this (the rerun must reproduce them; checked).
