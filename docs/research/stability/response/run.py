@@ -40,8 +40,12 @@ def main():
     ap.add_argument('--set', default='q1')
     ap.add_argument('--jobs', type=int, default=8)
     ap.add_argument('--only', default='')
+    ap.add_argument('--reverse', action='store_true', help='take the queue from its end')
+    ap.add_argument('--fresh', action='store_true', help='start only jobs whose file does not exist yet (a runner taking over from another)')
     a = ap.parse_args()
     queue = [j for j in jobs(a.set) if j[0].startswith(a.only)]
+    if a.reverse:
+        queue.reverse()
     running = []
     t0 = time.time()
     while queue or running:
@@ -51,7 +55,8 @@ def main():
             d = os.path.join(a.out, sub)
             os.makedirs(d, exist_ok=True)
             f = os.path.join(d, rid.replace(':', '_') + '.jsonl')
-            if os.path.exists(f) and any('"kind":"done"' in l for l in open(f)):
+            # Done already (or, with --fresh, started by an earlier runner of the same set, done or not): skip.
+            if os.path.exists(f) and (a.fresh or any('"kind":"done"' in l for l in open(f))):
                 continue
             e = dict(os.environ, **env, EXTRA=a.extra, HOLD='5', TURN_AT='1', TURN_FOR='1', OUT=f, KNOBS=knobs)
             log = open(f.replace('.jsonl', '.log'), 'w')
