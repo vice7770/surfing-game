@@ -279,6 +279,19 @@ sinusoid's read-out, which has no held-out role. I stop at a clean commit if the
    pipeline (Big seed 1, PERIODS 3, Compress with its twins) is read for its controls only (the zero twins, the
    pre-kick equality, the held difference at the kick, the masks, the linearity numbers), never for a response; the
    readers are tested on the known plant (§0.6) and committed before any game response is read.
+2. *2026-11-26 about 10:32 UTC, before any twin row of the game is read (the readers run only on the known plant so
+   far):* **the decay's read-out is Prony's, not the damped sinusoid's.** On the known plant (the design at 7 m/s,
+   0.30 m, rail 0, its own model as the plant), the registered fit on Ω's response puts f at the grid's edge
+   (1.55–1.65 Hz) with ζ −0.01 to 0.21, because Ω's response carries a slow part the single sinusoid cannot separate,
+   while the loop's own modes in 1.5–5 Hz have ζ 0.73–0.80 (`closedLoop`'s eigenvalues; e.g. 2.24 Hz, 0.764). So the
+   read-out of every closing, reproduction and twin is now **the dominant mode in 1.5–5 Hz of Ω's response over
+   m = 1 … 90 by Prony's method** (a least-squares linear prediction of order 16, its poles from the companion
+   matrix's eigenvalues, each mode's part of the response by least squares; dominant = the largest energy): its f, ζ
+   and q₂ = e^{−2σ/f}. Checked before any game row: on synthetic rings (2.67 Hz at ζ 0.05 and 0.15, 3.5 Hz at 0.30,
+   each under two slow exponentials) it returns f and ζ to three decimals; on the model's closed loop at 7 m/s
+   (0, 0.30, 0.45 m), 6 and 8 m/s it returns 2.22–2.86 Hz at ζ 0.70–0.81, against the eigenvalues' 2.08–2.62 Hz at
+   0.73–0.80. Every rule of §0.6 stands with this read-out in place of the fit (ζ, q₂ and f per response; medians;
+   the pooled peak of Ω's raw spectrum as registered). The damped sinusoid is still reported beside it, in no rule.
 
 ### 0.10 The order of the round (UTC, 2026-11-26)
 
