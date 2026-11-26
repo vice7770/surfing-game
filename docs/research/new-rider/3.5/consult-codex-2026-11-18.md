@@ -4508,7 +4508,7 @@ The text of `7c86cfa9` above stands as written. These corrections apply to it.
   8. **If nothing passes,** stop and report; he decides.
 - **His rides.** On 2026-11-26 he rode the current build (the bar, no change to how it rides) on his controller: "it seems like there is no improvement". That is expected, and it confirms the target.
 - **His approval:** "Yes, start 3.6h", 2026-11-26.
-- **The builder:** Opus at high, about 18:50 UTC.
+- **The builder:** Opus at high, about 19:35 UTC.
   - The reason: an implementation whose causes are mapped but not pinned, found by measured trials, on a track whose readings have been corrected several times.
   - Branch `claude/drift` from `claude/body-inertia` `ef4b86c8`, pushed at `57a83402`; worktree `.claude/worktrees/drift`.
   - The brief is `docs/research/stability/drift/BRIEF.md` (sha1 `99b208ed…`).
