@@ -157,3 +157,19 @@ and `course05` / `course10`, for the off probe, each finalist and R.
 Usage at each phase; at 90 % I ask, as the project's handoff rule says. Raw runs in the session scratchpad's `36h/`;
 only the rows the tables need are archived under `runs/`. Later changes to §0 go in as dated amendments, committed before
 the numbers they govern are read.
+
+### 0.10 Amendment 1, 2026-11-26, 20:04 UTC, before any candidate's number was read
+
+The first eight processes (the off probe and R with the wide set, `pushAnkle=0.5` seeds 1–2 with the screening set) run
+at about a third of the speed I planned on: 54 of about 162 stands after 12 min for the wide set, 22 of about 66 for the
+screening set (eight processes at once). At that pace stage 1's 21 processes take about 80 min. I have read no ride's
+outcome, only the count of `stand` rows. So, for the screening processes not yet started (`pushAnkle=0.5` seed 3, and
+every later configuration):
+- **The screening set is cut to the deep turns and the straight deep rides:** `compress:left|right`,
+  `crouch:left|right`, `compress:straight`, `crouch:straight` and `twin` (`run.py --set deep`). `pushAnkle=0.5` seed 3
+  keeps the screening set it was queued with, so that its seeds match.
+- **§0.4's "Big regressions ≤ 3" is counted over the Big benchmark rides the screening run carries** (the 72 deep turns
+  for the cut set). The regressions on tall, Snap and his way are left to the finalists' full reports, which carry them
+  all; a finalist whose full report regresses there fails line 1 as before.
+- **The swing** is read on `compress:straight` and `crouch:straight` (his way drops out of the cut set).
+- Nothing else in §0 changes. The runner is `run.py` at this commit.
