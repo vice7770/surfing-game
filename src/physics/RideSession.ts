@@ -247,6 +247,12 @@ export interface RideSessionOptions {
   leanPace?: 'stance';
   /** Firmer balance gains while a lean is asked (step 3.6b; `AttachedRiderOptions.turnGains`): 'firm' — the `?turnGains` dev switch. */
   turnGains?: 'firm';
+  /** The ankle row's feedback scaled in the deep stances (step 3.6h, C1; `AttachedRiderOptions.pushAnkle`) — the `?pushAnkle` dev switch. */
+  pushAnkle?: '0.75' | '0.5' | '0.35' | '0.25';
+  /** The twist row's likewise (step 3.6h, C1; `AttachedRiderOptions.pushTwist`) — the `?pushTwist` dev switch. */
+  pushTwist?: '0.75' | '0.5' | '0.35' | '0.25';
+  /** The balance's feedback notched at the deep swing (step 3.6h, C2; `AttachedRiderOptions.wobbleNotch`) — the `?wobbleNotch` dev switch. */
+  wobbleNotch?: '2' | '1';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -370,6 +376,9 @@ export class RideSession {
       ...(options.holdLine ? { holdLine: options.holdLine } : {}),
       ...(options.leanPace ? { leanPace: options.leanPace } : {}),
       ...(options.turnGains ? { turnGains: options.turnGains } : {}),
+      ...(options.pushAnkle ? { pushAnkle: options.pushAnkle } : {}),
+      ...(options.pushTwist ? { pushTwist: options.pushTwist } : {}),
+      ...(options.wobbleNotch ? { wobbleNotch: options.wobbleNotch } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

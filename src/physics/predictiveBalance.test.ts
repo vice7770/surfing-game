@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { eigenvalues, lateralCompliance, lateralMass } from './rollModel';
-import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, faceColumn, faceSupport, faceTrimPoint, HOLD_LINE_RATE, HOLD_LINE_TIME, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, faceColumn, faceSupport, faceTrimPoint, HOLD_LINE_RATE, HOLD_LINE_TIME, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, wobbleHz, DRIFT_FULL_DEPTH, type CommandTuning, type DesignWeights } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -669,5 +669,68 @@ describe('the turn weights (step 3.6b)', () => {
     const b = run(undefined, ask);
     expect(a.slice(0, 10)).toEqual(b.slice(0, 10));
     expect(a[20][0]).not.toBe(b[20][0]);
+  });
+});
+
+// Step 3.6h (`?pushAnkle`, `?pushTwist`, `?wobbleNotch`; `docs/research/stability/drift/README.md`): the command path's
+// tuning. Off (undefined), the controller is the shipped one; on, it acts in proportion to the depth and leaves the
+// controller's own model loop decaying.
+describe('the command tuning (step 3.6h)', () => {
+  const weights = { ...DEFAULT_WEIGHTS };
+  const lim = { ankle: 0.25, twist: 100 };
+  const run = (tuning: CommandTuning | undefined, depth: number, ticks = 90, speed = 7): { u: number[][]; x: number[][] } => {
+    const d = scheduledDesign(speed, depth, 0, weights);
+    const ctl = new PredictiveController(weights, 'tan', undefined, tuning);
+    let x = new Array<number>(d.phi.length).fill(0);
+    x[1] = 0.2;
+    const u: number[][] = [];
+    const xs: number[][] = [];
+    for (let k = 0; k < ticks; k += 1) {
+      const c = [...ctl.tick(d.c.map((row) => row.reduce((s, v, j) => s + v * x[j], 0)), speed, depth, 0, 0, lim)];
+      u.push(c);
+      x = d.phi.map((row, i) => row.reduce((s, v, j) => s + v * x[j], 0) + d.gamma[i][0] * c[0] + d.gamma[i][1] * c[1]);
+      xs.push(x);
+    }
+    return { u, x: xs };
+  };
+  const tunings: CommandTuning[] = [{ ankle: 0.75 }, { ankle: 0.5 }, { ankle: 0.35 }, { ankle: 0.25 }, { twist: 0.5 }, { twist: 0.25 }, { notchQ: 2 }, { notchQ: 1 }, { ankle: 0.5, notchQ: 2 }];
+  it('acts on nothing standing tall (depth 0): the shipped command to rounding', () => {
+    const off = run(undefined, 0).u;
+    for (const t of tunings) {
+      const on = run(t, 0).u;
+      for (let k = 0; k < off.length; k += 1) for (let q = 0; q < 2; q += 1) expect(Math.abs(on[k][q] - off[k][q]), JSON.stringify(t)).toBeLessThan(1e-9);
+    }
+  });
+  it('changes the command in Compress (depth 0.30 m)', () => {
+    const off = run(undefined, 0.3).u;
+    for (const t of tunings) expect(run(t, 0.3).u[20][0], JSON.stringify(t)).not.toBeCloseTo(off[20][0], 6);
+  });
+  it('keeps the controller\'s own model loop decaying in Compress and the tuck', () => {
+    for (const depth of [0.3, 0.45]) for (const speed of [5.5, 7, 9, 11]) {
+      const size = (x: number[]) => Math.hypot(...x);
+      const base = run(undefined, depth, 600, speed).x;
+      for (const t of tunings) {
+        const xs = run(t, depth, 600, speed).x;
+        expect(size(xs[599]), `${depth} ${speed} ${JSON.stringify(t)}`).toBeLessThan(0.05 * Math.max(...xs.slice(0, 60).map(size)));
+        expect(Number.isFinite(size(xs[599]))).toBe(true);
+      }
+      expect(size(base[599])).toBeLessThan(0.05 * Math.max(...base.slice(0, 60).map(size)));
+    }
+  });
+  it('places the notch on 3.6c\'s measured swing by depth', () => {
+    expect(wobbleHz(0)).toBeCloseTo(2.31, 9);
+    expect(wobbleHz(0.3)).toBeCloseTo(2.67, 9);
+    expect(wobbleHz(0.45)).toBeCloseTo(2.9, 9);
+    expect(wobbleHz(0.6)).toBeCloseTo(2.9, 9);
+    expect(DRIFT_FULL_DEPTH).toBe(0.3);
+  });
+  it('forgets the notch\'s history on a reset', () => {
+    const d = scheduledDesign(7, 0.3, 0, weights);
+    const ctl = new PredictiveController(weights, 'tan', undefined, { notchQ: 2 });
+    const sense = d.c.map((row) => row[1] * 0.2);
+    const first = [...ctl.tick(sense, 7, 0.3, 0, 0, lim)];
+    for (let k = 0; k < 30; k += 1) ctl.tick(sense, 7, 0.3, 0, 0, lim);
+    ctl.reset();
+    expect([...ctl.tick(sense, 7, 0.3, 0, 0, lim)]).toEqual(first);
   });
 });

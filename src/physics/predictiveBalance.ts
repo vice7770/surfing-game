@@ -1602,6 +1602,39 @@ export interface HoldInput { heading: number; cap: number }
 export const HOLD_LINE_TIME = 1.0;
 export const HOLD_LINE_RATE = 0.2;
 
+/**
+ * **Step 3.6h, the drift round** (`docs/research/stability/drift/README.md`; `?pushAnkle`, `?pushTwist`, `?wobbleNotch`):
+ * the balance's own command path tuned, opt-in, to stop the deep stances' 2.2–3.3 Hz swing. Nothing here touches the
+ * design, the filter, the predictor, the reference, the clamps or any limb: only how the feedback part of the command
+ * (`K (x̂ − x_ref)`) is formed before it is sent. The command sent is still what the filter and the predictor are fed,
+ * so the controller's estimate stays consistent with what the board was given.
+ *
+ * Both act in proportion to the design's depth, `w = min(1, depth / DRIFT_FULL_DEPTH)`: nothing standing tall at depth 0,
+ * fully at Compress's 0.30 m and deeper (the tuck's 0.45 m), and following the leg as it rises after Compress is let go.
+ *
+ * - `ankle`, `twist` (C1, the push matched to the board): the ankle row's and the twist row's feedback × (1 + (s − 1) w).
+ *   3.6d measured the board answering the ankle's rest 2.05–2.75 times as strongly as the model in the deep stances, and
+ *   the twist's torque 2.2–3.9 times in slip.
+ * - `notchQ` (C2, the wobble filter): the ankle row's feedback passed through a second-order notch (the RBJ biquad,
+ *   unit gain at 0 Hz) centred on the swing 3.6c measured at the design's depth (`wobbleHz`), quality factor Q, and blended
+ *   into the unfiltered feedback by w. The ankle row only: 3.6c found it sets the swing's size, and with both rows
+ *   notched the controller's own model loop no longer decays in Compress (with the ankle's alone it decays at every
+ *   speed and depth checked). The feed-forward of the steady turn (`ref.u`) and the bias are not filtered, so the turn's
+ *   own command passes as it ships.
+ */
+export interface CommandTuning { ankle?: number; twist?: number; notchQ?: number }
+/** Step 3.6h: the design depth at and below which the tuning acts in full, m (Compress's 0.30 m). */
+export const DRIFT_FULL_DEPTH = 0.3;
+/**
+ * Step 3.6h: the deep swing's frequency at a design depth, Hz: 3.6c's measured peaks on Canyon Big's straight rides
+ * (`docs/research/stability/wobble/README.md` §2.2, window 1): 2.31 Hz tall (0 m), 2.67 Compress (0.30 m), 2.90 the tuck
+ * (0.45 m), linear between and held beyond.
+ */
+export function wobbleHz(depth: number): number {
+  const d = Math.max(0, Math.min(0.45, depth));
+  return d <= 0.3 ? 2.31 + (2.67 - 2.31) * (d / 0.3) : 2.67 + (2.9 - 2.67) * ((d - 0.3) / 0.15);
+}
+
 export class PredictiveController {
   private readonly weights?: DesignWeights;
   /** The senses' line (newest last) and the commands sent (newest last), at most steps + 1 of each. */
@@ -1655,10 +1688,16 @@ export class PredictiveController {
   /** Step 3.6b: the turn weights' blend (scratch, refilled each tick it is used). */
   private turnBlended?: Design;
 
-  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan', turnWeights?: DesignWeights) {
+  /** Step 3.6h (`CommandTuning`): undefined by default, and then the command is formed as it ships, bit for bit. */
+  private readonly tuning?: CommandTuning;
+  /** Step 3.6h: the notch's history per command row, [x₋₁, x₋₂, y₋₁, y₋₂] of the feedback (zero after a reset). */
+  private readonly notchState = [[0, 0, 0, 0], [0, 0, 0, 0]];
+
+  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan', turnWeights?: DesignWeights, tuning?: CommandTuning) {
     this.weights = weights;
     this.turn = turn;
     this.turnWeights = turnWeights;
+    this.tuning = tuning;
   }
 
   reset(): void {
@@ -1674,6 +1713,7 @@ export class PredictiveController {
     this.sent[0] = 0; this.sent[1] = 0;
     this.raw[0] = 0; this.raw[1] = 0;
     this.bias[0] = 0; this.bias[1] = 0;
+    for (const z of this.notchState) z.fill(0);
   }
 
   /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
@@ -1876,7 +1916,10 @@ export class PredictiveController {
     const u = [0, 0];
     // Step 3.6b (`turnGains`): while a lean is asked, the turn weights' gains on the same estimate and reference.
     const gains = this.turnWeights !== undefined && bank !== 0 ? this.blend(speed, depth, rail, true).k : d.k;
-    for (let q = 0; q < N_COMMAND; q += 1) {
+    // Step 3.6h (`CommandTuning`, opt-in): the feedback scaled and filtered in proportion to the depth. Off, the loop below.
+    if (this.tuning) {
+      this.tunedCommand(u, ref, b0, b1, gains, xh, n, depth);
+    } else for (let q = 0; q < N_COMMAND; q += 1) {
       let s = ref.u[q] - (q === 0 ? b0 : b1);
       const row = gains[q];
       // Step 3.6c's diagnostic knobs (`wobbleKnobs.ts`, `ankleGain`, `twistGain`; 1 by default, read by no address).
@@ -1899,5 +1942,39 @@ export class PredictiveController {
     this.bias[0] = b0; this.bias[1] = b1;
     this.ticks += 1;
     return this.sent;
+  }
+
+  /**
+   * Step 3.6h: the command with the tuning (`CommandTuning`): u = ref.u − bias − N_w(g_w · K (x̂ − x_ref)), row by row,
+   * g_w = 1 + (s − 1) w the scale and N_w the notch (the ankle row only) blended by w = min(1, depth / DRIFT_FULL_DEPTH).
+   */
+  private tunedCommand(u: number[], ref: { x: number[]; u: number[] }, b0: number, b1: number, gains: Mat, xh: readonly number[], n: number, depth: number): void {
+    const t = this.tuning!;
+    const w = Math.max(0, Math.min(1, depth / DRIFT_FULL_DEPTH));
+    const q0 = t.notchQ !== undefined && t.notchQ > 0 ? t.notchQ : 0;
+    let b = [1, 0, 0], a = [0, 0];
+    if (q0 > 0) {
+      // The RBJ notch at the swing's frequency, normalised by a0: unit gain at 0 Hz and at Nyquist, zero at f0.
+      const w0 = 2 * Math.PI * wobbleHz(depth) * CONTROL_STEP;
+      const cw = Math.cos(w0);
+      const alpha = Math.sin(w0) / (2 * q0);
+      const a0 = 1 + alpha;
+      b = [1 / a0, (-2 * cw) / a0, 1 / a0];
+      a = [(-2 * cw) / a0, (1 - alpha) / a0];
+    }
+    for (let q = 0; q < N_COMMAND; q += 1) {
+      const row = gains[q];
+      let fb = 0;
+      for (let j = 0; j < n; j += 1) fb += row[j] * (xh[j] - ref.x[j]);
+      const scale = q === 0 ? (t.ankle ?? 1) : (t.twist ?? 1);
+      fb *= 1 + (scale - 1) * w;
+      if (q0 > 0 && q === 0) {
+        const z = this.notchState[q];
+        const y = b[0] * fb + b[1] * z[0] + b[2] * z[1] - a[0] * z[2] - a[1] * z[3];
+        z[1] = z[0]; z[0] = fb; z[3] = z[2]; z[2] = y;
+        fb += w * (y - fb);
+      }
+      u[q] = ref.u[q] - (q === 0 ? b0 : b1) - fb;
+    }
   }
 }

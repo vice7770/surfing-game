@@ -630,6 +630,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     ...leanPaceSwitch(),
     // `?turnGains=firm`: while a lean is asked, the balance's gains at half its effort weight (step 3.6b), opt-in, to ride.
     ...turnGainsSwitch(),
+    // `?pushAnkle=<s>`, `?pushTwist=<s>`, `?wobbleNotch=<Q>`: the balance's feedback scaled per command and notched at the
+    // deep stances' swing, in proportion to the depth (step 3.6h), opt-in, to ride.
+    ...driftSwitches(),
     // `?cueLater=on`: the pop-up cue the player is shown waits until the board moves 3.6 m/s through the water (step
     // 3.5u), opt-in, to ride.
     ...cueLaterSwitch(),
@@ -1532,6 +1535,25 @@ export function leanPaceSwitch(search?: string): { leanPace?: 'stance' } {
 export function turnGainsSwitch(search?: string): { turnGains?: 'firm' } {
   const v = devParam('turnGains', search)?.trim().toLowerCase();
   return v === 'firm' ? { turnGains: 'firm' } : {};
+}
+
+/**
+ * The step 3.6h dev switches (`SurfZoneConfig.pushAnkle`, `pushTwist`, `wobbleNotch`; `docs/research/stability/drift/README.md`):
+ * opt-in, the new surfer's balance feedback (never its feed-forward, design, filter, predictor or clamps) in proportion
+ * to the design's depth w = min(1, depth / 0.30 m), so nothing standing tall:
+ * - `?pushAnkle=0.75|0.5|0.35|0.25`, `?pushTwist=…`: the ankle's and the twist's feedback row × (1 + (s − 1) w) (C1);
+ * - `?wobbleNotch=2|1`: the ankle row's feedback through a notch of quality factor Q at the deep swing's frequency (C2).
+ * Only these values; anything else, off. Nothing on the default rider.
+ */
+export function driftSwitches(search?: string): { pushAnkle?: '0.75' | '0.5' | '0.35' | '0.25'; pushTwist?: '0.75' | '0.5' | '0.35' | '0.25'; wobbleNotch?: '2' | '1' } {
+  const scale = (name: string): '0.75' | '0.5' | '0.35' | '0.25' | undefined => {
+    const v = devParam(name, search)?.trim();
+    return v === '0.75' || v === '0.5' || v === '0.35' || v === '0.25' ? v : undefined;
+  };
+  const ankle = scale('pushAnkle');
+  const twist = scale('pushTwist');
+  const q = devParam('wobbleNotch', search)?.trim();
+  return { ...(ankle ? { pushAnkle: ankle } : {}), ...(twist ? { pushTwist: twist } : {}), ...(q === '2' || q === '1' ? { wobbleNotch: q } : {}) };
 }
 
 /**

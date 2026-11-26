@@ -243,7 +243,7 @@ const RIDER_KEYS = [
   'agile', 'legDrive', 'hull', 'railSuction', 'compressPull', 'carveFlex', 'snapLegs', 'snapCross', 'legPower', 'rider',
   'feltFrame', 'kneeRoom', 'stanceReach', 'ankleLimit', 'ankleRange', 'bankClamp', 'bodyBank', 'askCap', 'stanceDeep',
   'deepen', 'armCarry', 'trunk', 'buoyFrame', 'waterHeel', 'mountAgree', 'riderBody', 'riderCost', 'plantFloor', 'plantSpeed',
-  'deckHollow', 'snapUpturn', 'swing', 'faceTrim', 'holdLine', 'slowStand', 'leanPace', 'turnGains',
+  'deckHollow', 'snapUpturn', 'swing', 'faceTrim', 'holdLine', 'slowStand', 'leanPace', 'turnGains', 'pushAnkle', 'pushTwist', 'wobbleNotch',
 ] as const;
 function organicMode(): void {
   const SEED = Number(process.env.SEED ?? 1);

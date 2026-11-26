@@ -15,7 +15,7 @@ import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, ride
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
 import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, equivalentSpeed, railPull, stanceAt, type CaptureOmega, type DesignWeights, type PlantSpeed } from './predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, type CommandTuning, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, equivalentSpeed, railPull, stanceAt, type CaptureOmega, type DesignWeights, type PlantSpeed } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -1831,6 +1831,23 @@ export interface AttachedRiderOptions {
    * surfer only.
    */
   turnGains?: 'firm';
+  /**
+   * **The balance's push matched to the board** (step 3.6h, C1, `?pushAnkle=<s>`; `docs/research/stability/drift/README.md`):
+   * the ankle row of the balance's feedback × (1 + (s − 1) w), w = min(1, design depth / 0.30 m): nothing standing tall,
+   * s in Compress and the tuck. 3.6d measured the board rolling 2.05–2.75 times as far per ankle command as the balance's
+   * model expects in the deep stances. The feed-forward, the design, the filter, the predictor and every clamp are as they
+   * ship. Opt-in, off by default, pinned off for online rooms; the new surfer only.
+   */
+  pushAnkle?: '0.75' | '0.5' | '0.35' | '0.25';
+  /** The same for the twist row (step 3.6h, C1, `?pushTwist=<s>`): 3.6d's board slips 2.2–3.9 times as far per twist torque. */
+  pushTwist?: '0.75' | '0.5' | '0.35' | '0.25';
+  /**
+   * **The wobble filter** (step 3.6h, C2, `?wobbleNotch=<Q>`): the ankle row of the balance's feedback passes through a notch at the deep
+   * swing's frequency (`wobbleHz`: 2.31 Hz at depth 0, 2.67 at 0.30 m, 2.90 at 0.45 m), quality factor Q, blended in by the
+   * same depth weight w. Unit gain at 0 Hz; the steady turn's feed-forward is not filtered. Opt-in, off by default, pinned
+   * off for online rooms; the new surfer only.
+   */
+  wobbleNotch?: '2' | '1';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2824,7 +2841,14 @@ export class AttachedRider {
     this.holdLineRef = weights?.holdLine === 'ref';
     // Step 3.6b (`turnGains: 'firm'`): the same weights with `rho` at TURN_RHO, for the gains used while a lean is asked.
     const turnWeights = options.turnGains === 'firm' ? { ...(weights ?? DEFAULT_WEIGHTS), rho: TURN_RHO } : undefined;
-    this.predictor = new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights);
+    // Step 3.6h (`pushAnkle`, `pushTwist`, `wobbleNotch`): the command path's tuning, only when one is asked.
+    const tuning: CommandTuning | undefined = options.pushAnkle || options.pushTwist || options.wobbleNotch ? {
+      ...(options.pushAnkle ? { ankle: Number(options.pushAnkle) } : {}),
+      ...(options.pushTwist ? { twist: Number(options.pushTwist) } : {}),
+      ...(options.wobbleNotch ? { notchQ: Number(options.wobbleNotch) } : {}),
+    } : undefined;
+    this.predictor = tuning ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning)
+      : new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights);
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.leanPaceStance = options.leanPace === 'stance';
     this.rateSense = options.balance?.rateSense ?? 'canal';

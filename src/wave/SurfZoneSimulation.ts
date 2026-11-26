@@ -526,6 +526,15 @@ export interface SurfZoneConfig {
    */
   turnGains?: 'firm';
   /**
+   * Step 3.6h (`RideSessionOptions.pushAnkle`, `pushTwist`, `wobbleNotch`; `docs/research/stability/drift/README.md`): the
+   * new surfer's balance feedback scaled per command (C1) and notched at the deep swing (C2), in proportion to the design's
+   * depth (nothing standing tall, in full from Compress's 0.30 m). The new surfer (`?rider=new`) only. The `?pushAnkle`,
+   * `?pushTwist` and `?wobbleNotch` dev switches, opt-in, to ride; online rooms run the default.
+   */
+  pushAnkle?: '0.75' | '0.5' | '0.35' | '0.25';
+  pushTwist?: '0.75' | '0.5' | '0.35' | '0.25';
+  wobbleNotch?: '2' | '1';
+  /**
    * 'on': the pop-up cue the player is shown waits until the board can carry a stand, its speed through the water at
    * least `CUE_LATER_SPEED` while the shipped cue is lit (step 3.5u; `takeOffCue.ts` `playerCue`,
    * `docs/research/new-rider/3.5/cue-later.md`). The ride status's `cue` only: the rider's own cue (the paddle sprint)

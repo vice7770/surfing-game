@@ -10,7 +10,7 @@ import { PARTICLE_BUDGETS } from '../wave/particleBudget';
 import {
   DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, LAB_SPREADING_FLOOR, PADANG_PRACTICE_SWELL, PRACTICE_SWELL, PhysicalMode, REEF_PRACTICE_SWELL,
   REFRACTED_SPREADING, TANK_SWELL_LIMITS, chopForWind, balanceLimitRows, formatPhysicalReadout, labHeightLimit, labRawSea, labSpreadingFor, practiceSwell, spreadingFor,
-  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, bodyBankSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, armCarrySwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, plantSpeedSwitch, faceTrimSwitch, holdLineSwitch, leanPaceSwitch, turnGainsSwitch, cueLaterSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
+  canyonAgeJoinSwitch, canyonBeachLookSwitch, poolHeldOld, poolReefShort, poolReachLong, canyonBedSwitch, canyonJoinSwitch, canyonStartSwitch, canyonReefSeqSwitch, canyonTubeSwitch, onsetSwitch, startOutSwitch, strokeSwitch, surfaceMotionSwitch, swimSwitch, frothSwitch, extensionSwitch, snapSwitch, snapQuickSwitch, snapPivotSwitch, snapRecentreSwitch, snapUpturnSwitch, snapDepthSwitch, snapStampSwitch, agileSwitch, legDriveSwitch, hullSwitch, carveFlexSwitch, snapLegsSwitch, snapCrossSwitch, legPowerSwitch, waveSwitch, riderSwitch, feltFrameSwitch, kneeRoomSwitch, stanceReachSwitch, ankleLimitSwitch, ankleRangeSwitch, bankClampSwitch, bodyBankSwitch, askCapSwitch, stanceDeepSwitch, deepenSwitch, armCarrySwitch, buoyFrameSwitch, waterHeelSwitch, mountAgreeSwitch, riderBodySwitch, riderCostSwitch, plantFloorSwitch, plantSpeedSwitch, faceTrimSwitch, holdLineSwitch, leanPaceSwitch, turnGainsSwitch, driftSwitches, cueLaterSwitch, deckHollowSwitch, snapArmsSwitch, snapFanSwitch, boardSpraySwitch, spraySheetSwitch, duckDrawnOld, poolTubeCaseSwitch, plainHeightSwitch, contactRowsSwitch, deviceTrafficSwitches, formatDevice, barrelGpuSwitch, poolFloorSwitch, poolSizeSwitch, poolWindowSwitch, poolRefConfig, barrelHeightOld, cameraWaterOld, barrelMeshOld, surfZoneConfigFor, tubeFaceSwitches, tubeShapeSwitch, swellFor, swellHeightLimit, type PhysicalSettings,
 } from './PhysicalMode';
 import { SURF_SPOTS, physicalSettingsFor, swellChoice } from './SurfConditions';
 import { LocalSurfZone, type SurfZoneHost } from './SurfZoneHost';
@@ -1764,6 +1764,31 @@ describe('PhysicalMode', () => {
       expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(/\bturnGains: undefined\b/);
       vi.stubGlobal('location', { search: '' });
       expect(surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false).turnGains).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  // The step 3.6h dev switches (`?pushAnkle`, `?pushTwist`, `?wobbleNotch`): opt-in; only the listed values; online rooms
+  // pin them off.
+  it('scales and notches the balance\'s feedback with `?pushAnkle`, `?pushTwist` and `?wobbleNotch` (opt-in dev switches), and not otherwise', () => {
+    expect(driftSwitches('?pushAnkle=0.5')).toEqual({ pushAnkle: '0.5' });
+    expect(driftSwitches('?pushTwist=0.75&wobbleNotch=2')).toEqual({ pushTwist: '0.75', wobbleNotch: '2' });
+    expect(driftSwitches('?pushAnkle=0.35&pushTwist=0.25&wobbleNotch=1')).toEqual({ pushAnkle: '0.35', pushTwist: '0.25', wobbleNotch: '1' });
+    for (const search of ['', '?pushAnkle', '?pushAnkle=', '?pushAnkle=1', '?pushAnkle=0', '?pushAnkle=0.50', '?pushAnkle=2', '?pushTwist=on', '?wobbleNotch=on', '?wobbleNotch=3', '?turnGains=firm']) {
+      expect(driftSwitches(search), search).toEqual({});
+    }
+    const conditions = { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' } as const;
+    try {
+      vi.stubGlobal('location', { search: '?rider=new&pushAnkle=0.5&pushTwist=0.75&wobbleNotch=2' });
+      const on = surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false);
+      expect([on.pushAnkle, on.pushTwist, on.wobbleNotch]).toEqual(['0.5', '0.75', '2']);
+      const room = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+      const pinned = room.slice(room.indexOf('const overrides: Partial<SurfZoneConfig> = {'));
+      for (const key of ['pushAnkle', 'pushTwist', 'wobbleNotch']) expect(pinned.slice(0, pinned.indexOf('\n    };'))).toMatch(new RegExp(`\\b${key}: undefined\\b`));
+      vi.stubGlobal('location', { search: '' });
+      const off = surfZoneConfigFor(physicalSettingsFor('canyon', conditions, { stage: 2, compute: 'cpu' }), 5, false);
+      expect([off.pushAnkle, off.pushTwist, off.wobbleNotch]).toEqual([undefined, undefined, undefined]);
     } finally {
       vi.unstubAllGlobals();
     }
