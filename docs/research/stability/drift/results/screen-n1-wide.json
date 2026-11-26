@@ -1,0 +1,273 @@
+[
+ {
+  "name": "n1w",
+  "deepRides": 72,
+  "baseBalance": 39,
+  "stillFalling": 24,
+  "newBalance": 1,
+  "deepBalanceNow": 25,
+  "course05": {
+   "n": 62,
+   "mean": 1.52,
+   "median": 0.915,
+   "up": 44,
+   "down": 18,
+   "onlyOn": 0,
+   "onlyOff": 2
+  },
+  "course10": {
+   "n": 32,
+   "mean": 0.77,
+   "median": 0.5,
+   "up": 21,
+   "down": 10,
+   "onlyOn": 18,
+   "onlyOff": 0
+  },
+  "yawPeak": {
+   "n": 72,
+   "mean": -10.768,
+   "median": -6.15,
+   "up": 24,
+   "down": 48,
+   "onlyOn": 0,
+   "onlyOff": 0
+  },
+  "regressions": 8,
+  "regList": [
+   "big:s1:w11:crouch:left (lasted)",
+   "big:s1:w5:snap:left (sooner)",
+   "big:s1:w9:none:left (sooner)",
+   "big:s1:w9:snap:right (sooner)",
+   "big:s2:w12:crouch:left (reserve)",
+   "big:s2:w16:crouch:left (reserve)",
+   "big:s3:w6:none:left (lasted)",
+   "big:s3:w9:snap:left (sooner)"
+  ],
+  "regByScript": {
+   "snap": 3,
+   "none": 2,
+   "crouch": 3
+  },
+  "balanceByScript": {
+   "none": [
+    15,
+    15
+   ],
+   "crouch": [
+    20,
+    15
+   ],
+   "compress": [
+    19,
+    10
+   ],
+   "snap": [
+    22,
+    22
+   ],
+   "hisway": [
+    1,
+    1
+   ]
+  },
+  "swing": {
+   "compress:straight": {
+    "n": 13,
+    "ratio": 0.422,
+    "down": 13,
+    "up": 0,
+    "on": 2.49,
+    "off": 5.3
+   },
+   "crouch:straight": {
+    "n": 13,
+    "ratio": 0.598,
+    "down": 13,
+    "up": 0,
+    "on": 2.71,
+    "off": 5.69
+   },
+   "hisway": {
+    "n": 13,
+    "ratio": 0.422,
+    "down": 13,
+    "up": 0,
+    "on": 2.49,
+    "off": 5.3
+   }
+  },
+  "release": {
+   "0": {
+    "rides": 36,
+    "balBefore2": [
+     15,
+     11
+    ],
+    "balAll": [
+     22,
+     18
+    ],
+    "fellLaterSooner": [
+     19,
+     8
+    ],
+    "medianDt": 0.033,
+    "course05": {
+     "n": 29,
+     "mean": 0.567,
+     "median": 0.23,
+     "up": 19,
+     "down": 9,
+     "onlyOn": 2,
+     "onlyOff": 0
+    },
+    "course10": {
+     "n": 11,
+     "mean": -0.349,
+     "median": -0.16,
+     "up": 5,
+     "down": 6,
+     "onlyOn": 4,
+     "onlyOff": 0
+    }
+   },
+   "0.2": {
+    "rides": 36,
+    "balBefore2": [
+     6,
+     4
+    ],
+    "balAll": [
+     18,
+     15
+    ],
+    "fellLaterSooner": [
+     13,
+     11
+    ],
+    "medianDt": 0.0,
+    "course05": {
+     "n": 28,
+     "mean": 0.812,
+     "median": 0.27,
+     "up": 19,
+     "down": 9,
+     "onlyOn": 1,
+     "onlyOff": 1
+    },
+    "course10": {
+     "n": 19,
+     "mean": -0.136,
+     "median": -0.17,
+     "up": 8,
+     "down": 11,
+     "onlyOn": 2,
+     "onlyOff": 1
+    }
+   },
+   "0.4": {
+    "rides": 36,
+    "balBefore2": [
+     3,
+     1
+    ],
+    "balAll": [
+     15,
+     14
+    ],
+    "fellLaterSooner": [
+     12,
+     12
+    ],
+    "medianDt": 0.0,
+    "course05": {
+     "n": 32,
+     "mean": 0.296,
+     "median": 0.135,
+     "up": 19,
+     "down": 13,
+     "onlyOn": 0,
+     "onlyOff": 0
+    },
+    "course10": {
+     "n": 23,
+     "mean": 0.373,
+     "median": 0.11,
+     "up": 13,
+     "down": 10,
+     "onlyOn": 2,
+     "onlyOff": 0
+    }
+   },
+   "0.6": {
+    "rides": 36,
+    "balBefore2": [
+     3,
+     2
+    ],
+    "balAll": [
+     18,
+     18
+    ],
+    "fellLaterSooner": [
+     9,
+     15
+    ],
+    "medianDt": 0.0,
+    "course05": {
+     "n": 32,
+     "mean": 0.075,
+     "median": 0.03,
+     "up": 19,
+     "down": 11,
+     "onlyOn": 0,
+     "onlyOff": 0
+    },
+    "course10": {
+     "n": 23,
+     "mean": 0.646,
+     "median": -0.27,
+     "up": 9,
+     "down": 14,
+     "onlyOn": 1,
+     "onlyOff": 0
+    }
+   }
+  },
+  "hiswaySteer": {
+   "rides": 36,
+   "balBefore2": [
+    12,
+    5
+   ],
+   "balAll": [
+    19,
+    10
+   ],
+   "fellLaterSooner": [
+    10,
+    10
+   ],
+   "medianDt": 0.0,
+   "course05": {
+    "n": 30,
+    "mean": 1.238,
+    "median": 0.69,
+    "up": 19,
+    "down": 11,
+    "onlyOn": 0,
+    "onlyOff": 1
+   },
+   "course10": {
+    "n": 16,
+    "mean": 0.719,
+    "median": 0.5,
+    "up": 12,
+    "down": 4,
+    "onlyOn": 7,
+    "onlyOff": 0
+   }
+  }
+ }
+]

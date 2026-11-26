@@ -192,6 +192,9 @@ therefore `pushTwist=<0.5 or 0.35>&wobbleNotch=1`; `pushTwist=0.35` is still run
 is started now**; if `pushTwist=0.35` turns out the better twist scale, `pushTwist=0.35&wobbleNotch=1` is run as well and
 is the C3 of record. `pushTwist=0.5&wobbleNotch=2` (amendment 2) is an extra row.
 
+*Note, after the round (the amendments' text is kept as written): the headings' times are rounded; the commits'
+times, which fix the order, are 20:03:55, 20:45:41 and 20:47:50 UTC (§1).*
+
 ---
 
 ## 1. The order of the round (UTC, 2026-11-26)
@@ -271,6 +274,19 @@ for R and `pushAnkle=0.5`, which carried every Big script). `results/screen.json
   fall at +4.90 to +4.92 s under both twist scales and Q 2). These are rides that end on the edge either way; any change to the deep stance moves them. Each is
   explained ride by ride for the full report (§3).
 
+**The predictions (§0.8) against the result.**
+1. `pushAnkle=0.5`: the straight swing 0.5–0.7 of off — **held** (0.64 Compress, 0.67 the tuck); still falling 22–30 —
+   **held** (26); the turn at +1.0 s slower, failing the line or passing it narrowly — **held** (−0.34°). `0.35` shrinks
+   the swing more and slows the turn more — **held** (0.54; −0.66°).
+2. `pushTwist=0.5` changes the swing little — **held** (0.99); the falls by fewer than 5 of 39 — **missed** (7: 39 → 32).
+3. The notch shrinks the swing less than `pushAnkle=0.5` — **missed** (it shrinks it more: 0.45 and 0.42 against 0.64);
+   the turn within ±1° at +0.5 s — **missed narrowly** (+1.21° and +1.52°, both faster); falls 28–35 — **held** for Q 2
+   (29), **missed** for Q 1 (24, better).
+4. R shrinks the swing most — **held** (0.30); the deep turns' balance falls below 20 — **held** (19).
+5. No configuration reaches 0 regressions on its full report, Snap's steer rides and his way's lasting rides being where
+   — **held** for the count and for Snap (§3: 4 of 13); **missed** for his way (none of his way's rides regress; three
+   tall rides do).
+
 ## 3. The full report of the closest configuration, `wobbleNotch=1` (closest, not a finalist)
 
 *`npm run report:stability -- --mode full --jobs 4 --extra '&cueLater=on&plantFloor=6&wobbleNotch=1'` (bundles from
@@ -314,3 +330,114 @@ stances. Three are the tuck's rides that end on the edge either way (two of them
 test wave's placed start, and one Compress turn that turns further and falls after the release. A version weighted
 only by the stance asked (Compress and Crouch), not by the leg's depth, would leave Snap and tall alone; that is a
 change of the switch, not tested here.
+
+## 4. The turn just after letting go of R2
+
+*3.6c's drives `release<x>:left|right`: his way (Compress from +0.2 s, the trim released at 4.4 m/s), Compress let go x s
+before the steer (±1 from +1.0 s for 1.0 s). Canyon Big seeds 1–3, 36 rides each; the probe's wide set (the off probe,
+`wobbleNotch=1`, R); the benchmark's measures and cause rule. Paired by id against the off probe. The "three release
+times" are x = 0, 0.2, 0.4 s; 0.6 s beside. `results/screen-n1-wide.json` and `results/screen.json` (R).*
+
+| drive | balance falls before +2.0 s: off / `wobbleNotch=1` / R | balance falls over the ride: off / notch / R | notch: falls later / sooner than off (median Δ s) | notch: course +0.5 / +1.0 s, mean on − off (n) | R: course +0.5 / +1.0 s (n) |
+| --- | --- | --- | --- | --- | --- |
+| let go at the steer (x = 0) | 15 / **11** / **2** | 22 / 18 / 16 | 19 / 8 (+0.03) | +0.57° (29) / −0.35° (11) | −0.91° (27) / −2.07° (11) |
+| x = 0.2 s | 6 / **4** / **0** | 18 / 15 / 12 | 13 / 11 (0.00) | +0.81° (28) / −0.14° (19) | −0.28° (28) / −2.34° (19) |
+| x = 0.4 s | 3 / **1** / **0** | 15 / 14 / 12 | 12 / 12 (0.00) | +0.30° (32) / +0.37° (23) | −0.65° (32) / −2.43° (23) |
+| x = 0.6 s (beside) | 3 / 2 / 0 | 18 / 18 / 12 | 9 / 15 (0.00) | +0.08° (32) / +0.65° (23) | −1.23° (32) / −2.45° (23) |
+| his way with the 1 s full steer (`hisway:left|right`, R2 held) | 12 / **5** / **0** | 19 / 10 / 6 | 10 / 10 (0.00) | +1.24° (30) / +0.72° (16) | −0.29° (31) / −0.75° (16) |
+
+The notch follows the leg as it rises (its weight is the design depth's), so it acts most at x = 0, where the leg is
+still 0.30 m down when the turn starts (3.6c): there it takes the falls inside the steer from 15 to 11; R takes them to
+2. On his way of turning (R2 held, the full stick for a second) the notch halves the falls inside the steer (12 → 5) and
+over the ride (19 → 10), with the board coming round further at both times. The quicker rider turns slightly less far on
+these drives at +1.0 s (about −2° on the release drives).
+
+## 5. The reference: the quicker rider, R (not a candidate)
+
+*3.6d's matched delay at 4 ticks (`KNOBS=designDelay=4,captureDelay=4`: the design, the filter's age, the predictor and
+the senses all at 67 ms instead of 100 ms), probe-side, no switch. The wide set on Canyon Big seeds 1–3 (§0.3), 486
+rides; the benchmark's measures; against the baseline's rides for the benchmark scripts and the off probe's for the rest.*
+
+| | off | R |
+| --- | --- | --- |
+| deep turns falling for balance (of 72; of the baseline's 39, still falling) | 39 | 19 (19 of 39 still; 0 new) |
+| … Compress / the tuck (of 36 each) | 19 / 20 | 6 / 13 |
+| tall / Snap / his way, balance falls (Big benchmark rides) | 15 / 22 / 1 | 13 / 22 / 1 |
+| course +0.5 s, deep turns, mean on − off (n; up/down) | — | +0.58° (62; 31/31) |
+| course +1.0 s (n; up/down; reaching it only on) | — | +0.12° (32; 16/16; 23) |
+| peak yaw toward the steer, mean on − off | — | −13.1 deg/s (27 up / 45 down) |
+| the straight swing, Compress / the tuck (median deg/s; ratio, rides down) | 5.30 / 5.69 | 1.63 / 2.18 (0.30, 12 of 13; 0.49, 13 of 13) |
+| regressions by the rule, the 162 Big benchmark rides | 0 | **9**: Snap 5 (`s1:w5:left`, `s1:w9:right`, `s2:w15:right`, `s3:w9:left` sooner; `s1:w8:right` reserve), Crouch 2 (`s2:w12:left`, `s2:w16:left`, reserve), Compress 1 (`s3:w3:left`, reserve), tall 1 (`s3:w7:none:right` lasted, now falls) |
+
+R is the size of what the loop's delay does: it meets the second line on Big exactly (19 of 39) and takes Compress's
+turn falls from 19 to 6, with the turn neither faster nor slower on the rides that reach the times both ways, and the
+straight swing to a third of itself. Even so it has 9 regressions on Big alone, 5 of them Snap's (whose falls 3.6c found
+are not this swing's). It is a realism choice that stays Vicente's.
+
+## 6. Controls
+
+| control | result |
+| --- | --- |
+| **Switch off, the full report** (`npm run report:stability`'s two bundles built from `712c4cbe`'s `src` and scripts, which this branch's head has unchanged; `--mode full --jobs 4`, no switch; 21:06:15–21:39:11, 32.9 min) | exit 0, 0 regressions, 0 improvements; **227 of 227 ride lines identical to `baseline-full.json`** in every field (`same.py`); every process printed the build as asked (none refused) |
+| **Switch off, the quick report's rides** | the same run's 26 test-wave ride lines **identical to `baseline-quick.json`'s 26** (`same.py --groups tw-catch,tw-ride`). The full mode runs the quick mode's 27 processes unchanged, so no separate quick run was made (3.6b's practice) |
+| **The probe off** (`drift-probe.mjs`, no switch, the wide set) | its 162 Big benchmark ride lines identical to `baseline-full.json`'s; it also reproduces 3.6c's release counts (balance falls before +2.0 s: 15, 6, 3, 3 of 36 at x = 0, 0.2, 0.4, 0.6) |
+| **The Canyon byte check** (`scripts/m1-cpu-bench.ts` bundled with rolldown, prelude `globalThis.location = { search: '?canyonWaves=true' };`, `--spot canyon --steps 3600`, a fresh state file) | snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`: **identical** (21:40:25–21:45:43; `results/byte-check.txt`) |
+| `npx tsc -b` | clean (21:32) |
+| **The gain lock**, `npx vitest run src/physics/stabilityGains` (the test untouched: `git diff ef4b86c8 -- src/physics/stabilityGains.test.ts` is empty) | 5 of 5 |
+| **The switches' own tests** | `predictiveBalance.test.ts` "the command tuning (step 3.6h)": 5 of 5 (depth 0 gives the shipped command to 10⁻⁹; the command changes at 0.30 m; the controller's own model loop decays with every tuning at 0.30 and 0.45 m × 5.5, 7, 9, 11 m/s; the notch's frequencies; the reset). `PhysicalMode.test.ts` "scales and notches the balance's feedback …": 1 of 1 (only the listed values; the config carries them; `main.ts` pins all three to `undefined` online; absent by default) |
+| **The touched test files** (`predictiveBalance`, `PhysicalMode`, `RideSession`) | 3 files, 184 of 184 pass. `AttachedRider.test.ts` was not run (its constructor change only adds an argument when a switch is asked; covered by the switch-off reports) |
+| **Every switch printed back** | every process of every candidate run printed its switch as asked (`built` rows; the report refuses otherwise, and none was refused) |
+
+## 7. For Vicente
+
+**Nothing passes, so nothing is proposed.** I tried three ways of tuning the balance itself, each behind its own
+switch, off by default and pinned off online, and measured each on the Big swell's Compress and Crouch turns, his way:
+
+- **Pushing less with the ankle** (`?pushAnkle`) stops the most falls among the candidates (39 → 21 at its best) and
+  calms the drift to about half, but the board comes round a little less a second into the turn. That breaks the
+  "no slower" rule, so I stopped there.
+- **Pushing less with the hips' twist** (`?pushTwist`) barely changes the drift and saves few falls (39 → 30).
+- **A wobble filter on the ankle** (`?wobbleNotch`) is the best of them. It takes the drift on a straight Compress ride
+  to under half (0.42 of itself), saves 15 of the 39 falling Big turns, and the board comes round *further* (+1.4° at
+  half a second, +0.8° at a second). On your way of turning, R2 held with a full stick for a second, it halves the
+  falls (19 → 10 of 36). But on the full benchmark it still leaves 32 of the 47 falling deep turns falling (the line is
+  23), and 13 rides get worse. Most of those are outside Compress and Crouch: Snap (same depth, its own wobble is slower,
+  so the filter sits at the wrong frequency for it) and standing tall (the carve's knee bend lets a fifth of the filter
+  in). The test wave's eight deep turns all still fall.
+- **Both together** is worse than the filter alone.
+- **The quicker rider** (reaction 67 ms instead of 100 ms), kept as a reference, is the only thing that reaches the half
+  line on the Big swell (19 of 39) and takes the falls when letting go of R2 just before a turn from 15 to 2. It is the
+  biggest lever by far, and it is yours to decide on as a realism choice; it too makes 9 Big rides worse (5 of them Snap).
+
+**If you want to feel the filter anyway** (it fails two of the three lines, so this is for feel only; the coordinator
+would serve this branch):
+
+    http://localhost:5177/?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantFloor=6&wobbleNotch=1
+
+What you should feel, holding R2: the board's left-right twitch on a straight line in Compress about halved, a
+little less in Crouch, and turns that come in at least as fast; most turns that threw you still will. Standing tall and
+in Snap it can feel worse.
+
+**What I would test next, each needing your word:** the filter weighted by the stance asked (Compress and Crouch only),
+not by the leg's depth, which would leave Snap and tall alone (7 of its 13 regressions); and the quicker rider, if you
+want the realism trade looked at.
+
+## 8. Where everything is, and how to recompute it
+
+- **Raw runs** (not committed): the session scratchpad,
+  `/private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36h/`:
+  `scr/<config>/big_s<seed>.jsonl` (the probe; `off`, `R`, `a05`, `a035`, `a025`, `t05`, `t035`, `n2`, `n1`, `n1w`,
+  `c3t035n1`, `c3t05n1`, `c3t05n2`), each with the report's `rides.jsonl` and the reader's `screen.json`; `full/off`,
+  `full/n1`, `full/R` (the full reports, with `rides.jsonl`, `report.md`); `byte/` (the byte check); `base/f2` (the
+  baseline's committed raw run, unpacked); the run logs `scr/stage*.log`, `full/*.out`; `model-loop-probe.txt`.
+- **The probe:** `drift-probe.ts` (bundle: `rolldown docs/research/stability/drift/drift-probe.ts -o drift-probe.mjs --format
+  esm --platform node`), driven by `run.py --bundle … --root … --set screen|deep|wide name='&switch=…'` (R:
+  `R=knobs:designDelay=4,captureDelay=4`); measured by `node dist/scripts/stability-report.mjs --mode full --only big --reuse
+  --out <dir> --extra <build>`.
+- **The readers:** `screen.py` (§2, §4), `table.py` (§2's table), `passline.py` (§3, §5), `regress.py` (§3's frames),
+  `same.py` (§6).
+- **The results:** `results/screen.json`, `results/screen-n1-wide.json`, `results/passline-n1.json`,
+  `results/regress-n1.json`, `results/passline-R.json`, `results/byte-check.txt`, `results/model-loop.txt`.
+- **The switches:** `src/game/PhysicalMode.ts` `driftSwitches`; `src/physics/predictiveBalance.ts` `CommandTuning`,
+  `wobbleHz`, `DRIFT_FULL_DEPTH`, `PredictiveController.tunedCommand`; `src/physics/AttachedRider.ts` (the options
+  `pushAnkle`, `pushTwist`, `wobbleNotch`); pinned off in `src/main.ts`'s online overrides.
