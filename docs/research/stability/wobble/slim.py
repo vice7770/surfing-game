@@ -15,7 +15,7 @@ W = ['kind', 'script', 'wave', 'tS', 'om', 'p', 'yFin', 'yRail', 'yP', 'yB', 'yA
      'twAct', 'twA', 'twR', 'wAct', 'wK', 'wC', 'le', 'lr', 'lrr', 'lk', 'ank', 'aRest', 'cA', 'cOA', 'cH', 'cFA', 'cSA', 'cW', 'pfX', 'bey',
      'cHalf', 'cR', 'cM', 'hd', 'yd', 'kt', 'ktY', 'kn', 'lL', 'grip', 'held', 'twT', 'nS']
 O = ['kind', 'script', 'wave', 'tS', 'roll']
-F = ['kind', 'script', 'wave', 't', 'tS', 'yaw', 'res']
+F = ['kind', 'script', 'wave', 't', 'tS', 'yaw', 'res', 'fr', 'm1', 'm2', 'm3', 'mf']
 FREQ = '--freq' in sys.argv
 
 

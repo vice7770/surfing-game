@@ -289,8 +289,8 @@ M5, M8), `results/hc-falls.md`, `results/power-steer-falls.md`.*
 4. **What the frames show** (`big:s3:w9:compress:straight`, `series.py`): the yaw rate swings ±10–22 deg/s at 2.9 Hz
    from before +1.0 s with no steer, and the twist's active torque leads it by 0.05–0.07 s (about 50° at 2.9 Hz), its
    peaks ±5–14 N·m with the same sign as the yaw rate that follows. A torque that leads the rate by less than 90° feeds
-   it: the balance turns the upper body against the board's turn to steady the head, and the reaction turns the board
-   further the same way.
+   it: the twist turns the upper body against the board's yaw (as a balance steadying the head's yaw rate, one of its
+   senses, would) and its reaction turns the board further the same way.
 
 ### 2.2 What sets its frequency (M4)
 
@@ -304,20 +304,24 @@ so it could not give that order even before the knob.
 | `twistGain` (the twist row of the balance's gains) | tall / tuck / Compress | 2.19 / 2.31 / 2.41; 2.79 / 2.90 / 2.95; 2.52 / 2.67 / 2.80 | +0.15 / +0.09 / +0.18 | 1.19 / 0.91; 0.85 / 1.04; 0.98 / 1.04 | partly (tall, Compress); does not carry (tuck, by the ±0.15 Hz rule) |
 | `ankleGain` (the ankle row) | tall / tuck / Compress | 2.31 / 2.31 / 2.33; 2.87 / 2.90 / 2.91; 2.64 / 2.67 / 2.71 | +0.01 / +0.02 / +0.04 | 0.74 (11 of 12 down) / 1.52; 0.80 (11 of 13) / 1.13; **0.70 (13 of 13) / 1.42 (8 of 8 up)** | does not carry the frequency; sets the size |
 | `senseShift` (the senses reach the balance 4 / 6 / 8 ticks late; its design still assumes 6) | tall / tuck / Compress | **4.26 / 2.31 / 1.93; 3.73 / 2.90 / 2.33; 3.72 / 2.67 / 2.05** | **−1.15 / −0.68 / −0.86** | 2.33 / 10.49; 1.27 / 2.78; 1.11 / 5.73 (+2: 8 of 8 up) | **carries** (every stance; every ride's zero-crossing frequency moves the same way: 10–12 of 10–12 up at −2, 8–11 of 8–12 down at +2) |
-<!-- M4 fins -->
+| `fins` (every fin's lift slope: force and damping) | tall / tuck / Compress | 2.29 / 2.31 / 2.40; 2.88 / 2.90 / 2.89; 2.65 / 2.67 / 2.71 | +0.07 / +0.01 / +0.04 | 1.00 / 1.04; 0.75 / 1.23; 1.10 / 0.91 | does not carry |
 
-Rides standing through the window, of 12–13 a cell, except `ankleGain` ×1.3 (8 a cell: the firmer ankle throws more
-riders before +3.0 s). Intervals and every cell (Snap, his way) in `results/freq-w1.md`; window 2 (tS 0.5–4.5 s) in
+Rides standing through the window, of 11–13 a cell, except `ankleGain` ×1.3 and `senseShift` +2 (8 a cell in tall and
+Compress: both throw more riders before +3.0 s) and `senseShift` −2 (10 in the deep stances). Window 2 (tS 0.5–4.5 s)
+gives the same verdict for every knob and stance (`twistGain` *partly* in the tuck too, e +0.13). Intervals and every cell (Snap, his way) in `results/freq-w1.md`; window 2 (tS 0.5–4.5 s) in
 `results/freq-w2.md`.
 
 1. **The leg's own bounce is not it.** ±30 % on the knees' stiffness moves the leg's axial mode by −16 % / +14 %
    (2.2 / 3.0 Hz) and the swing's peak by at most 0.03 Hz in any stance (e within ±0.03), its size by 0–10 %. Y2 is out;
    the coordinator's lead 9 (2.46 Hz damped) is a coincidence of numbers.
-2. **The twist loop sets its pace.** The twist row's gain moves the peak the same way in every stance, 0.10–0.16 Hz for
+2. **Nor the hull's own yaw mode.** ±30 % on the fins' lift slope (force and damping, checked at the same slip) moves
+   the peak by at most 0.09 Hz (e +0.01 to +0.07) and the size by no consistent sign. Y3 is out, as M2 already showed:
+   the fins only take energy out of the swing.
+3. **The twist gain moves it a little.** The twist row's gain moves the peak the same way in every stance, 0.10–0.16 Hz for
    ±30 % (e +0.15 to +0.18 in tall and Compress, 2.52 and 2.80 Hz against 2.67 with both intervals clear of it), and
    barely its size. Below the pre-registered 0.25, so by the rule it is *partly*: the twist's feedback is one of the
    stiffnesses of the mode, not all of it.
-3. **The loop's delay sets its frequency.** Two ticks less delay than the design assumes moves the swing from 2.67 to
+4. **The loop's delay sets its frequency.** Two ticks less delay than the design assumes moves the swing from 2.67 to
    3.72 Hz in Compress (2.31 to 4.26 tall, 2.90 to 3.73 in the tuck); two ticks more moves it to 2.05 Hz (1.93, 2.33)
    and makes it 3–10 times as large. The elasticity is −0.7 to −1.2: the swing's period follows the senses' age about in
    proportion (2.67 Hz is a period of 3.7 sensing delays). **This is the carrier**: the 2.5–3 Hz swing is the balance
@@ -325,11 +329,11 @@ riders before +3.0 s). Intervals and every cell (Snap, his way) in `results/freq
    happens to excite. Codex's nominal test (§0, brief item 7) decays on the controller's own model, where the predictor
    cancels the delay exactly; on the board the game actually rides, the same loop leaves this mode lightly damped, and
    any extra delay drives it up.
-4. **The ankle loop sets its size.** The ankle row's gain does not move the peak (e +0.01 to +0.04) but scales the
+5. **The ankle gain sets its size.** The ankle row's gain does not move the peak (e +0.01 to +0.04) but scales the
    swing nearly in proportion: ×0.7 takes it to 0.70 of itself in Compress on 13 of 13 rides (0.80 in the tuck, 0.74
    tall), ×1.3 to 1.42 on 8 of 8 (and throws 5 more of 13 before +3.0 s). The ankle's active work is also the largest
-   joint work into the swing (§2.1). So the roll loop is what feeds the swing most; the twist loop fixes where in
-   frequency it rings.
+   joint work into the swing (§2.1). So the swing is one mode of the whole balance loop: the delay fixes its frequency,
+   the ankle (roll) channel feeds most of its energy, the twist channel turns the board's yaw with it.
 
 ### 2.3 Why it is larger deep (M8, M5)
 
@@ -343,8 +347,8 @@ tall, 2.60 Compress, 3.10 the tuck.
 | swap (the deep body otherwise as it is) | Compress: rides standing / amplitude, paired ratio to off (rides down) / share of the excess over tall removed, median (waves ≥ 0.5) | tuck: the same |
 | --- | --- | --- |
 | `splitDepth = 0`: the yaw inertia's split read at tall's (board-rigid 1.37, upper 1.44 kg·m², against Compress's 1.24 / 1.96 and the tuck's 0.86 / 2.44) | 13 / 0.70 (12 of 13) / **+0.48** (3 of 10) | 13 / 0.60 (13 of 13) / **+0.69** (8 of 10) |
-| `designDepth = 0`: the balance's design (model, gains, filter, reference) scheduled at depth 0 | 3 of 13 stand through 3.0 s; the survivors swing 8 times as much | 0 of 13 stand |
-<!-- both0 -->
+| `designDepth = 0`: the balance's design (model, gains, filter, reference) scheduled at depth 0 | 3 stand through +3.0 s (13 with it off); the survivors swing 8.0 times as much | 0 stand through |
+| both at 0 | 8 stand through; they swing 5.9 times as much (8 of 8 up) | 1 stands through |
 
 1. **The yaw inertia's split is about half of it.** Turning the deep body's yaw inertia back to tall's split (more of
    it carried rigid with the board, less on the upper body the twist turns) takes the swing down to 0.70 of itself in
@@ -354,10 +358,35 @@ tall, 2.60 Compress, 3.10 the tuck.
    one M2 measures: deep, the board and lower body that take the twist's reaction are lighter (1.80 and 1.42 kg·m²
    against 1.93, the board's own 0.56 with its water included) and the upper body the twist turns is heavier (1.96 and
    2.44 against 1.44, before the arms' 0.87 × `human.arms`), so the same twist torque yaws the board more.
-2. **The deep design is not the cause; it is what keeps the deep body up at all.** Scheduled at tall's depth, the
-   balance cannot hold the deep body: 10 of 13 Compress and 13 of 13 tuck straight rides fall before +3.0 s. So the
-   design's depth schedule is right in direction, and the swap cannot measure a share.
-<!-- M5 rest -->
+2. **The deep design is not the cause; it is what keeps the deep body up at all.** Scheduled at tall's depth (alone or
+   with tall's split), the balance cannot hold the deep body: in Compress 3 (8 with the split too) of the 13 rides that
+   stand through +3.0 s with it off still do, and they swing 6–8 times as much; in the tuck 0 (1). So the design's
+   depth schedule is right in direction, and these swaps cannot measure a share.
+3. **The rest of the excess is not identified.** After the split, Compress still swings about half again as much as
+   tall on the matched waves. The candidates left are the deep design's own loop gains against the real board (the
+   ankle gain scales the swing in every stance) and the body's lower centre of mass in the roll loop; neither was
+   swapped alone this round.
+
+### 2.4 The answer to question 1
+
+The 2.5–3 Hz swing is **the balance loop's own delay-set oscillation**: the predictive controller acting on senses
+0.1 s old, through its predictor, on the board as it really rides. Its frequency follows the loop's delay (e −0.7 to
+−1.2 in every stance) and not the knees, the fins or the ankle gain; the rider's ankle and twist do the work that keeps
+it going, the fins and the hull take it out. It is larger in Compress and the tuck chiefly because their yaw inertia
+sits more on the upper body the twist turns and less on the board-rigid lower body, so each twist torque yaws the board
+more (half of Compress's excess over tall, two-thirds of the tuck's); the rest is not identified. *Frames:* straight
+rides on Canyon Big seeds 1–3, tS 0.5–3.0 s (and 0.5–4.5 s), yaw about the world's up.
+
+### 2.5 Predictions against the result (§0.5)
+
+| # | prediction | result |
+| --- | --- | --- |
+| 1 | M1 closes below 10⁻⁹; shipped +38.43 on the first −20° step | **held** (10⁻¹⁴; 38.43) |
+| 2 | §0.2 holds; the design depth above 0.15 m at +1.0 s of `release0` with `heldDepth` 0 | **held** (0.30 m) |
+| 3 | Y1: twist work positive (held); twist the largest positive P into Ω_alt (held), fins negative (held); `twistGain` \|e\| ≥ 0.25 (**missed**: +0.15 to +0.18); `knee` does not carry (held); `fins` partly (**missed**: does not carry) | the carrier is the loop's delay, which I did not predict |
+| 4 | `splitDepth` removes ≥ half of Compress's excess; `designDepth` less than half | **missed narrowly** (0.48); `designDepth` unmeasurable (the rides fall) |
+| 5 | the felt tilt term carries the crossing; the swing grows | **missed** (the speed term carries it); growth held |
+| 6 | `release0`, `release0.2` ≥ 8 of 36; `release0.6` ≤ 4; overshoot only for x ≥ 0.4 | held for x = 0 (15), **missed** for x = 0.2 (6); held for 0.6 (3); overshoot held |
 
 ## 3. Question 2: how the swing becomes the sideways tip (M6)
 
@@ -464,6 +493,73 @@ riding stance, m. `release.py`, `results/release.md` (every sea); M6's split for
 | The touched files' tests | `yawLedgerClosed` (new, 2), `rollLedger`, `railSection`, `stabilityGains`: 27 passed; `predictiveBalance`, `AttachedRider.test`, `AttachedRider.deepCrouch`, `plantSpeed`: 181 passed and 8 expected failures (`it.fails`, as at `340fc560`), 0 failing |
 | Each knob is what it says (§0.6 item 3; `knobcheck.ts`, `results/knobcheck.txt`; the rows) | the gain rows' feedback ×1.3 / ×0.7 exactly, the other row untouched; the senses reach the filter 4 / 6 / 8 ticks late at −2 / 0 / +2; the fins' force and damping ×1.3 / ×0.7 at the same slip; the knees' stiffness 14 / 20 / 26 kN/m in the rows (`lk`); the design and split depths by code |
 | The facts of §0.2 | 1: M1. 2: by the code (`coupleYaw`, `finish`). 3: `yd` = max(0, −`leg.rest`) on all 89,308 Big standing frames, and `heldDepth` 0 the frame Compress is let go. 4: the felt vertical's across part follows V·dχ/dt (−0.88 to −0.94) where measurable, but its tilt across the deck barely changes (§3) |
+
+### 5.1 The order of the round (UTC, 2026-11-25/26)
+
+| time | step |
+| --- | --- |
+| 23:29:30 | the brief, verbatim (`68c0cb65`) |
+| 23:38:57 | **the pre-registration** (`03ef6770`), before any run |
+| 23:41:20 | the two diagnostic `src` changes, each its own commit (`2fabcaf9` the closed ledger and its test; `f5b8ff8e` the knobs) |
+| 23:42–23:52 | the quick report, knobs off (26 of 26); the byte check (23:43); four smoke rides of the probe (pipeline checks; one with four knobs at once, read only for the rows' fields) |
+| 23:51:57 | the probe and readers as run (`d16b1f62`; bundle sha1 `22a9716e…`) |
+| 23:52 | the base run and the knob runs start; base done 00:46, the knobs 01:33 (39 processes) |
+| about 00:00 | the first rows read: M1's bare boards |
+| 00:16–00:30 | the base run's Big rows read (M2, M3, M6, M7); the knob settings read as each finished (knee 00:28, twist 00:36, ankle 00:51 and 00:59, design 00:51, sense and split 01:17–01:20, fins and both 01:34) |
+| 00:46–01:31 | the full report, knobs off (227 of 227) |
+
+**No amendment to §0** was needed or made. Three additions were made after the rows they describe were read, and are
+labelled where they appear: the speed term against the yaw swing (§3 item 2, `tip.py`), the rise's fastest rate and
+the knee drop at +1.0 s (§4, `release.py`), and `dup.py`'s span cut to 3.6 s (to match the archive). `run.py` gained
+`--fresh` and `--total` at 00:11 to share the machine between two runners; it changes which process runs a job, not
+what it runs.
+
+## 6. For Vicente, and what is still open
+
+**What drifts the board left and right** ("the board starts drifting left and right"). It is the rider's own balance.
+The balance works on what the rider felt a tenth of a second ago, and on the board as it really rides that delay
+leaves it ringing: the ankles rock the board on its rails and the hips turn the upper body against the board's turn,
+and together they keep a 2.3–2.9 Hz swing of the board's heading and roll going, which the fins and the hull keep
+taking out. Nothing in the water starts it and the knees do not set it. Tall, the swing is a third the size. In
+Compress and in the tuck more of his yaw inertia rides on the upper body the hips turn and less on the legs that turn
+with the board, so each of the balance's twists swings the board further (about half of the difference in Compress,
+two-thirds in the tuck).
+
+**How it throws him** ("crashes the surfer down"). Each swing of the heading slides his feet sideways under him, about
+0.6 m/s of sideways speed per rad/s of swing. In a held turn the swing grows over two to four swings, and when his
+body's sideways speed against his feet is more than his hips can catch he goes over, nearly always to the inside of
+the turn. It is not his lean tilting too far; it is the board moving out from under him.
+
+**Letting go of R2 just before the turn** ("he still fell") does not help unless it is about 0.4 s or more before the
+stick: the legs take about half a second to straighten, and the balance stays in its Compress setting until they do.
+Let go as he turns, 15 of 36 Big turns fall (Compress held 12, tall 1), all of Compress's among them; 0.2 s before, 6;
+0.4–0.6 s before, 3.
+
+**No change is proposed.** This round only measured. What it suggests, each needing his word before any build:
+1. **The swing is the balance loop's delay margin.** Its frequency follows the senses' age (two ticks less: 3.7 Hz;
+   two ticks more: 2.0 Hz and 3–10 times as large). So a fix belongs in how the balance handles its own delay on the
+   real board (its model of the board's yaw against the board's actual response, or its damping of this mode), not in
+   the steer, the turn's limits, the knees or the fins.
+2. **The deep stances' yaw inertia split** makes the swing half to two-thirds bigger. It is the body's real inertia
+   (`STANCE_TABLE`, measured), so it is not a thing to change; it is why the deep stances need the loop's margin most.
+3. **The projection's catch is lost to a trace of the knee drop** (§4 item 5): letting Compress go, any trace of the
+   balance's own knee drop clears `fromCompress`, and the legs rise at up to 1.2 m/s instead of 0.59 (14 of 36 turns let
+   go at the steer). Not shown to cause falls here; it is not what the code's note says.
+4. **The ankle gain scales the swing in proportion** (×0.7: 0.70 of it, on every Compress ride). A gain change is
+   outside this round and the lock pins 5–8 m/s; reported, not proposed.
+5. **The 7.5 m/s knot** (lead 8 of the brief) was not tested.
+
+**What I could not settle, and what I would test next.**
+- **Why the loop rings on the board when it decays on its model.** Next: identify the board's yaw and roll response to
+  the twist and ankle commands from the game's own ticks on straight Compress rides (the swing is a clean 2.7 Hz
+  excitation), and compare it with the design's `plantAt` at the same speed and depth; the mismatch is the cause of the
+  margin. 3.6a part 2's plant identification did not pass its controls, so this needs the closed ledger and this
+  round's twist sums.
+- **The other half of Compress's excess.** Swap the deep design's gains alone (keep its model and filter) and the
+  centre of mass's height in the roll model, one at a time.
+- **Snap's falls** inside the steer are not this swing's (its swing over the fall is tall's size); not pursued.
+- **His own ride.** A recording of his processed steer and stance with the swing's frequency would confirm the 2.5–3 Hz
+  in his session; nothing here needs it.
 
 ## 7. Where everything is, and how to recompute it
 
