@@ -116,9 +116,12 @@ const q1: Any = {};
       const noisy = ys.map((y, i) => Float64Array.from(y, (x) => x + (noise * rms * gauss()) / ls[i].w));
       const map = new Map(ls.map((l, i) => [l, noisy[i]]));
       const r = regress(ls, (l) => map.get(l)!, regs);
-      const relErr = Math.max(...b.map((x, i) => Math.abs(r.coef[i] - x) / Math.max(Math.abs(x), 1e-9 * Math.max(...b.map(Math.abs)))));
+      // The vector's relative error ‖b̂ − b‖ / ‖b‖ (the registered line); beside it the largest per-coefficient relative
+      // error over the coefficients that are not 0 (a zero coefficient has no relative error).
+      const relErr = Math.sqrt(b.reduce((a, x, i) => a + (r.coef[i] - x) ** 2, 0) / b.reduce((a, x) => a + x * x, 0));
+      const perCoef = Math.max(...b.map((x, i) => (x !== 0 ? Math.abs(r.coef[i] - x) / Math.abs(x) : 0)));
       const within = b.map((x, i) => Math.abs(r.coef[i] - x) <= 3 * r.se[i]).filter(Boolean).length / b.length;
-      return { relErr, within };
+      return { relErr, perCoef, within };
     };
     const sc = {
       waterYaw: [synth(lsY, WATER_REG, mean('waterYaw'), 0), synth(lsY, WATER_REG, mean('waterYaw'), 0.1)],
@@ -126,7 +129,7 @@ const q1: Any = {};
       riderYaw: [synth(lsY, RIDER_REG, mean('riderYaw'), 0), synth(lsY, RIDER_REG, mean('riderYaw'), 0.1)],
       riderRoll: [synth(lsR, RIDER_REG, mean('riderRoll'), 0), synth(lsR, RIDER_REG, mean('riderRoll'), 0.1)],
     };
-    L.push(`- **the synthetic control** (${gname}): noise-free largest relative error ${Object.entries(sc).map(([k, v]) => `${k} ${f(v[0].relErr)}`).join(', ')}; with 10 % noise, the share of coefficients within 3 se ${Object.entries(sc).map(([k, v]) => `${k} ${f(v[1].within, 2)}`).join(', ')}`, '');
+    L.push(`- **the synthetic control** (${gname}): noise-free ‖b̂ − b‖ / ‖b‖ ${Object.entries(sc).map(([k, v]) => `${k} ${f(v[0].relErr)}`).join(', ')} (largest per nonzero coefficient ${Object.entries(sc).map(([k, v]) => `${k} ${f(v[0].perCoef)}`).join(', ')}); with 10 % noise, the share of coefficients within 3 se ${Object.entries(sc).map(([k, v]) => `${k} ${f(v[1].within, 2)}`).join(', ')}`, '');
     ent.waterYaw = { coef: yawSum.coef, se: yawSum.se, cond: yawSum.cond, vif: yawSum.vif, model: mean('waterYaw') };
     ent.waterRoll = { coef: rollSum.coef, se: rollSum.se, cond: rollSum.cond, vif: rollSum.vif, model: mean('waterRoll') };
     ent.riderYaw = { coef: ry.coef, se: ry.se, cond: ry.cond, vif: ry.vif, model: mean('riderYaw') };

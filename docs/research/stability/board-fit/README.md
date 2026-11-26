@@ -268,6 +268,19 @@ govern are read. I stop at a clean commit if the coordinator says so.
      and no registered set can move it. The known-plant control is extended to (e) (p* x_f × 0.6, z_d × 1.5) and
      must pass as the others.
    - Rules unchanged: the bins, the objective, the starts, the held-out rule and the selection among (a)–(c).
+2. *2026-11-26, about 12:55 UTC, after the second pass and before any byte of the held-out runs is read:* **the
+   synthetic control's "relative error" is the vector's, ‖b̂ − b‖ / ‖b‖.** Amendment 1's diagnosis was only part of
+   it: the code took, per coefficient, |b̂ᵢ − bᵢ| / max(|bᵢ|, 10⁻⁹ max|b|), so a coefficient that is 0 in the model
+   (the water's β̇, the rider's β) turned a rounding error of 10⁻¹³ into 10⁻⁴. The third pass prints the vector's
+   relative error (the registered line) and, beside it, the largest per-coefficient relative error over the
+   coefficients that are not 0. Every fit, every coefficient and every other number of the second pass is identical in
+   the third (checked: the JSONs' `bins`, `edges`, `perPair` and question 1's coefficients equal). The frozen fits are
+   the third pass's, committed with this amendment (`results/fit/`, sha1 `bb70d1b2…` Compress, `dc5183b0…` tuck,
+   `e4a6260b…` tall), with the held-out reader (`heldout.ts`) and the closures (`closures.ts`).
+   - **What I read of question 3 before the held-out set, stated.** To test `closures.ts`, I ran it on the fitting
+     set's closed twins with set (c), chosen for the test only (`results/dev/closures-fitting-c-dev.md`). Question 3's
+     rule, its read-outs and its sets are unchanged by it; the registered run uses the set question 2 selects on the
+     held-out set, on the fitting and the held-out seeds pooled.
 
 ### 0.11 The order of the round (UTC, 2026-11-26)
 

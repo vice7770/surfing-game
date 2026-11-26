@@ -1,0 +1,6 @@
+unperturbed: 32 sets, worst rateK 1.00000 vs 1 (rel 5.55e-15), resp 1.19e-13, iters 3, PASS (3 s)
+a: 32 sets, worst rateK 2.50000 vs 2.5 (rel 7.70e-13), resp 4.65e-13, iters 10, PASS (7 s)
+b: 32 sets, worst rateK 2.50000 vs 2.5 (rel 7.06e-13), resp 3.84e-13, iters 14, PASS (12 s)
+c: 32 sets, worst Iz 0.80000 vs 0.8 (rel 5.36e-11), resp 4.96e-13, iters 16, PASS (17 s)
+d: 32 sets, worst Iz 0.80000 vs 0.8 (rel 1.01e-11), resp 2.55e-13, iters 16, PASS (23 s)
+e: 32 sets, worst Iz 0.80000 vs 0.8 (rel 6.69e-11), resp 5.23e-13, iters 20, PASS (29 s)
