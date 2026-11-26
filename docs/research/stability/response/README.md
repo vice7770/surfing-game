@@ -329,7 +329,7 @@ Snap and his way are in `results/q1-w1.md` (his way is Compress frame for frame 
 
 1. **The swing's frequency follows the delay as designed.** With the design, the filter, the predictor and the
    senses all moved together, the peak moves the same way in every stance and every ride's zero-crossing frequency
-   with it (Compress 12 of 13 up at 4 ticks, 12 of 12 down at 8), both intervals clear of off: the matched shift
+   with it (Compress 12 of 13 up at 4 ticks, 12 of 13 down at 8, the 13th unchanged), both intervals clear of off: the matched shift
    *carries* by 3.6c's rule. So **the builder's reading stands, in a weaker form**: the loop's delay sets the
    frequency, but with an elasticity of −0.36 to −0.45, about half of the mismatched shift's −0.68 to −1.14. The
    period is not simply a multiple of the delay; the rest of the frequency is the loop on the board (§4).
@@ -401,14 +401,13 @@ three sizes; 144 per stance and mode.*
   by exactly δ on the kicked channel and 0 on the other.
 - **The clamps** (`maskReasons`, overlapping): in Compress, of the 124 complete sets, 22 meet the rest at the room's
   edge, 21 the twist past its range, 20 the controller's own clamp, 13 the rest past the hip's share, 5 the hip rotor at
-  its torque and 3 a kicked twist past its limit, almost all in the windows that run into A's own fall; they are
-  excluded.
+  its torque and 3 a kicked twist past its limit; they are excluded (their causes were not read).
 - **Linearity fails in about a third of the open sets and a quarter of the closed.** The second smoke ride (§5.3)
   showed that a fifth of δ does not cure it (e₂ 0.048 against 0.060): the failures are the ride's own non-smooth
   events, not the kick's size. They are excluded by the registered rule and counted.
 - **§0.2 item 6 at run time:** the twins' lean and twist asked equal A's on every tick of every passing set (largest
   difference 0), and the rail 0 throughout (straight rides). The speed through the water differs by at most 0.038 m/s
-  per kick of δ in Compress (0.15 tuck, 0.31 tall, the open twins drifting off A's line late in the window) and the
+  per kick of δ in Compress (0.15 tuck, 0.31 tall; largest over the 1.5 s window, either mode) and the
   depth by at most 0.00015 m (0.019 m tall, a knee drop): the gains' dependence on them is a second-order share the
   perturbation map leaves out.
 - **The senses' map** (§0.5, on A's own ticks around the kicks, 14,928 ticks): φ̇ = y1 − y6 against the board's roll
@@ -476,8 +475,10 @@ rule for "departs"; "no" marks a median outside the band whose sets do not agree
 4. **The model's response describes the board poorly overall:** over 1.5 s the largest difference between the
    measured and the model's open-loop sense responses is a median 1.01 of the model's largest (Compress, 65 sets;
    0.60 tall, 0.89 the tuck). **The blend is not the gap:** the blended design against `plantAt` at the exact speed,
-   depth and rail differs by a median 0.002 of itself (0.003 tall, 0.001 tuck); the largest gaps (up to 1.8–2.2) are
-   at the kick ticks below the schedule's lowest knot (4 m/s), where the blend holds the 4 m/s design.
+   depth and rail differs by a median 0.002 of itself (0.003 tall, 0.001 tuck); at the 155 kick ticks at 4 m/s or more the
+   largest is 0.072; the 24 below the schedule's lowest knot (4 m/s, where the blend holds the 4 m/s design) all
+   exceed 0.09, up to 2.18 at 0.24 m/s (`blendgap.ts`, a check written after this table was read). Those slow kicks are
+   in the medians above.
 5. **My prediction 4 held in part:** the ankle column departs in roll in Compress and the tuck (φ 2.75 and 2.05), but
    the twist column departs too (τ_a → β 2.2–3.9; in Compress τ_a → φ, θ +100°), and tall's ankle departs in phase
    (+97°, +115°) rather than gain. The departure is the mechanics as a whole, not one channel.
@@ -602,7 +603,7 @@ Bold: outside ±0.25 Hz.
 | --- | --- |
 | The probe at identity, Big seed 1, the five straight scripts (§2.1) | 6,912 `f`, 30 `stand`, 65 `summary` rows identical to 3.6c's base run (`results/ident.txt`) |
 | Knobs off, quick report, after the `src` change (`ed9ab674`), 10:12–10:24 UTC, 11.3 min | exit 0, 0 regressions, 0 improvements; **26 of 26** ride lines identical to `baseline-quick.json` (3.6c's `same.py`; `results/report-quick.txt`) |
-| Knobs off, full report, before the report (the same `src`), FULLTIME | FULLRESULT |
+| Knobs off, full report, before the report (the same `src`), 11:13:47–11:44 UTC, 30.0 min, 4 at once beside the last twin runs | exit 0, 0 regressions, 0 improvements; **227 of 227** ride lines identical to `baseline-full.json`, and its 26 test-wave rides identical to `baseline-quick.json`'s 26 (`results/report-full.txt`) |
 | The Canyon byte check (`ed9ab674`'s `src`, knobs off) | snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`: **identical** (`results/byte-check.txt`) |
 | `npx tsc -b` | clean |
 | The gain lock, `npx vitest run src/physics/stabilityGains` | **5 of 5** |
@@ -695,7 +696,7 @@ watching a twin ride that differs only by that nudge, and set it beside the boar
 | 11:20–11:27 | the twin runs done (2,799, 3,599 and 3,120 s; 13, 16 and 13 waves); the frozen readers on all of them (35 s) |
 | 11:29–11:30 | **a correction after that first full read**, in the read-out of no rule: the pooled peak's parabola on a spectrum with no peak inside 1.5–5 Hz (the model's own closings, S1) returned −3.19, 1.05 and −0.85 Hz; it now reports none (—). On the known plant, whose every spectrum has none, the reproduction's peak criterion then reads "none against none" as met (it had compared two extrapolations). Every other number in `results/response.md` is unchanged (`diff` before and after) |
 | 11:33 | the archive (`runs/twins.tar.gz`, `runs/q1.tar.gz`), checked: the slim twins give `results/response.md` and `results/shapes.md` again line for line, and the slim question 1 runs `results/freq-w1.md`; `tsc`, the gain lock, the touched files' tests |
-| FULLEND | the full report done: FULLRESULT |
+| 11:44 | the full report done: exit 0, 0 regressions, 227 of 227 identical |
 
 ## 7. Where everything is, and how to recompute it
 
