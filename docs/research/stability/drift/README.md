@@ -219,6 +219,18 @@ times, which fix the order, are 20:03:55, 20:45:41 and 20:47:50 UTC (§1).*
 | 21:02:39 | `pushTwist=0.35` read: the better twist scale, so the C3 of record is `pushTwist=0.35&wobbleNotch=1`, started 21:03:05 | — |
 | 21:05:00 | `pushTwist=0.5&wobbleNotch=2` (extra) read | — |
 | 21:06:15 | the switch-off full report started (the control, §0.7) | — |
+| 21:18:05 | `pushTwist=0.5&wobbleNotch=1` (extra) read | — |
+| 21:20:22 | the C3 of record read; the screening complete: **no finalist** (§2); by §0.4 the closest, `wobbleNotch=1`, gets the full report | — |
+| 21:20:35 | `wobbleNotch=1`'s full report started | — |
+| 21:21:53 | the screening section committed | `863057c0` |
+| 21:32 | `npx tsc -b`, the gain lock, the switches' tests and the touched test files | — |
+| 21:39:11 | the switch-off full report done: 227 of 227 and 26 of 26 identical | — |
+| 21:39:15 | the wide probe for `wobbleNotch=1` (the release drives, his way with the steer) started | — |
+| 21:40:25–21:45:43 | the Canyon byte check: identical | — |
+| 21:53:04 | `wobbleNotch=1`'s full report done and read (§3) | `5ac3ae22` (21:55:09) |
+| 21:53:47 | R's full report started (the reference's pass lines, §5) | — |
+| 22:01:24 | the wide probe for `wobbleNotch=1` read (§4) | — |
+| 22:23:47 | R's full report done and read | this write-up's last commit |
 
 ## 2. The screening (Canyon Big, the probe, §0.4)
 
@@ -369,6 +381,20 @@ rides; the benchmark's measures; against the baseline's rides for the benchmark 
 | the straight swing, Compress / the tuck (median deg/s; ratio, rides down) | 5.30 / 5.69 | 1.63 / 2.18 (0.30, 12 of 13; 0.49, 13 of 13) |
 | regressions by the rule, the 162 Big benchmark rides | 0 | **9**: Snap 5 (`s1:w5:left`, `s1:w9:right`, `s2:w15:right`, `s3:w9:left` sooner; `s1:w8:right` reserve), Crouch 2 (`s2:w12:left`, `s2:w16:left`, reserve), Compress 1 (`s3:w3:left`, reserve), tall 1 (`s3:w7:none:right` lasted, now falls) |
 
+**R's own full report** (the benchmark's report with the probe as its ride bundle, `KNOBS=designDelay=4,captureDelay=4`
+in every process, which printed the knobs; 21:53:47–22:23:47, 30.0 min, exit 1; its 162 Big ride lines identical to
+the probe run's above; `results/passline-R.json`), against the same three lines:
+
+| line | `wobbleNotch=1` (§3) | R |
+| --- | --- | --- |
+| 1. regressions | 13 | **14** (Snap 6: `big:s1:w5:left`, `s1:w9:right`, `s2:w15:right`, `s3:w9:left` sooner, `s1:w8:right` reserve; `tw-catch:snap:right` reserve; tall 4: `big:s3:w7:none:right` lasted → +2.43 s, `med:s1:w6:none:left|right` and `tw-catch:none:right` sooner; Crouch 2 and Compress 2: `big:s2:w12`, `s2:w16` reserve before wave falls, `big:s3:w3:compress:left` reserve 0.350 → 0.131 on a lasting ride, `tw-catch:compress:left` sooner) |
+| 2. still falling of 47 (line ≤ 23) | 32 (Big 24, test wave 8) | **25** (Big 19, `tw-catch` 4, `tw-ride` 2) |
+| 3. course +0.5 / +1.0 s, mean on − off | +1.41° / +0.81° | +0.11° / +0.82° (n 69 / 35) |
+| Big balance falls / lasting rides (77 / 27 today) | 63 / 41 | 55 / 49 |
+
+So even the quicker rider fails lines 1 and 2 at his address: the half line by 2 rides, and 14 regressions, 10 of them
+Snap's and tall's.
+
 R is the size of what the loop's delay does: it meets the second line on Big exactly (19 of 39) and takes Compress's
 turn falls from 19 to 6, with the turn neither faster nor slower on the rides that reach the times both ways, and the
 straight swing to a third of itself. Even so it has 9 regressions on Big alone, 5 of them Snap's (whose falls 3.6c found
@@ -406,8 +432,9 @@ switch, off by default and pinned off online, and measured each on the Big swell
   in). The test wave's eight deep turns all still fall.
 - **Both together** is worse than the filter alone.
 - **The quicker rider** (reaction 67 ms instead of 100 ms), kept as a reference, is the only thing that reaches the half
-  line on the Big swell (19 of 39) and takes the falls when letting go of R2 just before a turn from 15 to 2. It is the
-  biggest lever by far, and it is yours to decide on as a realism choice; it too makes 9 Big rides worse (5 of them Snap).
+  line on the Big swell (19 of 39), and it takes the falls when letting go of R2 just before a turn from 15 to 2. Even
+  so, on the full benchmark it leaves 25 of the 47 falling (the line is 23) and makes 14 rides worse, 10 of them Snap
+  and standing tall. It is the biggest lever by far, and it is yours to decide on as a realism choice.
 
 **If you want to feel the filter anyway** (it fails two of the three lines, so this is for feel only; the coordinator
 would serve this branch):
@@ -421,6 +448,19 @@ in Snap it can feel worse.
 **What I would test next, each needing your word:** the filter weighted by the stance asked (Compress and Crouch only),
 not by the leg's depth, which would leave Snap and tall alone (7 of its 13 regressions); and the quicker rider, if you
 want the realism trade looked at.
+
+**What is open.**
+- Whether the filter weighted by the stance asked (Compress and Crouch only) rather than the leg's depth would pass:
+  not tested (a change of the switch needs your word). It would remove at most the 7 Snap and tall regressions of §3,
+  leaving 6, and would not touch line 2 (32 of 47).
+- Two rides regress under every configuration screened, R included (`big:s2:w16:crouch:left`, a wave fall whose lowest
+  reserve drops before it; `big:s1:w11:crouch:left`, a ride that lasts its 5 s on 0.04 of reserve). Any change to the deep
+  stance seems to move them; with them in the baseline as they are, line 1 may be out of reach for any such change.
+  Whether that is right is the rule's question, not this round's.
+- On the test wave none of the eight deep turns stops falling under the filter (R saves two of `tw-ride`'s). Why the
+  test wave's deep turns resist is not looked at here; nor why `tw-ride:compress:straight` falls 2.1 s sooner with the
+  filter at the same swing.
+- The notch is centred by depth only, not by speed (§0.1).
 
 ## 8. Where everything is, and how to recompute it
 
