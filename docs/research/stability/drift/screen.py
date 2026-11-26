@@ -121,7 +121,9 @@ def summarise(name, d, base, off_rides, off_fr):
     falls0 = [i for i in deep if bal(bb[i])]
     still = [i for i in falls0 if (i not in now) or (not now[i]['stood']) or bal(now[i])]
     new = [i for i in deep if i not in falls0 and bal(now.get(i))]
-    reg = regressions(now, bb)
+    # Amendment 1: regressions over the Big benchmark rides this run carries (its scripts).
+    carried = {r['script'] for r in now.values()}
+    reg = regressions(now, {i: r for i, r in bb.items() if r['script'] in carried})
     regs = {}
     for i, kind, b, c in reg:
         regs.setdefault(i, kind)
@@ -136,7 +138,9 @@ def summarise(name, d, base, off_rides, off_fr):
         s = bb[i]['script'].split(':')[0]
         out['regByScript'][s] = out['regByScript'].get(s, 0) + 1
     for s in ('none', 'crouch', 'compress', 'snap', 'hisway'):
-        ids = [i for i, r in bb.items() if r['script'].split(':')[0] == s]
+        ids = [i for i, r in bb.items() if r['script'].split(':')[0] == s and r['script'] in carried]
+        if not ids:
+            continue
         out['balanceByScript'][s] = [sum(1 for i in ids if bal(bb[i])), sum(1 for i in ids if bal(now.get(i)))]
     fr = frames(d)
     out['swing'] = swing(fr, off_fr, ['compress:straight', 'crouch:straight', 'hisway'])

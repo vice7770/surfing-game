@@ -173,3 +173,14 @@ every later configuration):
   all; a finalist whose full report regresses there fails line 1 as before.
 - **The swing** is read on `compress:straight` and `crouch:straight` (his way drops out of the cut set).
 - Nothing else in §0 changes. The runner is `run.py` at this commit.
+
+### 0.11 Amendment 2, 2026-11-26, 20:46 UTC, before any number of the runs it names was read
+
+Read so far (screening, §0.4): off, R, `pushAnkle=0.5`, `pushAnkle=0.35`, `wobbleNotch=2`, `pushTwist=0.5`. Under §0.4's
+definition **neither ankle scale "helps"** (both lower the still-falling count but their `course10` mean is below 0), and
+`pushTwist=0.5` and `wobbleNotch=2` do. By the stage rule `pushAnkle=0.25` is queued (0.35 had fewer still falling than
+0.5) and `pushTwist=0.35` (0.5 helped). Stage 3's ankle-with-twist run is therefore not made. Stage 3's C3 is "the best C1
+with the better notch": the twist scale is the only C1 that helps, and `wobbleNotch=1` is not read yet. So that the slots
+are used, **`pushTwist=0.5&wobbleNotch=2` is started now, speculatively**, beside `pushTwist=0.35`. The rule's own C3
+(the better of `pushTwist` 0.5 / 0.35 by still falling, then regressions; the better of the two notches likewise) is
+the C3 of record: if it is another pair, it is run too, and the speculative run is reported as an extra row.
