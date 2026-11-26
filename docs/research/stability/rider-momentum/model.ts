@@ -15,6 +15,7 @@ const SPEEDS = [6, 8, 9.3, 10.5];
 const f = (x: number, n = 3) => x.toFixed(n);
 const out: string[] = ['| stance | V m/s | I_z = board + legs (model) | m x_f² | H-form partial I_z + m x_f² | instantaneous, unit yaw moment | instantaneous, board sway held (m_b × 10⁶) | side force at x_f: ṙ per N·s → inertia-equivalent x_f / ṙ |', '| --- | --- | --- | --- | --- | --- | --- | --- |'];
 const rows: unknown[] = [];
+const noJ: string[] = ['| stance | V m/s | J kg·m² | h m | m J / (J + m h²) kg | instantaneous yaw inertia, with J → without | board sway held, with J → without | ṙ per unit side impulse at x_f (rad/s per N·s), with J → without |', '| --- | --- | --- | --- | --- | --- | --- | --- |'];
 for (const [name, depth] of DEPTHS) for (const v of SPEEDS) {
   const { y } = shippedPlant(v, depth, 0);
   const iz = y.boardYawInertia + y.riderYawInertia;
@@ -27,7 +28,15 @@ for (const [name, depth] of DEPTHS) for (const v of SPEEDS) {
   const mxf2 = y.mass * y.feetStation * y.feetStation;
   const M = lateralMass(y, y.body);
   out.push(`| ${name} | ${v} | ${f(iz)} | ${f(mxf2)} | ${f(iz + mxf2)} | ${f(1 / c[2][2])} | ${f(1 / ch[2][2])} | ${f(y.feetStation / side)} |`);
+  // Amendment 4 (exploratory): the same with the body's own rotational inertia J removed (`twoBody`'s control).
+  const nb = { ...(y.body ?? { inertia: 0 }), inertia: 0 };
+  const c0 = lateralCompliance(y, nb), ch0 = lateralCompliance(held, nb);
+  const side0 = c0[2][0] * y.deckHeight + c0[2][2] * y.feetStation + c0[2][3];
+  const J = y.body?.inertia ?? 0, meff = (y.mass * J) / (J + y.mass * y.height * y.height);
+  noJ.push(`| ${name} | ${v} | ${f(J)} | ${f(y.height)} | ${f(meff, 1)} | ${f(1 / c[2][2])} → ${f(1 / c0[2][2])} | ${f(1 / ch[2][2])} → ${f(1 / ch0[2][2])} | ${f(side, 4)} → ${f(side0, 4)} |`);
   rows.push({ name, v, depth, iz, boardYaw: y.boardYawInertia, lower: y.riderYawInertia, mxf2, inst: 1 / c[2][2], held: 1 / ch[2][2], side, boardMass: y.boardMass, J: y.body?.inertia, h: y.height, M });
 }
 console.log(out.join('\n'));
+console.log('');
+console.log(noJ.join('\n'));
 console.log(JSON.stringify(rows));

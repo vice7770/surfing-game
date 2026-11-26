@@ -234,6 +234,13 @@ commit if the coordinator says so.
    (`decomp.ts`). Why: in `regress.ts` the rider's yaw per β (−250 N·m/rad in Compress above 8.7 m/s, "a term the model
    lacks" in 3.6e) sits in the lever (−lev −208 of −251), and the arm along the board moves with the body's pitch
    freedom w′, which the model lacks; this split says which part carries it.
+4. *2026-11-26, about 15:42 UTC, after the unit reads on Big seed 1 and the model's first unit reads (`model.ts`), and
+   before running what this adds; exploratory and model-only, it decides nothing:* **the model's unit reads with the
+   body's own rotational inertia J removed** (`body: { inertia: 0 }`, `twoBody`'s own control), and J, h and the
+   pendulum's effective mass at the feet m J / (J + m h²) printed beside. Why: the game's side impulse at the feet turns
+   the board about 3.6 times as much as the model's (−0.076 against −0.021 rad/s per N·s, Compress), and with the body
+   rigid (D) only 1.3 times; the game's body is a point mass on its leg (no J), the model's has J; this says how much of
+   the difference J carries.
 
 ### 0.9 The order of the round (UTC, 2026-11-26)
 
