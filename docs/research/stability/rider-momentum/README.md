@@ -210,6 +210,22 @@ commit if the coordinator says so.
      this amendment.
    - **The prediction for R_O after the split**: roF closes to the axis term plus O(h²) (≤ 1 % of RMS(lev)); roA equals
      hipA plus the axis term to 1 %; `stand` is the prone body's spin and the rotors' start, one substep per ride.
+2. *2026-11-26, about 15:26 UTC, after reading amendment 1's glide rerun (`36f/glide2/`, probe sha1 `8b6e64e1…`) and
+   before reading any Big seed 1 row:*
+   - **What the rerun showed.** On frames with no apart substep and no rotor start, |roF − axis| has a median of a few
+     10⁻³ N·m; the one large frame per ride (54 N·m) is the stand, where the rotors start from the board's turn
+     (`rst` = 1; my `stand` flag missed it because the `landing` phase lies between prone and standing). On the apart
+     frames hipA explains most of roA in Compress (RMS 82 against 78) but not all (RMS of roA − hipA 51), and none of it
+     in the tuck (11 N·m RMS left, hipA 0.003).
+   - **A further term, read from the code:** on an apart substep the light board takes the whole contact impulse on its
+     own 2.54 kg rows, so its Δω in one substep is large, and its rotation integrator (the explicit gyro −h ω × Iω on the
+     right-hand side, `BB:1476–1483`, with the inertia rotated after the velocity update, `BB:1714–1717`) is only
+     consistent to O(h Δω). The change (instrument only): per substep gy = ((I₁ − I₀) ω₁)_y + Δgyro_y, the board's
+     integrator's own yaw angular momentum error, split feasible (`gyF`) and apart (`gyA`), and the axis term on apart
+     substeps alone (`axisA`). The stand is identified by the rotor start (`rst` > 0), not by `stand`.
+   - **Reruns with this probe (sha1 `19a792ec…`)**: the three glides again and Big seed 1's base rides without twins
+     (amendment 1's base rerun was stopped at 15:25, before its first ride; no row of it was read).
+   - **Prediction:** roA − hipA − gyA − axisA closes to ≤ 1 % of RMS(roA); roF − axis − gyF closes likewise.
 
 ### 0.9 The order of the round (UTC, 2026-11-26)
 
@@ -218,3 +234,71 @@ commit if the coordinator says so.
 | 2026-11-26 | Vicente approves the round: "Yes, start 3.6f" (relayed by the coordinator, consult log `dab31365`) |
 | 14:52 | the worktree at `abe24730`; the brief's sha1 checked (`ee917386…`) |
 | 15:03 | one geometry computation (no ride): the board's centre of mass and the stance's middle |
+
+---
+
+## 1. Question 1: the trace, substep by substep (new rider standing, his address)
+
+*Code at `ef7908f2` (unchanged here). `AR` = `src/physics/AttachedRider.ts`, `BB` = `src/physics/BoardBody.ts`, `SB` =
+`src/physics/standingBody.ts`. Each claim below is checked numerically in §2 (R_s, the linear residual) on every standing
+and prone substep of this round's rides.*
+
+**Before the solve** (`BB:1546` `rider.prepare`):
+- The arm a = position − board.centerOfMass (`AR:3684`); the frame (up n, across t, forward f) from the heading, the leg
+  line's pitch and its measured bank (`AR:5553–5593`). `carried` b = target − c plus the body's offsets along n, t and,
+  for the new rider, f (`AR:3703–3711`): with n, t, f orthonormal, **b = a**.
+- `drive` = 0 for the free body: `uprightVelocity` returns nothing (`AR:5631`), the balance shift and sway are not added
+  (`AR:3717`), and the posture correction's error has its n, t and f parts removed (`AR:3726–3729`), so it is 0.
+- The three relative rates are **re-measured from the body's velocity** every substep: the leg's s = (v_r − carried
+  velocity)·n (`AR:4563`), the bank's u = (v_r − carried velocity)·t (`AR:3807`), the pitch's w along f (`AR:3772–3773`).
+  So the solve's `mismatch` (`AR:5004–5007`) is zero to rounding: **no velocity is re-set** at a substep's start.
+- The rotors move here: the swing (the hip across, `AR:4078`, about `rollAxis`, horizontal) and the trunk in pitch
+  (`SB:305–310`, about t, with a clamp at its range that zeroes its rate).
+
+**The solve** (`BB:1549–1575`), one 9 × 9 system over (Δv, Δω, Δs′, Δu′, Δw′):
+- Rows 0–5 are **the composite's** (board plus body). The board's own mass, inertia and the water's implicit terms are
+  the 6 × 6 block (`BB:1422`, `1539–1542`); `coupleYaw` adds the legs' rigid yaw share and the twist's β on n nᵀ and their
+  kick on the right-hand side (`AR:4928–4933`); `coupleStanding` adds the body: m on rows 0–2 (`AR:4969`), −m [b]× and
+  m [a]× (`AR:4981–4992`, **the m [a]× terms that carry the body's momentum into the board's angular rows**),
+  m ((a·b) I − b aᵀ) (`AR:4994`), the columns and rows of the three relative unknowns m n, m (a × n), m t, m (a × t)
+  (`AR:4971–4979`) and m f, m (a × f) (`SB:371–374`).
+- Rows 6–8 are the body's own along n, t and f, with the leg's spring and damper (`AR:4996`), the ankle's across
+  (`AR:5002`, k = 800, c = 80 over L²) and the pitch ankle's (`SB:376`) taken implicitly. They are springs, not
+  constraints: at the substep's scale the body is a free point mass on three soft joints.
+- The right-hand side: f = h F_ext − m·mismatch on rows 0–2 and a × f on rows 3–5 (`AR:5008`, `5028–5034`); the joints'
+  explicit forces on rows 6–8 (`AR:5036`, `5038`, `SB:379`); the swing's, the twist's, the pitch hip's couples on rows
+  3–5 (`AR:5042–5048`, `SB:380–384`); the hand's yaw on row 4 (`AR:5033`).
+- Solved by `solveLinear` (`BB:1560`). The board's new velocity is the solution's rows 0–5 (`BB:1566`).
+
+**Whether the feet can give it** (`AR:5099–5116` `settleStanding`): the body's new velocity v_b′ + ω′ × b + n s″ + t u″
++ f w″ gives the contact impulse J = m Δv_r − h F_ext, projected onto what a body on a deck can give (`AR:5656–5743`
+`project`: pushing only, the centre of pressure inside the support, the friction cone, the knees' cap), and the legs'
+power (`AR:5192–5224` `overPower`). **If the projection changes it, or the power is over**, the two are solved apart
+(`BB:1567–1575`, `pushCapped` `BB:1728–1740`): the board on its own 6 × 6 rows (with `coupleYaw`'s rotors) with
+−J at the arm (`AR:5119–5129` `pushBoard`), scaled by the legs' share (`AR:5271–5286`); the body gets J (`AR:5350–5351`).
+
+**After the solve** (`BB:1600–1720`): the water's implicit impulses from the solution (`BB:1626–1627`, plate, foils), the
+board's velocity (`BB:1704–1709`), the bed (`BB:1711`, after the solve), the board's position and orientation
+(`BB:1713–1718`), then `finish` (`BB:1719`): the body's velocity is set to the solve's (`AR:5330–5332`), J recorded
+(`AR:5333`), the rotors' spins moved on (`AR:5304`, `5308–5319`), the position advanced by v_r h (`AR:5420`) and the
+frame re-read (`AR:5421`). `carried` and `arm` are re-set at the next substep's `prepare` from the new positions: a
+geometric re-reading, not a change of any velocity.
+
+**The paths, named.**
+- *Where the body's reaction reaches the board:* every standing substep, coupled (rows 0–5 are the composite's, the
+  body's momentum change at its own arm) or apart (−J at the arm, `pushBoard`); the yaw rotors through `coupleYaw` in
+  both; the twist, swing, pitch-hip and hand couples on coupled substeps.
+- *Where a velocity or spin changes without its reaction on the board* (counted in §2):
+  1. **the apart substeps' couples**: on an apart substep the board is solved on its 6 × 6 rows, so the couples
+     written into the 9 × 9 right-hand side — the pitch hip's, the swing's and the hand's — never reach it, while the
+     trunk and swing rotors were moved in `prepare`;
+  2. **the rotors' re-set on re-coupling**: back on the deck after an uncoupled substep, `coupleYaw` starts the legs'
+     spin and the upper body's from the board's own turn (`AR:4907`, `4912`), with no impulse;
+  3. **the trunk rotor's clamp** at its range (`SB:307–310`);
+  4. **the bed**: `resolveBed` changes the board's velocity after the solve and `finish` reads it (`BB:1711`, `1719`);
+  5. outside the substep: the bounds (`RideSession.holdInside`, the pair together) and lip strikes (external).
+  None of them is the body's sideways momentum: the body's own linear momentum is always the solve's or J's.
+- **u′ is the bank's own rate relative to the deck**: u′ / L = θ̇ − φ̇ (`AR:5335–5337`, the body's bank rate is u″ / L
+  plus the board's roll rate about `rollAxis`), as in the model's pendulum. The freedoms the model lacks are the body's
+  along the board (w′, the pitch ankle) and along the leg (s′); the freedom the game lacks is the body's own rotational
+  inertia J about its centre (the model's `bodyInertiaAt`; the game has the swing and trunk rotors instead).

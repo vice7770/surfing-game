@@ -79,9 +79,28 @@ for where, d in (('glide', glide), ('Big s1', big)):
             g(ent['jump']), g(ent['lev']), g(ent['levL']), g(ent['levF']), g(ent['rotL']), g(ent['rotU']), g(ent['mVxr']),
             ent['inf'], ent['apart'], ent['bed'], ent['rst'], ent['agile'], ent['drives']))
 L.append('')
+# Amendment 1: R_O's split (only rows written by the amended probe carry it).
+L.append('**R_O split (amendment 1)**, per ride and stance, N·m per frame: RMS over frames with no apart substep of roF − axis; over frames with apart substeps, RMS of roA and of roA − hipA − (axis on those frames); the stand\'s frame; flight substeps\n')
+L.append('| ride | stance | frames all feasible: RMS roF, RMS axis, RMS (roF − axis), largest abs (roF − axis) | frames with apart substeps: n, RMS roA, RMS hipA, RMS (roA − hipA), largest abs (roA − hipA) | the stand\'s frame: stand | flight substeps |')
+L.append('| --- | --- | --- | --- | --- | --- |')
+for where, d in (('glide', glide), ('Big s1', big)):
+    for key, name in STANCES:
+        ms = [r for r in rows('%s/%s.jsonl' % (d, key), 'm') if r['nSt'] > 0 and 'roF' in r]
+        if not ms:
+            continue
+        fe = [r for r in ms if r['apart'] == 0 and r['stand'] == 0]
+        ap = [r for r in ms if r['apart'] > 0 and r['stand'] == 0]
+        sd = [r['stand'] for r in ms if r['stand'] != 0]
+        e = {'feasFrames': len(fe), 'roF': rms([r['roF'] for r in fe]), 'axis': rms([r['axis'] for r in fe]), 'roFx': rms([r['roF'] - r['axis'] for r in fe]),
+             'roFxMax': max([abs(r['roF'] - r['axis']) for r in fe] or [float('nan')]),
+             'apartFrames': len(ap), 'roA': rms([r['roA'] for r in ap]), 'hipA': rms([r['hipA'] for r in ap]), 'roAx': rms([r['roA'] - r['hipA'] for r in ap]),
+             'roAxMax': max([abs(r['roA'] - r['hipA']) for r in ap] or [float('nan')]), 'stand': sd, 'flight': sum(r['flight'] for r in ms)}
+        J['split|%s|%s' % (where, name)] = e
+        L.append('| %s | %s | %s, %s, %s, %s | %d, %s, %s, %s, %s | %s | %d |' % (where, name, g(e['roF']), g(e['axis']), g(e['roFx']), g(e['roFxMax']), e['apartFrames'], g(e['roA']), g(e['hipA']), g(e['roAx']), g(e['roAxMax']), ', '.join(g(x) for x in sd) or '—', e['flight']))
+L.append('')
 L.append('**The arm** (the body\'s centre from the board\'s, heading frame, median over standing frames [5 %, 95 %] along): ' + '; '.join(
     '%s %s: along %s [%s, %s] m, across %s m, up %s m; lower %s kg·m², twist β %s' % (k.split('|')[0], k.split('|')[1], g(v['aF']), g(v['aF5']), g(v['aF95']), g(v['aS']), g(v['aU']), g(v['lower']), g(v['beta'], 4))
-    for k, v in J.items()) + '\n')
+    for k, v in J.items() if 'aF' in v) + '\n')
 # ---------------------------------------------------------------- the prone control (C2)
 L.append('## C2, the rider prone (carried rigidly, `couple`), all prone substeps before the stand\n')
 L.append('| ride | stance | prone substeps (feasible) | R_s largest abs (N·m·s) / largest rel | linear residual largest abs (rel) | R_O largest per substep |')

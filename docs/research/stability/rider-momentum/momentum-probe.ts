@@ -328,6 +328,8 @@ interface Frm {
   n: number; nStand: number; led: number; pred: number; rs: number; rsMax: number; rsRel: number; ro: number; roMax: number; lin: number; linRel: number;
   // Amendment 1: R_O's split.
   roF: number; roA: number; hipA: number; axis: number; stand: number; flight: number;
+  // Amendment 2: the board's rotation integrator's yaw angular momentum error (the explicit gyro and the rotated inertia), feasible and apart.
+  gyF: number; gyA: number; axisA: number;
   lev: number; levL: number; levF: number; rotL: number; rotU: number; hip: number; hand: number; other: number;
   jS: number; jF: number; jU: number; aS: number; aF: number; aU: number; jumpMax: number;
   infeas: number; bed: number; reset: number; resetL: number; apart: number; agile: number; drives: number;
@@ -338,6 +340,7 @@ interface Frm {
 const newFrm = (): Frm => ({
   n: 0, nStand: 0, led: 0, pred: 0, rs: 0, rsMax: 0, rsRel: 0, ro: 0, roMax: 0, lin: 0, linRel: 0,
   roF: 0, roA: 0, hipA: 0, axis: 0, stand: 0, flight: 0,
+  gyF: 0, gyA: 0, axisA: 0,
   lev: 0, levL: 0, levF: 0, rotL: 0, rotU: 0, hip: 0, hand: 0, other: 0,
   jS: 0, jF: 0, jU: 0, aS: 0, aF: 0, aU: 0, jumpMax: 0,
   infeas: 0, bed: 0, reset: 0, resetL: 0, apart: 0, agile: 0, drives: 0,
@@ -494,7 +497,7 @@ let curBoard: Any = null;
     A.O = v3(this.centerOfMass);
     const out = step.call(this, dt, water);
     const F = A.f;
-    for (const k of ['led', 'pred', 'rs', 'ro', 'roF', 'roA', 'hipA', 'axis', 'stand', 'lev', 'levL', 'levF', 'rotL', 'rotU', 'hip', 'hand', 'other', 'jS', 'jF', 'jU'] as const) F[k] /= dt;
+    for (const k of ['led', 'pred', 'rs', 'ro', 'roF', 'roA', 'hipA', 'axis', 'stand', 'gyF', 'gyA', 'axisA', 'lev', 'levL', 'levF', 'rotL', 'rotU', 'hip', 'hand', 'other', 'jS', 'jF', 'jU'] as const) F[k] /= dt;
     if (F.nStand > 0) { F.aS /= F.nStand; F.aF /= F.nStand; F.aU /= F.nStand; F.lower /= F.nStand; F.beta /= F.nStand; }
     if (F.nu > 0) for (const k of ['cA', 'cB', 'cC', 'cD', 'cK', 'cAc', 'cCc', 'sA', 'sB', 'sC', 'sD', 'sK', 'wA', 'wB', 'wC', 'wD', 'wK'] as const) F[k] /= F.nu;
     if (BANK) { F.bankYaw = (bankLedger as Any).yawPer; F.bankSideYaw = (bankLedger as Any).sideYawPer; F.bankSway = (bankLedger as Any).sideSwayPer; }
@@ -602,7 +605,15 @@ let curBoard: Any = null;
       if (rd.feasible) F.roF += ro; else F.roA += ro;
       if (!rd.feasible) F.hipA += HIP_PITCH_INERTIA * ((rd.standingBody?.hip?.rate ?? 0) - hip0) * c.across[1];
       const r0 = s0.rot;
-      if (r0 && rot1 && c.yaw && c.coupled0 && c.tbCoupled0) F.axis += r0.spin * (c.lower * c.n[1] - r0.lower * r0.ny) + r0.upper * (c.Iu * c.n[1] - r0.Iu * r0.ny) + HIP_PITCH_INERTIA * r0.hipRate * (c.across[1] - r0.acy);
+      if (r0 && rot1 && c.yaw && c.coupled0 && c.tbCoupled0) {
+        const ax = r0.spin * (c.lower * c.n[1] - r0.lower * r0.ny) + r0.upper * (c.Iu * c.n[1] - r0.Iu * r0.ny) + HIP_PITCH_INERTIA * r0.hipRate * (c.across[1] - r0.acy);
+        F.axis += ax;
+        if (!rd.feasible) F.axisA += ax;
+      }
+      // Amendment 2: (I₁ − I₀) ω₁ about y plus the explicit gyro booked this substep.
+      const w1 = s1.wb, I0 = s0.I, I1 = s1.I;
+      const gy = (I1[3] - I0[3]) * w1[0] + (I1[4] - I0[4]) * w1[1] + (I1[5] - I0[5]) * w1[2] + (y.gyro - y0.gyro);
+      if (rd.feasible) F.gyF += gy; else F.gyA += gy;
       if (A.wasProne) F.stand += ro;
     }
     A.wasProne = !!rd && !c.standingSolve;
@@ -629,7 +640,7 @@ function momentumRow(board: Any): Record<string, unknown> | null {
   const inv = (x: number) => (Number.isFinite(x) && x !== 0 ? 1 / x : null);
   return {
     n: F.n, nSt: F.nStand, led: F.led, pred: F.pred, rs: F.rs, rsMax: F.rsMax, rsRel: F.rsRel, ro: F.ro, roMax: F.roMax, lin: F.lin, linRel: F.linRel,
-    roF: F.roF, roA: F.roA, hipA: F.hipA, axis: F.axis, stand: F.stand, flight: F.flight,
+    roF: F.roF, roA: F.roA, hipA: F.hipA, axis: F.axis, stand: F.stand, flight: F.flight, gyF: F.gyF, gyA: F.gyA, axisA: F.axisA,
     lev: F.lev, levL: F.levL, levF: F.levF, rotL: F.rotL, rotU: F.rotU, hip: F.hip, hand: F.hand, oth: F.other,
     jS: F.jS, jF: F.jF, jU: F.jU, aS: F.aS, aF: F.aF, aU: F.aU, jump: F.jumpMax,
     inf: F.infeas, bed: F.bed, rst: F.reset, rstL: F.resetL, apart: F.apart, agile: F.agile, drives: F.drives,
