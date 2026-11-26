@@ -183,7 +183,33 @@ commit if the coordinator says so.
 
 ### 0.8 Amendments
 
-(none yet)
+1. *2026-11-26, about 15:22 UTC, after reading the three glides' `m` and `mprone` rows (`36f/glide/`, probe sha1
+   `c6d69c9a…`) and before reading any row of the Big seed 1 runs, which are still running:*
+   - **What the glides showed that this amendment answers.** R_s closes (largest 2.3 × 10⁻¹⁴ N·m·s per substep,
+     relative ≤ 2 × 10⁻¹¹) and the linear residual closes (≤ 3.3 × 10⁻¹³ N·s) on every standing substep, apart ones
+     included; the prone control passes; the unit reads pass C3 (≤ 4 × 10⁻⁸) and (C) equals `bankLedger.yawPer`. But
+     R_O (about the fixed point) has a median |R_O| of 0.003 N·m on the 281 Compress glide frames with no apart substep
+     and up to 176 N·m on the 20 frames whose substeps all went apart, plus 54 N·m on the stand's first frame.
+   - **Two causes, read from the code, that the registered R_O does not separate.** (i) My bookkeeping: R_O drops the
+     yaw rotors' angular momentum on a substep where they are not coupled (`coupleYaw` inactive, the feet out of
+     contact), though `coupleYaw`'s own note says they keep their spin then; and it takes the rotors' axis and inertia
+     from the substep before, so a change of either shows in R_O. (ii) A candidate leak in the game: on an apart substep
+     (`pushBoard`, `pushCapped`) the board is solved on its 6 × 6 rows, so the couples `coupleStanding` wrote into the
+     standing right-hand side — the pitch hip's (`standingBody.couple`), the swing's, the hand's — never reach the board,
+     while the hip's and the swing's rotors were already moved in `prepare`.
+   - **The change (instrument only; R_s, the linear residual, the unit reads and every twin channel unchanged).** R_O
+     carries the rotors whenever the rider stands, coupled or not (the lower's inertia from the last coupled substep, the
+     kept spins), and is split per frame into: `roF` (feasible substeps) and `roA` (apart substeps); `hipA`, the trunk
+     rotor's y angular momentum change on apart substeps (I_hip Δ(rate) across_y, the couple the apart solve leaves out);
+     `axis`, the rotors' axis and inertia change (spin′ (I_now n_now,y − I_prev n_prev,y) for the lower and the upper);
+     `stand`, R_O on the substep the solve changes from prone to standing; and counts of flight substeps (standing,
+     uncoupled). The swing's rotor turns about `rollAxis`, which is horizontal, so it has no yaw part.
+   - **Reruns with the amended probe:** the three glides, and Big seed 1's three base rides **without twins** (one
+     process; the rides are the twin runs' base rides, which the read-only check compares). The twin runs carry on with
+     the registered probe: their R_s, lever, J and arm channels, which C4 and Q2's regressions read, are unchanged by
+     this amendment.
+   - **The prediction for R_O after the split**: roF closes to the axis term plus O(h²) (≤ 1 % of RMS(lev)); roA equals
+     hipA plus the axis term to 1 %; `stand` is the prone body's spin and the rotors' start, one substep per ride.
 
 ### 0.9 The order of the round (UTC, 2026-11-26)
 
