@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 10:00 UTC.**
+- **Status, 2026-11-26, about 12:15 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -72,20 +72,27 @@
         - let go 0.4–0.6 s before, 3, against tall's 1. Those turns then fall after the steer about as tall turns do.
       - **The review qualifies one inference:** the delay knob moved the senses, not the design, so it shows a dependence on the senses' age against the design, not yet on the delay as designed. It also corrects one stale table column.
       - **Open:** why the loop rings on the board when it decays on its model. That is 3.6d, below.
-    - **3.6d is running** (Vicente: "Yes, start 3.6d", 2026-11-26; dispatched as consult log `ae22e9bb`).
-      - Opus at xhigh, on `claude/board-response` from `5f69e9dc`, in `.claude/worktrees/board-response`. The docs and brief are in `docs/research/stability/response/`.
-      - Diagnosis only: docs, probes and diagnostic knobs, with no arm.
-      - **First, the matched delay:** the design, the filter, the predictor and the senses moved together to 4 and 8 ticks.
-      - **Then the board's response** to the balance's two commands, measured with kicked twins. These are probe-only, one-tick kicks on a deterministic replay of the same ride, so the wave's forcing cancels between the twins. The response is compared stage by stage with the design's own model.
-        - Vicente approved the kicks by name: "Yes, use the nudges" (consult log `d15c1492`).
-      - **Last, the check:** whether that response, closed with the balance's own design, reproduces the game's ringing.
+    - **3.6d is done and reviewed** (Vicente: "Yes, start 3.6d", then "Yes, use the nudges"; dispatched as consult log `ae22e9bb`; the review is `3e8755c5`).
+      - It is on `claude/board-response` `4a50e650`, from `5f69e9dc`: docs, probes and two diagnostic knobs, at their identity by default and read by no address. With the knobs off, the quick and full reports and the byte check are identical.
+      - **The matched delay** (the design and the senses moved together) sets part of the swing's frequency and most of its size.
+        - Compress: 3.08 / 2.67 / 2.36 Hz at 4 / 6 / 8 ticks. The swing is 0.30 of itself at 4 ticks and 2.36 times at 8.
+        - 3.6c's growth at −2 ticks came from the mismatch. The second 0.1 s line plays no part.
+      - **The board's response, by kicked twins.** The command path and the senses match the balance's model; the board's mechanics do not.
+        - Per ankle command, the board rolls 2.75 times the model's and yaws 2.05 times, 44° earlier.
+        - Per twist command, the board slips 3.88 times the model's.
+      - **The closure.** With the balance's own design, the measured mechanics give an undamped mode at the swing's frequency; the model's give ζ 0.66–0.81. No single part of the mechanics carries the ring.
+      - **The review's qualifications.**
+        - The closure reproduces the game's loop in only 2 of 38 sets, and it misses the 4-tick peak.
+        - The game's own damping is within about ±0.04 of zero, with its sign set by the read-out.
+        - A ledger lead: the board's immediate yaw after an ankle nudge is the fins against the rider's coupling.
+      - **Open:** fitting `plantAt`'s mechanical terms to the twins, read blind on held-out kicks (a 3.6e). It needs Vicente's word. A design on a corrected model would be an arm and would move the gain lock.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `d15c1492`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `3e8755c5`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -155,8 +162,8 @@ Also open:
 | `claude/slow-board` | `5450d8b3` | 3.6a part 2: no plant identified from the game's ticks passes its controls, so the lock is unchanged (docs and probes; from `3778d3b6`) |
 | `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
 | `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
-| `claude/board-response` | `5f69e9dc` | 3.6d, running: the matched delay, then the board's response by kicked twins (diagnosis only; from `5f69e9dc`; the builder's commits follow) |
-| `claude/the-record` | `d15c1492` | the consult log (verified on the remote 2026-11-26) |
+| `claude/board-response` | `4a50e650` | 3.6d: the matched delay sets the swing's size and part of its frequency; the command path and senses match the balance's model and the board's mechanics do not (docs, probes and diagnostic knobs, off by default; from `5f69e9dc`) |
+| `claude/the-record` | `3e8755c5` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
