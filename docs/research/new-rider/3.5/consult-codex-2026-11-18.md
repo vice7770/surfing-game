@@ -4375,7 +4375,7 @@ The text of `7c86cfa9` above stands as written. These corrections apply to it.
   - it runs only the balance's picture, with no game change, in about one to two hours;
   - it puts the picture's own nudges, with and without the body's inertia, against the game's recorded nudges;
   - if the inertia explains much of the gap, the next choice is his: change the picture (which moves the gains) or give the game's body that inertia.
-- **The builder:** Opus at high, about 16:50 UTC.
+- **The builder:** Opus at high, about 17:00 UTC.
   - The reason: this is a model-only test on existing machinery and data, so the computation is set but its reading is open. This track's readings have been corrected three times (3.6b's ledger attribution, 3.6e's lever, 3.6e's term table), so the registration and the controls carry the round.
   - Branch `claude/body-inertia` from `claude/rider-momentum` `fc466712`, pushed at `e3449861`; worktree `.claude/worktrees/body-inertia`.
   - The brief is `docs/research/stability/body-inertia/BRIEF.md` (sha1 `e22adf92…`).
