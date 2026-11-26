@@ -191,3 +191,82 @@ the C3 of record: if it is another pair, it is run too, and the speculative run 
 therefore `pushTwist=<0.5 or 0.35>&wobbleNotch=1`; `pushTwist=0.35` is still running. **`pushTwist=0.5&wobbleNotch=1`
 is started now**; if `pushTwist=0.35` turns out the better twist scale, `pushTwist=0.35&wobbleNotch=1` is run as well and
 is the C3 of record. `pushTwist=0.5&wobbleNotch=2` (amendment 2) is an extra row.
+
+---
+
+## 1. The order of the round (UTC, 2026-11-26)
+
+| time | what | commit |
+| --- | --- | --- |
+| 19:39:48 | the brief's sha1 checked (`99b208ed…`), on `57a83402` | — |
+| 19:42–19:49 | the switches built; the controller on its own model (§0.2): both rows notched fails to decay, the ankle row's notch decays; `npx tsc -b` clean; the switches' tests and the gain lock pass | — |
+| 19:50:30 | **the pre-registration and the switches committed and pushed**, before any game run | `712c4cbe` |
+| 19:51:12 | stage 1 started: the off probe and R (wide set), `pushAnkle=0.5` seeds 1–2 (screening set); bundle `drift-probe.mjs` sha1 `a8c91dcf…`, the report's `stability-report.mjs` `5cfc032e…`, `stability-ride.mjs` `b24804ad…` (built from `712c4cbe`'s `src`) | — |
+| 20:03:55 | **amendment 1** (the cut screening set), before any outcome was read | `cb22bd04` |
+| 20:08–20:15 | the rest of stage 1 queued under amendment 1 | — |
+| 20:14–20:15 | the off probe done and read: its 162 benchmark ride lines identical to `baseline-full.json` (the probe's control); R read | — |
+| 20:27 | `pushAnkle=0.5` read | — |
+| 20:29 | `pushAnkle=0.35` read; stage 2's `pushAnkle=0.25` queued (20:29:39) | — |
+| 20:31:45 | `wobbleNotch=2` read | — |
+| 20:44:38 | `pushTwist=0.5` read | — |
+| 20:45:41 | **amendment 2** (`pushTwist=0.35` and a speculative C3, `pushTwist=0.5&wobbleNotch=2`, started 20:44:59–20:47:26) | `af268623` |
+| 20:47:33 | `wobbleNotch=1` read | — |
+| 20:47:50 | **amendment 3** (the C3 of record pairs Q 1 with the better twist scale); `pushTwist=0.5&wobbleNotch=1` started 20:47:55 | `d75865f4` |
+| 20:49:04 | `pushAnkle=0.25` read | — |
+| 21:02:39 | `pushTwist=0.35` read: the better twist scale, so the C3 of record is `pushTwist=0.35&wobbleNotch=1`, started 21:03:05 | — |
+| 21:05:00 | `pushTwist=0.5&wobbleNotch=2` (extra) read | — |
+| 21:06:15 | the switch-off full report started (the control, §0.7) | — |
+
+## 2. The screening (Canyon Big, the probe, §0.4)
+
+*Canyon Big (`swell: 'big'`, Hs 2.4 m, Tp 14 s), organic seeds 1–3, `PERIODS=12`, his address with
+`&cueLater=on&plantFloor=6` and the switch; every ride measured by the benchmark's own `measure` (`stability-report.mjs
+--mode full --only big --reuse`). The deep turns: the 72 rides `crouch:left|right`, `compress:left|right` (the steer ±1
+from +1.0 s for 1.0 s), 39 of them balance falls in `baseline-full.json`. Course: the board's ground track
+(atan2(vx, vz)), world x–z, deg, the change from +1.0 s to +1.5 s and to +2.0 s, signed toward the steer, paired by id
+against the baseline's own values, over rides with the value both ways. Peak yaw: deg/s toward the steer over +1.0 to
++3.0 s, world. The swing: the std of the yaw rate (world, deg/s) about its centred 0.25 s mean over tS 0.5–3.0 s, on the
+straight rides standing through +3.0 s both ways, the paired median ratio on / off and the rides down. Regressions: the
+benchmark's rule, over the Big benchmark rides the run carries (amendment 1: the 72 deep turns for the cut set; all 162
+for R and `pushAnkle=0.5`, which carried every Big script). `results/screen.json` has every number; `screen.py` and
+`table.py` recompute them.*
+
+| configuration | deep turns still falling for balance (of 39) | all deep-turn balance falls (of 72) / new | course +0.5 s, mean on − off (n; up/down) | course +1.0 s, mean (n; up/down; reach only on/off) | peak yaw, mean | regressions on the carried Big rides | swing on / off, Compress straight (down of n) | the tuck straight |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| off (the probe, switch off) | 39 | 39 / 0 | +0.00° (64; 0/0) | +0.00° (32; 0/0; 0/0) | +0.00 | 0 | 1.00 (0 of 13) | 1.00 (0 of 13) |
+| `pushAnkle=0.5` | 26 | 27 / 1 | +1.18° (61; 43/17) | -0.34° (31; 13/18; 14/1) | -7.56 | 6 | 0.64 (11 of 13) | 0.67 (11 of 13) |
+| `pushAnkle=0.35` | 21 | 22 / 1 | +1.43° (61; 44/17) | -0.66° (31; 10/21; 21/1) | -14.55 | 2 | 0.54 (11 of 13) | 0.59 (11 of 13) |
+| `pushAnkle=0.25` | 22 | 24 / 2 | +1.57° (60; 41/19) | -0.33° (30; 12/18; 23/2) | -14.47 | 4 | 0.47 (11 of 13) | 0.55 (11 of 13) |
+| `pushTwist=0.5` | 32 | 32 / 0 | +1.19° (62; 40/22) | +0.21° (32; 16/16; 8/0) | -7.61 | 3 | 0.99 (7 of 13) | 0.89 (11 of 13) |
+| `pushTwist=0.35` | 30 | 30 / 0 | +1.46° (62; 40/22) | +0.25° (32; 16/16; 10/0) | -8.79 | 4 | 1.04 (6 of 13) | 0.83 (9 of 13) |
+| `wobbleNotch=2` | 29 | 30 / 1 | +1.21° (62; 47/15) | +0.09° (32; 21/11; 15/0) | -5.50 | 4 | 0.45 (12 of 13) | 0.65 (13 of 13) |
+| `wobbleNotch=1` | 24 | 25 / 1 | +1.52° (62; 44/18) | +0.77° (32; 21/10; 18/0) | -10.77 | 3 | 0.42 (13 of 13) | 0.60 (13 of 13) |
+| C3 of record, `pushTwist=0.35&wobbleNotch=1` | 30 | 31 / 1 | +2.02° (62; 40/22) | +0.22° (32; 14/18; 18/0) | -12.75 | 8 | 0.68 (11 of 13) | 0.73 (12 of 13) |
+| `pushTwist=0.5&wobbleNotch=1` (amendment 3, extra) | 25 | 26 / 1 | +2.08° (62; 42/20) | +1.04° (32; 18/14; 17/0) | -20.31 | 5 | 0.55 (12 of 13) | 0.67 (12 of 13) |
+| `pushTwist=0.5&wobbleNotch=2` (amendment 2, extra) | 31 | 32 / 1 | +2.00° (62; 43/19) | +1.15° (31; 20/11; 12/1) | -15.09 | 4 | 0.79 (11 of 13) | 0.75 (12 of 13) |
+| **R, reference** (`designDelay=4`, `captureDelay=4`) | 19 | 19 / 0 | +0.58° (62; 31/31) | +0.12° (32; 16/16; 23/0) | -13.14 | 9 | 0.30 (12 of 13) | 0.49 (13 of 13) |
+
+**The rule's reading (§0.4).**
+- **No configuration is a finalist.** None takes the deep turns' still-falling count to 19 or below; the best candidate is
+  `wobbleNotch=1` at 24 of 39. R, the reference, reaches exactly 19.
+- **The ankle scales do not "help" by the rule**: they take the falls down most among the candidates (26, 21, 22 still
+  falling at 0.5, 0.35, 0.25) and shrink the swing (0.47–0.64 of off in Compress), but the board has come round less at
+  +1.0 s (−0.33° to −0.66° on the rides that reach it both ways, 18–21 of 31 down at 0.35). So no ankle-with-twist run
+  was made (amendment 2). Note that 14–23 more rides reach +1.0 s with the ankle scaled than without, so the paired
+  set is the rides that also survive with the switch off.
+- **The twist scales help a little** (32 and 30 still falling) and barely touch the straight swing (0.99 and 1.04 in
+  Compress): 3.6c's finding that the twist row moves the swing's frequency, not its size, holds here.
+- **The notch helps and keeps the turn**: Q 1 takes the still-falling count to 24 with the course at +0.5 s +1.52° and at
+  +1.0 s +0.77°, and the straight swing to 0.42 of itself in Compress (13 of 13 down) and 0.60 in the tuck (13 of 13).
+  Q 2: 29, the swing 0.45 / 0.65.
+- **C3 does not add up**: the C3 of record (`pushTwist=0.35&wobbleNotch=1`) has 30 still falling and 8 regressions, worse
+  than the notch alone; with `pushTwist=0.5` (the extra row) 25. The twist scale undoes part of what the notch gives.
+- **So by the rule the full report goes to `wobbleNotch=1`, labelled "closest, not a finalist"**: the fewest still
+  falling (24) among the configurations whose turn means are ≥ 0.
+- **The same rides regress under almost every configuration** (R included): `big:s2:w16:crouch:left` (a wave fall at
+  +3.87 s whose lowest reserve, 0.160 in the baseline, now reaches 0–0.05 before a wave fall at +3.52 to +3.98 s, under
+  every configuration but `pushTwist=0.5&wobbleNotch=2`), `big:s1:w11:crouch:left` (it lasts its 5 s in the baseline with
+  a lowest reserve of 0.043, and now falls for balance at +4.58 to +4.95 s under the ankle scales, Q 1 and both C3 rows
+  with Q 1, and at +2.37 / +2.43 s under the Q 2 rows), `big:s3:w3:crouch:left` (lasts with 0.236; now a whitewater
+  fall at +4.90 to +4.92 s under both twist scales and Q 2). These are rides that end on the edge either way; any change to the deep stance moves them. Each is
+  explained ride by ride for the full report (§3).
