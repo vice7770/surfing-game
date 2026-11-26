@@ -147,7 +147,7 @@ dated amendments below, committed before the numbers they govern are read.
 
 ### 0.9 Amendments
 
-1. *2026-11-26, 17:55 UTC, after the first read of `regctl.ts` (17:51), before its rerun.* **A fix to question 3's
+1. *2026-11-26, 17:52 UTC, after the first read of `regctl.ts` (17:51), before its rerun.* **A fix to question 3's
    synthetic control, and one exploratory reading.** The registered control (§0.4 (i)) is 3.6e's: y = X b with one b,
    the group's mean b_kin, for every set. My first run built y with **each set's own** b_kin (its own speed in m V x_f)
    and compared the result with the mean; that is not 3.6e's control, and it "failed" (‖b̂ − b̄‖ / ‖b̄‖ 0.4–2.2) for
@@ -156,3 +156,12 @@ dated amendments below, committed before the numbers they govern are read.
    returns when every set's term is exactly its own kinematic form, noise-free — its per-r and per-ṙ coefficients
    printed with the line of §0.4. The regression of R_N itself, the forms' residuals and every other number of the first
    read are unchanged by this (the rerun must reproduce them; checked).
+2. *2026-11-26, about 18:00 UTC, after questions 1–3 were read, before this is run.* **Exploratory, model-only: does J
+   matter once the water is fitted?** Questions 1–2 put J in the shipped water; 3.6e's fit (c), with the water free,
+   ran J to its bound (0) in two of three Compress bins. So, as a reading that decides nothing: 3.6e's frozen fit (a)
+   (the twelve water scales of its bin, `results/fit/fit-<stance>.json`, nothing refitted) with J × 1 (**W_two**) and
+   J × 0 (**W_0**), the feet's roll coupling on; scored as question 1 (frozen and speed-following; both groups — the
+   fitting group is in-sample for the water, the held-out group out of sample) and closed as question 2 (the shipped
+   design). Reported: median e, e_W0 / e_Wtwo, per row; the closure rows. *My prediction:* with the water fitted, J = 0
+   is about neutral or better on the held-out Compress open sets (median ratio 0.85–1.0), and W_0 closes lighter than
+   W_two.
