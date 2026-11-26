@@ -3,8 +3,9 @@
 
     python3 -I ident.py <this round's file> <3.6c's file> [scripts, comma-separated]
 
-Every `f` row of the named scripts (default: 3.6c's five straight scripts), in order, as JSON with sorted keys, must be
-identical; also the `stand` and `summary` rows of those scripts.
+Every `f` row of the named scripts (default: 3.6c's five straight scripts), in order within each script (the files
+interleave the scripts in their own SCRIPTS order), as JSON with sorted keys, must be identical; also the `stand` and
+`summary` rows of those scripts.
 """
 import json, sys
 
@@ -20,8 +21,9 @@ def rows(path, kinds):
             continue
         r = json.loads(line)
         if r.get('script') in scripts:
-            out[k].append(json.dumps(r, sort_keys=True))
-    return out
+            out[k].append((r['script'], json.dumps(r, sort_keys=True)))
+    # In order within each script.
+    return {k: [x for sc in sorted(scripts) for (s2, x) in v if s2 == sc] for k, v in out.items()}
 
 
 kinds = ('f', 'stand', 'summary')

@@ -1,0 +1,3 @@
+f: 6912 rows here, 6912 in the reference; identical: True
+stand: 30 rows here, 30 in the reference; identical: True
+summary: 65 rows here, 65 in the reference; identical: True
