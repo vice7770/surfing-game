@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 19:45 UTC.**
+- **Status, 2026-11-26, about 22:50 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -135,22 +135,31 @@
       - **The gains** may move behind a switch; the lock moves only after he rides and accepts.
       - **The order:** the drift round (3.6h), then the turn round.
       - He rode the current build on his controller and found "no improvement". That is expected: nothing in how it rides has changed yet.
-    - **3.6h, the drift round, is running** (Vicente: "Yes, start 3.6h", 2026-11-26; dispatched as consult log `2ee416d7`, time corrected in `e3a4191a`).
-      - Opus at high, on `claude/drift` from `ef4b86c8` (pushed at `57a83402`), in `.claude/worktrees/drift`. The brief is in `docs/research/stability/drift/`.
-      - **The candidates:** the balance's push matched to how strongly the board answers; a wobble filter; both together. The quicker rider (a 67 ms reaction) is a reference only. Nothing touches the board's physics.
-      - **His pass line**, in the full stability report at his address:
-        - no regression;
-        - at most 23 of today's 47 deep-stance balance turn falls still falling;
-        - turns no slower.
-      - **Measured alongside, not targeted:** the turn just after letting go of R2.
-      - **If nothing passes,** the builder stops and reports, and he decides.
+    - **3.6h, the drift round, is done and reviewed** (Vicente: "Yes, start 3.6h", 2026-11-26; dispatched as consult log `2ee416d7`; the review is `7f8d0877`).
+      - It is on `claude/drift` `d5c8ccf9`, from `ef4b86c8`. It adds three opt-in switches, off by default and pinned off online: `?pushAnkle` and `?pushTwist` (the balance's push scaled down in the deep stances) and `?wobbleNotch` (a filter on the ankle's push at the wobble's frequency).
+        - With every switch off, the full report gives 227 of 227 and 26 of 26 identical. The byte check, `tsc` and the gain lock pass.
+        - The coordinator recounted every pass-line number, the screening table and the release table from the raw rides, and they match.
+      - **Nothing passes his line.**
+        - The closest is `?wobbleNotch=1`: 13 regressions (7 of them standing tall or in Snap); 32 of the 47 falling deep turns still fall (the line is 23); the turns slightly faster (+1.4° at +0.5 s, +0.8° at +1.0 s).
+        - It more than halves the deep stances' wobble on straight rides (0.42 of itself in Compress, 0.60 in Crouch). On Big it halves the falls on his way of turning, R2 held with a full stick for a second (19 → 10 of 36). It saves none of the test wave's eight deep turns.
+        - Pushing less with the ankle saves the most falls (39 → 21 on Big), but the board comes round less at +1.0 s. Pushing less with the twist barely helps. Both together are worse than the filter alone.
+      - **The quicker rider** (a 67 ms reaction, a reference only) fails too: 14 regressions and 25 of 47. It is the largest lever (Compress's Big turn falls 19 → 6), and a realism choice that stays his.
+      - **The coordinator's qualifications:**
+        - Of the two rides said to regress "under every configuration", one does not regress under the quicker rider or either twist scale.
+        - On the test wave, `tw-ride:hisway` and `tw-ride:compress:straight` are the same ride frame for frame, so the benchmark counts it twice.
+      - **Served for his feel ride:** dev server `breakline-latest` (port 5177) now runs `claude/drift` `d5c8ccf9`. With no switch it rides as before; add `&wobbleNotch=1` to his address for the filter.
+      - **Waiting on Vicente:**
+        - whether to ride the filter for feel (it fails two lines);
+        - then the next round: the turn round, or a filter that leaves tall and Snap alone;
+        - the quicker rider;
+        - whether line 1 should be judged against a measured null-change floor.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `e3a4191a`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `7f8d0877`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -224,8 +233,8 @@ Also open:
 | `claude/board-fit` | `ef7908f2` | 3.6e: the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only; its term table (the board barely feeling the rider in yaw, rolling far lighter) is withdrawn by the 3.6f review (docs, fits and probes; from `4a50e650`) |
 | `claude/rider-momentum` | `fc466712` | 3.6f: the game's coupled solve conserves the rider's momentum, and the board meets the body's push at its arm; 3.6e's term table could not see it; the picture's body has a rotational inertia the game's lacks (docs and probes; from `ef7908f2`) |
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
-| `claude/drift` | `57a83402` | 3.6h, running: the drift round, the balance tuned in the game behind opt-in switches to stop the deep-stance turns drifting (from `ef4b86c8`; the builder's commits follow) |
-| `claude/the-record` | `e3a4191a` | the consult log (verified on the remote 2026-11-26) |
+| `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`). Served on port 5177 |
+| `claude/the-record` | `7f8d0877` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
