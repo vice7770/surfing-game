@@ -145,10 +145,44 @@ export function scalesOf(sets: FitSet[]): number[][] {
   }
   return out.map((row, ch) => row.map((v) => (n[ch] > 0 ? Math.sqrt(v / n[ch]) : 1) || 1));
 }
+/**
+ * Amendment 3 (README §0.10): **the speed-following fit.** With `FIT_MODE.ltv` the model's response at a set follows
+ * the set's own kick window: x[1] = Γ(v₀) e, x[m + 1] = Φ(v_m) x[m], v_m the schedule speed at tick m (A's `kbase`
+ * arguments), the depth and the rail held at the kick tick's; Φ and Γ interpolated linearly in the speed between
+ * discretisations at the multiples of 0.25 m/s (the water's table and the board's inertias are linear between their
+ * 0.5 m/s rows). Off, the response is the registered one: the plant held at the kick tick's speed.
+ */
+export const FIT_MODE = { ltv: false };
+const NODE = 0.25;
+export function ltvResp(s: FitSet, m: Mult, cache: Map<string, Disc> = new Map()): Float64Array[] {
+  const node = (v: number) => { const k = `${v}|${s.depth}|${s.rail}`; let d = cache.get(k); if (!d) { d = disc(v, s.depth, s.rail, m); cache.set(k, d); } return d; };
+  const at = (v: number): Disc => {
+    const lo = Math.floor(v / NODE) * NODE, hi = lo + NODE;
+    const f = (v - lo) / NODE;
+    if (f < 1e-12) return node(lo);
+    const a = node(lo), b = node(hi);
+    return { phi: a.phi.map((row, i) => row.map((x, j) => x + f * (b.phi[i][j] - x))), gamma: a.gamma.map((row, i) => row.map((x, j) => x + f * (b.gamma[i][j] - x))) };
+  };
+  const speed = (k: number) => s.kb.args.speed[Math.max(0, Math.min(s.kb.args.speed.length - 1, ARGS_PRE + k))] as number;
+  const out: Float64Array[] = [new Float64Array(10)];
+  let x = Float64Array.from(at(speed(0)).gamma.map((row) => row[s.channel]));
+  for (let k = 1; k <= W_OPEN; k += 1) {
+    out.push(x);
+    const d = at(speed(k));
+    const nx = new Float64Array(10);
+    for (let i = 0; i < 10; i += 1) { let sum = 0; const r = d.phi[i]; for (let j = 0; j < 10; j += 1) sum += r[j] * x[j]; nx[i] = sum; }
+    x = nx;
+  }
+  return out;
+}
+/** The model's response at a set: registered (held at the kick tick) or, with `FIT_MODE.ltv`, speed-following. */
+export function modelResp(s: FitSet, m: Mult, cache?: Map<string, Disc>): Float64Array[] {
+  return FIT_MODE.ltv ? ltvResp(s, m, cache) : openResp(disc(s.v, s.depth, s.rail, m), s.channel);
+}
 /** One set's residuals (model − measured) / σ over m = 1 … 60 and the eight states. */
-export function setResid(s: FitSet, m: Mult, sig: number[][], out?: Float64Array, at = 0): Float64Array {
+export function setResid(s: FitSet, m: Mult, sig: number[][], out?: Float64Array, at = 0, cache?: Map<string, Disc>): Float64Array {
   const r = out ?? new Float64Array(W_OPEN * N8);
-  const G = openResp(disc(s.v, s.depth, s.rail, m), s.channel);
+  const G = modelResp(s, m, cache);
   const sg = sig[s.channel];
   for (let k = 1; k <= W_OPEN; k += 1) for (let o = 0; o < N8; o += 1) r[at + (k - 1) * N8 + o] = (G[k][o] - s.x[k][o]) / sg[o];
   return r;
@@ -156,7 +190,8 @@ export function setResid(s: FitSet, m: Mult, sig: number[][], out?: Float64Array
 export function resid(sets: FitSet[], names: string[], th: ArrayLike<number>, sig: number[][]): Float64Array {
   const m = multOf(names, th);
   const r = new Float64Array(sets.length * W_OPEN * N8);
-  sets.forEach((s, i) => setResid(s, m, sig, r, i * W_OPEN * N8));
+  const cache = new Map<string, Disc>();
+  sets.forEach((s, i) => setResid(s, m, sig, r, i * W_OPEN * N8, cache));
   return r;
 }
 /** The prediction error of a set (README §0.3): ‖(G − g) / σ‖ / ‖g / σ‖ over the eight states and m = 1 … 60. */

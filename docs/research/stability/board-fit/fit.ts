@@ -7,18 +7,23 @@
  *   ./node_modules/.bin/rolldown docs/research/stability/board-fit/fit.ts --file <s>/fit.mjs --format esm --platform node
  *   (prepend `globalThis.location = { search: '' };`) node <s>/fit.mjs <stance script> <out dir> <twins dir>
  */
-import { readdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { plantAt } from '../../../../src/physics/predictiveBalance';
 import { modelOpen, median } from '../response/responseLib';
 import {
-  NESTED, OWN, RIDER_REG, ROLL_WATER, SPEED_FLOOR, WATER, WATER_REG, YAW_WATER, binOf, disc, firOf, fitOn, fitSets, freeResp, freeRows, ledgerSet,
+  FIT_MODE, modelResp, NESTED, OWN, RIDER_REG, ROLL_WATER, SPEED_FLOOR, WATER, WATER_REG, YAW_WATER, binOf, disc, firOf, fitOn, fitSets, freeResp, freeRows, ledgerSet,
   loadRuns, modelCoefs, openResp, predErr, regress, scalesOf, tercileEdges, uncertainty, type FitResult, type FitSet, type LedgerSet, type Mult,
 } from './fitLib';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
 const [script, outDir, dir] = process.argv.slice(2);
+// Amendment 3: `--ltv`, the speed-following fit (question 1 and the per-pair fits are the registered pass's, skipped).
+const LTV = process.argv.includes('--ltv');
+FIT_MODE.ltv = LTV;
+const fromArg = process.argv.indexOf('--from');
+const FROM: Any = LTV && fromArg > 0 ? JSON.parse(readFileSync(join(process.argv[fromArg + 1], `fit-${({ 'compress:straight': 'Compress', 'none:straight': 'tall', 'crouch:straight': 'tuck' } as Record<string, string>)[script]}.json`), 'utf8')) : undefined;
 const LABEL: Record<string, string> = { 'compress:straight': 'Compress', 'none:straight': 'tall', 'crouch:straight': 'tuck' };
 const label = LABEL[script] ?? script;
 const log = (s: string) => console.error(`[${label} ${new Date().toISOString().slice(11, 19)}] ${s}`);
@@ -73,7 +78,7 @@ L.push(`- rails at the kick ticks: largest |rail| ${f(Math.max(...open.map((s) =
 // ---- Question 1 (README §0.2).
 const READ = (r: { cond: number; vif: number[] }, i: number) => r.cond <= 1e3 && r.vif[i] <= 30;
 const q1: Any = {};
-{
+if (!LTV) {
   L.push('## Question 1: the ledger regressions (per unit model-sign command; model signs N = −e_y, K = +e_q)', '');
   const groups: [string, FitSet[]][] = [...[0, 1, 2].map((b) => [binName(b), bins[b]] as [string, FitSet[]]), ['all ≥ 4 m/s', open]];
   for (const [gname, gs] of groups) {
@@ -200,7 +205,9 @@ for (let b = 0; b < 3; b += 1) {
   const prevOf: Record<string, string> = { b: 'a', c: 'b', d: 'c', e: 'c' };
   for (const which of ['a', 'b', 'c', 'd', 'e']) {
     const names = NESTED[which];
-    const starts: Mult[] = which === 'a' ? [{}, q1Start(b)] : [entry.nested[prevOf[which]].mult, {}];
+    // Amendment 3: the speed-following fit starts from 1 (or the previous set) and from the registered fit of the same set.
+    const starts: Mult[] = LTV ? [which === 'a' ? {} : entry.nested[prevOf[which]].mult, FROM.bins[b].nested[which].mult]
+      : which === 'a' ? [{}, q1Start(b)] : [entry.nested[prevOf[which]].mult, {}];
     log(`bin ${b} set ${which}: ${gs.length} sets, ${names.length} parameters, ${starts.length} starts`);
     const fit: FitResult = fitOn(gs, names, sig, starts, { maxIter: 200 });
     const un = uncertainty(gs, fit, sig, 30);
@@ -216,7 +223,8 @@ for (let b = 0; b < 3; b += 1) {
   const errs = gs.map((s) => {
     const r: Any = { id: s.id, v: s.v, channel: s.channel };
     r.ship = predErr(s, openResp(disc(s.v, s.depth, s.rail, {}), s.channel), sig);
-    for (const which of ['a', 'b', 'c', 'd', 'e']) r[which] = predErr(s, openResp(disc(s.v, s.depth, s.rail, entry.nested[which].mult), s.channel), sig);
+    if (LTV) r.shipL = predErr(s, modelResp(s, {}), sig);
+    for (const which of ['a', 'b', 'c', 'd', 'e']) r[which] = predErr(s, modelResp(s, entry.nested[which].mult), sig);
     if (s.kb.design) { const g = modelOpen(s.kb.design.phi, s.kb.design.gamma, s.kb.design.c, s.channel as 0 | 1); r.blend = predErr(s, (m) => [g[m][0] - g[m][5], g[m][1] - g[m][6], g[m][0], g[m][1], g[m][2] - g[m][4], g[m][8], g[m][3], g[m][2]], sig); }
     r.fir = predErr(s, (m) => entry.fir[s.channel][m], sig);
     r.free = predErr(s, freeResp(entry.free, s), sig);
@@ -233,7 +241,9 @@ for (let b = 0; b < 3; b += 1) {
   }
   L.push(`| FIR (bin mean) | — | | | | ${f(median(errs.map((e) => e.fir)))} | |`);
   L.push(`| free rows (one-step LS) | 80 | | | | ${f(median(errs.map((e) => e.free)))} | |`);
-  L.push(`| blended design at the kick tick | — | | | | ${f(median(errs.map((e) => e.blend)))} | |`, '');
+  L.push(`| blended design at the kick tick | — | | | | ${f(median(errs.map((e) => e.blend)))} | |`);
+  if (LTV) L.push(`| shipped, speed-following | — | | | | ${f(median(errs.map((e) => e.shipL)))} | |`);
+  L.push('');
   for (const which of ['a', 'b', 'c', 'd', 'e']) {
     const n = entry.nested[which];
     L.push(`- (${which}) multipliers [5–95 % bootstrap]: ${n.names.map((k: string, i: number) => `${k} ${n.un.atBound.includes(k) ? 'at its bound (0)' : `${f(n.mult[k], 3)} [${f(n.un.boot.lo[i], 2)}, ${f(n.un.boot.hi[i], 2)}]`}`).join('; ')}`);
@@ -243,7 +253,7 @@ for (let b = 0; b < 3; b += 1) {
 }
 
 // ---- Per (base, kick time) fits of (a) (README §0.3; descriptive).
-{
+if (!LTV) {
   const pairs = new Map<string, FitSet[]>();
   for (const s of open) { const k = `${s.base}|${s.at}`; const a = pairs.get(k) ?? []; a.push(s); pairs.set(k, a); }
   const both = [...pairs.values()].filter((p) => p.length === 2);
@@ -264,6 +274,7 @@ for (let b = 0; b < 3; b += 1) {
 }
 fits.q1 = q1;
 fits.slow = slow.length;
+fits.ltv = LTV;
 writeFileSync(join(outDir, `fit-${label}.json`), JSON.stringify(fits));
 writeFileSync(join(outDir, `fit-${label}.md`), L.join('\n'));
 log('done');

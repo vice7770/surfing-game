@@ -281,6 +281,36 @@ govern are read. I stop at a clean commit if the coordinator says so.
      set's closed twins with set (c), chosen for the test only (`results/dev/closures-fitting-c-dev.md`). Question 3's
      rule, its read-outs and its sets are unchanged by it; the registered run uses the set question 2 selects on the
      held-out set, on the fitting and the held-out seeds pooled.
+3. *2026-11-26, about 13:00 UTC, before any byte of the held-out runs is read and before the speed-following fits'
+   outputs are read:* **a second, speed-following fit beside the registered one.**
+   - **Why.** The registered time-varying known-plant variant (§0.3, `knownltv.ts`, run at 12:56 on the fitting set's
+     own kick windows) shows that the registered LTI fit cannot recover a known plant whose speed changes along the
+     window as the game's does: on the shipped model itself (every multiplier 1), re-evaluated at each tick's speed,
+     depth and rail, the LTI fit leaves a relative residual of 0.17–0.35 and returns multipliers off by 50 % to ×11
+     (the roll-rate roll moment ×5–11 in the lowest bins, the board's yaw inertia ×2–3 or at its bound). So the game
+     fits' large multipliers and inertias at their bounds may be the time variation's, not the board's.
+   - **The second fit** (`fit.ts --ltv`, `fitLib.ts` `FIT_MODE.ltv`): the same parameters, objective, bins, σ (the
+     same sets give the same σ), nested sets and uncertainty, with the model's response following the set's own kick
+     window: x[1] = Γ(v₀) e, x[m + 1] = Φ(v_m) x[m], v_m A's schedule speed at tick m, the depth and the rail held at
+     the kick tick's, Φ and Γ interpolated linearly in the speed between discretisations at the multiples of
+     0.25 m/s. Starts: (a) from 1 and from the registered fit's (a); each later set from the previous speed-following
+     set and from the registered fit of the same set.
+   - **Its known-plant control** (`knownltv.ts --ltv --held`): the shipped model and p* (restricted to each nested
+     set) re-evaluated at each tick's speed along the same windows, the depth and the rail held as the fit holds them.
+     Run first on Compress at 12:58 (bins 0 and 1, before this text): relative residual 2.4 × 10⁻⁴ – 1.4 × 10⁻³ (the
+     interpolation), multipliers within 0.1–5.2 % (the board's yaw inertia the worst). **Its pass line, set after
+     seeing that run and stated as such:** every multiplier within 5 % and the residual ≤ 2 × 10⁻³, in every bin of
+     every stance; the registered LTI fit's own control (1 %) is unchanged and already passed.
+   - **The held-out rule for the second fit** is the registered one (≥ 75 % of the held-out Compress sets better and
+     the median ratio ≤ 0.5), against **the shipped model following the speed the same way** (like for like); against
+     the registered shipped model (held at the kick tick) it is reported beside. Its selected set is the smallest of
+     (a)–(c) that predicts.
+   - **Precedence, so that nothing is chosen after the held-out read:** the registered LTI fit's answer to question 2
+     is reported as registered. **Question 3's primary run uses the speed-following fit's selected set** (or, if none
+     predicts, its set of the lowest held-out median ratio, labelled), because question 3's primary closure follows the
+     speed and a plant fitted with the speed held would carry the bias above into it; the registered LTI fit's
+     selected set is closed too and reported beside. Question 4 follows question 3's primary.
+   - `heldout.ts` scores both fits in the same single read.
 
 ### 0.11 The order of the round (UTC, 2026-11-26)
 

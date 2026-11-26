@@ -9,11 +9,14 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { median, modelOpen, waveErr, SENSE_ROWS, type Resp } from '../response/responseLib';
-import { SPEED_FLOOR, binOf, disc, fitSets, freeResp, loadRuns, openResp, outOf, predErr, type FitSet } from './fitLib';
+import { FIT_MODE, SPEED_FLOOR, binOf, disc, fitSets, freeResp, loadRuns, ltvResp, openResp, outOf, predErr, type FitSet } from './fitLib';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
-const [fitDir, heldDir, outDir] = process.argv.slice(2);
+const [fitDir, heldDir, outDir, ltvDir] = process.argv.slice(2);
+// Amendment 3: the speed-following fits (`fit.ts --ltv`), scored in the same read, against the shipped model following
+// the speed the same way.
+void FIT_MODE;
 const STANCES: [string, string][] = [['compress:straight', 'Compress'], ['crouch:straight', 'tuck'], ['none:straight', 'tall']];
 const LETTERS = ['a', 'b', 'c', 'd', 'e'];
 const f = (x: number, n = 3) => (Number.isFinite(x) ? x.toFixed(n) : '—');
@@ -28,6 +31,8 @@ const sensesOf = (G: Float64Array[]): Resp => G.map((x) => outOf(x));
 const measured = (s: FitSet): Resp => s.set.g;
 for (const [script, label] of STANCES) {
   const fit = JSON.parse(readFileSync(join(fitDir, `fit-${label}.json`), 'utf8'));
+  const fitL = ltvDir ? JSON.parse(readFileSync(join(ltvDir, `fit-${label}.json`), 'utf8')) : undefined;
+  if (fitL && JSON.stringify(fitL.edges) !== JSON.stringify(fit.edges)) throw new Error('the two fits disagree on the bins');
   const edges = fit.edges as [number, number];
   const openAll = all.filter((s) => s.script === script && s.mode === 'open' && s.set.pass60);
   const sets = openAll.filter((s) => s.v >= SPEED_FLOOR);
@@ -49,6 +54,11 @@ for (const [script, label] of STANCES) {
       r.blend = predErr(s, (m) => [g[m][0] - g[m][5], g[m][1] - g[m][6], g[m][0], g[m][1], g[m][2] - g[m][4], g[m][8], g[m][3], g[m][2]], sig);
     }
     r.fir = predErr(s, (m) => bin.fir[s.channel][m], sig);
+    if (fitL) {
+      const GsL = ltvResp(s, {});
+      r.shipL = predErr(s, GsL, sig);
+      for (const k of LETTERS) { const G = ltvResp(s, fitL.bins[b].nested[k].mult); r[`L${k}`] = predErr(s, G, sig); r[`L${k}Sense`] = waveErr(sensesOf(G), measured(s), SENSE_ROWS); }
+    }
     r.free = predErr(s, freeResp(bin.free, s), sig);
     return r;
   });
@@ -67,6 +77,20 @@ for (const [script, label] of STANCES) {
     L.push(`| ${name} | ${f(median(rows.map((r) => r[k])))} | ${f(median(ratio))} [${f(qq(ratio, 0.25))}, ${f(qq(ratio, 0.75))}] | ${better} of ${rows.length} | ${['a', 'b', 'c'].includes(k) ? (predicts ? '**yes**' : 'no') : (predicts ? 'yes (reference)' : 'no (reference)')} | ${rows[0]?.[`${k}Sense`] !== undefined ? f(median(rows.map((r) => r[`${k}Sense`]))) : ''} |`);
   }
   L.push('');
+  if (fitL) {
+    L.push(`**The speed-following fits** (amendment 3), against the shipped model following the speed (median e ${f(median(rows.map((r) => r.shipL)))}):`, '');
+    L.push('| model | median e | median e / e_shipped,speed-following [25–75 %] | better | predicts | median e / e_shipped (held at the kick tick) | senses waveform error, median |');
+    L.push('| --- | --- | --- | --- | --- | --- | --- |');
+    st.ruleL = {};
+    for (const k of LETTERS) {
+      const ratio = rows.map((r) => r[`L${k}`] / r.shipL);
+      const better = rows.filter((r) => r[`L${k}`] < r.shipL).length;
+      const predicts = better >= 0.75 * rows.length && median(ratio) <= 0.5;
+      st.ruleL[k] = { medianE: median(rows.map((r) => r[`L${k}`])), medianRatio: median(ratio), better, of: rows.length, predicts, medianRatioVsHeld: median(rows.map((r) => r[`L${k}`] / r.ship)) };
+      L.push(`| (${k}) speed-following${k >= 'd' ? ' (exploratory)' : ''} | ${f(median(rows.map((r) => r[`L${k}`])))} | ${f(median(ratio))} [${f(qq(ratio, 0.25))}, ${f(qq(ratio, 0.75))}] | ${better} of ${rows.length} | ${['a', 'b', 'c'].includes(k) ? (predicts ? '**yes**' : 'no') : (predicts ? 'yes (exploratory)' : 'no (exploratory)')} | ${f(st.ruleL[k].medianRatioVsHeld)} | ${f(median(rows.map((r) => r[`L${k}Sense`])))} |`);
+    }
+    L.push('');
+  }
   // Per bin.
   L.push('| bin | sets | median e_shipped | median ratio (a) / (b) / (c) / (d) / (e) | FIR |', '| --- | --- | --- | --- | --- |');
   for (let b = 0; b < 3; b += 1) {
@@ -82,7 +106,15 @@ const selected = ['a', 'b', 'c'].find((k) => comp[k].predicts);
 const fallback = ['a', 'b', 'c'].reduce((x, y) => (comp[y].medianRatio < comp[x].medianRatio ? y : x));
 summary.selected = selected ?? null;
 summary.carried = selected ?? fallback;
-L.push(`**Question 2 (Compress decides):** ${selected ? `set (${selected}) is the smallest that predicts` : `no nested set predicts; question 3 proceeds with (${fallback}), the lowest held-out median ratio, labelled as having failed question 2`}.`, '');
+L.push(`**Question 2, the registered fit (Compress decides):** ${selected ? `set (${selected}) is the smallest that predicts` : `no nested set predicts; its set of the lowest held-out median ratio is (${fallback}), labelled as having failed question 2`}.`, '');
+if (ltvDir) {
+  const cl = summary.stances.Compress.ruleL;
+  const selL = ['a', 'b', 'c'].find((k) => cl[k].predicts);
+  const fbL = ['a', 'b', 'c'].reduce((x, y) => (cl[y].medianRatio < cl[x].medianRatio ? y : x));
+  summary.selectedL = selL ?? null;
+  summary.carriedL = selL ?? fbL;
+  L.push(`**Question 2, the speed-following fit (amendment 3; Compress decides):** ${selL ? `set (${selL}) is the smallest that predicts` : `no nested set predicts; its set of the lowest held-out median ratio is (${fbL}), labelled as having failed question 2`}. Question 3's primary run uses the speed-following fit's set (${summary.carriedL}); the registered fit's set (${summary.carried}) is closed beside it.`, '');
+}
 writeFileSync(join(outDir, 'heldout-q2.md'), L.join('\n'));
 writeFileSync(join(outDir, 'heldout-q2.json'), JSON.stringify(summary));
 console.log(L.join('\n'));
