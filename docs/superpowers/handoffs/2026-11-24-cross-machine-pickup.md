@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 12:15 UTC.**
+- **Status, 2026-11-26, about 12:30 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -85,14 +85,23 @@
         - The closure reproduces the game's loop in only 2 of 38 sets, and it misses the 4-tick peak.
         - The game's own damping is within about ±0.04 of zero, with its sign set by the read-out.
         - A ledger lead: the board's immediate yaw after an ankle nudge is the fins against the rider's coupling.
-      - **Open:** fitting `plantAt`'s mechanical terms to the twins, read blind on held-out kicks (a 3.6e). It needs Vicente's word. A design on a corrected model would be an arm and would move the gain lock.
+      - **Open:** fitting `plantAt`'s mechanical terms to the twins, read blind on held-out kicks. That is 3.6e, below. A design on a corrected model would be an arm and would move the gain lock.
+    - **3.6e is running** (Vicente: "Yes, start 3.6e", 2026-11-26; dispatched as consult log `4144ff19`).
+      - Opus at xhigh, on `claude/board-fit` from `4a50e650`, in `.claude/worktrees/board-fit`. The docs and brief are in `docs/research/stability/board-fit/`.
+      - Diagnosis only: fits, scripts and probes, with the shipped design and the gain lock untouched.
+      - **The plan:**
+        - the game's derivatives term by term from 3.6d's twins;
+        - a nested grey-box fit of `plantAt`'s own parameters, gated by a known-plant recovery;
+        - a blind test on fresh twins from Big seeds 4 and 5;
+        - the fitted model closed with the shipped design, against the game's rings and the delay sweeps.
+      - Last, model-only, a design built on the fitted model, as a number for Vicente's next decision.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `3e8755c5`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `4144ff19`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -163,7 +172,8 @@ Also open:
 | `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
 | `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
 | `claude/board-response` | `4a50e650` | 3.6d: the matched delay sets the swing's size and part of its frequency; the command path and senses match the balance's model and the board's mechanics do not (docs, probes and diagnostic knobs, off by default; from `5f69e9dc`) |
-| `claude/the-record` | `3e8755c5` | the consult log (verified on the remote 2026-11-26) |
+| `claude/board-fit` | `4a50e650` | 3.6e, running: the balance's picture of the board fitted to the kicked twins, tested blind (diagnosis only; from `4a50e650`; the builder's commits follow) |
+| `claude/the-record` | `4144ff19` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
