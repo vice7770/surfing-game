@@ -247,7 +247,27 @@ govern are read. I stop at a clean commit if the coordinator says so.
 
 ### 0.10 Amendments
 
-(none yet)
+1. *2026-11-26, about 12:50 UTC, after the first pass of `fit.ts` on the fitting set (question 1's tables and the
+   in-sample fits of (a)–(d), all three stances) and before any byte of the held-out runs is read:*
+   - **An order deviation, stated.** Question 1's synthetic control ran in the same pass as the game's regressions,
+     and I read both together. Its noise-free line failed: largest relative error 2 × 10⁻⁷ (water) to 5 × 10⁻⁵ (the
+     rider's yaw), against the registered 10⁻⁸. The cause is numerical: the normal equations were solved on unscaled
+     columns (φ̈ and β differ by about 10⁴ in size). **Fix (numerics only, the estimator unchanged):** the normal
+     equations are solved on unit-RMS columns and scaled back. The second pass reruns the control; question 1's
+     coefficients are reported from that pass and only if the control passes there.
+   - **Question 1's standard errors** are cluster-robust by set (the registration said "its standard error" and left
+     the form open; the residuals are correlated within a set).
+   - **The bootstrap** is one Gauss–Newton step per resample from the fit (3.6a part 2's), not a full refit, for time.
+   - **A log multiplier that runs to its bound.** In the first pass the board's inertias (and in places the body's)
+     ran to zero (their logarithms to about −700, their Jacobian columns exactly zero). Such a parameter is reported
+     as *at its bound (0)*, and the scaled κ is taken over the others. Nothing about the fit changes.
+   - **An exploratory set (e)**, never selected: (c) plus multipliers on the feet's station x_f (`feetStation`,
+     −0.244 m) and the deck's height z_d (`deckHeight`, 0.031 m), free reals. Why: question 1's first pass puts the
+     game's rider-yaw coefficients on r and β̇ at about −0.4 and +0.7 N·m per unit (Compress, all speeds), where the
+     model's lateral-force lever −x_f m V gives +155 and +158; the feet's station is the term the table points at,
+     and no registered set can move it. The known-plant control is extended to (e) (p* x_f × 0.6, z_d × 1.5) and
+     must pass as the others.
+   - Rules unchanged: the bins, the objective, the starts, the held-out rule and the selection among (a)–(c).
 
 ### 0.11 The order of the round (UTC, 2026-11-26)
 
