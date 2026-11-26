@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-25, about 23:40 UTC.**
+- **Status, 2026-11-26, about 02:00 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -58,19 +58,27 @@
       - He fell turning with the controller but not with the arrows. The D-pad and Precise response did not help: "the board starts drifting left and right".
       - He turned tall on the arrows, and on the pad he holds R2 (Compress). So the stance is the difference, not the device.
       - On the pad, turns in Normal hold. Turns in Compress and in Crouch (the tuck, with `deepen=on`) throw him, and so does a turn just after letting go of R2.
-    - **3.6c is running** (consult log `65039723`). Vicente approved it in his own words: "Yes, start it", then "i say yes to this to continue during the night".
-      - **The work is diagnosis only:**
-        - what carries the deep stances' 2.5–3 Hz swing and its sideways tip, using Codex's half-cycle joint work once the riderless yaw budget closes, and frequency tracking with diagnostic knobs;
-        - a turn started 0–0.6 s after letting go of R2.
-      - **The builder:** Opus at xhigh, on `claude/wobble` from `340fc560`, in `.claude/worktrees/wobble`. Its brief is `docs/research/stability/wobble/BRIEF.md` on that branch.
-      - **Vicente is away until about 06:45 UTC.** The coordinator reviews 3.6c when it reports.
+    - **3.6c is done and reviewed** (dispatched as consult log `65039723`; the review is `59637443`). Vicente approved it in his own words: "Yes, start it", then "i say yes to this to continue during the night".
+      - It is on `claude/wobble` `5f69e9dc`, from `340fc560`: docs, probes and diagnostic knobs, at their identity by default and read by no address. With the knobs off, the full report and the byte check are identical.
+      - **The swing is the balance loop's own mode, on the board as it rides.**
+        - The rider's twist and ankle feed it, and the fins and the hull take energy out.
+        - The knees and the fins do not set its frequency. The senses' age against the design does, and the ankle gain sets its size.
+        - On the design's own model nothing at 2.5–3 Hz is lightly damped, so the swing comes from the gap between the model and the board.
+      - **Deep is worse** partly through the yaw inertia's split: about half of Compress's excess over tall, and two-thirds of the tuck's.
+      - **The sideways tip** is the body's speed across the feet, which follows the yaw swing. The felt tilt plays no part.
+      - **A turn just after letting go of R2** falls until the leg is up, about half a second later. On Big, balance falls inside the steer:
+        - let go at the steer, 15 of 36 (Compress held, 12);
+        - let go 0.2 s before, 6;
+        - let go 0.4–0.6 s before, 3, against tall's 1. Those turns then fall after the steer about as tall turns do.
+      - **The review qualifies one inference:** the delay knob moved the senses, not the design, so it shows a dependence on the senses' age against the design, not yet on the delay as designed. It also corrects one stale table column.
+      - **Open:** why the loop rings on the board when it decays on its model. A next round would start with a matched delay shift (the design rebuilt for the shifted delay), then identify the board's response to the balance's commands. It needs Vicente's word.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `65039723`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `59637443`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -139,8 +147,8 @@ Also open:
 | `claude/balance-bar` | `dea549c7` | the balance bar's UI behind `rider=new` (from `3778d3b6`); it contains the ride build |
 | `claude/slow-board` | `5450d8b3` | 3.6a part 2: no plant identified from the game's ticks passes its controls, so the lock is unchanged (docs and probes; from `3778d3b6`) |
 | `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
-| `claude/wobble` | (running) | 3.6c: the deep stances' wobble and sideways tip, and a turn just after letting go of R2; diagnosis only (from `340fc560`) |
-| `claude/the-record` | `65039723` | the consult log (verified on the remote 2026-11-25) |
+| `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
+| `claude/the-record` | `59637443` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
