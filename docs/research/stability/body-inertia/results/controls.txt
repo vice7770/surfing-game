@@ -1,0 +1,10 @@
+[controls 17:08:00] fitting: 716 sets
+[controls 17:08:00] heldout: 296 sets
+[controls 17:08:00] 1. P_two vs shippedPlant at 253 kick points: largest |ΔΦ|, |ΔΓ| = 0 (PASS)
+[controls 17:08:00] 2. P_control vs pre-3.4a at 253 kick points: A 9.38e-15, B 0.00e+0 row-relative (PASS)
+[controls 17:08:00] 1b. Compress held-out: 24 sets (3.6e 24), median e 1.061 (SF 0.987), largest per-set |Δ| 0.00e+0 (SF 0.00e+0) (PASS)
+[controls 17:08:00] 1b. tuck held-out: 24 sets (3.6e 24), median e 1.140 (SF 1.073), largest per-set |Δ| 0.00e+0 (SF 0.00e+0) (PASS)
+[controls 17:08:00] 1b. tall held-out: 31 sets (3.6e 31), median e 0.802 (SF 0.754), largest per-set |Δ| 0.00e+0 (SF 0.00e+0) (PASS)
+[controls 17:08:03] 3. Compress closures: 91 sets (3.6e 91), largest per-set |Δ| 0.00e+0; pooled frozen f 2.73 ζ 0.730, SF f 2.27 ζ 0.576 (PASS)
+[controls 17:08:06] 3. tuck closures: 80 sets (3.6e 80), largest per-set |Δ| 0.00e+0; pooled frozen f 3.28 ζ 0.656, SF f 2.90 ζ 0.587 (PASS)
+[controls 17:08:10] 3. tall closures: 115 sets (3.6e 115), largest per-set |Δ| 0.00e+0; pooled frozen f 2.35 ζ 0.803, SF f 2.30 ζ 0.597 (PASS)

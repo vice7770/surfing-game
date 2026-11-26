@@ -1,0 +1,8 @@
+ RUN  v5.0.1 /Users/vicentealmeida/Documents/Codex/surfing-game/.claude/worktrees/body-inertia
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 29 skipped (30)
+   Start at  17:08:17
+   Duration  198ms (transform 71%, tests 14%, import 13%, worker 2%)
+

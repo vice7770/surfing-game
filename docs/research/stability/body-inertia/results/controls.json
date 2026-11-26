@@ -1,0 +1,92 @@
+{
+ "identity": {
+  "points": 253,
+  "largestPhiGammaDiff": 0,
+  "pass": true
+ },
+ "control": {
+  "points": 253,
+  "largestRowRelA": 9.380069117603269e-15,
+  "largestRowRelB": 0,
+  "pass": true
+ },
+ "heldout": {
+  "Compress": {
+   "sets": 24,
+   "refSets": 24,
+   "missing": 0,
+   "medianE": 1.0608629514307686,
+   "medianESF": 0.9870340992895714,
+   "worstPerSet": 0,
+   "worstPerSetSF": 0,
+   "pass": true
+  },
+  "tuck": {
+   "sets": 24,
+   "refSets": 24,
+   "missing": 0,
+   "medianE": 1.1395962155525545,
+   "medianESF": 1.0729541858735656,
+   "worstPerSet": 0,
+   "worstPerSetSF": 0,
+   "pass": true
+  },
+  "tall": {
+   "sets": 31,
+   "refSets": 31,
+   "missing": 0,
+   "medianE": 0.8018847880770827,
+   "medianESF": 0.7542792081408579,
+   "worstPerSet": 0,
+   "worstPerSetSF": 0,
+   "pass": true
+  }
+ },
+ "closure": {
+  "Compress": {
+   "sets": 91,
+   "refSets": 91,
+   "missing": 0,
+   "worst": 0,
+   "frozen": {
+    "f": 2.7323653327339823,
+    "zeta": 0.7304549503791342
+   },
+   "sf": {
+    "f": 2.2731531007105423,
+    "zeta": 0.5762501322648226
+   },
+   "pass": true
+  },
+  "tuck": {
+   "sets": 80,
+   "refSets": 80,
+   "missing": 0,
+   "worst": 0,
+   "frozen": {
+    "f": 3.2807119857516573,
+    "zeta": 0.6562255665923455
+   },
+   "sf": {
+    "f": 2.90441065265536,
+    "zeta": 0.5869256537731143
+   },
+   "pass": true
+  },
+  "tall": {
+   "sets": 115,
+   "refSets": 115,
+   "missing": 0,
+   "worst": 0,
+   "frozen": {
+    "f": 2.351586524451158,
+    "zeta": 0.8031708789583288
+   },
+   "sf": {
+    "f": 2.2966420269545447,
+    "zeta": 0.5966231662669573
+   },
+   "pass": true
+  }
+ }
+}
