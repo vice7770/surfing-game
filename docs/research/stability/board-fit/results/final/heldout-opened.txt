@@ -1,0 +1,3 @@
+first opening (crashed on its first set before any output): 13:24:40.083821000 UTC
+second opening (the frozen reader after the fix df0c07ec), the read: 13:25:06 UTC; the reader's own stamp 2026-11-26T13:25:06.615Z
+the held-out runs: seed 4: exit 0 in 2623 s, done 13:18:39;seed 5: exit 0 in 2822 s, done 13:21:58;

@@ -326,7 +326,32 @@ govern are read. I stop at a clean commit if the coordinator says so.
 | time | step |
 | --- | --- |
 | 2026-11-26 | Vicente approves the round: "Yes, start 3.6e" (relayed by the coordinator, consult log `4144ff19`) |
-| (this commit) | the brief, verbatim, and this pre-registration, before any run |
+| 12:32 | the probe's bundle rebuilt from this worktree: sha1 `b91bb540…`, identical to 3.6d's (no run) |
+| **12:34:41** | **the brief, verbatim, and this pre-registration** (`a4d17162`), before any run |
+| 12:34:56 | the held-out twin runs start (Big seeds 4 and 5, `run.sh`, 3.6d's bundle) |
+| 12:35:06 | the full stability report starts (knobs off, `src` untouched) |
+| 12:38–12:42 | the known-plant control (LTI): smoke at 8.5 m/s, then all three centres: 15 of 15 pass |
+| 12:42–12:44 | the first pass of `fit.ts` on the fitting set (question 1 with its synthetic control in the same pass; the fits (a)–(d)); read |
+| 12:47 | the known-plant control for (e): 3 of 3 pass |
+| **12:49:11** | **amendment 1** (`087462da`): the order deviation stated, numerics, cluster-robust se, the one-step bootstrap, bounds, set (e) |
+| 12:48–12:51 | the second pass; the closures' development run on the fitting set, set (c) (`results/dev/`) |
+| 12:51–12:54 | the third pass (the synthetic control's vector metric); fits identical to the second |
+| **12:55:33** | **amendment 2 and the first freeze** (`d36e9416`): the frozen LTI fits, `heldout.ts`, `closures.ts` |
+| 12:56 | the time-varying known-plant variant (registered, reported): the LTI fit defeated |
+| 12:58–12:59 | the speed-following fit's known plant (Compress); the speed-following game fits launched (not read) |
+| **13:11:04** | **amendment 3** (`39df8b51`): the speed-following fit, its control, its held-out rule, the precedence |
+| 13:09–13:11 | the full report done (33.9 min): 227 of 227 and 26 of 26 identical |
+| 13:11 | the speed-following control on all stances: (c) fails on `Iz` in five bins |
+| **13:12:01** | **amendment 4** (`9e4297f1`): `Iz` held in the speed-following (c)–(e); control and fits rerun |
+| 13:12–13:16 | `tsc` clean, the gain lock 5 of 5, the byte check identical; the held-`Iz` control: 9 of 9 bins pass |
+| 13:18:39, 13:21:58 | the held-out runs exit 0 (2,623 s and 2,822 s) |
+| 13:19–13:23 | the speed-following fits (`Iz` held) done; bins and σ checked equal to the registered fit's |
+| **13:24:03** | **the second freeze** (`d36af85a`): the speed-following fits, the controls, question 1's write-up |
+| **13:24:40** | **the held-out files first opened**, by the frozen `heldout.ts`: it crashed on its first set before printing or writing anything (the senses' waveform error indexed to 90 ticks on a 60-tick response) |
+| 13:25:04 | the fix, on its own (`df0c07ec`) |
+| **13:25:06** | **the held-out read** (`heldout.ts`, both fits, once): question 2 |
+| 13:25:10–13:25:51 | question 3's closures (`closures.ts`, unchanged since the first freeze; set (c) of each fit, by the rule), fitting and held-out seeds |
+| 13:26–13:30 | the archive (`runs/`), checked by rerunning the registered fit on the slim fitting rows; the write-up |
 
 ---
 
@@ -406,3 +431,230 @@ slip −970 / −401 / −1071 against −664 / −943 / −1019, the water's ro
    (+6.9 against −6.8 at 6 m/s; +6.0 pooled); the water's roll per roll far below the table — partly (56–82 %, not
    3.6a part 2's near zero); the ankle's spring and damper within 30 % — held (65–86 %); the body's lateral force
    departs — held, and by far more than I guessed (0–9 % in yaw).
+
+## 2. The known-plant controls (before any game fit counts)
+
+| control | data | result |
+| --- | --- | --- |
+| **the registered LTI fit's** (`knownfit.ts`, `results/known/known-*.json`) | `plantAt` at Compress (0.30 m, rail 0) with p* as the true plant, closed with the shipped `PredictiveController`, AR(1) disturbance, A and its 50 twins on four rides at v₀ ± 0.25, ± 0.75 m/s, v₀ = 6.0, 8.5, 10.5; read through 3.6d's `group()` and this round's fit code; 32 open sets per centre | **18 of 18 pass** (unperturbed with (c)'s 19 parameters, and (a)–(e) at p*, at each centre): largest parameter error 7.8 × 10⁻¹¹ ((c), `Iz`, 6.0 m/s), largest response error 7.8 × 10⁻¹³; the multipliers at 1 build his plant bit for bit (largest \|ΔΦ\| 0) |
+| **the time-varying variant, LTI fit** (`knownltv.ts`, registered as reported; `results/known/ltv-lti-*.json`) | the same plants re-evaluated at each tick's speed, depth and rail along the fitting set's own kick windows (Compress 63, tuck 69, tall 59), fitted by the LTI fit at the kick speed | **the LTI fit is defeated by the speed's change inside a window**: on the shipped model itself, relative residual 0.17–0.35 and multipliers off by 50 % to ×11 (the roll-rate roll moment ×10.3–11.6 in the lowest bin, the board's yaw inertia ×2.1–3.2, or to its bound tall); at p*, ×2–8 |
+| **the speed-following fit's** (amendments 3–4; `results/known/ltv-held-*.json`, `ltv-held-holdIz-*.json`) | the same windows, the truth following the speed with the depth and rail held (as the fit does) | (a) and (b) pass in all nine bins (largest 1.9 % and 1.1 %, residual ≤ 1.6 × 10⁻³); (c) failed on `Iz` in five bins (5.2–11.7 %); **with `Iz` held at 1 (§0.3's rule), (c) passes in all nine (largest 0.8 %, residual ≤ 1.6 × 10⁻³)** |
+| question 1's synthetic control | §1 | passes (‖b̂ − b‖ / ‖b‖ ≤ 2.8 × 10⁻¹²) |
+
+My prediction 2 held in part: (a) and (b) recover; the unidentifiable one in (c) is the board's yaw inertia against the
+rider's lower yaw inertia (the speed-following fit only), not the twist's damping.
+
+## 3. Question 2: does a model fitted to the twins predict nudges it has not seen?
+
+*The fits: per stance and speed bin (terciles of the fitting set's kick speeds: Compress [4, 8.7), [8.7, 10.1),
+[10.1, ∞) m/s with 21 / 20 / 22 sets, medians 5.97 / 9.28 / 10.50; the tuck [4, 8.5), [8.5, 10), [10, ∞) with
+24 / 23 / 22; tall [4, 9.2), [9.2, 10.4), [10.4, ∞) with 19 / 20 / 20), the eight mechanical states over 1.0 s, each
+state and channel scaled by its own RMS. Every fit, its multipliers, bootstrap, singular values and in-sample errors:
+`results/fit/` (registered, LTI) and `results/fit-ltv/` (speed-following); set (c)'s multipliers in
+`results/final/fit-summary.md`. The held-out read: `results/final/heldout-q2.md` (Big seeds 4 and 5, read once at
+13:25:06 UTC; §0.11).*
+
+### 3.1 The fits on the fitting set (in-sample)
+
+| stance | shipped e (median) | (a) / (b) / (c) e, LTI | ratio to shipped, (c) LTI, by bin | (c) speed-following, ratio to the shipped speed-following, by bin | the FIR (bin mean) e, by bin |
+| --- | --- | --- | --- | --- | --- |
+| Compress | 1.12 / 0.97 / 1.02 | 0.60 / 0.58 / 0.56; 0.51 / 0.51 / 0.50; 0.33 / 0.34 / 0.32 (by bin) | 0.49 / 0.59 / 0.30 | 0.51 / 0.47 / 0.29 | 0.75 / 0.52 / 0.34 |
+| tuck | 1.23 / 1.02 / 1.03 | (c) 0.51 / 0.58 / 0.39 | 0.40 / 0.58 / 0.34 | 0.40 / 0.51 / 0.35 | 0.61 / 0.59 / 0.35 |
+| tall | 0.88 / 0.75 / 0.73 | (c) 0.38 / 0.37 / 0.34 | 0.46 / 0.47 / 0.45 | 0.41 / 0.51 / 0.51 | 0.45 / 0.36 / 0.37 |
+
+- **The fitted multipliers are not physical constants.** In Compress the water's per-slip and per-roll-rate scales
+  run to ×10–36 above 8.7 m/s, the board's roll inertia ×1–54, and in every stance some inertia runs to its bound
+  (0): the board's yaw inertia, the body's frontal inertia or the rider's lower yaw inertia, by bin; the
+  speed-following fit's middle Compress bin puts the slip's three scales at ±10⁶ (κ 1.1 × 10⁴). The bootstrap ranges
+  are wide: 15 of Compress's 36 water-scale intervals (set (c), registered) cross zero. The time-varying known plant (§2) shows that the LTI fit
+  produces multipliers of this kind from the speed's change alone; the speed-following fit removes that source and
+  still finds them. So the fits are descriptions of the responses, not a measurement of the board's terms; question 1
+  is the term-level measurement.
+- **Each extra set buys almost nothing.** From (a) to (c) the relative residual falls by 0.01–0.06 in every bin; (d)
+  (the pendulum's height and the ankle) and (e) (the feet's station and the deck's height) by another 0.00–0.03. The
+  in-sample fits are about as good as the bin's mean response (the FIR): the 0.3–0.6 left over is the spread between
+  sets of one bin, which one LTI or speed-following model per bin cannot follow.
+- **Per (base, kick time) fits of (a)** (descriptive, `results/fit/fit-<stance>.md` last table; Compress, 25 pairs with
+  both channels): one plant per kick leaves a relative residual of 0.15–0.36 (median 0.22 on the 22 pairs above
+  5.5 m/s), against 0.34–0.65 for one plant per bin, so most of the bins' misfit is the plant changing from one kick to
+  the next. Above 5.5 m/s the pairs agree on a pattern: the roll damping per roll rate ×2–15 the table's (21 of 22),
+  the roll moment per yaw rate of the other sign (21 of 22), the slip's yaw and side force ×1–5, the roll moment per
+  roll ×0–0.9. Two pairs at 4.9–5.0 m/s run to multipliers of 10²–10⁴.
+
+### 3.2 The held-out prediction (the registered rule; Compress decides)
+
+| stance (held-out open sets) | shipped e, median | (a) / (b) / (c): median e / e_shipped; sets better | the FIR's ratio | speed-following (a) / (b) / (c): ratio to the shipped speed-following; better | predicts? registered / speed-following |
+| --- | --- | --- | --- | --- | --- |
+| **Compress (24; 10 ankle)** | 1.061 | **0.543 / 0.563 / 0.514; 24 / 24 / 24 of 24** | 0.483 | **0.573 / 0.542 / 0.540; 23 / 24 / 24** | **no / no** |
+| tuck (24; 11 ankle) | 1.140 | 0.523 / 0.530 / 0.545; 24 / 23 / 22 | 0.401 | 0.456 / 0.444 / 0.443; 24 / 24 / 24 | no / **yes, (a)** |
+| tall (31; 8 ankle) | 0.802 | 0.416 / 0.393 / 0.411; 31 / 31 / 30 | 0.404 | 0.478 / 0.466 / 0.474; 29 / 29 / 29 | **yes, (a)** / **yes, (a)** |
+
+- **Question 2's answer is no, narrowly.** In Compress every nested set of both fits predicts every held-out set
+  better than the shipped model (24 of 24 for (a)–(c) of the registered fit), and halves the error, but the median
+  ratio is 0.51–0.57, above the registered 0.5. The registered fit's (c) is the closest, 0.514 [0.443, 0.636]. The
+  tuck passes with the speed-following fit (0.44–0.46) and fails with the registered one (0.52–0.55); tall passes with
+  both. The exploratory (d) and (e) do no better (Compress 0.52–0.55).
+- **The ceiling.** The fitting bin's mean response (the FIR) reaches 0.483 in Compress, 0.401 the tuck and 0.404 tall:
+  a single response per bin is as good as any fitted plant here, and only just under the line. The free mechanical
+  rows (one-step least squares) are unstable when simulated (median ratio 1.2–5.9). The blended design A used is the
+  shipped `plantAt` to 10⁻³ (ratio 1.000).
+- **By speed** (Compress, registered (c)): 0.48 below 8.7 m/s (12 sets), 0.56 at 8.7–10.1 (6), 0.58 above (6).
+- **The selected set**: none predicts in Compress, so by the rule question 3 proceeds with each fit's set of the lowest
+  held-out median ratio: (c) for both, labelled as having failed question 2.
+- **My prediction 3** was wrong: (a) is as good as (b) and (c) (the body's bank is not the missing piece the shapes
+  suggested), the median ratio is 0.51–0.57, not 0.4, and the roll inertia's multiplier is not consistently below 1.
+
+## 4. Question 3: the fitted model closed with the shipped design
+
+*Closed twins passing over 1.5 s at ≥ 4 m/s, the fitting and held-out seeds pooled (Compress 66 + 25, the tuck
+61 + 19, tall 73 + 42); Ω's response (the model's −r) to a unit kick on either channel over 1.5 s; the fitted plant set
+(c) of its bin; the controller the exact perturbation map of the blended designs, A's own speed, depth and rail per
+tick. `results/final/q3-ltv-c.md` (primary, the speed-following fit) and `q3-lti-c.md` (the registered fit), with
+the fitting and held-out seeds apart.*
+
+| Compress, pooled (91 sets) | Prony f, median | f − f_twin, median paired | waveform error Ω | Prony ζ | damped-sinusoid ζ | envelope ratio |
+| --- | --- | --- | --- | --- | --- | --- |
+| **the closed twins** (the game) | 2.54 | | | 0.033 | −0.036 | 0.91 |
+| speed-following fit (c), speed-following closure (**primary**) | 2.52 | +0.12 | **2.02** | −0.059 | −0.083 | 1.94 |
+| … frozen | 2.57 | +0.17 | 2.56 | −0.079 | −0.098 | 2.70 |
+| registered fit (c), speed-following closure | 2.66 | +0.12 | **0.90** | 0.072 | 0.007 | 0.62 |
+| … frozen | 2.65 | +0.12 | 0.87 | 0.053 | 0.000 | 0.56 |
+| the shipped model, speed-following | 2.27 | −0.26 | 0.98 | 0.576 | 0.112 | 0.13 |
+| … frozen | 2.73 | +0.23 | 0.99 | 0.730 | 0.127 | 0.26 |
+| 3.6d's S0 (the measured open response closed; 50 sets) | 2.71 | +0.17 | 1.58 | −0.051 | | 1.49 |
+
+| stance, pooled | primary: Δf, waveform, ζ (Prony) | registered fit: Δf, waveform, ζ | the twins' ζ | the shipped model: Δf, ζ |
+| --- | --- | --- | --- | --- |
+| tuck (80) | +0.14, **0.70**, 0.083 | +0.11, 0.88, 0.078 | 0.054 | +0.20, 0.587 |
+| tall (115) | −0.18, 1.05, 0.180 | −0.13, 0.93, 0.127 | 0.057 | +0.09, 0.597 |
+
+1. **The fitted models put the loop's mode where the game's is, and nearly undamped; the shipped model does not.**
+   Closed with the balance's own design, both fits ring at the twins' frequency within +0.12 Hz in Compress (+0.11 to
+   +0.14 the tuck) with Prony ζ −0.06 to +0.08 against the twins' +0.03 to +0.05, where the shipped model, closed the
+   same way, gives ζ 0.58–0.73 and a frequency 0.23–0.26 Hz off. The registered fit's closure is the closer in decay
+   (ζ +0.07, envelope 0.62 against 0.91); the speed-following fit's grows (ζ −0.06; below 8.7 m/s it diverges:
+   ζ −0.135, waveform 17.8 on 37 sets).
+2. **It does not reproduce the waveform, so question 3's answer is no** (registered: |Δf| ≤ 0.15 Hz and the median
+   waveform error ≤ 0.6). Compress: the primary's waveform error is 2.02 (the registered fit's 0.90); the tuck 0.70
+   (0.57 on its 19 held-out sets) and tall 1.05. A waveform error near 0.9 means the predicted ring is as far from the
+   twin's as no ring at all: a 0.1 Hz error is half a cycle of phase by the end of 1.5 s, and the sets' own
+   frequencies spread.
+3. **The delay sweeps** (the fitted model with the designs rebuilt for 4 and 8 ticks and with the senses shifted ±2;
+   Prony f, median over the sets, against 3.6d's and 3.6c's measured peaks):
+
+   | | Compress: primary / registered fit / measured | tuck: primary / measured | tall: primary / measured |
+   | --- | --- | --- | --- |
+   | 4 ticks | 2.78 / 2.87 / **3.08** | 3.14 / 3.26 | 2.13 / 2.90 |
+   | 6 ticks | 2.52 / 2.66 / 2.67 | 2.78 / 2.90 | 1.95 / 2.31 |
+   | 8 ticks | 2.32 / 2.52 / 2.36 | 2.53 / 2.54 | 1.92 / 2.11 |
+   | senses −2 | 3.41 / 3.44 / **3.72** | 3.65 / 3.73 | 2.04 / 4.26 |
+   | senses +2 | 2.14 / 2.19 / 2.05 | 2.31 / 2.33 | 1.72 / 1.93 |
+   | predicts (all within ±0.25, order right) | **no** (4 ticks −0.30, −2 −0.31) / no (−2 −0.28) | **yes** | no |
+
+   In the tuck the speed-following fit predicts all five peaks within 0.12 Hz, in order. In Compress both fits get
+   6, 8 and +2 within 0.16 Hz and the order right, and fall short on the short-delay side by 0.21–0.31 Hz (the
+   registered fit's 4-tick peak, −0.21, is inside the line; its −2 peak, −0.28, is not), as 3.6d's measured response
+   did (2.51 pooled, 3.02 Prony, at 4 ticks). Tall misses: its fitted loop is too slow (1.9–2.1 Hz against 2.3) and
+   insensitive to the senses' shift.
+4. **My prediction 4** was right on the frequency and the near-zero damping in Compress and the tuck, wrong on the
+   waveform (≤ 0.6) and on tall.
+
+## 5. Question 4
+
+**Not reached**: question 3's primary closure does not reproduce in Compress (§0.6). No design was built on the fitted
+plant.
+
+## 6. Controls (knobs off; `src` untouched)
+
+| control | result |
+| --- | --- |
+| `git diff 4a50e650 --stat -- src scripts` | empty: no `src` or `scripts` change, so no knob |
+| The full stability report, `npm run report:stability -- --mode full`, 12:35:06–13:09 UTC, 33.9 min, beside the two held-out runs and the fits | exit 0, 0 regressions, 0 improvements; **227 of 227** ride lines identical to `baseline-full.json`, its 26 test-wave lines identical to `baseline-quick.json`'s (3.6c's `same.py`; `results/report-full.txt`). The quick report was not run (`src` unchanged; the brief asks for it after a `src` change only) |
+| The Canyon byte check | snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`: **identical** (`results/byte-check.txt`) |
+| `npx tsc -b` | clean |
+| The gain lock, `npx vitest run src/physics/stabilityGains` | **5 of 5** |
+| The probe | 3.6d's `response-probe.ts` unchanged; the bundle rebuilt here is bit for bit 3.6d's (sha1 `b91bb540…`) |
+| The known-plant controls, question 1's synthetic control | §2, §1 |
+| The archive | the registered fit rerun on the slim fitting rows (`runs/fitting.tar.gz`) gives its JSON (bins, edges, per-pair fits, question 1) and its table identical |
+| No arm, no hidden motor, no bound touched | the round ran the shipped game; the fits and closures are offline models |
+
+## 7. For Vicente
+
+**What the board does that the balance's picture of it does not**, measured term by term from the nudged twins, in
+Compress and the tuck (tall is nearer the picture):
+- **The rider's weight does not hold the board's heading the way the picture says.** In the balance's model the body's
+  sideways inertia, carried by the feet 0.24 m behind the board's centre, resists every turn of the board; in the game
+  that effect is a twentieth of the model's or less. The twist between the hips and the legs, by contrast, is exactly
+  the model's.
+- **The board is several times lighter in roll than the picture says**, and the water's grip on it is a fifth to four
+  fifths of the table's, with two of its terms of the other sign (the fins turn the board the other way when it rolls,
+  at the lower speeds).
+- So the real board rolls and turns more and sooner for the same push, which is what 3.6d saw.
+
+**What fitting the picture to the nudges gives.**
+- A model fitted to the nudges predicts fresh nudges (seeds 4 and 5, never seen) better than the shipped picture on
+  every one of 24 Compress nudges, with about half the error; by the bar set in advance (better on 75 % and at most half
+  the error, in the median) it falls just short in Compress (0.51–0.57 of the error), and passes tall and, with the
+  speed-following fit, the tuck.
+- Closed with the balance's own, unchanged design, the fitted model rings at the game's frequency (2.5–2.7 Hz in
+  Compress, within 0.12 Hz) and barely decays, as the game does, where the shipped picture decays within a swing. In
+  the tuck it also predicts how the swing's frequency moves with the reaction time, every case within 0.12 Hz. But it
+  does not reproduce the swing's waveform nudge by nudge (the registered bar), so it is not yet a model the balance can
+  be rebuilt on.
+- The fitted numbers themselves are not physical: they move a lot from bin to bin and some inertias run to zero. The
+  term-by-term measurement (above) is the part to trust.
+
+**No change is proposed** and none was made: no arm, the shipped design and gains untouched, the lock unchanged. What
+this suggests, each needing his word:
+1. The rider's yaw coupling through the feet and the board's roll inertia are the two terms of the balance's picture
+   most at odds with the game; a picture rebuilt with those two from the ledgers (not from a whole-response fit) is the
+   next candidate to test, model-only, before any arm.
+2. The board's answer changes from one nudge to the next more than any one picture per speed can follow (one fitted
+   plant per nudge leaves a fifth of the response unexplained, one per speed band a third to two thirds); a balance that
+   assumes one picture will keep meeting that gap.
+
+## 8. What I could not settle, and what I would test next
+
+- **Question 2 fails by a hair, and the ceiling is close to the line.** In Compress the best ratio is 0.514 against
+  the 0.5 bar, and the fitting bins' own mean response only reaches 0.483. With 24 held-out Compress sets (two seeds),
+  that margin is inside the sampling noise; I would not read "fails" as "far from passing".
+- **Question 3's waveform.** The fitted closures find the ring's frequency and its near-zero damping, but the waveform
+  errors are 0.70–2.0 (registered bar 0.6). The speed-following fit's Compress plant below 8.7 m/s makes the loop
+  grow (ζ −0.135), the registered fit's does not; which is nearer the board is not settled, since both miss the
+  waveform.
+- **Why the fitted multipliers are unphysical.** The time-varying known plant shows the LTI fit manufactures them from
+  the speed's change; the speed-following fit removes that source and still produces some (the slip scales at 10⁶ in
+  one bin). The remaining candidates: the board's heave and pitch (3.6a part 2's leftover; the 10-state model has none),
+  the plant changing between kicks for reasons other than speed (depth, the face), and the β measured in the rider's
+  heading frame. Next: per-kick fits with the term-level structure of §1 imposed (the feet's lever and the roll
+  inertia from the ledgers), and the 14-state plant with heave and pitch, scored on the same held-out set.
+- **The game's yaw "negative added inertia"** (+0.8 to +1.0 N·m per rad/s² in the water's yaw ledger) and the yaw
+  acceleration rolling the board (−0.7 to −0.9) are measured, not explained: they may be the implicit added-mass solve
+  booked against the board's own rate, or a sub-frame timing of the ledger. A check against the bare board's ledger
+  (3.6c M1) would separate them.
+- **The registered rule on the synthetic control was misread by my code**, and question 1 was read before the control
+  was confirmed (amendments 1–2): stated, fixed, and the coefficients unchanged.
+
+## 9. Where everything is, and how to recompute it
+
+- **Raw runs** (session scratchpad):
+  `/private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36e/`:
+  `heldout/big_s{4,5}.jsonl` (the held-out twin runs, whole, with `status.txt`), `rep/f-off/` (the full report),
+  `byte/` (the byte check), `fit3/`, `fitltv2/` (the frozen fits as run), `known2/`, `ltv/`, `ltv2/`, `ltv3/` (the
+  controls), `final/` (the held-out read and the closures), `bin/` (every bundle; `response-probe-b91bb540.mjs` the
+  probe). The fitting set is 3.6d's `scratchpad/36d/twins/` (read-only).
+- **Archived here** (`runs/`): `heldout.tar.gz` (the held-out runs whole, every row, with their ledgers; 21 MB) and
+  `fitting.tar.gz` (the fitting set's `weights`, `kbase` and `kick` rows, the ledgers' `e` kept on the open kicked rows
+  of sizes ±1, which is all question 1 reads; `slim.py`; 27 MB; checked to give the registered fit again).
+- **The scripts** (bundle with `./node_modules/.bin/rolldown <file> --file <out>.mjs --format esm --platform node`,
+  then prepend `globalThis.location = { search: '' };`):
+  - `run.sh <probe bundle> <out dir>`: the held-out runs;
+  - `knownfit.mjs <centre> <out.json> [sets]`: the LTI known plant;
+  - `knownltv.mjs <stance> <fit dir> <twins dir> <out.json> [--ltv] [--held] [--holdc Iz]`: the time-varying known plant;
+  - `fit.mjs <stance> <out dir> <twins dir>` (registered) and `… --ltv --from <registered fit dir> --holdc Iz`
+    (speed-following): question 1 and the fits;
+  - `heldout.mjs <registered fit dir> <held-out dir> <out dir> <speed-following fit dir>`: question 2;
+  - `closures.mjs <fit dir> c <out prefix> fitting=<twins dir> heldout=<held-out dir>`: question 3.
+- **The results**: `results/fit/`, `results/fit-ltv/` (the frozen fits and their tables), `results/known/` (the
+  controls), `results/final/` (`heldout-q2.md`, `q3-ltv-c.md`, `q3-lti-c.md`, `fit-summary.md`, `heldout-opened.txt`),
+  `results/dev/` (the closures' development run), `results/report-full.txt`, `results/byte-check.txt`.
