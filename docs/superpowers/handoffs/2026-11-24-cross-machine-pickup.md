@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 14:55 UTC.**
+- **Status, 2026-11-26, about 16:30 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -88,29 +88,41 @@
       - **Open:** fitting `plantAt`'s mechanical terms to the twins, read blind on held-out kicks. That is 3.6e, below. A design on a corrected model would be an arm and would move the gain lock.
     - **3.6e is done and reviewed** (Vicente: "Yes, start 3.6e", 2026-11-26; dispatched as consult log `4144ff19`; the review is `7c86cfa9`).
       - It is on `claude/board-fit` `ef7908f2`, from `4a50e650`: docs, fits and probes, with no `src` change. The full report (227 of 227 and 26 of 26 identical) and the byte check are identical. The held-out seeds stayed blind until the fits were frozen.
-      - **Two of the board's terms, measured and confirmed by the coordinator's own regression:**
-        - The board barely feels the rider's sideways momentum in yaw: those terms are 0–9 % of the model's, and the yaw inertia it feels is the legs' share alone (1.1–1.3 kg·m² in Compress, against the model's 5.6).
-        - The board and the water roll with an inertia of 0–0.3 kg·m², against the model's 0.63–1.0.
+      - **Its term table is withdrawn by the 3.6f review (`0247a8e2`).**
+        - The table read the board as barely feeling the rider's sideways momentum in yaw: those terms were 0–9 % of the model's, and the yaw inertia it felt was the legs' share alone. It also read the board and the water as rolling with 0–0.3 kg·m², against the model's 0.63–1.0.
+        - 3.6f shows that the same regression returns those small yaw coefficients for a term with the full lever built in. So the yaw reading is the method's, not the board's. The roll side rests on the same regression and has not been tested.
+        - Neither is to be used to correct the balance's picture.
       - **The fit** (`plantAt`'s own parameters) halves the error on every fresh Compress nudge but misses the bar narrowly: 0.514 against 0.5, within sampling. The fitted numbers are not physical.
       - **The closure** (the fitted model with the shipped design) matches the game's swing frequency on the fitting seeds only. On the fresh seeds it misses by +0.30 and +0.51 Hz in Compress. The registered waveform bound was out of reach for any one response per speed bin.
-      - **The review's new reading:** the model's 0.244 m lever is the game's own geometry. So the open question is why the game's board barely feels the body's sideways momentum, which may be a question about the game's physics, not only about the balance's picture.
-      - **Open:** where the rider's sideways momentum goes in the game's coupled solve. That is 3.6f, below. Nothing is proposed for the balance yet.
-    - **3.6f is running** (Vicente: "Yes, start 3.6f", 2026-11-26; dispatched as consult log `dab31365`).
-      - Opus at xhigh, on `claude/rider-momentum` from `ef7908f2` (pushed at `abe24730`), in `.claude/worktrees/rider-momentum`. The brief is in `docs/research/stability/rider-momentum/`.
-      - **Diagnosis only:** a code read plus a small probe. No arm, and no fix even if a leak is found; a fix would need his word.
-      - **The plan:**
-        - trace how the body's momentum is carried as the board turns;
-        - measure the momentum accounting per substep, with controls;
-        - measure the yaw inertia the board feels with the bank ledger's unit impulses;
-        - check the ledger's booking while he stands;
-        - give a verdict with sizes: a leak in the coupling, the reaction booked as water, or a freedom the model lacks.
+      - **The lever, which stands:** the model's 0.244 m lever is the game's own geometry.
+    - **3.6f is done and reviewed** (Vicente: "Yes, start 3.6f", 2026-11-26; dispatched as consult log `dab31365`; the review is `0247a8e2`).
+      - It is on `claude/rider-momentum` `fc466712`, from `ef7908f2`: docs and probes, with no `src` change.
+        - The full report gives 227 of 227 and 26 of 26 identical. The byte check, `tsc` and the gain lock pass.
+        - The coordinator checked each of these and recomputed the key numbers from the raw rows with its own reader.
+      - **The game does not lose the rider's sideways momentum.**
+        - The coupled solve gives the board the body's reaction at the body's own arm, 0.25–0.30 m behind the board's centre.
+        - The books close to rounding on every substep.
+        - The controls closed first: a bare board on the Canyon face, the rider prone, and unit pushes with known answers.
+      - **3.6e's term table could not see it.** A test term with the full lever built in, put through the same regression, comes out just as small: the regression files the rider's push under the ankle's states.
+      - **At the instant a turn starts, neither the game's board nor the balance's picture meets the body's mass at its lever.** The light board slides sideways under it. In both, what the board meets is the board, the water and the legs.
+      - **One real difference.** The picture's body has its own rotational inertia (4.6 kg·m² in Compress), which makes the feet drag 12.7 kg of the body sideways. The game's point-mass body drags none.
+        - A sideways push at the feet turns the game's board 3–5 times as much as the picture's.
+        - Without that inertia the picture matches the game's yaw answer but overshoots the side push. So the board's sway differs too.
+        - Their effect on the 2.5–3 Hz swing is not measured.
+      - **Three small bookkeeping faults in the game, named and not fixed.** They are a game-physics question for Vicente.
+        - The legs' spin tilts with the leg line without a torque.
+        - On substeps where the feet cannot hold, the trunk's pitch couple reaches nothing.
+        - At the stand, the legs' spin starts from the board's.
+
+        All three are small except where the feet have already lost their hold.
+      - **Next, waiting for Vicente:** a candidate 3.6g, model-only. It sets the picture's own nudge responses, with and without the body's inertia, against the game's twins.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `dab31365`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `0247a8e2`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -181,9 +193,9 @@ Also open:
 | `claude/faster-turns` | `340fc560` | 3.6b: faster turns in Compress and Crouch; neither arm passes, and the diagnosis is the result (from `dea549c7`) |
 | `claude/wobble` | `5f69e9dc` | 3.6c: the deep stances' wobble is the balance loop's own mode on the board as it rides; the tip is the body's speed across the feet; a turn after letting go of R2 falls until the leg is up (docs, probes and diagnostic knobs, off by default; from `340fc560`) |
 | `claude/board-response` | `4a50e650` | 3.6d: the matched delay sets the swing's size and part of its frequency; the command path and senses match the balance's model and the board's mechanics do not (docs, probes and diagnostic knobs, off by default; from `5f69e9dc`) |
-| `claude/board-fit` | `ef7908f2` | 3.6e: the board barely feels the rider's sideways momentum in yaw and rolls far lighter than the balance's picture; the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only (docs, fits and probes; from `4a50e650`) |
-| `claude/rider-momentum` | `abe24730` | 3.6f, running: where the rider's sideways momentum goes when the board turns (diagnosis only; from `ef7908f2`; the builder's commits follow) |
-| `claude/the-record` | `dab31365` | the consult log (verified on the remote 2026-11-26) |
+| `claude/board-fit` | `ef7908f2` | 3.6e: the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only; its term table (the board barely feeling the rider in yaw, rolling far lighter) is withdrawn by the 3.6f review (docs, fits and probes; from `4a50e650`) |
+| `claude/rider-momentum` | `fc466712` | 3.6f: the game's coupled solve conserves the rider's momentum, and the board meets the body's push at its arm; 3.6e's term table could not see it; the picture's body has a rotational inertia the game's lacks (docs and probes; from `ef7908f2`) |
+| `claude/the-record` | `0247a8e2` | the consult log (verified on the remote 2026-11-26) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
