@@ -179,7 +179,7 @@
       - **He chose the root round** after an explainer page (below). The earlier list waits: the quicker rider, the falls after the steer, and the ankle's range.
     - **3.6j, turn first, is running** (dispatched 2026-11-27 about 17:10 UTC; consult log `46cdcc8e`).
       - **The explainer.** He asked for one at about 11:45 UTC: "give me in a html explanation the steps on what makes the surfer move … I dont want a nudge in the middle of the turning".
-        - It is a private claude.ai page, "How the Surfer Moves". Its content is in the session scratchpad's `surfer-page/content.md`.
+        - It is a private claude.ai page, "How the Surfer Moves". A standalone copy is committed on this branch at [`docs/research/new-rider/how-the-surfer-moves.html`](../../research/new-rider/how-the-surfer-moves.html), and its content source is in the session scratchpad's `surfer-page/content.md`.
         - It shows the chain function by function at `a1f22e33`.
         - The balance expects about twice the turn the board makes.
         - It offered A (turn first, the lean follows), B (the picture rebuilt from the measured board) and C (more switches).

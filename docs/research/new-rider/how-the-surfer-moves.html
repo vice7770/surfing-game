@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- "How the Surfer Moves": the explainer published for Vicente on 2026-11-27 (a private claude.ai page), with a
+     document skeleton added so this file opens on its own. Function lines are from claude/turn-entry a1f22e33. -->
+<style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>How the Surfer Moves</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Design tokens
+   Palette: --accent deep sea teal; --bg / --surface / --line sea-tinted neutrals;
+   tag colors (turn violet, stick amber, nudge magenta, fall red) are semantic and separate from the accent.
+   Type: Space Grotesk headings, Inter text, JetBrains Mono for function names and file:line.
+   Layout: one narrow column, a vertical chain of numbered steps in nested frames, a small loop diagram. */
+:root {
+  --bg: #f3f7f8;
+  --surface: #ffffff;
+  --surface2: #e8f0f2;
+  --fg: #12262d;
+  --muted: #4e656d;
+  --line: #c3d3d8;
+  --accent: #0b6e83;
+  --accent-soft: #d5ebf0;
+  --turn: #5b3fb5;
+  --turn-soft: #e6e0f7;
+  --stick: #8a5a00;
+  --stick-soft: #f8ebc8;
+  --nudge: #b0185b;
+  --nudge-soft: #f8dbe8;
+  --fall: #b3261e;
+  --fall-soft: #f8dcd9;
+  --ok: #1d6b3a;
+  --ok-soft: #d8efdf;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1a1f;
+    --surface: #132830;
+    --surface2: #1a343d;
+    --fg: #e3eff2;
+    --muted: #9db6bd;
+    --line: #2d4b55;
+    --accent: #5cc3d9;
+    --accent-soft: #14414c;
+    --turn: #b7a4f5;
+    --turn-soft: #2d2552;
+    --stick: #f0c15a;
+    --stick-soft: #43330c;
+    --nudge: #f58ab8;
+    --nudge-soft: #4d1730;
+    --fall: #ff8d84;
+    --fall-soft: #4f1c18;
+    --ok: #7fd49b;
+    --ok-soft: #14392361;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1a1f;
+  --surface: #132830;
+  --surface2: #1a343d;
+  --fg: #e3eff2;
+  --muted: #9db6bd;
+  --line: #2d4b55;
+  --accent: #5cc3d9;
+  --accent-soft: #14414c;
+  --turn: #b7a4f5;
+  --turn-soft: #2d2552;
+  --stick: #f0c15a;
+  --stick-soft: #43330c;
+  --nudge: #f58ab8;
+  --nudge-soft: #4d1730;
+  --fall: #ff8d84;
+  --fall-soft: #4f1c18;
+  --ok: #7fd49b;
+  --ok-soft: #14392361;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55;
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+h1, h2, h3 { font-family: "Space Grotesk", Inter, system-ui, sans-serif; text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 30px; }
+h2 { font-size: 21px; }
+h3 { font-size: 16px; }
+p, ul, ol { margin: 0; }
+.prose { max-width: 65ch; }
+.small { font-size: 12.5px; color: var(--muted); }
+code, .chip, .loc { font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; }
+code { font-size: 0.9em; background: var(--surface2); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+header { display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.lead { font-size: 16px; max-width: 65ch; }
+
+/* checked box */
+.check { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.check ul { padding-left: 18px; display: flex; flex-direction: column; gap: 8px; max-width: 65ch; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* chain */
+.frame { position: relative; border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 22px; min-width: 0; background: var(--surface2); }
+.frame .frame { background: var(--bg); border-style: dashed; }
+.frame .frame .frame { background: var(--surface2); border-style: solid; border-color: var(--accent); }
+.frame-label { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+.frame .frame .frame > .frame-label { color: var(--accent); }
+.frame-label code { text-transform: none; letter-spacing: 0; }
+.chain { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.step { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; min-width: 0; }
+.chain > .step ~ .step::before, .chain > .step ~ .frame::before, .chain > .frame ~ .step::before, .chain > .frame ~ .frame::before {
+  content: ""; position: absolute; left: 24px; top: -22px; height: 22px; width: 2px; background: var(--muted);
+}
+.chain > .step ~ .step::after, .chain > .frame ~ .step::after {
+  content: ""; position: absolute; left: 19px; top: -8px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid var(--muted);
+}
+.sn { font-family: "Space Grotesk", Inter, sans-serif; font-weight: 700; font-size: 15px; color: var(--accent); background: var(--accent-soft); border-radius: 6px; min-width: 34px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0 6px; grid-row: 1; }
+.sh { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; min-width: 0; grid-column: 2; }
+.st { font-weight: 600; font-size: 14.5px; }
+.sb { grid-column: 2; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; background: var(--accent-soft); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 7px; overflow-wrap: anywhere; }
+.loc { font-size: 11.5px; color: var(--muted); overflow-wrap: anywhere; }
+.what { font-size: 13.5px; max-width: 65ch; }
+.what ul { padding-left: 18px; display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.tag { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; border-radius: 5px; padding: 2px 8px; font-weight: 600; border: 1px solid currentColor; }
+.tag b { letter-spacing: 0.08em; font-weight: 700; }
+.tag span { font-weight: 400; }
+.tag-turn { color: var(--turn); background: var(--turn-soft); }
+.tag-stick { color: var(--stick); background: var(--stick-soft); }
+.tag-nudge { color: var(--nudge); background: var(--nudge-soft); }
+.tag-fall { color: var(--fall); background: var(--fall-soft); }
+.note { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 10px; max-width: 65ch; }
+.tail { font-size: 13px; color: var(--muted); }
+
+/* loop svg */
+.scroller { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+.scroller svg { display: block; min-width: 560px; width: 100%; height: auto; }
+.node { fill: var(--surface2); stroke: var(--accent); stroke-width: 1.5; }
+.pic { fill: var(--turn-soft); stroke: var(--turn); stroke-width: 1.5; }
+.frame-pic { fill: none; stroke: var(--turn); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.t { fill: var(--fg); font-family: Inter, system-ui, sans-serif; font-size: 12.5px; text-anchor: middle; }
+.t2 { fill: var(--muted); font-family: Inter, system-ui, sans-serif; font-size: 11px; text-anchor: middle; }
+.tl-pic { fill: var(--turn); font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; text-anchor: middle; }
+.tl-delay { fill: var(--stick); font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; text-anchor: middle; }
+.arrow { stroke: var(--muted); stroke-width: 2; fill: none; }
+.arrow-delay { stroke: var(--stick); stroke-width: 3; fill: none; }
+.head { fill: var(--muted); stroke: var(--muted); }
+.head-delay { fill: var(--stick); stroke: var(--stick); }
+
+/* measured list */
+ol.measured { padding-left: 22px; display: flex; flex-direction: column; gap: 14px; max-width: 65ch; }
+ol.measured li { padding-left: 4px; }
+ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
+.reading { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; max-width: 65ch; }
+
+/* options */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.card.rec { border: 2px solid var(--ok); }
+.card h3 { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.badge { font-family: Inter, sans-serif; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; color: var(--ok); background: var(--ok-soft); border: 1px solid var(--ok); border-radius: 5px; padding: 1px 8px; }
+.badge.no { color: var(--fall); background: var(--fall-soft); border-color: var(--fall); }
+.card dl { margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
+.card dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.card dd { margin: 0; display: flex; flex-direction: column; gap: 3px; }
+.card dd ul { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 3px; }
+.judged { max-width: 65ch; }
+.closing { font-weight: 600; max-width: 65ch; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+@media (max-width: 480px) { h1 { font-size: 26px; } .frame { padding: 10px 8px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Breakline, the new surfer</div>
+  <h1>How the Surfer Moves</h1>
+  <p class="lead">On every game tick the controller's input goes into the ride session. The board, the rider and the water are then solved together in small substeps. In each one, the rider's balance chooses two commands, the ankle's rest angle and the upper body's twist torque. It chooses them from what it sensed 0.1 s ago and from its own picture of the board. The water, the fins and those two torques move the board, and a capture-point test decides whether the rider can still stay up.</p>
+  <p class="small prose">The new surfer (<code>rider=new</code>) on your address. Line numbers are from <code>claude/turn-entry</code> <code>a1f22e33</code>, the build on port 5177. With its switches off it rides like the earlier builds.</p>
+</header>
+
+<section aria-labelledby="h-checked">
+  <div class="check">
+    <h2 id="h-checked">Your ride of the combined fix, checked</h2>
+    <p class="small">What you felt, against the bots' rides of the same build (Big swell seeds 1–3, plus the test wave for the bar; the steer starts 1.0 s after the stand and lasts 1.0 s).</p>
+    <ul>
+      <li><b>Compress better:</b> the balance bar's lowest point doubles, from <span class="num">0.038</span> to <span class="num">0.075</span> (mean over 40 deep turns).</li>
+      <li><b>Crouch not:</b> it stays where it was, from <span class="num">0.036</span> to <span class="num">0.039</span>.</li>
+      <li><b>The nudge is real.</b> It is the board aim (<code>turnAim=board</code>). On the rides that stay up, the board had turned 13° by half a second after the steer with the aim alone, against 23° without it. The combination reached 18°. The aim is withdrawn.</li>
+    </ul>
+  </div>
+</section>
+
+<section aria-labelledby="h-chain">
+  <h2 id="h-chain">What makes the surfer move, step by step</h2>
+  <p class="small prose">The numbering is real: it is the order the code runs. Function names are <code>Class.method()</code>, with the file:line beside each.</p>
+
+  <div class="frame">
+    <div class="frame-label">Every tick</div>
+    <div class="chain">
+
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="sh"><span class="st">The controller</span></div>
+        <div class="sb">
+          <div class="chips"><span class="chip">RideSession.step()</span></div>
+          <div class="loc">src/physics/RideSession.ts:494</div>
+          <p class="what">Copies your input onto the rider: <code>steer</code> (left stick), <code>compress</code> (R2), <code>crouch</code>, <code>snap</code>, <code>trim</code>, <code>rotate</code> and <code>hand</code>. Then it steps the board.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="sh"><span class="st">The board's step</span></div>
+        <div class="sb">
+          <div class="chips"><span class="chip">BoardBody.step()</span><span class="chip">advance()</span><span class="chip">substep()</span></div>
+          <div class="loc">src/physics/BoardBody.ts:867, :1098, :1150</div>
+          <p class="what">Splits the tick into small substeps: at least 16 while the new surfer stands (<code>NEW_STANDING_SUBSTEPS</code>, <code>AttachedRider.ts:50</code>).</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="frame">
+    <div class="frame-label">Every substep (<code>BoardBody.substep()</code>)</div>
+    <div class="chain">
+
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="sh"><span class="st">The water on the hull</span></div>
+        <div class="sb">
+          <div class="chips"><span class="chip">placePressure()</span><span class="chip">placeBand()</span></div>
+          <div class="loc">BoardBody.ts:1746, :1800</div>
+          <p class="what">Planing pressure, buoyancy, the water's added mass and the waves the board makes.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="sn">4</div>
+        <div class="sh"><span class="st">Fins and rails</span>
+          <span class="tag tag-turn"><b>TURN</b><span>the turn comes from here</span></span></div>
+        <div class="sb">
+          <div class="chips"><span class="chip">applyFoils()</span></div>
+          <div class="loc">BoardBody.ts:927</div>
+          <p class="what">The fins' and the rail faces' side forces. A board rolled onto its rail meets the water at an angle, and these forces swing it round.</p>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">The rider prepares</div>
+        <div class="chain">
+
+          <div class="step">
+            <div class="sn">5</div>
+            <div class="sh"><span class="st">The rider prepares, in order</span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">AttachedRider.prepare()</span></div>
+              <div class="loc">src/physics/AttachedRider.ts:3731</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="sn">5a</div>
+            <div class="sh"><span class="st">Weight along the board</span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">balanceStep()</span></div>
+              <div class="loc">AttachedRider.ts:6013</div>
+              <p class="what">The trim's pressure forward or back, and Snap's weight over the fins.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="sn">5b</div>
+            <div class="sh"><span class="st">The body's shape</span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">updatePosture()</span></div>
+              <div class="loc">AttachedRider.ts:5883</div>
+              <p class="what">The posture's parts, centre of mass and the feet's support for the phase.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="sn">5c</div>
+            <div class="sh"><span class="st">The stance's depth</span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">prepareLeg()</span></div>
+              <div class="loc">AttachedRider.ts:4515</div>
+              <p class="what">Compress holds the legs 0.30 m down (<code>CROUCH_DEPTH</code>) and Crouch 0.45 m (<code>MANUAL_CROUCH_DEPTH</code>), reached no faster than the legs can move. The knees' strength left is part of the balance bar.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="sn">5d</div>
+            <div class="sh"><span class="st">The twist asked</span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">twistStep()</span></div>
+              <div class="loc">AttachedRider.ts:4196</div>
+              <p class="what">The stick's rotate, or Snap, becomes the twist the body should hold (within ±0.87 rad).</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="sn">5e</div>
+            <div class="sh"><span class="st">The lean asked</span>
+              <span class="tag tag-stick"><b>STICK</b><span>the stick becomes a lean here</span></span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">prepareBank()</span></div>
+              <div class="loc">AttachedRider.ts:3864</div>
+              <div class="what">
+                <ul>
+                  <li>The left stick asks steer × 50° of lean (<code>RAIL_RANGE</code>).</li>
+                  <li>The ask is capped at the lean a 4.5 m-radius turn holds at this speed (<code>TURN_RADIUS</code>): 38° at 5.9 m/s.</li>
+                  <li>It is eased in at no more than 1.4 rad/s (<code>LEAN_IN_RATE</code>), giving <code>leanAsked</code>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="sn">5f</div>
+            <div class="sh"><span class="st">The balance</span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">humanBank()</span><span class="chip">predictiveBank()</span></div>
+              <div class="loc">AttachedRider.ts:3956, :4014</div>
+              <div class="what">
+                <ul>
+                  <li>Every 1/60 s it reads its senses: the body's bank and its rate, the head's yaw rate, the twist and its rate, and the ankle's angle and rate.</li>
+                  <li>Then it calls the balance controller (step 6).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="frame">
+            <div class="frame-label">The balance, every 1/60 s</div>
+            <div class="chain">
+
+              <div class="step">
+                <div class="sn">6</div>
+                <div class="sh"><span class="st">The balance controller</span></div>
+                <div class="sb">
+                  <div class="chips"><span class="chip">PredictiveController.tick()</span></div>
+                  <div class="loc">src/physics/predictiveBalance.ts:1854</div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="sn">6a</div>
+                <div class="sh"><span class="st">Its picture of the board</span></div>
+                <div class="sb">
+                  <div class="chips"><span class="chip">blend()</span></div>
+                  <div class="loc">predictiveBalance.ts:1776</div>
+                  <p class="what">The internal model for this speed, stance depth and rail, blended from the 8 nearest designs.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="sn">6b</div>
+                <div class="sh"><span class="st">The senses, 0.1 s late</span></div>
+                <div class="sb">
+                  <p class="what">They reach the balance 0.1 s after they happen (<code>BALANCE_DELAY</code>). A Kalman filter updates the balance's estimate of the body and board from them.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="sn">6c</div>
+                <div class="sh"><span class="st">The prediction</span></div>
+                <div class="sb">
+                  <p class="what">The estimate is carried forward those 0.1 s, on the picture, with the commands sent since.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="sn">6d</div>
+                <div class="sh"><span class="st">The steady turn</span>
+                  <span class="tag tag-nudge"><b>NUDGE</b><span>the nudge came from here (the board aim swapped this; withdrawn)</span></span></div>
+                <div class="sb">
+                  <div class="chips"><span class="chip">steadyTurn()</span></div>
+                  <div class="loc">predictiveBalance.ts:1561</div>
+                  <p class="what">The steady turn the picture says holds the lean asked: the board's roll, yaw rate and slip, and the ankle and twist commands that hold them. This is the balance's aim.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="sn">6e</div>
+                <div class="sh"><span class="st">The feedback</span></div>
+                <div class="sb">
+                  <p class="what">Command = the steady turn's command − K × (predicted state − steady turn). The gain K weighs every state, the board's yaw rate (0.2 rad/s acceptable) and slip (0.02 rad) included. So the balance holds the board to the steady turn it predicts.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="sn">6f</div>
+                <div class="sh"><span class="st">The limits</span></div>
+                <div class="sb">
+                  <p class="what">The ankle stays within its range. The twist torque stays within ±100 N·m, or within the feet's grip if that is less.</p>
+                </div>
+              </div>
+
+              <div class="note">The turn round's switches act here and stay off unless asked.
+                <ul>
+                  <li><code>entryReference()</code> (<code>:2014</code>) replaced 6d's steady turn: the board aim (withdrawn) and the planned lean.</li>
+                  <li><code>tunedCommand()</code> (<code>:2072</code>) is the wobble filter.</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="sn">7</div>
+            <div class="sh"><span class="st">The muscles</span></div>
+            <div class="sb">
+              <div class="chips"><span class="chip">humanSwingStep()</span><span class="chip">setAnkle()</span></div>
+              <div class="loc">AttachedRider.ts:4138 (back in predictiveBank())</div>
+              <div class="what">
+                <ul>
+                  <li>The hip swing takes what the ankle cannot (<code>humanSwingStep()</code>, <code>:4138</code>).</li>
+                  <li>The ankle's rest and the twist torque ease in over 0.05 s (<code>MOTOR_LAG</code>).</li>
+                  <li>The ankle acts as a spring and damper of 800 N·m/rad between body and board (<code>setAnkle()</code>).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="sn">8</div>
+        <div class="sh"><span class="st">Body and board solved together</span></div>
+        <div class="sb">
+          <div class="chips"><span class="chip">coupleYaw()</span><span class="chip">coupleStanding()</span><span class="chip">solveLinear()</span><span class="chip">settleStanding()</span></div>
+          <div class="loc">AttachedRider.ts:4965, :5020, :5169; BoardBody.ts:1560</div>
+          <p class="what">The board's six motions, the leg, the body's bank and its motion along the board are solved in one implicit step. The ankle and twist torques push body and board equally and oppositely.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="sn">9</div>
+        <div class="sh"><span class="st">Can he stay up?</span>
+          <span class="tag tag-fall"><b>FALL</b><span>the fall is decided here</span></span></div>
+        <div class="sb">
+          <div class="chips"><span class="chip">AttachedRider.finish()</span><span class="chip">captureStep()</span><span class="chip">HumanBalance.capture()</span></div>
+          <div class="loc">AttachedRider.ts:5372, :5534; src/physics/humanBalance.ts:472</div>
+          <div class="what">
+            <ul>
+              <li><b>The capture point</b> is where the body's centre of mass is heading: its offset from the feet plus its speed ÷ √(g ÷ height). It is measured along the vertical the rider feels, which is gravity plus the turn's acceleration, in the deck's frame.</li>
+              <li><b>The balance bar</b> is the least of three margins: the capture point inside the feet, the grip left, and the knees' strength left.</li>
+              <li><b>The fall.</b> Once the capture point is past the feet's edge by more than the reach, with the weight itself past the edge, <code>fallen</code> (<code>:530</code>) and <code>separate('balance')</code> (<code>AttachedRider.ts:5520</code>).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="small prose">After the last substep: <code>endStep()</code> (<code>AttachedRider.ts:3691</code>), and the next tick.</p>
+</section>
+
+<section aria-labelledby="h-loop">
+  <h2 id="h-loop">The balance loop</h2>
+  <div class="scroller">
+    <svg viewBox="0 0 668 300" role="img" aria-labelledby="loop-title loop-desc" xmlns="http://www.w3.org/2000/svg">
+      <title id="loop-title">The balance loop</title>
+      <desc id="loop-desc">Senses, 0.1 s late, go to the estimate, then the prediction, then the steady turn for the lean asked, then the feedback, then the ankle and twist, then body and board, then water, fins and rails, and back to the senses. The prediction and the steady turn both come from the balance's own picture of the board.</desc>
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="head"/></marker>
+        <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="head-delay"/></marker>
+      </defs>
+
+      <rect class="frame-pic" x="342" y="40" width="318" height="80" rx="8" fill="none"/>
+      <text class="tl-pic" x="501" y="34">the picture</text>
+      <text class="tl-delay" x="176" y="34">0.1 s delay</text>
+
+      <rect class="node" x="16" y="50" width="132" height="56" rx="6"/>
+      <text class="t" x="82" y="73">Senses</text><text class="t2" x="82" y="90">0.1 s late</text>
+
+      <rect class="node" x="184" y="50" width="132" height="56" rx="6"/>
+      <text class="t" x="250" y="73">Estimate</text><text class="t2" x="250" y="90">Kalman</text>
+
+      <rect class="pic" x="352" y="50" width="132" height="56" rx="6"/>
+      <text class="t" x="418" y="73">Prediction</text><text class="t2" x="418" y="90">+0.1 s on the picture</text>
+
+      <rect class="pic" x="520" y="50" width="132" height="56" rx="6"/>
+      <text class="t" x="586" y="68">Steady turn</text><text class="t2" x="586" y="84">for the lean asked</text><text class="t2" x="586" y="98">(the aim)</text>
+
+      <rect class="node" x="520" y="190" width="132" height="56" rx="6"/>
+      <text class="t" x="586" y="223">Feedback</text>
+
+      <rect class="node" x="352" y="190" width="132" height="56" rx="6"/>
+      <text class="t" x="418" y="223">Ankle and twist</text>
+
+      <rect class="node" x="184" y="190" width="132" height="56" rx="6"/>
+      <text class="t" x="250" y="223">Body and board</text>
+
+      <rect class="node" x="16" y="190" width="132" height="56" rx="6"/>
+      <text class="t" x="82" y="217">Water, fins</text><text class="t" x="82" y="233">and rails</text>
+
+      <path class="arrow-delay" d="M150,78 L180,78" marker-end="url(#ahd)"/>
+      <path class="arrow" d="M318,78 L348,78" marker-end="url(#ah)"/>
+      <path class="arrow" d="M486,78 L516,78" marker-end="url(#ah)"/>
+      <path class="arrow" d="M586,108 L586,186" marker-end="url(#ah)"/>
+      <path class="arrow" d="M518,218 L488,218" marker-end="url(#ah)"/>
+      <path class="arrow" d="M350,218 L320,218" marker-end="url(#ah)"/>
+      <path class="arrow" d="M182,218 L152,218" marker-end="url(#ah)"/>
+      <path class="arrow" d="M82,188 L82,110" marker-end="url(#ah)"/>
+    </svg>
+  </div>
+  <p class="prose">The balance never sees the board directly. It acts on its picture, 0.1 s behind. When the picture is wrong, its corrections steer the board in ways it does not expect.</p>
+</section>
+
+<section aria-labelledby="h-turn">
+  <h2 id="h-turn">Where the turn comes from</h2>
+  <ul class="prose" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">
+    <li>The stick does not turn the board. It asks for a lean (5e).</li>
+    <li>The balance then rolls the board with the ankle, and twists the upper body, toward the steady turn its picture predicts for that lean (6d–6e).</li>
+    <li>The board turns because its rail and fins meet the water at an angle (4).</li>
+    <li>So the turn needs two things to agree: the balance's picture of how the board will turn, and how the water really turns it.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="h-wrong">
+  <h2 id="h-wrong">What goes wrong in Compress and Crouch (measured)</h2>
+  <p class="small prose">Sample: the bots' rides of this build, Big swell seeds 1–3, the steer from 1.0 to 2.0 s after the stand. Item 2 also counts the test wave; item 3 is round 3.6d's probe of the board.</p>
+  <ol class="measured">
+    <li><b>The balance expects about twice the turn the board makes.</b> Measured in the steer's second half, 1.5–2.0 s after the stand, on 16 Compress rides that stay up, with no switches:
+      <ul>
+        <li>the stick asks 38° of lean;</li>
+        <li>the steady turn (6d) expects the board to turn at 45°/s;</li>
+        <li>the board comes round at about 21°/s (10.7° in that half second);</li>
+        <li>the body's bank averages 20° and the rail 17°.</li>
+      </ul>
+    </li>
+    <li><b>He goes over the inside rail.</b> 51 of the 56 falls during the steer go into the turn, never over the nose or tail. The body leans in, the board swings away under it, and one big swing carries the body over the inside rail.</li>
+    <li><b>The picture answers the ankle differently from the board</b> (measured in round 3.6d).
+      <ul>
+        <li>After the ankle moves, the board yaws at once: −0.38 rad/s per radian of command within 3 ticks in Compress.</li>
+        <li>The picture says it barely does: +0.007.</li>
+        <li>So the balance's own corrections steer the board in ways it does not expect.</li>
+      </ul>
+    </li>
+    <li><b>Crouch starts lower.</b>
+      <ul>
+        <li>Its bar's lowest point comes before the turn on 14–16 of 36 rides, against 2–6 in Compress.</li>
+        <li>Its knees leave less strength in reserve: a median of 0.50 against 0.60 before the steer.</li>
+        <li>The turn fixes cannot reach that.</li>
+      </ul>
+    </li>
+  </ol>
+  <div class="reading"><b>The coordinator's reading, to be tested:</b> the lean is sized for a turn the board does not make, and each correction swings the board. One big swing carries him over the inside rail.</div>
+</section>
+
+<section aria-labelledby="h-nudge">
+  <h2 id="h-nudge">Where the nudge came from</h2>
+  <ul class="prose" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">
+    <li>The board aim (<code>turnAim=board</code>) swapped 6d's steady turn for standing tall's, including its commands. 6e then held the board to it.</li>
+    <li>In the steer's second half, the twist torque was about four times larger: 24 N·m against 6.</li>
+    <li>Half a second after the steer, the board had turned 13° against 23° without it (16 Compress rides that stay up). The combination reached 18°.</li>
+    <li>It is withdrawn.</li>
+    <li>Without the switches, the steady turn asks for more turn than the board makes, so on average the balance is not holding the turn back.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="h-advice">
+  <h2 id="h-advice">What to change</h2>
+  <p class="prose"><b>Your rule for the next round: nothing may hold the board's turn back in the middle of a turn.</b></p>
+  <div class="cards">
+
+    <div class="card rec">
+      <h3><span class="badge">Recommended</span>A. Turn first, the lean follows.</h3>
+      <dl>
+        <dt>What changes</dt>
+        <dd><ul>
+          <li>The stick asks for rail: the ankles put the board on its rail, and the water turns it (step 4).</li>
+          <li>The balance stops aiming the board's yaw rate and slip.</li>
+          <li>It keeps the body over the feet against the turn the board is actually making, which is the vertical the rider feels (step 9).</li>
+        </ul></dd>
+        <dt>Where</dt>
+        <dd>5e (the stick asks for rail, not lean), and 6d–6e (the steady turn built from the board's roll, with the yaw rate and slip not held).</dd>
+        <dt>Why</dt>
+        <dd><ul>
+          <li>Nothing aims the turn, so the balance cannot hold it back.</li>
+          <li>The body never leans for a turn the board is not making.</li>
+        </ul></dd>
+        <dt>Risk</dt>
+        <dd>The turn is then only as quick as the water makes it, and today that is slower than you want. The board's turn (step 4) may need its own look after this.</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3>B. Fix the balance's picture of the board.</h3>
+      <dl>
+        <dt>What changes</dt>
+        <dd>The picture is built from the board's own measured response. Round 3.6e found that this is the only model that predicts the board.</dd>
+        <dt>Where</dt>
+        <dd>6a–6c.</dd>
+        <dt>Risk</dt>
+        <dd><ul>
+          <li>That model still left about half the error.</li>
+          <li>The aim stays in the loop, so a wrong picture can still push the board.</li>
+        </ul></dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3><span class="badge no">Not recommended</span>C. Keep tuning switches on the same picture.</h3>
+      <dl>
+        <dt>Why not</dt>
+        <dd><ul>
+          <li>Two rounds (3.6h, 3.6i) passed nothing.</li>
+          <li>The one fix that stopped the throws, the board aim, did it by holding the turn back.</li>
+        </ul></dd>
+      </dl>
+    </div>
+
+  </div>
+  <p class="judged small"><b>How any option is judged:</b> behind a switch, off by default; the stability report (falls in the 80 deep turns, ridden your way, and with R2 let go at the steer; no slower turns); and your ride.</p>
+  <p class="closing">The next round is your call. The coordinator recommends planning A with you.</p>
+</section>
+
+</div>
+</body>
+</html>
