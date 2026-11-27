@@ -312,3 +312,11 @@ at the escape, median) drives the body across the feet toward the inside at 1.7 
 against a body at 11–14° and a lean asked of 41–46°. In the named fall the balance's commands reach their limits on the
 swing before the escape.
 
+### 0.11 Amendment 3, 2026-11-27, 02:36 UTC, after E1 and E2 (s = 0.25) were read, before any other screening number
+
+By §0.5 step 2, E2 at s = 0.25 does not help (§2), so **s = 0.5** is run (`e2h`). E12 at 0.25 (`e12`) was queued under
+§0.5 step 1 and is read as registered. So that the slots are used, **E12 at s = 0.5 (`e12h`) is started now,
+speculatively**: it is the E12 of record only if E2 at 0.5 turns out better than at 0.25 (§0.5 step 2); otherwise it is an
+extra row. The second runner starts at most 7 processes machine-wide (`--cap 7`) so that the two runners together never
+exceed 8.
+
