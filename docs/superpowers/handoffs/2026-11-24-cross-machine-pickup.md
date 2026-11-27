@@ -159,7 +159,7 @@
         - the falls over the ride halved in three places: the benchmark's 80 deep turns (47 → ≤ 23), his way on Big (19 → ≤ 9 of 36), and R2 let go at the steer (22 → ≤ 11 of 36);
         - turns no slower.
         - The quicker rider is a yardstick only.
-      - **Codex's entry `8aa48d38`** (a turn-entry work order) was read. Its three differences from his answers were put to him, and he chose. The rest is folded into the brief. A check of its numbers from the saved data is running.
+      - **Codex's entry `8aa48d38`** (a turn-entry work order) was read. Its three differences from his answers were put to him, and he chose. The rest is folded into the brief. Its numbers were then checked from the saved data. It holds, with two claims qualified and two with caveats (consult log `9bac04f6`), and the builder has the verdicts.
       - **If nothing passes,** the builder stops and reports, and he decides.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
@@ -167,7 +167,7 @@
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `b1c2dc7d`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `9bac04f6`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -243,7 +243,7 @@ Also open:
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
 | `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`). Served on port 5177 |
 | `claude/turn-entry` | `75f1d449` | 3.6i, running: the turn round (the brief; from `d5c8ccf9`; the builder's commits follow) |
-| `claude/the-record` | `b1c2dc7d` | the consult log (verified on the remote 2026-11-27) |
+| `claude/the-record` | `9bac04f6` | the consult log (verified on the remote 2026-11-27) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
