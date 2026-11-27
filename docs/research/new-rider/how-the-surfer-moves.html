@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- "How the Surfer Moves": a living doc (CLAUDE.md, "Living docs"). This file is the source; the private claude.ai
      page of the same name is republished from it. A document skeleton is added so the file opens on its own.
-     Function lines are from claude/turn-entry a1f22e33. Version 3, 2026-11-27: Codex's review (consult log 49ec95f2)
-     and 3.6j's result (7e0d00fd). -->
+     Function lines are from claude/turn-entry a1f22e33. Version 4, 2026-11-27: Codex's review (consult log 49ec95f2),
+     3.6j's result (7e0d00fd) and 3.6k's water check (715eadda). -->
 <style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>How the Surfer Moves</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -192,7 +192,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
   <div class="eyebrow">Breakline, the new surfer</div>
   <h1>How the Surfer Moves</h1>
   <p class="lead">On every game tick the controller's input goes into the ride session. The board, the rider and the water are then solved together in small substeps. In each one, the rider's balance chooses two commands, the ankle's rest angle and the upper body's twist torque. It chooses them from what it sensed 0.1 s ago and from its own picture of the board. The water, the fins and those two torques move the board, and a capture-point test decides whether the rider can still stay up.</p>
-  <p class="small prose">The new surfer (<code>rider=new</code>) on your address. Line numbers are from <code>claude/turn-entry</code> <code>a1f22e33</code>, the build on port 5177. With its switches off it rides like the earlier builds. Updated 2026-11-27 with Codex's review (consult log <code>49ec95f2</code>) and 3.6j's result (<code>7e0d00fd</code>).</p>
+  <p class="small prose">The new surfer (<code>rider=new</code>) on your address. Line numbers are from <code>claude/turn-entry</code> <code>a1f22e33</code>, the build on port 5177. With its switches off it rides like the earlier builds. Updated 2026-11-27 with Codex's review (consult log <code>49ec95f2</code>) and 3.6j's result (<code>7e0d00fd</code>), and 3.6k's water check (<code>715eadda</code>).</p>
 </header>
 
 <section aria-labelledby="h-checked">
@@ -572,6 +572,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
       </ul>
     </li>
     <li><b>The turn comes from the balance's aim</b> (3.6j). With the steady turn's turn-rate and slip targets removed, and the straight-riding fault that exposed fixed, the board came round 16–55° less by +1.5 s on the rides that stayed up, and standing tall turned the wrong way. Without the aim, the water turns the board much less than the aim does.</li>
+    <li><b>The water turns the board right for its rail; the rail is what's shallow</b> (3.6k). With the rail held in the flat-water lab, the board carves steadily at 30–40° at 7 m/s: about 1.4°/s of turn per degree, and 55°/s at 40°, against Compress's 23°/s today. A real bottom turn sits at about 42° of rail (Forsyth et al. 2024, as the advisor reads its Table 2). So today's 17–20° comes from the rider. At 6 and 8 m/s a deep rail rings instead of holding, and no sourced rail force fixes that.</li>
   </ol>
   <div class="reading"><b>The coordinator's reading, to be tested:</b> the lean is sized for a turn the board does not make, and each correction swings the board. One big swing carries him over the inside rail.</div>
 </section>
@@ -625,7 +626,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
     </div>
 
     <div class="card">
-      <h3><span class="badge next">Waits on the water's own turn</span>A2. The feet steer, the balance stays over the feet (Codex).</h3>
+      <h3><span class="badge next">Waits on a deeper rail</span>A2. The feet steer, the balance stays over the feet (Codex).</h3>
       <dl>
         <dt>What changes</dt>
         <dd><ul>
@@ -638,7 +639,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
         <dt>Why</dt>
         <dd>It keeps the feet steering and the water turning, without A's two flaws.</dd>
         <dt>Risk</dt>
-        <dd>Full steer can use all the ankle's room on one side and leave none for balance. The round would log when both cannot be met. 3.6j showed that, with no aim, the water turns the board much less than the aim does, so A2 needs the board's own turn looked at first.</dd>
+        <dd>Full steer can use all the ankle's room on one side and leave none for balance. The round would log when both cannot be met. 3.6k found the water turns the board right for its rail, so A2's open question is how the rider gets onto a deeper rail.</dd>
       </dl>
     </div>
 
@@ -670,7 +671,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
 
   </div>
   <p class="judged small"><b>How any option is judged:</b> behind a switch, off by default; the stability report (falls in the 80 deep turns, ridden your way, and with R2 let go at the steer; no slower turns); and your ride.</p>
-  <p class="closing">3.6j tested A, and it failed. The turn as it ships comes from the balance's aim. The next question is the board's own turn in the water, and the next round is your call.</p>
+  <p class="closing">3.6j tested A, and it failed: the turn as it ships comes from the balance's aim. 3.6k then found the water turns the board right for its rail. The next question is why the rider's rail stops at 17–20°, against about 42° in a real bottom turn. The next round is your call.</p>
 </section>
 
 </div>
