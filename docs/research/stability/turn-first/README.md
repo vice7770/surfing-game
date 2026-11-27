@@ -226,3 +226,18 @@ Usage at each stage boundary and at least every 45 minutes; at 80 % of the 5-hou
 and hand back. Raw runs in the session scratchpad's `36j/`; only the rows the tables need are archived under `runs/` or
 `results/`. Later changes to §0 go in as dated amendments that fix a bug in this build, each committed before the numbers
 it governs are read. Decisions that are Vicente's (scope, a bound, realism) stop the round at a clean commit.
+
+### 0.9 Note, 2026-11-27, 18:15 UTC: a diagnostic, not an arm and not an amendment (`src` unchanged)
+
+**What had been read.** The screening of both arms (`screen.py`, `line4.py`, `quantities.py`, `dips.py`) and one ride's
+frames (`big:s1:w6:compress:left`, off and `aim`). `aim` already swings before any steer: on the straight and tall rides
+at tS 0.3–1.0 s the prediction's yaw rate |`pYaw`| has a median of 24.0 deg/s against off's 9.0 (p90 79.0 against 32.7),
+with the ankle at its range on 5.4 % of frames against none. Then two test-wave diagnostics of `aim` (8 deep turns each)
+with the probe overriding the feed-forward only (`diag-probe.ts`, `FREE_FF`): with the turn and the slip at nothing in the
+feed-forward's solve (`still`), every ride fell at 0.57–1.40 s; with the slip alone at nothing (`noslip`), they fell at
+1.72–4.73 s against off's 1.48–3.65 s and the built `aim`'s 1.17–1.72 s.
+
+**What runs next, deciding nothing:** `aim` with `FREE_FF=noslip` on the Big screening set, labelled a diagnostic of which
+term breaks the arm (the slip is never sensed; the feed-forward multiplied its estimate by −0.8 to −2.7 rad of ankle per
+rad, §0.3 item 3). It is not one of Vicente's arms, gets no full report and is not served; the two arms are judged as
+built. It is read with the same readers.
