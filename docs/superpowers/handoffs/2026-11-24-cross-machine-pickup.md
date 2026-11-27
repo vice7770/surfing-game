@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-26, about 22:50 UTC.**
+- **Status, 2026-11-27, about 01:50 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -148,18 +148,26 @@
         - Of the two rides said to regress "under every configuration", one does not regress under the quicker rider or either twist scale.
         - On the test wave, `tw-ride:hisway` and `tw-ride:compress:straight` are the same ride frame for frame, so the benchmark counts it twice.
       - **Served for his feel ride:** dev server `breakline-latest` (port 5177) now runs `claude/drift` `d5c8ccf9`. With no switch it rides as before; add `&wobbleNotch=1` to his address for the filter.
-      - **Waiting on Vicente:**
-        - whether to ride the filter for feel (it fails two lines);
-        - then the next round: the turn round, or a filter that leaves tall and Snap alone;
-        - the quicker rider;
-        - whether line 1 should be judged against a measured null-change floor.
+      - **His feel ride** (2026-11-27, about 00:40 UTC): "it still seems to have the same problem. Maybe less wobble. But the surfer still falls on turn". Asked when, he said "As I steer". The frames agree: the deep turns tip the body over 0.5–1.0 s into the steer.
+      - **The null-change floor** (his "Yes, run it"): with the ankle's push nudged 1 % down, 1 ride regresses (`big:s2:w16:crouch:left`); nudged 1 % up, none; the probe with no nudge is 227 of 227 identical. So the benchmark's regressions are real effects, and line 1 for the next round is at most 1.
+    - **3.6i, the turn round, is running.** Vicente planned it in three rounds (2026-11-27, 00:50–01:02 UTC, "Use all recommended" each time); consult log `b1c2dc7d`.
+      - It runs on Opus at high effort on `claude/turn-entry` from `d5c8ccf9`, in `.claude/worktrees/turn-entry`. The brief is `docs/research/stability/turn-entry/BRIEF.md` (`75f1d449`). Dispatched about 01:45 UTC.
+      - **The target:** the balance falls during the steer in Compress and Crouch, with R2 held and with R2 let go as the steer starts.
+      - **The order:** first it finds which way the body goes over. Then it tries the entry fixes (the aim matched to the board, a planned lean, and both together) and Codex's two filter variants, each behind an opt-in switch.
+      - **The pass line:**
+        - at most 1 regression;
+        - the falls over the ride halved in three places: the benchmark's 80 deep turns (47 → ≤ 23), his way on Big (19 → ≤ 9 of 36), and R2 let go at the steer (22 → ≤ 11 of 36);
+        - turns no slower.
+        - The quicker rider is a yardstick only.
+      - **Codex's entry `8aa48d38`** (a turn-entry work order) was read. Its three differences from his answers were put to him, and he chose. The rest is folded into the brief. A check of its numbers from the saved data is running.
+      - **If nothing passes,** the builder stops and reports, and he decides.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `7f8d0877`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `b1c2dc7d`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -234,7 +242,8 @@ Also open:
 | `claude/rider-momentum` | `fc466712` | 3.6f: the game's coupled solve conserves the rider's momentum, and the board meets the body's push at its arm; 3.6e's term table could not see it; the picture's body has a rotational inertia the game's lacks (docs and probes; from `ef7908f2`) |
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
 | `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`). Served on port 5177 |
-| `claude/the-record` | `7f8d0877` | the consult log (verified on the remote 2026-11-26) |
+| `claude/turn-entry` | `75f1d449` | 3.6i, running: the turn round (the brief; from `d5c8ccf9`; the builder's commits follow) |
+| `claude/the-record` | `b1c2dc7d` | the consult log (verified on the remote 2026-11-27) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
