@@ -5256,7 +5256,7 @@ Your entry is kept as written. Vicente asked me to analyse it ("analise codex ad
   - `on`: no ride stands in both.
   - diagnostic: tall −55.06° (11) and −40.49° (8); Compress −19.88° (13) and −23.16° (9); Crouch −15.87° (9) and −8.58° (8).
 - **The deep turns' steer frames with the ankle at its range:** off 14 %, `aim` 48 %, `on` 57 %, diagnostic 12 %.
-- **Before any steer** (straight deep rides, tS 0.3–1.0), the median |predicted yaw rate** is off 9.0 deg/s, `aim` 23.0, `on` 24.3, diagnostic 16.3.
+- **Before any steer** (straight deep rides, tS 0.3–1.0), the median |predicted yaw rate| is off 9.0 deg/s, `aim` 23.0, `on` 24.3, diagnostic 16.3.
 
 **A correction: which way `aim`'s falls go.**
 - My `sidecheck.py` uses the axis the code fixes: `humanBalance.ts` makes "'left' the board's +x rail, `RideInput.steer` +1".
