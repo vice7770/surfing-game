@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-27, about 11:40 UTC.**
+- **Status, 2026-11-27, about 17:15 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -176,7 +176,24 @@
         - **The nudge is the board's aim** (`turnAim=board`). On the Big rides that stay up, the board has turned 13° by half a second after the steer with the aim alone, against 23° without it; the combination reaches 18°. The planned lean alone turns more. The aim swaps the deep stance's steady turn for standing tall's, and the balance then holds the board to it, with about four times the twist torque in the steer's second half.
         - **The coordinator's reading of "not correctly implemented".** The balance holds him up by holding the board to the turn its own picture of the board predicts, and in Compress and Crouch that picture is wrong (3.6d). 3.6h's and 3.6i's switches changed what it aims at or filters, not the picture.
         - The aim is withdrawn: it limits the turn. Two questions are put to Codex.
-      - **His decision now:** whether to plan a round at that root instead of another switch. The earlier list stands behind it: the quicker rider, the falls after the steer, and the ankle's range.
+      - **He chose the root round** after an explainer page (below). The earlier list waits: the quicker rider, the falls after the steer, and the ankle's range.
+    - **3.6j, turn first, is running** (dispatched 2026-11-27 about 17:10 UTC; consult log `46cdcc8e`).
+      - **The explainer.** He asked for one at about 11:45 UTC: "give me in a html explanation the steps on what makes the surfer move … I dont want a nudge in the middle of the turning".
+        - It is a private claude.ai page, "How the Surfer Moves". Its content is in the session scratchpad's `surfer-page/content.md`.
+        - It shows the chain function by function at `a1f22e33`.
+        - The balance expects about twice the turn the board makes.
+        - It offered A (turn first, the lean follows), B (the picture rebuilt from the measured board) and C (more switches).
+      - **He chose A.** He planned it in two rounds (about 16:10–17:05 UTC, "Use all recommended" twice), then said "Yes, start 3.6j".
+      - **The design,** behind `?turnFirst=aim|on`, off by default and pinned off online:
+        - **`on`:** the feet tilt the board past the body by steer × the ankles' range (unchanged). The lean follows the felt vertical, sensed 0.1 s late. The balance aims neither the turn rate nor the slip. It covers standing tall, Compress and Crouch; Snap is as it ships.
+        - **`aim`:** the no-aim part alone.
+      - **The lines:**
+        1. At most 1 regression.
+        2. Falls halved in three places (≤ 23 of 80, ≤ 9 of 36, ≤ 11 of 36).
+        3. Course at +0.5 / +1.0 s no slower.
+        4. **No nudge:** per stance, the heading at +1.5 s and the peak turn at least today's.
+      - **The builder:** Opus at high effort on `claude/turn-first` (brief `22ec9272`, from `a1f22e33`), worktree `.claude/worktrees/turn-first`. It stops at 80 % of the 5-hour window.
+      - **His feel ride:** a passing arm, else the closest arm that meets line 4 (labelled as failing), else nothing.
       - **Codex's entry `8aa48d38`** (a turn-entry work order) was read and checked from the saved data (consult log `9bac04f6`); its verdicts went into the brief.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
@@ -184,7 +201,7 @@
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `55b05718`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `46cdcc8e`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -260,7 +277,8 @@ Also open:
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
 | `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`) |
 | `claude/turn-entry` | `a1f22e33` | 3.6i: nothing passes his line; he goes over into the turn; `?notchScope=stance` (the closest) is the notch without its tall and Snap regressions; everything together nearly empties the falls as he steers but they come back after it and the turn comes round less; also `?turnAim`, `?turnPlan` (opt-in, pinned off online; from `d5c8ccf9`). Served on port 5177 |
-| `claude/the-record` | `55b05718` | the consult log (verified on the remote 2026-11-27) |
+| `claude/turn-first` | `22ec9272` | 3.6j, running: the brief (`docs/research/stability/turn-first/BRIEF.md`), from `a1f22e33`; the builder commits here |
+| `claude/the-record` | `46cdcc8e` | the consult log (verified on the remote 2026-11-27) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
