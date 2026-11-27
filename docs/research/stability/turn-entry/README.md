@@ -320,3 +320,48 @@ speculatively**: it is the E12 of record only if E2 at 0.5 turns out better than
 extra row. The second runner starts at most 7 processes machine-wide (`--cap 7`) so that the two runners together never
 exceed 8.
 
+## 2. The screening (interim; handed back at 03:08 UTC before E2 at s = 0.5 and E12 at 0.5 were read)
+
+*Canyon Big seeds 1–3, `PERIODS=12`, and the test wave's eight deep turns; his address with `&cueLater=on&plantFloor=6`
+and the switch; measured by the benchmark's own report (`--reuse`); `screen.py` (`results/screen.md`, `results/screen.json`).
+Off, `notch` (`?wobbleNotch=1` as built) and R are 3.6h's runs (§0.3). Course: world x–z, deg toward the steer, paired
+by id against off. Regressions: the benchmark's rule against `baseline-full.json`, over the 80 bench rides, per ride.*
+
+| configuration | bench balance falls of 80 (during / after / before; still of 47; new) | hisway of 36 (during / after) | release0 of 36 (during / after) | sum (off 88) | course +0.5 s mean (n; up/down) | course +1.0 s mean (n; up/down; only on/off) | peak yaw | regressions (bench rides carried) | swing Compress / tuck (down of n) | helps / finalist |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| off | 47 (29 / 18 / 0; 47; 0) | 19 (12 / 7) | 22 (15 / 7) | 88 | +0.00° (71; 0/0) | +0.00° (35; 0/0; 0/0) | +0.0 | 0 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
+| e1 | 33 (13 / 20 / 0; 33; 0) | 15 (6 / 9) | 16 (13 / 3) | 64 | +0.94° (71; 47/17) | -2.76° (35; 7/28; 15/0) | +5.1 | 2 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
+| e2 | 49 (33 / 16 / 0; 44; 5) | 19 (13 / 6) | 22 (20 / 2) | 90 | -0.70° (70; 26/37) | +5.36° (23; 21/2; 6/12) | +10.8 | 23 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
+| e12 | 39 (18 / 21 / 0; 36; 3) | 15 (6 / 9) | 19 (16 / 3) | 73 | -0.01° (71; 36/29) | +4.83° (31; 24/7; 11/4) | +11.3 | 11 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
+| n1 | 38 (11 / 27 / 0; 37; 1) | 11 (8 / 3) | 20 (12 / 8) | 69 | +1.69° (69; 51/18) | +1.91° (35; 21/14; 18/0) | -9.6 | 5 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
+| n2 | 33 (6 / 27 / 0; 33; 0) | 11 (5 / 6) | 18 (11 / 7) | 62 | +1.37° (71; 52/19) | +0.94° (35; 25/10; 23/0) | -7.6 | 2 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
+| notch | 33 (6 / 27 / 0; 32; 1) | 10 (5 / 5) | 18 (11 / 7) | 61 | +1.41° (69; 49/20) | +0.81° (35; 23/11; 23/0) | -10.5 | 4 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
+| R | 25 (3 / 22 / 0; 25; 0) | 6 (0 / 6) | 16 (2 / 14) | 47 | +0.11° (69; 34/35) | +0.82° (35; 19/16; 26/0) | -16.5 | 4 (80) | +0.30 (12 of 13) / +0.49 (13 of 13) | yes / no |
+e1 regressions: big:s2:w16:crouch:left (reserve 0.160->0.045); tw-catch:compress:left (sooner 3.65->3.33)
+e2 regressions: big:s1:w5:compress:right (sooner 1.78->1.32); big:s1:w6:crouch:left (sooner 4.87->3.42); big:s1:w6:crouch:right (sooner 2.28->1.72); big:s1:w6:compress:left (sooner 4.77->2.32); big:s1:w11:crouch:left (lasted); big:s1:w11:crouch:right (sooner 4.68->4.27); big:s1:w11:compress:left (sooner 3.77->1.82); big:s1:w11:compress:right (lasted, reserve 0.242->0.003); big:s2:w6:crouch:left (sooner 2.15->1.68); big:s2:w6:crouch:right (lasted); big:s2:w6:compress:left (sooner 4.28->1.82); big:s2:w6:compress:right (lasted, reserve 0.265->0.157); big:s2:w12:crouch:left (reserve 0.128->0.000); big:s2:w15:crouch:left (sooner 2.02->1.57); big:s2:w15:compress:left (sooner 2.55->1.57); big:s2:w15:compress:right (lasted, reserve 0.187->0.024); big:s3:w3:crouch:left (lasted, reserve 0.236->0.000); big:s3:w3:compress:left (lasted, reserve 0.350->0.054); big:s3:w7:crouch:right (sooner 1.85->1.53); big:s3:w13:crouch:left (sooner 1.90->1.53); tw-catch:crouch:right (sooner 3.30->1.95); tw-catch:compress:left (sooner 3.65->1.98); tw-catch:compress:right (sooner 3.10->1.65)
+e12 regressions: big:s1:w6:crouch:left (sooner 4.87->4.58); big:s1:w6:compress:right (sooner 4.65->4.18); big:s1:w11:compress:right (lasted, reserve 0.242->0.025); big:s2:w6:crouch:right (lasted); big:s2:w12:crouch:left (reserve 0.128->0.026); big:s2:w15:compress:right (lasted, reserve 0.187->0.040); big:s2:w16:crouch:left (reserve 0.160->0.033); big:s3:w3:crouch:left (lasted, reserve 0.236->0.000); big:s3:w3:compress:left (lasted, reserve 0.350->0.000); tw-catch:compress:left (sooner 3.65->2.62); tw-catch:compress:right (sooner 3.10->1.72)
+n1 regressions: big:s1:w11:crouch:left (lasted); big:s1:w11:crouch:right (sooner 4.68->3.93); big:s1:w11:compress:left (sooner 3.77->2.82); big:s3:w3:crouch:left (lasted); tw-catch:compress:left (sooner 3.65->3.30)
+n2 regressions: big:s2:w12:crouch:left (reserve 0.128->0.013); tw-catch:compress:left (sooner 3.65->2.95)
+notch regressions: big:s1:w11:crouch:left (lasted); big:s2:w12:crouch:left (reserve 0.128->0.013); big:s2:w16:crouch:left (reserve 0.160->0.000); tw-catch:compress:left (sooner 3.65->2.90)
+R regressions: big:s2:w12:crouch:left (reserve 0.128->0.000); big:s2:w16:crouch:left (reserve 0.160->0.046); big:s3:w3:compress:left (reserve 0.350->0.131); tw-catch:compress:left (sooner 3.65->3.20)
+
+**Read by §0.5.** No configuration is a finalist. E1 cuts the falls (sum 64) but turns slower at +1.0 s (−2.76°, 28 of
+35 down), so it does not "help". E2 at 0.25 makes things worse (sum 90, 23 regressions: the planned lean puts the body
+in sooner, every fall during the steer into the turn). E12 at 0.25: sum 73, course +0.5 s −0.01°, 11 regressions. N1
+helps (sum 69, turns +1.69° / +1.91°, 5 regressions). N2 helps (sum 62, turns +1.37° / +0.94°, 2 regressions) and is
+the notch as built on the falls (61) with its tall/Snap reach removed by construction. Every fall during the steer in
+every configuration is still into the turn (`side.py` per configuration).
+
+**Not yet done:** E2 at 0.5 (`e2h`) and E12 at 0.5 (`e12h`, speculative) were running at hand-back; the combination
+(§0.5 step 4) and any full report are not run.
+
+## 6. Controls (done)
+
+- **Switch off, the full report** (this branch's bundles from `b92cb490`, no switch, `--mode full --jobs 4`,
+  01:55:52–02:28:33 UTC): exit 0, 0 regressions; **227 of 227 ride lines identical to `baseline-full.json`**; its 26
+  test-wave lines **identical to `baseline-quick.json`'s 26**.
+- **The Canyon byte check** (`m1-cpu-bench.ts`, prelude `?canyonWaves=true`, `--spot canyon --steps 3600`, fresh state,
+  03:02:22–03:07:12 UTC): snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`, **identical** (`results/byte-check.txt`).
+- `npx tsc -b` clean; the gain lock and the touched test files (`predictiveBalance`, `PhysicalMode`, `RideSession`,
+  `stabilityGains`): 4 files, 195 of 195 (01:55 UTC); the gain-lock test untouched.
+

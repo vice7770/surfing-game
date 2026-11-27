@@ -1,0 +1,852 @@
+[
+ {
+  "name": "off",
+  "bench": {
+   "n": 80,
+   "falls": 47,
+   "during": 29,
+   "after": 18,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 19,
+   "during": 12,
+   "after": 7,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 22,
+   "during": 15,
+   "after": 7,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 47,
+  "benchNew": 0,
+  "sum": 88,
+  "c05": {
+   "mean": 0.0,
+   "median": 0.0,
+   "n": 71,
+   "up": 0,
+   "down": 0,
+   "onlyOn": 0,
+   "onlyOff": 0
+  },
+  "c10": {
+   "mean": 0.0,
+   "median": 0.0,
+   "n": 35,
+   "up": 0,
+   "down": 0,
+   "onlyOn": 0,
+   "onlyOff": 0
+  },
+  "yawPeak": 0.0,
+  "regressions": 0,
+  "regList": [],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    1.0,
+    0,
+    13
+   ],
+   "crouch:straight": [
+    1.0,
+    0,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "e1",
+  "bench": {
+   "n": 80,
+   "falls": 33,
+   "during": 13,
+   "after": 20,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 15,
+   "during": 6,
+   "after": 9,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 16,
+   "during": 13,
+   "after": 3,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 33,
+  "benchNew": 0,
+  "sum": 64,
+  "c05": {
+   "mean": 0.9363380281690141,
+   "median": 0.6499999999999999,
+   "n": 71,
+   "up": 47,
+   "down": 17,
+   "onlyOn": 1,
+   "onlyOff": 0
+  },
+  "c10": {
+   "mean": -2.7648571428571427,
+   "median": -1.67,
+   "n": 35,
+   "up": 7,
+   "down": 28,
+   "onlyOn": 15,
+   "onlyOff": 0
+  },
+  "yawPeak": 5.091875,
+  "regressions": 2,
+  "regList": [
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.045"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->3.33"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    1.0,
+    0,
+    13
+   ],
+   "crouch:straight": [
+    1.0,
+    0,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "e2",
+  "bench": {
+   "n": 80,
+   "falls": 49,
+   "during": 33,
+   "after": 16,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 19,
+   "during": 13,
+   "after": 6,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 22,
+   "during": 20,
+   "after": 2,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 44,
+  "benchNew": 5,
+  "sum": 90,
+  "c05": {
+   "mean": -0.7038571428571428,
+   "median": -0.08500000000000002,
+   "n": 70,
+   "up": 26,
+   "down": 37,
+   "onlyOn": 1,
+   "onlyOff": 1
+  },
+  "c10": {
+   "mean": 5.361739130434782,
+   "median": 5.8100000000000005,
+   "n": 23,
+   "up": 21,
+   "down": 2,
+   "onlyOn": 6,
+   "onlyOff": 12
+  },
+  "yawPeak": 10.753,
+  "regressions": 23,
+  "regList": [
+   [
+    "big:s1:w5:compress:right",
+    [
+     "sooner 1.78->1.32"
+    ]
+   ],
+   [
+    "big:s1:w6:crouch:left",
+    [
+     "sooner 4.87->3.42"
+    ]
+   ],
+   [
+    "big:s1:w6:crouch:right",
+    [
+     "sooner 2.28->1.72"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:left",
+    [
+     "sooner 4.77->2.32"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:right",
+    [
+     "sooner 4.68->4.27"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:left",
+    [
+     "sooner 3.77->1.82"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:right",
+    [
+     "lasted",
+     "reserve 0.242->0.003"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:left",
+    [
+     "sooner 2.15->1.68"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:right",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:left",
+    [
+     "sooner 4.28->1.82"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:right",
+    [
+     "lasted",
+     "reserve 0.265->0.157"
+    ]
+   ],
+   [
+    "big:s2:w12:crouch:left",
+    [
+     "reserve 0.128->0.000"
+    ]
+   ],
+   [
+    "big:s2:w15:crouch:left",
+    [
+     "sooner 2.02->1.57"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:left",
+    [
+     "sooner 2.55->1.57"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:right",
+    [
+     "lasted",
+     "reserve 0.187->0.024"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:left",
+    [
+     "lasted",
+     "reserve 0.236->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:left",
+    [
+     "lasted",
+     "reserve 0.350->0.054"
+    ]
+   ],
+   [
+    "big:s3:w7:crouch:right",
+    [
+     "sooner 1.85->1.53"
+    ]
+   ],
+   [
+    "big:s3:w13:crouch:left",
+    [
+     "sooner 1.90->1.53"
+    ]
+   ],
+   [
+    "tw-catch:crouch:right",
+    [
+     "sooner 3.30->1.95"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->1.98"
+    ]
+   ],
+   [
+    "tw-catch:compress:right",
+    [
+     "sooner 3.10->1.65"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    1.0,
+    0,
+    13
+   ],
+   "crouch:straight": [
+    1.0,
+    0,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "e12",
+  "bench": {
+   "n": 80,
+   "falls": 39,
+   "during": 18,
+   "after": 21,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 15,
+   "during": 6,
+   "after": 9,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 19,
+   "during": 16,
+   "after": 3,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 36,
+  "benchNew": 3,
+  "sum": 73,
+  "c05": {
+   "mean": -0.014507042253521151,
+   "median": 0.009999999999999787,
+   "n": 71,
+   "up": 36,
+   "down": 29,
+   "onlyOn": 2,
+   "onlyOff": 0
+  },
+  "c10": {
+   "mean": 4.831290322580645,
+   "median": 3.549999999999999,
+   "n": 31,
+   "up": 24,
+   "down": 7,
+   "onlyOn": 11,
+   "onlyOff": 4
+  },
+  "yawPeak": 11.314375,
+  "regressions": 11,
+  "regList": [
+   [
+    "big:s1:w6:crouch:left",
+    [
+     "sooner 4.87->4.58"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:right",
+    [
+     "sooner 4.65->4.18"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:right",
+    [
+     "lasted",
+     "reserve 0.242->0.025"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:right",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w12:crouch:left",
+    [
+     "reserve 0.128->0.026"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:right",
+    [
+     "lasted",
+     "reserve 0.187->0.040"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.033"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:left",
+    [
+     "lasted",
+     "reserve 0.236->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:left",
+    [
+     "lasted",
+     "reserve 0.350->0.000"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->2.62"
+    ]
+   ],
+   [
+    "tw-catch:compress:right",
+    [
+     "sooner 3.10->1.72"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    1.0,
+    0,
+    13
+   ],
+   "crouch:straight": [
+    1.0,
+    0,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "n1",
+  "bench": {
+   "n": 80,
+   "falls": 38,
+   "during": 11,
+   "after": 27,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 11,
+   "during": 8,
+   "after": 3,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 20,
+   "during": 12,
+   "after": 8,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 37,
+  "benchNew": 1,
+  "sum": 69,
+  "c05": {
+   "mean": 1.6915942028985507,
+   "median": 1.38,
+   "n": 69,
+   "up": 51,
+   "down": 18,
+   "onlyOn": 1,
+   "onlyOff": 2
+  },
+  "c10": {
+   "mean": 1.907142857142857,
+   "median": 0.8599999999999994,
+   "n": 35,
+   "up": 21,
+   "down": 14,
+   "onlyOn": 18,
+   "onlyOff": 0
+  },
+  "yawPeak": -9.636500000000002,
+  "regressions": 5,
+  "regList": [
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:right",
+    [
+     "sooner 4.68->3.93"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:left",
+    [
+     "sooner 3.77->2.82"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->3.30"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    0.42171709927701606,
+    13,
+    13
+   ],
+   "crouch:straight": [
+    0.5983669318498984,
+    13,
+    13
+   ]
+  },
+  "helps": true,
+  "finalist": false
+ },
+ {
+  "name": "n2",
+  "bench": {
+   "n": 80,
+   "falls": 33,
+   "during": 6,
+   "after": 27,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 11,
+   "during": 5,
+   "after": 6,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 18,
+   "during": 11,
+   "after": 7,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 33,
+  "benchNew": 0,
+  "sum": 62,
+  "c05": {
+   "mean": 1.3732394366197183,
+   "median": 0.81,
+   "n": 71,
+   "up": 52,
+   "down": 19,
+   "onlyOn": 1,
+   "onlyOff": 0
+  },
+  "c10": {
+   "mean": 0.9411428571428571,
+   "median": 0.5500000000000007,
+   "n": 35,
+   "up": 25,
+   "down": 10,
+   "onlyOn": 23,
+   "onlyOff": 0
+  },
+  "yawPeak": -7.627875,
+  "regressions": 2,
+  "regList": [
+   [
+    "big:s2:w12:crouch:left",
+    [
+     "reserve 0.128->0.013"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->2.95"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    0.42416367521780046,
+    13,
+    13
+   ],
+   "crouch:straight": [
+    0.5979238758457573,
+    13,
+    13
+   ]
+  },
+  "helps": true,
+  "finalist": false
+ },
+ {
+  "name": "notch",
+  "bench": {
+   "n": 80,
+   "falls": 33,
+   "during": 6,
+   "after": 27,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 10,
+   "during": 5,
+   "after": 5,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 18,
+   "during": 11,
+   "after": 7,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 32,
+  "benchNew": 1,
+  "sum": 61,
+  "c05": {
+   "mean": 1.4072463768115941,
+   "median": 0.9199999999999999,
+   "n": 69,
+   "up": 49,
+   "down": 20,
+   "onlyOn": 1,
+   "onlyOff": 2
+  },
+  "c10": {
+   "mean": 0.8114285714285714,
+   "median": 0.46000000000000085,
+   "n": 35,
+   "up": 23,
+   "down": 11,
+   "onlyOn": 23,
+   "onlyOff": 0
+  },
+  "yawPeak": -10.450375000000001,
+  "regressions": 4,
+  "regList": [
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w12:crouch:left",
+    [
+     "reserve 0.128->0.013"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.000"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->2.90"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    0.42171709927701606,
+    13,
+    13
+   ],
+   "crouch:straight": [
+    0.5983669318498984,
+    13,
+    13
+   ]
+  },
+  "helps": true,
+  "finalist": false
+ },
+ {
+  "name": "R",
+  "bench": {
+   "n": 80,
+   "falls": 25,
+   "during": 3,
+   "after": 22,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 6,
+   "during": 0,
+   "after": 6,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 16,
+   "during": 2,
+   "after": 14,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 25,
+  "benchNew": 0,
+  "sum": 47,
+  "c05": {
+   "mean": 0.10681159420289858,
+   "median": -0.07000000000000006,
+   "n": 69,
+   "up": 34,
+   "down": 35,
+   "onlyOn": 3,
+   "onlyOff": 2
+  },
+  "c10": {
+   "mean": 0.8202857142857143,
+   "median": 0.17999999999999972,
+   "n": 35,
+   "up": 19,
+   "down": 16,
+   "onlyOn": 26,
+   "onlyOff": 0
+  },
+  "yawPeak": -16.51325,
+  "regressions": 4,
+  "regList": [
+   [
+    "big:s2:w12:crouch:left",
+    [
+     "reserve 0.128->0.000"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.046"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:left",
+    [
+     "reserve 0.350->0.131"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->3.20"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    0.2999327744734307,
+    12,
+    13
+   ],
+   "crouch:straight": [
+    0.4899237299064825,
+    13,
+    13
+   ]
+  },
+  "helps": true,
+  "finalist": false
+ }
+]
