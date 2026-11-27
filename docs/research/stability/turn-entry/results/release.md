@@ -1,0 +1,10 @@
+| drive | off: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | notch: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | R: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | n2: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | c3: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean |
+| --- | --- | --- | --- | --- | --- |
+| release0:left\|right (the screening runs) | 15 / 22 (36); +0.00° (29) / +0.00° (11) | 11 / 18 (36); +0.57° (29) / -0.35° (11) | 2 / 16 (36); -0.91° (27) / -2.07° (11) | 11 / 18 (36); +0.57° (29) / -0.36° (11) | 11 / 15 (36); +0.88° (29) / -0.40° (10) |
+| release0.2:left\|right | 6 / 18 (36); +0.00° (29) / +0.00° (20) | 4 / 15 (36); +0.81° (28) / -0.14° (19) | 0 / 12 (36); -0.28° (28) / -2.34° (19) | 4 / 15 (36); +0.80° (28) / -0.18° (19) | 5 / 14 (36); +0.86° (27) / +1.77° (16) |
+| release0.4:left\|right | 3 / 15 (36); +0.00° (32) / +0.00° (23) | 1 / 14 (36); +0.30° (32) / +0.37° (23) | 0 / 12 (36); -0.65° (32) / -2.43° (23) | 1 / 14 (36); +0.23° (32) / +0.04° (23) | 1 / 14 (36); +0.30° (32) / +0.37° (23) |
+| release0.6:left\|right | 3 / 18 (36); +0.00° (32) / +0.00° (23) | 2 / 18 (36); +0.07° (32) / +0.65° (23) | 0 / 12 (36); -1.23° (32) / -2.45° (23) | 3 / 18 (36); +0.00° (32) / -0.01° (23) | 2 / 18 (36); +0.07° (32) / +0.65° (23) |
+
+release0: notch: 2 of 18 identical to off, 1 balance falls (off 2); R: 1 of 18 identical to off, 1 balance falls (off 2); n2: 2 of 18 identical to off, 1 balance falls (off 2); c3: 2 of 18 identical to off, 1 balance falls (off 2)
+none:left/none:right: notch: 2 of 36 identical to off, 15 balance falls (off 15); R: 0 of 36 identical to off, 13 balance falls (off 15); n2: 36 of 36 identical to off, 15 balance falls (off 15); c3: 2 of 36 identical to off, 15 balance falls (off 15)
+snap:left/snap:right: notch: 0 of 36 identical to off, 22 balance falls (off 22); R: 0 of 36 identical to off, 22 balance falls (off 22); n2: 36 of 36 identical to off, 22 balance falls (off 22); c3: 0 of 36 identical to off, 22 balance falls (off 22)

@@ -256,6 +256,14 @@ its numbers, not its place (§0.5 step 4). Both readings are reported in §1. No
 other edits after the first run: it tolerates `w` rows without `cPA` (3.6c's archive, the test wave) and `o` rows without
 `bank` (the frame before the stand), and it adds the +0.25 / +0.5 s records §0.2 registered but the first version left out.
 
+### 0.11 Amendment 3, 2026-11-27, 02:36 UTC, after E1 and E2 (s = 0.25) were read, before any other screening number
+
+By §0.5 step 2, E2 at s = 0.25 does not help (§2), so **s = 0.5** is run (`e2h`). E12 at 0.25 (`e12`) was queued under
+§0.5 step 1 and is read as registered. So that the slots are used, **E12 at s = 0.5 (`e12h`) is started now,
+speculatively**: it is the E12 of record only if E2 at 0.5 turns out better than at 0.25 (§0.5 step 2); otherwise it is an
+extra row. The second runner starts at most 7 processes machine-wide (`--cap 7`) so that the two runners together never
+exceed 8.
+
 ### 0.12 Amendment 4, 2026-11-27, about 03:15 UTC, after E2 at s = 0.5 was read, before E12 at 0.5 was read
 
 - **E2 at 0.5 is better than at 0.25** (sum 85 against 90), so by §0.5 step 2 **E12 at 0.5 (`e12h`) is the E12 of
@@ -289,6 +297,34 @@ the labelled extra is `c3x` = `&turnAim=board&turnPlan=0.5&wobbleNotch=1&notchSc
   each, 8 in all).
 - Then `release0.2|0.4|0.6:left|right` (and `release0`, `none`/`snap` turns as untouched controls) on Big seeds 1–3 for
   N2 and for `c3` (`run.py --set extra`).
+
+### The order of the round (UTC, 2026-11-27)
+
+| time | what | commit |
+| --- | --- | --- |
+| 01:40–01:55 | the brief read; the switches built; the controller on its own model (§0.4); tsc and the named tests | — |
+| 01:55:38 | **the pre-registration, the switches, `side.py`, the brief's amendment 1**, before any game run | `b92cb490` |
+| 01:55:52 | the switch-off full report started (§6) | — |
+| 01:56 | stage 1 read (3.6h's off probe, 3.6c's test-wave archive); the felt check printed "outward" | — |
+| 01:58 | the screening runner started (E1, E2 0.25, E12 0.25, N1, N2 queued in that order) | — |
+| 02:00:07 | **stage 1 and amendment 2** (the axis settled geometrically: into the turn, E1 first) | `d2baba4d` |
+| 02:01:13 | the screening reader, `measure.sh`, `run.py`, before any screening number | `d578145c` |
+| 02:16:42 | E1 read | — |
+| 02:28:33 | the switch-off full report done: 227 / 227, 26 / 26 identical | — |
+| 02:34:42 | E2 (0.25) read | — |
+| 02:35:23 | **amendment 3** (E2 at 0.5; E12 at 0.5 speculative) | `2ab6d23c` |
+| 02:46:27 / 02:51:33 / 03:02:08 | E12 (0.25), N1, N2 read | — |
+| 03:02:22–03:07:12 | the Canyon byte check: identical | — |
+| 03:07:41 | an interim hand-back nobody asked for (the harness's); the round resumed at about 03:11 by the coordinator | `79a346d9` |
+| 03:11:34 | E2 (0.5) read | — |
+| 03:15:01 | **amendment 4** (E12 at 0.5 of record; the best filter; the combination and its N2 extra declared) | `a653e4bc` |
+| 03:17:50 | E12 (0.5) read | — |
+| 03:18:13 | the combination of record named (`c3`) and `c3x`; both started | `02ae5ada` |
+| 03:45:57 | `c3`, `c3x` read: no finalist | — |
+| 03:46:21 | **amendment 5** (the full report to N2 as the closest; `c3`'s as a labelled extra) | `0e8d8486` |
+| 03:46:33–04:19:33 | the two full reports | — |
+| 04:20–04:38 | the release drives and untouched controls for N2 and `c3` | — |
+| this commit | the write-up | — |
 
 ## 1. Stage 1: the body goes over into the turn (switch off)
 
@@ -346,50 +382,186 @@ at the escape, median) drives the body across the feet toward the inside at 1.7 
 against a body at 11–14° and a lean asked of 41–46°. In the named fall the balance's commands reach their limits on the
 swing before the escape.
 
-### 0.11 Amendment 3, 2026-11-27, 02:36 UTC, after E1 and E2 (s = 0.25) were read, before any other screening number
+## 2. The screening
 
-By §0.5 step 2, E2 at s = 0.25 does not help (§2), so **s = 0.5** is run (`e2h`). E12 at 0.25 (`e12`) was queued under
-§0.5 step 1 and is read as registered. So that the slots are used, **E12 at s = 0.5 (`e12h`) is started now,
-speculatively**: it is the E12 of record only if E2 at 0.5 turns out better than at 0.25 (§0.5 step 2); otherwise it is an
-extra row. The second runner starts at most 7 processes machine-wide (`--cap 7`) so that the two runners together never
-exceed 8.
-
-## 2. The screening (interim; handed back at 03:08 UTC before E2 at s = 0.5 and E12 at 0.5 were read)
-
-*Canyon Big seeds 1–3, `PERIODS=12`, and the test wave's eight deep turns; his address with `&cueLater=on&plantFloor=6`
-and the switch; measured by the benchmark's own report (`--reuse`); `screen.py` (`results/screen.md`, `results/screen.json`).
-Off, `notch` (`?wobbleNotch=1` as built) and R are 3.6h's runs (§0.3). Course: world x–z, deg toward the steer, paired
-by id against off. Regressions: the benchmark's rule against `baseline-full.json`, over the 80 bench rides, per ride.*
+*Canyon Big (`swell: 'big'`, Hs 2.4 m, Tp 14 s), organic seeds 1–3, `PERIODS=12`, and the test wave's eight deep turns;
+his address with `&cueLater=on&plantFloor=6` and the switch; every ride measured by the benchmark's own report
+(`stability-report.mjs --mode full --reuse`; the test-wave measure exits 2 because the other 18 test-wave scripts are
+absent by design). Off, `notch` (`?wobbleNotch=1` as built) and R are 3.6h's runs (§0.3). Balance falls over the whole
+ride (during the steer = +1.0 to +2.0 s after the stand). Course: the board's ground track, world x–z, deg toward the steer,
+paired by id against off over rides having the value both ways. Peak yaw: deg/s toward the steer, world, mean on − off.
+Regressions: the benchmark's rule against `baseline-full.json` over the 80 bench rides, per ride. The swing: 3.6h's
+measure on the straight deep rides, paired median ratio on / off. `screen.py`; `results/screen.md`, `results/screen.json`.*
 
 | configuration | bench balance falls of 80 (during / after / before; still of 47; new) | hisway of 36 (during / after) | release0 of 36 (during / after) | sum (off 88) | course +0.5 s mean (n; up/down) | course +1.0 s mean (n; up/down; only on/off) | peak yaw | regressions (bench rides carried) | swing Compress / tuck (down of n) | helps / finalist |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | off | 47 (29 / 18 / 0; 47; 0) | 19 (12 / 7) | 22 (15 / 7) | 88 | +0.00° (71; 0/0) | +0.00° (35; 0/0; 0/0) | +0.0 | 0 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
 | e1 | 33 (13 / 20 / 0; 33; 0) | 15 (6 / 9) | 16 (13 / 3) | 64 | +0.94° (71; 47/17) | -2.76° (35; 7/28; 15/0) | +5.1 | 2 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
 | e2 | 49 (33 / 16 / 0; 44; 5) | 19 (13 / 6) | 22 (20 / 2) | 90 | -0.70° (70; 26/37) | +5.36° (23; 21/2; 6/12) | +10.8 | 23 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
+| e2h | 46 (24 / 22 / 0; 44; 2) | 18 (10 / 8) | 21 (19 / 2) | 85 | -0.18° (70; 28/35) | +3.96° (32; 24/8; 8/3) | +4.3 | 12 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
 | e12 | 39 (18 / 21 / 0; 36; 3) | 15 (6 / 9) | 19 (16 / 3) | 73 | -0.01° (71; 36/29) | +4.83° (31; 24/7; 11/4) | +11.3 | 11 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
+| e12h | 31 (14 / 17 / 0; 30; 1) | 11 (6 / 5) | 16 (15 / 1) | 58 | +0.65° (70; 48/16) | -1.28° (35; 12/23; 15/0) | +1.6 | 4 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
 | n1 | 38 (11 / 27 / 0; 37; 1) | 11 (8 / 3) | 20 (12 / 8) | 69 | +1.69° (69; 51/18) | +1.91° (35; 21/14; 18/0) | -9.6 | 5 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
 | n2 | 33 (6 / 27 / 0; 33; 0) | 11 (5 / 6) | 18 (11 / 7) | 62 | +1.37° (71; 52/19) | +0.94° (35; 25/10; 23/0) | -7.6 | 2 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
+| c3 | 26 (1 / 25 / 0; 22; 4) | 9 (0 / 9) | 15 (11 / 4) | 50 | +1.71° (69; 50/19) | -1.73° (35; 16/19; 28/0) | +4.5 | 9 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | no / no |
+| c3x | 26 (1 / 25 / 0; 22; 4) | 9 (0 / 9) | 15 (11 / 4) | 50 | +1.67° (71; 52/19) | -1.77° (35; 16/19; 28/0) | +4.7 | 8 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | no / no |
 | notch | 33 (6 / 27 / 0; 32; 1) | 10 (5 / 5) | 18 (11 / 7) | 61 | +1.41° (69; 49/20) | +0.81° (35; 23/11; 23/0) | -10.5 | 4 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
 | R | 25 (3 / 22 / 0; 25; 0) | 6 (0 / 6) | 16 (2 / 14) | 47 | +0.11° (69; 34/35) | +0.82° (35; 19/16; 26/0) | -16.5 | 4 (80) | +0.30 (12 of 13) / +0.49 (13 of 13) | yes / no |
 e1 regressions: big:s2:w16:crouch:left (reserve 0.160->0.045); tw-catch:compress:left (sooner 3.65->3.33)
 e2 regressions: big:s1:w5:compress:right (sooner 1.78->1.32); big:s1:w6:crouch:left (sooner 4.87->3.42); big:s1:w6:crouch:right (sooner 2.28->1.72); big:s1:w6:compress:left (sooner 4.77->2.32); big:s1:w11:crouch:left (lasted); big:s1:w11:crouch:right (sooner 4.68->4.27); big:s1:w11:compress:left (sooner 3.77->1.82); big:s1:w11:compress:right (lasted, reserve 0.242->0.003); big:s2:w6:crouch:left (sooner 2.15->1.68); big:s2:w6:crouch:right (lasted); big:s2:w6:compress:left (sooner 4.28->1.82); big:s2:w6:compress:right (lasted, reserve 0.265->0.157); big:s2:w12:crouch:left (reserve 0.128->0.000); big:s2:w15:crouch:left (sooner 2.02->1.57); big:s2:w15:compress:left (sooner 2.55->1.57); big:s2:w15:compress:right (lasted, reserve 0.187->0.024); big:s3:w3:crouch:left (lasted, reserve 0.236->0.000); big:s3:w3:compress:left (lasted, reserve 0.350->0.054); big:s3:w7:crouch:right (sooner 1.85->1.53); big:s3:w13:crouch:left (sooner 1.90->1.53); tw-catch:crouch:right (sooner 3.30->1.95); tw-catch:compress:left (sooner 3.65->1.98); tw-catch:compress:right (sooner 3.10->1.65)
+e2h regressions: big:s1:w6:compress:left (sooner 4.77->3.32); big:s1:w6:compress:right (sooner 4.65->4.28); big:s1:w11:crouch:left (lasted); big:s1:w11:crouch:right (sooner 4.68->4.17); big:s1:w11:compress:left (sooner 3.77->2.77); big:s1:w11:compress:right (reserve 0.242->0.076); big:s2:w6:compress:left (sooner 4.28->2.98); big:s2:w6:compress:right (reserve 0.265->0.000); big:s2:w15:compress:left (sooner 2.55->1.77); big:s2:w15:compress:right (lasted, reserve 0.187->0.003); big:s3:w3:crouch:left (lasted, reserve 0.236->0.000); big:s3:w3:compress:left (lasted, reserve 0.350->0.000)
 e12 regressions: big:s1:w6:crouch:left (sooner 4.87->4.58); big:s1:w6:compress:right (sooner 4.65->4.18); big:s1:w11:compress:right (lasted, reserve 0.242->0.025); big:s2:w6:crouch:right (lasted); big:s2:w12:crouch:left (reserve 0.128->0.026); big:s2:w15:compress:right (lasted, reserve 0.187->0.040); big:s2:w16:crouch:left (reserve 0.160->0.033); big:s3:w3:crouch:left (lasted, reserve 0.236->0.000); big:s3:w3:compress:left (lasted, reserve 0.350->0.000); tw-catch:compress:left (sooner 3.65->2.62); tw-catch:compress:right (sooner 3.10->1.72)
+e12h regressions: big:s1:w6:crouch:left (sooner 4.87->4.53); big:s1:w6:compress:left (sooner 4.77->4.48); big:s2:w6:crouch:right (lasted); big:s2:w16:crouch:left (reserve 0.160->0.000)
 n1 regressions: big:s1:w11:crouch:left (lasted); big:s1:w11:crouch:right (sooner 4.68->3.93); big:s1:w11:compress:left (sooner 3.77->2.82); big:s3:w3:crouch:left (lasted); tw-catch:compress:left (sooner 3.65->3.30)
 n2 regressions: big:s2:w12:crouch:left (reserve 0.128->0.013); tw-catch:compress:left (sooner 3.65->2.95)
+c3 regressions: big:s1:w6:crouch:left (sooner 4.87->4.40); big:s1:w6:compress:left (sooner 4.77->4.47); big:s1:w6:compress:right (sooner 4.65->4.35); big:s1:w11:crouch:left (lasted); big:s1:w11:compress:right (lasted, reserve 0.242->0.012); big:s2:w6:crouch:right (lasted); big:s2:w6:compress:right (lasted, reserve 0.265->0.000); big:s2:w16:crouch:left (reserve 0.160->0.034); tw-catch:compress:left (sooner 3.65->3.37)
+c3x regressions: big:s1:w6:crouch:left (sooner 4.87->4.38); big:s1:w6:compress:right (sooner 4.65->4.35); big:s1:w11:crouch:left (lasted); big:s1:w11:compress:right (lasted, reserve 0.242->0.014); big:s2:w6:crouch:right (lasted); big:s2:w6:compress:right (lasted, reserve 0.265->0.000); big:s2:w16:crouch:left (reserve 0.160->0.000); tw-catch:compress:left (sooner 3.65->3.33)
 notch regressions: big:s1:w11:crouch:left (lasted); big:s2:w12:crouch:left (reserve 0.128->0.013); big:s2:w16:crouch:left (reserve 0.160->0.000); tw-catch:compress:left (sooner 3.65->2.90)
 R regressions: big:s2:w12:crouch:left (reserve 0.128->0.000); big:s2:w16:crouch:left (reserve 0.160->0.046); big:s3:w3:compress:left (reserve 0.350->0.131); tw-catch:compress:left (sooner 3.65->3.20)
 
-**Read by §0.5.** No configuration is a finalist. E1 cuts the falls (sum 64) but turns slower at +1.0 s (−2.76°, 28 of
-35 down), so it does not "help". E2 at 0.25 makes things worse (sum 90, 23 regressions: the planned lean puts the body
-in sooner, every fall during the steer into the turn). E12 at 0.25: sum 73, course +0.5 s −0.01°, 11 regressions. N1
-helps (sum 69, turns +1.69° / +1.91°, 5 regressions). N2 helps (sum 62, turns +1.37° / +0.94°, 2 regressions) and is
-the notch as built on the falls (61) with its tall/Snap reach removed by construction. Every fall during the steer in
-every configuration is still into the turn (`side.py` per configuration).
+**Read by §0.5 (every row in the order §1's table gives).**
+- **No configuration is a finalist.** None meets all three falling lines (bench ≤ 23, hisway ≤ 9, release0 ≤ 11) with
+  both turn means ≥ 0. Only `c3` and `c3x` meet any of them (hisway 9).
+- **E1, the aim matched to the board** (`turnAim=board`): the falls during the steer 29 → 13 and the sum 88 → 64, with no
+  change to the straight swing (E1 acts only while a lean is asked), but the board has come round less at +1.0 s
+  (−2.76°, 28 of 35 rides down). It does not "help" by the rule.
+- **E2, the planned lean**, makes things worse at both strengths: s = 0.25 sum 90 and 23 regressions, s = 0.5 sum 85 and
+  12. The planned lean gets the body over sooner (bank at +0.25 s 12° against 6° off, `side.py`), every fall during the
+  steer is into the turn, and the falls come sooner. The model's plan outruns what the real board carries.
+- **E12**: at 0.25, sum 73, course +0.5 s −0.01°; at 0.5 (of record), **sum 58, the fewest of any entry fix**, course
+  +0.5 s +0.65° but +1.0 s −1.28°. By §0.5 step 4's fallback (no entry fix has both turn means ≥ 0), E12 at 0.5 is the
+  best entry fix.
+- **N1** (the notch on `K x̂` only) helps: sum 69, the fastest turns of all (+1.69° / +1.91°), 5 regressions; fewer
+  falls saved than the notch as built.
+- **N2** (the notch only under the entry mark) helps: sum 62, turns +1.37° / +0.94°, 2 regressions on the bench; on the
+  falls it is the notch as built less one ride. The best filter by the rule is the notch as built (61).
+- **The combination of record, `c3` (E12 at 0.5 with the notch)**: sum **50**, beside R's 47: bench 26 (only 1 during the
+  steer; 25 after), hisway 9 (0 during), release0 15. Course +0.5 s +1.71°, **+1.0 s −1.73°** (19 of 35 down). 9
+  regressions on the bench. The extra `c3x` (with N2) is the same on every count (sum 50, 8 regressions).
+- **Every configuration's falls during the steer still go into the turn** (`side.py` on each; e.g. `c3`: the 12 pooled
+  falls during the steer are all into the turn); what the fixes change is how many and when.
 
-**Not yet done:** E2 at 0.5 (`e2h`) and E12 at 0.5 (`e12h`, speculative) were running at hand-back; the combination
-(§0.5 step 4) and any full report are not run.
+## 3. The full reports
 
-## 6. Controls (done)
+*`stability-report.mjs --mode full --jobs 4 --ride-bundle entry-probe.mjs --extra '&cueLater=on&plantFloor=6&<switch>'`,
+both at once, 03:46:33–04:19:33 UTC (32.8 and 33.0 min), exit 1 (regressions); 227 rides each; every process printed its
+switches as asked (none refused). His address; the test wave, Canyon B Medium and Big, seeds 1–3. The bench's rows are
+identical to the screening probe's for the same switches. Hisway and release0 are the probe's (§0.6).*
+
+| line | N2 (closest, not a finalist) | `c3` (extra; the combination) | `wobbleNotch=1` (3.6h) | R (3.6h) |
+| --- | --- | --- | --- | --- |
+| 1. regressions (≤ 1) | **4 rides (3 distinct; 2 bench): fails** | **18 rides (20 test lines; 9 bench): fails** | 13 | 14 |
+| 2a. bench falls of 80 (≤ 23; during / after) | **33 (6 / 27): fails** | **26 (1 / 25): fails** | 33 (6 / 27) | 25 (3 / 22) |
+| 2b. hisway, Big (≤ 9 of 36) | 11 (5 / 6): fails | **9 (0 / 9): meets** | 10 | 6 |
+| 2c. release0, Big (≤ 11 of 36) | 18 (11 / 7): fails | 15 (11 / 4): fails | 18 | 16 |
+| 3. course +0.5 / +1.0 s, mean (≥ 0) | +1.37° / +0.94°: **meets** | +1.71° / **−1.73°: fails** | +1.41° / +0.81° | +0.11° / +0.82° |
+
+**N2's regressions, each from its frames** (`drift/regress.py` against the baseline's raw run; times after the stand):
+- `big:s2:w12:crouch:left` (reserve 0.128 → 0.013): a wave fall either way (+2.87 s off, +2.52 s), the reserve's low on
+  the margin just before it; the swing over the steer a tenth of off's (3.4 against 36.5 deg/s). The same regression as
+  the notch's in 3.6h. Its straight twin `big:s2:w12:crouch:straight` is a wave fall at +2.30 s both ways, its lowest
+  reserve 0.053 → 0.019 with N2, so the straight ride loses its reserve the same way.
+- `tw-catch:compress:left` (+3.65 → +2.95 s, balance): turns further (+11.2° against +6.3° at +1.0 s) with less swing,
+  and falls 0.95 s after the release, on the margin. The notch's regression in 3.6h too (+2.90 s). Its straight twin
+  `tw-catch:compress:straight` does not regress.
+- `tw-ride:compress:straight` and `tw-ride:hisway` (+4.82 → +2.68 s): one ride counted twice (frame for frame the same; the
+  placed start is already beyond recovery at +0.317 s, before any steer, amendment 1, C7). A straight ride in Compress, so
+  only N2's notch acts on it; its swing unchanged (10.8 against 10.2). Not explained further; the notch did the same in 3.6h.
+- **None is the null floor's edge ride.** `big:s2:w16:crouch:left` does not regress under N2. N2 removes all seven of the
+  notch's tall and Snap regressions, as built to (the mark is never on standing tall or in Snap).
+
+**`c3`'s regressions** (`results/full-c3-regress.txt`):
+- **Seven are tall or Snap, and they are the notch's own, ride for ride and to the frame** (`big:s1:w5:snap:left`,
+  `big:s1:w9:none:left`, `big:s1:w9:snap:right`, `big:s3:w6:none:left`, `big:s3:w9:snap:left`, `med:s3:w6:none:right`,
+  `tw-catch:snap:right`, at the same fall times as 3.6h's): the entry fix gives those rides nothing, and the notch as
+  built reaches them through its depth weight. With N2's scope (`c3x`) they would not be touched; `c3x`'s full report
+  was not run.
+- **Seven are deep turns that now fall late, 4.25–4.67 s after the stand** (2.3–2.7 s after the steer ends):
+  `big:s1:w6:crouch:left`, `big:s1:w6:compress:left`, `big:s1:w6:compress:right` (sooner by 0.30–0.47 s; their straight
+  twins fall at +4.65–4.85 s both ways), `big:s1:w11:crouch:left`, `big:s1:w11:compress:right`, `big:s2:w6:crouch:right`,
+  `big:s2:w6:compress:right` (lasted 5 s off, now fall; their straight twins last both ways). The notch alone lets five
+  of these seven last; on all seven `c3`'s board has come round less at +1.0 s (+1.6° to +10.3° against +7.8° to +14.4°
+  off) and the swing over the steer is up (13–26 against 8–13 deg/s). They are the entry fix's: a slower turn that ends in a
+  late fall.
+- `big:s2:w16:crouch:left` (reserve 0.160 → 0.034, a wave fall at +3.90 s either way): **the null floor's edge ride**.
+- `tw-catch:compress:left` and `tw-ride:compress:straight` / `tw-ride:hisway`: as under N2.
+
+## 4. The turn just after letting go of R2, and the untouched controls
+
+*3.6c's drives `release<x>:left|right` (his way: Compress from +0.2 s, the trim released at 4.4 m/s; Compress let go x s
+before the steer, ±1 from +1.0 s for 1.0 s), Canyon Big seeds 1–3, 36 rides each; release0 from the screening runs, 0.2–0.6
+from `run.py --set extra` (04:20–04:38 UTC). Balance falls before +2.0 s and over the ride; course paired against off,
+world x–z, deg toward the steer (n). `release.py`; `results/release.md`.*
+
+| drive | off: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | notch: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | R: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | n2: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean | c3: falls < +2.0 s / over the ride (n); course +0.5 / +1.0 s mean |
+| --- | --- | --- | --- | --- | --- |
+| release0:left\|right (the screening runs) | 15 / 22 (36); +0.00° (29) / +0.00° (11) | 11 / 18 (36); +0.57° (29) / -0.35° (11) | 2 / 16 (36); -0.91° (27) / -2.07° (11) | 11 / 18 (36); +0.57° (29) / -0.36° (11) | 11 / 15 (36); +0.88° (29) / -0.40° (10) |
+| release0.2:left\|right | 6 / 18 (36); +0.00° (29) / +0.00° (20) | 4 / 15 (36); +0.81° (28) / -0.14° (19) | 0 / 12 (36); -0.28° (28) / -2.34° (19) | 4 / 15 (36); +0.80° (28) / -0.18° (19) | 5 / 14 (36); +0.86° (27) / +1.77° (16) |
+| release0.4:left\|right | 3 / 15 (36); +0.00° (32) / +0.00° (23) | 1 / 14 (36); +0.30° (32) / +0.37° (23) | 0 / 12 (36); -0.65° (32) / -2.43° (23) | 1 / 14 (36); +0.23° (32) / +0.04° (23) | 1 / 14 (36); +0.30° (32) / +0.37° (23) |
+| release0.6:left\|right | 3 / 18 (36); +0.00° (32) / +0.00° (23) | 2 / 18 (36); +0.07° (32) / +0.65° (23) | 0 / 12 (36); -1.23° (32) / -2.45° (23) | 3 / 18 (36); +0.00° (32) / -0.01° (23) | 2 / 18 (36); +0.07° (32) / +0.65° (23) |
+
+release0: notch: 2 of 18 identical to off, 1 balance falls (off 2); R: 1 of 18 identical to off, 1 balance falls (off 2); n2: 2 of 18 identical to off, 1 balance falls (off 2); c3: 2 of 18 identical to off, 1 balance falls (off 2)
+none:left/none:right: notch: 2 of 36 identical to off, 15 balance falls (off 15); R: 0 of 36 identical to off, 13 balance falls (off 15); n2: 36 of 36 identical to off, 15 balance falls (off 15); c3: 2 of 36 identical to off, 15 balance falls (off 15)
+snap:left/snap:right: notch: 0 of 36 identical to off, 22 balance falls (off 22); R: 0 of 36 identical to off, 22 balance falls (off 22); n2: 36 of 36 identical to off, 22 balance falls (off 22); c3: 0 of 36 identical to off, 22 balance falls (off 22)
+
+- **N2 follows the leg:** at x = 0 it acts through the turn (the mark kept while the leg rises), at 0.2 s still partly,
+  and by 0.4–0.6 s the leg is back above 0.10 m before the steer, so N2's turn is the shipped one (0.6 s: courses within
+  0.01° of off).
+- **`c3` at x = 0** takes the falls over the ride 22 → 15, the fewest of any configuration, R included (16), but its falls
+  before +2.0 s stay at the notch's 11 (R: 2). At x = 0.4 and 0.6 its numbers are the notch's
+  exactly: the entry mark has cleared before the steer, so only the notch (as built) acts, as registered.
+- **The untouched controls.** N2's tall turns (`none:left|right`) and Snap turns (`snap:left|right`) are **36 of 36 and 36
+  of 36 identical to off** in every field: turning tall or in Snap gets no contribution, as built. `c3`'s are not (2 and 0
+  of 36), because the notch as built reaches them by its depth weight (§3). The release with no steer (`release0`) rides
+  Compress until the let-go, so every filter changes it (2 of 18 identical); its balance falls are 1 against off's 2 for
+  every configuration. A continued turn and a reversal were not run (they need new drives).
+
+## 5. For Vicente
+
+**Nothing passes, so nothing is proposed for your ride.** What I found and tried, on the Big swell's Compress and Crouch
+turns, your way:
+
+- **Which way you go over.** When the deep turns throw you as you steer, the body goes over **into the turn**, never
+  out of it and never over the nose or tail (51 of 56 such falls). The body leans in as it should, but the board does
+  not come round under it: it swings away from the steer at about 2.5 times a second, and one big swing away carries
+  the body over the inside rail.
+- **Matching the board's aim** (`?turnAim=board`, asking the board for the roll it carries standing tall) halves the
+  falls *as you steer* (29 → 13 of 80) but the board comes round about 3° less a second into the turn. Fails the
+  "no slower" line.
+- **Starting the lean at once** (`?turnPlan`, a planned lean) makes it worse: the body gets in faster than the board
+  carries it and you go over sooner.
+- **Both together** (`?turnAim=board&turnPlan=0.5`) saves the most of any single change (88 → 58 falls over the three
+  sets), still about 1° slower at a second.
+- **The wobble filter, only in Compress and Crouch** (`?wobbleNotch=1&notchScope=stance`) keeps everything the filter
+  gave in 3.6h on your deep turns and no longer touches standing tall or Snap: 4 rides worse on the full benchmark instead
+  of 13, the turns as fast or faster. But 33 of the 80 deep turns still fall (the line is 23).
+- **Everything together** (aim, planned lean and filter) nearly empties the falls *during* the steer (1 of 80; your way 0
+  of 36) and comes close to the quicker rider's count (50 against 47 over the three sets), but the falls move to after the
+  steer (25), the turn is about 2° slower at a second, and 18 rides get worse.
+- **The quicker rider** (67 ms, the yardstick) still has the fewest falls (47).
+
+**What it says.** The deep turns fall because the board swings away under a body that is already leaning in. Changing the
+aim or adding the filter takes falls out of the steer, but they come back after it, or the turn comes round more slowly. None of the
+switches here reaches your half line without slowing the turn. **If you want to feel one anyway** (each fails at least one
+line; port 5177 serves `claude/drift`, which does not have these switches, so this branch would need serving):
+- the filter in Compress and Crouch only (fails lines 1 and 2; turns as fast or faster):
+
+      http://localhost:5177/?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantFloor=6&wobbleNotch=1&notchScope=stance
+
+  What you should feel: the drift on a straight Compress line about halved, turns that come in at least as fast, most
+  throws as you steer still there; standing tall and Snap exactly as today.
+- everything together (fails lines 1, 2 and 3), the version that takes the throws out of the steer itself:
+
+      http://localhost:5177/?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantFloor=6&turnAim=board&turnPlan=0.5&wobbleNotch=1&notchScope=stance
+
+  What you should feel: the body leaning in sooner and the board rarely throwing you while you hold the stick, a turn
+  that comes round a little less far, and some falls a second or two after you let the stick go.
+
+**Decisions that are yours:** whether a turn that comes round about 1–2° less at a second is acceptable if it stops the
+throws as you steer (line 3 as it stands says no); whether the falls after the steer, which these changes move rather than
+remove, are next; and the quicker rider, as before.
+
+## 6. Controls
 
 - **Switch off, the full report** (this branch's bundles from `b92cb490`, no switch, `--mode full --jobs 4`,
   01:55:52–02:28:33 UTC): exit 0, 0 regressions; **227 of 227 ride lines identical to `baseline-full.json`**; its 26
@@ -398,4 +570,42 @@ every configuration is still into the turn (`side.py` per configuration).
   03:02:22–03:07:12 UTC): snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`, **identical** (`results/byte-check.txt`).
 - `npx tsc -b` clean; the gain lock and the touched test files (`predictiveBalance`, `PhysicalMode`, `RideSession`,
   `stabilityGains`): 4 files, 195 of 195 (01:55 UTC); the gain-lock test untouched.
+- **Every switch printed back**: every process of every screening run and of both full reports printed its switches as
+  asked (`built` rows; the report refuses otherwise, and none was refused).
+- **The touched source after the pre-registration:** none. `src` is as committed at `b92cb490`; the later commits touch
+  only `docs/research/stability/turn-entry/`. `git diff d5c8ccf9 --stat -- src scripts`: 10 files, +320 / −17
+  (`PhysicalMode.ts` +22 and its test +25, `main.ts`, `AttachedRider.ts` +52, `RideSession.ts` +9,
+  `predictiveBalance.ts` +151 and its test +86, `SurfZoneRunner.ts`, `SurfZoneSimulation.ts` +8, `stability-ride.ts`).
+
+## 7. The predictions (§0.7) against the result
+
+1. Stage 1, into the turn — **held** (bench 26 of 29); the sideways speed term most of the capture point — **held**
+   (at the escape `cA` 0.51 m = `cPA` 0.11 m + `cSA`/ω₀ 0.40 m, medians). Nose or tail few or none — **held** (none).
+2. E1 does little or harm, 40–50 of 80 — **missed**: 33, half the falls during the steer gone; the turn ±1° — **missed**
+   (−2.76° at +1.0 s).
+3. E2 (0.25) takes the falls during the steer down, 30–40 of 80 — **missed** (49; worse); faster at +0.5 s — **missed**
+   (−0.70°); a deeper first outward roll — not read.
+4. E12 between E1 and E2 — **held** at 0.25 (73 between 64 and 90); at 0.5 it beat both (58).
+5. N1 ≈ the notch on the falls, at least as fast — **held** for the speed (+1.69 / +1.91), **missed** for the falls (38
+   against 33). N2 keeps the notch's line 2 and drops its tall and Snap regressions — **held** (33; 4 regressions, none
+   tall or Snap).
+6. Nothing passes; the combination comes closest; R stays the largest lever — **held**.
+
+## 8. Where everything is
+
+- **Raw runs** (not committed), the session scratchpad
+  `/private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36i/`:
+  `scr/<config>/` (the screening: `big_s1..3.jsonl`, `tw-*.jsonl`, `rides.jsonl`, `tw/rides.jsonl`), `ext/<config>/`
+  (the release drives and controls), `full/off`, `full/n2`, `full/c3` (the full reports, with `report.md`), `s1tw/` (the
+  stage-1 test-wave measure), `byte/`, `bin/` (the bundles: `entry-probe.mjs` sha1 `0a37781177c2…`, `stability-report.mjs`
+  `5cfc032ef19c…`, `stability-ride.mjs` `bc4dfab0bed5…`, built from `b92cb490`), the logs `scr/stage2a.log`, `stage2b.log`,
+  `stage3b.log`, `ext.log`.
+- **Readers:** `side.py` (stage 1, every configuration), `pair.py`, `screen.py`, `release.py`, `measure.sh`, `run.py`;
+  3.6h's `drift/regress.py` for the regressions' frames; `tools/` (the model checks).
+- **Results:** `results/side-off.json`, `results/pair-off.txt`, `results/screen.md|json`, `results/full-lines.json`,
+  `results/full-c3-regress.txt`, `results/release.md`, `results/model-loop.txt`, `results/e1-equilibrium.txt`,
+  `results/byte-check.txt`.
+- **The switches:** `src/game/PhysicalMode.ts` `entrySwitches`; `src/physics/predictiveBalance.ts` `EntryTuning`,
+  `PredictiveController.entryReference`, `CommandTuning.scope`; `src/physics/AttachedRider.ts` (`turnAim`, `turnPlan`,
+  `notchScope`, the entry mark, `ENTRY_TALL_DEPTH`); pinned off in `src/main.ts`.
 
