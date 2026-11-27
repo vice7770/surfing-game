@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-27, about 01:50 UTC.**
+- **Status, 2026-11-27, about 04:50 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -147,27 +147,38 @@
       - **The coordinator's qualifications:**
         - Of the two rides said to regress "under every configuration", one does not regress under the quicker rider or either twist scale.
         - On the test wave, `tw-ride:hisway` and `tw-ride:compress:straight` are the same ride frame for frame, so the benchmark counts it twice.
-      - **Served for his feel ride:** dev server `breakline-latest` (port 5177) now runs `claude/drift` `d5c8ccf9`. With no switch it rides as before; add `&wobbleNotch=1` to his address for the filter.
+      - **Served for his feel ride:** dev server `breakline-latest` (port 5177) ran `claude/drift` `d5c8ccf9` until 3.6i's review (it now runs `claude/turn-entry`, below). With no switch it rides as before; add `&wobbleNotch=1` to his address for the filter.
       - **His feel ride** (2026-11-27, about 00:40 UTC): "it still seems to have the same problem. Maybe less wobble. But the surfer still falls on turn". Asked when, he said "As I steer". The frames agree: the deep turns tip the body over 0.5–1.0 s into the steer.
       - **The null-change floor** (his "Yes, run it"): with the ankle's push nudged 1 % down, 1 ride regresses (`big:s2:w16:crouch:left`); nudged 1 % up, none; the probe with no nudge is 227 of 227 identical. So the benchmark's regressions are real effects, and line 1 for the next round is at most 1.
-    - **3.6i, the turn round, is running.** Vicente planned it in three rounds (2026-11-27, 00:50–01:02 UTC, "Use all recommended" each time); consult log `b1c2dc7d`.
-      - It runs on Opus at high effort on `claude/turn-entry` from `d5c8ccf9`, in `.claude/worktrees/turn-entry`. The brief is `docs/research/stability/turn-entry/BRIEF.md` (`75f1d449`). Dispatched about 01:45 UTC.
-      - **The target:** the balance falls during the steer in Compress and Crouch, with R2 held and with R2 let go as the steer starts.
-      - **The order:** first it finds which way the body goes over. Then it tries the entry fixes (the aim matched to the board, a planned lean, and both together) and Codex's two filter variants, each behind an opt-in switch.
-      - **The pass line:**
-        - at most 1 regression;
-        - the falls over the ride halved in three places: the benchmark's 80 deep turns (47 → ≤ 23), his way on Big (19 → ≤ 9 of 36), and R2 let go at the steer (22 → ≤ 11 of 36);
-        - turns no slower.
-        - The quicker rider is a yardstick only.
-      - **Codex's entry `8aa48d38`** (a turn-entry work order) was read. Its three differences from his answers were put to him, and he chose. The rest is folded into the brief. Its numbers were then checked from the saved data. It holds, with two claims qualified and two with caveats (consult log `9bac04f6`), and the builder has the verdicts.
-      - **If nothing passes,** the builder stops and reports, and he decides.
+    - **3.6i, the turn round, is done and reviewed.** Vicente planned it in three rounds (2026-11-27, 00:50–01:02 UTC, "Use all recommended" each time); dispatched as consult log `b1c2dc7d`; the review is `836d2cdb`.
+      - It is on `claude/turn-entry` `a1f22e33`, from `d5c8ccf9` (Opus at high effort; the brief is `docs/research/stability/turn-entry/BRIEF.md`, the write-up `README.md` beside it).
+        - It adds three opt-in switches, off by default and pinned off online: `?turnAim=board` (the board's aim, taken from standing tall), `?turnPlan=0.5|0.25|0.15` (a planned lean), and `?notchScope=state|stance` (with `&wobbleNotch=1`: the filter on the estimated state alone, or only in Compress and Crouch).
+        - With every switch off, the full report gives 227 of 227 and 26 of 26 identical. The byte check, `tsc` and the gain lock pass.
+        - The coordinator measured every screening run, both full reports and the release runs from the raw rides with its own build and readers. Every number matches.
+      - **The pass line was:** at most 1 regression; the falls over the ride halved in three places (the benchmark's 80 deep turns 47 → ≤ 23, his way on Big 19 → ≤ 9 of 36, R2 let go at the steer 22 → ≤ 11 of 36); turns no slower.
+      - **Which way he goes over:** into the turn (51 of 56 falls during the steer), never over the nose or tail. The body leans in, the board swings away under it, and one big swing carries the body over the inside rail.
+      - **Nothing passes his line.**
+        - **The closest by the rule is the filter in Compress and Crouch only** (`&wobbleNotch=1&notchScope=stance`). It keeps the notch's deep-turn numbers (33 of 80 still fall), turns as fast or faster, and leaves standing tall and Snap exactly as today. It regresses 3 rides (4 report lines).
+        - **Everything together** (`&turnAim=board&turnPlan=0.5&wobbleNotch=1`) nearly empties the falls as he steers: 1 of 80 on the bench, 0 of 36 his way. But the falls come back after the steer (25 of 80 against 18), the turn comes round about 1.7° less by +1.0 s, and 18 rides regress (7 of them tall or Snap, through the unscoped notch). With R2 let go as he steers, it still falls during the steer on 11 of 36.
+        - The board's aim alone halves the falls as he steers (29 → 13 of 80) but slows the turn about 3°. The planned lean alone adds falls at 0.25 and barely moves them at 0.5.
+      - **The coordinator's qualifications:**
+        - Amendment 2's reason was wrong, though its conclusion holds: the felt vertical across the deck never marks the turn's inside during a steer. That is put to Codex.
+        - The write-up's second feel URL is the scoped combination (`&notchScope=stance`), but the "18 rides get worse" beside it is the unscoped one's; the scoped one has no full report.
+      - **Served for his feel ride:** dev server `breakline-latest` (port 5177) now runs `claude/turn-entry` `a1f22e33`. With no 3.6i switch it rides as `claude/drift` did. The coordinator suggests the scoped combination:
+
+        ```
+        http://localhost:5177/?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantFloor=6&turnAim=board&turnPlan=0.5&wobbleNotch=1&notchScope=stance
+        ```
+
+      - **His decisions:** whether a turn about 2° less round at a second is acceptable if it stops the throws as he steers (line 3 says no); whether the falls after the steer are the next target; the quicker rider; the ankle's range (the coordinator sees no case for it yet).
+      - **Codex's entry `8aa48d38`** (a turn-entry work order) was read and checked from the saved data (consult log `9bac04f6`); its verdicts went into the brief.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `9bac04f6`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `836d2cdb`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -241,9 +252,9 @@ Also open:
 | `claude/board-fit` | `ef7908f2` | 3.6e: the fit halves the error on fresh nudges but misses the bar narrowly; the closure matches the swing's frequency on the fitting seeds only; its term table (the board barely feeling the rider in yaw, rolling far lighter) is withdrawn by the 3.6f review (docs, fits and probes; from `4a50e650`) |
 | `claude/rider-momentum` | `fc466712` | 3.6f: the game's coupled solve conserves the rider's momentum, and the board meets the body's push at its arm; 3.6e's term table could not see it; the picture's body has a rotational inertia the game's lacks (docs and probes; from `ef7908f2`) |
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
-| `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`). Served on port 5177 |
-| `claude/turn-entry` | `75f1d449` | 3.6i, running: the turn round (the brief; from `d5c8ccf9`; the builder's commits follow) |
-| `claude/the-record` | `9bac04f6` | the consult log (verified on the remote 2026-11-27) |
+| `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`) |
+| `claude/turn-entry` | `a1f22e33` | 3.6i: nothing passes his line; he goes over into the turn; `?notchScope=stance` (the closest) is the notch without its tall and Snap regressions; everything together nearly empties the falls as he steers but they come back after it and the turn comes round less; also `?turnAim`, `?turnPlan` (opt-in, pinned off online; from `d5c8ccf9`). Served on port 5177 |
+| `claude/the-record` | `836d2cdb` | the consult log (verified on the remote 2026-11-27) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
