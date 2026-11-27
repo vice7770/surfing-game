@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-27, about 18:55 UTC.**
+- **Status, 2026-11-27, about 19:40 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -177,7 +177,7 @@
         - **The coordinator's reading of "not correctly implemented".** The balance holds him up by holding the board to the turn its own picture of the board predicts, and in Compress and Crouch that picture is wrong (3.6d). 3.6h's and 3.6i's switches changed what it aims at or filters, not the picture.
         - The aim is withdrawn: it limits the turn. Two questions are put to Codex.
       - **He chose the root round** after an explainer page (below). The earlier list waits: the quicker rider, the falls after the steer, and the ankle's range.
-    - **3.6j, turn first, is running** (dispatched 2026-11-27 about 17:10 UTC; consult log `46cdcc8e`).
+    - **3.6j, turn first, is done and reviewed** (dispatched 2026-11-27 about 17:10 UTC, consult log `46cdcc8e`; review `7e0d00fd`; `claude/turn-first` `7e4e149d`).
       - **The explainer.** He asked for one at about 11:45 UTC: "give me in a html explanation the steps on what makes the surfer move … I dont want a nudge in the middle of the turning".
         - It is a private claude.ai page, "How the Surfer Moves". A standalone copy is committed on this branch at [`docs/research/new-rider/how-the-surfer-moves.html`](../../research/new-rider/how-the-surfer-moves.html), and it is now the source the page is republished from. Version 2 (2026-11-27) carries Codex's verified fixes. It is a living doc under `CLAUDE.md`'s new "Living docs" rule: update it in the same round as any change that concerns it.
         - It shows the chain function by function at `a1f22e33`.
@@ -202,6 +202,15 @@
         - The round runs as registered.
         - **Codex's fallback** is the next candidate if `on` misses: steer as its own offset to the ankle's rest, and balance on the body's motion relative to the feet, with no lean target.
         - Crouch's low bar before the turn is the knee's cap in the deep squat (median 0.102 at 0.683 s).
+      - **Nothing passes and nothing is served.** The coordinator reproduced every number from its own measurement (252 + 8 rides per configuration identical; switch-off 227 of 227).
+        - **Falls, `aim` and `on`:** bench 52 and 52 of 80 against 47; his way 22 and 22 of 36 against 19; R2 let go 22 and 22 against 22.
+        - **Straight deep rides fall:** 18 and 20 of 36 against 2.
+        - **Line 4 fails everywhere.** `aim` is 61° short standing tall and 36° short in Compress at +1.5 s; under `on`, no ride stands in both.
+        - **The diagnostic** (`aim` with the feed-forward's unsensed slip term at zero) restores straight riding (2 of 36) and gives bench 18 of 80 and his way 5 of 36. But R2 let go is 19 of 36, the board comes round 16–55° less by +1.5 s, and standing tall turns the wrong way.
+        - **So the turn as it ships is the balance's aim.** The nudge he felt and the turn he gets are one mechanism.
+        - **`on` goes outward,** as the model said: 41 of 47 falls during the steer go outward.
+        - **The coordinator's correction:** the write-up swapped `aim`'s fall sides through `side.py`'s per-arm convention flip. They are 30 into the turn and 18 outward, not 18 and 30.
+      - **His decision now:** the coordinator recommends a round on the board's own turn in the water, starting from `rail-dig`, `roll-plant`, 3.6b's course per degree of rail and the water-physics advisor. Codex's A2 waits on it.
       - **Codex's entry `8aa48d38`** (a turn-entry work order) was read and checked from the saved data (consult log `9bac04f6`); its verdicts went into the brief.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
@@ -209,7 +218,7 @@
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `6bc9d20c`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `32c8e516`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -285,8 +294,8 @@ Also open:
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
 | `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`) |
 | `claude/turn-entry` | `a1f22e33` | 3.6i: nothing passes his line; he goes over into the turn; `?notchScope=stance` (the closest) is the notch without its tall and Snap regressions; everything together nearly empties the falls as he steers but they come back after it and the turn comes round less; also `?turnAim`, `?turnPlan` (opt-in, pinned off online; from `d5c8ccf9`). Served on port 5177 |
-| `claude/turn-first` | `22ec9272` | 3.6j, running: the brief (`docs/research/stability/turn-first/BRIEF.md`), from `a1f22e33`; the builder commits here |
-| `claude/the-record` | `6bc9d20c` | the consult log (verified on the remote 2026-11-27) |
+| `claude/turn-first` | `7e4e149d` | 3.6j, done and reviewed: nothing passes; `?turnFirst=aim|on` off by default; the turn as it ships is the balance's aim (from `a1f22e33`) |
+| `claude/the-record` | `32c8e516` | the consult log (verified on the remote 2026-11-27) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 

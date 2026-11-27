@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- "How the Surfer Moves": a living doc (CLAUDE.md, "Living docs"). This file is the source; the private claude.ai
      page of the same name is republished from it. A document skeleton is added so the file opens on its own.
-     Function lines are from claude/turn-entry a1f22e33. Version 2, 2026-11-27: Codex's review (consult log 49ec95f2). -->
+     Function lines are from claude/turn-entry a1f22e33. Version 3, 2026-11-27: Codex's review (consult log 49ec95f2)
+     and 3.6j's result (7e0d00fd). -->
 <style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>How the Surfer Moves</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -191,7 +192,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
   <div class="eyebrow">Breakline, the new surfer</div>
   <h1>How the Surfer Moves</h1>
   <p class="lead">On every game tick the controller's input goes into the ride session. The board, the rider and the water are then solved together in small substeps. In each one, the rider's balance chooses two commands, the ankle's rest angle and the upper body's twist torque. It chooses them from what it sensed 0.1 s ago and from its own picture of the board. The water, the fins and those two torques move the board, and a capture-point test decides whether the rider can still stay up.</p>
-  <p class="small prose">The new surfer (<code>rider=new</code>) on your address. Line numbers are from <code>claude/turn-entry</code> <code>a1f22e33</code>, the build on port 5177. With its switches off it rides like the earlier builds. Updated 2026-11-27 with Codex's review (consult log <code>49ec95f2</code>).</p>
+  <p class="small prose">The new surfer (<code>rider=new</code>) on your address. Line numbers are from <code>claude/turn-entry</code> <code>a1f22e33</code>, the build on port 5177. With its switches off it rides like the earlier builds. Updated 2026-11-27 with Codex's review (consult log <code>49ec95f2</code>) and 3.6j's result (<code>7e0d00fd</code>).</p>
 </header>
 
 <section aria-labelledby="h-checked">
@@ -417,6 +418,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
                 <ul>
                   <li><code>entryReference()</code> (<code>:2014</code>) replaced 6d's steady turn: the board aim (withdrawn) and the planned lean.</li>
                   <li><code>tunedCommand()</code> (<code>:2072</code>) is the wobble filter.</li>
+                  <li><code>freeReference()</code> (3.6j's <code>?turnFirst=aim|on</code>, on <code>claude/turn-first</code>) left the turn rate and slip free. It failed (consult log <code>7e0d00fd</code>).</li>
                 </ul>
               </div>
 
@@ -569,6 +571,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
         <li>The turn fixes cannot reach that.</li>
       </ul>
     </li>
+    <li><b>The turn comes from the balance's aim</b> (3.6j). With the steady turn's turn-rate and slip targets removed, and the straight-riding fault that exposed fixed, the board came round 16–55° less by +1.5 s on the rides that stayed up, and standing tall turned the wrong way. Without the aim, the water turns the board much less than the aim does.</li>
   </ol>
   <div class="reading"><b>The coordinator's reading, to be tested:</b> the lean is sized for a turn the board does not make, and each correction swings the board. One big swing carries him over the inside rail.</div>
 </section>
@@ -590,7 +593,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
   <div class="cards">
 
     <div class="card rec">
-      <h3><span class="badge">Testing now (3.6j)</span>A. Turn first, the lean follows.</h3>
+      <h3><span class="badge no">Tested in 3.6j: failed</span>A. Turn first, the lean follows.</h3>
       <dl>
         <dt>What changes</dt>
         <dd><ul>
@@ -612,11 +615,17 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
           <li>On the balance's own model the full version turns outward. That model is wrong in this channel, so the game decides.</li>
           <li>The turn is only as quick as the water makes it, and today that is slower than you want.</li>
         </ul></dd>
+        <dt>What 3.6j found</dt>
+        <dd><ul>
+          <li>Neither version passed a line. Taking the aim out broke straight riding (18 of 36 deep straight rides fell, against 2), through a balance term on the board's slip, which the balance never senses.</li>
+          <li>With that term removed, the board came round 16–55° less by +1.5 s, and standing tall turned the wrong way. The turn as it ships comes from the balance's aim, so the nudge you felt and the turn you get are one mechanism.</li>
+          <li>The full version went outward, as the model said: 41 of 47 falls during the steer went over the outside rail.</li>
+        </ul></dd>
       </dl>
     </div>
 
     <div class="card">
-      <h3><span class="badge next">Next if A misses</span>A2. The feet steer, the balance stays over the feet (Codex).</h3>
+      <h3><span class="badge next">Waits on the water's own turn</span>A2. The feet steer, the balance stays over the feet (Codex).</h3>
       <dl>
         <dt>What changes</dt>
         <dd><ul>
@@ -629,7 +638,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
         <dt>Why</dt>
         <dd>It keeps the feet steering and the water turning, without A's two flaws.</dd>
         <dt>Risk</dt>
-        <dd>Full steer can use all the ankle's room on one side and leave none for balance. The round would log when both cannot be met.</dd>
+        <dd>Full steer can use all the ankle's room on one side and leave none for balance. The round would log when both cannot be met. 3.6j showed that, with no aim, the water turns the board much less than the aim does, so A2 needs the board's own turn looked at first.</dd>
       </dl>
     </div>
 
@@ -661,7 +670,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
 
   </div>
   <p class="judged small"><b>How any option is judged:</b> behind a switch, off by default; the stability report (falls in the 80 deep turns, ridden your way, and with R2 let go at the steer; no slower turns); and your ride.</p>
-  <p class="closing">3.6j is testing A now. If it misses, A2 is the next candidate. The next round is your call.</p>
+  <p class="closing">3.6j tested A, and it failed. The turn as it ships comes from the balance's aim. The next question is the board's own turn in the water, and the next round is your call.</p>
 </section>
 
 </div>
