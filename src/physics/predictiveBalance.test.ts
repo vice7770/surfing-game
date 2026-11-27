@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { eigenvalues, lateralCompliance, lateralMass } from './rollModel';
-import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, faceColumn, faceSupport, faceTrimPoint, HOLD_LINE_RATE, HOLD_LINE_TIME, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, wobbleHz, DRIFT_FULL_DEPTH, type CommandTuning, type DesignWeights } from './predictiveBalance';
+import { CONTROL_STEP, COST_CAPTURE_SCALE, COST_FEET_REACH, DEFAULT_WEIGHTS, PredictiveController, SCHEDULE_DEPTHS, SCHEDULE_RAILS, SCHEDULE_SPEEDS, add, bodyInertiaAt, captureOmega, captureRow, closedLoop, continuousPlant, costWeights, design, discretise, STANCE_TABLE, STANCE_TABLE_DEEP, STANCE_TUCK, BODY_FRONTAL_SHARE_TUCK, SCHEDULE_DEPTHS_DEEP, stanceAt, heelColumn, faceColumn, faceSupport, faceTrimPoint, HOLD_LINE_RATE, HOLD_LINE_TIME, leastDamping, mul, plantAt, scheduledDesign, steadyTurn, wobbleHz, DRIFT_FULL_DEPTH, type CommandTuning, type DesignWeights, type EntryTuning } from './predictiveBalance';
 
 describe('predictive balance (step 3.2d, model only)', () => {
   it('discretises a first-order lag exactly', () => {
@@ -734,3 +734,66 @@ describe('the command tuning (step 3.6h)', () => {
     expect([...ctl.tick(sense, 7, 0.3, 0, 0, lim)]).toEqual(first);
   });
 });
+
+describe('the entry tuning and the notch variants (step 3.6i)', () => {
+  const weights = { ...DEFAULT_WEIGHTS, riderBody: 'two' as const, plantFloor: 6, stanceDeep: true };
+  const lim = { ankle: 0.25, twist: 100 };
+  const DEG = Math.PI / 180;
+  /** The controller on its own model; the lean asked ramps at 1.4 rad/s to 40° from tick 0, back to 0 from +1.0 s. */
+  const run = (entry: EntryTuning | undefined, tuning: CommandTuning | undefined, depth: number, speed: number, on: boolean, ticks = 600) => {
+    const d = scheduledDesign(speed, depth, 0, weights);
+    const ctl = new PredictiveController(weights, 'tan', undefined, tuning, entry);
+    let x = new Array<number>(d.phi.length).fill(0);
+    let lean = 0;
+    const u: number[][] = [];
+    const xs: number[][] = [];
+    for (let k = 0; k < ticks; k += 1) {
+      lean += Math.max(-1.4 / 60, Math.min(1.4 / 60, (k < 60 ? 40 * DEG : 0) - lean));
+      const c = [...ctl.tick(d.c.map((row) => row.reduce((s, v, j) => s + v * x[j], 0)), speed, depth, -lean, 0, lim, 0, 0, 0, undefined, on)];
+      u.push(c);
+      x = d.phi.map((row, i) => row.reduce((s, v, j) => s + v * x[j], 0) + d.gamma[i][0] * c[0] + d.gamma[i][1] * c[1]);
+      xs.push(x);
+    }
+    return { u, x: xs, ctl };
+  };
+  const entries: EntryTuning[] = [{ aim: true }, { planBank: 0.5 }, { planBank: 0.25 }, { planBank: 0.15 }, { aim: true, planBank: 0.25 }];
+  it('with the entry mark off, the command as it ships, bit for bit', () => {
+    const off = run(undefined, undefined, 0.3, 7.5, false).u;
+    for (const e of entries) expect(run(e, undefined, 0.3, 7.5, false).u, JSON.stringify(e)).toEqual(off);
+    const notch = run(undefined, { notchQ: 1 }, 0.3, 7.5, false).u;
+    expect(run(undefined, { notchQ: 1, scope: 'stance' }, 0.3, 7.5, false).u).toEqual(off);
+    expect(run(undefined, { notchQ: 1, scope: 'stance' }, 0.3, 7.5, true).u).toEqual(notch);
+  });
+  it('the aim standing tall is the shipped reference at depth 0', () => {
+    const off = run(undefined, undefined, 0, 7.9, true).u;
+    const on = run({ aim: true }, undefined, 0, 7.9, true).u;
+    for (let k = 0; k < off.length; k += 1) for (let q = 0; q < 2; q += 1) expect(Math.abs(on[k][q] - off[k][q])).toBeLessThan(1e-9);
+  });
+  it('the planned lean leans the model body further by +0.5 s, within the clamps, and the loop settles', () => {
+    for (const [depth, speed] of [[0.3, 7.5], [0.45, 7], [0.3, 9.5]]) {
+      const off = run(undefined, undefined, depth, speed, true);
+      const plan = run({ planBank: 0.25 }, undefined, depth, speed, true);
+      expect(-plan.x[29][2], `${depth} ${speed}`).toBeGreaterThan(-off.x[29][2] + 5 * DEG);
+      for (const c of plan.u) expect(Math.abs(c[0])).toBeLessThanOrEqual(0.25);
+      const size = (x: number[]) => Math.hypot(...x);
+      expect(size(plan.x[599])).toBeLessThan(0.05 * Math.max(...plan.x.slice(0, 120).map(size)));
+      expect(plan.ctl.plan.on).toBe(false);
+    }
+  });
+  it('N1 filters the state\'s part only: with x̂ at the reference, the ankle row\'s feedback is nothing', () => {
+    // On the controller's own model the shipped notch and N1 differ while the reference moves, and agree with it still.
+    const a = run(undefined, { notchQ: 1 }, 0.3, 7.5, true).u;
+    const b = run(undefined, { notchQ: 1, scope: 'state' }, 0.3, 7.5, true).u;
+    expect(Math.max(...a.slice(0, 60).map((c, k) => Math.abs(c[0] - b[k][0])))).toBeGreaterThan(1e-4);
+    const size = (x: number[]) => Math.hypot(...x);
+    const xs = run(undefined, { notchQ: 1, scope: 'state' }, 0.3, 7.5, true).x;
+    expect(size(xs[599])).toBeLessThan(0.05 * Math.max(...xs.slice(0, 120).map(size)));
+  });
+  it('forgets the plan on a reset', () => {
+    const { ctl } = run({ planBank: 0.25 }, undefined, 0.3, 7.5, true, 30);
+    expect(ctl.plan.on).toBe(true);
+    ctl.reset();
+    expect(ctl.plan.on).toBe(false);
+  });
+});
+

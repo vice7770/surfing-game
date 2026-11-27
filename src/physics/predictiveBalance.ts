@@ -1622,7 +1622,47 @@ export const HOLD_LINE_RATE = 0.2;
  *   speed and depth checked). The feed-forward of the steady turn (`ref.u`) and the bias are not filtered, so the turn's
  *   own command passes as it ships.
  */
-export interface CommandTuning { ankle?: number; twist?: number; notchQ?: number }
+export interface CommandTuning {
+  ankle?: number; twist?: number; notchQ?: number;
+  /**
+   * Step 3.6i (`?notchScope`; `docs/research/stability/turn-entry/README.md`), with `notchQ` only:
+   * - `'state'` (N1): the notch filters the estimated state's part of the ankle row's feedback, `K x̂`, and the reference's
+   *   part, `K x_ref`, goes to the command directly. The same notch, the same depth weight, the same unit gain at 0 Hz.
+   * - `'stance'` (N2): the shipped notch (`K (x̂ − x_ref)` filtered), acting only while the entry mark is on (Compress or
+   *   Crouch asked, or a turn begun in one; `tick`'s `entryOn`).
+   * Undefined: 3.6h's notch, as it ships.
+   */
+  scope?: 'state' | 'stance';
+}
+
+/**
+ * **Step 3.6i, the turn round** (`docs/research/stability/turn-entry/README.md`; `?turnAim`, `?turnPlan`): the balance's
+ * reference during a turn, opt-in, acting only while the caller's entry mark is on (Compress or Crouch asked, or a turn
+ * begun in one while the legs extend; `tick`'s `entryOn`). Neither touches the gains `K`, the filter, the predictor, the
+ * clamps or any bound; the same lean is asked.
+ *
+ * - `aim` (E1, the aim matched to the board, `?turnAim=board`): the steady turn for the lean asked is the one the
+ *   depth-0 design holds at the same speed and rail (its board roll, yaw rate, slip, lagged states and both commands
+ *   together, with the 'tan' correction and the face's trim as `tick` applies them), in place of the deep design's. The
+ *   board under a deep rider is the same hull on the same water: 3.6b measured the deep stances' course per degree of rail
+ *   close to standing tall's (1.18 Compress, 0.95 Crouch, 1.26 tall over +1.5 to +2.0 s), while their own steady turn asks
+ *   4–14 % less board roll per degree of lean (3.6b §5 item 5). **It is not an equilibrium of the deep design's model**:
+ *   that model holds a lean at one board roll only (with the roll held 2–7° higher, its nearest steady turn by least
+ *   squares asks 117–336 deg/s of yaw), so the aim is the tall design's whole steady turn, a coherent one, and the game is
+ *   its test (README §0).
+ * - `planBank` (E2, a planned lean, `?turnPlan=<s>`; `planRho` for model checks only): when a lean is asked, the reference
+ *   is a planned movement: the design's own model (Φ, Γ, the same blended design) run forward from the reference of the
+ *   tick before, driven toward the steady turn of the lean asked by the plan's own LQR gain (the design's weights with the
+ *   body bank's acceptable error, `stateScale[2]`, times `planBank`), its command within today's ankle and twist clamps. The plan's state is the reference (bank, its rate,
+ *   the board's roll and rate and every other state) and the plan's command is the feed-forward; the feedback is the
+ *   shipped `K (x̂ − x_ref)` on it, unchanged. On the design's model, the plan is a trajectory the model can follow
+ *   exactly (x_{k+1} = Φ x_k + Γ v_k). It ends once no lean is asked and the plan is back at the steady reference.
+ * - Both (E12): the plan is driven toward E1's steady turn.
+ */
+export interface EntryTuning { aim?: boolean; planRho?: number; planBank?: number }
+/** Step 3.6i: the plan ends once no lean is asked and every state of it is within this of the steady reference. */
+export const PLAN_SETTLED = 1e-4;
+
 /** Step 3.6h: the design depth at and below which the tuning acts in full, m (Compress's 0.30 m). */
 export const DRIFT_FULL_DEPTH = 0.3;
 /**
@@ -1693,11 +1733,24 @@ export class PredictiveController {
   /** Step 3.6h: the notch's history per command row, [x₋₁, x₋₂, y₋₁, y₋₂] of the feedback (zero after a reset). */
   private readonly notchState = [[0, 0, 0, 0], [0, 0, 0, 0]];
 
-  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan', turnWeights?: DesignWeights, tuning?: CommandTuning) {
+  /** Step 3.6i (`EntryTuning`): undefined by default, and then the reference is formed as it ships, bit for bit. */
+  private readonly entry?: EntryTuning;
+  /** Step 3.6i: the plan's weights (`rho` at `planRho`), its blend's scratch, its state and command, whether it runs. */
+  private readonly planWeights?: DesignWeights;
+  private planBlended?: Design;
+  private tallBlended?: Design;
+  readonly plan = { on: false, x: new Array<number>(N_STATE + N_HEAVE).fill(0), u: [0, 0] };
+
+  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan', turnWeights?: DesignWeights, tuning?: CommandTuning, entry?: EntryTuning) {
     this.weights = weights;
     this.turn = turn;
     this.turnWeights = turnWeights;
     this.tuning = tuning;
+    this.entry = entry;
+    if (entry?.planRho !== undefined || entry?.planBank !== undefined) {
+      const base = weights ?? DEFAULT_WEIGHTS;
+      this.planWeights = { ...base, rho: entry.planRho ?? base.rho, stateScale: base.stateScale.map((v, i) => (i === 2 ? v * (entry.planBank ?? 1) : v)) };
+    }
   }
 
   reset(): void {
@@ -1714,11 +1767,14 @@ export class PredictiveController {
     this.raw[0] = 0; this.raw[1] = 0;
     this.bias[0] = 0; this.bias[1] = 0;
     for (const z of this.notchState) z.fill(0);
+    this.plan.on = false;
+    this.plan.x.fill(0);
+    this.plan.u[0] = 0; this.plan.u[1] = 0;
   }
 
   /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
-  private blend(speed: number, depth: number, rail: number, turning = false): Design {
-    const weights = turning ? this.turnWeights : this.weights;
+  private blend(speed: number, depth: number, rail: number, turning = false, slot?: 'plan' | 'tall'): Design {
+    const weights = slot === 'plan' ? this.planWeights : turning ? this.turnWeights : this.weights;
     // Step 3.5w (`plantSpeed: 'face'` or `'taper'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
     const speeds = weights?.plantSpeed !== undefined ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
     const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
@@ -1752,7 +1808,7 @@ export class PredictiveController {
     const ws = [(1 - fv) * (1 - fd) * (1 - fr), fv * (1 - fd) * (1 - fr), (1 - fv) * fd * (1 - fr), fv * fd * (1 - fr),
       (1 - fv) * (1 - fd) * fr, fv * (1 - fd) * fr, (1 - fv) * fd * fr, fv * fd * fr];
     const first = ds[0];
-    let out = turning ? this.turnBlended : this.blendedDesign;
+    let out = slot === 'plan' ? this.planBlended : slot === 'tall' ? this.tallBlended : turning ? this.turnBlended : this.blendedDesign;
     if (!out) {
       const copy = (m: Mat) => m.map((row) => row.slice());
       out = {
@@ -1764,7 +1820,9 @@ export class PredictiveController {
         ...(first.gammaF && first.gammaFE && first.predF && first.trimX && first.trimU
           ? { gammaF: copy(first.gammaF), gammaFE: copy(first.gammaFE), predF: copy(first.predF), trimX: copy(first.trimX), trimU: copy(first.trimU) } : {}),
       };
-      if (turning) this.turnBlended = out;
+      if (slot === 'plan') this.planBlended = out;
+      else if (slot === 'tall') this.tallBlended = out;
+      else if (turning) this.turnBlended = out;
       else this.blendedDesign = out;
     }
     const mix = (target: Mat, get: (d: Design) => Mat) => {
@@ -1793,7 +1851,7 @@ export class PredictiveController {
    * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
    * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
    */
-  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, face = 0, hold?: HoldInput): readonly number[] {
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, face = 0, hold?: HoldInput, entryOn = false): readonly number[] {
     const d = this.blend(speed, depth, rail);
     // The plant's own size: ten, or fourteen with the board's heave and pitch carried (step 3.2p).
     const n = d.phi.length;
@@ -1911,13 +1969,18 @@ export class PredictiveController {
       ref.u[0] += d.trimU[0][0] * sensedFace;
       ref.u[1] += d.trimU[1][0] * sensedFace;
     }
+    // Step 3.6i (`EntryTuning`, opt-in): the aim matched to the board and the planned lean, while the entry mark is on.
+    if (this.entry) ref = this.entryReference(ref, d, speed, depth, rail, bank, twistAsked, drive, tilt, sensedFace, limits, entryOn);
     for (let i = 0; i < n; i += 1) this.reference.x[i] = ref.x[i];
     this.reference.u[0] = ref.u[0]; this.reference.u[1] = ref.u[1];
     const u = [0, 0];
     // Step 3.6b (`turnGains`): while a lean is asked, the turn weights' gains on the same estimate and reference.
     const gains = this.turnWeights !== undefined && bank !== 0 ? this.blend(speed, depth, rail, true).k : d.k;
     // Step 3.6h (`CommandTuning`, opt-in): the feedback scaled and filtered in proportion to the depth. Off, the loop below.
-    if (this.tuning) {
+    // Step 3.6i (N2, `scope: 'stance'`): with the entry mark off, the loop below as it ships, and the notch's history cleared.
+    const scoped = this.tuning?.scope === 'stance' && !entryOn;
+    if (scoped) for (const z of this.notchState) z.fill(0);
+    if (this.tuning && !scoped) {
       this.tunedCommand(u, ref, b0, b1, gains, xh, n, depth);
     } else for (let q = 0; q < N_COMMAND; q += 1) {
       let s = ref.u[q] - (q === 0 ? b0 : b1);
@@ -1945,6 +2008,64 @@ export class PredictiveController {
   }
 
   /**
+   * Step 3.6i: the reference with the entry tuning (`EntryTuning`). `ref` is the steady turn `tick` built (the lean asked,
+   * the 'tan' correction, the face's trim); with the mark off it is returned as it is and any plan ends.
+   */
+  private entryReference(ref: { x: number[]; u: number[] }, d: Design, speed: number, depth: number, rail: number, bank: number, twistAsked: number,
+    drive: number[] | undefined, tilt: number, sensedFace: number, limits: ControlLimits, entryOn: boolean): { x: number[]; u: number[] } {
+    const e = this.entry!;
+    const n = d.phi.length;
+    if (!entryOn) { this.plan.on = false; return ref; }
+    let aimed = ref;
+    if (e.aim && Math.abs(bank) > 1e-6) {
+      // E1: the board's roll for this lean as the depth-0 design's steady turn holds it at this speed and rail (in the
+      // tan space, as `tick` solves), the rest re-solved on this design with the roll and the bank held.
+      const tall = this.blend(speed, 0, rail, false, 'tall');
+      const lean = this.turn === 'tan' ? Math.tan(bank) : bank;
+      const tallDrive = tall.gammaD && drive ? tall.gammaD.map((row) => row[0] * tilt) : undefined;
+      const a = steadyTurn(tall.phi, tall.gamma, lean, twistAsked, tallDrive);
+      const f = this.turn === 'tan' ? bank / Math.tan(bank) : 1;
+      aimed = { x: a.x.map((v, i) => (i === 0 || i === 2 || i === 8 ? v * f : v)), u: [a.u[0] * f, a.u[1]] };
+      // The face's trim, as `tick` adds it to the shipped steady turn.
+      if (d.trimX && d.trimU && sensedFace !== 0) {
+        for (let i = 0; i < n; i += 1) aimed.x[i] += d.trimX[i][0] * sensedFace;
+        aimed.u[0] += d.trimU[0][0] * sensedFace;
+        aimed.u[1] += d.trimU[1][0] * sensedFace;
+      }
+    }
+    if (this.planWeights === undefined) return aimed;
+    const p = this.plan;
+    if (!p.on) {
+      if (Math.abs(bank) <= 1e-6) return aimed;
+      // The plan starts from the reference of the tick before (the steady turn the loop was holding).
+      p.on = true;
+      for (let i = 0; i < n; i += 1) p.x[i] = this.reference.x[i];
+    }
+    const kp = this.blend(speed, depth, rail, false, 'plan').k;
+    const [least, most] = typeof limits.ankle === 'number' ? [-limits.ankle, limits.ankle] : limits.ankle;
+    const v = [0, 0];
+    for (let q = 0; q < N_COMMAND; q += 1) {
+      let s = aimed.u[q];
+      for (let j = 0; j < n; j += 1) s -= kp[q][j] * (p.x[j] - aimed.x[j]);
+      v[q] = q === 0 ? Math.max(least, Math.min(most, s)) : Math.max(-limits.twist, Math.min(limits.twist, s));
+    }
+    const out = { x: p.x.slice(0, n), u: v };
+    // The plan's next state on the design's own model.
+    const next = new Array<number>(n);
+    let settled = Math.abs(bank) <= 1e-6;
+    for (let i = 0; i < n; i += 1) {
+      let s = d.gamma[i][0] * v[0] + d.gamma[i][1] * v[1];
+      for (let j = 0; j < n; j += 1) s += d.phi[i][j] * p.x[j];
+      next[i] = s;
+      if (Math.abs(p.x[i] - aimed.x[i]) > PLAN_SETTLED) settled = false;
+    }
+    for (let i = 0; i < n; i += 1) p.x[i] = next[i];
+    p.u[0] = v[0]; p.u[1] = v[1];
+    if (settled) { p.on = false; return aimed; }
+    return out;
+  }
+
+  /**
    * Step 3.6h: the command with the tuning (`CommandTuning`): u = ref.u − bias − N_w(g_w · K (x̂ − x_ref)), row by row,
    * g_w = 1 + (s − 1) w the scale and N_w the notch (the ankle row only) blended by w = min(1, depth / DRIFT_FULL_DEPTH).
    */
@@ -1968,7 +2089,17 @@ export class PredictiveController {
       for (let j = 0; j < n; j += 1) fb += row[j] * (xh[j] - ref.x[j]);
       const scale = q === 0 ? (t.ankle ?? 1) : (t.twist ?? 1);
       fb *= 1 + (scale - 1) * w;
-      if (q0 > 0 && q === 0) {
+      if (q0 > 0 && q === 0 && t.scope === 'state') {
+        // Step 3.6i (N1): the notch on `K x̂` alone; `K x_ref` direct. fb = s·(K x̂) − s·(K x_ref), the first part filtered.
+        let fr = 0;
+        for (let j = 0; j < n; j += 1) fr += row[j] * ref.x[j];
+        fr *= 1 + (scale - 1) * w;
+        const fx = fb + fr;
+        const z = this.notchState[q];
+        const y = b[0] * fx + b[1] * z[0] + b[2] * z[1] - a[0] * z[2] - a[1] * z[3];
+        z[1] = z[0]; z[0] = fx; z[3] = z[2]; z[2] = y;
+        fb = fx + w * (y - fx) - fr;
+      } else if (q0 > 0 && q === 0) {
         const z = this.notchState[q];
         const y = b[0] * fb + b[1] * z[0] + b[2] * z[1] - a[0] * z[2] - a[1] * z[3];
         z[1] = z[0]; z[0] = fb; z[3] = z[2]; z[2] = y;

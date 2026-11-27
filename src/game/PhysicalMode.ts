@@ -633,6 +633,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?pushAnkle=<s>`, `?pushTwist=<s>`, `?wobbleNotch=<Q>`: the balance's feedback scaled per command and notched at the
     // deep stances' swing, in proportion to the depth (step 3.6h), opt-in, to ride.
     ...driftSwitches(),
+    // `?turnAim=board`, `?turnPlan=<s>`, `?notchScope=state|stance`: the balance's reference in a turn begun in Compress or
+    // Crouch, and the wobble filter's variants (step 3.6i), opt-in, to ride.
+    ...entrySwitches(),
     // `?cueLater=on`: the pop-up cue the player is shown waits until the board moves 3.6 m/s through the water (step
     // 3.5u), opt-in, to ride.
     ...cueLaterSwitch(),
@@ -1554,6 +1557,25 @@ export function driftSwitches(search?: string): { pushAnkle?: '0.75' | '0.5' | '
   const twist = scale('pushTwist');
   const q = devParam('wobbleNotch', search)?.trim();
   return { ...(ankle ? { pushAnkle: ankle } : {}), ...(twist ? { pushTwist: twist } : {}), ...(q === '2' || q === '1' ? { wobbleNotch: q } : {}) };
+}
+
+/**
+ * The step 3.6i dev switches (`SurfZoneConfig.turnAim`, `turnPlan`, `notchScope`; `docs/research/stability/turn-entry/README.md`):
+ * opt-in, the new surfer's balance reference while Compress or Crouch is asked (or in a turn begun in one), never its gains:
+ * - `?turnAim=board`: the steady turn's aim from the board's own, standing tall's (E1);
+ * - `?turnPlan=0.5|0.25|0.15`: a planned lean, the reference a plan on the balance's own model (E2);
+ * - `?notchScope=state|stance`, with `?wobbleNotch`: the notch on the estimated state alone (N1), or only in Compress and Crouch (N2).
+ * Only these values; anything else, off. Nothing on the default rider.
+ */
+export function entrySwitches(search?: string): { turnAim?: 'board'; turnPlan?: '0.5' | '0.25' | '0.15'; notchScope?: 'state' | 'stance' } {
+  const aim = devParam('turnAim', search)?.trim();
+  const plan = devParam('turnPlan', search)?.trim();
+  const scope = devParam('notchScope', search)?.trim();
+  return {
+    ...(aim === 'board' ? { turnAim: 'board' as const } : {}),
+    ...(plan === '0.5' || plan === '0.25' || plan === '0.15' ? { turnPlan: plan } : {}),
+    ...(scope === 'state' || scope === 'stance' ? { notchScope: scope } : {}),
+  };
 }
 
 /**

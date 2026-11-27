@@ -253,6 +253,12 @@ export interface RideSessionOptions {
   pushTwist?: '0.75' | '0.5' | '0.35' | '0.25';
   /** The balance's feedback notched at the deep swing (step 3.6h, C2; `AttachedRiderOptions.wobbleNotch`) — the `?wobbleNotch` dev switch. */
   wobbleNotch?: '2' | '1';
+  /** The steady turn's aim from the board's own (step 3.6i, E1; `AttachedRiderOptions.turnAim`) — the `?turnAim` dev switch. */
+  turnAim?: 'board';
+  /** A planned lean (step 3.6i, E2; `AttachedRiderOptions.turnPlan`) — the `?turnPlan` dev switch. */
+  turnPlan?: '0.5' | '0.25' | '0.15';
+  /** The wobble filter's variants (step 3.6i, N1 / N2; `AttachedRiderOptions.notchScope`) — the `?notchScope` dev switch. */
+  notchScope?: 'state' | 'stance';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -379,6 +385,9 @@ export class RideSession {
       ...(options.pushAnkle ? { pushAnkle: options.pushAnkle } : {}),
       ...(options.pushTwist ? { pushTwist: options.pushTwist } : {}),
       ...(options.wobbleNotch ? { wobbleNotch: options.wobbleNotch } : {}),
+      ...(options.turnAim ? { turnAim: options.turnAim } : {}),
+      ...(options.turnPlan ? { turnPlan: options.turnPlan } : {}),
+      ...(options.notchScope ? { notchScope: options.notchScope } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

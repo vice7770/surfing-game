@@ -15,7 +15,7 @@ import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, ride
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
 import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, type CommandTuning, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, equivalentSpeed, railPull, stanceAt, type CaptureOmega, type DesignWeights, type PlantSpeed } from './predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, type CommandTuning, type EntryTuning, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, equivalentSpeed, railPull, stanceAt, type CaptureOmega, type DesignWeights, type PlantSpeed } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -612,6 +612,11 @@ const TWIST_STOP_DAMPING = 50;
  * turn produces no feedback.
  */
 const LEAN_IN_RATE = 1.4;
+/**
+ * Step 3.6i (the entry mark): the leg's depth below which a turn begun in Compress or Crouch counts as stood tall again
+ * once no lean is asked, m. Above the carve's own knee flex standing tall (about 0.07 m, 3.6h §0.1).
+ */
+const ENTRY_TALL_DEPTH = 0.1;
 /** Step 3.6b (`turnGains: 'firm'`): the balance's effort weight while a lean is asked, half the shipped `rho` of 10. */
 const TURN_RHO = 5;
 /**
@@ -1848,6 +1853,21 @@ export interface AttachedRiderOptions {
    * off for online rooms; the new surfer only.
    */
   wobbleNotch?: '2' | '1';
+  /**
+   * **The aim matched to the board** (step 3.6i, E1, `?turnAim=board`; `docs/research/stability/turn-entry/README.md`): while
+   * the entry mark is on (Compress or Crouch asked, or a turn begun in one while the legs rise), the balance's steady turn
+   * for the lean asked is standing tall's, whose board carries more roll for the same lean. Opt-in, off by default, pinned
+   * off for online rooms; the new surfer only.
+   */
+  turnAim?: 'board';
+  /**
+   * **A planned lean** (step 3.6i, E2, `?turnPlan=<s>`): while the entry mark is on and a lean is asked, the balance's
+   * reference is a plan run on its own model toward the steady turn, its bank's acceptable error × s, the plan's command
+   * its feed-forward; the feedback on it as it ships. Opt-in, off by default, pinned off online; the new surfer only.
+   */
+  turnPlan?: '0.5' | '0.25' | '0.15';
+  /** The wobble filter's variants (step 3.6i, `?notchScope=state|stance`, with `wobbleNotch`): N1 the notch on `K x̂` alone, N2 only under the entry mark. */
+  notchScope?: 'state' | 'stance';
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2443,6 +2463,13 @@ export class AttachedRider {
   /** The lean the player asks for (the steer and the hand), eased as `bankReference`, rad: the new surfer's balance's reference (step 3.2e). */
   private leanAsked = 0;
   /**
+   * Step 3.6i: whether the entry mark is kept (a `turnAim`, `turnPlan` or `notchScope=stance` switch asked), and the mark:
+   * on while Compress or Crouch is asked (Snap not held), and kept after they are let go until no lean is asked and the
+   * leg is back above ENTRY_TALL_DEPTH; off at once under Snap. Read by the balance only when a switch asks.
+   */
+  private readonly entryMarked: boolean;
+  entryOn = false;
+  /**
    * The new surfer standing free (step 3.2e): balance by prediction (`PredictiveController`, `predictor`), on its own
    * clock of simulated time (`controlDue`, s to its next tick), the commands held between its ticks (this file's signs):
    * the ankle's command before the feet's reach (the hip takes the rest; the predictor is fed the reach's) and the twist's torque.
@@ -2846,8 +2873,17 @@ export class AttachedRider {
       ...(options.pushAnkle ? { ankle: Number(options.pushAnkle) } : {}),
       ...(options.pushTwist ? { twist: Number(options.pushTwist) } : {}),
       ...(options.wobbleNotch ? { notchQ: Number(options.wobbleNotch) } : {}),
+      // Step 3.6i (`notchScope`): the notch's variants, only with the notch.
+      ...(options.wobbleNotch && options.notchScope ? { scope: options.notchScope } : {}),
     } : undefined;
-    this.predictor = tuning ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning)
+    // Step 3.6i (`turnAim`, `turnPlan`): the reference in a turn begun in Compress or Crouch, only when one is asked.
+    const entry: EntryTuning | undefined = options.turnAim || options.turnPlan ? {
+      ...(options.turnAim ? { aim: true } : {}),
+      ...(options.turnPlan ? { planBank: Number(options.turnPlan) } : {}),
+    } : undefined;
+    this.entryMarked = entry !== undefined || (tuning?.scope === 'stance');
+    this.predictor = entry ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning, entry)
+      : tuning ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning)
       : new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights);
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
     this.leanPaceStance = options.leanPace === 'stance';
@@ -4050,7 +4086,16 @@ export class AttachedRider {
       // right, the world heading's + is the nose to the left), and the lean cap the stick's own ask has now.
       const hold = this.holdLineRef ? { heading: -this.standingLineError, cap: this.leanProbe.cap } : undefined;
       // Step 3.6c's diagnostic knob (`wobbleKnobs.ts`, `designDepth`; off by default, read by no address).
-      const u = this.predictor.tick(sense, speed, WOBBLE.designDepth < 0 ? this.yawDepth : WOBBLE.designDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold);
+      // Step 3.6i: the entry mark, kept only when a switch asks; otherwise the call as it ships.
+      if (this.entryMarked) {
+        const deep = this.crouchAsked > 0 || this.compressAsked > 0;
+        if (this.snapping > 0) this.entryOn = false;
+        else if (deep) this.entryOn = true;
+        else if (this.entryOn && Math.abs(this.leanAsked) < 1e-6 && this.yawDepth < ENTRY_TALL_DEPTH) this.entryOn = false;
+      }
+      const u = this.entryMarked
+        ? this.predictor.tick(sense, speed, WOBBLE.designDepth < 0 ? this.yawDepth : WOBBLE.designDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold, this.entryOn)
+        : this.predictor.tick(sense, speed, WOBBLE.designDepth < 0 ? this.yawDepth : WOBBLE.designDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold);
       this.schedRail = rail;
       this.schedTilt = this.faceTrim ? faceSense : faceTilt;
       this.heldAnkleRaw = -this.predictor.raw[0];
@@ -4351,6 +4396,7 @@ export class AttachedRider {
     this.pitchRateSense = 0;
     this.twistAsked = 0;
     this.leanAsked = 0;
+    this.entryOn = false;
     this.resetTwistBody();
   }
 

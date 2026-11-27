@@ -47,6 +47,33 @@ Vicente planned this round with the coordinator on 2026-11-27, 00:50–01:02 UTC
   - his way with a 1 s full steer on Big (`hisway:left|right`, 36 rides, 3.6h's probe): 19 fall, 12 during the steer, 18 by tipping; the notch 10 (5 during); R 6 (none during);
   - R2 let go as the steer starts on Big (`release0:left|right`, 36 rides): 15 fall before +2.0 s, 22 over the ride; the notch 11 / 18; R 2 / 16.
 - **Codex** (consult log `8aa48d38`): every first sampled beyond-recovery frame of the final escape is sideways; at the Compress fall's escape the sideways-velocity term is 0.403 m of the 0.500 m change in capture position. In the four `tw-ride` placed starts the board is already yawing −32 to −34 deg/s, rolled −19.5° to −21.3° about its heading, with the twist at +0.78 to +0.88 rad, when the steer starts; they detach 0.48–0.92 s into it. In the four `tw-catch` paddle-ins, three fall after the steer (3.10–3.65 s after the stand), two with no sampled capture crossing: treat them as possible failures of recovery after a turn. The notch acts on `K (x̂ − x_ref)` and so also filters the changing reference's part of the command. *(The coordinator confirmed this last point in the code. Codex's test-wave numbers are under the coordinator's check; corrections, if any, come by message and as an amendment to this brief.)*
+  - **Amendment 1, 2026-11-27, about 01:45 UTC (the coordinator's checked verdicts on `8aa48d38`, received by message
+    and folded in by the builder before any run; read-only, recomputed from the 3.6c archive and the source; files in
+    the scratchpad's `review-codex-8aa48d38/tools/`: `tw.py`, `tw.out`, `chk.py`, `chk.out`, `tip-compress.out`; the
+    archive extracted in `../extract/base/`).** Codex's text above is kept as written.
+    - **Confirmed:** C1, C2 and C3 (3.6d's matched delay, 3.6c's ledger); C4, C6 and C10. C10 covers two points: the notch
+      filters `row·(x̂ − ref.x)`, so it also filters the changing reference; and the reference is a series of steady turns.
+      C3's three nuances: the ankle shows up as active alternating work, not as a row of the ledger; the water's added
+      mass and friction feed the swing slightly, only the fins and the pressure damp it; in held turns the feet's push
+      damps. In C4, 0.500 m and 0.403 m are separate medians, so 0.403 is not literally a share of 0.500.
+    - **C7 holds, with three caveats:** the four `tw-ride` deep turns are two independent starts (all rows before tS 1.0
+      are identical within each stance, so compress:left = compress:right = compress:straight = hisway, and crouch:left =
+      crouch:right); all four already cross beyond recovery at tS 0.317–0.35 s, before the steer; the 0.51–0.57 m speed
+      term is measured to the first beyond frame after the escape, and to the escape's onset it is 0.022 m for
+      compress:right and 0.467 m for crouch:right, those two escapes beginning on an infeasible-contact (m2) frame.
+    - **C8 is qualified.** The three `tw-catch` falls after the steer are compress:left 3.65 s, compress:right 3.10 s and
+      crouch:right 3.30 s. Only crouch:right has no beyond frame at all. compress:right crosses at tS 2.383–2.433 s, after
+      the steer, but its final escape at 3.05 s starts on an m2 frame with no crossing. crouch:left falls inside the
+      steer, at 1.80 s.
+    - **C9 holds** with the wobble record's yaw rate (`w.om`; 3.6c's centred 15-frame mean removed): `tw-catch` late falls
+      1.6–8.1 deg/s, `tw-ride` 20.5–39.5 deg/s. With the frame row's yaw the `tw-ride` values are higher (20.5–54.6)
+      because the window reaches past detachment.
+    - **C5 is qualified, and it matters for E1 and E2.** The board out-answers the design's model on the ankle-to-board
+      channels: δ→roll 2.75×, δ→yaw rate 2.05× at +44°, δ→slip 1.60×, τ_a→slip 3.88×. It does not on every channel:
+      τ_a→roll is 0.60× and δ→upper-body yaw rate 0.45×, and phases are up to about 100° off (3.6d README L427–460,
+      "gains 0.45–3.9 times the model's"). The pre-registration says how the entry feed-forward deals with this.
+    - **Also checked:** the archived `tw` rides are today's benchmark rides; all 8 match `baseline-full.json`'s fall times
+      exactly.
 - **The null-change floor** (coordinator, 2026-11-27; `scratchpad/nullfloor/`, three full reports through 3.6h's probe bundle): measured 00:33–01:36 UTC. With `ankleGain` 0.99, **1** ride regresses: `big:s2:w16:crouch:left`, its lowest reserve 0.160 → 0.041 on a wave fall at +3.87 s (a ride that regresses under 10 of 3.6h's 11 configurations too). With 1.01, **none**. The probe with no knob gives 227 of 227 rides identical to `baseline-full.json` in every field, so the comparison is clean. Fall times move by at most 0.05 s on 90 % of rides; all 47 deep-turn falls still fall; the turn numbers move by about ±0.05°. So the benchmark's regressions are real effects of a change: 12 of the notch's 13 and 13 of R's 14 lie beyond the floor. `big:s2:w16:crouch:left` is the one ride known to be on the edge.
 
 ## Stage 1: which way the body goes over (switch off; before any fix is chosen)

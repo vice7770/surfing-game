@@ -535,6 +535,14 @@ export interface SurfZoneConfig {
   pushTwist?: '0.75' | '0.5' | '0.35' | '0.25';
   wobbleNotch?: '2' | '1';
   /**
+   * Step 3.6i (`RideSessionOptions.turnAim`, `turnPlan`, `notchScope`; `docs/research/stability/turn-entry/README.md`): the
+   * new surfer's balance reference in a turn begun in Compress or Crouch (E1, E2), and the wobble filter's variants (N1,
+   * N2). The `?turnAim`, `?turnPlan` and `?notchScope` dev switches, opt-in, to ride; online rooms run the default.
+   */
+  turnAim?: 'board';
+  turnPlan?: '0.5' | '0.25' | '0.15';
+  notchScope?: 'state' | 'stance';
+  /**
    * 'on': the pop-up cue the player is shown waits until the board can carry a stand, its speed through the water at
    * least `CUE_LATER_SPEED` while the shipped cue is lit (step 3.5u; `takeOffCue.ts` `playerCue`,
    * `docs/research/new-rider/3.5/cue-later.md`). The ride status's `cue` only: the rider's own cue (the paddle sprint)
