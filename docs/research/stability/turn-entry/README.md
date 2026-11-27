@@ -234,3 +234,81 @@ Usage at each stage boundary and at least every 45 minutes; at 80 % of the 5-hou
 and hand back. Raw runs in the session scratchpad's `36i/`; only the rows the tables need are archived under `runs/`.
 Later changes to §0 go in as dated amendments, committed before the numbers they govern are read. Decisions that are
 Vicente's (scope, a bound, realism) stop the round at a clean commit.
+
+### 0.10 Amendment 2, 2026-11-27, about 02:00 UTC, after stage 1's side counts were first read (the order only)
+
+**What happened.** `side.py` as committed (`b92cb490`) checks the across axis by the felt vertical: sign(`feltAcross`) ×
+steer at +0.3 to +0.5 s into the steer must be +1. It came out **−1** (1792 frames), so the reader swapped the labels and
+printed "outward 26, into 3 → E2 first". **The check's premise is false**: 3.6b (§1.2 item 5) measured the board turning
+*away* from the steer for the first 0.35–0.45 s, so at +0.3 to +0.5 s the felt vertical follows the board's wrong-way turn
+and says nothing about the axis. I registered a check that cannot do its job.
+
+**The axis, settled without a turn in it** (`side.py --convention geometric`; `tools/conv.py`): the centre of mass's own
+offset across (`cOA`, board +x) has the sign of the body's bank (the rider's sign) on 6626 of 9569 frames with |bank| > 5°
+(on the bench, hisway and release0 rides of the off probe), and the lean asked (`ask`, the rider's sign) × steer has median
++1 at +0.3 to +0.5 s. So the rider's + is the steer's side and board +x is the steer's side for steer +1 — as
+`CaptureState.toward`'s note says ("'left' is the board's +x rail, `RideInput.steer` +1"). With the labels as first
+assumed, the counts read **into the turn 26, outward 3** (bench, during the steer).
+
+**What changes.** Stage 1's side is read with the geometric convention. **By the registered rule that puts E1 first.**
+The order changes no outcome: every fix is screened in any case (§0.2), and the combination's entry fix is chosen by
+its numbers, not its place (§0.5 step 4). Both readings are reported in §1. Nothing else in §0 changes. The reader's two
+other edits after the first run: it tolerates `w` rows without `cPA` (3.6c's archive, the test wave) and `o` rows without
+`bank` (the frame before the stand), and it adds the +0.25 / +0.5 s records §0.2 registered but the first version left out.
+
+## 1. Stage 1: the body goes over into the turn (switch off)
+
+*Canyon Big seeds 1–3 (3.6h's off probe, `36h/scr/off`) and the test wave (3.6c's base archive, measured into `36i/s1tw`);
+his address with `&cueLater=on&plantFloor=6`; the benchmark's cause rule; the classing frame is the first beyond-recovery
+frame (`bey`) of the final escape. Across quantities signed toward the inside of the asked turn; the capture state in the
+feet's frame (board x across, the felt vertical's projection); angles the rider's (deg), yaw world (deg/s), course world
+x–z from the onset (deg). `side.py --convention geometric`, `results/side-off.json`.*
+
+| place (stance) | balance falls | during the steer: into / outward / nose–tail | after: into / outward | no beyond frame |
+| --- | --- | --- | --- | --- |
+| bench, Compress (40 rides) | 23 | 13 / 1 / 0 | 7 / 2 | 5 (all after) |
+| bench, Crouch (40 rides) | 24 | 13 / 2 / 0 | 7 / 2 | 11 (4 during) |
+| **bench, both (80; today 47)** | **47** | **26 / 3 / 0** | 14 / 4 | 16 |
+| hisway:left\|right, Big (36) | 19 | 11 / 1 / 0 | 6 / 1 | 4 (all after) |
+| release0:left\|right, Big (36) | 22 | 14 / 1 / 0 | 7 / 0 | 10 (8 during) |
+| pooled | 88 | 51 / 5 / 0 | 27 / 5 | 30 |
+
+("No beyond frame": the ride detached with no sampled capture crossing in its final escape; it is classed on its last `w`
+row before the fall, as §0.2 registered.)
+
+(As first printed under the registered felt check, the same counts with the labels swapped: bench during "outward 26,
+into 3"; §0.10.) **Nobody goes over the nose or tail.** **By the rule (§0.2, §0.10): into the turn, so E1 is screened first.**
+
+**What the falling frames show** (the 51 pooled falls into the turn during the steer; medians):
+
+| when | lean asked | body bank | board roll / rail | yaw rate toward the steer | course | body's sideways speed (cSA) | capture point across / headroom | ankle sent (aRaw) / twist sent |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| +0.25 s | 21.4° | 6.1° | 3.7° / 2.8° | +6 deg/s | −2.5° | +0.42 m/s | +0.12 m / +0.36 m | −0.05 rad / +5 N·m |
+| +0.5 s | 41.4° | 11.4° | 5.6° / 6.1° | **−32 deg/s** | −3.2° | +0.72 m/s | +0.24 m / +0.27 m | +0.15 rad / −32 N·m |
+| the first beyond frame (median +0.55–0.7 s) | 45.5° | 14.1° | 4.3° / 3.7° | **−84 deg/s** | **−9.1°** | **+1.71 m/s** | +0.51 m / −0.02 m | +0.07 rad / −2 N·m |
+
+So the body leans into the asked turn as it should (14° by the escape) while the board **does not come round**: it rolls
+only 4–6°, and at the escape it is yawing 84 deg/s *away* from the steer with the course 9° away. The body's own speed
+across the feet toward the inside (1.7 m/s, from 0.4 at +0.25 s) carries the capture point past the inside rail. The five
+outward falls are the opposite case: the board does come round (roll 10.5°, yaw +178 deg/s, course +28°) under a body at 5°.
+
+**The named pair** (`pair.py`; the bench falls during the steer have a median fall time of +1.75 s): the fall
+`big:s3:w9:crouch:left` (stand 6.09 m/s, a balance fall at +1.75 s) and the survivor `big:s3:w3:crouch:left` (same
+seed, stance and steer; stand 5.07 m/s; lasts 5 s). Step by step from the onset (`results/pair-off.txt`):
+- **The fall.** The lean asked ramps at 1.4 rad/s (21° at +0.25 s, 41° at +0.5 s). The board's yaw swings with growing
+  size at about 2.5 Hz: −47 (+0.20 s), +100 (+0.35), −154 (+0.50), −228 deg/s (+0.55). The commands swing with it and
+  reach their limits: the twist sent −100 N·m (its clamp) at +0.45 and +0.50 s, the ankle's raw ask +0.40 and +0.62 rad
+  (its range 0.25) — the balance is fighting the swing, not leaning the body. The body is at 0.5–3° of bank at
+  +0.40–0.50 s; on the yaw's big swing away the body's speed across jumps to +2.66 m/s toward the inside at +0.55 s, the
+  capture point to +0.63 m, the headroom to −0.08 m: beyond. The board rolls up to 25–37° only after that.
+- **The survivor** asks less (its slower board caps the lean asked at 35°), and its yaw swings at most ±53 deg/s; the
+  commands stay inside their limits (ankle within ±0.15 rad, twist within ±27 N·m); the body comes to 11° by +0.5 s and
+  14–17° by +1.0 s with the board at 12–18°, the headroom never below 0.38 m.
+
+**The diagnosis, in one paragraph.** On the falling deep turns the body goes over **into the turn**, in 51 of 56 falls
+during the steer (bench 26 of 29) and 27 of 32 after it, never over the nose or tail. What throws it is the board
+swinging away under it: the yaw's 2.5 Hz swing grows through the entry until a half-swing away from the steer (−84 deg/s
+at the escape, median) drives the body across the feet toward the inside at 1.7 m/s, while the board carries 4–6° of roll
+against a body at 11–14° and a lean asked of 41–46°. In the named fall the balance's commands reach their limits on the
+swing before the escape.
+

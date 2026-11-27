@@ -28,6 +28,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--big', required=True)
 ap.add_argument('--tw', required=True)
 ap.add_argument('--json')
+ap.add_argument('--convention', default='felt', choices=['felt', 'geometric'])
 a = ap.parse_args()
 
 DEEP = ['compress:left', 'compress:right', 'crouch:left', 'crouch:right']
@@ -101,6 +102,24 @@ for rid, r in rides.items():
             checks.append((1 if w['cFA'] > 0 else -1) * s)
 conv = st.median(checks) if checks else 0
 flip = conv < 0
+# Amendment 2 (README §0.10, written after the first output was read): the across axis settled geometrically, with no
+# turn in it: the centre of mass's own offset across (cOA, board +x) against the body's bank (o.bank, the rider's sign),
+# and the lean asked's side (o.ask x steer). If the body banked to the rider's + puts its weight to board +x, and the
+# rider's + is the steer's side, then board +x is the steer's side and cA x steer > 0 is the inside of the asked turn.
+geo = Counter()
+asks = []
+if a.convention == 'geometric':
+    for rid, r in rides.items():
+        R = rows[rid]
+        s = steer_of(r['script'])
+        ob = {round(o['tS'], 3): o for o in R['o']}
+        for w in R['w']:
+            o = ob.get(round(w['tS'], 3))
+            if o is None or w.get('cOA') is None: continue
+            if o.get('bank') is not None and abs(o['bank']) > 5: geo[(1 if w['cOA'] > 0 else -1) * (1 if o['bank'] > 0 else -1)] += 1
+            if 1.3 <= w['tS'] <= 1.5 and o.get('ask'): asks.append((1 if o['ask'] > 0 else -1) * s)
+    side_sign = (1 if geo[1] >= geo[-1] else -1) * (1 if (st.median(asks) if asks else 1) > 0 else -1)
+    flip = side_sign < 0
 
 out = []
 for rid, r in sorted(rides.items()):
@@ -135,17 +154,27 @@ for rid, r in sorted(rides.items()):
         half = frame.get('cHalf') or 0
         reach = frame.get('cR') or 0
         rec.update({
-            'cA': frame['cA'] * g, 'cSA': frame['cSA'] * g, 'cPA': frame['cPA'] * g, 'cOA': frame['cOA'] * g, 'cFA': frame['cFA'] * g,
+            **{k: (frame[k] * g if frame.get(k) is not None else None) for k in ('cA', 'cSA', 'cPA', 'cOA', 'cFA')},
             'headroom': half + reach - abs(frame['cA']), 'half': half, 'reach': reach, 'cT': frame.get('cT'),
         })
         if o:
-            rec.update({'ask': o['ask'] * s, 'bank': o['bank'] * s, 'roll': o['roll'] * s, 'rail': o['rail'] * s, 'aRaw': o['aRaw'] * s, 'tw': o['tw'] * s})
+            rec.update({k: (o[k] * s if o.get(k) is not None else None) for k in ('ask', 'bank', 'roll', 'rail', 'aRaw', 'tw')})
         if fr and f0:
             rec.update({'yaw': fr['yaw'] * s, 'course': ((fr['crs'] - f0['crs'] + 180) % 360 - 180) * s})
+        if on is not None:
+            for dt, tag in ((0.25, '25'), (0.5, '50')):
+                ww, oo, ff = nearest(w, on + dt), nearest(R['o'], on + dt), nearest(f, on + dt)
+                if ww and oo and ff and f0 and on + dt < fell and oo.get('ask') is not None:
+                    rec.update({f'cSA{tag}': ww['cSA'] * g, f'cA{tag}': ww['cA'] * g, f'head{tag}': (ww.get('cHalf') or 0) + (ww.get('cR') or 0) - abs(ww['cA']),
+                                f'ask{tag}': oo['ask'] * s, f'bank{tag}': oo['bank'] * s, f'roll{tag}': oo['roll'] * s, f'rail{tag}': oo['rail'] * s,
+                                f'yaw{tag}': ff['yaw'] * s, f'course{tag}': ((ff['crs'] - f0['crs'] + 180) % 360 - 180) * s,
+                                f'aRaw{tag}': (oo.get('aRaw') or 0) * s, f'tw{tag}': (oo.get('tw') or 0) * s})
     out.append(rec)
 
-print(f'convention check: median sign(feltAcross) x steer at +0.3-0.5 s into the steer = {conv:+.0f} over {len(checks)} frames'
-      + (' -> labels swapped' if flip else ' (as assumed)'))
+print(f'convention check (felt, as registered): median sign(feltAcross) x steer at +0.3-0.5 s into the steer = {conv:+.0f} over {len(checks)} frames')
+if a.convention == 'geometric':
+    print(f'convention (geometric, amendment 2): sign(cOA) x sign(bank) on frames |bank| > 5 deg {dict(geo)}; median sign(ask) x steer at +0.3-0.5 s {st.median(asks) if asks else None:+.0f}')
+print('labels swapped' if flip else 'labels as assumed (cA x steer > 0 = into the turn)')
 for place in PLACES:
     sel = [x for x in out if x['place'] == place]
     print(f'\n{place}: {len(sel)} balance falls')
@@ -182,5 +211,7 @@ for side in ('into', 'outward', 'nose/tail'):
     sel = [x for x in out if x['side'] == side and x['when'] == 'during']
     if sel:
         print(f'  {side} (during, {len(sel)}): ' + ', '.join(f'{k} {med(k, sel)}' for k in ('cA', 'cPA', 'cSA', 'headroom', 'ask', 'bank', 'roll', 'rail', 'yaw', 'course', 'aRaw', 'tw')))
+        for tag in ('25', '50'):
+            print(f'    at +0.{tag} s: ' + ', '.join(f'{k} {med(k + tag, sel)}' for k in ('cA', 'cSA', 'head', 'ask', 'bank', 'roll', 'rail', 'yaw', 'course', 'aRaw', 'tw')))
 if a.json:
     json.dump({'convention': conv, 'flip': flip, 'falls': out, 'order': order}, open(a.json, 'w'), indent=1)
