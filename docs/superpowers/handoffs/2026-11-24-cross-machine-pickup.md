@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-27, about 19:20 UTC.**
+- **Status, 2026-11-27, about 19:35 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -210,7 +210,22 @@
         - **So the turn as it ships is the balance's aim.** The nudge he felt and the turn he gets are one mechanism.
         - **`on` goes outward,** as the model said: 41 of 47 falls during the steer go outward.
         - **The coordinator's correction:** the write-up swapped `aim`'s fall sides through `side.py`'s per-arm convention flip. They are 30 into the turn and 18 outward, not 18 and 30.
-      - **His decision now:** the coordinator recommends a round on the board's own turn in the water, starting from `rail-dig`, `roll-plant`, 3.6b's course per degree of rail and the water-physics advisor. Codex's A2 waits on it.
+      - **He chose** ("Yes, let's plan") the coordinator's recommendation of a round on the board's own turn in the water, starting from `rail-dig`, `roll-plant`, 3.6b's course per degree of rail and the water-physics advisor. Codex's A2 waits on it.
+    - **3.6k, a rail that holds, is running** (planned 2026-11-27 about 19:00–19:25 UTC, "Use all recommended" twice, "Yes, start 3.6k"; consult log `b062319f`; brief `claude/rail-hold` `126c5411`).
+      - **The reframing**, from the earlier studies:
+        - the water already turns the board about right for its rail (roll-plant 29e; 1.2–1.6 deg/s per degree in 3.6j's rides);
+        - what falls short is the rail: 17–20° in full-stick turns, against about 50° in a real bottom turn;
+        - the board loses its sideways grip past about 18° (rail-dig 29s: the rail is a 4 mm face; holding 40° needs "a rail with a body").
+      - **The plan:**
+        - The water-physics advisor (Opus xhigh, started about 19:30 UTC) designs a rail that holds, from sources. If it can't, the coordinator returns to Vicente.
+        - One builder (Opus high) then builds it behind `?railHold=on`, which changes only the hull and rail forces. It retests `?hull=rail`, using the shipped balance, with 3.6j's no-aim diagnostic as a second reading.
+      - **The lines:**
+        1. At most 1 regression.
+        2. Falls no worse, straight riding included.
+        3. Turns no slower and no nudge.
+        4. The rail holds: the lab grip stays positive to 40° at 7 m/s, and the game's rail goes deeper.
+        5. His ride.
+      - **His feel ride:** a passing arm, else the closest arm that meets lines 3 and 4 (labelled as failing), else nothing.
       - **Codex's entry `8aa48d38`** (a turn-entry work order) was read and checked from the saved data (consult log `9bac04f6`); its verdicts went into the brief.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
@@ -218,7 +233,7 @@
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `32c8e516`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `b062319f`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -295,7 +310,8 @@ Also open:
 | `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`) |
 | `claude/turn-entry` | `a1f22e33` | 3.6i: nothing passes his line; he goes over into the turn; `?notchScope=stance` (the closest) is the notch without its tall and Snap regressions; everything together nearly empties the falls as he steers but they come back after it and the turn comes round less; also `?turnAim`, `?turnPlan` (opt-in, pinned off online; from `d5c8ccf9`). Served on port 5177 |
 | `claude/turn-first` | `7e4e149d` | 3.6j, done and reviewed: nothing passes; `?turnFirst=aim|on` off by default; the turn as it ships is the balance's aim (from `a1f22e33`) |
-| `claude/the-record` | `32c8e516` | the consult log (verified on the remote 2026-11-27) |
+| `claude/rail-hold` | `126c5411` | 3.6k, running: the plan (`docs/research/stability/rail-hold/BRIEF.md`), from `7e4e149d`; the advisor's design pending; the builder commits here |
+| `claude/the-record` | `b062319f` | the consult log (verified on the remote 2026-11-27) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
