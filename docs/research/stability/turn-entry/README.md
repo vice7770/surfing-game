@@ -270,6 +270,13 @@ other edits after the first run: it tolerates `w` rows without `cPA` (3.6c's arc
   finalist), with `--ride-bundle entry-probe.mjs`; then `release0.2|0.4|0.6:left|right` on Big for it. The round was
   resumed by the coordinator at about 03:11 UTC after an early hand-back at 03:07 that nobody had asked for.
 
+### 0.13 Note, 2026-11-27, 03:18 UTC: the combination of record named (by §0.5 step 4, nothing new decided)
+
+E12 at 0.5 read (03:17:50): sum 58, course +0.5 s +0.65°, +1.0 s −1.28°. No entry fix has both turn means ≥ 0, so by
+§0.5 step 4's fallback the best entry fix is the one with the fewest of the sum: **E12 at 0.5** (58; E1 64, E12 at 0.25
+73, E2 at 0.5 85, E2 at 0.25 90). **The combination of record is `c3` = `&turnAim=board&turnPlan=0.5&wobbleNotch=1`**;
+the labelled extra is `c3x` = `&turnAim=board&turnPlan=0.5&wobbleNotch=1&notchScope=stance`. Both started 03:18 UTC.
+
 ## 1. Stage 1: the body goes over into the turn (switch off)
 
 *Canyon Big seeds 1–3 (3.6h's off probe, `36h/scr/off`) and the test wave (3.6c's base archive, measured into `36i/s1tw`);

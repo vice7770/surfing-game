@@ -355,6 +355,148 @@
   "finalist": false
  },
  {
+  "name": "e2h",
+  "bench": {
+   "n": 80,
+   "falls": 46,
+   "during": 24,
+   "after": 22,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 18,
+   "during": 10,
+   "after": 8,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 21,
+   "during": 19,
+   "after": 2,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 44,
+  "benchNew": 2,
+  "sum": 85,
+  "c05": {
+   "mean": -0.1755714285714286,
+   "median": -0.025000000000000022,
+   "n": 70,
+   "up": 28,
+   "down": 35,
+   "onlyOn": 1,
+   "onlyOff": 1
+  },
+  "c10": {
+   "mean": 3.9625,
+   "median": 2.625000000000001,
+   "n": 32,
+   "up": 24,
+   "down": 8,
+   "onlyOn": 8,
+   "onlyOff": 3
+  },
+  "yawPeak": 4.3341249999999985,
+  "regressions": 12,
+  "regList": [
+   [
+    "big:s1:w6:compress:left",
+    [
+     "sooner 4.77->3.32"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:right",
+    [
+     "sooner 4.65->4.28"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:right",
+    [
+     "sooner 4.68->4.17"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:left",
+    [
+     "sooner 3.77->2.77"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:right",
+    [
+     "reserve 0.242->0.076"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:left",
+    [
+     "sooner 4.28->2.98"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:right",
+    [
+     "reserve 0.265->0.000"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:left",
+    [
+     "sooner 2.55->1.77"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:right",
+    [
+     "lasted",
+     "reserve 0.187->0.003"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:left",
+    [
+     "lasted",
+     "reserve 0.236->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:left",
+    [
+     "lasted",
+     "reserve 0.350->0.000"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    1.0,
+    0,
+    13
+   ],
+   "crouch:straight": [
+    1.0,
+    0,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
   "name": "e12",
   "bench": {
    "n": 80,
@@ -472,6 +614,97 @@
     "tw-catch:compress:right",
     [
      "sooner 3.10->1.72"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    1.0,
+    0,
+    13
+   ],
+   "crouch:straight": [
+    1.0,
+    0,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "e12h",
+  "bench": {
+   "n": 80,
+   "falls": 31,
+   "during": 14,
+   "after": 17,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 11,
+   "during": 6,
+   "after": 5,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 16,
+   "during": 15,
+   "after": 1,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 30,
+  "benchNew": 1,
+  "sum": 58,
+  "c05": {
+   "mean": 0.6531428571428571,
+   "median": 0.5950000000000001,
+   "n": 70,
+   "up": 48,
+   "down": 16,
+   "onlyOn": 1,
+   "onlyOff": 1
+  },
+  "c10": {
+   "mean": -1.2822857142857145,
+   "median": -0.5499999999999989,
+   "n": 35,
+   "up": 12,
+   "down": 23,
+   "onlyOn": 15,
+   "onlyOff": 0
+  },
+  "yawPeak": 1.5949999999999993,
+  "regressions": 4,
+  "regList": [
+   [
+    "big:s1:w6:crouch:left",
+    [
+     "sooner 4.87->4.53"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:left",
+    [
+     "sooner 4.77->4.48"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:right",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.000"
     ]
    ]
   ],
