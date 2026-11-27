@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-27, about 04:50 UTC.**
+- **Status, 2026-11-27, about 11:40 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -170,7 +170,13 @@
         http://localhost:5177/?canyonWaves=true&rider=new&feltFrame=deck&riderBody=two&stanceReach=keep&deepen=on&cueLater=on&plantFloor=6&turnAim=board&turnPlan=0.5&wobbleNotch=1&notchScope=stance
         ```
 
-      - **His decisions:** whether a turn about 2° less round at a second is acceptable if it stops the throws as he steers (line 3 says no); whether the falls after the steer are the next target; the quicker rider; the ankle's range (the coordinator sees no case for it yet).
+      - **He rode it** (2026-11-27, about 11:25 UTC): "I played it, the balance of compress has improved but not crouch. compress is back to have a nudge while turning stoping the surfer to fully turn at will. This system is not correctly implemented". The coordinator checked it against the saved rides (consult log `55b05718`):
+        - **The bar.** Compress's lowest reserve doubles under every lever (0.038 → 0.075 under the combination). Crouch's stays where it was (0.036 → 0.039).
+        - **Why Crouch does not move.** Crouch's lowest point comes before the steer on 14–16 of 36 Big rides in every setting, where the turn's levers cannot reach. Before the steer its knee leaves a median reserve of 0.50, against Compress's 0.60.
+        - **The nudge is the board's aim** (`turnAim=board`). On the Big rides that stay up, the board has turned 13° by half a second after the steer with the aim alone, against 23° without it; the combination reaches 18°. The planned lean alone turns more. The aim swaps the deep stance's steady turn for standing tall's, and the balance then holds the board to it, with about four times the twist torque in the steer's second half.
+        - **The coordinator's reading of "not correctly implemented".** The balance holds him up by holding the board to the turn its own picture of the board predicts, and in Compress and Crouch that picture is wrong (3.6d). 3.6h's and 3.6i's switches changed what it aims at or filters, not the picture.
+        - The aim is withdrawn: it limits the turn. Two questions are put to Codex.
+      - **His decision now:** whether to plan a round at that root instead of another switch. The earlier list stands behind it: the quicker rider, the falls after the steer, and the ankle's range.
       - **Codex's entry `8aa48d38`** (a turn-entry work order) was read and checked from the saved data (consult log `9bac04f6`); its verdicts went into the brief.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
@@ -178,7 +184,7 @@
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `836d2cdb`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `55b05718`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -254,7 +260,7 @@ Also open:
 | `claude/body-inertia` | `ef4b86c8` | 3.6g: with the picture's own water, the kicked twins follow the body's inertia, not a body without it; no inertia gives the game's ring; 3.6e's regression returns the same "missing lever" from the picture itself (model-only; from `fc466712`) |
 | `claude/drift` | `d5c8ccf9` | 3.6h: nothing passes his line; `?wobbleNotch=1`, the closest, calms the deep wobble and halves his way's Big turn falls but leaves 32 of 47 falling, with 13 regressions; also `?pushAnkle`, `?pushTwist` (opt-in, pinned off online; from `ef4b86c8`) |
 | `claude/turn-entry` | `a1f22e33` | 3.6i: nothing passes his line; he goes over into the turn; `?notchScope=stance` (the closest) is the notch without its tall and Snap regressions; everything together nearly empties the falls as he steers but they come back after it and the turn comes round less; also `?turnAim`, `?turnPlan` (opt-in, pinned off online; from `d5c8ccf9`). Served on port 5177 |
-| `claude/the-record` | `836d2cdb` | the consult log (verified on the remote 2026-11-27) |
+| `claude/the-record` | `55b05718` | the consult log (verified on the remote 2026-11-27) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
