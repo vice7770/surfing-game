@@ -1,0 +1,780 @@
+[
+ {
+  "name": "off",
+  "bench": {
+   "n": 80,
+   "falls": 47,
+   "during": 29,
+   "after": 18,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 19,
+   "during": 12,
+   "after": 7,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 22,
+   "during": 15,
+   "after": 7,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 47,
+  "benchNew": 0,
+  "sum": 88,
+  "c05": {
+   "mean": 0.0,
+   "median": 0.0,
+   "n": 71,
+   "up": 0,
+   "down": 0,
+   "onlyOn": 0,
+   "onlyOff": 0
+  },
+  "c10": {
+   "mean": 0.0,
+   "median": 0.0,
+   "n": 35,
+   "up": 0,
+   "down": 0,
+   "onlyOn": 0,
+   "onlyOff": 0
+  },
+  "yawPeak": 0.0,
+  "regressions": 0,
+  "regList": [],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    1.0,
+    0,
+    13
+   ],
+   "crouch:straight": [
+    1.0,
+    0,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "aim",
+  "bench": {
+   "n": 80,
+   "falls": 52,
+   "during": 47,
+   "after": 5,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 22,
+   "during": 20,
+   "after": 2,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 22,
+   "during": 22,
+   "after": 0,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 47,
+  "benchNew": 5,
+  "sum": 96,
+  "c05": {
+   "mean": 0.5588888888888889,
+   "median": 2.0199999999999996,
+   "n": 36,
+   "up": 19,
+   "down": 17,
+   "onlyOn": 2,
+   "onlyOff": 35
+  },
+  "c10": {
+   "mean": -10.16625,
+   "median": -2.9600000000000004,
+   "n": 8,
+   "up": 3,
+   "down": 5,
+   "onlyOn": 1,
+   "onlyOff": 27
+  },
+  "yawPeak": 23.87675,
+  "regressions": 46,
+  "regList": [
+   [
+    "big:s1:w5:crouch:left",
+    [
+     "sooner 1.97->1.20"
+    ]
+   ],
+   [
+    "big:s1:w5:compress:left",
+    [
+     "sooner 1.52->1.03"
+    ]
+   ],
+   [
+    "big:s1:w5:compress:right",
+    [
+     "sooner 1.78->1.03"
+    ]
+   ],
+   [
+    "big:s1:w6:crouch:left",
+    [
+     "sooner 4.87->1.38"
+    ]
+   ],
+   [
+    "big:s1:w6:crouch:right",
+    [
+     "sooner 2.28->1.40"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:left",
+    [
+     "sooner 4.77->1.27"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:right",
+    [
+     "sooner 4.65->1.32"
+    ]
+   ],
+   [
+    "big:s1:w9:compress:left",
+    [
+     "sooner 1.55->1.15"
+    ]
+   ],
+   [
+    "big:s1:w9:compress:right",
+    [
+     "sooner 1.95->1.17"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:right",
+    [
+     "sooner 4.68->1.57"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:right",
+    [
+     "lasted",
+     "reserve 0.242->0.000"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:right",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:left",
+    [
+     "sooner 4.28->1.88"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:right",
+    [
+     "lasted",
+     "reserve 0.265->0.000"
+    ]
+   ],
+   [
+    "big:s2:w10:crouch:right",
+    [
+     "sooner 2.13->1.47"
+    ]
+   ],
+   [
+    "big:s2:w10:compress:left",
+    [
+     "sooner 1.58->1.28"
+    ]
+   ],
+   [
+    "big:s2:w10:compress:right",
+    [
+     "sooner 1.88->1.37"
+    ]
+   ],
+   [
+    "big:s2:w12:crouch:left",
+    [
+     "reserve 0.128->0.000"
+    ]
+   ],
+   [
+    "big:s2:w15:crouch:left",
+    [
+     "sooner 2.02->1.52"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:left",
+    [
+     "sooner 2.55->1.88"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:right",
+    [
+     "lasted",
+     "reserve 0.187->0.000"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:left",
+    [
+     "lasted",
+     "reserve 0.236->0.017"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:right",
+    [
+     "lasted",
+     "reserve 0.236->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:left",
+    [
+     "lasted",
+     "reserve 0.350->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:right",
+    [
+     "lasted",
+     "reserve 0.350->0.000"
+    ]
+   ],
+   [
+    "big:s3:w6:crouch:left",
+    [
+     "sooner 2.53->1.70"
+    ]
+   ],
+   [
+    "big:s3:w6:crouch:right",
+    [
+     "sooner 2.22->1.90"
+    ]
+   ],
+   [
+    "big:s3:w6:compress:left",
+    [
+     "sooner 2.65->1.30"
+    ]
+   ],
+   [
+    "big:s3:w6:compress:right",
+    [
+     "sooner 2.65->1.47"
+    ]
+   ],
+   [
+    "big:s3:w7:crouch:left",
+    [
+     "sooner 1.72->1.40"
+    ]
+   ],
+   [
+    "big:s3:w7:crouch:right",
+    [
+     "sooner 1.85->1.27"
+    ]
+   ],
+   [
+    "big:s3:w7:compress:left",
+    [
+     "sooner 1.83->1.30"
+    ]
+   ],
+   [
+    "big:s3:w7:compress:right",
+    [
+     "sooner 1.55->1.27"
+    ]
+   ],
+   [
+    "big:s3:w9:crouch:left",
+    [
+     "sooner 1.75->1.35"
+    ]
+   ],
+   [
+    "big:s3:w9:compress:right",
+    [
+     "sooner 1.83->1.28"
+    ]
+   ],
+   [
+    "big:s3:w13:crouch:left",
+    [
+     "sooner 1.90->1.38"
+    ]
+   ],
+   [
+    "big:s3:w13:compress:right",
+    [
+     "sooner 1.90->1.25"
+    ]
+   ],
+   [
+    "tw-catch:crouch:left",
+    [
+     "sooner 1.80->1.48"
+    ]
+   ],
+   [
+    "tw-catch:crouch:right",
+    [
+     "sooner 3.30->1.42"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->1.32"
+    ]
+   ],
+   [
+    "tw-catch:compress:right",
+    [
+     "sooner 3.10->1.48"
+    ]
+   ],
+   [
+    "tw-ride:crouch:right",
+    [
+     "sooner 1.92->1.60"
+    ]
+   ],
+   [
+    "tw-ride:compress:left",
+    [
+     "sooner 1.70->1.17"
+    ]
+   ],
+   [
+    "tw-ride:compress:right",
+    [
+     "sooner 1.48->1.17"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    12.294031451755451,
+    0,
+    3
+   ],
+   "crouch:straight": [
+    6.588010821504357,
+    0,
+    8
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "on",
+  "bench": {
+   "n": 80,
+   "falls": 52,
+   "during": 47,
+   "after": 1,
+   "before": 4,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 22,
+   "during": 22,
+   "after": 0,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 22,
+   "during": 22,
+   "after": 0,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 47,
+  "benchNew": 5,
+  "sum": 96,
+  "c05": {
+   "mean": 3.7279166666666668,
+   "median": 2.645,
+   "n": 24,
+   "up": 13,
+   "down": 11,
+   "onlyOn": 2,
+   "onlyOff": 47
+  },
+  "c10": {
+   "mean": -41.36,
+   "median": -41.36,
+   "n": 2,
+   "up": 0,
+   "down": 2,
+   "onlyOn": 0,
+   "onlyOff": 33
+  },
+  "yawPeak": 32.9446052631579,
+  "regressions": 48,
+  "regList": [
+   [
+    "big:s1:w5:crouch:left",
+    [
+     "sooner 1.97->1.42"
+    ]
+   ],
+   [
+    "big:s1:w5:crouch:right",
+    [
+     "sooner 1.88->1.32"
+    ]
+   ],
+   [
+    "big:s1:w5:compress:left",
+    [
+     "sooner 1.52->1.03"
+    ]
+   ],
+   [
+    "big:s1:w5:compress:right",
+    [
+     "sooner 1.78->1.03"
+    ]
+   ],
+   [
+    "big:s1:w6:crouch:left",
+    [
+     "sooner 4.87->1.38"
+    ]
+   ],
+   [
+    "big:s1:w6:crouch:right",
+    [
+     "sooner 2.28->1.23"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:left",
+    [
+     "sooner 4.77->1.63"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:right",
+    [
+     "sooner 4.65->1.42"
+    ]
+   ],
+   [
+    "big:s1:w9:crouch:left",
+    [
+     "sooner 1.87->1.37"
+    ]
+   ],
+   [
+    "big:s1:w9:compress:right",
+    [
+     "sooner 1.95->1.37"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:right",
+    [
+     "sooner 4.68->1.62"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:left",
+    [
+     "sooner 3.77->1.35"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:right",
+    [
+     "lasted",
+     "reserve 0.242->0.000"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:left",
+    [
+     "sooner 2.15->1.78"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:right",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:left",
+    [
+     "sooner 4.28->1.83"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:right",
+    [
+     "lasted",
+     "reserve 0.265->0.000"
+    ]
+   ],
+   [
+    "big:s2:w10:crouch:right",
+    [
+     "sooner 2.13->1.32"
+    ]
+   ],
+   [
+    "big:s2:w10:compress:left",
+    [
+     "sooner 1.58->1.22"
+    ]
+   ],
+   [
+    "big:s2:w10:compress:right",
+    [
+     "sooner 1.88->1.47"
+    ]
+   ],
+   [
+    "big:s2:w12:crouch:left",
+    [
+     "reserve 0.128->0.000"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:left",
+    [
+     "sooner 2.55->1.35"
+    ]
+   ],
+   [
+    "big:s2:w15:compress:right",
+    [
+     "lasted",
+     "reserve 0.187->0.000"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:left",
+    [
+     "lasted",
+     "reserve 0.236->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:crouch:right",
+    [
+     "lasted",
+     "reserve 0.236->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:left",
+    [
+     "lasted",
+     "reserve 0.350->0.000"
+    ]
+   ],
+   [
+    "big:s3:w3:compress:right",
+    [
+     "lasted",
+     "reserve 0.350->0.000"
+    ]
+   ],
+   [
+    "big:s3:w6:crouch:left",
+    [
+     "sooner 2.53->1.08"
+    ]
+   ],
+   [
+    "big:s3:w6:crouch:right",
+    [
+     "sooner 2.22->1.08"
+    ]
+   ],
+   [
+    "big:s3:w6:compress:left",
+    [
+     "sooner 2.65->1.10"
+    ]
+   ],
+   [
+    "big:s3:w6:compress:right",
+    [
+     "sooner 2.65->1.15"
+    ]
+   ],
+   [
+    "big:s3:w7:crouch:left",
+    [
+     "sooner 1.72->1.38"
+    ]
+   ],
+   [
+    "big:s3:w7:crouch:right",
+    [
+     "sooner 1.85->1.40"
+    ]
+   ],
+   [
+    "big:s3:w9:crouch:left",
+    [
+     "sooner 1.75->1.23"
+    ]
+   ],
+   [
+    "big:s3:w13:crouch:left",
+    [
+     "sooner 1.90->1.52"
+    ]
+   ],
+   [
+    "big:s3:w13:crouch:right",
+    [
+     "sooner 1.62->1.35"
+    ]
+   ],
+   [
+    "big:s3:w13:compress:left",
+    [
+     "sooner 1.58->1.18"
+    ]
+   ],
+   [
+    "big:s3:w13:compress:right",
+    [
+     "sooner 1.90->1.45"
+    ]
+   ],
+   [
+    "tw-catch:crouch:left",
+    [
+     "sooner 1.80->1.07"
+    ]
+   ],
+   [
+    "tw-catch:crouch:right",
+    [
+     "sooner 3.30->1.07"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->1.10"
+    ]
+   ],
+   [
+    "tw-catch:compress:right",
+    [
+     "sooner 3.10->1.08"
+    ]
+   ],
+   [
+    "tw-ride:crouch:left",
+    [
+     "sooner 1.67->0.80"
+    ]
+   ],
+   [
+    "tw-ride:crouch:right",
+    [
+     "sooner 1.92->0.80"
+    ]
+   ],
+   [
+    "tw-ride:compress:left",
+    [
+     "sooner 1.70->0.82"
+    ]
+   ],
+   [
+    "tw-ride:compress:right",
+    [
+     "sooner 1.48->0.82"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    null,
+    0,
+    0
+   ],
+   "crouch:straight": [
+    8.0458385863004,
+    0,
+    4
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ }
+]

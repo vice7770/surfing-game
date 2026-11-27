@@ -227,7 +227,7 @@ and hand back. Raw runs in the session scratchpad's `36j/`; only the rows the ta
 `results/`. Later changes to §0 go in as dated amendments that fix a bug in this build, each committed before the numbers
 it governs are read. Decisions that are Vicente's (scope, a bound, realism) stop the round at a clean commit.
 
-### 0.9 Note, 2026-11-27, 18:15 UTC: a diagnostic, not an arm and not an amendment (`src` unchanged)
+### 0.9 Note, 2026-11-27, 18:11 UTC: a diagnostic, not an arm and not an amendment (`src` unchanged)
 
 **What had been read.** The screening of both arms (`screen.py`, `line4.py`, `quantities.py`, `dips.py`) and one ride's
 frames (`big:s1:w6:compress:left`, off and `aim`). `aim` already swings before any steer: on the straight and tall rides
@@ -241,3 +241,193 @@ feed-forward's solve (`still`), every ride fell at 0.57–1.40 s; with the slip 
 term breaks the arm (the slip is never sensed; the feed-forward multiplied its estimate by −0.8 to −2.7 rad of ankle per
 rad, §0.3 item 3). It is not one of Vicente's arms, gets no full report and is not served; the two arms are judged as
 built. It is read with the same readers.
+
+### The order of the round (UTC, 2026-11-27)
+
+| time | what | commit |
+| --- | --- | --- |
+| 17:08–17:31 | the brief read; the switch built; the controller on its own model (§0.3); tsc and the named tests; two smoke runs (§0) | — |
+| 17:33:28 | **the pre-registration, the switch, the readers**, before any screening run | `56f01681` |
+| 17:33:58 | the screening started (off, `aim`, `on`; Big seeds 1–3 and the test wave's eight) | — |
+| 17:53 | off measured: 252 of 252 Big rides identical to 3.6h's off probe, 8 of 8 test-wave rides identical to `baseline-full.json` | — |
+| 17:56 | `aim` read (screening); one ride's frames read; the swing before the steer found | — |
+| 17:57–18:10 | two test-wave diagnostics of `aim`'s feed-forward (`still`, `noslip`) | — |
+| 18:10 | `on` read (screening, line 4, quantities, sides, dips) | — |
+| 18:11:32 | **note 0.9**: the `noslip` diagnostic declared before its Big run (`src` unchanged) | `3e4d7ad4` |
+| 18:10–18:35 | the extra drives (off, `aim`; `on`'s not run, §6), the `noslip` diagnostic on Big | — |
+| 18:10:48–19:10:55 | the switch-off full report (`--jobs 2`); the quick report 18:35:44–18:46:57; the Canyon byte check 18:35:44–18:40:57 | — |
+| this commit | the write-up | — |
+
+## 1. The answer
+
+**Nothing passes; neither arm meets any of the four lines, and neither meets line 4, so by Q11 nothing is served.**
+Both arms break riding before the steer: the straight deep rides fall 18 of 36 (`aim`) and 20 of 36 (`on`) against off's 2.
+The cause, found by diagnostic and not built as an arm: **the feed-forward's slip term.** The slip is never sensed; the
+feed-forward held the lean against the slip's estimated moments with −0.8 to −2.7 rad of ankle per rad of estimated slip, and
+in the game that feeds the board's yaw swing. With that one term at nothing (`aim` + `FREE_FF=noslip`, a probe override,
+deciding nothing) the straight rides fall 2 of 36 again, and the falls halve on the bench and his way — **but the turn
+barely comes round** (standing tall's heading at +1.5 s into the steer −17.5° against off's +37.6°: the board turns away),
+so it fails line 4 by far. **With the balance aiming no turn, the board does not turn toward the steer on its own; on
+this build the turn the rider gets comes from the aim.** That is the round's main finding for Vicente's question.
+
+## 2. The screening (Big seeds 1–3 + the test wave, his address, the switch-off rows from this round's own probe)
+
+Lines 2 and 3 (`screen.py`, `results/screen.md`; balance falls over the whole ride, during = [1.0, 2.0) s; turns paired
+with off over the 80):
+
+| configuration | bench of 80 (during / after / before) | hisway of 36 (during / after) | release0 of 36 (during / after) | course +0.5 s (n) | course +1.0 s (n; only off) | peak yaw vs off | bench regressions (benchmark's rule, of 80) | straight swing Compress / tuck |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **line** | **≤ 23** | **≤ 9** | **≤ 11** | **≥ 0** | **≥ 0** | | | |
+| off | 47 (29 / 18 / 0) | 19 (12 / 7) | 22 (15 / 7) | 0 (71) | 0 (35) | 0 | 0 | 1.00 / 1.00 |
+| `aim` | 52 (47 / 5 / 0) | 22 (20 / 2) | 22 (22 / 0) | +0.56° (36) | −10.17° (8; 27) | +23.9 deg/s | 46 | 12.29 (3 rides) / 6.59 (8) |
+| `on` | 52 (47 / 1 / 4) | 22 (22 / 0) | 22 (22 / 0) | +3.73° (24) | −41.36° (2; 33) | +32.9 deg/s | 48 | — (0) / 8.05 (4) |
+| diagnostic `aim`, slip term at nothing | 18 (4 / 14 / 0) | 5 (1 / 4) | 19 (6 / 13) | +1.19° (69) | −4.17° (33) | +5.1 deg/s | 9 | 1.43 (13) / 1.01 (13) |
+
+(The diagnostic's eight test-wave rides are its 18:00–18:10 runs; all eight fell, at 1.72–4.73 s.) Standing tall's
+turns (`none:left|right`, paired with off): `aim` course +0.5 s −3.09° (23 rides), +1.0 s −18.42° (9); `on` +3.35° (10),
++1.0 s no ride standing in both.
+
+Line 4 (`line4.py`, `results/line4.md`; heading change toward the steer, paired with off; n rides standing in both):
+
+| configuration | standing tall: +1.0→+2.5 s (n) / largest to +3.0 s (n) | Compress | Crouch | line 4 |
+| --- | --- | --- | --- | --- |
+| `aim` | −61.24° (4) / −41.96° (3) | −35.63° (3) / −22.54° (3) | −14.27° (3) / none standing (0) | fails |
+| `on` | no ride standing at 2.5 s in both (0) | (0) | (0) | fails |
+| diagnostic, slip at nothing | −55.06° (11) / −40.49° (8) | −19.88° (13) / −23.16° (9) | −15.87° (9) / −8.58° (8) | fails |
+
+Off's own means on the same rides: standing tall +52.5° / +57.2° (`aim`'s pairs), +37.6° / +55.3° (the diagnostic's);
+Compress +31.5° / +41.0° and +25.2° / +36.9°. `hisway:left|right` is frame-identical to `compress:left|right` (heading
+rows) on 28 of 36 rides under each configuration, so it is counted once (with Compress).
+
+Reported (`quantities.py`, `results/quantities.md`; steer frames tS 1.0–2.0 while attached, toward the steer; means):
+
+| configuration, stance | felt lean sensed / true | old lean asked | tilt asked / reached | ankle at its range | least sideways headroom (median, m) | peak yaw (deg/s) |
+| --- | --- | --- | --- | --- | --- | --- |
+| off, Compress | — | 24.49° | — / −2.60° | 13 % | −0.008 | 97.8 |
+| off, Crouch | — | 24.47° | — / −3.80° | 15 % | 0.180 | 86.9 |
+| off, tall | — | 27.59° | — / −2.04° | 4 % | 0.054 | 98.9 |
+| `aim`, Compress | −0.27° / −0.62° | 14.68° | — / +0.31° | 52 % | −0.186 | 113.1 |
+| `aim`, Crouch | +2.03° / +2.94° | 19.46° | — / −0.67° | 45 % | −0.146 | 126.0 |
+| `aim`, tall | +0.38° / +0.01° | 21.69° | — / −0.70° | 53 % | −0.348 | 132.6 |
+| `on`, Compress | −4.07° / −6.57° | 14.69° | 8.42° / 6.84° | 61 % | −0.244 | 135.7 |
+| `on`, Crouch | −7.02° / −11.09° | 16.70° | 9.02° / 5.47° | 53 % | −0.054 | 130.6 |
+| `on`, tall | −0.44° / −1.85° | 12.22° | 7.28° / 4.18° | 57 % | −0.357 | 149.0 |
+
+(The tilt asked is a mean over the steer's frames, the ease-in and the frames before a fall included; the full ask is
+14.3°.) **`on`'s felt vertical leans outward during the steer** (−4 to −11°): the board turns away, as the model said
+(§0.3 item 2), and the body follows it there.
+
+Which way the falls go (3.6i's `side.py`, geometric convention; bench, during the steer): off 26 into / 3 outward; `aim`
+18 into / 30 outward; `on` 6 into / 41 outward (and 4 before the steer, 2 / 2). His way: off 11 / 1, `aim` 9 / 11, `on`
+3 / 19. **Both arms turn the falls round: the board swings away under a body that no longer leans with it.**
+
+Crouch's dips before the steer (`dips.py`; the ride's lowest reserve before tS 1.0): off Compress 2 of 36, Crouch 14 of
+36 (the brief's 14–16); `aim` 2 / 6; `on` 2 / 10 — fewer for Crouch only because the arms' lowest point moves into the
+steer, where they fall.
+
+Straight deep rides (`compress|crouch:straight`, balance falls over the ride): off 2 of 36 (median 4.68 s), `aim` 18
+(2.06 s), `on` 20 (1.79 s), the diagnostic 2 (4.70 s). Before any steer (tS 0.3–1.0 s, the straight and tall rides) `aim`'s
+predicted yaw rate |`pYaw`| has a median of 24.0 deg/s against off's 9.0 (p90 79.0 against 32.7), the ankle at its range
+on 5.4 % of frames against none.
+
+## 3. The full reports
+
+None for an arm: by §0.5 an arm gets one if it meets lines 2–4 in the screening, or else the closest arm that meets line 4;
+neither meets line 4. The switch-off full report is §6.
+
+## 4. Why: what the diagnostics show (deciding nothing)
+
+- **The one ride.** `big:s1:w6:compress:left` under `aim`: at tS 0.90 s, no lean asked, the prediction's yaw rate is −65
+  deg/s, then +64 at 1.00 and +93 at 1.05; the ankle's command at 0.90 / 0.95 / 1.00 / 1.05 / 1.10 s is +0.232 / +0.250 (at its range) / +0.180 / −0.122 /
+  −0.250, the twist −52.4 / −65.8 / −26.5 / +35.7 / +100.0 N·m (at its bound). Off at the same frames: |`pYaw`| under 4 deg/s, the ankle under 0.04.
+- **The feed-forward's terms** (test wave, 8 deep turns each, all falling in every configuration; fall times): off
+  1.48–3.65 s; `aim` as built 1.17–1.72 s; the turn and slip both at nothing in the feed-forward 0.57–1.40 s (four before
+  the steer); the slip alone at nothing 1.72–4.73 s. On Big the last is the diagnostic row above. So the **slip term** is
+  the destabiliser (the board's slip is never sensed; its estimate is the model's, and §0.3 item 3 measured the term's
+  weight, −68 to −251 rad/s² of yaw acceleration per rad, against the weathercock's +211 to +397); the **turn term helps**
+  (without it the rider falls before the steer).
+- **Without the slip term the falls halve and the turn goes**: bench 18 of 80, his way 5 of 36 — both under the half line —
+  but `release0` 19 of 36, `course10` −4.17°, 9 regressions, and the heading toward the steer at +1.5 s 15.9–55.1° short of
+  off's in every stance, standing tall turning away (−17.5°). That is the measure of how much of today's turn the aim makes.
+
+## 5. For Vicente
+
+Nothing goes on port 5177: neither arm meets the no-nudge line (Q11). In plain words: taking the balance's aim off the turn
+did stop the balance holding the turn back, but it also took away almost all of the turn, because on this board the turn
+you get when you steer is mostly the balance steering the board for you through your ankles. With the aim off and the feet
+tilting the board onto its rail, the board does not come round on its own; it swings away and you go over the outside.
+As built, both arms also wobble when you ride straight, from one term in the balance (the slip it cannot feel); removing
+that term fixes the wobble but not the turn. The question this leaves is the board's own turn in the water (your Q6's third
+item, and option A's stated risk): how much should a board on its rail turn without the rider steering it?
+
+## 6. Controls
+
+- **This probe off against 3.6h's off probe:** 252 of 252 shared Big rides identical in every field of `rides.jsonl`;
+  its eight test-wave rides identical to `baseline-full.json`'s.
+- **Switch off, the full report** (this branch's bundles, no switch, `--mode full --jobs 2`, 18:10:48–19:10:55 UTC): exit 0, 0 regressions;
+  **227 of 227 ride lines identical to `baseline-full.json`**; its 26 test-wave lines **identical to `baseline-quick.json`'s 26**.
+- **Switch off, the quick report** (`--mode quick --jobs 4`, 18:35:44–18:46:57 UTC): exit 0, 0 regressions, **26 of 26 identical to
+  `baseline-quick.json`**.
+- **The Canyon byte check** (`m1-cpu-bench.ts`, prelude `?canyonWaves=true`, `--spot canyon --steps 3600`, fresh state,
+  18:35:44–18:40:57 UTC): snapshots `a367d938f15fa934`, state `9e5831f80e38abd9`, **identical** (`results/byte-check.txt`).
+- `npx tsc -b` clean; the touched test files (`predictiveBalance`, `PhysicalMode`, `RideSession`, `stabilityGains`): 4
+  files, 201 of 201; the gain lock `npx vitest run src/physics/stabilityGains` 5 of 5, its file untouched (`git diff
+  a1f22e33 -- src/physics/stabilityGains.test.ts` empty). The new tests: "turn first (step 3.6j)" (5, `predictiveBalance`)
+  and "turns first with `?turnFirst=aim|on`" (`PhysicalMode`).
+- **Every switch printed back**: every screening, extra and diagnostic process printed `turnFirst` as asked in its `built`
+  row (the report refuses otherwise; none was refused).
+- **The untouched controls** (Big seeds 1–3, paired with off; `results/release.md`): the release with no steer
+  (`release0`, recovery after the let-go): off 2 balance falls of 18, `aim` 11 (0 identical). The release offsets
+  (balance falls before +2.0 s / over the ride, of 36): off 6 / 18, 3 / 15, 3 / 18 at 0.2 / 0.4 / 0.6 s; `aim` 20 / 22,
+  17 / 22, 16 / 22. The reversal and the continued turn (balance falls of 18; rides standing at 3.0 s): off `none:rev` 8
+  (9), `compress:rev` 11 (6), `crouch:rev` 10 (5), `none:long` 9 (7), `compress:long` 11 (4), `crouch:long` 11 (4); `aim`
+  11, 11, 11, 11, 11, 11 with 0–1 standing at 3.0 s. Snap (`snap:left|right`): 22 balance falls of 36 under off, `aim` and
+  `on` alike, none of the 36 identical to off (the tall stance before Snap is held at 0.2 s rides the free reference, as
+  §0.6 item 3 predicted). **`on`'s extra drives were not run**: both arms had failed before the steer when they would have
+  started, and the slots went to the diagnostic and the controls.
+- **The touched source after the pre-registration:** none. `src` is as committed at `56f01681`; the later commits touch only
+  `docs/research/stability/turn-first/`. `git diff a1f22e33 --stat -- src scripts`: 10 files, +354 / −20.
+
+## 7. The predictions (§0.6) against the result
+
+1. `aim` close to off, bench 38–50 — **missed** (52, 47 during the steer); `hisway` 15–22 — **held** (22); `release0`
+   18–25 — **held** (22); turns ±1° at +0.5 s — **held** (+0.56°); line 4 at risk standing tall — **held** (it fails in
+   every stance); does not pass line 2 — **held**.
+2. `on`: the model says outward; I expected the game's board to turn it the right way at first — **missed**: the felt lean
+   is outward during the steer and 41 of 47 bench falls during it go outward; the ankle at its range on much of the steer —
+   **held** (53–61 %); falls not halved, line 3 or 4 fails — **held** (all fail).
+3. Nothing passes — **held**; Snap rides not identical — **held** (0 of 36).
+
+## 8. Findings (for the coordinator)
+
+1. **The turn comes from the aim.** Removing the balance's aim on the yaw rate and slip (and only that, with the
+   destabilising slip term also removed) leaves a board that turns 16–55° less toward the steer by +1.5 s, standing tall
+   away from it. The nudge Vicente felt and the turn he gets are the same mechanism.
+2. **Holding the lean "at the turn the board is making now" cannot be free of the turn's own terms**, and the slip's part
+   of it acts on an unsensed estimate: as built it broke straight riding (§2, §4). The brief's literal no-aim check ("a
+   change in the yaw rate alone produces no command") conflicts with its derivation sentence; I built the derivation and
+   said so in §0.2.
+3. **Holding the board past the body by the ankle pushes the body outward** (both on the model and in the game): with the
+   bank on the felt vertical and the turn not aimed, `on`'s turn runs outward. The 3.2q history (the felt-vertical loop)
+   repeats in a stronger form.
+4. **The ankle at its range** on 45–61 % of the arms' steer frames (off 4–15 %). No bound was widened; the range is
+   reported as binding, which is Vicente's to judge.
+5. Between the schedule's knots the free reference solved on the blended continuous plant differs from the shipped steady
+   turn on the blended discrete designs by up to 0.11° of roll (§0.2); small, and reported.
+
+## 9. Where everything is
+
+- **Raw runs** (not committed), the session scratchpad
+  `/private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36j/`:
+  `scr/<off|aim|on>/` (the screening: `big_s1..3.jsonl`, `tw-*.jsonl`, `rides.jsonl`, `tw/rides.jsonl`), `ext/<off|aim>/`
+  (the extra drives), `diag/<aimStill|aimNoslip>/` (the diagnostics), `smoke/`, `full/off`, `full/quick` (the switch-off reports),
+  `byte/`, `bin/` (`first-probe.mjs` sha1 `26619cc27df0…`, `stability-report.mjs` `5cfc032ef19c…` (3.6i's, byte for byte),
+  `stability-ride.mjs` `06c78fb20db2…`, `diag-probe.mjs`), the logs `scr/screen.log`, `ext/ext.log`, `diag/*.log`.
+- **Readers:** `line4.py`, `quantities.py`, `dips.py` (this round), 3.6i's `screen.py`, `release.py`, `side.py` (unchanged),
+  `measure.sh`, `run.py`; `tools/` (the model checks); `diag-probe.ts` (the diagnostic override).
+- **Results:** `results/screen.md|json`, `line4.md`, `quantities.md`, `dips.txt`, `side-<off|aim|on>.json`,
+  `release.md`, `screen-noslip.md`, `line4-noslip.md`, `model-loop.txt`, `ff-variants*.txt`, `eig.txt`, `byte-check.txt`;
+  `runs/` the rides' rows.
+- **The switch:** `src/game/PhysicalMode.ts` `turnFirstSwitch`; `src/physics/predictiveBalance.ts` `TurnFirst`,
+  `TurnFirstInput`, `DesignWeights.turnFree`, `PredictiveController.freeReference`; `src/physics/AttachedRider.ts`
+  (`turnFirst`, `tiltAsked`, `feltLean`, `feltLeanAbout`); pinned off in `src/main.ts`.

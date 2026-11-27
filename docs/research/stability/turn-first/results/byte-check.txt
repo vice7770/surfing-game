@@ -1,0 +1,6 @@
+spun up on the CPU in 34.7 s; kept in /private/tmp/claude-501/-Users-vicentealmeida-Documents-Codex-surfing-game/7f68bd0b-0784-4918-a0d6-f8978afbced6/scratchpad/36j/byte/state-fresh.bin
+canyon medium, 64 components, 400 × 451 = 180400 cells, render 401 × 511, solver t 22.000
+ms p50/p95 over 3600 steps: breaking 1.02/1.11, roller 0.56/0.66, front 0.00/0.00, lip 0.02/0.02, foam 2.00/2.14, airSources 0.05/0.07, aeration 0.95/1.06, contact 0.00/0.00, board 0.55/0.74, bubbles 0.14/0.16, spray 0.24/0.33, sounds 0.00/0.00, snapshotFields 3.39/3.60, snapshot 3.83/4.09, summary 0.31/0.36
+  CPU stages per step (step − water + snapshot + summary): 9.89/10.61; water (CPU solver, not timed on the device) 64.1
+  hashes: snapshots a367d938f15fa934, state 9e5831f80e38abd9
+exit 0

@@ -1,0 +1,6 @@
+off: compress lowest reserve before the steer on 2 of 36 rides
+off: crouch lowest reserve before the steer on 14 of 36 rides
+aim: compress lowest reserve before the steer on 2 of 36 rides
+aim: crouch lowest reserve before the steer on 6 of 36 rides
+on: compress lowest reserve before the steer on 2 of 36 rides
+on: crouch lowest reserve before the steer on 10 of 36 rides
