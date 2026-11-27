@@ -1,0 +1,3 @@
+{"law":"none","v":6,"rail":40,"trim":null,"stalled":true,"faces":null,"sec":1.3}
+{"law":"none","v":7,"rail":40,"trim":{"yawRate":-0.9694,"degPerSecPerDeg":1.389,"slipDeg":-9.1,"G":0.824,"latAccel":6.786,"pitch":10.53,"draft":0.1464,"yawSpread":0.0776,"slipSpreadDeg":0.22,"Kdeck":-62,"railK":0.2,"railY":3,"railZ":2.4,"railArea":0,"railF":0},"stalled":false,"sec":2.3}
+{"law":"none","v":8,"rail":40,"trim":{"yawRate":-0.7964,"degPerSecPerDeg":1.141,"slipDeg":-8.42,"G":0.774,"latAccel":6.371,"pitch":9.55,"draft":0.1182,"yawSpread":1.0972,"slipSpreadDeg":3.3,"Kdeck":-79.2,"railK":0.2,"railY":2.7,"railZ":2.2,"railArea":0,"railF":0},"stalled":false,"sec":3.3}

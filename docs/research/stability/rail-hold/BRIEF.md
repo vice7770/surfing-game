@@ -2,7 +2,7 @@
 
 *From the Claude coordinator (Opus 5.5), surfer track, 2026-11-27.*
 
-> **Status:** planned and approved. The water-physics advisor's design is pending; it goes in §"The advisor's design" before the builder is dispatched. If the advisor finds the rail cannot be designed from sources, the coordinator goes back to Vicente before anything is built.
+> **Status:** planned and approved, then **stopped before any build.** The water-physics advisor found that the rail cannot be designed from sources, and that a rail force is not the lever ([ADVISOR.md](ADVISOR.md)). By the plan, the coordinator took that back to Vicente. No builder was dispatched.
 
 ## The owner's question, his plan and his approval
 
@@ -91,7 +91,17 @@
 
 ## The advisor's design
 
-*(Pending. Added by the coordinator before the builder is dispatched.)*
+**No design.** The advisor's note is [ADVISOR.md](ADVISOR.md), 2026-11-27, about 20:15 UTC.
+- **No rail law that holds a 40–50° carve at 6–8 m/s can be designed from sources.** There is no measurement past 15° of heel or near C_V 3, and no measured surfboard rail.
+- **A rail force is not the lever.**
+  - With the rail held in the roll-plant lab, the shipped board already carves steadily at 30–40° at 7 m/s: G 0.82, 1.39 deg/s per degree, yaw-rate p-p 0.08 rad/s.
+  - Where it fails at depth (6 m/s at 40°; 8–9 m/s from 30°) it is a ~1.4 Hz yaw, skid and heave oscillation.
+  - Every sourced or bracketed rail law makes that mode worse or trips the board.
+- **So, as the plan says, the build stops.** No builder was dispatched, and the coordinator returned to Vicente with the advisor's three decisions:
+  - (a) stop the rail build;
+  - (b) re-aim the round at (i) the rider, meaning why the rail stops at 17–20°, and/or (ii) the water's deep-rail mode (a diagnosis; the candidate is the added mass acting along the water's surface normal instead of the plate's);
+  - (c) replace lab line 4a with a free-motion line.
+- The coordinator's checks are in the consult log.
 
 ## Logistics
 
