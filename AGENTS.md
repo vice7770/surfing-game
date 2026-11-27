@@ -24,4 +24,6 @@ During an active review, pick up each new clip, movement-code handoff or playtes
 
 For a material finding, tell the movement coordinator what was observed, where to verify it, what it means for the builder and what remains uncertain. Use the current shared consultation log and its signed, append-only convention. A known live coordinator can also route time-sensitive findings. Preserve independent reads until the reader has recorded its observations. Follow a significant finding through the builder’s response, then inspect the revised code or evidence before describing it as verified. Tell Vicente what changed, what still needs his judgement and who acknowledged the handoff.
 
+The project keeps living docs that describe the game as it is now, listed under "Living docs" in [CLAUDE.md](CLAUDE.md). Vicente asked on 2026-11-27 that they be updated whenever a change concerns them. When a review covers such a change, check that each concerned doc was updated. Name any stale claim in the consult log.
+
 The project’s existing coordination references are the [Claude–Codex consultation](docs/research/new-rider/3.5/consult-codex-2026-11-18.md) and the [surfer and wave handoff](docs/superpowers/handoffs/2026-11-16-surfer-and-wave-handoff.md). Use their successors as the project moves on.

@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- "How the Surfer Moves": the explainer published for Vicente on 2026-11-27 (a private claude.ai page), with a
-     document skeleton added so this file opens on its own. Function lines are from claude/turn-entry a1f22e33. -->
+<!-- "How the Surfer Moves": a living doc (CLAUDE.md, "Living docs"). This file is the source; the private claude.ai
+     page of the same name is republished from it. A document skeleton is added so the file opens on its own.
+     Function lines are from claude/turn-entry a1f22e33. Version 2, 2026-11-27: Codex's review (consult log 49ec95f2). -->
 <style>:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>How the Surfer Moves</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -172,6 +173,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
 .card h3 { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .badge { font-family: Inter, sans-serif; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; color: var(--ok); background: var(--ok-soft); border: 1px solid var(--ok); border-radius: 5px; padding: 1px 8px; }
 .badge.no { color: var(--fall); background: var(--fall-soft); border-color: var(--fall); }
+.badge.next { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
 .card dl { margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; }
 .card dt { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .card dd { margin: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -189,7 +191,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
   <div class="eyebrow">Breakline, the new surfer</div>
   <h1>How the Surfer Moves</h1>
   <p class="lead">On every game tick the controller's input goes into the ride session. The board, the rider and the water are then solved together in small substeps. In each one, the rider's balance chooses two commands, the ankle's rest angle and the upper body's twist torque. It chooses them from what it sensed 0.1 s ago and from its own picture of the board. The water, the fins and those two torques move the board, and a capture-point test decides whether the rider can still stay up.</p>
-  <p class="small prose">The new surfer (<code>rider=new</code>) on your address. Line numbers are from <code>claude/turn-entry</code> <code>a1f22e33</code>, the build on port 5177. With its switches off it rides like the earlier builds.</p>
+  <p class="small prose">The new surfer (<code>rider=new</code>) on your address. Line numbers are from <code>claude/turn-entry</code> <code>a1f22e33</code>, the build on port 5177. With its switches off it rides like the earlier builds. Updated 2026-11-27 with Codex's review (consult log <code>49ec95f2</code>).</p>
 </header>
 
 <section aria-labelledby="h-checked">
@@ -216,9 +218,9 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
         <div class="sn">1</div>
         <div class="sh"><span class="st">The controller</span></div>
         <div class="sb">
-          <div class="chips"><span class="chip">RideSession.step()</span></div>
-          <div class="loc">src/physics/RideSession.ts:494</div>
-          <p class="what">Copies your input onto the rider: <code>steer</code> (left stick), <code>compress</code> (R2), <code>crouch</code>, <code>snap</code>, <code>trim</code>, <code>rotate</code> and <code>hand</code>. Then it steps the board.</p>
+          <div class="chips"><span class="chip">Controls.rideRequest()</span><span class="chip">PhysicalMode.screenSteer()</span><span class="chip">SurfZoneRunner.advance()</span><span class="chip">RideSession.step()</span></div>
+          <div class="loc">src/game/Controls.ts:151; src/game/PhysicalMode.ts:2251; src/wave/SurfZoneRunner.ts:632, :808; src/physics/RideSession.ts:494</div>
+          <p class="what">Your pad's stick is read relative to the camera and turned into a steer toward one side of the board. The game's runner advances the water and steps the ride session, which copies your input onto the rider: <code>steer</code> (left stick), <code>compress</code> (R2), <code>crouch</code>, <code>snap</code>, <code>trim</code> and <code>hand</code>. Your pad sends no <code>rotate</code>. Then the session steps the board.</p>
         </div>
       </div>
 
@@ -299,7 +301,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
             <div class="sb">
               <div class="chips"><span class="chip">prepareLeg()</span></div>
               <div class="loc">AttachedRider.ts:4515</div>
-              <p class="what">Compress holds the legs 0.30 m down (<code>CROUCH_DEPTH</code>) and Crouch 0.45 m (<code>MANUAL_CROUCH_DEPTH</code>), reached no faster than the legs can move. The knees' strength left is part of the balance bar.</p>
+              <p class="what">Compress asks for the legs 0.30 m down (<code>CROUCH_DEPTH</code>) and Crouch for 0.45 m (<code>MANUAL_CROUCH_DEPTH</code>), reached no faster than the legs can move. The depth actually reached picks the balance's designs (6a). The knees' strength left is part of the balance bar, and bent legs are weaker: about 3.0 body weights standing, 2.1 in Compress and 1.9 in the tuck (<code>kneeStrength()</code>, <code>standingBody.ts:113</code>).</p>
             </div>
           </div>
 
@@ -309,7 +311,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
             <div class="sb">
               <div class="chips"><span class="chip">twistStep()</span></div>
               <div class="loc">AttachedRider.ts:4196</div>
-              <p class="what">The stick's rotate, or Snap, becomes the twist the body should hold (within ±0.87 rad).</p>
+              <p class="what">Snap's aim, or a <code>rotate</code> input, becomes the twist the body should hold (within ±0.87 rad). Your pad sends no <code>rotate</code>, so on your pad the twist asked is zero except under Snap.</p>
             </div>
           </div>
 
@@ -431,7 +433,8 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
                 <ul>
                   <li>The hip swing takes what the ankle cannot (<code>humanSwingStep()</code>, <code>:4138</code>).</li>
                   <li>The ankle's rest and the twist torque ease in over 0.05 s (<code>MOTOR_LAG</code>).</li>
-                  <li>The ankle acts as a spring and damper of 800 N·m/rad between body and board (<code>setAnkle()</code>).</li>
+                  <li>The ankle acts as a spring of 800 N·m/rad and a damper of 80 N·m·s/rad between body and board (<code>setAnkle()</code>).</li>
+                  <li>The commands are held between the balance's 1/60 s ticks. The lag and the limits act every substep.</li>
                 </ul>
               </div>
             </div>
@@ -462,6 +465,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
               <li><b>The capture point</b> is where the body's centre of mass is heading: its offset from the feet plus its speed ÷ √(g ÷ height). It is measured along the vertical the rider feels, which is gravity plus the turn's acceleration, in the deck's frame.</li>
               <li><b>The balance bar</b> is the least of three margins: the capture point inside the feet, the grip left, and the knees' strength left.</li>
               <li><b>The fall.</b> Once the capture point is past the feet's edge by more than the reach, with the weight itself past the edge, <code>fallen</code> (<code>:530</code>) and <code>separate('balance')</code> (<code>AttachedRider.ts:5520</code>).</li>
+              <li><b>Other ways off.</b> The capture test pauses while the feet carry almost no load (<code>CAPTURE_LOAD</code>). The rider also comes off for a foot slip, a sway or posture error past recovery, or too long in the air (<code>AttachedRider.ts:5519–5522</code>).</li>
             </ul>
           </div>
         </div>
@@ -478,7 +482,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
   <div class="scroller">
     <svg viewBox="0 0 668 300" role="img" aria-labelledby="loop-title loop-desc" xmlns="http://www.w3.org/2000/svg">
       <title id="loop-title">The balance loop</title>
-      <desc id="loop-desc">Senses, 0.1 s late, go to the estimate, then the prediction, then the steady turn for the lean asked, then the feedback, then the ankle and twist, then body and board, then water, fins and rails, and back to the senses. The prediction and the steady turn both come from the balance's own picture of the board.</desc>
+      <desc id="loop-desc">Senses, 0.1 s late, go to the estimate and then the prediction. The stick's lean asked goes to the steady turn. The prediction and the steady turn meet in the feedback, which goes to the ankle and twist, then body and board, then water, fins and rails, and back to the senses. The prediction and the steady turn both come from the balance's own picture of the board.</desc>
       <defs>
         <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="head"/></marker>
         <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="head-delay"/></marker>
@@ -514,7 +518,9 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
 
       <path class="arrow-delay" d="M150,78 L180,78" marker-end="url(#ahd)"/>
       <path class="arrow" d="M318,78 L348,78" marker-end="url(#ah)"/>
-      <path class="arrow" d="M486,78 L516,78" marker-end="url(#ah)"/>
+      <text class="t2" x="600" y="13">the stick's lean asked</text>
+      <path class="arrow" d="M600,18 L600,46" marker-end="url(#ah)"/>
+      <path class="arrow" d="M418,108 L418,150 L552,150 L552,186" marker-end="url(#ah)"/>
       <path class="arrow" d="M586,108 L586,186" marker-end="url(#ah)"/>
       <path class="arrow" d="M518,218 L488,218" marker-end="url(#ah)"/>
       <path class="arrow" d="M350,218 L320,218" marker-end="url(#ah)"/>
@@ -522,7 +528,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
       <path class="arrow" d="M82,188 L82,110" marker-end="url(#ah)"/>
     </svg>
   </div>
-  <p class="prose">The balance never sees the board directly. It acts on its picture, 0.1 s behind. When the picture is wrong, its corrections steer the board in ways it does not expect.</p>
+  <p class="prose">The balance never sees the board directly. Its prediction and its steady turn both come from its picture of the board, and they meet in the feedback, 0.1 s behind the senses. When the picture is wrong, its corrections steer the board in ways it does not expect.</p>
 </section>
 
 <section aria-labelledby="h-turn">
@@ -546,6 +552,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
         <li>the board comes round at about 21°/s (10.7° in that half second);</li>
         <li>the body's bank averages 20° and the rail 17°.</li>
       </ul>
+      <p class="small">The model's yaw rate is about the leg's axis and the board's turn here is its heading in the world, so this shows a mismatch in scale, not an exact ratio (Codex's review).</p>
     </li>
     <li><b>He goes over the inside rail.</b> 51 of the 56 falls during the steer go into the turn, never over the nose or tail. The body leans in, the board swings away under it, and one big swing carries the body over the inside rail.</li>
     <li><b>The picture answers the ankle differently from the board</b> (measured in round 3.6d).
@@ -583,7 +590,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
   <div class="cards">
 
     <div class="card rec">
-      <h3><span class="badge">Recommended</span>A. Turn first, the lean follows.</h3>
+      <h3><span class="badge">Testing now (3.6j)</span>A. Turn first, the lean follows.</h3>
       <dl>
         <dt>What changes</dt>
         <dd><ul>
@@ -598,8 +605,31 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
           <li>Nothing aims the turn, so the balance cannot hold it back.</li>
           <li>The body never leans for a turn the board is not making.</li>
         </ul></dd>
+        <dt>Known risks, found after you approved it</dt>
+        <dd><ul>
+          <li>The felt-vertical lean rebuilds the loop removed in step 3.2q after your ride on 2026-11-14: "the compress is still to slow and barely turns now".</li>
+          <li>The feet's tilt target, ±14°, is the ankle spring's rest range. In a steady turn the feet hold only about 5–8° between board and body, so the ankle sits at its limit.</li>
+          <li>On the balance's own model the full version turns outward. That model is wrong in this channel, so the game decides.</li>
+          <li>The turn is only as quick as the water makes it, and today that is slower than you want.</li>
+        </ul></dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h3><span class="badge next">Next if A misses</span>A2. The feet steer, the balance stays over the feet (Codex).</h3>
+      <dl>
+        <dt>What changes</dt>
+        <dd><ul>
+          <li>The stick adds its own steering offset to the ankle's rest, through the ankle's existing range, the rail's bite, the hip's share and the muscle lag.</li>
+          <li>The balance keeps the body's position and motion over the moving feet, on the same 0.1 s senses.</li>
+          <li>No lean target, and no turn rate, slip, heading or rail target.</li>
+        </ul></dd>
+        <dt>Where</dt>
+        <dd>5e (the stick becomes an ankle offset) and 6d–6e (references without a turn, or a lean that chases the rail).</dd>
+        <dt>Why</dt>
+        <dd>It keeps the feet steering and the water turning, without A's two flaws.</dd>
         <dt>Risk</dt>
-        <dd>The turn is then only as quick as the water makes it, and today that is slower than you want. The board's turn (step 4) may need its own look after this.</dd>
+        <dd>Full steer can use all the ankle's room on one side and leave none for balance. The round would log when both cannot be met.</dd>
       </dl>
     </div>
 
@@ -631,7 +661,7 @@ ol.measured ul { padding-left: 18px; margin-top: 4px; display: flex; flex-direct
 
   </div>
   <p class="judged small"><b>How any option is judged:</b> behind a switch, off by default; the stability report (falls in the 80 deep turns, ridden your way, and with R2 let go at the steer; no slower turns); and your ride.</p>
-  <p class="closing">The next round is your call. The coordinator recommends planning A with you.</p>
+  <p class="closing">3.6j is testing A now. If it misses, A2 is the next candidate. The next round is your call.</p>
 </section>
 
 </div>

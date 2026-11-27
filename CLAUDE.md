@@ -20,4 +20,28 @@ Once `npm run report:stability` exists (step 3.6a), every surfer-track round inc
 
 The [stability-system entry in the consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md) records the agreed design.
 
+## Living docs
+
+Vicente asked on 2026-11-27 that these docs stay current. Each one describes the game as it is now. Update a doc in the same round as any change that concerns it, for example:
+- a function or file line it names moves;
+- a behaviour it explains changes;
+- a number it quotes is measured again;
+- a switch it describes ships or is removed;
+- a finding it reports is corrected.
+
+Who updates and how:
+- **The builder** updates the doc on its branch. If the doc lives on another branch, the builder lists the needed edits in its hand-back.
+- **The coordinator** checks each concerned doc at review, applies the edits on `claude/ride-everything`, and republishes any published page from that file. It notes the update in the round's consult-log entry.
+- **A change behind an off-by-default switch** is described as a switch. The main description changes when Vicente accepts the change.
+- **A new doc of this kind** is added to the table when it is made.
+
+| Doc | What it describes | Update it when |
+| --- | --- | --- |
+| [How the Surfer Moves](docs/research/new-rider/how-the-surfer-moves.html), also published as the private claude.ai page of the same name | The new surfer's chain from the pad to the board: each function and line in order, the measured problems and the options | A function in the chain changes or moves; the balance's reference, cost, senses, actuation or fall test changes; a number it quotes is measured again; a round settles one of its options |
+| The current cross-machine pickup (below) | Where every track stands | At every dispatch, review and owner decision |
+| The [surfer and wave handoff](docs/superpowers/handoffs/2026-11-16-surfer-and-wave-handoff.md) | Standing project decisions | Vicente adds or changes a standing decision |
+| `docs/research/stability/README.md` and `baseline-*.json` on the surfer track's branches | The stability report and its baseline | The report's rides or rules change, or Vicente accepts a new baseline |
+
+## Pickup
+
 For a cross-machine pickup, link the pushed branch and commit, the work order, the supporting evidence and the question still open. Verify the commit is reachable on the remote. The [surfer and wave handoff](docs/superpowers/handoffs/2026-11-16-surfer-and-wave-handoff.md) records standing project decisions. The [cross-machine pickup](https://github.com/vice7770/surfing-game/blob/claude/ride-everything/docs/superpowers/handoffs/2026-11-20-cross-machine-pickup.md) and the [sharp-steer work order](https://github.com/vice7770/surfing-game/blob/claude/ride-everything/docs/superpowers/handoffs/2026-11-20-work-order-sharp-steer-collapse.md) record the November 20 movement handoff. Their current successor is the [November 24 cross-machine pickup](https://github.com/vice7770/surfing-game/blob/claude/ride-everything/docs/superpowers/handoffs/2026-11-24-cross-machine-pickup.md): start there. Follow later successors as work advances.
