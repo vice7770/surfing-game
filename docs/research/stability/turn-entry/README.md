@@ -256,6 +256,20 @@ its numbers, not its place (§0.5 step 4). Both readings are reported in §1. No
 other edits after the first run: it tolerates `w` rows without `cPA` (3.6c's archive, the test wave) and `o` rows without
 `bank` (the frame before the stand), and it adds the +0.25 / +0.5 s records §0.2 registered but the first version left out.
 
+### 0.12 Amendment 4, 2026-11-27, about 03:15 UTC, after E2 at s = 0.5 was read, before E12 at 0.5 was read
+
+- **E2 at 0.5 is better than at 0.25** (sum 85 against 90), so by §0.5 step 2 **E12 at 0.5 (`e12h`) is the E12 of
+  record**; E12 at 0.25 stays as a row.
+- **The best filter** by §0.5 step 4 (the fewest of the sum among N1, N2 and `wobbleNotch=1` as built with both turn
+  means ≥ 0) is **`wobbleNotch=1` as built** (61; N2 62, N1 69).
+- **The combination of record** is the best entry fix by §0.5 step 4, decided once `e12h` is read, with
+  `&wobbleNotch=1`. **A labelled extra, reported only and chosen by no rule:** the same entry fix with N2
+  (`&wobbleNotch=1&notchScope=stance`), because N2 is one fall behind the notch on the sum with half its regressions (the
+  coordinator's suggestion, 2026-11-27 about 03:12 UTC).
+- The full report goes to the configuration §0.5 names after the combination is read (a finalist, or the closest, not a
+  finalist), with `--ride-bundle entry-probe.mjs`; then `release0.2|0.4|0.6:left|right` on Big for it. The round was
+  resumed by the coordinator at about 03:11 UTC after an early hand-back at 03:07 that nobody had asked for.
+
 ## 1. Stage 1: the body goes over into the turn (switch off)
 
 *Canyon Big seeds 1–3 (3.6h's off probe, `36h/scr/off`) and the test wave (3.6c's base archive, measured into `36i/s1tw`);
