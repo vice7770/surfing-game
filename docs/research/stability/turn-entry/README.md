@@ -277,6 +277,19 @@ E12 at 0.5 read (03:17:50): sum 58, course +0.5 s +0.65°, +1.0 s −1.28°. No 
 73, E2 at 0.5 85, E2 at 0.25 90). **The combination of record is `c3` = `&turnAim=board&turnPlan=0.5&wobbleNotch=1`**;
 the labelled extra is `c3x` = `&turnAim=board&turnPlan=0.5&wobbleNotch=1&notchScope=stance`. Both started 03:18 UTC.
 
+### 0.14 Amendment 5, 2026-11-27, about 03:47 UTC, after the combination was read, before any full report
+
+- **The combination `c3` is not a finalist**: bench 26 of 80 (line ≤ 23), hisway 9 of 36 (meets ≤ 9), release0 15 of 36
+  (line ≤ 11), course +1.0 s −1.73° (line ≥ 0), 9 regressions. Nothing screened is a finalist.
+- **By §0.5 the full report goes to the closest, not a finalist: the smallest sum among the configurations whose turn
+  means are both ≥ 0.** Of this round's candidates that is **N2** (`&wobbleNotch=1&notchScope=stance`, sum 62; N1 69).
+  (`wobbleNotch=1` as built, 61, is 3.6h's reference and already has its full report: 13 regressions, 32 of 47.)
+- **A labelled extra, chosen by no rule: the full report of `c3`** as well, because it has the fewest falls of any
+  candidate (sum 50, beside R's 47) and its line-3 failure is at +1.0 s only. Both full reports run at once (4 processes
+  each, 8 in all).
+- Then `release0.2|0.4|0.6:left|right` (and `release0`, `none`/`snap` turns as untouched controls) on Big seeds 1–3 for
+  N2 and for `c3` (`run.py --set extra`).
+
 ## 1. Stage 1: the body goes over into the turn (switch off)
 
 *Canyon Big seeds 1–3 (3.6h's off probe, `36h/scr/off`) and the test wave (3.6c's base archive, measured into `36i/s1tw`);

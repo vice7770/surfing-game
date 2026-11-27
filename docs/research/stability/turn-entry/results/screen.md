@@ -8,6 +8,8 @@
 | e12h | 31 (14 / 17 / 0; 30; 1) | 11 (6 / 5) | 16 (15 / 1) | 58 | +0.65° (70; 48/16) | -1.28° (35; 12/23; 15/0) | +1.6 | 4 (80) | +1.00 (0 of 13) / +1.00 (0 of 13) | no / no |
 | n1 | 38 (11 / 27 / 0; 37; 1) | 11 (8 / 3) | 20 (12 / 8) | 69 | +1.69° (69; 51/18) | +1.91° (35; 21/14; 18/0) | -9.6 | 5 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
 | n2 | 33 (6 / 27 / 0; 33; 0) | 11 (5 / 6) | 18 (11 / 7) | 62 | +1.37° (71; 52/19) | +0.94° (35; 25/10; 23/0) | -7.6 | 2 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
+| c3 | 26 (1 / 25 / 0; 22; 4) | 9 (0 / 9) | 15 (11 / 4) | 50 | +1.71° (69; 50/19) | -1.73° (35; 16/19; 28/0) | +4.5 | 9 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | no / no |
+| c3x | 26 (1 / 25 / 0; 22; 4) | 9 (0 / 9) | 15 (11 / 4) | 50 | +1.67° (71; 52/19) | -1.77° (35; 16/19; 28/0) | +4.7 | 8 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | no / no |
 | notch | 33 (6 / 27 / 0; 32; 1) | 10 (5 / 5) | 18 (11 / 7) | 61 | +1.41° (69; 49/20) | +0.81° (35; 23/11; 23/0) | -10.5 | 4 (80) | +0.42 (13 of 13) / +0.60 (13 of 13) | yes / no |
 | R | 25 (3 / 22 / 0; 25; 0) | 6 (0 / 6) | 16 (2 / 14) | 47 | +0.11° (69; 34/35) | +0.82° (35; 19/16; 26/0) | -16.5 | 4 (80) | +0.30 (12 of 13) / +0.49 (13 of 13) | yes / no |
 e1 regressions: big:s2:w16:crouch:left (reserve 0.160->0.045); tw-catch:compress:left (sooner 3.65->3.33)
@@ -17,5 +19,7 @@ e12 regressions: big:s1:w6:crouch:left (sooner 4.87->4.58); big:s1:w6:compress:r
 e12h regressions: big:s1:w6:crouch:left (sooner 4.87->4.53); big:s1:w6:compress:left (sooner 4.77->4.48); big:s2:w6:crouch:right (lasted); big:s2:w16:crouch:left (reserve 0.160->0.000)
 n1 regressions: big:s1:w11:crouch:left (lasted); big:s1:w11:crouch:right (sooner 4.68->3.93); big:s1:w11:compress:left (sooner 3.77->2.82); big:s3:w3:crouch:left (lasted); tw-catch:compress:left (sooner 3.65->3.30)
 n2 regressions: big:s2:w12:crouch:left (reserve 0.128->0.013); tw-catch:compress:left (sooner 3.65->2.95)
+c3 regressions: big:s1:w6:crouch:left (sooner 4.87->4.40); big:s1:w6:compress:left (sooner 4.77->4.47); big:s1:w6:compress:right (sooner 4.65->4.35); big:s1:w11:crouch:left (lasted); big:s1:w11:compress:right (lasted, reserve 0.242->0.012); big:s2:w6:crouch:right (lasted); big:s2:w6:compress:right (lasted, reserve 0.265->0.000); big:s2:w16:crouch:left (reserve 0.160->0.034); tw-catch:compress:left (sooner 3.65->3.37)
+c3x regressions: big:s1:w6:crouch:left (sooner 4.87->4.38); big:s1:w6:compress:right (sooner 4.65->4.35); big:s1:w11:crouch:left (lasted); big:s1:w11:compress:right (lasted, reserve 0.242->0.014); big:s2:w6:crouch:right (lasted); big:s2:w6:compress:right (lasted, reserve 0.265->0.000); big:s2:w16:crouch:left (reserve 0.160->0.000); tw-catch:compress:left (sooner 3.65->3.33)
 notch regressions: big:s1:w11:crouch:left (lasted); big:s2:w12:crouch:left (reserve 0.128->0.013); big:s2:w16:crouch:left (reserve 0.160->0.000); tw-catch:compress:left (sooner 3.65->2.90)
 R regressions: big:s2:w12:crouch:left (reserve 0.128->0.000); big:s2:w16:crouch:left (reserve 0.160->0.046); big:s3:w3:compress:left (reserve 0.350->0.131); tw-catch:compress:left (sooner 3.65->3.20)

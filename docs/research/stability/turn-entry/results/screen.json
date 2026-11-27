@@ -901,6 +901,246 @@
   "finalist": false
  },
  {
+  "name": "c3",
+  "bench": {
+   "n": 80,
+   "falls": 26,
+   "during": 1,
+   "after": 25,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 9,
+   "during": 0,
+   "after": 9,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 15,
+   "during": 11,
+   "after": 4,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 22,
+  "benchNew": 4,
+  "sum": 50,
+  "c05": {
+   "mean": 1.711159420289855,
+   "median": 1.5300000000000002,
+   "n": 69,
+   "up": 50,
+   "down": 19,
+   "onlyOn": 1,
+   "onlyOff": 2
+  },
+  "c10": {
+   "mean": -1.7265714285714286,
+   "median": -1.71,
+   "n": 35,
+   "up": 16,
+   "down": 19,
+   "onlyOn": 28,
+   "onlyOff": 0
+  },
+  "yawPeak": 4.481749999999998,
+  "regressions": 9,
+  "regList": [
+   [
+    "big:s1:w6:crouch:left",
+    [
+     "sooner 4.87->4.40"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:left",
+    [
+     "sooner 4.77->4.47"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:right",
+    [
+     "sooner 4.65->4.35"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:right",
+    [
+     "lasted",
+     "reserve 0.242->0.012"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:right",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:right",
+    [
+     "lasted",
+     "reserve 0.265->0.000"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.034"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->3.37"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    0.42171709927701606,
+    13,
+    13
+   ],
+   "crouch:straight": [
+    0.5983669318498984,
+    13,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
+  "name": "c3x",
+  "bench": {
+   "n": 80,
+   "falls": 26,
+   "during": 1,
+   "after": 25,
+   "before": 0,
+   "noStand": 0
+  },
+  "hisway": {
+   "n": 36,
+   "falls": 9,
+   "during": 0,
+   "after": 9,
+   "before": 0,
+   "noStand": 0
+  },
+  "release0": {
+   "n": 36,
+   "falls": 15,
+   "during": 11,
+   "after": 4,
+   "before": 0,
+   "noStand": 0
+  },
+  "benchStill": 22,
+  "benchNew": 4,
+  "sum": 50,
+  "c05": {
+   "mean": 1.6705633802816902,
+   "median": 1.33,
+   "n": 71,
+   "up": 52,
+   "down": 19,
+   "onlyOn": 1,
+   "onlyOff": 0
+  },
+  "c10": {
+   "mean": -1.7734285714285716,
+   "median": -1.6600000000000001,
+   "n": 35,
+   "up": 16,
+   "down": 19,
+   "onlyOn": 28,
+   "onlyOff": 0
+  },
+  "yawPeak": 4.69525,
+  "regressions": 8,
+  "regList": [
+   [
+    "big:s1:w6:crouch:left",
+    [
+     "sooner 4.87->4.38"
+    ]
+   ],
+   [
+    "big:s1:w6:compress:right",
+    [
+     "sooner 4.65->4.35"
+    ]
+   ],
+   [
+    "big:s1:w11:crouch:left",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s1:w11:compress:right",
+    [
+     "lasted",
+     "reserve 0.242->0.014"
+    ]
+   ],
+   [
+    "big:s2:w6:crouch:right",
+    [
+     "lasted"
+    ]
+   ],
+   [
+    "big:s2:w6:compress:right",
+    [
+     "lasted",
+     "reserve 0.265->0.000"
+    ]
+   ],
+   [
+    "big:s2:w16:crouch:left",
+    [
+     "reserve 0.160->0.000"
+    ]
+   ],
+   [
+    "tw-catch:compress:left",
+    [
+     "sooner 3.65->3.33"
+    ]
+   ]
+  ],
+  "carried": 80,
+  "swing": {
+   "compress:straight": [
+    0.42416367521780046,
+    13,
+    13
+   ],
+   "crouch:straight": [
+    0.5979238758457573,
+    13,
+    13
+   ]
+  },
+  "helps": false,
+  "finalist": false
+ },
+ {
   "name": "notch",
   "bench": {
    "n": 80,
