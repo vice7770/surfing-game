@@ -543,6 +543,12 @@ export interface SurfZoneConfig {
   turnPlan?: '0.5' | '0.25' | '0.15';
   notchScope?: 'state' | 'stance';
   /**
+   * Step 3.6j (`RideSessionOptions.turnFirst`; `docs/research/stability/turn-first/README.md`): turn first — the new
+   * surfer's balance aims neither the turn rate nor the slip (`aim`), and with `on` the stick tilts the board past the body
+   * and the lean follows the felt vertical. The `?turnFirst` dev switch, opt-in, to ride; online rooms run the default.
+   */
+  turnFirst?: 'aim' | 'on';
+  /**
    * 'on': the pop-up cue the player is shown waits until the board can carry a stand, its speed through the water at
    * least `CUE_LATER_SPEED` while the shipped cue is lit (step 3.5u; `takeOffCue.ts` `playerCue`,
    * `docs/research/new-rider/3.5/cue-later.md`). The ride status's `cue` only: the rider's own cue (the paddle sprint)

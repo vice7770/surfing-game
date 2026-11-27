@@ -797,3 +797,102 @@ describe('the entry tuning and the notch variants (step 3.6i)', () => {
   });
 });
 
+
+describe('turn first (step 3.6j)', () => {
+  // His weights (`riderBody=two&plantFloor=6`); the senses of a still rider, a little perturbed, the same for every controller.
+  const w: DesignWeights = { ...DEFAULT_WEIGHTS, riderBody: 'two', plantFloor: 6 };
+  const lim = { ankle: 0.25, twist: 100 };
+  const senses = (k: number) => [0.01 * Math.sin(k / 7), 0.02 * Math.cos(k / 5), 0.03 * Math.sin(k / 3), 0.01, 0.005 * Math.cos(k / 4), 0.004 * Math.sin(k / 6), 0.01 * Math.cos(k / 9), 0, 0];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type Any = any;
+
+  it('is the shipped controller bit for bit while it does not act (Snap held), whatever felt lean and tilt ride its line', () => {
+    for (const mode of ['aim', 'on'] as const) {
+      const ship = new PredictiveController(w, 'tan');
+      const tf = new PredictiveController(w, 'tan', undefined, undefined, undefined, mode);
+      for (let k = 0; k < 120; k += 1) {
+        const a = [...ship.tick(senses(k), 7.5, 0.3, -0.3, 0, lim, 0.2)];
+        const b = [...tf.tick(senses(k), 7.5, 0.3, -0.3, 0, lim, 0.2, 0, 0, undefined, false, { active: false, felt: 0.1 * Math.sin(k), tilt: -0.2, railCap: 0.21 })];
+        expect(b).toEqual(a);
+      }
+    }
+  });
+
+  it("'aim': with the board turning and slipping as the shipped steady turn says, the free reference is that steady turn", () => {
+    // At the schedule's knots, where nothing is blended (between them the blend of the discrete designs and of the continuous
+    // plants differ a little, and so do their equilibria: the README reports by how much).
+    for (const [speed, depth, rail, lean] of [[7.5, 0.3, SCHEDULE_RAILS[1], -0.5], [7, 0.45, SCHEDULE_RAILS[2], 0.4], [8, 0, 0, -0.6], [9.5, 0.3, SCHEDULE_RAILS[1], 0.3]]) {
+      const ctl = new PredictiveController(w, 'tan', undefined, undefined, undefined, 'aim') as Any;
+      const d = ctl.blend(speed, depth, rail, false, 'free');
+      const t = steadyTurn(d.phi, d.gamma, Math.tan(lean), 0.05);
+      const f = lean / Math.tan(lean);
+      const ship = { x: t.x.map((v, i) => (i === 0 || i === 2 || i === 8 ? v * f : v)), u: [t.u[0] * f, t.u[1]] };
+      const xh = ship.x.slice();
+      const ref = ctl.freeReference(d, lean, undefined, 0.05, xh);
+      for (let i = 0; i < 10; i += 1) expect(ref.x[i]).toBeCloseTo(ship.x[i], 8);
+      expect(ref.u[0]).toBeCloseTo(ship.u[0], 8);
+      expect(ref.u[1]).toBeCloseTo(ship.u[1], 6);
+    }
+  });
+
+  it('weighs neither the yaw rate nor the slip in its designs, and only those', () => {
+    const { y, t } = plantAt(7.5, 0.3, { body: true, plantFloor: 6, stanceDeep: true });
+    const ship = design(y, t, w);
+    const free = design(y, t, { ...w, turnFree: true });
+    expect(free.phi).toEqual(ship.phi);
+    expect(free.l).toEqual(ship.l);
+    expect(free.k).not.toEqual(ship.k);
+    expect(ship.a).toBeUndefined();
+    expect(free.a).toEqual(continuousPlant(y, t).a);
+  });
+
+  it('no aim: on the controller\'s own model, the turn rate and the slip reach the command only through the hold of the lean and the tilt', () => {
+    for (const mode of ['aim', 'on'] as const) {
+      const ctl = new PredictiveController(w, 'tan', undefined, undefined, undefined, mode) as Any;
+      const d = ctl.blend(7.5, 0.3, 0.2, false, 'free');
+      const bank = -0.4;
+      const tilt = mode === 'on' ? -0.15 : undefined;
+      const base = [-0.45, 0.1, -0.38, 0.05, -0.6, 0.05, 0.02, -0.62, 0.03, 1.5];
+      const command = (xh: number[]) => {
+        const ref = ctl.freeReference(d, bank, tilt, 0.02, xh);
+        return { u: [0, 1].map((q) => ref.u[q] - d.k[q].reduce((s: number, kq: number, j: number) => s + kq * (xh[j] - ref.x[j]), 0)), ref };
+      };
+      const c0 = command(base);
+      // The board's yaw rate with the upper body turning with it (the twist rate unchanged), and the slip.
+      const moved = base.slice();
+      moved[4] += 0.3; moved[7] += 0.3; moved[5] -= 0.04;
+      const c1 = command(moved);
+      // The reference takes the turn and slip as they are: their errors, and the twist rate's, are the same.
+      for (const j of [4, 5]) expect(moved[j] - c1.ref.x[j]).toBe(0);
+      expect(moved[7] - c1.ref.x[7]).toBeCloseTo(base[7] - c0.ref.x[7], 12);
+      // What changed is the feed-forward's hold, and the lags' reference at it (x_ref[8], x_ref[9] are the commands).
+      // (Every reference entry but the turn's, the slip's and the upper body's yaw rate, which moved with the estimate.)
+      const du = [0, 1].map((q) => c1.ref.u[q] - c0.ref.u[q]
+        + [0, 1, 2, 3, 6, 8, 9].reduce((s, j) => s + d.k[q][j] * (c1.ref.x[j] - c0.ref.x[j]), 0));
+      for (const q of [0, 1]) expect(c1.u[q] - c0.u[q]).toBeCloseTo(du[q], 9);
+      // The hold: at the new turn the three held accelerations are nothing (exactly with 'aim'; least squares with 'on').
+      const a = d.a as number[][];
+      const f = bank / Math.tan(bank);
+      const xs = c1.ref.x.map((v: number, i: number) => (i === 0 || i === 2 || i === 8 ? v / f : v));
+      const acc = [1, 3, 7].map((i) => a[i].reduce((s, v, j) => s + v * xs[j], 0));
+      if (mode === 'aim') for (const v of acc) expect(Math.abs(v)).toBeLessThan(1e-9);
+      else expect(Math.abs(acc[2])).toBeLessThan(1e-9);
+    }
+  });
+
+  it("'on': the bank is the felt lean read CONTROL_STEP × steps late, the roll that bank plus the tilt asked", () => {
+    const ctl = new PredictiveController(w, 'tan', undefined, undefined, undefined, 'on');
+    const lag = Math.round(0.1 / CONTROL_STEP);
+    for (let k = 0; k < 30; k += 1) {
+      const felt = k >= 10 ? -0.2 : 0;
+      ctl.tick(senses(k), 7.5, 0.3, 0, 0, lim, 0, 0, 0, undefined, false, { active: true, felt, tilt: 0.1, railCap: 0.21 });
+      const sensed = k >= 10 + lag ? -0.2 : 0;
+      expect(ctl.feltSensed).toBe(sensed);
+      expect(ctl.reference.x[2]).toBe(sensed);
+      // The tilt in this file's sign is φ − θ: the rider's roll − bank is its negative.
+      expect(ctl.reference.x[0] - ctl.reference.x[2]).toBeCloseTo(0.1, 12);
+    }
+    ctl.reset();
+    expect(ctl.feltSensed).toBe(0);
+  });
+});

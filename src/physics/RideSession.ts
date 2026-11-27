@@ -259,6 +259,8 @@ export interface RideSessionOptions {
   turnPlan?: '0.5' | '0.25' | '0.15';
   /** The wobble filter's variants (step 3.6i, N1 / N2; `AttachedRiderOptions.notchScope`) — the `?notchScope` dev switch. */
   notchScope?: 'state' | 'stance';
+  /** Turn first (step 3.6j; `AttachedRiderOptions.turnFirst`) — the `?turnFirst` dev switch. */
+  turnFirst?: 'aim' | 'on';
   /** Where the hydrostatic support points (step 3.3d; `BoardBodyOptions.buoyFrame`): 'hull' (the `?buoyFrame=hull` dev switch); by default the water-surface normal. */
   buoyFrame?: 'hull';
   /** The hollow over a banked planing deck (deck-hollow, 2026-11-10; `BoardBodyOptions.deckHollow`): 'on' (the `?deckHollow=on` dev switch); by default as before. */
@@ -388,6 +390,7 @@ export class RideSession {
       ...(options.turnAim ? { turnAim: options.turnAim } : {}),
       ...(options.turnPlan ? { turnPlan: options.turnPlan } : {}),
       ...(options.notchScope ? { notchScope: options.notchScope } : {}),
+      ...(options.turnFirst ? { turnFirst: options.turnFirst } : {}),
       ...(options.snapUpturn ? { snapUpturn: options.snapUpturn } : {}),
     });
     this.swimOld = options.swim === 'old';

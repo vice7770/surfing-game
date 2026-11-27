@@ -636,6 +636,9 @@ function switchedConfigFor(settings: PhysicalSettings, seed: number, tier: boole
     // `?turnAim=board`, `?turnPlan=<s>`, `?notchScope=state|stance`: the balance's reference in a turn begun in Compress or
     // Crouch, and the wobble filter's variants (step 3.6i), opt-in, to ride.
     ...entrySwitches(),
+    // `?turnFirst=aim|on`: the balance aims neither the turn rate nor the slip; with `on` the stick tilts the board past
+    // the body and the lean follows the felt vertical (step 3.6j), opt-in, to ride.
+    ...turnFirstSwitch(),
     // `?cueLater=on`: the pop-up cue the player is shown waits until the board moves 3.6 m/s through the water (step
     // 3.5u), opt-in, to ride.
     ...cueLaterSwitch(),
@@ -1576,6 +1579,18 @@ export function entrySwitches(search?: string): { turnAim?: 'board'; turnPlan?: 
     ...(plan === '0.5' || plan === '0.25' || plan === '0.15' ? { turnPlan: plan } : {}),
     ...(scope === 'state' || scope === 'stance' ? { notchScope: scope } : {}),
   };
+}
+
+/**
+ * The step 3.6j dev switch (`SurfZoneConfig.turnFirst`; `docs/research/stability/turn-first/README.md`): opt-in, the new
+ * surfer's balance standing tall, in Compress and in Crouch (Snap as it ships):
+ * - `?turnFirst=aim`: the balance aims neither the board's yaw rate nor its slip; the stick asks the lean as it ships;
+ * - `?turnFirst=on`: that, the stick tilting the board past the body by steer × the ankles' range, the lean following the felt vertical.
+ * Only these values; anything else, off. Nothing on the default rider.
+ */
+export function turnFirstSwitch(search?: string): { turnFirst?: 'aim' | 'on' } {
+  const v = devParam('turnFirst', search)?.trim();
+  return v === 'aim' || v === 'on' ? { turnFirst: v } : {};
 }
 
 /**

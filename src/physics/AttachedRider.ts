@@ -15,7 +15,7 @@ import { RIDER_PARTS, deckHeight, duckPose, postureCenter, riderPartMasses, ride
 import { ANKLE_HEIGHT, HIP_PITCH_INERTIA, HIP_PITCH_TORQUE, KNEE_STIFFNESS, StandingBody, kneeStrength } from './standingBody';
 import { HIP_SHARE, HUMAN_ANKLE_DAMPING, HUMAN_ANKLE_STIFFNESS, HUMAN_BANK_FORWARD, HUMAN_BANK_GAIN, HUMAN_BANK_RATE_GAIN, HumanBalance, MOTOR_LAG, rotorImpulse, stanceRoom } from './humanBalance';
 import type { SurfWater, WaterSample } from './SurfWater';
-import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, type CommandTuning, type EntryTuning, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, equivalentSpeed, railPull, stanceAt, type CaptureOmega, type DesignWeights, type PlantSpeed } from './predictiveBalance';
+import { CONTROL_STEP, DEFAULT_WEIGHTS, PredictiveController, type CommandTuning, type EntryTuning, type TurnFirst, TWIST_DAMPING, TWIST_STIFFNESS, costWeights, equivalentSpeed, railPull, stanceAt, type CaptureOmega, type DesignWeights, type PlantSpeed } from './predictiveBalance';
 import type { StrokeSplash } from '../wave/SprayCloud';
 
 /**
@@ -1868,6 +1868,17 @@ export interface AttachedRiderOptions {
   turnPlan?: '0.5' | '0.25' | '0.15';
   /** The wobble filter's variants (step 3.6i, `?notchScope=state|stance`, with `wobbleNotch`): N1 the notch on `K x̂` alone, N2 only under the entry mark. */
   notchScope?: 'state' | 'stance';
+  /**
+   * **Turn first** (step 3.6j, `?turnFirst=aim|on`; `docs/research/stability/turn-first/README.md`), standing tall, in
+   * Compress and in Crouch (not while Snap is held, which rides as it ships):
+   * - `'aim'`: the balance aims neither the board's yaw rate nor its slip (`PredictiveController`'s `TurnFirst`); the stick
+   *   asks for the lean as it ships.
+   * - `'on'`: that, and the stick asks the feet to tilt the board past the body by steer × `restRange()` (`tiltAsked`,
+   *   eased as the lean asked is), and the body's bank follows the felt vertical (`feltLean`, the capture point's own
+   *   felt vector), sensed BALANCE_DELAY late on the controller's senses' line, the hand's bend added.
+   * Opt-in, off by default, pinned off for online rooms; the new surfer only.
+   */
+  turnFirst?: TurnFirst;
 }
 
 /** The rider's phase: a posture, or lying back down after a failed pop-up. */
@@ -2039,6 +2050,16 @@ function cross(a: V3, b: V3, out: Vector3): Vector3 {
  * rider are solved apart for that substep, so the rider tips, slips or flies
  * rather than receiving grip that does not exist. Knee flex absorbs a landing.
  */
+/**
+ * Step 3.6j (`turnFirst`): the lean about `heading` of the vector `felt` (world), rad, + toward the heading's +x, in the
+ * sense `StandingBody.bankOf` reads the body's bank: the angle at which a body's centre of mass lies along the felt
+ * vertical. `turn` is scratch.
+ */
+export function feltLeanAbout(felt: Vector3, heading: Quaternion, turn: Quaternion): number {
+  const local = felt.applyQuaternion(turn.copy(heading).invert());
+  return Math.atan2(local.x, Math.hypot(local.y, local.z));
+}
+
 export class AttachedRider {
   readonly mass: number;
   /** Regular or Goofy; changed only between rides (a retry, a placement, or off the board), never mid-ride. */
@@ -2470,6 +2491,16 @@ export class AttachedRider {
   private readonly entryMarked: boolean;
   entryOn = false;
   /**
+   * Step 3.6j (`turnFirst`): the switch; the board's tilt past the body the stick asks (rad, this file's sign: roll − bank,
+   * + with the steer, eased as `leanAsked`); the felt vertical's lean about the heading now (rad, + toward the board's +x,
+   * `bank.angle`'s sense), read off `pairFelt` in `prepareBank`. Both stay 0 with the switch off and nothing reads them.
+   */
+  private readonly turnFirstMode?: TurnFirst;
+  tiltAsked = 0;
+  feltLean = 0;
+  private readonly feltScratch = new Vector3();
+  private readonly feltTurn = new Quaternion();
+  /**
    * The new surfer standing free (step 3.2e): balance by prediction (`PredictiveController`, `predictor`), on its own
    * clock of simulated time (`controlDue`, s to its next tick), the commands held between its ticks (this file's signs):
    * the ankle's command before the feet's reach (the hip takes the rest; the predictor is fed the reach's) and the twist's torque.
@@ -2882,7 +2913,10 @@ export class AttachedRider {
       ...(options.turnPlan ? { planBank: Number(options.turnPlan) } : {}),
     } : undefined;
     this.entryMarked = entry !== undefined || (tuning?.scope === 'stance');
-    this.predictor = entry ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning, entry)
+    // Step 3.6j (`turnFirst`): the controller's mode, only when asked; otherwise the constructors as they ship.
+    this.turnFirstMode = options.turnFirst === 'aim' || options.turnFirst === 'on' ? options.turnFirst : undefined;
+    this.predictor = this.turnFirstMode ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning, entry, this.turnFirstMode)
+      : entry ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning, entry)
       : tuning ? new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights, tuning)
       : new PredictiveController(weights, options.balance?.turn ?? 'tan', turnWeights);
     this.leanPace = options.balance?.leanRate ?? LEAN_IN_RATE;
@@ -3904,6 +3938,18 @@ export class AttachedRider {
       // Step 3.6b (`leanPace: 'stance'`): LEAN_IN_RATE's own derivation at the stance's height. Off, the pace as it ships.
       const pace = this.leanPaceStance ? this.leanPace * stancePace(this.yawDepth, this.stanceDeepRow) : this.leanPace;
       this.leanAsked += Math.max(-pace * h, Math.min(pace * h, towardOwn));
+      // Step 3.6j (`turnFirst: 'on'`): the tilt the stick asks, steer × the ankles' range, gated and eased as the lean
+      // asked is; and the felt vertical's lean now, from the capture point's own felt vector.
+      if (this.turnFirstMode === 'on') {
+        const tiltOwn = most > 0 ? this.steer * this.restRange() : 0;
+        const towardTilt = (tiltOwn - this.tiltAsked) * (1 - Math.exp(-h / REFERENCE_TIME));
+        this.tiltAsked += Math.max(-pace * h, Math.min(pace * h, towardTilt));
+      }
+      if (this.turnFirstMode !== undefined) {
+        const felt = this.feltScratch.copy(this.pairFelt);
+        if (this.deckFelt) felt.applyQuaternion(board.orientation);
+        this.feltLean = feltLeanAbout(felt, this.heading, this.feltTurn);
+      }
     }
     // Read-only, for probes (step 3.3f): the cap, the lean asked after it, the speed it is built on and the plane.
     this.leanProbe.cap = most;
@@ -4093,7 +4139,12 @@ export class AttachedRider {
         else if (deep) this.entryOn = true;
         else if (this.entryOn && Math.abs(this.leanAsked) < 1e-6 && this.yawDepth < ENTRY_TALL_DEPTH) this.entryOn = false;
       }
-      const u = this.entryMarked
+      // Step 3.6j (`turnFirst`): the felt lean and the tilt, in the model's signs, every tick; acting unless Snap is held.
+      const firstOn = this.turnFirstMode !== undefined && this.snapping <= 0;
+      const u = this.turnFirstMode !== undefined
+        ? this.predictor.tick(sense, speed, WOBBLE.designDepth < 0 ? this.yawDepth : WOBBLE.designDepth, firstOn && this.turnFirstMode === 'on' ? -(HAND_BEND * this.handBend * HOLD_BANK) : -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold, this.entryOn,
+          { active: firstOn, felt: -this.feltLean, tilt: -this.tiltAsked, railCap: this.railCap })
+        : this.entryMarked
         ? this.predictor.tick(sense, speed, WOBBLE.designDepth < 0 ? this.yawDepth : WOBBLE.designDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold, this.entryOn)
         : this.predictor.tick(sense, speed, WOBBLE.designDepth < 0 ? this.yawDepth : WOBBLE.designDepth, -this.leanAsked, -this.twistAsked, { ankle: range, twist: Math.min(TWIST_BODY_TORQUE, grip) }, rail, faceTilt, faceSense, hold);
       this.schedRail = rail;
@@ -4397,6 +4448,8 @@ export class AttachedRider {
     this.twistAsked = 0;
     this.leanAsked = 0;
     this.entryOn = false;
+    this.tiltAsked = 0;
+    this.feltLean = 0;
     this.resetTwistBody();
   }
 

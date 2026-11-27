@@ -1,0 +1,12 @@
+v 7.5 depth 0.3 rail 0: open 1.0177 | shipped K 0.9737 | free K 0.9708 | free K without r,beta columns 0.9743 | shipped K without 0.9740
+v 7.5 depth 0.3 rail 10: open 1.0606 | shipped K 0.9659 | free K 0.9623 | free K without r,beta columns 0.9696 | shipped K without 0.9709
+v 7 depth 0.45 rail 0: open 0.9959 | shipped K 0.9770 | free K 0.9718 | free K without r,beta columns 0.9678 | shipped K without 0.9718
+v 7 depth 0.45 rail 10: open 0.9974 | shipped K 0.9712 | free K 0.9670 | free K without r,beta columns 0.9680 | shipped K without 0.9720
+v 7.9 depth 0 rail 0: open 1.0236 | shipped K 0.9682 | free K 0.9663 | free K without r,beta columns 0.9740 | shipped K without 0.9697
+v 7.9 depth 0 rail 10: open 1.0527 | shipped K 0.9564 | free K 0.9529 | free K without r,beta columns 0.9578 | shipped K without 0.9609
+v 9.5 depth 0.3 rail 0: open 0.9998 | shipped K 0.9668 | free K 0.9653 | free K without r,beta columns 0.9650 | shipped K without 0.9671
+v 9.5 depth 0.3 rail 10: open 1.0097 | shipped K 0.9630 | free K 0.9618 | free K without r,beta columns 0.9634 | shipped K without 0.9654
+v 6 depth 0.3 rail 0: open 1.0168 | shipped K 0.9825 | free K 0.9796 | free K without r,beta columns 0.9864 | shipped K without 0.9858
+v 6 depth 0.3 rail 10: open 1.0356 | shipped K 0.9727 | free K 0.9657 | free K without r,beta columns 0.9766 | shipped K without 0.9804
+v 6 depth 0.45 rail 0: open 1.0010 | shipped K 0.9842 | free K 0.9792 | free K without r,beta columns 0.9671 | shipped K without 0.9725
+v 6 depth 0.45 rail 10: open 1.0170 | shipped K 0.9757 | free K 0.9691 | free K without r,beta columns 0.9702 | shipped K without 0.9734

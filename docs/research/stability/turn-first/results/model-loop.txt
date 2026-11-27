@@ -1,0 +1,32 @@
+own-model loop; times +0.25/+0.5/+1.0/+1.5 s; deg, deg/s, + toward the steer; rail 0
+depth 0.3 speed 7.5
+  off  bank/roll/yaw 2.1/-0.7/-17  12.3/9.5/7  33.5/33.4/48  26.6/28.3/43 | least roll -1.1 | max ankle 0.064 raw>clamp 0 | |state| 8-10 s 2.4e-6
+  aim  bank/roll/yaw 1.8/-0.2/-33  11.3/10.6/7  31.2/28.1/45  28.4/27.5/39 | least roll -0.9 | max ankle 0.146 raw>clamp 0 | |state| 8-10 s 3.3e-4
+  on   bank/roll/yaw -6.9/2.1/-14  -22.6/-15.4/66  -53.7/-49.0/-113  -55.1/-61.7/-188 | least roll -46.1 | max ankle 0.250 raw>clamp 429 | |state| 8-10 s 3.8e+0
+depth 0.45 speed 7
+  off  bank/roll/yaw 3.0/-0.4/-7  15.7/8.3/10  37.3/24.4/38  24.9/17.6/29 | least roll -1.0 | max ankle 0.130 raw>clamp 0 | |state| 8-10 s 1.8e-5
+  aim  bank/roll/yaw 3.0/-0.6/-12  15.5/8.3/6  35.0/22.8/40  23.8/16.6/32 | least roll -1.1 | max ankle 0.141 raw>clamp 0 | |state| 8-10 s 3.7e-9
+  on   bank/roll/yaw -10.6/0.5/18  -39.9/-29.0/-48  -41.9/-25.9/-43  -3.6/1.2/7 | least roll -35.4 | max ankle 0.250 raw>clamp 8 | |state| 8-10 s 3.6e-7
+depth 0.3 speed 9.5
+  off  bank/roll/yaw 2.6/-0.4/-12  14.7/7.9/6  36.7/24.7/32  25.7/18.4/24 | least roll -0.9 | max ankle 0.108 raw>clamp 0 | |state| 8-10 s 9.3e-8
+  aim  bank/roll/yaw 1.4/0.5/-13  8.1/4.9/1  26.6/16.3/24  27.9/18.3/24 | least roll -0.3 | max ankle 0.140 raw>clamp 0 | |state| 8-10 s 1.3e-4
+  on   bank/roll/yaw -9.1/1.5/8  -32.6/-23.6/-4  -43.7/-28.7/-47  -6.9/-1.5/-4 | least roll -34.0 | max ankle 0.250 raw>clamp 276 | |state| 8-10 s 1.2e+0
+depth 0 speed 7.9
+  off  bank/roll/yaw 1.9/-0.3/-21  11.8/9.2/4  33.3/31.4/47  27.3/26.8/43 | least roll -0.8 | max ankle 0.054 raw>clamp 0 | |state| 8-10 s 2.4e-7
+  aim  bank/roll/yaw 0.9/2.7/-33  7.1/9.8/3  28.0/18.0/38  31.6/28.2/37 | least roll 0.0 | max ankle 0.250 raw>clamp 25 | |state| 8-10 s 3.9e-2
+  on   bank/roll/yaw -5.1/4.5/-4  -15.5/-9.0/100  -46.9/-40.8/-31  -54.6/-54.6/-98 | least roll -43.1 | max ankle 0.250 raw>clamp 134 | |state| 8-10 s 3.0e+0
+
+feed-forward per unit of the estimate (rad/s of r with the upper body turning with it; rad of slip): du0, du1, and the yaw acceleration it adds (a48 du0 + a49 du1) against the open loop a44 / a45
+  depth 0.3 v 7.5 aim: r: du0 0.1023 du1 0.00 dphi_ref -0.032 -> yaw acc 10.68 vs a44 -17.59 | slip: du0 -1.644 du1 0.0 -> yaw acc -171.6 vs a45 214.2
+  depth 0.3 v 7.5 on : r: du0 0.0666 du1 0.00 dphi_ref 0.000 -> yaw acc 6.95 vs a44 -17.59 | slip: du0 -0.749 du1 0.0 -> yaw acc -78.1 vs a45 214.2
+  depth 0.45 v 7 aim: r: du0 0.0452 du1 0.00 dphi_ref 0.009 -> yaw acc 6.14 vs a44 -18.32 | slip: du0 -0.817 du1 0.0 -> yaw acc -110.9 vs a45 211.4
+  depth 0.45 v 7 on : r: du0 0.0566 du1 0.00 dphi_ref 0.000 -> yaw acc 7.69 vs a44 -18.32 | slip: du0 -0.599 du1 0.0 -> yaw acc -81.3 vs a45 211.4
+  depth 0 v 7.9 aim: r: du0 0.1836 du1 0.00 dphi_ref -0.094 -> yaw acc 16.59 vs a44 -18.76 | slip: du0 -2.694 du1 0.0 -> yaw acc -243.5 vs a45 239.5
+  depth 0 v 7.9 on : r: du0 0.0650 du1 0.00 dphi_ref 0.000 -> yaw acc 5.87 vs a44 -18.76 | slip: du0 -0.747 du1 0.0 -> yaw acc -67.5 vs a45 239.5
+  depth 0.3 v 9.5 aim: r: du0 0.1430 du1 0.00 dphi_ref -0.053 -> yaw acc 14.17 vs a44 -26.44 | slip: du0 -2.531 du1 0.0 -> yaw acc -250.8 vs a45 396.5
+  depth 0.3 v 9.5 on : r: du0 0.0708 du1 0.00 dphi_ref 0.000 -> yaw acc 7.02 vs a44 -26.44 | slip: du0 -0.968 du1 0.0 -> yaw acc -95.9 vs a45 396.5
+
+aim against the shipped steady turn between the schedule knots (the board as the steady turn says); largest difference over x and u
+  v 7.3 depth 0.25 rail 11.5: |dx| 1.96e-3 (roll 0.1124 deg), du0 -1.09e-3, du1 0.000 N m
+  v 8.2 depth 0.4 rail 7.4: |dx| 6.57e-4 (roll 0.0130 deg), du0 -6.58e-4, du1 0.000 N m
+  v 6.6 depth 0.1 rail 2.9: |dx| 6.58e-4 (roll 0.0165 deg), du0 -6.59e-4, du1 0.000 N m

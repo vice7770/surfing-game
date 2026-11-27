@@ -1000,6 +1000,13 @@ export interface DesignWeights {
    * the one without it tick for tick. No integral: one fails the model gate at 5 m/s (hold-line.md §3.3).
    */
   holdLine?: 'ref';
+  /**
+   * **The turn left free** (step 3.6j, `?turnFirst=aim|on`; `docs/research/stability/turn-first/README.md`): the board's
+   * yaw rate (state 4) and slip (state 5) carry no weight in the cost, every other weight as given. The design then also
+   * carries its continuous plant (`Design.a`, `Design.b`), which the switch's feed-forward is solved on. Omitted: the
+   * design as it ships, bit for bit (and the cache's key, which `JSON.stringify` builds, is the shipped one).
+   */
+  turnFree?: boolean;
 }
 /**
  * The two new senses' noise (step 3.2p):
@@ -1126,6 +1133,9 @@ export interface Design {
   predF?: Mat;
   trimX?: Mat;
   trimU?: Mat;
+  /** Step 3.6j (`DesignWeights.turnFree` only): the continuous plant the design was discretised from (`continuousPlant`). */
+  a?: Mat;
+  b?: Mat;
 }
 /**
  * The capture point across as a row over the state, m per rad: ξ = L (θ + θ̇/ω₀) with L the centre of mass over the feet
@@ -1229,6 +1239,8 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
   const nState = a.length;
   const q = zeros(nState, nState);
   for (let i = 0; i < 8; i += 1) q[i][i] = 1 / (w.stateScale[i] * w.stateScale[i]);
+  // Step 3.6j (`turnFree`): the board's yaw rate and slip unweighted; nothing else moves.
+  if (w.turnFree) { q[4][4] = 0; q[5][5] = 0; }
   // The bank's cost as this stance's own limit, not one angle for every stance (`feetReach`): the lean at which the
   // capture point leaves the feet, feetReach / L.
   if (w.feetReach) {
@@ -1355,7 +1367,7 @@ export function design(y: YawPlant, t: TwistPlant, w: DesignWeights = DEFAULT_WE
     }
     face = { gammaF, gammaFE, predF, trimX, trimU };
   }
-  return { phi, gamma, c, k, phiE, gammaE, cE, l, phiN: power, pred, steps, bias, ...(gammaD && predD ? { gammaD, predD } : {}), ...face };
+  return { phi, gamma, c, k, phiE, gammaE, cE, l, phiN: power, pred, steps, bias, ...(gammaD && predD ? { gammaD, predD } : {}), ...face, ...(w.turnFree ? { a, b } : {}) };
 }
 
 /**
@@ -1663,6 +1675,29 @@ export interface EntryTuning { aim?: boolean; planRho?: number; planBank?: numbe
 /** Step 3.6i: the plan ends once no lean is asked and every state of it is within this of the steady reference. */
 export const PLAN_SETTLED = 1e-4;
 
+/**
+ * **Step 3.6j, turn first** (`?turnFirst=aim|on`; `docs/research/stability/turn-first/README.md`), the controller's mode:
+ * - `'aim'`: the balance aims neither the board's yaw rate nor its slip. The designs are `DesignWeights.turnFree`'s (both
+ *   unweighted), and the reference is the lean asked and the board's roll that holds it **at the turn the board is making
+ *   now** (`freeReference`): the yaw rate and slip in the reference are the prediction's own (x̂₄, x̂₅), the upper body's
+ *   yaw rate the same as the board's (the twist rate nothing), the rates of the roll and the bank nothing, the twist the
+ *   twist asked; the board's roll φ and both commands are solved so that the board's roll, the body's bank and the upper
+ *   body's yaw do not accelerate there (the continuous plant's rows 1, 3 and 7). Rows 4 and 5 — the yaw rate's and the
+ *   slip's own — are not held.
+ * - `'on'`: the same, with the reference's bank the felt vertical's lean (the caller's `TurnFirstInput.felt`, read off this
+ *   controller's own senses' line, CONTROL_STEP × steps late) plus the caller's bank asked (the hand), and the board's roll
+ *   that bank plus the tilt asked (`TurnFirstInput.tilt`): with both angles set, the two commands are the weighted least
+ *   squares of the same three rows, each row weighted by the design's own cost on that rate (1 / stateScale²).
+ * The estimate, the filter and the predictor are the shipped ones on the same plant. Undefined: the controller as it ships.
+ */
+export type TurnFirst = 'aim' | 'on';
+/**
+ * Step 3.6j: what the caller hands `tick` each tick while `TurnFirst` is set: whether it acts now (not under Snap), the felt
+ * vertical's lean now (rad, this file's sign; it rides the senses' line whether or not it acts), the board's tilt past the
+ * body asked (rad, this file's sign: φ − θ), and the schedule's rail cap (rad).
+ */
+export interface TurnFirstInput { active: boolean; felt: number; tilt: number; railCap: number }
+
 /** Step 3.6h: the design depth at and below which the tuning acts in full, m (Compress's 0.30 m). */
 export const DRIFT_FULL_DEPTH = 0.3;
 /**
@@ -1741,12 +1776,26 @@ export class PredictiveController {
   private tallBlended?: Design;
   readonly plan = { on: false, x: new Array<number>(N_STATE + N_HEAVE).fill(0), u: [0, 0] };
 
-  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan', turnWeights?: DesignWeights, tuning?: CommandTuning, entry?: EntryTuning) {
+  /** Step 3.6j (`TurnFirst`): undefined by default, and then nothing below is read. */
+  private readonly turnFirst?: TurnFirst;
+  private readonly freeWeights?: DesignWeights;
+  private freeBlended?: Design;
+  /** Step 3.6j: the felt vertical's lean as it rides the senses' line (newest last, at most steps + 1), rad, this file's sign. */
+  private readonly felts: number[] = [];
+  /** Step 3.6j, for probes: the felt lean the last tick read (rad, this file's sign), and whether the free reference acted. */
+  feltSensed = 0;
+  freeOn = false;
+
+  constructor(weights?: DesignWeights, turn: 'linear' | 'tan' = 'tan', turnWeights?: DesignWeights, tuning?: CommandTuning, entry?: EntryTuning, turnFirst?: TurnFirst) {
     this.weights = weights;
     this.turn = turn;
     this.turnWeights = turnWeights;
     this.tuning = tuning;
     this.entry = entry;
+    if (turnFirst) {
+      this.turnFirst = turnFirst;
+      this.freeWeights = { ...(weights ?? DEFAULT_WEIGHTS), turnFree: true };
+    }
     if (entry?.planRho !== undefined || entry?.planBank !== undefined) {
       const base = weights ?? DEFAULT_WEIGHTS;
       this.planWeights = { ...base, rho: entry.planRho ?? base.rho, stateScale: base.stateScale.map((v, i) => (i === 2 ? v * (entry.planBank ?? 1) : v)) };
@@ -1770,11 +1819,14 @@ export class PredictiveController {
     this.plan.on = false;
     this.plan.x.fill(0);
     this.plan.u[0] = 0; this.plan.u[1] = 0;
+    this.felts.length = 0;
+    this.feltSensed = 0;
+    this.freeOn = false;
   }
 
   /** The nearest designs blended at a speed, depth and rail (clamped to the table): step 3.2f makes it eight. */
-  private blend(speed: number, depth: number, rail: number, turning = false, slot?: 'plan' | 'tall'): Design {
-    const weights = slot === 'plan' ? this.planWeights : turning ? this.turnWeights : this.weights;
+  private blend(speed: number, depth: number, rail: number, turning = false, slot?: 'plan' | 'tall' | 'free'): Design {
+    const weights = slot === 'plan' ? this.planWeights : slot === 'free' ? this.freeWeights : turning ? this.turnWeights : this.weights;
     // Step 3.5w (`plantSpeed: 'face'` or `'taper'`): the schedule reaches down to 3 m/s. Otherwise the shipped list, unchanged.
     const speeds = weights?.plantSpeed !== undefined ? SCHEDULE_SPEEDS_FACE : SCHEDULE_SPEEDS;
     const v = Math.max(speeds[0], Math.min(speeds[speeds.length - 1], speed));
@@ -1808,7 +1860,7 @@ export class PredictiveController {
     const ws = [(1 - fv) * (1 - fd) * (1 - fr), fv * (1 - fd) * (1 - fr), (1 - fv) * fd * (1 - fr), fv * fd * (1 - fr),
       (1 - fv) * (1 - fd) * fr, fv * (1 - fd) * fr, (1 - fv) * fd * fr, fv * fd * fr];
     const first = ds[0];
-    let out = slot === 'plan' ? this.planBlended : slot === 'tall' ? this.tallBlended : turning ? this.turnBlended : this.blendedDesign;
+    let out = slot === 'plan' ? this.planBlended : slot === 'tall' ? this.tallBlended : slot === 'free' ? this.freeBlended : turning ? this.turnBlended : this.blendedDesign;
     if (!out) {
       const copy = (m: Mat) => m.map((row) => row.slice());
       out = {
@@ -1819,9 +1871,12 @@ export class PredictiveController {
         // Step 3.5r: the face's column, its estimate's copy, its sum over the delay and the trim, likewise.
         ...(first.gammaF && first.gammaFE && first.predF && first.trimX && first.trimU
           ? { gammaF: copy(first.gammaF), gammaFE: copy(first.gammaFE), predF: copy(first.predF), trimX: copy(first.trimX), trimU: copy(first.trimU) } : {}),
+        // Step 3.6j: the continuous plant, only in the free slot's designs.
+        ...(slot === 'free' && first.a && first.b ? { a: copy(first.a), b: copy(first.b) } : {}),
       };
       if (slot === 'plan') this.planBlended = out;
       else if (slot === 'tall') this.tallBlended = out;
+      else if (slot === 'free') this.freeBlended = out;
       else if (turning) this.turnBlended = out;
       else this.blendedDesign = out;
     }
@@ -1843,6 +1898,7 @@ export class PredictiveController {
       mix(out.gammaF, (d) => d.gammaF!); mix(out.gammaFE, (d) => d.gammaFE!); mix(out.predF, (d) => d.predF!);
       mix(out.trimX, (d) => d.trimX!); mix(out.trimU, (d) => d.trimU!);
     }
+    if (slot === 'free' && out.a && out.b) { mix(out.a, (d) => d.a!); mix(out.b, (d) => d.b!); }
     return out;
   }
 
@@ -1851,8 +1907,26 @@ export class PredictiveController {
    * and the bank and twist asked for (rad, this file's signs). Returns the commands to hold until the next tick
    * [the ankle's rest, rad; the twist's torque, N·m], clamped to `limits`.
    */
-  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, face = 0, hold?: HoldInput, entryOn = false): readonly number[] {
-    const d = this.blend(speed, depth, rail);
+  tick(sense: readonly number[], speed: number, depth: number, bankAsked: number, twistAsked: number, limits: ControlLimits, rail = 0, tilt = 0, face = 0, hold?: HoldInput, entryOn = false, turn?: TurnFirstInput): readonly number[] {
+    // Step 3.6j (`TurnFirst`, opt-in): the felt lean rides the senses' line, read as old as every other sense; while the
+    // switch acts, the free designs, and under `'on'` the bank is the felt lean plus the bank asked and the schedule's rail
+    // that bank plus the tilt. Unset, `free` is false and `bankIn` and `railIn` are the caller's own, bit for bit.
+    let free = false;
+    let bankIn = bankAsked;
+    let railIn = rail;
+    if (this.turnFirst !== undefined && turn) {
+      const lag = WOBBLE.designDelay < 0 ? Math.round(PREDICT_DELAY / CONTROL_STEP) : Math.round(WOBBLE.designDelay);
+      this.felts.push(turn.felt);
+      if (this.felts.length > lag + 1) this.felts.shift();
+      this.feltSensed = this.felts.length > lag ? this.felts[this.felts.length - 1 - lag] : 0;
+      free = turn.active;
+      if (free && this.turnFirst === 'on') {
+        bankIn = this.feltSensed + bankAsked;
+        railIn = Math.min(turn.railCap, Math.abs(bankIn + turn.tilt));
+      }
+      this.freeOn = free;
+    }
+    const d = free ? this.blend(speed, depth, railIn, false, 'free') : this.blend(speed, depth, rail);
     // The plant's own size: ten, or fourteen with the board's heave and pitch carried (step 3.2p).
     const n = d.phi.length;
     const p = d.c.length;
@@ -1949,13 +2023,14 @@ export class PredictiveController {
       }
     }
     this.holdBank = holdBank;
-    const bank = holdBank === 0 ? bankAsked : bankAsked + holdBank;
+    const bank = holdBank === 0 ? bankIn : bankIn + holdBank;
     // `'predict'` leaves the reference the flat-water one that ships; `'both'` and `'ref'` solve the steady turn on
     // this face.
     const refHeel = this.weights?.waterHeel === 'both' || this.weights?.waterHeel === 'ref';
     const drive = d.gammaD && refHeel ? d.gammaD.map((row) => row[0] * tilt) : undefined;
-    let ref = steadyTurn(d.phi, d.gamma, bank, twistAsked, drive);
-    if (this.turn === 'tan' && Math.abs(bank) > 1e-6) {
+    // Step 3.6j: the free reference (`freeReference`) in place of the steady turn while the switch acts.
+    let ref = free ? this.freeReference(d, bank, this.turnFirst === 'on' ? turn!.tilt : undefined, twistAsked, xh) : steadyTurn(d.phi, d.gamma, bank, twistAsked, drive);
+    if (!free && this.turn === 'tan' && Math.abs(bank) > 1e-6) {
       // The turn that balances the lean asked (the linear model's bank is the lean's tangent in the body's balance), its
       // angles (the board's roll, the bank, the ankle's rest) brought back to the lean asked.
       const t = steadyTurn(d.phi, d.gamma, Math.tan(bank), twistAsked, drive);
@@ -1964,18 +2039,18 @@ export class PredictiveController {
     }
     // Step 3.5r (`faceTrim: 'on'`): the steady turn for the lean asked, moved to the face's neutral trim by the sensed
     // tilt (the bank target stays the lean asked; `trimX` and `trimU` are zero for `'model'`).
-    if (d.trimX && d.trimU && sensedFace !== 0) {
+    if (!free && d.trimX && d.trimU && sensedFace !== 0) {
       for (let i = 0; i < n; i += 1) ref.x[i] += d.trimX[i][0] * sensedFace;
       ref.u[0] += d.trimU[0][0] * sensedFace;
       ref.u[1] += d.trimU[1][0] * sensedFace;
     }
     // Step 3.6i (`EntryTuning`, opt-in): the aim matched to the board and the planned lean, while the entry mark is on.
-    if (this.entry) ref = this.entryReference(ref, d, speed, depth, rail, bank, twistAsked, drive, tilt, sensedFace, limits, entryOn);
+    if (this.entry && !free) ref = this.entryReference(ref, d, speed, depth, rail, bank, twistAsked, drive, tilt, sensedFace, limits, entryOn);
     for (let i = 0; i < n; i += 1) this.reference.x[i] = ref.x[i];
     this.reference.u[0] = ref.u[0]; this.reference.u[1] = ref.u[1];
     const u = [0, 0];
     // Step 3.6b (`turnGains`): while a lean is asked, the turn weights' gains on the same estimate and reference.
-    const gains = this.turnWeights !== undefined && bank !== 0 ? this.blend(speed, depth, rail, true).k : d.k;
+    const gains = !free && this.turnWeights !== undefined && bank !== 0 ? this.blend(speed, depth, rail, true).k : d.k;
     // Step 3.6h (`CommandTuning`, opt-in): the feedback scaled and filtered in proportion to the depth. Off, the loop below.
     // Step 3.6i (N2, `scope: 'stance'`): with the entry mark off, the loop below as it ships, and the notch's history cleared.
     const scoped = this.tuning?.scope === 'stance' && !entryOn;
@@ -2005,6 +2080,66 @@ export class PredictiveController {
     this.bias[0] = b0; this.bias[1] = b1;
     this.ticks += 1;
     return this.sent;
+  }
+
+  /**
+   * **Step 3.6j: the free reference** (`TurnFirst`; README §0.2). The state the balance holds, with the board's yaw rate and
+   * slip the prediction's own (x̂₄, x̂₅; free, so the feedback's yaw-rate and slip columns act on nothing), the upper body
+   * turning with the board (ω_u = x̂₄: the twist rate nothing), the roll's and the bank's rates nothing, the twist the twist
+   * asked, the lags at the commands; and the commands (the feed-forward) that hold it at that turn: on the continuous plant
+   * (`Design.a`; the commands enter the three rows through the lags only), the rows of the board's roll acceleration (1),
+   * the body's bank acceleration (3) and the upper body's yaw acceleration (7) at that state are nothing.
+   * - `tilt` undefined (`'aim'`): the bank is `bank`, and the board's roll φ and both commands solve the three rows exactly.
+   * - `tilt` given (`'on'`): the board's roll is `bank + tilt` as well, one command too few: the upper body's row is held
+   *   exactly and the ankle's command is the least squares of the roll's and the bank's rows, each weighted by the
+   *   design's own cost on its rate, 1 / stateScale[i]² (i = 1, 3).
+   * In the 'tan' space as `tick`'s steady turn: solved with the bank at tan(bank) and the board's roll scaled alike, then
+   * the roll, the bank, the ankle's lag and its command brought back by bank / tan(bank). So with the board turning and
+   * slipping exactly as the shipped steady turn says, `'aim'`'s reference IS the shipped steady turn.
+   */
+  private freeReference(d: Design, bank: number, tilt: number | undefined, twist: number, xh: readonly number[]): { x: number[]; u: number[] } {
+    const n = d.phi.length;
+    const a = d.a!;
+    const f = this.turn === 'tan' && Math.abs(bank) > 1e-6 ? bank / Math.tan(bank) : 1;
+    const x = new Array<number>(n).fill(0);
+    x[2] = bank / f;
+    x[4] = xh[4];
+    x[5] = xh[5];
+    x[6] = twist;
+    x[7] = xh[4];
+    if (tilt !== undefined) x[0] = (bank + tilt) / f;
+    const rows = [1, 3, 7];
+    const known = rows.map((i) => { let s = 0; for (let j = 0; j < n; j += 1) s += a[i][j] * x[j]; return s; });
+    let roll = x[0];
+    let u0 = 0;
+    let u1 = 0;
+    if (tilt === undefined) {
+      const z = solveSmall(rows.map((i) => [a[i][0], a[i][8], a[i][9]]), known.map((v) => -v));
+      roll = z[0]; u0 = z[1]; u1 = z[2];
+    } else {
+      // The upper body's row held exactly (u1 = −(known₇ + a₇₈ u0) / a₇₉), and the ankle's command the least squares of
+      // the roll's and the bank's rows, each weighted by the design's own cost on its rate, 1 / stateScale[i]² (i = 1, 3).
+      const s = this.freeWeights!.stateScale;
+      const q = [1 / (s[1] * s[1]), 1 / (s[3] * s[3])];
+      const t9 = a[7][9];
+      const g0 = Math.abs(t9) > 1e-12 ? -a[7][8] / t9 : 0;
+      const g1 = Math.abs(t9) > 1e-12 ? -known[2] / t9 : 0;
+      let num = 0;
+      let den = 0;
+      [1, 3].forEach((i, k) => {
+        const c = a[i][8] + a[i][9] * g0;
+        const r0 = known[k] + a[i][9] * g1;
+        num -= q[k] * c * r0;
+        den += q[k] * c * c;
+      });
+      u0 = den > 0 ? num / den : 0;
+      u1 = g1 + g0 * u0;
+    }
+    x[0] = roll * f;
+    x[2] = bank;
+    x[8] = u0 * f;
+    x[9] = u1;
+    return { x, u: [u0 * f, u1] };
   }
 
   /**
