@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-28, about 14:00 UTC.**
+- **Status, 2026-11-28, about 15:45 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -237,8 +237,9 @@
         5. His ride.
       - **His feel ride:** a passing arm, else the closest arm that meets lines 3 and 4 (labelled as failing), else nothing.
       - **Codex's entry `8aa48d38`** (a turn-entry work order) was read and checked from the saved data (consult log `9bac04f6`); its verdicts went into the brief.
-    - **3.6l, the lean's pace, is planned and waits for his word** (planned 2026-11-28 in two rounds of questions, "Use all recommended" twice; consult log `59f74e5a`).
-      - **The brief** is `claude/lean-speed` `f81712b4`, `docs/research/stability/lean-speed/BRIEF.md`, from `claude/rail-hold` `92227e9b`.
+    - **3.6l, the lean's pace, is running** (planned 2026-11-28 in two rounds of questions, "Use all recommended" twice; told of the September study, he said "Yes, start 3.6l" at about 15:35 UTC; consult log `59f74e5a` and `119fecf5`).
+      - **The brief** is `claude/lean-speed` `402acad2`, `docs/research/stability/lean-speed/BRIEF.md`, from `claude/rail-hold` `92227e9b`.
+      - **One Opus builder at xhigh** started at about 15:40 UTC in `.claude/worktrees/lean-speed`. It pre-registers the gate, and pushes the gate's table before any build.
       - **The coordinator's correction:** the rail does not stop at 17–20°. That was the mean over tS 1.5–2.0 of the bench's one-second steer. Tick by tick (3.6j's switch-off rows, Big seeds 1–3, rides standing at tS 2.5):
         - by +0.5 s the lean asked is 30–37°, the body 11–12° and the rail 8–11°;
         - at the steer's end the rail is 28° standing tall, 20° in Compress and 19° in Crouch, still rising;
@@ -269,7 +270,7 @@
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `59f74e5a`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `119fecf5`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -347,8 +348,8 @@ Also open:
 | `claude/turn-entry` | `a1f22e33` | 3.6i: nothing passes his line; he goes over into the turn; `?notchScope=stance` (the closest) is the notch without its tall and Snap regressions; everything together nearly empties the falls as he steers but they come back after it and the turn comes round less; also `?turnAim`, `?turnPlan` (opt-in, pinned off online; from `d5c8ccf9`). Served on port 5177 |
 | `claude/turn-first` | `7e4e149d` | 3.6j, done and reviewed: nothing passes; `?turnFirst=aim|on` off by default; the turn as it ships is the balance's aim (from `a1f22e33`) |
 | `claude/rail-hold` | `92227e9b` | 3.6k, stopped before any build: the plan and the advisor's note (`ADVISOR.md`, `advisor/`), from `7e4e149d`; no `src` change |
-| `claude/lean-speed` | `f81712b4` | 3.6l, planned and waiting for his word: the brief only, from `92227e9b`; no `src` change |
-| `claude/the-record` | `59f74e5a` | the consult log (verified on the remote 2026-11-28) |
+| `claude/lean-speed` | `402acad2` | 3.6l, running: the brief, from `92227e9b`; the builder pushes here |
+| `claude/the-record` | `119fecf5` | the consult log (verified on the remote 2026-11-28) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
