@@ -1,0 +1,50 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s1.jsonl: grid 400x451 seed 1 12 periods scripts cue,cued250,cued500,lift,early arms ships
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s2.jsonl: grid 400x451 seed 2 12 periods scripts cue,cued250,cued500,lift,early arms ships
+
+## 75 stands over 22 (seed, wave) pairs: 15 carried the full window, 60 fell, 0 excluded as truncated
+   the rides that lasted came from 5 distinct waves
+
+## ⭐ what every ride that lasted had, pooled. A condition on the left that holds for ALL of them is one
+   they all shared; a condition MOSTLY followed by a ride that lasts would additionally be predictive.
+   ⛔ These are descriptions of an observed sample, NOT thresholds and not conditions to gate standing on:
+   within the survivors' own range more speed is not better (see stand.md Part 5.4's counterexample).
+
+                                             held / stands   share
+  planing at the stand                        15 /  28     54%
+  NOT planing at the stand                     0 /  47      0%
+  speed through the water >= 4.400 m/s        15 /  19     79%
+  speed through the water <  4.400 m/s         0 /  56      0%
+  the feet DRY at the stand                   15 /  30     50%
+  ⭐ the feet WET at the stand                  0 /  45      0%
+  planing AND the feet dry                    15 /  28     54%
+  planing AND the feet wet                     0 /   0      —
+  not planing AND the feet dry                 0 /   2      0%
+
+## ⭐ the game's verdict against the feet, measured. The verdict returns on the FIRST test that fires.
+
+  verdict                 held / stands | of those, feet actually WET | feet actually DRY
+  'feet under water'       0 /  40  |                         40 |                 0   (0 of the wet ones lasted)
+  'sinking'               12 /  26  |                          5 |                21   (0 of the wet ones lasted)
+  not refused              3 /   9  |                          0 |                 9
+
+   ⚠️ stands whose verdict is `sinking` while the feet ARE under water: 5 — the game's own
+      `feet under water` count under-reports wet feet by that many
+      seed 1 w 7 early    into 0.279 m/s (> SINK_RATE, so it returned first), rear foot +0.839 m, front +0.480 m, lasted 0
+      seed 1 w11 early    into 0.379 m/s (> SINK_RATE, so it returned first), rear foot +0.992 m, front +0.617 m, lasted 0
+      seed 2 w 1 early    into 0.318 m/s (> SINK_RATE, so it returned first), rear foot +0.911 m, front +0.530 m, lasted 0
+      seed 2 w 6 early    into 0.292 m/s (> SINK_RATE, so it returned first), rear foot +0.848 m, front +0.488 m, lasted 0
+      seed 2 w10 early    into 0.326 m/s (> SINK_RATE, so it returned first), rear foot +0.883 m, front +0.507 m, lasted 0
+
+## ⭐ the fall test's two terms, per sea. `human.fallen` is `beyond && weightPast`, and the conjunction is
+   reached INSIDE a substep, so at frame granularity it shows only on the frame AFTER the separation — which
+   is a frozen frame and excluded. A probe that looks for the conjunction on live frames finds nothing.
+   seed 1: of 2123 live standing frames, `beyond` on 208, `weightPast` on 60, BOTH on 0
+      stands that reached `beyond` at least once: 20; of those, 0 carried the window
+   seed 2: of 3744 live standing frames, `beyond` on 113, `weightPast` on 252, BOTH on 0
+      stands that reached `beyond` at least once: 16; of those, 0 carried the window
+
+## what a gate would have cost, had each test been the gate (the stand refused, the rider laid back down)
+  the flag as written (any verdict)        refuses  66 of 75 stands, and would destroy 12 of the 15 rides that lasted
+  `feet under water` as the verdict        refuses  40 of 75 stands, and would destroy  0 of the 15 rides that lasted
+  ⭐ the FEET, measured, test order aside   refuses  45 of 75 stands, and would destroy  0 of the 15 rides that lasted
+  `sinking` as the verdict                 refuses  26 of 75 stands, and would destroy 12 of the 15 rides that lasted

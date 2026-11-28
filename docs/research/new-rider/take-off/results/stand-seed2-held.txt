@@ -1,0 +1,61 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s2.jsonl
+# grid 400x451 = 180400 cells · seed 2 · medium · 12 periods · arms ships · scripts cue,cued250,cued500,lift,early · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 47 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 11 waves, 55 runs, 1069 s wall
+
+## held vs fell, median of each (plain medians; truncated runs excluded from BOTH)
+   populations: held 11, fell 30, excluded as truncated 0
+
+                                                       held       fell
+planing at the stand                                  1.000      0.000
+speed through the water, m/s (the latch's own)        4.635      2.330
+lean cap at the stand, rad                            0.454      0.000
+planing share of the first second                     1.000      0.000
+wetted hull at the stand, m2                          0.079      0.517
+up the face at the stand                              0.674      0.747
+face slope under the board, deg                      18.398     12.165
+up the face at the PRESS                              0.747      0.781
+the board draft at the stand, m                      -0.051      0.148
+ahead of the crest, m                                 2.956      2.555
+front foot's LOAD SHARE                               0.338      0.612
+load at the feet, bw                                  0.787      0.952
+landing peak, bw                                      1.453      1.211
+the feet's depth, m                                  -0.060      0.272
+the descent into the surface, m/s                     0.756      0.249
+capture margin, min over the first second             0.516      0.000
+grip left, min                                        0.799      0.443
+knees left, min                                       0.372      0.531
+past the feet ACROSS, peak, m                         0.000      0.299
+past the feet ALONG, peak, m                          0.000      0.000
+roll peak in the first second, deg                    1.679     23.843
+
+
+## ⭐ which columns separate held from fell with NO OVERLAP — the test that matters, because a median
+     difference over 4 runs is not a discriminator and a non-overlapping range over the whole population is
+   planing at the stand                             held    1.000..   1.000  fell    0.000..   1.000  overlaps
+   speed through the water, m/s (the latch's own)   held    4.400..   6.523  fell    0.907..   4.879  overlaps
+   lean cap at the stand, rad                       held    0.415..   0.766  fell    0.000..   0.493  overlaps
+   planing share of the first second                held    1.000..   1.000  fell    0.000..   1.000  overlaps
+   wetted hull at the stand, m2                     held    0.034..   0.268  fell    0.122..   0.621  overlaps
+   up the face at the stand                         held    0.508..   0.710  fell    0.000..   1.000  overlaps
+   face slope under the board, deg                  held   16.506..  19.320  fell   -3.558..  17.095  overlaps
+   up the face at the PRESS                         held    0.698..   0.777  fell    0.004..   0.944  overlaps
+   the board draft at the stand, m                  held   -0.064..  -0.045  fell   -0.056..   0.612  overlaps
+   ahead of the crest, m                            held    2.570..   3.523  fell   -1.306..   5.096  overlaps
+   front foot's LOAD SHARE                          held    0.267..   0.432  fell    0.286..   0.757  overlaps
+   load at the feet, bw                             held    0.614..   0.931  fell    0.710..   1.321  overlaps
+   landing peak, bw                                 held    1.336..   1.594  fell    0.859..   2.247  overlaps
+   the feet's depth, m                              held   -0.069..  -0.010  fell   -0.058..   0.911  overlaps
+   the descent into the surface, m/s                held    0.472..   0.856  fell    0.108..   0.980  overlaps
+   capture margin, min over the first second        held    0.349..   0.572  fell    0.000..   0.507  overlaps
+   grip left, min                                   held    0.727..   0.865  fell    0.000..   0.894  overlaps
+   knees left, min                                  held    0.340..   0.405  fell    0.354..   0.858  overlaps
+   past the feet ACROSS, peak, m                    held    0.000..   0.000  fell    0.000..   0.904  overlaps
+   past the feet ALONG, peak, m                     held    0.000..   0.094  fell    0.000..   0.488  overlaps
+   roll peak in the first second, deg               held    0.734..   4.213  fell    1.630..  88.041  overlaps
+
+## the refusal against the outcome: a 2x2, because a gate that predicts nothing is not a gate
+   refused (any verdict)        11 held of 37  (median fall 0.717 s)
+   refused `sinking`            11 held of 23  (median fall 0.933 s)
+   refused `feet under water`    0 held of 14  (median fall 0.567 s)
+   not refused                   0 held of  4  (median fall 0.917 s)

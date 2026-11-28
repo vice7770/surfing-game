@@ -1,0 +1,3 @@
+the build that produced seed 1 (scripts hold/turnL, popping at the cue) against this file (cue/cueL)
+seed 1, waves 1-8, arms ships/trunk/bank: 48 runs aligned, 2016 shared values compared, 0 differ
+(the four columns the old build did not emit are excluded: ['fsCapMed', 'fsPlaningFirst', 'fsPlaningMed', 'popBy'], 192 values)

@@ -1,0 +1,1 @@
+THE COMMITTED PROBE REPRODUCES THE COMMITTED RESULTS: 10 runs aligned of 10 and 10, 1380 summary values compared, 0 differ

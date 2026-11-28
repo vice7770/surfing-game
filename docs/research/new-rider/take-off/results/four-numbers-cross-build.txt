@@ -1,0 +1,17 @@
+# cross-build: 36 runs here, 36 there, 36 aligned on (script, wave)
+# 423 shared summary values compared, 0 differ
+   (a difference here would mean the two builds are not the same rider on the same sea)
+# 0 differences in TRIAL-dependent running maxima, reported apart:
+# 3 stands were CENSORED at TRIAL = 16 s in #429 and are followed here:
+   ('cue', 6): stood at 16.016666666665756 s → fell at None s, None s after the stand, cause None
+   ('cueL', 6): stood at 16.016666666665756 s → fell at 18.45 s, 2.43333 s after the stand, cause balance
+   ('cueR', 6): stood at 16.016666666665756 s → fell at 17.75 s, 1.73333 s after the stand, cause balance
+
+# cross-build: 33 runs here, 33 there, 33 aligned on (script, wave)
+# 426 shared summary values compared, 0 differ
+   (a difference here would mean the two builds are not the same rider on the same sea)
+# 3 differences in TRIAL-dependent running maxima, reported apart:
+   ('cue', 4): face 1.4674 vs 0.8439166396383748 (never stood; TRIAL)
+   ('cueL', 4): face 1.4674 vs 0.8439166396383748 (never stood; TRIAL)
+   ('cueR', 4): face 1.4674 vs 0.8439166396383748 (never stood; TRIAL)
+# 0 stands were CENSORED at TRIAL = 16 s in #429 and are followed here:

@@ -1,0 +1,25 @@
+# /private/tmp/claude-501/-Users-vicentealmeida-Documents-ChatGPT-surfing-game/ccce9afb-c899-492c-81da-476154da18db/scratchpad/s2.jsonl
+# grid 400x451 = 180400 cells · seed 2 · medium · 12 periods · arms ships · scripts cue,cued250,cued500,lift,early · probe on · Hs 1.4 Tp 11 · start (-122, -134) · spun up in 47 s
+# mirror constants: {'STAND_STRAIN': 0.05, 'SINK_RATE': 0.3, 'FEET_DEPTH': 0.1, 'PLANING_SPEED': 4}
+# 11 waves, 55 runs, 1069 s wall
+
+## the press moved past the cue: cue, cued250, cued500
+   (V is the board's speed THROUGH the water at the stand, which is what `planingStep` tests against 4 m/s)
+
+  wave |             cue             |           cued250           |           cued500          
+  w  1 | pop  6.93 V  4.64 HELD          | pop  7.20 V  4.83 HELD          | pop  7.45 V  4.88 fell 0.817   
+  w  2 | pop  7.28 V  4.51 HELD          | pop  7.55 V  5.78 HELD          | pop  7.80 V  6.52 HELD         
+  w  3 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  4 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  5 | pop  7.52 V  3.73 fell 0.950    | pop  7.78 V  3.93 fell 0.717    | pop  8.03 V  3.94 fell 0.883   
+  w  6 | pop  6.58 V  4.35 fell 2.300    | pop  6.85 V  4.74 fell 1.950    | pop  7.10 V  4.79 fell 1.933   
+  w  7 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w  8 | pop  8.42 V  2.36 fell 0.550    | pop  8.68 V  2.02 fell 0.650    | pop  8.93 V  1.84 fell 0.600   
+  w  9 | pop     - V     - no press      | pop     - V     - no press      | pop     - V     - no press     
+  w 10 | pop  6.30 V  4.18 fell 0.933    | pop  6.55 V  4.43 fell 0.783    | pop  6.80 V  3.97 fell 0.433   
+  w 11 | pop  6.85 V  4.40 HELD          | pop  7.10 V  5.43 HELD          | pop  7.35 V  6.12 HELD         
+
+## riders that popped and never stood (they lost the board or slipped during the 1.2 s)
+   w 3 lift     pressed 5.53 s, outcome rising, fell 6.68 s, cause balance
+
+## ☠️ delayed presses that never happened: the rule fired but the press would land past TRIAL - 1 s
