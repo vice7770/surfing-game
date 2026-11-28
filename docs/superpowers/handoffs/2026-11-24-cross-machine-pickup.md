@@ -4,7 +4,7 @@
 - This page succeeds the [2026-11-20 pickup](2026-11-20-cross-machine-pickup.md).
 - Every commit named below was verified on the remote on 2026-11-24 at about 18:15 UTC.
 - Nothing is merged, and there are no PRs.
-- **Status, 2026-11-27, about 20:30 UTC.**
+- **Status, 2026-11-28, about 14:00 UTC.**
   - **Vicente's ride verdict (2026-11-25).**
     - He rode the ride build his way: Compress from 0.1–0.3 s after the stand, the trim fully forward from the stand and released once moving, and the stick centred after turns. He likes the stability.
     - On Canyon's big swell he did not fall, and could turn and ride the wave a bit.
@@ -221,10 +221,10 @@
         - the feet's 93 N·m is a derivation, and the ankle is unbounded on his address;
         - the added mass acts along the water normal, as the advisor says;
         - the real bottom turn is 42° of rail (Forsyth Table 2, as the advisor reads it).
-      - **His decision now:** the coordinator recommends a round on why the rider's rail stops at 17–20°. The water's deep-rail mode (the added-mass direction) is a later diagnosis, and any later hull or rail work uses the free-motion lab line.
+      - **His decision:** a round on the rider's rail, which became 3.6l (below). The coordinator framed it as why the rail "stops at 17–20°"; that framing is corrected in 3.6l. The water's deep-rail mode (the added-mass direction) is a later diagnosis, and any later hull or rail work uses the free-motion lab line.
       - **The reframing**, from the earlier studies:
         - the water already turns the board about right for its rail (roll-plant 29e; 1.2–1.6 deg/s per degree in 3.6j's rides);
-        - what falls short is the rail: 17–20° in full-stick turns, against about 50° in a real bottom turn;
+        - what falls short is the rail: 17–20° in full-stick turns, against about 50° in a real bottom turn (corrected on 2026-11-28: 17–20° was the mean over tS 1.5–2.0, the rail is still rising when the steer ends, and a real bottom turn sets about 42°; see 3.6l);
         - the board loses its sideways grip past about 18° (rail-dig 29s: the rail is a 4 mm face; holding 40° needs "a rail with a body").
       - **The plan:**
         - The water-physics advisor (Opus xhigh, started about 19:30 UTC) designs a rail that holds, from sources. If it can't, the coordinator returns to Vicente.
@@ -237,13 +237,39 @@
         5. His ride.
       - **His feel ride:** a passing arm, else the closest arm that meets lines 3 and 4 (labelled as failing), else nothing.
       - **Codex's entry `8aa48d38`** (a turn-entry work order) was read and checked from the saved data (consult log `9bac04f6`); its verdicts went into the brief.
+    - **3.6l, the lean's pace, is planned and waits for his word** (planned 2026-11-28 in two rounds of questions, "Use all recommended" twice; consult log `59f74e5a`).
+      - **The brief** is `claude/lean-speed` `f81712b4`, `docs/research/stability/lean-speed/BRIEF.md`, from `claude/rail-hold` `92227e9b`.
+      - **The coordinator's correction:** the rail does not stop at 17–20°. That was the mean over tS 1.5–2.0 of the bench's one-second steer. Tick by tick (3.6j's switch-off rows, Big seeds 1–3, rides standing at tS 2.5):
+        - by +0.5 s the lean asked is 30–37°, the body 11–12° and the rail 8–11°;
+        - at the steer's end the rail is 28° standing tall, 20° in Compress and 19° in Crouch, still rising;
+        - nothing is at a limit: the ankle is at its range on 2–4 % of the steer;
+        - the balance's own picture leans as slowly, 12–16° at +0.5 s and 33–37° at +1.0 s. The game nearly matches it standing tall, and Compress and Crouch fall 9° and 15° behind by +1.0 s;
+        - held for 2 s, the tall rail runs on to about 37° by +1.5 s and he goes over into the turn (9 of 18 fall). Compress and Crouch fall 11 of 18 each.
+      - **Found late:** the September lean-in studies on the old rider (`docs/research/lean-in-study.md`, `bottom-turn-entry-study.md`).
+        - They found the lean can only come in as fast as the turn's pull builds.
+        - Reference shaping and rate feed-forward fell, and the lean could be at most 20–40 % quicker.
+        - Their open option is a rail that leads the body.
+        - Vicente was told before the start.
+      - **The plan:**
+        - **Part 1,** on the balance's picture only: what sets the pace (the September reading tested first), the fastest lean the feet alone can make, and candidates (Codex's A2, a small rail lead).
+        - **The gate,** in every stance at 6–9.5 m/s: the lean at +0.5 s at least 1.5 times today's, no more wrong-way turn, within the ankle's range and the feet's strength, and no new swing. 3.6d's measured board is a warning.
+        - **Part 2,** only if the gate passes: one arm behind `?leanSpeed=<arm>`, opt-in and pinned off online.
+        - **Who:** one Opus builder at xhigh, with no water advisor. Codex reviews alongside.
+      - **The lines:**
+        1. At most 1 regression.
+        2. Balance falls no worse: bench 47 of 80, his way 19 of 36, R2 let go 22 of 36, straight 2 of 36.
+        3. Turns no slower, and no nudge.
+        4. The lean at +0.5 s at least 1.25 times off's per stance, and the rail at the steer's end deeper.
+        5. His ride.
+      - **His feel ride:** a passing arm on port 5177. Else the closest arm that meets lines 2 and 3, labelled as failing. Else nothing, and port 5177 keeps 3.6i's build.
+      - **The living doc** How the Surfer Moves is at version 5, with the correction: the private page and `docs/research/new-rider/how-the-surfer-moves.html`.
   - The coordinator's reviews are in the consult log.
   - The reset hold below no longer applies. On 2026-11-25 the account read 3 % of its weekly limit, with extra usage disabled.
   - Read the consult log's newest entry before starting anything on the surfer track.
 
 ## Start here
 
-1. **Read the consult log.** Its newest entries are on `claude/the-record` at `715eadda`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
+1. **Read the consult log.** Its newest entries are on `claude/the-record` at `59f74e5a`, in the [consult log](https://github.com/vice7770/surfing-game/blob/claude/the-record/docs/research/new-rider/3.5/consult-codex-2026-11-18.md).
    - Start at "3.5s" (2026-11-23).
    - Read through to the 2026-11-24 entry, "Vicente rides the later cue with `taper` and with `plantFloor=6`".
    - Each step's evidence is linked from its entry.
@@ -321,7 +347,8 @@ Also open:
 | `claude/turn-entry` | `a1f22e33` | 3.6i: nothing passes his line; he goes over into the turn; `?notchScope=stance` (the closest) is the notch without its tall and Snap regressions; everything together nearly empties the falls as he steers but they come back after it and the turn comes round less; also `?turnAim`, `?turnPlan` (opt-in, pinned off online; from `d5c8ccf9`). Served on port 5177 |
 | `claude/turn-first` | `7e4e149d` | 3.6j, done and reviewed: nothing passes; `?turnFirst=aim|on` off by default; the turn as it ships is the balance's aim (from `a1f22e33`) |
 | `claude/rail-hold` | `92227e9b` | 3.6k, stopped before any build: the plan and the advisor's note (`ADVISOR.md`, `advisor/`), from `7e4e149d`; no `src` change |
-| `claude/the-record` | `715eadda` | the consult log (verified on the remote 2026-11-27) |
+| `claude/lean-speed` | `f81712b4` | 3.6l, planned and waiting for his word: the brief only, from `92227e9b`; no `src` change |
+| `claude/the-record` | `59f74e5a` | the consult log (verified on the remote 2026-11-28) |
 | `claude/ride-everything` | this commit | orchestration: `CLAUDE.md`, `AGENTS.md`, the handoffs |
 | `main` | `1a29a6c7` | untouched |
 
