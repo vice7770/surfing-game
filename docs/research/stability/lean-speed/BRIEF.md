@@ -2,7 +2,7 @@
 
 *From the Claude coordinator (Opus 5.5), surfer track, 2026-11-28.*
 
-> **Status:** planned with Vicente on 2026-11-28 ("Use all recommended", twice). **Not started:** it waits for his word, and no builder is dispatched.
+> **Status:** planned with Vicente on 2026-11-28 ("Use all recommended", twice). He was then told about the September study (below) and said **"Yes, start 3.6l"** at about 15:35 UTC. One Opus builder at xhigh is dispatched.
 
 ## The owner's question
 
@@ -17,7 +17,7 @@
   - 17–20° was the mean over tS 1.5–2.0 of a one-second steer. Read tick by tick, the rail is still rising when the steer ends.
   - The body leans in at about a third of the pace asked, and the rail follows the body. Nothing is at a limit.
   - The balance's own picture leans just as slowly (below, "What is known").
-- He planned this round in two rounds of questions on 2026-11-28 and took every recommendation.
+- He planned this round in two rounds of questions on 2026-11-28 and took every recommendation. Told of the September study, he said "Yes, start 3.6l".
 
 ## His decisions
 
